@@ -1,0 +1,833 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* shadcn's `dark:` variant. ThemeProvider keeps `.dark` in sync with
+   [data-theme], so shadcn utilities and jojo tokens never disagree. */
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   shadcn/ui NEUTRAL
+   The values ui.shadcn.com ships, converted from oklch to hex:
+   neutral greys, a monochrome primary, no hue in the chrome.
+   Surfaces are opaque; depth is a hairline border plus a small
+   shadow. Every text/surface pair carries its measured WCAG ratio.
+   ============================================================ */
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
+
+  /* One disciplined type scale. Replaces the scattered 13.5 / 11.5 /
+     10.5px arbitrary values, which were a straightforward amateur tell. */
+  --text-xs: 0.6875rem; /* 11px — labels, meta */
+  --text-xs--line-height: 1.4;
+  --text-sm: 0.8125rem; /* 13px — table and list body */
+  --text-sm--line-height: 1.45;
+  --text-base: 0.875rem; /* 14px — body */
+  --text-base--line-height: 1.5;
+  --text-lg: 1rem; /* 16px — panel titles */
+  --text-lg--line-height: 1.4;
+  --text-xl: 1.25rem; /* 20px — page titles */
+  --text-xl--line-height: 1.3;
+  --text-2xl: 1.75rem; /* 28px — stat figures */
+  --text-2xl--line-height: 1.1;
+
+  /* Surfaces */
+  --color-page: var(--page);
+  --color-panel: var(--panel);
+  --color-well: var(--well);
+  --color-raised: var(--raised);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-row-hover: var(--row-hover);
+
+  /* Text ramp */
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+
+  /* Accent — monochrome, per shadcn: near-black light, near-white dark */
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-border: var(--accent-border);
+
+  /* Info — soft brand colour for non-status data (track chips, meters) */
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-border: var(--info-border);
+
+  /* Status. Reserved: never reused as a chart series. */
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-border: var(--danger-border);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-border: var(--warning-border);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-border: var(--success-border);
+
+  /* Chart series — a separate namespace from status, so a red segment is
+     never ambiguous between "overdue" and "series 4". */
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+  --color-series-5: var(--series-5);
+
+  /* Pipeline stages. A namespace of their own because they are neither status
+     nor chart series: they sit on --well and must stay separable at 6px. */
+  --color-stage-draft: var(--stage-draft);
+  --color-stage-submitted: var(--stage-submitted);
+  --color-stage-screen: var(--stage-screen);
+  --color-stage-interview: var(--stage-interview);
+  --color-stage-offer: var(--stage-offer);
+  --color-stage-closed: var(--stage-closed);
+
+  /* Sequential ramp for shares of a total */
+  --color-ramp-1: var(--ramp-1);
+  --color-ramp-2: var(--ramp-2);
+  --color-ramp-3: var(--ramp-3);
+  --color-ramp-4: var(--ramp-4);
+
+  /* shadcn contract, sourced from the tokens above */
+  --color-background: var(--page);
+  --color-foreground: var(--text-1);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--text-1);
+  --color-popover: var(--raised);
+  --color-popover-foreground: var(--text-1);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-fg);
+  --color-secondary: var(--well);
+  --color-secondary-foreground: var(--text-1);
+  --color-muted: var(--well);
+  --color-muted-foreground: var(--text-2);
+  --color-accent-foreground: var(--text-1);
+  --color-destructive: var(--danger);
+  --color-border: var(--hairline);
+  --color-input: var(--hairline-strong);
+  --color-ring: var(--accent);
+
+  --color-chart-1: var(--series-1);
+  --color-chart-2: var(--series-2);
+  --color-chart-3: var(--series-3);
+  --color-chart-4: var(--series-4);
+  --color-chart-5: var(--text-3);
+
+  --color-sidebar: var(--panel);
+  --color-sidebar-foreground: var(--text-1);
+  --color-sidebar-primary: var(--accent);
+  --color-sidebar-primary-foreground: var(--accent-fg);
+  --color-sidebar-accent: var(--well);
+  --color-sidebar-accent-foreground: var(--text-1);
+  --color-sidebar-border: var(--hairline);
+  --color-sidebar-ring: var(--accent);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
+/* ---------- LIGHT — shadcn/ui neutral ---------- */
+:root,
+html[data-theme='light'] {
+  --page: #f5f5f5; /* shadcn --muted, so panels read against the page */
+  --panel: #ffffff; /* --card / --background */
+  --well: #f5f5f5; /* --secondary / --muted */
+  --raised: #ffffff; /* --popover */
+  --hairline: #e5e5e5; /* --border */
+  --hairline-strong: #d4d4d4;
+  --row-hover: #f5f5f5;
+
+  --text-1: #0a0a0a; /* --foreground      · 19.80:1 on panel */
+  --text-2: #525252; /*                     7.81:1 on panel */
+  --text-3: #737373; /* --muted-foreground · 4.74:1 on panel, 4.35:1 on page */
+
+  /* shadcn's primary is monochrome — near-black in light, near-white in dark.
+     It doubles as the focus ring, which is why the ring passes easily here:
+     shadcn's own --ring (#a1a1a1) is 2.58:1 and fails WCAG 1.4.11's 3:1. */
+  --accent: #171717; /* 17.93:1 on panel */
+  --accent-fg: #fafafa;
+  --accent-soft: #f5f5f5;
+  --accent-border: #d4d4d4;
+
+  --danger: #c81e1e; /* 5.74:1 */
+  --danger-soft: #fef2f2;
+  --danger-border: #fecaca;
+  --warning: #a16207; /* 4.92:1 */
+  --warning-soft: #fefce8;
+  --warning-border: #fde68a;
+  --success: #15803d; /* 5.02:1 */
+  --success-soft: #f0fdf4;
+  --success-border: #bbf7d0;
+
+  /* Info — a soft brand colour for data that is not a status. The primary is
+     monochrome, so using it as a fill rendered chips and bars near-black. */
+  --info: #3b6fbf; /* 5.34:1 on panel */
+  --info-soft: #eff4fc;
+  --info-border: #cbdcf3;
+
+  /* Soft sky + soft coral, hues taken from the reference chart (sky 236°,
+     coral 26°) and nudged only until they clear the chroma floor — anything
+     paler than this literally "reads gray" to the validator.
+     ALL CHECKS PASS on #ffffff. */
+  --series-1: #4f9dc9; /* sky   */
+  --series-2: #c96b64; /* coral */
+  /* Slots 3-4 keep the reference's mustard and sage. They are never adjacent
+     to a colliding pair because the donut uses the ramp below instead. */
+  --series-3: #cea441; /* mustard */
+  --series-4: #449970; /* sage    */
+  --series-5: #8a6bbf; /* violet — 5th slot; palette revisit pending */
+
+  /* Pipeline stages — six hues, one per phase.
+     Draft and Closed used to share --text-3, and Submitted and Screen shared
+     --info, so half the funnel was two colours.
+
+     Ordering is chosen, not incidental: sky and violet collapse to dE 3.0 under
+     deuteranopia, so mustard is placed between them. Every adjacent pair now
+     clears dE 8 simulated for protanopia and deuteranopia, and every fill
+     clears 3:1 against the --well track it sits on.
+     Sky and mustard are deepened from their chart-series equivalents, which
+     were tuned against white and read too faint on #f5f5f5. */
+  --stage-draft: #737373; /* 4.35:1 on well — neutral: nothing has happened yet */
+  --stage-submitted: #3c92c3; /* 3.16:1 */
+  --stage-screen: #aa842c; /* 3.19:1 */
+  --stage-interview: #8a6bbf; /* 3.90:1 */
+  --stage-offer: #449970; /* 3.19:1 — green, the one convention worth keeping */
+  --stage-closed: #c96b64; /* 3.34:1 */
+
+  /* Sequential ramp for part-to-whole (the donut). One hue, light to dark:
+     four soft hues could not be separated in the dark band, and a ramp is the
+     correct form for shares of a total anyway. */
+  --ramp-1: #2f6f97;
+  --ramp-2: #4f9dc9;
+  --ramp-3: #86bcdb;
+  --ramp-4: #c2dcec;
+
+  /* Scrollbars. Translucent so the surface behind shows through — that is the
+     whole of the glass read — but only as translucent as contrast allows.
+     Overriding the browser's own scrollbar forfeits WCAG 1.4.11's "determined
+     by the user agent" exemption, so the thumb is a UI component that owes 3:1.
+     At the alpha this started on (0.18) it measured 1.49:1: present, but not
+     something you could actually find. */
+  --scrollbar-thumb: rgba(10, 10, 10, 0.44); /* 3.02:1 on --page */
+  --scrollbar-thumb-hover: rgba(10, 10, 10, 0.56); /* 4.36:1 */
+  --scrollbar-thumb-active: rgba(10, 10, 10, 0.68);
+  /* Kept low on purpose: the sheen lightens the top of the thumb, and a strong
+     one would claw back the contrast the alpha above just bought. */
+  --scrollbar-sheen: rgba(255, 255, 255, 0.18);
+  --scrollbar-edge: rgba(10, 10, 10, 0.1);
+
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-raised: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- DARK — shadcn/ui neutral (their dark is separately chosen too) ---------- */
+html[data-theme='dark'] {
+  --page: #0a0a0a; /* --background */
+  --panel: #171717; /* --card */
+  --well: #262626; /* --secondary / --muted */
+  --raised: #171717; /* --popover */
+  --hairline: #2a2a2a; /* solid equivalent of oklch(1 0 0 / 10%) */
+  --hairline-strong: #3d3d3d;
+  --row-hover: #1f1f1f;
+
+  --text-1: #fafafa; /* --foreground      · 17.18:1 on panel */
+  --text-2: #d4d4d4; /*                    12.09:1 on panel */
+  --text-3: #a1a1a1; /* --muted-foreground · 6.94:1 on panel */
+
+  --accent: #fafafa; /* monochrome primary, inverted */
+  --accent-fg: #171717;
+  --accent-soft: #262626;
+  --accent-border: #404040;
+
+  --danger: #ff6467; /*  6.21:1 — shadcn's --destructive */
+  --danger-soft: #2a1515;
+  --danger-border: #4a2020;
+  --warning: #fbbf24; /* 10.74:1 */
+  --warning-soft: #262010;
+  --warning-border: #453714;
+  --success: #4ade80; /* 10.29:1 */
+  --success-soft: #12241a;
+  --success-border: #1e4030;
+
+  --info: #7ba5e8; /* 7.31:1 on panel */
+  --info-soft: #16202e;
+  --info-border: #2a3c55;
+
+  /* Separately validated for the dark surface — the light steps sit outside
+     the dark lightness band (0.48–0.67). ALL CHECKS PASS on #171717. */
+  --series-1: #3e96c6; /* sky     */
+  --series-2: #cf6a62; /* coral   */
+  --series-3: #b18d39; /* mustard */
+  --series-4: #45a075; /* sage    */
+  --series-5: #9d84d4; /* violet */
+
+  /* Pipeline stages, dark. Same hues and same ordering; all six clear 4.2:1
+     against the --well track here, so only the light values needed deepening. */
+  --stage-draft: #a1a1a1; /* 5.86:1 on well */
+  --stage-submitted: #3e96c6; /* 4.60:1 */
+  --stage-screen: #b18d39; /* 4.86:1 */
+  --stage-interview: #9d84d4; /* 4.82:1 */
+  --stage-offer: #45a075; /* 4.71:1 */
+  --stage-closed: #cf6a62; /* 4.25:1 */
+
+  --ramp-1: #8ec4e2;
+  --ramp-2: #4f9dc9;
+  --ramp-3: #3a7ba3;
+  --ramp-4: #2a5975;
+
+  /* Scrollbars, dark. Light thumb on a dark ground, same 3:1 floor. */
+  --scrollbar-thumb: rgba(250, 250, 250, 0.36); /* 3.17:1 on --page */
+  --scrollbar-thumb-hover: rgba(250, 250, 250, 0.5); /* 5.15:1 */
+  --scrollbar-thumb-active: rgba(250, 250, 250, 0.62);
+  --scrollbar-sheen: rgba(255, 255, 255, 0.14);
+  --scrollbar-edge: rgba(255, 255, 255, 0.12);
+
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+@layer base {
+  * {
+    @apply border-hairline;
+  }
+
+  html {
+    background: var(--page);
+    @apply font-sans;
+  }
+
+  body {
+    /* No overflow-x-hidden: it makes body a scroll container and breaks the
+       sticky topbar. Nothing overflows now that the orbs are gone. */
+    @apply min-h-dvh bg-page text-base text-text-1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ------------------------------------------------------------
+     Glass scrollbars, applied to every scroll container.
+
+     An honest caveat on "glass": `backdrop-filter` does not work on scrollbar
+     pseudo-elements — they are painted by the scrollbar rather than laid out as
+     real elements, so there is no backdrop for them to sample. The material is
+     therefore built the only way it can be: a transparent track so the surface
+     underneath shows through unblurred, a translucent thumb tinted from the
+     page, a top-down sheen for the light-catching edge, and a hairline rim.
+
+     The thumb is inset with a transparent border plus `background-clip:
+     padding-box`, which is what makes it read as a floating pill rather than a
+     bar wedged against the edge of the panel.
+     ------------------------------------------------------------ */
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    background-color: var(--scrollbar-thumb);
+    background-image: linear-gradient(to bottom, var(--scrollbar-sheen), transparent 60%);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--scrollbar-edge);
+    transition: background-color 140ms ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--scrollbar-thumb-active);
+  }
+
+  /* Firefox, which has no pseudo-elements and only two colours to give.
+     Gated behind @supports rather than set alongside: Chrome 121+ drops the
+     ::-webkit-scrollbar rules entirely the moment a non-auto `scrollbar-width`
+     or `scrollbar-color` is present, so declaring both unconditionally would
+     trade the whole effect for a flat thumb in the browser most people use. */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) transparent;
+    }
+  }
+
+  /* Data reads as columns only when digits share a width. */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-medium tracking-[-0.01em];
+  }
+
+  /* WCAG 1.4.11 needs 3:1 for focus indicators. The old `ring/50` measured
+     2.97:1 dark and 1.83:1 light — it failed in both themes, on every
+     hand-rolled control. Full-opacity accent plus an offset ring passes. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@layer utilities {
+  /* The app's primary surface. Opaque, hairline-bordered, lightly raised. */
+  .surface {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* Recessed secondary surface — chart tracks, day cells, inset wells. */
+  .well {
+    background: var(--well);
+    border: 1px solid var(--hairline);
+  }
+}
+
+/* Brand card: a slow scan sweep and a breathing glow. Both are compositor-only
+   (transform / opacity), so this costs nothing next to a WebGL canvas — and it
+   makes no network request, which a local-first app has to care about. */
+@keyframes jojo-scan {
+  0% {
+    transform: translateY(-140%);
+    opacity: 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(340%);
+    opacity: 0;
+  }
+}
+
+/* Spotlight sweep-in, from the reference component. */
+@keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-72%, -62%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -40%) scale(1);
+  }
+}
+
+.animate-spotlight {
+  animation: spotlight 2s ease 0.75s 1 forwards;
+}
+
+@keyframes jojo-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+/* ============================================================
+   MASCOT RIG
+   The robot's gestures. Every one is a compositor-only transform
+   on a single group, and each group is driven by exactly one
+   layer of the rig, so they compose instead of overwriting:
+
+     .jojo-mascot        <svg>  whole-body moves (lean in, bounce, spin…)
+     .jojo-mascot-root   <g>    the idle bob, always running
+     .jojo-mascot-head   <g>    nod, shake, think
+     .jojo-mascot-arm-*  <g>    wave, cheer
+     .jojo-mascot-eyes   <g>    blink
+
+   Durations come from POSE_MS via the inline --pose-ms, so the
+   keyframes below carry shape only and the two cannot drift.
+   ============================================================ */
+
+/* `view-box` resolves transform-origin against the root viewBox, so each pivot
+   below is a literal anatomical coordinate in the 512x512 drawing. The obvious
+   alternative, `fill-box` with percentages, silently moves the pivot whenever
+   art is added to a group — a nod would start rotating about the wrong point
+   the first time the head gains an antenna. */
+.jojo-mascot-root,
+.jojo-mascot-head,
+.jojo-mascot-eyes,
+.jojo-mascot-arm {
+  transform-box: view-box;
+}
+
+.jojo-mascot-root {
+  transform-origin: 256px 472px; /* base of the torso */
+  animation: jojo-mascot-bob 4.2s ease-in-out infinite;
+}
+
+.jojo-mascot-head {
+  transform-origin: 256px 232px; /* the neck joint */
+}
+
+.jojo-mascot-arm-l {
+  transform-origin: 134px 294px; /* left shoulder */
+}
+
+.jojo-mascot-arm-r {
+  transform-origin: 378px 294px; /* right shoulder */
+}
+
+.jojo-mascot-eyes {
+  transform-origin: 258px 119px; /* between the eyes */
+  transition: transform 70ms ease;
+}
+
+.jojo-mascot-eyes.is-blinking {
+  transform: scaleY(0.08);
+}
+
+/* Resting: a slow, shallow breath. Small enough to read as alive in peripheral
+   vision without ever asking to be looked at. */
+@keyframes jojo-mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.7deg);
+  }
+}
+
+/* Yes. Twice, because one dip reads as a glitch. */
+@keyframes jojo-mascot-nod {
+  0%,
+  40%,
+  80%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  20%,
+  60% {
+    transform: translateY(13px) rotate(3deg);
+  }
+}
+
+/* No. Decaying amplitude, the way a real head settles. */
+@keyframes jojo-mascot-shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-8deg);
+  }
+  40% {
+    transform: rotate(7deg);
+  }
+  60% {
+    transform: rotate(-5deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+}
+
+/* Bow. The flat robot cannot pitch on an axis the way the 3D one does, so the
+   forward dip is spelled as sinking and squashing — the read a side-on lean
+   gives you in silhouette. */
+@keyframes jojo-mascot-bow {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  26%,
+  68% {
+    transform: translateY(20px) scaleY(0.88);
+  }
+}
+
+/* Comes toward you and holds. Scale is the only depth cue a flat robot has. */
+@keyframes jojo-mascot-lean-in {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  20%,
+  82% {
+    transform: translateY(-3%) scale(1.1);
+  }
+}
+
+/* Rocks and settles. Roll, so it cannot be confused with the shake above. */
+@keyframes jojo-mascot-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  18% {
+    transform: rotate(9deg);
+  }
+  38% {
+    transform: rotate(-9deg);
+  }
+  56% {
+    transform: rotate(6deg);
+  }
+  74% {
+    transform: rotate(-4deg);
+  }
+  88% {
+    transform: rotate(2deg);
+  }
+}
+
+/* Three decaying hops. */
+@keyframes jojo-mascot-bounce {
+  0%,
+  32%,
+  66%,
+  100% {
+    transform: translateY(0);
+  }
+  16% {
+    transform: translateY(-13%);
+  }
+  50% {
+    transform: translateY(-8%);
+  }
+  82% {
+    transform: translateY(-4%);
+  }
+}
+
+/* The squash that lands with each hop — stretched at the top, flattened on
+   contact. Without it the robot reads as being teleported upward. */
+@keyframes jojo-mascot-bounce-squash {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  16% {
+    transform: scaleY(1.05);
+  }
+  32% {
+    transform: scaleY(0.93);
+  }
+  50% {
+    transform: scaleY(1.03);
+  }
+  66% {
+    transform: scaleY(0.95);
+  }
+  82% {
+    transform: scaleY(1.02);
+  }
+}
+
+/* A full turn, in the plane rather than through it.
+   rotateY was the obvious mapping of the 3D yaw and it is wrong here: a flat
+   SVG turned 90 degrees is edge-on, so the robot disappeared completely for a
+   sixth of the gesture. An in-plane rotation always presents its full face. */
+@keyframes jojo-mascot-spin {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(180deg) translateY(-7%);
+  }
+  100% {
+    transform: rotate(360deg) translateY(0);
+  }
+}
+
+/* Pulls back and away, then recovers. The mirror of lean in, and quicker. */
+@keyframes jojo-mascot-recoil {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  24% {
+    transform: translateY(4%) scale(0.9);
+  }
+  62% {
+    transform: translateY(1%) scale(0.97);
+  }
+}
+
+/* Attention. Percentages, not px: this one is on the <svg> element, so the
+   units are CSS pixels of the rendered card rather than viewBox units. */
+@keyframes jojo-mascot-startle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-5%) scale(1.06);
+  }
+  58% {
+    transform: translateY(1%) scale(0.98);
+  }
+  80% {
+    transform: translateY(-1.5%) scale(1.01);
+  }
+}
+
+/* Four-beat sway. The bounce lands on the off-beat so the two never pulse
+   together. Body only, matching the 3D rig. */
+@keyframes jojo-mascot-dance {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  12% {
+    transform: translateY(-10px) rotate(6deg);
+  }
+  37% {
+    transform: translateY(0) rotate(-6deg);
+  }
+  62% {
+    transform: translateY(-10px) rotate(6deg);
+  }
+  87% {
+    transform: translateY(0) rotate(-6deg);
+  }
+}
+
+/* Head-driven, because a flat character reads a nod and a shake in the head
+   rather than the whole body. Everything else drives the body. */
+.jojo-mascot[data-pose='nod'] .jojo-mascot-head {
+  animation: jojo-mascot-nod var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='shake'] .jojo-mascot-head {
+  animation: jojo-mascot-shake var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='bow'] .jojo-mascot-root {
+  animation: jojo-mascot-bow var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='leanIn'] {
+  animation: jojo-mascot-lean-in var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='wobble'] .jojo-mascot-root {
+  animation: jojo-mascot-wobble var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='bounce'] {
+  animation: jojo-mascot-bounce var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='bounce'] .jojo-mascot-root {
+  animation: jojo-mascot-bounce-squash var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='spin'] {
+  animation: jojo-mascot-spin var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='recoil'] {
+  animation: jojo-mascot-recoil var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='startle'] {
+  animation: jojo-mascot-startle var(--pose-ms) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* Overrides the resting bob on the same element — the shorthand replaces it for
+   the length of the gesture, then the bob resumes. */
+.jojo-mascot[data-pose='dance'] .jojo-mascot-root {
+  animation: jojo-mascot-dance var(--pose-ms) ease-in-out;
+}
+
+/* A translucent scrollbar is the first thing this setting is asking for less
+   of. Same shapes, opaque fills. */
+/* The rich-text editor's content is user-authored HTML, so Tailwind's utility
+   pass never sees these tags — they need actual rules. Scoped to `.rte` so
+   nothing leaks into the rest of the app. */
+.rte:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-3);
+}
+
+.rte ul,
+.rte ol {
+  margin: 0.4em 0 0.4em 1.25em;
+}
+
+.rte ul {
+  list-style: disc;
+}
+
+.rte ol {
+  list-style: decimal;
+}
+
+.rte li {
+  margin: 0.15em 0;
+}
+
+.rte table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5em 0;
+}
+
+.rte td,
+.rte th {
+  border: 1px solid var(--hairline-strong);
+  padding: 0.25em 0.5em;
+  /* An empty cell would otherwise collapse to a sliver too narrow to click
+     into, which makes a freshly inserted table impossible to fill in. */
+  min-width: 3em;
+  vertical-align: top;
+}
+
+.rte a {
+  color: var(--info);
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  html[data-theme='light'] {
+    --scrollbar-thumb: #c2c2c2;
+    --scrollbar-thumb-hover: #a8a8a8;
+    --scrollbar-thumb-active: #8f8f8f;
+    --scrollbar-sheen: transparent;
+    --scrollbar-edge: #b0b0b0;
+  }
+
+  html[data-theme='dark'] {
+    --scrollbar-thumb: #3d3d3d;
+    --scrollbar-thumb-hover: #525252;
+    --scrollbar-thumb-active: #666666;
+    --scrollbar-sheen: transparent;
+    --scrollbar-edge: #4d4d4d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

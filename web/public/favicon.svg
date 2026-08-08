@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="jojo">
+  <title>jojo</title>
+
+  <!-- Dark plate: the robot is light grey, which would vanish against a white
+       browser tab. The plate guarantees it reads in both tab themes. -->
+  <rect width="512" height="512" rx="115" fill="#171717" />
+
+  <!-- Cropped to the HEAD only. The full robot (head + body + chest marker)
+       collapses into a smudge at 16px; the visor and two eyes are the part
+       that stays recognisable, so the head is scaled up to fill the frame. -->
+
+  <!-- Ears -->
+  <rect x="8" y="200" width="56" height="112" rx="21" fill="#aeb6bf" />
+  <rect x="8" y="200" width="24" height="112" rx="21" fill="#98a1ab" />
+  <rect x="448" y="200" width="56" height="112" rx="21" fill="#aeb6bf" />
+  <rect x="480" y="200" width="24" height="112" rx="21" fill="#98a1ab" />
+
+  <!-- Head -->
+  <rect x="46" y="117" width="420" height="278" rx="133" fill="#e6e7e8" />
+  <path d="M179 117C106 117 46 179 46 251v10c0 72 60 134 133 134h-8c-73 0-89-62-89-134v-10c0-72 16-134 89-134z" fill="#d3d5d7" />
+
+  <!-- Visor -->
+  <rect x="106" y="153" width="300" height="206" rx="99" fill="#57596b" />
+  <path d="M205 153c-55 0-99 46-99 99v8c0 53 44 99 99 99h-17c-55 0-32-46-32-99v-8c0-53-23-99 32-99z" fill="#43455a" />
+
+  <!-- Eyes -->
+  <circle cx="196" cy="256" r="41" fill="#71dcef" />
+  <path d="M196 215a41 41 0 0 0 0 82 41 41 0 0 1 0-82z" fill="#5ccbe0" />
+  <circle cx="316" cy="256" r="41" fill="#71dcef" />
+  <path d="M316 215a41 41 0 0 0 0 82 41 41 0 0 1 0-82z" fill="#5ccbe0" />
+</svg>
