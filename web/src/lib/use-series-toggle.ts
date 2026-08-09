@@ -22,7 +22,16 @@ export function useSeriesToggle<T extends string>(keys: readonly T[]) {
 
   const isHidden = useCallback((key: string) => hidden.has(key as T), [hidden])
 
+  /**
+   * Switch everything back on, in one write.
+   *
+   * Without it the only reset was toggling each hidden key back, which every
+   * caller had to spell for itself — and doing that in a loop queues one state
+   * update per key rather than one per press.
+   */
+  const showAll = useCallback(() => setHidden(new Set<T>()), [])
+
   const visibleKeys = useMemo(() => keys.filter((k) => !hidden.has(k)), [keys, hidden])
 
-  return { hidden, toggle, isHidden, visibleKeys, allHidden: visibleKeys.length === 0 }
+  return { hidden, toggle, showAll, isHidden, visibleKeys, allHidden: visibleKeys.length === 0 }
 }

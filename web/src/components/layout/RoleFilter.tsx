@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Check, ListFilter, X } from 'lucide-react'
 import {
   Command,
@@ -10,19 +10,10 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
-import { ROLES, applications, type RoleTag } from '@/data/seed'
+import { ROLES, type RoleTag } from '@/data/seed'
 import { useRoles } from '@/lib/roles-context'
+import { useApplications } from '@/lib/store-context'
 import { cn } from '@/lib/utils'
-
-/** How many applications carry each role — shown so the filter is informative
- *  before you apply it, not just after. */
-const COUNTS = ROLES.reduce(
-  (acc, role) => {
-    acc[role] = applications.filter((a) => a.roleTag === role).length
-    return acc
-  },
-  {} as Record<RoleTag, number>,
-)
 
 /** Chips shown inline before collapsing to "+N". */
 const INLINE = 2
@@ -41,6 +32,25 @@ const INLINE = 2
 export function RoleFilter() {
   const [open, setOpen] = useState(false)
   const { selected, toggle, setAll, clear } = useRoles()
+  const { all } = useApplications()
+
+  /**
+   * How many applications carry each role — shown so the filter is informative
+   * before you apply it, not just after. Counted in render: computed once at
+   * module load, the figures froze at whatever the seed held and an application
+   * added this session was filterable but uncounted.
+   */
+  const counts = useMemo(
+    () =>
+      ROLES.reduce(
+        (acc, role) => {
+          acc[role] = all.filter((a) => a.roleTag === role).length
+          return acc
+        },
+        {} as Record<RoleTag, number>,
+      ),
+    [all],
+  )
 
   const chosen = ROLES.filter((r) => selected.has(r))
   const inline = chosen.slice(0, INLINE)
@@ -96,7 +106,7 @@ export function RoleFilter() {
                       </span>
                       <span className="min-w-0 flex-1 truncate">{role}</span>
                       <span className="tabular shrink-0 font-mono text-xs text-text-3">
-                        {COUNTS[role]}
+                        {counts[role]}
                       </span>
                     </CommandItem>
                   )

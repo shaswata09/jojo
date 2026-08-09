@@ -21,19 +21,33 @@
   --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
 
   /* One disciplined type scale. Replaces the scattered 13.5 / 11.5 /
-     10.5px arbitrary values, which were a straightforward amateur tell. */
+     10.5px arbitrary values, which were a straightforward amateur tell.
+
+     Tracking is bound to the size rather than to the tag. A blanket
+     -0.01em on h1/h2/h3 tightened a 28px figure too little and an 11px
+     uppercase label far too much — optical letter-spacing runs the other
+     way from size, so it belongs on the step, not on the element. Each
+     `text-*` utility carries its own, and `tracking-*` still overrides it
+     (Tailwind emits these through --tw-tracking), which is why the
+     uppercase eyebrow labels keep their tracking-wide. */
   --text-xs: 0.6875rem; /* 11px — labels, meta */
   --text-xs--line-height: 1.4;
+  --text-xs--letter-spacing: 0.01em;
   --text-sm: 0.8125rem; /* 13px — table and list body */
   --text-sm--line-height: 1.45;
+  --text-sm--letter-spacing: 0em;
   --text-base: 0.875rem; /* 14px — body */
   --text-base--line-height: 1.5;
+  --text-base--letter-spacing: 0em;
   --text-lg: 1rem; /* 16px — panel titles */
   --text-lg--line-height: 1.4;
+  --text-lg--letter-spacing: -0.005em;
   --text-xl: 1.25rem; /* 20px — page titles */
   --text-xl--line-height: 1.3;
+  --text-xl--letter-spacing: -0.01em;
   --text-2xl: 1.75rem; /* 28px — stat figures */
   --text-2xl--line-height: 1.1;
+  --text-2xl--letter-spacing: -0.02em;
 
   /* Surfaces */
   --color-page: var(--page);
@@ -141,20 +155,38 @@ html[data-theme='light'] {
   --well: #f5f5f5; /* --secondary / --muted */
   --raised: #ffffff; /* --popover */
   --hairline: #e5e5e5; /* --border */
-  --hairline-strong: #d4d4d4;
-  --row-hover: #f5f5f5;
+  /* Was #d4d4d4 — 1.48:1 on panel, which is the border on every input, the
+     reminder checkbox and the board's dashed "Add here" slot. Those are UI
+     components, not decoration, so they owe WCAG 1.4.11 a real edge. 2.05:1
+     is still short of 3:1, but going darker starts to read as a filled
+     control; the selected state below carries the rest of the signal. */
+  --hairline-strong: #b5b5b5; /* 2.05:1 on panel */
+  /* Was #f5f5f5, byte-identical to --well — so `hover:bg-row-hover` on a
+     control already sitting on a well painted nothing at all. */
+  --row-hover: #f0f0f0; /* 1.14:1 on panel */
 
   --text-1: #0a0a0a; /* --foreground      · 19.80:1 on panel */
   --text-2: #525252; /*                     7.81:1 on panel */
-  --text-3: #737373; /* --muted-foreground · 4.74:1 on panel, 4.35:1 on page */
+  /* Was #737373: 4.74:1 on panel but only 4.35:1 on the page and the well,
+     and the well is where most meta text actually lives. Measured on every
+     surface it lands on now — panel, page/well, row hover, and the selected
+     fill below, which is the tightest of the four. */
+  --text-3: #696969; /* 5.49:1 panel · 5.04:1 well · 4.82:1 row-hover · 4.61:1 accent-soft */
 
   /* shadcn's primary is monochrome — near-black in light, near-white in dark.
      It doubles as the focus ring, which is why the ring passes easily here:
      shadcn's own --ring (#a1a1a1) is 2.58:1 and fails WCAG 1.4.11's 3:1. */
   --accent: #171717; /* 17.93:1 on panel */
   --accent-fg: #fafafa;
-  --accent-soft: #f5f5f5;
-  --accent-border: #d4d4d4;
+  /* The selected/hovered/drop fill. It was #f5f5f5 — the same bytes as --well
+     and --page — so eight interaction states across the app resolved to the
+     colour that was already there and painted nothing: the kanban drop target,
+     the "today" tile, the ?focus= arrival highlight, the reminder checkbox,
+     the role filter, the StageMenu trigger, the PageHeader options button, the
+     editor's active toolbar button. It has to be a real step below --well, not
+     an alias of it. */
+  --accent-soft: #ebebeb; /* 1.19:1 on panel · 1.09:1 on well */
+  --accent-border: #a3a3a3; /* 2.52:1 on panel — a clear step past hairline-strong */
 
   --danger: #c81e1e; /* 5.74:1 */
   --danger-soft: #fef2f2;
@@ -223,6 +255,12 @@ html[data-theme='light'] {
   --scrollbar-sheen: rgba(255, 255, 255, 0.18);
   --scrollbar-edge: rgba(10, 10, 10, 0.1);
 
+  /* Only used when transparency is turned down — see the media query at the
+     foot of this file. The dialog overlay normally leans on a blur to say
+     "the page behind is out of reach"; with the blur gone, the wash has to
+     carry that on its own. */
+  --scrim: rgba(10, 10, 10, 0.72);
+
   --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-raised: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
@@ -230,22 +268,34 @@ html[data-theme='light'] {
 
 /* ---------- DARK — shadcn/ui neutral (their dark is separately chosen too) ---------- */
 html[data-theme='dark'] {
+  /* Depth ordering, and it was upside down. Light runs page #f5f5f5 → well
+     #f5f5f5 → panel #ffffff, so a card sits ABOVE the track it is inset in.
+     Dark ran panel #171717 → well #262626 — the other way round — so every
+     board column, chart track and day cell was lighter than the card holding
+     it and the cards read as holes punched in the surface. Sampled from a
+     screenshot of /applications: card #171717 on track #262626.
+     The ramp is now monotonic in both themes, darkest to lightest:
+     page → well → panel → row-hover → accent-soft. */
   --page: #0a0a0a; /* --background */
-  --panel: #171717; /* --card */
-  --well: #262626; /* --secondary / --muted */
-  --raised: #171717; /* --popover */
-  --hairline: #2a2a2a; /* solid equivalent of oklch(1 0 0 / 10%) */
-  --hairline-strong: #3d3d3d;
-  --row-hover: #1f1f1f;
+  --panel: #1f1f1f; /* --card    · 1.20:1 on page (was 1.10:1) */
+  --well: #171717; /* --secondary / --muted · recessed 1.09:1 under panel */
+  --raised: #1f1f1f; /* --popover · tracks --panel, as it does in light */
+  --hairline: #333333; /* 1.30:1 on panel — was #2a2a2a, 1.15:1 once panel lifted */
+  --hairline-strong: #4a4a4a; /* 1.86:1 on panel */
+  /* Hover lifts in dark and sinks in light: the shared rule is "move away from
+     the page", not "get darker". Was #1f1f1f, which is now the panel itself. */
+  --row-hover: #2a2a2a; /* 1.15:1 on panel */
 
-  --text-1: #fafafa; /* --foreground      · 17.18:1 on panel */
-  --text-2: #d4d4d4; /*                    12.09:1 on panel */
-  --text-3: #a1a1a1; /* --muted-foreground · 6.94:1 on panel */
+  --text-1: #fafafa; /* --foreground      · 15.79:1 on panel */
+  --text-2: #d4d4d4; /*                    11.12:1 on panel */
+  --text-3: #a1a1a1; /* --muted-foreground · 6.38:1 panel · 6.94:1 well · 5.11:1 accent-soft */
 
   --accent: #fafafa; /* monochrome primary, inverted */
   --accent-fg: #171717;
-  --accent-soft: #262626;
-  --accent-border: #404040;
+  /* Was #262626 — the same bytes as the old --well, the identical failure the
+     light palette had. See the light block for the eight states it silenced. */
+  --accent-soft: #303030; /* 1.25:1 on panel · 1.36:1 on well */
+  --accent-border: #5a5a5a; /* 2.39:1 on panel */
 
   --danger: #ff6467; /*  6.21:1 — shadcn's --destructive */
   --danger-soft: #2a1515;
@@ -269,14 +319,17 @@ html[data-theme='dark'] {
   --series-4: #45a075; /* sage    */
   --series-5: #9d84d4; /* violet */
 
-  /* Pipeline stages, dark. Same hues and same ordering; all six clear 4.2:1
-     against the --well track here, so only the light values needed deepening. */
-  --stage-draft: #a1a1a1; /* 5.86:1 on well */
-  --stage-submitted: #3e96c6; /* 4.60:1 */
-  --stage-screen: #b18d39; /* 4.86:1 */
-  --stage-interview: #9d84d4; /* 4.82:1 */
-  --stage-offer: #45a075; /* 4.71:1 */
-  --stage-closed: #cf6a62; /* 4.25:1 */
+  /* Pipeline stages, dark. Same hues and same ordering; only the light values
+     ever needed deepening. Re-measured after --well and --panel swapped
+     places, because the stage dot appears on both: it rides the well on a
+     board column and the panel on a table chip, and the panel is now the
+     paler of the two, so that is the number that has to clear 3:1. */
+  --stage-draft: #a1a1a1; /* 6.38:1 on panel · 6.94:1 on well */
+  --stage-submitted: #3e96c6; /* 5.01:1 · 5.45:1 */
+  --stage-screen: #b18d39; /* 5.29:1 · 5.75:1 */
+  --stage-interview: #9d84d4; /* 5.25:1 · 5.71:1 */
+  --stage-offer: #45a075; /* 5.13:1 · 5.58:1 */
+  --stage-closed: #cf6a62; /* 4.62:1 · 5.03:1 */
 
   --ramp-1: #8ec4e2;
   --ramp-2: #4f9dc9;
@@ -289,6 +342,8 @@ html[data-theme='dark'] {
   --scrollbar-thumb-active: rgba(250, 250, 250, 0.62);
   --scrollbar-sheen: rgba(255, 255, 255, 0.14);
   --scrollbar-edge: rgba(255, 255, 255, 0.12);
+
+  --scrim: rgba(0, 0, 0, 0.82);
 
   --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -378,10 +433,13 @@ html[data-theme='dark'] {
     cursor: pointer;
   }
 
+  /* Weight only. Tracking used to be pinned here at -0.01em for every heading
+     regardless of size, which is backwards — an <h3> set at text-xs wants
+     tracking opened up, not closed. It now comes from the type step. */
   h1,
   h2,
   h3 {
-    @apply font-medium tracking-[-0.01em];
+    @apply font-medium;
   }
 
   /* WCAG 1.4.11 needs 3:1 for focus indicators. The old `ring/50` measured
@@ -754,8 +812,6 @@ html[data-theme='dark'] {
   animation: jojo-mascot-dance var(--pose-ms) ease-in-out;
 }
 
-/* A translucent scrollbar is the first thing this setting is asking for less
-   of. Same shapes, opaque fills. */
 /* The rich-text editor's content is user-authored HTML, so Tailwind's utility
    pass never sees these tags — they need actual rules. Scoped to `.rte` so
    nothing leaks into the rest of the app. */
@@ -803,6 +859,8 @@ html[data-theme='dark'] {
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  /* A translucent scrollbar is the first thing this setting is asking for less
+     of. Same shapes, opaque fills. */
   :root,
   html[data-theme='light'] {
     --scrollbar-thumb: #c2c2c2;
@@ -819,6 +877,58 @@ html[data-theme='dark'] {
     --scrollbar-sheen: transparent;
     --scrollbar-edge: #4d4d4d;
   }
+
+  /* Blur is the expensive half of every glass surface and the half this
+     preference is actually about. Reset it wholesale rather than naming
+     today's overlays one by one — a list of selectors silently misses the
+     next translucent thing anyone adds, and a missed one is invisible to the
+     author because they are not the ones who set the preference. Mirrors the
+     shape of the reduced-motion block below. */
+  /* Prefixed first, standard second, and not the other way round: the CSS
+     minifier treats the pair as one property and keeps whichever it reads
+     last, so writing the standard one first silently shipped a Safari-only
+     rule and left Firefox blurred. */
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* The modal scrim leans on that blur: on its own it is a 10% black wash,
+     which does not separate a dialog from live, legible page content. With
+     the blur withdrawn it has to dim instead. */
+  [data-slot='dialog-overlay'] {
+    background-color: var(--scrim);
+  }
+}
+
+/* Press feedback.
+
+   The house rule is that feedback belongs on pointer-down, not on release —
+   the moment lag appears, directness falls off a cliff. Only `Button` carried
+   an `:active` rule, so the surfaces people press most often (nav links, board
+   cards, table rows, chips, segmented options, the reminder checkbox) sat
+   completely dead under the finger until the click had already been handled.
+
+   Two properties only, both compositor-friendly, so this can never cost a
+   frame on a row being dragged. `transition-duration` is deliberately short in
+   and instant out: a press should register the moment it happens and let go
+   the moment it is released. */
+.pressable {
+  transition:
+    transform 120ms cubic-bezier(0.32, 0.72, 0, 1),
+    filter 120ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.pressable:active {
+  transform: scale(0.985);
+}
+
+/* Rows and cards are wide, so a scale reads as the whole surface shifting.
+   They dip instead — the same gesture, sized to the element. */
+.pressable-row:active {
+  transform: translateY(1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -829,5 +939,195 @@ html[data-theme='dark'] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Reduced motion means a gentler equivalent, not none: the press still has
+     to answer, so the transform is dropped and the acknowledgement moves to
+     brightness, which does not move anything on screen. */
+  .pressable:active,
+  .pressable-row:active {
+    transform: none;
+    filter: brightness(0.97);
+  }
+}
+
+/* Arrival highlight.
+
+   The tint a `?focus=` deep link leaves on the row it named. It has one job —
+   answering "which of these did the link mean?" — and it has done that job
+   within a second of arrival, so it decays rather than burning in. The
+   parameter is dropped on the same beat by `use-arrival-highlight.ts`; the fade
+   is what stops that removal from reading as a snap.
+
+   Keyframed rather than transitioned because there is nothing to transition
+   *from*: the row mounts already highlighted, and a transition needs two
+   states in two frames. Duration is mirrored in ARRIVAL_HIGHLIGHT_MS. */
+@keyframes jojo-arrival {
+  0%,
+  55% {
+    background-color: var(--accent-soft);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.arrival-highlight {
+  animation: jojo-arrival 2600ms ease-out forwards;
+}
+
+/* The same cue on a surface that already carries a fill — the snippet cards.
+   `forwards` holds the last keyframe for the life of the element, so ending on
+   `transparent` there would leave the card permanently without its background;
+   this lands the tint back on the fill it started from. */
+@keyframes jojo-arrival-well {
+  0%,
+  55% {
+    background-color: var(--accent-soft);
+  }
+  100% {
+    background-color: var(--well);
+  }
+}
+
+.arrival-highlight-well {
+  animation: jojo-arrival-well 2600ms ease-out forwards;
+}
+
+/* ------------------------------------------------------------
+   Touch tier.
+
+   Everything here is behind `pointer: coarse`, which asks about the *device*,
+   not the width: a 1280px tablet needs the bigger targets and a 380px window
+   on a laptop does not. Sizing this off a breakpoint would have grown half the
+   desktop app for nobody.
+
+   The rule being answered is 44x44 CSS pixels for anything you tap. The app
+   fails it in four shapes — icon buttons drawn at 24-32px, segmented options at
+   25px, menu rows at 28px and text fields at 32px — and they do not all want
+   the same fix.
+
+   On what these selectors match: the app's icon controls are almost never
+   `<Button size="icon">`. The house contract, set by the overflow menus, is a
+   bare `size-6` / `size-7` / `size-8` square on a plain <button>, so matching
+   the drawn size in the class attribute is what actually reaches them. It is
+   stringly, and it is checked: `size-5` is deliberately absent, because the
+   calendar's day-number button is drawn at that size and already carries its
+   own `after:inset-0` catch area covering the whole cell.
+   ------------------------------------------------------------ */
+@media (pointer: coarse) {
+  /* Icon buttons keep the box they draw and grow the box they *catch*.
+
+     Inflating `size-7` to `size-11` would be the obvious fix and the wrong one:
+     those buttons sit in 56px rows and 36px header gutters measured around
+     them, so the finger would gain 16px and the layout would lose the row. A
+     centred pseudo-element is invisible, costs no layout, and is hit-tested as
+     part of the button — which is the whole of what a tap target is.
+
+     `:where()` deliberately zeroes the specificity of `position: relative`, so
+     an icon button a call site has positioned absolutely keeps its own
+     positioning. Either value establishes a containing block, which is all the
+     pseudo-element needs.
+
+     The honest cost: on a 28px button the catch area overhangs by 8px on each
+     side, so a link whose text ends flush against one loses those 8px. That is
+     what a 44px target means on a dense row, and it is why the rule below
+     spaces adjacent icon buttons apart — two overlapping catch areas is the one
+     case where the overhang takes a tap from something that also needed it. */
+  :where(
+    [data-slot='button'][data-size^='icon'],
+    button[class*='size-6'],
+    button[class*='size-7'],
+    button[class*='size-8'],
+    .touch-target
+  ) {
+    position: relative;
+  }
+
+  [data-slot='button'][data-size^='icon']::after,
+  button[class*='size-6']::after,
+  button[class*='size-7']::after,
+  button[class*='size-8']::after,
+  .touch-target::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Tight clusters — the keyword picker beside the flag beside the ⋯ — are
+     drawn at `gap-0.5`, which is 2px between two 28px buttons and 22px of
+     shared catch area. Any two adjacent squares get pushed apart instead. */
+  :is(
+      [data-slot='button'][data-size^='icon'],
+      button[class*='size-6'],
+      button[class*='size-7'],
+      button[class*='size-8'],
+      .touch-target
+    )
+    + :is(
+      [data-slot='button'][data-size^='icon'],
+      button[class*='size-6'],
+      button[class*='size-7'],
+      button[class*='size-8'],
+      .touch-target
+    ) {
+    margin-inline-start: 0.375rem;
+  }
+
+  /* Rows and options that have somewhere to grow. A popover sizes to its
+     content and a segmented control sits on its own line, so height here costs
+     nothing around it. `min-height` rather than `height` so a two-line row
+     still fits its second line.
+
+     `[role='radio']` reaches both segmented controls in the app — `Segment`'s
+     pills and `BucketFilter`'s chips — which is why neither component states
+     this itself. Switches are excluded because they are drawn at a fixed 18px
+     and would stretch into an oval; the row they sit in is the target there,
+     and `switch.tsx` already carries its own `after:-inset` catch area. Icon
+     buttons are excluded because the rule above already handled them without
+     touching the popover's height. */
+  [data-slot='command-item'],
+  [role='radio'],
+  [data-slot='popover-content'] button:not([data-slot='switch']):not([data-size^='icon']) {
+    min-height: 2.75rem;
+  }
+
+  /* Text buttons. `sm` is in the list because it is the app's de facto default
+     — 109 of the ~180 buttons ask for it, including New application and From
+     link, which are drawn at 28px. Reading the variant table instead of the
+     call sites would have shipped a rule that missed almost every button on the
+     page.
+
+     `xs` is the one size left out: those eight are genuinely inline, set inside
+     a line of text, and a 44px minimum there sets the height of the sentence
+     around them. This also keeps a submit button the same height as the field
+     it submits, which the h-11 input above would otherwise have broken. */
+  [data-slot='button']:is([data-size='default'], [data-size='sm'], [data-size='lg']) {
+    min-height: 2.75rem;
+  }
+
+  /* The ⌘K field. Its height is pinned with `!` inside `command.tsx` so the
+     palette's input matches the rows under it, and an important declaration is
+     the only thing that can answer one. */
+  [data-slot='command-input-wrapper'] [data-slot='input-group'] {
+    height: 2.75rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* A second block rather than an edit to the one above, so packages landing in
+     parallel do not collide in the same braces.
+
+     The arrival tint is information, not decoration: flattened to 0.01ms by the
+     global reset it would appear and vanish inside one frame, leaving the
+     reader with no answer to the question the link was asking. It holds instead
+     and lets the URL parameter clearing be the thing that removes it. */
+  .arrival-highlight {
+    animation: none !important;
+    background-color: var(--accent-soft);
   }
 }

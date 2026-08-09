@@ -2,9 +2,18 @@ import { cn } from '@/lib/utils'
 
 export type RadarSeries = { label: string; color: string; values: number[] }
 
-const SIZE = 240
-const CX = SIZE / 2
-const CY = SIZE / 2
+/**
+ * Wider than it is tall, and deliberately.
+ *
+ * The axis labels ring at 128% of R, so on the old square 240 viewBox the two
+ * widest ones ran off the left and right edges — "Interview prep" rendered as
+ * "erview prep". The plot itself is unchanged; the extra 100 units are gutter
+ * for the labels, which only ever grow sideways.
+ */
+const W = 340
+const H = 240
+const CX = W / 2
+const CY = H / 2
 const R = 78
 const RINGS = 4
 
@@ -35,8 +44,8 @@ export function Radar({
   return (
     <div className={cn('flex flex-col items-center', className)}>
       <svg
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="h-auto w-full max-w-[260px]"
+        viewBox={`0 0 ${W} ${H}`}
+        className="h-auto w-full max-w-[340px]"
         role="img"
         aria-label={`Radar comparing ${series.map((s) => s.label).join(' and ')} across ${axes.join(', ')}`}
       >

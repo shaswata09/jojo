@@ -7,8 +7,11 @@ import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 export function AppShell() {
   const [navOpen, setNavOpen] = useState(false)
   const navButtonRef = useRef<HTMLButtonElement>(null)
+  const mainRef = useRef<HTMLElement>(null)
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
   const { pathname } = useLocation()
+  /** First render is a page load, where the browser already owns focus. */
+  const landed = useRef(false)
 
   /** Closes and returns focus to the trigger — for Escape, backdrop and the X. */
   const closeNav = useCallback(() => {
@@ -19,6 +22,27 @@ export function AppShell() {
   // Navigating away should dismiss the drawer, but focus belongs with the new
   // page rather than back on the hamburger.
   useEffect(() => setNavOpen(false), [pathname])
+
+  /**
+   * Move focus to the new page on navigation.
+   *
+   * A client-side route change swaps the content without moving focus, so a
+   * keyboard user who activates a nav link is left with focus back in the
+   * sidebar and has to tab through the whole shell again — eighteen stops
+   * before the first thing on the page — while a screen reader announces
+   * nothing at all, because as far as it is concerned nothing happened.
+   *
+   * Skipped on the first render: that is a page load, where the browser has
+   * already put focus in the right place, and stealing it would scroll a
+   * deep-linked record out of view the moment it arrived.
+   */
+  useEffect(() => {
+    if (!landed.current) {
+      landed.current = true
+      return
+    }
+    mainRef.current?.focus()
+  }, [pathname])
 
   // Escape to dismiss, and lock background scroll while the drawer covers it.
   useEffect(() => {
@@ -40,6 +64,24 @@ export function AppShell() {
 
   return (
     <>
+      {/* Off-screen until focused, which is the whole point: it is the first
+          tab stop in the document, and without it reaching page content from
+          the address bar costs eighteen presses through the sidebar, topbar
+          and utility icons on every single navigation. */}
+      <a
+        href="#main"
+        onClick={(event) => {
+          // The href is a real fragment so it survives with JS disabled, but
+          // letting it navigate would push a history entry whose only content
+          // is a hash — Back would then appear to do nothing.
+          event.preventDefault()
+          mainRef.current?.focus()
+        }}
+        className="sr-only rounded-md bg-panel px-3 py-2 text-sm text-text-1 shadow-[var(--shadow-raised)] ring-1 ring-hairline-strong focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60]"
+      >
+        Skip to main content
+      </a>
+
       {/* Backdrop: mobile only, and only while open. */}
       {navOpen && !isDesktop ? (
         <button
@@ -79,7 +121,16 @@ export function AppShell() {
           {/* flex-1 + min-h-0 so a page can hand a child the remaining
               viewport height (the kanban board does). Panels are unaffected:
               a column flex container stretches children across, not down. */}
-          <main className="flex min-h-0 flex-1 flex-col gap-4 sm:gap-5">
+          {/* tabIndex -1 so it can receive programmatic focus on navigation
+              without becoming a tab stop of its own; outline-none because that
+              focus is a scroll-and-announce, not something to draw a ring
+              around — the ring belongs on controls the user aimed at. */}
+          <main
+            ref={mainRef}
+            id="main"
+            tabIndex={-1}
+            className="flex min-h-0 flex-1 flex-col gap-4 outline-none sm:gap-5"
+          >
             <Outlet />
           </main>
         </div>

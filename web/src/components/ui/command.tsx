@@ -38,16 +38,29 @@ function CommandDialog({
   className?: string
   showCloseButton?: boolean
 }) {
+  // Same guarantee ConfirmDialog makes: a closed palette is not mounted at all,
+  // so closing it tears the portal, the focus trap and the `aria-hidden` Radix
+  // stamps on the app shell down in one commit rather than leaving them to an
+  // exit animation that may never report back. The palette is the one dialog
+  // reachable from every route by keyboard, so it is the worst one to strand.
+  // `=== false` rather than falsy: an uncontrolled Dialog passes no `open`.
+  if (props.open === false) return null
+
   return (
     <Dialog {...props}>
-      <DialogHeader className="sr-only">
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
-      </DialogHeader>
       <DialogContent
         className={cn('top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0', className)}
         showCloseButton={showCloseButton}
       >
+        {/* Inside the content, not beside it. Out here the header was rendered
+            whether the palette was open or not and outside the portal, so a
+            phantom "Search" heading sat in the outline of every route — and the
+            title Radix points `aria-labelledby` at lived in a different tree
+            from the dialog it names. */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
         {children}
       </DialogContent>
     </Dialog>

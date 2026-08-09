@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { Download, TriangleAlert, Upload } from 'lucide-react'
+import { Link } from 'react-router'
+import { Download, RotateCcw, Share2, TriangleAlert, Upload } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { RobotMascot } from '@/components/brand/RobotMascot'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { Field, SettingRow } from '@/components/common/Field'
+import { KeywordManager } from '@/components/common/KeywordManager'
 import { GESTURES, useMascot } from '@/lib/mascot-context'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -11,7 +14,10 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { isSoundEnabled, playSwitchClick, setSoundEnabled } from '@/lib/sound'
 import { isStorageAvailable } from '@/lib/storage'
+import { useStoreAdmin } from '@/lib/store-context'
+import { useToast } from '@/lib/toast-context'
 import { useTheme, type ThemePref } from '@/lib/theme-context'
+import { transferPath, useTitle } from '@/lib/links'
 
 const THEMES = [
   { value: 'light', label: 'Light' },
@@ -19,16 +25,106 @@ const THEMES = [
   { value: 'system', label: 'System' },
 ] as const satisfies readonly { value: ThemePref; label: string }[]
 
+const DATA_SETS = [
+  { value: 'demo', label: 'Demo data' },
+  { value: 'empty', label: 'Empty' },
+] as const
+type DataSet = (typeof DATA_SETS)[number]['value']
+
+/** Which destructive data action is waiting on a confirmation. */
+type PendingData = 'demo' | 'empty' | 'reset'
+
 export function Settings() {
+  useTitle('Settings')
   const { pref, setPref } = useTheme()
   const { pose, seq, play } = useMascot()
-  const [autoSync, setAutoSync] = useState(true)
-  const [snapshots, setSnapshots] = useState(true)
+  const { exportJSON, reset, clearAll, isEmpty } = useStoreAdmin()
+  const { toast } = useToast()
+  // All three start off. They were on by default in a panel whose own copy says
+  // nothing is connected — and in an app whose promise is that your data stays
+  // on your machine, a switch that claims to be writing files somewhere is the
+  // single most consequential thing a person could be wrong about. Off is both
+  // true and the safe reading.
+  const [autoSync, setAutoSync] = useState(false)
+  const [snapshots, setSnapshots] = useState(false)
   const [watchFolder, setWatchFolder] = useState(false)
   const [sound, setSound] = useState(isSoundEnabled)
+  const [pending, setPending] = useState<PendingData | null>(null)
 
   // Reported, not assumed. jojo is local-first, so this is load-bearing.
   const storageOk = isStorageAvailable()
+
+  /**
+   * Writes the store to a file the browser downloads.
+   *
+   * A Blob URL pins its data in memory until it is revoked, so the handle is
+   * released as soon as the click has been dispatched — otherwise every export
+   * would leak a copy of the whole store for the life of the tab.
+   */
+  const onExport = () => {
+    const blob = new Blob([exportJSON()], { type: 'application/json' })
+    const href = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = href
+    anchor.download = 'jojo-data.json'
+    anchor.click()
+    URL.revokeObjectURL(href)
+    toast({ title: 'Exported', description: 'jojo-data.json was written to your downloads.' })
+  }
+
+  /**
+   * The seeded records are the only thing standing between a first-time reader
+   * and every empty state in the app, and until now they could not be moved:
+   * the store is reseeded on every load, so "what does this look like before I
+   * have anything" was unanswerable without editing the source.
+   *
+   * All three writes replace or delete records the user may have authored, and
+   * none of them is undoable — the reducer has a reset and a clear, and no
+   * restore between them — so each goes through a confirmation rather than an
+   * undo toast. Say it in the dialog, and say it again in the toast.
+   */
+  const dataSet: DataSet = isEmpty ? 'empty' : 'demo'
+
+  const applyPending = () => {
+    if (pending === 'empty') {
+      clearAll()
+      toast({
+        title: 'Everything cleared',
+        description:
+          'Every record is gone, your profile included. Load the demo data again from here.',
+        tone: 'danger',
+      })
+      return
+    }
+    reset()
+    toast({
+      title: pending === 'reset' ? 'Demo data reset' : 'Demo data loaded',
+      description:
+        'The seeded applications, timeline, vault, postings and profile are back as they shipped.',
+    })
+  }
+
+  const pendingCopy: Record<PendingData, { title: string; description: string; confirm: string }> =
+    {
+      empty: {
+        title: 'Clear every record?',
+        description:
+          'Applications, the timeline, the vault, saved postings and your profile all go, including anything you added this session. There is no undo — export first if you want them back. Your keywords are kept — they live in their own store — but nothing is left carrying them, so every count in the keyword panel goes to zero.',
+        confirm: 'Clear everything',
+      },
+      demo: {
+        title: 'Load the demo data?',
+        description:
+          'The seeded records come back, tagged with the keywords they shipped with. Anything you have added this session is replaced, not merged, and there is no undo.',
+        confirm: 'Load demo data',
+      },
+      reset: {
+        title: 'Reset to the demo data?',
+        description:
+          'Every edit, addition and deletion from this session is discarded and the seeded records come back exactly as they shipped, tagged as they shipped. Your keyword list itself is left alone. There is no undo.',
+        confirm: 'Reset data',
+      },
+    }
 
   return (
     <>
@@ -41,50 +137,66 @@ export function Settings() {
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
           <p>
-            This browser is blocking local storage, so nothing can be saved. Private windows and
-            some managed browsers do this. jojo will work for this session only.
+            This browser is blocking local storage. Nothing in this build depends on it yet — the
+            store is in memory either way — but persistence cannot be turned on here until the block
+            is lifted. Private windows and some managed browsers do this.
           </p>
         </div>
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
         <Panel>
-          <PanelTitle hint="optional">Localhost bridge</PanelTitle>
+          <PanelTitle hint="optional">Save to a file on this computer</PanelTitle>
           <p className="mb-3 text-sm text-text-2">
-            Mirrors your data to a JSON file on disk and keeps submission snapshots.
+            jojo works fully without this. Set up later and it also keeps a copy of your records in
+            a file you own, so they survive closing the tab. Nothing connects to these fields yet.
           </p>
           <div className="space-y-3">
-            <Field label="Endpoint" defaultValue="http://localhost:7423" mono />
-            <Field label="Pairing token" type="password" defaultValue="••••-••••-4F2A" mono />
-            <Field label="Data file" defaultValue="~/jobsearch/jojo-data.json" mono />
+            <Field label="Address" defaultValue="http://localhost:7423" mono />
+            {/* "Bridge" is load-bearing since Transfer arrived: that page also
+                shows a "Pairing code", and it means something else entirely —
+                one pairs this tab with a helper process on this machine, the
+                other pairs this device with a second one. Two identical labels
+                for two different secrets is how someone ends up typing the
+                wrong one into the wrong field. */}
+            <Field label="Bridge pairing code" type="password" defaultValue="••••-••••-4F2A" mono />
+            <Field label="Where to save it" defaultValue="~/jobsearch/jojo-data.json" mono />
           </div>
           <div className="mt-4">
+            {/* Named for what happens to the user's records, not for the
+                mechanism. "Auto sync" describes an implementation; "save as I
+                work" describes the thing being promised, which is what a person
+                is actually deciding about. */}
             <SettingRow
-              label="Auto sync"
-              description="Write changes to disk as you work"
-              control={
-                <Switch checked={autoSync} onCheckedChange={setAutoSync} aria-label="Auto sync" />
-              }
-            />
-            <SettingRow
-              label="Save submission snapshots"
-              description="Keep a timestamped copy of exactly what you sent"
+              label="Save as I work"
+              description="Write every change straight to that file"
               control={
                 <Switch
-                  checked={snapshots}
-                  onCheckedChange={setSnapshots}
-                  aria-label="Save submission snapshots"
+                  checked={autoSync}
+                  onCheckedChange={setAutoSync}
+                  aria-label="Save as I work"
                 />
               }
             />
             <SettingRow
-              label="Watch materials folder"
-              description="Pick up document edits automatically"
+              label="Keep a copy of what I sent"
+              description="A timestamped snapshot of each submitted application"
+              control={
+                <Switch
+                  checked={snapshots}
+                  onCheckedChange={setSnapshots}
+                  aria-label="Keep a copy of what I sent"
+                />
+              }
+            />
+            <SettingRow
+              label="Notice when my documents change"
+              description="Pick up edits to your CV and statements automatically"
               control={
                 <Switch
                   checked={watchFolder}
                   onCheckedChange={setWatchFolder}
-                  aria-label="Watch materials folder"
+                  aria-label="Notice when my documents change"
                 />
               }
             />
@@ -101,7 +213,15 @@ export function Settings() {
             <Field label="Model" defaultValue="llama-3.1-8b-instruct" mono />
           </div>
           <div className="mt-4 flex items-center gap-3">
-            <Button variant="outline" size="sm" disabled title="Needs the bridge client">
+            {/* The old blocker named the bridge, which is the panel above. The
+                real one is nearer than that: this build makes no network
+                requests at all, so there is nothing here to test with. */}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              title="This build makes no network requests, so there is nothing to reach the endpoint with"
+            >
               Test connection
             </Button>
             <Chip tone="gray">Not connected</Chip>
@@ -130,7 +250,12 @@ export function Settings() {
               <span className="grid size-14 shrink-0 place-items-center rounded-md bg-[#171717]">
                 <RobotMascot pose={pose} seq={seq} className="size-11" />
               </span>
-              <div className="flex max-w-72 flex-wrap justify-end gap-1.5">
+              {/* Narrower on phones. SettingRow's control cell is `shrink-0`,
+                  so whatever this measures is a hard floor for the row — at 72
+                  the ten gestures plus the robot plate pushed the Settings page
+                  into a sideways scroll. Wrapping into an extra line costs
+                  nothing; the page scrolling does not. */}
+              <div className="flex max-w-56 flex-wrap justify-end gap-1.5 sm:max-w-72">
                 {GESTURES.map(({ pose: g, label }) => (
                   <Button key={g} variant="outline" size="sm" onClick={() => play(g)}>
                     {label}
@@ -161,29 +286,117 @@ export function Settings() {
       <Panel>
         <PanelTitle>Your data</PanelTitle>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" disabled title="Export needs the local store">
+          <Button variant="outline" size="sm" onClick={onExport}>
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
             Export jojo-data.json
           </Button>
-          <Button variant="outline" size="sm" disabled title="Export needs the local store">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            title="No spreadsheet writer is bundled — the JSON export holds the same records"
+          >
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
             Export to Excel
           </Button>
-          <Button variant="outline" size="sm" disabled title="Import needs the local store">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            title="The store can be read but not yet replaced, so an import would have nowhere to land"
+          >
             <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
             Import
           </Button>
+        </div>
+        <p className="mt-2 text-xs text-text-3">
+          The export covers applications, the timeline, the vault, saved postings and your profile.
+          Keywords live in their own store and are not in it yet — the panel below manages those.
+        </p>
+
+        <div className="mt-4">
+          <SettingRow
+            label="Records"
+            description={
+              isEmpty
+                ? 'Every list is empty, so every page is showing its first-run state.'
+                : 'The seeded search — twelve applications, a timeline, a stocked vault.'
+            }
+            control={
+              <Segment
+                label="Records"
+                options={DATA_SETS}
+                value={dataSet}
+                // The segment reflects the store rather than a local flag, so it
+                // does not flip until the confirmation behind it has been taken.
+                onChange={(next) => setPending(next === 'empty' ? 'empty' : 'demo')}
+              />
+            }
+          />
+          {/* Export writes a file you then have to carry somewhere; this is the
+              other half of the same question, so it belongs in the same panel
+              rather than behind a nav item someone has to already know about.
+              The description says what the page is up front — a row here that
+              turned out to be a demonstration would be a worse surprise than
+              one that says so before you press it. */}
+          <SettingRow
+            label="Move to another device"
+            description="Pair with a second device and hand over everything. A demonstration in this build — nothing is transmitted."
+            control={
+              <Button variant="outline" size="sm" asChild>
+                <Link to={transferPath()}>
+                  <Share2 className="size-3.5" strokeWidth={1.8} aria-hidden />
+                  Open Transfer
+                </Link>
+              </Button>
+            }
+          />
+          <SettingRow
+            label="Reset the demo data"
+            description="Puts back everything as it shipped, discarding this session's edits."
+            control={
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isEmpty}
+                title={
+                  isEmpty
+                    ? 'Nothing to reset — switch Records back to Demo data first'
+                    : 'Discard this session and reseed'
+                }
+                onClick={() => setPending('reset')}
+              >
+                <RotateCcw className="size-3.5" strokeWidth={1.8} aria-hidden />
+                Reset
+              </Button>
+            }
+          />
         </div>
 
         <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
           <p>
-            Everything lives in this browser. Clearing site data erases it. Keep the bridge sync on,
-            or export regularly — that one file is your whole profile, and importing it on another
-            machine moves everything.
+            Nothing is written to disk in this build — the store lives in memory for as long as the
+            tab is open, so a reload puts the demo data back and takes your changes with it. Export
+            before you close it. With the bridge running, the same file would be kept in step as you
+            work.
           </p>
         </div>
       </Panel>
+
+      <KeywordManager />
+
+      <ConfirmDialog
+        open={pending !== null}
+        onOpenChange={(open) => {
+          if (!open) setPending(null)
+        }}
+        title={pending ? pendingCopy[pending].title : 'Change the data?'}
+        description={pending ? pendingCopy[pending].description : ''}
+        confirmLabel={pending ? pendingCopy[pending].confirm : 'Continue'}
+        tone="danger"
+        onConfirm={applyPending}
+      />
     </>
   )
 }

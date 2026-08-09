@@ -69,11 +69,38 @@ export function ChartLegend({
   )
 }
 
-/** Shown when every series has been switched off. */
-export function AllHidden({ className }: { className?: string }) {
+/**
+ * Shown when every series has been switched off.
+ *
+ * The legend is still on screen, so the reset was never unreachable — but it
+ * was a sentence telling you to go and find it, one entry at a time. `onShowAll`
+ * makes it one press. Kept optional: a caller with no batched way to clear its
+ * hidden set gets the prose it had before rather than a button that only half
+ * works.
+ */
+export function AllHidden({
+  onShowAll,
+  className,
+}: {
+  onShowAll?: () => void
+  className?: string
+}) {
   return (
-    <p className={cn('py-10 text-center text-sm text-text-3', className)}>
-      All series hidden — pick one from the legend to bring it back.
-    </p>
+    <div className={cn('flex flex-col items-center gap-2 py-10 text-center', className)}>
+      <p className="text-sm text-text-3">
+        {onShowAll
+          ? 'Every series is switched off in the legend.'
+          : 'All series hidden — pick one from the legend to bring it back.'}
+      </p>
+      {onShowAll ? (
+        <button
+          type="button"
+          onClick={onShowAll}
+          className="cursor-pointer rounded-sm border border-hairline bg-well px-2.5 py-1 text-xs text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
+        >
+          Show all series
+        </button>
+      ) : null}
+    </div>
   )
 }

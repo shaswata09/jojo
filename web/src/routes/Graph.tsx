@@ -1,0 +1,222 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Network, Plus, Shuffle } from 'lucide-react'
+import { EmptyState } from '@/components/common/EmptyState'
+import { PageHeader, PageOption } from '@/components/common/PageHeader'
+import { Panel, PanelTitle } from '@/components/common/Panel'
+import { GraphCanvas } from '@/components/graph/GraphCanvas'
+import { GraphDetail } from '@/components/graph/GraphDetail'
+import { GraphLegend } from '@/components/graph/GraphLegend'
+import { QueryPanel } from '@/components/graph/QueryPanel'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { useDialogs } from '@/lib/dialogs-context'
+import { buildGraph, filterGraph, runQuery } from '@/lib/graph'
+import type { GraphNodeType, GraphQuery } from '@/lib/graph'
+import { useLabels } from '@/lib/labels-context'
+import { useTitle } from '@/lib/links'
+import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
+
+/**
+ * The knowledge graph, as a preview.
+ *
+ * The real product will keep records in a graph rather than in seven lists.
+ * This page is the argument for that: the same records you already have, drawn
+ * as what they actually are — a network — plus the questions that only become
+ * answerable once they are one. Nothing here is a new dataset. Everything is
+ * derived from the session store on every render, so a record deleted on the
+ * board is gone from this canvas before you get back to it.
+ */
+export function Graph() {
+  useTitle('Graph')
+
+  const { all: applications } = useApplications()
+  const { all: timeline } = useTimeline()
+  const { links, files, snippets } = useVault()
+  const { matches, postings } = useScout()
+  const { labelsOf } = useLabels()
+  const { open } = useDialogs()
+
+  const graph = useMemo(
+    () =>
+      buildGraph({ applications, timeline, links, files, snippets, postings, matches, labelsOf }),
+    [applications, timeline, links, files, snippets, postings, matches, labelsOf],
+  )
+
+  const [hidden, setHidden] = useState<ReadonlySet<GraphNodeType>>(() => new Set())
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [query, setQuery] = useState<GraphQuery | null>(null)
+  /** Bumped by "Reset layout" — the canvas reshuffles when this changes. */
+  const [layoutNonce, setLayoutNonce] = useState(0)
+  const [showAllLabels, setShowAllLabels] = useState(false)
+  const [hideLoners, setHideLoners] = useState(false)
+
+  const view = useMemo(
+    () =>
+      filterGraph(graph, (node) => !hidden.has(node.type) && !(hideLoners && node.degree === 0)),
+    [graph, hidden, hideLoners],
+  )
+
+  const counts = useMemo(() => {
+    const map = new Map<GraphNodeType, number>()
+    for (const node of graph.nodes) map.set(node.type, (map.get(node.type) ?? 0) + 1)
+    return map
+  }, [graph])
+
+  /**
+   * Queries run against the whole graph, never the filtered view.
+   *
+   * "Files not used by any application" has to be true of your files, not of
+   * the files you happen to have left visible — an answer that changed when you
+   * pressed a legend row would be worse than no answer.
+   */
+  const result = useMemo(() => (query ? runQuery(graph, query) : null), [graph, query])
+
+  // A record can be deleted from another page while this one is mounted.
+  useEffect(() => {
+    setSelectedId((id) => (id && graph.byId.has(id) ? id : null))
+  }, [graph])
+
+  const toggleType = useCallback((type: GraphNodeType) => {
+    setHidden((current) => {
+      const next = new Set(current)
+      if (!next.delete(type)) next.add(type)
+      return next
+    })
+  }, [])
+
+  const selected = selectedId ? (graph.byId.get(selectedId) ?? null) : null
+
+  /**
+   * A query that matched nothing has to be said next to the picture.
+   *
+   * The canvas no longer dims when the answer is empty, so it stays legible —
+   * but "92 of 92 records" beside an unchanged graph does not tell you the
+   * question came back empty either. The Answer panel is a scroll away; the
+   * heading is where the eye already is.
+   */
+  const noMatches = result !== null && result.rows.length === 0
+
+  if (graph.nodes.length === 0) {
+    return (
+      <>
+        <PageHeader
+          title="Graph"
+          subtitle="Nothing to draw yet — the graph is built from the records in this session."
+        />
+        <Panel>
+          <EmptyState
+            icon={Network}
+            title="No records to connect"
+            description="Applications, reminders, files and keywords become nodes here, and the pointers between them become edges. Add the first application and the graph starts drawing itself."
+            action={
+              <Button size="sm" onClick={() => open('application')}>
+                <Plus className="size-3.5" strokeWidth={2} aria-hidden />
+                New application
+              </Button>
+            }
+          />
+        </Panel>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <PageHeader
+        title="Graph"
+        subtitle="A preview of the knowledge graph jojo will store records in. Built from this session's records, in this browser."
+        settings={
+          <>
+            <PageOption
+              label="Label every record"
+              hint="Off, only hubs and whatever you are pointing at are named — the rest collide"
+              control={
+                <Switch
+                  checked={showAllLabels}
+                  onCheckedChange={setShowAllLabels}
+                  aria-label="Label every record"
+                />
+              }
+            />
+            <PageOption
+              label="Hide unconnected records"
+              hint="Drops anything with no edges — usually a file or link filed under nothing"
+              control={
+                <Switch
+                  checked={hideLoners}
+                  onCheckedChange={setHideLoners}
+                  aria-label="Hide unconnected records"
+                />
+              }
+            />
+          </>
+        }
+        actions={
+          <Button variant="outline" size="sm" onClick={() => setLayoutNonce((n) => n + 1)}>
+            <Shuffle className="size-3.5" strokeWidth={2} aria-hidden />
+            Reset layout
+          </Button>
+        }
+      />
+
+      <div className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <Panel className="flex min-w-0 flex-col">
+          <PanelTitle
+            hint={
+              noMatches ? (
+                <>
+                  No records match this question ·{' '}
+                  <button
+                    type="button"
+                    onClick={() => setQuery(null)}
+                    className="cursor-pointer underline underline-offset-2 transition-colors hover:text-text-1"
+                  >
+                    clear the query
+                  </button>
+                </>
+              ) : (
+                `${view.nodes.length} of ${graph.nodes.length} records · ${view.edges.length} connections`
+              )
+            }
+          >
+            Everything, connected
+          </PanelTitle>
+
+          <div className="well h-[380px] overflow-hidden rounded-md sm:h-[460px] lg:h-[560px]">
+            <GraphCanvas
+              graph={view}
+              showAllLabels={showAllLabels}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              result={result}
+              layoutNonce={layoutNonce}
+            />
+          </div>
+
+          <p className="mt-2 text-xs text-text-3">
+            Hover or tab to a node to trace its neighbourhood, press to select it, drag to move it.
+            Node colour is its kind, size is how much points at it.
+          </p>
+
+          <GraphLegend
+            counts={counts}
+            hidden={hidden}
+            onToggle={toggleType}
+            onShowAll={() => setHidden(new Set())}
+          />
+        </Panel>
+
+        <GraphDetail graph={graph} node={selected} onSelect={setSelectedId} />
+      </div>
+
+      <QueryPanel
+        graph={graph}
+        query={query}
+        onQueryChange={setQuery}
+        result={result}
+        selectedId={selectedId}
+        onSelectNode={setSelectedId}
+      />
+    </>
+  )
+}

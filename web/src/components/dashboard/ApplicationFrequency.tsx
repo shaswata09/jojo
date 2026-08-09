@@ -1,13 +1,18 @@
 import { useMemo, useState } from 'react'
+import { CalendarOff, ClipboardList, Plus } from 'lucide-react'
 import { AllHidden, ChartLegend } from '@/components/charts/ChartLegend'
+import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
-import { PERIODS, frequencyByPeriod, type Period, type RoleTag } from '@/data/seed'
-import { useRoles } from '@/lib/roles-context'
+import { Button } from '@/components/ui/button'
+import { PERIODS, ROLES, type Application, type Period, type RoleTag } from '@/data/seed'
+import { TODAY, addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
+import { useDialogs } from '@/lib/dialogs-context'
+import { useApplications } from '@/lib/store-context'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 
-/** Chart slots, assigned to roles in a fixed order so a role keeps its colour
- *  as the filter changes. */
+/** Chart slots, indexed by ROLES order so a role keeps its colour whichever
+ *  other roles happen to be in the store. */
 const SLOT = [
   'var(--series-1)',
   'var(--series-2)',
@@ -31,6 +36,13 @@ const PLOT_H = H - PAD.top - PAD.bottom
 const SEGMENT_GAP = 2
 const RADIUS = 3
 
+/** How far back each period is allowed to run before the axis stops being
+ *  readable. Anything older is reported in the footnote instead of silently
+ *  vanishing, which is the failure this panel was built to stop repeating. */
+const MAX_BUCKETS: Record<Period, number> = { week: 14, month: 12, quarter: 8 }
+
+const PERIOD_NOUN: Record<Period, string> = { week: 'week', month: 'month', quarter: 'quarter' }
+
 function topRoundedRect(x: number, y: number, w: number, h: number, r: number) {
   const rr = Math.max(0, Math.min(r, h, w / 2))
   return `M${x},${y + h} L${x},${y + rr} Q${x},${y} ${x + rr},${y} L${x + w - rr},${y} Q${x + w},${y} ${x + w},${y + rr} L${x + w},${y + h} Z`
@@ -47,24 +59,119 @@ function niceDomain(rawMax: number) {
   return { top: rawMax, ticks: [0, rawMax] }
 }
 
+/**
+ * The date an application counts against.
+ *
+ * `submittedOn` is the fallback because the seed records carry that and not
+ * `appliedOn` — a chart keyed on `appliedOn` alone would have been empty on
+ * the demo data, which is the same class of bug as never reading the store.
+ */
+const sentOn = (a: Application) => a.appliedOn ?? a.submittedOn
+
+/** Monday of the week `iso` falls in. */
+function weekStart(iso: string) {
+  const { y, m, d } = partsOf(iso)
+  // getDay() is 0 on Sunday, so Sunday has to reach back six days, not none.
+  return isoOf(y, m, d - ((new Date(y, m - 1, d).getDay() + 6) % 7))
+}
+
+function bucketKey(iso: string, period: Period): string {
+  const { y, m } = partsOf(iso)
+  if (period === 'week') return weekStart(iso)
+  if (period === 'month') return `${y}-${String(m).padStart(2, '0')}`
+  return `${y}-Q${Math.ceil(m / 3)}`
+}
+
+function bucketLabel(key: string, period: Period): string {
+  if (period === 'week') return shortDate(key)
+  // 'Oct 1' → 'Oct'. The month names live in timeline.ts and are not exported;
+  // copying the array here is exactly how the two would drift apart.
+  if (period === 'month') return shortDate(`${key}-01`).split(' ')[0]
+  return key.slice(5)
+}
+
+/**
+ * Every bucket between two dates, built from the calendar rather than from the
+ * records — a week nobody applied in has to draw a gap. Deriving the axis from
+ * the data instead is what turns a quiet fortnight into a straight line.
+ */
+function bucketKeys(from: string, to: string, period: Period): string[] {
+  const a = partsOf(from)
+  const b = partsOf(to)
+  const keys: string[] = []
+
+  if (period === 'week') {
+    const end = weekStart(to)
+    for (let cursor = weekStart(from); cursor <= end; cursor = addDays(cursor, 7)) keys.push(cursor)
+  } else if (period === 'month') {
+    const months = (b.y - a.y) * 12 + (b.m - a.m)
+    // isoOf normalises an overflowing month, so month 13 of 2026 is January 2027.
+    for (let i = 0; i <= months; i++) keys.push(bucketKey(isoOf(a.y, a.m + i, 1), 'month'))
+  } else {
+    const first = a.y * 4 + Math.ceil(a.m / 3) - 1
+    const last = b.y * 4 + Math.ceil(b.m / 3) - 1
+    for (let i = first; i <= last; i++) keys.push(`${Math.floor(i / 4)}-Q${(i % 4) + 1}`)
+  }
+
+  return keys.length > MAX_BUCKETS[period] ? keys.slice(-MAX_BUCKETS[period]) : keys
+}
+
+const blankCounts = () => Object.fromEntries(ROLES.map((r) => [r, 0])) as Record<RoleTag, number>
+
+/**
+ * When you applied, from your own records.
+ *
+ * This panel used to import a frozen `frequencyByPeriod` table from the seed
+ * and never call `useApplications` at all — so it was literally incapable of
+ * being empty, and kept narrating a search after the store had been cleared.
+ * Everything below is counted; what cannot be counted is named in the footnote
+ * rather than quietly dropped.
+ */
 export function ApplicationFrequency() {
   const [hover, setHover] = useState<number | null>(null)
   const [chart, setChart] = useState<ChartType>('bar')
   const [period, setPeriod] = useState<Period>('week')
 
-  // Roles chosen in the topbar decide which series exist at all; the legend
-  // then hides individual ones without changing the global filter.
-  const { activeRoles } = useRoles()
-  const series = activeRoles.map((role, i) => ({
-    key: role as RoleTag,
-    label: role,
-    color: SLOT[i % SLOT.length],
-  }))
+  const { all } = useApplications()
+  const { open } = useDialogs()
 
-  const { toggle, isHidden, allHidden } = useSeriesToggle(series.map((s) => s.key))
+  const { data, series, inWindow, undated, earlier, firstLabel } = useMemo(() => {
+    const dated = all.filter((a) => sentOn(a) !== undefined)
+    const dates = dated.map((a) => sentOn(a) as string)
+
+    // The axis always contains today, so an empty store still draws a frame
+    // and a record dated ahead of today still has a bucket to land in.
+    const from = dates.reduce((min, d) => (d < min ? d : min), TODAY)
+    const to = dates.reduce((max, d) => (d > max ? d : max), TODAY)
+    const keys = bucketKeys(from, to, period)
+
+    const counts = new Map(keys.map((k) => [k, blankCounts()]))
+    let hit = 0
+    for (const a of dated) {
+      const row = counts.get(bucketKey(sentOn(a) as string, period))
+      if (!row) continue
+      row[a.roleTag] += 1
+      hit += 1
+    }
+
+    return {
+      data: keys.map((key) => ({ label: bucketLabel(key, period), counts: counts.get(key)! })),
+      // Only the roles actually present get a series — an always-empty legend
+      // entry is a filter that filters nothing.
+      series: ROLES.filter((role) => dated.some((a) => a.roleTag === role)).map((role) => ({
+        key: role,
+        label: role,
+        color: SLOT[ROLES.indexOf(role) % SLOT.length],
+      })),
+      inWindow: hit,
+      undated: all.length - dated.length,
+      earlier: dated.length - hit,
+      firstLabel: keys.length > 0 ? bucketLabel(keys[0], period) : '',
+    }
+  }, [all, period])
+
+  const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(series.map((s) => s.key))
   const visible = series.filter((s) => !isHidden(s.key))
-
-  const data = frequencyByPeriod[period]
 
   const { yMax, ticks } = useMemo(() => {
     // The domain follows what is VISIBLE — hiding a series has to rescale the
@@ -80,7 +187,7 @@ export function ApplicationFrequency() {
     return { yMax: top, ticks }
   }, [data, chart, visible])
 
-  const slot = PLOT_W / data.length
+  const slot = PLOT_W / Math.max(1, data.length)
   const barW = slot * 0.68
   const y = (v: number) => PAD.top + PLOT_H * (1 - v / yMax)
   const cx = (i: number) => PAD.left + i * slot + slot / 2
@@ -89,34 +196,74 @@ export function ApplicationFrequency() {
   // Label every nth tick so they never collide, whatever the period.
   const labelEvery = Math.ceil(data.length / 7)
 
+  const noRecords = all.length === 0
+  const noDates = !noRecords && series.length === 0
+  const showChart = !noRecords && !noDates
+
+  // What the chart cannot show, said out loud. Silently dropping the records
+  // without a date is how the dashboard came to say 13 while this said 12.
+  const gaps: string[] = []
+  if (undated > 0) gaps.push(`${undated} ${undated === 1 ? 'has' : 'have'} no date yet`)
+  if (earlier > 0) gaps.push(`${earlier} ${earlier === 1 ? 'falls' : 'fall'} before ${firstLabel}`)
+
   return (
     <Panel className="min-w-0">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <PanelTitle className="mb-0" hint={`by ${period}`}>
-          Application frequency
+        <PanelTitle className="mb-0" hint={showChart ? `by ${PERIOD_NOUN[period]}` : undefined}>
+          When you applied
         </PanelTitle>
-        <div className="flex flex-wrap items-center gap-2">
-          <Segment label="Period" options={PERIODS} value={period} onChange={setPeriod} />
-          <Segment label="Chart type" options={CHARTS} value={chart} onChange={setChart} />
-        </div>
+        {/* Hidden at zero: a period switch and a chart-type switch over nothing
+            are two controls that change nothing you can see. */}
+        {showChart ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Segment label="Period" options={PERIODS} value={period} onChange={setPeriod} />
+            <Segment label="Chart type" options={CHARTS} value={chart} onChange={setChart} />
+          </div>
+        ) : null}
       </div>
 
-      <ChartLegend
-        className="mb-3"
-        items={series.map((s) => ({ key: s.key, label: s.label, color: s.color }))}
-        isHidden={isHidden}
-        onToggle={toggle}
-      />
+      {showChart ? (
+        <ChartLegend
+          className="mb-3"
+          items={series.map((s) => ({ key: s.key, label: s.label, color: s.color }))}
+          isHidden={isHidden}
+          onToggle={toggle}
+        />
+      ) : null}
 
-      {allHidden ? (
-        <AllHidden />
+      {noRecords ? (
+        <EmptyState
+          icon={ClipboardList}
+          title="Nothing to chart yet"
+          description="This counts the applications you send, week by week, split by the kind of role. Add one and the first bar appears."
+          action={
+            <Button size="sm" onClick={() => open('application')}>
+              <Plus className="size-3.5" strokeWidth={2} aria-hidden />
+              New application
+            </Button>
+          }
+        />
+      ) : noDates ? (
+        <EmptyState
+          icon={CalendarOff}
+          title="No send dates recorded yet"
+          description={
+            // Singular-safe: at one record this line read "None of your 1
+            // applications", which is the first-run state of this panel.
+            all.length === 1
+              ? 'Your one application carries no date yet. One is stamped when you move a record to Submitted.'
+              : `None of your ${all.length} applications carries a date yet. One is stamped when you move a record to Submitted.`
+          }
+        />
+      ) : allHidden ? (
+        <AllHidden onShowAll={showAll} />
       ) : (
         <div className="relative">
           <svg
             viewBox={`0 0 ${W} ${H}`}
             className="h-auto w-full"
             role="img"
-            aria-label={`Applications per ${period}, split by ${activeRoles.join(', ')}`}
+            aria-label={`Applications sent per ${PERIOD_NOUN[period]}, split by ${visible.map((s) => s.label).join(', ')}`}
           >
             {ticks.map((t) => (
               <g key={t}>
@@ -260,29 +407,45 @@ export function ApplicationFrequency() {
         </div>
       )}
 
-      <table className="sr-only">
-        <caption>Applications submitted per {period}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Period</th>
-            {series.map((s) => (
-              <th key={s.key} scope="col">
-                {s.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((d) => (
-            <tr key={d.label}>
-              <th scope="row">{d.label}</th>
-              {series.map((s) => (
-                <td key={s.key}>{d.counts[s.key]}</td>
+      {showChart && gaps.length > 0 ? (
+        <p className="mt-3 text-xs text-text-3">
+          Counting {inWindow} of {all.length} applications — {gaps.join(' and ')}.
+        </p>
+      ) : null}
+
+      {/* `sr-only` on a <div>, not on the <table>. On a table the utility's
+          `width: 1px` is only a minimum — table-layout:auto grows the box to fit
+          its content, so this laid out 463px wide, and an absolutely positioned
+          box that wide still counts towards the document's scrollable overflow.
+          The dashboard and Statistics both scrolled sideways on a phone because
+          of it. A block wrapper honours the 1px and clips the table inside. */}
+      {showChart ? (
+        <div className="sr-only">
+          <table>
+            <caption>Applications sent per {PERIOD_NOUN[period]}</caption>
+            <thead>
+              <tr>
+                <th scope="col">Period</th>
+                {series.map((s) => (
+                  <th key={s.key} scope="col">
+                    {s.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((d) => (
+                <tr key={d.label}>
+                  <th scope="row">{d.label}</th>
+                  {series.map((s) => (
+                    <td key={s.key}>{d.counts[s.key]}</td>
+                  ))}
+                </tr>
               ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </tbody>
+          </table>
+        </div>
+      ) : null}
     </Panel>
   )
 }

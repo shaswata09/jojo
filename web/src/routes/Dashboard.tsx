@@ -1,45 +1,70 @@
-import { ApplicationFrequency } from '@/components/dashboard/ApplicationFrequency'
-import { ApplicationSources } from '@/components/dashboard/ApplicationSources'
-import { FollowUpTimeline } from '@/components/dashboard/FollowUpTimeline'
+import { PageHeader } from '@/components/common/PageHeader'
+import { GlancePanel } from '@/components/dashboard/GlancePanel'
+import { OwedThisWeek } from '@/components/dashboard/OwedThisWeek'
 import { PipelineBreakdown } from '@/components/dashboard/PipelineBreakdown'
 import { PriorityActions } from '@/components/dashboard/PriorityActions'
-import { QuickAdd } from '@/components/dashboard/QuickAdd'
 import { RecentApplications } from '@/components/dashboard/RecentApplications'
-import { GlancePanel } from '@/components/dashboard/GlancePanel'
-import { ThisWeek } from '@/components/dashboard/ThisWeek'
+import { MONTH_LABELS, TODAY } from '@/data/calendar'
+import { useApplications } from '@/lib/store-context'
+import { useTitle } from '@/lib/links'
 
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+/**
+ * "Monday 12 October", computed once from the mock's pinned today.
+ *
+ * Built here rather than imported because nothing else in the app spells a date
+ * out in full — every other surface uses `shortDate`. Naming the weekday is the
+ * point of the header: this is the only screen whose subject is the day itself.
+ */
+const TODAY_LABEL = `${
+  WEEKDAY_NAMES[new Date(TODAY.year, TODAY.month - 1, TODAY.day).getDay()]
+} ${TODAY.day} ${MONTH_LABELS[TODAY.month - 1]}`
+
+/**
+ * The landing screen, and until now the only route with no `PageHeader` — no
+ * title, no day, and nowhere that said the thing the whole product is built
+ * around: that none of this leaves the machine. That promise was stated on the
+ * guide, the settings page and the profile, which is three pages a new user has
+ * no reason to open before deciding whether to trust the app with a job search.
+ *
+ * The two charts that used to sit in the second row are gone. Both render
+ * identically on /statistics, and both were pushing the week's actual work —
+ * what is overdue, what is due — below the fold on a 900px screen.
+ */
 export function Dashboard() {
+  useTitle('Today')
+  const { all } = useApplications()
+
+  const subtitle =
+    all.length === 0
+      ? `${TODAY_LABEL} · nothing tracked yet — everything you add stays on this machine.`
+      : `${TODAY_LABEL} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this machine.`
+
   return (
     <>
-      {/* Fluid again now the tiles aren't square — the fixed 236px track only
-          existed to stop the square block dragging the carousel's height. */}
+      <PageHeader title="Today" subtitle={subtitle} />
+
       <div className="grid grid-cols-1 items-stretch gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
-        {/* Stacked inside the left column rather than added as its own row, so
-            the quick-add sits directly over the carousel it feeds and the
-            glance panel keeps the full height of the row. */}
-        <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
-          <QuickAdd />
-          <PriorityActions />
-        </div>
+        <PriorityActions />
         <GlancePanel />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <ApplicationFrequency />
-        <ApplicationSources />
-      </div>
+      {/* The week gets the wider column and the two reference panels stack
+          beside it: "Owed this week" is the only thing on this row you act on,
+          and it is the one that grows as the search does.
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-[1.2fr_1fr]">
-        <ThisWeek />
-        <FollowUpTimeline />
-      </div>
-
-      {/* Neither of these needs a row to itself: the pipeline is one band of
-          figures and the recent list is a narrow two-column layout, so both
-          were spending most of a full-width row on empty space. */}
-      <div className="grid grid-cols-1 items-stretch gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-        <PipelineBreakdown />
-        <RecentApplications />
+          `items-stretch` rather than `items-start`, so the left panel is exactly
+          as tall as Recent applications and Pipeline together. Left to itself
+          the row ended level at some record counts and ragged at others, which
+          reads as a layout that slipped rather than one that adapts. The list
+          inside takes the height it is given and scrolls — see OwedThisWeek. */}
+      <div className="grid grid-cols-1 items-stretch gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <OwedThisWeek />
+        <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
+          <RecentApplications />
+          <PipelineBreakdown />
+        </div>
       </div>
     </>
   )

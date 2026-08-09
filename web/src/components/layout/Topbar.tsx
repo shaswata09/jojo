@@ -1,9 +1,9 @@
 import type { RefObject } from 'react'
 import { NavLink } from 'react-router'
-import { CircleHelp, Menu, MessageSquare, Search, Settings, UserRound } from 'lucide-react'
+import { CircleHelp, Menu, Search, Settings, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
-import { RoleFilter } from '@/components/layout/RoleFilter'
+import { NewMenu } from '@/components/common/NewMenu'
 import { SpotlightSearch, useSpotlight } from '@/components/layout/SpotlightSearch'
 import { cn } from '@/lib/utils'
 
@@ -14,10 +14,12 @@ type UtilityLink = { to: string; label: string; icon: LucideIcon }
  * because they are a different class from the workflow pages — you visit them
  * occasionally, not as part of tracking a search.
  */
+// Chat was here too, pointing at a page whose whole content was "Not built
+// yet". A permanent icon in the chrome leading to a stub is a dead end you
+// cannot help walking into; the route went with it.
 const ACCOUNT: UtilityLink[] = [
   { to: '/profile', label: 'My profile', icon: UserRound },
   { to: '/settings', label: 'Settings', icon: Settings },
-  { to: '/chat', label: 'Chat', icon: MessageSquare },
 ]
 
 /** The assistant sits on its own — it is a capability, not a settings page. */
@@ -79,8 +81,18 @@ export function Topbar({
 
       <SpotlightSearch open={spotlight.open} onOpenChange={spotlight.setOpen} />
 
-      <div className="ml-auto sm:ml-0">
-        <RoleFilter />
+      {/* Create sits before the account icons: it is an action rather than
+          navigation, and until it landed here every route hid its own version
+          of "add", so adding a reminder meant first finding the page that owned
+          reminders. `NewMenu` runs the `n` shortcut itself — do not call
+          `useNewShortcut` here as well.
+
+          The role filter used to sit beside it. It was pinned globally but
+          changed two of a dozen surfaces, so every dashboard number was
+          ambiguous about whether it counted the whole search; it now lives in
+          the Applications toolbar, next to the only list it filters. */}
+      <div className="ml-auto flex items-center gap-2 sm:ml-0">
+        <NewMenu />
       </div>
 
       {/* Three groups, hairline-separated: account and support · assistant ·

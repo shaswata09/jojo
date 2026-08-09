@@ -63,7 +63,14 @@ export function PageHeader({
               {settings}
             </PopoverContent>
           </Popover>
-        ) : null}
+        ) : (
+          /* The gutter is reserved whether or not a page has options, so the
+             h1 lands on the same x on every route. Without it the title jumps
+             46px sideways as you move between a page with a settings control
+             and one without — which reads, every single time, as the layout
+             breaking rather than as a control appearing. */
+          <span aria-hidden className="size-9 shrink-0" />
+        )}
 
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold">{title}</h1>

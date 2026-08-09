@@ -1,0 +1,200 @@
+/*
+ * Component-scoped CSS for the transfer scene.
+ *
+ * The class names (`fade-in`, `fade-in-subtitle`, `explore-btn`, `explore-arrow`,
+ * `arrow-svg`) come from the original component's markup, which referenced them
+ * but never shipped their definitions. They are common enough words to collide
+ * with anything, so every rule is nested under `.transfer-scope` — nothing here
+ * can reach a element outside this component, and src/index.css stays untouched.
+ */
+
+.transfer-scope {
+  --transfer-scan: #ff3b30;
+  --transfer-ink: #f5f5f5;
+}
+
+/* ── Title: a staggered, slightly glitchy word reveal ───────────────────────
+   Each word carries its own `--i`, so the stagger is data, not a stack of
+   nth-child rules that would cap out at whatever the longest headline was. */
+
+.transfer-scope .fade-in {
+  display: inline-block;
+  animation: transfer-word-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 110ms);
+  /* The blur and the horizontal jitter both rasterise; without this the text
+     re-hints itself every frame and the reveal reads as a shimmer. */
+  will-change: transform, opacity, filter;
+}
+
+@keyframes transfer-word-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0.42em, 0) skewX(-7deg);
+    filter: blur(7px);
+  }
+  36% {
+    opacity: 1;
+    transform: translate3d(-0.05em, 0, 0) skewX(0deg);
+    filter: blur(0);
+  }
+  /* Three frames of signal drop. This is the "glitch" — a sync fault on a
+     transmission, not a bounce, so it is asymmetric and it does not overshoot
+     back the way it came. */
+  40% {
+    opacity: 0.35;
+    transform: translate3d(0.06em, 0, 0);
+  }
+  44% {
+    opacity: 1;
+    transform: translate3d(-0.02em, 0, 0);
+  }
+  52% {
+    opacity: 0.72;
+    transform: translate3d(0.02em, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+.transfer-scope .fade-in-subtitle {
+  display: block;
+  animation: transfer-subtitle-in 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Lands after the last word of a short headline has settled. */
+  animation-delay: var(--transfer-subtitle-delay, 620ms);
+}
+
+@keyframes transfer-subtitle-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0.6em, 0);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* ── Call to action ────────────────────────────────────────────────────────── */
+
+.transfer-scope .explore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.15rem;
+  border: 1px solid color-mix(in oklab, var(--transfer-ink) 32%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--transfer-ink) 6%, transparent);
+  color: var(--transfer-ink);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 120ms ease;
+  animation: transfer-subtitle-in 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--transfer-cta-delay, 820ms);
+}
+
+.transfer-scope .explore-btn:hover {
+  border-color: color-mix(in oklab, var(--transfer-ink) 60%, transparent);
+  background: color-mix(in oklab, var(--transfer-ink) 12%, transparent);
+}
+
+/* Feedback on pointer-down, matching `.pressable` elsewhere in the app. */
+.transfer-scope .explore-btn:active {
+  transform: translateY(1px);
+}
+
+.transfer-scope .explore-arrow {
+  display: inline-flex;
+  /* The arrow moves, the label does not — the transition lives here rather than
+     on the button so a hover cannot drag the text along with it. */
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.transfer-scope .explore-btn:hover .explore-arrow {
+  transform: translateX(4px);
+}
+
+.transfer-scope .arrow-svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Still fallback, for browsers with no WebGPU adapter ────────────────────
+   The same picture the shader samples, plus a CSS approximation of the two
+   things the shader adds: the dot grid and the red scan band. Compositor-only
+   (transform / opacity), so it costs nothing on the machines least able to
+   afford it — which is exactly the set of machines that end up here. */
+
+.transfer-scope .transfer-fallback-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Matches the tone the bloom pass gives the live scene, so switching paths is
+     a loss of motion rather than a change of subject. */
+  filter: contrast(1.05) saturate(0.9);
+}
+
+.transfer-scope .transfer-fallback-dots {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0.28;
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in oklab, var(--transfer-ink) 70%, transparent) 0.5px,
+    transparent 1px
+  );
+  background-size: 4px 4px;
+}
+
+.transfer-scope .transfer-fallback-scan {
+  position: absolute;
+  inset-inline: 0;
+  height: 22%;
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--transfer-scan) 55%, transparent) 48%,
+    color-mix(in oklab, var(--transfer-scan) 85%, transparent) 50%,
+    color-mix(in oklab, var(--transfer-scan) 55%, transparent) 52%,
+    transparent
+  );
+  animation: transfer-scan-sweep 4s ease-in-out infinite alternate;
+}
+
+@keyframes transfer-scan-sweep {
+  from {
+    transform: translateY(-30%);
+  }
+  to {
+    transform: translateY(430%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* index.css already clamps every animation to 0.01ms app-wide, which would
+     freeze the sweep mid-travel and leave a red bar parked across the image.
+     A frozen scan line is worse than no scan line, so this one goes away
+     entirely — the picture stays, which is the part that carries meaning. */
+  .transfer-scope .transfer-fallback-scan {
+    display: none;
+  }
+}

@@ -1,407 +1,311 @@
 /**
- * Demo content transcribed from the design mockup.
- * This is a stand-in for the real store — swap it for the browser-storage
- * layer once persistence is decided, keeping these shapes.
+ * The seed the session store starts from.
+ *
+ * Transcribed from the design mockup. Nothing here is mutated in place — the
+ * arrays are the initial value handed to `StoreProvider`, and every edit the
+ * user makes lives in that reducer instead.
  */
+
+import { TODAY, daysBetween, shortDate } from '@/data/timeline'
 
 export type Urgency = 'red' | 'amber' | 'gray'
 
-export type Deadline = {
-  id: string
-  role: string
-  detail: string
-  due: string
-  urgency: Urgency
-}
-
-export type FollowUp = {
-  id: string
-  org: string
-  role: string
-  reason: string
-  /** Relative label for the timeline rail, e.g. "9 days ago". */
-  when: string
-  urgency: Urgency
-}
-
-export type Stat = {
-  label: string
-  value: string
-  alert?: boolean
-}
-
 export type Stage = 'draft' | 'submitted' | 'screen' | 'interview' | 'offer' | 'closed'
+
+/** The same four the sources donut splits by, so the two can't drift apart. */
+export const SOURCES = ['Job scout', 'Job board', 'Referral', 'Careers page'] as const
+export type Source = (typeof SOURCES)[number]
+
+/** How a closed application ended. Absent while it is still live. */
+export type Outcome = 'rejected' | 'withdrawn' | 'accepted' | 'declined' | 'ghosted'
+
+export type Offer = {
+  /**
+   * 'YYYY-MM-DD'. Was a display string sitting beside a hand-counted
+   * `daysLeft`, which meant the countdown was stale the moment the mock's
+   * today moved — `offerDaysLeft` derives it now.
+   */
+  respondBy: string
+  comp?: string
+  note: string
+}
 
 export type Application = {
   id: string
+  /**
+   * Employer and position, split. They were packed into one 'Stripe — ML
+   * engineer' string, which reads fine and sorts, groups and searches badly:
+   * every consumer that wanted just the employer had to split on an em dash.
+   * `displayName` puts them back together for display.
+   */
+  org: string
   role: string
   note: string
   /** The job role this application is for — the axis the user filters on. */
   roleTag: RoleTag
   stage: Stage
   flagged?: boolean
-  chips?: { label: string; tone: 'teal' | 'amber' | 'red' | 'green' | 'gray' }[]
+  /*
+   * There is deliberately no badge field here.
+   *
+   * Rows used to carry a hand-authored `chips` array — `offer`, `prep due`,
+   * `24d left` — rendered with the same component as the user's keywords, so a
+   * tag the app invented was indistinguishable from one the user chose. Baylor
+   * ended up saying "Offer" twice in its own header (once as its stage, once as
+   * a chip) and Rice said "Deadline Nov 1" in the note and "24d left" beside it,
+   * in two different date vocabularies. Everything it carried is derived
+   * elsewhere now: the stage from `stage`, the countdown from the timeline, "due
+   * something" from the flag. Keywords are the user's system and stay.
+   */
   /** What last happened, for the activity feed. */
   lastAction: string
   /** Days since lastAction. Drives ordering; a real store would use a date. */
   daysAgo: number
+  source?: Source
+  location?: string
+  comp?: string
+  url?: string
+  /** All 'YYYY-MM-DD'. Optional because the mock rows predate them. */
+  appliedOn?: string
+  submittedOn?: string
+  firstReplyOn?: string
+  outcome?: Outcome
   /** Present only while stage === 'offer'. */
-  offer?: {
-    respondBy: string
-    daysLeft: number
-    comp?: string
-    note: string
-  }
+  offer?: Offer
 }
 
-export type EventKind = 'deadline' | 'interview' | 'visit' | 'call' | 'prep'
-
-export type AgendaEvent = {
-  id: string
-  /** Days from today; 0 is today. A real store would hold a date. */
-  inDays: number
-  title: string
-  detail: string
-  kind: EventKind
-  urgency: Urgency
+/**
+ * 'Stripe — ML engineer' — an em dash with spaces either side.
+ *
+ * Byte-identical to the packed string the split replaced, so every existing
+ * render stays as it was.
+ */
+/**
+ * 'Rice — Assistant professor', or just 'Rice'.
+ *
+ * Only the employer is required on an application, and a posting promoted from
+ * a URL that names no job ('jobs.rice.edu/postings/29411') arrives with the
+ * role blank. Interpolating it regardless left a dangling separator on the end
+ * of the name — punctuation promising a second half that is not there.
+ */
+export function displayName(a: Pick<Application, 'org' | 'role'>) {
+  return a.role.trim() ? `${a.org} — ${a.role}` : a.org
 }
 
-/** Headline counts. The dashboard subtitle and stat tiles both read from
- *  here so the two can't drift apart. */
-export const summary = { total: 37, active: 21, interviews: 4 }
+/** Negative once the date has passed, so an expired offer reads as expired. */
+export function offerDaysLeft(offer: Offer, today: string = TODAY) {
+  return daysBetween(today, offer.respondBy)
+}
 
-export const deadlines: Deadline[] = [
-  {
-    id: 'ut-austin',
-    role: 'UT Austin — Assistant professor, CS',
-    detail: 'Research + teaching + diversity statements',
-    due: 'in 3 days',
-    urgency: 'red',
-  },
-  {
-    id: 'stripe',
-    role: 'Stripe — ML engineer',
-    detail: 'Referral from D. Chen',
-    due: 'in 6 days',
-    urgency: 'amber',
-  },
-  {
-    id: 'texas-tech',
-    role: 'Texas Tech — Assistant professor, ECE',
-    detail: '3 reference letters required',
-    due: 'in 15 days',
-    urgency: 'gray',
-  },
-  {
-    id: 'rice',
-    role: 'Rice — Assistant professor, Statistics',
-    detail: 'Draft not started',
-    due: 'in 24 days',
-    urgency: 'gray',
-  },
-]
+/** 'Nov 15'. */
+export function respondByLabel(offer: Offer) {
+  return shortDate(offer.respondBy)
+}
 
-export const followUps: FollowUp[] = [
-  {
-    id: 'ut-austin',
-    org: 'UT Austin',
-    role: 'Assistant professor, CS',
-    reason: 'Confirm the application was received',
-    when: 'Submitted 24 days ago',
-    urgency: 'red',
-  },
-  {
-    id: 'tamu',
-    org: 'Texas A&M',
-    role: 'Assistant professor, ECE',
-    reason: 'No response since submission',
-    when: '21 days of silence',
-    urgency: 'red',
-  },
-  {
-    id: 'databricks',
-    org: 'Databricks',
-    role: 'ML engineer',
-    reason: 'Recruiter said "next week"',
-    when: 'Promised 9 days ago',
-    urgency: 'amber',
-  },
-]
-
-// Declared after followUps so the count is derived, never hand-maintained.
-export const stats: Stat[] = [
-  { label: 'Applications', value: String(summary.total) },
-  { label: 'Active', value: String(summary.active) },
-  { label: 'Interviews', value: String(summary.interviews) },
-  { label: 'Follow-ups due', value: String(followUps.length), alert: true },
-]
-
+/**
+ * `source` is taken from what each row already said where it said anything —
+ * "Added from Job scout", "Referral from D. Chen" — and filled in plausibly
+ * where it said nothing, so the sources breakdown has something to count.
+ */
 export const applications: Application[] = [
   {
     id: 'baylor',
-    role: 'Baylor — CS',
+    org: 'Baylor',
+    role: 'CS',
     note: 'Respond by Nov 15 · negotiating',
     roleTag: 'Assistant Professor',
     stage: 'offer',
-    chips: [{ label: 'offer', tone: 'green' }],
     lastAction: 'Offer received',
     daysAgo: 1,
+    source: 'Job scout',
+    location: 'Waco, TX',
+    submittedOn: '2026-08-24',
+    firstReplyOn: '2026-09-14',
     offer: {
-      respondBy: 'Nov 15',
-      daysLeft: 34,
+      respondBy: '2026-11-15',
       comp: '$112k + $15k startup',
       note: 'Negotiating startup package and teaching load',
     },
   },
   {
     id: 'stripe',
-    role: 'Stripe — ML engineer',
+    org: 'Stripe',
+    role: 'ML engineer',
     note: 'Onsite Oct 30 · 5 rounds',
     roleTag: 'ML Engineer',
     stage: 'interview',
-    chips: [{ label: 'prep due', tone: 'amber' }],
     lastAction: 'Onsite scheduled',
     daysAgo: 2,
+    source: 'Referral',
+    location: 'South San Francisco, CA',
+    url: 'https://stripe.com/jobs/listing/ml-engineer-inference',
+    submittedOn: '2026-09-25',
+    firstReplyOn: '2026-10-02',
   },
   {
     id: 'ut-austin',
-    role: 'UT Austin — CS',
+    org: 'UT Austin',
+    role: 'CS',
     note: 'Submitted Sep 20 · snapshot saved',
     roleTag: 'Assistant Professor',
     stage: 'submitted',
     flagged: true,
-    chips: [{ label: 'follow up', tone: 'red' }],
     lastAction: 'Flagged for follow-up',
     daysAgo: 3,
+    source: 'Job board',
+    location: 'Austin, TX',
+    submittedOn: '2026-09-20',
   },
   {
     id: 'texas-tech',
-    role: 'Texas Tech — ECE',
+    org: 'Texas Tech',
+    role: 'ECE',
     note: 'Zoom with committee Oct 28',
     roleTag: 'Assistant Professor',
     stage: 'screen',
-    chips: [{ label: 'prep due', tone: 'amber' }],
     lastAction: 'Committee call scheduled',
     daysAgo: 4,
+    source: 'Job scout',
+    location: 'Lubbock, TX',
+    submittedOn: '2026-09-08',
+    firstReplyOn: '2026-10-05',
   },
   {
     id: 'uh',
-    role: 'UH — Assistant professor, CS',
+    org: 'UH',
+    role: 'Assistant professor, CS',
     note: 'Campus visit Nov 6 · job talk',
     roleTag: 'Assistant Professor',
     stage: 'interview',
-    chips: [{ label: 'slides draft', tone: 'amber' }],
     lastAction: 'Campus visit confirmed',
     daysAgo: 5,
+    source: 'Job board',
+    location: 'Houston, TX',
+    submittedOn: '2026-08-30',
+    firstReplyOn: '2026-09-21',
   },
   {
     id: 'rice',
-    role: 'Rice — Statistics',
+    org: 'Rice',
+    role: 'Statistics',
     note: 'Deadline Nov 1 · statements missing',
     roleTag: 'Assistant Professor',
     stage: 'draft',
-    chips: [{ label: '24d left', tone: 'gray' }],
     lastAction: 'Draft created',
     daysAgo: 6,
+    source: 'Careers page',
+    location: 'Houston, TX',
+    url: 'https://jobs.rice.edu/postings/statistics-tt',
   },
   {
     id: 'databricks',
-    role: 'Databricks — ML engineer',
+    org: 'Databricks',
+    role: 'ML engineer',
     note: 'Recruiter reply overdue',
     roleTag: 'ML Engineer',
     stage: 'submitted',
-    chips: [{ label: 'nudge', tone: 'amber' }],
     lastAction: 'Recruiter replied',
     daysAgo: 7,
+    source: 'Job board',
+    location: 'Remote',
+    submittedOn: '2026-09-12',
+    firstReplyOn: '2026-10-03',
   },
   {
     id: 'tamu',
-    role: 'Texas A&M — ECE',
+    org: 'Texas A&M',
+    role: 'ECE',
     note: 'No response in 21 days',
     roleTag: 'Assistant Professor',
     stage: 'submitted',
     flagged: true,
-    chips: [{ label: 'follow up', tone: 'red' }],
     lastAction: 'Application submitted',
     daysAgo: 9,
+    source: 'Job scout',
+    location: 'College Station, TX',
+    submittedOn: '2026-10-02',
   },
   {
     id: 'meta',
-    role: 'Meta — Research scientist',
+    org: 'Meta',
+    role: 'Research scientist',
     note: 'Rolling · referral pending',
     roleTag: 'Researcher',
     stage: 'draft',
     lastAction: 'Referral requested',
     daysAgo: 11,
+    source: 'Careers page',
+    location: 'Menlo Park, CA',
   },
   {
     id: 'unt',
-    role: 'UNT — Assistant professor, CS',
+    org: 'UNT',
+    role: 'Assistant professor, CS',
     note: 'Deadline Nov 20',
     roleTag: 'Assistant Professor',
     stage: 'draft',
-    chips: [{ label: '43d left', tone: 'gray' }],
     lastAction: 'Added from Job scout',
     daysAgo: 12,
+    source: 'Job scout',
+    location: 'Denton, TX',
   },
   {
     id: 'google',
-    role: 'Google — Research eng.',
+    org: 'Google',
+    role: 'Research eng.',
     note: 'Rejected Oct 2',
     roleTag: 'Researcher',
     stage: 'closed',
     lastAction: 'Rejected',
     daysAgo: 14,
+    source: 'Careers page',
+    location: 'Mountain View, CA',
+    submittedOn: '2026-08-18',
+    firstReplyOn: '2026-10-02',
+    outcome: 'rejected',
   },
   {
     id: 'smu',
-    role: 'SMU — Lecturer',
+    org: 'SMU',
+    role: 'Lecturer',
     note: 'Withdrawn',
     roleTag: 'Lecturer',
     stage: 'closed',
     lastAction: 'Withdrawn',
     daysAgo: 20,
+    source: 'Referral',
+    location: 'Dallas, TX',
+    submittedOn: '2026-07-30',
+    outcome: 'withdrawn',
   },
 ]
 
 /**
  * One colour per phase.
  *
- * Draft and Closed both used --text-3, and Submitted and Screen both --info, so
- * six stages rendered as four colours and the funnel read as though it doubled
- * back. The stage tokens are validated in index.css for contrast against the
- * bar track and for separation under colour-blind simulation.
+ * Draft and Closed both used --text-3, and Submitted and Screening call both
+ * --info, so six stages rendered as four colours and the funnel read as though
+ * it doubled back. The stage tokens are validated in index.css for contrast
+ * against the bar track and for separation under colour-blind simulation.
+ *
+ * `label` is prose and free to change; `id` is the wire format — it is written
+ * into '?stage=' links, read back by `useApplicationsParams`, and keys the
+ * `--stage-*` tokens. "Screen" became "Screening call" because on its own the
+ * word is a verb as often as a noun; the id stayed 'screen' so no saved link
+ * broke. Nothing may lay out on a label's length: this one went from 6 to 14
+ * characters.
  */
 export const STAGES: { id: Stage; label: string; dot: string }[] = [
   { id: 'draft', label: 'Draft', dot: 'bg-stage-draft' },
   { id: 'submitted', label: 'Submitted', dot: 'bg-stage-submitted' },
-  { id: 'screen', label: 'Screen', dot: 'bg-stage-screen' },
+  { id: 'screen', label: 'Screening call', dot: 'bg-stage-screen' },
   { id: 'interview', label: 'Interview', dot: 'bg-stage-interview' },
   { id: 'offer', label: 'Offer', dot: 'bg-stage-offer' },
   { id: 'closed', label: 'Closed', dot: 'bg-stage-closed' },
 ]
 
-/** Most recently touched applications, newest first. Derived so the feed can
- *  never disagree with the application list itself. */
-export const recentApplications = [...applications].sort((a, b) => a.daysAgo - b.daysAgo)
-
-/** Count per stage, in pipeline order. */
-export const stageCounts = STAGES.map((stage) => ({
-  ...stage,
-  count: applications.filter((a) => a.stage === stage.id).length,
-}))
-
 /** An application known to carry offer details, so consumers need no `!`. */
 export type OfferApplication = Application & { offer: NonNullable<Application['offer']> }
-
-/** Live offers, derived so the countdown can't disagree with the pipeline. */
-export const offers: OfferApplication[] = applications.filter(
-  (a): a is OfferApplication => a.stage === 'offer' && a.offer !== undefined,
-)
-
-/**
- * The mock's "today" is a fixed Monday so the demo never shifts under you.
- * Real dates arrive with persistence.
- */
-export const weekDays = [
-  { label: 'Mon', date: '12' },
-  { label: 'Tue', date: '13' },
-  { label: 'Wed', date: '14' },
-  { label: 'Thu', date: '15' },
-  { label: 'Fri', date: '16' },
-  { label: 'Sat', date: '17' },
-  { label: 'Sun', date: '18' },
-]
-
-/** Everything with a date attached — this week and beyond. */
-export const agenda: AgendaEvent[] = [
-  {
-    id: 'ut-austin-prep',
-    inDays: 0,
-    title: 'Finalize UT Austin statements',
-    detail: 'Research + teaching + diversity · deadline Thursday',
-    kind: 'prep',
-    urgency: 'red',
-  },
-  {
-    id: 'advisor-sync',
-    inDays: 1,
-    title: 'Advisor sync — reference letters',
-    detail: 'Chase the third letter for Texas Tech',
-    kind: 'call',
-    urgency: 'amber',
-  },
-  {
-    id: 'ut-austin',
-    inDays: 3,
-    title: 'UT Austin — Assistant professor, CS',
-    detail: 'Application deadline',
-    kind: 'deadline',
-    urgency: 'red',
-  },
-  {
-    id: 'stripe-cv',
-    inDays: 4,
-    title: 'Tailor CV for Stripe',
-    detail: 'Assistant can draft from the posting',
-    kind: 'prep',
-    urgency: 'gray',
-  },
-  {
-    id: 'stripe',
-    inDays: 6,
-    title: 'Stripe — ML engineer',
-    detail: 'Application deadline · referral from D. Chen',
-    kind: 'deadline',
-    urgency: 'amber',
-  },
-  // Beyond the week — kept here so nothing is lost when the card focuses on 7 days.
-  {
-    id: 'texas-tech-zoom',
-    inDays: 16,
-    title: 'Texas Tech — committee Zoom',
-    detail: 'Oct 28 · 45 min',
-    kind: 'interview',
-    urgency: 'gray',
-  },
-  {
-    id: 'stripe-onsite',
-    inDays: 18,
-    title: 'Stripe — onsite',
-    detail: 'Oct 30 · 5 rounds',
-    kind: 'interview',
-    urgency: 'gray',
-  },
-  {
-    id: 'uh-visit',
-    inDays: 25,
-    title: 'UH — campus visit',
-    detail: 'Nov 6 · job talk',
-    kind: 'visit',
-    urgency: 'gray',
-  },
-]
-
-export const thisWeek = agenda.filter((e) => e.inDays <= 6)
-export const laterEvents = agenda.filter((e) => e.inDays > 6)
-
-export type WeekBucket = { week: string; academia: number; industry: number }
-
-/** Submissions per week for the last 12 weeks. Totals 37, matching `summary`. */
-export const applicationFrequency: WeekBucket[] = [
-  { week: 'Jul 21', academia: 1, industry: 0 },
-  { week: 'Jul 28', academia: 2, industry: 1 },
-  { week: 'Aug 4', academia: 1, industry: 1 },
-  { week: 'Aug 11', academia: 3, industry: 0 },
-  { week: 'Aug 18', academia: 2, industry: 1 },
-  { week: 'Aug 25', academia: 4, industry: 1 },
-  { week: 'Sep 1', academia: 2, industry: 2 },
-  { week: 'Sep 8', academia: 3, industry: 1 },
-  { week: 'Sep 15', academia: 1, industry: 2 },
-  { week: 'Sep 22', academia: 3, industry: 0 },
-  { week: 'Sep 29', academia: 2, industry: 1 },
-  { week: 'Oct 6', academia: 2, industry: 1 },
-]
 
 /**
  * Job roles the user tracks. "Academia vs industry" was too blunt — a
@@ -468,14 +372,4 @@ export const PERIODS: { value: Period; label: string }[] = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
   { value: 'quarter', label: 'Quarter' },
-]
-
-export type SourceStat = { source: string; count: number }
-
-/** Where applications originated. Also totals 37. */
-export const applicationSources: SourceStat[] = [
-  { source: 'Job scout', count: 14 },
-  { source: 'Job board', count: 11 },
-  { source: 'Referral', count: 7 },
-  { source: 'Careers page', count: 5 },
 ]

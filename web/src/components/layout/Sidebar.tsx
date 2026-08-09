@@ -1,6 +1,18 @@
 import { BrandCard } from '@/components/brand/BrandCard'
-import { GESTURES, useMascot, type MascotPose } from '@/lib/mascot-context'
+import { TODAY, bucketOf } from '@/data/timeline'
 import type { DotStatus } from '@/components/common/StatusDot'
+import {
+  applicationsPath,
+  calendarPath,
+  dashboardPath,
+  graphPath,
+  scoutPath,
+  settingsPath,
+  statisticsPath,
+  transferPath,
+  vaultPath,
+} from '@/lib/links'
+import { useApplications, useScout, useTimeline } from '@/lib/store-context'
 import { useFocusTrap } from '@/lib/use-focus-trap'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
@@ -10,47 +22,140 @@ import {
   Cable,
   CalendarDays,
   ChartColumn,
-  ChevronDown,
   Cpu,
   Database,
   ClipboardList,
   LayoutDashboard,
   Radar,
+  Share2,
   X,
 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { NavLink } from 'react-router'
+import { NavLink, useNavigate } from 'react-router'
+
+type Badge = { text: string; tone: 'red' | 'accent'; title: string }
 
 type NavEntry = {
   to: string
   label: string
   icon: LucideIcon
-  badge?: { text: string; tone: 'red' | 'accent' }
+  badge?: Badge
 }
 
-const NAV: NavEntry[] = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  {
-    to: '/applications',
-    label: 'Applications',
-    icon: ClipboardList,
-    badge: { text: '3 due', tone: 'red' },
-  },
-  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { to: '/vault', label: 'Vault', icon: Archive, badge: { text: '3', tone: 'red' } },
-  { to: '/scout', label: 'Job scout', icon: Radar, badge: { text: '5 new', tone: 'accent' } },
-  { to: '/statistics', label: 'Statistics', icon: ChartColumn },
-]
+/**
+ * Live counts for the nav.
+ *
+ * Every one of these was a frozen string — '3 due' stayed at three however many
+ * you cleared, which teaches people to stop believing the number. Each counts
+ * something visible on the page it sits beside, so following the link answers
+ * the question the badge raises rather than opening a page where the count is
+ * nowhere to be seen.
+ */
+function useNavEntries(): NavEntry[] {
+  const { all } = useApplications()
+  const { reminders, thisWeek } = useTimeline()
+  const { matches } = useScout()
+
+  const flagged = all.filter((a) => a.flagged).length
+  const overdue = reminders.filter((r) => !r.completedOn && bucketOf(r, TODAY) === 'overdue').length
+  const week = thisWeek.length
+  // A match nobody has turned into an application yet — the only ones there is
+  // anything left to do about.
+  const fresh = matches.filter((m) => !m.applicationId).length
+
+  return [
+    { to: dashboardPath(), label: 'Dashboard', icon: LayoutDashboard },
+    {
+      to: applicationsPath(),
+      label: 'Applications',
+      icon: ClipboardList,
+      badge:
+        flagged > 0
+          ? { text: `${flagged} flagged`, tone: 'red', title: 'Flagged for follow-up' }
+          : undefined,
+    },
+    {
+      to: calendarPath(),
+      label: 'Calendar',
+      icon: CalendarDays,
+      badge:
+        week > 0
+          ? { text: String(week), tone: 'accent', title: 'Scheduled in the next seven days' }
+          : undefined,
+    },
+    {
+      to: vaultPath(),
+      label: 'Vault',
+      icon: Archive,
+      badge:
+        overdue > 0
+          ? { text: String(overdue), tone: 'red', title: 'Reminders past their date' }
+          : undefined,
+    },
+    {
+      to: scoutPath(),
+      label: 'Job scout',
+      icon: Radar,
+      badge:
+        fresh > 0
+          ? { text: `${fresh} new`, tone: 'accent', title: 'Matches not yet added to applications' }
+          : undefined,
+    },
+    { to: statisticsPath(), label: 'Statistics', icon: ChartColumn },
+  ]
+}
+
 // Profile, Assistant, Settings and How to use moved to the topbar's utility
 // row — ten flat peers mixed workflow destinations with account and support
 // pages, which every design system treats as a different class.
 
-// TODO: replace with live runtime state once the bridge + vLLM clients land.
-const RUNTIME: { label: string; meta: string; status: DotStatus; icon: LucideIcon }[] = [
-  { label: 'Browser storage', meta: '14.2 MB', status: 'on', icon: Database },
-  { label: 'Localhost bridge', meta: '2m ago', status: 'on', icon: Cable },
-  { label: 'vLLM', meta: 'offline', status: 'warn', icon: Cpu },
-]
+/**
+ * What the three runtime pieces are actually doing.
+ *
+ * These read '14.2 MB', '2m ago' and a green dot on the bridge — numbers for a
+ * sync that has never run and a store that is not on disk. A status strip whose
+ * figures are invented is worse than none: it is the one place a reader looks
+ * to find out whether their data is safe. Each now states the real state, and
+ * the tile still opens Settings, where each is configured.
+ */
+const RUNTIME: { label: string; meta: string; status: DotStatus; icon: LucideIcon; to: string }[] =
+  [
+    // Storage opens the Graph rather than Settings. The tile says where your
+    // records are being held, and the graph is the honest answer to that — the
+    // records themselves, drawn. Settings only has a notice about the same thing.
+    {
+      label: 'Browser storage',
+      meta: 'in memory',
+      status: 'warn',
+      icon: Database,
+      to: graphPath(),
+    },
+    // 'no bridge', not 'not connected': at four across a tile is ~50px, and
+    // 'connected' neither fits on one line nor breaks anywhere useful, so it
+    // ran straight through the tile's borders on both sides. Every meta on this
+    // row is now two short words at most, and the full state is in the tooltip
+    // and the accessible name.
+    {
+      label: 'Localhost bridge',
+      meta: 'no bridge',
+      status: 'off',
+      icon: Cable,
+      to: settingsPath(),
+    },
+    { label: 'Local model', meta: 'offline', status: 'off', icon: Cpu, to: settingsPath() },
+    // Fourth on the row because it belongs to the same subject: where the records
+    // live, and how they get to another device. 'no device' rather than a
+    // readiness word — nothing is paired, and a tile that read 'ready' would be
+    // claiming a connection this build never opens.
+    { label: 'Transfer', meta: 'no device', status: 'off', icon: Share2, to: transferPath() },
+  ]
+
+/** Named in each tile's tooltip, so a click never lands somewhere unannounced. */
+const RUNTIME_DEST: Record<string, string> = {
+  [graphPath()]: 'the graph',
+  [transferPath()]: 'Transfer',
+  [settingsPath()]: 'Settings',
+}
 
 /** Status carried by the icon's colour once the dot and the label are gone. */
 const RUNTIME_TONE: Record<DotStatus, string> = {
@@ -68,7 +173,8 @@ const RUNTIME_TONE: Record<DotStatus, string> = {
  */
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
-  const { play } = useMascot()
+  const nav = useNavEntries()
+  const navigate = useNavigate()
   const closeRef = useRef<HTMLButtonElement>(null)
   const asideRef = useRef<HTMLElement>(null)
 
@@ -116,7 +222,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       />
 
       <nav className="contents">
-        {NAV.map(({ to, label, icon: Icon, badge }) => (
+        {nav.map(({ to, label, icon: Icon, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -125,7 +231,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             tabIndex={!isDesktop && !open ? -1 : undefined}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2.5 text-sm transition-colors duration-150 select-none',
+                'pressable flex items-center gap-2.5 rounded-md border border-transparent px-3 py-2.5 text-sm transition-colors duration-150 select-none',
                 isActive
                   ? 'border-hairline bg-well text-text-1'
                   : 'text-text-2 hover:bg-well hover:text-text-1',
@@ -135,7 +241,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             <Icon className="size-4 shrink-0" strokeWidth={1.7} />
             {label}
             {badge ? (
+              // Inside the link rather than beside it: the destination is the
+              // page where the thing it counts is visible, and a second anchor
+              // nested in this one would be invalid markup for no new
+              // destination. The `title` says what the number is counting,
+              // which the number alone never does.
               <span
+                title={badge.title}
                 className={cn(
                   'ml-auto rounded-full px-1.5 py-px text-xs font-semibold',
                   badge.tone === 'red'
@@ -144,73 +256,46 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 )}
               >
                 {badge.text}
+                <span className="sr-only"> — {badge.title}</span>
               </span>
             ) : null}
           </NavLink>
         ))}
       </nav>
 
-      {/* TEMPORARY — a bench for trying the gesture rig while it is being
-          tuned. Nothing else depends on it; delete this whole block (and the
-          GESTURES/useMascot imports) when the gestures are settled. The same
-          list is reachable for real in Settings → Appearance. */}
-      <div className="mt-auto flex flex-col gap-1.5 pt-4">
-        <div className="px-2.5 pb-0.5 text-xs tracking-wide text-text-3 uppercase">
-          Gestures <span className="text-danger normal-case">· temp</span>
-        </div>
-        <div className="relative">
-          <select
-            aria-label="Play a gesture"
-            // Held at "" rather than tracking a selection: this is a command
-            // menu, not a setting. A <select> fires no change event when the
-            // current value is picked again, so a sticky value would make every
-            // gesture unrepeatable — exactly the thing a test bench needs.
-            value=""
-            onChange={(event) => {
-              if (event.target.value) play(event.target.value as MascotPose)
-            }}
-            // Not tabbable while the drawer is closed off-screen, matching the
-            // nav links above.
-            tabIndex={!isDesktop && !open ? -1 : undefined}
-            className="w-full cursor-pointer appearance-none rounded-md border border-hairline bg-well py-1.5 pr-7 pl-2.5 text-xs text-text-2 transition-colors hover:bg-row-hover hover:text-text-1"
-          >
-            <option value="">Play a gesture…</option>
-            {GESTURES.map(({ pose, label }) => (
-              <option key={pose} value={pose}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            aria-hidden
-            className="pointer-events-none absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-text-3"
-            strokeWidth={1.7}
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-[7px] pt-4">
+      {/* The gesture bench that used to sit here — a <select> labelled "temp" in
+          red — is gone. It was a tuning tool, and the same list is reachable for
+          real in Settings → Appearance, beside the mascot it drives. `mt-auto`
+          moved onto the runtime block, which is what should be pinned to the
+          foot of the column. */}
+      <div className="mt-auto flex flex-col gap-[7px] pt-4">
         <div className="px-2.5 pb-0.5 text-xs tracking-wide text-text-3 uppercase">Runtime</div>
-        {/* Icon over value, three up. Colour carries health, the icon carries
+        {/* Icon over value, four up. Colour carries health, the icon carries
             what it is, the text carries the value. The label survives as the
-            tooltip and as the accessible name — an icon above "2m ago" says
+            tooltip and as the accessible name — an icon above "in memory" says
             nothing on its own, and colour alone would be the only signal of
             trouble.
 
-            Deliberately unwired: no onClick, so these are focusable and press
-            like buttons but claim to do nothing yet. Each `title` names the
-            destination it will get rather than leaving a control that looks
-            live and silently swallows the click. */}
-        <div className="grid grid-cols-3 gap-1.5">
+            Each tile now names its own destination rather than all four going
+            to Settings: storage opens the Graph (the records it is talking
+            about, drawn), Transfer opens the handoff, and the bridge and the
+            model still open Settings, where they are configured. The `title`
+            says which, so no tile takes a click somewhere unannounced. */}
+        {/* Two by two rather than four across. A quarter of a 232px rail is
+            ~50px, which is narrower than the words it has to hold — half is
+            ~110px, so every value fits on one line and the icons stop being
+            the only thing readable at a glance. */}
+        <div className="grid grid-cols-2 gap-1.5">
           {RUNTIME.map((r) => (
             <button
               key={r.label}
               type="button"
-              title={`${r.label} — ${r.meta} (opens Settings once wired up)`}
+              onClick={() => navigate(r.to)}
+              title={`${r.label} — ${r.meta}. Opens ${RUNTIME_DEST[r.to] ?? 'Settings'}`}
               // Not tabbable while the drawer is closed off-screen, matching
               // the nav links above.
               tabIndex={!isDesktop && !open ? -1 : undefined}
-              className="flex cursor-pointer flex-col items-center gap-1 rounded-md border border-hairline bg-well px-1 py-2 transition-colors hover:border-hairline-strong hover:bg-row-hover active:bg-well"
+              className="pressable flex cursor-pointer flex-col items-center gap-1 rounded-md border border-hairline bg-well px-1 py-2 transition-colors hover:border-hairline-strong hover:bg-row-hover active:bg-well"
             >
               <r.icon
                 aria-hidden
@@ -218,7 +303,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 className={cn('size-4 shrink-0', RUNTIME_TONE[r.status])}
               />
               <span className="sr-only">{r.label}: </span>
-              <span className="text-xs whitespace-nowrap text-text-2">{r.meta}</span>
+              {/* Wraps rather than `whitespace-nowrap`: a quarter of a 240px
+                  rail is ~50px and "not connected" is wider than that, so
+                  nowrap spilled the words straight through the tile's border.
+                  The grid stretches all four, so two lines here still line up. */}
+              <span className="text-center text-xs leading-tight text-balance text-text-2">
+                {r.meta}
+              </span>
             </button>
           ))}
         </div>

@@ -81,16 +81,30 @@ const TABLE_HTML = `<table><tbody>${Array.from(
  * document-model editor (ProseMirror, Lexical) at ~100KB, which is the right
  * call when collaborative editing or a serialisable schema matter and the wrong
  * one for a formatting toolbar over a text field.
+ *
+ * `onChange` hands back HTML, and every field in this app stores plain text —
+ * so a caller that persists must convert through `textFromHtml`, the way the
+ * snippets tool and the file-note drawer do. Writing this straight into a
+ * record puts `<span style="font-weight: bold;">` on every list and search
+ * result that prints the field, because nothing outside this box renders HTML.
  */
 export function RichTextEditor({
   value,
   onChange,
   placeholder,
+  ariaLabel = 'Snippet text',
   className,
 }: {
   value: string
   onChange: (html: string) => void
   placeholder?: string
+  /**
+   * What this field is, out loud. It was hardcoded to "Snippet text", so the
+   * file note and the message draft both announced themselves as a snippet —
+   * different fields with one wrong name between them. The default keeps the
+   * snippets tool reading exactly as it did.
+   */
+  ariaLabel?: string
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -238,7 +252,7 @@ export function RichTextEditor({
         suppressContentEditableWarning
         role="textbox"
         aria-multiline="true"
-        aria-label="Snippet text"
+        aria-label={ariaLabel}
         data-placeholder={placeholder}
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
         onKeyUp={refresh}

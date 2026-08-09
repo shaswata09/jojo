@@ -80,8 +80,26 @@ export function Segment<T extends string>({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(opt.value)}
             className={cn(
-              'rounded-full px-[15px] py-[5px] transition-colors duration-150',
-              active ? 'bg-accent-soft font-medium text-accent' : 'text-text-2 hover:text-text-1',
+              // A 25px pill is the shortest tap target in the app. It grows to
+              // 44px on a coarse pointer, but the rule lives in index.css
+              // against `[role='radio']` so `BucketFilter`'s chips — the app's
+              // other segmented control, with the same problem — are covered by
+              // the same declaration rather than a second copy of it. Height
+              // only: the Vault's segment carries five options and the page
+              // header has no room to widen them at 390px.
+              'pressable rounded-full px-[15px] py-[5px] transition-colors duration-150',
+              // The thumb returns to the card's own colour while the track stays
+              // recessed — the segmented-control model, and the only pairing
+              // that reads in both themes: --panel is lighter than --well in
+              // light and darker in dark, so any fixed tint works in one and
+              // disappears in the other. `bg-accent-soft` was exactly that
+              // mistake: it is byte-identical to --well in both palettes, so
+              // the active pill rendered no pill at all.
+              // Ring rather than border, so selecting an option cannot shift
+              // the width of its neighbours by a pixel.
+              active
+                ? 'bg-panel font-medium text-accent ring-1 ring-hairline'
+                : 'text-text-2 hover:text-text-1',
             )}
           >
             {opt.label}
