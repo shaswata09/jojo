@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { Download, RotateCcw, Share2, TriangleAlert, Upload } from 'lucide-react'
+import { Download, RotateCcw, Share2, Trash2, TriangleAlert, Upload } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { RobotMascot } from '@/components/brand/RobotMascot'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
@@ -13,7 +13,7 @@ import { Segment } from '@/components/common/Segment'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { isSoundEnabled, playSwitchClick, setSoundEnabled } from '@/lib/sound'
-import { isStorageAvailable } from '@/lib/storage'
+import { clearSiteData, isStorageAvailable } from '@/lib/storage'
 import { useStoreAdmin } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { useTheme, type ThemePref } from '@/lib/theme-context'
@@ -32,7 +32,7 @@ const DATA_SETS = [
 type DataSet = (typeof DATA_SETS)[number]['value']
 
 /** Which destructive data action is waiting on a confirmation. */
-type PendingData = 'demo' | 'empty' | 'reset'
+type PendingData = 'demo' | 'empty' | 'reset' | 'storage'
 
 export function Settings() {
   useTitle('Settings')
@@ -50,6 +50,7 @@ export function Settings() {
   const [watchFolder, setWatchFolder] = useState(false)
   const [sound, setSound] = useState(isSoundEnabled)
   const [pending, setPending] = useState<PendingData | null>(null)
+  const [clearing, setClearing] = useState(false)
 
   // Reported, not assumed. jojo is local-first, so this is load-bearing.
   const storageOk = isStorageAvailable()
@@ -85,7 +86,49 @@ export function Settings() {
    */
   const dataSet: DataSet = isEmpty ? 'empty' : 'demo'
 
+  /**
+   * Empties the browser, then the tab.
+   *
+   * The store is cleared too. Wiping the preferences while twelve applications
+   * stayed on screen would make the confirmation's own wording false — and the
+   * records are the thing a person means when they say "clear everything".
+   *
+   * The theme is deliberately NOT reset in memory afterwards. The stored
+   * preference is gone, so a reload picks up the system setting; repainting the
+   * page a different colour under someone who just pressed a button about
+   * storage would read as a fault rather than as the point.
+   */
+  const onClearStorage = async () => {
+    setClearing(true)
+    try {
+      const cleared = await clearSiteData()
+      clearAll()
+      const parts = [
+        `${cleared.localStorage + cleared.sessionStorage} stored preferences`,
+        cleared.indexedDBUnknown
+          ? 'databases could not be listed by this browser'
+          : `${cleared.indexedDB} databases`,
+        `${cleared.caches} caches`,
+        `${cleared.cookies} cookies`,
+      ]
+      toast({
+        title: 'Browser storage cleared',
+        description: `${parts.join(' · ')}. Every record in this tab is gone too.`,
+        tone: 'danger',
+      })
+    } finally {
+      // In a finally: a browser that blocks one of the stores throws past the
+      // await, and a button stuck reading "Clearing…" would be the only thing
+      // left to tell the user what happened.
+      setClearing(false)
+    }
+  }
+
   const applyPending = () => {
+    if (pending === 'storage') {
+      void onClearStorage()
+      return
+    }
     if (pending === 'empty') {
       clearAll()
       toast({
@@ -123,6 +166,15 @@ export function Settings() {
         description:
           'Every edit, addition and deletion from this session is discarded and the seeded records come back exactly as they shipped, tagged as they shipped. Your keyword list itself is left alone. There is no undo.',
         confirm: 'Reset data',
+      },
+      // Says what it reaches AND what it cannot. jojo has no server, so a
+      // dialog offering to clear one would be inventing a thing to reassure
+      // the reader about; the honest version is that there is nothing there.
+      storage: {
+        title: 'Clear everything this site has stored?',
+        description:
+          'Empties this browser of everything jojo has put in it — your theme and sound preferences, any databases, caches and cookies — and clears the records held in this tab. There is no server holding a copy, and nothing here has ever left this machine, so this is all of it. There is no undo: export first if you want your records back.',
+        confirm: 'Clear storage',
       },
     }
 
@@ -348,6 +400,24 @@ export function Settings() {
                   <Share2 className="size-3.5" strokeWidth={1.8} aria-hidden />
                   Open Transfer
                 </Link>
+              </Button>
+            }
+          />
+          {/* Last in the panel, because it is the largest hammer in it: the two
+              rows above change what is in the app, this one leaves nothing of
+              jojo on the machine at all. */}
+          <SettingRow
+            label="Clear browser storage"
+            description="Empties everything this site has stored in your browser — preferences, databases, caches and cookies — and the records held in this tab."
+            control={
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={clearing}
+                onClick={() => setPending('storage')}
+              >
+                <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
+                {clearing ? 'Clearing…' : 'Clear storage'}
               </Button>
             }
           />
