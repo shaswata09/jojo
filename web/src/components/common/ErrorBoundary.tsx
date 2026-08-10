@@ -20,19 +20,28 @@ type State = { error: Error | null }
  * `react-error-boundary` would be a dependency for ~40 lines.
  */
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { error: null }
+  override state: State = { error: null }
 
   static getDerivedStateFromError(error: Error): State {
     return { error }
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  override componentDidCatch(error: Error, info: ErrorInfo) {
     // Local-first: no telemetry endpoint to report to, so the console is it.
-    console.error('Unhandled render error:', error, info.componentStack)
+    //
+    // Named for what this boundary DID, not "unhandled render error", which is
+    // what it used to say. Every line it prints is by definition one it caught,
+    // and the widget boundaries print it on their designed path — a machine with
+    // no GPU logs it once as `SplineRobot` hands over to the 2D mascot, exactly
+    // as intended. An audit read that line as a crash the build had missed and
+    // went looking for the bug; a boundary that reports a working fallback as an
+    // unhandled failure is spending someone's afternoon every time it fires.
+    const scope = this.props.fallback === undefined ? 'app' : 'widget'
+    console.error(`Render error caught by the ${scope} boundary:`, error, info.componentStack)
     this.props.onError?.(error)
   }
 
-  render() {
+  override render() {
     const { error } = this.state
     if (!error) return this.props.children
     if (this.props.fallback !== undefined) return this.props.fallback
@@ -41,10 +50,27 @@ export class ErrorBoundary extends Component<Props, State> {
       <div className="grid min-h-dvh place-items-center p-5">
         <div className="surface max-w-md rounded-lg px-5 py-5">
           <h1 className="text-lg font-semibold">Something broke</h1>
+          {/*
+           * Promised nothing about the records on purpose.
+           *
+           * This read "Your data is untouched — this is a display error", which
+           * was a guess even while the store was in memory: a crash part-way
+           * through a multi-collection write left the store half-edited, and the
+           * sentence told the user it had not. Once records are on disk the same
+           * sentence starts covering a write that never reached IndexedDB, and a
+           * reassurance that turns out to be wrong is worse than no reassurance
+           * — the user stops reloading, and loses the work anyway.
+           */}
           <p className="mt-2 text-sm text-text-2">
-            Your data is untouched — this is a display error. Reloading usually clears it.
+            A view failed to render. Try again re-mounts it without reloading the page.
           </p>
-          <pre className="bg-input-bg mt-3 max-h-40 overflow-auto rounded-sm p-3 font-mono text-xs text-text-3">
+          {/*
+           * `bg-input-bg` named no token, so Tailwind emitted no rule for it and
+           * the trace sat on the panel background with no recess at all — a
+           * silent failure, because an unknown utility is not an error. `well`
+           * is the token the rest of the app uses for a sunken block.
+           */}
+          <pre className="mt-3 max-h-40 overflow-auto rounded-sm bg-well p-3 font-mono text-xs text-text-3">
             {error.message}
           </pre>
           <button

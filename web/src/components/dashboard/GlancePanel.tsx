@@ -2,51 +2,42 @@ import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
-import { TODAY, WEEKDAYS, buildMonth, stepMonth } from '@/data/calendar'
-import { TODAY as TODAY_ISO, daysBetween, isoOf, partsOf } from '@/data/timeline'
-import type { TimelineItem } from '@/data/timeline'
+import { WEEKDAYS, buildMonth, stepMonth } from '@/data/calendar'
+import { isoOf, partsOf } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath, calendarPath, formatSort, vaultPath } from '@/lib/links'
-import { useApplications, useTimeline } from '@/lib/store-context'
-import { KIND_ICON } from '@/lib/timeline-visuals'
+import { KIND_ICON, MARK_DOT, MARK_TEXT, markOf } from '@/lib/timeline-visuals'
+import type { Mark } from '@/lib/timeline-visuals'
+import { TODAY as TODAY_ISO, TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
-const MONTH_TODAY = `${buildMonth(TODAY.year, TODAY.month).label} ${TODAY.day}`
+const MONTH_TODAY = `${buildMonth(TODAY_PARTS.year, TODAY_PARTS.month).label} ${TODAY_PARTS.day}`
 
 /**
- * What a day is marked with — the Calendar route's four marks, by the same two
- * thresholds, so the two grids cannot disagree about the same date.
+ * What a day is marked with — the Calendar route's marks, off the shared rule,
+ * so the two grids cannot disagree about the same date.
  *
  * This panel was the last place still reading the seed's `TimelineItem.urgency`,
  * a priority somebody typed in by hand. It painted Oct 15 — three days out —
  * overdue red while the week strip 200px below called Oct 12 amber, and it kept
  * a ticked-off reminder's red dot under a toast that said the thing was off the
- * dashboard. Completed is checked first and outranked by nothing: a finished
- * item is not past due, whatever its date says.
+ * dashboard. It then carried its own copy of the replacement rule, which is the
+ * same failure one step later; `markOf` is imported now.
+ *
+ * Only `done` is local, and it differs from the calendar's on purpose: the dot
+ * goes hollow the same way, but a finished item on a dashboard reads grey
+ * rather than green — nothing here is a reward for having done it.
  */
-type Mark = 'done' | 'overdue' | 'soon' | 'none'
-
-function markOf(item: TimelineItem): Mark {
-  if (item.completedOn) return 'done'
-  const gap = daysBetween(TODAY_ISO, item.date)
-  if (gap < 0) return 'overdue'
-  // Today and tomorrow are the only two days amber may claim.
-  return gap <= 1 ? 'soon' : 'none'
-}
-
-/** Hollow for done, exactly as the calendar draws it. */
-const MARK_DOT: Record<Mark, string> = {
+const DAY_DOT: Record<Mark, string> = {
+  ...MARK_DOT,
   done: 'border border-text-3 bg-transparent',
-  overdue: 'bg-danger',
-  soon: 'bg-warning',
-  none: 'bg-text-3',
 }
 
-const MARK_TEXT: Record<Mark, string> = {
+const DAY_TEXT: Record<Mark, string> = {
+  ...MARK_TEXT,
   done: 'text-text-3',
-  overdue: 'text-danger',
-  soon: 'text-warning',
-  none: 'text-text-3',
 }
 
 /** An ISO date in the shape the calendar route reads it. */
@@ -72,11 +63,11 @@ export function GlancePanel() {
   const { all: items, forMonth, overdue } = useTimeline()
   const { open } = useDialogs()
   const [view, setView] = useState<{ year: number; month: number }>({
-    year: TODAY.year,
-    month: TODAY.month,
+    year: TODAY_PARTS.year,
+    month: TODAY_PARTS.month,
   })
-  const month = useMemo(() => buildMonth(view.year, view.month), [view])
-  const [selected, setSelected] = useState<number>(TODAY.day)
+  const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
+  const [selected, setSelected] = useState<number>(TODAY_PARTS.day)
 
   /**
    * Paging keeps the day you were looking at, so stepping through months
@@ -88,13 +79,13 @@ export function GlancePanel() {
   const goTo = useCallback((next: { year: number; month: number }) => {
     setView(next)
     setSelected((day) =>
-      next.year === TODAY.year && next.month === TODAY.month
-        ? TODAY.day
+      next.year === TODAY_PARTS.year && next.month === TODAY_PARTS.month
+        ? TODAY_PARTS.day
         : Math.min(day, buildMonth(next.year, next.month).days),
     )
   }, [])
 
-  const isCurrentMonth = view.year === TODAY.year && view.month === TODAY.month
+  const isCurrentMonth = view.year === TODAY_PARTS.year && view.month === TODAY_PARTS.month
 
   /**
    * The counters, derived rather than written down — and every one of them a
@@ -242,7 +233,7 @@ export function GlancePanel() {
                 current month, hollow once you have paged away from it. */}
             <button
               type="button"
-              onClick={() => goTo({ year: TODAY.year, month: TODAY.month })}
+              onClick={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
               aria-label="Go to current month"
               aria-current={isCurrentMonth ? 'date' : undefined}
               title={`${MONTH_TODAY} — current month`}
@@ -341,7 +332,7 @@ export function GlancePanel() {
                   </span>
                   {/* Fixed-height rail so rows stay aligned with or without a dot. */}
                   <span aria-hidden className="flex h-1 items-center">
-                    {mark ? <span className={cn('size-1 rounded-full', MARK_DOT[mark])} /> : null}
+                    {mark ? <span className={cn('size-1 rounded-full', DAY_DOT[mark])} /> : null}
                   </span>
                 </button>
               )
@@ -387,7 +378,7 @@ export function GlancePanel() {
                   return (
                     <li key={e.id} className="flex gap-2">
                       <Icon
-                        className={cn('mt-0.5 size-3.5 shrink-0', MARK_TEXT[mark])}
+                        className={cn('mt-0.5 size-3.5 shrink-0', DAY_TEXT[mark])}
                         strokeWidth={1.8}
                         aria-hidden
                       />

@@ -29,14 +29,16 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
-import { MONTH_LABELS, TODAY, WEEKDAYS, buildMonth, stepMonth } from '@/data/calendar'
-import { compareItems, daysBetween, isoOf, partsOf, shortDate, timeLabel } from '@/data/timeline'
+import { MONTH_LABELS, WEEKDAYS, buildMonth, stepMonth } from '@/data/calendar'
+import { compareItems, isoOf, partsOf, shortDate, timeLabel } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useCalendarParams, useTitle } from '@/lib/links'
-import { useTimeline } from '@/lib/store-context'
-import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
+import { KIND_ICON, KIND_LABEL, MARK_DOT, MARK_TEXT, markOf } from '@/lib/timeline-visuals'
+import type { Mark } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
+import { TODAY_PARTS } from '@/lib/today'
 import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
 import { useReducedMotion } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
@@ -67,41 +69,29 @@ const REVEAL_IN_ROW =
 const DAY_DROP_PREFIX = 'day:'
 
 /** The mock's fixed "today", spelled the two ways the copy below needs it. */
-const TODAY_ISO = isoOf(TODAY.year, TODAY.month, TODAY.day)
-const TODAY_MONTH = `${MONTH_LABELS[TODAY.month - 1]} ${TODAY.year}`
+const TODAY_ISO = isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
+const TODAY_MONTH = `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
 
 /**
  * What the grid draws on an item — and the only thing the key under it has to
  * explain.
  *
- * Derived from the date, not read off `item.urgency`. That field is a
- * hand-authored priority in the seed: it paints the UT Austin deadline red
+ * `markOf` is derived from the date, not read off `item.urgency`. That field is
+ * a hand-authored priority in the seed: it paints the UT Austin deadline red
  * three days before it falls, the same red as a follow-up missed a week ago,
  * and paints an already-overdue chase amber. Under the colour law red is past
  * due and nothing else and amber is inside 48 hours and nothing else — so a key
  * reading "Overdue / Due within 48 hours" beside those colours would have been
- * a second mismatch replacing the one it was sent to fix. `lib/priority.ts`
- * derives the dashboard's the same way, from the same two thresholds.
+ * a second mismatch replacing the one it was sent to fix.
  *
- * Note for whoever owns the seed: `TimelineItem.urgency` is no longer read on
- * this route. Other surfaces still trust it.
- */
-type Mark = 'done' | 'overdue' | 'soon' | 'none'
-
-function markOf(item: TimelineItem): Mark {
-  if (item.completedOn) return 'done'
-  const gap = daysBetween(TODAY_ISO, item.date)
-  if (gap < 0) return 'overdue'
-  // Today and tomorrow are the only two days amber may claim.
-  return gap <= 1 ? 'soon' : 'none'
-}
-
-/**
- * The chip body in a day cell. Only the two marks the key names carry a fill —
- * everything else is bare text, so a filled chip always means one of the two
- * things printed under the grid. `bg-well` on a `bg-well` cell was the same
- * pixels with none of that guarantee, and it turned into a visible box the
- * moment the cell changed colour under a drag.
+ * The rule itself now lives in `lib/timeline-visuals.ts`, with the dashboard's
+ * three copies of it. This route had the fourth.
+ *
+ * The chip body: only the two marks the key names carry a fill — everything
+ * else is bare text, so a filled chip always means one of the two things
+ * printed under the grid. `bg-well` on a `bg-well` cell was the same pixels
+ * with none of that guarantee, and it turned into a visible box the moment the
+ * cell changed colour under a drag.
  */
 const MARK_CHIP: Record<Mark, string> = {
   done: 'bg-transparent text-text-3',
@@ -111,19 +101,15 @@ const MARK_CHIP: Record<Mark, string> = {
 }
 
 /** The dot the grid falls back to when a cell is too narrow for a chip. */
-const MARK_DOT: Record<Mark, string> = {
+const DAY_DOT: Record<Mark, string> = {
+  ...MARK_DOT,
   done: 'border border-text-3 bg-transparent',
-  overdue: 'bg-danger',
-  soon: 'bg-warning',
-  none: 'bg-text-3',
 }
 
-/** The kind icon in the day list. */
-const MARK_TEXT: Record<Mark, string> = {
+/** The kind icon in the day list. Green for done — the glance panel greys it. */
+const DAY_TEXT: Record<Mark, string> = {
+  ...MARK_TEXT,
   done: 'text-success',
-  overdue: 'text-danger',
-  soon: 'text-warning',
-  none: 'text-text-3',
 }
 
 /**
@@ -241,7 +227,7 @@ function MonthPicker({
           {MONTH_LABELS.map((label, i) => {
             const m = i + 1
             const isCurrent = draftYear === year && m === month
-            const isToday = draftYear === TODAY.year && m === TODAY.month
+            const isToday = draftYear === TODAY_PARTS.year && m === TODAY_PARTS.month
             return (
               <button
                 key={label}
@@ -486,7 +472,7 @@ function DayCell({
           same way a switched-off series does in the legend. */}
       <div className={cn('mt-1 flex items-center gap-0.5', !dotsOnly && 'sm:hidden')}>
         {items.slice(0, 3).map((e) => (
-          <span key={e.id} aria-hidden className={cn('size-1 rounded-full', MARK_DOT[markOf(e)])} />
+          <span key={e.id} aria-hidden className={cn('size-1 rounded-full', DAY_DOT[markOf(e)])} />
         ))}
         {items.length > 3 ? (
           <span aria-hidden className="ml-0.5 text-[10px] leading-none text-text-3">
@@ -533,7 +519,7 @@ export function Calendar() {
   const [dotsOnly, setDotsOnly] = useState(false)
   const [tallCells, setTallCells] = useState(true)
   const reducedMotion = useReducedMotion()
-  const month = useMemo(() => buildMonth(view.year, view.month), [view])
+  const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
   const { forMonth, get, remove, reschedule } = useTimeline()
 
   /** The chip currently in the pointer's hand, rendered in the overlay. */
@@ -578,14 +564,14 @@ export function Calendar() {
   /** Keeps the day you were looking at, clamped; snaps to today on the way home. */
   const goTo = (next: { year: number; month: number }) => {
     const day =
-      next.year === TODAY.year && next.month === TODAY.month
-        ? TODAY.day
+      next.year === TODAY_PARTS.year && next.month === TODAY_PARTS.month
+        ? TODAY_PARTS.day
         : Math.min(selected, buildMonth(next.year, next.month).days)
     // `focus` is dropped: it names an item on a day you have just left.
     set({ y: next.year, m: next.month, d: day, focus: undefined })
   }
 
-  const isCurrentMonth = view.year === TODAY.year && view.month === TODAY.month
+  const isCurrentMonth = view.year === TODAY_PARTS.year && view.month === TODAY_PARTS.month
   const nextMonth = stepMonth(view.year, view.month, 1)
 
   const selectedEvents = eventsFor.get(selected) ?? []
@@ -751,12 +737,12 @@ export function Calendar() {
                     reads as a pressed control rather than a dead one. */}
                 <button
                   type="button"
-                  onClick={() => goTo({ year: TODAY.year, month: TODAY.month })}
+                  onClick={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
                   aria-current={isCurrentMonth ? 'date' : undefined}
                   title={
                     isCurrentMonth
                       ? `Back to ${shortDate(TODAY_ISO)}`
-                      : `Go to ${MONTH_LABELS[TODAY.month - 1]} ${TODAY.year}`
+                      : `Go to ${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
                   }
                   className={cn(
                     'h-7 cursor-pointer rounded-full border px-2.5 text-xs transition-colors',
@@ -873,7 +859,7 @@ export function Calendar() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => goTo({ year: TODAY.year, month: TODAY.month })}
+                        onClick={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
                       >
                         Back to {TODAY_MONTH}
                       </Button>
@@ -900,7 +886,7 @@ export function Calendar() {
                       )}
                     >
                       <Icon
-                        className={cn('mt-0.5 size-4 shrink-0', MARK_TEXT[mark])}
+                        className={cn('mt-0.5 size-4 shrink-0', DAY_TEXT[mark])}
                         strokeWidth={1.7}
                         aria-hidden
                       />
@@ -1005,7 +991,7 @@ export function Calendar() {
                           className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-1 py-1 text-left text-xs transition-colors hover:bg-row-hover"
                         >
                           <span
-                            className={cn('size-1.5 shrink-0 rounded-full', MARK_DOT[mark])}
+                            className={cn('size-1.5 shrink-0 rounded-full', DAY_DOT[mark])}
                             aria-hidden
                           />
                           {start ? (

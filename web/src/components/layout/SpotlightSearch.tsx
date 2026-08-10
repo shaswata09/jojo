@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   Archive,
+  ArrowLeftRight,
   BellRing,
   CalendarDays,
   ChartColumn,
@@ -10,15 +11,22 @@ import {
   CornerDownLeft,
   FileText,
   LayoutDashboard,
+  Pencil,
+  Plus,
   Radar,
   Settings,
   Share2,
+  Trash2,
   UserRound,
   Waypoints,
+  Wrench,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
-import { CREATE_ACTIONS, useRunCreateAction } from '@/components/common/NewMenu'
+import { CREATE_ACTIONS, DIALOG_TOOLS, useRunCreateAction } from '@/components/common/NewMenu'
+import { ToolRunDialog } from '@/components/common/ToolRunDialog'
+import { planToolForm } from '@/components/common/tool-form'
+import type { FormPlan } from '@/components/common/tool-form'
 import {
   Command,
   CommandDialog,
@@ -30,7 +38,15 @@ import {
   CommandSeparator,
 } from '@/components/ui/command'
 import { displayName } from '@/data/seed'
-import { TODAY, bucketOf, partsOf, shortDate } from '@/data/timeline'
+import { bucketOf, partsOf, shortDate } from '@/data/timeline'
+import type { NodeType } from '@/kg/core/model'
+import { useGraph } from '@/kg/react/kg-context'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
+import { TOOLS } from '@/kg/tools'
+import type { ToolName } from '@/kg/tools'
+import type { AnyTool } from '@/kg/tools/tool'
+import { TODAY } from '@/lib/today'
 import {
   appPath,
   applicationsPath,
@@ -44,7 +60,6 @@ import {
   transferPath,
   vaultPath,
 } from '@/lib/links'
-import { useApplications, useTimeline } from '@/lib/store-context'
 
 type Result = {
   id: string
@@ -105,6 +120,17 @@ const PAGES: Result[] = [
   { id: 'p-guide', label: 'How to use', icon: CircleHelp, to: '/guide' },
 ]
 
+/** What the verb does to your records, at a glance, before you read the row. */
+const EFFECT_ICON: Record<string, LucideIcon> = {
+  create: Plus,
+  update: Pencil,
+  delete: Trash2,
+  move: ArrowLeftRight,
+  admin: Wrench,
+}
+
+type ToolRow = { name: ToolName; plan: FormPlan; icon: LucideIcon }
+
 /**
  * Spotlight-style search.
  *
@@ -150,6 +176,31 @@ export function SpotlightSearch({
   const { all: applications, byId } = useApplications()
   const { all: dated, reminders } = useTimeline()
   const runCreate = useRunCreateAction()
+  const memory = useGraph()
+  /** The tool whose generated form is open, with the plan the row was offered on. */
+  const [pending, setPending] = useState<ToolRow | null>(null)
+
+  /**
+   * Every registered tool that can be given an honest form, in registry order.
+   *
+   * Registry order is domain order — applications, then the timeline, then the
+   * vault — which reads as a menu; alphabetical by title would interleave five
+   * unrelated things under 'D'. The list is recomputed against the snapshot
+   * because a tool whose only picker would be empty is not offered: "Delete
+   * link" with no links to delete is a row that can only disappoint.
+   */
+  const tools: ToolRow[] = useMemo(() => {
+    const countOf = (type: NodeType) => memory.ofType(type).length
+    const rows: ToolRow[] = []
+    for (const name of Object.keys(TOOLS) as ToolName[]) {
+      if (DIALOG_TOOLS.has(name)) continue
+      const tool: AnyTool = TOOLS[name]
+      const plan = planToolForm(tool, { countOf })
+      if (!plan) continue
+      rows.push({ name, plan, icon: EFFECT_ICON[tool.effect] ?? Wrench })
+    }
+    return rows
+  }, [memory])
 
   // Every result goes to the record itself, not to the page it lives on.
   // Landing on the board with no idea which of forty rows you picked is the
@@ -161,7 +212,7 @@ export function SpotlightSearch({
         label: displayName(a),
         detail: a.note,
         icon: ClipboardList,
-        to: appPath(a.id),
+        to: appPath(a),
         keywords: `${a.roleTag} ${a.stage} ${a.lastAction}`,
       })),
     [applications],
@@ -232,80 +283,133 @@ export function SpotlightSearch({
   )
 
   return (
-    <CommandDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Search"
-      description="Search applications, reminders, events and pages"
-      className="top-[15%] w-[min(92vw,44rem)] max-w-none sm:max-w-none"
-    >
-      {/* This build's CommandDialog renders Dialog > DialogContent > children
+    <>
+      <CommandDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Search"
+        description="Search applications, reminders, events and pages"
+        className="top-[15%] w-[min(92vw,44rem)] max-w-none sm:max-w-none"
+      >
+        {/* This build's CommandDialog renders Dialog > DialogContent > children
           with no cmdk root, so the Command provider has to be supplied here —
           without it CommandInput has no store and throws on mount. */}
-      <Command filter={matchesQuery}>
-        <CommandInput placeholder="Search applications, reminders, events…" />
-        <CommandList className="max-h-[62vh]">
-          <CommandEmpty>
-            <div className="py-6 text-center">
-              <FileText className="mx-auto size-5 text-text-3" strokeWidth={1.6} aria-hidden />
-              <p className="mt-2 text-sm text-text-2">Nothing matches that.</p>
-              <p className="mt-0.5 text-xs text-text-3">Try a role, an organisation or a stage.</p>
-            </div>
-          </CommandEmpty>
+        <Command filter={matchesQuery}>
+          <CommandInput placeholder="Search applications, reminders, events…" />
+          <CommandList className="max-h-[62vh]">
+            <CommandEmpty>
+              <div className="py-6 text-center">
+                <FileText className="mx-auto size-5 text-text-3" strokeWidth={1.6} aria-hidden />
+                <p className="mt-2 text-sm text-text-2">Nothing matches that.</p>
+                <p className="mt-0.5 text-xs text-text-3">
+                  Try a role, an organisation or a stage.
+                </p>
+              </div>
+            </CommandEmpty>
 
-          {/* First, and before anything typed narrows the list: the palette is
+            {/* First, and before anything typed narrows the list: the palette is
               the fastest route to "add a thing" from any page, and a create
               action buried under forty applications is not a route at all. The
               same array the topbar's menu renders, run through the same hook —
               so a row that became a link cannot still be fired as a dialog
               here. */}
-          <CommandGroup heading="Actions">
-            {CREATE_ACTIONS.map((action) => (
-              <CommandItem
-                key={action.id}
-                value={`${action.label} ${action.hint ?? ''}`}
-                onSelect={() => {
-                  onOpenChange(false)
-                  // Deferred a frame: this dialog returns focus to its trigger
-                  // as it unmounts, and a dialog mounted in the same commit
-                  // would have that focus pulled straight back out of it.
-                  requestAnimationFrame(() => runCreate(action))
-                }}
-                className="gap-2.5"
-              >
-                <action.icon
-                  className="size-4 shrink-0 text-text-3"
-                  strokeWidth={1.7}
-                  aria-hidden
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate">{action.label}</span>
-                  {action.hint ? (
-                    <span className="block truncate text-xs text-text-3">{action.hint}</span>
-                  ) : null}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
+            <CommandGroup heading="Actions">
+              {CREATE_ACTIONS.map((action) => (
+                <CommandItem
+                  key={action.id}
+                  value={`${action.label} ${action.hint ?? ''}`}
+                  onSelect={() => {
+                    onOpenChange(false)
+                    // Deferred a frame: this dialog returns focus to its trigger
+                    // as it unmounts, and a dialog mounted in the same commit
+                    // would have that focus pulled straight back out of it.
+                    requestAnimationFrame(() => runCreate(action))
+                  }}
+                  className="gap-2.5"
+                >
+                  <action.icon
+                    className="size-4 shrink-0 text-text-3"
+                    strokeWidth={1.7}
+                    aria-hidden
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{action.label}</span>
+                    {action.hint ? (
+                      <span className="block truncate text-xs text-text-3">{action.hint}</span>
+                    ) : null}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
 
-          <Section heading="Applications" items={apps} />
-          <CommandSeparator />
-          <Section heading="Reminders" items={rems} />
-          <CommandSeparator />
-          <Section heading="Calendar" items={events} />
-          <CommandSeparator />
-          <Section heading="Go to" items={PAGES} />
-        </CommandList>
+            <Section heading="Applications" items={apps} />
+            <CommandSeparator />
+            <Section heading="Reminders" items={rems} />
+            <CommandSeparator />
+            <Section heading="Calendar" items={events} />
+            <CommandSeparator />
 
-        <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">
-          <span className="flex items-center gap-1">
-            <CornerDownLeft className="size-3" aria-hidden /> to open
-          </span>
-          <span>esc to close</span>
-        </div>
-      </Command>
-    </CommandDialog>
+            {/* Below the records, above the pages. A palette is asked for a
+              record far more often than for a verb, and the verbs are long
+              enough a list to push everything under them off the screen — but
+              they are what someone types "delete" or "snooze" hoping to find,
+              and typing is what this group is reached by. */}
+            <CommandGroup heading="Tools">
+              {tools.map((row) => (
+                <CommandItem
+                  key={row.name}
+                  // The tool's own name is in here as well: it is what the
+                  // architecture document and the audit log call it, and someone
+                  // who has read either should be able to type it.
+                  value={`${row.plan.tool.title} ${row.plan.tool.summary} ${row.name}`}
+                  onSelect={() => {
+                    onOpenChange(false)
+                    // A frame later, for the same reason the create rows defer:
+                    // this dialog hands focus back to its trigger as it unmounts,
+                    // and a dialog mounted in the same commit loses it again.
+                    requestAnimationFrame(() => setPending(row))
+                  }}
+                  className="gap-2.5"
+                >
+                  <row.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{row.plan.tool.title}</span>
+                    <span className="block truncate text-xs text-text-3">
+                      {row.plan.tool.summary}
+                    </span>
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+
+            <Section heading="Go to" items={PAGES} />
+          </CommandList>
+
+          <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">
+            <span className="flex items-center gap-1">
+              <CornerDownLeft className="size-3" aria-hidden /> to open
+            </span>
+            <span>esc to close</span>
+          </div>
+        </Command>
+      </CommandDialog>
+
+      {/* Outside the palette, and only while a tool is pending: the palette is
+          already closed by the time this mounts, and a form nested inside a
+          dialog that is unmounting would go with it. */}
+      {pending ? (
+        <ToolRunDialog
+          key={pending.name}
+          name={pending.name}
+          plan={pending.plan}
+          onOpenChange={(next) => {
+            if (!next) setPending(null)
+          }}
+        />
+      ) : null}
+    </>
   )
 }
 

@@ -7,10 +7,12 @@ import { RichTextEditor } from '@/components/common/RichTextEditor'
 import { Button } from '@/components/ui/button'
 import { agoLabel } from '@/data/timeline'
 import type { VaultFile } from '@/data/vault'
+import { useVault } from '@/kg/react/use-vault'
 import { pdfObjectUrl, placeholderPdf } from '@/lib/placeholder-pdf'
 import { htmlFromText, textFromHtml } from '@/lib/rich-text'
-import { useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
+import { useUndoable } from '@/lib/undo'
 
 /**
  * Shows a file in the browser's own document viewer.
@@ -45,6 +47,7 @@ export function FileViewer({
   const [noteSaved, setNoteSaved] = useState(false)
   const { updateFile } = useVault()
   const { toast } = useToast()
+  const undoable = useUndoable()
 
   /**
    * The stored note is one line of plain text; the editor speaks HTML.
@@ -62,14 +65,21 @@ export function FileViewer({
   const noteText = textFromHtml(noteHtml)
   const noteDirty = noteText !== (file.note ?? '')
 
+  /**
+   * Saving a note clears the editor's dirty state, so the text that was
+   * replaced is gone from the screen as well as from the record — which is
+   * exactly the write that has to be reversible. It had no Undo; it has one
+   * now, off the journal's before-image rather than a copy captured here.
+   */
   const saveNote = () => {
-    updateFile(file.id, { note: noteText || undefined })
+    const { restore } = undoable(() => updateFile(file.id, { note: noteText || undefined }))
     setNoteSaved(true)
     toast({
       title: `Note saved on ${file.name}`,
       description: noteText
         ? 'It shows against this file wherever the vault lists it.'
         : 'The note is now empty, so nothing shows against this file.',
+      action: restore ? { label: 'Undo', onClick: restore } : undefined,
     })
   }
 
@@ -84,7 +94,10 @@ export function FileViewer({
             title: file.name,
             lines: [
               { text: 'Placeholder preview', size: 12 },
-              { text: `${file.size} · ${file.bucket} · saved ${agoLabel(file.savedOn)}`, gap: 6 },
+              {
+                text: `${file.size} · ${file.bucket} · saved ${agoLabel(file.savedOn, TODAY)}`,
+                gap: 6,
+              },
               ...(file.note ? [{ text: file.note }] : []),
               {
                 text: 'This row shipped with the app. A file you add yourself previews for real.',

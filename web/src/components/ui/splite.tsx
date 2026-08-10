@@ -8,6 +8,15 @@ const Spline = lazy(() => import('@splinetool/react-spline'))
 interface SplineSceneProps {
   scene: string
   className?: string
+  /**
+   * Where the runtime looks for its WebAssembly helpers.
+   *
+   * Left unset it hardcodes unpkg.com, and it reaches for one the moment a
+   * scene uses procedural geometry — so a scene served from this origin still
+   * pulled half a megabyte off a CDN on load. The caller vendors the file and
+   * names the folder; see SplineRobot.
+   */
+  wasmPath?: string
   /** Route pointer events from the whole page, not just the canvas. */
   globalEvents?: boolean
   /** Handed the loaded Application so callers can drive scene objects. */
@@ -18,6 +27,7 @@ interface SplineSceneProps {
 export function SplineScene({
   scene,
   className,
+  wasmPath,
   globalEvents = false,
   onLoad,
   fallback,
@@ -27,6 +37,7 @@ export function SplineScene({
       <Spline
         scene={scene}
         className={className}
+        {...(wasmPath === undefined ? {} : { wasmPath })}
         onLoad={(app: Application) => {
           if (globalEvents) app.setGlobalEvents(true)
           onLoad?.(app)

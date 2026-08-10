@@ -21,11 +21,14 @@ import {
 } from '@/components/ui/dialog'
 import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
-import { TODAY, shortDate } from '@/data/timeline'
+import { shortDate } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 import type { Snippet } from '@/data/vault'
-import { useApplications, useTimeline, useVault } from '@/lib/store-context'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
+import { useVault } from '@/kg/react/use-vault'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
 /** How long the copied confirmation stays up — the same beat as SnippetsTool. */

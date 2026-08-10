@@ -6,9 +6,10 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { Button } from '@/components/ui/button'
 import { PERIODS, ROLES, type Application, type Period, type RoleTag } from '@/data/seed'
-import { TODAY, addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
+import { addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
-import { useApplications } from '@/lib/store-context'
+import { TODAY } from '@/lib/today'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 
 /** Chart slots, indexed by ROLES order so a role keeps its colour whichever

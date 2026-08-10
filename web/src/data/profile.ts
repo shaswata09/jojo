@@ -14,30 +14,9 @@
  * email in the fields.
  */
 
-/** Every free-text field on the profile page, in one record. */
-export type ProfileText = {
-  fullName: string
-  position: string
-  location: string
-  email: string
-  website: string
-  scholar: string
-  github: string
-  linkedin: string
-  targetRoles: string
-  regions: string
-}
+import type { Profile, ProfileText } from '@/kg/core/model'
 
-export type Profile = {
-  text: ProfileText
-  /**
-   * What the scout scores a posting against. Not the global keyword system —
-   * see the panel copy, which has to keep the two apart for the reader too.
-   */
-  matchTerms: string[]
-  includeAcademia: boolean
-  includeIndustry: boolean
-}
+export type { Profile, ProfileText } from '@/kg/core/model'
 
 const BLANK_TEXT: ProfileText = {
   fullName: '',

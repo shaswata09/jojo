@@ -4,75 +4,32 @@
  * Transcribed from the design mockup. Nothing here is mutated in place — the
  * arrays are the initial value handed to `StoreProvider`, and every edit the
  * user makes lives in that reducer instead.
+ *
+ * Fixtures only, as of the KG layer. The domain types moved DOWN to
+ * `@/kg/core/model` and are re-exported here, so every existing import still
+ * resolves — but the model no longer depends on this file, and a demo record is
+ * no longer the definition of what a record is. There is deliberately no badge
+ * field on an application: rows used to carry a hand-authored `chips` array —
+ * `offer`, `prep due`, `24d left` — rendered with the same component as the
+ * user's keywords, so a tag the app invented was indistinguishable from one the
+ * user chose. Everything it carried is derived elsewhere now.
  */
 
-import { TODAY, daysBetween, shortDate } from '@/data/timeline'
+import { daysBetween, shortDate } from '@/data/timeline'
+import { ROLES } from '@/kg/core/model'
+import type { Application, Offer, RoleTag, Stage } from '@/kg/core/model'
 
-export type Urgency = 'red' | 'amber' | 'gray'
-
-export type Stage = 'draft' | 'submitted' | 'screen' | 'interview' | 'offer' | 'closed'
-
-/** The same four the sources donut splits by, so the two can't drift apart. */
-export const SOURCES = ['Job scout', 'Job board', 'Referral', 'Careers page'] as const
-export type Source = (typeof SOURCES)[number]
-
-/** How a closed application ended. Absent while it is still live. */
-export type Outcome = 'rejected' | 'withdrawn' | 'accepted' | 'declined' | 'ghosted'
-
-export type Offer = {
-  /**
-   * 'YYYY-MM-DD'. Was a display string sitting beside a hand-counted
-   * `daysLeft`, which meant the countdown was stale the moment the mock's
-   * today moved — `offerDaysLeft` derives it now.
-   */
-  respondBy: string
-  comp?: string
-  note: string
-}
-
-export type Application = {
-  id: string
-  /**
-   * Employer and position, split. They were packed into one 'Stripe — ML
-   * engineer' string, which reads fine and sorts, groups and searches badly:
-   * every consumer that wanted just the employer had to split on an em dash.
-   * `displayName` puts them back together for display.
-   */
-  org: string
-  role: string
-  note: string
-  /** The job role this application is for — the axis the user filters on. */
-  roleTag: RoleTag
-  stage: Stage
-  flagged?: boolean
-  /*
-   * There is deliberately no badge field here.
-   *
-   * Rows used to carry a hand-authored `chips` array — `offer`, `prep due`,
-   * `24d left` — rendered with the same component as the user's keywords, so a
-   * tag the app invented was indistinguishable from one the user chose. Baylor
-   * ended up saying "Offer" twice in its own header (once as its stage, once as
-   * a chip) and Rice said "Deadline Nov 1" in the note and "24d left" beside it,
-   * in two different date vocabularies. Everything it carried is derived
-   * elsewhere now: the stage from `stage`, the countdown from the timeline, "due
-   * something" from the flag. Keywords are the user's system and stay.
-   */
-  /** What last happened, for the activity feed. */
-  lastAction: string
-  /** Days since lastAction. Drives ordering; a real store would use a date. */
-  daysAgo: number
-  source?: Source
-  location?: string
-  comp?: string
-  url?: string
-  /** All 'YYYY-MM-DD'. Optional because the mock rows predate them. */
-  appliedOn?: string
-  submittedOn?: string
-  firstReplyOn?: string
-  outcome?: Outcome
-  /** Present only while stage === 'offer'. */
-  offer?: Offer
-}
+export { ROLES, SOURCES } from '@/kg/core/model'
+export type {
+  Application,
+  Offer,
+  OfferApplication,
+  Outcome,
+  RoleTag,
+  Source,
+  Stage,
+  Urgency,
+} from '@/kg/core/model'
 
 /**
  * 'Stripe — ML engineer' — an em dash with spaces either side.
@@ -92,8 +49,16 @@ export function displayName(a: Pick<Application, 'org' | 'role'>) {
   return a.role.trim() ? `${a.org} — ${a.role}` : a.org
 }
 
-/** Negative once the date has passed, so an expired offer reads as expired. */
-export function offerDaysLeft(offer: Offer, today: string = TODAY) {
+/**
+ * Negative once the date has passed, so an expired offer reads as expired.
+ *
+ * `today` is required. It used to default to the fixtures' pinned day, and the
+ * default was what every caller passed — so the countdown froze on the day the
+ * fixtures were written and an offer whose deadline was last month still said
+ * "in 34 days". A date this module cannot know is a date this module must be
+ * handed.
+ */
+export function offerDaysLeft(offer: Offer, today: string) {
   return daysBetween(today, offer.respondBy)
 }
 
@@ -303,23 +268,6 @@ export const STAGES: { id: Stage; label: string; dot: string }[] = [
   { id: 'offer', label: 'Offer', dot: 'bg-stage-offer' },
   { id: 'closed', label: 'Closed', dot: 'bg-stage-closed' },
 ]
-
-/** An application known to carry offer details, so consumers need no `!`. */
-export type OfferApplication = Application & { offer: NonNullable<Application['offer']> }
-
-/**
- * Job roles the user tracks. "Academia vs industry" was too blunt — a
- * postdoc and a lecturer are both academia but nothing like each other, and
- * the split told you nothing you could act on.
- */
-export const ROLES = [
-  'Assistant Professor',
-  'Postdoc',
-  'Researcher',
-  'ML Engineer',
-  'Lecturer',
-] as const
-export type RoleTag = (typeof ROLES)[number]
 
 export type RoleBucket = { label: string; counts: Record<RoleTag, number> }
 

@@ -8,45 +8,32 @@
  * is transcribed below exactly once, keyed to the application it belongs to.
  */
 
-import type { Urgency } from '@/data/seed'
+import type { TimelineItem } from '@/kg/core/model'
 
-export type TimelineKind =
-  'deadline' | 'interview' | 'visit' | 'call' | 'prep' | 'admin' | 'follow-up'
+export type { TimelineItem, TimelineKind } from '@/kg/core/model'
 
+/** Which end of the day a row falls in. A reading of an item, not a field. */
 export type TimelineBucket = 'overdue' | 'today' | 'upcoming' | 'done'
 
-export type TimelineItem = {
-  id: string
-  title: string
-  /** One-line context, shown under the title. */
-  detail?: string
-  /** The user's own scribble, kept apart from `detail` so edits never clobber it. */
-  note?: string
-  /** 'YYYY-MM-DD'. A real sortable date, never "in 3 days". */
-  date: string
-  allDay: boolean
-  /** Minutes from midnight. Undefined whenever `allDay`. */
-  startMins?: number
-  durationMins?: number
-  kind: TimelineKind
-  urgency: Urgency
-  /** The edge the old models were missing — `Application['id']`. */
-  applicationId?: string
-  /** Whether this surfaces in the Vault's Reminders tool. */
-  remind: boolean
-  completedOn?: string | null
-  location?: string
-  joinUrl?: string
-}
-
 /**
- * The seed's implied today, pinned so the demo never drifts.
+ * The day the fixtures below were WRITTEN against. Not today, and never today.
  *
  * Everything relative in the old arrays agrees on this date: "8 days overdue"
  * against a due of Oct 4, "in 34 days" against the Baylor deadline of Nov 15,
  * and the 12th falling on the Monday the dashboard's week strip opens with.
+ *
+ * It was called `TODAY` and the whole app imported it as today, which was true
+ * for as long as the store died on reload and false from Wave 2 onward — a demo
+ * opened in 2027 showed an October eight months gone, every deadline overdue and
+ * nothing due. It is a property of the fixtures now, read by exactly one caller:
+ * `repo/seed.ts` measures the gap between this and the real day and shifts every
+ * authored date across by that whole number of days. Today itself lives in
+ * `src/lib/today.ts`, which is allowed to read a clock.
+ *
+ * Do not move it to keep pace with the calendar. The dates below are authored
+ * against it; changing one without the others breaks the seeded story.
  */
-export const TODAY = '2026-10-12'
+export const SEED_TODAY = '2026-10-12'
 
 /* ------------------------------ date plumbing ----------------------------- */
 
@@ -76,10 +63,17 @@ export function addDays(iso: string, n: number): string {
   return isoOf(y, m, d + n)
 }
 
-export function todayISO(): string {
-  const now = new Date()
-  return isoOf(now.getFullYear(), now.getMonth() + 1, now.getDate())
-}
+/*
+ * `todayISO()` used to live here and is deliberately gone.
+ *
+ * It read the wall clock, and it sat in the one directory `repo` and `tools` are
+ * both allowed to import (check-layers.mjs:59,66) — so a tool could have reached
+ * the clock through it without ever writing `new Date()`, which is the exact
+ * thing D26 puts behind ToolContext.now. It had zero call sites in all of src/,
+ * so nothing broke; what it had was a loaded gun inside the alias D26 protects.
+ * Anything needing today's date takes it as an argument, the way `today` already
+ * flows down from KgProvider.
+ */
 
 /**
  * Both endpoints are rebuilt at UTC midnight before subtracting. Subtracting
@@ -90,6 +84,26 @@ export function daysBetween(from: string, to: string): number {
   const a = partsOf(from)
   const b = partsOf(to)
   return Math.round((Date.UTC(b.y, b.m - 1, b.d) - Date.UTC(a.y, a.m - 1, a.d)) / 86_400_000)
+}
+
+/**
+ * Whole days from the day the fixtures were written to `today`. The rebase.
+ *
+ * ONE offset applied to every date, not a per-record regeneration. "Submitted
+ * three weeks before the first reply", "replied to on the second day of the
+ * month after", "this deadline falls on the Monday the week strip opens with" —
+ * every one of those is a relationship the fixtures encode by hand, and
+ * re-deriving each date from today would have dissolved all of them into a set
+ * of individually plausible, mutually unrelated dates. A constant shift moves
+ * the story without touching a single thing inside it.
+ *
+ * Whole DAYS, not hours: the fixtures are 'YYYY-MM-DD' throughout, and an offset
+ * with a time component in it would have rounded some dates over a boundary and
+ * not others, which is the one way a constant shift can still lose a
+ * relationship.
+ */
+export function seedOffset(today: string): number {
+  return daysBetween(SEED_TODAY, today)
 }
 
 const MONTHS_SHORT = [
@@ -142,7 +156,7 @@ export function bucketOf(item: TimelineItem, today: string): TimelineBucket {
  *
  * A future date falls through to the plain date: nothing is "ago".
  */
-export function agoLabel(iso: string, today: string = TODAY): string {
+export function agoLabel(iso: string, today: string): string {
   const gap = daysBetween(iso, today)
   if (gap < 0) return shortDate(iso)
   if (gap === 0) return 'today'
@@ -187,8 +201,17 @@ export function compareItems(a: TimelineItem, b: TimelineItem): number {
  *
  * Where a deadline, a reminder and a calendar entry described the same real
  * event they are merged into one row here: the merged row keeps the calendar's
- * title and urgency (the calendar legend reads from it), the reminder's note,
- * and `remind: true` if any of the copies was a reminder.
+ * title, the reminder's note, and `remind: true` if any of the copies was a
+ * reminder.
+ *
+ * The `urgency` on every row below is dead weight and this comment used to
+ * claim otherwise — "the calendar legend reads from it". It does not, and
+ * neither does anything else: the calendar, the glance grid, "Owed this week"
+ * and the priority deck all derive their colour from the date
+ * (`lib/timeline-visuals.ts`). The field survives here only because
+ * `TimelineItemProps` in `kg/core/model.ts` still requires it, and that is a
+ * persisted shape — dropping it is a migration, not an edit. It goes when the
+ * model does.
  */
 export const timeline: TimelineItem[] = [
   {
@@ -465,9 +488,10 @@ export const remindersOf = (items: TimelineItem[]): TimelineItem[] => items.filt
  * glance panel as work waiting on you. Nothing about it was true, and the only
  * way to clear it was to tick off a nudge you had not sent.
  *
- * `today` defaults to `TODAY` because every bucket and countdown in the app is
- * measured against the seed's pinned today; a caller passing the wall clock
- * would disagree with `bucketOf` on which rows are overdue.
+ * `today` is passed in, like every other dated reading in this file. It used to
+ * default to the fixtures' pinned October, which made the default the wrong
+ * answer everywhere and the right answer nowhere — this module cannot know what
+ * day it is, and `src/data` is not allowed to find out.
  */
-export const followUpsOf = (items: TimelineItem[], today: string = TODAY): TimelineItem[] =>
+export const followUpsOf = (items: TimelineItem[], today: string): TimelineItem[] =>
   items.filter((i) => i.kind === 'follow-up' && !i.completedOn && i.date <= today)

@@ -6,12 +6,16 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { TODAY, addDays, shortDate } from '@/data/timeline'
+import { addDays, shortDate } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath } from '@/lib/links'
-import { usePriorityActions, type PriorityAction, type PriorityUrgency } from '@/lib/priority'
-import { useApplications, useTimeline } from '@/lib/store-context'
+import { usePriorityActions, type PriorityAction } from '@/lib/priority'
+import { MARK_TEXT } from '@/lib/timeline-visuals'
+import type { DateMark } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
 /**
@@ -21,16 +25,10 @@ import { cn } from '@/lib/utils'
  * — the deck used to paint a 34-day offer green, which read as "you are fine"
  * on the one card that ends every other application you are running.
  */
-const URGENCY_BORDER: Record<PriorityUrgency, string> = {
+const URGENCY_BORDER: Record<DateMark, string> = {
   overdue: 'border-danger-border',
   soon: 'border-warning-border',
   none: 'border-hairline',
-}
-
-const URGENCY_TEXT: Record<PriorityUrgency, string> = {
-  overdue: 'text-danger',
-  soon: 'text-warning',
-  none: 'text-text-3',
 }
 
 const menuItem =
@@ -164,7 +162,7 @@ function HeroCard({ action }: { action: PriorityAction }) {
 
       <h3 className="mt-2 text-xl font-semibold">{action.headline}</h3>
       <p className="mt-1 line-clamp-1 text-sm text-text-2">{action.context}</p>
-      <p className={cn('mt-1.5 text-xs', URGENCY_TEXT[action.urgency])}>{action.timing}</p>
+      <p className={cn('mt-1.5 text-xs', MARK_TEXT[action.urgency])}>{action.timing}</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {action.actions.map((a) => (
@@ -197,7 +195,7 @@ function ActionRow({ action }: { action: PriorityAction }) {
         {action.headline}
       </span>
 
-      <span className={cn('shrink-0 text-xs whitespace-nowrap', URGENCY_TEXT[action.urgency])}>
+      <span className={cn('shrink-0 text-xs whitespace-nowrap', MARK_TEXT[action.urgency])}>
         {action.timing}
       </span>
 

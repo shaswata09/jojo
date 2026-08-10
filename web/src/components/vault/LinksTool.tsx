@@ -23,9 +23,10 @@ import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/Vaul
 import { displayName } from '@/data/seed'
 import { LINK_CATEGORIES } from '@/data/vault'
 import type { LinkCategory, VaultLink } from '@/data/vault'
+import { useApplications } from '@/kg/react/use-applications'
+import { useVault } from '@/kg/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
 import { appPath } from '@/lib/links'
-import { useApplications, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
@@ -711,7 +712,7 @@ export function LinksTool({ focus }: { focus?: string }) {
                     {l.note ? <span className="truncate">· {l.note}</span> : null}
                     {related ? (
                       <Link
-                        to={appPath(related.id)}
+                        to={appPath(related)}
                         className="shrink-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
                       >
                         · {displayName(related)}

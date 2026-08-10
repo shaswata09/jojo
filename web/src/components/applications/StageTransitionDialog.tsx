@@ -15,8 +15,9 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { displayName } from '@/data/seed'
 import type { Application, Outcome, Stage } from '@/data/seed'
-import { TODAY, addDays, shortDate } from '@/data/timeline'
-import type { TimelineDraft } from '@/lib/store-context'
+import { addDays, shortDate } from '@/data/timeline'
+import type { TimelineDraft } from '@/kg/react/use-timeline'
+import { TODAY } from '@/lib/today'
 
 const FORMATS = [
   { value: 'phone', label: 'Phone' },
@@ -245,6 +246,18 @@ function TransitionForm({
     return patch
   }
 
+  /**
+   * Neither draft stamps an `urgency`.
+   *
+   * They used to: `'amber'` on the interview and `'red'` on the respond-by, and
+   * both were invented at the keyboard — an interview six weeks out was born
+   * amber and a respond-by three weeks out was born red, with nothing that ever
+   * updated either as the date approached or passed. Nothing reads the field:
+   * the calendar, the glance grid, "Owed this week" and the priority deck all
+   * derive their colour from the date (`lib/timeline-visuals.ts`). Writing a
+   * value nothing reads is how the next person infers a rule that does not
+   * exist and starts colouring something by it.
+   */
   const buildItem = (): TimelineDraft | undefined => {
     if (target === 'interview' && mintInterview) {
       return {
@@ -252,7 +265,6 @@ function TransitionForm({
         detail: application.roleTag,
         date,
         kind: 'interview',
-        urgency: 'amber',
         applicationId: application.id,
         remind: true,
         location: format === 'onsite' ? application.location : undefined,
@@ -264,7 +276,6 @@ function TransitionForm({
         detail: 'Decision deadline',
         date: respondBy,
         kind: 'deadline',
-        urgency: 'red',
         applicationId: application.id,
         remind: true,
       }

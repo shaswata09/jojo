@@ -5,8 +5,6 @@
  * they are laid out in and nothing else.
  */
 
-import { TODAY as TODAY_ISO, partsOf } from '@/data/timeline'
-
 export type CalendarMonth = {
   label: string
   year: number
@@ -14,22 +12,12 @@ export type CalendarMonth = {
   days: number
   /** Weekday of the 1st, Monday = 0. Weeks start Monday throughout. */
   startsOn: number
-  /** Present only on the month containing the mock's "today". */
+  /** Present only on the month containing today. */
   today?: number
 }
 
-/**
- * The mock's fixed "today", in the year/month/day the grids page by.
- *
- * Split out of the timeline's ISO date rather than written twice: as a literal
- * it could disagree with everything measured against `TODAY`, and a calendar
- * whose "today" marker sits on a different day from the overdue count is worse
- * than one with no marker at all.
- */
-export const TODAY = (() => {
-  const { y, m, d } = partsOf(TODAY_ISO)
-  return { year: y, month: m, day: d }
-})()
+/** The year/month/day the grids page by. `TODAY_PARTS` in `@/lib/today`. */
+export type CalendarDay = { year: number; month: number; day: number }
 
 export const MONTH_LABELS = [
   'January',
@@ -51,8 +39,15 @@ export const MONTH_LABELS = [
  * to a hand-written list. The two months that used to be literals came out of
  * this identically — verified against October and November 2026 — so paging
  * costs no fidelity.
+ *
+ * `today` is a parameter because this file lives in `src/data`, which is not
+ * allowed to read a clock (`check-platform.mjs`). It used to close over the
+ * fixtures' pinned October, so the marker sat on 12 October in every month of
+ * every year the user paged to, and a caller who only wanted `days` for a clamp
+ * still dragged the whole fixture epoch in behind it. Omitting it means "no
+ * marker", which is what that caller actually wants.
  */
-export function buildMonth(year: number, month: number): CalendarMonth {
+export function buildMonth(year: number, month: number, today?: CalendarDay): CalendarMonth {
   // Day 0 of the following month is the last day of this one.
   const days = new Date(year, month, 0).getDate()
   // getDay() is Sunday-first; the whole app starts weeks on Monday.
@@ -64,7 +59,7 @@ export function buildMonth(year: number, month: number): CalendarMonth {
     month,
     days,
     startsOn,
-    ...(year === TODAY.year && month === TODAY.month ? { today: TODAY.day } : {}),
+    ...(today && year === today.year && month === today.month ? { today: today.day } : {}),
   }
 }
 

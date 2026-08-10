@@ -6,11 +6,14 @@ import { Chip } from '@/components/common/Chip'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { TODAY } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useScout } from '@/kg/react/use-scout'
+import { useTimeline } from '@/kg/react/use-timeline'
+import { useVault } from '@/kg/react/use-vault'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
 import { profilePath, scoutPath, settingsPath, useTitle, vaultPath } from '@/lib/links'
-import { useScout, useTimeline, useVault, useApplications } from '@/lib/store-context'
+import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
 type Layer = {
@@ -347,10 +350,17 @@ export function Guide() {
           />
           <div>
             <h2 className="text-base font-medium">Your browser is the database</h2>
+            {/* The heading was already true and the paragraph under it denied
+                it: "this build keeps everything in memory for the session, so a
+                reload starts from the demo data again". Records go to IndexedDB
+                as you work now, so what is left to warn about is the thing that
+                is still true — the database is on this one machine, nothing
+                syncs it anywhere, and a browser can clear it. */}
             <p className="mt-1.5 text-sm text-text-2">
-              This build keeps everything in memory for the session, so a reload starts from the
-              demo data again — Settings is where you switch between that and an empty store. Export
-              a <Kbd>.json</Kbd> backup from there for anything you want to keep.
+              Every record is written to the database inside this browser as you work, so closing
+              the tab is safe. Nothing leaves this machine and nothing syncs — clear your browser
+              data, switch browsers or lose the disk and it goes with them. Export a{' '}
+              <Kbd>.json</Kbd> backup from Settings for anything you want to keep elsewhere.
             </p>
           </div>
         </div>

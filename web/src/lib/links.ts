@@ -1,7 +1,10 @@
 import { useCallback, useEffect } from 'react'
 import { useSearchParams } from 'react-router'
-import { TODAY, buildMonth } from '@/data/calendar'
+import { buildMonth } from '@/data/calendar'
 import { STAGES, type Stage } from '@/data/seed'
+import { addressOf } from '@/kg/core/address'
+import type { Addressable } from '@/kg/core/address'
+import { TODAY_PARTS } from '@/lib/today'
 
 /**
  * Every route the app links to, and every param those routes read.
@@ -44,9 +47,12 @@ const APPLICATIONS_DEFAULTS = {
 
 const VAULT_DEFAULTS = { tool: 'reminders' } as const
 
-// The calendar opens on the mock's pinned "today" rather than a literal date,
-// so moving TODAY moves the landing month with it.
-const CALENDAR_DEFAULTS = { y: TODAY.year, m: TODAY.month, d: TODAY.day } as const
+// The calendar opens on today rather than on a literal date. It used to open on
+// the fixtures' pinned October, which was a month in the past for anyone who
+// loaded the app after it — and because a param equal to the default is omitted
+// from the URL, "go to this month" produced a link that landed on that October
+// for the next reader.
+const CALENDAR_DEFAULTS = { y: TODAY_PARTS.year, m: TODAY_PARTS.month, d: TODAY_PARTS.day } as const
 
 /** What each page shows with an empty query string. Exported for "clear filters". */
 export const DEFAULTS = {
@@ -109,11 +115,22 @@ export function transferPath() {
 /**
  * A single application.
  *
- * Encoded because an id minted from a typed-in role name is only slugified, not
- * sanitised — a slash in it would otherwise invent a route segment.
+ * Takes the RECORD, not an id. It used to take a string, every one of its
+ * eighteen call sites passed `a.id`, and ids are minted per session — so the URL
+ * in the address bar was dead the moment the tab reloaded and the detail route
+ * answered a live record with "This application no longer exists". A slug is
+ * what survives a reload, a transfer to another device, and an Electron
+ * `open-url` that arrives before the graph is built; `addressOf` is the only
+ * thing allowed to decide which string that is.
+ *
+ * Still encoded, for the reason it always was: a slug is minted from a typed-in
+ * employer name and `slugify` only trims, lowercases and collapses whitespace,
+ * so an employer called 'A/B' yields 'a/b' and would otherwise invent a route
+ * segment. React Router decodes the parameter again, so `bySlug` sees the slug
+ * that was stored.
  */
-export function appPath(id: string) {
-  return `/applications/${encodeURIComponent(id)}`
+export function appPath(a: Addressable) {
+  return `/applications/${encodeURIComponent(addressOf(a))}`
 }
 
 export function applicationsPath(

@@ -3,10 +3,17 @@
     "name": "jojo",
     "slug": "jojo",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "jojo",
     "userInterfaceStyle": "automatic",
+    "//backgroundColor": [
+      "The native root view, painted before React mounts. It matches the dark",
+      "page colour because the app now opens dark by default — left at the",
+      "platform default this is white, and every cold start began with a white",
+      "flash before the first frame."
+    ],
+    "backgroundColor": "#0a0a0a",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -31,6 +38,21 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"]
+    "plugins": [
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 31,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          },
+          "ios": {
+            "deploymentTarget": "16.4"
+          }
+        }
+      ]
+    ]
   }
 }

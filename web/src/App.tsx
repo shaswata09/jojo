@@ -99,7 +99,12 @@ export default function App() {
               the stage filter and the search box exactly as they were, and Back
               closes the record rather than rebuilding the page behind it. */}
           <Route path="applications" element={<Applications />}>
-            <Route path=":id" element={<ApplicationDetailRoute />} />
+            {/* `:key`, not `:id`. The segment holds the record's slug —
+                '/applications/rice' — and accepts an id only so links built
+                before that still resolve. Naming it `id` is how the resolver
+                came to be skipped at three sites in Applications.tsx that
+                compared the raw segment against a NodeId. */}
+            <Route path=":key" element={<ApplicationDetailRoute />} />
           </Route>
           <Route path="calendar" element={<Calendar />} />
           <Route path="vault" element={<Vault />} />

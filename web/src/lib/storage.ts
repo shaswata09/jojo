@@ -72,8 +72,12 @@ export type ClearedSiteData = {
  * others being cleared — a partial wipe that reports honestly is much better
  * than an exception that leaves the user unsure what happened.
  *
- * Deliberately not a page reload. The caller owns what happens next, and the
- * app's own records live in memory where this cannot reach them.
+ * Deliberately not a page reload, and the caller owns what happens next — which
+ * matters more than it used to. This DOES reach the app's own records now: the
+ * `indexedDB` step below deletes the database they live in, so after this
+ * returns, every list still on screen is showing rows that exist nowhere and the
+ * next edit would go to a closed store. `Settings.onClearStorage` reloads
+ * immediately for exactly that reason; anything else calling this owes the same.
  */
 /**
  * Caps a step that can hang.

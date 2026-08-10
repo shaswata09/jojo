@@ -26,9 +26,12 @@ import { Switch } from '@/components/ui/switch'
 import type { Pipeline } from '@/data/scout'
 import { displayName } from '@/data/seed'
 import { agoLabel } from '@/data/timeline'
-import { appPath, useScoutParams, useTitle } from '@/lib/links'
-import { useApplications, useScout } from '@/lib/store-context'
+import { useApplications } from '@/kg/react/use-applications'
+import { useScout } from '@/kg/react/use-scout'
+import { appPath, scoutPath, useScoutParams, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
+import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
 
@@ -224,6 +227,7 @@ export function JobScout() {
   useArrivalHighlight(token, () => set({ focus: undefined }))
   const focusedRow = useArrivalScroll<HTMLDivElement>(token)
   const { toast } = useToast()
+  const undoable = useUndoable()
   const [url, setUrl] = useState('')
 
   const savePipeline = (draft: PipelineDraft) => {
@@ -257,15 +261,31 @@ export function JobScout() {
     })
   }
 
-  /** Turns a match into a real application and goes straight to it. */
+  /**
+   * Turns a match into a real application and goes straight to it.
+   *
+   * The Undo carries the reader back to this page as well as reverting the
+   * write. Without the navigation it would delete the record out from under the
+   * detail route the promotion had just pushed them onto, and the page they were
+   * looking at would empty itself while they were reading it.
+   */
   const onPromote = (matchId: string) => {
-    const application = promoteToApplication(matchId)
+    const { value: application, restore } = undoable(() => promoteToApplication(matchId))
     if (!application) return
     toast({
       title: `${application.org} added as a draft`,
       description: 'The match stays in this feed, now linked to the application.',
+      action: restore
+        ? {
+            label: 'Undo',
+            onClick: () => {
+              restore()
+              navigate(scoutPath({ focus: { kind: 'match', id: matchId } }))
+            },
+          }
+        : undefined,
     })
-    navigate(appPath(application.id))
+    navigate(appPath(application))
   }
 
   /**
@@ -283,15 +303,25 @@ export function JobScout() {
   }
 
   /** The second way in, and the one the panel copy promises. Same shape as the
-   *  match promotion above: the posting stays filed, now linked. */
+   *  match promotion above: the posting stays filed, now linked, and the Undo
+   *  reverts the write and brings the reader back off the detail route. */
   const onPromotePosting = (postingId: string) => {
-    const application = promotePosting(postingId)
+    const { value: application, restore } = undoable(() => promotePosting(postingId))
     if (!application) return
     toast({
       title: `${application.org} added as a draft`,
       description: 'The posting stays saved here, now linked to the application.',
+      action: restore
+        ? {
+            label: 'Undo',
+            onClick: () => {
+              restore()
+              navigate(scoutPath({ focus: { kind: 'posting', id: postingId } }))
+            },
+          }
+        : undefined,
     })
-    navigate(appPath(application.id))
+    navigate(appPath(application))
   }
 
   /** A URL and a title, retyped in seconds — undo toast, no confirmation. */
@@ -350,7 +380,13 @@ export function JobScout() {
           <PanelTitle className="mb-0" hint="run locally on a schedule">
             Pipelines
           </PanelTitle>
-          <p className="text-xs text-text-3">Kept for this visit — nothing is written to disk</p>
+          {/* Was "kept for this visit — nothing is written to disk", beside
+              pipelines that are nodes in the graph and survive a reload. What
+              is still true of them is the half people ask about: they are
+              written here, and nothing about them runs anywhere else. */}
+          <p className="text-xs text-text-3">
+            Saved in this browser — nothing runs off this machine
+          </p>
         </div>
 
         {visiblePipelines.length === 0 ? (
@@ -448,7 +484,7 @@ export function JobScout() {
                       <div className="mt-1 text-xs text-text-3">
                         In applications as{' '}
                         <Link
-                          to={appPath(application.id)}
+                          to={appPath(application)}
                           className="text-text-2 underline underline-offset-2 hover:text-text-1"
                         >
                           {displayName(application)}
@@ -553,14 +589,14 @@ export function JobScout() {
                             the claim the disabled button below denies, so only
                             the URL and the date — both real — are shown. */}
                         <span className="mt-0.5 block truncate font-mono text-xs text-text-3">
-                          {hostOf(p.url)} · saved {agoLabel(p.savedOn)}
+                          {hostOf(p.url)} · saved {agoLabel(p.savedOn, TODAY)}
                         </span>
                       </a>
                       {application ? (
                         <div className="mt-1 text-xs text-text-3">
                           In applications as{' '}
                           <Link
-                            to={appPath(application.id)}
+                            to={appPath(application)}
                             className="text-text-2 underline underline-offset-2 hover:text-text-1"
                           >
                             {displayName(application)}

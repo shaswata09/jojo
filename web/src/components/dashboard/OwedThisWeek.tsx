@@ -6,22 +6,14 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import {
-  TODAY,
-  addDays,
-  daysBetween,
-  partsOf,
-  shortDate,
-  timeLabel,
-  whenLabel,
-} from '@/data/timeline'
+import { addDays, partsOf, shortDate, timeLabel, whenLabel } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
-import type { Urgency } from '@/data/seed'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { calendarPath } from '@/lib/links'
-import { useTimeline } from '@/lib/store-context'
-import { KIND_ICON, URGENCY_DOT, URGENCY_TEXT } from '@/lib/timeline-visuals'
+import { KIND_ICON, MARK_DOT, MARK_TEXT, dateMark } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -49,21 +41,6 @@ const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`
 const dayParams = (iso: string) => {
   const { y, m, d } = partsOf(iso)
   return { y, m, d }
-}
-
-/**
- * Colour, from the date and nothing else.
- *
- * `urgency` is a field somebody typed into the seed, and it drifts the moment
- * anything is rescheduled — a row read "3 days overdue" beside an amber dot.
- * Returning the existing `Urgency` union keeps the shared icon and dot maps
- * usable, but red now means past due and amber means inside 48 hours, which is
- * the whole of the colour law for a countdown.
- */
-function dateUrgency(iso: string): Urgency {
-  const gap = daysBetween(TODAY, iso)
-  if (gap < 0) return 'red'
-  return gap <= 1 ? 'amber' : 'gray'
 }
 
 /** Three fixed steps, each printing the date it is about to write. */
@@ -248,7 +225,7 @@ export function OwedThisWeek() {
                     {events.map((e) => (
                       <span
                         key={e.id}
-                        className={cn('size-1 rounded-full', URGENCY_DOT[dateUrgency(e.date)])}
+                        className={cn('size-1 rounded-full', MARK_DOT[dateMark(e.date)])}
                         aria-hidden
                       />
                     ))}
@@ -301,7 +278,7 @@ export function OwedThisWeek() {
                       <ul className="divide-y divide-hairline">
                         {group.items.map((e) => {
                           const Icon = KIND_ICON[e.kind]
-                          const urgency = dateUrgency(e.date)
+                          const mark = dateMark(e.date)
                           return (
                             <li key={e.id} className="flex items-start gap-2.5 py-2.5">
                               {/* A real checkbox role, so the state is announced
@@ -322,7 +299,7 @@ export function OwedThisWeek() {
                               </button>
 
                               <Icon
-                                className={cn('mt-0.5 size-4 shrink-0', URGENCY_TEXT[urgency])}
+                                className={cn('mt-0.5 size-4 shrink-0', MARK_TEXT[mark])}
                                 strokeWidth={1.7}
                                 aria-hidden
                               />
@@ -347,7 +324,7 @@ export function OwedThisWeek() {
                               <span
                                 className={cn(
                                   'mt-0.5 shrink-0 text-xs font-medium whitespace-nowrap',
-                                  URGENCY_TEXT[urgency],
+                                  MARK_TEXT[mark],
                                 )}
                               >
                                 {whenLabel(e, TODAY)}

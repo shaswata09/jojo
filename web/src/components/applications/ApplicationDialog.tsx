@@ -27,12 +27,15 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ROLES, SOURCES, STAGES, displayName } from '@/data/seed'
 import type { Application, RoleTag, Source, Stage, Urgency } from '@/data/seed'
-import { TODAY, daysBetween, shortDate } from '@/data/timeline'
+import { daysBetween, shortDate } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
-import { useApplications, useTimeline } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
+import { useUndoable } from '@/lib/undo'
 import { cn } from '@/lib/utils'
 
 /**
@@ -169,9 +172,10 @@ export function ApplicationDialog({
 }) {
   const applications = useApplications()
   const timeline = useTimeline()
-  const { labelIdsOf, setRecord, removeRecord } = useLabels()
+  const { labelIdsOf, setRecord } = useLabels()
   const { toast } = useToast()
   const { open: openDialog } = useDialogs()
+  const undoable = useUndoable()
 
   const [form, setForm] = useState<FormState>(() => formFrom(initial))
   const [keywords, setKeywords] = useState<string[]>(() => keywordsOf(initial, labelIdsOf))
@@ -331,24 +335,39 @@ export function ApplicationDialog({
     url: form.url.trim() || undefined,
   })
 
+  /**
+   * One user action, three writes — the record, its keywords, and the deadline
+   * the form minted — so the Undo has to cover all three.
+   *
+   * This toast had none at all, which broke the app's own law that every write
+   * carries one, and it was the only "added" toast in the app that did not:
+   * deleting an application offers a restore, and so does discarding this very
+   * form. `undoable` wraps the whole burst rather than the create alone,
+   * because reverting only the record would have left the deadline on the
+   * calendar pointing at an application that no longer existed.
+   */
   function create(): Application {
-    const fields = shared()
-    const created = applications.add({
-      ...fields,
-      // The store's own default reads 'Draft created', which is a lie for
-      // anything logged at a later stage — people add an interview they are
-      // already booked for.
-      lastAction: fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
-    })
+    const { value: created, restore } = undoable(() => {
+      const fields = shared()
+      const record = applications.add({
+        ...fields,
+        // The store's own default reads 'Draft created', which is a lie for
+        // anything logged at a later stage — people add an interview they are
+        // already booked for.
+        lastAction: fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
+      })
 
-    setRecord(refKey('app', created.id), keywords)
-    if (form.deadline) mintDeadline(created)
+      setRecord(refKey('app', record.id), keywords)
+      if (form.deadline) mintDeadline(record)
+      return record
+    })
 
     toast({
       title: `${displayName(created)} added`,
       description: form.deadline
         ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
         : 'No deadline yet — add one and it shows up in This week.',
+      action: restore ? { label: 'Undo', onClick: restore } : undefined,
     })
     return created
   }
@@ -359,12 +378,13 @@ export function ApplicationDialog({
     const lastAction = moved ? `Moved to ${STAGE_LABEL[fields.stage]}` : 'Details edited'
 
     applications.update(current.id, { ...fields, lastAction })
+    // One write, not two. There used to be a `removeRecord(current.id)` under
+    // this line, sweeping the bare-id spelling the seeded applications were
+    // keyed by so the record did not exist under two keys and get counted
+    // twice. Both spellings now resolve to the same node (D14 — a keyword is a
+    // node and tagging is a `TAGS` edge), so that call cleared the keywords this
+    // one had just set.
     setRecord(refKey('app', current.id), keywords)
-    // The seeded applications are still keyed by bare id in the label store, and
-    // `keywordsOf` read that copy in. Leaving it behind would count the record
-    // twice in the filter's totals, so the record moves to the canonical key
-    // rather than existing under both.
-    removeRecord(current.id)
 
     // Mirrors what `update` stamps, so `onSaved` hands back the record the store
     // now holds rather than one with a stale activity line.

@@ -2,8 +2,15 @@ import { createContext, useContext } from 'react'
 import type { Label, LabelTone } from '@/data/labels'
 
 export type LabelsContextValue = {
-  /** Every keyword that exists, seeded plus anything the user has added. */
-  labels: Label[]
+  /**
+   * Every keyword that exists, seeded plus anything the user has added.
+   *
+   * Readonly because it is a projection of the graph and is cached by epoch: a
+   * consumer that sorted it in place would have reordered the cached array every
+   * other component is holding, and the next render would show a different order
+   * with nothing having changed.
+   */
+  labels: readonly Label[]
   /**
    * Creates a keyword if the name is new and returns its id either way — so
    * typing a name that exists selects it rather than minting a twin. Matching
@@ -39,21 +46,17 @@ export type LabelsContextValue = {
    * records too.
    */
   removeRecord: (recordId: string) => void
-  /**
-   * Forgets every record→keyword edge at once. The keywords themselves survive,
-   * exactly as `removeRecord` leaves them — this is that call for every record
-   * there is, which is what Settings' "Clear everything" actually did to the
-   * store. Without it the manager goes on reporting "Used on 32 records" with
-   * no records left to carry them.
+  /*
+   * `clearRecords` and `resetRecords` are gone.
+   *
+   * They existed because the tagging lived in this provider and the records
+   * lived in another, so Settings' Empty and Demo data had to reach into both
+   * and keep them in step by hand — and the moment one of them was missed, the
+   * manager went on reporting "Used on 32 records" over a store with no records
+   * in it. Tagging is a `TAGS` edge now, so emptying the records takes their
+   * tags with them inside the same transaction and there is nothing left to
+   * synchronise.
    */
-  clearRecords: () => void
-  /**
-   * Puts the seeded tagging back, for the store's reset. "Back as they shipped"
-   * has to include what the shipped records were tagged with, or the demo data
-   * returns with every keyword count at zero. Edges to keywords the user has
-   * since deleted are dropped: the list itself is theirs and is not reseeded.
-   */
-  resetRecords: () => void
 
   /** The current filter selection. Empty means "everything", never "nothing". */
   selected: ReadonlySet<string>

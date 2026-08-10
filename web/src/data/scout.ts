@@ -1,11 +1,11 @@
-export type Pipeline = {
-  id: string
-  name: string
-  source: string
-  schedule: string
-  filter: string
-  enabled: boolean
-}
+/**
+ * Scout fixtures. The three record types moved down to `@/kg/core/model` and
+ * are re-exported here so every existing import still resolves.
+ */
+
+import type { Match, Pipeline, SavedPosting } from '@/kg/core/model'
+
+export type { Match, Pipeline, SavedPosting } from '@/kg/core/model'
 
 export const pipelines: Pipeline[] = [
   {
@@ -34,15 +34,6 @@ export const pipelines: Pipeline[] = [
   },
 ]
 
-export type Match = {
-  id: string
-  role: string
-  detail: string
-  fit: number
-  /** Set once the match has been promoted. The match itself stays in the feed. */
-  applicationId?: string
-}
-
 export const matches: Match[] = [
   {
     id: 'unt',
@@ -70,18 +61,6 @@ export const matches: Match[] = [
     fit: 41,
   },
 ]
-
-export type SavedPosting = {
-  id: string
-  title: string
-  url: string
-  /** ISO date the snapshot was taken. Rendered through `agoLabel`. */
-  savedOn: string
-  size: string
-  /** `linked` is this edge rendered as a boolean; the store keeps them in step. */
-  linked: boolean
-  applicationId?: string
-}
 
 export const savedPostings: SavedPosting[] = [
   {

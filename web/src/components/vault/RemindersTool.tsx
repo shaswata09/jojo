@@ -11,14 +11,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { MenuItem, MenuSection, RowMenu } from '@/components/vault/RowMenu'
 import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
 import { displayName } from '@/data/seed'
-import { TODAY, addDays, bucketOf, shortDate, whenLabel } from '@/data/timeline'
+import type { Application } from '@/data/seed'
+import { addDays, bucketOf, shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
 import { appPath } from '@/lib/links'
-import { useApplications, useTimeline } from '@/lib/store-context'
 import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
@@ -201,8 +204,15 @@ function ReminderRow({
   actions,
 }: {
   item: TimelineItem
-  /** The application it hangs off, already spelled for display. */
-  related?: string
+  /**
+   * The application it hangs off — the record, not a name spelled from it.
+   *
+   * It was a string, and the link beside it was built from `item.applicationId`.
+   * That id is minted per session, so the reminder's one way back to its
+   * application was a URL that died on the next reload; `appPath` needs the
+   * record to reach for its slug.
+   */
+  related?: Application
   /** Arrived here from a link that named this row — see `focus` in links.ts. */
   focused?: boolean
   /** Set on the focused row only, so the tool can scroll it into view. */
@@ -299,12 +309,12 @@ function ReminderRow({
               {/* The edge back to the application — the reason every dated thing
                   became one record with an `applicationId` instead of five lists
                   that could only name a job in prose. */}
-              {related && item.applicationId ? (
+              {related ? (
                 <Link
-                  to={appPath(item.applicationId)}
+                  to={appPath(related)}
                   className="min-w-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
                 >
-                  {related}
+                  {displayName(related)}
                 </Link>
               ) : (
                 <span className="shrink-0">Unfiled</span>
@@ -468,14 +478,17 @@ export function RemindersTool({ focus }: { focus?: string }) {
   // switch inside the dialog is what can take it out again.
   const edit = (item: TimelineItem) => open('timelineItem', { mode: 'reminder', initial: item })
 
-  const relatedTo = (item: TimelineItem) => {
-    const app = item.applicationId ? byId.get(item.applicationId) : undefined
+  const relatedTo = (item: TimelineItem) =>
+    item.applicationId ? byId.get(item.applicationId) : undefined
+
+  const relatedName = (item: TimelineItem) => {
+    const app = relatedTo(item)
     return app ? displayName(app) : undefined
   }
 
   /** 'Chase recruiter reply · Databricks — ML engineer', for a toast. */
   const describe = (item: TimelineItem) => {
-    const related = relatedTo(item)
+    const related = relatedName(item)
     return related ? `${item.title} · ${related}` : item.title
   }
 
@@ -596,7 +609,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const visible = reminders.filter(
     (r) =>
       labelMatches(r.id) &&
-      matchesQuery(query, r.title, r.detail, r.note, KIND_LABEL[r.kind], relatedTo(r)),
+      matchesQuery(query, r.title, r.detail, r.note, KIND_LABEL[r.kind], relatedName(r)),
   )
 
   /**

@@ -1,0 +1,203 @@
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { Pressable, StyleSheet, Switch, TextInput, View } from 'react-native'
+import type { StyleProp, TextInputProps, ViewStyle } from 'react-native'
+import { Feather } from '@expo/vector-icons'
+import { Txt } from '@/components/ui/Text'
+import { s } from '@/theme/styles'
+import { useColors } from '@/theme/theme-context'
+import { fonts, radius, space, type } from '@/theme/tokens'
+
+/**
+ * A labelled slot for any control.
+ *
+ * Label, then the control, then a hint or an error underneath — never both, so
+ * a field that has gone wrong says one thing rather than two. `required` draws
+ * the marker the form's description promises.
+ */
+export function FormField({
+  label,
+  hint,
+  error,
+  required,
+  children,
+  style,
+}: {
+  label: string
+  hint?: string
+  error?: string
+  required?: boolean
+  children: ReactNode
+  style?: StyleProp<ViewStyle>
+}) {
+  return (
+    <View style={[styles.field, style]}>
+      <View style={styles.labelRow}>
+        <Txt size="xs" tone="secondary" weight="medium">
+          {label}
+        </Txt>
+        {required ? (
+          <Txt size="xs" tone="danger">
+            {' *'}
+          </Txt>
+        ) : null}
+      </View>
+      {children}
+      {error ? (
+        <Txt size="xs" tone="danger" style={styles.hint}>
+          {error}
+        </Txt>
+      ) : hint ? (
+        <Txt size="xs" tone="muted" style={styles.hint}>
+          {hint}
+        </Txt>
+      ) : null}
+    </View>
+  )
+}
+
+export type TextFieldProps = Omit<TextInputProps, 'style'> & {
+  label: string
+  hint?: string
+  error?: string
+  required?: boolean
+  mono?: boolean
+  style?: StyleProp<ViewStyle>
+}
+
+export function TextField({
+  label,
+  hint,
+  error,
+  required,
+  mono,
+  style,
+  multiline,
+  ...rest
+}: TextFieldProps) {
+  const c = useColors()
+  const [focused, setFocused] = useState(false)
+
+  return (
+    <FormField label={label} hint={hint} error={error} required={required} style={style}>
+      <TextInput
+        {...rest}
+        multiline={multiline}
+        placeholderTextColor={c.text3}
+        onFocus={(e) => {
+          setFocused(true)
+          rest.onFocus?.(e)
+        }}
+        onBlur={(e) => {
+          setFocused(false)
+          rest.onBlur?.(e)
+        }}
+        style={[
+          styles.input,
+          {
+            color: c.text1,
+            backgroundColor: c.well,
+            fontFamily: mono ? fonts.mono : fonts.regular,
+            // The focus ring is the accent at full opacity. The web app
+            // measured its old translucent ring at 2.97:1 and 1.83:1 — it
+            // failed WCAG 1.4.11 in both themes, on every hand-rolled control.
+            borderColor: error ? c.danger : focused ? c.accent : c.hairlineStrong,
+            borderWidth: focused || error ? 1.5 : StyleSheet.hairlineWidth,
+            minHeight: multiline ? 96 : 44,
+            textAlignVertical: multiline ? 'top' : 'center',
+            paddingTop: multiline ? space[2.5] : 0,
+          },
+        ]}
+      />
+    </FormField>
+  )
+}
+
+/**
+ * A setting and its control on one line, with room for a description.
+ *
+ * Named for what happens to the user's records rather than for the mechanism —
+ * "Save as I work" describes the promise, "Auto sync" describes an
+ * implementation, and only the first is a thing a person decides about.
+ */
+export function SettingRow({
+  label,
+  description,
+  control,
+  onPress,
+}: {
+  label: string
+  description?: string
+  control?: ReactNode
+  onPress?: () => void
+}) {
+  const c = useColors()
+  const body = (
+    <View style={styles.settingRow}>
+      <View style={s.fill}>
+        <Txt size="base">{label}</Txt>
+        {description ? (
+          <Txt size="xs" tone="muted" style={{ marginTop: 2 }}>
+            {description}
+          </Txt>
+        ) : null}
+      </View>
+      {control ? <View style={styles.settingControl}>{control}</View> : null}
+      {onPress && !control ? <Feather name="chevron-right" size={18} color={c.text3} /> : null}
+    </View>
+  )
+
+  if (!onPress) return body
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [pressed && { backgroundColor: c.rowHover, borderRadius: radius.md }]}
+    >
+      {body}
+    </Pressable>
+  )
+}
+
+/** The platform switch, tinted from the palette so it is not iOS green. */
+export function Toggle({
+  value,
+  onValueChange,
+  label,
+}: {
+  value: boolean
+  onValueChange: (next: boolean) => void
+  label: string
+}) {
+  const c = useColors()
+  return (
+    <Switch
+      accessibilityLabel={label}
+      value={value}
+      onValueChange={onValueChange}
+      trackColor={{ false: c.hairlineStrong, true: c.accent }}
+      thumbColor={value ? c.accentFg : c.panel}
+      ios_backgroundColor={c.hairlineStrong}
+    />
+  )
+}
+
+const styles = StyleSheet.create({
+  field: { gap: space[1.5] },
+  labelRow: { flexDirection: 'row', alignItems: 'center' },
+  input: {
+    borderRadius: radius.md,
+    paddingHorizontal: space[3],
+    paddingVertical: space[2.5],
+    fontSize: type.base,
+  },
+  hint: { marginTop: 0 },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[3],
+    paddingVertical: space[3],
+    minHeight: 56,
+  },
+  settingControl: { flexShrink: 0 },
+})

@@ -5,6 +5,7 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { displayName, offerDaysLeft, respondByLabel } from '@/data/seed'
 import type { OfferApplication, Outcome } from '@/data/seed'
+import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
 /** Which outcomes this block can produce. Both close the application. */
@@ -13,9 +14,11 @@ export type OfferDecision = 'accepted' | 'declined'
 /**
  * How long is left, in words, plus how alarmed to look about it.
  *
- * Counted from the pinned TODAY rather than the wall clock — every other
- * relative label in the app is, and a countdown that disagreed with the
- * deadline on the timeline beside it would be the one nobody trusts.
+ * Counted from `TODAY`, which is the wall clock read once per page load, the
+ * same one every other relative label in the app uses. Through a shared
+ * constant rather than a `new Date()` of its own: a countdown that disagreed
+ * with the deadline on the timeline beside it would be the one nobody trusts,
+ * and two clock reads either side of midnight is all that takes.
  *
  * Two rules from the app's colour and date law meet here, and this block used
  * to break both. Red belongs to a date that has already gone; amber to one
@@ -81,7 +84,7 @@ export function OfferBlock({
 }) {
   const [pending, setPending] = useState<OfferDecision | null>(null)
   const { offer } = application
-  const left = countdown(offerDaysLeft(offer))
+  const left = countdown(offerDaysLeft(offer, TODAY))
 
   // Deliberately no accent border: `.surface` sets the border from the same
   // utilities layer, so a `border-*` class here would win or lose by source

@@ -17,9 +17,9 @@ import { MenuItem, MenuSection, RowMenu } from '@/components/vault/RowMenu'
 import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
 import { SNIPPET_TAGS } from '@/data/vault'
 import type { Snippet, SnippetTag } from '@/data/vault'
+import { useVault } from '@/kg/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
 import { htmlFromText, textFromHtml } from '@/lib/rich-text'
-import { useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
@@ -713,8 +713,13 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                   </div>
                 </div>
 
+                {/* Was "saved snippets live in this tab only — a reload puts
+                    the seeded set back", written when they did. They are
+                    records in the store now and a reload brings back what you
+                    wrote, so the line that is worth the space is the one about
+                    where they are usable. */}
                 <p className="text-xs text-text-3">
-                  Saved snippets live in this tab only — a reload puts the seeded set back.
+                  Saved to the database in this browser — it is here when you come back.
                 </p>
               </form>
             )

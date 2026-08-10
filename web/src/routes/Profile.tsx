@@ -13,10 +13,14 @@ import { Switch } from '@/components/ui/switch'
 import type { ProfileText } from '@/data/profile'
 import { displayName } from '@/data/seed'
 import { agoLabel } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useProfile } from '@/kg/react/use-profile'
+import { useVault } from '@/kg/react/use-vault'
 import { kindOfFile, sizeLabel } from '@/lib/files'
 import { useTitle, vaultPath } from '@/lib/links'
-import { useApplications, useProfile, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
+import { useUndoable } from '@/lib/undo'
 
 /** The bucket a profile document belongs to, in the Vault's own vocabulary. */
 const DOCUMENTS_BUCKET = 'Applications' as const
@@ -59,6 +63,7 @@ export function Profile() {
   const { files, addFile } = useVault()
   const { get } = useApplications()
   const { toast } = useToast()
+  const undoable = useUndoable()
   const fileInput = useRef<HTMLInputElement>(null)
 
   /**
@@ -75,11 +80,27 @@ export function Profile() {
   const set = (key: keyof ProfileText) => (event: ChangeEvent<HTMLInputElement>) =>
     setDraft((prev) => ({ ...prev, [key]: event.target.value }))
 
+  /**
+   * The one write on the page that had no Undo.
+   *
+   * It is the write that most needs one: ten fields go in behind a single
+   * button, and the page's own `draft` is not reset by the save — so an Undo
+   * puts the stored record back while leaving what was typed on screen, which
+   * is a save bar the user can simply press again. Pressing Save with nothing
+   * changed commits nothing, and `restore` is `null` there rather than a button
+   * that would do nothing.
+   */
   const onSave = () => {
-    update({ text: draft })
+    const { restore } = undoable(() => update({ text: draft }))
     toast({
       title: 'Profile saved',
-      description: 'Kept for this visit — the profile is not written to disk yet.',
+      // Was "kept for this visit — the profile is not written to disk yet",
+      // which stopped being true when the store went to IndexedDB. A save toast
+      // that undersells the save is the one kind of false modesty that costs
+      // something: it is the sentence that sends someone off to retype it
+      // somewhere they trust more.
+      description: 'Written to this browser and kept.',
+      action: restore ? { label: 'Undo', onClick: restore } : undefined,
     })
   }
 
@@ -380,7 +401,7 @@ export function Profile() {
                     <span className="truncate font-mono text-sm">{f.name}</span>
                   </div>
                   <p className="tabular mt-1.5 text-xs text-text-3">
-                    {f.size} · saved {agoLabel(f.savedOn)}
+                    {f.size} · saved {agoLabel(f.savedOn, TODAY)}
                   </p>
                   {f.note ? (
                     <p className="mt-1 line-clamp-2 text-xs text-text-3">{f.note}</p>
@@ -421,8 +442,11 @@ export function Profile() {
       <div aria-live="polite" className="sticky bottom-3 z-10 sm:bottom-5">
         {dirty ? (
           <div className="surface flex flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3">
+            {/* Was "saving keeps them for this visit, not to disk". The bar
+                exists to make someone press Save; describing the save as
+                worthless was an argument against it. */}
             <p className="text-sm text-text-2">
-              Unsaved changes — saving keeps them for this visit, not to disk.
+              Unsaved changes — saving writes them to this browser.
             </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => setDraft(saved)}>

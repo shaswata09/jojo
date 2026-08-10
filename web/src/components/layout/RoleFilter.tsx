@@ -11,8 +11,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { ROLES, type RoleTag } from '@/data/seed'
+import { useApplications } from '@/kg/react/use-applications'
 import { useRoles } from '@/lib/roles-context'
-import { useApplications } from '@/lib/store-context'
 import { cn } from '@/lib/utils'
 
 /** Chips shown inline before collapsing to "+N". */

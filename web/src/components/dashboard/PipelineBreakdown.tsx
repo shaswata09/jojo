@@ -2,8 +2,8 @@ import { ClipboardList, Plus } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
+import { useApplications } from '@/kg/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
-import { useApplications } from '@/lib/store-context'
 import { cn } from '@/lib/utils'
 
 /**

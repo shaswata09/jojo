@@ -6,23 +6,37 @@
  * you saved, filed under a bucket, to come back to.
  */
 
+import { FILE_BUCKET_VALUES, LINK_CATEGORY_VALUES, SNIPPET_TAG_VALUES } from '@/kg/core/model'
+import type {
+  FileBucket,
+  LinkCategory,
+  Snippet,
+  SnippetTag,
+  VaultFile,
+  VaultLink,
+} from '@/kg/core/model'
+
+export type {
+  FileBucket,
+  FileKind,
+  LinkCategory,
+  Snippet,
+  SnippetTag,
+  VaultFile,
+  VaultLink,
+} from '@/kg/core/model'
+
 /* --------------------------------- links --------------------------------- */
 
-export type LinkCategory = 'Posting' | 'Institution' | 'Person' | 'Guide'
-
-export type VaultLink = {
-  id: string
-  title: string
-  url: string
-  category: LinkCategory
-  note?: string
-  /** ISO date the record was filed. Rendered through `agoLabel`. */
-  savedOn: string
-  /** `Application['id']`. Cleared, never followed, when that application goes. */
-  applicationId?: string
-}
-
-export const LINK_CATEGORIES: LinkCategory[] = ['Posting', 'Institution', 'Person', 'Guide']
+/**
+ * Spread from the model's value tuple rather than written out again.
+ *
+ * The list here is the UI's ordering — it is what the category filter renders
+ * left to right — and the tuple in the model is what `validate.ts` checks a
+ * stored row against. They were the same four strings written twice, which is
+ * one deploy away from a category that saves and never appears.
+ */
+export const LINK_CATEGORIES: LinkCategory[] = [...LINK_CATEGORY_VALUES]
 
 export const vaultLinks: VaultLink[] = [
   {
@@ -91,22 +105,7 @@ export const vaultLinks: VaultLink[] = [
 
 /* --------------------------------- files --------------------------------- */
 
-export type FileBucket = 'To read' | 'Applications' | 'Talks' | 'Admin'
-export type FileKind = 'pdf' | 'doc' | 'slides' | 'note'
-
-export type VaultFile = {
-  id: string
-  name: string
-  kind: FileKind
-  bucket: FileBucket
-  size: string
-  /** ISO date the record was filed. Rendered through `agoLabel`. */
-  savedOn: string
-  note?: string
-  applicationId?: string
-}
-
-export const FILE_BUCKETS: FileBucket[] = ['To read', 'Applications', 'Talks', 'Admin']
+export const FILE_BUCKETS: FileBucket[] = [...FILE_BUCKET_VALUES]
 
 export const vaultFiles: VaultFile[] = [
   {
@@ -199,17 +198,7 @@ export const vaultFiles: VaultFile[] = [
 
 /* -------------------------------- snippets -------------------------------- */
 
-export type SnippetTag = 'Cover letter' | 'Application form' | 'Email' | 'Bio'
-
-export type Snippet = {
-  id: string
-  title: string
-  tag: SnippetTag
-  body: string
-  applicationId?: string
-}
-
-export const SNIPPET_TAGS: SnippetTag[] = ['Cover letter', 'Application form', 'Email', 'Bio']
+export const SNIPPET_TAGS: SnippetTag[] = [...SNIPPET_TAG_VALUES]
 
 /**
  * The answers you retype every time.

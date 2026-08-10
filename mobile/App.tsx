@@ -1,20 +1,99 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native'
+import { StatusBar } from 'expo-status-bar'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { useFonts } from 'expo-font'
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter'
+import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono'
+import { LabelsProvider } from '@/lib/labels'
+import { RolesProvider } from '@/lib/roles'
+import { SheetsProvider } from '@/lib/sheets'
+import { StoreProvider } from '@/lib/store'
+import { ToastProvider } from '@/lib/toast'
+import { RootNavigator } from '@/navigation'
+import { SheetHost } from '@/sheets/SheetHost'
+import { ThemeProvider } from '@/theme/theme'
+import { useTheme } from '@/theme/theme-context'
 
+/**
+ * jojo — Jarvis fOr Job Organization, on a phone.
+ *
+ * The provider order is load-bearing and matches the web app's:
+ *
+ *   Theme → Roles → Labels → Toast → Store → Sheets
+ *
+ * Toasts sit OUTSIDE the store because an undo has to stay on screen after the
+ * write that raised it, and often after the screen it came from has gone. The
+ * store sits inside Labels because deleting an application also has to drop
+ * that application's keywords — the reducer cannot do it, since keywords live in
+ * a provider above it and are not part of `StoreState`.
+ *
+ * Nothing is persisted and nothing is fetched. A restart is the reset button;
+ * Settings is where you switch between the demo records and an empty store.
+ */
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    JetBrainsMono_400Regular,
+  })
+
+  // Held back rather than rendered in the system font and swapped: every panel
+  // in the app is measured against Inter's metrics, so a first paint in the
+  // platform face is a layout that visibly resettles a frame later.
+  if (!fontsLoaded) return <View style={styles.blank} />
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <RolesProvider>
+            <LabelsProvider>
+              <ToastProvider>
+                <StoreProvider>
+                  <SheetsProvider>
+                    <Themed />
+                  </SheetsProvider>
+                </StoreProvider>
+              </ToastProvider>
+            </LabelsProvider>
+          </RolesProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  )
+}
+
+/**
+ * Inside the theme, so the status bar can follow it.
+ *
+ * `SheetHost` is mounted beside the navigator rather than inside it: a sheet is
+ * not a route, and putting it under a screen would tear it down the moment the
+ * screen that opened it navigated away.
+ */
+function Themed() {
+  const { theme, colors } = useTheme()
+
+  return (
+    <View style={[styles.root, { backgroundColor: colors.page }]}>
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+      <RootNavigator />
+      <SheetHost />
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  root: { flex: 1 },
+  // The palette is not resolvable before the theme provider mounts, and the
+  // dark page colour is the app's default — so this is what a cold start shows
+  // for the frame or two the fonts take.
+  blank: { flex: 1, backgroundColor: '#0a0a0a' },
+})

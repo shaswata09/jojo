@@ -10,13 +10,9 @@
  * One flat namespace across applications, reminders and anything added later:
  * a keyword is only worth setting up if it works everywhere the record appears.
  */
-export type LabelTone = 'teal' | 'amber' | 'red' | 'green' | 'gray'
+import type { Label, LabelTone } from '@/kg/core/model'
 
-export type Label = {
-  id: string
-  name: string
-  tone: LabelTone
-}
+export type { Label, LabelTone } from '@/kg/core/model'
 
 export const seedLabels: Label[] = [
   { id: 'developer', name: 'Developer', tone: 'teal' },

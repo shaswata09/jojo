@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
+import type { ToolName } from '@/kg/tools'
 import { useDialogs } from '@/lib/dialogs-context'
 import type { DialogName } from '@/lib/dialogs-context'
 import { scoutPath, vaultPath } from '@/lib/links'
@@ -39,6 +40,22 @@ export type CreateAction = {
    * disabled, which made "New" a menu with two dead rows in it.
    */
   to?: string
+  /**
+   * The tool this row's DIALOG already runs, when it opens one.
+   *
+   * The command palette lists every tool that can be given a generated form, and
+   * `application.create` is one of them — so without this the palette showed
+   * "New application", which opens the hand-written dialog that knows about
+   * keywords and offers, directly above "Add application", a generated form that
+   * does not. Two rows, nearly the same words, quietly different powers. Named
+   * here rather than in the palette so the pair cannot drift apart: the row and
+   * the tool it supersedes are one entry.
+   *
+   * Only for rows that open a dialog. `save-link` navigates to the Vault, which
+   * is not the same promise as running `vault.link.save`, so that tool stays in
+   * the palette on its own account.
+   */
+  tool?: ToolName
 }
 
 /**
@@ -57,6 +74,7 @@ export const CREATE_ACTIONS: CreateAction[] = [
     label: 'New application',
     icon: ClipboardList,
     dialog: { name: 'application' },
+    tool: 'application.create',
   },
   {
     id: 'new-reminder',
@@ -65,12 +83,14 @@ export const CREATE_ACTIONS: CreateAction[] = [
     // Reminders and events are one record with one dialog — `mode` only picks
     // which fields lead, so the two rows cannot drift into two editors.
     dialog: { name: 'timelineItem', props: { mode: 'reminder' } },
+    tool: 'timeline.item.create',
   },
   {
     id: 'new-event',
     label: 'New event',
     icon: CalendarDays,
     dialog: { name: 'timelineItem', props: { mode: 'event' } },
+    tool: 'timeline.item.create',
   },
   {
     id: 'draft-message',
@@ -96,6 +116,15 @@ export const CREATE_ACTIONS: CreateAction[] = [
     to: scoutPath(),
   },
 ]
+
+/**
+ * The tools a row above already covers with a real dialog.
+ *
+ * Derived rather than listed, so adding a `tool` to a row is the whole change.
+ */
+export const DIALOG_TOOLS: ReadonlySet<ToolName> = new Set(
+  CREATE_ACTIONS.flatMap((action) => (action.dialog && action.tool ? [action.tool] : [])),
+)
 
 /**
  * Runs one of the rows above, whichever kind it is.

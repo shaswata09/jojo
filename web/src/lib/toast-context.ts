@@ -1,43 +1,26 @@
-import { createContext, useContext } from 'react'
-
-export type ToastTone = 'default' | 'danger'
-
-export type ToastAction = {
-  label: string
-  onClick: () => void
-}
-
-export type ToastOptions = {
-  title: string
-  description?: string
-  /** `danger` also raises the live region to assertive — see ToastViewport. */
-  tone?: ToastTone
-  /** One affordance only. A toast with two choices is a dialog wearing a hat. */
-  action?: ToastAction
-}
-
-export type Toast = ToastOptions & { id: string }
-
-export type ToastContextValue = {
-  /** Queues a toast and returns its id, so a caller can retire it early. */
-  toast: (options: ToastOptions) => string
-  dismiss: (id: string) => void
-}
-
 /**
- * Deliberately carries no toast list. Every component that fires a toast
- * subscribes here, and putting the list in the value would re-render all of
- * them each time any toast appeared or expired. The provider renders the
- * viewport itself and hands it the list as a prop instead, so this value is
- * built once and never changes identity.
+ * The web adapter for the toast port, plus the one import path web code uses.
+ *
+ * The interface — `ToastOptions`, `ToastContextValue`, `ToastContext`,
+ * `useToast` — lives in `@/kg/react/toast`, because `kg/react` fires toasts and
+ * `kg/react` has to compile with no DOM lib at all. What is left here is
+ * everything that only a browser can mean: an `HTMLElement` to hand focus back
+ * to, and a CSS selector.
+ *
+ * The port is re-exported rather than re-imported at each call site so the 20-odd
+ * components that fire toasts kept their import line when it moved. If you are
+ * adding a helper below, ask which side of that split it is on: anything typed
+ * in DOM terms belongs here and must not be imported from `src/kg`.
  */
-export const ToastContext = createContext<ToastContextValue | null>(null)
 
-export function useToast() {
-  const ctx = useContext(ToastContext)
-  if (!ctx) throw new Error('useToast must be used inside <ToastProvider>')
-  return ctx
-}
+export { ToastContext, useToast } from '@/kg/react/toast'
+export type {
+  Toast,
+  ToastAction,
+  ToastContextValue,
+  ToastOptions,
+  ToastTone,
+} from '@/kg/react/toast'
 
 /**
  * How many stay on screen; the oldest is dropped to make room. Saving a form

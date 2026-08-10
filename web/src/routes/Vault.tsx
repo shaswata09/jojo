@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { LabelFilter } from '@/components/common/LabelFilter'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Segment } from '@/components/common/Segment'
@@ -8,8 +8,9 @@ import { FilesTool } from '@/components/vault/FilesTool'
 import { LinksTool } from '@/components/vault/LinksTool'
 import { RemindersTool } from '@/components/vault/RemindersTool'
 import { SnippetsTool } from '@/components/vault/SnippetsTool'
+import { useTimeline } from '@/kg/react/use-timeline'
+import { useVault } from '@/kg/react/use-vault'
 import { type VaultTool, useTitle, useVaultParams } from '@/lib/links'
-import { useTimeline, useVault } from '@/lib/store-context'
 import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
 
 /**
@@ -49,6 +50,33 @@ export function Vault() {
   const { links, files, snippets } = useVault()
   // Counts in the subtitle are informative but noisy on a narrow screen.
   const [showCounts, setShowCounts] = useState(true)
+
+  /**
+   * Keeps the open tab inside the scroller below.
+   *
+   * Once the segment can scroll, the selected pill can be off-screen — and it
+   * is exactly where it hurts: '/vault?tool=tools' is a real link, the spotlight
+   * and the sidebar both emit tab links, and at 320px Tools sits 42px past the
+   * right edge. The control would open showing four unselected tabs, which
+   * reads as a segmented control with nothing chosen rather than as one that
+   * has been scrolled.
+   *
+   * Written straight to `scrollLeft` rather than `scrollIntoView`, which also
+   * scrolls the window and would drag the page down to a control that was
+   * already in view. Measured from rects rather than `offsetLeft`, because the
+   * button's offset parent is whatever is positioned above it and that is not
+   * this box. Everything fitting makes it a no-op: the target goes negative and
+   * the browser clamps it to zero.
+   */
+  const tabs = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const box = tabs.current
+    const active = box?.querySelector<HTMLElement>('[aria-checked="true"]')
+    if (!box || !active) return
+    const outer = box.getBoundingClientRect()
+    const pill = active.getBoundingClientRect()
+    box.scrollLeft += pill.left - outer.left - (outer.width - pill.width) / 2
+  }, [tool])
 
   // Ids of whatever the active tool lists, so the keyword counts describe the
   // tab you are looking at rather than the whole vault.
@@ -97,14 +125,45 @@ export function Vault() {
           </>
         }
         actions={
-          <Segment
-            label="Vault tool"
-            options={TOOLS}
-            value={tool}
-            // `focus` is cleared with the tab: a highlighted row in the tool you
-            // just left is a URL describing something nobody is looking at.
-            onChange={(next) => set({ tool: next, focus: undefined })}
-          />
+          /**
+           * Scrolled, not wrapped.
+           *
+           * Five tabs make this segment 342px wide and its buttons cannot
+           * compress past their own words, so at 320px it pushed the document
+           * to 354px and every page on the route scrolled sideways — the header,
+           * the keyword chips and the rows all shifted with it. The Segment is
+           * shared with four other pages and its own comment records that its
+           * options cannot be narrowed, so the fix belongs here, to the one page
+           * that carries five of them.
+           *
+           * Wrapping was the other option and it is the worse one: a pill track
+           * is `rounded-full`, and a second row inside it turns the control into
+           * a shape that is not a segmented control any more. `w-max` keeps the
+           * track as wide as its buttons so the recessed background travels with
+           * them — without it the track stops at 320px and the last tab slides
+           * out over bare page.
+           *
+           * The cap is against the viewport rather than `max-w-full`, which was
+           * tried first and does nothing: it resolves against the header's own
+           * actions row, and that row is sized BY this control, so the two agree
+           * on 342px and the page still overflows. Nothing between here and the
+           * viewport carries a definite width to measure instead — the header
+           * row's `min-width: auto` is what refuses to shrink, and it belongs to
+           * PageHeader, which four other pages share. `1.5rem` is AppShell's
+           * `p-3`; the cap can only bite below a 366px viewport, and `p-3` is
+           * the padding everywhere under `sm`.
+           */
+          <div ref={tabs} className="-mb-1 max-w-[calc(100vw-1.5rem)] min-w-0 overflow-x-auto pb-1">
+            <Segment
+              label="Vault tool"
+              options={TOOLS}
+              value={tool}
+              className="w-max"
+              // `focus` is cleared with the tab: a highlighted row in the tool you
+              // just left is a URL describing something nobody is looking at.
+              onChange={(next) => set({ tool: next, focus: undefined })}
+            />
+          </div>
         }
       />
 

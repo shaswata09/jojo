@@ -32,15 +32,19 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Textarea } from '@/components/ui/textarea'
 import { displayName } from '@/data/seed'
 import type { Application, OfferApplication, Stage } from '@/data/seed'
-import { TODAY, bucketOf, compareItems, shortDate, timeLabel, whenLabel } from '@/data/timeline'
+import { bucketOf, compareItems, shortDate, timeLabel, whenLabel } from '@/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useScout } from '@/kg/react/use-scout'
+import type { TimelineDraft } from '@/kg/react/use-timeline'
+import { useTimeline } from '@/kg/react/use-timeline'
+import { useVault } from '@/kg/react/use-vault'
 import { useDialogs } from '@/lib/dialogs-context'
 import { refKey } from '@/lib/ids'
 import { appPath, applicationsPath, useTitle } from '@/lib/links'
-import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
-import type { TimelineDraft } from '@/lib/store-context'
 import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 
@@ -102,9 +106,12 @@ export type ApplicationDetailProps = {
  * and until this existed every one of them pointed at nothing.
  */
 export function ApplicationDetail({ onAddItem, onEdit, onClose }: ApplicationDetailProps) {
-  const { id = '' } = useParams()
+  // The path segment, which is a slug ('/applications/rice') or — for a link
+  // built before the builder emitted slugs — a NodeId. `get` is the one place
+  // that knows the difference; nothing here may compare it to `a.id`.
+  const { key = '' } = useParams()
   const { get } = useApplications()
-  const application = get(id)
+  const application = get(key)
 
   // The missing case first, because it is a real destination rather than an
   // error: a bookmark, a shared link, or the back button after a delete all
@@ -115,7 +122,7 @@ export function ApplicationDetail({ onAddItem, onEdit, onClose }: ApplicationDet
         <EmptyState
           icon={FileQuestion}
           title="This application no longer exists"
-          description="It was deleted, or the link points at an id that never existed. Nothing else was removed with it."
+          description="It was deleted, or the link points at a record that never existed. Nothing else was removed with it."
           action={
             <Button asChild variant="outline" size="sm">
               <Link to={applicationsPath()}>Back to applications</Link>
@@ -305,11 +312,11 @@ function Detail({
         label: 'Undo',
         onClick: () => {
           remove(copy.id)
-          navigate(appPath(a.id))
+          navigate(appPath(a))
         },
       },
     })
-    navigate(appPath(copy.id))
+    navigate(appPath(copy))
   }
 
   const onDraft = () => openDialog('draft', { applicationId: a.id })
@@ -328,7 +335,7 @@ function Detail({
         label: 'Undo',
         onClick: () => {
           restore()
-          navigate(appPath(a.id))
+          navigate(appPath(a))
         },
       },
     })

@@ -10,9 +10,9 @@ import { SearchHealth } from '@/components/dashboard/SearchHealth'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { statsFor } from '@/data/statistics'
+import { useApplications } from '@/kg/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath, useTitle } from '@/lib/links'
-import { useApplications } from '@/lib/store-context'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { cn } from '@/lib/utils'
 
@@ -190,97 +190,117 @@ export function Statistics() {
         </Panel>
 
         <Panel className="min-w-0">
-          {/* Every record lands in exactly one band, drafts included, so this
-              total is the same total the board shows. */}
+          {/* Every sent record lands in exactly one band, so these sum to the
+              funnel's first step beside it and the offer band is the same 1 of
+              9 the headline tile reports. The drafts are named rather than
+              dropped silently — they are on the board, and a heading reading a
+              smaller number than the board's with no explanation is the kind of
+              gap a reader has to go and check. */}
           <PanelTitle
             hint={
-              outcomeTotal === all.length
-                ? `${all.length} ${all.length === 1 ? 'application' : 'applications'}`
-                : `${outcomeTotal} of ${all.length}`
+              outcomeTotal !== sent
+                ? `${outcomeTotal} of ${sent} shown`
+                : sent === all.length
+                  ? `${sent} sent`
+                  : `${sent} of ${all.length} sent`
             }
           >
             Outcomes
           </PanelTitle>
 
-          {/* Part-to-whole, so a single stacked bar with a 2px surface gap
+          {/* Nothing sent means five bands of zero under a bar with no fill —
+              a panel that looks broken rather than empty. The funnel beside it
+              already offers the way out of this state, so this says what it is
+              and leaves the one button where it was. */}
+          {sent === 0 ? (
+            <EmptyState
+              icon={SendHorizontal}
+              title="Nothing has an outcome yet"
+              description="An outcome is what came back, so only applications that have gone out can have one. Every record here is still a draft."
+            />
+          ) : (
+            <>
+              {/* Part-to-whole, so a single stacked bar with a 2px surface gap
               between segments. The track is painted even when every band is
               switched off — an unfilled `flex` row is an invisible 10px strip,
               which reads as the panel having broken rather than as a filter. */}
-          <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-well">
-            {visibleOutcomes.map((o) => (
-              <div
-                key={o.label}
-                className="h-full first:rounded-l-full last:rounded-r-full"
-                style={{
-                  width: `${share(o.count, outcomeTotal)}%`,
-                  background: OUTCOME_RAMP[outcomes.indexOf(o) % OUTCOME_RAMP.length],
-                }}
-              />
-            ))}
-          </div>
+              <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-well">
+                {visibleOutcomes.map((o) => (
+                  <div
+                    key={o.label}
+                    className="h-full first:rounded-l-full last:rounded-r-full"
+                    style={{
+                      width: `${share(o.count, outcomeTotal)}%`,
+                      background: OUTCOME_RAMP[outcomes.indexOf(o) % OUTCOME_RAMP.length],
+                    }}
+                  />
+                ))}
+              </div>
 
-          {/* Every band can be switched off, and then the bar above says
+              {/* Every band can be switched off, and then the bar above says
               nothing at all — so the state is named and the reset is one press
               rather than four. */}
-          {outcomeToggle.allHidden ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-text-3">
-              Every outcome is switched off.
-              <button
-                type="button"
-                onClick={outcomeToggle.showAll}
-                className="cursor-pointer rounded-sm border border-hairline bg-well px-2 py-0.5 text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
-              >
-                Show all
-              </button>
-            </div>
-          ) : null}
+              {outcomeToggle.allHidden ? (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-text-3">
+                  Every outcome is switched off.
+                  <button
+                    type="button"
+                    onClick={outcomeToggle.showAll}
+                    className="cursor-pointer rounded-sm border border-hairline bg-well px-2 py-0.5 text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1"
+                  >
+                    Show all
+                  </button>
+                </div>
+              ) : null}
 
-          {/* Legend toggles each band; the bar and the percentages both rebase
+              {/* Legend toggles each band; the bar and the percentages both rebase
               on what remains visible. A swatch and a plain label, not a
               coloured pill — colour on a pill is reserved for the user's own
               keywords, and this one is a chart key. */}
-          <ul className="mt-4 space-y-0.5">
-            {outcomes.map((o, i) => {
-              const off = outcomeToggle.isHidden(o.label)
-              const color = OUTCOME_RAMP[i % OUTCOME_RAMP.length]
-              return (
-                <li key={o.label}>
-                  <button
-                    type="button"
-                    onClick={() => outcomeToggle.toggle(o.label)}
-                    aria-pressed={!off}
-                    title={off ? `Show ${o.label}` : `Hide ${o.label}`}
-                    className="flex w-full items-center gap-2.5 rounded-sm px-1 py-1 text-sm transition-colors hover:bg-row-hover"
-                  >
-                    <span
-                      aria-hidden
-                      className="size-2.5 shrink-0 rounded-[2px] border"
-                      style={{ background: off ? 'transparent' : color, borderColor: color }}
-                    />
-                    <span
-                      className={cn(
-                        'min-w-0 truncate text-left',
-                        off ? 'text-text-3 line-through decoration-1' : 'text-text-2',
-                      )}
-                    >
-                      {o.label}
-                    </span>
-                    <span
-                      className={cn(
-                        'tabular ml-auto shrink-0 font-mono',
-                        off ? 'text-text-3' : 'text-text-1',
-                      )}
-                    >
-                      {o.count}
-                      <span className="ml-1.5 text-xs text-text-3">
-                        {off ? 0 : share(o.count, outcomeTotal)}%
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+              <ul className="mt-4 space-y-0.5">
+                {outcomes.map((o, i) => {
+                  const off = outcomeToggle.isHidden(o.label)
+                  const color = OUTCOME_RAMP[i % OUTCOME_RAMP.length]
+                  return (
+                    <li key={o.label}>
+                      <button
+                        type="button"
+                        onClick={() => outcomeToggle.toggle(o.label)}
+                        aria-pressed={!off}
+                        title={off ? `Show ${o.label}` : `Hide ${o.label}`}
+                        className="flex w-full items-center gap-2.5 rounded-sm px-1 py-1 text-sm transition-colors hover:bg-row-hover"
+                      >
+                        <span
+                          aria-hidden
+                          className="size-2.5 shrink-0 rounded-[2px] border"
+                          style={{ background: off ? 'transparent' : color, borderColor: color }}
+                        />
+                        <span
+                          className={cn(
+                            'min-w-0 truncate text-left',
+                            off ? 'text-text-3 line-through decoration-1' : 'text-text-2',
+                          )}
+                        >
+                          {o.label}
+                        </span>
+                        <span
+                          className={cn(
+                            'tabular ml-auto shrink-0 font-mono',
+                            off ? 'text-text-3' : 'text-text-1',
+                          )}
+                        >
+                          {o.count}
+                          <span className="ml-1.5 text-xs text-text-3">
+                            {off ? 0 : share(o.count, outcomeTotal)}%
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
+          )}
         </Panel>
       </div>
 

@@ -6,9 +6,9 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle, Row, RowList } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { displayName } from '@/data/seed'
+import { useApplications } from '@/kg/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { appPath, applicationsPath } from '@/lib/links'
-import { useApplications } from '@/lib/store-context'
 
 // Five, not six. The row this panel shares was running taller than it needed
 // to, and the sixth entry is the least useful one on a panel that exists to
@@ -57,7 +57,7 @@ export function RecentApplications() {
                 {/* The panel's whole job is to point at the record that just
                   moved; before this it named it and left you to find it. */}
                 <Link
-                  to={appPath(a.id)}
+                  to={appPath(a)}
                   className="block truncate transition-colors hover:text-accent hover:underline"
                 >
                   {displayName(a)}

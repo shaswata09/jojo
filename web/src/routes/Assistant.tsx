@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
+import { useVault } from '@/kg/react/use-vault'
 import { useTitle, vaultPath } from '@/lib/links'
-import { useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 
 /**

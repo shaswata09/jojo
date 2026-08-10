@@ -12,9 +12,8 @@ import { Switch } from '@/components/ui/switch'
 import { useDialogs } from '@/lib/dialogs-context'
 import { buildGraph, filterGraph, runQuery } from '@/lib/graph'
 import type { GraphNodeType, GraphQuery } from '@/lib/graph'
-import { useLabels } from '@/lib/labels-context'
+import { useGraph } from '@/kg/react/kg-context'
 import { useTitle } from '@/lib/links'
-import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
 
 /**
  * The knowledge graph, as a preview.
@@ -29,18 +28,14 @@ import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-co
 export function Graph() {
   useTitle('Graph')
 
-  const { all: applications } = useApplications()
-  const { all: timeline } = useTimeline()
-  const { links, files, snippets } = useVault()
-  const { matches, postings } = useScout()
-  const { labelsOf } = useLabels()
+  // The snapshot itself, not eight projections of it. The page used to rebuild
+  // ~400 nodes and edges whenever any record OR any keyword changed, because it
+  // depended on eight arrays and a closure; it now depends on one reading that
+  // changes once per commit.
+  const memory = useGraph()
   const { open } = useDialogs()
 
-  const graph = useMemo(
-    () =>
-      buildGraph({ applications, timeline, links, files, snippets, postings, matches, labelsOf }),
-    [applications, timeline, links, files, snippets, postings, matches, labelsOf],
-  )
+  const graph = useMemo(() => buildGraph(memory), [memory])
 
   const [hidden, setHidden] = useState<ReadonlySet<GraphNodeType>>(() => new Set())
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -101,7 +96,7 @@ export function Graph() {
       <>
         <PageHeader
           title="Graph"
-          subtitle="Nothing to draw yet — the graph is built from the records in this session."
+          subtitle="Nothing to draw yet — the graph is built from the records in your store."
         />
         <Panel>
           <EmptyState
@@ -122,14 +117,23 @@ export function Graph() {
 
   return (
     <>
+      {/* The subtitle was "a preview of the knowledge graph jojo WILL store
+          records in. Built from THIS SESSION'S records" — two claims that were
+          true while the store was compiled into memory on every load, and are
+          now the wrong way round in both halves. This is not a preview of the
+          store; it is the store, drawn. */}
       <PageHeader
         title="Graph"
-        subtitle="A preview of the knowledge graph jojo will store records in. Built from this session's records, in this browser."
+        subtitle="The knowledge graph your records are stored in, drawn. Every node is a record in this browser and every edge is a pointer between two of them."
         settings={
           <>
             <PageOption
               label="Label every record"
-              hint="Off, only hubs and whatever you are pointing at are named — the rest collide"
+              // The old hint ended "— the rest collide", which was a fair
+              // warning while they did. The canvas now drops any label that
+              // would land on another one, so the honest trade is the opposite:
+              // this switch is how you get a name onto a node the crowd hid.
+              hint="Off, hubs and whatever you are pointing at are named, and anything that would overlap is dropped"
               control={
                 <Switch
                   checked={showAllLabels}

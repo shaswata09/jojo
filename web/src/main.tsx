@@ -19,20 +19,25 @@ createRoot(container).render(
     <ErrorBoundary>
       <ThemeProvider>
         <RolesProvider>
-          <LabelsProvider>
-            {/* Toasts outside the store: an undo has to stay on screen after
-                the write that raised it, and often after the route has gone. */}
-            <ToastProvider>
-              <StoreProvider>
+          {/* Toasts outside the store: an undo has to stay on screen after
+              the write that raised it, and often after the route has gone —
+              and the store's own ⌘Z handler fires one, so it needs this. */}
+          <ToastProvider>
+            <StoreProvider>
+              {/* Keywords moved INTO the store (D14), so this provider now sits
+                  inside it rather than above it. It holds one thing: which
+                  chips the filter has lit, which is UI state and belongs to
+                  this tab rather than to the records. */}
+              <LabelsProvider>
                 <DialogsProvider>
                   <MascotProvider>
                     <App />
                     <DialogHost />
                   </MascotProvider>
                 </DialogsProvider>
-              </StoreProvider>
-            </ToastProvider>
-          </LabelsProvider>
+              </LabelsProvider>
+            </StoreProvider>
+          </ToastProvider>
         </RolesProvider>
       </ThemeProvider>
     </ErrorBoundary>

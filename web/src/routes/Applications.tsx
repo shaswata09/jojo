@@ -46,16 +46,10 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
 import { STAGES, displayName, type Application, type Stage } from '@/data/seed'
-import {
-  TODAY,
-  addDays,
-  agoLabel,
-  compareItems,
-  daysBetween,
-  shortDate,
-  whenLabel,
-} from '@/data/timeline'
+import { addDays, agoLabel, compareItems, daysBetween, shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
@@ -68,10 +62,10 @@ import {
   type ApplicationsSortKey,
   type ApplicationsView,
 } from '@/lib/links'
+import { TODAY } from '@/lib/today'
 import { useFillViewport } from '@/lib/use-fill-viewport'
 import { DESKTOP_QUERY, useMediaQuery, useReducedMotion } from '@/lib/use-media-query'
 import { useRoles } from '@/lib/roles-context'
-import { useApplications, useTimeline } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { cn } from '@/lib/utils'
 
@@ -104,7 +98,7 @@ const openRail =
  * as a cell value.
  */
 function activityLabel(daysAgo: number) {
-  const ago = agoLabel(addDays(TODAY, -daysAgo))
+  const ago = agoLabel(addDays(TODAY, -daysAgo), TODAY)
   return ago.charAt(0).toUpperCase() + ago.slice(1)
 }
 
@@ -403,7 +397,7 @@ function BoardCardBody({
               a link: it is a picture of the card being carried. */}
           {handle ? (
             <Link
-              to={appPath(app.id)}
+              to={appPath(app)}
               draggable={false}
               aria-current={open ? 'page' : undefined}
               className="block truncate text-sm font-semibold after:absolute after:inset-0 after:content-[''] hover:text-accent"
@@ -688,7 +682,7 @@ function DetailSheet({
 export function Applications() {
   const { matches, selected: selectedRoles, clear: clearRoles } = useRoles()
   const { matches: keywordMatches, selected: selectedKeywords, clearSelected } = useLabels()
-  const { all } = useApplications()
+  const { all, get } = useApplications()
   const { all: timelineItems } = useTimeline()
   const { open } = useDialogs()
   const actions = useRowActions()
@@ -698,8 +692,15 @@ export function Applications() {
   // Whether a record is open beside the list. Read from the path rather than
   // from state, so a bookmarked /applications/rice lays out correctly on the
   // very first render.
-  const detail = useMatch('/applications/:id')
-  const openId = detail?.params.id
+  //
+  // Resolved to the record's id before anything compares it. The segment is a
+  // slug, and the four comparisons below are all against `a.id` — so on
+  // '/applications/rice', the URL that already worked, the panel rendered the
+  // right record while the card behind it was not marked open, the row never
+  // scrolled into view, and the mobile sheet was titled "Application".
+  const detail = useMatch('/applications/:key')
+  const openKey = detail?.params.key
+  const openId = openKey ? get(openKey)?.id : undefined
 
   // View, search, stage and sort live in the URL. They were four useStates, so
   // the one page in the app you would actually want to send someone ("look at
@@ -1165,7 +1166,7 @@ export function Applications() {
                           )}
                         >
                           <Link
-                            to={appPath(a.id)}
+                            to={appPath(a)}
                             aria-current={isOpen ? 'page' : undefined}
                             className="block truncate hover:text-accent hover:underline"
                           >

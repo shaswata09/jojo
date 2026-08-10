@@ -1,0 +1,268 @@
+import { useMemo, useState } from 'react'
+import { Pressable, StyleSheet, View } from 'react-native'
+import { Feather } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { FileEditor } from '@/components/common/FileEditor'
+import { LabelChips, LabelPicker } from '@/components/common/Labels'
+import { buildRecordMenu } from '@/components/common/recordMenu'
+import { BucketFilter } from '@/components/ui/BucketFilter'
+import { Button, IconButton } from '@/components/ui/Button'
+import { Chip } from '@/components/ui/Chip'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { MenuSheet } from '@/components/ui/Menu'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { Divider, Panel } from '@/components/ui/Surface'
+import { Txt } from '@/components/ui/Text'
+import { displayName } from '@/data/seed'
+import { agoLabel } from '@/data/timeline'
+import { FILE_BUCKETS } from '@/data/vault'
+import type { FileBucket, FileKind, VaultFile } from '@/data/vault'
+import { useLabels } from '@/lib/labels-context'
+import { matchesQuery } from '@/lib/search'
+import { useApplications, useVault } from '@/lib/store-context'
+import type { FeatherName } from '@/lib/timeline-visuals'
+import { useToast } from '@/lib/toast-context'
+import type { RootStackParamList } from '@/navigation/types'
+import { s } from '@/theme/styles'
+import { useColors } from '@/theme/theme-context'
+import { space } from '@/theme/tokens'
+
+/** One glyph per kind, so a deck and a scan are told apart in the list. */
+const FILE_ICON: Record<FileKind, FeatherName> = {
+  pdf: 'file',
+  doc: 'file-text',
+  slides: 'monitor',
+  note: 'edit-3',
+}
+
+const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Record<
+  FileBucket,
+  string
+>
+
+/**
+ * Documents, as records.
+ *
+ * Nothing here reads a file's contents — there is no picker wired up in this
+ * build and no bytes behind a record, so what is kept is the name, the size and
+ * the type. That is said in the editor rather than implied by a viewer frame
+ * that could not render anything.
+ */
+export function FilesTool() {
+  const c = useColors()
+  const { files, addFile, updateFile, removeFile } = useVault()
+  const { byId } = useApplications()
+  const { matches } = useLabels()
+  const { toast } = useToast()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+
+  const [bucket, setBucket] = useState<FileBucket | 'all'>('all')
+  const [query, setQuery] = useState('')
+  const [menuFor, setMenuFor] = useState<VaultFile | null>(null)
+  const [editing, setEditing] = useState<VaultFile | 'new' | null>(null)
+
+  const pool = useMemo(
+    () => files.filter((f) => matches(f.id) && matchesQuery(query, f.name, f.note, f.bucket)),
+    [files, query, matches],
+  )
+
+  const counts = useMemo(() => {
+    const map: Partial<Record<FileBucket, number>> = {}
+    for (const f of pool) map[f.bucket] = (map[f.bucket] ?? 0) + 1
+    return map
+  }, [pool])
+
+  const rows = bucket === 'all' ? pool : pool.filter((f) => f.bucket === bucket)
+
+  const onDelete = (f: VaultFile) => {
+    const { restore } = removeFile(f.id)
+    toast({
+      title: 'Document removed',
+      description: f.name,
+      tone: 'danger',
+      action: { label: 'Undo', onPress: restore },
+    })
+  }
+
+  const onDuplicate = (f: VaultFile) => {
+    const { id: _id, savedOn: _savedOn, ...rest } = f
+    const copy = addFile({ ...rest, name: copyName(f.name) })
+    toast({
+      title: 'Document duplicated',
+      description: copy.name,
+      action: { label: 'Undo', onPress: () => removeFile(copy.id) },
+    })
+  }
+
+  const onMove = (f: VaultFile, next: FileBucket) => {
+    const before = f.bucket
+    updateFile(f.id, { bucket: next })
+    toast({
+      title: `Moved to ${next}`,
+      description: f.name,
+      action: { label: 'Undo', onPress: () => updateFile(f.id, { bucket: before }) },
+    })
+  }
+
+  return (
+    <>
+      <SearchInput
+        label="Search documents"
+        value={query}
+        onChange={setQuery}
+        placeholder="Search name, note or bucket"
+      />
+      <BucketFilter
+        label="Filter documents"
+        options={FILE_BUCKETS}
+        labels={BUCKET_LABELS}
+        counts={counts}
+        value={bucket}
+        onChange={setBucket}
+        total={pool.length}
+      />
+      <Button label="Record a document" icon="plus" onPress={() => setEditing('new')} />
+
+      <Panel padded={false}>
+        {rows.length === 0 ? (
+          <View style={{ padding: space[4] }}>
+            <EmptyState
+              icon="file-text"
+              title={files.length === 0 ? 'No documents yet' : 'Nothing in this bucket'}
+              description="Your CV, statements, talks and admin scans. Names, sizes and types are recorded — nothing reads the file itself."
+              action={
+                <Button label="Record a document" icon="plus" onPress={() => setEditing('new')} />
+              }
+            />
+          </View>
+        ) : (
+          rows.map((f, i) => {
+            // The edge is cleared, not followed, when an application is deleted
+            // — so a document can name an id whose record has gone.
+            const app = f.applicationId ? byId.get(f.applicationId) : undefined
+            return (
+              <View key={f.id}>
+                {i > 0 ? <Divider /> : null}
+                <View style={styles.row}>
+                  <Feather name={FILE_ICON[f.kind]} size={17} color={c.text3} style={styles.icon} />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Edit ${f.name}`}
+                    onPress={() => setEditing(f)}
+                    style={s.fill}
+                  >
+                    <Txt size="sm" weight="medium" mono numberOfLines={2}>
+                      {f.name}
+                    </Txt>
+                    <Txt size="xs" tone="muted">
+                      {f.size} · saved {agoLabel(f.savedOn)}
+                    </Txt>
+                    {f.note ? (
+                      <Txt size="xs" tone="muted" numberOfLines={2}>
+                        {f.note}
+                      </Txt>
+                    ) : null}
+                    {app ? (
+                      <Pressable
+                        accessibilityRole="link"
+                        onPress={() => navigation.navigate('ApplicationDetail', { id: app.id })}
+                      >
+                        <Txt size="xs" tone="info">
+                          {displayName(app)}
+                        </Txt>
+                      </Pressable>
+                    ) : null}
+                    <View style={styles.chips}>
+                      <Chip size="sm" tone="gray">
+                        {f.bucket}
+                      </Chip>
+                      <LabelChips recordId={f.id} />
+                    </View>
+                  </Pressable>
+                  <LabelPicker recordId={f.id} name={f.name} />
+                  <IconButton
+                    icon="more-horizontal"
+                    label={`More actions for ${f.name}`}
+                    onPress={() => setMenuFor(f)}
+                  />
+                </View>
+              </View>
+            )
+          })
+        )}
+      </Panel>
+
+      <MenuSheet
+        open={menuFor !== null}
+        onClose={() => setMenuFor(null)}
+        title={menuFor?.name}
+        description={menuFor ? `${menuFor.bucket} · ${menuFor.size}` : undefined}
+        actions={
+          menuFor
+            ? buildRecordMenu({
+                onEdit: () => setEditing(menuFor),
+                editLabel: 'Rename and edit note',
+                onDuplicate: () => onDuplicate(menuFor),
+                move: {
+                  label: 'Bucket',
+                  options: FILE_BUCKETS,
+                  current: menuFor.bucket,
+                  onMove: (next) => onMove(menuFor, next),
+                },
+                onDelete: () => onDelete(menuFor),
+                deleteLabel: 'Remove',
+              })
+            : []
+        }
+      />
+
+      {editing ? (
+        <FileEditor
+          key={editing === 'new' ? 'new' : editing.id}
+          initial={editing === 'new' ? undefined : editing}
+          onClose={() => setEditing(null)}
+          onSave={(draft) => {
+            if (editing !== 'new') {
+              updateFile(editing.id, draft)
+              toast({ title: 'Document updated', description: draft.name })
+            } else {
+              addFile(draft)
+              toast({
+                title: 'Document recorded',
+                description: `${draft.name} · filed under ${draft.bucket}. The name, size and type are kept — the file itself is not read.`,
+              })
+            }
+            setEditing(null)
+          }}
+        />
+      ) : null}
+    </>
+  )
+}
+
+/** `CV-2026.pdf` → `CV-2026 (copy).pdf`, so the extension survives. */
+function copyName(name: string) {
+  const dot = name.lastIndexOf('.')
+  if (dot <= 0) return `${name} (copy)`
+  return `${name.slice(0, dot)} (copy)${name.slice(dot)}`
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: space[2],
+    paddingVertical: space[3],
+    paddingLeft: space[4],
+    paddingRight: space[2],
+  },
+  icon: { marginTop: 2 },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: space[1.5],
+    marginTop: space[1.5],
+  },
+})

@@ -1,0 +1,51 @@
+{
+  /*
+   * L1 core, L2 repo, L3 tools and the logger — the pure-TypeScript half.
+   *
+   * `"lib": ["ES2023"]` with `"types": []` is the point of this file. No DOM, no
+   * Node, no vite/client, so `document`, `window`, `process` and `HTMLElement`
+   * are not names these layers can spell, and the guard in check-platform.mjs
+   * stopped being the only thing standing between the shared model and a
+   * ReferenceError on React Native. The four globals that survive are declared,
+   * one at a time and with a reason each, in types/portable-globals.d.ts.
+   *
+   * `src/kg/storage` arrives as a project REFERENCE rather than as source.
+   * `repo` imports `driver.ts`, `memory-driver.ts`, `schema.ts` and
+   * `migrations.ts` from it — the port, the in-memory implementation of the
+   * port, the store catalogue and the migration table — so storage is reachable
+   * from here through the import graph, and TypeScript checks everything it
+   * reaches. That would mean checking the whole directory, `idb-driver.ts`
+   * included, under `"lib": ["ES2023"]`, and reporting the adapter layer for
+   * doing its job. The reference makes repo type-check against storage's
+   * emitted .d.ts instead, where those four files are DOM-free by construction.
+   * See tsconfig.kg-storage.json for why that file is the composite one.
+   *
+   * Note what is NOT in that list: `repo/boot.ts` does not import
+   * `createIdbDriver`, and never did in this tree — `boot()` takes `driver: Driver`
+   * as a parameter and the web app names the IndexedDB one once, in
+   * `src/lib/store.tsx`. This comment used to claim otherwise, which overstated
+   * the coupling and would have talked the next reader out of a reference that
+   * is load-bearing for an entirely different reason.
+   *
+   * `disableSourceOfProjectReferenceRedirect` is what makes that load-bearing
+   * rather than incidental: without it TypeScript may resolve a reference back
+   * to the .ts source when it decides that is more accurate, and the DOM comes
+   * with it. Off means the declaration file is the only thing repo can see,
+   * which is the point.
+   */
+  "extends": "./tsconfig.kg.base.json",
+  "references": [{ "path": "./tsconfig.kg-storage.json" }],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.kg.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": [],
+    "disableSourceOfProjectReferenceRedirect": true
+  },
+  "include": [
+    "src/kg/core",
+    "src/kg/repo",
+    "src/kg/tools",
+    "src/kg/log.ts",
+    "types/portable-globals.d.ts"
+  ]
+}

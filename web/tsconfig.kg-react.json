@@ -1,0 +1,46 @@
+{
+  /*
+   * L4 react — ES2023 plus React, and nothing else.
+   *
+   * "React Native is React, so the hooks travel" is the claim the whole layer
+   * rests on, and this is where the compiler is told to hold it. No DOM lib, so
+   * `document`, `window` and `localStorage` are not names this directory can
+   * spell. `"types": ["react"]` rather than the app's `["vite/client"]`, so
+   * `import.meta.env` does not resolve either, and @types/node — which npm
+   * installs for vite.config.ts and which TypeScript would otherwise inject
+   * globally into every project in the repo — cannot hand this layer `process`,
+   * `Buffer` or `__dirname`.
+   *
+   * What `types` does NOT do, and it is worth knowing before trusting it: it
+   * governs which @types packages are included AUTOMATICALLY, as globals. An
+   * explicit `import { createPortal } from 'react-dom'` still resolves through
+   * node_modules like any other package. So does `@/lib/toast-context`. Those
+   * are import edges, and import edges are check-layers.mjs and
+   * check-platform.mjs territory — see the DOM_MODULES list in the latter, which
+   * exists precisely because this config cannot express that ban.
+   *
+   * The other soft edge: @types/react ships `global.d.ts`, which declares
+   * `HTMLElement`, `KeyboardEvent` and ~150 more as EMPTY interfaces so that
+   * React compiles under `--lib ES6` — that file is written for React Native. So
+   * a bare `el: HTMLElement` annotation still type-checks here; `el.focus()` does
+   * not, because the interface has no members. That gap is why
+   * check-platform.mjs bans those names as identifiers rather than trusting the
+   * lib setting alone.
+   *
+   * `"jsx": "react-jsx"` is inherited. The JSX runtime types resolve through
+   * @types/react; intrinsic elements like <div> resolve to those empty stubs,
+   * which is correct enough — there is no <div> on React Native, and this
+   * directory renders providers, not markup.
+   */
+  "extends": "./tsconfig.kg.base.json",
+  "references": [{ "path": "./tsconfig.kg-storage.json" }],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.kg-react.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": ["react"],
+    /* Same reason as tsconfig.kg.json: storage is a .d.ts here, never a source
+       file, so `repo`'s driver choice cannot drag IndexedDB up into the hooks. */
+    "disableSourceOfProjectReferenceRedirect": true
+  },
+  "include": ["src/kg/react", "types/portable-globals.d.ts"]
+}

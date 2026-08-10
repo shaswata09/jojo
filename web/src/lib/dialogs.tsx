@@ -7,9 +7,10 @@ import { DraftDialog } from '@/components/draft/DraftDialog'
 import type { DraftDialogProps } from '@/components/draft/DraftDialog'
 import { TimelineItemDialog } from '@/components/timeline/TimelineItemDialog'
 import type { TimelineItem } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { DialogsContext, useDialogs, useTriggerOriginTracking } from '@/lib/dialogs-context'
 import type { DialogName, OpenDialog } from '@/lib/dialogs-context'
-import { useApplications, useTimeline } from '@/lib/store-context'
 
 /**
  * One place that knows which dialog is open.

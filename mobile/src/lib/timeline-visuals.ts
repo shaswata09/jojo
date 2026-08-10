@@ -15,9 +15,7 @@ import type { Palette } from '@/theme/tokens'
  * lucide icons the web app draws. Where Feather has no equivalent the nearest
  * honest glyph is used and noted.
  */
-export type FeatherName = React.ComponentProps<
-  typeof import('@expo/vector-icons').Feather
->['name']
+export type FeatherName = React.ComponentProps<typeof import('@expo/vector-icons').Feather>['name']
 
 export const KIND_ICON: Record<TimelineKind, FeatherName> = {
   deadline: 'clock',

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
+import { StorageBanner } from '@/components/common/StorageBanner'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 
 export function AppShell() {
@@ -118,6 +119,13 @@ export function AppShell() {
 
         <div className="flex min-w-0 flex-1 flex-col gap-4 sm:gap-5">
           <Topbar onOpenNav={() => setNavOpen(true)} navButtonRef={navButtonRef} />
+          {/* Above the route rather than inside it, and above <main> rather than
+              in it: "nothing you change is being saved" belongs to the app, not
+              to whichever page happened to be open when saving stopped, and a
+              banner rendered per route would have unmounted and re-announced
+              itself on every navigation. It renders nothing at all in the
+              healthy case, which is almost always. */}
+          <StorageBanner />
           {/* flex-1 + min-h-0 so a page can hand a child the remaining
               viewport height (the kanban board does). Panels are unaffected:
               a column flex container stretches children across, not down. */}

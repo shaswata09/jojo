@@ -8,8 +8,10 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { searchHealthFor } from '@/data/statistics'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { applicationsPath } from '@/lib/links'
-import { useApplications, useTimeline } from '@/lib/store-context'
+import { TODAY } from '@/lib/today'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 
 /**
@@ -45,7 +47,10 @@ export function SearchHealth() {
   // An axis with no denominator has no score — no applications sent means no
   // reply rate, and 0% would be a claim rather than an absence.
   const measured = useMemo(
-    () => searchHealthFor({ applications: all, timeline }).filter((a) => a.score !== null),
+    () =>
+      searchHealthFor({ applications: all, timeline, today: TODAY }).filter(
+        (a) => a.score !== null,
+      ),
     [all, timeline],
   )
 

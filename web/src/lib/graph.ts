@@ -1,27 +1,29 @@
 /**
- * The knowledge graph behind the session store.
+ * The knowledge graph, as the /graph page reads it.
  *
- * Nothing here is a second copy of the data. Every node is a record that
- * already exists in the store and every edge is a pointer the store already
- * holds — `Application.org`, `TimelineItem.applicationId`, the label lookup
- * table, `Match.applicationId`. The graph is a *reading* of those, rebuilt from
- * scratch whenever the store changes, which is what keeps it honest: a record
- * deleted in the board cannot linger here.
+ * Nothing here is a second copy of the data any more, and nothing here derives
+ * the graph from seven arrays either. The graph IS the store: this file walks
+ * the snapshot and dresses it for a canvas — a label, a detail line, an href,
+ * and the two view-only node types that are deliberately not persisted.
  *
- * Pure on purpose. It takes plain arrays and a `labelsOf` function rather than
- * calling the store hooks itself, so the whole thing can be exercised without a
- * React tree, and so the route decides what "the graph" is scoped to.
+ * `role` and `source` are synthesised here and nowhere else (D5). They are closed
+ * unions driving a fixed filter and a fixed legend order, so promoting them to
+ * real nodes would put a join on every projection and buy nothing the user can
+ * rename or annotate. They exist on this page because a picture of "which of
+ * these came from a referral" is worth drawing.
+ *
+ * Pure on purpose. It takes a `GraphSnapshot` rather than calling a hook, so the
+ * whole thing can be exercised without a React tree, and so the route decides
+ * what "the graph" is scoped to.
  */
 
 import { displayName } from '@/data/seed'
-import type { Application, Source } from '@/data/seed'
 import { agoLabel, partsOf, shortDate } from '@/data/timeline'
-import type { TimelineItem, TimelineKind } from '@/data/timeline'
-import type { Match, SavedPosting } from '@/data/scout'
-import type { Label } from '@/data/labels'
-import type { Snippet, VaultFile, VaultLink } from '@/data/vault'
-import { refKey } from '@/lib/ids'
+import type { TimelineKind } from '@/data/timeline'
+import type { NodeType, StoredNode } from '@/kg/core/model'
+import type { GraphSnapshot } from '@/kg/core/snapshot'
 import { applicationsPath, appPath, calendarPath, scoutPath, vaultPath } from '@/lib/links'
+import { TODAY } from '@/lib/today'
 
 /* ---------------------------------- model --------------------------------- */
 
@@ -119,55 +121,54 @@ export const REL_LABEL: Record<GraphRel, string> = {
 }
 
 /**
- * Node ids carry their type because ids collide across collections: six seeded
- * records answer to 'stripe'. Applications are spelled 'app:stripe' — the same
- * form `refKey` mints — so an id read out of the label store lines up with one
- * read out of here. The four derived types have no `EntityKind` to borrow, so
- * their prefixes are declared here instead of forced into `ENTITY_KINDS`.
+ * The two node types that are drawn but never stored.
+ *
+ * Every other node on this canvas answers to its own `NodeId`, which already
+ * carries its type — 'app:0192…' — so the prefixing this map used to do for
+ * eleven types is only needed for the two that have no record to be an id of.
  */
-const TYPE_PREFIX: Record<GraphNodeType, string> = {
-  application: 'app',
-  organisation: 'org',
-  role: 'role',
-  item: 'item',
-  keyword: 'kw',
-  link: 'link',
-  file: 'file',
-  snippet: 'snippet',
-  posting: 'posting',
-  match: 'match',
-  source: 'source',
-}
+const VALUE_PREFIX = { role: 'role', source: 'source' } as const
 
-export function graphNodeId(type: GraphNodeType, recordId: string) {
-  return `${TYPE_PREFIX[type]}:${recordId}`
+export function graphNodeId(type: 'role' | 'source', value: string) {
+  return `${VALUE_PREFIX[type]}:${keyOf(value)}`
 }
 
 /** Lowercased and hyphenated, so 'UT Austin' and 'ut austin' are one node. */
 const keyOf = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '-')
 
-/* ---------------------------------- build --------------------------------- */
-
-export type GraphInput = {
-  applications: readonly Application[]
-  timeline: readonly TimelineItem[]
-  links: readonly VaultLink[]
-  files: readonly VaultFile[]
-  snippets: readonly Snippet[]
-  postings: readonly SavedPosting[]
-  matches: readonly Match[]
-  /** The keywords on one record, keyed the way the label store spells it. */
-  labelsOf: (recordKey: string) => readonly Label[]
+/**
+ * Which stored types get drawn, and as what.
+ *
+ * `pipeline` and `profile` are absent: a pipeline is a saved search over a job
+ * board and names no record here, and the profile is a singleton that would sit
+ * alone in the corner of every canvas. Both were absent before this file read
+ * the snapshot, and leaving them absent is what keeps the page unchanged.
+ */
+const DRAWN: Partial<Record<NodeType, GraphNodeType>> = {
+  application: 'application',
+  organisation: 'organisation',
+  timelineItem: 'item',
+  keyword: 'keyword',
+  link: 'link',
+  file: 'file',
+  snippet: 'snippet',
+  posting: 'posting',
+  match: 'match',
 }
 
-export function buildGraph(input: GraphInput): Graph {
+/** The stored relations that have a drawn node at both ends. */
+const DRAWN_RELS: ReadonlySet<string> = new Set(['AT', 'ABOUT', 'FILED_UNDER', 'TAGS', 'BECAME'])
+
+/* ---------------------------------- build --------------------------------- */
+
+export function buildGraph(memory: GraphSnapshot): Graph {
   const nodes: GraphNode[] = []
   const byId = new Map<string, GraphNode>()
   const edges: GraphEdge[] = []
   const edgeById = new Map<string, GraphEdge>()
 
-  /** Returns the existing node when the id is taken — organisations, roles,
-   *  keywords and sources are shared by many records and must not be duplicated. */
+  /** Returns the existing node when the id is taken — roles and sources are
+   *  shared by many records and must not be duplicated. */
   const addNode = (node: Omit<GraphNode, 'degree'>): GraphNode => {
     const existing = byId.get(node.id)
     if (existing) return existing
@@ -177,9 +178,9 @@ export function buildGraph(input: GraphInput): Graph {
     return full
   }
 
-  // Guarded on both ends: the store unlinks rather than cascades on delete, so a
-  // stale pointer should not exist — but an edge to a missing node would render
-  // as a line into empty space, which reads as the layout having broken.
+  // Guarded on both ends: an edge to a node this page does not draw — a posting
+  // FROM a pipeline — would otherwise render as a line into empty space, which
+  // reads as the layout having broken rather than as a type being hidden.
   const addEdge = (from: string, to: string, rel: GraphRel) => {
     if (from === to || !byId.has(from) || !byId.has(to)) return
     const id = `${from}|${rel}|${to}`
@@ -189,169 +190,41 @@ export function buildGraph(input: GraphInput): Graph {
     edgeById.set(id, edge)
   }
 
-  /**
-   * Keywords are keyed inconsistently by design: applications answer to
-   * 'app:rice' because six records share the bare id, everything else answers
-   * to its bare id. Getting this wrong loses every keyword edge silently, so
-   * callers hand over the exact keys rather than a record and a guess.
-   */
-  const tagWith = (nodeId: string, keys: readonly string[]) => {
-    const seen = new Set<string>()
-    for (const key of keys) {
-      for (const label of input.labelsOf(key)) {
-        if (seen.has(label.id)) continue
-        seen.add(label.id)
-        const keyword = addNode({
-          id: graphNodeId('keyword', label.id),
-          type: 'keyword',
-          label: label.name,
-          recordId: label.id,
-        })
-        addEdge(keyword.id, nodeId, 'TAGS')
-      }
-    }
+  for (const node of memory.nodes()) {
+    const type = DRAWN[node.type]
+    if (type) addNode(describe(memory, node, type))
   }
 
-  for (const a of input.applications) {
-    const app = addNode({
-      id: graphNodeId('application', a.id),
-      type: 'application',
-      label: displayName(a),
-      detail: a.location,
-      recordId: a.id,
-      href: appPath(a.id),
-    })
-
-    const org = addNode({
-      id: graphNodeId('organisation', keyOf(a.org)),
-      type: 'organisation',
-      label: a.org,
-      recordId: a.org,
-      // The board's search box is the closest thing an organisation has to a
-      // page of its own, and it does match on `org`.
-      href: applicationsPath({ q: a.org }),
-    })
-    addEdge(app.id, org.id, 'AT')
-
-    const role = addNode({
-      id: graphNodeId('role', keyOf(a.roleTag)),
-      type: 'role',
-      label: a.roleTag,
-      recordId: a.roleTag,
-    })
-    addEdge(app.id, role.id, 'IS')
-
-    if (a.source) {
-      const source = addNode({
-        id: graphNodeId('source', keyOf(a.source)),
-        type: 'source',
-        label: a.source,
-        recordId: a.source satisfies Source,
-      })
-      addEdge(app.id, source.id, 'FROM')
-    }
-
-    // Both spellings, matching what the store sweeps on delete: a session
-    // restored from an older shape can still hold the bare key.
-    tagWith(app.id, [refKey('app', a.id), a.id])
-  }
-
-  for (const item of input.timeline) {
-    const { y, m, d } = partsOf(item.date)
-    const node = addNode({
-      id: graphNodeId('item', item.id),
-      type: 'item',
-      label: item.title,
-      detail: shortDate(item.date),
-      recordId: item.id,
-      href: calendarPath({ y, m, d, focus: item.id }),
-      itemKind: item.kind,
-      reminder: item.remind,
-    })
-    if (item.applicationId) {
-      addEdge(node.id, graphNodeId('application', item.applicationId), 'ABOUT')
-    }
-    tagWith(node.id, [item.id])
-  }
-
-  for (const link of input.links) {
-    const node = addNode({
-      id: graphNodeId('link', link.id),
-      type: 'link',
-      label: link.title,
-      detail: link.category,
-      recordId: link.id,
-      href: vaultPath({ tool: 'links', focus: link.id }),
-    })
-    if (link.applicationId) {
-      addEdge(node.id, graphNodeId('application', link.applicationId), 'FILED_UNDER')
-    }
-    tagWith(node.id, [link.id])
-  }
-
-  for (const file of input.files) {
-    const node = addNode({
-      id: graphNodeId('file', file.id),
-      type: 'file',
-      label: file.name,
-      detail: file.bucket,
-      recordId: file.id,
-      href: vaultPath({ tool: 'files', focus: file.id }),
-    })
-    if (file.applicationId) {
-      addEdge(node.id, graphNodeId('application', file.applicationId), 'FILED_UNDER')
-    }
-    tagWith(node.id, [file.id])
-  }
-
-  for (const snippet of input.snippets) {
-    const node = addNode({
-      id: graphNodeId('snippet', snippet.id),
-      type: 'snippet',
-      label: snippet.title,
-      detail: snippet.tag,
-      recordId: snippet.id,
-      href: vaultPath({ tool: 'snippets', focus: snippet.id }),
-    })
-    if (snippet.applicationId) {
-      addEdge(node.id, graphNodeId('application', snippet.applicationId), 'FILED_UNDER')
-    }
-    tagWith(node.id, [snippet.id])
-  }
-
-  /**
-   * Postings and matches are deliberately not asked for keywords.
+  /*
+   * The value nodes, and the two edges that only exist on this canvas.
    *
-   * Nothing in the app tags them, and both collections use ids that collide
-   * with applications — the saved posting 'rice' and the application 'rice' —
-   * so a bare-key lookup here would hand one record's keywords to another.
+   * `IS` and the application->source edge are not in `RELS` and are never
+   * written down. They are drawn from props, here, at the point the props are
+   * already in hand.
    */
-  for (const posting of input.postings) {
-    const node = addNode({
-      id: graphNodeId('posting', posting.id),
-      type: 'posting',
-      label: posting.title,
-      detail: `Saved ${agoLabel(posting.savedOn)}`,
-      recordId: posting.id,
-      href: scoutPath({ focus: { kind: 'posting', id: posting.id } }),
+  for (const application of memory.ofType('application')) {
+    const role = addNode({
+      id: graphNodeId('role', application.props.roleTag),
+      type: 'role',
+      label: application.props.roleTag,
+      recordId: application.props.roleTag,
     })
-    if (posting.applicationId) {
-      addEdge(node.id, graphNodeId('application', posting.applicationId), 'BECAME')
+    addEdge(application.id, role.id, 'IS')
+
+    const from = application.props.source
+    if (from) {
+      const source = addNode({
+        id: graphNodeId('source', from),
+        type: 'source',
+        label: from,
+        recordId: from,
+      })
+      addEdge(application.id, source.id, 'FROM')
     }
   }
 
-  for (const match of input.matches) {
-    const node = addNode({
-      id: graphNodeId('match', match.id),
-      type: 'match',
-      label: match.role,
-      detail: `${match.fit}% fit`,
-      recordId: match.id,
-      href: scoutPath({ focus: { kind: 'match', id: match.id } }),
-    })
-    if (match.applicationId) {
-      addEdge(node.id, graphNodeId('application', match.applicationId), 'BECAME')
-    }
+  for (const edge of memory.edges()) {
+    if (DRAWN_RELS.has(edge.rel)) addEdge(edge.from, edge.to, edge.rel as GraphRel)
   }
 
   const incident = new Map<string, string[]>()
@@ -366,6 +239,96 @@ export function buildGraph(input: GraphInput): Graph {
   }
 
   return { nodes, edges, byId, edgeById, incident }
+}
+
+/**
+ * One stored record, dressed for the canvas.
+ *
+ * `href` is where the record lives in the app. Roles, sources and keywords have
+ * nowhere to send you and say so by leaving it unset — an organisation's page is
+ * the board's search box, which does match on `org`, and that is as close as it
+ * gets to one.
+ */
+function describe(
+  memory: GraphSnapshot,
+  node: StoredNode,
+  type: GraphNodeType,
+): Omit<GraphNode, 'degree'> {
+  const base = { id: node.id, type, recordId: node.id }
+
+  switch (node.type) {
+    case 'application': {
+      const org = memory.one(node.id, 'AT', 'organisation')?.props.name ?? ''
+      return {
+        ...base,
+        label: displayName({ org, role: node.props.role }),
+        ...(node.props.location === undefined ? {} : { detail: node.props.location }),
+        // The stored node, so the link carries the slug rather than the id the
+        // canvas happens to be drawing this session.
+        href: appPath({ id: node.id, slug: node.props.slug }),
+      }
+    }
+    case 'organisation':
+      return {
+        ...base,
+        label: node.props.name,
+        href: applicationsPath({ q: node.props.name }),
+      }
+    case 'timelineItem': {
+      const { y, m, d } = partsOf(node.props.date)
+      return {
+        ...base,
+        label: node.props.title,
+        detail: shortDate(node.props.date),
+        href: calendarPath({ y, m, d, focus: node.id }),
+        itemKind: node.props.kind,
+        reminder: node.props.remind,
+      }
+    }
+    case 'keyword':
+      return { ...base, label: node.props.name }
+    case 'link':
+      return {
+        ...base,
+        label: node.props.title,
+        detail: node.props.category,
+        href: vaultPath({ tool: 'links', focus: node.id }),
+      }
+    case 'file':
+      return {
+        ...base,
+        label: node.props.name,
+        detail: node.props.bucket,
+        href: vaultPath({ tool: 'files', focus: node.id }),
+      }
+    case 'snippet':
+      return {
+        ...base,
+        label: node.props.title,
+        detail: node.props.tag,
+        href: vaultPath({ tool: 'snippets', focus: node.id }),
+      }
+    case 'posting':
+      return {
+        ...base,
+        label: node.props.title,
+        detail: `Saved ${agoLabel(node.props.savedOn, TODAY)}`,
+        href: scoutPath({ focus: { kind: 'posting', id: node.id } }),
+      }
+    case 'match':
+      return {
+        ...base,
+        label: node.props.role,
+        detail: `${node.props.fit}% fit`,
+        href: scoutPath({ focus: { kind: 'match', id: node.id } }),
+      }
+    default:
+      // Unreachable while DRAWN and this switch agree. It is written as a
+      // fallback rather than an exhaustiveness assert because a new node type
+      // must not be able to blank the whole canvas before anyone has decided
+      // how to draw it.
+      return { ...base, label: node.id }
+  }
 }
 
 /* -------------------------------- traversal ------------------------------- */
@@ -558,7 +521,7 @@ const EMPTY_RESULT: QueryResult = {
   nodes: new Set(),
   edges: new Set(),
   countLabel: 'Matches',
-  emptyNote: 'Nothing in this session matches that pattern.',
+  emptyNote: 'Nothing in your records matches that pattern.',
 }
 
 function matchesFacet(node: GraphNode, facet: ItemFacet | undefined): boolean {
@@ -632,7 +595,7 @@ function runPattern(graph: Graph, query: PatternQuery): QueryResult {
     emptyNote:
       query.quantifier === 'missing'
         ? 'Nothing is missing that connection — every record of this kind has one.'
-        : 'Nothing in this session matches that pattern.',
+        : 'Nothing in your records matches that pattern.',
   }
 }
 
@@ -644,7 +607,7 @@ function runPath(graph: Graph, query: PathQuery): QueryResult {
       nodes: new Set(),
       edges: new Set(),
       countLabel: 'Hops',
-      emptyNote: 'No path — these two records are not connected by anything in this session.',
+      emptyNote: 'No path — these two records are not connected by anything in your store.',
     }
   }
 

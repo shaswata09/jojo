@@ -36,6 +36,24 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# generated native folders
-/ios
-/android
+# The native projects are committed, not ignored.
+#
+# `android/` and `ios/` are the build. They are checked in so this is an
+# ordinary Android and Xcode project that anyone can clone and build without
+# running an Expo command first, and so a change to native config is reviewable
+# in a diff rather than hidden inside a generator.
+#
+# The cost of that choice: `expo prebuild` regenerates these from `app.json` and
+# will overwrite hand edits. Edit the native files directly and treat prebuild
+# as a one-time bootstrap, or make the change in `app.json` and re-run it.
+#
+# Only build output is ignored.
+/android/build/
+/android/app/build/
+/android/.gradle/
+/android/.idea/
+/android/local.properties
+/ios/build/
+/ios/Pods/
+/ios/*.xcworkspace/xcuserdata/
+/ios/*.xcodeproj/xcuserdata/

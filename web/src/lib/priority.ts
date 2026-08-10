@@ -1,17 +1,12 @@
 import { useMemo } from 'react'
 import { offerDaysLeft } from '@/data/seed'
-import { TODAY, daysBetween, shortDate } from '@/data/timeline'
+import { daysBetween, shortDate } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { appPath } from '@/lib/links'
-import { useApplications, useTimeline } from '@/lib/store-context'
-
-/**
- * How close a date is, and the only thing on the deck allowed to carry colour.
- *
- * red = past due, amber = due inside 48 hours, nothing else. Derived from the
- * date on every read rather than stored, so a card cannot say "3 days overdue"
- * beside an amber marker the way the hand-written `urgency` field allowed.
- */
-export type PriorityUrgency = 'overdue' | 'soon' | 'none'
+import { dateMark } from '@/lib/timeline-visuals'
+import type { DateMark } from '@/lib/timeline-visuals'
+import { TODAY } from '@/lib/today'
 
 export type PriorityAction = {
   id: string
@@ -27,7 +22,13 @@ export type PriorityAction = {
    * half at 28px, which made "34 days" the loudest thing on the dashboard.
    */
   timing: string
-  urgency: PriorityUrgency
+  /**
+   * How close the date is, and the only thing on the deck allowed to carry
+   * colour. Derived on every read rather than stored, so a card cannot say
+   * "3 days overdue" beside an amber marker the way the hand-written `urgency`
+   * field allowed. This module used to spell the rule itself; it is shared now.
+   */
+  urgency: DateMark
   /**
    * The dated item this card is about, when there is one.
    *
@@ -52,13 +53,6 @@ export type PriorityAction = {
     draft?: { itemId?: string; applicationId?: string }
     blocker?: string
   }[]
-}
-
-function urgencyOf(iso: string): PriorityUrgency {
-  const gap = daysBetween(TODAY, iso)
-  if (gap < 0) return 'overdue'
-  // "Inside 48 hours" is today and tomorrow — the only two days amber may claim.
-  return gap <= 1 ? 'soon' : 'none'
 }
 
 /**
@@ -109,24 +103,28 @@ export function usePriorityActions(): PriorityAction[] {
     const interviewEvent = nextInterview
       ? items.find((i) => i.applicationId === nextInterview.id && i.kind === 'interview')
       : undefined
-    const orgOf = (applicationId?: string) =>
-      all.find((a) => a.id === applicationId)?.org ?? 'Unknown'
+    // A deadline holds the application's id, not the record, so both the
+    // headline and the link have to look it up. `appPath` needs the record
+    // itself now — an id alone cannot address anything that survives a reload.
+    const appOf = (applicationId?: string) => all.find((a) => a.id === applicationId)
+    const orgOf = (applicationId?: string) => appOf(applicationId)?.org ?? 'Unknown'
+    const deadlineApp = appOf(nextDeadline?.applicationId)
 
     return [
       ...offers.map((a): PriorityAction => {
-        const daysLeft = offerDaysLeft(a.offer)
+        const daysLeft = offerDaysLeft(a.offer, TODAY)
         return {
           id: `offer-${a.id}`,
           kindLabel: 'Offer',
           headline: `Reply to ${a.org}`,
           context: sentence(a.role, a.offer.comp, a.offer.note),
           timing: `Respond by ${shortDate(a.offer.respondBy)} · ${relativeLabel(a.offer.respondBy)}`,
-          urgency: urgencyOf(a.offer.respondBy),
+          urgency: dateMark(a.offer.respondBy),
           actions: [
             { label: 'Draft a reply', primary: true, draft: { applicationId: a.id } },
             {
               label: daysLeft < 0 ? 'Record what happened' : 'Accept or decline',
-              to: appPath(a.id),
+              to: appPath(a),
             },
           ],
         }
@@ -140,7 +138,7 @@ export function usePriorityActions(): PriorityAction[] {
               headline: `Submit to ${orgOf(nextDeadline.applicationId)}`,
               context: sentence(nextDeadline.title, nextDeadline.detail ?? nextDeadline.note),
               timing: `Due ${shortDate(nextDeadline.date)} · ${relativeLabel(nextDeadline.date)}`,
-              urgency: urgencyOf(nextDeadline.date),
+              urgency: dateMark(nextDeadline.date),
               itemId: nextDeadline.id,
               actions: [
                 { label: 'Draft a message', primary: true, draft: { itemId: nextDeadline.id } },
@@ -148,8 +146,8 @@ export function usePriorityActions(): PriorityAction[] {
                   label: 'Open application',
                   // The deadline knows which application it belongs to; before
                   // this the button went to the list and left you to find it.
-                  ...(nextDeadline.applicationId
-                    ? { to: appPath(nextDeadline.applicationId) }
+                  ...(deadlineApp
+                    ? { to: appPath(deadlineApp) }
                     : { blocker: 'This deadline is not filed under an application' }),
                 },
               ],
@@ -171,7 +169,7 @@ export function usePriorityActions(): PriorityAction[] {
               timing: interviewEvent
                 ? `${shortDate(interviewEvent.date)} · ${relativeLabel(interviewEvent.date)}`
                 : 'No date set',
-              urgency: interviewEvent ? urgencyOf(interviewEvent.date) : 'none',
+              urgency: interviewEvent ? dateMark(interviewEvent.date) : 'none',
               itemId: interviewEvent?.id,
               actions: interviewEvent
                 ? [
@@ -180,11 +178,11 @@ export function usePriorityActions(): PriorityAction[] {
                       primary: true,
                       draft: { applicationId: nextInterview.id, itemId: interviewEvent.id },
                     },
-                    { label: 'Open application', to: appPath(nextInterview.id) },
+                    { label: 'Open application', to: appPath(nextInterview) },
                   ]
                 : // Nothing to draft against an interview with no date — the
                   // record is where the date gets added, so it leads instead.
-                  [{ label: 'Open application', primary: true, to: appPath(nextInterview.id) }],
+                  [{ label: 'Open application', primary: true, to: appPath(nextInterview) }],
             } satisfies PriorityAction,
           ]
         : []),

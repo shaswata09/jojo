@@ -4,9 +4,10 @@ import { OwedThisWeek } from '@/components/dashboard/OwedThisWeek'
 import { PipelineBreakdown } from '@/components/dashboard/PipelineBreakdown'
 import { PriorityActions } from '@/components/dashboard/PriorityActions'
 import { RecentApplications } from '@/components/dashboard/RecentApplications'
-import { MONTH_LABELS, TODAY } from '@/data/calendar'
-import { useApplications } from '@/lib/store-context'
+import { MONTH_LABELS } from '@/data/calendar'
+import { useApplications } from '@/kg/react/use-applications'
 import { useTitle } from '@/lib/links'
+import { TODAY_PARTS } from '@/lib/today'
 
 const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -18,8 +19,8 @@ const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', '
  * point of the header: this is the only screen whose subject is the day itself.
  */
 const TODAY_LABEL = `${
-  WEEKDAY_NAMES[new Date(TODAY.year, TODAY.month - 1, TODAY.day).getDay()]
-} ${TODAY.day} ${MONTH_LABELS[TODAY.month - 1]}`
+  WEEKDAY_NAMES[new Date(TODAY_PARTS.year, TODAY_PARTS.month - 1, TODAY_PARTS.day).getDay()]
+} ${TODAY_PARTS.day} ${MONTH_LABELS[TODAY_PARTS.month - 1]}`
 
 /**
  * The landing screen, and until now the only route with no `PageHeader` — no

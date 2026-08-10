@@ -25,12 +25,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch'
 import { displayName } from '@/data/seed'
 import type { Stage } from '@/data/seed'
-import { TODAY, addDays, shortDate, whenLabel } from '@/data/timeline'
+import { addDays, shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineItem, TimelineKind } from '@/data/timeline'
+import { useApplications } from '@/kg/react/use-applications'
+import { useTimeline } from '@/kg/react/use-timeline'
 import { useLabels } from '@/lib/labels-context'
-import { useApplications, useTimeline } from '@/lib/store-context'
 import { KIND_ICON, KIND_LABEL, TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
+import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
 /**
@@ -53,13 +55,14 @@ export type TimelineItemDialogProps = {
 }
 
 /**
- * Quick dates, measured from the seed's pinned today rather than the wall clock.
+ * Quick dates, measured from `TODAY` rather than from a `new Date()` here.
  *
- * `new Date()` here is the trap: every bucket, countdown and relative label in
- * the app is measured against `TODAY` (2026-10-12), so a reminder stamped with
- * the real date would land years past the seeded data — filed under "overdue"
- * for a month the calendar never scrolls to, invisible in every list that
- * matters. Same reason the date field defaults to `TODAY`.
+ * `TODAY` is the wall clock, read once per page load in `@/lib/today`, and every
+ * bucket, countdown and relative label in the app is measured against that same
+ * read. A second read in this module would be a day out from all of them for the
+ * few seconds either side of midnight, and "Today" is the one label that must
+ * never file a reminder under Overdue the moment it is saved. Same reason the
+ * date field defaults to `TODAY`.
  *
  * "In 7 days" rather than "In a week": the app has exactly one relative
  * vocabulary — Today / Tomorrow / in N days — and a second spelling for the same
