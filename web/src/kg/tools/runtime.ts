@@ -121,7 +121,8 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
           .map((n) => slugOf(n) ?? '')
         // The pending set matters: two files dropped in one gesture both call
         // this before either is attached to a node, and without it both take the
-        // same slug — the bug `FilesTool.tsx:198-221` works around by hand.
+        // same slug — the bug `sortDrop` in `components/vault/files/intake.ts`
+        // works around by hand.
         const slug = uniqueSlug(slugify(base) || type, [...taken, ...buf.minted])
         buf.minted.add(slug)
         return slug
@@ -203,7 +204,8 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
    */
   function step(dir: 'undo' | 'redo'): ToolResult<void> {
     // `undoable` and `redoable` read NEWEST FIRST — the order the Undo menu and
-    // the audit log render in (`journal.ts:169`). Taking the last entry undid
+    // the audit log render in (`Ring.entries` in `kg/repo/journal.ts`). Taking
+    // the last entry undid
     // the oldest write in the session instead of the one just made.
     const ring = dir === 'undo' ? repo.undoable : repo.redoable
     const target = ring[0]

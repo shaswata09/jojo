@@ -41,7 +41,8 @@ export type Instant = string
  *
  * Kept apart from `Instant` because they are read differently: a deadline is
  * the same day everywhere on earth, and rendering one through a timezone is how
- * a date silently shifts by one — the bug `data/timeline.ts:53-59` documents.
+ * a date silently shifts by one — the bug the date-handling header above `isoOf`
+ * in `data/timeline.ts` documents.
  */
 export type ISODate = string
 

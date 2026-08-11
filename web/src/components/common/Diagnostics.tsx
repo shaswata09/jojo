@@ -26,7 +26,8 @@ import { sessionOf, useBoot } from '@/lib/boot-context'
  */
 
 /**
- * Typed as a total map on purpose (R-12's pattern, `graph.ts:96-108`).
+ * Typed as a total map on purpose (R-12's pattern — `NODE_TYPE_LABEL` in
+ * `lib/graph/model.ts`).
  *
  * A new node type then fails to compile here rather than rendering its raw
  * identifier in a settings panel, which is how `pipeline` would have shown up as
@@ -190,7 +191,8 @@ export function Diagnostics() {
           {/*
            * Spelled out rather than printed raw, because the raw value reads as
            * the wrong claim. `dataSet` flips to 'user' on the FIRST write of any
-           * kind (`meta.ts:109`) — including the write that loads the demo data —
+           * kind (`touched` in `kg/repo/meta.ts`) — including the write that
+           * loads the demo data —
            * so a row saying "user" a second after pressing Demo data would look
            * like the panel had lost track of what is in the store. What the field
            * actually records is whether anything has been written since it was

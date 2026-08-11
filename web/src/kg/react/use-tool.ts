@@ -2,7 +2,8 @@
  * L4 — useTool(name): run the tool, fire the toast from `describe`, wire Undo.
  *
  * The optional `say` override exists for genuinely card-local knowledge — "hidden
- * while the keyword filter is on" (LinksTool.tsx:419-425) — and should stay rare
+ * while the keyword filter is on" (the save toast in `vault/LinksTool.tsx`) —
+ * and should stay rare
  * enough that a second use reads as a smell.
  *
  * `useRun` is the same call WITHOUT the toast, and it is what the six

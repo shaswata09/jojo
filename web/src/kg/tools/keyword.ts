@@ -3,14 +3,14 @@
  *
  * D14, and the wave's first end-to-end proof that edges journal correctly. A
  * keyword is a node and tagging is a `TAGS` edge, which deletes the whole class
- * of bug documented at `store-context.ts:930-936`: keywords lived in a provider
+ * of bug documented at the removed `store-context.ts`: keywords lived in a provider
  * above the store, so every write that touched records had to carry the keyword
  * map by hand. Fifteen stash sites did; the ones that did not left edges
  * outliving the records they pointed at, and a cleared store still reported
  * "Used on 32 records" in Settings while the Applications filter, counting within
  * a live list, read 0 for the same keyword on the same screenful.
  *
- * `removeLabel`'s hand-rolled three-part undo (`labels.tsx:86-146`) is gone with
+ * `removeLabel`'s hand-rolled three-part undo (in the old `labels.tsx`) is gone with
  * it. It is now the same generic undo as everything else, and the trap it
  * documented — a filter selection holding an id nothing carries, which empties
  * every list on the page with no chip left to explain it — belongs to the filter

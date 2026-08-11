@@ -1,5 +1,6 @@
 /**
- * L1 — neighbours, shortestPath, subgraphOf, filterGraph. Lifted from src/lib/graph.ts.
+ * L1 — neighbours, shortestPath, subgraphOf, filterGraph. Lifted from the
+ * traversal half of `src/lib/graph/` (`traversal.ts`).
  *
  * Edges are stored directed and traversed both ways by default: someone asking
  * what connects two records does not hold a direction in their head, and a query
@@ -7,15 +8,15 @@
  * answered all of it.
  *
  * `filterGraph` leaves `degree` at its whole-graph value on purpose — it is a
- * property of the record, not of the view. See src/lib/graph.test.ts, which pins
- * this so nobody "fixes" it.
+ * property of the record, not of the view. See `src/lib/graph.test.ts`, which
+ * pins this so nobody "fixes" it.
  *
  * Generic over the node and edge shape rather than typed to `StoredNode`.
  * `/graph` traverses a graph that has role and source nodes in it, which are
  * synthesised for the view and never stored, and it carries `label`, `href` and
  * `degree` on every node. Fixing this file to the stored shape would mean
- * `lib/graph.ts` keeping a second copy of the BFS for the only graph anyone
- * actually looks at — which is the copy that would drift.
+ * `lib/graph/traversal.ts` keeping a second copy of the BFS for the only graph
+ * anyone actually looks at — which is the copy that would drift.
  */
 
 /** The two fields traversal needs. Everything else is the caller's business. */
@@ -34,7 +35,8 @@ export type ReadableGraph<N extends GraphNodeLike, E extends GraphEdgeLike> = {
 
 /**
  * The same shape with mutable containers, so a filtered graph is assignable
- * straight back to `lib/graph.ts`'s `Graph` without a cast at the call site.
+ * straight back to the `Graph` in `lib/graph/model.ts` without a cast at the
+ * call site.
  */
 export type IndexedGraph<N extends GraphNodeLike, E extends GraphEdgeLike> = {
   nodes: N[]

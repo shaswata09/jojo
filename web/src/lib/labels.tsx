@@ -12,7 +12,7 @@ import { LabelsContext } from '@/lib/labels-context'
  * sites did it, and why the ones that did not left keyword edges pointing at
  * records that no longer existed. D14 merges them: a keyword is a node, tagging
  * is a `TAGS` edge, and both live in the graph with everything else. The audit
- * bug at `store-context.ts:930-936` — Settings reporting "Used on 32 records"
+ * bug at the removed `store-context.ts` — Settings reporting "Used on 32 records"
  * over an emptied store while the Applications filter read 0 for the same
  * keyword on the same screenful — cannot be written any more, because there is
  * no second place for the count to come from.

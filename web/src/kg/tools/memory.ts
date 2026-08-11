@@ -2,7 +2,8 @@
  * L3 — the two admin tools.
  *
  * Both are `undoable: false`. That is not an oversight: they already go through
- * a confirmation dialog rather than an undo toast (`Settings.tsx:78-85`), and
+ * a confirmation dialog rather than an undo toast (`pendingCopy` in
+ * `components/settings/data-confirm-copy.tsx`), and
  * journalling them would break that contract and write one entry holding every
  * record in the store. The runtime enforces it on the undo STACK rather than on
  * the journal, because `repo.commit` is the only path from a transaction buffer
@@ -100,7 +101,7 @@ export const memoryClear = defineTool({
       matchTerms: [],
     })
     // Keywords survive. They are the user's own system and outlive any one set
-    // of records — and the alternative is what `store-context.ts:930-936`
+    // of records — and the alternative is what the removed `store-context.ts`
     // describes from the other direction: a cleared store still reporting "Used
     // on 32 records" because the two halves were cleared by different code.
   },

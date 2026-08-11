@@ -39,7 +39,8 @@ export const applicationStageSet = defineTool({
  *
  * Up to five field writes and a minted timeline item, which used to land as two
  * separate store calls in one tick with nothing making them atomic
- * (`StageTransitionDialog.tsx:203-304`). A failure between them left an
+ * (`apply` in `components/applications/StageTransitionDialog.tsx`). A failure
+ * between them left an
  * application at Interview with no interview on the calendar.
  */
 export const applicationStageAdvance = defineTool({

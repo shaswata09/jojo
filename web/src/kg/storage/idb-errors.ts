@@ -18,7 +18,7 @@ import type { DriverResult, StorageFailureCode } from './driver'
  * arrives as an `AbortError` whose `cause` is the `QuotaExceededError` — and
  * reporting that as a generic abort is how "there is no room left" turns into a
  * retry loop that can never succeed. The queue treats quota as terminal
- * (queue.ts:53-56) and everything else as retryable, so getting this wrong does
+ * (`TERMINAL` in `kg/repo/queue.ts`) and everything else as retryable, so getting this wrong does
  * not produce a wrong message, it produces an infinite one.
  */
 function errorName(e: unknown): string {

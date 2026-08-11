@@ -26,7 +26,7 @@ import { useToast } from '@/lib/toast-context'
 /**
  * The two writes with no meaningful inverse.
  *
- * Both are declared `undoable: false` (`tools/memory.ts:78,133`) and both go
+ * Both are declared `undoable: false` (both tools in `kg/tools/memory.ts`) and both go
  * through a confirmation rather than an undo toast. The runtime enforces that on
  * the undo STACK, not on the journal, so they are in the audit like everything
  * else and `revert` would happily replay one — putting back the whole store as

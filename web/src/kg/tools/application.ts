@@ -3,8 +3,9 @@
  *
  * The composites here are the reason the tool layer exists. `application.create`
  * used to be four writes in a component: the record, the keyword set, the
- * deadline item, and the toast that described all three (`ApplicationDialog.tsx`
- * :334-354). Nothing made them atomic and nothing could undo them together, so a
+ * deadline item, and the toast that described all three (`create` in
+ * `components/applications/dialog/use-application-writes.ts`).
+ * Nothing made them atomic and nothing could undo them together, so a
  * failure between the second and the third left an application tagged with
  * keywords and missing the deadline the toast had just promised was on the
  * calendar. One transaction, one journal row, one Undo.
@@ -50,8 +51,8 @@ export const orgEnsure = defineTool({
 
   run(ctx, input): NodeId {
     const name = input.name.trim()
-    // Matched on the folded NAME, not on the slug of it — the rule `labels.tsx`
-    // :41-53 arrived at for keywords, for the same reason. After a rename a slug
+    // Matched on the folded NAME, not on the slug of it — the rule `foldName`
+    // states, arrived at for keywords, for the same reason. After a rename a slug
     // says nothing about what the record is called, so a slug match would miss
     // 'Rice' spelled 'rice-2' and stand a second Rice up beside it.
     const existing = ctx.memory
@@ -171,7 +172,8 @@ export const applicationUpdate = defineTool({
      * The rest of the record, all `null`-to-clear.
      *
      * The catalogue writes this tool's second argument as `patch`, and it has to
-     * be the whole record or it is not one: `ApplicationDetail.tsx:268` restores
+     * be the whole record or it is not one: `revertOf` in
+     * `routes/ApplicationDetail.tsx` restores
      * a before-image by handing back every field it changed, offer and outcome
      * included, and a schema that silently dropped five of them would have made
      * that undo look like it worked while leaving the offer on a closed
@@ -182,8 +184,9 @@ export const applicationUpdate = defineTool({
      * The activity timestamp, restored rather than stamped.
      *
      * Every write counts as activity and `touch` stamps `now`, which is right
-     * for an edit and wrong for the undo of one: `Applications.tsx:154-162`
-     * snapshots the three fields a stage move rewrites precisely because a row
+     * for an edit and wrong for the undo of one: `onSetStage` in
+     * `components/applications/use-row-actions.tsx` snapshots the three fields
+     * a stage move rewrites precisely because a row
      * put back at "touched today" sorts to the top of the list it was never at
      * the top of, and that list's default sort is this field.
      */

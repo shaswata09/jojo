@@ -8,8 +8,8 @@
  * fifteen sites did, and the ones that did not left edges outliving the records
  * they pointed at.
  *
- * `countFor` is a set-size read instead of the O(labels × records) scan
- * `labels.tsx:219-229` ran on every render (R-10).
+ * `countFor` is a set-size read instead of the O(labels × records) scan the old
+ * keyword provider in `labels.tsx` ran on every render (R-10).
  *
  * The filter SELECTION does not live here. It is UI state — which chips are lit
  * on this screen, in this tab — and it stays in `labels.tsx`, which is the whole
@@ -102,7 +102,7 @@ export function useKeywords() {
   /**
    * Delete, and the generic undo that replaced a hand-rolled three-part one.
    *
-   * `labels.tsx:86-146` stashed the chip's slot, the records it was on and
+   * The old `removeLabel` in `labels.tsx` stashed the chip's slot, the records it was on and
    * whether it was filtering, then put all three back. Two of those are edges
    * and the journal captures them; the third is the filter selection, which is
    * UI state and is restored by the caller in `labels.tsx`.

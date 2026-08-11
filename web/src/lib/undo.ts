@@ -3,7 +3,8 @@
  *
  * The app's stated law is that every write carries `action: Undo`. Delete, stage
  * move, calendar move and snippet save honour it because the hooks behind them
- * hand back a `restore` — `use-applications.ts:153`, and three more like it. Four
+ * hand back a `restore` — `remove` in `use-applications.ts`, and three more like
+ * it. Four
  * writes did not: promoting a posting or a match to an application, saving the
  * profile, saving a note on a file, and creating an application. Each of those
  * hooks returns the record rather than the undo, and the six hook signatures are
@@ -65,7 +66,8 @@ export type Undoable<T> = {
  * ring and applied it a second time, undoing the undo.
  */
 export function undoableWith<T>(journal: UndoJournal, write: () => T): Undoable<T> {
-  // `undoable` reads newest first (`journal.ts:169`), so the head before the
+  // `undoable` reads newest first (`Ring.entries` in `kg/repo/journal.ts`), so
+  // the head before the
   // write is the marker everything above it was committed after.
   const head = journal.undoable[0]?.id ?? null
 

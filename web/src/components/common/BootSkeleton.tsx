@@ -26,7 +26,8 @@ import { useEffect, useState } from 'react'
 const SAY_SOMETHING_MS = 600
 
 /**
- * The driver gives up on a blocked upgrade at exactly 5 s (`idb-driver.ts:84`),
+ * The driver gives up on a blocked upgrade at exactly 5 s
+ * (`BLOCKED_GRACE_MS` in `kg/storage/idb-driver.ts`),
  * so anything still here past that is not a slow disk. It still does not become
  * the recovery panel: boot is about to resolve on its own with a real reason,
  * and a panel offering to delete the database while the read that would have

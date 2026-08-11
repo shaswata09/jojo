@@ -77,8 +77,11 @@ export function FlagButton({
       onClick={() => onFlag(app)}
       className={cn(
         'grid size-7 shrink-0 cursor-pointer place-items-center rounded-md border transition-colors',
+        // Amber, not red: red is this app's word for past due, so a flag the
+        // user set themselves read as a missed date, and the button fought the
+        // amber sidebar badge counting it.
         app.flagged
-          ? 'border-danger-border bg-danger-soft text-danger'
+          ? 'border-warning-border bg-warning-soft text-warning'
           : 'border-transparent text-text-3 hover:border-hairline hover:bg-well hover:text-text-1',
       )}
     >

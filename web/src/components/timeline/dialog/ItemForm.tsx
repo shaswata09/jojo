@@ -1,9 +1,9 @@
 import { useId, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Field, FormField } from '@/components/common/Field'
+import { Field, FormField, TextareaField } from '@/components/common/Field'
+import { KeywordPicker } from '@/components/common/KeywordPicker'
 import { ApplicationLinkField } from '@/components/timeline/dialog/ApplicationLinkField'
 import { KindGrid } from '@/components/timeline/dialog/KindGrid'
-import { MoreDetailsFields } from '@/components/timeline/dialog/MoreDetailsFields'
 import { ScheduleFields } from '@/components/timeline/dialog/ScheduleFields'
 import {
   DEFAULT_DURATION_MINS,
@@ -348,12 +348,36 @@ export function ItemForm({
           onChange={(event) => setDetail(event.target.value)}
         />
 
-        <MoreDetailsFields
-          note={note}
-          onNoteChange={setNote}
-          keywords={keywords}
-          onKeywordsChange={setKeywords}
-        />
+        {/* Folded, not deleted. These two are the fields nobody fills in on the
+            way to saving a reminder, and open they pushed Save off a 900px
+            screen. `<details>` rather than state, so the browser handles the
+            expanded/collapsed semantics and find-in-page still reaches inside. */}
+        <details className="group rounded-lg border border-hairline">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-text-2 transition-colors hover:text-text-1">
+            More details
+            <span className="text-xs text-text-3">
+              {[note.trim() ? 'note' : null, keywords.length > 0 ? 'keywords' : null]
+                .filter(Boolean)
+                .join(' · ') || 'note, keywords'}
+            </span>
+          </summary>
+          <div className="grid gap-3.5 border-t border-hairline px-3 py-3">
+            <TextareaField
+              label="Note"
+              hint="Your own scribble. Kept apart from the detail, so an edit never clobbers it."
+              rows={2}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+
+            <FormField
+              label="Keywords"
+              hint="Shared with applications, files and links — filtering by one finds all of them."
+            >
+              <KeywordPicker value={keywords} onChange={setKeywords} />
+            </FormField>
+          </div>
+        </details>
       </div>
 
       <DialogFooter className={editingId ? 'sm:justify-between' : undefined}>

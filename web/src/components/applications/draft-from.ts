@@ -1,7 +1,7 @@
 /**
  * Moved to @/kg/core/parse-posting.
  *
- * It was imported by `store-context.ts:3` — a domain write reaching UP into a
+ * It was imported by the removed `store-context.ts` — a domain write reaching UP into a
  * component folder for URL parsing, and the one layer violation the KG plan set
  * out to fix on the way past. The parser was always pure, so it moved down
  * rather than being rewritten.

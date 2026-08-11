@@ -2,7 +2,7 @@
  * L4 — useVault(). Signature frozen; the façade that re-exported it is gone.
  *
  * Three collections that took the same three edits through one generic
- * (`useCollectionActions`, `store-context.ts:618-660`). The generic is gone: it
+ * (`useCollectionActions`, in the removed `store-context.ts`). The generic is gone: it
  * could not carry a rule that belonged to one of the three, so `savedOn`, the id
  * prefix and the name field were all passed in as parameters and the call sites
  * became the documentation. Each collection now names its own tool.
@@ -10,7 +10,8 @@
  * `addFile` goes through the bulk tool with a list of one. Two files dropped in
  * a single gesture used to mint their slug from a store read that predated both
  * of them and take the same id — one row, one keyword set, one delete taking out
- * two documents — which `FilesTool.tsx:198-221` works around by hand. Bulk is
+ * two documents — which `sortDrop` in `components/vault/files/intake.ts` works
+ * around by hand. Bulk is
  * what makes `ctx.mintSlug` able to see the sibling, so the workaround has
  * nothing left to do.
  */

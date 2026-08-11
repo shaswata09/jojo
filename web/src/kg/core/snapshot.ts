@@ -26,7 +26,7 @@ export interface GraphSnapshot {
   /** Id-ascending, which for UUIDv7 is creation order. */
   ofType<T extends NodeType>(type: T): readonly StoredNode<T>[]
   bySlug<T extends NodeType>(type: T, slug: string): StoredNode<T> | undefined
-  /** Folded name -> keyword. The dedupe rule from labels.tsx:41-53, indexed. */
+  /** Folded name -> keyword. The dedupe rule `foldName` states, indexed. */
   keywordNamed(name: string): StoredNode<'keyword'> | undefined
 
   out(id: NodeId, rel?: Rel): readonly StoredEdge[]
@@ -226,7 +226,7 @@ export class MutableSnapshot implements GraphSnapshot {
   }
 
   /**
-   * Unlinks, never cascades — verbatim from `store-context.ts:152-176`.
+   * Unlinks, never cascades — verbatim from the removed `store-context.ts`.
    *
    * Deleting an application drops its edges and leaves the timeline items,
    * links, files and snippets exactly where they were. Cascading would delete
@@ -296,7 +296,8 @@ export class MutableSnapshot implements GraphSnapshot {
    * `rehydrate` used to do — was the bug behind every list in the app surviving
    * a wholesale replace. A fresh snapshot counts from version 0, and
    * `createProjection` reads an equal version as "same commit, same answer"
-   * (`project.ts:90`); a tab that had not committed anything since boot sat at
+   * (`createProjection` in `kg/core/project.ts`); a tab that had not committed
+   * anything since boot sat at
    * version 0, so the replacement arrived at 0 as well and the board went on
    * rendering the twelve demo applications the user had just pressed *Start
    * empty* to be rid of. The same screenful contradicted itself, because

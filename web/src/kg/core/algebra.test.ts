@@ -1,11 +1,12 @@
 /**
  * The Wave 0 characterisation tests, re-pointed at the layer that inherits them.
  *
- * `src/lib/graph.test.ts` pins the same five topologies against `graph.ts`.
- * These are the same assertions against `algebra.ts`, deliberately duplicated
- * rather than shared: for as long as both implementations exist, the pair is the
- * proof that the move preserved the contract, and the day `graph.ts` starts
- * calling this file the duplication becomes one test of one function.
+ * `src/lib/graph.test.ts` pins the same five topologies against
+ * `lib/graph/traversal.ts`. These are the same assertions against `algebra.ts`,
+ * deliberately duplicated rather than shared: for as long as both
+ * implementations exist, the pair is the proof that the move preserved the
+ * contract, and the day `lib/graph/traversal.ts` starts calling this file the
+ * duplication becomes one test of one function.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -101,7 +102,8 @@ describe('shortestPath', () => {
 
 describe('filterGraph', () => {
   /**
-   * `degree` is deliberately the WHOLE-graph value, per graph.ts:462-468.
+   * `degree` is deliberately the WHOLE-graph value, per `filterGraph` in
+   * `lib/graph/traversal.ts`.
    *
    * It sizes the node, and it is a property of the record rather than of the
    * view: recounting it after a filter would make a node shrink because you hid

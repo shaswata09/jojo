@@ -168,8 +168,8 @@ describe('createOneProjection', () => {
     expect(projectOne(g, app.id)).not.toBe(first)
   })
 
-  // The distinction has to survive: ApplicationDetail.tsx:112-127 renders "This
-  // application no longer exists" from exactly this undefined.
+  // The distinction has to survive: `routes/ApplicationDetail.tsx` renders its
+  // "This application no longer exists" state from exactly this undefined.
   it('answers undefined for a record that has gone', () => {
     const projectOne = oneProjection()
     const app = application('rice')

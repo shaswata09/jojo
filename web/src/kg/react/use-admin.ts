@@ -10,7 +10,7 @@
  *
  * Neither of them carries a keyword map any more. That is D14: a keyword is a
  * node and tagging is a `TAGS` edge, so clearing the records takes their tags
- * with them in the same transaction. The bug at `store-context.ts:930-936` — a
+ * with them in the same transaction. The bug at the removed `store-context.ts` — a
  * cleared store still reporting "Used on 32 records" in Settings while the
  * Applications filter read 0 for the same keyword on the same screenful — is not
  * fixed here, it is unrepresentable: there is no second store to forget to

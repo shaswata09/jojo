@@ -149,7 +149,7 @@ describe('keywords, merged into the graph (D14)', () => {
   })
 
   /**
-   * The audit bug at `store-context.ts:930-936`, and why it is now
+   * The audit bug at the removed `store-context.ts`, and why it is now
    * unrepresentable.
    *
    * Keywords lived in a provider above the store, so clearing the records and

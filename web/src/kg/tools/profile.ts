@@ -83,7 +83,7 @@ export function profileNode(ctx: ToolContext) {
  * The whole record, saved at once.
  *
  * `profile.text.set` writes one field, which is right for a field that saves on
- * blur and wrong for the page as it stands: `Profile.tsx:79` has a save bar over
+ * blur and wrong for the page as it stands: `routes/Profile.tsx` has a save bar over
  * ten inputs, and ten tools would be ten journal rows and ten Undos for one
  * press of Save. Absent from §4's catalogue for the same reason it is `internal`
  * here — it is the shape of today's form, not a verb anyone should reach for

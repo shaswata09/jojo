@@ -170,7 +170,8 @@ describe('validateRows', () => {
     expect(rows.skipped).toHaveLength(1)
   })
 
-  // The graph spelling of graph.ts:180-190: an edge with a missing end would
+  // The graph spelling of `addEdge`'s both-ends guard in `lib/graph/build.ts`:
+  // an edge with a missing end would
   // render as a line running off into empty space, which reads as the layout
   // having broken rather than as a record having gone.
   it('drops an edge whose end did not survive, and says so', () => {

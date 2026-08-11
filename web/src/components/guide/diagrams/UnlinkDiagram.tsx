@@ -14,11 +14,13 @@ import { useId } from 'react'
  * available to each state, and at 390px that put the three record names below
  * the size anything is readable at. Vertical costs height, which a page has.
  *
- * Verified against `application.delete` in `src/kg/tools/application.ts:348-370`
- * and `tx.del` in `src/kg/tools/runtime.ts:308-314`: the node and its incident
+ * Verified against `applicationDelete` in `src/kg/tools/application-record.ts`
+ * and `del` in `src/kg/tools/runtime-tx.ts`: the node and its incident
  * edges are staged for removal and nothing at the other end is named by the
  * delta at all. The relinking claim in the caption is the assertion in
- * `src/kg/repo/repository.test.ts:242` and `journal.test.ts:140`.
+ * `repository.test.ts`'s "unlinks without cascading, and relinks on undo" and
+ * `journal.test.ts`'s "unlinks five records on delete and relinks all five on
+ * undo".
  */
 
 const SLOT_X = 150

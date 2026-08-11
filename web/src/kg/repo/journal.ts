@@ -11,9 +11,10 @@
  *
  * The 42 hand-written undo closures this replaces all had the same shape and the
  * same hole: `useApplications().remove` captured the record, its index and the
- * ids pointing at it from five collections (`store-context.ts:334-368`) and got
+ * ids pointing at it from five collections (in the removed `store-context.ts`) and got
  * it right, while `removeLabel` captured three separate pieces of provider state
- * (`labels.tsx:86-146`) and `revertOf` (`ApplicationDetail.tsx:759`) captured a
+ * (the old `removeLabel` in `labels.tsx`) and `revertOf` (in
+ * `routes/ApplicationDetail.tsx`) captured a
  * hand-written before-image of one field. Every one of them was a person
  * remembering what a write touched. A delta captured BY the write cannot forget.
  */

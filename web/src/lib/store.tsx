@@ -92,7 +92,8 @@ let dataSetChosen = false
 /**
  * How long *Start fresh* waits for a delete before saying who is holding it.
  *
- * The driver's own patience with a blocked upgrade (`idb-driver.ts:84`), for the
+ * The driver's own patience with a blocked upgrade (`BLOCKED_GRACE_MS` in
+ * `kg/storage/idb-driver.ts`), for the
  * same reason and to the same number: this is the moment the UI has something
  * true to say, and two different waits would mean two different accounts of the
  * same locked database depending on which one the user hit first.

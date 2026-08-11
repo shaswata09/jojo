@@ -131,7 +131,7 @@ describe('applyJournal', () => {
    * Deleting an application UNLINKS, it never cascades — and the undo has to put
    * every one of those edges back.
    *
-   * This is `store-context.ts:152-176` and its `ApplicationEdges` capture, in the
+   * This is the removed `store-context.ts` and its `ApplicationEdges` capture, in the
    * graph's spelling. The reminder, the link, the file, the snippet and the
    * captured posting all survive the delete carrying no pointer, and come back
    * carrying it again. An undo that returned the application to an app where

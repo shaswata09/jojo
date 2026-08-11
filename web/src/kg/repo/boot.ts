@@ -181,7 +181,8 @@ export function bootInMemory({ now, dataSet = 'demo' }: BootOptions): Session {
   return {
     repo,
     // Delegated rather than copied. `dataSet` flips from 'demo' to 'user' on the
-    // first write the user makes (meta.ts:106), and a Session holding its own
+    // first write the user makes (`touched` in `meta.ts`), and a Session holding
+    // its own
     // copy would go on reporting 'demo' — which is what Settings reads before
     // offering to replace their records with the fixtures.
     get meta() {

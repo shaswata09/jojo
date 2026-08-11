@@ -2,7 +2,7 @@
  * L4 — the toast PORT. What the graph layer needs a platform to be able to say.
  *
  * This lived in `src/lib/toast-context.ts`, and `kg/react` imported it from
- * there (`kg.tsx:25`, `use-tool.ts:17-18`). That module also holds
+ * there (`kg/react/kg.tsx` and `kg/react/use-tool.ts`). That module also holds
  * `deferFocusReturn`, whose parameter is an `HTMLElement`, and the CSS selector
  * a dialog matches the toast stack with — so the one layer that is supposed to
  * mount unchanged inside React Native depended, through a single import line, on

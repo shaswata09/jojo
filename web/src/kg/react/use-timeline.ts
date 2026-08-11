@@ -6,7 +6,8 @@
  * is an instruction to invert whatever it finds, and by the time an undo fires
  * the item may have been unticked on another screen — so the undo re-ticks it.
  * This hook reads the current value and asks for the one the card meant, which
- * is the same fix `PriorityActions.tsx:69-71` writes out by hand three times.
+ * is the same fix the Undo on the completion toast in `PriorityActions.tsx`
+ * writes out by hand three times.
  *
  * Every bucket is measured against the provider's `today`, not against a module
  * constant. Nothing under `src/kg` reads a clock or imports one (D26) — the day

@@ -1,7 +1,8 @@
 /**
  * L0 — is IndexedDB actually usable, and will the browser keep what we write?
  *
- * The IndexedDB sibling of `src/lib/storage.ts:13`, and it exists for the same
+ * The IndexedDB sibling of `isStorageAvailable` in `src/lib/storage.ts`, and it
+ * exists for the same
  * reason that one does: `localStorage` is a getter that THROWS rather than
  * returning null when a browser blocks storage, and IndexedDB is worse — the
  * global is present, `open()` returns a request, and the failure arrives
@@ -29,7 +30,8 @@ const PROBE_DB = '__jojo_probe__'
  * Long enough for a cold disk, short enough not to be the reason boot is slow.
  *
  * A blocked `open` never errors and never resolves — measured in `clearSiteData`
- * (storage.ts:78-87), where an unbounded step left a button reading "Clearing…"
+ * (`withTimeout` in `storage.ts`), where an unbounded step left a button reading
+ * "Clearing…"
  * for good. A probe that can hang is a boot that can hang, so it cannot.
  */
 const PROBE_TIMEOUT_MS = 3_000

@@ -31,7 +31,8 @@ export function TrackApplicationSection() {
               third one is. Drag, the board pill and the table chip share one
               path that never asks (`Applications.tsx` onMoveStage: set the
               stage, toast, offer Undo). `stageNeedsDetails` is called from
-              exactly one place, `ApplicationDetail.tsx:283`. Someone who
+              exactly one place, `onMoveStage` in `routes/ApplicationDetail.tsx`.
+              Someone who
               dragged a card to Offer and waited for the form to appear would
               have been told to expect it here. */}
           <p className="mt-1 text-sm text-text-2">

@@ -11,12 +11,14 @@
  * so "cleared" meant "every record type we remembered to name is gone", which is
  * not the sentence Settings makes and not the one the first-run fork makes
  * either. `repo.replaceAll` clears every object store inside one transaction
- * (`idb-driver.ts:659`), so this file can promise the wipe rather than approximate
+ * (`rowsIntoBatch` in `kg/storage/idb-driver.ts`), so this file can promise the
+ * wipe rather than approximate
  * it.
  *
  * It also writes the meta row, and that is the half the tools cannot do at all.
  * A tool commit runs through `land()`, which flips `dataSet` to 'user' on the
- * first write (`repository.ts:213`) — correct for a user typing, wrong for the
+ * first write (`touched(meta)` in the Repository's `land`) — correct for a user
+ * typing, wrong for the
  * user pressing *Start empty*, because it records "these are your records" about
  * a store that has none. `dataSet: 'empty'` with `seededAt: null` is the thing
  * D24's meta row exists to carry across a reload: the difference between a store

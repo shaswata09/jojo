@@ -107,7 +107,7 @@ export function DataPanel() {
   /**
    * Nothing in this store is the user's yet.
    *
-   * `dataSet` flips to 'user' on the first commit they make (`meta.ts:109`), so
+   * `dataSet` flips to 'user' on the first commit they make (`touched` in `kg/repo/meta.ts`), so
    * 'demo' is a store that has been loaded and not touched since — which makes it
    * the one case where clearing may take the KEYWORDS too. Ordinarily
    * `memory.clear` keeps them on purpose (D14: a keyword is the user's own system

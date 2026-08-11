@@ -79,7 +79,8 @@ export function GraphDetail({
 
       const plan = planToolForm(tool, { countOf, seeded })
       if (!plan) continue
-      // `tools/index.ts:181-185` throws at module load unless every tool answers
+      // The name check at the foot of `kg/tools/index.ts` throws at module load
+      // unless every tool answers
       // to the key it is filed under, so a tool that came out of the registry
       // has a name that is one of its keys.
       rows.push({ name: tool.name as ToolName, plan, seeded })

@@ -108,9 +108,12 @@ export function BoardCardBody({
           )}
           <div className="mt-0.5 text-xs text-text-3">{app.note}</div>
         </div>
+        {/* Amber, not red: red is this app's word for past due, so a flag the
+            user set themselves read as a missed date, and the icon fought the
+            amber sidebar badge that counts it (BADGE_TONE in SidebarNav.tsx). */}
         {app.flagged ? (
           <Flag
-            className="mt-0.5 size-3.5 shrink-0 text-danger"
+            className="mt-0.5 size-3.5 shrink-0 text-warning"
             strokeWidth={1.9}
             aria-label="Flagged for follow-up"
           />

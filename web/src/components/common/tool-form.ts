@@ -1,7 +1,7 @@
 /**
  * A form, planned from a tool's `FieldMeta` — no React, so it is testable.
  *
- * `core/schema.ts:6-13` says `FieldMeta` was kept introspectable "so the command
+ * The `FieldMeta` header in `core/schema.ts` says it was kept introspectable "so the command
  * palette can generate a form from a tool's input schema". This is that reader.
  * It is deliberately the only place that decides what a generated form can and
  * cannot draw, because the palette and `/graph` both ask the question and an
@@ -17,7 +17,7 @@
  * Nothing here validates. `runtime.check` does that against the tool's own
  * schema, so the message under a field is the sentence the schema author wrote
  * and a generated form can never disagree with the tool it submits to — the
- * failure `schema.ts:9-13` names.
+ * failure the `FieldMeta` header in `kg/core/schema.ts` names.
  */
 
 import { displayName } from '@/data/seed'
@@ -146,7 +146,8 @@ function planField(key: string, meta: FieldMeta, countOf: CountOf): FieldPlan | 
  *
  * `internal` tools are absent from every surface by their own declaration.
  * `admin` ones are absent because they are `undoable: false` and Settings owns
- * them behind a confirmation dialog (`Settings.tsx:78-85`) — offering "Load
+ * them behind a confirmation dialog (`pendingCopy` in
+ * `components/settings/data-confirm-copy.tsx`) — offering "Load
  * demo data" as a one-Enter palette row would delete a user's records with no
  * undo and no question asked.
  *
@@ -197,7 +198,7 @@ export function planToolForm(
 /**
  * One record, in a line, for a picker.
  *
- * Not `buildGraph`'s `describe` (`lib/graph.ts:246`), which dresses a record for
+ * Not `buildGraph`'s `describe` (`lib/graph/build.ts`), which dresses a record for
  * the canvas: it also mints an href, a detail line and an item kind, it draws
  * nothing for `pipeline` or `profile`, and it walks every node and edge in the
  * store to answer a question about one type. A picker needs a name.

@@ -149,8 +149,8 @@ export function createProjection<T extends NodeType, R>(
  * Separate from `createProjection` because a detail page that re-projected the
  * whole collection to find one row would do the work of the board to render one
  * card, and because the answer here is legitimately `undefined` when the record
- * has gone. `ApplicationDetail.tsx:112-127` renders "This application no longer
- * exists" from exactly that, so the distinction has to survive.
+ * has gone. `routes/ApplicationDetail.tsx` renders its "This application no
+ * longer exists" state from exactly that, so the distinction has to survive.
  */
 export function createOneProjection<T extends NodeType, R>(
   type: T,

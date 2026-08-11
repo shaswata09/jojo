@@ -143,8 +143,11 @@ export function DetailHeader({
             }
             className={cn(
               'grid size-8 place-items-center rounded-lg border transition-colors',
+              // Amber, not red: red is this app's word for past due, so a flag
+              // the user set themselves read as a missed date, and the button
+              // fought the amber sidebar badge counting it.
               a.flagged
-                ? 'border-danger-border bg-danger-soft text-danger'
+                ? 'border-warning-border bg-warning-soft text-warning'
                 : 'border-hairline bg-well text-text-3 hover:border-hairline-strong hover:text-text-1',
             )}
           >

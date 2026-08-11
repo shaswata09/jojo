@@ -83,8 +83,8 @@ export type Tx = {
    *
    * The edges go because an edge whose endpoint is missing is corrupt — the
    * boot integrity check (R-2) rejects the whole graph over one of them. The
-   * records at the other end are untouched: that is D15, and it is
-   * `store-context.ts:162-176` said in graph.
+   * records at the other end are untouched: that is D15, and it is what the
+   * removed `store-context.ts` said in graph.
    */
   del(id: NodeId): void
   link(from: NodeId, rel: Rel, to: NodeId, props?: Props): EdgeId
@@ -106,7 +106,8 @@ export type ToolContext = {
   /**
    * Unique against stored nodes AND nodes this transaction has already created.
    *
-   * `FilesTool.tsx:198-221` works around the absence of the second half by hand:
+   * `sortDrop` in `components/vault/files/intake.ts` works around the absence
+   * of the second half by hand:
    * two files dropped in one gesture both minted their slug from a store read
    * that predated either of them, took the same id, and from then on were one
    * row with one keyword set that one delete took out together.
@@ -141,7 +142,8 @@ export type Tool<I, O = void> = {
    * Excluded from the journal.
    *
    * The admin tools already go through a confirmation dialog rather than an undo
-   * toast (`Settings.tsx:78-85`); journalling them would both break that
+   * toast (`pendingCopy` in `components/settings/data-confirm-copy.tsx`);
+   * journalling them would both break that
    * contract and write a single entry holding every record in the store.
    */
   readonly undoable?: false

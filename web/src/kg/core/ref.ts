@@ -13,7 +13,7 @@
  * [type, slug] index. Time-ordered ids also make "restore to its old position"
  * free, which is what deletes the reducer's captured `at` index.
  *
- * The difference from `src/lib/ids.ts:49-57`, which this replaces, is that
+ * The difference from `parseRef` in `src/lib/ids.ts`, which this replaces, is that
  * `parseRef` *tolerated* a bare key and read it as an application. It had to:
  * the label store keyed most records by a bare id. Here a bare id is rejected,
  * because the tolerance is exactly what let a keyword written against 'stripe'
@@ -48,7 +48,7 @@ import { NODE_TYPES, RELS } from './model'
 /**
  * Short, stable and never re-spelled: a prefix is written into every id ever
  * minted, so renaming one rewrites the user's whole store. 'app' and 'kw' match
- * what `graph.ts:128-140` and `refKey` already emit, so an id read out of an
+ * what `graphNodeId` in `lib/graph/build.ts` and `refKey` already emit, so an id read out of an
  * older export lines up with one read out of here.
  */
 export const TYPE_PREFIX: { readonly [T in NodeType]: string } = {
@@ -175,7 +175,8 @@ export function newNodeId(type: NodeType, atMs: number): NodeId {
  * Splits an id into its type and its uuid, or returns null.
  *
  * Only the first colon separates and only a known prefix counts as a type, for
- * the reason `ids.ts:44-47` gives: a pasted URL must survive the round trip
+ * the reason `parseRef`'s header in `ids.ts` gives: a pasted URL must survive
+ * the round trip
  * rather than becoming `{ type: 'https', uuid: '//stripe.com' }`. Unlike
  * `parseRef`, a bare id with no prefix is not read as an application — it is
  * rejected, because guessing between six records is what the prefix exists to
@@ -208,7 +209,8 @@ export function isNodeId(id: unknown, expect?: NodeType): id is NodeId {
 /* ------------------------------- edge ids --------------------------------- */
 
 /**
- * `${from}|${rel}|${to}` — exactly what `graph.ts:186` already mints.
+ * `${from}|${rel}|${to}` — exactly what `addEdge` inside `buildGraph`
+ * (`lib/graph/build.ts`) already mints.
  *
  * The id being a function of its ends is what makes create and delete
  * idempotent with no read-before-write: linking the same keyword twice writes
@@ -247,7 +249,8 @@ export function slugify(s: string): string {
 /**
  * Folded for comparison only — 'UT Austin' and '  ut austin ' are one keyword.
  *
- * Trim and lowercase, matching `labels.tsx:12` exactly. Deliberately NOT
+ * Trim and lowercase, matching what the old keyword provider in `labels.tsx`
+ * did exactly, so keywords minted before D14 still fold together. Deliberately NOT
  * `slugify`: matching on the slug misses a renamed keyword, because after a
  * rename the id says nothing about what the keyword is called, and 'developr'
  * can legitimately read "Developer".
@@ -262,8 +265,9 @@ export function foldName(name: string): string {
  * Counting from 2 so the first duplicate reads as the second of its name —
  * 'unt-1' would imply an 'unt-0' somewhere. Takes the slugs already spoken for
  * rather than a snapshot, so a caller can include rows it has staged inside a
- * transaction but not yet committed: the bug `FilesTool.tsx:198-221` works
- * around by hand when a bulk add drops ten files with the same name at once.
+ * transaction but not yet committed: the bug `sortDrop` in
+ * `components/vault/files/intake.ts` works around by hand when a bulk add drops
+ * ten files with the same name at once.
  */
 export function uniqueSlug(base: string, taken: Iterable<string>): string {
   const used = new Set(taken)

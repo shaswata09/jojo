@@ -2,8 +2,8 @@
  * L4 — useScout(). Signature frozen; the façade that re-exported it is gone.
  *
  * The two promotions used to be `addApplication` followed by `updateMatch` in
- * one tick with nothing making them atomic (`store-context.ts:790-813`,
- * `:830-857`): a failure between them produced an application nothing pointed at,
+ * one tick with nothing making them atomic (both in the removed
+ * `store-context.ts`): a failure between them produced an application nothing pointed at,
  * and the match still offering "Add to applications" for a job you had already
  * added. They are one tool and one transaction now, and one Undo.
  *

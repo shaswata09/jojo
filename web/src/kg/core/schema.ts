@@ -2,8 +2,10 @@
  * L1 — the s.* combinators, Schema<T>, FieldMeta, Parsed<T>.
  *
  * Hand-rolled rather than zod, ~130 lines of machinery. This app has written
- * input validation twice already (ApplicationDialog.tsx:107-127,
- * LinksTool.tsx:51-69), and `FieldMeta` has to stay introspectable so the
+ * input validation twice already (`validate` in
+ * `components/applications/dialog/form-state.ts`, and
+ * `normalizeUrl`/`parseUrl` in `components/vault/links/url.ts`), and
+ * `FieldMeta` has to stay introspectable so the
  * command palette can generate a form from a tool's input schema.
  *
  * `FieldMeta` is therefore data, never a closure. The moment a validator's
@@ -187,7 +189,8 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
  *
  * The shape check alone accepts '2026-02-31', which every consumer then renders
  * as a real deadline while `daysBetween` counts to the 3rd of March. Rebuilt
- * through UTC rather than a local Date for the reason `data/timeline.ts:53-59`
+ * through UTC rather than a local Date for the reason the date-handling header
+ * above `isoOf` in `data/timeline.ts`
  * gives: a local parse of a date-only string shifts west of Greenwich.
  */
 function isoDate(o: TextOptions = {}): Schema<string> {

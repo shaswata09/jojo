@@ -4,7 +4,7 @@
  * `draftFromUrl` and `draftFromText` are imported from `kg/core/parse-posting`.
  * They used to live in `components/applications/draft-from`, which meant the
  * store — a domain write — reached UP into a component folder for URL parsing
- * (`store-context.ts:3`). That is the one existing layer violation the plan
+ * (the removed `store-context.ts`). That is the one existing layer violation the plan
  * names, and it is fixed by moving the parser DOWN rather than by moving the
  * caller up. If you are tempted to tidy it back into `components/` because the
  * dialog also uses it: the dialog imports it from core too, and a domain write

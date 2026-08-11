@@ -2,7 +2,7 @@
  * L2 — the write-behind queue: drain, coalescing, backoff, PersistenceHealth.
  *
  * Nothing awaits this. `commit` is synchronous because the alternative is a
- * route transition gated on a disk write — `JobScout.tsx:268` navigates to an
+ * route transition gated on a disk write — `onPromote` in `routes/JobScout.tsx` navigates to an
  * application the moment it is created, and awaiting the write would put a
  * spinner between clicking a card and seeing it.
  *

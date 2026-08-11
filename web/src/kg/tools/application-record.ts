@@ -117,8 +117,8 @@ export const applicationNoteSet = defineTool({
  *
  * By the time an undo fires the flag may have been cleared elsewhere, and
  * toggling again would set it — a fact this codebase already writes down three
- * times (`PriorityActions.tsx:69-71`, `RemindersTool.tsx:497-499`,
- * `OwedThisWeek.tsx:177`). The card reads the current value and asks for the one
+ * times — on the Undo of the completion toast in `PriorityActions.tsx`,
+ * `RemindersTool.tsx` and `OwedThisWeek.tsx`. The card reads the current value and asks for the one
  * it wants.
  */
 export const applicationFlagSet = defineTool({

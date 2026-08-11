@@ -3,8 +3,9 @@
  *
  * `commit` is synchronous. It applies the entry's after-images to the snapshot,
  * appends the journal row and enqueues the durable ops; it never awaits the disk.
- * Awaiting would mean a route transition gated on a write (JobScout.tsx:268,
- * ApplicationDetail.tsx:299) — a spinner between clicking a card and seeing it.
+ * Awaiting would mean a route transition gated on a write (`onPromote` in
+ * `routes/JobScout.tsx`, `onDecide` in `routes/ApplicationDetail.tsx`) — a
+ * spinner between clicking a card and seeing it.
  *
  * Memory is authoritative and IndexedDB is a durability mechanism, not a query
  * mechanism.

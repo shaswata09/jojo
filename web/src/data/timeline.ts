@@ -67,7 +67,8 @@ export function addDays(iso: string, n: number): string {
  * `todayISO()` used to live here and is deliberately gone.
  *
  * It read the wall clock, and it sat in the one directory `repo` and `tools` are
- * both allowed to import (check-layers.mjs:59,66) — so a tool could have reached
+ * both allowed to import (the `alias: ['@/data']` entries under `repo` and
+ * `tools` in `scripts/check-layers.mjs`) — so a tool could have reached
  * the clock through it without ever writing `new Date()`, which is the exact
  * thing D26 puts behind ToolContext.now. It had zero call sites in all of src/,
  * so nothing broke; what it had was a loaded gun inside the alias D26 protects.

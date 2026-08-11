@@ -24,7 +24,7 @@ import { useRun } from '@/kg/react/use-tool'
 import type { ToolName } from '@/kg/tools'
 import { useToast } from '@/lib/toast-context'
 
-/** Matches the pickers in `QueryPanel.tsx:46-47` — the app's one select skin. */
+/** Matches `SELECT_CLASS` in `graph/query/QueryFields.tsx` — the app's one select skin. */
 const SELECT_CLASS =
   'h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2 text-sm text-text-1 transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
 
@@ -165,7 +165,8 @@ function GeneratedField({
 /**
  * Any tool, as a form, from its own input schema.
  *
- * This is the surface `core/schema.ts:6-13` was written for: one reader of
+ * This is the surface the `FieldMeta` header in `core/schema.ts` was written
+ * for: one reader of
  * `FieldMeta` that both ⌘K and `/graph` open, so a tool gains a usable form the
  * moment it is registered rather than when somebody writes its dialog. It does
  * not replace the hand-written editors — `ApplicationDialog` knows about

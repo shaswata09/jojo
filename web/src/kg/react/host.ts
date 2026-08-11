@@ -3,7 +3,7 @@
  *
  * Two members, and the bar for a third is high. `useUndoHotkey` used to sit
  * inside `KgProvider` and call `window.addEventListener('keydown', …)` directly
- * (kg.tsx:96-99, now gone), which made the shared React layer unmountable
+ * (in `kg.tsx`, now gone), which made the shared React layer unmountable
  * anywhere `window` is not defined — on React Native that is a `ReferenceError`
  * at mount, not a type error someone would have caught in review. Everything
  * `kg/react` needed from a browser now arrives through this interface, and the
@@ -58,8 +58,8 @@ export interface Host {
    * `run` returns a promise because Electron is the one platform that can
    * genuinely defer its `before-quit` until the write settles. Web and RN cannot
    * wait and must not try: `queue.flush()` resolves on a *failed* attempt on
-   * purpose (queue.ts:196-206), so a handler that blocked on durability would
-   * hang on exactly the failure it exists to survive.
+   * purpose (see `flush` in `kg/repo/queue.ts`), so a handler that blocked on
+   * durability would hang on exactly the failure it exists to survive.
    *
    * May fire more than once for one suspension — the web adapter listens to two
    * events that both fire on an ordinary tab close — so `run` must be idempotent.
@@ -133,7 +133,8 @@ export const headlessHost: Host = Object.freeze({
  *   going through this port at all.
  * - `onSuspend`: `AppState.addEventListener('change', …)` firing on
  *   `'background'`. Note that RN throttles timers in the background, so the
- *   queue's backoff (queue.ts:122-137) will not fire there — the flush on
+ *   queue's backoff (`schedule` in `kg/repo/queue.ts`) will not fire there —
+ *   the flush on
  *   suspend is the belt and the timer the braces, not the reverse.
  *
  * Electron's renderer can use the web adapter unchanged for `onUndoRequest`

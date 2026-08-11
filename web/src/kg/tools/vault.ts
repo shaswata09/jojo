@@ -3,12 +3,12 @@
  *
  * Three collections that take the same three edits, so the shape below repeats
  * on purpose rather than being generalised: `useCollectionActions`
- * (`store-context.ts:618-660`) proved one generic serves them, and it also
+ * (in the removed `store-context.ts`) proved one generic serves them, and it also
  * proved what that costs — the generic could not carry a rule that belonged to
  * one of them, so `savedOn`, the id prefix and the name field all had to be
  * passed in as parameters and the call sites became the documentation.
  *
- * No file bytes. `data/files.ts:12-13` — "Nothing here reads file CONTENT" — is
+ * No file bytes. `lib/files.ts`'s header — "Nothing here reads file CONTENT" — is
  * the existing statement of this and D27 makes it an invariant: `props` is
  * binary-free, so `getAll('nodes')` stays a five-millisecond operation. A file
  * record is a name, a size label and a bucket.
@@ -222,8 +222,9 @@ const fileDraft = s.object({
  *
  * `addFile` minted its slug from a store read that predated the whole gesture,
  * so two files dropped together both took the same id and from then on were one
- * row with one keyword set that one delete took out together. `FilesTool.tsx`
- * :198-221 works that around by hand with a `seen` set. Here `ctx.mintSlug`
+ * row with one keyword set that one delete took out together. `sortDrop` in
+ * `components/vault/files/intake.ts` works that around by hand with a `seen`
+ * set. Here `ctx.mintSlug`
  * counts what this transaction has already handed out, so the workaround has
  * nothing left to do — and the whole drop is one commit and one Undo.
  */

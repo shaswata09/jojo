@@ -231,7 +231,7 @@ describe('revert', () => {
   })
 
   /**
-   * Deleting an application UNLINKS, it never cascades — `store-context.ts:152-176`
+   * Deleting an application UNLINKS, it never cascades — the removed `store-context.ts`
    * in the graph's spelling, with the undo it never had.
    *
    * The reminder survives the delete carrying no pointer, and comes back

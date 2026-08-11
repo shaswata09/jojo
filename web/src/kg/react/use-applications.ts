@@ -63,8 +63,8 @@ export function useApplications() {
    * mobile sheet was titled "Application".
    *
    * The `byId` hit is not a second resolver, it is an identity preserve:
-   * `createOneProjection` keeps its own cache (`project.ts:113`), so projecting
-   * the record again would hand the detail route a different object than the
+   * `createOneProjection` (in `kg/core/project.ts`) keeps its own cache, so
+   * projecting the record again would hand the detail route a different object than the
    * list holds and defeat every `React.memo` keyed on it.
    */
   const get = useCallback(
@@ -116,7 +116,7 @@ export function useApplications() {
    * A patch over the whole record, including clearing a field.
    *
    * A key that is PRESENT and `undefined` means "clear this", which is how
-   * `revertOf` (`ApplicationDetail.tsx:268`) spells a restore; a key that is
+   * `revertOf` (in `routes/ApplicationDetail.tsx`) spells a restore; a key that is
    * absent means "leave it alone". `Object.hasOwn` is the only thing that can
    * tell those apart, and conflating them would make an undo of a stage change
    * quietly wipe the dates the stage change had filled in.

@@ -1,6 +1,6 @@
 /**
  * Characterisation tests: the traversal contract `src/kg/core/algebra.ts` has
- * to inherit when `graph.ts` is demoted to a reading of the snapshot.
+ * to inherit when `lib/graph/` is demoted to a reading of the snapshot.
  *
  * Topologies are built by hand rather than through `buildGraph`, so a failure
  * points at the traversal rather than at a change in the seed fixtures.
@@ -109,7 +109,8 @@ describe('shortestPath', () => {
 
 describe('filterGraph', () => {
   /**
-   * `degree` is deliberately the WHOLE-graph value, per graph.ts:462-468.
+   * `degree` is deliberately the WHOLE-graph value, per `filterGraph` in
+   * `lib/graph/traversal.ts`.
    *
    * It sizes the node, and it is a property of the record rather than of the
    * view: recounting it after a filter would make a node shrink because you hid

@@ -64,7 +64,7 @@ export { dayOf } from '../core/project'
  * Every write counts as activity.
  *
  * This replaces `daysAgo: 0`, which `useApplications.update` spread into every
- * patch (`store-context.ts:328`). An edit that left the timestamp alone sank the
+ * patch (in the removed `store-context.ts`). An edit that left the timestamp alone sank the
  * row the user had just touched to the bottom of the recent feed, which is the
  * default sort on two screens.
  */

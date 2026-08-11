@@ -157,7 +157,7 @@ describe('edges', () => {
 
 describe('removeNode', () => {
   /**
-   * Unlink, never cascade — verbatim from store-context.ts:152-176.
+   * Unlink, never cascade — verbatim from the removed `store-context.ts`.
    *
    * Deleting an application drops its edges and leaves the timeline items,
    * links, files and snippets exactly where they were. Cascading would delete

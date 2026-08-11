@@ -8,9 +8,10 @@
  * `toggleDone` is gone, split into `complete` and `reopen`. A toggle is an
  * instruction to invert whatever it finds, and by the time an undo fires the item
  * may have been unticked on another screen — so the undo would re-tick it. This
- * codebase already wrote that down three times before anyone acted on it
- * (`PriorityActions.tsx:69-71`, `RemindersTool.tsx:497-499`,
- * `OwedThisWeek.tsx:177`). `snooze` is the same shape of trap and is written
+ * codebase already wrote that down three times before anyone acted on it — on
+ * the Undo of the completion toast in `PriorityActions.tsx`,
+ * `RemindersTool.tsx` and `OwedThisWeek.tsx`. `snooze` is the same shape of
+ * trap and is written
  * here as an absolute date so its undo is exact.
  *
  * `allDay` is not stored. It was `startMins === undefined` written down a second
@@ -120,8 +121,8 @@ export const timelineItemUpdate = defineTool({
      * `null` reopens the item; absent leaves the tick alone.
      *
      * Here as well as on `complete`/`reopen` because a card that restores a
-     * before-image hands back every field it changed at once
-     * (`TimelineItemDialog.tsx:410`), and a save that dropped this one silently
+     * before-image hands back every field it changed at once (the Undo in
+     * `components/timeline/dialog/ItemForm.tsx`), and a save that dropped this one silently
      * would put back the title and leave the item ticked.
      */
     completedOn: s.optional(s.nullable(s.isoDate({ label: 'Completed on' }))),

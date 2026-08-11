@@ -10,7 +10,7 @@
  * A spread reducer treated both as "write undefined", which happened to be right.
  * A schema cannot: `s.optional` drops an explicit `undefined` before the tool
  * sees it, so a patch spelling a clear that way would have been read as "not
- * mentioned" — and `revertOf` (`ApplicationDetail.tsx:268`) restores a
+ * mentioned" — and `revertOf` (in `routes/ApplicationDetail.tsx`) restores a
  * before-image by handing back exactly that. The undo of a stage change would
  * have put the stage back and left the offer it had just written.
  *
