@@ -12,8 +12,24 @@ const buttonVariants = cva(
         default: 'bg-primary text-primary-foreground hover:bg-primary/80',
         outline:
           'border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
+        // `hover:bg-row-hover`, not the `color-mix()` over `var(--secondary)`
+        // and `var(--foreground)` this used to carry. Neither of THOSE two
+        // names is a custom property anywhere in the stylesheet — both resolve
+        // to the empty string — so the mix was invalid at computed-value time,
+        // `background-color` fell back to its initial value, and the hover
+        // measured `rgba(0, 0, 0, 0)` in both themes: the button did not move
+        // under the pointer.
+        //
+        // The prefixed `--color-secondary` and `--color-foreground` DO resolve
+        // at runtime (measured `#171717` dark / `#f5f5f5` light), so `@theme
+        // inline` is not the culprit and a mix over those would have worked —
+        // an earlier version of this comment claimed otherwise and was wrong.
+        // The bug was only ever the missing `--color-` prefix. `--row-hover` is
+        // still the better answer: it is the token the palette defines for
+        // exactly this step ("move away from the page" — darker in light,
+        // lighter in dark), so a named utility replaces the arbitrary value.
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
+          'bg-secondary text-secondary-foreground hover:bg-row-hover aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
         ghost:
           'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
         destructive:

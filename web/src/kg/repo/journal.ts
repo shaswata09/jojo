@@ -78,6 +78,13 @@ const imageFor = <T>(delta: RecordDelta<T>, dir: Direction): T | null =>
  * undoing a delete would put the application back after its `AT` edge, and any
  * index keyed on the endpoints would have been asked to file an edge against a
  * node that did not exist yet.
+ *
+ * It replays the entry and NOTHING ELSE. A real `GraphWriter` — `MutableSnapshot`
+ * — cascades incident edges out of `removeNode` to keep that same invariant, and
+ * an edge removed that way is not in the entry, so it reaches no durable op and
+ * no before-image. Naming the displaced edges is the caller's job, before it
+ * gets here: `withDisplacedEdges` in `repository.ts`, which is the replay-side
+ * counterpart of `tx.del`'s `dropIncident`.
  */
 export function applyJournal(s: GraphWriter, entry: JournalEntry, dir: Direction): void {
   for (const delta of entry.edges) {
@@ -120,9 +127,70 @@ export function invert(entry: JournalEntry, label: string): JournalDraft {
   }
 }
 
-/** Whether an entry changed anything. An empty one is not worth an Undo. */
-export const isEmpty = (entry: Pick<JournalEntry, 'nodes' | 'edges'>): boolean =>
-  entry.nodes.length === 0 && entry.edges.length === 0
+/**
+ * Structural equality over stored images. No library, and no `JSON.stringify`.
+ *
+ * Stringifying compares key ORDER as well as content, and `tx.patch` rebuilds
+ * `props` by spreading and reassigning — so deleting a key and putting it back
+ * with the same value moves it, and two identical records would have compared
+ * unequal for a reason nobody could see in the values. Images are plain JSON by
+ * construction: `props` is binary-free (D27) and every stored field is a string,
+ * number, boolean, array or record.
+ */
+function sameImage(a: unknown, b: unknown): boolean {
+  if (a === b) return true
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false
+
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
+    return a.every((item, index) => sameImage(item, b[index]))
+  }
+
+  const left = a as Record<string, unknown>
+  const right = b as Record<string, unknown>
+  const keys = Object.keys(left)
+  if (keys.length !== Object.keys(right).length) return false
+  // `in` rather than `!== undefined`: an explicitly-undefined key is a DIFFERENT
+  // record from an absent one everywhere else in this codebase (D21), and a
+  // comparison that folded them together would report a change as a no-op.
+  return keys.every((key) => key in right && sameImage(left[key], right[key]))
+}
+
+/**
+ * The image without the field the writer stamps whether or not anything moved.
+ *
+ * `updatedAt` is excluded because it is not something the user did — `tx.patch`
+ * writes it on every call, including the call that wrote the same values back.
+ */
+const withoutStamp = (image: unknown): unknown => {
+  if (typeof image !== 'object' || image === null) return image
+  const rest: Record<string, unknown> = { ...(image as Record<string, unknown>) }
+  delete rest['updatedAt']
+  return rest
+}
+
+/** A create or a delete is always a change: one side is null. */
+const isNoOp = <T>(delta: RecordDelta<T>): boolean => {
+  if (delta.before === null || delta.after === null) return delta.before === delta.after
+  return sameImage(withoutStamp(delta.before), withoutStamp(delta.after))
+}
+
+/**
+ * Whether an entry left every record exactly as it found it.
+ *
+ * The question the undo stack needs answered, and it is not "does the entry have
+ * deltas". That spelling was unanswerable-by-construction for every patch-based
+ * tool: `tx.patch` writes `updatedAt: instant` whether or not anything else
+ * moved, so a Save pressed over an unchanged form always staged one node delta,
+ * always looked like a change, and always took the top of the undo stack — so
+ * the next Ctrl+Z restored a timestamp and left the edit before it in place.
+ *
+ * Such an entry is still committed and still audited: "you pressed save and
+ * nothing happened" is worth being able to see, and the timestamp is a real
+ * write. It just is not what Undo means.
+ */
+export const changesNothing = (entry: Pick<JournalEntry, 'nodes' | 'edges'>): boolean =>
+  entry.nodes.every(isNoOp) && entry.edges.every(isNoOp)
 
 /* --------------------------------- reading -------------------------------- */
 

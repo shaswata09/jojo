@@ -87,7 +87,11 @@ export function FileRow({
               type="button"
               onClick={() => onEdit('name')}
               title="Rename this file"
-              className="block max-w-full cursor-pointer truncate text-left font-mono text-sm text-text-1 transition-colors hover:text-accent"
+              /* `hover:underline` as well as the colour. In the dark theme
+                 --accent and --text-1 are the same #fafafa (see index.css), so
+                 the colour change alone painted nothing and the file name gave
+                 no sign it could be clicked to rename. */
+              className="block max-w-full cursor-pointer truncate text-left font-mono text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
             >
               {f.name}
             </button>

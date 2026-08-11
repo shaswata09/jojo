@@ -23,11 +23,11 @@
 import type { EdgeId, Instant, NodeId, NodeType, Rel, StoredEdge, StoredNode } from '../core/model'
 import { uuidv7 } from '../core/ref'
 import { fail, ok } from '../core/result'
-import type { Result } from '../core/result'
+import type { KgErrorCode, Result } from '../core/result'
 import type { GraphSnapshot, MutableSnapshot } from '../core/snapshot'
 import type { Driver, DurableOp, StoreEvent } from '../storage/driver'
 import type { StoredRow } from '../storage/schema'
-import { AUDIT_CAP, Ring, UNDO_DEPTH, applyJournal, invert, isEmpty } from './journal'
+import { AUDIT_CAP, Ring, UNDO_DEPTH, applyJournal, changesNothing, invert } from './journal'
 import type { JournalDraft, JournalEntry, RecordDelta } from './journal'
 import { metaRow, touched } from './meta'
 import type { StoreMeta } from './meta'
@@ -66,7 +66,12 @@ export interface Repository {
   subscribeHealth(fn: (h: PersistenceHealth) => void): () => void
   /** Awaited by export, by Settings' three data ops, and by pagehide. */
   flush(): Promise<void>
-  /** Wholesale replace in one driver transaction: demo / empty / import. */
+  /**
+   * Wholesale replace in one driver transaction: demo / empty / import.
+   *
+   * Refuses, without writing anything, when the write queue could not be
+   * drained first. See the comment on the flush inside it.
+   */
   replaceAll(graph: GraphRows, meta: StoreMeta): Promise<Result<void>>
   /**
    * Adopts rows that were read back off disk. Writes NOTHING.
@@ -173,6 +178,47 @@ function opsFor(entry: JournalEntry): DurableOp[] {
   return ops
 }
 
+/**
+ * The entry, plus a delta for every edge removing its node will take with it.
+ *
+ * `MutableSnapshot.removeNode` cascades over incident edges so the graph can
+ * never hold an edge with a missing end. `opsFor` derives its ops only from the
+ * entry, so an edge the cascade reached was removed from memory, never written
+ * as a delete, and never captured as a before-image. The audit measured the
+ * cost: create an application, tag it inside the eight-second Undo window,
+ * press Undo — the tag left the screen with no undo that could bring it back,
+ * and a TAGS row stayed on disk pointing at a node that no longer existed, so
+ * every launch from then on said "1 record on this device could not be read".
+ * D12 is the rule it broke: a delta captured by the write cannot be forgotten.
+ *
+ * The WRITE path never had this hole — `tx.del` stages `dropIncident(id)`, so
+ * the displaced edges are journalled before the node goes. Replay had no such
+ * staging, because an inverted entry carries only what the original entry
+ * named. This is that same staging, applied to whatever is about to be removed,
+ * which makes both paths obey one rule instead of two.
+ *
+ * Returns the entry unchanged when nothing is displaced, which is every commit
+ * that deletes nothing and every delete a tool staged properly.
+ */
+function withDisplacedEdges(s: MutableSnapshot, entry: JournalEntry): JournalEntry {
+  const named = new Set(entry.edges.map((delta) => delta.id))
+  const displaced: RecordDelta<StoredEdge>[] = []
+
+  for (const delta of entry.nodes) {
+    // Only the removals cascade. `land` always replays forwards, so the image
+    // that decides is `after`.
+    if (delta.after !== null) continue
+    for (const edge of s.incident(delta.id)) {
+      if (named.has(edge.id)) continue
+      named.add(edge.id)
+      displaced.push({ id: edge.id, before: edge, after: null })
+    }
+  }
+
+  if (displaced.length === 0) return entry
+  return { ...entry, edges: [...entry.edges, ...displaced] }
+}
+
 export function createRepository(options: RepositoryOptions): Repository {
   const { driver, now } = options
 
@@ -208,7 +254,8 @@ export function createRepository(options: RepositoryOptions): Repository {
     return { ...draft, id: uuidv7(Date.parse(at)), at }
   }
 
-  function land(entry: JournalEntry): JournalEntry {
+  function land(stamped: JournalEntry): JournalEntry {
+    const entry = withDisplacedEdges(snapshot, stamped)
     applyJournal(snapshot, entry, 'redo')
     snapshot.commit()
     current = reading(snapshot)
@@ -244,7 +291,14 @@ export function createRepository(options: RepositoryOptions): Repository {
       // An entry that changed nothing is still audited — "you pressed save and
       // nothing happened" is worth being able to see — but it must not take the
       // top of the undo stack, or one no-op save eats the undo the user wanted.
-      if (!isEmpty(entry)) {
+      //
+      // This used to ask whether the entry had any deltas AT ALL, which no
+      // patch-based tool can ever answer no to: `tx.patch` stamps `updatedAt` on
+      // every call, so pressing Save on an unchanged form staged a delta, took
+      // the top of the undo stack, and left Ctrl+Z rewriting a timestamp instead
+      // of undoing the edit before it. `changesNothing` reads the images rather
+      // than counting them, which is what makes the guard mean what it says.
+      if (!changesNothing(entry)) {
         undo.push(entry)
         // Anything redoable described a future this write has just replaced.
         // Keeping it would let redo reapply a before-image captured against
@@ -315,10 +369,29 @@ export function createRepository(options: RepositoryOptions): Repository {
     flush: () => queue.flush(),
 
     async replaceAll(graph, nextMeta) {
-      // Flushed FIRST. The queued ops describe rows that are about to stop
-      // existing, and draining them after the replace would write a deleted
-      // record back into a store that had just been emptied.
-      await queue.flush()
+      // Flushed FIRST, and the ANSWER is read. The queued ops describe rows that
+      // are about to stop existing, and draining them after the replace would
+      // write a deleted record back into a store that had just been emptied.
+      //
+      // `flush()` alone was not enough, and the gap was silent: it settles on a
+      // failed attempt by design so `pagehide` can never hang, so awaiting it
+      // while the disk was failing resolved with the stale batch still pending.
+      // The audit drove it — a write failing at the moment the user pressed
+      // Settings -> Empty reported success, blanked the screen, and then the
+      // next successful retry put the deleted record and its journal row back on
+      // disk under an empty graph, with health reporting `idle`. On a store
+      // still holding the demo fixtures the pending meta flip went back with it
+      // and D24's first-run signal read 'user' over a store the user had emptied.
+      //
+      // So it fails closed rather than dropping `pending`: those ops are the
+      // user's unsaved work, and discarding them to make a wipe succeed would
+      // trade a visible refusal for a silent loss.
+      if ((await queue.flushAndReport()) !== 'drained') {
+        const health = queue.health
+        return fail(stalledCode(health), stalledMessage(health), {
+          context: { at: 'replaceAll', health },
+        })
+      }
 
       const written = await driver.replace({
         nodes: graph.nodes.map(rowOf),
@@ -375,6 +448,38 @@ export function createRepository(options: RepositoryOptions): Repository {
       driver.close()
     },
   }
+}
+
+/**
+ * The code a refused `replaceAll` reports, taken from why the queue is stuck.
+ *
+ * Widened from the queue's own reason rather than flattened to one code, so the
+ * log line and Diagnostics say the same thing the banner does. A queue that is
+ * merely `degraded` has no reason of its own — the disk is failing for some
+ * reason it did not classify — and 'storage/unavailable' is the honest reading
+ * of that.
+ */
+function stalledCode(health: PersistenceHealth): KgErrorCode {
+  if (health.state !== 'off') return 'storage/unavailable'
+  if (health.reason === 'quota') return 'storage/quota'
+  if (health.reason === 'blocked') return 'storage/blocked'
+  return 'storage/corrupt'
+}
+
+/**
+ * Toast copy for the refusal. Two sentences, because there are two situations.
+ *
+ * `off` is not recoverable inside a session, so telling the user to wait would
+ * be the same promise the banner used to make and could not keep; the only
+ * thing left that helps them is an export. Everything else is a retry away, and
+ * saying so is what makes the refusal read as caution rather than as a bug. The
+ * default sentence for the code is not used: the codes describe why the DISK
+ * said no, and this is a message about what jojo did instead.
+ */
+function stalledMessage(health: PersistenceHealth): string {
+  return health.state === 'off'
+    ? 'jojo has stopped saving to this device, and some of your changes are still only on screen. Export a copy from Settings before replacing your records.'
+    : 'Some of your changes have not reached the disk yet. Try again once saving has caught up.'
 }
 
 /** Rings are FIFO by design; `revert` is the one caller that removes by id. */

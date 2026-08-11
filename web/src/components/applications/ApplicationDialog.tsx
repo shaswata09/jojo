@@ -77,21 +77,22 @@ export function ApplicationDialog({
   const deadlineRef = useRef<HTMLInputElement>(null)
   const urlRef = useRef<HTMLInputElement>(null)
 
-  /**
-   * Reopening has to start from the new `initial`, not from whatever the last
-   * visit left behind — the same mounted dialog serves "new application" and
-   * "edit Rice" one after the other. Adjusting during render rather than in an
-   * effect keeps the first painted frame correct.
+  /*
+   * Reopening starts from the new `initial` because reopening MOUNTS this
+   * component again — `DialogHost` varies its key per open (`dialog-mount.ts`)
+   * and unmounts it on close, so the three initialisers above run for every
+   * visit.
+   *
+   * There used to be a re-seed here instead: a render-phase `open !== wasOpen`
+   * adjust, guarding against a reopen on an already-mounted instance. It could
+   * never fire. The only mount site passes `open` as a literal `true`, so the
+   * value it compared never changed — and the case it was written for did happen,
+   * through the key, where it went unnoticed until someone pressed "Draft
+   * discarded · Undo" over an already-open blank form and got the blank form
+   * back. A guard that cannot run is worse than none, because it reads as cover.
+   * Anything mounting this dialog with an `open` prop that toggles has to seed it
+   * from a key that varies with the open, as the host does.
    */
-  const [wasOpen, setWasOpen] = useState(open)
-  if (open !== wasOpen) {
-    setWasOpen(open)
-    if (open) {
-      setForm(formFrom(initial))
-      setKeywords(keywordsOf(initial, labelIdsOf))
-      setCheck({ attempted: false, errors: {} })
-    }
-  }
 
   const id = initial?.id
   const record = mode === 'edit' && id ? applications.get(id) : undefined

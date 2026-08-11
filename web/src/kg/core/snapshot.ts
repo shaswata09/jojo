@@ -232,6 +232,16 @@ export class MutableSnapshot implements GraphSnapshot {
    * links, files and snippets exactly where they were. Cascading would delete
    * the user's own writing because it happened to be filed somewhere, and no
    * undo of that reads as reversible.
+   *
+   * The edge sweep below is not part of that promise — it is the invariant that
+   * this structure never holds an edge with a missing end. It is also silent,
+   * and a caller that does not know which edges it took loses them: they never
+   * become durable deletes and never become before-images. Every writer must
+   * therefore name the incident edges itself before calling this. Both of them
+   * do — `tx.del`'s `dropIncident` on the write path, `withDisplacedEdges` in
+   * `repository.ts` on the replay path — and the second one exists because it
+   * did not, which cost a dangling TAGS row on disk and a "1 record could not be
+   * read" banner on every launch afterwards.
    */
   removeNode(id: NodeId): StoredNode | undefined {
     const node = this.#byId.get(id)

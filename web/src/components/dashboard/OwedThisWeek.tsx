@@ -313,7 +313,13 @@ export function OwedThisWeek() {
                                 <button
                                   type="button"
                                   onClick={() => edit(e)}
-                                  className="block max-w-full cursor-pointer truncate text-left text-sm transition-colors hover:text-accent"
+                                  /* `hover:underline` as well as the colour:
+                                     in dark, --accent and --text-1 are the
+                                     same #fafafa (see index.css), so the title
+                                     of an owed item gave no sign it opened
+                                     anything. The tick beside it survived on
+                                     its border change. */
+                                  className="block max-w-full cursor-pointer truncate text-left text-sm underline-offset-2 transition-colors hover:text-accent hover:underline"
                                 >
                                   {e.title}
                                 </button>

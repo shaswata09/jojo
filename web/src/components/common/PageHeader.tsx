@@ -52,7 +52,13 @@ export function PageHeader({
             <PopoverTrigger
               aria-label={`${title} options`}
               title={`${title} options`}
-              className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-hairline bg-well text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1 data-[state=open]:border-accent-border data-[state=open]:bg-accent-soft data-[state=open]:text-accent"
+              // `touch-target` because the coarse-pointer rule in `index.css`
+              // enumerates `size-6`/`size-7`/`size-8` and stops there: this is
+              // the app's one bare `size-9` trigger, so it was the only control
+              // in a page header that kept its drawn 36x36 while the buttons
+              // beside it caught 44x44. Bigger on screen, smaller under a
+              // finger, which is the shape of bug nobody finds by looking.
+              className="touch-target grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-hairline bg-well text-text-2 transition-colors hover:border-hairline-strong hover:text-text-1 data-[state=open]:border-accent-border data-[state=open]:bg-accent-soft data-[state=open]:text-accent"
             >
               <SlidersHorizontal className="size-4" strokeWidth={1.8} aria-hidden />
             </PopoverTrigger>

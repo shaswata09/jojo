@@ -393,7 +393,12 @@ export function GlancePanel() {
                             initial: e,
                           })
                         }
-                        className="min-w-0 cursor-pointer rounded-sm text-left transition-colors hover:text-accent"
+                        /* `hover:underline` as well as the colour: in dark,
+                           --accent and --text-1 are the same #fafafa (see
+                           index.css), so this row said nothing under the
+                           pointer. The counters above it were never affected —
+                           their <Link> underlines the whole group. */
+                        className="min-w-0 cursor-pointer rounded-sm text-left underline-offset-2 transition-colors hover:text-accent hover:underline"
                       >
                         {/* Struck and greyed once ticked off, the same as the
                             calendar draws it — the row stays because the day

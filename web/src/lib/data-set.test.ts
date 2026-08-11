@@ -20,9 +20,13 @@ import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { dayOf } from '@/kg/core/project'
 import { createProjections } from '@/kg/react/projections'
+import { MutableSnapshot } from '@/kg/core/snapshot'
 import { boot, resetBoot } from '@/kg/repo/boot'
-import { readMeta } from '@/kg/repo/meta'
+import { freshMeta, readMeta } from '@/kg/repo/meta'
+import { createRepository } from '@/kg/repo/repository'
+import { seedToGraph } from '@/kg/repo/seed'
 import { createIdbDriver } from '@/kg/storage/idb-driver'
+import { createMemoryDriver } from '@/kg/storage/memory-driver'
 import { createToolRuntime } from '@/kg/tools/runtime'
 import { applyDataSet, graphFor, metaFor } from '@/lib/data-set'
 
@@ -166,6 +170,69 @@ describe('choosing a data set', () => {
     const meta = readMeta(rows.meta)
     if (meta === null || meta === 'corrupt') throw new Error('the meta row did not survive')
     expect(meta.dataSet).toBe('empty')
+  })
+
+  /**
+   * The same invariant on the path where the flush does NOT drain, which is the
+   * only path where it was ever in danger.
+   *
+   * The case above proves the ordering when the disk is healthy: the queue
+   * empties, then the store is replaced, and nothing is left to land afterwards.
+   * It could never have failed — `flush()` resolves after a successful drain by
+   * construction. The audit's A1 is the other resolution: `flush()` also settles
+   * on a FAILED attempt, so `replaceAll` used to wipe the store while the batch
+   * was still queued, and the next successful retry wrote the deleted record and
+   * its journal row back underneath an empty screen.
+   *
+   * Driven through the memory driver rather than IndexedDB because the fault has
+   * to be injected at the driver seam and then cleared — the failing window is
+   * the whole reproduction, and `fake-indexeddb` has no way to open one.
+   */
+  it('refuses to empty a store whose last write has not landed', async () => {
+    let broken = true
+    const driver = createMemoryDriver({
+      fault: (call) =>
+        broken && call === 'commit'
+          ? { code: 'storage/unavailable', message: 'the database is locked' }
+          : null,
+    })
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from(),
+      meta: freshMeta(NOW, 'demo'),
+      now: () => NOW,
+    })
+
+    const doomed = seedToGraph(NOW).nodes[0]
+    if (!doomed) throw new Error('the fixtures compiled to nothing')
+    repo.commit({
+      tool: 'application.create',
+      input: {},
+      label: 'added',
+      calls: [],
+      nodes: [{ id: doomed.id, before: null, after: doomed }],
+      edges: [],
+    })
+    await repo.flush()
+    expect(repo.health.state).toBe('degraded')
+
+    const applied = await applyDataSet(repo, 'empty', LATER)
+
+    // The button reports the refusal instead of a success it cannot deliver;
+    // `chooseDataSet` in `lib/store.tsx` turns this into "The records were not
+    // cleared… Your records are unchanged."
+    expect(applied.ok).toBe(false)
+    expect(repo.getSnapshot().node(doomed.id)).toBeDefined()
+    expect(repo.meta.dataSet).not.toBe('empty')
+
+    // The half that used to diverge: the disk catches up to the SCREEN, rather
+    // than to a wipe the screen never saw.
+    broken = false
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.nodes.map((row) => row['id'])).toEqual([doomed.id])
+    expect(rows.ok && readMeta(rows.value.meta)).toMatchObject({ dataSet: 'user' })
+    repo.close()
   })
 })
 

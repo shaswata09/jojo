@@ -24,6 +24,51 @@ import { metaRow, opened } from './meta'
 import type { StoreMeta } from './meta'
 import { createRepository } from './repository'
 
+/**
+ * Edge rows whose ends are not in the store AT ALL — the only rows boot deletes.
+ *
+ * Read off the RAW rows, before validation, and that is the whole distinction.
+ * `validateRows` skips an edge for two unrelated reasons and reports them with
+ * the same sentence: the row is malformed, or the record it names is not there.
+ * The first is data the user should be told about and must not be touched — a
+ * node row that fails today's schema is still their record, and a fix-forward
+ * migration can bring it back with its links intact, which deleting the links
+ * would make impossible. The second names an id nothing in the store answers to.
+ * Node ids are UUIDv7 and are never reissued, so no future boot can make that
+ * edge valid; it is a row that fails validation on every launch, is counted into
+ * "N records on this device could not be read and are not being shown", and can
+ * never stop being counted.
+ *
+ * They exist because journal replay used to remove a node without naming the
+ * edges the snapshot's cascade took with it (`withDisplacedEdges` in
+ * `repository.ts` is that fix). That stops NEW ones; every store that already
+ * hit it still has the row and still shows the banner, forever, which is why
+ * this pass is here rather than only the fix.
+ *
+ * Logged with their ids rather than dropped quietly (R-1), but not counted into
+ * `skipped`: `skipped` means "a record of yours is not on screen", and the thing
+ * removed here is one end of a link whose other end went a long time ago.
+ */
+export function orphanEdgeKeys(rows: Rows): string[] {
+  const present = new Set<string>()
+  for (const row of rows.nodes) {
+    const id = row['id']
+    if (typeof id === 'string') present.add(id)
+  }
+
+  const orphans: string[] = []
+  for (const row of rows.edges) {
+    const id = row['id']
+    const from = row['from']
+    const to = row['to']
+    // A row too broken to name its own ends is corrupt, not orphaned. It stays,
+    // and it stays counted.
+    if (typeof id !== 'string' || typeof from !== 'string' || typeof to !== 'string') continue
+    if (!present.has(from) || !present.has(to)) orphans.push(id)
+  }
+  return orphans
+}
+
 export async function ready(
   driver: Driver,
   options: DurableBootOptions,
@@ -35,9 +80,22 @@ export async function ready(
   // THE trust boundary. Everything below this line is a checked record; nothing
   // above it was more than a JSON blob with a primary key.
   const validated = validateRows(rows.nodes, rows.edges)
-  if (validated.skipped.length > 0) {
-    kgWarn(`${validated.skipped.length} record(s) could not be read and are not shown`, {
-      skipped: validated.skipped,
+
+  // Pruned before the count is reported, so the banner is right on THIS launch
+  // rather than on the next one. See `orphanEdgeKeys` for what qualifies.
+  const orphans = new Set(orphanEdgeKeys(rows))
+  const skipped = validated.skipped.filter(
+    (d) => !(d.store === 'edges' && d.id !== null && orphans.has(d.id)),
+  )
+  if (orphans.size > 0) {
+    kgLog(`removed ${orphans.size} link row(s) that pointed at records that are gone`, {
+      edges: [...orphans],
+    })
+  }
+
+  if (skipped.length > 0) {
+    kgWarn(`${skipped.length} record(s) could not be read and are not shown`, {
+      skipped,
     })
   }
 
@@ -58,6 +116,7 @@ export async function ready(
   // prune that only half-landed would leave the ops keys non-contiguous — which
   // is what the repository's sequence counter continues from below.
   const chores: DurableOp[] = []
+  for (const id of orphans) chores.push({ kind: 'delete', store: 'edges', key: id })
   if (kept.length < history.length) {
     chores.push({ kind: 'clear', store: 'ops' })
     kept.forEach((entry, index) => {
@@ -93,6 +152,6 @@ export async function ready(
 
   return {
     outcome: 'ready',
-    session: live(driver, repo, options, { problems, skipped: validated.skipped, crossTab }),
+    session: live(driver, repo, options, { problems, skipped, crossTab }),
   }
 }

@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 import type { Instant, NodeId, StoredEdge, StoredNode } from '../core/model'
-import { AUDIT_CAP, Ring, UNDO_DEPTH, applyJournal, invert, isEmpty } from './journal'
+import { AUDIT_CAP, Ring, UNDO_DEPTH, applyJournal, changesNothing, invert } from './journal'
 import type { GraphWriter, JournalEntry } from './journal'
 
 const AT: Instant = '2026-10-12T09:00:00.000Z'
@@ -194,13 +194,96 @@ describe('invert', () => {
   })
 })
 
-describe('isEmpty', () => {
-  it('is true only when nothing was written', () => {
-    expect(isEmpty({ nodes: [], edges: [] })).toBe(true)
+describe('changesNothing', () => {
+  it('is true when nothing was written at all', () => {
+    expect(changesNothing({ nodes: [], edges: [] })).toBe(true)
     expect(
-      isEmpty({
+      changesNothing({
         nodes: [],
         edges: [about('a', 'b')].map((e) => ({ id: e.id, before: null, after: e })),
+      }),
+    ).toBe(false)
+  })
+
+  /**
+   * The case the old spelling could not see, and the reason it mattered.
+   *
+   * `tx.patch` stamps `updatedAt` on every call, so a Save pressed over an
+   * unchanged form ALWAYS produced a delta. Counting deltas therefore answered
+   * "yes, something changed" for every no-op save in the app, the entry took the
+   * top of the undo stack, and the next Ctrl+Z restored a timestamp instead of
+   * undoing the edit before it.
+   */
+  it('sees through the updatedAt stamp that every patch writes', () => {
+    const before = application('rice', 'statements missing')
+    const after = { ...before, updatedAt: '2026-10-12T11:30:00.000Z' }
+
+    expect(changesNothing({ nodes: [{ id: before.id, before, after }], edges: [] })).toBe(true)
+  })
+
+  it('is false when a field moved as well as the stamp', () => {
+    const before = application('rice', 'statements missing')
+    const after = {
+      ...application('rice', 'statements done'),
+      updatedAt: '2026-10-12T11:30:00.000Z',
+    }
+
+    expect(changesNothing({ nodes: [{ id: before.id, before, after }], edges: [] })).toBe(false)
+  })
+
+  // A create and a delete are changes whatever the images look like: one side is
+  // absent, which is the whole content of the delta.
+  it('never calls a create or a delete a no-op', () => {
+    const node = application('rice')
+    expect(changesNothing({ nodes: [{ id: node.id, before: null, after: node }], edges: [] })).toBe(
+      false,
+    )
+    expect(changesNothing({ nodes: [{ id: node.id, before: node, after: null }], edges: [] })).toBe(
+      false,
+    )
+  })
+
+  /**
+   * Compared structurally rather than by identity or by `JSON.stringify`.
+   *
+   * The images come back from two different places — one off the snapshot, one
+   * built by `{ ...current, props }` — so they are never the same object, and
+   * `props` is rebuilt key by key, so their key order can differ for values that
+   * are identical.
+   */
+  it('compares props by value, not by reference or key order', () => {
+    const before = application('rice')
+    const reordered = {
+      ...before,
+      props: Object.fromEntries(Object.entries(before.props).reverse()),
+    } as StoredNode
+
+    expect(
+      changesNothing({ nodes: [{ id: before.id, before, after: reordered }], edges: [] }),
+    ).toBe(true)
+
+    const deeper = {
+      ...before,
+      props: { ...before.props, offer: { respondBy: '2026-11-01', note: 'call back' } },
+    } as StoredNode
+    expect(changesNothing({ nodes: [{ id: before.id, before, after: deeper }], edges: [] })).toBe(
+      false,
+    )
+  })
+
+  // One real delta among no-ops is still a change, or a bulk write would lose
+  // its undo because most of the records it touched happened not to move.
+  it('is false when any one delta moved', () => {
+    const still = application('rice')
+    const moved = application('unt', 'note')
+
+    expect(
+      changesNothing({
+        nodes: [
+          { id: still.id, before: still, after: { ...still, updatedAt: AT } },
+          { id: moved.id, before: moved, after: application('unt', 'note changed') },
+        ],
+        edges: [],
       }),
     ).toBe(false)
   })

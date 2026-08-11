@@ -384,7 +384,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             toastRef.current({
               title:
                 choice === 'demo' ? 'The demo data was not loaded' : 'The records were not cleared',
-              description: `${written.error.message}. Your records are unchanged.`,
+              // `.userMessage`, not `.message`: KgError's constructor builds
+              // `message` as `${code}: ${text}`, so this sentence rendered as
+              // "storage/unavailable: Some of your changes have not reached the
+              // disk yet. Try again once saving has caught up.. Your records are
+              // unchanged." — the error code shown to the user and a doubled
+              // full stop. The user message already ends in one, so nothing is
+              // appended here either.
+              description: `${written.error.userMessage} Your records are unchanged.`,
               tone: 'danger',
             })
             return false

@@ -21,6 +21,7 @@ import type { InputOf, OutputOf, ToolName } from '@/kg/tools'
 import { useKg } from './kg-context'
 import { useToast } from './toast'
 import type { ToastOptions } from './toast'
+import { useUndoable } from './undo'
 
 export type Run<N extends ToolName> = (input: InputOf<N>) => ToolResult<OutputOf<N>>
 
@@ -64,22 +65,46 @@ const announced = (a: Announcement, undo: (() => void) | null): ToastOptions => 
   ...(undo === null ? {} : { action: { label: 'Undo', onClick: undo } }),
 })
 
+/**
+ * The Undo is `undoableWith`'s, not `result.undo`.
+ *
+ * `result.undo` is `() => void repo.revert(journalId)` with no guard on it, and
+ * a toast is precisely where an unguarded revert bites: it lives for eight
+ * seconds while the user keeps working. Pressed after ⌘Z had already undone the
+ * same entry, `repo.revert` finds it in the audit ring and applies it a second
+ * time, which UNDOES the undo; pressed after the user has written to the same
+ * record again, it puts a whole before-image back over what they typed (D12).
+ * The first card to adopt this hook would have inherited both, which is why it
+ * was worth fixing a hook with no call sites rather than deleting it: the hook
+ * is the documented Wave 3 destination — `host.ts` and `ToolRunDialog.tsx` both
+ * point at it by name — and the trap is in the one line that is easiest to copy.
+ *
+ * `undoableWith` also covers a burst: a tool that calls other tools still lands
+ * one entry, but a card that runs two in one handler gets both undone in the
+ * right order.
+ */
 export function useTool<N extends ToolName>(
   name: N,
 ): (input: InputOf<N>, say?: (a: Announcement) => Announcement) => ToolResult<OutputOf<N>> {
   const { runtime } = useKg()
   const { toast } = useToast()
+  const undoable = useUndoable()
 
   return useCallback(
     (input: InputOf<N>, say?: (a: Announcement) => Announcement) => {
-      const result = runtime.run(name, input)
+      // The run is inside `undoable` so the entries it committed are read off
+      // the undo ring by the same rule every hand-written toast in the app uses.
+      // A refusal commits nothing, so `restore` comes back null on its own — and
+      // so does a tool declared `undoable: false`, which clears the stack as it
+      // commits.
+      const { value: result, restore } = undoable(() => runtime.run(name, input))
       if (!result.ok) {
         toast(refusal(result.errors[0]?.message ?? 'Something about that record did not fit.'))
         return result
       }
-      toast(announced(say ? say(result.announcement) : result.announcement, result.undo))
+      toast(announced(say ? say(result.announcement) : result.announcement, restore))
       return result
     },
-    [runtime, toast, name],
+    [runtime, toast, name, undoable],
   )
 }

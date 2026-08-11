@@ -11,6 +11,15 @@ import { cn } from '@/lib/utils'
  * shrinks the disc as you click through them. It is painted `text-panel`, which
  * is white on the light theme's dark fills and near-black on the dark theme's
  * bright ones — the one token that stays legible on all five in both themes.
+ *
+ * The disc and the button are two elements rather than one because they answer
+ * two different questions. The disc is 16px because five of them have to sit in
+ * a 240px popover and still read as a swatch row; the button used to be 16px
+ * too, and measured on a phone that was a 16x16 tap target with 22px between
+ * centres — failing WCAG 2.5.8 on the size rule AND on the spacing exception,
+ * in the smallest interactive control in the app, which appears in every
+ * keyword-recolour popover on /settings, /applications and /vault. The button
+ * is now the 24px box the rule asks for and the disc inside it is untouched.
  */
 export function ToneSwatches({
   value,
@@ -38,12 +47,17 @@ export function ToneSwatches({
           aria-label={toneName[tone]}
           title={toneName[tone]}
           onClick={() => onChange(tone)}
-          className={cn(
-            'grid size-4 cursor-pointer place-items-center rounded-full text-panel transition-transform hover:scale-110',
-            toneFill[tone],
-          )}
+          className="group/swatch grid size-6 cursor-pointer place-items-center rounded-full"
         >
-          {tone === value ? <Check className="size-2.5" strokeWidth={3.5} aria-hidden /> : null}
+          <span
+            aria-hidden
+            className={cn(
+              'grid size-4 place-items-center rounded-full text-panel transition-transform group-hover/swatch:scale-110',
+              toneFill[tone],
+            )}
+          >
+            {tone === value ? <Check className="size-2.5" strokeWidth={3.5} /> : null}
+          </span>
         </button>
       ))}
     </div>

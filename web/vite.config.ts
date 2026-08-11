@@ -27,5 +27,19 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    /**
+     * Only so that `import css from '@/index.css?raw'` returns the stylesheet.
+     *
+     * Vitest stubs every id matching `.css` with an empty module by default,
+     * and it matches on the id, so the `?raw` query does not escape it — the
+     * import silently yields `''`. A test that reads an empty stylesheet finds
+     * no tokens and no selectors, and then passes, which is the failure mode
+     * this whole test suite exists to avoid.
+     *
+     * The cost is nil: no test imports a stylesheet for its styles, and the one
+     * that reads `index.css` reads it as text. Turning this on does not put a
+     * DOM anywhere — `environment` above is still `node`.
+     */
+    css: true,
   },
 })

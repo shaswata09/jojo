@@ -59,7 +59,11 @@ export function SnippetCard({
             type="button"
             onClick={onOpen}
             title="Edit this snippet"
-            className="block max-w-full cursor-pointer truncate text-left text-sm text-text-1 transition-colors hover:text-accent"
+            /* `hover:underline` as well as the colour. In the dark theme
+               --accent and --text-1 are the same #fafafa (see index.css), so
+               the colour change alone painted nothing and the only thing left
+               saying this was a control was the cursor. */
+            className="block max-w-full cursor-pointer truncate text-left text-sm text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
           >
             {s.title}
           </button>

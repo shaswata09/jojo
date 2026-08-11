@@ -10,6 +10,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Instant, StoredEdge, StoredNode } from '../core/model'
 import { MutableSnapshot } from '../core/snapshot'
+import type { Driver, DurableOp } from '../storage/driver'
 import { createMemoryDriver } from '../storage/memory-driver'
 import type { JournalDraft } from './journal'
 import { freshMeta } from './meta'
@@ -78,6 +79,45 @@ function setup(nodes: StoredNode[] = [], edges: StoredEdge[] = []) {
 }
 
 const created = (node: StoredNode) => draft({ nodes: [{ id: node.id, before: null, after: node }] })
+
+const tags = (keyword: string, application: string): StoredEdge => ({
+  id: `${keyword}|TAGS|${application}`,
+  rel: 'TAGS',
+  from: keyword,
+  to: application,
+  props: {},
+  createdAt: AT,
+})
+
+const keyword = (slug: string): StoredNode => ({
+  id: `kw:${slug}`,
+  type: 'keyword',
+  props: { slug, name: slug, tone: 'teal' },
+  createdAt: AT,
+  updatedAt: AT,
+})
+
+/**
+ * A driver that keeps every op it was handed, so the OPS can be asserted on.
+ *
+ * `createMemoryDriver` allocates the `ops` key itself when it is handed `null` —
+ * which is the behaviour under test one layer down, and exactly what makes it
+ * blind here: a repository that passed its own key would be served just as
+ * happily, and the store would look right. Nothing in the suite inspected what
+ * `opsFor` emits until this existed; see `describe('the journal row's key')`.
+ */
+function recordingDriver() {
+  const inner = createMemoryDriver()
+  const batches: DurableOp[][] = []
+  const driver: Driver = {
+    ...inner,
+    commit: (ops) => {
+      batches.push([...ops])
+      return inner.commit(ops)
+    },
+  }
+  return { driver, batches }
+}
 
 describe('commit', () => {
   it('applies the after-images and hands back a stamped entry', () => {
@@ -183,6 +223,42 @@ describe('commit', () => {
 
     expect(repo.audit.map((e) => e.label)).toEqual(['Saved with no changes', 'Rice added'])
     expect(repo.undoable.map((e) => e.label)).toEqual(['Rice added'])
+  })
+
+  /**
+   * The same guard, against the shape every real save actually has.
+   *
+   * A tool cannot produce the entry above: `tx.patch` stamps `updatedAt` on
+   * every call, so pressing Save on a form nobody edited stages a delta whose
+   * two images differ by a timestamp and nothing else. Guarding on "has deltas"
+   * therefore let every no-op save take the top of the undo stack, and the next
+   * Ctrl+Z put a timestamp back instead of undoing the edit before it.
+   */
+  it('does not let a save that only restamped updatedAt eat the undo', () => {
+    const rice = application('rice', 'statements missing')
+    const { repo: seeded } = setup([rice])
+
+    const real = seeded.commit(
+      draft({
+        label: 'Note edited',
+        nodes: [{ id: rice.id, before: rice, after: application('rice', 'statements done') }],
+      }),
+    )
+    const restamped = {
+      ...application('rice', 'statements done'),
+      updatedAt: '2026-10-12T10:00:00.000Z',
+    }
+    seeded.commit(
+      draft({
+        label: 'Saved with no changes',
+        nodes: [{ id: rice.id, before: application('rice', 'statements done'), after: restamped }],
+      }),
+    )
+
+    // Audited, because "you pressed save and nothing happened" is worth seeing.
+    expect(seeded.audit.map((e) => e.label)).toEqual(['Saved with no changes', 'Note edited'])
+    // But Undo still means the edit.
+    expect(seeded.undoable.map((e) => e.id)).toEqual([real.id])
   })
 })
 
@@ -328,6 +404,229 @@ describe('replaceAll', () => {
     }
     // The graph is untouched, because the write that would have justified it failed.
     expect(repo.getSnapshot().node('app:rice')).toBeDefined()
+  })
+})
+
+/**
+ * The one bug in this codebase's history that is KNOWN to have destroyed user
+ * data, and until this block nothing observed the value that causes it.
+ *
+ * `opsFor` emits `key: null` so the STORE allocates the journal row's key. It
+ * used to emit a counter this repository kept, which is per tab: two tabs open
+ * on the same database both believed the next free key was the same integer, so
+ * `put` overwrote instead of appending and a concurrent burst reached disk with
+ * about half its journal rows destroyed. The audit re-introduced exactly that
+ * mutation and the suite stayed green at 362/362, because `idb-driver.test.ts`'s
+ * `append()` helper hardcodes `key: null` — the STORE's behaviour was proven and
+ * what the repository PASSES was never looked at.
+ */
+describe("the journal row's key", () => {
+  it('is left for the store to allocate, never chosen here', async () => {
+    const { driver, batches } = recordingDriver()
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from(),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+
+    repo.commit(created(application('rice')))
+    repo.commit(created(application('unt')))
+    await repo.flush()
+
+    const journalPuts = batches
+      .flat()
+      .filter((op) => op.store === 'ops')
+      .map((op) => (op.kind === 'clear' ? 'clear' : op.key))
+
+    expect(journalPuts).toHaveLength(2)
+    expect(journalPuts).toEqual([null, null])
+    repo.close()
+  })
+
+  /**
+   * The loss itself, not the value that causes it.
+   *
+   * Two repositories over one store are the two tabs. The memory driver models
+   * IndexedDB's key generator rather than a Map's — an explicit key is honoured
+   * and raises the sequence, `null` allocates — so a repository that supplies
+   * its own key overwrites the other tab's rows here exactly as it did on disk.
+   */
+  it('lets two tabs on one store keep every entry each of them wrote', async () => {
+    const shared = createMemoryDriver()
+    const tab = (label: string) => {
+      const repo = createRepository({
+        driver: shared,
+        snapshot: MutableSnapshot.from(),
+        meta: freshMeta(AT, 'demo'),
+        now: () => AT,
+      })
+      return { repo, label }
+    }
+
+    const a = tab('a')
+    const b = tab('b')
+    for (let n = 0; n < 3; n += 1) {
+      a.repo.commit(draft({ label: `a${n}`, nodes: [], edges: [] }))
+      b.repo.commit(draft({ label: `b${n}`, nodes: [], edges: [] }))
+    }
+    await a.repo.flush()
+    await b.repo.flush()
+
+    expect(shared.counts().ops).toBe(6)
+    const rows = await shared.readAll()
+    const labels = rows.ok ? rows.value.ops.map((row) => row['label']) : []
+    expect([...labels].sort()).toEqual(['a0', 'a1', 'a2', 'b0', 'b1', 'b2'])
+    a.repo.close()
+    b.repo.close()
+  })
+})
+
+/**
+ * Replay removes a node; the snapshot's cascade removes its edges; the entry
+ * names only the node. That gap is A3.
+ *
+ * The user creates an application (toast: Undo, live eight seconds), tags it
+ * inside the window, and presses Undo. Before this, the tag left the screen with
+ * no undo that could bring it back, and its TAGS row stayed on disk pointing at
+ * a node that no longer existed — so `validateRows` rejected it on every launch
+ * from then on and the app said "1 record on this device could not be read and
+ * is not being shown", forever, with nothing to clear it.
+ */
+describe('undoing a create that something has since pointed at', () => {
+  const setupTagged = () => {
+    const driver = createMemoryDriver()
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from([keyword('k1')]),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+    const app = application('a1')
+    const edge = tags('kw:k1', app.id)
+
+    const create = repo.commit(created(app))
+    repo.commit(draft({ label: 'Tagged', edges: [{ id: edge.id, before: null, after: edge }] }))
+    return { driver, repo, app, edge, create }
+  }
+
+  it('journals the edge the cascade removes, and deletes its row', async () => {
+    const { driver, repo, app, edge, create } = setupTagged()
+
+    const undone = repo.revert(create.id)
+
+    // In memory first: the node is gone and the edge went with it.
+    expect(repo.getSnapshot().node(app.id)).toBeUndefined()
+    expect(repo.getSnapshot().edges()).toEqual([])
+
+    // Then the disk, which is where the damage was. The row left behind was
+    // 'kw:k1|TAGS|app:a1' — a link to a node the same undo had just deleted, and
+    // nothing anywhere ever deleted it.
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.edges).toEqual([])
+    expect(rows.ok && rows.value.nodes.map((row) => row['id'])).toEqual([])
+
+    // And the entry SAYS what it removed, which is what makes the undo undoable
+    // and the delete durable. D12: a delta captured by the write cannot be
+    // forgotten.
+    expect(undone.edges).toEqual([{ id: edge.id, before: edge, after: null }])
+    // The keyword itself is untouched — D15, unlink never cascade.
+    expect(repo.getSnapshot().node('kw:k1')).toBeDefined()
+    repo.close()
+  })
+
+  it('puts the tag back on redo, on screen and on disk alike', async () => {
+    const { driver, repo, app, edge, create } = setupTagged()
+    const undone = repo.revert(create.id)
+
+    repo.revert(undone.id)
+
+    expect(repo.getSnapshot().node(app.id)).toBeDefined()
+    expect(repo.getSnapshot().edge(edge.id)).toEqual(edge)
+
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.edges.map((row) => row['id'])).toEqual([edge.id])
+    repo.close()
+  })
+})
+
+/**
+ * A1 — Settings -> Empty and Import must not proceed on a flush that did not
+ * drain.
+ *
+ * `flush()` settles on a failed attempt by design, so `replaceAll` used to wipe
+ * the store on the strength of a promise that said nothing about whether
+ * anything had reached disk. The audit drove it: Empty reported success, the
+ * screen went blank, storage recovered, the backoff fired, and the record the
+ * user had just deleted was back on disk under an empty graph — with health
+ * reporting `idle`.
+ */
+describe('replaceAll while a write is failing', () => {
+  const failing = () => {
+    let broken = true
+    const driver = createMemoryDriver({
+      fault: (call) =>
+        broken && call === 'commit' ? { code: 'storage/unavailable', message: 'blip' } : null,
+    })
+    return { driver, recover: () => (broken = false) }
+  }
+
+  it('refuses, and says why, rather than reporting a wipe it cannot make stick', async () => {
+    const { driver, recover } = failing()
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from(),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+
+    repo.commit(created(application('doomed')))
+    await repo.flush()
+    expect(repo.health.state).toBe('degraded')
+
+    const result = await repo.replaceAll({ nodes: [], edges: [] }, freshMeta(AT, 'empty'))
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.code).toBe('storage/unavailable')
+      // A sentence about what jojo did, not about what IndexedDB said.
+      expect(result.error.userMessage).toContain('have not reached the disk')
+    }
+    // Nothing moved: not the graph, not the meta row, not the store.
+    expect(repo.getSnapshot().node('app:doomed')).toBeDefined()
+    expect(repo.meta.dataSet).toBe('user')
+    expect(driver.counts()).toEqual({ nodes: 0, edges: 0, meta: 0, ops: 0 })
+
+    // And when the disk comes back, screen and disk agree — which is the whole
+    // point. The old behaviour left the record on disk and NOT on screen.
+    recover()
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.nodes.map((row) => row['id'])).toEqual(['app:doomed'])
+    expect(repo.getSnapshot().node('app:doomed')).toBeDefined()
+    repo.close()
+  })
+
+  it('still empties the store once the queue has actually drained', async () => {
+    const { driver, recover } = failing()
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from(),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+
+    repo.commit(created(application('doomed')))
+    await repo.flush()
+    recover()
+
+    const result = await repo.replaceAll({ nodes: [], edges: [] }, freshMeta(AT, 'empty'))
+
+    expect(result.ok).toBe(true)
+    expect(driver.counts()).toEqual({ nodes: 0, edges: 0, meta: 1, ops: 0 })
+    repo.close()
   })
 })
 

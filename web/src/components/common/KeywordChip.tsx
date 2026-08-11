@@ -160,7 +160,15 @@ export function KeywordChip({
           // Full colour rather than dimmed until hover: it is a control, so the
           // glyph owes 3:1, and --text-3 has no headroom left to spend on
           // opacity — 60% of it lands at 2.3:1 on the chip's own background.
-          className="grid cursor-pointer place-items-center self-stretch rounded-r-full pr-1.5 pl-0.5"
+          //
+          // `touch-target` because this is the control `index.css` names as the
+          // example of one too small for any `size-*` selector to reach, and it
+          // was not actually opted in: measured on a 390x844 phone it was a
+          // 20x23 box with a 21x24 tap area, against the 44x44 the rest of the
+          // app gets. Growing the chevron itself is not available — it is
+          // stretched to the pill's height, and the pill's height is the
+          // keyword's type size — so the catch area is the only lever.
+          className="touch-target grid cursor-pointer place-items-center self-stretch rounded-r-full pr-1.5 pl-0.5"
         >
           <ChevronDown className="size-3" strokeWidth={2} aria-hidden />
         </PopoverTrigger>

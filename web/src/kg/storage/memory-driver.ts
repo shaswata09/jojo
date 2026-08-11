@@ -21,6 +21,7 @@
  */
 
 import { driverFail, driverOk, emptyRows } from './driver'
+import { classify } from './idb-errors'
 import type {
   Driver,
   DriverFailure,
@@ -206,15 +207,35 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
       ops: new Map(stores.ops),
     }
 
-    for (const op of ops) {
-      if (op.kind === 'clear') {
-        next[op.store].clear()
-      } else if (op.kind === 'delete') {
-        next[op.store].delete(op.key)
-      } else {
-        const cloned = structuredClone(op.value) as StoredRow
-        next[op.store].set(keyOf(op.store, op.key, cloned), cloned)
+    /**
+     * The clone is inside the try, because it is the one statement here that
+     * can throw.
+     *
+     * `structuredClone` refuses a function, a Blob-free `props` being an
+     * invariant rather than a check (D27), and this driver threw the resulting
+     * DataCloneError straight out of `commit` — breaking `Driver`'s first
+     * sentence, "never throws", in the driver that private browsing falls back
+     * to and that every test in the suite runs against. The real driver returns
+     * `storage/corrupt` for the identical row, so the stand-in was the more
+     * permissive of the two on exactly the input where that matters. Routed
+     * through the same `classify` the real driver uses so the two agree on the
+     * code as well as on the shape.
+     */
+    try {
+      for (const op of ops) {
+        if (op.kind === 'clear') {
+          next[op.store].clear()
+        } else if (op.kind === 'delete') {
+          next[op.store].delete(op.key)
+        } else {
+          const cloned = structuredClone(op.value) as StoredRow
+          next[op.store].set(keyOf(op.store, op.key, cloned), cloned)
+        }
       }
+    } catch (e) {
+      // `next` is discarded unswapped, so a batch that failed halfway leaves
+      // nothing behind — the same all-or-nothing the transaction gives.
+      return classify<void>(e, 'commit')
     }
 
     stores = next
@@ -225,7 +246,11 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
     const failed = guard<void>('replace')
     if (failed) return failed
     const next = emptyStores()
-    load(rows, next)
+    try {
+      load(rows, next)
+    } catch (e) {
+      return classify<void>(e, 'replace')
+    }
     stores = next
     return driverOk(undefined)
   }
@@ -244,7 +269,11 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
     if (failed) return failed
     if (stores.meta.size > 0) return driverOk(false)
     const next = emptyStores()
-    load(rows, next)
+    try {
+      load(rows, next)
+    } catch (e) {
+      return classify<boolean>(e, 'seedIfPristine')
+    }
     stores = next
     return driverOk(true)
   }

@@ -392,6 +392,33 @@ export function createIdbDriver(options: IdbDriverOptions = {}): Driver {
    * transactions, no atomicity, and the half-write back. At this scale the extra
    * locks cost nothing measurable.
    */
+  /**
+   * Rolls a transaction back, for the failure that does NOT roll itself back.
+   *
+   * A request that fails aborts its transaction on its own, so a
+   * `ConstraintError` mid-batch was always all-or-nothing. A `put` that throws
+   * SYNCHRONOUSLY never creates a request — `DataCloneError` on a value the
+   * structured clone algorithm refuses is the reachable case — so the throw
+   * escaped the loop, the requests already issued stayed issued, and the
+   * transaction committed them on the way out. `commit` then reported failure
+   * over a store that had taken half the batch: R-3's half-write, with no
+   * journal entry describing the state it left behind, and now permanent,
+   * because `storage/corrupt` stops the write queue rather than retrying it.
+   *
+   * `tx.done` is swallowed rather than awaited: aborting rejects it, nothing
+   * downstream awaits it on this path, and an unhandled rejection here prints a
+   * second trace over the real error and can take the test process down.
+   */
+  function rollBack(tx: AnyTx): void {
+    try {
+      tx.abort()
+    } catch {
+      // Already finished — the rollback we wanted has happened anyway, or the
+      // transaction committed before we got here and there is nothing to undo.
+    }
+    void tx.done.catch(() => {})
+  }
+
   async function write(apply: (batch: Batch) => void, what: string): Promise<DriverResult<void>> {
     const opened = await ensureOpen()
     if (!opened.ok) return { ok: false, error: opened.error }
@@ -413,6 +440,7 @@ export function createIdbDriver(options: IdbDriverOptions = {}): Driver {
         await tx.done
         return driverOk(undefined)
       } catch (e) {
+        rollBack(tx)
         return classify<void>(firstError() ?? e, what)
       }
     } catch (e) {
@@ -539,6 +567,10 @@ export function createIdbDriver(options: IdbDriverOptions = {}): Driver {
       if (event) channel.post(event)
       return driverOk(true)
     } catch (e) {
+      // Same rollback as `write`, and for the same reason: `rowsIntoBatch` can
+      // throw part-way through a seed, and a half-seeded store is one a later
+      // `seedIfPristine` would decline to fix.
+      rollBack(tx)
       return classify<boolean>(firstError() ?? e, 'seedIfPristine')
     }
   }

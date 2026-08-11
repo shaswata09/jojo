@@ -111,7 +111,12 @@ export function ReminderRow({
               type="button"
               onClick={() => actions.edit(item)}
               className={cn(
-                'block max-w-full cursor-pointer truncate text-left text-sm transition-colors hover:text-accent',
+                // `hover:underline` as well as the colour. In the dark theme
+                // --accent and --text-1 are the same #fafafa (see index.css),
+                // so an undone title — which is --text-1 — changed nothing at
+                // all under the pointer. A done one is --text-3 and did move,
+                // which is exactly why this went unnoticed.
+                'block max-w-full cursor-pointer truncate text-left text-sm underline-offset-2 transition-colors hover:text-accent hover:underline',
                 done && 'text-text-3 line-through',
               )}
             >

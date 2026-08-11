@@ -18,6 +18,7 @@
 import { describe, expect, it } from 'vitest'
 import { createMemoryDriver } from '../storage/memory-driver'
 import type { MemoryDriver } from '../storage/memory-driver'
+import { driverFail } from '../storage/driver'
 import type { Rows } from '../storage/driver'
 import type { MetaRow, StoredRow } from '../storage/schema'
 import { boot, resetBoot } from './boot'
@@ -431,8 +432,23 @@ describe('another tab', () => {
       }),
     )
 
-    const [theirs] = session.repo.getSnapshot().ofType('application')
-    if (!theirs) throw new Error('the demo store should have applications')
+    const [theirs, mine] = session.repo.getSnapshot().ofType('application')
+    if (!theirs || !mine) throw new Error('the demo store should have applications')
+
+    // A local edit first, so that the undo assertion below is about an undo
+    // stack that had something in it. Without one it passed either way, which is
+    // how B2 survived this file.
+    session.repo.commit({
+      tool: 'application.note.set',
+      input: {},
+      label: 'A local edit',
+      calls: [],
+      nodes: [
+        { id: mine.id, before: mine, after: { ...mine, props: { ...mine.props, note: 'mine' } } },
+      ],
+      edges: [],
+    })
+    expect(session.repo.undoable).toHaveLength(1)
 
     // The other tab deletes a record and writes its journal row. Nothing
     // announces it, because there is no channel to announce it on.
@@ -459,7 +475,20 @@ describe('another tab', () => {
     session.dispose()
   })
 
-  it('does not announce a resume that found nothing', async () => {
+  /**
+   * B2, and the reason this case is worth two assertions rather than one.
+   *
+   * It used to assert only that the toast stayed quiet, which it did — while the
+   * undo stack was emptied underneath it on every single resume. On a browser
+   * with no BroadcastChannel `visibilitychange` fires on every alt-tab, so ⌘Z
+   * was dead from the first tab switch on and nothing said why. `undoable` is
+   * the assertion that would have caught it; `told` on its own never could.
+   *
+   * Note where the emptying actually happened, because it is not where the name
+   * suggests: `repo.rehydrate` clears the undo and redo rings itself, so gating
+   * the `clearHistory()` call that follows it would have left this red.
+   */
+  it('neither announces nor forgets on a resume that found nothing', async () => {
     let resume: (() => void) | null = null
     let told = 0
     const session = sessionOf(
@@ -473,6 +502,20 @@ describe('another tab', () => {
       }),
     )
 
+    const [mine] = session.repo.getSnapshot().ofType('application')
+    if (!mine) throw new Error('the demo store should have applications')
+    session.repo.commit({
+      tool: 'application.note.set',
+      input: {},
+      label: 'A local edit',
+      calls: [],
+      nodes: [
+        { id: mine.id, before: mine, after: { ...mine, props: { ...mine.props, note: 'mine' } } },
+      ],
+      edges: [],
+    })
+    expect(session.repo.undoable).toHaveLength(1)
+
     if (!resume) throw new Error('boot did not subscribe to resume')
     ;(resume as () => void)()
     ;(resume as () => void)()
@@ -480,6 +523,167 @@ describe('another tab', () => {
 
     // A toast on every alt-tab is a notification about nothing.
     expect(told).toBe(0)
+    // And the user can still undo what they just did. Our own write is on disk
+    // by now — the resume flushes first — so the store looks different from the
+    // one we booted; "different from boot" is not "somebody else wrote".
+    expect(session.repo.undoable).toHaveLength(1)
+    expect(session.repo.getSnapshot().node(mine.id, 'application')?.props.note).toBe('mine')
+    session.dispose()
+  })
+
+  /**
+   * The case that makes the gate above safe, and the one that refutes the
+   * one-word version of this fix.
+   *
+   * The other tab commits, and then THIS tab flushes a queued write of its own
+   * on the way through the resume — so the newest journal row on disk is ours,
+   * and any signal shaped "is the newest row ours?" reports that nothing
+   * happened. It did: our before-image was captured against a record their write
+   * has moved, and replaying it would put their work back the way it was.
+   */
+  it('adopts a resume where another tab wrote and our own flush landed on top', async () => {
+    const first = createMemoryDriver()
+    const one = sessionOf(await bootWith(first, { now: at(NOW) }))
+    const carried = await readRows(first)
+    one.dispose()
+
+    let resume: (() => void) | null = null
+    let told = 0
+    const driver = createMemoryDriver({ rows: carried })
+    const session = sessionOf(
+      await bootWith(driver, {
+        now: at(LATER),
+        onRemoteChange: () => (told += 1),
+        onResume: (fn) => {
+          resume = fn
+          return () => {}
+        },
+      }),
+    )
+
+    const [mine, theirs] = session.repo.getSnapshot().ofType('application')
+    if (!mine || !theirs) throw new Error('the demo store should have applications')
+
+    // Their edit: a note on a record we are not touching. No node is created or
+    // removed, so the row counts stay identical and the journal row is the only
+    // trace of it — which is the point of this case.
+    await driver.commit([
+      {
+        kind: 'put',
+        store: 'nodes',
+        key: theirs.id,
+        value: { ...theirs, props: { ...theirs.props, note: 'theirs' } } as never,
+      },
+      {
+        kind: 'put',
+        store: 'ops',
+        key: null,
+        value: {
+          id: 'theirs',
+          at: LATER,
+          tool: 'application.note.set',
+          input: {},
+          label: 'Theirs',
+          calls: [],
+          nodes: [],
+          edges: [],
+        },
+      },
+    ])
+
+    // Ours, still in the write queue when the tab comes back: the resume's own
+    // flush is what puts it on disk after theirs.
+    session.repo.commit({
+      tool: 'application.note.set',
+      input: {},
+      label: 'A local edit',
+      calls: [],
+      nodes: [
+        { id: mine.id, before: mine, after: { ...mine, props: { ...mine.props, note: 'mine' } } },
+      ],
+      edges: [],
+    })
+    expect(session.repo.undoable).toHaveLength(1)
+
+    if (!resume) throw new Error('boot did not subscribe to resume')
+    ;(resume as () => void)()
+    await new Promise<void>((resolve) => setTimeout(resolve, 20))
+
+    expect(session.repo.getSnapshot().node(theirs.id, 'application')?.props.note).toBe('theirs')
+    // Ours survived, because the flush happens before the rehydrate.
+    expect(session.repo.getSnapshot().node(mine.id, 'application')?.props.note).toBe('mine')
+    expect(session.repo.undoable).toEqual([])
+    expect(told).toBe(1)
+
+    session.dispose()
+  })
+
+  /**
+   * A stranded queue is not another tab, and adopting on one costs real work.
+   *
+   * `flush()` settles on a failed attempt, so the resume used to walk straight
+   * past a queue that had saved nothing. Our own unsaved rows are in memory and
+   * not on disk, so the row counts differ, `changedElsewhere` reads that as
+   * somebody else's write, and the user was told "Updated from another tab"
+   * with no other tab in existence. The toast was the visible half; the
+   * expensive half is that `adopt` takes the disk rows wholesale, so it would
+   * have overwritten the graph with the version missing exactly the writes the
+   * queue could not save.
+   */
+  it('neither announces nor adopts when it is our own queue that is stranded', async () => {
+    let broken = false
+    const base = createMemoryDriver()
+    const driver: MemoryDriver = {
+      ...base,
+      commit: (ops) =>
+        broken ? Promise.resolve(driverFail<void>('storage/corrupt', 'stuck')) : base.commit(ops),
+    }
+
+    let resume: (() => void) | null = null
+    let told = 0
+    const session = sessionOf(
+      await bootWith(driver, {
+        now: at(NOW),
+        onRemoteChange: () => (told += 1),
+        onResume: (fn) => {
+          resume = fn
+          return () => {}
+        },
+      }),
+    )
+
+    const [mine] = session.repo.getSnapshot().ofType('application')
+    if (!mine) throw new Error('the demo store should have applications')
+
+    // From here the disk takes nothing, so what follows exists only in memory.
+    // It has to CREATE a node rather than edit one: `changedElsewhere` compares
+    // row counts, so an edit to an existing record leaves the counts equal and
+    // the resume returns before reaching the adopt whether the guard is there or
+    // not — a test built on one passes with the fix removed.
+    broken = true
+    const added = { ...mine, id: 'app:only-in-memory' }
+    session.repo.commit({
+      tool: 'application.create',
+      input: {},
+      label: 'A local create',
+      calls: [],
+      nodes: [{ id: added.id, before: null, after: added }],
+      edges: [],
+    })
+
+    const before = session.repo.getSnapshot().nodes().length
+
+    if (!resume) throw new Error('boot did not subscribe to resume')
+    ;(resume as () => void)()
+    await new Promise<void>((resolve) => setTimeout(resolve, 20))
+
+    expect(told).toBe(0)
+    // The record is still on screen. Without the guard the adopt replaced the
+    // graph with the disk rows, which never received it.
+    expect(session.repo.getSnapshot().node(added.id, 'application')).toBeTruthy()
+    expect(session.repo.getSnapshot().nodes()).toHaveLength(before)
+    expect(session.repo.undoable).toHaveLength(1)
+
     session.dispose()
   })
 

@@ -290,6 +290,17 @@ html[data-theme='dark'] {
   --text-2: #d4d4d4; /*                    11.12:1 on panel */
   --text-3: #a1a1a1; /* --muted-foreground · 6.38:1 panel · 6.94:1 well · 5.11:1 accent-soft */
 
+  /* Byte-identical to --text-1 above, and deliberately so: shadcn's primary is
+     monochrome and inverts to near-white here. The consequence is that
+     `hover:text-accent` on text that is already --text-1 changes nothing in
+     this theme — a whole-subtree computed-style diff under a real hover on six
+     list and card titles came back with nothing changed anywhere in the
+     document, leaving `cursor: pointer` as the only thing saying they were
+     clickable. Those six now pair the colour with `hover:underline`, which is
+     what the titles in RecentApplications and ApplicationsTable already did.
+     Do NOT fix this by moving --accent: it is the focus ring, the primary
+     button fill and the selected state, all of which are correct as they are,
+     and the owner has rewound one theme inversion already. */
   --accent: #fafafa; /* monochrome primary, inverted */
   --accent-fg: #171717;
   /* Was #262626 — the same bytes as the old --well, the identical failure the
@@ -1024,10 +1035,19 @@ html[data-theme='dark'] {
    interactivity keeps the rule off the decorative `size-8` boxes (the boot
    skeleton's blocks) that a bare `[class*='size-8']` would have inflated.
 
-   Controls drawn smaller than `size-6` — the board's 18px drag grip, a
-   reminder's tick, a keyword chevron — cannot be reached by any size class,
-   because they have none. Those opt in with `.touch-target`, which is in every
-   list below and was, until this was audited, used by nothing.
+   Controls the enumeration cannot reach opt in with `.touch-target`, which is
+   in every list below. Two shapes need it. Controls drawn smaller than `size-6`
+   have no size class at all — the board's 18px drag grip, a reminder's tick,
+   the keyword chip's chevron. And controls drawn LARGER than `size-8` fall off
+   the top of the list: `PageHeader`'s settings trigger is the app's one bare
+   `size-9`, and it kept its drawn 36x36 while the buttons beside it caught 44.
+
+   This paragraph used to name the keyword chevron as though it were already
+   opted in. It was not, for as long as this rule has existed: `grep
+   touch-target src` returned three call sites and the chevron measured 20x23
+   under a finger. The claim and the code are back in agreement, and
+   `touch-targets.test.ts` now reads the selector lists below and fails if
+   either of those two controls stops being reachable by them.
    ------------------------------------------------------------ */
 @media (pointer: coarse) {
   /* Icon buttons keep the box they draw and grow the box they *catch*.

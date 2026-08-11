@@ -3,9 +3,11 @@
  *
  * Split out of `idb-driver.ts`: every driver entry point ends in a `catch` that
  * calls `classify`, so this is the one place that decides whether a failure is
- * retried forever, reported as full, or escalated to the recovery panel. It
- * knows nothing about `idb` or about IndexedDB handles — it reads a caught
- * value and returns a `DriverResult`.
+ * retried, reported as full, or escalated to the recovery panel. It knows
+ * nothing about `idb` or about IndexedDB handles — it reads a caught value and
+ * returns a `DriverResult`, which is why the write queue's own backstop
+ * (`commitGuarded` in `kg/repo/queue.ts`, for a driver that throws instead of
+ * returning) routes through it rather than inventing a second mapping.
  */
 
 import { driverFail } from './driver'
@@ -17,9 +19,10 @@ import type { DriverResult, StorageFailureCode } from './driver'
  * `tx.done` rejects with the transaction's error, but a quota failure in Chrome
  * arrives as an `AbortError` whose `cause` is the `QuotaExceededError` — and
  * reporting that as a generic abort is how "there is no room left" turns into a
- * retry loop that can never succeed. The queue treats quota as terminal
- * (`TERMINAL` in `kg/repo/queue.ts`) and everything else as retryable, so getting this wrong does
- * not produce a wrong message, it produces an infinite one.
+ * retry loop that can never succeed. `TERMINAL` in `kg/repo/queue.ts` stops the
+ * queue on quota, blocked and corrupt, and retries only `unavailable`, so a
+ * failure misread as the last of those does not produce a wrong message, it
+ * produces an infinite one.
  */
 function errorName(e: unknown): string {
   if (typeof e !== 'object' || e === null) return ''
@@ -43,6 +46,15 @@ export const messageOf = (e: unknown): string =>
  * retry, "your data could not be read" invites the recovery panel, and guessing
  * the second when it was the first would offer to start somebody fresh over a
  * transient failure.
+ *
+ * That default carries more weight than it used to. `unavailable` is now the
+ * ONLY code the write queue retries — the other three stop it — so a
+ * deterministic failure misclassified as `unavailable` is a queue that retries
+ * it forever, and a transient one misclassified as `corrupt` is persistence
+ * switched off over a blip. The three names in the `corrupt` arm below are
+ * there because each is decided by the bytes of the row being written and never
+ * by the weather: a unique-index collision, an invalid key, and a value the
+ * structured clone algorithm refuses.
  */
 export function classify<T>(e: unknown, what: string): DriverResult<T> {
   const name = errorName(e)

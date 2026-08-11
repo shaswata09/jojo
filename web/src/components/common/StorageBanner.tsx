@@ -170,18 +170,49 @@ export function StorageBanner() {
   }
 
   if (health.state === 'off') {
+    /*
+     * `unsaved` counts the user's ACTIONS; `pending` counts rows, and one stage
+     * change is three of them. The number here is the one someone checks
+     * against their own memory of what they did — and it now keeps counting
+     * after the queue stops, because `enqueue` refreshes it on every action
+     * rather than only on the way into `writing`. It used to freeze at whatever
+     * it read the moment saving stopped, so a user who carried on working for
+     * ten minutes was told one change was at risk.
+     */
+    const atRisk =
+      health.unsaved === 0
+        ? null
+        : `${health.unsaved} change${health.unsaved === 1 ? '' : 's'} ${health.unsaved === 1 ? 'is' : 'are'} on screen but not saved — export from Settings to keep ${health.unsaved === 1 ? 'it' : 'them'}, because reloading or closing this tab will lose ${health.unsaved === 1 ? 'it' : 'them'}.`
+
+    /*
+     * The arm that used to be a retry loop.
+     *
+     * `storage/corrupt` was retried on a flat four-second backoff with no
+     * ceiling, so a single unreadable row on disk — one collision the write can
+     * never win — left the user working into a queue that would never drain,
+     * under a banner that said "still retrying" and meant "never". It is
+     * terminal now (`TERMINAL` in `kg/repo/queue.ts`), and this is what
+     * terminal has to say: the work on screen is not on disk, no amount of
+     * waiting changes that, and the export is the only thing that saves it.
+     */
+    if (health.reason === 'corrupt') {
+      return (
+        <Banner tone="danger">
+          jojo has stopped saving: this browser refused a change to your records and retrying will
+          not help. {atRisk ?? 'Everything you changed before that is on disk.'} Export from
+          Settings now — Settings → Diagnostics has the details, and reloading before you export
+          loses whatever is only on screen.
+        </Banner>
+      )
+    }
+
     return (
       <Banner tone="danger">
         {health.reason === 'quota' ? (
           <>
             This browser has no room left, so jojo has stopped saving.{' '}
-            {/* `unsaved` counts the user's ACTIONS; `pending` counts rows, and
-                one stage change is three of them. The number here is the one
-                someone checks against their own memory of what they did. */}
-            {health.unsaved === 0
-              ? 'Everything you changed before that is on disk.'
-              : `${health.unsaved} change${health.unsaved === 1 ? '' : 's'} ${health.unsaved === 1 ? 'is' : 'are'} on screen but not saved — export from Settings to keep ${health.unsaved === 1 ? 'it' : 'them'}, because reloading or closing this tab will lose ${health.unsaved === 1 ? 'it' : 'them'}.`}{' '}
-            Free some space, then reload.
+            {atRisk ?? 'Everything you changed before that is on disk.'} Free some space, then
+            reload.
           </>
         ) : (
           <>

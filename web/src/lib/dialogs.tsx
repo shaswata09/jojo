@@ -9,6 +9,7 @@ import { TimelineItemDialog } from '@/components/timeline/TimelineItemDialog'
 import type { TimelineItem } from '@/data/timeline'
 import { useApplications } from '@/kg/react/use-applications'
 import { useTimeline } from '@/kg/react/use-timeline'
+import { NO_MOUNT, mountKey, nextMount } from '@/lib/dialog-mount'
 import { DialogsContext, useDialogs, useTriggerOriginTracking } from '@/lib/dialogs-context'
 import type { DialogName, OpenDialog } from '@/lib/dialogs-context'
 
@@ -89,6 +90,18 @@ export function DialogHost() {
   const { get } = useApplications()
   const { forApplication } = useTimeline()
 
+  /**
+   * Which open request each key belongs to. See `dialog-mount.ts` for the bug.
+   *
+   * Adjusted during render rather than in an effect, so the first painted frame
+   * already carries the new key: an effect would have mounted the previous
+   * instance for one frame with the new props, which for a dialog whose fields
+   * are lazy `useState` initialisers means seeding them from the wrong initial.
+   */
+  const [mount, setMount] = useState(() => nextMount(NO_MOUNT, current))
+  const showing = nextMount(mount, current)
+  if (showing !== mount) setMount(showing)
+
   // A dialog only ever reports `false` here — it closes itself, and the host
   // unmounts it rather than keeping a closed dialog mounted with stale props.
   const onOpenChange = useCallback(
@@ -116,9 +129,13 @@ export function DialogHost() {
 
     return (
       <ApplicationDialog
-        // Keyed so opening a second record while one is up re-seeds the form
-        // rather than leaving the first record's values in the fields.
-        key={`application:${props.id ?? 'new'}`}
+        // Keyed per OPEN, not per record. Keyed on the record alone, pressing
+        // "Draft discarded · Undo" while a blank new-application dialog was
+        // already up matched the mounted instance's key, so React reused it and
+        // the restored draft in `initial` was never read — the form stayed blank
+        // and the toast was spent. `open` below is a literal because a mount now
+        // exists only while the dialog is up.
+        key={mountKey(`application:${props.id ?? 'new'}`, showing)}
         open
         onOpenChange={onOpenChange}
         mode={mode}
@@ -131,7 +148,10 @@ export function DialogHost() {
     const props = current.props as TimelineItemProps
     return (
       <TimelineItemDialog
-        key={`timelineItem:${props.initial?.id ?? 'new'}`}
+        // Per open, for the reason the application dialog above gives: this one
+        // seeds its fields the same way and would have kept the previous open's
+        // values just as silently.
+        key={mountKey(`timelineItem:${props.initial?.id ?? 'new'}`, showing)}
         open
         onOpenChange={onOpenChange}
         mode={props.mode ?? 'reminder'}
@@ -144,10 +164,11 @@ export function DialogHost() {
     const props = current.props as DraftProps
     return (
       <DraftDialog
-        // Keyed on the record the draft is for, so opening a second reminder's
-        // draft re-seeds the template and the substituted text rather than
-        // leaving the first one's half-edited message in the editor.
-        key={`draft:${props.itemId ?? props.applicationId ?? 'new'}`}
+        // Keyed on the record the draft is for AND on which open it is, so
+        // asking for the same reminder's draft twice re-seeds the template and
+        // the substituted text rather than leaving the first one's half-edited
+        // message in the editor.
+        key={mountKey(`draft:${props.itemId ?? props.applicationId ?? 'new'}`, showing)}
         open
         onOpenChange={onOpenChange}
         itemId={props.itemId}

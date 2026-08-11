@@ -127,6 +127,83 @@ describe('createMemoryDriver', () => {
     expect(unwrap(await driver.readAll()).nodes.map((n) => n['id'])).toEqual(['a'])
   })
 
+  /**
+   * R-11, driven rather than described.
+   *
+   * An impatient reload during a slow first boot — or simply two tabs opened at
+   * once on a fresh install — gives two seeders that both read "no meta" and
+   * both write. The result is 182 nodes with every record doubled through the
+   * slug minter as `rice-2`, `rice-3`, and no way to tell which of each pair the
+   * user then edited. The emptiness test therefore has to happen inside the
+   * transaction that does the writing, which is why `seedIfPristine` is a driver
+   * method and not a `readAll` followed by a `replace`.
+   *
+   * Both calls are started before either is awaited, so a version that read the
+   * meta store, awaited anything, and then wrote would lose the race here. In
+   * this driver "the transaction" is precisely that there is no await between
+   * the two — and this file is the only place that fact is checked, for the
+   * driver every test in the suite runs against and the one the app falls back
+   * to when storage is blocked.
+   */
+  it('seeds once when two seeders race, and tells the loser it lost — R-11', async () => {
+    const driver = createMemoryDriver()
+    const seed = (marker: string) => ({
+      nodes: [{ id: `app:${marker}` }],
+      edges: [],
+      meta: [{ key: 'store', value: { dataSet: 'demo', seededAt: marker } }],
+      ops: [],
+    })
+
+    const [first, second] = await Promise.all([
+      driver.seedIfPristine(seed('one')),
+      driver.seedIfPristine(seed('two')),
+    ])
+
+    // One `true`, one `false`, in either order: `false` is a normal outcome and
+    // not a failure — it means somebody else got there first.
+    expect([unwrap(first), unwrap(second)].sort()).toEqual([false, true])
+    expect(driver.counts().nodes).toBe(1)
+    expect(driver.counts().meta).toBe(1)
+
+    // And the loser's rows are nowhere: a seed that appended instead of
+    // no-opping is the doubled store, one record at a time.
+    const rows = unwrap(await driver.readAll())
+    const marker = (rows.meta[0]?.['value'] as { seededAt?: string } | undefined)?.seededAt
+    expect(marker === 'one' || marker === 'two').toBe(true)
+    // The winner's meta row and the winner's nodes, never one of each: the two
+    // go in under the same `stores` swap or neither does.
+    expect(rows.nodes).toEqual([{ id: `app:${marker}` }])
+  })
+
+  // D24: first run is the ABSENCE of the meta row, never "the node store is
+  // empty". A driver that tested `nodes` would reseed the demo fixtures over
+  // Settings → Records → Empty on every reload, which makes the button
+  // impossible to use — and it would do it below `boot`, where the decision has
+  // already been made correctly.
+  it('reads meta, not the node store, to decide a store is pristine', async () => {
+    const driver = createMemoryDriver({
+      rows: {
+        nodes: [],
+        edges: [],
+        meta: [{ key: 'store', value: { dataSet: 'empty' } }],
+        ops: [],
+      },
+    })
+
+    const seeded = await driver.seedIfPristine({
+      nodes: [{ id: 'app:1' }],
+      edges: [],
+      meta: [{ key: 'store', value: { dataSet: 'demo' } }],
+      ops: [],
+    })
+
+    expect(unwrap(seeded)).toBe(false)
+    expect(driver.counts().nodes).toBe(0)
+    expect(unwrap(await driver.readAll()).meta).toEqual([
+      { key: 'store', value: { dataSet: 'empty' } },
+    ])
+  })
+
   it('replaces wholesale and destroys everything', async () => {
     const driver = createMemoryDriver()
     await driver.commit([put('nodes', 'a', { id: 'a' })])
