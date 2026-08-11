@@ -67,6 +67,30 @@ export interface Host {
    * back the same idle promise.
    */
   onSuspend(run: () => Promise<void>): () => void
+
+  /**
+   * The tab is in front of the user again after not being.
+   *
+   * The mirror of `onSuspend`, and it earns its place by the same test: the
+   * graph owns state a platform event has to act on. What it acts on is the
+   * possibility that another tab changed the store while we were away — which is
+   * normally BroadcastChannel's job, and is nobody's job at all when the browser
+   * has no BroadcastChannel (Safari before 15.4; a sandboxed frame with an
+   * opaque origin, where constructing one throws). There, two tabs write whole
+   * records over each other in silence and a stale undo stack replays over the
+   * result. `repo/boot.ts` subscribes to this ONLY when the store reports
+   * `crossTab: false`, so on a normal browser nothing here runs.
+   *
+   * Deliberately not "on focus": focus fires when the user clicks back into the
+   * page from the URL bar, which is not a moment anything can have changed. The
+   * web adapter uses `visibilitychange`, which is the event that actually means
+   * "this tab was in the background and now is not".
+   *
+   * Optional, unlike the other two. A platform with a single window — Electron's
+   * renderer, a native shell — has nothing to resume from, and a host that
+   * cannot say so would have to lie.
+   */
+  onResume?(run: () => void): () => void
 }
 
 /** One shared no-op unsubscribe, so a headless host allocates nothing per mount. */

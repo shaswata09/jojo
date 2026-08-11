@@ -16,18 +16,18 @@
  */
 
 import {
-  applicationCreate,
   applicationDelete,
   applicationDuplicate,
   applicationFlagSet,
   applicationNoteSet,
+} from './application-record'
+import {
   applicationOfferClear,
   applicationOfferDecide,
   applicationStageAdvance,
   applicationStageSet,
-  applicationUpdate,
-  orgEnsure,
-} from './application'
+} from './application-stage'
+import { applicationCreate, applicationUpdate, orgEnsure } from './application'
 import {
   keywordAttach,
   keywordCreate,

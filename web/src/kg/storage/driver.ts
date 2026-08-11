@@ -52,8 +52,22 @@ export const driverFail = <T>(
     ? { ok: false, error: { code, message } }
     : { ok: false, error: { code, message, context } }
 
+/**
+ * `key: null` on a put means "let the store allocate it".
+ *
+ * Only `ops` can take it — it is the one store with out-of-line, autoIncrement
+ * keys — and it is what the journal uses. The alternative, which this codebase
+ * shipped, was a per-tab counter: two tabs writing at once both believed the
+ * next free key was 41, and IndexedDB's `put` overwrote rather than appended, so
+ * roughly half of a concurrent burst's audit entries were destroyed. The store's
+ * own key generator is the one allocator both tabs share, and it is right there.
+ *
+ * `null` rather than an omitted field on purpose: an optional key would make
+ * every existing call site type-check unchanged, including the ones that must
+ * keep passing a key, and the compiler would have nothing to say about it.
+ */
 export type DurableOp =
-  | { kind: 'put'; store: StoreName; key: string | number; value: StoredRow }
+  | { kind: 'put'; store: StoreName; key: string | number | null; value: StoredRow }
   | { kind: 'delete'; store: StoreName; key: string | number }
   | { kind: 'clear'; store: StoreName }
 
@@ -66,7 +80,19 @@ export type Rows = {
 
 export const emptyRows = (): Rows => ({ nodes: [], edges: [], meta: [], ops: [] })
 
-export type OpenInfo = { version: number; from: number; migrated: readonly string[] }
+export type OpenInfo = {
+  version: number
+  from: number
+  migrated: readonly string[]
+  /**
+   * Whether this store can hear other tabs.
+   *
+   * False means every cross-tab guarantee in `repo` is off: no remote adoption,
+   * no undo-stack invalidation. The layer above has to compensate rather than
+   * discover it as two tabs quietly overwriting each other.
+   */
+  crossTab: boolean
+}
 
 /** What another tab tells us it did. The payload is deliberately not a delta. */
 export type StoreEvent = { kind: 'commit'; at: Instant; entryId: string }

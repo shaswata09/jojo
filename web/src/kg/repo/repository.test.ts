@@ -354,7 +354,6 @@ describe('history', () => {
       meta: freshMeta(AT, 'demo'),
       now: () => AT,
       audit: seen,
-      opsSeq: 2,
     })
 
     expect(repo.audit.map((e) => e.label)).toEqual(['newer', 'older'])

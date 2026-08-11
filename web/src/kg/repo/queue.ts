@@ -23,13 +23,32 @@
 
 import { kgWarn } from '../log'
 import type { Driver, DriverFailure, DurableOp } from '../storage/driver'
-import type { StoreName } from '../storage/schema'
 
 export type PersistenceHealth =
   | { state: 'idle' }
   | { state: 'writing'; pending: number }
-  | { state: 'degraded'; pending: number; attempts: number; lastError: string }
-  | { state: 'off'; reason: 'blocked' | 'quota' }
+  | {
+      state: 'degraded'
+      pending: number
+      /** User actions stranded, not rows. See `unsavedIn`. */
+      unsaved: number
+      attempts: number
+      lastError: string
+    }
+  | { state: 'off'; reason: 'blocked' | 'quota'; pending: number; unsaved: number }
+
+/**
+ * How many of the user's ACTIONS are stranded, as opposed to how many rows are.
+ *
+ * `pending` counts durable ops, and one action is several of them — a stage
+ * change writes the node, an edge or two and a journal row. A banner reading
+ * "4 changes could not be saved" over a single drag is not a small inaccuracy
+ * here: it is the number the user checks against their own memory of what they
+ * did, and it must match. Every commit enqueues exactly one journal row
+ * (`repository.ts`'s `opsFor`), so counting those counts actions.
+ */
+export const unsavedIn = (ops: readonly DurableOp[]): number =>
+  ops.reduce((n, op) => (op.kind === 'put' && op.store === 'ops' ? n + 1 : n), 0)
 
 /**
  * 250 ms, 1 s, 4 s, then 4 s forever.
@@ -66,8 +85,22 @@ export interface WriteQueue {
   stop(): void
 }
 
-/** '<store>\0<key>' — a `put` and a `delete` of one row collapse onto each other. */
-const slotOf = (store: StoreName, key: string | number) => `${store}\0${String(key)}`
+/**
+ * '<store>\0<key>' — a `put` and a `delete` of one row collapse onto each other.
+ *
+ * A journal row has no key yet: `ops` keys are allocated by the store itself so
+ * that two tabs writing at once cannot land on the same integer, so its op
+ * carries `key: null`. Every one of those would otherwise collapse onto the slot
+ * `ops\0null` and a burst of edits would reach disk as its last journal entry
+ * only — the audit log losing rows again, by a different route. The entry's own
+ * id is the identity here, which keeps the collapse correct (the same entry
+ * requeued after a failed drain is still one row) without merging distinct ones.
+ */
+const slotOf = (op: Exclude<DurableOp, { kind: 'clear' }>): string => {
+  if (op.key !== null) return `${op.store}\0${String(op.key)}`
+  const id = op.kind === 'put' ? op.value['id'] : undefined
+  return `${op.store}\0#${typeof id === 'string' ? id : String(Math.random())}`
+}
 
 /**
  * Collapses a batch to the smallest sequence with the same end state.
@@ -92,7 +125,7 @@ export function coalesce(ops: readonly DurableOp[]): DurableOp[] {
       if (!clears.some((c) => c.store === op.store)) clears.push(op)
       continue
     }
-    bySlot.set(slotOf(op.store, op.key), op)
+    bySlot.set(slotOf(op), op)
   }
 
   return [...clears, ...bySlot.values()]
@@ -176,7 +209,15 @@ export function createWriteQueue(driver: Driver): WriteQueue {
     const terminal = TERMINAL[result.error.code]
     if (terminal) {
       kgWarn('persistence off', { reason: terminal, message: result.error.message })
-      setHealth({ state: 'off', reason: terminal })
+      // The counts go out with it. Nothing is coming back for these ops, so the
+      // banner's job stops being "wait" and becomes "here is what you will lose
+      // if you reload" — which it cannot say without knowing how much there is.
+      setHealth({
+        state: 'off',
+        reason: terminal,
+        pending: pending.length,
+        unsaved: unsavedIn(pending),
+      })
       // Nothing is coming back for these, and a promise nobody resolves is a
       // pagehide handler that never returns.
       settleIdle()
@@ -188,6 +229,7 @@ export function createWriteQueue(driver: Driver): WriteQueue {
     setHealth({
       state: 'degraded',
       pending: pending.length,
+      unsaved: unsavedIn(pending),
       attempts,
       lastError: result.error.message,
     })

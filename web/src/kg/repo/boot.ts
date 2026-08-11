@@ -9,6 +9,13 @@
  * private-browsing window; it just cannot promise anything, and says so through
  * `Session.durable`.
  *
+ * `runBoot` below chooses between two continuations, and each is its own file
+ * because each answers a different question later. `firstRun` is here, next to
+ * the D24 rule it exists to obey. The store-already-exists path is
+ * `boot-ready.ts` — the trust boundary, where a stored row becomes a checked
+ * record. What both of them hand back is `boot-live.ts`, which is everything
+ * that goes on happening after boot returns.
+ *
  *
  * FIRST RUN IS THE ABSENCE OF THE META ROW (D24)
  *
@@ -37,19 +44,20 @@
  * whose own records are fine.
  */
 
-import { checkInvariants, validateRows } from '../core/validate'
+import { checkInvariants } from '../core/validate'
 import type { Diagnostic } from '../core/validate'
 import type { Instant, StoredEdge, StoredNode } from '../core/model'
 import { MutableSnapshot } from '../core/snapshot'
 import { kgLog, kgWarn } from '../log'
 import { emptyRows } from '../storage/driver'
-import type { Driver, DurableOp, Rows, StoreEvent } from '../storage/driver'
+import type { Driver, Rows } from '../storage/driver'
 import { createMemoryDriver } from '../storage/memory-driver'
 import type { StoredRow } from '../storage/schema'
-import { AUDIT_CAP, readJournalRows } from './journal'
-import { freshMeta, metaRow, opened, readMeta } from './meta'
+import { live } from './boot-live'
+import { ready } from './boot-ready'
+import { freshMeta, metaRow, readMeta } from './meta'
 import type { StoreMeta } from './meta'
-import { createRepository, onRemoteCommit } from './repository'
+import { createRepository } from './repository'
 import type { Repository } from './repository'
 import { seedToGraph } from './seed'
 
@@ -113,9 +121,37 @@ export type DurableBootOptions = BootOptions & {
   onBlocking?: () => void
   /** A remote change has been adopted; the snapshot is new and undo is cleared. */
   onRemoteChange?: () => void
+  /**
+   * The tab came back to the foreground. Supplied by the composition root.
+   *
+   * Subscribed ONLY when the store reports `crossTab: false` — see `live`. On a
+   * browser with a working BroadcastChannel this is never called.
+   */
+  onResume?: (fn: () => void) => () => void
 }
 
 const rowOf = (record: StoredNode | StoredEdge): StoredRow => record as unknown as StoredRow
+
+/**
+ * The stand-in session a failed open falls back to. Always empty, never seeded.
+ *
+ * This is the counterpart to the rule at the top of this file, arriving through
+ * the door that rule does not guard. A corrupt store never auto-reseeds because
+ * showing fixtures over records we could not read turns a recoverable problem
+ * into a permanent-looking one — and an open that failed is the same situation
+ * with less information, not a different one. `storage/blocked` in particular
+ * means there IS a database on disk: an old tab that reloads after a deploy
+ * takes this path with the user's real records sitting intact underneath, and
+ * seeding demo data here put twelve fabricated applications on screen labelled
+ * only "nothing you change is saved". Nowhere did anything say they were not the
+ * user's.
+ *
+ * Empty is the honest reading. It is also the safe one: `StorageBanner` says the
+ * store could not be opened, and an empty list under that sentence reads as "we
+ * could not load anything", which is exactly what happened.
+ */
+const bootStandIn = (options: BootOptions): Session =>
+  bootInMemory({ now: options.now, dataSet: 'empty' })
 
 /* ------------------------------- in memory -------------------------------- */
 
@@ -205,7 +241,7 @@ async function runBoot(options: DurableBootOptions): Promise<BootResult> {
       outcome: 'unavailable',
       reason: open.error.code === 'storage/blocked' ? 'blocked' : 'unsupported',
       detail: open.error.message,
-      session: bootInMemory(options),
+      session: bootStandIn(options),
     }
   }
   if (open.value.migrated.length > 0) {
@@ -234,8 +270,8 @@ async function runBoot(options: DurableBootOptions): Promise<BootResult> {
     }
   }
 
-  if (stored === null) return firstRun(driver, options, dataSet)
-  return ready(driver, options, read.value, stored, now())
+  if (stored === null) return firstRun(driver, options, dataSet, open.value.crossTab)
+  return ready(driver, options, read.value, stored, now(), open.value.crossTab)
 }
 
 /* -------------------------------- first run ------------------------------- */
@@ -244,6 +280,7 @@ async function firstRun(
   driver: Driver,
   options: DurableBootOptions,
   dataSet: 'demo' | 'empty',
+  crossTab: boolean,
 ): Promise<BootResult> {
   const at = options.now()
   const graph = dataSet === 'demo' ? seedToGraph(at) : { nodes: [], edges: [], unresolved: [] }
@@ -278,7 +315,7 @@ async function firstRun(
       outcome: 'unavailable',
       reason: seeded.error.code === 'storage/blocked' ? 'blocked' : 'unsupported',
       detail: seeded.error.message,
-      session: bootInMemory(options),
+      session: bootStandIn(options),
     }
   }
 
@@ -297,7 +334,7 @@ async function firstRun(
         rescued: again.ok ? again.value : null,
       }
     }
-    return ready(driver, options, again.value, stored, options.now())
+    return ready(driver, options, again.value, stored, options.now(), crossTab)
   }
 
   const snapshot = MutableSnapshot.from(graph.nodes, graph.edges)
@@ -305,194 +342,6 @@ async function firstRun(
 
   return {
     outcome: 'first-run',
-    session: live(driver, repo, options, { problems, skipped: [] }),
-  }
-}
-
-/* ---------------------------------- ready --------------------------------- */
-
-async function ready(
-  driver: Driver,
-  options: DurableBootOptions,
-  rows: Rows,
-  stored: StoreMeta,
-  at: Instant,
-): Promise<BootResult> {
-  // THE trust boundary. Everything below this line is a checked record; nothing
-  // above it was more than a JSON blob with a primary key.
-  const validated = validateRows(rows.nodes, rows.edges)
-  if (validated.skipped.length > 0) {
-    kgWarn(`${validated.skipped.length} record(s) could not be read and are not shown`, {
-      skipped: validated.skipped,
-    })
-  }
-
-  const problems = checkInvariants(validated.nodes, validated.edges).map(
-    (d) => `${d.store} ${d.id}: ${d.message}`,
-  )
-  if (problems.length > 0) {
-    kgWarn(`the stored graph failed ${problems.length} integrity check(s)`, { problems })
-  }
-
-  const history = readJournalRows(rows.ops)
-  const kept = history.slice(-AUDIT_CAP)
-  const meta = opened(stored, at)
-
-  // One transaction for the two things every open owes the store: the audit
-  // trimmed to its cap, and `lastOpenedAt`. Written through the driver rather
-  // than the queue because the repository does not exist yet, and because a
-  // prune that only half-landed would leave the ops keys non-contiguous — which
-  // is what the repository's sequence counter continues from below.
-  const chores: DurableOp[] = []
-  if (kept.length < history.length) {
-    chores.push({ kind: 'clear', store: 'ops' })
-    kept.forEach((entry, index) => {
-      chores.push({
-        kind: 'put',
-        store: 'ops',
-        key: index + 1,
-        value: entry as unknown as StoredRow,
-      })
-    })
-    kgLog(`pruned the audit log from ${history.length} to ${kept.length} entries`)
-  }
-  const row = metaRow(meta)
-  chores.push({ kind: 'put', store: 'meta', key: row.key, value: row })
-
-  const written = await driver.commit(chores)
-  if (!written.ok) {
-    // Not fatal, and deliberately so. A store we can read but not write is still
-    // a store the user can look at, and the write queue's health is what tells
-    // them the rest — escalating to the recovery panel here would hide their
-    // records behind a message about a timestamp.
-    kgWarn('could not stamp the store on open', { detail: written.error.message })
-  }
-
-  const snapshot = MutableSnapshot.from(validated.nodes, validated.edges)
-  const repo = createRepository({
-    driver,
-    snapshot,
-    meta,
-    now: options.now,
-    audit: kept,
-    opsSeq: kept.length,
-  })
-
-  return {
-    outcome: 'ready',
-    session: live(driver, repo, options, { problems, skipped: validated.skipped }),
-  }
-}
-
-/* -------------------------------- cross-tab ------------------------------- */
-
-/**
- * D23's 50 ms. Below what a person notices, above the gap between two drains.
- *
- * It lives here rather than in `storage/channel.ts`, where it reads like it
- * belongs, because `repo` may not import that file — see the note at the bottom
- * of it. Which is the right side of the seam anyway: the number is chosen for
- * the cost of the rehydrate, and the rehydrate is here.
- */
-const REMOTE_DEBOUNCE_MS = 50
-
-/**
- * Coalesces a burst of remote commits into one rehydrate.
- *
- * Another tab saving a form drains once, but a bulk file add or a drag across
- * the board drains repeatedly and each drain posts. Rehydrating per message
- * would rebuild the snapshot five times and — because a remote change clears the
- * undo stack — do it five times while the user is looking at the result.
- *
- * Trailing edge only. A leading edge would rehydrate on the first message of a
- * burst, and the first message is the one most likely to be describing a batch
- * that is still being written.
- */
-function debounceEvents(fn: (event: StoreEvent) => void, ms: number): (event: StoreEvent) => void {
-  let timer: ReturnType<typeof setTimeout> | null = null
-  let last: StoreEvent | null = null
-
-  return (event) => {
-    last = event
-    if (timer !== null) clearTimeout(timer)
-    timer = setTimeout(() => {
-      timer = null
-      const pending = last
-      last = null
-      if (pending) fn(pending)
-    }, ms)
-  }
-}
-
-/**
- * Wraps a durable repository with the two things another tab can do to it.
- *
- * Both subscriptions are dropped by `dispose`, and neither is optional. Ignoring
- * `blocking` is R-4 — the deadlock that never shows up in development, because
- * you are only ever running one build — and ignoring a remote commit is a tab
- * that goes on showing records another tab deleted, with an undo stack that
- * would put them back.
- */
-function live(
-  driver: Driver,
-  repo: Repository,
-  options: DurableBootOptions,
-  parts: { problems: readonly string[]; skipped: readonly Diagnostic[] },
-): Session {
-  const adopt = async (): Promise<void> => {
-    const again = await driver.readAll()
-    if (!again.ok) {
-      kgWarn('a remote change arrived but the store could not be re-read', {
-        detail: again.error.message,
-      })
-      return
-    }
-    const stored = readMeta(again.value.meta)
-    if (stored === null || stored === 'corrupt') {
-      // The other tab emptied or replaced the store and we caught it mid-write.
-      // Leaving our own reading in place is the conservative answer: it is
-      // stale, which a reload fixes, rather than empty, which looks like data
-      // loss and would offer to reseed over it.
-      kgWarn('a remote change arrived but the store has no readable meta row')
-      return
-    }
-    const validated = validateRows(again.value.nodes, again.value.edges)
-    repo.rehydrate(
-      { nodes: validated.nodes, edges: validated.edges },
-      stored,
-      readJournalRows(again.value.ops),
-    )
-    options.onRemoteChange?.()
-  }
-
-  const unsubscribeRemote = driver.onRemoteCommit(
-    debounceEvents((event) => {
-      // flush -> rehydrate -> clear the undo stack, in that order (D23). Our own
-      // queued ops are last-write-wins against theirs, so draining them after we
-      // rehydrate would replay our stale rows over their fresh ones.
-      void onRemoteCommit(repo, event, adopt)
-    }, REMOTE_DEBOUNCE_MS),
-  )
-
-  const unsubscribeBlocking = driver.onBlocking(() => {
-    kgWarn('another tab is upgrading the database; this one has closed its connection')
-    options.onBlocking?.()
-  })
-
-  return {
-    repo,
-    // Delegated, never copied — see `bootInMemory`. On this path there is a
-    // second writer too: a remote rehydrate adopts the other tab's meta row.
-    get meta() {
-      return repo.meta
-    },
-    problems: parts.problems,
-    skipped: parts.skipped,
-    durable: true,
-    dispose() {
-      unsubscribeRemote()
-      unsubscribeBlocking()
-      repo.close()
-    },
+    session: live(driver, repo, options, { problems, skipped: [], crossTab }),
   }
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { useSearchParams } from 'react-router'
+import { useLocation, useSearchParams } from 'react-router'
 import { buildMonth } from '@/data/calendar'
 import { STAGES, type Stage } from '@/data/seed'
 import { addressOf } from '@/kg/core/address'
@@ -97,6 +97,53 @@ export function settingsPath() {
   return '/settings'
 }
 
+/**
+ * The assistant. The last route still linked to by a literal — the guide points
+ * at it from two pages now, and one of them is the page whose whole job is
+ * being accurate about where things are.
+ */
+export function assistantPath() {
+  return '/assistant'
+}
+
+/**
+ * The documentation section: four pages under one path.
+ *
+ * The order is part of the contract rather than a detail of whichever component
+ * draws the list — the rail numbers these, the pager walks them, and a "next"
+ * link that disagreed with the numbering would be a page out of sequence in two
+ * places at once. Trust, then competence, then understanding, then provenance.
+ *
+ * The landing page is the bare '/guide', not '/guide/overview'. It is what the
+ * topbar's help icon and the palette have pointed at since before there was
+ * anything to split, and those links — and any bookmark on them — have to keep
+ * landing somewhere real. Same rule as everywhere else in this file: the
+ * default is omitted from the URL.
+ */
+export const GUIDE_PAGES = ['overview', 'screens', 'graph', 'built-with'] as const
+export type GuidePage = (typeof GUIDE_PAGES)[number]
+
+const GUIDE_DEFAULTS = { page: 'overview' } as const
+
+export function guidePath(page: GuidePage = GUIDE_DEFAULTS.page) {
+  return page === GUIDE_DEFAULTS.page ? '/guide' : `/guide/${page}`
+}
+
+/**
+ * Which of the four is open.
+ *
+ * A path reader rather than a param one, because the guide's pages are routes:
+ * they each want their own title, their own h1 and their own history entry, and
+ * a query string gives none of those. Anything unrecognised reads as the
+ * landing page rather than throwing — the router has already decided this URL
+ * matches the section, so the only question left is which pill to light.
+ */
+export function useGuidePage(): GuidePage {
+  const { pathname } = useLocation()
+  const segment = pathname.replace(/^\/guide\/?/, '').replace(/\/+$/, '')
+  return GUIDE_PAGES.includes(segment as GuidePage) ? (segment as GuidePage) : GUIDE_DEFAULTS.page
+}
+
 /** The knowledge-graph preview. No params — it reads the whole store. */
 export function graphPath() {
   return '/graph'
@@ -133,6 +180,18 @@ export function appPath(a: Addressable) {
   return `/applications/${encodeURIComponent(addressOf(a))}`
 }
 
+/**
+ * The board, with whatever the toolbar is filtering by.
+ *
+ * There was a fifth parameter here: `new`, composed as '?new=1' and documented
+ * as "opens the page with the new-application dialog already up". Nothing ever
+ * read it. `useApplicationsParams` handed back an `isNew` flag, no route
+ * consumed it, and none of the twenty-odd call sites passed it — so a link
+ * carrying '?new=1' landed on an ordinary board and silently did nothing, which
+ * is the worst thing a URL parameter can do to the next person who links to it.
+ * Removed rather than wired up: `n` and the New menu already open the dialog
+ * from anywhere, so there was no behaviour missing, only a promise nothing kept.
+ */
 export function applicationsPath(
   p: {
     view?: ApplicationsView
@@ -140,8 +199,6 @@ export function applicationsPath(
     q?: string
     /** Wire form, from `formatSort` — 'daysAgo' or '-daysAgo'. */
     sort?: string
-    /** Opens the page with the new-application dialog already up. */
-    new?: boolean
   } = {},
 ) {
   return withQuery('/applications', {
@@ -149,7 +206,6 @@ export function applicationsPath(
     stage: omitDefault(p.stage, APPLICATIONS_DEFAULTS.stage),
     q: omitDefault(p.q, APPLICATIONS_DEFAULTS.q),
     sort: omitDefault(p.sort, APPLICATIONS_DEFAULTS.sort),
-    new: p.new ? '1' : undefined,
   })
 }
 
@@ -259,7 +315,6 @@ export function useApplicationsParams() {
         stage?: Stage | 'all'
         q?: string
         sort?: string
-        isNew?: boolean
       },
       opts?: SetOptions,
     ) => {
@@ -268,7 +323,6 @@ export function useApplicationsParams() {
       if ('stage' in patch) wire.stage = patch.stage
       if ('q' in patch) wire.q = patch.q
       if ('sort' in patch) wire.sort = patch.sort
-      if ('isNew' in patch) wire.new = patch.isNew ? '1' : undefined
 
       setParams((prev) => patched(prev, wire, APPLICATIONS_DEFAULTS), {
         replace: opts?.replace ?? true,
@@ -283,8 +337,6 @@ export function useApplicationsParams() {
     q: params.get('q') ?? APPLICATIONS_DEFAULTS.q,
     /** Wire form; run it through `parseSort` for the key and direction. */
     sort: params.get('sort') ?? APPLICATIONS_DEFAULTS.sort,
-    // Named `isNew` because `new` cannot be a destructured binding.
-    isNew: params.has('new'),
     set,
   }
 }

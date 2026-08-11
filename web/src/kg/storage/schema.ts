@@ -137,9 +137,16 @@ export const STORE_SPECS: readonly StoreSpec[] = [
     name: 'ops',
     // The one store with out-of-line keys. A journal entry has no natural
     // numeric key and the audit is read as a sequence, so the sequence number is
-    // the key. `autoIncrement` is on as the backstop: every caller passes an
-    // explicit key today, and a caller that one day forgets gets an appended row
-    // rather than a silent overwrite of entry zero.
+    // the key — and `autoIncrement` is what mints it. That is not a backstop any
+    // more, it is the mechanism: the repository puts journal rows with no key at
+    // all (`repository.ts`'s `opsFor`) precisely because the store's generator is
+    // the only allocator two tabs share. A counter kept per tab had them both
+    // writing key 41 and silently overwriting each other's history.
+    //
+    // The two callers that DO pass explicit keys — `replace`, and the audit prune
+    // on open — both renumber from 1 inside a transaction that has just cleared
+    // the store. That is safe because a generator is never rewound by `clear()`,
+    // only by deleting the store, so what they append next still lands above.
     keyPath: null,
     autoIncrement: true,
     indexes: [

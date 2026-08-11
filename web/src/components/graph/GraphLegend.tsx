@@ -1,7 +1,8 @@
-import { NODE_TYPE_LABEL } from '@/lib/graph'
-import type { GraphNodeType } from '@/lib/graph'
+import { NODE_TYPE_LABEL } from '@/lib/graph/model'
+import type { GraphNodeType } from '@/lib/graph/model'
 import { cn } from '@/lib/utils'
-import { LEGEND_ORDER, TypeSwatch } from './visuals'
+import { TypeSwatch } from './NodeGlyph'
+import { LEGEND_ORDER } from './visuals'
 
 /**
  * The key, and the filter — one control rather than two.

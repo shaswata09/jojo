@@ -1,119 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { DragEvent, FormEvent, KeyboardEvent } from 'react'
-import {
-  FileText,
-  FileType,
-  Pencil,
-  Plus,
-  Presentation,
-  StickyNote,
-  Trash2,
-  Upload,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { FileText, Plus, Upload } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Field } from '@/components/common/Field'
-import { LabelChips, LabelPicker } from '@/components/common/LabelFilter'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { FileViewer } from '@/components/vault/FileViewer'
-import { MenuItem, MenuSection, RowMenu } from '@/components/vault/RowMenu'
 import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
+import { filesEmptyState } from '@/components/vault/files/empty-state'
+import { FileRow } from '@/components/vault/files/FileRow'
+import { sortDrop } from '@/components/vault/files/intake'
+import { useFileDrop } from '@/components/vault/files/use-file-drop'
 import { FILE_BUCKETS } from '@/data/vault'
-import type { FileBucket, FileKind, VaultFile } from '@/data/vault'
+import type { FileBucket, VaultFile } from '@/data/vault'
 import { useVault } from '@/kg/react/use-vault'
 import { kindOfFile, sizeLabel } from '@/lib/files'
-import { slugify } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
-
-const kindIcon: Record<FileKind, LucideIcon> = {
-  pdf: FileType,
-  doc: FileText,
-  slides: Presentation,
-  note: StickyNote,
-}
-
-/**
- * True only while something from the file system is being dragged over.
- *
- * Checked on every handler: a card dragged off the applications board also
- * fires dragover here, and a drop zone that lit up for it would be advertising
- * something it cannot accept.
- */
-function draggingFiles(event: DragEvent) {
-  return event.dataTransfer.types.includes('Files')
-}
-
-/**
- * One field, edited where it is read.
- *
- * Renaming a file and correcting its note are the same interaction with a
- * different label, and neither is worth a dialog — the value being changed is
- * already on screen, and a modal would cover the row it came from.
- */
-function InlineEdit({
-  label,
-  value,
-  mono,
-  required,
-  onSave,
-  onCancel,
-}: {
-  label: string
-  value: string
-  mono?: boolean
-  /** Set where an empty value would leave the record unusable — a file's name. */
-  required?: boolean
-  onSave: (next: string) => void
-  onCancel: () => void
-}) {
-  const [draft, setDraft] = useState(value)
-  const blocked = Boolean(required) && !draft.trim()
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
-    if (blocked) return
-    onSave(draft.trim())
-  }
-
-  // Escape backs out of an inline editor everywhere else in this app; a row that
-  // could only be left with the mouse would be the odd one out.
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape') return
-    event.preventDefault()
-    onCancel()
-  }
-
-  return (
-    <form onSubmit={submit} onKeyDown={onKeyDown} className="flex flex-wrap items-end gap-2">
-      <Field
-        label={label}
-        value={draft}
-        mono={mono}
-        autoFocus
-        autoComplete="off"
-        spellCheck={false}
-        className="min-w-[12rem] flex-1"
-        onChange={(event) => setDraft(event.target.value)}
-      />
-      <Button
-        type="submit"
-        size="sm"
-        disabled={blocked}
-        title={blocked ? 'A file needs a name' : undefined}
-      >
-        Save
-      </Button>
-      <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-        Cancel
-      </Button>
-    </form>
-  )
-}
 
 /**
  * Read-later files, in buckets.
@@ -132,7 +36,6 @@ export function FilesTool({ focus }: { focus?: string }) {
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [editing, setEditing] = useState<{ id: string; field: 'name' | 'note' } | null>(null)
-  const [dragging, setDragging] = useState(false)
 
   /**
    * The real `File` behind a row added this session, by record id.
@@ -159,23 +62,6 @@ export function FilesTool({ focus }: { focus?: string }) {
   const focusedRow = useArrivalScroll<HTMLLIElement>(focus)
 
   const pickerRef = useRef<HTMLInputElement>(null)
-  /** dragenter/dragleave fire per element, so a bare boolean flickers on every
-   *  child the pointer crosses. Counting them is what makes the state hold. */
-  const dragDepth = useRef(0)
-
-  useEffect(() => {
-    // A file dropped anywhere else in the window makes the browser navigate to
-    // it, which throws away a session that only exists in memory. Swallowed for
-    // as long as this tool is mounted; the panel below handles its own drop
-    // first, on the way up.
-    const swallow = (event: globalThis.DragEvent) => event.preventDefault()
-    window.addEventListener('dragover', swallow)
-    window.addEventListener('drop', swallow)
-    return () => {
-      window.removeEventListener('dragover', swallow)
-      window.removeEventListener('drop', swallow)
-    }
-  }, [])
 
   const counts = useMemo(() => {
     const map: Record<string, number> = {}
@@ -196,25 +82,17 @@ export function FilesTool({ focus }: { focus?: string }) {
   const target: FileBucket = bucket === 'all' ? 'To read' : bucket
 
   const addFiles = (list: FileList | null) => {
-    const picked = Array.from(list ?? [])
-    if (picked.length === 0) return
+    const { total, picked, fresh, folders, skipped } = sortDrop(list, files)
+    if (total === 0) return
 
-    /**
-     * `addFile` mints the id from the name and reads the store as of the last
-     * render, so two files landing in one gesture cannot see each other: both
-     * would take the same id, and from then on they are one row with one
-     * keyword set that one delete takes out together. Deduped on the id the
-     * name would produce rather than on the name itself, because that is the
-     * thing that has to be unique — 'CV 2026.pdf' and 'CV-2026.pdf' slugify to
-     * the same key.
-     */
-    const seen = new Set(files.map((f) => slugify(f.name)))
-    const fresh = picked.filter((file) => {
-      const key = slugify(file.name)
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
+    if (picked.length === 0) {
+      toast({
+        title: folders === 1 ? 'That looks like a folder' : 'Those look like folders',
+        description:
+          'jojo files documents one at a time. Open the folder and drop the files in it.',
+      })
+      return
+    }
 
     const added: string[] = []
     for (const file of fresh) {
@@ -228,7 +106,6 @@ export function FilesTool({ focus }: { focus?: string }) {
       setBlobs((prev) => ({ ...prev, [record.id]: file }))
     }
 
-    const skipped = picked.length - fresh.length
     if (fresh.length === 0) {
       toast({
         title: skipped === 1 ? 'That file is already here' : 'Those files are already here',
@@ -258,32 +135,46 @@ export function FilesTool({ focus }: { focus?: string }) {
         description: 'A file of the same name was already in the vault.',
       })
     }
+    // Said even when the rest of the drop landed. A mixed drop that silently
+    // dropped the folders would leave the user counting rows and not finding
+    // the number they expected.
+    if (folders > 0) {
+      toast({
+        title: folders === 1 ? '1 folder skipped' : `${folders} folders skipped`,
+        description:
+          'jojo files documents one at a time. Open the folder and drop the files in it.',
+      })
+    }
   }
 
-  const onDragOver = (event: DragEvent) => {
-    if (!draggingFiles(event)) return
-    // Without this the browser refuses the drop and opens the file instead.
-    event.preventDefault()
-    event.dataTransfer.dropEffect = 'copy'
+  const { dragging, onDragEnter, onDragOver, onDragLeave, onDrop } = useFileDrop(addFiles)
+
+  const onRename = (file: VaultFile, next: string) => {
+    const before = file.name
+    updateFile(file.id, { name: next })
+    setEditing(null)
+    toast({
+      title: `${next} renamed`,
+      description: `Was ${before}.`,
+      action: {
+        label: 'Undo',
+        onClick: () => updateFile(file.id, { name: before }),
+      },
+    })
   }
 
-  const onDragEnter = (event: DragEvent) => {
-    if (!draggingFiles(event)) return
-    dragDepth.current += 1
-    setDragging(true)
-  }
-
-  const onDragLeave = () => {
-    dragDepth.current = Math.max(0, dragDepth.current - 1)
-    if (dragDepth.current === 0) setDragging(false)
-  }
-
-  const onDrop = (event: DragEvent) => {
-    if (!draggingFiles(event)) return
-    event.preventDefault()
-    dragDepth.current = 0
-    setDragging(false)
-    addFiles(event.dataTransfer.files)
+  const onNote = (file: VaultFile, next: string) => {
+    const before = file.note
+    updateFile(file.id, { note: next || undefined })
+    setEditing(null)
+    toast({
+      title: `${file.name} ${next ? 'note saved' : 'note cleared'}`,
+      description: next || 'The row keeps its name, bucket and keywords.',
+      action: {
+        label: 'Undo',
+        onClick: () => updateFile(file.id, { note: before }),
+      },
+    })
   }
 
   const onMove = (file: VaultFile, next: FileBucket) => {
@@ -332,72 +223,16 @@ export function FilesTool({ focus }: { focus?: string }) {
     </Button>
   )
 
-  /**
-   * Every empty list names the control that emptied it. "Nothing in this bucket"
-   * over a vault holding ten files, because a keyword chip is set on the page
-   * header, reads as data loss rather than as a filter.
-   */
-  const empty = (() => {
-    if (files.length === 0) {
-      return {
-        title: 'No files yet',
-        description: 'Drop a posting, a paper or a draft here — or add one from your computer.',
-        action: addButton,
-      }
-    }
-    if (query.trim()) {
-      return {
-        title: 'Nothing matches that search',
-        description: `No file mentions "${query.trim()}" in its name, note or bucket.`,
-        action: (
-          <Button variant="outline" size="sm" onClick={() => setQuery('')}>
-            Clear search
-          </Button>
-        ),
-      }
-    }
-    const byBucket = bucket !== 'all'
-    const byKeyword = selectedLabels.size > 0
-
-    if (byBucket && byKeyword) {
-      return {
-        title: 'Nothing matches both filters',
-        description: `No file in ${bucket} carries the selected keywords.`,
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setBucket('all')
-              clearSelected()
-            }}
-          >
-            Clear both filters
-          </Button>
-        ),
-      }
-    }
-    if (byBucket) {
-      return {
-        title: `Nothing in ${bucket}`,
-        description: `${files.length} files are filed under the other buckets.`,
-        action: (
-          <Button variant="outline" size="sm" onClick={() => setBucket('all')}>
-            Show all buckets
-          </Button>
-        ),
-      }
-    }
-    return {
-      title: 'No files carry those keywords',
-      description: 'The keyword filter at the top of the page is what is hiding them.',
-      action: (
-        <Button variant="outline" size="sm" onClick={clearSelected}>
-          Clear keywords
-        </Button>
-      ),
-    }
-  })()
+  const empty = filesEmptyState({
+    total: files.length,
+    query,
+    bucket,
+    selectedLabels,
+    addButton,
+    onClearQuery: () => setQuery(''),
+    onClearBucket: () => setBucket('all'),
+    onClearKeywords: clearSelected,
+  })
 
   return (
     // The list narrows when a preview is up, so the document gets the room and
@@ -459,138 +294,24 @@ export function FilesTool({ focus }: { focus?: string }) {
           />
         ) : (
           <ul className="divide-y divide-hairline">
-            {visible.map((f) => {
-              const Icon = kindIcon[f.kind]
-              const isEditing = editing?.id === f.id
-
-              return (
-                <li
-                  key={f.id}
-                  ref={f.id === focus ? focusedRow : undefined}
-                  className={cn(
-                    'flex items-center gap-3 py-2.5',
-                    f.id === focus && 'arrival-highlight -mx-2 rounded-md px-2',
-                  )}
-                >
-                  <Icon
-                    aria-hidden
-                    strokeWidth={1.7}
-                    className="size-3.5 shrink-0 self-start text-text-3"
-                  />
-
-                  <div className="min-w-0 flex-1">
-                    {isEditing && editing.field === 'name' ? (
-                      <InlineEdit
-                        label="File name"
-                        value={f.name}
-                        mono
-                        required
-                        onCancel={() => setEditing(null)}
-                        onSave={(next) => {
-                          const before = f.name
-                          updateFile(f.id, { name: next })
-                          setEditing(null)
-                          toast({
-                            title: `${next} renamed`,
-                            description: `Was ${before}.`,
-                            action: {
-                              label: 'Undo',
-                              onClick: () => updateFile(f.id, { name: before }),
-                            },
-                          })
-                        }}
-                      />
-                    ) : isEditing ? (
-                      <InlineEdit
-                        label="Note"
-                        value={f.note ?? ''}
-                        onCancel={() => setEditing(null)}
-                        onSave={(next) => {
-                          const before = f.note
-                          updateFile(f.id, { note: next || undefined })
-                          setEditing(null)
-                          toast({
-                            title: `${f.name} ${next ? 'note saved' : 'note cleared'}`,
-                            description: next || 'The row keeps its name, bucket and keywords.',
-                            action: {
-                              label: 'Undo',
-                              onClick: () => updateFile(f.id, { note: before }),
-                            },
-                          })
-                        }}
-                      />
-                    ) : (
-                      <>
-                        {/* A button, not a div. It looked exactly like the
-                            reminder title beside it in the same vault and did
-                            nothing when clicked. */}
-                        <button
-                          type="button"
-                          onClick={() => setEditing({ id: f.id, field: 'name' })}
-                          title="Rename this file"
-                          className="block max-w-full cursor-pointer truncate text-left font-mono text-sm text-text-1 transition-colors hover:text-accent"
-                        >
-                          {f.name}
-                        </button>
-                        <div className="mt-0.5 flex items-center gap-x-2 overflow-hidden text-xs text-text-3">
-                          <span className="shrink-0">{f.bucket}</span>
-                          <span aria-hidden>·</span>
-                          <span className="tabular shrink-0">{f.size}</span>
-                          {blobs[f.id] ? (
-                            <>
-                              <span aria-hidden>·</span>
-                              {/* Worth saying: it is the difference between a
-                                  real preview and a generated stand-in. */}
-                              <span className="shrink-0">on this device</span>
-                            </>
-                          ) : null}
-                          {f.note ? <span className="truncate">· {f.note}</span> : null}
-                          <LabelChips recordId={f.id} className="shrink-0" />
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="flex shrink-0 items-center gap-1">
-                    <LabelPicker recordId={f.id} />
-                    <Button
-                      variant={openId === f.id ? 'default' : 'ghost'}
-                      size="sm"
-                      aria-pressed={openId === f.id}
-                      onClick={() => setOpenId((prev) => (prev === f.id ? null : f.id))}
-                    >
-                      {openId === f.id ? 'Viewing' : 'Preview'}
-                    </Button>
-                    <RowMenu name={f.name}>
-                      <MenuItem
-                        icon={Pencil}
-                        onSelect={() => setEditing({ id: f.id, field: 'name' })}
-                      >
-                        Rename
-                      </MenuItem>
-                      <MenuItem
-                        icon={StickyNote}
-                        onSelect={() => setEditing({ id: f.id, field: 'note' })}
-                      >
-                        {f.note ? 'Edit note' : 'Add note'}
-                      </MenuItem>
-                      <MenuSection title="Move to">
-                        {FILE_BUCKETS.map((b) => (
-                          <MenuItem key={b} current={b === f.bucket} onSelect={() => onMove(f, b)}>
-                            {b}
-                          </MenuItem>
-                        ))}
-                      </MenuSection>
-                      <MenuSection>
-                        <MenuItem icon={Trash2} danger onSelect={() => onDelete(f)}>
-                          Delete
-                        </MenuItem>
-                      </MenuSection>
-                    </RowMenu>
-                  </div>
-                </li>
-              )
-            })}
+            {visible.map((f) => (
+              <FileRow
+                key={f.id}
+                file={f}
+                focused={f.id === focus}
+                rowRef={f.id === focus ? focusedRow : undefined}
+                editingField={editing?.id === f.id ? editing.field : undefined}
+                onDevice={Boolean(blobs[f.id])}
+                previewing={openId === f.id}
+                onEdit={(field) => setEditing({ id: f.id, field })}
+                onCancelEdit={() => setEditing(null)}
+                onRename={onRename}
+                onNote={onNote}
+                onTogglePreview={() => setOpenId((prev) => (prev === f.id ? null : f.id))}
+                onMove={onMove}
+                onDelete={onDelete}
+              />
+            ))}
           </ul>
         )}
 

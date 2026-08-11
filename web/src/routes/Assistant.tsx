@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowUp, Check, Copy, Quote, TriangleAlert } from 'lucide-react'
+import { ArrowUp, Quote, TriangleAlert } from 'lucide-react'
+import { CopyFeedback } from '@/components/common/CopyFeedback'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { Chip } from '@/components/common/Chip'
@@ -292,12 +293,7 @@ export function Assistant() {
 
                   <div className="mt-2.5 flex flex-wrap gap-2">
                     <Button variant="ghost" size="sm" onClick={() => copy(m.id, m.text)}>
-                      {copiedId === m.id ? (
-                        <Check className="size-3.5" strokeWidth={2} aria-hidden />
-                      ) : (
-                        <Copy className="size-3.5" strokeWidth={1.8} aria-hidden />
-                      )}
-                      {copiedId === m.id ? (copyFailed ? 'Blocked' : 'Copied') : 'Copy'}
+                      <CopyFeedback copied={copiedId === m.id} failed={copyFailed} />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => saveToSnippets(m)}>
                       <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />

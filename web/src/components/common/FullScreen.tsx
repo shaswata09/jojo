@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Maximize2 } from 'lucide-react'
 import {
@@ -7,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { TOAST_STACK_SELECTOR, deferFocusReturn } from '@/lib/toast-context'
 import { cn } from '@/lib/utils'
 
 /**
@@ -84,8 +86,79 @@ export function FullScreenDialog({
    *
    * Removing the subtree skips the wait. Radix's own effects still run on
    * unmount, so the scroll lock and the focus scope are released as usual.
+   *
+   * What does NOT still run is `onCloseAutoFocus`. Radix fires that as part of
+   * closing, and this panel never closes — it vanishes — so `dialog.tsx`'s
+   * whole focus-restoration path is skipped, and pressing Escape left focus on
+   * a node that had just been removed: `document.activeElement` measured BODY,
+   * and the next Tab started again from the top of the page. That is what the
+   * surface below restores by hand, and why it is a separate component: the
+   * restoration is an effect, and an effect cannot live after the early return.
    */
   if (!open) return null
+
+  return (
+    <FullScreenSurface onOpenChange={onOpenChange} title={title} description={description}>
+      {children}
+    </FullScreenSurface>
+  )
+}
+
+function FullScreenSurface({
+  onOpenChange,
+  title,
+  description,
+  children,
+}: {
+  onOpenChange: (open: boolean) => void
+  title: string
+  description?: string
+  children: ReactNode
+}) {
+  /**
+   * Captured during render, not in an effect.
+   *
+   * By the time any effect here runs, Radix's own focus scope has already moved
+   * focus into the panel, so an effect would record the panel. The first render
+   * of this component is the last moment `document.activeElement` is still the
+   * control the user pressed to open it.
+   */
+  const openerRef = useRef<HTMLElement | null>(null)
+  if (openerRef.current === null) {
+    const active = document.activeElement
+    openerRef.current = active instanceof HTMLElement && active !== document.body ? active : null
+  }
+
+  /**
+   * Hands focus back on the way out, standing in for the `onCloseAutoFocus`
+   * this panel's early unmount skips.
+   *
+   * A layout effect for the reason `toast.tsx` gives: cleanup has to run while
+   * the node is still connected, or the question "does the panel still hold
+   * focus?" is always answered no.
+   */
+  useLayoutEffect(() => {
+    const opener = openerRef.current
+    return () => {
+      // A write on the way out — Save note, then Escape — puts an Undo in the
+      // toast stack and the stack takes focus so the Undo is reachable. Taking
+      // it back now would withdraw the Undo a frame after offering it, so the
+      // trigger is handed to the toast to use when it goes. Same contract
+      // `dialog.tsx` uses.
+      if (document.activeElement?.closest(TOAST_STACK_SELECTOR)) {
+        deferFocusReturn(opener?.isConnected ? opener : null)
+        return
+      }
+      if (opener?.isConnected) {
+        opener.focus({ preventScroll: true })
+        return
+      }
+      // The opener went with the record it belonged to. `<main>` is
+      // `tabIndex={-1}` for this (`AppShell.tsx`) — resuming the tab order in
+      // the content beats resuming it at the skip link.
+      document.getElementById('main')?.focus({ preventScroll: true })
+    }
+  }, [])
 
   return (
     <Dialog open onOpenChange={onOpenChange}>

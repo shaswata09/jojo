@@ -293,7 +293,9 @@ export function OwedThisWeek() {
                                 aria-label={`Mark "${e.title}" done`}
                                 title="Mark done"
                                 onClick={() => complete(e)}
-                                className="mt-0.5 grid size-[18px] shrink-0 cursor-pointer place-items-center rounded-sm border border-hairline-strong text-transparent transition-colors hover:border-accent-border hover:text-accent"
+                                // `touch-target`: 18px is below every size
+                                // class the coarse-pointer rule matches on.
+                                className="touch-target mt-0.5 grid size-[18px] shrink-0 cursor-pointer place-items-center rounded-sm border border-hairline-strong text-transparent transition-colors hover:border-accent-border hover:text-accent"
                               >
                                 <Check className="size-3" strokeWidth={2.5} aria-hidden />
                               </button>

@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button'
 import type { NodeType } from '@/kg/core/model'
 import { useGraph, useKg } from '@/kg/react/kg-context'
 import type { ToolName } from '@/kg/tools'
-import { NODE_TYPE_LABEL, REL_LABEL, incidentEdges, otherEnd } from '@/lib/graph'
-import type { Graph, GraphNode, GraphRel } from '@/lib/graph'
-import { LEGEND_ORDER, TypeSwatch } from './visuals'
+import { NODE_TYPE_LABEL, REL_LABEL } from '@/lib/graph/model'
+import type { Graph, GraphNode, GraphRel } from '@/lib/graph/model'
+import { incidentEdges, otherEnd } from '@/lib/graph/traversal'
+import { TypeSwatch } from './NodeGlyph'
+import { LEGEND_ORDER } from './visuals'
 
 /** One verb this record supports, with the record already filled in. */
 type Verb = { name: ToolName; plan: FormPlan; seeded: Readonly<Record<string, unknown>> }

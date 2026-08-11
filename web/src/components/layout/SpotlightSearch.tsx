@@ -26,6 +26,7 @@ import { RobotIcon } from '@/components/brand/RobotIcon'
 import { CREATE_ACTIONS, DIALOG_TOOLS, useRunCreateAction } from '@/components/common/NewMenu'
 import { ToolRunDialog } from '@/components/common/ToolRunDialog'
 import { planToolForm } from '@/components/common/tool-form'
+import { GUIDE_PAGE_META } from '@/components/guide/pages'
 import type { FormPlan } from '@/components/common/tool-form'
 import {
   Command,
@@ -50,9 +51,11 @@ import { TODAY } from '@/lib/today'
 import {
   appPath,
   applicationsPath,
+  assistantPath,
   calendarPath,
   dashboardPath,
   graphPath,
+  guidePath,
   profilePath,
   scoutPath,
   settingsPath,
@@ -60,6 +63,7 @@ import {
   transferPath,
   vaultPath,
 } from '@/lib/links'
+import type { GuidePage } from '@/lib/links'
 
 type Result = {
   id: string
@@ -69,6 +73,14 @@ type Result = {
   to: string
   /** Extra text matched against but not displayed. */
   keywords?: string
+}
+
+/** What someone types when they want a guide page but do not know its name. */
+const GUIDE_KEYWORDS: Record<GuidePage, string> = {
+  overview: 'getting started first steps checklist onboarding storage backup shortcuts undo',
+  screens: 'reference pages screens routes what does this do not connected disabled',
+  graph: 'nodes edges query records model relationships architecture',
+  'built-with': 'licence license credits acknowledgements open source dependencies versions',
 }
 
 const PAGES: Result[] = [
@@ -112,12 +124,23 @@ const PAGES: Result[] = [
     id: 'p-assist',
     label: 'Assistant',
     icon: RobotIcon as unknown as LucideIcon,
-    // No builder for these two: they are placeholders rather than destinations
-    // the app links to from anywhere else.
-    to: '/assistant',
+    to: assistantPath(),
   },
   { id: 'p-set', label: 'Settings', icon: Settings, to: settingsPath() },
-  { id: 'p-guide', label: 'How to use', icon: CircleHelp, to: '/guide' },
+  // The guide's four pages, each its own row rather than one row for the
+  // section. Outside the palette it is reachable from a single unlabelled
+  // question mark in the topbar, so this is where someone who has never found
+  // it will find it — and they will be typing what they want to know
+  // ('licence', 'shortcut', 'backup'), not the name of a page they have never
+  // seen. The keywords are what those questions look like.
+  ...GUIDE_PAGE_META.map((page) => ({
+    id: `p-guide-${page.id}`,
+    label: page.label,
+    detail: page.blurb,
+    icon: CircleHelp,
+    to: guidePath(page.id),
+    keywords: `guide help documentation how to use manual ${GUIDE_KEYWORDS[page.id]}`,
+  })),
 ]
 
 /** What the verb does to your records, at a glance, before you read the row. */

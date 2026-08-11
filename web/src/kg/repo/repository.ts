@@ -91,8 +91,6 @@ export type RepositoryOptions = {
   now: () => Instant
   /** Rows already in the `ops` store, so the audit survives a rehydrate. */
   audit?: readonly JournalEntry[]
-  /** Next free key in `ops`. Continued rather than restarted, so keys never collide. */
-  opsSeq?: number
 }
 
 /**
@@ -146,7 +144,7 @@ const rowOf = (record: StoredNode | StoredEdge): StoredRow => record as unknown 
  * to re-derive what a write touched forgets things in exactly the way the
  * hand-written undo closures did, one layer down.
  */
-function opsFor(entry: JournalEntry, opsKey: number): DurableOp[] {
+function opsFor(entry: JournalEntry): DurableOp[] {
   const ops: DurableOp[] = []
 
   const push = <T extends StoredNode | StoredEdge>(
@@ -161,7 +159,16 @@ function opsFor(entry: JournalEntry, opsKey: number): DurableOp[] {
 
   push('nodes', entry.nodes)
   push('edges', entry.edges)
-  ops.push({ kind: 'put', store: 'ops', key: opsKey, value: entry as unknown as StoredRow })
+  // `key: null` — the STORE allocates. This used to be a counter this repository
+  // kept, and the counter is per tab: two tabs open on the same database both
+  // believed the next free key was the same integer, so `put` overwrote instead
+  // of appending and a concurrent burst reached disk with about half its journal
+  // rows destroyed. The records themselves survived that (they are keyed by id);
+  // the log of what happened to them did not, which is the one thing an audit
+  // exists to be. `schema.ts` has had `autoIncrement: true` on this store all
+  // along, described there as the backstop for a caller that forgets its key.
+  // The caller did not forget — it insisted — and the backstop is the fix.
+  ops.push({ kind: 'put', store: 'ops', key: null, value: entry as unknown as StoredRow })
   return ops
 }
 
@@ -182,7 +189,6 @@ export function createRepository(options: RepositoryOptions): Repository {
   // it are what every projection cache is keyed against.
   const snapshot = options.snapshot
   let meta = options.meta
-  let opsSeq = options.opsSeq ?? audit.size
   let current = reading(snapshot)
 
   const notify = () => {
@@ -207,8 +213,7 @@ export function createRepository(options: RepositoryOptions): Repository {
     current = reading(snapshot)
     audit.push(entry)
 
-    opsSeq += 1
-    const ops = opsFor(entry, opsSeq)
+    const ops = opsFor(entry)
 
     // Demo data stops being demo data the moment the user writes to it. Left at
     // 'demo', Settings would go on offering to replace their records with the
@@ -344,7 +349,6 @@ export function createRepository(options: RepositoryOptions): Repository {
       undo.clear()
       redo.clear()
       audit.clear()
-      opsSeq = 0
       notify()
       return ok(undefined)
     },
@@ -362,10 +366,6 @@ export function createRepository(options: RepositoryOptions): Repository {
       redo.clear()
       audit.clear()
       if (nextAudit) audit.load([...nextAudit])
-      // Continued from what came back off disk, not restarted. The other tab is
-      // writing into the same `ops` store with its own counter; restarting ours
-      // at zero would have us overwrite its newest entries with our oldest.
-      opsSeq = audit.size
       notify()
     },
 

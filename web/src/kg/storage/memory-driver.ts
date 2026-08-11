@@ -92,24 +92,53 @@ const readStore = (store: Store): StoredRow[] =>
     .sort(([a], [b]) => compareKeys(a, b))
     .map(([, row]) => structuredClone(row) as StoredRow)
 
-/**
- * The key each store reads off its own rows.
- *
- * In-line keys, so a `put` carries its key inside the value and the two cannot
- * disagree. `ops` is the exception — it is `autoIncrement`, so the caller has to
- * supply the sequence number and there is nothing in the row to check it against.
- */
-function keyOf(store: StoreName, key: Key, value: StoredRow): Key {
-  if (store === 'ops') return key
-  const inline = value['id'] ?? value['key']
-  return typeof inline === 'string' || typeof inline === 'number' ? inline : key
-}
-
 export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDriver {
   let stores = emptyStores()
   let closed = false
   const remote = new Set<(e: StoreEvent) => void>()
   const blocking = new Set<() => void>()
+
+  /**
+   * `ops`'s key generator, modelled on IndexedDB's rather than on a Map's.
+   *
+   * Two behaviours are load-bearing and neither is obvious. It never goes
+   * backwards, not even after `clear()` — the spec resets a generator only when
+   * the store or database is deleted — which is what lets the audit prune
+   * renumber the survivors from 1 without the next appended entry colliding with
+   * them. And an explicit key raises it, so a driver rehydrated from rows 1..200
+   * allocates 201 next rather than overwriting row 1.
+   *
+   * A driver that simply took the caller's word for the key would have made the
+   * two-tab overwrite bug invisible in the entire test suite, since every test
+   * runs against this one.
+   */
+  let opsSeq = 0
+
+  const nextOpsKey = (): number => {
+    opsSeq += 1
+    return opsSeq
+  }
+
+  const noteOpsKey = (key: Key): void => {
+    if (typeof key === 'number' && key > opsSeq) opsSeq = key
+  }
+
+  /**
+   * The key each store reads off its own rows.
+   *
+   * In-line keys, so a `put` carries its key inside the value and the two cannot
+   * disagree. `ops` is the exception — it is out-of-line and `autoIncrement`, so
+   * either the caller supplies a sequence number or `null` asks the store to.
+   */
+  function keyOf(store: StoreName, key: Key | null, value: StoredRow): Key {
+    if (store === 'ops') {
+      if (key === null) return nextOpsKey()
+      noteOpsKey(key)
+      return key
+    }
+    const inline = value['id'] ?? value['key']
+    return typeof inline === 'string' || typeof inline === 'number' ? inline : (key ?? '')
+  }
 
   const load = (rows: Partial<Rows>, into: Stores) => {
     for (const name of STORE_NAMES) {
@@ -143,7 +172,10 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
   }
 
   const open = async (): Promise<DriverResult<OpenInfo>> =>
-    guard<OpenInfo>('open') ?? driverOk({ version: 1, from: 1, migrated: [] })
+    // `crossTab: false` — a Map in this process reaches nobody. It is also the
+    // honest answer for the fallback session, which is a tab on its own by
+    // definition: there is no shared store for a second tab to disagree about.
+    guard<OpenInfo>('open') ?? driverOk({ version: 1, from: 1, migrated: [], crossTab: false })
 
   const readAll = async (): Promise<DriverResult<Rows>> =>
     guard<Rows>('readAll') ??
@@ -221,6 +253,9 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
     const failed = guard<void>('destroy')
     if (failed) return failed
     stores = emptyStores()
+    // The one operation that DOES reset the key generator, here as in the spec:
+    // deleting the database takes the store and its generator with it.
+    opsSeq = 0
     return driverOk(undefined)
   }
 

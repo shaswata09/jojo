@@ -37,7 +37,7 @@ const nullDriver = (): Options['driver'] => ({
   // Written as literals rather than through `ok()`: the driver has its own
   // narrower failure type, so a `Result<T>` carrying a `KgErrorCode` is not the
   // same shape and the ok branch would drag the wrong error union with it.
-  open: async () => ({ ok: true, value: { version: 1, from: 0, migrated: [] } }),
+  open: async () => ({ ok: true, value: { version: 1, from: 0, migrated: [], crossTab: false } }),
   readAll: async () => ({ ok: true, value: { nodes: [], edges: [], meta: [], ops: [] } }),
   commit: async () => ({ ok: true, value: undefined }),
   replace: async () => ({ ok: true, value: undefined }),

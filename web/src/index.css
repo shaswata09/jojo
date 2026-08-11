@@ -1009,11 +1009,25 @@ html[data-theme='dark'] {
 
    On what these selectors match: the app's icon controls are almost never
    `<Button size="icon">`. The house contract, set by the overflow menus, is a
-   bare `size-6` / `size-7` / `size-8` square on a plain <button>, so matching
-   the drawn size in the class attribute is what actually reaches them. It is
-   stringly, and it is checked: `size-5` is deliberately absent, because the
-   calendar's day-number button is drawn at that size and already carries its
-   own `after:inset-0` catch area covering the whole cell.
+   bare `size-6` / `size-7` / `size-8` square, so matching the drawn size in the
+   class attribute is what actually reaches them. It is stringly, and it is
+   checked: `size-5` is deliberately absent, because the calendar's day-number
+   button is drawn at that size and already carries its own `after:inset-0`
+   catch area covering the whole cell.
+
+   The element list is `button, a[href], [role='button']` rather than `button`,
+   because the tag was never the thing that mattered and using it made the
+   coverage arbitrary. The topbar's My profile / Settings / Assistant / Help are
+   `NavLink`s carrying the SAME `size-8` class as the Open-navigation button
+   beside them; the button caught 44px and the four links caught 32, identical
+   on screen and different under a finger, purely on tag name. Qualifying by
+   interactivity keeps the rule off the decorative `size-8` boxes (the boot
+   skeleton's blocks) that a bare `[class*='size-8']` would have inflated.
+
+   Controls drawn smaller than `size-6` — the board's 18px drag grip, a
+   reminder's tick, a keyword chevron — cannot be reached by any size class,
+   because they have none. Those opt in with `.touch-target`, which is in every
+   list below and was, until this was audited, used by nothing.
    ------------------------------------------------------------ */
 @media (pointer: coarse) {
   /* Icon buttons keep the box they draw and grow the box they *catch*.
@@ -1036,18 +1050,18 @@ html[data-theme='dark'] {
      case where the overhang takes a tap from something that also needed it. */
   :where(
     [data-slot='button'][data-size^='icon'],
-    button[class*='size-6'],
-    button[class*='size-7'],
-    button[class*='size-8'],
+    :is(button, a[href], [role='button'])[class*='size-6'],
+    :is(button, a[href], [role='button'])[class*='size-7'],
+    :is(button, a[href], [role='button'])[class*='size-8'],
     .touch-target
   ) {
     position: relative;
   }
 
   [data-slot='button'][data-size^='icon']::after,
-  button[class*='size-6']::after,
-  button[class*='size-7']::after,
-  button[class*='size-8']::after,
+  :is(button, a[href], [role='button'])[class*='size-6']::after,
+  :is(button, a[href], [role='button'])[class*='size-7']::after,
+  :is(button, a[href], [role='button'])[class*='size-8']::after,
   .touch-target::after {
     content: '';
     position: absolute;
@@ -1063,16 +1077,16 @@ html[data-theme='dark'] {
      shared catch area. Any two adjacent squares get pushed apart instead. */
   :is(
       [data-slot='button'][data-size^='icon'],
-      button[class*='size-6'],
-      button[class*='size-7'],
-      button[class*='size-8'],
+      :is(button, a[href], [role='button'])[class*='size-6'],
+      :is(button, a[href], [role='button'])[class*='size-7'],
+      :is(button, a[href], [role='button'])[class*='size-8'],
       .touch-target
     )
     + :is(
       [data-slot='button'][data-size^='icon'],
-      button[class*='size-6'],
-      button[class*='size-7'],
-      button[class*='size-8'],
+      :is(button, a[href], [role='button'])[class*='size-6'],
+      :is(button, a[href], [role='button'])[class*='size-7'],
+      :is(button, a[href], [role='button'])[class*='size-8'],
       .touch-target
     ) {
     margin-inline-start: 0.375rem;
@@ -1108,6 +1122,31 @@ html[data-theme='dark'] {
      it submits, which the h-11 input above would otherwise have broken. */
   [data-slot='button']:is([data-size='default'], [data-size='sm'], [data-size='lg']) {
     min-height: 2.75rem;
+  }
+
+  /* Switches, which are the one control that cannot grow its drawn box: a
+     44px-tall switch is an oval, not a switch.
+
+     `switch.tsx` carries `after:-inset-x-3 after:-inset-y-2` and the comment
+     above used to cite that as "already carries its own catch area". Measured,
+     it is 34px on an 18.4px track — ten short, and short in the axis that
+     matters, since the track is only 18px tall to begin with. The insets are
+     replaced here rather than in `switch.tsx` so the desktop pointer keeps the
+     tighter box: a 44px catch area around a switch in a dense settings list is
+     right for a finger and wrong for a mouse, where it would swallow clicks
+     meant for the label beside it. */
+  [data-slot='switch'] {
+    position: relative;
+  }
+
+  [data-slot='switch']::after {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
   }
 
   /* The ⌘K field. Its height is pinned with `!` inside `command.tsx` so the

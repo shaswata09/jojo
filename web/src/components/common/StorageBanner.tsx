@@ -1,8 +1,10 @@
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { RefreshCw, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useStoreStatus } from '@/kg/react/status-context'
-import { useBoot } from '@/lib/boot-context'
+import { estimateStorage } from '@/kg/storage/probe'
+import { sessionOf, useBoot } from '@/lib/boot-context'
 
 /**
  * The three ways a session that booted can stop being able to save, said out
@@ -19,6 +21,23 @@ import { useBoot } from '@/lib/boot-context'
  * another tab's upgrade cannot save at all, so it is reported before a write
  * queue that is merely struggling, and a store that never opened is reported
  * before either — it is the reason the others cannot happen.
+ *
+ *
+ * WHICH ARMS GET A RELOAD BUTTON, AND WHY THE QUOTA ARM DOES NOT
+ *
+ * A reload discards everything the write queue is still holding. On the two
+ * arms where the tab is shut out of the database — `interrupted`, and
+ * `unavailable` — that is not a cost, because nothing this tab does can ever
+ * reach disk and reloading is the only way forward; the button is the whole
+ * remedy.
+ *
+ * On `health.state === 'off'` it is the opposite. `queue.ts` deliberately keeps
+ * the failed ops and warns persistently rather than rolling the UI back, so the
+ * user's unsaved changes are sitting in that queue — and the banner explaining
+ * that was, until now, handing them a one-click button that threw the changes
+ * away with no confirmation and no count. So this arm offers no reload. It says
+ * what to do instead, and Export is a real answer here: the records are on
+ * screen, and an export reads the graph in memory rather than the disk.
  */
 
 function Banner({
@@ -55,9 +74,54 @@ const ReloadButton = () => (
   </Button>
 )
 
+/**
+ * The share of the origin's quota in use, or null if the browser will not say.
+ *
+ * `estimateStorage` had exactly one consumer before this — Diagnostics, which
+ * prints "10.0 MB of 10.0 MB" and nothing else. So the number was measured,
+ * displayed to whoever went looking for it, and never acted on: the first a
+ * user heard that the disk was full was a write failing, by which point the
+ * queue is `off` and the change they just made is stranded. A figure that is
+ * already in hand and predicts the one unrecoverable failure in this app should
+ * be read out before the failure, not after.
+ *
+ * Re-checked when the queue starts writing rather than on a timer. Usage only
+ * moves when we write, an idle tab has nothing to re-measure, and the check
+ * costs a promise. The floor between checks keeps a burst of edits from
+ * measuring once per drain.
+ */
+const RECHECK_MS = 30_000
+
+/** Warn here rather than at 100%: it has to arrive while there is room to act. */
+const NEARLY_FULL = 0.9
+
+function useStoragePressure(writing: boolean): number | null {
+  const [ratio, setRatio] = useState<number | null>(null)
+  const checkedAt = useRef(0)
+
+  useEffect(() => {
+    const now = Date.now()
+    if (checkedAt.current !== 0 && (!writing || now - checkedAt.current < RECHECK_MS)) return
+    checkedAt.current = now
+
+    let live = true
+    void estimateStorage().then((estimate) => {
+      if (!live) return
+      const { usage, quota } = estimate ?? { usage: null, quota: null }
+      setRatio(usage !== null && quota !== null && quota > 0 ? usage / quota : null)
+    })
+    return () => {
+      live = false
+    }
+  }, [writing])
+
+  return ratio
+}
+
 export function StorageBanner() {
   const { state, interrupted } = useBoot()
   const { health } = useStoreStatus()
+  const pressure = useStoragePressure(health.state === 'writing')
 
   if (interrupted) {
     return (
@@ -81,16 +145,24 @@ export function StorageBanner() {
              * suggests for the first ("close the tab with the older version")
              * is exactly backwards for it. Naming the situation rather than
              * whose version is newer is right either way.
+             *
+             * The second sentence is the one that was missing. This tab is
+             * running on an empty stand-in (`boot.ts`'s `bootStandIn`), and a
+             * user looking at an empty Applications page after a deploy needs
+             * to be told their records are still there before they conclude
+             * jojo has eaten them.
              */}
             jojo could not open its database — another jojo tab is open on a different version of
-            the app. Close the other tabs and reload. Until then this tab works, but nothing you
-            change is saved.
+            the app. <strong className="font-medium">Your records are still on disk</strong>, but
+            this tab could not read them, so it is showing nothing rather than guessing. Close the
+            other tabs and reload to get them back.
           </>
         ) : (
           <>
-            This browser is not letting jojo store anything, so your records live in this tab only
-            and go when you close it. Private windows and some managed browsers do this. Export from
-            Settings before you leave.
+            This browser is not letting jojo open its storage, so this tab is a blank workspace:
+            anything already saved on this device is not being shown, and anything you type here
+            goes when you close the tab. Private windows and some managed browsers do this. Export
+            from Settings before you leave if you add anything worth keeping.
           </>
         )}
       </Banner>
@@ -99,10 +171,25 @@ export function StorageBanner() {
 
   if (health.state === 'off') {
     return (
-      <Banner tone="danger" action={<ReloadButton />}>
-        {health.reason === 'quota'
-          ? 'This browser has no room left, so jojo has stopped saving. Free some space, then reload — your records are still on screen and can be exported from Settings.'
-          : 'jojo has stopped saving because another tab has the database. Close the other tabs and reload — your records are still on screen and can be exported from Settings.'}
+      <Banner tone="danger">
+        {health.reason === 'quota' ? (
+          <>
+            This browser has no room left, so jojo has stopped saving.{' '}
+            {/* `unsaved` counts the user's ACTIONS; `pending` counts rows, and
+                one stage change is three of them. The number here is the one
+                someone checks against their own memory of what they did. */}
+            {health.unsaved === 0
+              ? 'Everything you changed before that is on disk.'
+              : `${health.unsaved} change${health.unsaved === 1 ? '' : 's'} ${health.unsaved === 1 ? 'is' : 'are'} on screen but not saved — export from Settings to keep ${health.unsaved === 1 ? 'it' : 'them'}, because reloading or closing this tab will lose ${health.unsaved === 1 ? 'it' : 'them'}.`}{' '}
+            Free some space, then reload.
+          </>
+        ) : (
+          <>
+            jojo has stopped saving because another tab has the database. Close the other tabs, then
+            export from Settings if anything on screen has not been saved — reloading this tab loses
+            it.
+          </>
+        )}
       </Banner>
     )
   }
@@ -114,8 +201,46 @@ export function StorageBanner() {
             and drains in order if a later retry succeeds, so this is a number
             that goes down on its own — which is the difference between a
             warning someone can wait out and one they can only guess at. */}
-        {health.pending} change{health.pending === 1 ? '' : 's'} could not be saved and jojo is
-        still retrying. Export from Settings if you need a copy now. ({health.lastError})
+        {health.unsaved === 1 ? '1 change' : `${health.unsaved} changes`} could not be saved and
+        jojo is still retrying. Export from Settings if you need a copy now. ({health.lastError})
+      </Banner>
+    )
+  }
+
+  /*
+   * Records that were read and NOT shown.
+   *
+   * `boot.ts` calls a silently skipped node "lost work with no server backup
+   * and no undo", counts every one and logs its id — and then the only place
+   * that said so was Settings → Diagnostics. On screen, an application that
+   * failed validation between two reloads simply stopped existing: the list
+   * read "11 applications, all on this machine" with no asterisk, so the one
+   * person who could notice was someone already counting.
+   *
+   * A banner rather than a toast, for the same reason as everything else here:
+   * it describes a condition that persists until the rows are fixed or dropped,
+   * and it points at the panel that names them.
+   */
+  const skipped = sessionOf(state)?.skipped ?? []
+  if (skipped.length > 0) {
+    return (
+      <Banner tone="warning">
+        {skipped.length === 1 ? '1 record' : `${skipped.length} records`} on this device could not
+        be read and {skipped.length === 1 ? 'is' : 'are'} not being shown. Nothing has been deleted
+        — Settings → Diagnostics lists what they are, and an export from there includes everything
+        jojo could read.
+      </Banner>
+    )
+  }
+
+  // Last, because it is the only one describing something that has not happened
+  // yet. Any of the failures above is already the thing this warns about.
+  if (pressure !== null && pressure >= NEARLY_FULL) {
+    return (
+      <Banner tone="warning">
+        This browser is nearly out of room for jojo — about {Math.round(pressure * 100)}% of what it
+        allows is in use. Saving stops working when it fills, so it is worth exporting from Settings
+        and clearing space now, while your records can still be written.
       </Banner>
     )
   }

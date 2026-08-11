@@ -21,6 +21,14 @@ const put = (key: string, value: object): DurableOp => ({
 
 const del = (key: string): DurableOp => ({ kind: 'delete', store: 'nodes', key })
 
+/** A journal row as the repository enqueues one: no key, the store allocates. */
+const journal = (id: string): DurableOp => ({
+  kind: 'put',
+  store: 'ops',
+  key: null,
+  value: { id, label: id },
+})
+
 describe('coalesce', () => {
   // A drag across the board writes the same node on every frame. Without this
   // the first drain after a busy second carries hundreds of ops describing two
@@ -58,6 +66,27 @@ describe('coalesce', () => {
 
   it('leaves an empty batch empty', () => {
     expect(coalesce([])).toEqual([])
+  })
+
+  /**
+   * The keyless journal rows, which have no slot to collide on and must not
+   * borrow one.
+   *
+   * Keying them all as `ops\0null` would have collapsed a burst of edits into
+   * its last entry — the audit log losing rows again, one layer up from the
+   * two-tab overwrite that made the keys keyless in the first place.
+   */
+  it('never collapses two journal rows onto each other', () => {
+    expect(coalesce([journal('j1'), journal('j2'), journal('j3')])).toHaveLength(3)
+  })
+
+  it('still collapses the SAME journal row requeued after a failed drain', () => {
+    expect(coalesce([journal('j1'), journal('j1')])).toEqual([journal('j1')])
+  })
+
+  it('drops journal rows queued ahead of a clear of the ops store', () => {
+    const clear: DurableOp = { kind: 'clear', store: 'ops' }
+    expect(coalesce([journal('j1'), clear, journal('j2')])).toEqual([clear, journal('j2')])
   })
 })
 
@@ -114,6 +143,10 @@ describe('createWriteQueue', () => {
     expect(queue.health).toEqual({
       state: 'degraded',
       pending: 1,
+      // No journal row in this batch, so no user action is stranded. `pending`
+      // counts rows and `unsaved` counts actions; the banner says "3 changes"
+      // and has to mean the second.
+      unsaved: 0,
       attempts: 1,
       lastError: 'the store rejected the write',
     })
@@ -124,6 +157,26 @@ describe('createWriteQueue', () => {
 
     expect(queue.health).toEqual({ state: 'idle' })
     expect(driver.counts().nodes).toBe(1)
+  })
+
+  /**
+   * The number the banner shows the user, and what it has to be counting.
+   *
+   * `pending` is rows: one stage change is a node put, an edge put and a journal
+   * row. Reporting that as "3 changes could not be saved" over a single drag is
+   * the kind of wrong the user can check against their own memory.
+   */
+  it('counts stranded user actions, not stranded rows', async () => {
+    const queue = createWriteQueue(
+      createMemoryDriver({
+        fault: (call) => (call === 'commit' ? { code: 'storage/quota', message: 'full' } : null),
+      }),
+    )
+
+    queue.enqueue([put('app:1', { id: 'app:1' }), put('app:2', { id: 'app:2' }), journal('j1')])
+    await queue.flush()
+
+    expect(queue.health).toEqual({ state: 'off', reason: 'quota', pending: 3, unsaved: 1 })
   })
 
   // Retrying either of these forever would spin behind a banner that said
@@ -141,7 +194,7 @@ describe('createWriteQueue', () => {
       queue.enqueue([put('a', { id: 'a' })])
       await queue.flush()
 
-      expect(queue.health).toEqual({ state: 'off', reason })
+      expect(queue.health).toEqual({ state: 'off', reason, pending: 1, unsaved: 0 })
       // A pagehide handler awaiting a promise nobody resolves never returns.
       await queue.flush()
     }

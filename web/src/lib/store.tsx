@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { FirstRunChoice } from '@/components/common/FirstRunChoice'
 import { StoreGate } from '@/components/common/StoreGate'
-import { boot, resetBoot } from '@/kg/repo/boot'
+import { boot, bootInMemory, resetBoot } from '@/kg/repo/boot'
 import type { BootResult, Session } from '@/kg/repo/boot'
+import { kgWarn } from '@/kg/log'
 import { KgProvider } from '@/kg/react/kg'
 import { StoreStatusProvider } from '@/kg/react/status'
 import type { StorePhase } from '@/kg/react/status-context'
@@ -184,6 +185,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // and is upgrading the database, and we have closed our connection so it
       // is not deadlocked. Nothing this tab does from here on can be saved.
       onBlocking: () => setInterrupted(true),
+      /*
+       * Only ever called on a browser with no BroadcastChannel — `boot` checks
+       * the store's `crossTab` before it subscribes. There, this is the whole of
+       * the cross-tab safety net: without it, two tabs write whole records over
+       * each other in silence and each keeps an undo stack that will replay over
+       * the other's work.
+       */
+      onResume: webHost.onResume?.bind(webHost),
       onRemoteChange: () => {
         // Said out loud because the undo stack is gone with it (D23). A user who
         // pressed ⌘Z after this and got nothing would reasonably conclude undo
@@ -210,13 +219,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState(next)
   }, [])
 
+  /**
+   * `open()`, with the guarantee the gate depends on: it always settles the state.
+   *
+   * `BootState` starts at `loading` and `StoreGate` renders a skeleton for it, so
+   * a boot that neither resolves nor is caught is a grey screen with no message
+   * and no way out — the one outcome every failure path in this file was written
+   * to prevent. `boot()` is supposed to return a `BootResult` rather than throw,
+   * and the driver is supposed to return a `DriverResult` rather than throw; this
+   * is the backstop for the day one of them does, and it degrades to exactly what
+   * a genuinely unavailable store degrades to.
+   */
+  const openGuarded = useCallback(async () => {
+    try {
+      await open()
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e)
+      kgWarn('boot threw instead of reporting; running in memory', { detail })
+      resetBoot()
+      const session = bootInMemory({ now, dataSet: 'empty' })
+      live = session
+      setState({
+        phase: 'unavailable',
+        reason: 'unsupported',
+        detail,
+        session,
+        hydratedAt: Date.now(),
+      })
+    }
+  }, [open])
+
   useEffect(() => {
     mounts += 1
     if (pendingDispose !== null) {
       clearTimeout(pendingDispose)
       pendingDispose = null
     }
-    void open()
+    void openGuarded()
 
     return () => {
       mounts -= 1
@@ -225,7 +264,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         disposeLive()
       }, 0)
     }
-  }, [open])
+  }, [openGuarded])
 
   /**
    * R-6: ask the browser not to evict us, after the user's FIRST real record.
@@ -256,8 +295,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     disposeLive()
     setInterrupted(false)
     setState({ phase: 'loading' })
-    void open().finally(() => setBusy(false))
-  }, [open])
+    void openGuarded().finally(() => setBusy(false))
+  }, [openGuarded])
 
   const startFresh = useCallback(() => {
     setBusy(true)
@@ -302,10 +341,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
       setInterrupted(false)
       setState({ phase: 'loading' })
-      await open()
+      await openGuarded()
       setBusy(false)
     })()
-  }, [open])
+  }, [openGuarded])
 
   const closeStore = useCallback(() => {
     disposeLive()

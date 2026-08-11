@@ -159,6 +159,39 @@ export function SplineRobot({ className }: { className?: string }) {
     else setTimeout(() => play('bow'), INTRO_SETTLE_MS)
   }
 
+  /**
+   * Reduced motion does not mount the scene at all.
+   *
+   * The rig was already gated — `createSplineRig`'s gestures and the arrival
+   * bow both check `reduced` — and that turned out to cover the half of the
+   * motion this app authored and none of the half the scene brings with it.
+   * Measured under `prefers-reduced-motion: reduce`: 38% of the card's pixels
+   * still changing between two samples a second apart, the robot still turning
+   * its whole body to follow the pointer, still moving eleven seconds after
+   * load. `globalEvents` routes every pointer move on the page into the scene,
+   * so the tracking followed the user everywhere, and the runtime's own `start`
+   * animation answers to nothing this file can reach.
+   *
+   * There is no partial answer available: the runtime exposes no way to hold
+   * its own animations while keeping the render. So the preference is honoured
+   * the only way it can be — by rendering the 2D mascot instead, which is the
+   * same character at the same size in the same box and is genuinely still
+   * (0.00% of pixels changed, idle or under a pointer sweep).
+   *
+   * It also ends the scene's render loop for these users, which is the one
+   * place this file can do anything about a runtime that requests animation
+   * frames forever on every route.
+   */
+  if (reduced) {
+    return (
+      <div className={className}>
+        <div className="pointer-events-none absolute inset-0 grid place-items-center">
+          <RobotMascot pose={pose} seq={seq} className="h-[76%] w-auto" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={className}>
       {/* Guarded on its own. Spline throws "Error creating WebGL context" on

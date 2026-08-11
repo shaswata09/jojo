@@ -300,7 +300,43 @@ describe('when the store cannot be trusted', () => {
     // The app still runs. It just cannot promise anything, and `durable: false`
     // is how the banner knows to say so.
     expect(result.session.durable).toBe(false)
-    expect(result.session.repo.getSnapshot().ofType('application').length).toBeGreaterThan(0)
+    // And it runs EMPTY. A failed open means we do not know what is on disk —
+    // for `storage/blocked` we know something is — so seeding the fixtures here
+    // would put twelve fabricated applications on screen where the user has
+    // their own records, under a banner that only mentions saving.
+    expect(result.session.repo.getSnapshot().ofType('application')).toHaveLength(0)
+    result.session.dispose()
+  })
+
+  it('never fabricates records when a blocked store falls back to memory', async () => {
+    // The old-tab-after-a-deploy path: the store on disk is fine and holds the
+    // user's work, this build just cannot open it. Showing the demo fixtures
+    // here was indistinguishable, on screen, from showing their job search.
+    const driver = createMemoryDriver({
+      fault: (call) =>
+        call === 'open' ? { code: 'storage/blocked', message: 'a newer build wrote it' } : null,
+    })
+
+    const result = await bootWith(driver, { now: at(NOW), dataSet: 'demo' })
+
+    expect(result.outcome === 'unavailable' && result.reason).toBe('blocked')
+    if (result.outcome !== 'unavailable') return
+    expect(result.session.repo.getSnapshot().nodes()).toHaveLength(0)
+    expect(result.session.meta.dataSet).toBe('empty')
+    result.session.dispose()
+  })
+
+  it('runs empty rather than seeded when the first-run write itself fails', async () => {
+    const driver = createMemoryDriver({
+      fault: (call) =>
+        call === 'seedIfPristine' ? { code: 'storage/quota', message: 'no room' } : null,
+    })
+
+    const result = await bootWith(driver, { now: at(NOW), dataSet: 'demo' })
+
+    expect(result.outcome).toBe('unavailable')
+    if (result.outcome !== 'unavailable') return
+    expect(result.session.repo.getSnapshot().nodes()).toHaveLength(0)
     result.session.dispose()
   })
 
@@ -362,6 +398,88 @@ describe('another tab', () => {
     // store that has never existed.
     expect(session.repo.undoable).toEqual([])
 
+    session.dispose()
+  })
+
+  /**
+   * The browser that cannot be told: no BroadcastChannel, so no remote commits.
+   *
+   * `createMemoryDriver` reports `crossTab: false`, which is exactly what a
+   * browser without BroadcastChannel reports, so this drives the real branch.
+   * Without the resume catch-up, this tab goes on showing a record another tab
+   * deleted and keeps an undo stack that would put it back.
+   */
+  it('catches up on resume when the store cannot hear other tabs', async () => {
+    const first = createMemoryDriver()
+    const one = sessionOf(await bootWith(first, { now: at(NOW) }))
+    const carried = await readRows(first)
+    one.dispose()
+
+    let resume: (() => void) | null = null
+    let told = 0
+    const driver = createMemoryDriver({ rows: carried })
+    const session = sessionOf(
+      await bootWith(driver, {
+        now: at(LATER),
+        onRemoteChange: () => (told += 1),
+        onResume: (fn) => {
+          resume = fn
+          return () => {
+            resume = null
+          }
+        },
+      }),
+    )
+
+    const [theirs] = session.repo.getSnapshot().ofType('application')
+    if (!theirs) throw new Error('the demo store should have applications')
+
+    // The other tab deletes a record and writes its journal row. Nothing
+    // announces it, because there is no channel to announce it on.
+    await driver.commit([
+      { kind: 'delete', store: 'nodes', key: theirs.id },
+      {
+        kind: 'put',
+        store: 'ops',
+        key: null,
+        value: { id: 'theirs', at: LATER, tool: 't', label: 'Theirs', calls: [], nodes: [] },
+      },
+    ])
+    expect(session.repo.getSnapshot().node(theirs.id)).toBeDefined()
+
+    if (!resume) throw new Error('boot did not subscribe to resume')
+    ;(resume as () => void)()
+    await new Promise<void>((resolve) => setTimeout(resolve, 20))
+
+    expect(session.repo.getSnapshot().node(theirs.id)).toBeUndefined()
+    expect(session.repo.undoable).toEqual([])
+    // Announced, because the newest journal row on disk is not one of ours.
+    expect(told).toBe(1)
+
+    session.dispose()
+  })
+
+  it('does not announce a resume that found nothing', async () => {
+    let resume: (() => void) | null = null
+    let told = 0
+    const session = sessionOf(
+      await bootWith(createMemoryDriver(), {
+        now: at(NOW),
+        onRemoteChange: () => (told += 1),
+        onResume: (fn) => {
+          resume = fn
+          return () => {}
+        },
+      }),
+    )
+
+    if (!resume) throw new Error('boot did not subscribe to resume')
+    ;(resume as () => void)()
+    ;(resume as () => void)()
+    await new Promise<void>((resolve) => setTimeout(resolve, 20))
+
+    // A toast on every alt-tab is a notification about nothing.
+    expect(told).toBe(0)
     session.dispose()
   })
 

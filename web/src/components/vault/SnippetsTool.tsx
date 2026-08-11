@@ -1,20 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Check, Copy, CopyPlus, Pencil, Plus, Quote, Trash2, X } from 'lucide-react'
+import { Plus, Quote } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
-import { Chip } from '@/components/common/Chip'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Field, FormField } from '@/components/common/Field'
-import { KeywordPicker } from '@/components/common/KeywordPicker'
-import { LabelChips, LabelPicker } from '@/components/common/LabelFilter'
-import { Panel, PanelTitle } from '@/components/common/Panel'
-import { ExpandButton, FullScreenDialog } from '@/components/common/FullScreen'
-import { RichTextEditor } from '@/components/common/RichTextEditor'
-import { Segment } from '@/components/common/Segment'
+import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { MenuItem, MenuSection, RowMenu } from '@/components/vault/RowMenu'
 import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
+import { snippetsEmptyState } from '@/components/vault/snippets/empty-state'
+import { keywordKey } from '@/components/vault/snippets/model'
+import type { Clean, Draft, Pending } from '@/components/vault/snippets/model'
+import { SnippetCard } from '@/components/vault/snippets/SnippetCard'
+import { SnippetEditor } from '@/components/vault/snippets/SnippetEditor'
 import { SNIPPET_TAGS } from '@/data/vault'
 import type { Snippet, SnippetTag } from '@/data/vault'
 import { useVault } from '@/kg/react/use-vault'
@@ -26,27 +23,6 @@ import { cn } from '@/lib/utils'
 
 /** How long the copied confirmation stays up. */
 const COPIED_MS = 1600
-
-const TAG_OPTIONS = SNIPPET_TAGS.map((t) => ({ value: t, label: t }))
-
-/** The editor's working copy. `id` is null until the snippet has been saved once. */
-type Draft = {
-  id: string | null
-  title: string
-  tag: SnippetTag
-  html: string
-  /** Staged, not written on click — see `KeywordPicker`. Cancel discards them. */
-  keywords: string[]
-}
-
-/** What the draft looked like when it was opened, for the dirty check. */
-type Clean = { title: string; tag: SnippetTag; body: string; keywords: string }
-
-/** Order-insensitive, because picking A then B is the same set as B then A. */
-const keywordKey = (ids: readonly string[]) => [...ids].sort().join(',')
-
-/** Deciding what to do after the discard warning is answered. */
-type Pending = { kind: 'close' } | { kind: 'open'; snippet?: Snippet }
 
 /**
  * The answers you retype on every form, ready to paste.
@@ -367,78 +343,16 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     })
   }
 
-  /**
-   * Every empty list names the control that emptied it. "No snippets here yet"
-   * over a vault holding eight of them, because a chip above the list is set,
-   * is the fastest way to make someone think the app lost their writing.
-   */
-  const empty = (() => {
-    if (snippets.length === 0) {
-      return {
-        title: 'No snippets yet',
-        description:
-          'Save the paragraphs you keep rewriting — the bio, the why-this-department, the follow-up email.',
-        action: (
-          <Button size="sm" onClick={() => requestOpen()}>
-            <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            New snippet
-          </Button>
-        ),
-      }
-    }
-    if (query.trim()) {
-      return {
-        title: 'Nothing matches that search',
-        description: `No snippet mentions "${query.trim()}" in its name, text or kind.`,
-        action: (
-          <Button variant="outline" size="sm" onClick={() => setQuery('')}>
-            Clear search
-          </Button>
-        ),
-      }
-    }
-    const byTag = tagFilter !== 'all'
-    const byKeyword = selectedLabels.size > 0
-
-    if (byTag && byKeyword) {
-      return {
-        title: 'Nothing matches both filters',
-        description: `No ${tagFilter} snippet carries the selected keywords.`,
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setTagFilter('all')
-              clearSelected()
-            }}
-          >
-            Clear both filters
-          </Button>
-        ),
-      }
-    }
-    if (byTag) {
-      return {
-        title: `No ${tagFilter} snippets`,
-        description: `${snippets.length} snippets are filed under the other kinds.`,
-        action: (
-          <Button variant="outline" size="sm" onClick={() => setTagFilter('all')}>
-            Show all kinds
-          </Button>
-        ),
-      }
-    }
-    return {
-      title: 'No snippets carry those keywords',
-      description: 'The keyword filter at the top of the page is what is hiding them.',
-      action: (
-        <Button variant="outline" size="sm" onClick={clearSelected}>
-          Clear keywords
-        </Button>
-      ),
-    }
-  })()
+  const empty = snippetsEmptyState({
+    total: snippets.length,
+    query,
+    tagFilter,
+    selectedLabels,
+    onNew: () => requestOpen(),
+    onClearQuery: () => setQuery(''),
+    onClearTag: () => setTagFilter('all'),
+    onClearKeywords: clearSelected,
+  })
 
   return (
     <div className="flex flex-wrap items-start gap-4 sm:gap-5">
@@ -481,92 +395,22 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           />
         ) : (
           <ul className={cn('grid gap-3', editing ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2')}>
-            {visible.map((s) => {
-              const isCopied = copiedId === s.id
-              return (
-                <li
-                  key={s.id}
-                  ref={s.id === focus ? focusedCard : undefined}
-                  className={cn(
-                    'well flex min-w-0 flex-col rounded-lg p-3',
-                    // The row the editor is working on, so it is obvious which
-                    // record the panel beside the list belongs to.
-                    editing?.id === s.id && 'ring-1 ring-accent-border',
-                    // The `-well` variant, not the plain one: this card has its
-                    // own fill for the tint to fade back to.
-                    s.id === focus && 'arrival-highlight-well',
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="min-w-0 flex-1">
-                      {/* A button, not a div. It sat next to a pencil that did
-                          the same thing, and looked exactly like the reminder
-                          titles one tab over, which have always been clickable. */}
-                      <button
-                        type="button"
-                        onClick={() => requestOpen(s)}
-                        title="Edit this snippet"
-                        className="block max-w-full cursor-pointer truncate text-left text-sm text-text-1 transition-colors hover:text-accent"
-                      >
-                        {s.title}
-                      </button>
-                      <span className="mt-1.5 flex flex-wrap items-center gap-1">
-                        <Chip shape="capsule" tone="gray">
-                          {s.tag}
-                        </Chip>
-                        <LabelChips recordId={s.id} />
-                      </span>
-                    </div>
-
-                    <LabelPicker recordId={s.id} />
-                    {/* Copy stays out in the open on every card: it is what a
-                        snippet is for, and burying the primary action of a
-                        record behind ⋯ to make room for Edit would be the wrong
-                        way round. */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copy(s.id, s.body)}
-                      className="shrink-0"
-                    >
-                      {isCopied ? (
-                        <Check className="size-3.5" strokeWidth={2} aria-hidden />
-                      ) : (
-                        <Copy className="size-3.5" strokeWidth={1.8} aria-hidden />
-                      )}
-                      {isCopied ? (failed ? 'Blocked' : 'Copied') : 'Copy'}
-                    </Button>
-                    <RowMenu name={s.title}>
-                      <MenuItem icon={Pencil} onSelect={() => requestOpen(s)}>
-                        Edit
-                      </MenuItem>
-                      <MenuItem icon={CopyPlus} onSelect={() => onDuplicate(s)}>
-                        Duplicate
-                      </MenuItem>
-                      <MenuSection title="Move to">
-                        {SNIPPET_TAGS.map((t) => (
-                          <MenuItem key={t} current={t === s.tag} onSelect={() => onMove(s, t)}>
-                            {t}
-                          </MenuItem>
-                        ))}
-                      </MenuSection>
-                      <MenuSection>
-                        {/* Snippets had no delete at all before this — the only
-                            way to remove one was to open the editor. */}
-                        <MenuItem icon={Trash2} danger onSelect={() => onDelete(s.id)}>
-                          Delete
-                        </MenuItem>
-                      </MenuSection>
-                    </RowMenu>
-                  </div>
-
-                  {/* whitespace-pre-line so the email templates keep their breaks. */}
-                  <p className="mt-2.5 line-clamp-4 text-xs whitespace-pre-line text-text-2">
-                    {s.body}
-                  </p>
-                </li>
-              )
-            })}
+            {visible.map((s) => (
+              <SnippetCard
+                key={s.id}
+                snippet={s}
+                cardRef={s.id === focus ? focusedCard : undefined}
+                focused={s.id === focus}
+                active={editing?.id === s.id}
+                copied={copiedId === s.id}
+                failed={failed}
+                onOpen={() => requestOpen(s)}
+                onCopy={() => copy(s.id, s.body)}
+                onDuplicate={onDuplicate}
+                onMove={onMove}
+                onDelete={onDelete}
+              />
+            ))}
           </ul>
         )}
 
@@ -581,163 +425,20 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         </p>
       </Panel>
 
-      {/* One form, rendered either in the side panel or full screen.
-          Everything the card offers — title, kind, keywords, delete, save —
-          goes with it, because an editor that drops half its controls when it
-          gets bigger is the wrong way round. The draft lives in `editing`,
-          above this, so moving between the two costs the caret and nothing
-          else. */}
-      {editing
-        ? (() => {
-            const form = (
-              /* noValidate: `required` stays on the fields for assistive tech,
-                 and without it the browser's own bubble fires over the message
-                 written for the field. */
-              <form
-                noValidate
-                onSubmit={save}
-                className={cn('flex min-h-0 flex-col gap-3', full && 'flex-1 overflow-y-auto')}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <PanelTitle className="mb-0" hint={dirty ? 'Unsaved changes' : undefined}>
-                    {editing.id ? 'Edit snippet' : 'New snippet'}
-                  </PanelTitle>
-                  {/* Dropped full screen, where the dialog already puts an X in
-                      the same corner — two dismissals stacked on top of each
-                      other read as two different scopes when the one below is
-                      just the way out. Kept in the side panel, which has no
-                      chrome of its own and would otherwise have no exit but
-                      Cancel at the foot of the form. */}
-                  {full ? null : (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={requestClose}
-                      className="shrink-0"
-                    >
-                      <X className="size-3.5" strokeWidth={2} aria-hidden />
-                      Close
-                    </Button>
-                  )}
-                </div>
-
-                <Field
-                  label="Title"
-                  required
-                  error={titleError}
-                  value={editing.title}
-                  autoComplete="off"
-                  placeholder="e.g. Why this department"
-                  onChange={(event) =>
-                    setEditing((prev) => (prev ? { ...prev, title: event.target.value } : prev))
-                  }
-                />
-
-                <FormField label="Kind" hint="Where it files, and which chip the list shows.">
-                  <Segment
-                    label="Kind"
-                    options={TAG_OPTIONS}
-                    value={editing.tag}
-                    onChange={(next) =>
-                      setEditing((prev) => (prev ? { ...prev, tag: next } : prev))
-                    }
-                    className="flex-wrap gap-1 rounded-xl"
-                  />
-                </FormField>
-
-                <FormField
-                  label="Text"
-                  required
-                  error={bodyError}
-                  hint="Stored as plain text — line breaks survive, the formatting buttons do not."
-                >
-                  <div className="relative">
-                    {/* Over the toolbar's right end rather than beside the field
-                    label: it acts on the editor, and the editor is what it sits
-                    on. z-[1] clears the toolbar's own background. Hidden once
-                    expanded — the dialog's own close is the way back. */}
-                    {full ? null : (
-                      <ExpandButton
-                        onClick={() => setFullText(true)}
-                        label="Write full screen"
-                        className="absolute top-1.5 right-1.5 z-[1]"
-                      />
-                    )}
-                    <RichTextEditor
-                      value={editing.html}
-                      onChange={(html) => setEditing((prev) => (prev ? { ...prev, html } : prev))}
-                      placeholder="Write the paragraph you keep rewriting…"
-                      className={full ? 'min-h-0 flex-1' : undefined}
-                    />
-                  </div>
-                </FormField>
-
-                <FormField
-                  label="Keywords"
-                  hint="Shared with applications, reminders and files — filtering by one finds all of them."
-                >
-                  <KeywordPicker
-                    value={editing.keywords}
-                    onChange={(next) =>
-                      setEditing((prev) => (prev ? { ...prev, keywords: next } : prev))
-                    }
-                  />
-                </FormField>
-
-                <div
-                  className={cn(
-                    'flex flex-wrap items-center gap-2 border-t border-hairline pt-3',
-                    editing.id ? 'justify-between' : 'justify-end',
-                  )}
-                >
-                  {editing.id ? (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => onDelete(editing.id as string)}
-                    >
-                      Delete
-                    </Button>
-                  ) : null}
-                  <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={requestClose}>
-                      Cancel
-                    </Button>
-                    {/* Left enabled with a field empty: pressing it names the missing
-                    one, where a disabled button leaves the user hunting. */}
-                    <Button type="submit" size="sm">
-                      Save
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Was "saved snippets live in this tab only — a reload puts
-                    the seeded set back", written when they did. They are
-                    records in the store now and a reload brings back what you
-                    wrote, so the line that is worth the space is the one about
-                    where they are usable. */}
-                <p className="text-xs text-text-3">
-                  Saved to the database in this browser — it is here when you come back.
-                </p>
-              </form>
-            )
-
-            return full ? (
-              <FullScreenDialog
-                open
-                onOpenChange={(next) => setFullText(next)}
-                title={editing.title.trim() || 'New snippet'}
-                description="Editing the snippet full screen. Press Escape to go back."
-              >
-                {form}
-              </FullScreenDialog>
-            ) : (
-              <Panel className="flex min-w-0 flex-1 basis-[380px] flex-col">{form}</Panel>
-            )
-          })()
-        : null}
+      {editing ? (
+        <SnippetEditor
+          editing={editing}
+          setEditing={setEditing}
+          dirty={dirty}
+          full={full}
+          setFullText={setFullText}
+          titleError={titleError}
+          bodyError={bodyError}
+          save={save}
+          requestClose={requestClose}
+          onDelete={onDelete}
+        />
+      ) : null}
 
       {/* The one confirmation left in the Vault, and the only one the Delete law
           allows: unsaved paragraphs are the single thing here that no undo can

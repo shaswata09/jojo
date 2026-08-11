@@ -25,7 +25,14 @@ const unwrap = <T>(r: { ok: true; value: T } | { ok: false; error: unknown }): T
 describe('createMemoryDriver', () => {
   it('opens, commits and reads back', async () => {
     const driver = createMemoryDriver()
-    expect(unwrap(await driver.open())).toEqual({ version: 1, from: 1, migrated: [] })
+    expect(unwrap(await driver.open())).toEqual({
+      version: 1,
+      from: 1,
+      migrated: [],
+      // A Map in this process reaches no other tab, and the layer above has to
+      // be told rather than assume — see `nullChannel`.
+      crossTab: false,
+    })
 
     await driver.commit([put('nodes', 'app:1', { id: 'app:1', type: 'application' })])
     const rows = unwrap(await driver.readAll())

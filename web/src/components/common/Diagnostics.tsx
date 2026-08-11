@@ -150,7 +150,15 @@ export function Diagnostics() {
                   ? 'this browser will not say'
                   : persisted
                     ? 'yes'
-                    : 'no — it may be deleted after 7 days without a visit'
+                    : // Deliberately not "after 7 days": that is Safari's
+                      // eviction window and reads as a floor, which it is not.
+                      // A Chrome private window reports exactly this — `persist()`
+                      // resolves false — and discards the whole store when the
+                      // window closes, minutes later. Chrome exposes no bit for
+                      // private browsing, so this line cannot detect that case;
+                      // what it can do is stop implying a week of safety it has
+                      // no way to check.
+                      'no — the browser may clear it at any time, and a private window will when it closes'
             }
           />
           <Line
@@ -171,7 +179,7 @@ export function Diagnostics() {
                 : health.state === 'writing'
                   ? `saving ${health.pending} change${health.pending === 1 ? '' : 's'}`
                   : health.state === 'degraded'
-                    ? `retrying ${health.pending} (attempt ${health.attempts}): ${health.lastError}`
+                    ? `retrying ${health.unsaved} change(s), ${health.pending} row(s) (attempt ${health.attempts}): ${health.lastError}`
                     : `stopped — ${health.reason}`
             }
           />

@@ -61,10 +61,24 @@ export function BrandCard({ action, className }: { action?: ReactNode; className
         <SplineRobot className="absolute inset-0 translate-y-[6%] scale-[1.35]" />
       </button>
 
-      {/* Scrim so the wordmark stays legible over whatever the robot is doing. */}
+      {/* Scrim so the wordmark stays legible over whatever the robot is doing.
+
+          It was `h-1/3 from-black/85`, and that was sized against the 3D robot,
+          whose lower body is near-black — over which 85% is plenty. It is not
+          the only thing that renders here. With WebGL unavailable the 2D mascot
+          takes over, and its torso is near-WHITE and lands exactly behind the
+          wordmark: measured 2.13:1 at worst and 26% of the text box below
+          4.5:1, on the app's own name.
+
+          So the scrim is now sized for the worse of the two backgrounds rather
+          than the better one. Solid black at the baseline, still 75% at the top
+          of the wordmark, transparent by the top of the taller band — which
+          holds ≥4.9:1 for the tagline and ≥10:1 for the wordmark even against a
+          pure white body behind it, and is visually indistinguishable over the
+          dark 3D robot it was tuned for. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/85 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black via-black/75 to-transparent"
       />
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3 text-center">

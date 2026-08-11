@@ -71,6 +71,92 @@ const rows = (overrides: Partial<Rows> = {}): Rows => ({
   ...overrides,
 })
 
+/* ------------------------- the contract, under duress --------------------- */
+
+/**
+ * "Never throws. Every method returns a Result." — `driver.ts`.
+ *
+ * That line is what every caller above this layer is written against, and it is
+ * load-bearing in a way that is easy to underrate: `boot.ts` does
+ * `await driver.open()` with no catch, `store.tsx` sets state from the result,
+ * and `StoreGate` renders a skeleton until that state arrives. So a driver that
+ * throws instead of returning does not produce an error screen — it produces a
+ * grey skeleton that never resolves, under a message about other tabs holding
+ * the database that is not true and that closing tabs will never fix.
+ *
+ * Both shapes below are what a browser does when the origin's storage is
+ * blocked by policy, or when the page is a sandboxed iframe without
+ * `allow-same-origin`: reading the global throws, and `open()` throws. Neither
+ * is a rejected request, which is the only failure the rest of this file
+ * exercises.
+ */
+describe('a platform that refuses IndexedDB by throwing', () => {
+  /** Swaps the global, runs, and puts it back whatever happens. */
+  async function withIndexedDb<T>(replacement: PropertyDescriptor, run: () => Promise<T>) {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+    Object.defineProperty(globalThis, 'indexedDB', { configurable: true, ...replacement })
+    try {
+      return await run()
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'indexedDB', original)
+      else Reflect.deleteProperty(globalThis, 'indexedDB')
+    }
+  }
+
+  it('reports a failure when READING the global throws', async () => {
+    const result = await withIndexedDb(
+      {
+        get() {
+          throw new DOMException('Storage is disabled by policy', 'SecurityError')
+        },
+      },
+      // Constructed inside, because `createIdbDriver` mints a channel and the
+      // driver must survive being built in this environment too.
+      () => driverFor(nextName()).open(),
+    )
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.code).toBe('storage/unavailable')
+  })
+
+  it('reports a failure when open() throws synchronously', async () => {
+    const result = await withIndexedDb(
+      {
+        value: {
+          open() {
+            throw new DOMException('Storage is disabled by policy', 'SecurityError')
+          },
+          deleteDatabase() {
+            throw new DOMException('Storage is disabled by policy', 'SecurityError')
+          },
+        },
+      },
+      () => driverFor(nextName()).open(),
+    )
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    // `SecurityError` is not one of the named codes, so it takes the default —
+    // which is the arm whose recovery is "run in memory and say so", not the
+    // one that offers to delete the user's records.
+    expect(result.error.code).toBe('storage/unavailable')
+  })
+
+  it('reports a failure from destroy() rather than throwing out of it', async () => {
+    const result = await withIndexedDb(
+      {
+        get() {
+          throw new DOMException('Storage is disabled by policy', 'SecurityError')
+        },
+      },
+      () => driverFor(nextName()).destroy(),
+    )
+
+    expect(result.ok).toBe(false)
+  })
+})
+
 /* ------------------------------- the schema ------------------------------- */
 
 describe('the layout on disk', () => {
@@ -262,6 +348,90 @@ describe('the round trip', () => {
     second.close()
     expect(read.ok && read.value.nodes.map((r) => r['id'])).toEqual(['app:new'])
     expect(read.ok && read.value.meta).toHaveLength(1)
+  })
+})
+
+/* -------------------------------- the audit ------------------------------- */
+
+/**
+ * The `ops` store's key allocation, which is the whole of D2's audit-log loss.
+ *
+ * The repository used to number journal rows from a counter it kept itself. A
+ * counter is per tab; the store is not. Two tabs open on the same database both
+ * believed the next free key was the same integer, `put` overwrote rather than
+ * appended, and about half of a concurrent burst's history was destroyed —
+ * silently, with the records themselves intact, so nothing on screen said so.
+ *
+ * `fake-indexeddb` implements the real key generator, including the part that
+ * makes the fix safe: `clear()` does not rewind it.
+ */
+describe('the audit log under concurrent writers', () => {
+  const entry = (id: string): StoredRow => ({
+    id,
+    at: '2026-10-12T12:00:00.000Z',
+    tool: 't',
+    label: id,
+    calls: [],
+    nodes: [],
+    edges: [],
+  })
+
+  const append = (id: string) =>
+    ({ kind: 'put', store: 'ops', key: null, value: entry(id) }) as const
+
+  it('appends rather than overwrites when the key is left to the store', async () => {
+    const driver = driverFor(nextName())
+    await driver.commit([append('a')])
+    await driver.commit([append('b')])
+    await driver.commit([append('c')])
+
+    const read = await driver.readAll()
+    driver.close()
+    expect(read.ok && read.value.ops.map((r) => r['id'])).toEqual(['a', 'b', 'c'])
+  })
+
+  it('keeps every entry when two connections write at once', async () => {
+    const name = nextName()
+    const tabA = driverFor(name)
+    const tabB = driverFor(name)
+
+    // Interleaved and overlapping, which is what a burst across two tabs is.
+    // Neither driver has any idea what the other has written.
+    await Promise.all([
+      ...Array.from({ length: 12 }, (_, i) => tabA.commit([append(`a${i}`)])),
+      ...Array.from({ length: 12 }, (_, i) => tabB.commit([append(`b${i}`)])),
+    ])
+
+    const read = await tabA.readAll()
+    tabA.close()
+    tabB.close()
+
+    if (!read.ok) throw new Error('could not read the store back')
+    const ids = read.value.ops.map((r) => r['id'])
+    expect(ids).toHaveLength(24)
+    expect(new Set(ids).size).toBe(24)
+  })
+
+  /**
+   * The prune on open renumbers the survivors from 1 in a transaction that has
+   * just cleared the store. That is only safe because a key generator is never
+   * rewound by `clear()` — if it were, the next appended entry would land on
+   * key 1 and overwrite the oldest row it had just kept.
+   */
+  it('appends above a renumbered audit after a prune', async () => {
+    const driver = driverFor(nextName())
+    for (const id of ['old-1', 'old-2', 'old-3']) await driver.commit([append(id)])
+
+    await driver.commit([
+      { kind: 'clear', store: 'ops' },
+      { kind: 'put', store: 'ops', key: 1, value: entry('kept-1') },
+      { kind: 'put', store: 'ops', key: 2, value: entry('kept-2') },
+    ])
+    await driver.commit([append('fresh')])
+
+    const read = await driver.readAll()
+    driver.close()
+    expect(read.ok && read.value.ops.map((r) => r['id'])).toEqual(['kept-1', 'kept-2', 'fresh'])
   })
 })
 
@@ -576,6 +746,7 @@ describe('the cross-tab channel', () => {
     const posted: StoreEvent[] = []
     const listeners = new Set<(e: StoreEvent) => void>()
     const spy = {
+      crossTab: true,
       post: (event: StoreEvent) => {
         posted.push(event)
         for (const fn of listeners) fn(event)

@@ -29,6 +29,13 @@ export interface Channel {
   /** Returns an unsubscribe, matching every other subscription in the codebase. */
   subscribe(fn: (event: StoreEvent) => void): () => void
   close(): void
+  /**
+   * Whether this channel actually reaches other tabs.
+   *
+   * False for `nullChannel`, and the app has to know rather than assume. See the
+   * note on `nullChannel` for what goes wrong when it assumes.
+   */
+  readonly crossTab: boolean
 }
 
 const unsubscribe = () => {}
@@ -36,16 +43,28 @@ const unsubscribe = () => {}
 /**
  * The channel that carries nothing.
  *
- * Three callers, and none of them is a failure: a runtime with no
+ * Three callers, and none of them is a failure in itself: a runtime with no
  * BroadcastChannel (React Native, Node under test, Safari before 15.4), the
  * in-memory driver, and any test that wants a driver with no cross-tab traffic.
- * A missing BroadcastChannel is not a broken app — it is a single-tab app, which
- * is what every native shell is anyway.
+ *
+ * This used to say "a missing BroadcastChannel is not a broken app — it is a
+ * single-tab app", and that is true of a native shell and false of a browser.
+ * A browser with two tabs open and no channel is not one tab: it is two tabs
+ * that overwrite each other in silence. D23's protection — flush, rehydrate,
+ * clear the undo stack — is driven entirely by this channel, so without it tab A
+ * writes a whole record over tab B's edit, and B's undo stack, never cleared,
+ * will happily revert A's write using before-images captured minutes ago. Both
+ * losses are silent.
+ *
+ * Hence `crossTab`. `repo/boot.ts` reads it and, when it is false, falls back to
+ * re-reading the store whenever the tab is resumed — later than a channel, but
+ * bounded, and it clears the stale undo stack at the same time.
  */
 export const nullChannel: Channel = Object.freeze({
   post: () => {},
   subscribe: () => unsubscribe,
   close: () => {},
+  crossTab: false,
 })
 
 /**
@@ -98,6 +117,8 @@ export function createStoreChannel(name: string): Channel {
   }
 
   return {
+    crossTab: true,
+
     post(event) {
       try {
         channel?.postMessage(event)

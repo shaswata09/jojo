@@ -14,6 +14,27 @@ import { cn } from '@/lib/utils'
 /** Long enough to read as leaving, short enough not to sit in the way. */
 const EXIT_MS = 150
 
+/**
+ * The element to hand focus back to, given the one that has it now.
+ *
+ * Usually the same element. The exception is the one that matters: a write
+ * fired from inside a popover — a stage change, a snooze, a bucket move —
+ * leaves focus on the popover's content while the popover is closing, and that
+ * node is gone long before the toast is. Recording it means recording a
+ * tombstone.
+ *
+ * Radix wires the pair together with `aria-controls`, so the trigger is one
+ * query away and it is exactly the control the user pressed. Dialogs do not
+ * need this — `dialog.tsx` hands its trigger over through `deferFocusReturn`
+ * before it closes — but no popover does, and there are many more popovers.
+ */
+function survivorFor(active: HTMLElement): HTMLElement {
+  const content = active.closest<HTMLElement>('[data-slot="popover-content"]')
+  if (!content?.id) return active
+  const trigger = document.querySelector<HTMLElement>(`[aria-controls="${CSS.escape(content.id)}"]`)
+  return trigger ?? active
+}
+
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 /**
@@ -117,7 +138,8 @@ function ToastItem({
   const actionRef = useCallback((node: HTMLButtonElement | null) => {
     if (!node || document.querySelector('[role=dialog][data-state=open]')) return
     const active = document.activeElement
-    returnToRef.current = active instanceof HTMLElement && active !== document.body ? active : null
+    returnToRef.current =
+      active instanceof HTMLElement && active !== document.body ? survivorFor(active) : null
     takingFocusRef.current = true
     tookFocusRef.current = true
     node.focus()
@@ -143,8 +165,35 @@ function ToastItem({
       // toast does not use is stale by the time the next one arrives.
       const deferred = takeDeferredFocusReturn()
       if (!item?.contains(document.activeElement)) return
-      const back = returnToRef.current ?? deferred
-      if (back?.isConnected) back.focus({ preventScroll: true })
+
+      /*
+       * The first candidate still IN the document, and a landmark if there is
+       * none.
+       *
+       * `returnToRef.current ?? deferred` was the old choice and it stranded
+       * focus on `<body>` in the commonest case there is. A stage change fires
+       * its toast from inside a popover: the popover's own content element is
+       * what has focus when the toast mounts, so it was recorded — and by the
+       * time this cleanup runs, eight seconds later, that element has been
+       * unmounted. `isConnected` correctly rejected it, `??` had already
+       * committed to it, and nothing was focused at all. The user's next Tab
+       * restarted from the top of the document, five seconds after an action
+       * they had stopped thinking about.
+       *
+       * `survivorFor` above is the other half: it resolves a focused popover
+       * body to the trigger that opened it, which outlives the popover, so the
+       * common case now returns focus to the control the user actually pressed
+       * rather than merely somewhere reasonable.
+       */
+      const back = [returnToRef.current, deferred].find((el) => el?.isConnected)
+      if (back) {
+        back.focus({ preventScroll: true })
+        return
+      }
+      // Nothing recorded survived. `<main>` is `tabIndex={-1}` for exactly this
+      // (`AppShell.tsx`), and resuming the tab order at the content beats
+      // resuming it at the skip link.
+      document.getElementById('main')?.focus({ preventScroll: true })
     }
   }, [])
 

@@ -177,7 +177,13 @@ export function NewMenu({ className }: { className?: string }) {
           aria-label="New"
           // Squares off below `sm`, where the topbar already wraps the search
           // field onto its own row and the top row has no width to spare.
-          className={cn('h-8 w-8 shrink-0 rounded-md p-0 text-xs sm:w-auto sm:px-2.5', className)}
+          // `size-8` rather than `h-8 w-8`: they draw identically, and only the
+          // first is reached by the coarse-pointer catch-area rule in
+          // `index.css`. `PopoverTrigger asChild` also overwrites this button's
+          // `data-slot` with `popover-trigger`, so the rule's other branch
+          // cannot see it either — which left the New button at 32×32 under a
+          // finger while every menu button it opens was 44.
+          className={cn('size-8 shrink-0 rounded-md p-0 text-xs sm:w-auto sm:px-2.5', className)}
         >
           <Plus className="size-3.5" strokeWidth={2} aria-hidden />
           <span className="hidden sm:inline">New</span>

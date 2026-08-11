@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FileQuestion, PanelRightClose, PanelRightOpen, X } from 'lucide-react'
+import { FileQuestion, FileWarning, PanelRightClose, PanelRightOpen, X } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ExpandButton, FullScreenDialog } from '@/components/common/FullScreen'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -42,6 +42,8 @@ export function FileViewer({
   onClose: () => void
 }) {
   const [url, setUrl] = useState<string | null>(null)
+  /** Set when the browser refused to mint a blob URL. See the effect below. */
+  const [previewError, setPreviewError] = useState<string | null>(null)
   const [full, setFull] = useState(false)
   const [notesOpen, setNotesOpen] = useState(true)
   const [noteSaved, setNoteSaved] = useState(false)
@@ -99,8 +101,25 @@ export function FileViewer({
                 gap: 6,
               },
               ...(file.note ? [{ text: file.note }] : []),
+              /*
+               * This used to read "This row shipped with the app. A file you
+               * add yourself previews for real." — and it was printed over
+               * documents the user had dropped themselves.
+               *
+               * D27 is why. The vault keeps a file's name and size and never
+               * its bytes, so the `File` behind a real preview lives in React
+               * state and goes at the next reload while the row it created
+               * survives. After that reload a seeded row and the user's own
+               * file are indistinguishable here: both arrive with no blob. The
+               * old sentence guessed, guessed wrong for the user's file, and
+               * told them their own document was a fixture.
+               *
+               * So it no longer guesses. What is said instead is true of both:
+               * jojo never held the contents, which is the actual reason there
+               * is nothing to render, and it is worth the user knowing anyway.
+               */
               {
-                text: 'This row shipped with the app. A file you add yourself previews for real.',
+                text: 'jojo keeps a file\u2019s name, size and notes — never its contents — so there is no document stored here to show. A file added in this session previews for real until the page reloads.',
                 gap: 14,
               },
             ],
@@ -110,16 +129,42 @@ export function FileViewer({
   )
 
   useEffect(() => {
+    /*
+     * Every `createObjectURL` here is inside a `try`, and that is not belt and
+     * braces — it is a blast-radius fix. This runs in an effect, so a throw is
+     * not caught by the click that opened the preview; it goes to the nearest
+     * error boundary, and the nearest one is the app root (`main.tsx`). A
+     * browser that refuses blob URLs therefore replaced the sidebar, the topbar
+     * and the route with "Something broke" because somebody pressed Preview on
+     * a file. A preview pane may fail as a preview pane; it may not take the
+     * application down.
+     */
+    setPreviewError(null)
+
     // Blob URLs pin their data until revoked either way, so both branches clean
     // up after themselves — without it every preview leaks a document for the
     // life of the tab.
     if (real) {
-      const next = URL.createObjectURL(real)
+      let next: string
+      try {
+        next = URL.createObjectURL(real)
+      } catch (error) {
+        setUrl(null)
+        setPreviewError(error instanceof Error ? error.message : String(error))
+        return
+      }
       setUrl(next)
       return () => URL.revokeObjectURL(next)
     }
     if (!pdf) return setUrl(null)
-    const next = pdfObjectUrl(pdf)
+    let next: string
+    try {
+      next = pdfObjectUrl(pdf)
+    } catch (error) {
+      setUrl(null)
+      setPreviewError(error instanceof Error ? error.message : String(error))
+      return
+    }
     setUrl(next)
     return () => URL.revokeObjectURL(next)
   }, [pdf, real])
@@ -137,6 +182,14 @@ export function FileViewer({
       src={url}
       title={`${file.name} preview`}
       className="w-full flex-1 rounded-md border border-hairline bg-well"
+    />
+  ) : previewError ? (
+    <EmptyState
+      icon={FileWarning}
+      title="This browser would not open the preview"
+      // Names the record as untouched, because the failure is in the viewer and
+      // a user watching a preview fail has no way to know the row is fine.
+      description={`${previewError}. The file's record in your vault is unaffected — only the preview could not be built.`}
     />
   ) : (
     <EmptyState

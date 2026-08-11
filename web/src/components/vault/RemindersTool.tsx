@@ -1,370 +1,33 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type Ref } from 'react'
-import { Link } from 'react-router'
-import { BellRing, Check, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Field } from '@/components/common/Field'
-import { LabelChips, LabelPicker } from '@/components/common/LabelFilter'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { MenuItem, MenuSection, RowMenu } from '@/components/vault/RowMenu'
 import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
+import { remindersEmptyState } from '@/components/vault/reminders/empty-state'
+import {
+  BUCKETS,
+  BUCKET_LABEL,
+  COLLAPSE_MS,
+  HOLD_MS,
+  anchorOf,
+} from '@/components/vault/reminders/model'
+import type { RowActions, Transit } from '@/components/vault/reminders/model'
+import { ReminderRow } from '@/components/vault/reminders/ReminderRow'
 import { displayName } from '@/data/seed'
-import type { Application } from '@/data/seed'
 import { addDays, bucketOf, shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@/data/timeline'
 import { useApplications } from '@/kg/react/use-applications'
 import { useTimeline } from '@/kg/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
-import { appPath } from '@/lib/links'
-import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
+import { KIND_LABEL } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
-
-const bucketText: Record<TimelineBucket, string> = {
-  overdue: 'text-danger',
-  today: 'text-warning',
-  upcoming: 'text-text-3',
-  done: 'text-text-3',
-}
-
-const BUCKETS: TimelineBucket[] = ['overdue', 'today', 'upcoming', 'done']
-
-const BUCKET_LABEL: Record<TimelineBucket, string> = {
-  overdue: 'Overdue',
-  today: 'Today',
-  upcoming: 'Upcoming',
-  done: 'Completed',
-}
-
-/**
- * How long the row you just acted on stays put before it collapses.
- *
- * Ticking a reminder used to unmount its row in the same commit as the click:
- * the thing you pressed was gone before the pointer left it, and on a mis-click
- * there was nothing on screen to tell you which row had vanished. The hold
- * paints the outcome on the row itself — box ticked, title struck, or the new
- * date already showing — and only then takes it away.
- */
-const HOLD_MS = 400
-const COLLAPSE_MS = 220
-
-/**
- * A row mid-flight, with the outcome of the click painted on it before the
- * store has been written.
- *
- * `held` shows `preview` merged over the record and does not move. `leaving`
- * collapses it to nothing. `arriving` is the same row re-inserted wherever the
- * write put it, expanding from nothing — so the two halves read as one journey
- * rather than a disappearance followed by an unrelated appearance.
- */
-type Transit = {
-  phase: 'held' | 'leaving' | 'arriving'
-  preview?: Partial<TimelineItem>
-}
-
-/**
- * Where a snooze counts from — a mirror of `useTimeline().snooze` in
- * store-context.ts, kept here only so the menu can print the date it is about
- * to write. Change one and change the other, or the label promises a Tuesday
- * and the store writes a Thursday.
- */
-const anchorOf = (item: TimelineItem) => (item.date < TODAY ? TODAY : item.date)
-
-/**
- * The snooze steps, spelled two ways.
- *
- * The store counts from today only when an item is already overdue; for
- * anything dated ahead it counts from that date. So "Tomorrow" is a lie on a
- * reminder due next Friday — it would land on the Saturday. The `later`
- * spelling is used whenever the anchor is not today, which is the only way the
- * label can never claim a date the store is not going to write.
- */
-const SNOOZE_STEPS = [
-  { days: 1, soon: 'Tomorrow', later: 'A day later' },
-  { days: 3, soon: 'In 3 days', later: 'Three days later' },
-  { days: 7, soon: 'In 7 days', later: 'A week later' },
-]
-
-type RowActions = {
-  toggle: (item: TimelineItem) => void
-  edit: (item: TimelineItem) => void
-  duplicate: (item: TimelineItem) => void
-  remove: (item: TimelineItem) => void
-  snooze: (item: TimelineItem, days: number) => void
-  moveTo: (item: TimelineItem, iso: string) => void
-  draft: (item: TimelineItem) => void
-}
-
-/** The two-line date block, shared by the snooze trigger and the inert copy. */
-function DateLines({ item }: { item: TimelineItem }) {
-  return (
-    <>
-      <span
-        className={cn(
-          'block text-xs font-medium whitespace-nowrap',
-          bucketText[bucketOf(item, TODAY)],
-        )}
-      >
-        {whenLabel(item, TODAY)}
-      </span>
-      <span className="mt-0.5 block font-mono text-xs text-text-3">{shortDate(item.date)}</span>
-    </>
-  )
-}
-
-/**
- * Snooze, hung off the date the user is already looking at.
- *
- * Every option writes a new date and nothing else, so the row re-buckets and
- * physically moves from Overdue down into Upcoming. That journey is the
- * feedback — the grouping below is recomputed from `bucketOf` every render
- * precisely so it can happen.
- */
-function SnoozeMenu({ item, actions }: { item: TimelineItem; actions: RowActions }) {
-  const [open, setOpen] = useState(false)
-  // Seeded from the row so the calendar opens on the month the reminder is in
-  // rather than on today, which for an overdue item is the wrong page.
-  const [picked, setPicked] = useState(item.date)
-  const anchor = anchorOf(item)
-  const soon = anchor === TODAY
-
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        // Re-seeded on the way open, not just at mount. Snoozing rewrites the
-        // row's date underneath this component, and a field still holding last
-        // week's value would offer to move the reminder back there.
-        if (next) setPicked(item.date)
-        setOpen(next)
-      }}
-    >
-      <PopoverTrigger
-        title="Snooze or move this reminder"
-        aria-label={`Snooze "${item.title}" — ${whenLabel(item, TODAY)}`}
-        className="shrink-0 cursor-pointer rounded-md px-1.5 py-0.5 text-right transition-colors hover:bg-well data-[state=open]:bg-well"
-      >
-        <DateLines item={item} />
-      </PopoverTrigger>
-
-      <PopoverContent align="end" className="w-60">
-        <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">Snooze</div>
-        <div className="flex flex-col">
-          {SNOOZE_STEPS.map((step) => (
-            <button
-              key={step.days}
-              type="button"
-              className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-1.5 py-1.5 text-xs text-text-2 transition-colors hover:bg-well hover:text-text-1"
-              onClick={() => {
-                setOpen(false)
-                actions.snooze(item, step.days)
-              }}
-            >
-              <span className="flex-1 text-left">{soon ? step.soon : step.later}</span>
-              <span className="font-mono text-text-3">{shortDate(addDays(anchor, step.days))}</span>
-            </button>
-          ))}
-        </div>
-
-        <span aria-hidden className="h-px bg-hairline" />
-
-        {/* No `min` on the input. An overdue reminder opens this field holding a
-            date that is already past, and a minimum of today would mark it
-            invalid before anyone touched it — and moving something back a day
-            is a legitimate correction, not a snooze. */}
-        <Field
-          label="Pick a date"
-          type="date"
-          value={picked}
-          onChange={(event) => {
-            const iso = event.target.value
-            setPicked(iso)
-            if (!iso || iso === item.date) return
-            setOpen(false)
-            actions.moveTo(item, iso)
-          }}
-        />
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function ReminderRow({
-  item,
-  related,
-  focused,
-  rowRef,
-  transit,
-  actions,
-}: {
-  item: TimelineItem
-  /**
-   * The application it hangs off — the record, not a name spelled from it.
-   *
-   * It was a string, and the link beside it was built from `item.applicationId`.
-   * That id is minted per session, so the reminder's one way back to its
-   * application was a URL that died on the next reload; `appPath` needs the
-   * record to reach for its slug.
-   */
-  related?: Application
-  /** Arrived here from a link that named this row — see `focus` in links.ts. */
-  focused?: boolean
-  /** Set on the focused row only, so the tool can scroll it into view. */
-  rowRef?: Ref<HTMLLIElement>
-  /** Set while this row is playing out the click that will move or remove it. */
-  transit?: Transit
-  actions: RowActions
-}) {
-  // Everything below reads the previewed record, so the outcome is on the row
-  // before the store knows about it.
-  const shown = transit?.preview ? { ...item, ...transit.preview } : item
-  const Icon = KIND_ICON[shown.kind]
-  const done = Boolean(shown.completedOn)
-  const collapsed = transit?.phase === 'leaving' || transit?.phase === 'arriving'
-
-  return (
-    // The collapse is a grid track, not a height: `1fr → 0fr` animates without
-    // anyone having to measure the row first, and everything below slides up
-    // continuously instead of jumping when the row is finally gone.
-    <li
-      ref={rowRef}
-      className={cn(
-        'grid border-b border-hairline transition-[grid-template-rows,opacity] ease-out last:border-b-0',
-        collapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100',
-      )}
-      style={{ transitionDuration: `${COLLAPSE_MS}ms` }}
-    >
-      <div
-        className={cn(
-          'overflow-hidden',
-          // A row on its way out must not take a second click: the store write
-          // has not happened yet, so a double-tick would fire twice.
-          transit && 'pointer-events-none',
-        )}
-      >
-        <div
-          className={cn(
-            // Wraps below `sm`. The trailing cluster is `shrink-0` and runs to
-            // ~220px (Draft a reply, the date, the keyword picker, the ⋯), which
-            // on a 390px screen left the title about 90px — it rendered as "C…",
-            // and at 360px as nothing at all, so the row said a reminder was
-            // overdue without saying which. On one line the actions now drop
-            // underneath and the title gets the width.
-            'flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5 sm:flex-nowrap',
-            // Marks the row a link pointed at. `.arrival-highlight` fades the
-            // tint out rather than holding it — see use-arrival-highlight.ts,
-            // which drops the URL parameter on the same beat and scrolls the
-            // row into view, because a tint below the fold answers nothing.
-            focused && 'arrival-highlight -mx-2 rounded-md px-2',
-          )}
-        >
-          {/* A real checkbox role, so screen readers get the state and Space works. */}
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={done}
-            onClick={() => actions.toggle(item)}
-            aria-label={done ? `Mark "${item.title}" as not done` : `Mark "${item.title}" done`}
-            className={cn(
-              'grid size-[18px] shrink-0 place-items-center rounded-sm border transition-colors',
-              done
-                ? 'border-accent-border bg-accent-soft text-accent'
-                : 'border-hairline-strong hover:border-accent-border',
-            )}
-          >
-            {done ? <Check className="size-3" strokeWidth={2.5} /> : null}
-          </button>
-
-          <div className="min-w-0 flex-1 basis-[calc(100%-1.875rem)] sm:basis-auto">
-            {/* The title is the way in to editing it. A row you can tick but not
-                correct is where every wrong date in this list came from. */}
-            <button
-              type="button"
-              onClick={() => actions.edit(item)}
-              className={cn(
-                'block max-w-full cursor-pointer truncate text-left text-sm transition-colors hover:text-accent',
-                done && 'text-text-3 line-through',
-              )}
-            >
-              {shown.title}
-            </button>
-            {/* One line, not three. The keyword chips used to sit under this and
-                made every row a different height, which is why eight reminders
-                did not fit on a screen. */}
-            <div className="mt-0.5 flex items-center gap-x-2 overflow-hidden text-xs text-text-3">
-              {/* Named out loud: the icon is the only thing on the row that
-                  says whether this is a chase or a piece of prep. */}
-              <Icon
-                role="img"
-                aria-label={KIND_LABEL[shown.kind]}
-                className="size-3.5 shrink-0"
-                strokeWidth={1.7}
-              />
-              {/* The edge back to the application — the reason every dated thing
-                  became one record with an `applicationId` instead of five lists
-                  that could only name a job in prose. */}
-              {related ? (
-                <Link
-                  to={appPath(related)}
-                  className="min-w-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
-                >
-                  {displayName(related)}
-                </Link>
-              ) : (
-                <span className="shrink-0">Unfiled</span>
-              )}
-              {shown.note ? <span className="truncate">· {shown.note}</span> : null}
-              <LabelChips recordId={item.id} className="shrink-0" />
-            </div>
-          </div>
-
-          <div className="flex w-full shrink-0 items-center justify-end gap-1 sm:w-auto sm:justify-start">
-            {/* Ahead of the date, not after the ⋯. Sitting last, it pushed the
-                overflow button 56px sideways on follow-up rows only, so ⋯ was in
-                a different place on every other row of the list. */}
-            {shown.kind === 'follow-up' && !done ? (
-              <Button variant="ghost" size="sm" onClick={() => actions.draft(item)}>
-                Draft a reply
-              </Button>
-            ) : null}
-
-            {/* A completed row keeps the date it was done on, and nothing to
-                snooze: moving a finished reminder into next week is not a thing
-                anyone means to do. Untick it first and the menu comes back. */}
-            {done ? (
-              <div className="px-1.5 py-0.5 text-right">
-                <DateLines item={shown} />
-              </div>
-            ) : (
-              <SnoozeMenu item={shown} actions={actions} />
-            )}
-
-            <LabelPicker recordId={item.id} />
-            <RowMenu name={item.title}>
-              <MenuItem icon={Pencil} onSelect={() => actions.edit(item)}>
-                Edit
-              </MenuItem>
-              <MenuItem icon={Copy} onSelect={() => actions.duplicate(item)}>
-                Duplicate
-              </MenuItem>
-              <MenuSection>
-                <MenuItem icon={Trash2} danger onSelect={() => actions.remove(item)}>
-                  Delete
-                </MenuItem>
-              </MenuSection>
-            </RowMenu>
-          </div>
-        </div>
-      </div>
-    </li>
-  )
-}
 
 /**
  * Everything flagged to come back to, off the one timeline.
@@ -625,89 +288,16 @@ export function RemindersTool({ focus }: { focus?: string }) {
 
   const shownRows = BUCKETS.reduce((n, b) => n + rowsIn(b).length, 0)
 
-  /**
-   * Every empty list names the control that emptied it. "All caught up" over a
-   * vault holding eight open reminders, because a chip or a search box is set,
-   * congratulates someone for work they have not done.
-   */
-  const empty = (() => {
-    if (reminders.length === 0) {
-      return {
-        icon: BellRing,
-        title: 'No reminders yet',
-        description:
-          'A reminder is a dated nudge — chase a referee, check a portal, send a thank-you. Ones you mark as follow-ups also show on the dashboard until you tick them off.',
-        action: (
-          <Button size="sm" onClick={() => open('timelineItem', { mode: 'reminder' })}>
-            <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            Add reminder
-          </Button>
-        ),
-      }
-    }
-    if (query.trim()) {
-      return {
-        icon: BellRing,
-        title: 'Nothing matches that search',
-        description: `No reminder mentions "${query.trim()}" in its title, note, kind or application.`,
-        action: (
-          <Button variant="outline" size="sm" onClick={() => setQuery('')}>
-            Clear search
-          </Button>
-        ),
-      }
-    }
-    const byBucket = bucket !== 'all'
-    const byKeyword = selectedLabels.size > 0
-
-    if (byBucket && byKeyword) {
-      return {
-        icon: BellRing,
-        title: 'Nothing matches both filters',
-        description: `No ${BUCKET_LABEL[bucket].toLowerCase()} reminder carries the selected keywords.`,
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setBucket('all')
-              clearSelected()
-            }}
-          >
-            Clear both filters
-          </Button>
-        ),
-      }
-    }
-    if (byBucket) {
-      return {
-        icon: bucket === 'done' ? Check : BellRing,
-        title:
-          bucket === 'done'
-            ? 'Nothing completed yet'
-            : `Nothing ${BUCKET_LABEL[bucket].toLowerCase()}`,
-        description:
-          bucket === 'done'
-            ? 'Reminders you tick off collect here, so one ticked by mistake is still findable.'
-            : `${reminders.length} reminders are filed under the other groups.`,
-        action: (
-          <Button variant="outline" size="sm" onClick={() => setBucket('all')}>
-            Show all reminders
-          </Button>
-        ),
-      }
-    }
-    return {
-      icon: BellRing,
-      title: 'No reminders carry those keywords',
-      description: 'The keyword filter at the top of the page is what is hiding them.',
-      action: (
-        <Button variant="outline" size="sm" onClick={clearSelected}>
-          Clear keywords
-        </Button>
-      ),
-    }
-  })()
+  const empty = remindersEmptyState({
+    total: reminders.length,
+    query,
+    bucket,
+    selectedLabels,
+    onAdd: () => open('timelineItem', { mode: 'reminder' }),
+    onClearQuery: () => setQuery(''),
+    onClearBucket: () => setBucket('all'),
+    onClearKeywords: clearSelected,
+  })
 
   return (
     <Panel className="min-w-0">

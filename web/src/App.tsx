@@ -3,6 +3,10 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { Loader } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
+import { GuideBuiltWith } from '@/components/guide/GuideBuiltWith'
+import { GuideGraph } from '@/components/guide/GuideGraph'
+import { GuideOverview } from '@/components/guide/GuideOverview'
+import { GuideScreens } from '@/components/guide/GuideScreens'
 import { AppShell } from '@/components/layout/AppShell'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useTitle } from '@/lib/links'
@@ -137,7 +141,19 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="assistant" element={<Assistant />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="guide" element={<Guide />} />
+          {/* The guide is a section, not a page: a layout route holding the
+              rail and the pager, with the four pages as children. The landing
+              page is the index rather than '/guide/overview', so the topbar's
+              help icon, the palette and every bookmark taken before the split
+              still land on something. The segments are `links.ts`'s
+              `GUIDE_PAGES`, in that order — this is the only place they are
+              written out, and a path composed anywhere else is a bug. */}
+          <Route path="guide" element={<Guide />}>
+            <Route index element={<GuideOverview />} />
+            <Route path="screens" element={<GuideScreens />} />
+            <Route path="graph" element={<GuideGraph />} />
+            <Route path="built-with" element={<GuideBuiltWith />} />
+          </Route>
           <Route
             path="*"
             element={<Placeholder title="Not found" subtitle="That page does not exist." />}

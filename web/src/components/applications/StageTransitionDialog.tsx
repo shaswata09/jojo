@@ -1,7 +1,18 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { STAGE_LABEL } from '@/components/applications/StageMenu'
-import { Field, FormField, SettingRow, TextareaField } from '@/components/common/Field'
-import { Segment } from '@/components/common/Segment'
+import {
+  ClosedFields,
+  InterviewFields,
+  KeepOfferRow,
+  OfferFields,
+  SubmittedFields,
+} from '@/components/applications/dialog/TransitionFields'
+import {
+  FORMAT_LABEL,
+  OUTCOME_ACTION,
+  OUTCOME_LABEL,
+} from '@/components/applications/dialog/transition-options'
+import type { Format } from '@/components/applications/dialog/transition-options'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,47 +23,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
 import { displayName } from '@/data/seed'
 import type { Application, Outcome, Stage } from '@/data/seed'
 import { addDays, shortDate } from '@/data/timeline'
 import type { TimelineDraft } from '@/kg/react/use-timeline'
 import { TODAY } from '@/lib/today'
-
-const FORMATS = [
-  { value: 'phone', label: 'Phone' },
-  { value: 'video', label: 'Video' },
-  { value: 'onsite', label: 'Onsite' },
-] as const
-
-type Format = (typeof FORMATS)[number]['value']
-
-const FORMAT_LABEL = Object.fromEntries(FORMATS.map((f) => [f.value, f.label])) as Record<
-  Format,
-  string
->
-
-const OUTCOMES: { value: Outcome; label: string }[] = [
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'withdrawn', label: 'Withdrawn' },
-  { value: 'accepted', label: 'Accepted' },
-  { value: 'declined', label: 'Declined' },
-  { value: 'ghosted', label: 'Ghosted — no reply' },
-]
-
-const OUTCOME_LABEL = Object.fromEntries(OUTCOMES.map((o) => [o.value, o.label])) as Record<
-  Outcome,
-  string
->
-
-/** What the activity feed should say afterwards. */
-const OUTCOME_ACTION: Record<Outcome, string> = {
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-  accepted: 'Offer accepted',
-  declined: 'Offer declined',
-  ghosted: 'Closed with no reply',
-}
 
 /** The four stages that carry a field block. Draft and Screen collect nothing. */
 const BLOCKED_STAGES: readonly Stage[] = ['submitted', 'interview', 'offer', 'closed']
@@ -158,6 +133,13 @@ export function StageTransitionDialog({
   )
 }
 
+/**
+ * The stage-change form: what each destination collects, and what it writes.
+ *
+ * The field blocks themselves live in `dialog/TransitionFields.tsx`; everything
+ * here is the state behind them and the three answers the footer's three
+ * buttons give.
+ */
 function TransitionForm({
   application,
   target,
@@ -169,8 +151,6 @@ function TransitionForm({
   onApply: StageTransitionDialogProps['onApply']
   onClose: () => void
 }) {
-  const outcomeId = useId()
-
   const [date, setDate] = useState(TODAY)
   const [portalUrl, setPortalUrl] = useState(application.url ?? '')
   const [reference, setReference] = useState('')
@@ -344,134 +324,49 @@ function TransitionForm({
     >
       <div className="flex max-h-[55vh] flex-col gap-3 overflow-y-auto">
         {target === 'submitted' ? (
-          <>
-            <Field
-              label="Submitted on"
-              type="date"
-              value={date}
-              required
-              onChange={(e) => setDate(e.target.value)}
-            />
-            <Field
-              label="Portal URL"
-              type="url"
-              mono
-              placeholder="https://"
-              value={portalUrl}
-              hint="Where the application lives, for when you need to chase it."
-              onChange={(e) => setPortalUrl(e.target.value)}
-            />
-            <Field
-              label="Confirmation reference"
-              mono
-              placeholder="e.g. 4471-QZ"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-            />
-          </>
+          <SubmittedFields
+            date={date}
+            onDateChange={setDate}
+            portalUrl={portalUrl}
+            onPortalUrlChange={setPortalUrl}
+            reference={reference}
+            onReferenceChange={setReference}
+          />
         ) : null}
 
         {target === 'interview' ? (
-          <>
-            <Field
-              label="Interview date"
-              type="date"
-              value={date}
-              required
-              onChange={(e) => setDate(e.target.value)}
-            />
-            <FormField label="Format">
-              <Segment
-                label="Interview format"
-                options={FORMATS}
-                value={format}
-                onChange={setFormat}
-                className="w-fit"
-              />
-            </FormField>
-            <SettingRow
-              label="Add it to the timeline"
-              description="Creates an interview entry on that date, with a reminder."
-              control={
-                <Switch
-                  checked={mintInterview}
-                  onCheckedChange={setMintInterview}
-                  aria-label="Add it to the timeline"
-                />
-              }
-            />
-          </>
+          <InterviewFields
+            date={date}
+            onDateChange={setDate}
+            format={format}
+            onFormatChange={setFormat}
+            mintInterview={mintInterview}
+            onMintInterviewChange={setMintInterview}
+          />
         ) : null}
 
         {target === 'offer' ? (
-          <>
-            <Field
-              label="Respond by"
-              type="date"
-              value={respondBy}
-              required
-              onChange={(e) => setRespondBy(e.target.value)}
-            />
-            <Field
-              label="Package"
-              placeholder="e.g. $112k + $15k startup"
-              value={offerComp}
-              onChange={(e) => setOfferComp(e.target.value)}
-            />
-            <TextareaField
-              label="Note"
-              rows={3}
-              placeholder="What is still being negotiated"
-              value={offerNote}
-              onChange={(e) => setOfferNote(e.target.value)}
-            />
-            <SettingRow
-              label="Add the deadline to the timeline"
-              description="A respond-by date with nothing watching it is the one deadline you cannot afford to miss."
-              control={
-                <Switch
-                  checked={mintRespondBy}
-                  onCheckedChange={setMintRespondBy}
-                  aria-label="Add the deadline to the timeline"
-                />
-              }
-            />
-          </>
+          <OfferFields
+            respondBy={respondBy}
+            onRespondByChange={setRespondBy}
+            offerComp={offerComp}
+            onOfferCompChange={setOfferComp}
+            offerNote={offerNote}
+            onOfferNoteChange={setOfferNote}
+            mintRespondBy={mintRespondBy}
+            onMintRespondByChange={setMintRespondBy}
+          />
         ) : null}
 
         {target === 'closed' ? (
-          <FormField label="Outcome" htmlFor={outcomeId} required>
-            {/* A native select: five options is past what a segmented control
-                can hold without wrapping, and this one is keyboard-complete
-                and screen-reader-complete for free. */}
-            <select
-              id={outcomeId}
-              value={outcome}
-              onChange={(e) => setOutcome(e.target.value as Outcome)}
-              className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm text-text-1 outline-none focus-visible:border-ring"
-            >
-              {OUTCOMES.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </FormField>
+          <ClosedFields outcome={outcome} onOutcomeChange={setOutcome} />
         ) : null}
 
         {leavingOffer ? (
-          <SettingRow
-            label="Keep the offer details"
-            description={`Respond by ${shortDate(application.offer?.respondBy ?? TODAY)}${
-              application.offer?.comp ? ` · ${application.offer.comp}` : ''
-            }. Turn this off to clear them.`}
-            control={
-              <Switch
-                checked={keepOffer}
-                onCheckedChange={setKeepOffer}
-                aria-label="Keep the offer details"
-              />
-            }
+          <KeepOfferRow
+            offer={application.offer}
+            keepOffer={keepOffer}
+            onKeepOfferChange={setKeepOffer}
           />
         ) : null}
       </div>

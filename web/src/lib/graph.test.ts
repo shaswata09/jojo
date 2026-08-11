@@ -7,8 +7,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import type { Graph, GraphEdge, GraphNode, GraphRel } from '@/lib/graph'
-import { filterGraph, shortestPath } from '@/lib/graph'
+import type { Graph, GraphEdge, GraphNode, GraphRel } from '@/lib/graph/model'
+import { filterGraph, shortestPath } from '@/lib/graph/traversal'
 
 /** Mirrors `buildGraph`'s indexes, including degree counted over EVERY edge. */
 function makeGraph(ids: readonly string[], links: readonly [string, string][]): Graph {

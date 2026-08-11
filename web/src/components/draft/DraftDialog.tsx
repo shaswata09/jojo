@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, Copy, Mail, PenLine, Send, Sparkles } from 'lucide-react'
+import { Mail, PenLine, Send, Sparkles } from 'lucide-react'
+import { CopyFeedback } from '@/components/common/CopyFeedback'
 import { EmptyState } from '@/components/common/EmptyState'
 import { RichTextEditor } from '@/components/common/RichTextEditor'
 import { Button } from '@/components/ui/button'
@@ -445,12 +446,7 @@ function DraftBody({
             title={empty ? 'Write something first' : 'Copy the message to the clipboard'}
             onClick={copy}
           >
-            {copied ? (
-              <Check className="size-3.5" strokeWidth={2} aria-hidden />
-            ) : (
-              <Copy className="size-3.5" strokeWidth={1.8} aria-hidden />
-            )}
-            {copied ? (failed ? 'Blocked' : 'Copied') : 'Copy'}
+            <CopyFeedback copied={copied} failed={failed} />
           </Button>
           <Button
             type="button"

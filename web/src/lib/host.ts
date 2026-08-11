@@ -75,6 +75,27 @@ export const webHost: Host = {
       document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   },
+
+  /**
+   * `visibilitychange` to visible, and nothing else.
+   *
+   * Not `focus`: that fires when the user clicks from the URL bar back into the
+   * page, or dismisses a dialog, neither of which is a moment another tab can
+   * have changed the store — and the subscriber's response is to re-read the
+   * database and clear the undo stack, which is not something to do on a stray
+   * click. `visibilitychange` is the event that means what is wanted here: this
+   * tab was in the background and now is not.
+   *
+   * Paired with `onSuspend`'s hidden branch, which flushed on the way out.
+   */
+  onResume(run) {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') run()
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  },
 }
 
 /**
