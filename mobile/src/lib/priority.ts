@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
+import { TODAY } from '@/lib/today'
 import { offerDaysLeft } from '@/data/seed'
-import { TODAY, daysBetween, shortDate } from '@/data/timeline'
+import { daysBetween, shortDate } from '@/data/timeline'
 import { useApplications, useTimeline } from '@/lib/store-context'
 
 /**

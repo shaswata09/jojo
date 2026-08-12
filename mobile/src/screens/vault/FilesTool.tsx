@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
@@ -17,24 +18,17 @@ import { Txt } from '@/components/ui/Text'
 import { displayName } from '@/data/seed'
 import { agoLabel } from '@/data/timeline'
 import { FILE_BUCKETS } from '@/data/vault'
-import type { FileBucket, FileKind, VaultFile } from '@/data/vault'
+import type { FileBucket, VaultFile } from '@/data/vault'
 import { useLabels } from '@/lib/labels-context'
+import { FileViewer } from '@/screens/vault/FileViewer'
+import { FILE_KIND_ICON } from '@/lib/files'
 import { matchesQuery } from '@/lib/search'
 import { useApplications, useVault } from '@/lib/store-context'
-import type { FeatherName } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
-
-/** One glyph per kind, so a deck and a scan are told apart in the list. */
-const FILE_ICON: Record<FileKind, FeatherName> = {
-  pdf: 'file',
-  doc: 'file-text',
-  slides: 'monitor',
-  note: 'edit-3',
-}
 
 const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Record<
   FileBucket,
@@ -44,10 +38,15 @@ const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Rec
 /**
  * Documents, as records.
  *
- * Nothing here reads a file's contents — there is no picker wired up in this
- * build and no bytes behind a record, so what is kept is the name, the size and
- * the type. That is said in the editor rather than implied by a viewer frame
- * that could not render anything.
+ * A record can now have a real file behind it. Choosing one copies it into this
+ * app's own storage and the record keeps the path, so the row opens rather than
+ * merely describing something. Nothing reads what is inside it: no parsing, no
+ * indexing, no upload — the size is computed from the byte count and that is the
+ * only thing the contents are used for.
+ *
+ * Typing a record by hand still works, and is not a lesser path. A document kept
+ * on a laptop, or a paper form, is a real thing to track; the viewer tells those
+ * two kinds apart rather than treating the second as a failure of the first.
  */
 export function FilesTool() {
   const c = useColors()
@@ -61,6 +60,9 @@ export function FilesTool() {
   const [query, setQuery] = useState('')
   const [menuFor, setMenuFor] = useState<VaultFile | null>(null)
   const [editing, setEditing] = useState<VaultFile | 'new' | null>(null)
+  // Opening a document and editing it are two different intentions, and the row
+  // used to serve only the second. The tap now reads; the menu still edits.
+  const [viewing, setViewing] = useState<VaultFile | null>(null)
 
   const pool = useMemo(
     () => files.filter((f) => matches(f.id) && matchesQuery(query, f.name, f.note, f.bucket)),
@@ -77,6 +79,10 @@ export function FilesTool() {
 
   const onDelete = (f: VaultFile) => {
     const { restore } = removeFile(f.id)
+    // The copy stays until the undo window is a memory: deleting the bytes here
+    // would make Undo restore a record pointing at nothing, which is a worse
+    // outcome than a few kilobytes surviving a little longer. The sweep on next
+    // launch is what actually reclaims them.
     toast({
       title: 'Document removed',
       description: f.name,
@@ -145,18 +151,23 @@ export function FilesTool() {
               <View key={f.id}>
                 {i > 0 ? <Divider /> : null}
                 <View style={styles.row}>
-                  <Feather name={FILE_ICON[f.kind]} size={17} color={c.text3} style={styles.icon} />
+                  <Feather
+                    name={FILE_KIND_ICON[f.kind]}
+                    size={17}
+                    color={c.text3}
+                    style={styles.icon}
+                  />
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={`Edit ${f.name}`}
-                    onPress={() => setEditing(f)}
+                    accessibilityLabel={`Open ${f.name}`}
+                    onPress={() => setViewing(f)}
                     style={s.fill}
                   >
                     <Txt size="sm" weight="medium" mono numberOfLines={2}>
                       {f.name}
                     </Txt>
                     <Txt size="xs" tone="muted">
-                      {f.size} · saved {agoLabel(f.savedOn)}
+                      {f.size} · saved {agoLabel(f.savedOn, TODAY)}
                     </Txt>
                     {f.note ? (
                       <Txt size="xs" tone="muted" numberOfLines={2}>
@@ -215,6 +226,15 @@ export function FilesTool() {
               })
             : []
         }
+      />
+
+      <FileViewer
+        file={viewing}
+        onClose={() => setViewing(null)}
+        onEdit={(f) => {
+          setViewing(null)
+          setEditing(f)
+        }}
       />
 
       {editing ? (

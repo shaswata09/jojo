@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ToastContext as KgToastContext } from '@/kg/react/toast'
+import type { ToastContextValue as KgToastContextValue } from '@/kg/react/toast'
 import type { ReactNode } from 'react'
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -30,10 +32,41 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ toast, dismiss }), [toast, dismiss])
 
+  /**
+   * The same provider, seen through the graph layer's port.
+   *
+   * `kg/react/toast.ts` declares what the graph needs a platform to be able to
+   * say, and `KgProvider` and `useTool` read it — so the tool runtime's own
+   * toasts (a write failed, a change was adopted) go through here rather than
+   * through a second stack nobody styled.
+   *
+   * The one difference is the action's callback name: the port says `onClick`,
+   * because it was cut from the web app where that is what a button does. This
+   * app says `onPress`, because that is what a button does here, and thirty call
+   * sites already say it. Renaming them to satisfy a port would put the wrong
+   * word on every touch handler in the app to spare one adapter three lines, so
+   * the adapter takes the three lines.
+   */
+  const kgValue = useMemo<KgToastContextValue>(
+    () => ({
+      toast: (options) =>
+        toast({
+          ...options,
+          action: options.action
+            ? { label: options.action.label, onPress: options.action.onClick }
+            : undefined,
+        }),
+      dismiss,
+    }),
+    [toast, dismiss],
+  )
+
   return (
     <ToastContext.Provider value={value}>
-      {children}
-      <ToastViewport toasts={toasts} onDismiss={dismiss} />
+      <KgToastContext.Provider value={kgValue}>
+        {children}
+        <ToastViewport toasts={toasts} onDismiss={dismiss} />
+      </KgToastContext.Provider>
     </ToastContext.Provider>
   )
 }

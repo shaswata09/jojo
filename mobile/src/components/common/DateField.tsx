@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -12,7 +13,7 @@ import {
   buildMonth,
   stepMonth,
 } from '@/data/calendar'
-import { TODAY, addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
+import { addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'

@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { fitOf } from '@/lib/fit'
+import { listJoin } from '@/lib/text'
+import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -16,6 +19,7 @@ import type { Pipeline } from '@/data/scout'
 import { displayName } from '@/data/seed'
 import { agoLabel } from '@/data/timeline'
 import { draftFromUrl } from '@/lib/draft-from'
+import { useProfile } from '@/kg/react/use-profile'
 import { useApplications, useScout } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { displayUrl, hrefOf } from '@/lib/urls'
@@ -53,6 +57,7 @@ export function JobScoutScreen() {
     updatePipeline,
     removePipeline,
   } = useScout()
+  const { profile } = useProfile()
   const { get } = useApplications()
   const { toast } = useToast()
 
@@ -227,10 +232,11 @@ export function JobScoutScreen() {
       </Panel>
 
       <Panel>
-        {/* The hint used to read "last run Oct 11". Nothing has ever run — the
-            banner above says matching is paused — so the date was a claim the
-            rest of the screen denies. */}
-        <PanelTitle hint="example scores">Matches</PanelTitle>
+        {/* The hint used to read "example scores", because the percentages were
+            fixtures. They are computed now — against the match terms, target
+            roles and regions on your profile — so the hint says what they are
+            measured against rather than apologising for them. */}
+        <PanelTitle hint="scored against your profile">Matches</PanelTitle>
 
         {matches.length === 0 ? (
           <EmptyState
@@ -243,6 +249,7 @@ export function JobScoutScreen() {
             // The edge is cleared when an application is deleted, so a match can
             // carry an id whose record has just gone; read it, never assume it.
             const application = m.applicationId ? get(m.applicationId) : undefined
+            const fit = fitOf(profile, m.role, m.detail)
             return (
               <View key={m.id}>
                 {i > 0 ? <Divider /> : null}
@@ -252,6 +259,18 @@ export function JobScoutScreen() {
                     <Txt size="xs" tone="muted">
                       {m.detail}
                     </Txt>
+                    {/* What it matched on, so a percentage is a claim you can
+                        check rather than a number to be trusted. */}
+                    {fit.matched.length > 0 ? (
+                      <Txt size="xs" tone="muted" numberOfLines={1}>
+                        matched {listJoin(fit.matched.slice(0, 3))}
+                      </Txt>
+                    ) : null}
+                    {fit.score === null ? (
+                      <Txt size="xs" tone="muted">
+                        {fit.reason}
+                      </Txt>
+                    ) : null}
                     {application ? (
                       <Pressable
                         accessibilityRole="link"
@@ -266,7 +285,16 @@ export function JobScoutScreen() {
                     ) : null}
                   </View>
                   <View style={styles.matchRight}>
-                    <Chip tone={fitTone(m.fit)} size="sm">{`${m.fit}% fit`}</Chip>
+                    {/* No score rather than a made-up one. An empty profile has
+                        told the app nothing to rank against, and a confident
+                        number over nothing is what the fixtures used to do. */}
+                    {fit.score === null ? (
+                      <Chip tone="gray" size="sm">
+                        not scored
+                      </Chip>
+                    ) : (
+                      <Chip tone={fitTone(fit.score)} size="sm">{`${fit.score}% fit`}</Chip>
+                    )}
                     {/* Promoting links the two rather than moving the match: the
                         feed is generated, so a mis-tap on a row that vanished
                         could not be undone. */}
@@ -333,7 +361,7 @@ export function JobScoutScreen() {
                           fetched. Printing it would restate the very claim the
                           disabled snapshot button denies. */}
                       <Txt size="xs" tone="muted" mono numberOfLines={1}>
-                        {displayUrl(p.url)} · saved {agoLabel(p.savedOn)}
+                        {displayUrl(p.url)} · saved {agoLabel(p.savedOn, TODAY)}
                       </Txt>
                       {application ? (
                         <Txt size="xs" tone="info" style={{ marginTop: space[1] }}>

@@ -104,6 +104,8 @@ export type VaultFile = {
   savedOn: string
   note?: string
   applicationId?: string
+  /** Where the copy lives on this device, when one was picked. */
+  uri?: string
 }
 
 export const FILE_BUCKETS: FileBucket[] = ['To read', 'Applications', 'Talks', 'Admin']

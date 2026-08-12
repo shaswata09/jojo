@@ -3,9 +3,10 @@
 The same job tracker as `web/`, as an Android and iOS app. React Native via Expo.
 
 Everything runs on the device. There is no server, no account and no network call
-of any kind — the store lives in memory for as long as the app is open, seeded
-with the same twelve applications, timeline, vault and profile the web prototype
-ships with. Settings is where you switch between that and an empty store.
+of any kind. Records are saved on the device and survive closing the app; a
+first launch asks whether to start from the same twelve applications, timeline,
+vault and profile the web prototype ships with, or from nothing. Settings is
+where you change your mind later.
 
 ---
 
@@ -96,6 +97,65 @@ piece of work and this README would be lying if it claimed it had been done.
 **Android 12 (API 31)** and **iOS 16.4**, set in `app.json` through
 `expo-build-properties` and compiled against Android SDK 36. Anything older is
 out of support; do not spend time testing on it.
+
+---
+
+## The store is the web app's, running here
+
+`src/kg/` is `web/src/kg/` — **59 files copied without a line changed**: the graph
+model, the repository, the write queue, the journal, the tool runtime and the
+React hooks. It was built to be portable and it turned out to be: the whole layer
+compiled inside this app on the first try bar three imports, because nothing
+under `core`, `repo`, `tools` or `react` touches a browser API. The only place
+that did was `storage/`, which already had a `Driver` interface and two
+implementations behind it.
+
+Three adapters is the entire cost of the port:
+
+| File                      | What it supplies                                                             |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| `kg/storage/rn-driver.ts` | Persistence. Wraps the memory driver and mirrors it to AsyncStorage.         |
+| `lib/host.ts`             | `AppState` for suspend/resume, so a backgrounded app flushes its queue.      |
+| `lib/store.tsx`           | The composition root — the one place a driver, a host and a clock are named. |
+
+`lib/store-context.ts` is now an eight-line shim. It could be, because the
+reducer it replaced had been written against the same hook surface — `all`,
+`byId`, `add`, `update`, `remove`, `setStage`, name for name — so **not one
+screen changed**. The 962-line reducer is gone.
+
+### What changed for the user
+
+**Records survive.** A restart was the reset button; it is not any more. Verified
+by ticking a reminder off, killing the process, and reopening to find it still
+ticked.
+
+**The clock is real.** `TODAY` was `'2026-10-12'` in the fixtures, and sixty call
+sites imported it. It now lives in `lib/today.ts` and reads the device, with the
+seed's authored dates shifted by a whole number of days at seed time — so a
+record created on Tuesday says "today" rather than being measured against an
+October that never moves.
+
+**Every write goes through a named tool** (`application.stage.set`,
+`vault.file.move`, …) with a before-image, which is what makes undo and the
+journal real rather than per-screen bookkeeping.
+
+### Two things this newly makes possible, not yet built
+
+The audit log and its undo-the-newest were listed above as impossible here
+because this app had no journal. It has one now — `kg/repo/journal.ts` came
+across with everything else — so the Settings panel web has is a UI job rather
+than an architectural one. Same for the first-run "demo or empty" choice:
+`boot()` reports `first-run` and takes a `dataSet`, and nothing reads it yet.
+
+### Two caveats worth stating
+
+`structuredClone` is a browser global Hermes does not have, and the storage layer
+clones every row through it. `lib/polyfills.ts` supplies a JSON round-trip,
+guarded, and imported before anything in `src/kg` evaluates.
+
+The kg **tests did not come across** — 22 files that import `vitest`, which this
+app has no runner for. The layer is covered on the web side and unchanged here,
+but "unchanged" is an argument, not a test run.
 
 ---
 
@@ -269,26 +329,75 @@ instead of under three.
 
 ---
 
+## Journey parity with the web app
+
+Audited screen by screen against `web/` on 2026-08-11. Every destination the web
+app has, this has: the same five tab-bar screens, the same five Vault tools, the
+same stack behind More, the same dashboard panels, the same application-detail
+sections, and the same per-page option switches.
+
+Four journeys the web app had and this did not, now closed:
+
+| Journey                      | What was missing                                                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Go to a screen by name**   | The ⌘K palette ends with a "Go to" group. Search had records but no destinations, so typing "statistics" found nothing.                     |
+| **Open a document**          | Tapping a file went straight into the edit form — there was no way to _look at_ one. Now a viewer, with editing beside it.                  |
+| **Ask the graph a question** | Only the fixed examples. Now a pattern builder — kind, has/missing, which link, other end — the same four parts the web builder has.        |
+| **The guide is four pages**  | One screen against the web's overview / screens / graph / built-with. Now the same four, behind a segmented control rather than a nav rail. |
+
+Two the web app has that this deliberately does not:
+
+- **The audit log.** Settings shows every write, newest first, with an undo on
+  the newest. It reads the graph store's journal; this app's store is a reducer
+  with no journal, so the panel would have nothing to list. Building one is
+  functional work, not mock work.
+- **Storage diagnostics.** They report on browser storage — quota, what was
+  recovered, what was pruned. Nothing here is persisted, so there is nothing to
+  diagnose. The Runtime panel under More says that plainly instead.
+
+And one difference of shape rather than coverage: the web app drags calendar
+chips between days. That is still a stage menu and a date picker here, for the
+reason in the table above — a 4px drop target on a 44pt cell is not a gesture a
+thumb can aim. The board's drag exists because a 250pt column is.
+
+---
+
 ## What is honest about being unfinished
 
-The same three claims the web app is careful about, kept careful here:
+Three things that used to be listed here are no longer placeholders, and the
+copy on every screen that claimed otherwise has been corrected:
 
-- **The assistant has no model.** Every reply is one of five worked examples and
-  carries a badge saying so. The fallback says it is a canned answer rather than
-  improvising a plausible paragraph.
-- **The scout scores nothing.** Pipelines are writable and postings are savable;
-  the banner says matching is paused, and the seeded fit scores are labelled
-  "example scores".
-- **Nothing is fetched or written to disk.** Saving a posting keeps the URL and
-  the employer guessed from it. Recording a document keeps a name, a size and a
-  type. Export copies the store to the clipboard, because a phone has no
-  downloads folder this build has asked permission for. Transfer walks through
-  the handoff and says, under the pairing code, that no connection is open.
+- **The assistant answers.** Point it at any OpenAI-compatible server in
+  Settings — Ollama, LM Studio, vLLM, one tap each — and it sends a real
+  request, with the last few turns for context. Without one it still falls back
+  to the five worked examples, still badged. A failed request says what failed;
+  it never substitutes a canned answer for a real one silently. This is the only
+  network call the app can make, and it goes to the address you typed.
+- **The scout scores.** Fit percentages are computed on the device against the
+  match terms, target roles and regions on your profile, weighted in that order,
+  and every row says what it matched on. A profile with nothing in it produces
+  "not scored" rather than a confident number over nothing.
+- **Documents are real files.** Choosing one copies it into the app's own
+  storage and the record keeps the path, so a row opens in whatever handles the
+  type. Nothing reads what is inside it. Typing a record by hand still works and
+  is not a lesser path — a document on a laptop is a real thing to track, and the
+  viewer tells the two kinds apart rather than treating one as a broken version
+  of the other.
+
+What is still honestly absent:
+
+- **The scout finds nothing on its own.** It scores what is in front of it;
+  nothing goes out and crawls a board, so the feed holds only what you put in it.
+- **The localhost bridge is not built.** Settings describes it and the repo's
+  `server/` directory is empty. Nothing tries to reach it.
+- **Transfer moves nothing.** It walks the handoff and says, under the pairing
+  code, that no connection is open. Export to the clipboard is the working route
+  between devices.
 
 The graph is a smaller model than the web's: the same node types and
-relationships, laid out by type rather than by a force simulation, with six
-canned cross-collection queries instead of a visual query builder. A force
-solver on a 390pt canvas with 120 nodes settles into a hairball.
+relationships, laid out by type rather than by a force simulation. The visual
+query builder is here now, alongside the six canned questions. A force solver on
+a 390pt canvas with 120 nodes settles into a hairball.
 
 ---
 

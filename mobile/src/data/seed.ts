@@ -6,7 +6,8 @@
  * user makes lives in that reducer instead.
  */
 
-import { TODAY, daysBetween, shortDate } from '@/data/timeline'
+import { daysBetween, shortDate } from '@/data/timeline'
+import { TODAY } from '@/lib/today'
 
 export type Urgency = 'red' | 'amber' | 'gray'
 

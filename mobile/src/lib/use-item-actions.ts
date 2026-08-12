@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { TODAY, addDays, shortDate } from '@/data/timeline'
+import { addDays, shortDate } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
+import { TODAY } from '@/lib/today'
 import { useLabels } from '@/lib/labels-context'
 import { useSheets } from '@/lib/sheets-context'
 import { useTimeline } from '@/lib/store-context'

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TODAY } from '@/lib/today'
 import { StyleSheet, View } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
@@ -69,7 +70,7 @@ export function ProfileScreen() {
     update({ text: draft })
     toast({
       title: 'Profile saved',
-      description: 'Kept for this visit — the profile is not written to disk yet.',
+      description: 'Saved on this device.',
     })
   }
 
@@ -284,7 +285,7 @@ export function ProfileScreen() {
                       </Txt>
                     </View>
                     <Txt size="xs" tone="muted">
-                      {f.size} · saved {agoLabel(f.savedOn)}
+                      {f.size} · saved {agoLabel(f.savedOn, TODAY)}
                     </Txt>
                     {f.note ? (
                       <Txt size="xs" tone="muted" numberOfLines={2}>

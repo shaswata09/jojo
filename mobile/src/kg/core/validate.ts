@@ -1,0 +1,430 @@
+/**
+ * L1 — unknown -> StoredNode | Diagnostic[]. THE single trust boundary cast.
+ *
+ * Everything read off disk passes through here exactly once. A rejection is never
+ * dropped silently: it is logged with the offending record id, counted in
+ * Settings' Diagnostics, and the corrupt path offers to export what could be read
+ * before anything else. Local-first means a silently skipped node is lost work
+ * with no server backup and no undo.
+ *
+ * Two casts live in this file and nowhere else in the codebase. Grep for
+ * `as StoredNode` and `as StoredEdge`: if either appears in a second module,
+ * some other file has decided it knows what a stored row is, and the guarantee
+ * that a malformed record can only enter through a counted diagnostic is gone.
+ */
+
+import type { NodePropsByType, NodeType, Rel, StoredEdge, StoredNode } from './model'
+import {
+  EDGE_SCHEMA,
+  FILE_BUCKET_VALUES,
+  FILE_KIND_VALUES,
+  LABEL_TONE_VALUES,
+  LINK_CATEGORY_VALUES,
+  NODE_TYPES,
+  OUTCOME_VALUES,
+  RELS,
+  ROLES,
+  SNIPPET_TAG_VALUES,
+  SOURCES,
+  STAGE_VALUES,
+  TIMELINE_KIND_VALUES,
+  URGENCY_VALUES,
+  edgeIsWellTyped,
+} from './model'
+import { edgeId, parseNodeId, typeOfId } from './ref'
+import type { Schema } from './schema'
+import { formatIssues, s } from './schema'
+
+/* ------------------------------- diagnostics ------------------------------ */
+
+/**
+ * What was skipped and why, in the user's words where possible.
+ *
+ * `id` is the record's own id when it could be read and null when the row was
+ * too broken to have one — a row with no id is the case that most needs saying
+ * out loud, because it is invisible everywhere else.
+ */
+export type Diagnostic = {
+  store: 'nodes' | 'edges'
+  id: string | null
+  message: string
+}
+
+const diagnostic = (
+  store: Diagnostic['store'],
+  id: string | null,
+  message: string,
+): Diagnostic => ({
+  store,
+  id,
+  message,
+})
+
+export type Validated<T> = { ok: true; value: T } | { ok: false; diagnostics: Diagnostic[] }
+
+/* ------------------------------ props schemas ----------------------------- */
+
+const offerSchema = s.object({
+  respondBy: s.isoDate({ label: 'Respond by' }),
+  comp: s.optional(s.string({ label: 'Compensation' })),
+  note: s.string({ label: 'Note', multiline: true }),
+})
+
+const profileTextSchema = s.object({
+  fullName: s.string({ label: 'Full name' }),
+  position: s.string({ label: 'Position' }),
+  location: s.string({ label: 'Location' }),
+  email: s.string({ label: 'Email' }),
+  website: s.string({ label: 'Website' }),
+  scholar: s.string({ label: 'Scholar' }),
+  github: s.string({ label: 'GitHub' }),
+  linkedin: s.string({ label: 'LinkedIn' }),
+  targetRoles: s.string({ label: 'Target roles' }),
+  regions: s.string({ label: 'Regions' }),
+})
+
+/**
+ * One schema per node type, and the palette generates its form from these.
+ *
+ * `slug` is `min: 1` everywhere it appears: a blank slug passes a `typeof`
+ * check, then collides with every other blank one in the `[type, slug]` index,
+ * so the second record to arrive silently replaces the first.
+ */
+const slug = s.string({ min: 1, label: 'Slug' })
+
+export const NODE_PROP_SCHEMAS = {
+  application: s.object({
+    slug,
+    role: s.string({ label: 'Role' }),
+    note: s.string({ label: 'Note', multiline: true }),
+    roleTag: s.enum(ROLES, { label: 'Role type' }),
+    stage: s.enum(STAGE_VALUES, { label: 'Stage' }),
+    flagged: s.optional(s.boolean({ label: 'Flagged' })),
+    lastAction: s.string({ label: 'Last action' }),
+    lastActionAt: s.instant({ label: 'Last action at' }),
+    source: s.optional(s.enum(SOURCES, { label: 'Source' })),
+    location: s.optional(s.string({ label: 'Location' })),
+    comp: s.optional(s.string({ label: 'Compensation' })),
+    url: s.optional(s.string({ label: 'Posting link' })),
+    appliedOn: s.optional(s.isoDate({ label: 'Applied on' })),
+    submittedOn: s.optional(s.isoDate({ label: 'Submitted on' })),
+    firstReplyOn: s.optional(s.isoDate({ label: 'First reply on' })),
+    outcome: s.optional(s.enum(OUTCOME_VALUES, { label: 'Outcome' })),
+    offer: s.optional(offerSchema),
+  }),
+  organisation: s.object({ slug, name: s.string({ min: 1, label: 'Name' }) }),
+  timelineItem: s.object({
+    slug,
+    title: s.string({ min: 1, label: 'Title' }),
+    detail: s.optional(s.string({ label: 'Detail' })),
+    note: s.optional(s.string({ label: 'Note', multiline: true })),
+    date: s.isoDate({ label: 'Date' }),
+    startMins: s.optional(s.number({ min: 0, max: 1439, int: true, label: 'Starts at' })),
+    durationMins: s.optional(s.number({ min: 0, int: true, label: 'Lasts' })),
+    kind: s.enum(TIMELINE_KIND_VALUES, { label: 'Kind' }),
+    urgency: s.enum(URGENCY_VALUES, { label: 'Urgency' }),
+    remind: s.boolean({ label: 'Remind me' }),
+    completedOn: s.optional(s.isoDate({ label: 'Completed on' })),
+    location: s.optional(s.string({ label: 'Location' })),
+    joinUrl: s.optional(s.string({ label: 'Join link' })),
+  }),
+  keyword: s.object({
+    slug,
+    name: s.string({ min: 1, label: 'Name' }),
+    tone: s.enum(LABEL_TONE_VALUES, { label: 'Colour' }),
+  }),
+  link: s.object({
+    slug,
+    title: s.string({ min: 1, label: 'Title' }),
+    url: s.string({ min: 1, label: 'Link' }),
+    category: s.enum(LINK_CATEGORY_VALUES, { label: 'Category' }),
+    note: s.optional(s.string({ label: 'Note', multiline: true })),
+    savedOn: s.isoDate({ label: 'Saved on' }),
+  }),
+  file: s.object({
+    slug,
+    name: s.string({ min: 1, label: 'Name' }),
+    kind: s.enum(FILE_KIND_VALUES, { label: 'Kind' }),
+    bucket: s.enum(FILE_BUCKET_VALUES, { label: 'Bucket' }),
+    size: s.string({ label: 'Size' }),
+    savedOn: s.isoDate({ label: 'Saved on' }),
+    note: s.optional(s.string({ label: 'Note', multiline: true })),
+  }),
+  snippet: s.object({
+    slug,
+    title: s.string({ min: 1, label: 'Title' }),
+    tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Tag' }),
+    body: s.string({ label: 'Body', multiline: true }),
+  }),
+  posting: s.object({
+    slug,
+    title: s.string({ min: 1, label: 'Title' }),
+    url: s.string({ label: 'Link' }),
+    savedOn: s.isoDate({ label: 'Saved on' }),
+    size: s.string({ label: 'Size' }),
+  }),
+  match: s.object({
+    slug,
+    role: s.string({ min: 1, label: 'Role' }),
+    detail: s.string({ label: 'Detail' }),
+    fit: s.number({ min: 0, max: 100, int: true, label: 'Fit' }),
+  }),
+  pipeline: s.object({
+    slug,
+    name: s.string({ min: 1, label: 'Name' }),
+    source: s.string({ label: 'Source' }),
+    schedule: s.string({ label: 'Schedule' }),
+    filter: s.string({ label: 'Filter' }),
+    enabled: s.boolean({ label: 'Enabled' }),
+  }),
+  profile: s.object({
+    text: profileTextSchema,
+    matchTerms: s.array(s.string({ min: 1 }), { label: 'Match terms' }),
+    includeAcademia: s.boolean({ label: 'Include academia' }),
+    includeIndustry: s.boolean({ label: 'Include industry' }),
+  }),
+} satisfies { [T in NodeType]: Schema<NodePropsByType[T]> }
+
+const NODE_TYPE_SET: ReadonlySet<string> = new Set<string>(NODE_TYPES)
+const REL_SET: ReadonlySet<string> = new Set<string>(RELS)
+
+const isNodeType = (value: string): value is NodeType => NODE_TYPE_SET.has(value)
+const isRel = (value: string): value is Rel => REL_SET.has(value)
+
+function propSchemaFor(type: NodeType): Schema<unknown> {
+  return NODE_PROP_SCHEMAS[type]
+}
+
+/* -------------------------------- envelopes ------------------------------- */
+
+const isRow = (row: unknown): row is Record<string, unknown> =>
+  typeof row === 'object' && row !== null && !Array.isArray(row)
+
+const readString = (row: Record<string, unknown>, key: string): string | null => {
+  const value = row[key]
+  return typeof value === 'string' ? value : null
+}
+
+/**
+ * A node row off disk.
+ *
+ * The id and the `type` field are checked against each other rather than
+ * trusted separately. They are two spellings of one fact — 'app:0192…' already
+ * says application — and a row where they disagree is a row written by a bug,
+ * which is worth catching here rather than three layers up where the projection
+ * hands an application's props to a keyword's renderer.
+ */
+export function validateNode(row: unknown): Validated<StoredNode> {
+  if (!isRow(row)) return { ok: false, diagnostics: [diagnostic('nodes', null, 'Not a record.')] }
+
+  const id = readString(row, 'id')
+  if (!id) return { ok: false, diagnostics: [diagnostic('nodes', null, 'Has no id.')] }
+
+  const parsed = parseNodeId(id)
+  if (!parsed) {
+    return { ok: false, diagnostics: [diagnostic('nodes', id, 'Its id is not a jojo id.')] }
+  }
+
+  const type = readString(row, 'type')
+  if (!type || !isNodeType(type)) {
+    return { ok: false, diagnostics: [diagnostic('nodes', id, `Unknown record type '${type}'.`)] }
+  }
+  if (type !== parsed.type) {
+    return {
+      ok: false,
+      diagnostics: [
+        diagnostic('nodes', id, `Says it is a ${type} but its id says ${parsed.type}.`),
+      ],
+    }
+  }
+
+  const createdAt = readString(row, 'createdAt')
+  const updatedAt = readString(row, 'updatedAt')
+  if (!createdAt || !updatedAt) {
+    return { ok: false, diagnostics: [diagnostic('nodes', id, 'Is missing its timestamps.')] }
+  }
+
+  const props = propSchemaFor(parsed.type).parse(row['props'], '')
+  if (!props.ok) {
+    return {
+      ok: false,
+      diagnostics: [diagnostic('nodes', id, `Could not be read — ${formatIssues(props.issues)}`)],
+    }
+  }
+
+  // The trust boundary. Every field above has been checked; `props` came back
+  // from the schema for exactly the type the id declares.
+  return {
+    ok: true,
+    value: { id, type: parsed.type, props: props.value, createdAt, updatedAt } as StoredNode,
+  }
+}
+
+/**
+ * An edge row off disk.
+ *
+ * `EDGE_SCHEMA` is checked here and not left to a later integrity pass, because
+ * type-prefixed ids make it a pure question: 'kw:…|TAGS|app:…' carries both
+ * endpoint types in the key itself. An edge the schema forbids has no
+ * projection that will ever read it, so keeping it would mean a row that exists,
+ * survives export and renders nowhere.
+ */
+export function validateEdge(row: unknown): Validated<StoredEdge> {
+  if (!isRow(row)) return { ok: false, diagnostics: [diagnostic('edges', null, 'Not a record.')] }
+
+  const id = readString(row, 'id')
+  if (!id) return { ok: false, diagnostics: [diagnostic('edges', null, 'Has no id.')] }
+
+  const from = readString(row, 'from')
+  const to = readString(row, 'to')
+  const rel = readString(row, 'rel')
+  if (!from || !to || !rel || !isRel(rel)) {
+    return { ok: false, diagnostics: [diagnostic('edges', id, 'Does not name two records.')] }
+  }
+
+  const fromType = typeOfId(from)
+  const toType = typeOfId(to)
+  if (!fromType || !toType) {
+    const message = 'Points at something that is not a jojo id.'
+    return { ok: false, diagnostics: [diagnostic('edges', id, message)] }
+  }
+
+  if (id !== edgeId(from, rel, to)) {
+    return { ok: false, diagnostics: [diagnostic('edges', id, 'Its id disagrees with its ends.')] }
+  }
+
+  if (!edgeIsWellTyped(rel, fromType, toType)) {
+    const message = `A ${fromType} cannot ${EDGE_SCHEMA[rel].label} a ${toType}.`
+    return { ok: false, diagnostics: [diagnostic('edges', id, message)] }
+  }
+
+  const createdAt = readString(row, 'createdAt')
+  if (!createdAt) {
+    return { ok: false, diagnostics: [diagnostic('edges', id, 'Is missing its timestamp.')] }
+  }
+
+  const rawProps = row['props']
+  const props = rawProps === undefined ? {} : rawProps
+  if (!isRow(props)) {
+    return { ok: false, diagnostics: [diagnostic('edges', id, 'Its details could not be read.')] }
+  }
+
+  return { ok: true, value: { id, rel, from, to, props, createdAt } as StoredEdge }
+}
+
+/* -------------------------------- the batch ------------------------------- */
+
+export type ValidatedRows = {
+  nodes: StoredNode[]
+  edges: StoredEdge[]
+  /** Never empty and never ignored: every one of these is a record not shown. */
+  skipped: Diagnostic[]
+}
+
+/**
+ * The whole store, node rows first.
+ *
+ * Edges are filtered against the nodes that survived, which is the graph
+ * spelling of `addEdge`'s both-ends guard in `lib/graph/build.ts`: an edge with
+ * a missing end would render as a
+ * line running off into empty space, which reads as the layout having broken
+ * rather than as a record having gone.
+ */
+export function validateRows(
+  nodeRows: readonly unknown[],
+  edgeRows: readonly unknown[],
+): ValidatedRows {
+  const nodes: StoredNode[] = []
+  const edges: StoredEdge[] = []
+  const skipped: Diagnostic[] = []
+  const byId = new Map<string, StoredNode>()
+
+  for (const row of nodeRows) {
+    const parsed = validateNode(row)
+    if (!parsed.ok) {
+      skipped.push(...parsed.diagnostics)
+      continue
+    }
+    // Last one wins, and the loser is reported. A duplicate primary key cannot
+    // come out of IndexedDB, so this only fires on an import or a merge — the
+    // two paths where silently keeping one of two records is worst.
+    if (byId.has(parsed.value.id)) {
+      skipped.push(diagnostic('nodes', parsed.value.id, 'Appeared twice; the later one was kept.'))
+    }
+    byId.set(parsed.value.id, parsed.value)
+  }
+  nodes.push(...byId.values())
+
+  const seenEdge = new Set<string>()
+  for (const row of edgeRows) {
+    const parsed = validateEdge(row)
+    if (!parsed.ok) {
+      skipped.push(...parsed.diagnostics)
+      continue
+    }
+    const edge = parsed.value
+    if (seenEdge.has(edge.id)) continue
+    if (!byId.has(edge.from) || !byId.has(edge.to)) {
+      skipped.push(diagnostic('edges', edge.id, 'Joins a record that is not there.'))
+      continue
+    }
+    seenEdge.add(edge.id)
+    edges.push(edge)
+  }
+
+  return { nodes, edges, skipped }
+}
+
+/* ------------------------------- invariants ------------------------------- */
+
+/**
+ * The dev-only integrity check R-2 asks for, run on boot behind a flag.
+ *
+ * It answers the question a UUID migration makes urgent and nothing else can:
+ * did the seed compiler resolve every slug reference, or did it write an edge
+ * to an id that was never minted? Cheap enough to run every boot at this scale;
+ * kept separate from `validateRows` because a violation here is a bug in jojo,
+ * not a corrupt store, and the two want different recoveries.
+ */
+export function checkInvariants(
+  nodes: readonly StoredNode[],
+  edges: readonly StoredEdge[],
+): Diagnostic[] {
+  const problems: Diagnostic[] = []
+  const byId = new Map(nodes.map((n) => [n.id, n]))
+
+  const slugs = new Set<string>()
+  for (const node of nodes) {
+    // Narrowed on the discriminant rather than through `hasSlug`: a guard over
+    // `node.type` alone tells the compiler nothing about `node.props`, and
+    // reading `props.slug` off the profile branch is exactly the mistake this
+    // loop exists to catch in the data.
+    if (node.type === 'profile') continue
+
+    const key = `${node.type}\0${node.props.slug}`
+    if (slugs.has(key)) {
+      const message = `Two ${node.type} records share '${node.props.slug}'.`
+      problems.push(diagnostic('nodes', node.id, message))
+    }
+    slugs.add(key)
+  }
+
+  const singles = new Set<string>()
+  for (const edge of edges) {
+    if (!byId.has(edge.from) || !byId.has(edge.to)) {
+      problems.push(diagnostic('edges', edge.id, 'Joins a record that is not there.'))
+      continue
+    }
+    if (EDGE_SCHEMA[edge.rel].fromCardinality !== 'one') continue
+
+    const key = `${edge.from}\0${edge.rel}`
+    if (singles.has(key)) {
+      problems.push(
+        diagnostic('edges', edge.id, `${edge.rel} allows one target and this record has two.`),
+      )
+    }
+    singles.add(key)
+  }
+
+  return problems
+}

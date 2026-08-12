@@ -1,13 +1,14 @@
 import { StyleSheet, View } from 'react-native'
+import { TODAY } from '@/lib/today'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
-import { Columns, Screen } from '@/components/ui/Screen'
+import { Columns } from '@/components/ui/Screen'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { TODAY } from '@/data/timeline'
+
 import { useLabels } from '@/lib/labels-context'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
@@ -70,7 +71,7 @@ type Step = {
   onPress: () => void
 }
 
-export function GuideScreen() {
+export function GuideOverview() {
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { open } = useSheets()
@@ -144,10 +145,7 @@ export function GuideScreen() {
   const doneCount = trackable.filter((s) => s.done).length
 
   return (
-    <Screen
-      title="How to use jojo"
-      subtitle="Everything runs on your device. Start simple, add power when you want it."
-    >
+    <>
       {LAYERS.map((l) => (
         <Panel key={l.name} style={l.active ? { borderColor: c.accentBorder } : undefined}>
           <View style={s.row}>
@@ -261,13 +259,13 @@ export function GuideScreen() {
             </Txt>
           </View>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[2] }}>
-            This build keeps everything in memory for the session, so a restart starts from the demo
-            data again — Settings is where you switch between that and an empty store, and where the
-            JSON export lives.
+            Your records are saved on this device and survive a restart. Nothing is sent anywhere —
+            no account, no sync, no network call. Settings is where you clear them, reload the demo
+            data, or export a copy to the clipboard.
           </Txt>
         </Panel>
       </Columns>
-    </Screen>
+    </>
   )
 }
 

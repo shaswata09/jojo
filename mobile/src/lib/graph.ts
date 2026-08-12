@@ -1,3 +1,4 @@
+import type { Palette } from '@/theme/tokens'
 /**
  * The records you already have, as the network they actually are.
  *
@@ -86,13 +87,13 @@ export type Graph = {
 export const graphNodeId = (type: GraphNodeType, recordId: string) => `${type}:${recordId}`
 
 export type GraphInput = {
-  applications: Application[]
-  timeline: TimelineItem[]
-  links: VaultLink[]
-  files: VaultFile[]
-  snippets: Snippet[]
-  postings: SavedPosting[]
-  matches: Match[]
+  applications: readonly Application[]
+  timeline: readonly TimelineItem[]
+  links: readonly VaultLink[]
+  files: readonly VaultFile[]
+  snippets: readonly Snippet[]
+  postings: readonly SavedPosting[]
+  matches: readonly Match[]
   labelsOf: (recordId: string) => Label[]
 }
 
@@ -262,3 +263,96 @@ export const QUERY_EXAMPLES: QueryExample[] = [
       ),
   },
 ]
+
+/* ----------------------------- pattern queries ---------------------------- */
+
+/**
+ * A question built from parts rather than picked off a list.
+ *
+ * The examples above are fixed questions with the answer hard-coded into a
+ * `run`. This is the other half the web app has and this did not: pick what you
+ * are looking for, whether it has a relationship or is missing one, and what
+ * sits on the other end. Three dropdowns cover every join the seven-list
+ * version of this app cannot do at all.
+ *
+ * `'any'` on either end is not a wildcard for tidiness — it is what makes
+ * "anything with no keyword on it" askable, which is the query people actually
+ * want and the one a fixed list never quite has.
+ */
+export type Quantifier = 'has' | 'missing'
+
+export type PatternQuery = {
+  start: GraphNodeType | 'any'
+  quantifier: Quantifier
+  rel: GraphRel | 'any'
+  end: GraphNodeType | 'any'
+}
+
+export type PatternRow = {
+  node: GraphNode
+  /** What it matched on. Empty for `missing` — that is the point of asking. */
+  matched: GraphNode[]
+}
+
+export const DEFAULT_PATTERN: PatternQuery = {
+  start: 'application',
+  quantifier: 'missing',
+  rel: 'any',
+  end: 'item',
+}
+
+/**
+ * The question in words, so the controls above it are legible.
+ *
+ * The web app also prints a pseudo-Cypher line beside this. Left out here: it
+ * needs a monospace line the width of a phone does not have, and its whole job
+ * was to teach the shape to someone who already reads query languages.
+ */
+export function describePattern(q: PatternQuery): string {
+  const start = q.start === 'any' ? 'Anything' : `${NODE_TYPE_LABEL[q.start]}s`
+  const rel = q.rel === 'any' ? 'linked to' : REL_LABEL[q.rel]
+  const end = q.end === 'any' ? 'anything' : `a ${NODE_TYPE_LABEL[q.end].toLowerCase()}`
+  return q.quantifier === 'has' ? `${start} ${rel} ${end}` : `${start} not ${rel} ${end}`
+}
+
+/** Runs the pattern over the graph. Pure, and cheap enough to run per keystroke. */
+export function runPattern(graph: Graph, q: PatternQuery): PatternRow[] {
+  const pool = q.start === 'any' ? graph.nodes : graph.nodes.filter((n) => n.type === q.start)
+
+  return pool
+    .map((node) => {
+      const matched = incidentEdges(graph, node.id)
+        .filter((e) => (q.rel === 'any' ? true : e.rel === q.rel))
+        .map((e) => graph.byId.get(otherEnd(e, node.id)))
+        .filter((n): n is GraphNode => Boolean(n))
+        .filter((n) => (q.end === 'any' ? true : n.type === q.end))
+      return { node, matched }
+    })
+    .filter((row) => (q.quantifier === 'has' ? row.matched.length > 0 : row.matched.length === 0))
+}
+
+/* --------------------------------- visuals -------------------------------- */
+
+/**
+ * A colour per node type.
+ *
+ * Drawn from the chart-series namespace rather than the status one, so a red
+ * node is never ambiguous between "overdue" and "type 4". Ten types over five
+ * series means two types share a hue; they are ordered so the pairs are never
+ * adjacent in the legend and never joined by an edge in practice.
+ */
+export function typeColor(type: GraphNodeType, c: Palette) {
+  const map: Record<GraphNodeType, string> = {
+    application: c.series[0],
+    org: c.series[3],
+    role: c.series[4],
+    item: c.series[2],
+    file: c.series[1],
+    link: c.info,
+    snippet: c.series[4],
+    posting: c.series[1],
+    match: c.series[3],
+    keyword: c.text3,
+  }
+  return map[type]
+}

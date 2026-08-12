@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
@@ -10,8 +11,9 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { s } from '@/theme/styles'
 import { Txt } from '@/components/ui/Text'
 import { STAGE_LABEL, displayName } from '@/data/seed'
-import { TODAY, shortDate, whenLabel } from '@/data/timeline'
+import { shortDate, whenLabel } from '@/data/timeline'
 import { CREATE_ACTIONS, useRunCreateAction } from '@/lib/create-actions'
+import { DESTINATIONS } from '@/lib/destinations'
 import { matchesQuery } from '@/lib/search'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
@@ -141,6 +143,21 @@ export function SearchScreen() {
         detail: `${m.fit}% fit`,
         group: 'Job scout',
         onPress: () => navigation.navigate('JobScout'),
+      })
+    }
+
+    // Last, and deliberately so. A screen matches on a short generic word far
+    // more often than a record does — "calendar" would otherwise bury the two
+    // interviews you were looking for under the page they live on.
+    for (const d of DESTINATIONS) {
+      if (!hit(d.label, d.hint)) continue
+      out.push({
+        id: d.id,
+        icon: d.icon,
+        title: d.label,
+        detail: d.hint,
+        group: 'Go to',
+        onPress: () => d.go(navigation),
       })
     }
 

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { TODAY } from '@/lib/today'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -66,7 +67,10 @@ export function StatisticsScreen() {
   const share = (n: number, of: number) => (of > 0 ? Math.round((n / of) * 100) : 0)
 
   const health = useMemo(
-    () => searchHealthFor({ applications: all, timeline }).filter((a) => a.score !== null),
+    () =>
+      searchHealthFor({ applications: all, timeline, today: TODAY }).filter(
+        (a) => a.score !== null,
+      ),
     [all, timeline],
   )
   const ranked = [...health].sort((a, b) => (a.score ?? 0) - a.target - ((b.score ?? 0) - b.target))

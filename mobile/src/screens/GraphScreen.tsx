@@ -7,49 +7,32 @@ import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Screen } from '@/components/ui/Screen'
+import { PatternBuilder } from '@/components/common/PatternBuilder'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import {
   GRAPH_NODE_TYPES,
   NODE_TYPE_LABEL,
+  DEFAULT_PATTERN,
+  typeColor,
   QUERY_EXAMPLES,
+  describePattern,
+  runPattern,
   REL_LABEL,
   buildGraph,
   incidentEdges,
   otherEnd,
 } from '@/lib/graph'
-import type { GraphNode, GraphNodeType } from '@/lib/graph'
+import type { GraphNode, GraphNodeType, PatternQuery } from '@/lib/graph'
 import { useLabels } from '@/lib/labels-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
-import type { Palette } from '@/theme/tokens'
 import { radius, space } from '@/theme/tokens'
 
-/**
- * A colour per node type.
- *
- * Drawn from the chart-series namespace rather than the status one, so a red
- * node is never ambiguous between "overdue" and "type 4". Ten types over five
- * series means two types share a hue; they are ordered so the pairs are never
- * adjacent in the legend and never joined by an edge in practice.
- */
-function typeColor(type: GraphNodeType, c: Palette) {
-  const map: Record<GraphNodeType, string> = {
-    application: c.series[0],
-    org: c.series[3],
-    role: c.series[4],
-    item: c.series[2],
-    file: c.series[1],
-    link: c.info,
-    snippet: c.series[4],
-    posting: c.series[1],
-    match: c.series[3],
-    keyword: c.text3,
-  }
-  return map[type]
-}
+/** Enough to see the shape of the answer without turning a panel into a list view. */
+const PATTERN_SHOWN = 8
 
 export function GraphScreen() {
   const c = useColors()
@@ -71,6 +54,7 @@ export function GraphScreen() {
   const [hidden, setHidden] = useState<ReadonlySet<GraphNodeType>>(() => new Set())
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [queryId, setQueryId] = useState<string | null>(null)
+  const [pattern, setPattern] = useState<PatternQuery>(DEFAULT_PATTERN)
 
   const counts = useMemo(() => {
     const map = new Map<GraphNodeType, number>()
@@ -134,6 +118,7 @@ export function GraphScreen() {
   const selected = selectedId ? (graph.byId.get(selectedId) ?? null) : null
   const query = QUERY_EXAMPLES.find((q) => q.id === queryId)
   const result = query ? query.run(graph) : null
+  const patternRows = useMemo(() => runPattern(graph, pattern), [graph, pattern])
 
   const toggleType = (type: GraphNodeType) =>
     setHidden((current) => {
@@ -342,6 +327,64 @@ export function GraphScreen() {
             />
           ))}
         </View>
+
+        {/* The examples are the fast path; this is the one that makes the graph
+            worth having. A fixed list can only answer questions somebody
+            thought of, and "files with no keyword on them" was never on it. */}
+        <Divider style={{ marginVertical: space[3] }} />
+        <PanelTitle hint="build your own">Ask something else</PanelTitle>
+        <PatternBuilder
+          value={pattern}
+          onChange={(next) => {
+            setPattern(next)
+            // Two questions on screen at once would leave the highlighted nodes
+            // ambiguous about which one they are answering.
+            setQueryId(null)
+          }}
+        />
+        <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>
+          {describePattern(pattern)}
+        </Txt>
+        <Txt size="xs" tone="muted" style={{ marginTop: space[1] }}>
+          {patternRows.length === 0
+            ? 'Nothing matches this one.'
+            : `${patternRows.length} ${patternRows.length === 1 ? 'record' : 'records'}`}
+        </Txt>
+        {patternRows.length > 0 ? (
+          <View style={{ marginTop: space[2] }}>
+            {patternRows.slice(0, PATTERN_SHOWN).map((row) => (
+              <Pressable
+                key={row.node.id}
+                accessibilityRole="button"
+                onPress={() => setSelectedId(row.node.id)}
+                style={styles.edgeRow}
+              >
+                <View
+                  style={[
+                    styles.swatch,
+                    {
+                      backgroundColor: typeColor(row.node.type, c),
+                      borderColor: typeColor(row.node.type, c),
+                    },
+                  ]}
+                />
+                <Txt size="sm" style={s.fill} numberOfLines={1}>
+                  {row.node.label}
+                </Txt>
+                {row.matched.length > 0 ? (
+                  <Chip size="sm" tone="gray">
+                    {String(row.matched.length)}
+                  </Chip>
+                ) : null}
+              </Pressable>
+            ))}
+            {patternRows.length > PATTERN_SHOWN ? (
+              <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
+                and {patternRows.length - PATTERN_SHOWN} more
+              </Txt>
+            ) : null}
+          </View>
+        ) : null}
 
         {query && result ? (
           <View style={{ marginTop: space[4] }}>

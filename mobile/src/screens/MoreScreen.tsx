@@ -1,4 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native'
+import type { PersistenceHealth } from '@/kg/repo/repository'
+import { useStoreStatus } from '@/kg/react/status-context'
+import { TODAY } from '@/lib/today'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -6,7 +9,7 @@ import { StatusDot } from '@/components/ui/Chip'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { TODAY, bucketOf } from '@/data/timeline'
+import { bucketOf } from '@/data/timeline'
 import { useScout, useTimeline } from '@/lib/store-context'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import type { RootStackParamList } from '@/navigation/types'
@@ -31,7 +34,26 @@ type Entry = {
  * tab bar could not hold, then the account and support pages, which every
  * design system treats as a different class.
  */
+/** Green while the queue is keeping up; amber the moment it is not. */
+const storageStatus = (health: PersistenceHealth): 'on' | 'warn' =>
+  health.state === 'idle' || health.state === 'writing' ? 'on' : 'warn'
+
+/** The write queue's state, in the panel's own vocabulary. */
+function storageMeta(health: PersistenceHealth): string {
+  switch (health.state) {
+    case 'idle':
+      return 'saved'
+    case 'writing':
+      return health.pending > 0 ? `saving ${String(health.pending)}` : 'saving'
+    case 'degraded':
+      return `${String(health.unsaved)} unsaved`
+    case 'off':
+      return 'not saving'
+  }
+}
+
 export function MoreScreen() {
+  const { health } = useStoreStatus()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { reminders } = useTimeline()
@@ -164,8 +186,11 @@ export function MoreScreen() {
           {[
             {
               label: 'Device storage',
-              meta: 'in memory',
-              status: 'warn' as const,
+              // Read from the write queue rather than asserted. A row that says
+              // "on this device" while writes are failing is the one lie this
+              // panel exists to prevent.
+              meta: storageMeta(health),
+              status: storageStatus(health),
               icon: 'database' as const,
             },
             {

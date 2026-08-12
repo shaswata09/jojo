@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react'
+import { useModelSettings } from '@/lib/model-settings-context'
+import { complete, isConfigured } from '@/lib/llm'
 import { StyleSheet, TextInput, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -138,34 +140,91 @@ function scriptFor(text: string): Script {
   return SCRIPTS.find((s) => s.cues.some((cue) => haystack.includes(cue))) ?? FALLBACK
 }
 
-type Message = { id: string; role: 'you' | 'assistant'; text: string; scriptId?: string }
+/**
+ * What the model is told it is. Short on purpose: a long persona spends the
+ * context window on itself, and this app's job is the user's own words back in
+ * a usable shape rather than a voice.
+ */
+const SYSTEM_PROMPT =
+  'You help someone manage a job search. Answer in plain prose, ready to paste into an email or a form. No preamble, no markdown headings, no offers to help further.'
+
+/** The last few turns, so a follow-up means something. */
+const history = (messages: readonly Message[]) =>
+  messages.slice(-6).map((m) => ({
+    role: m.role === 'you' ? ('user' as const) : ('assistant' as const),
+    content: m.text,
+  }))
+
+type Message = {
+  id: string
+  role: 'you' | 'assistant'
+  text: string
+  /** Set when the reply came from the worked-example list rather than a model. */
+  scriptId?: string
+  /** Set when a real request failed, so the row can say what went wrong. */
+  failed?: boolean
+}
 
 export function AssistantScreen() {
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [messages, setMessages] = useState<Message[]>([])
   const [prompt, setPrompt] = useState('')
+  const [pending, setPending] = useState(false)
+  const { settings } = useModelSettings()
+  const connected = isConfigured(settings)
   const nextId = useRef(0)
   const { copy, isCopied } = useCopy()
 
   const { addSnippet } = useVault()
   const { toast } = useToast()
 
-  const send = (text: string) => {
+  /**
+   * Two paths, and which one ran is always visible on the reply.
+   *
+   * With a model configured this is a real request to it. Without one — or when
+   * the request fails — it falls back to the worked example, carrying the badge
+   * that has been on every canned reply since the first build. What it must
+   * never do is present the fallback as a model's answer, which is why the
+   * failure case says what failed rather than quietly substituting.
+   */
+  const send = async (text: string) => {
     const clean = text.trim()
-    if (!clean) return
-    const script = scriptFor(clean)
+    if (!clean || pending) return
     const at = nextId.current
     nextId.current += 2
+    setPrompt('')
 
-    // Both messages in one write, and with no delay: a thinking pause would be
-    // theatre, and the reply was chosen before the question finished rendering.
+    if (!isConfigured(settings)) {
+      const script = scriptFor(clean)
+      setMessages((prev) => [
+        ...prev,
+        { id: `m${at}`, role: 'you', text: clean },
+        { id: `m${at + 1}`, role: 'assistant', text: script.reply, scriptId: script.id },
+      ])
+      return
+    }
+
+    setMessages((prev) => [...prev, { id: `m${at}`, role: 'you', text: clean }])
+    setPending(true)
+    const result = await complete(settings, [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...history(messages),
+      { role: 'user', content: clean },
+    ])
+    setPending(false)
+
     setMessages((prev) => [
       ...prev,
-      { id: `m${at}`, role: 'you', text: clean },
-      { id: `m${at + 1}`, role: 'assistant', text: script.reply, scriptId: script.id },
+      result.ok
+        ? { id: `m${at + 1}`, role: 'assistant', text: result.text }
+        : {
+            id: `m${at + 1}`,
+            role: 'assistant',
+            text: result.reason,
+            failed: true,
+          },
     ])
-    setPrompt('')
   }
 
   const saveToSnippets = (message: Message) => {
@@ -207,22 +266,39 @@ export function AssistantScreen() {
       {/* Stated once, at the top, in the same words the Job scout uses for the
           same fact. The per-reply badge below repeats it because a reply that
           scrolled away from this banner would otherwise read as a real answer. */}
-      <View
-        accessibilityRole="alert"
-        style={[s.banner, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
-      >
-        <Txt size="sm" tone="warning">
-          No model is connected, so every reply below is a worked example rather than an answer.
-          Point jojo at a local OpenAI-compatible server — vLLM, Ollama or LM Studio — in Settings.
-        </Txt>
-      </View>
+      {connected ? (
+        <View style={[s.banner, { backgroundColor: c.well, borderColor: c.hairline }]}>
+          <Txt size="sm" tone="secondary">
+            Answering with{' '}
+            <Txt size="sm" weight="medium" mono>
+              {settings.model}
+            </Txt>{' '}
+            at {settings.endpoint}. The request goes to that address and nowhere else.
+          </Txt>
+        </View>
+      ) : (
+        <View
+          accessibilityRole="alert"
+          style={[s.banner, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
+        >
+          <Txt size="sm" tone="warning">
+            No model is connected, so every reply below is a worked example rather than an answer.
+            Point jojo at a local OpenAI-compatible server — vLLM, Ollama or LM Studio — in
+            Settings.
+          </Txt>
+        </View>
+      )}
 
       <Panel>
         {messages.length === 0 ? (
           <EmptyState
             icon="message-square"
             title="Nothing asked yet"
-            description="Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model's answer."
+            description={
+              connected
+                ? 'Pick one of the prompts below, or type anything. It answers on your own device, against the model you connected.'
+                : "Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model's answer."
+            }
           />
         ) : (
           <View style={{ gap: space[3] }}>

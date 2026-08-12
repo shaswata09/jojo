@@ -19,7 +19,7 @@
 
 import type { Application, RoleTag } from '@/data/seed'
 import { ROLES } from '@/data/seed'
-import { TODAY, daysBetween } from '@/data/timeline'
+import { daysBetween } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 
 /**
@@ -104,7 +104,7 @@ const FUNNEL_STEPS = ['Applied', 'Replied', 'Screening call', 'Interview', 'Offe
  * Counted as nested subsets of one another, so the funnel can only ever narrow
  * — no clamping needed, and no step can round itself into existence.
  */
-function funnelFor(all: Application[]): FunnelStep[] {
+function funnelFor(all: readonly Application[]): FunnelStep[] {
   const reached = all.map(reachedOf)
   return FUNNEL_STEPS.map((stage, i) => ({
     stage,
@@ -124,7 +124,7 @@ export type Kpi = {
 }
 
 /** Every reply whose gap can actually be measured — both dates present. */
-function replyGaps(all: Application[]): number[] {
+function replyGaps(all: readonly Application[]): number[] {
   return all
     .map((a) => {
       // Same fallback order as the frequency chart: seed rows carry
@@ -136,7 +136,7 @@ function replyGaps(all: Application[]): number[] {
     .sort((a, b) => a - b)
 }
 
-function kpisFor(all: Application[], funnel: FunnelStep[]): Kpi[] {
+function kpisFor(all: readonly Application[], funnel: FunnelStep[]): Kpi[] {
   const sent = funnel[0].count
   const gaps = replyGaps(all)
   const mid = Math.floor(gaps.length / 2)
@@ -177,10 +177,38 @@ function kpisFor(all: Application[], funnel: FunnelStep[]): Kpi[] {
 export type Outcome = { label: string; count: number }
 
 /**
- * A partition of every record, drafts included — so the bands sum to the store
- * exactly and the total in the panel heading is the same total the board shows.
+ * A partition of everything that has been SENT.
+ *
+ * It used to partition every record, drafts included, so that the panel's total
+ * matched the board's. That is what put two offer percentages on one screen:
+ * the headline read "Offer rate 11% · 1 of 9 reached an offer" and the band
+ * eleven inches below it read "Offer 1 8%", because one divided by the nine
+ * sent and the other by all twelve records. Both were labelled and both were
+ * arithmetically right, which is exactly what made it unarguable and unusable —
+ * a reader cannot tell a second measurement from a contradiction.
+ *
+ * Sent is the denominator that had to survive, because every other rate on the
+ * page already uses it. It is also the truer reading of the word: a draft has
+ * not had an outcome, it has not been anywhere. The old partition had to file
+ * one under 'In progress', which claimed something was in train with an
+ * employer who has never seen it.
+ *
+ * The bands now sum to the funnel's first step rather than to the board, and
+ * 'Offer' is the same set as the funnel's last step — so the three statements
+ * of that one number cross-foot instead of merely coexisting. The count the
+ * board shows is still on the page: the panel heading says how many of the
+ * store's records these are.
  */
 export const OUTCOME_BANDS = ['In progress', 'Offer', 'Rejected', 'Withdrawn', 'No reply'] as const
+
+/** Only what has gone out. Anything still in draft has no outcome to band. */
+export function outcomesFor(all: readonly Application[]): Outcome[] {
+  const sent = all.filter((a) => reachedOf(a) >= REACH.sent)
+  return OUTCOME_BANDS.map((label) => ({
+    label,
+    count: sent.filter((a) => bandOf(a) === label).length,
+  }))
+}
 
 function bandOf(a: Application): (typeof OUTCOME_BANDS)[number] {
   // Offer first, or a live offer would be swept into "In progress" and the
@@ -211,7 +239,7 @@ export type RoleRow = {
  * Every column is the same per-record test the funnel uses, so the rows
  * cross-foot against it exactly rather than approximately.
  */
-function rolesFor(all: Application[]): RoleRow[] {
+function rolesFor(all: readonly Application[]): RoleRow[] {
   const sent = all.filter((a) => reachedOf(a) >= REACH.sent)
   return ROLES.filter((role) => sent.some((a) => a.roleTag === role)).map((role) => {
     const rows = sent.filter((a) => a.roleTag === role)
@@ -229,25 +257,26 @@ function rolesFor(all: Application[]): RoleRow[] {
 /* --------------------------------- surface -------------------------------- */
 
 export type Stats = {
-  /** How many records have actually gone out. Every rate's denominator. */
+  /**
+   * How many records have actually gone out. Every rate's denominator, the
+   * outcome bands' included — that is the whole point of there being one.
+   */
   sent: number
   funnel: FunnelStep[]
   kpis: Kpi[]
+  /** Bands over the sent records only. Sums to `sent`, not to `all.length`. */
   outcomes: Outcome[]
   roles: RoleRow[]
 }
 
 /** One call site, so the panels cannot drift apart. */
-export function statsFor(all: Application[]): Stats {
+export function statsFor(all: readonly Application[]): Stats {
   const funnel = funnelFor(all)
   return {
     sent: funnel[0].count,
     funnel,
     kpis: kpisFor(all, funnel),
-    outcomes: OUTCOME_BANDS.map((label) => ({
-      label,
-      count: all.filter((a) => bandOf(a) === label).length,
-    })),
+    outcomes: outcomesFor(all),
     roles: rolesFor(all),
   }
 }
@@ -290,10 +319,18 @@ export type HealthAxis = {
  * diagnosis.
  */
 export function searchHealthFor(input: {
-  applications: Application[]
-  timeline: TimelineItem[]
+  applications: readonly Application[]
+  timeline: readonly TimelineItem[]
+  /**
+   * Passed in, not read from a constant. "Late" is the one axis below that
+   * depends on the day it is asked on, and it was measured against the
+   * fixtures' pinned October — so every open follow-up counted as late forever
+   * once the calendar passed it, and the panel reported a search falling apart
+   * on a store nobody had touched.
+   */
+  today: string
 }): HealthAxis[] {
-  const { applications, timeline } = input
+  const { applications, timeline, today } = input
   const total = applications.length
   const sent = applications.filter((a) => reachedOf(a) >= REACH.sent)
   const replied = sent.filter((a) => reachedOf(a) >= REACH.replied).length
@@ -302,7 +339,7 @@ export function searchHealthFor(input: {
   const drafts = total - sent.length
 
   const openFollowUps = timeline.filter((i) => i.kind === 'follow-up' && !i.completedOn)
-  const late = openFollowUps.filter((i) => i.date < TODAY).length
+  const late = openFollowUps.filter((i) => i.date < today).length
 
   // Only the ones still live can go quiet — a closed application is meant to
   // sit still, and counting it as neglected would be a reproach for finishing.

@@ -5,7 +5,8 @@
  * they are laid out in and nothing else.
  */
 
-import { TODAY as TODAY_ISO, partsOf } from '@/data/timeline'
+import { partsOf } from '@/data/timeline'
+import { TODAY as TODAY_ISO } from '@/lib/today'
 
 export type CalendarMonth = {
   label: string

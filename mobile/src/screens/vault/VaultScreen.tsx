@@ -3,6 +3,7 @@ import { useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import { LabelFilter } from '@/components/common/Labels'
 import { Screen } from '@/components/ui/Screen'
+import { SettingRow, Toggle } from '@/components/ui/Field'
 import { Segment } from '@/components/ui/Segment'
 import { useTimeline, useVault } from '@/lib/store-context'
 import type { TabParamList, VaultTool } from '@/navigation/types'
@@ -35,6 +36,10 @@ const TOOLS = [
 export function VaultScreen() {
   const route = useRoute<RouteProp<TabParamList, 'Vault'>>()
   const [tool, setTool] = useState<VaultTool>(route.params?.tool ?? 'reminders')
+  // The web page makes this a switch too. Four totals is the right default —
+  // it is the only place the vault says how much is in it — but it is also the
+  // longest subtitle in the app, and on a narrow phone it wraps to two lines.
+  const [showCounts, setShowCounts] = useState(true)
   const { reminders } = useTimeline()
   const { links, files, snippets } = useVault()
 
@@ -69,10 +74,22 @@ export function VaultScreen() {
    * the same tab was described by two different numbers. The open/completed
    * split belongs to the reminders bucket filter, where you can act on it.
    */
-  const subtitle = `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets`
+  const subtitle = showCounts
+    ? `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets`
+    : 'Reminders, links, files and snippets'
 
   return (
-    <Screen title="Vault" subtitle={subtitle}>
+    <Screen
+      title="Vault"
+      subtitle={subtitle}
+      options={
+        <SettingRow
+          label="Show counts"
+          description="Item totals in the subtitle, rather than what the tabs hold"
+          control={<Toggle value={showCounts} onValueChange={setShowCounts} label="Show counts" />}
+        />
+      }
+    >
       <Segment label="Vault tool" scroll options={TOOLS} value={tool} onChange={setTool} />
 
       {/* One filter for the whole vault: a keyword means the same thing on a

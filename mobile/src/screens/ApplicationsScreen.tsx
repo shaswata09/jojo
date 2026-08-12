@@ -19,8 +19,9 @@ import { SettingRow, Toggle } from '@/components/ui/Field'
 import { Txt } from '@/components/ui/Text'
 import { ROLES, STAGES, STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, RoleTag, Stage } from '@/data/seed'
-import { TODAY, addDays, agoLabel, compareItems, daysBetween, shortDate } from '@/data/timeline'
+import { addDays, agoLabel, compareItems, daysBetween, shortDate } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
+import { TODAY } from '@/lib/today'
 import { draftFromUrl } from '@/lib/draft-from'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
@@ -66,7 +67,7 @@ const SORTS: { value: SortKey; label: string; asc: string; desc: string }[] = [
  * would say out loud.
  */
 function activityLabel(daysAgo: number) {
-  const ago = agoLabel(addDays(TODAY, -daysAgo))
+  const ago = agoLabel(addDays(TODAY, -daysAgo), TODAY)
   return ago.charAt(0).toUpperCase() + ago.slice(1)
 }
 

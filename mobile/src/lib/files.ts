@@ -1,3 +1,4 @@
+import type { FeatherName } from '@/lib/timeline-visuals'
 import type { FileKind } from '@/data/vault'
 
 /**
@@ -40,6 +41,20 @@ const KIND_BY_EXT: Record<string, FileKind> = {
  * `type` is optional because one caller has a real `File` and the other only
  * ever had a name — passing it can only ever rescue a PDF the extension missed.
  */
+/**
+ * One glyph per kind, so a deck and a scan are told apart at a glance.
+ *
+ * Here rather than in `FilesTool` because the viewer needs the same mapping,
+ * and two copies is how a kind added later ends up drawn as a document in one
+ * place and nothing in the other.
+ */
+export const FILE_KIND_ICON: Record<FileKind, FeatherName> = {
+  pdf: 'file',
+  doc: 'file-text',
+  slides: 'monitor',
+  note: 'edit-3',
+}
+
 export function kindOfFile(name: string, type?: string): FileKind {
   const ext = name.split('.').pop()?.toLowerCase() ?? ''
   return KIND_BY_EXT[ext] ?? (type === 'application/pdf' ? 'pdf' : 'doc')

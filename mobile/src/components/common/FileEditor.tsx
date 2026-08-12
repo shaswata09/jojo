@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { pickDocuments } from '@/lib/documents'
+import { Txt } from '@/components/ui/Text'
 import { View } from 'react-native'
 import { Button } from '@/components/ui/Button'
 import { FormField, TextField } from '@/components/ui/Field'
@@ -41,6 +43,34 @@ export function FileEditor({
   const [applicationId, setApplicationId] = useState(initial?.applicationId)
   const [appPickerOpen, setAppPickerOpen] = useState(false)
   const [attempted, setAttempted] = useState(false)
+  // Set when a real file was picked this sitting, so Save records where the
+  // copy went. An edit of an existing record keeps whatever it already had.
+  const [uri, setUri] = useState(initial?.uri)
+  const [picking, setPicking] = useState(false)
+  const [pickError, setPickError] = useState<string | null>(null)
+
+  /**
+   * Pick a file, and fill the form in from it.
+   *
+   * The fields stay editable afterwards. The name off the filesystem is often
+   * not the name anyone wants to read — `Scan_20260812_0001.pdf` — and the
+   * record is what the app shows everywhere else.
+   */
+  const onPick = async () => {
+    setPicking(true)
+    setPickError(null)
+    const result = await pickDocuments(bucket)
+    setPicking(false)
+    if (!result.ok) {
+      if (!result.cancelled) setPickError(result.reason)
+      return
+    }
+    const first = result.documents[0]
+    if (!first) return
+    setName(first.name)
+    setSize(first.size)
+    setUri(first.uri)
+  }
 
   const selectedApp = applicationId ? byId.get(applicationId) : undefined
 
@@ -53,6 +83,7 @@ export function FileEditor({
       // different icons without the user having to say which is which.
       kind: kindOfFile(name.trim()),
       bucket,
+      ...(uri === undefined ? {} : { uri }),
       // An empty string would print as a blank where a size goes; the em dash
       // is what the seed uses for "not known".
       size: size.trim() || '—',
@@ -66,9 +97,11 @@ export function FileEditor({
       open
       onClose={onClose}
       title={initial ? 'Edit document' : 'Record a document'}
-      // Honest about what this build does. There is no file picker wired up, so
-      // the record is typed — and saying so beats implying a file was read.
-      description="Nothing is uploaded and no file is read. This records the name, size and type so the rest of the app can point at it."
+      description={
+        uri
+          ? 'Kept on this device, in this app. Nothing is uploaded and nothing reads what is inside it.'
+          : 'Choose a file to keep a copy of it, or fill this in by hand to record one you are keeping elsewhere.'
+      }
       footer={
         <>
           <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
@@ -77,6 +110,31 @@ export function FileEditor({
       }
     >
       <View style={{ gap: space[3.5], paddingBottom: space[2] }}>
+        {/* First, because it fills in three of the fields below it. Typing them
+            stays available for a document kept somewhere else — a paper form,
+            a file on a laptop — which is what the old build could only do. */}
+        <View style={{ gap: space[2] }}>
+          <Button
+            label={picking ? 'Choosing…' : uri ? 'Choose a different file' : 'Choose a file'}
+            icon="upload"
+            variant="outline"
+            full
+            size="md"
+            disabled={picking}
+            onPress={onPick}
+          />
+          {uri ? (
+            <Txt size="xs" tone="muted">
+              A copy is kept in this app. It goes when the app is uninstalled.
+            </Txt>
+          ) : null}
+          {pickError ? (
+            <Txt size="xs" tone="danger">
+              {pickError}
+            </Txt>
+          ) : null}
+        </View>
+
         <TextField
           label="File name"
           required

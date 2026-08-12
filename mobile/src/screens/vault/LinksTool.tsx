@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -153,7 +154,7 @@ export function LinksTool() {
                       {l.title}
                     </Txt>
                     <Txt size="xs" tone="muted" mono numberOfLines={1}>
-                      {displayUrl(l.url)} · saved {agoLabel(l.savedOn)}
+                      {displayUrl(l.url)} · saved {agoLabel(l.savedOn, TODAY)}
                     </Txt>
                     {l.note ? (
                       <Txt size="xs" tone="muted" numberOfLines={2}>

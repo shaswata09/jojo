@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
+import { ping } from '@/lib/llm'
+import { s } from '@/theme/styles'
+import { AuditLog } from '@/components/common/AuditLog'
 import { Pressable, StyleSheet, View } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import { useNavigation } from '@react-navigation/native'
@@ -41,6 +45,28 @@ export function SettingsScreen() {
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { pref, setPref } = useTheme()
+
+  // The model's address, held locally while it is being typed and written to
+  // the device on a successful test or on leaving the field.
+  const { settings, save } = useModelSettings()
+  const [endpoint, setEndpoint] = useState(settings.endpoint)
+  const [model, setModel] = useState(settings.model)
+  const [testing, setTesting] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'ok' | 'fail'>('idle')
+  const [detail, setDetail] = useState<string | null>(null)
+
+  const onTest = async () => {
+    const next = { endpoint: endpoint.trim(), model: model.trim() }
+    setTesting(true)
+    setDetail(null)
+    const result = await ping(next)
+    setTesting(false)
+    setStatus(result.ok ? 'ok' : 'fail')
+    setDetail(result.ok ? 'Answered. The assistant will use this model.' : result.reason)
+    // Saved either way: an endpoint that failed today is still the one the user
+    // meant, and losing it on every failed attempt is its own small cruelty.
+    save(next)
+  }
   const { exportJSON, reset, clearAll, isEmpty } = useStoreAdmin()
   const { toast } = useToast()
 
@@ -177,19 +203,71 @@ export function SettingsScreen() {
             <TextField
               label="Endpoint"
               mono
-              defaultValue="http://localhost:8000/v1"
-              editable={false}
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={endpoint}
+              placeholder="http://localhost:11434/v1"
+              hint="The base URL. `chat/completions` is appended to it."
+              onChangeText={setEndpoint}
             />
-            <TextField label="Model" mono defaultValue="llama-3.1-8b-instruct" editable={false} />
+            <TextField
+              label="Model"
+              mono
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={model}
+              placeholder="llama3.1:8b"
+              onChangeText={setModel}
+            />
+            {/* Three servers, one tap each. Typing a port from memory is the
+                step people get wrong, and every one of these is a default. */}
+            <View style={s.chipRow}>
+              {SUGGESTIONS.map((sug) => (
+                <Pressable
+                  key={sug.label}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setEndpoint(sug.endpoint)
+                    setModel(sug.model)
+                  }}
+                >
+                  <Chip tone="gray">{sug.label}</Chip>
+                </Pressable>
+              ))}
+            </View>
           </View>
           <View style={styles.testRow}>
             <Button
-              label="Test connection"
+              label={testing ? 'Testing…' : 'Test connection'}
               variant="outline"
-              blocker="This build makes no network requests, so there is nothing to reach the endpoint with"
+              disabled={testing || endpoint.trim().length === 0 || model.trim().length === 0}
+              blocker={
+                endpoint.trim().length === 0 || model.trim().length === 0
+                  ? 'Fill in an endpoint and a model first.'
+                  : undefined
+              }
+              onPress={onTest}
             />
-            <Chip tone="gray">Not connected</Chip>
+            {status === 'ok' ? (
+              <Chip tone="green">Connected</Chip>
+            ) : status === 'fail' ? (
+              <Chip tone="red">No answer</Chip>
+            ) : (
+              <Chip tone="gray">Not tested</Chip>
+            )}
           </View>
+          {/* The server's own words, not a paraphrase. A wrong port and a model
+              name that does not exist fail differently, and only the endpoint
+              knows which happened. */}
+          {detail ? (
+            <Txt
+              size="xs"
+              tone={status === 'ok' ? 'muted' : 'danger'}
+              style={{ marginTop: space[2] }}
+            >
+              {detail}
+            </Txt>
+          ) : null}
         </Panel>
 
         <Panel>
@@ -267,14 +345,16 @@ export function SettingsScreen() {
             ]}
           >
             <Txt size="sm" tone="warning">
-              Nothing is written to disk in this build — the store lives in memory for as long as
-              the app is open, so a restart puts the demo data back and takes your changes with it.
-              Export before you close it.
+              Your records are saved on this device and survive closing the app. Nothing leaves it:
+              there is no account, no sync and no network call. Export writes a copy to the
+              clipboard if you want one somewhere else.
             </Txt>
           </View>
         </Panel>
 
         <KeywordManager />
+
+        <AuditLog />
       </Columns>
 
       <ConfirmSheet

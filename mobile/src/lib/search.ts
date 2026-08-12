@@ -16,7 +16,7 @@ export function matchesQuery(query: string, ...fields: (string | undefined | nul
   return fields.some((field) => field && fold(field).includes(needle))
 }
 
-const fold = (text: string) =>
+export const fold = (text: string) =>
   text
     .trim()
     .toLowerCase()

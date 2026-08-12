@@ -13,6 +13,7 @@ import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono'
 import { LabelsProvider } from '@/lib/labels'
 import { RolesProvider } from '@/lib/roles'
 import { SheetsProvider } from '@/lib/sheets'
+import { ModelSettingsProvider } from '@/lib/model-settings'
 import { StoreProvider } from '@/lib/store'
 import { ToastProvider } from '@/lib/toast'
 import { RootNavigator } from '@/navigation'
@@ -55,15 +56,23 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <RolesProvider>
-            <LabelsProvider>
-              <ToastProvider>
+            <ToastProvider>
+              <ModelSettingsProvider>
                 <StoreProvider>
-                  <SheetsProvider>
-                    <Themed />
-                  </SheetsProvider>
+                  {/* Inside the store, because keywords are records now. They
+                      used to be `useState` in this provider — a second set
+                      beside the graph's own, which meant the seven keyword
+                      tools were unreachable and nothing you tagged survived a
+                      restart. `useKeywords` is the graph's, so this provider
+                      keeps only the filter selection, which is view state. */}
+                  <LabelsProvider>
+                    <SheetsProvider>
+                      <Themed />
+                    </SheetsProvider>
+                  </LabelsProvider>
                 </StoreProvider>
-              </ToastProvider>
-            </LabelsProvider>
+              </ModelSettingsProvider>
+            </ToastProvider>
           </RolesProvider>
         </ThemeProvider>
       </SafeAreaProvider>
