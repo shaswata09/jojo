@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "vitest run",
-    "lint": "oxlint && node scripts/check-layers.mjs && node scripts/check-platform.mjs",
+    "lint": "npm -w @jojo/service run lint && oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview"

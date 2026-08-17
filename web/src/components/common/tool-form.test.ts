@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { TOOLS } from '@/kg/tools'
-import type { AnyTool } from '@/kg/tools/tool'
+import { TOOLS } from '@jojo/service/tools/index'
+import type { AnyTool } from '@jojo/service/tools/tool'
 import { buildInput, humanise, initialValues, optionLabel, planToolForm } from './tool-form'
 import type { CountOf, FormPlan } from './tool-form'
 

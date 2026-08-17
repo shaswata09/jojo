@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useToast } from '@/lib/toast-context'
 

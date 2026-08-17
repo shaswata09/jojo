@@ -26,11 +26,11 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { MutableSnapshot } from '@/kg/core/snapshot'
-import type { StoredNode } from '@/kg/core/model'
-import { createRepository } from '@/kg/repo/repository'
-import { TOOLS } from '@/kg/tools/index'
-import { createToolRuntime } from '@/kg/tools/runtime'
+import { MutableSnapshot } from '@jojo/service/core/snapshot'
+import type { StoredNode } from '@jojo/service/core/model'
+import { createRepository } from '@jojo/service/repo/repository'
+import { TOOLS } from '@jojo/service/tools/index'
+import { createToolRuntime } from '@jojo/service/tools/runtime'
 import { applications } from './seed'
 
 type Options = Parameters<typeof createRepository>[0]

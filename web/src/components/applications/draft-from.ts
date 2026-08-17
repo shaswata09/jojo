@@ -11,4 +11,4 @@
  * Wave 4. Do not add anything to it.
  */
 
-export { draftFromText, draftFromUrl } from '@/kg/core/parse-posting'
+export { draftFromText, draftFromUrl } from '@jojo/service/core/parse-posting'

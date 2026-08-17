@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { FirstRunChoice } from '@/components/common/FirstRunChoice'
 import { StoreGate } from '@/components/common/StoreGate'
-import { boot, bootInMemory, resetBoot } from '@/kg/repo/boot'
-import type { BootResult, Session } from '@/kg/repo/boot'
-import { kgWarn } from '@/kg/log'
-import { KgProvider } from '@/kg/react/kg'
-import { StoreStatusProvider } from '@/kg/react/status'
-import type { StorePhase } from '@/kg/react/status-context'
+import { boot, bootInMemory, resetBoot } from '@jojo/service/repo/boot'
+import type { BootResult, Session } from '@jojo/service/repo/boot'
+import { kgWarn } from '@jojo/service/log'
+import { KgProvider } from '@jojo/service/react/kg'
+import { StoreStatusProvider } from '@jojo/service/react/status'
+import type { StorePhase } from '@jojo/service/react/status-context'
 import { createIdbDriver } from '@/kg/storage/idb-driver'
 import { requestPersistentStorage } from '@/kg/storage/probe'
 import { BootContext, sessionOf } from '@/lib/boot-context'
@@ -31,7 +31,7 @@ import { useToast } from '@/lib/toast-context'
  * would read "Empty" and offer to load demo data over records that are on disk
  * and merely not read yet.
  *
- * `now` is the wall clock, injected here because no module under `src/kg` may
+ * `now` is the wall clock, injected here because no module under `service/kg` may
  * read one (D26) and `src/lib` is the layer allowed a platform API. Through
  * Waves 1–3 it was pinned to the seed's October instead — every relative label
  * in the app was measured against a fixture constant, and a store stamping real
@@ -433,7 +433,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         {session ? (
           <StoreStatusProvider repo={session.repo} boot={phase}>
             {/* The one place the platform is named. `KgProvider` defaults to a
-                headless host so nothing under `src/kg` has to know a browser
+                headless host so nothing under `service/kg` has to know a browser
                 exists; this is the web app, so this is where the browser gets
                 supplied — ⌘Z/⇧⌘Z and the flush on pagehide. */}
             <KgProvider repo={session.repo} now={now} host={webHost}>

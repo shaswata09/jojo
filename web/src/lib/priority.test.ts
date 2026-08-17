@@ -15,15 +15,15 @@
  *
  * The gate stayed in `src/lib` when the deck moved below the seam, because both
  * halves of the comparison have to be measured against the SAME day and the day
- * a test can reach without a provider is `TODAY` — which nothing under `src/kg`
+ * a test can reach without a provider is `TODAY` — which nothing under `service/kg`
  * may import (D26). `relativeLabel` here is the binding that supplies it.
  *
  * Node-only, per D20: both are pure functions over strings.
  */
 
 import { describe, expect, it } from 'vitest'
-import { whenLabel } from '@/kg/core/dates'
-import type { TimelineItem } from '@/kg/core/model'
+import { whenLabel } from '@jojo/service/core/dates'
+import type { TimelineItem } from '@jojo/service/core/model'
 import { relativeLabel } from '@/lib/priority'
 import { TODAY } from '@/lib/today'
 

@@ -26,6 +26,9 @@ Layer 1 is the only one that must work. Everything above it degrades gracefully 
 
 ```
 jojo/
+├── service/             @jojo/service — the knowledge graph, its tools and the
+│                        React binding. No build step; both apps compile the
+│                        TypeScript. Owned by neither of them.
 ├── web/                 React single-page app
 ├── mobile/              React Native app for Android and iOS
 │   ├── android/         Committed Gradle project
@@ -43,11 +46,10 @@ keyword system, the seed itself — came from `web/`, so the two report the same
 numbers rather than merely resembling each other. What differs is the
 presentation layer and the four interactions a phone cannot take from a pointer.
 
-`web/` has since moved its store onto a knowledge graph (`web/src/kg/`) and
-`mobile/` still carries the pre-graph copies of those modules. Every seeded
-value and enumeration was compared after that refactor and they are identical,
-so nothing observable differs today — but the two will need re-syncing when the
-web's migration finishes. `mobile/README.md` has the detail.
+The knowledge graph that store runs on now lives in `service/`, imported by both
+apps as `@jojo/service`. `mobile/` still carries its own copy of an earlier
+generation of it, which is what the current migration is deleting; until that
+lands, `mobile/README.md` has the detail on what has drifted.
 
 ---
 

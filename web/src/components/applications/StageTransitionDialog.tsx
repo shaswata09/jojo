@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/dialog'
 import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
-import type { TimelineDraft } from '@/kg/react/use-timeline'
+import type { TimelineDraft } from '@jojo/service/react/use-timeline'
 import { TODAY } from '@/lib/today'
 
 export type StageTransitionDialogProps = {

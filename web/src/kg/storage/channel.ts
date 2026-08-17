@@ -20,9 +20,9 @@
  * something this file arranges, and it is why `post` takes no sender id.
  */
 
-import type { StoreEvent } from './driver'
+import type { StoreEvent } from '@jojo/service/storage/driver'
 
-export type { StoreEvent } from './driver'
+export type { StoreEvent } from '@jojo/service/storage/driver'
 
 export interface Channel {
   post(event: StoreEvent): void
@@ -150,7 +150,7 @@ export function createStoreChannel(name: string): Channel {
  *
  * It is `REMOTE_DEBOUNCE_MS` in `repo/boot-live.ts`, next to the rehydrate it
  * protects, because the
- * only consumer is `repo` and `repo` may not import this file. `tsconfig.kg.json`
+ * only consumer is `repo` and `repo` may not import this file. `service/tsconfig.core.json`
  * compiles core, repo and tools with `"lib": ["ES2023"]` and no `@types` at all
  * — no `BroadcastChannel`, no `MessageEvent` — so a helper exported from here
  * drags this module into that program and fails it on the first identifier.

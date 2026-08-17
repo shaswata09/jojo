@@ -14,10 +14,10 @@
 
 import { describe, expect, it } from 'vitest'
 import { matchPath } from 'react-router'
-import { resolveAddress } from '@/kg/core/address'
-import type { Instant } from '@/kg/core/model'
-import { createProjections } from '@/kg/react/projections'
-import { bootInMemory } from '@/kg/repo/boot'
+import { resolveAddress } from '@jojo/service/core/address'
+import type { Instant } from '@jojo/service/core/model'
+import { createProjections } from '@jojo/service/react/projections'
+import { bootInMemory } from '@jojo/service/repo/boot'
 import { appPath, BASE_TITLE } from '@/lib/links'
 // `?raw` rather than `node:fs`: the app project's `types` is `["vite/client"]`,
 // so `node:fs` does not typecheck here, and vite/client is what declares this.

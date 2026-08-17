@@ -19,15 +19,15 @@
  * user chose. Everything it carried is derived elsewhere now.
  */
 
-import { shortDate } from '@/kg/core/dates'
-import { STAGE_LABEL, STAGE_VALUES } from '@/kg/core/model'
-import type { Application, Offer, Stage } from '@/kg/core/model'
+import { shortDate } from '@jojo/service/core/dates'
+import { STAGE_LABEL, STAGE_VALUES } from '@jojo/service/core/model'
+import type { Application, Offer, Stage } from '@jojo/service/core/model'
 
-export { ROLES, SOURCES, STAGE_LABEL } from '@/kg/core/model'
+export { ROLES, SOURCES, STAGE_LABEL } from '@jojo/service/core/model'
 /* `offerDaysLeft` followed `kg/react/use-priority.ts`, its only reader outside
  * this file's own callers, down into `kg/core/dates.ts`. `respondByLabel` below
- * stayed: nothing under `src/kg` asks for it. */
-export { offerDaysLeft } from '@/kg/core/dates'
+ * stayed: nothing under `service/kg` asks for it. */
+export { offerDaysLeft } from '@jojo/service/core/dates'
 export type {
   Application,
   Offer,
@@ -37,7 +37,7 @@ export type {
   Source,
   Stage,
   Urgency,
-} from '@/kg/core/model'
+} from '@jojo/service/core/model'
 
 /**
  * 'Stripe — ML engineer' — an em dash with spaces either side.

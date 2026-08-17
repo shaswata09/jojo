@@ -10,7 +10,7 @@
  * file and passed silently at the top.
  */
 
-import { OUTCOME_VALUES } from '@/kg/core/model'
+import { OUTCOME_VALUES } from '@jojo/service/core/model'
 import type { Outcome } from '@/data/seed'
 
 export const FORMATS = [

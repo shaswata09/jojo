@@ -10,17 +10,17 @@
  * The port is re-exported rather than re-imported at each call site so the 20-odd
  * components that fire toasts kept their import line when it moved. If you are
  * adding a helper below, ask which side of that split it is on: anything typed
- * in DOM terms belongs here and must not be imported from `src/kg`.
+ * in DOM terms belongs here and must not be imported from `service/kg`.
  */
 
-export { ToastContext, useToast } from '@/kg/react/toast'
+export { ToastContext, useToast } from '@jojo/service/react/toast'
 export type {
   Toast,
   ToastAction,
   ToastContextValue,
   ToastOptions,
   ToastTone,
-} from '@/kg/react/toast'
+} from '@jojo/service/react/toast'
 
 /**
  * How many stay on screen; the oldest is dropped to make room. Saving a form

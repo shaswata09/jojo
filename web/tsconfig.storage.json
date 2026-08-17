@@ -1,0 +1,38 @@
+{
+  /*
+   * The IndexedDB adapter — the half of L0 storage that knows it is in a
+   * browser.
+   *
+   * IndexedDB, BroadcastChannel and the quota estimate live here and nowhere
+   * else. This is the line `check-platform.mjs` always intended: the port
+   * (`Driver`), the store catalogue, the migration table and the two
+   * platform-free implementations are in `@jojo/service/storage`, compiled with
+   * no DOM at all, and everything on this side is allowed to name a browser
+   * because naming the browser is its job.
+   *
+   * WHAT CHANGED WHEN THE PACKAGE SPLIT
+   *
+   * This project used to be `composite` with `emitDeclarationOnly`, and the
+   * reason was `repo`: it imports four files out of storage, so storage was
+   * reachable from a project compiled with `"lib": ["ES2023"]`, and TypeScript
+   * type-checks everything it reaches. The composite emit meant `repo` saw a
+   * .d.ts instead of `idb-driver.ts`, which put the DOM on the other side of a
+   * declaration file.
+   *
+   * `repo` is in `@jojo/service` now, and its reference points at
+   * `service/tsconfig.storage.json`. Nothing in this repo reaches INTO this
+   * directory except the web app itself, which has DOM anyway. So the emit has
+   * no consumer and is gone; this is a plain type-check project again.
+   *
+   * It still does not get `types`. vite/client and @types/node would let a
+   * driver reach for `import.meta.env` or `fs`, and a storage adapter that can
+   * read the filesystem is the Electron rewrite arriving early and by accident.
+   */
+  "extends": "./tsconfig.adapters.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.storage.tsbuildinfo",
+    "lib": ["ES2023", "DOM"],
+    "types": []
+  },
+  "include": ["src/kg/storage"]
+}

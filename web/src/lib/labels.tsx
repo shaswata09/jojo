@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useKeywords } from '@/kg/react/use-keywords'
+import { useKeywords } from '@jojo/service/react/use-keywords'
 import { LabelsContext } from '@/lib/labels-context'
 
 /**

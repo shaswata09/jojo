@@ -8,9 +8,9 @@
  * still there tomorrow. That question needs the whole stack: a tool, the
  * repository, the write-behind queue, a real transaction, and a second boot.
  *
- * It lives in `src/lib` rather than under `src/kg` because this is where the
- * pieces are allowed to meet. `src/kg/repo` compiles with no DOM lib, so it
- * cannot name the IndexedDB driver, and `src/kg/storage` may not import the
+ * It lives in `src/lib` rather than under `service/kg` because this is where the
+ * pieces are allowed to meet. `service/kg/repo` compiles with no DOM lib, so it
+ * cannot name the IndexedDB driver, and `web/src/kg/storage` may not import the
  * layer above it — the composition happens in the app shell, and so does the
  * test of the composition. `src/lib/store.tsx` is the production version of the
  * first ten lines below.
@@ -18,10 +18,10 @@
 
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
-import { boot, resetBoot } from '@/kg/repo/boot'
-import type { Session } from '@/kg/repo/boot'
+import { boot, resetBoot } from '@jojo/service/repo/boot'
+import type { Session } from '@jojo/service/repo/boot'
 import { createIdbDriver } from '@/kg/storage/idb-driver'
-import { createToolRuntime } from '@/kg/tools/runtime'
+import { createToolRuntime } from '@jojo/service/tools/runtime'
 
 const NOW = '2026-10-12T12:00:00.000Z'
 const LATER = '2026-10-13T09:30:00.000Z'

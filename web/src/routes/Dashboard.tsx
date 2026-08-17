@@ -5,7 +5,7 @@ import { PipelineBreakdown } from '@/components/dashboard/PipelineBreakdown'
 import { PriorityActions } from '@/components/dashboard/PriorityActions'
 import { RecentApplications } from '@/components/dashboard/RecentApplications'
 import { MONTH_LABELS } from '@/data/calendar'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { useTitle } from '@/lib/links'
 import { TODAY_PARTS } from '@/lib/today'
 

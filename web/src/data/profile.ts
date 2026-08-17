@@ -14,10 +14,10 @@
  * email in the fields.
  */
 
-import type { Profile } from '@/kg/core/model'
+import type { Profile } from '@jojo/service/core/model'
 
-export type { Profile, ProfileText } from '@/kg/core/model'
-export { emptyProfile, profileIsBlank } from '@/kg/core/profile'
+export type { Profile, ProfileText } from '@jojo/service/core/model'
+export { emptyProfile, profileIsBlank } from '@jojo/service/core/profile'
 
 /**
  * Fresh objects on every call rather than exported constants.

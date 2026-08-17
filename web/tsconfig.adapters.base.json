@@ -1,0 +1,32 @@
+{
+  /*
+   * Shared settings for the web-only adapters that used to be part of `src/kg`.
+   *
+   * This file was `tsconfig.kg.base.json` and it was the base for three
+   * projects. Two of them — core/repo/tools and react — went into
+   * `@jojo/service` along with the code, and `service/tsconfig.base.json` is
+   * their successor. What is left in this app under `src/kg` is
+   * `storage/idb-*`, `channel.ts` and `probe.ts`: the IndexedDB adapter, which
+   * is web-only by design and always was. One project, one base, kept separate
+   * from `tsconfig.app.json` for the reason below.
+   *
+   * The reason is the three flags. `tsconfig.app.json` cannot carry them —
+   * `noUncheckedIndexedAccess` app-wide is 94 errors, 47 of them inside
+   * components/graph/force.ts, a hot physics loop where every array read is
+   * provably in range. Over a storage adapter the same flag is the difference
+   * between a row being there and a `TypeError` on a store one record shorter
+   * than the code assumed, and `exactOptionalPropertyTypes` is what keeps a
+   * `Partial<T>` patch carrying an explicit `undefined` distinguishable from an
+   * absent key — a distinction IndexedDB's structured clone preserves and
+   * memory does not.
+   *
+   * So the adapters keep the strictness the layer they implement is held to,
+   * even though they no longer live in the same package as it.
+   */
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true
+  }
+}

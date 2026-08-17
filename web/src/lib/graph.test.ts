@@ -1,5 +1,5 @@
 /**
- * Characterisation tests: the traversal contract `src/kg/core/algebra.ts` has
+ * Characterisation tests: the traversal contract `service/kg/core/algebra.ts` has
  * to inherit when `lib/graph/` is demoted to a reading of the snapshot.
  *
  * Topologies are built by hand rather than through `buildGraph`, so a failure

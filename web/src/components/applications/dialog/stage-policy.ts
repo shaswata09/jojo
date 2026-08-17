@@ -17,7 +17,7 @@
  *    asserted the two agreed.
  * 2. Calling `application.stage.advance`. The tool has been built, tested and
  *    documented since the graph layer landed and has zero callers outside
- *    `src/kg` — the UI still writes the patch and mints the item as two
+ *    `service/kg` — the UI still writes the patch and mints the item as two
  *    separate store calls with a hand-rolled undo, which is exactly the
  *    non-atomicity the tool's own header says it exists to fix. `buildStagePatch`
  *    returns the tool's input keys verbatim (`stage`, `appliedOn`,
@@ -42,7 +42,7 @@ import type { Format } from '@/components/applications/dialog/transition-options
 import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, Outcome, Stage } from '@/data/seed'
 import { addDays, shortDate } from '@/data/timeline'
-import type { TimelineDraft } from '@/kg/react/use-timeline'
+import type { TimelineDraft } from '@jojo/service/react/use-timeline'
 
 /** The four stages that carry a field block. Draft and Screen collect nothing. */
 const BLOCKED_STAGES: readonly Stage[] = ['submitted', 'interview', 'offer', 'closed']

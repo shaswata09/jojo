@@ -1,5 +1,5 @@
 import type { TimelineItem } from '@/data/timeline'
-import { DEADLINE_DETAIL } from '@/kg/tools/support'
+import { DEADLINE_DETAIL } from '@jojo/service/tools/support'
 
 /**
  * Re-exported, not redeclared.

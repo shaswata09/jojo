@@ -7,7 +7,7 @@
  * an event's `at` has to come out of the data or not exist at all.
  */
 
-import type { DurableOp, Rows, StoreEvent } from './driver'
+import type { DurableOp, Rows, StoreEvent } from '@jojo/service/storage/driver'
 
 /**
  * The commit event a batch describes, read off the batch itself.

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
-import { useVault } from '@/kg/react/use-vault'
+import { useVault } from '@jojo/service/react/use-vault'
 import { useTitle, vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 

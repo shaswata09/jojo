@@ -20,7 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { menuItemClass } from '@/components/common/RowMenu'
 import { displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { refKey } from '@/lib/ids'
 import { applicationsPath } from '@/lib/links'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'

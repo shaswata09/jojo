@@ -1,0 +1,54 @@
+{
+  /*
+   * L0 storage — the port, the store catalogue, the migration table, and the
+   * two implementations that need no platform.
+   *
+   * WHAT CHANGED WHEN THIS MOVED, AND WHY THE LIB SHRANK
+   *
+   * In web this project carried `"lib": ["ES2023", "DOM"]`, because
+   * `idb-driver.ts` lived here and IndexedDB, BroadcastChannel and the quota
+   * estimate were its job. Those files did not come along: every DOM-shaped
+   * storage file stayed in `web/src/kg/storage`, which is where the platform
+   * adapters belong and where `check-platform.mjs` always intended the line to
+   * fall. What is left is DOM-free — measured, not assumed: compiling this
+   * directory under `"lib": ["ES2023"]` with `"types": []` produced exactly
+   * three errors, all of them `TextEncoder`/`TextDecoder`, and no DOM name at
+   * all.
+   *
+   * So the lib is now ES2023 like everything else in the package, and the
+   * DOM-versus-no-DOM reason for keeping storage in its own project is gone.
+   * Two reasons to keep the project anyway:
+   *
+   * 1. `types/text-codec.d.ts` below, which is scoped to this directory and
+   *    nowhere else. Folded into the core project it would grant `TextEncoder`
+   *    to `core`, `repo` and `tools`, which is a capability none of them has any
+   *    business having on Hermes.
+   * 2. `composite` + `disableSourceOfProjectReferenceRedirect` in the consuming
+   *    projects means `repo` type-checks against this layer's EMITTED .d.ts
+   *    rather than against its source. That is the layer boundary restated as a
+   *    build artifact, and it survives the next driver that does need a platform.
+   *
+   * Declarations only, into node_modules/.tmp. Nothing is bundled from here —
+   * both apps compile the sources themselves — so this emit is type-checking
+   * scaffolding and belongs beside the .tsbuildinfo.
+   *
+   * `rootDir` is the package root rather than `kg/storage`, because a composite
+   * project rejects an input file outside its rootDir and the two .d.ts inputs
+   * live in `types/`. Nothing reads the emitted layout, so its shape does not
+   * matter.
+   */
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.storage.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": [],
+
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "rootDir": ".",
+    "outDir": "./node_modules/.tmp/storage"
+  },
+  "include": ["kg/storage", "types/portable-globals.d.ts", "types/text-codec.d.ts"]
+}

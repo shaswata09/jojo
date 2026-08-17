@@ -9,7 +9,7 @@
  */
 
 import type { AnyStore, AnyTx } from './idb-handles'
-import type { StoreName, StoredRow } from './schema'
+import type { StoreName, StoredRow } from '@jojo/service/storage/schema'
 
 /**
  * What a write may do, and the whole of it.

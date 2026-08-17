@@ -16,14 +16,17 @@
  * `relativeLabel` stays exported from here because `priority.test.ts` walks it
  * against `whenLabel` across a range of offsets, and both sides of that
  * comparison have to be measured against the same day — `TODAY`, which nothing
- * under `src/kg` may import (D26).
+ * under `service/kg` may import (D26).
  */
 
-import { relativeLabelOn, usePriorityActions as usePriorityDeck } from '@/kg/react/use-priority'
+import {
+  relativeLabelOn,
+  usePriorityActions as usePriorityDeck,
+} from '@jojo/service/react/use-priority'
 import { appPath } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 
-export type { PriorityAction } from '@/kg/react/use-priority'
+export type { PriorityAction } from '@jojo/service/react/use-priority'
 
 /** `relativeLabelOn`, measured against the app's today. */
 export const relativeLabel = (iso: string) => relativeLabelOn(TODAY, iso)

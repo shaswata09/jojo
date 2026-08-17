@@ -10,9 +10,9 @@
  * One flat namespace across applications, reminders and anything added later:
  * a keyword is only worth setting up if it works everywhere the record appears.
  */
-import type { Label } from '@/kg/core/model'
+import type { Label } from '@jojo/service/core/model'
 
-export type { Label, LabelTone } from '@/kg/core/model'
+export type { Label, LabelTone } from '@jojo/service/core/model'
 
 export const seedLabels: Label[] = [
   { id: 'developer', name: 'Developer', tone: 'teal' },

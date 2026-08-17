@@ -3,9 +3,9 @@
  * are re-exported here so every existing import still resolves.
  */
 
-import type { Match, Pipeline, SavedPosting } from '@/kg/core/model'
+import type { Match, Pipeline, SavedPosting } from '@jojo/service/core/model'
 
-export type { Match, Pipeline, SavedPosting } from '@/kg/core/model'
+export type { Match, Pipeline, SavedPosting } from '@jojo/service/core/model'
 
 export const pipelines: Pipeline[] = [
   {

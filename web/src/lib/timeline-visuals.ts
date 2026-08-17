@@ -14,19 +14,19 @@
  * `dateMark` and `markOf` are re-bound here rather than re-exported, because the
  * shared versions take `today` as an argument and these do not: thirteen call
  * sites ask about a date without holding a clock, and `TODAY` is the web app's
- * one wall-clock read. Nothing under `src/kg` may import it (D26), so the
+ * one wall-clock read. Nothing under `service/kg` may import it (D26), so the
  * binding is what `src/lib` is for.
  */
 
 import { AlarmClock, CalendarClock, FileText, Plane, Users, Video } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { TimelineItem, TimelineKind } from '@/kg/core/model'
-import { dateMarkOn, markOn } from '@/kg/core/timeline-view'
-import type { DateMark } from '@/kg/core/timeline-view'
+import type { TimelineItem, TimelineKind } from '@jojo/service/core/model'
+import { dateMarkOn, markOn } from '@jojo/service/core/timeline-view'
+import type { DateMark } from '@jojo/service/core/timeline-view'
 import { TODAY } from '@/lib/today'
 
-export { KIND_LABEL, TIMELINE_KINDS } from '@/kg/core/timeline-view'
-export type { DateMark, Mark } from '@/kg/core/timeline-view'
+export { KIND_LABEL, TIMELINE_KINDS } from '@jojo/service/core/timeline-view'
+export type { DateMark, Mark } from '@jojo/service/core/timeline-view'
 
 /**
  * Which glyph each kind draws.

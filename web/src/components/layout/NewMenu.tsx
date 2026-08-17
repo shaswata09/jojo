@@ -13,7 +13,7 @@ import {
 import { isTypingTarget } from '@/components/common/typing-target'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import type { ToolName } from '@/kg/tools'
+import type { ToolName } from '@jojo/service/tools/index'
 import { useDialogs } from '@/lib/dialogs-context'
 import type { DialogName } from '@/lib/dialogs-context'
 import { scoutPath, vaultPath } from '@/lib/links'

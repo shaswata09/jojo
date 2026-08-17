@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { RefreshCw, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useStoreStatus } from '@/kg/react/status-context'
+import { useStoreStatus } from '@jojo/service/react/status-context'
 import { estimateStorage } from '@/kg/storage/probe'
 import { sessionOf, useBoot } from '@/lib/boot-context'
 

@@ -143,7 +143,9 @@ export function ImportRule() {
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
-        <title id={titleId}>The import rule inside src/kg, and the two scripts enforcing it</title>
+        <title id={titleId}>
+          The import rule inside service/kg, and the two scripts enforcing it
+        </title>
         <desc id={descId}>
           Five layers stacked top to bottom: react, tools, repo, core, storage. Three arrowheads sit
           in the gaps — react into tools, tools into repo, repo into core — and every one of them
@@ -277,7 +279,7 @@ export function ImportRule() {
         {/* This block also read "no clock", which put the clock ban inside a
             bracket that stops above storage — and so implied storage may read
             one. It may not: `check-platform.mjs` applies the `clock` group to
-            every layer under src/kg and to src/data as well, because a driver
+            every layer under service/kg and to the fixtures as well, because a driver
             that stamps its own timestamps breaks a replay exactly as a tool
             would. What the bracket really marks off is DOM and Node. The clock
             rule spans the whole stack, so it is stated in the caption, where a

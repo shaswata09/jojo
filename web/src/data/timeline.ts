@@ -11,7 +11,7 @@
  * `daysBetween`, `shortDate`, `agoLabel`, `whenLabel`, `timeLabel`,
  * `compareItems`, `bucketOf`, `followUpsOf` — now lives in `kg/core/dates.ts`
  * and is re-exported below, so no call site moved. It left because six modules
- * under `src/kg` imported it and only `repo/seed.ts` and `tools/memory.ts`
+ * under `service/kg` imported it and only `repo/seed.ts` and `tools/memory.ts`
  * wanted the fixture: the service layer was reaching through the `@/data` alias
  * for `shortDate` and taking a 276-line demo dataset with it. See the header of
  * `kg/core/dates.ts` for the failure that makes the alias itself the problem.
@@ -21,8 +21,8 @@
  * carries the whole story forward to the real one.
  */
 
-export type { TimelineItem, TimelineKind } from '@/kg/core/model'
-export type { TimelineBucket } from '@/kg/core/dates'
+export type { TimelineItem, TimelineKind } from '@jojo/service/core/model'
+export type { TimelineBucket } from '@jojo/service/core/dates'
 export {
   addDays,
   agoLabel,
@@ -35,10 +35,10 @@ export {
   shortDate,
   timeLabel,
   whenLabel,
-} from '@/kg/core/dates'
+} from '@jojo/service/core/dates'
 
-import type { TimelineItem } from '@/kg/core/model'
-import { daysBetween } from '@/kg/core/dates'
+import type { TimelineItem } from '@jojo/service/core/model'
+import { daysBetween } from '@jojo/service/core/dates'
 
 /**
  * The day the fixtures below were WRITTEN against. Not today, and never today.

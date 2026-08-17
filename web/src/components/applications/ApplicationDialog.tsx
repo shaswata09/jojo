@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dialog'
 import { displayName } from '@/data/seed'
 import type { RoleTag } from '@/data/seed'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'

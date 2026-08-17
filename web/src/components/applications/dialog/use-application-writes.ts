@@ -3,15 +3,15 @@ import type { ApplicationInitial, FormState } from '@/components/applications/di
 import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, RoleTag } from '@/data/seed'
 import { shortDate } from '@/data/timeline'
-import { useApplications } from '@/kg/react/use-applications'
-import { useTimeline } from '@/kg/react/use-timeline'
+import { useApplications } from '@jojo/service/react/use-applications'
+import { useTimeline } from '@jojo/service/react/use-timeline'
 // Imported, not redeclared. This file used to carry its own `deadlineUrgency`
 // with the 7/21-day thresholds spelled a second time, twenty lines from a
 // comment explaining that the seed's colours mix proximity with readiness. The
 // tool layer's copy is the one the store writes through, so a drift here would
 // have shown the user one colour on the form's item and another on everything
 // the tools mint.
-import { deadlineUrgency } from '@/kg/tools/support'
+import { deadlineUrgency } from '@jojo/service/tools/support'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'

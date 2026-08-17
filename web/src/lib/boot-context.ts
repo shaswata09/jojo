@@ -14,8 +14,8 @@
  */
 
 import { createContext, useContext } from 'react'
-import type { Session } from '@/kg/repo/boot'
-import type { Rows } from '@/kg/storage/driver'
+import type { Session } from '@jojo/service/repo/boot'
+import type { Rows } from '@jojo/service/storage/driver'
 import type { DataSetChoice } from '@/lib/data-set'
 
 export type BootState =

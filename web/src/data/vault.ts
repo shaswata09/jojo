@@ -6,7 +6,11 @@
  * you saved, filed under a bucket, to come back to.
  */
 
-import { FILE_BUCKET_VALUES, LINK_CATEGORY_VALUES, SNIPPET_TAG_VALUES } from '@/kg/core/model'
+import {
+  FILE_BUCKET_VALUES,
+  LINK_CATEGORY_VALUES,
+  SNIPPET_TAG_VALUES,
+} from '@jojo/service/core/model'
 import type {
   FileBucket,
   LinkCategory,
@@ -14,7 +18,7 @@ import type {
   SnippetTag,
   VaultFile,
   VaultLink,
-} from '@/kg/core/model'
+} from '@jojo/service/core/model'
 
 export type {
   FileBucket,
@@ -24,7 +28,7 @@ export type {
   SnippetTag,
   VaultFile,
   VaultLink,
-} from '@/kg/core/model'
+} from '@jojo/service/core/model'
 
 /* --------------------------------- links --------------------------------- */
 

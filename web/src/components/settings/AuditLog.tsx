@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { useGraph, useKg } from '@/kg/react/kg-context'
-import type { JournalEntry } from '@/kg/repo/journal'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
+import type { JournalEntry } from '@jojo/service/repo/journal'
 import { useToast } from '@/lib/toast-context'
 
 /**

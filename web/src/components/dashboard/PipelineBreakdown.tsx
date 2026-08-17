@@ -3,7 +3,7 @@ import { STAGE_DOT } from '@/data/seed'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { cn } from '@/lib/utils'
 

@@ -1,7 +1,7 @@
 /**
  * L0 — the five `idb` handle types the driver and its helpers pass around.
  *
- * Types only, and this is the one other file under src/kg that names `idb` at
+ * Types only, and this is the one other file under service/kg that names `idb` at
  * all. `idb-driver.ts` remains the only file that IMPORTS it at runtime —
  * `openDB` and `deleteDB` are there and nowhere else — so the platform coupling
  * is still one module. What is here erases at compile time under

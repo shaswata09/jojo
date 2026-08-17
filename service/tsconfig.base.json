@@ -1,0 +1,85 @@
+{
+  /*
+   * Shared settings for the three service projects. Never built on its own — it
+   * has no `include` and the solution file does not reference it.
+   *
+   * This is `web/tsconfig.kg.base.json` re-derived, and "re-derived" rather than
+   * "copied" because the old one got half of itself by extending
+   * `web/tsconfig.app.json`: target, module, moduleResolution, jsx, strict, the
+   * bundler-mode flags and the `@/*` alias all arrived from the app that
+   * happened to host the code. A package that two apps import cannot inherit its
+   * compiler settings from one of them, so everything the layers actually depend
+   * on is written out here.
+   *
+   * The three projects differ in `lib`, `types` and `include`. Nothing else.
+   */
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "esnext",
+    "skipLibCheck": true,
+
+    /* Bundler mode. Neither app runs tsc's emit — Vite compiles for web, Metro
+       plus babel-preset-expo for mobile — so this project type-checks only. */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /*
+     * Three flags the apps do not carry, over this package only.
+     *
+     * `noUncheckedIndexedAccess` app-wide is 94 errors in web, 47 of them inside
+     * components/graph/force.ts — a hot physics loop where every array read is
+     * provably in range and the flag is pure noise. Here the same flag is the
+     * difference between `nodes[i]` being a node and being a `TypeError: cannot
+     * read property 'type' of undefined` on a store one record shorter than the
+     * code assumed.
+     *
+     * `exactOptionalPropertyTypes` prevents a bug that only appears once rows
+     * round-trip through a driver: a `Partial<T>` patch carrying an explicit
+     * `undefined` is indistinguishable from an absent key in memory, but
+     * IndexedDB's structured clone preserves it — so the key comes back
+     * present-and-undefined and every `in` check that guarded a field starts
+     * answering the opposite way on the second launch.
+     */
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    /*
+     * TEMPORARY, and it is the only `@/` specifier this package is allowed.
+     *
+     * `repo/seed.ts` and `tools/memory.ts` compile the demo fixtures, and those
+     * fixtures are still `web/src/data` — they move into `service/data` in the
+     * next step, at which point the 22 specifiers become relative and this
+     * mapping is deleted.
+     *
+     * It is spelled as a path mapping rather than rewritten to
+     * `../../../web/src/data/…` deliberately: the relative form would escape the
+     * package, which check-layers.mjs reports as "reaches outside kg with a
+     * relative path", and it would have to be un-written again a step later.
+     * Keeping the `@/data` spelling also keeps DATA_READERS — the allowlist that
+     * says only those two modules may read fixtures — matching, because that
+     * list is written in `@/` vocabulary.
+     *
+     * What this mapping does NOT do is make the specifier correct at runtime for
+     * anyone but web: `@/` resolves against the CONSUMER's root, so on mobile it
+     * would find `mobile/src/data`, a file that exists and has drifted. That is
+     * the hazard the next step removes. Nothing in mobile imports this package
+     * yet, which is what makes the interim safe.
+     */
+    "paths": {
+      "@/data/*": ["../web/src/data/*"]
+    }
+  }
+}

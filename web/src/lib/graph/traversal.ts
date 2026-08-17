@@ -26,4 +26,4 @@ export {
   neighbourhood,
   otherEnd,
   shortestPath,
-} from '@/kg/core/algebra'
+} from '@jojo/service/core/algebra'

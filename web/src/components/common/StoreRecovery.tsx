@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Download, RotateCcw, Trash2, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import type { Rows } from '@/kg/storage/driver'
+import type { Rows } from '@jojo/service/storage/driver'
 import { useBoot } from '@/lib/boot-context'
 
 /**

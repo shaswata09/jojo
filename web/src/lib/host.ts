@@ -1,7 +1,7 @@
 /**
  * The web adapter for `Host` — the only implementation that touches the DOM.
  *
- * It lives here rather than under `src/kg` because nothing under `src/kg` may
+ * It lives here rather than under `service/kg` because nothing under `service/kg` may
  * reference `window` or `document` any more: the graph, the tools and the React
  * bindings have to mount unchanged inside a React Native or Electron-main
  * bundle, and a single `window.addEventListener` in the shared layer is a
@@ -16,7 +16,7 @@
  * methods needs a browser.
  */
 
-import type { Host } from '@/kg/react/host'
+import type { Host } from '@jojo/service/react/host'
 
 export const webHost: Host = {
   /**

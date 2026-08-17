@@ -24,11 +24,17 @@
 
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
-import { emptyRows } from './driver'
-import type { Driver, DriverResult, DurableOp, Rows, StoreEvent } from './driver'
+import { emptyRows } from '@jojo/service/storage/driver'
+import type {
+  Driver,
+  DriverResult,
+  DurableOp,
+  Rows,
+  StoreEvent,
+} from '@jojo/service/storage/driver'
 import { createIdbDriver } from './idb-driver'
-import { createMemoryDriver } from './memory-driver'
-import type { StoredRow } from './schema'
+import { createMemoryDriver } from '@jojo/service/storage/memory-driver'
+import type { StoredRow } from '@jojo/service/storage/schema'
 
 /**
  * A fresh database per driver, for the same reason `idb-driver.test.ts` does it:

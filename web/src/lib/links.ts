@@ -2,8 +2,8 @@ import { useCallback, useEffect } from 'react'
 import { useLocation, useSearchParams } from 'react-router'
 import { buildMonth } from '@/data/calendar'
 import { STAGES, type Stage } from '@/data/seed'
-import { addressOf } from '@/kg/core/address'
-import type { Addressable } from '@/kg/core/address'
+import { addressOf } from '@jojo/service/core/address'
+import type { Addressable } from '@jojo/service/core/address'
 import { TODAY_PARTS } from '@/lib/today'
 
 /**

@@ -24,4 +24,4 @@
  * from `@/kg/react/undo` should stay reached that way.
  */
 
-export { undoableWith, useUndoable } from '@/kg/react/undo'
+export { undoableWith, useUndoable } from '@jojo/service/react/undo'

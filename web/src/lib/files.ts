@@ -16,4 +16,4 @@
  * is web-only and goes next to `storage.ts` under its own name.
  */
 
-export { kindOfFile, sizeLabel } from '@/kg/core/files'
+export { kindOfFile, sizeLabel } from '@jojo/service/core/files'

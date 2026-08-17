@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle, Row, RowList } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { STAGE_LABEL, displayName } from '@/data/seed'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { appPath, applicationsPath } from '@/lib/links'
 

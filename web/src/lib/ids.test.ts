@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { toLabelId } from '@/data/labels'
-import { slugify } from '@/kg/core/ref'
+import { slugify } from '@jojo/service/core/ref'
 import { refKey } from '@/lib/ids'
 
 describe('refKey', () => {

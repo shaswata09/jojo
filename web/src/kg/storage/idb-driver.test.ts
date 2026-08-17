@@ -15,12 +15,17 @@
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { nullChannel } from './channel'
-import type { Rows, StoreEvent } from './driver'
+import type { Rows, StoreEvent } from '@jojo/service/storage/driver'
 import { createIdbDriver } from './idb-driver'
-import { MIGRATIONS, SCHEMA_VERSION, pendingMigrations, versionOf } from './migrations'
-import type { Migration } from './migrations'
-import { STORE_SPECS } from './schema'
-import type { StoredRow } from './schema'
+import {
+  MIGRATIONS,
+  SCHEMA_VERSION,
+  pendingMigrations,
+  versionOf,
+} from '@jojo/service/storage/migrations'
+import type { Migration } from '@jojo/service/storage/migrations'
+import { STORE_SPECS } from '@jojo/service/storage/schema'
+import type { StoredRow } from '@jojo/service/storage/schema'
 
 /**
  * A fresh database per test.

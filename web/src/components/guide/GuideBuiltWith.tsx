@@ -223,7 +223,7 @@ export function GuideBuiltWith() {
 
         <div className="grid grid-cols-1 gap-4 sm:gap-5">
           <Panel>
-            <PanelTitle hint="src/kg">One rule, and two scripts that hold it</PanelTitle>
+            <PanelTitle hint="service/kg">One rule, and two scripts that hold it</PanelTitle>
             <p className="mb-3.5 text-sm text-text-2">
               Everything about your records — the model, the writes, the storage — sits under one
               directory in five layers, and the whole architecture is a single rule about which of
@@ -246,13 +246,13 @@ export function GuideBuiltWith() {
             </Panel>
 
             <Panel>
-              <PanelTitle hint="29 files, 362 tests">Tested where it counts</PanelTitle>
+              <PanelTitle hint="49 files, 607 tests">Tested where it counts</PanelTitle>
               <p className="text-sm text-text-2">
-                Nineteen of those files are under <span className="font-mono text-xs">src/kg</span>,
-                against a real IndexedDB implementation running in Node. There are no component
-                tests and no browser in the suite — a deliberate line: the record model is where a
-                silent mistake costs you data, and it runs in about a second, which is what makes
-                anyone run it.
+                Twenty-six of those files are in <span className="font-mono text-xs">service/</span>
+                , the package both apps import, against a real IndexedDB implementation running in
+                Node. There are no component tests and no browser in the suite — a deliberate line:
+                the record model is where a silent mistake costs you data, and it runs in about a
+                second, which is what makes anyone run it.
               </p>
             </Panel>
 

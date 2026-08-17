@@ -10,8 +10,8 @@
  */
 
 import type { AnyDb, UpgradeStore, UpgradeTx } from './idb-handles'
-import type { MigrationContext } from './migrations'
-import type { IndexSpec, StoreName, StoreSpec, StoredRow } from './schema'
+import type { MigrationContext } from '@jojo/service/storage/migrations'
+import type { IndexSpec, StoreName, StoreSpec, StoredRow } from '@jojo/service/storage/schema'
 
 /**
  * The `MigrationContext` over a live upgrade transaction.
