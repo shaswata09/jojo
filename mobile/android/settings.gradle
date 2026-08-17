@@ -18,6 +18,19 @@ pluginManagement {
 }
 
 plugins {
+  // Lets Gradle FETCH a JDK it does not have, rather than failing on whatever
+  // JVM happened to launch it. Paired with `gradle/gradle-daemon-jvm.properties`
+  // (which pins the daemon to Java 17), this is what makes the build independent
+  // of the developer's `JAVA_HOME`.
+  //
+  // The two failures it removes are both real and both cryptic:
+  //   - the machine default here is Java 11, and AGP 8 refuses with
+  //     "Android Gradle plugin requires Java 17 to run";
+  //   - Android Studio's bundled JBR is Java 25, which Gradle 8.14.3 does not
+  //     know, and it fails with "Error resolving plugin ... > 25.0.2", which
+  //     names neither Java nor a version anyone would recognise as one.
+  id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
+
   id("com.facebook.react.settings")
   id("expo-autolinking-settings")
 }
