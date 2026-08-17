@@ -1,8 +1,9 @@
 /**
  * The web import path for the Undo a card wires by hand.
  *
- * The implementation is `@/kg/react/undo`. It moved down when `use-tool.ts` —
- * the hook cards migrate to in Wave 3 — needed the same guard, because
+ * The implementation is `@/kg/react/undo`. It moved down when `use-tool.ts`
+ * needed the same guard — a hook written for cards to migrate to, which none
+ * have yet — because
  * `check-platform.mjs` bans `kg/react -> @/lib`: `src/lib` is jojo's web app,
  * and the shared layer reaching into it is how the toast context's DOM types got
  * below the seam the first time. Nothing in the undo rule is web-only, so the

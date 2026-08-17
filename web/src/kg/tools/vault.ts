@@ -14,34 +14,17 @@
  * record is a name, a size label and a bucket.
  */
 
-import type { FileBucket, FileKind, LinkCategory, NodeId, SnippetTag } from '@/kg/core/model'
+import {
+  FILE_BUCKET_VALUES,
+  FILE_KIND_VALUES,
+  LINK_CATEGORY_VALUES,
+  SNIPPET_TAG_VALUES,
+} from '@/kg/core/model'
+import type { NodeId } from '@/kg/core/model'
 import { s } from '@/kg/core/schema'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 import { dayOf, opt } from './support'
-
-const CATEGORIES = [
-  'Posting',
-  'Institution',
-  'Person',
-  'Guide',
-] as const satisfies readonly LinkCategory[]
-
-const BUCKETS = [
-  'To read',
-  'Applications',
-  'Talks',
-  'Admin',
-] as const satisfies readonly FileBucket[]
-
-const FILE_KINDS = ['pdf', 'doc', 'slides', 'note'] as const satisfies readonly FileKind[]
-
-const SNIPPET_TAGS = [
-  'Cover letter',
-  'Application form',
-  'Email',
-  'Bio',
-] as const satisfies readonly SnippetTag[]
 
 /** `null` unfiles it; absent leaves the edge alone. The two are not the same. */
 const applicationId = s.optional(s.nullable(s.id('application', { label: 'Filed under' })))
@@ -71,7 +54,7 @@ export const vaultLinkSave = defineTool({
   input: s.object({
     title: s.string({ min: 1, label: 'Title' }),
     url: s.string({ min: 1, label: 'Link' }),
-    category: s.enum(CATEGORIES, { label: 'Category' }),
+    category: s.enum(LINK_CATEGORY_VALUES, { label: 'Category' }),
     note: s.optional(s.string({ label: 'Note' })),
     savedOn: s.optional(s.isoDate()),
     applicationId,
@@ -113,7 +96,7 @@ export const vaultLinkUpdate = defineTool({
     id: linkId,
     title: s.optional(s.string({ min: 1, label: 'Title' })),
     url: s.optional(s.string({ min: 1, label: 'Link' })),
-    category: s.optional(s.enum(CATEGORIES, { label: 'Category' })),
+    category: s.optional(s.enum(LINK_CATEGORY_VALUES, { label: 'Category' })),
     note: s.optional(s.string({ label: 'Note' })),
     savedOn: s.optional(s.isoDate()),
     applicationId,
@@ -192,7 +175,7 @@ export const vaultLinkRecategorise = defineTool({
   summary: 'Files the link under a different category.',
   effect: 'move',
   touches: ['link'],
-  input: s.object({ id: linkId, category: s.enum(CATEGORIES, { label: 'Category' }) }),
+  input: s.object({ id: linkId, category: s.enum(LINK_CATEGORY_VALUES, { label: 'Category' }) }),
 
   run(ctx, input) {
     ctx.require('link', input.id)
@@ -208,8 +191,8 @@ const fileId = s.id('file', { label: 'File' })
 
 const fileDraft = s.object({
   name: s.string({ min: 1, label: 'Name' }),
-  kind: s.enum(FILE_KINDS, { label: 'Kind' }),
-  bucket: s.enum(BUCKETS, { label: 'Bucket' }),
+  kind: s.enum(FILE_KIND_VALUES, { label: 'Kind' }),
+  bucket: s.enum(FILE_BUCKET_VALUES, { label: 'Bucket' }),
   /** '184 KB' — a label the user reads. No bytes are held, ever (D27). */
   size: s.string({ label: 'Size' }),
   note: s.optional(s.string({ label: 'Note' })),
@@ -223,10 +206,18 @@ const fileDraft = s.object({
  * `addFile` minted its slug from a store read that predated the whole gesture,
  * so two files dropped together both took the same id and from then on were one
  * row with one keyword set that one delete took out together. `sortDrop` in
- * `components/vault/files/intake.ts` works that around by hand with a `seen`
- * set. Here `ctx.mintSlug`
- * counts what this transaction has already handed out, so the workaround has
- * nothing left to do — and the whole drop is one commit and one Undo.
+ * `components/vault/files/intake.ts` used to work that around by predicting the
+ * minted slug; it dedupes on the folded name now. Here `ctx.mintSlug` reads the
+ * transaction overlay, so each `tx.put` below is visible to the next draft's
+ * mint — which is what made that prediction unnecessary, and the whole drop is
+ * one commit and one Undo.
+ *
+ * That last clause is the part not currently delivered. `useVault().addFile`
+ * passes a list of one and `components/vault/FilesTool.tsx` calls it in a `for`
+ * loop, so a ten-file drop is ten transactions, ten journal rows and an undo
+ * hand-built as ten deletes — the opposite of what `files: FileDraft[]` and the
+ * `min: 1` below exist for. Nothing needs to change HERE to fix it: the caller
+ * passes the array.
  */
 export const vaultFileAdd = defineTool({
   name: 'vault.file.add',
@@ -274,8 +265,8 @@ export const vaultFileUpdate = defineTool({
   input: s.object({
     id: fileId,
     name: s.optional(s.string({ min: 1, label: 'Name' })),
-    kind: s.optional(s.enum(FILE_KINDS, { label: 'Kind' })),
-    bucket: s.optional(s.enum(BUCKETS, { label: 'Bucket' })),
+    kind: s.optional(s.enum(FILE_KIND_VALUES, { label: 'Kind' })),
+    bucket: s.optional(s.enum(FILE_BUCKET_VALUES, { label: 'Bucket' })),
     note: s.optional(s.string({ label: 'Note' })),
     size: s.optional(s.string({ label: 'Size' })),
     savedOn: s.optional(s.isoDate()),
@@ -327,7 +318,7 @@ export const vaultFileMove = defineTool({
   summary: 'Files the document under a different bucket.',
   effect: 'move',
   touches: ['file'],
-  input: s.object({ id: fileId, bucket: s.enum(BUCKETS, { label: 'Bucket' }) }),
+  input: s.object({ id: fileId, bucket: s.enum(FILE_BUCKET_VALUES, { label: 'Bucket' }) }),
 
   run(ctx, input) {
     ctx.require('file', input.id)
@@ -365,7 +356,7 @@ export const vaultSnippetCreate = defineTool({
   touches: ['snippet'],
   input: s.object({
     title: s.string({ min: 1, label: 'Title' }),
-    tag: s.enum(SNIPPET_TAGS, { label: 'Used for' }),
+    tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Used for' }),
     body: s.string({ label: 'Text', multiline: true }),
     applicationId,
   }),
@@ -400,7 +391,7 @@ export const vaultSnippetUpdate = defineTool({
   input: s.object({
     id: snippetId,
     title: s.optional(s.string({ min: 1, label: 'Title' })),
-    tag: s.optional(s.enum(SNIPPET_TAGS, { label: 'Used for' })),
+    tag: s.optional(s.enum(SNIPPET_TAG_VALUES, { label: 'Used for' })),
     body: s.optional(s.string({ label: 'Text', multiline: true })),
     applicationId,
   }),
@@ -476,7 +467,7 @@ export const vaultSnippetRetag = defineTool({
   summary: 'Moves the snippet to another tag.',
   effect: 'move',
   touches: ['snippet'],
-  input: s.object({ id: snippetId, tag: s.enum(SNIPPET_TAGS, { label: 'Used for' }) }),
+  input: s.object({ id: snippetId, tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Used for' }) }),
 
   run(ctx, input) {
     ctx.require('snippet', input.id)

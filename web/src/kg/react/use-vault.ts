@@ -19,6 +19,7 @@
 import { useCallback, useMemo } from 'react'
 import type { Snippet, VaultFile, VaultLink } from '@/kg/core/model'
 import { useGraph, useKg } from './kg-context'
+import { useReadBack } from './read-back'
 import { useRun } from './use-tool'
 import { asNull, asText, nothingToRestore, present } from './patch'
 
@@ -28,32 +29,14 @@ type SnippetDraft = Omit<Snippet, 'id'>
 
 export function useVault() {
   const graph = useGraph()
-  const { repo, projections } = useKg()
+  const { projections } = useKg()
   const run = useRun()
 
   const links = projections.links(graph)
   const files = projections.files(graph)
   const snippets = projections.snippets(graph)
 
-  /**
-   * The record just written, read back off the committed snapshot.
-   *
-   * `graph` above is the reading this render was given, and a create inside a
-   * handler commits after it — so looking the new id up there would return
-   * undefined and every card that navigates to what it just made would land on
-   * "this no longer exists".
-   */
-  const readBack = useCallback(
-    <R extends { id: string }>(
-      list: (g: ReturnType<typeof repo.getSnapshot>) => readonly R[],
-      id: string,
-    ): R => {
-      const found = list(repo.getSnapshot()).find((r) => r.id === id)
-      if (!found) throw new Error('The record was created and could not be read back.')
-      return found
-    },
-    [repo],
-  )
+  const readBack = useReadBack()
 
   const addLink = useCallback(
     (draft: LinkDraft): VaultLink => {

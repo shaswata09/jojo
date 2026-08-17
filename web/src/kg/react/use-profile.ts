@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { profileIsBlank } from '@/data/profile'
+import { profileIsBlank } from '@/kg/core/profile'
 import type { Profile } from '@/kg/core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'

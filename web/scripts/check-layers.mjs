@@ -1,5 +1,5 @@
 /**
- * Enforces the import direction inside src/kg.
+ * Enforces the import direction inside src/kg, and around src/data.
  *
  * The layer rule is the whole architecture: imports point strictly downward,
  * L4 -> L3 -> L2 -> L1 -> L0, never upward. Left to good intentions it survives
@@ -61,8 +61,8 @@ const RULES = {
   repo: {
     label: 'L2 repo',
     internal: ['core', 'storage', 'repo', 'log'],
-    // `repo/seed.ts` compiles the src/data fixtures into nodes and edges. It is
-    // the only reader of them in the whole layer.
+    // Only `repo/seed.ts`, and only to compile the fixtures into nodes and
+    // edges. See DATA_READERS — the alias is not enough on its own.
     alias: ['@/data'],
     packages: true,
     react: false,
@@ -70,6 +70,7 @@ const RULES = {
   tools: {
     label: 'L3 tools',
     internal: ['core', 'tools', 'log'],
+    // Only `tools/memory.ts`, which is `memory.reset`. See DATA_READERS.
     alias: ['@/data'],
     packages: true,
     react: false,
@@ -81,12 +82,51 @@ const RULES = {
   react: {
     label: 'L4 react',
     internal: ['core', 'storage', 'repo', 'tools', 'react', 'log'],
-    alias: ['@/data', '@/lib'],
+    /*
+     * `@/lib` is gone, and it is worth saying why rather than leaving a shorter
+     * list. It was allowed here because the toast context used to live in
+     * `src/lib`; the interface moved to `kg/react/toast.ts` and only the web
+     * adapter stayed behind. Since then `check-platform.mjs` has banned the same
+     * import as a DOM module — so the two guards disagreed, and only the second
+     * one was load-bearing. A rule that another rule already contradicts is a
+     * rule nobody can reason from: whichever file you read first tells you the
+     * wrong thing. There are no `@/lib` imports under `kg/react` to remove.
+     *
+     * `@/data` survives only for tests. See DATA_READERS.
+     */
+    alias: ['@/data'],
     packages: true,
     react: true,
   },
   log: { label: 'log', internal: ['log'], alias: [], packages: false, react: false },
 }
+
+/**
+ * The only production modules under src/kg that may import `@/data`.
+ *
+ * The alias on its own was never the rule anyone meant. The comment above `repo`
+ * used to read "`repo/seed.ts` … is the only reader of them in the whole layer",
+ * and it was false by a factor of six: `tools/support.ts` took `daysBetween` and
+ * re-exported `STAGE_LABEL`, `tools/application.ts` and two siblings took
+ * `shortDate`, `tools/keyword.ts` took a colour list, and four modules under
+ * `kg/react` took date selectors, `profileIsBlank` and the stage vocabulary. A
+ * grant written for two files had quietly become a grant for twelve, and the
+ * comment describing it stayed accurate-sounding the whole time.
+ *
+ * It matters beyond tidiness because `@/…` resolves against the CONSUMER's
+ * project root. The Expo app in `mobile/` maps `@/*` to its own `src`, so a
+ * shared `kg/tools/timeline.ts` asking for `@/data/timeline` gets
+ * `mobile/src/data/timeline.ts` — a file that exists, that has drifted from this
+ * one, and that fails no check. The failure mode is not a missing module; it is
+ * the wrong module, silently. Everything the service layer actually needed moved
+ * into `kg/core` (`dates.ts`, `profile.ts`, `STAGE_LABEL` in `model.ts`), and
+ * what is left here is genuinely the demo dataset.
+ *
+ * Tests are exempt. A test that seeds from the same fixture the seeder reads is
+ * asserting against the real input, which is the point of it; the hazard above
+ * is about code that SHIPS.
+ */
+const DATA_READERS = new Set(['repo/seed.ts', 'tools/memory.ts'])
 
 /** Banned everywhere under src/kg: a domain write must not reach up into the UI. */
 const UPWARD = ['@/components', '@/routes', '@/kg/../']
@@ -208,6 +248,20 @@ for (const file of walk(KG)) {
           line,
           `${rule.label} imports '${spec}'. Allowed aliases: ${rule.alias.join(', ') || 'none'}.`,
         )
+        continue
+      }
+      if (
+        (spec === '@/data' || spec.startsWith('@/data/')) &&
+        !isTest(file) &&
+        !DATA_READERS.has(relFromKg.split(path.sep).join('/'))
+      ) {
+        fail(
+          file,
+          line,
+          `imports the demo fixtures ('${spec}'). Only ${[...DATA_READERS].join(' and ')} may — ` +
+            `see DATA_READERS in this file. If what you want is date maths, the stage labels or an ` +
+            `empty profile, they are in kg/core (dates.ts, model.ts, profile.ts) and always were the model's.`,
+        )
       }
       continue
     }
@@ -227,6 +281,89 @@ for (const file of walk(KG)) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+
+/**
+ * src/data, which is inside the boundary whether or not it is inside the folder.
+ *
+ * This file walked `src/kg` and stopped there, and the omission was structural
+ * rather than an oversight: `src/data` was described as fixtures, and fixtures
+ * are leaves. They are not. `repo/seed.ts` and `tools/memory.ts` import this
+ * directory, so anything it imports is reachable from the model — a `react`
+ * import here would put React inside `repo`, and an `@/lib` import would put the
+ * web app underneath `tools`, and until now nothing looked.
+ *
+ * The type system does not cover the gap either. `tsconfig.kg.json` pulls in the
+ * six `src/data` modules the layer actually reaches and checks them under
+ * `"lib": ["ES2023"], "types": []` like everything else — but only those six.
+ * `statistics.ts` and `calendar.ts` are reached by no kg module, so they are
+ * compiled solely by `tsconfig.app.json`, with DOM in the lib and `vite/client`
+ * in the types. They are pure domain code that two probes have recommended
+ * moving down; the day someone does, whatever they picked up in the meantime
+ * comes with them.
+ *
+ * What is allowed: sibling `@/data` modules and `@/kg/core`. `core` is where the
+ * types these fixtures are annotated with live, and where the date and profile
+ * helpers they used to own now live, so the edge points down and stays there.
+ * Nothing else — no packages, no React, no `@/lib`, and no `@/kg/repo`,
+ * `@/kg/tools` or `@/kg/react`, which would be a fixture reaching back up into
+ * the layers that read it. Tests get vitest and the whole of `@/kg`: `seed.test.ts`
+ * builds a real repository to assert the fixtures compile into a valid graph,
+ * which is exactly the test worth having.
+ */
+const DATA = path.join(WEB, 'src', 'data')
+const DATA_ALIASES = ['@/data', '@/kg/core']
+
+for (const file of walk(DATA)) {
+  const source = readFileSync(file, 'utf8')
+  const test = isTest(file)
+
+  if (file.endsWith('.tsx')) {
+    fail(file, 1, `is .tsx in src/data. Fixtures and domain data are not components.`)
+  }
+
+  for (const [, spec] of source.matchAll(TODAY_IMPORT)) {
+    fail(
+      file,
+      lineOf(source, spec),
+      `imports TODAY from '${spec}'. D26 applies here too — src/data is read by repo and tools.`,
+    )
+  }
+
+  for (const spec of specsIn(source)) {
+    const line = lineOf(source, spec)
+
+    if (UPWARD.some((p) => spec.startsWith(p))) {
+      fail(file, line, `imports '${spec}'. src/data is below the UI, not beside it.`)
+      continue
+    }
+    if (spec.startsWith('.') || DATA_ALIASES.some((a) => spec === a || spec.startsWith(`${a}/`))) {
+      continue
+    }
+    if (spec.startsWith('@/')) {
+      if (test && spec.startsWith('@/kg/')) continue
+      fail(
+        file,
+        line,
+        `src/data imports '${spec}'. Allowed: ${DATA_ALIASES.join(', ')} (tests may also reach the rest of @/kg). ` +
+          `repo/seed.ts and tools/memory.ts import this directory, so anything it imports is reachable from the model.`,
+      )
+      continue
+    }
+    if (REACT_PACKAGES.test(spec)) {
+      fail(file, line, `src/data imports '${spec}'. Only kg/react may import React.`)
+      continue
+    }
+    if (!(test && TEST_PACKAGES.test(spec))) {
+      fail(
+        file,
+        line,
+        `src/data imports the package '${spec}'. It is reachable from repo and tools, which ship on three platforms.`,
+      )
+    }
+  }
+}
+
 if (failures.length > 0) {
   console.error(`\ncheck-layers: ${failures.length} layer violation(s)\n`)
   for (const f of failures) console.error(`  ${f}`)
@@ -235,4 +372,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('check-layers: src/kg import direction is clean')
+console.log('check-layers: src/kg and src/data import direction is clean')

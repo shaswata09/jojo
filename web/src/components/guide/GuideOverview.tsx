@@ -8,7 +8,8 @@ import {
   KeywordsSection,
 } from '@/components/guide/overview/GettingAround'
 import { LadderSection } from '@/components/guide/overview/Ladder'
-import { OnThisPage } from '@/components/guide/overview/OnThisPage'
+import { OnThisPage } from '@/components/guide/OnThisPage'
+import { SECTIONS } from '@/components/guide/overview/sections'
 import { TrackApplicationSection } from '@/components/guide/overview/TrackApplication'
 import { DatesSection, ProfileSection, VaultSection } from '@/components/guide/overview/WhatYouFile'
 import { BrowserIsTheDatabase, DataSection } from '@/components/guide/overview/YourData'
@@ -32,7 +33,7 @@ import { useTitle } from '@/lib/links'
  * That order is the reason the sections sit in the files they do: what you
  * track, what you file beside it, how you get around it, where it is kept, and
  * what is not connected yet. The `id` on each panel is what the jump list in
- * `overview/OnThisPage.tsx` links to.
+ * `overview/sections.ts` lists and the shared `OnThisPage` links to.
  */
 export function GuideOverview() {
   useTitle('How to use jojo')
@@ -46,7 +47,7 @@ export function GuideOverview() {
 
       <GuideContents />
 
-      <OnThisPage />
+      <OnThisPage sections={SECTIONS} caption="On this page" />
 
       {/* The tour was written, tested and imported by nothing — a door-less
           room, and a guide that mentioned a tutorial no reader could reach.

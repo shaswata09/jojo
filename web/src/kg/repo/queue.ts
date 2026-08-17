@@ -295,6 +295,15 @@ export function createWriteQueue(driver: Driver): WriteQueue {
   }
 
   async function drain(): Promise<void> {
+    // The `off` arm is a backstop, and worth knowing as one. Nothing can reach
+    // this function while the queue is off: `enqueue` returns after refreshing
+    // the counts without scheduling, `flushAndReport` answers 'stranded' without
+    // scheduling, and the only writer of `off` is this function, which returns
+    // straight after setting it — so there is never a timer outstanding when it
+    // flips. It stays because "off" is the one state that must not attempt a
+    // write: the ops behind it are a deterministic failure, and retrying one is
+    // not caution but a banner promising a recovery that cannot arrive. It is
+    // also unobservable from outside, so a test for it would pass either way.
     if (draining || stopped || health.state === 'off') return
     if (pending.length === 0) {
       setHealth({ state: 'idle' })

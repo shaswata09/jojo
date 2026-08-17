@@ -1,62 +1,36 @@
-import { useState } from 'react'
-import { Copy, Flag, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Copy, Flag, Pencil, Trash2 } from 'lucide-react'
+import { MenuItem, RowMenu as OverflowMenu } from '@/components/common/RowMenu'
 import type { RowActions } from '@/components/applications/use-row-actions'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { displayName, type Application } from '@/data/seed'
 import { cn } from '@/lib/utils'
 
-const menuItem =
-  'flex w-full items-center gap-2 rounded-sm px-1.5 py-1.5 text-xs text-text-2 transition-colors hover:bg-well hover:text-text-1'
-
-/** Edit · Duplicate · Delete, behind one overflow button. */
+/**
+ * Edit · Duplicate · Delete on an applications row.
+ *
+ * A wrapper over the shared `RowMenu`, not a second menu. This file used to be
+ * one: same trigger classes to the byte, same three items in the same order,
+ * and three differences nobody chose — a `w-44` popover against the vault's
+ * `w-48`, an item class missing `cursor-pointer`, and no `danger` styling
+ * beyond a hand-written `cn()`. The one that reached users was the cursor: the
+ * app's longest list was the only place a ⋯ item did not look clickable.
+ *
+ * Kept as a named wrapper rather than inlined at the call site because the
+ * three actions and their order are the contract `RowMenu`'s header states, and
+ * a call site is free to reorder what it spells out.
+ */
 export function RowMenu({ app, actions }: { app: Application; actions: RowActions }) {
-  const [open, setOpen] = useState(false)
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        aria-label={`More actions for ${displayName(app)}`}
-        title="More actions"
-        className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-md border border-transparent text-text-3 transition-colors hover:border-hairline hover:bg-well hover:text-text-1 data-[state=open]:border-accent-border data-[state=open]:bg-accent-soft data-[state=open]:text-accent"
-      >
-        <MoreHorizontal className="size-4" strokeWidth={1.9} aria-hidden />
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-44 gap-1 p-1.5">
-        <button
-          type="button"
-          className={menuItem}
-          onClick={() => {
-            setOpen(false)
-            actions.onEdit(app)
-          }}
-        >
-          <Pencil className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-          Edit
-        </button>
-        <button
-          type="button"
-          className={menuItem}
-          onClick={() => {
-            setOpen(false)
-            actions.onDuplicate(app)
-          }}
-        >
-          <Copy className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-          Duplicate
-        </button>
-        <button
-          type="button"
-          className={cn(menuItem, 'text-danger hover:bg-danger-soft hover:text-danger')}
-          onClick={() => {
-            setOpen(false)
-            actions.requestDelete(app)
-          }}
-        >
-          <Trash2 className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
-          Delete
-        </button>
-      </PopoverContent>
-    </Popover>
+    <OverflowMenu name={displayName(app)}>
+      <MenuItem icon={Pencil} onSelect={() => actions.onEdit(app)}>
+        Edit
+      </MenuItem>
+      <MenuItem icon={Copy} onSelect={() => actions.onDuplicate(app)}>
+        Duplicate
+      </MenuItem>
+      <MenuItem icon={Trash2} danger onSelect={() => actions.requestDelete(app)}>
+        Delete
+      </MenuItem>
+    </OverflowMenu>
   )
 }
 

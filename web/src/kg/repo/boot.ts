@@ -46,18 +46,17 @@
 
 import { checkInvariants } from '../core/validate'
 import type { Diagnostic } from '../core/validate'
-import type { Instant, StoredEdge, StoredNode } from '../core/model'
+import type { Instant } from '../core/model'
 import { MutableSnapshot } from '../core/snapshot'
 import { kgLog, kgWarn } from '../log'
 import { emptyRows } from '../storage/driver'
 import type { Driver, Rows } from '../storage/driver'
 import { createMemoryDriver } from '../storage/memory-driver'
-import type { StoredRow } from '../storage/schema'
 import { live } from './boot-live'
 import { ready } from './boot-ready'
 import { freshMeta, metaRow, readMeta } from './meta'
 import type { StoreMeta } from './meta'
-import { createRepository } from './repository'
+import { createRepository, rowOf } from './repository'
 import type { Repository } from './repository'
 import { seedToGraph } from './seed'
 
@@ -129,8 +128,6 @@ export type DurableBootOptions = BootOptions & {
    */
   onResume?: (fn: () => void) => () => void
 }
-
-const rowOf = (record: StoredNode | StoredEdge): StoredRow => record as unknown as StoredRow
 
 /**
  * The stand-in session a failed open falls back to. Always empty, never seeded.

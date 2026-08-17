@@ -1,14 +1,11 @@
 /**
  * L3 — the two admin tools.
  *
- * Both are `undoable: false`. That is not an oversight: they already go through
- * a confirmation dialog rather than an undo toast (`pendingCopy` in
- * `components/settings/data-confirm-copy.tsx`), and
- * journalling them would break that contract and write one entry holding every
- * record in the store. The runtime enforces it on the undo STACK rather than on
- * the journal, because `repo.commit` is the only path from a transaction buffer
- * to the durable op list — and after a reset no earlier before-image is safe to
- * replay anyway.
+ * Both are `undoable: false`, and journalling them would write one entry holding
+ * every record in the store. The runtime enforces it on the undo STACK rather
+ * than on the journal, because `repo.commit` is the only path from a transaction
+ * buffer to the durable op list — and after a reset no earlier before-image is
+ * safe to replay anyway.
  *
  * `memory.reset` compiles `src/data/*` into nodes and edges. §2 of the
  * architecture names this the one tool allowed to import the fixtures, and the
@@ -20,21 +17,43 @@
  * of fixtures is the shape of R-1: a field added to `data/seed.ts` gets picked
  * up by whichever one the author happened to open, and the demo store then
  * differs depending on whether it arrived by first run or by pressing "Demo
- * data". They must be reconciled into one before Wave 2 — the cheap fix is to
- * let `tools/` import `repo/seed`, which is one line in
- * `scripts/check-layers.mjs`'s allowlist.
+ * data".
  *
- * `memory.import` is deliberately absent. The catalogue marks it new, and what
- * it replays is the envelope `useStoreAdmin().exportJSON` writes — a format the
- * React layer defines and which does not exist yet. An importer written against
- * a guess at that format is a data-loss bug with a confirmation dialog in front
- * of it.
+ * That is STILL TRUE, and the plan that used to be recorded here — "reconcile
+ * before Wave 2; the cheap fix is to let `tools/` import `repo/seed`" — did not
+ * happen. Waves 2, 3 and 4 shipped around it. What happened instead is that
+ * `src/lib/data-set.ts` took Settings AWAY from these tools and onto
+ * `seedToGraph` + `repo.replaceAll`, for two reasons this file cannot answer:
+ * a tool's wipe is only as complete as `RECORD_TYPES` below and its deletes
+ * queue behind the write queue, whereas `replaceAll` clears every object store
+ * in one transaction; and a tool commit cannot write the `dataSet: 'empty'` meta
+ * row D24 needs, because `land()` flips `dataSet` to 'user' on any write. So
+ * `repo/seed` is now the compiler the app's own Settings screen trusts.
+ *
+ * These two are nonetheless still LIVE user-facing doors, not leftovers:
+ * neither is `internal`, and `SpotlightSearch` lists every non-internal tool, so
+ * ⌘K reaches both. The line this header used to carry — "they already go through
+ * a confirmation dialog rather than an undo toast" — is true of the Settings
+ * path that no longer calls them and false of the palette path that does. Anyone
+ * reconciling the two compilers should decide that first: marking both
+ * `internal` removes the second door and makes `data-set.ts` the only way in,
+ * which is what the rest of the app already assumes.
+ *
+ * `memory.import` is deliberately absent, but not for the reason recorded here
+ * before. The envelope exists — `EXPORT_VERSION` and `exportJSON` in
+ * `kg/react/use-admin.ts` — so "a format the React layer defines and which does
+ * not exist yet" is out of date. The live blocker is the one `DataPanel`'s own
+ * Import tooltip states: reading a backup needs a validator that can REFUSE a
+ * file it does not understand. An importer written without one is a data-loss
+ * bug with a confirmation dialog in front of it.
  *
  * `memory.undo` / `memory.redo` are not registry tools either. They are
  * `runtime.undo()` and `runtime.redo()`: a tool runs inside a transaction and
  * has no access to the journal, so a tool that reverted an entry would have to
- * reach for the repository singleton the layer rule exists to forbid. Binding
- * them to ⌘Z and the palette is Wave 3.
+ * reach for the repository singleton the layer rule exists to forbid. ⌘Z and ⇧⌘Z
+ * reach them through `webHost.onUndoRequest` in `src/lib/host.ts`; the palette
+ * never grew an entry for either, and because they are not tools it never will
+ * by itself.
  */
 
 import { seedLabels, seedLabelsByRecord } from '@/data/labels'
@@ -43,7 +62,15 @@ import { matches, pipelines, savedPostings } from '@/data/scout'
 import { applications } from '@/data/seed'
 import { timeline } from '@/data/timeline'
 import { snippets, vaultFiles, vaultLinks } from '@/data/vault'
-import type { Instant, NodeId, NodePropsByType, SluggedType, StoredNode } from '@/kg/core/model'
+import { NODE_TYPES } from '@/kg/core/model'
+import type {
+  Instant,
+  NodeId,
+  NodePropsByType,
+  NodeType,
+  SluggedType,
+  StoredNode,
+} from '@/kg/core/model'
 import { s } from '@/kg/core/schema'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
@@ -51,18 +78,25 @@ import { profileNode } from './profile'
 
 /* ---------------------------------- clear --------------------------------- */
 
-/** Everything the user can create. Keywords and the profile are handled apart. */
-const RECORD_TYPES = [
-  'application',
-  'organisation',
-  'timelineItem',
-  'link',
-  'file',
-  'snippet',
-  'posting',
-  'match',
-  'pipeline',
-] as const
+/**
+ * Everything a wipe walks, as `NODE_TYPES` minus the two handled apart.
+ *
+ * A subtraction rather than a list, because this list being SHORT is a silent
+ * failure: `memory.clear`'s summary says "removes every record", and a twelfth
+ * node type added to the model and not to a hand-written list here would leave
+ * its rows behind under that sentence. `lib/data-set.ts`'s header names this exact
+ * gap as one of the two reasons Settings stopped calling these tools —
+ * *"'cleared' meant 'every record type we remembered to name is gone'"*. Written
+ * this way, the model adds the type and the wipe already covers it.
+ *
+ * The exclusions are the two that are not "records the user creates":
+ * a keyword is the user's own vocabulary and `memory.clear` keeps it (D14), and
+ * the profile is a singleton that is blanked rather than deleted because the
+ * page has to have something to render.
+ */
+const HANDLED_APART: ReadonlySet<string> = new Set<NodeType>(['keyword', 'profile'])
+
+const RECORD_TYPES: readonly NodeType[] = NODE_TYPES.filter((type) => !HANDLED_APART.has(type))
 
 function clearRecords(ctx: ToolContext) {
   for (const type of RECORD_TYPES) {

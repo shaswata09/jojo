@@ -51,12 +51,3 @@ export const GUIDE_PAGE_META: readonly GuidePageMeta[] = GUIDE_PAGES.map((id) =>
   id,
   ...META[id],
 }))
-
-const BY_ID = Object.fromEntries(GUIDE_PAGE_META.map((page) => [page.id, page])) as Record<
-  GuidePage,
-  GuidePageMeta
->
-
-export function guidePageMeta(id: GuidePage): GuidePageMeta {
-  return BY_ID[id]
-}

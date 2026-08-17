@@ -21,13 +21,12 @@
  * and offer tools in `application-stage.ts`.
  */
 
-import { shortDate } from '@/data/timeline'
-import { ROLES, SOURCES } from '@/kg/core/model'
+import { shortDate } from '@/kg/core/dates'
+import { OUTCOME_VALUES, ROLES, SOURCES, STAGE_VALUES } from '@/kg/core/model'
 import type { NodeId } from '@/kg/core/model'
 import { foldName } from '@/kg/core/ref'
 import { s } from '@/kg/core/schema'
 import {
-  OUTCOMES,
   appId,
   cleared,
   fields,
@@ -35,7 +34,7 @@ import {
   syncDeadline,
   syncKeywords,
 } from './application-fields'
-import { STAGE_IDS, STAGE_LABEL, displayOf, opt, touch } from './support'
+import { STAGE_LABEL, displayOf, opt, touch } from './support'
 import { defineTool } from './tool'
 
 /* ------------------------------- org.ensure ------------------------------- */
@@ -87,7 +86,7 @@ export const applicationCreate = defineTool({
     org: s.string({ min: 1, label: 'Employer' }),
     role: s.string({ label: 'Role' }),
     roleTag: s.enum(ROLES, { label: 'Role type' }),
-    stage: s.enum(STAGE_IDS, { label: 'Stage' }),
+    stage: s.enum(STAGE_VALUES, { label: 'Stage' }),
     lastAction: s.optional(s.string()),
     deadline: s.optional(s.isoDate({ label: 'Deadline' })),
     keywords: s.optional(s.array(s.id('keyword'), { label: 'Keywords' })),
@@ -103,7 +102,7 @@ export const applicationCreate = defineTool({
     appliedOn: s.optional(s.isoDate({ label: 'Applied on' })),
     submittedOn: s.optional(s.isoDate({ label: 'Submitted on' })),
     firstReplyOn: s.optional(s.isoDate({ label: 'First reply' })),
-    outcome: s.optional(s.enum(OUTCOMES, { label: 'Outcome' })),
+    outcome: s.optional(s.enum(OUTCOME_VALUES, { label: 'Outcome' })),
     offer: s.optional(offerShape),
   }),
 
@@ -195,7 +194,7 @@ export const applicationUpdate = defineTool({
     appliedOn: s.optional(s.nullable(s.isoDate({ label: 'Applied on' }))),
     submittedOn: s.optional(s.nullable(s.isoDate({ label: 'Submitted on' }))),
     firstReplyOn: s.optional(s.nullable(s.isoDate({ label: 'First reply' }))),
-    outcome: s.optional(s.nullable(s.enum(OUTCOMES, { label: 'Outcome' }))),
+    outcome: s.optional(s.nullable(s.enum(OUTCOME_VALUES, { label: 'Outcome' }))),
     offer: s.optional(s.nullable(offerShape)),
   }),
 

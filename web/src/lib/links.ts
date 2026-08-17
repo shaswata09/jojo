@@ -54,7 +54,15 @@ const VAULT_DEFAULTS = { tool: 'reminders' } as const
 // for the next reader.
 const CALENDAR_DEFAULTS = { y: TODAY_PARTS.year, m: TODAY_PARTS.month, d: TODAY_PARTS.day } as const
 
-/** What each page shows with an empty query string. Exported for "clear filters". */
+/**
+ * What each page shows with an empty query string.
+ *
+ * Read by the param hooks below, which is the whole of its live use. It used to
+ * say "exported for 'clear filters'" — `clearFilters` in `routes/Applications.tsx`
+ * does not read it, it spells `{ q: '', stage: 'all' }` by hand, so the two
+ * agree by coincidence and a changed default would leave Clear filters restoring
+ * the old one.
+ */
 export const DEFAULTS = {
   applications: APPLICATIONS_DEFAULTS,
   vault: VAULT_DEFAULTS,
@@ -460,5 +468,12 @@ export function useTitle(title: string | null) {
   }, [title])
 }
 
-/** Matches index.html, so the two cannot drift. */
+/**
+ * The document title with no route-specific one set. Matches `index.html`.
+ *
+ * "So the two cannot drift" is what this used to claim, and nothing made it so —
+ * it is a string literal copied into a file no test read. `links.test.ts` now
+ * reads `index.html` and asserts they are equal, which is what that sentence
+ * was promising.
+ */
 export const BASE_TITLE = 'jojo — local-first job tracker'

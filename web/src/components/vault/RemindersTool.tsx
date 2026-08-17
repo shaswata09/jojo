@@ -1,18 +1,14 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { BellRing, Check, Plus } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
+import { BUCKETS, BUCKET_LABEL } from '@/components/common/timeline-buckets'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
-import { remindersEmptyState } from '@/components/vault/reminders/empty-state'
-import {
-  BUCKETS,
-  BUCKET_LABEL,
-  COLLAPSE_MS,
-  HOLD_MS,
-  anchorOf,
-} from '@/components/vault/reminders/model'
+import { emptyStateFor } from '@/components/vault/empty-state'
+import { matchesQuery } from '@/components/vault/search'
+import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
+import { COLLAPSE_MS, HOLD_MS, anchorOf } from '@/components/vault/reminders/model'
 import type { RowActions, Transit } from '@/components/vault/reminders/model'
 import { ReminderRow } from '@/components/vault/reminders/ReminderRow'
 import { displayName } from '@/data/seed'
@@ -288,15 +284,51 @@ export function RemindersTool({ focus }: { focus?: string }) {
 
   const shownRows = BUCKETS.reduce((n, b) => n + rowsIn(b).length, 0)
 
-  const empty = remindersEmptyState({
+  // Only ever read by the branches that already know the chip is on; named
+  // here because the copy object is built before the branch is chosen.
+  const bucketWord = bucket === 'all' ? '' : BUCKET_LABEL[bucket].toLowerCase()
+
+  const empty = emptyStateFor({
     total: reminders.length,
     query,
-    bucket,
-    selectedLabels,
-    onAdd: () => open('timelineItem', { mode: 'reminder' }),
+    filteredByBucket: bucket !== 'all',
+    filteredByKeyword: selectedLabels.size > 0,
     onClearQuery: () => setQuery(''),
     onClearBucket: () => setBucket('all'),
     onClearKeywords: clearSelected,
+    copy: {
+      icon: BellRing,
+      zero: {
+        title: 'No reminders yet',
+        description:
+          'A reminder is a dated nudge — chase a referee, check a portal, send a thank-you. Ones you mark as follow-ups also show on the dashboard until you tick them off.',
+        action: (
+          <Button size="sm" onClick={() => open('timelineItem', { mode: 'reminder' })}>
+            <Plus className="size-3.5" strokeWidth={2} aria-hidden />
+            Add reminder
+          </Button>
+        ),
+      },
+      search: (q) => `No reminder mentions "${q}" in its title, note, kind or application.`,
+      both: `No ${bucketWord} reminder carries the selected keywords.`,
+      // Done is the one bucket that is not a deadline passing: an empty Done
+      // list is not a filter hiding work, so it says something else.
+      bucket:
+        bucket === 'done'
+          ? {
+              icon: Check,
+              title: 'Nothing completed yet',
+              description:
+                'Reminders you tick off collect here, so one ticked by mistake is still findable.',
+              clearLabel: 'Show all reminders',
+            }
+          : {
+              title: `Nothing ${bucketWord}`,
+              description: `${reminders.length} reminders are filed under the other groups.`,
+              clearLabel: 'Show all reminders',
+            },
+      keywords: { title: 'No reminders carry those keywords' },
+    },
   })
 
   return (

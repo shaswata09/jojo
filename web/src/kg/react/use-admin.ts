@@ -4,9 +4,21 @@
  * `reset` and `clearAll` stay SYNCHRONOUS, against §3.5's note that they become
  * async. They do not need to be: `memory.reset` and `memory.clear` are tools, a
  * tool runs inside one synchronous transaction, and the durable write is enqueued
- * behind it (D11). Making them async here would have made two call sites await a
- * promise that resolves before it is returned, and hidden the one place a real
- * await belongs — `repo.flush()`, which arrives with IndexedDB in Wave 2.
+ * behind it (D11). An `async` wrapper here would return a promise that has
+ * already resolved by the time a caller sees it — a ceremony that says "this
+ * might take a while" about something that cannot.
+ *
+ * The version of this paragraph written in Wave 1 argued the point by counting
+ * call sites and by pointing at a real await that "arrives with IndexedDB in
+ * Wave 2". Both are spent. IndexedDB arrived, and the genuine awaits landed in
+ * `chooseDataSet`/`replaceAll` rather than here. `clearAll` now has exactly one
+ * caller (`DataPanel`) and `reset` has NONE — Settings routes "load the demo
+ * records" through `chooseDataSet` in `src/lib/data-set.ts` instead, which
+ * writes the meta row remembering the choice, and `memory.reset` does not.
+ * `reset` is therefore reachable only from the command palette. Do not delete it
+ * on that basis without reading `kg/tools/memory.ts`'s header first: it and
+ * `seedToGraph` are two compilers for one set of fixtures, and which one should
+ * survive is a decision that belongs in the tools layer, not here.
  *
  * Neither of them carries a keyword map any more. That is D14: a keyword is a
  * node and tagging is a `TAGS` edge, so clearing the records takes their tags
@@ -18,7 +30,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { profileIsBlank } from '@/data/profile'
+import { profileIsBlank } from '@/kg/core/profile'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
 

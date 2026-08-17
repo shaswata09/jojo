@@ -2,8 +2,8 @@
  * The projection round trip: the whole "collections are projections of the
  * graph" claim, mechanically checked.
  *
- * `seedState()` is compiled to nodes and edges, projected back, and compared
- * against the fixture arrays it came from. If the graph cannot reproduce them
+ * `seedToGraph` compiles the `src/data` fixtures to nodes and edges; they are
+ * projected back and compared against the fixture arrays they came from. If the graph cannot reproduce them
  * exactly then something was lost in the compilation — a field, an edge, an
  * ordering — and every consumer of the six hooks would see the loss without
  * anything reporting it. This is also R-2's mechanical proof that the identity

@@ -19,10 +19,9 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { SOURCES, STAGES } from '@/data/seed'
 import { resolveAddress } from '@/kg/core/address'
 import type { Application, OfferApplication, Stage } from '@/kg/core/model'
-import { STAGE_LABEL } from '@/kg/tools/support'
+import { SOURCES, STAGE_LABEL, STAGE_VALUES } from '@/kg/core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
 import { asNull, asText, nothingToRestore, present } from './patch'
@@ -105,6 +104,12 @@ export function useApplications() {
       // Application comes back and two call sites navigate to it. A refusal here
       // is a schema the form disagrees with, which is a bug, not a user error.
       if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not add the application.')
+      // `project` reads `repo.getSnapshot()`, not the `graph` this render was
+      // given, for the reason `useReadBack` in `read-back.ts` spells out: the
+      // create commits after this render's snapshot was taken. This is the same
+      // rule as that helper and deliberately not routed through it — an
+      // application is read back through a single-record projector, so there is
+      // no list to hand over.
       const created = project(result.output)
       if (!created) throw new Error('The application was created and could not be read back.')
       return created
@@ -179,9 +184,31 @@ export function useApplications() {
     [run, project],
   )
 
+  /**
+   * `{ id, label, count }`, and deliberately no colour.
+   *
+   * This used to spread `STAGES` from `@/data/seed`, which carries a `dot` field
+   * whose values are Tailwind class names — 'bg-stage-draft', 'bg-stage-offer'.
+   * So a CSS class was being minted inside the one layer that is supposed to
+   * mount unchanged on React Native, where it resolves to nothing. Neither guard
+   * could see it: `check-platform.mjs` looks for platform IDENTIFIERS and a class
+   * name is a string literal, and `check-layers.mjs` reads import direction,
+   * which was downward and legal. Built from `STAGE_VALUES` and `STAGE_LABEL`
+   * instead, both of which are the model's own. A web caller that wants the
+   * colour reads `STAGE_DOT[id]` from `@/data/seed`, which is where a Tailwind
+   * token belongs — `PipelineBreakdown` is the one that does.
+   *
+   * The import that carried it is gone as well: `check-layers.mjs` now names the
+   * only two production modules under `src/kg` allowed to read `@/data` at all,
+   * and neither is a hook.
+   */
   const stageCounts = useMemo(
     () =>
-      STAGES.map((stage) => ({ ...stage, count: all.filter((a) => a.stage === stage.id).length })),
+      STAGE_VALUES.map((id) => ({
+        id,
+        label: STAGE_LABEL[id],
+        count: all.filter((a) => a.stage === id).length,
+      })),
     [all],
   )
 
@@ -190,6 +217,16 @@ export function useApplications() {
     [all],
   )
 
+  /**
+   * Most recently touched first. ASCENDING, because `daysAgo` counts backwards.
+   *
+   * Spelled out because the comparator reads like the opposite of the name, and
+   * because `daysAgo` is not a stored field — it is projected from `lastActionAt`
+   * against the provider's `today` (D25). Two consequences: the order is only as
+   * correct as `today` is, and sorting on the stored instant instead would be a
+   * finer-grained sort, not the same one, since every record touched today ties
+   * at 0 here and keeps its id order (D4).
+   */
   const recent = useMemo(() => [...all].sort((a, b) => a.daysAgo - b.daysAgo), [all])
 
   // Every source stays in the list even at zero, so the breakdown's colours and

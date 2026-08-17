@@ -2,13 +2,15 @@ import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { STAGES } from '@/data/seed'
+import { STAGES, STAGE_DOT, STAGE_LABEL } from '@/data/seed'
 import type { Stage } from '@/data/seed'
 import { cn } from '@/lib/utils'
 
 /**
- * The two small lookups every stage render needs, derived from STAGES so a
- * stage added to the data cannot be missed by one of them.
+ * `STAGE_LABEL` and `STAGE_DOT` used to be declared here and imported from
+ * here by seven files, while four other files built their own copy of one or
+ * both. They live in `@/data/seed` now, next to `STAGE_VALUES`-derived `STAGES`
+ * and typed rather than cast — import them from there.
  *
  * There used to be a third, `STAGE_TONE`, mapping the six stages onto Chip's
  * four generic tones — which meant Submitted and Screen were both teal, Draft
@@ -16,15 +18,6 @@ import { cn } from '@/lib/utils'
  * colour the board painted for the same record. It is gone; `<Chip stage>` is
  * the one place a stage becomes a colour now.
  */
-export const STAGE_LABEL = Object.fromEntries(STAGES.map((s) => [s.id, s.label])) as Record<
-  Stage,
-  string
->
-
-export const STAGE_DOT = Object.fromEntries(STAGES.map((s) => [s.id, s.dot])) as Record<
-  Stage,
-  string
->
 
 /**
  * Change an application's stage without a mouse.

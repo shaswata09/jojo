@@ -3,7 +3,7 @@ import { FileText, FileType, Pencil, Presentation, StickyNote, Trash2 } from 'lu
 import type { LucideIcon } from 'lucide-react'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { Button } from '@/components/ui/button'
-import { MenuItem, MenuSection, RowMenu } from '@/components/vault/RowMenu'
+import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
 import { InlineEdit } from '@/components/vault/files/InlineEdit'
 import { FILE_BUCKETS } from '@/data/vault'
 import type { FileBucket, FileKind, VaultFile } from '@/data/vault'

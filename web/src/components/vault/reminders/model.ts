@@ -1,14 +1,5 @@
-import type { TimelineBucket, TimelineItem } from '@/data/timeline'
-import { TODAY } from '@/lib/today'
-
-export const BUCKETS: TimelineBucket[] = ['overdue', 'today', 'upcoming', 'done']
-
-export const BUCKET_LABEL: Record<TimelineBucket, string> = {
-  overdue: 'Overdue',
-  today: 'Today',
-  upcoming: 'Upcoming',
-  done: 'Completed',
-}
+import { snoozeAnchor } from '@/components/common/snooze'
+import type { TimelineItem } from '@/data/timeline'
 
 /**
  * How long the row you just acted on stays put before it collapses.
@@ -37,27 +28,14 @@ export type Transit = {
 }
 
 /**
- * Where a snooze counts from — a mirror of `useTimeline().snooze` in
- * store-context.ts, kept here only so the menu can print the date it is about
- * to write. Change one and change the other, or the label promises a Tuesday
- * and the store writes a Thursday.
- */
-export const anchorOf = (item: TimelineItem) => (item.date < TODAY ? TODAY : item.date)
-
-/**
- * The snooze steps, spelled two ways.
+ * Where a snooze counts from, over a whole item.
  *
- * The store counts from today only when an item is already overdue; for
- * anything dated ahead it counts from that date. So "Tomorrow" is a lie on a
- * reminder due next Friday — it would land on the Saturday. The `later`
- * spelling is used whenever the anchor is not today, which is the only way the
- * label can never claim a date the store is not going to write.
+ * The rule itself is `snoozeAnchor` in `components/common/snooze.tsx` — this
+ * file, `OwedThisWeek` and `PriorityActions` each used to carry their own copy,
+ * and the note that said "change one and change the other" had three targets
+ * and named two. `SNOOZE_STEPS` moved there with it.
  */
-export const SNOOZE_STEPS = [
-  { days: 1, soon: 'Tomorrow', later: 'A day later' },
-  { days: 3, soon: 'In 3 days', later: 'Three days later' },
-  { days: 7, soon: 'In 7 days', later: 'A week later' },
-]
+export const anchorOf = (item: TimelineItem) => snoozeAnchor(item.date)
 
 export type RowActions = {
   toggle: (item: TimelineItem) => void

@@ -121,8 +121,10 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
           .map((n) => slugOf(n) ?? '')
         // The pending set matters: two files dropped in one gesture both call
         // this before either is attached to a node, and without it both take the
-        // same slug — the bug `sortDrop` in `components/vault/files/intake.ts`
-        // works around by hand.
+        // same slug — one row with one keyword set that a single delete took out
+        // together. `sortDrop` in `components/vault/files/intake.ts` used to work
+        // that around by predicting this slug with a second copy of `slugify`;
+        // the prediction is gone and it now dedupes on the folded name alone.
         const slug = uniqueSlug(slugify(base) || type, [...taken, ...buf.minted])
         buf.minted.add(slug)
         return slug

@@ -90,8 +90,9 @@ describe('node ids', () => {
   /**
    * The break from `parseRef`, stated as a test.
    *
-   * `ids.ts` read a bare key as an application because the label store keyed
-   * most records by one. That tolerance is exactly what let a keyword written
+   * `parseRef` in `ids.ts` read a bare key as an application, because the label
+   * store keyed most records by one. It has since been deleted — this function
+   * is what replaced it. That tolerance is exactly what let a keyword written
    * against 'stripe' find the wrong one of six records, so here a bare id is
    * rejected outright.
    */

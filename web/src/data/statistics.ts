@@ -174,7 +174,19 @@ function kpisFor(all: readonly Application[], funnel: FunnelStep[]): Kpi[] {
 
 /* -------------------------------- outcomes -------------------------------- */
 
-export type Outcome = { label: string; count: number }
+/**
+ * One band of the outcomes panel — a label and how many sent applications are
+ * in it.
+ *
+ * Named `OutcomeBand`, not `Outcome`. `Outcome` is already a type in this
+ * directory: the five-value union on a record (`rejected`, `withdrawn`,
+ * `accepted`, `declined`, `ghosted`) declared in `kg/core/model.ts` and
+ * re-exported by the sibling `seed.ts`. Two unrelated types under one name in
+ * one folder is a mis-import the compiler cannot help with, because both are
+ * plausible in an outcomes function's signature. It pairs with `OUTCOME_BANDS`
+ * below, which is where the labels come from.
+ */
+export type OutcomeBand = { label: string; count: number }
 
 /**
  * A partition of everything that has been SENT.
@@ -202,7 +214,7 @@ export type Outcome = { label: string; count: number }
 export const OUTCOME_BANDS = ['In progress', 'Offer', 'Rejected', 'Withdrawn', 'No reply'] as const
 
 /** Only what has gone out. Anything still in draft has no outcome to band. */
-export function outcomesFor(all: readonly Application[]): Outcome[] {
+export function outcomesFor(all: readonly Application[]): OutcomeBand[] {
   const sent = all.filter((a) => reachedOf(a) >= REACH.sent)
   return OUTCOME_BANDS.map((label) => ({
     label,
@@ -265,7 +277,7 @@ export type Stats = {
   funnel: FunnelStep[]
   kpis: Kpi[]
   /** Bands over the sent records only. Sums to `sent`, not to `all.length`. */
-  outcomes: Outcome[]
+  outcomes: OutcomeBand[]
   roles: RoleRow[]
 }
 

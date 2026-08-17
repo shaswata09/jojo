@@ -1,31 +1,22 @@
 import { DEADLINE_DETAIL, applicationDeadlineOf } from '@/components/applications/deadline'
 import type { ApplicationInitial, FormState } from '@/components/applications/dialog/form-state'
-import { STAGES, displayName } from '@/data/seed'
-import type { Application, RoleTag, Stage, Urgency } from '@/data/seed'
-import { daysBetween, shortDate } from '@/data/timeline'
+import { STAGE_LABEL, displayName } from '@/data/seed'
+import type { Application, RoleTag } from '@/data/seed'
+import { shortDate } from '@/data/timeline'
 import { useApplications } from '@/kg/react/use-applications'
 import { useTimeline } from '@/kg/react/use-timeline'
+// Imported, not redeclared. This file used to carry its own `deadlineUrgency`
+// with the 7/21-day thresholds spelled a second time, twenty lines from a
+// comment explaining that the seed's colours mix proximity with readiness. The
+// tool layer's copy is the one the store writes through, so a drift here would
+// have shown the user one colour on the form's item and another on everything
+// the tools mint.
+import { deadlineUrgency } from '@/kg/tools/support'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
-
-const STAGE_LABEL = Object.fromEntries(STAGES.map((s) => [s.id, s.label])) as Record<Stage, string>
-
-/**
- * How loud a new deadline reads on the calendar.
- *
- * The seed mixes proximity with readiness — Rice is red at three weeks because
- * nothing is written yet. Readiness is not something a form can know, so this
- * uses the half that is knowable and lets the user override it later.
- */
-function deadlineUrgency(date: string): Urgency {
-  const days = daysBetween(TODAY, date)
-  if (days <= 7) return 'red'
-  if (days <= 21) return 'amber'
-  return 'gray'
-}
 
 /**
  * Everything `ApplicationDialog` writes when Save is pressed, and nothing else.
@@ -72,7 +63,7 @@ export function useApplicationWrites({
       detail: DEADLINE_DETAIL,
       date: form.deadline,
       kind: 'deadline',
-      urgency: deadlineUrgency(form.deadline),
+      urgency: deadlineUrgency(TODAY, form.deadline),
       applicationId: application.id,
       allDay: true,
       // Off, like every seeded application deadline. The reminders list and the
@@ -111,7 +102,7 @@ export function useApplicationWrites({
       // item still holds the name this dialog gave it. Once someone has retitled
       // it by hand that title is theirs, not a derived string to overwrite.
       title: existing.title === displayName(previous) ? displayName(next) : existing.title,
-      urgency: dateChanged ? deadlineUrgency(form.deadline) : existing.urgency,
+      urgency: dateChanged ? deadlineUrgency(TODAY, form.deadline) : existing.urgency,
     })
     return null
   }

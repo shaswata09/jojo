@@ -1,7 +1,8 @@
 import { PageHeader } from '@/components/common/PageHeader'
 import { ApplicationsScreen } from '@/components/guide/screens/ApplicationsScreen'
 import { DoorsSection } from '@/components/guide/screens/DoorsSection'
-import { OnThisPage } from '@/components/guide/screens/OnThisPage'
+import { OnThisPage } from '@/components/guide/OnThisPage'
+import { SECTIONS } from '@/components/guide/screens/sections'
 import {
   CalendarScreen,
   ScoutScreen,
@@ -50,7 +51,7 @@ export function GuideScreens() {
         subtitle="One section per page — what it is for, what is not obvious, and what is not connected yet."
       />
 
-      <OnThisPage />
+      <OnThisPage sections={SECTIONS} caption="Thirteen sections — jump to the one you came for" />
 
       <DoorsSection />
 

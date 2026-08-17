@@ -10,11 +10,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Instant, StoredEdge, StoredNode } from '../core/model'
 import { MutableSnapshot } from '../core/snapshot'
-import type { Driver, DurableOp } from '../storage/driver'
+import type { Driver, DurableOp, StoreEvent } from '../storage/driver'
 import { createMemoryDriver } from '../storage/memory-driver'
 import type { JournalDraft } from './journal'
 import { freshMeta } from './meta'
-import { createRepository } from './repository'
+import { createRepository, onRemoteCommit } from './repository'
+import type { Repository } from './repository'
 
 const AT: Instant = '2026-10-12T09:00:00.000Z'
 
@@ -120,6 +121,68 @@ function recordingDriver() {
 }
 
 describe('commit', () => {
+  /**
+   * `stack: false` — the write the SYSTEM finished, not one the user performed.
+   *
+   * The only case today is attaching a file's bytes once they land on disk,
+   * seconds after the drop. Without this, ⌘Z after dropping a CV reverts the
+   * attach and silently unlinks bytes the user just watched arrive, and an
+   * attach arriving while they are considering a redo destroys it.
+   *
+   * Journalled and audited either way: the audit log's job is to record
+   * everything that touched the store, and a background write is exactly the
+   * kind a user later wants an account of. Only the undo ring is withheld.
+   */
+  describe('stack: false', () => {
+    it('journals and audits without taking the top of the undo stack', () => {
+      const { repo } = setup()
+      const rice = application('rice')
+      repo.commit(created(rice))
+      expect(repo.undoable).toHaveLength(1)
+
+      const attached = repo.commit(
+        draft({
+          nodes: [{ id: rice.id, before: rice, after: application('rice', 'attached') }],
+        }),
+        { stack: false },
+      )
+
+      // Still on screen, still in the audit, still a durable write.
+      expect(repo.getSnapshot().node('app:rice', 'application')?.props.note).toBe('attached')
+      expect(repo.audit.some((e) => e.id === attached.id)).toBe(true)
+      // But the user's undo is still the thing the user did.
+      expect(repo.undoable).toHaveLength(1)
+      expect(repo.undoable[0]?.id).not.toBe(attached.id)
+    })
+
+    it('leaves redo alone, so a background write cannot eat it', () => {
+      const { repo } = setup()
+      const rice = application('rice')
+      const create = repo.commit(created(rice))
+      repo.revert(create.id)
+      expect(repo.redoable).toHaveLength(1)
+
+      repo.commit(created(application('other')), { stack: false })
+
+      expect(repo.redoable).toHaveLength(1)
+    })
+
+    it('still enqueues the durable ops', async () => {
+      const { repo, driver } = setup()
+      repo.commit(created(application('rice')), { stack: false })
+      await repo.flush()
+      expect(driver.counts().nodes).toBe(1)
+      // One journal row, as every commit writes.
+      expect(driver.counts().ops).toBe(1)
+    })
+
+    it('defaults to stacking, so nothing else changes', () => {
+      const { repo } = setup()
+      repo.commit(created(application('rice')))
+      expect(repo.undoable).toHaveLength(1)
+    })
+  })
+
   it('applies the after-images and hands back a stamped entry', () => {
     const { repo } = setup()
     const rice = application('rice')
@@ -640,6 +703,54 @@ describe('history', () => {
     expect(repo.undoable).toEqual([])
     expect(repo.redoable).toEqual([])
     expect(repo.audit).toHaveLength(1)
+  })
+
+  /**
+   * D23 and R-7: flush, THEN rehydrate, then clear. The order is the guarantee.
+   *
+   * Our queued ops are last-write-wins against the other tab's, so draining them
+   * after we adopt would replay our stale rows over their fresh ones — and the
+   * other direction loses the user's work outright: rehydrating first replaces
+   * the graph on screen with the one on disk, which is missing exactly the
+   * writes still sitting in our queue. The edit vanishes from the screen while
+   * the flush that follows puts it on the disk, so the two copies now disagree
+   * and only a reload reveals which one won.
+   *
+   * Deliberately a four-line fake rather than two tabs and a clock. The function
+   * under test IS the ordering; a real driver would let a microtask drain the
+   * queue on its own and pass whichever way round the two awaits went, which is
+   * how this survived a mutation against the whole suite.
+   */
+  describe('onRemoteCommit', () => {
+    const event: StoreEvent = { kind: 'commit', at: AT, entryId: 'theirs' }
+
+    it('puts our queued write on disk before adopting what is there', async () => {
+      const disk = ['theirs']
+      let queued = ['mine']
+      let onScreen = ['mine']
+      let clearedAfter: string[] | null = null
+
+      const repo = {
+        flush: async () => {
+          await Promise.resolve()
+          disk.push(...queued)
+          queued = []
+        },
+        clearHistory: () => {
+          clearedAfter = [...onScreen]
+        },
+      } as unknown as Repository
+
+      await onRemoteCommit(repo, event, async () => {
+        await Promise.resolve()
+        onScreen = [...disk]
+      })
+
+      expect(onScreen).toEqual(['theirs', 'mine'])
+      // And the stack goes last: every before-image in it was captured against
+      // records the adopt has just replaced.
+      expect(clearedAfter).toEqual(['theirs', 'mine'])
+    })
   })
 
   it('replays a persisted audit so it survives a rehydrate', () => {

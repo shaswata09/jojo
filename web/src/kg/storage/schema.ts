@@ -158,7 +158,3 @@ export const STORE_SPECS: readonly StoreSpec[] = [
     ],
   },
 ]
-
-export const STORE_SPEC_BY_NAME: { readonly [N in StoreName]: StoreSpec } = Object.fromEntries(
-  STORE_SPECS.map((spec) => [spec.name, spec]),
-) as { [N in StoreName]: StoreSpec }

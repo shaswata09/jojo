@@ -3,32 +3,28 @@
  * form owns beyond the record itself.
  *
  * Split out of `application.ts` because four modules now spell these: create and
- * update share `fields` verbatim, `application.stage.advance` shares `OUTCOMES`
- * and `offerShape`, and every tool that takes an id takes `appId`. A second copy
- * of any of them is a schema that accepts a value the other one rejects, which
+ * update share `fields` verbatim, `application.stage.advance` shares
+ * `offerShape`, and every tool that takes an id takes `appId`. A second copy of
+ * any of them is a schema that accepts a value the other one rejects, which
  * shows up as a form that saves in one dialog and refuses in the next.
+ *
+ * The closed unions are NOT among them. They come from `@/kg/core/model` at
+ * every call site — `OUTCOMES` used to be a fifth spelling of `OUTCOME_VALUES`
+ * here, and it also collided by name with a differently-shaped `OUTCOMES` in
+ * `components/applications/dialog/transition-options.ts`.
  */
 
-import { ROLES, SOURCES } from '@/kg/core/model'
-import type { ISODate, NodeId, Outcome } from '@/kg/core/model'
+import { ROLES, SOURCES, STAGE_VALUES } from '@/kg/core/model'
+import type { ISODate, NodeId } from '@/kg/core/model'
 import { s } from '@/kg/core/schema'
 import {
   DEADLINE_DETAIL,
-  STAGE_IDS,
   applicationDeadlineOf,
   dayOf,
   deadlineUrgency,
   displayOf,
 } from './support'
 import type { ToolContext } from './tool'
-
-export const OUTCOMES = [
-  'rejected',
-  'withdrawn',
-  'accepted',
-  'declined',
-  'ghosted',
-] as const satisfies readonly Outcome[]
 
 export const appId = s.id('application', { label: 'Application' })
 
@@ -37,7 +33,7 @@ export const fields = {
   org: s.optional(s.string({ min: 1, label: 'Employer' })),
   role: s.optional(s.string({ label: 'Role' })),
   roleTag: s.optional(s.enum(ROLES, { label: 'Role type' })),
-  stage: s.optional(s.enum(STAGE_IDS, { label: 'Stage' })),
+  stage: s.optional(s.enum(STAGE_VALUES, { label: 'Stage' })),
   note: s.optional(s.string({ label: 'Note', multiline: true })),
   source: s.optional(s.enum(SOURCES, { label: 'Where it came from' })),
   location: s.optional(s.string({ label: 'Location' })),

@@ -17,7 +17,9 @@ import { cn } from '@/lib/utils'
 const REVEAL_IN_ROW =
   'pointer-events-none opacity-0 transition-opacity group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100'
 
-/** The mock's fixed "today" as a month, for the way back out of a month you paged to. */
+/** The current month, for the way back out of a month you paged to. Named from
+    `TODAY_PARTS` — the wall clock, sampled once at load — not from a pinned
+    fixture day, which is what this said until the clock became real. */
 const TODAY_MONTH = `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
 
 export function DayRail({

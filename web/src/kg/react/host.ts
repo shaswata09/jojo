@@ -86,9 +86,20 @@ export interface Host {
    * web adapter uses `visibilitychange`, which is the event that actually means
    * "this tab was in the background and now is not".
    *
-   * Optional, unlike the other two. A platform with a single window — Electron's
-   * renderer, a native shell — has nothing to resume from, and a host that
-   * cannot say so would have to lie.
+   * Optional, unlike the other two — but the reason first written down here was
+   * wrong, and it is worth keeping the correction rather than the reason. It
+   * said a platform with a single window has nothing to resume from, so it
+   * should omit this. `nativeHost` reasoned exactly that way, then supplied it
+   * anyway: a phone runs one instance, but the RN driver reports
+   * `crossTab: false`, and that is the condition `repo/boot.ts` subscribes on.
+   * What runs on resume there is a re-read of what is on disk — worth doing
+   * after a long background, because the OS may have killed and restarted the
+   * process between suspend and resume, and a resume that assumes memory
+   * survived is a resume that can show a stale graph.
+   *
+   * So the honest test for omitting it is not "is there one window" but "can
+   * this store's contents change while we are not running". Electron's renderer
+   * over a single-process store is the case that can still say no.
    */
   onResume?(run: () => void): () => void
 }
@@ -120,25 +131,30 @@ export const headlessHost: Host = Object.freeze({
 })
 
 /**
- * What React Native would supply, when there is an RN app to supply it.
+ * The adapters that exist, and the one that does not.
  *
- * Deliberately not written yet — an adapter no app mounts is an adapter no test
- * covers, and the seam is the deliverable, not a guess at the implementation.
- * For whoever writes it:
+ * This block used to read "what React Native WOULD supply, when there is an RN
+ * app to supply it — deliberately not written yet". Both halves expired: the
+ * Expo app under `mobile/` is wired to the store, and `nativeHost` in
+ * `mobile/src/lib/host.ts` is the adapter. It is recorded here because a port
+ * whose own documentation says its second implementation is hypothetical is a
+ * port people design against a guess — and the guess was wrong in one place, on
+ * `onResume` above.
  *
- * - `onUndoRequest`: `() => unsubscribe`. There is no hardware keyboard in the
- *   general case, and undo on a phone is an affordance — the toast's Undo action
- *   is already wired through `useTool` — not a chord. `runtime.undo()/redo()` is
- *   public on `KgContext`, so a long-press menu can call it directly without
- *   going through this port at all.
- * - `onSuspend`: `AppState.addEventListener('change', …)` firing on
- *   `'background'`. Note that RN throttles timers in the background, so the
- *   queue's backoff (`schedule` in `kg/repo/queue.ts`) will not fire there —
- *   the flush on
- *   suspend is the belt and the timer the braces, not the reverse.
- *
- * Electron's renderer can use the web adapter unchanged for `onUndoRequest`
- * today, but should not: a desktop user expects Edit ▸ Undo in the menu bar,
- * greyed out when there is nothing to undo, which is a native menu accelerator
- * forwarded over IPC rather than a renderer keydown.
+ * - **Web** — `webHost` in `src/lib/host.ts`. Keyboard chord, two suspend
+ *   events, `visibilitychange` for resume.
+ * - **React Native** — `nativeHost` in `mobile/src/lib/host.ts`. Gives nothing
+ *   for `onUndoRequest` (there is no chord on a phone; every destructive write
+ *   already raises a toast with an Undo action, and `runtime.undo()` is public
+ *   on `KgContext` for anything that wants it directly), and drives the other
+ *   two off `AppState`. Read that file before changing this interface: it is
+ *   the one that found out RN throttles background timers, so the queue's own
+ *   retry backoff does not fire there and the flush on suspend is the belt
+ *   rather than the braces.
+ * - **Electron** — still unwritten. Its renderer can use the web adapter
+ *   unchanged for `onUndoRequest` today, but should not: a desktop user expects
+ *   Edit ▸ Undo in the menu bar, greyed out when there is nothing to undo,
+ *   which is a native menu accelerator forwarded over IPC rather than a
+ *   renderer keydown. It is also the one platform that can genuinely await
+ *   `onSuspend`'s promise.
  */

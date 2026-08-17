@@ -17,14 +17,22 @@
  * selection, which is UI state and stays in `labels.tsx`.
  */
 
-import { NEW_LABEL_TONES } from '@/data/labels'
 import type { LabelTone, NodeId, Taggable } from '@/kg/core/model'
-import { TAGGABLE } from '@/kg/core/model'
+import { LABEL_TONE_VALUES, TAGGABLE } from '@/kg/core/model'
 import { s } from '@/kg/core/schema'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 
-const TONES = ['teal', 'amber', 'red', 'green', 'gray'] as const satisfies readonly LabelTone[]
+/**
+ * The colour a keyword the user creates gets, cycled so two in a row differ.
+ *
+ * It was declared in `src/data/labels.ts` beside the seeded keywords, which made
+ * this tool — the only caller it has ever had — import a fixture module to mint a
+ * colour. `src/data` is read by `repo/seed.ts` and `tools/memory.ts` and by
+ * nothing else in the layer now; the rule for which tone a NEW keyword gets is a
+ * tool's rule, so it lives with the tool that applies it.
+ */
+const NEW_KEYWORD_TONES: LabelTone[] = ['teal', 'green', 'amber', 'red', 'gray']
 
 const keywordId = s.id('keyword', { label: 'Keyword' })
 
@@ -53,7 +61,7 @@ export const keywordCreate = defineTool({
   touches: ['keyword'],
   input: s.object({
     name: s.string({ min: 1, max: 40, label: 'Name' }),
-    tone: s.optional(s.enum(TONES, { label: 'Colour' })),
+    tone: s.optional(s.enum(LABEL_TONE_VALUES, { label: 'Colour' })),
   }),
 
   run(ctx, input): NodeId {
@@ -72,7 +80,7 @@ export const keywordCreate = defineTool({
       props: {
         slug: ctx.mintSlug('keyword', name),
         name,
-        tone: input.tone ?? NEW_LABEL_TONES[taken % NEW_LABEL_TONES.length] ?? 'teal',
+        tone: input.tone ?? NEW_KEYWORD_TONES[taken % NEW_KEYWORD_TONES.length] ?? 'teal',
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,
@@ -136,7 +144,7 @@ export const keywordToneSet = defineTool({
   summary: 'Changes the keyword’s chip colour.',
   effect: 'update',
   touches: ['keyword'],
-  input: s.object({ id: keywordId, tone: s.enum(TONES, { label: 'Colour' }) }),
+  input: s.object({ id: keywordId, tone: s.enum(LABEL_TONE_VALUES, { label: 'Colour' }) }),
 
   run(ctx, input) {
     ctx.require('keyword', input.id)

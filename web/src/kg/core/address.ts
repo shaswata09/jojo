@@ -12,10 +12,12 @@
  * mint. Four reasons, in the order they bite:
  *
  * - A reload re-mints every id. That is the reported bug.
- * - Wave 2's `memory.import` replays an export through `application.create`
- *   rather than assigning a parsed blob, which mints fresh ids — so an id URL
- *   dies on transfer even once ids are stable per install. `slug` is a stored
- *   prop and survives the round trip verbatim.
+ * - Any import that replays an export through `application.create` rather than
+ *   assigning a parsed blob mints fresh ids, so an id URL dies on transfer even
+ *   once ids are stable per install. `slug` is a stored prop and survives the
+ *   round trip verbatim. (Written as "Wave 2's `memory.import`" — that tool is
+ *   deliberately absent, see the header of `kg/tools/memory.ts`; the argument
+ *   holds for whatever import arrives.)
  * - React Navigation and Electron's `open-url` hand the app a path string on a
  *   COLD start, before any graph exists. A key that only means something to the
  *   process that minted it is exactly the key that cannot survive that handoff.

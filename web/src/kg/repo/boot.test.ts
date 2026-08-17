@@ -91,6 +91,51 @@ describe('the first run', () => {
     session.dispose()
   })
 
+  /**
+   * R-11's other half: the tab that LOSES the seed race has to read the winner's
+   * store, not keep the one it compiled.
+   *
+   * `seedIfPristine` writes nothing when a meta row appeared between our read
+   * and our write, and answers `false`. Every id in the store is then one the
+   * other process minted — ours were minted by `newNodeId` moments earlier and
+   * exist nowhere but this tab's memory. Keeping them means every route
+   * resolution, every edge endpoint and every deep link is against ids the store
+   * has never held: the app looks perfectly healthy until the first reload, and
+   * then it is a different set of records with the same names.
+   */
+  it('reads back the store another tab seeded, rather than keeping its own ids', async () => {
+    const theirs = createMemoryDriver()
+    const won = sessionOf(await bootWith(theirs, { now: at(NOW) }))
+    const theirRows = await readRows(theirs)
+    const theirIds = won.repo
+      .getSnapshot()
+      .ofType('application')
+      .map((a) => a.id)
+    won.dispose()
+
+    // Pristine when we read it, seeded by the time we write.
+    const base = createMemoryDriver()
+    const driver: MemoryDriver = {
+      ...base,
+      seedIfPristine: async () => {
+        await base.replace(theirRows)
+        return base.seedIfPristine(theirRows)
+      },
+    }
+
+    const result = await bootWith(driver, { now: at(LATER) })
+
+    expect(result.outcome).toBe('ready')
+    const session = sessionOf(result)
+    expect(
+      session.repo
+        .getSnapshot()
+        .ofType('application')
+        .map((a) => a.id),
+    ).toEqual(theirIds)
+    session.dispose()
+  })
+
   it('starts empty when asked to, and records that the user asked', async () => {
     const driver = createMemoryDriver()
     const session = sessionOf(await bootWith(driver, { now: at(NOW), dataSet: 'empty' }))
@@ -339,6 +384,31 @@ describe('when the store cannot be trusted', () => {
     if (result.outcome !== 'unavailable') return
     expect(result.session.repo.getSnapshot().nodes()).toHaveLength(0)
     result.session.dispose()
+  })
+
+  /**
+   * The same distinction as the open above, on the write — and this is the door
+   * a user actually arrives through after a deploy.
+   *
+   * 'unsupported' and 'blocked' are two different sentences with two different
+   * remedies: "this browser cannot store anything" is permanent and tells the
+   * user to give up, while "another tab is open with an older version" is fixed
+   * by closing a tab. Reporting the first for the second sends someone away from
+   * a working app, and the store they were told does not exist is sitting on
+   * their disk.
+   */
+  it('reports a blocked first-run write as blocked, not as unsupported', async () => {
+    const driver = createMemoryDriver({
+      fault: (call) =>
+        call === 'seedIfPristine'
+          ? { code: 'storage/blocked', message: 'an older tab holds it' }
+          : null,
+    })
+
+    const result = await bootWith(driver, { now: at(NOW), dataSet: 'demo' })
+
+    expect(result.outcome === 'unavailable' && result.reason).toBe('blocked')
+    if (result.outcome === 'unavailable') result.session.dispose()
   })
 
   it('reports a blocked open as blocked, not as unsupported', async () => {

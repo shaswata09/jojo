@@ -3,6 +3,7 @@ import { Mail, PenLine, Send, Sparkles } from 'lucide-react'
 import { CopyFeedback } from '@/components/common/CopyFeedback'
 import { EmptyState } from '@/components/common/EmptyState'
 import { RichTextEditor } from '@/components/common/RichTextEditor'
+import { applyFills, blanksIn, fillsFor } from '@/components/draft/template'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -21,9 +22,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { displayName } from '@/data/seed'
-import type { Application } from '@/data/seed'
-import { shortDate } from '@/data/timeline'
-import type { TimelineItem } from '@/data/timeline'
 import type { Snippet } from '@/data/vault'
 import { useApplications } from '@/kg/react/use-applications'
 import { useTimeline } from '@/kg/react/use-timeline'
@@ -35,78 +33,8 @@ import { cn } from '@/lib/utils'
 /** How long the copied confirmation stays up — the same beat as SnippetsTool. */
 const COPIED_MS = 1600
 
-/**
- * A blank in a snippet: `[NAME]`, `[YOUR NAME]`, `[LOCAL CONTEXT]`.
- *
- * Upper case with an optional space is the convention every seeded snippet
- * already follows, and it is narrow enough that a bracketed aside someone types
- * into their own draft — "[see attached]" — is not mistaken for one.
- */
-const BLANK = /\[[A-Z][A-Z0-9 '/-]*\]/g
-
 /** The quiet line under a control — the same weight the form hints use. */
 const HINT = 'text-xs text-text-3'
-
-/* ----------------------------- placeholders ------------------------------ */
-
-/** 'jobs.rice.edu' from the saved posting URL, or nothing if it is not a URL. */
-function hostOf(url?: string): string | undefined {
-  if (!url) return undefined
-  try {
-    return new URL(url).host
-  } catch {
-    return undefined
-  }
-}
-
-/**
- * What the records actually know, keyed by the token that asks for it.
- *
- * Everything absent from this map stays on the page as a visible blank. That is
- * the whole design: `[NAME]` is never filled, because the store holds no
- * recruiter's name and a *plausible* one — inferred from a note, or borrowed
- * from a nearby contact link — is exactly the kind of thing that gets sent by
- * accident and addresses a search chair as the wrong person. A blank is
- * impossible to send without noticing. A confident guess is not.
- */
-function fillsFor(app?: Application, item?: TimelineItem): Record<string, string> {
-  const fills: Record<string, string> = {}
-  if (app) {
-    fills.ROLE = app.role
-    fills.POSITION = app.role
-    fills.ORG = app.org
-    fills.EMPLOYER = app.org
-    fills.COMPANY = app.org
-    fills.INSTITUTION = app.org
-
-    const sent = app.submittedOn ?? app.appliedOn
-    if (sent) fills.DATE = shortDate(sent)
-
-    const portal = hostOf(app.url)
-    if (portal) fills.PORTAL = portal
-  }
-
-  // One token, two questions. In a chase — "I submitted it on [DATE]" — it is
-  // the day the application went in. In a thank-you it is the day you met, and
-  // for that the item is the record that knows, not the application. Getting
-  // this backwards produces a wrong date rather than a missing one, which is
-  // the worse failure, so the kind decides and the application only fills in
-  // for the chase.
-  if (item && (item.kind === 'interview' || item.kind === 'visit' || item.kind === 'call')) {
-    fills.DATE = shortDate(item.date)
-  }
-
-  return fills
-}
-
-const applyFills = (body: string, fills: Record<string, string>) =>
-  body.replace(BLANK, (token) => fills[token.slice(1, -1)] ?? token)
-
-/** Every blank still in the text, in the order they first appear. */
-function blanksIn(text: string) {
-  const found = text.match(BLANK) ?? []
-  return { count: found.length, names: [...new Set(found)] }
-}
 
 /* -------------------------------- text ----------------------------------- */
 

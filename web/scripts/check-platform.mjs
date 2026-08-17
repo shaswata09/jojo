@@ -295,14 +295,16 @@ const isNodeModule = (spec) =>
  *   purpose is that the tree ends up in a document, so it is the exact import
  *   that turns "the hooks travel" from true into false. RN renders through
  *   react-native, Electron's main process renders nothing.
- * - `@/lib` and `@/components` are jojo's web app. `check-layers.mjs` allows
- *   `kg/react -> @/lib` because the toast context used to live there; the
+ * - `@/lib` and `@/components` are jojo's web app. `check-layers.mjs` used to
+ *   allow `kg/react -> @/lib` because the toast context lived there; the
  *   interface moved to `kg/react/toast.ts` and only the web adapter stayed —
  *   `ToastViewport`, a CSS selector, and a focus helper typed `HTMLElement`.
  *   Importing that module back into the shared layer is the original violation
  *   returning by the same door, and it does not produce a type error: the empty
  *   `HTMLElement` stub means the ANNOTATION still checks. Only the call would
  *   fail, and there is no call — which is what makes this worth a lint rule.
+ *   The grant in `check-layers.mjs` is gone now, so the two files agree; this
+ *   one is still the load-bearing half, because it also covers `react-dom`.
  *
  * Prefix-matched, so `react-dom/client` and `@/lib/utils` are covered without
  * enumerating them, and `@/data` — pure fixtures, allowed by check-layers in
@@ -349,14 +351,32 @@ const TARGETS = [
     },
   },
   {
-    // Not a kg layer, but `repo` and `tools` are both allowed to import `@/data`
-    // (check-layers.mjs:66,73). A `new Date()` behind that alias is a wall-clock
-    // read reachable from a tool without the tool ever naming Date — which is
-    // the D26 hole `todayISO()` sat in until this rule went live. Only the clock
-    // rules apply: src/data is pure fixtures and pure date maths.
+    /*
+     * Not a kg layer, but `repo/seed.ts` and `tools/memory.ts` import it, so it
+     * is reachable from the model and gets the model's rules.
+     *
+     * It started with `clock` alone: a `new Date()` behind the `@/data` alias is
+     * a wall-clock read reachable from a tool without the tool ever naming Date,
+     * which is the D26 hole `todayISO()` sat in until that rule went live. The
+     * other three were left off on the grounds that src/data is "pure fixtures
+     * and pure date maths" — which described the code but not the guarantee.
+     * Nothing stopped a `document.querySelector` landing here, and the type
+     * system does not cover it: `tsconfig.kg.json` type-checks the src/data
+     * modules that kg reaches, under `"lib": ["ES2023"]` with no DOM, but only
+     * those. `statistics.ts` and `calendar.ts` are reached by no kg module, so
+     * the only project that compiles them is `tsconfig.app.json` — DOM in the
+     * lib, `vite/client` in the types. Both are pure domain code that two probes
+     * have recommended moving into `kg/core`; a DOM global picked up in the
+     * meantime would travel with them and break on React Native at mount.
+     *
+     * No `timer`. Nothing here schedules anything today, but a fixture module is
+     * not where determinism is won or lost, and `repo` — the layer that reads
+     * these — is allowed a timer for its retry backoff. Adding it would be a rule
+     * with no failure behind it.
+     */
     root: path.join(WEB, 'src', 'data'),
     layerOf: () => 'data',
-    layers: { data: ['clock'] },
+    layers: { data: ['dom', 'node', 'net', 'clock'] },
   },
 ]
 

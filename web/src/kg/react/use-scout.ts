@@ -1,5 +1,9 @@
 /**
- * L4 — useScout(). Signature frozen; the façade that re-exported it is gone.
+ * L4 — useScout().
+ *
+ * No longer "signature frozen": that constraint existed to let the removed
+ * `store-context.ts` façade keep re-exporting this unchanged, and the façade is
+ * gone. `addMatch` was dropped on that basis — see below.
  *
  * The two promotions used to be `addApplication` followed by `updateMatch` in
  * one tick with nothing making them atomic (both in the removed
@@ -15,6 +19,7 @@
 import { useCallback, useMemo } from 'react'
 import type { Match, Pipeline, RoleTag, SavedPosting } from '@/kg/core/model'
 import { useGraph, useKg } from './kg-context'
+import { useReadBack } from './read-back'
 import { useRun } from './use-tool'
 import { asNull, nothingToRestore, present } from './patch'
 
@@ -32,17 +37,7 @@ export function useScout() {
   const postings = projections.postings(graph)
   const pipelines = projections.pipelines(graph)
 
-  const readBack = useCallback(
-    <R extends { id: string }>(
-      list: (g: ReturnType<typeof repo.getSnapshot>) => readonly R[],
-      id: string,
-    ): R => {
-      const found = list(repo.getSnapshot()).find((r) => r.id === id)
-      if (!found) throw new Error('The record was created and could not be read back.')
-      return found
-    },
-    [repo],
-  )
+  const readBack = useReadBack()
 
   const application = useCallback(
     (id: string) => projections.application(repo.getSnapshot(), id),
@@ -51,19 +46,13 @@ export function useScout() {
 
   /* -------------------------------- matches ------------------------------- */
 
-  const addMatch = useCallback(
-    (draft: Omit<Match, 'id'>): Match => {
-      const result = run('scout.match.save', {
-        role: draft.role,
-        detail: draft.detail,
-        fit: draft.fit,
-        ...present('applicationId', draft.applicationId),
-      })
-      if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not add the match.')
-      return readBack(projections.matches, result.output)
-    },
-    [run, readBack, projections],
-  )
+  // `addMatch` was here and is deleted: nothing in the app ever called it. It
+  // was retained on the strength of a note in `kg/tools/scout.ts` claiming it was
+  // "part of a signature 36 files compile against" — that count belonged to the
+  // removed `store-context.ts` façade, not to this hook, and `useScout` has six
+  // consumers, none of which destructures it. Matches are created by
+  // `scout.match.save` from the tools layer and promoted from here; the app has
+  // no hand-authored-match surface. If one lands, this is four lines.
 
   const updateMatch = useCallback(
     (id: string, patch: Partial<Match>) => {
@@ -100,6 +89,14 @@ export function useScout() {
       // The application link is a second, typed write rather than a field on the
       // create: `BECAME` is an edge, and a posting saved with a pointer nobody
       // followed is what `linked` used to be.
+      //
+      // The consequence, which is the part that bites: this is TWO commits, so
+      // it lands two journal entries and two undo entries. That is safe only
+      // because `undoableWith` (in `undo.ts`) reverts every entry a handler
+      // committed rather than just the last one — otherwise one ⌘Z would strip
+      // the link and leave the posting behind. Anyone folding these back into a
+      // single `scout.posting.save` input should do it for atomicity, and should
+      // know that the two-entry path is currently load-bearing on that rule.
       if (draft.applicationId !== undefined) {
         run('scout.posting.update', { id: result.output, applicationId: draft.applicationId })
       }
@@ -194,7 +191,6 @@ export function useScout() {
   return useMemo(
     () => ({
       matches,
-      addMatch,
       updateMatch,
       removeMatch,
       postings,
@@ -210,7 +206,6 @@ export function useScout() {
     }),
     [
       matches,
-      addMatch,
       updateMatch,
       removeMatch,
       postings,

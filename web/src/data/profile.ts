@@ -14,40 +14,21 @@
  * email in the fields.
  */
 
-import type { Profile, ProfileText } from '@/kg/core/model'
+import type { Profile } from '@/kg/core/model'
 
 export type { Profile, ProfileText } from '@/kg/core/model'
-
-const BLANK_TEXT: ProfileText = {
-  fullName: '',
-  position: '',
-  location: '',
-  email: '',
-  website: '',
-  scholar: '',
-  github: '',
-  linkedin: '',
-  targetRoles: '',
-  regions: '',
-}
+export { emptyProfile, profileIsBlank } from '@/kg/core/profile'
 
 /**
  * Fresh objects on every call rather than exported constants.
  *
- * `seedState()` and `emptyState()` hand their result straight to the reducer,
- * and a shared object would let one session's edits reach the next reset — the
- * arrays elsewhere in the seed are copied with a spread for the same reason.
- *
- * Both switches start on: an untouched profile filters nothing out, and a scout
- * that silently excluded half the boards would be a setting nobody chose.
+ * The result goes straight into a node's `props` — `seedProfile()` through
+ * `repo/seed.ts` and `memory.reset` — and props are patched in place, so a
+ * shared object would let one session's edits reach the next reset. That is why
+ * these are functions and not consts; it was originally written against a
+ * reducer that no longer exists, and the mechanism changed while the hazard did
+ * not.
  */
-export const emptyProfile = (): Profile => ({
-  text: { ...BLANK_TEXT },
-  matchTerms: [],
-  includeAcademia: true,
-  includeIndustry: true,
-})
-
 export const seedProfile = (): Profile => ({
   text: {
     fullName: 'Alex Rahman',
@@ -65,15 +46,3 @@ export const seedProfile = (): Profile => ({
   includeAcademia: true,
   includeIndustry: true,
 })
-
-/**
- * Whether anything has been filled in.
- *
- * The two switches are settings rather than content, so they are not counted:
- * a profile whose fields are all blank is an empty profile no matter which way
- * they point. Read by Settings' "is this store empty" signal and by the
- * Transfer manifest, which must not offer to move a record with nothing in it.
- */
-export const profileIsBlank = (profile: Profile) =>
-  profile.matchTerms.length === 0 &&
-  Object.values(profile.text).every((value) => value.trim() === '')

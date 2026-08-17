@@ -148,7 +148,8 @@ export function createStoreChannel(name: string): Channel {
 /*
  * The 50 ms debounce D23 asks for is NOT here, and it looks like it should be.
  *
- * It lives in `repo/boot.ts`, next to the rehydrate it protects, because the
+ * It is `REMOTE_DEBOUNCE_MS` in `repo/boot-live.ts`, next to the rehydrate it
+ * protects, because the
  * only consumer is `repo` and `repo` may not import this file. `tsconfig.kg.json`
  * compiles core, repo and tools with `"lib": ["ES2023"]` and no `@types` at all
  * — no `BroadcastChannel`, no `MessageEvent` — so a helper exported from here

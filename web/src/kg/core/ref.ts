@@ -13,7 +13,8 @@
  * [type, slug] index. Time-ordered ids also make "restore to its old position"
  * free, which is what deletes the reducer's captured `at` index.
  *
- * The difference from `parseRef` in `src/lib/ids.ts`, which this replaces, is that
+ * The difference from `parseRef`, the scheme this replaced and which has since
+ * been deleted from `src/lib/ids.ts`, is that
  * `parseRef` *tolerated* a bare key and read it as an application. It had to:
  * the label store keyed most records by a bare id. Here a bare id is rejected,
  * because the tolerance is exactly what let a keyword written against 'stripe'
@@ -175,7 +176,7 @@ export function newNodeId(type: NodeType, atMs: number): NodeId {
  * Splits an id into its type and its uuid, or returns null.
  *
  * Only the first colon separates and only a known prefix counts as a type, for
- * the reason `parseRef`'s header in `ids.ts` gives: a pasted URL must survive
+ * the reason `parseRef` gave before it was deleted: a pasted URL must survive
  * the round trip
  * rather than becoming `{ type: 'https', uuid: '//stripe.com' }`. Unlike
  * `parseRef`, a bare id with no prefix is not read as an application — it is
@@ -265,9 +266,10 @@ export function foldName(name: string): string {
  * Counting from 2 so the first duplicate reads as the second of its name —
  * 'unt-1' would imply an 'unt-0' somewhere. Takes the slugs already spoken for
  * rather than a snapshot, so a caller can include rows it has staged inside a
- * transaction but not yet committed: the bug `sortDrop` in
- * `components/vault/files/intake.ts` works around by hand when a bulk add drops
- * ten files with the same name at once.
+ * transaction but not yet committed — which is what lets a bulk add drop ten
+ * files with the same name and give each a distinct slug. Before the overlay,
+ * `sortDrop` in `components/vault/files/intake.ts` had to work that around by
+ * predicting this function's output; it no longer does.
  */
 export function uniqueSlug(base: string, taken: Iterable<string>): string {
   const used = new Set(taken)

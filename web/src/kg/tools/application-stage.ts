@@ -8,10 +8,11 @@
  * the application, and clearing one is the tidy-up after a move away from it.
  */
 
-import { shortDate } from '@/data/timeline'
+import { shortDate } from '@/kg/core/dates'
+import { OUTCOME_VALUES, STAGE_VALUES, TIMELINE_KIND_VALUES, URGENCY_VALUES } from '@/kg/core/model'
 import { s } from '@/kg/core/schema'
-import { OUTCOMES, appId, cleared, offerShape } from './application-fields'
-import { STAGE_IDS, STAGE_LABEL, TIMELINE_KINDS, URGENCIES, displayOf, touch } from './support'
+import { appId, cleared, offerShape } from './application-fields'
+import { STAGE_LABEL, displayOf, touch } from './support'
 import { defineTool } from './tool'
 
 export const applicationStageSet = defineTool({
@@ -20,7 +21,7 @@ export const applicationStageSet = defineTool({
   summary: 'Moves the application to another stage, with nothing attached.',
   effect: 'move',
   touches: ['application'],
-  input: s.object({ id: appId, stage: s.enum(STAGE_IDS, { label: 'Stage' }) }),
+  input: s.object({ id: appId, stage: s.enum(STAGE_VALUES, { label: 'Stage' }) }),
 
   run(ctx, input) {
     ctx.require('application', input.id)
@@ -51,13 +52,13 @@ export const applicationStageAdvance = defineTool({
   touches: ['application'],
   input: s.object({
     id: appId,
-    stage: s.enum(STAGE_IDS, { label: 'Stage' }),
+    stage: s.enum(STAGE_VALUES, { label: 'Stage' }),
     lastAction: s.optional(s.string()),
     appliedOn: s.optional(s.isoDate({ label: 'Applied on' })),
     submittedOn: s.optional(s.isoDate({ label: 'Submitted on' })),
     firstReplyOn: s.optional(s.isoDate({ label: 'First reply' })),
     url: s.optional(s.string({ label: 'Portal link' })),
-    outcome: s.optional(s.enum(OUTCOMES, { label: 'Outcome' })),
+    outcome: s.optional(s.enum(OUTCOME_VALUES, { label: 'Outcome' })),
     offer: s.optional(offerShape),
     /** True when the user chose not to keep an offer they are moving away from. */
     clearOffer: s.optional(s.boolean()),
@@ -66,8 +67,8 @@ export const applicationStageAdvance = defineTool({
         title: s.string({ min: 1 }),
         detail: s.optional(s.string()),
         date: s.isoDate(),
-        kind: s.enum(TIMELINE_KINDS),
-        urgency: s.optional(s.enum(URGENCIES)),
+        kind: s.enum(TIMELINE_KIND_VALUES),
+        urgency: s.optional(s.enum(URGENCY_VALUES)),
         location: s.optional(s.string()),
         remind: s.optional(s.boolean()),
       }),

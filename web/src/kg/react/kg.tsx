@@ -5,10 +5,16 @@
  *
  * It does not fetch, own state, derive anything, or decide when the app is
  * ready. `useSyncExternalStore(repo.subscribe, repo.getSnapshot)` — in
- * `kg-context.ts`, called once — is its only subscription, and the boot gate
- * lives in a separate provider so a persistence-health tick does not re-render
- * every consumer. It does not create the repository either: it is handed one
- * that is already open, which is why there is no loading branch in this file.
+ * `kg-context.ts`, called once — is the only thing here that makes a commit
+ * re-render, and the boot gate lives in a separate provider so a
+ * persistence-health tick does not re-render every consumer. It does not create
+ * the repository either: it is handed one that is already open, which is why
+ * there is no loading branch in this file.
+ *
+ * "Only thing that re-renders", not "only subscription", which is what this said
+ * before: `useHostBindings` at the foot of this same file subscribes twice more,
+ * to the platform rather than to the graph. Those two set no state — see
+ * `kg-context.ts` for the property that actually matters.
  *
  * It does not know what platform it is on. It used to: the ⌘Z binding read
  * `window` directly from here, which made the whole shared React layer

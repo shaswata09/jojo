@@ -4,6 +4,9 @@ import { CalendarCheck, CalendarClock, Check, Mail, Plus } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { SnoozeSteps } from '@/components/common/SnoozeSteps'
+import { snoozeAnchor } from '@/components/common/snooze'
+import { plural } from '@/components/common/text'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { addDays, partsOf, shortDate, timeLabel, whenLabel } from '@/data/timeline'
@@ -24,19 +27,6 @@ const LATER_SHOWN = 4
 const TOMORROW = addDays(TODAY, 1)
 const WEEK_END = addDays(TODAY, 6)
 
-const menuItem =
-  'flex w-full cursor-pointer items-center gap-2 rounded-sm px-1.5 py-1.5 text-xs text-text-2 transition-colors hover:bg-well hover:text-text-1'
-
-const SNOOZE_STEPS = [
-  { days: 1, label: 'A day' },
-  { days: 3, label: 'Three days' },
-  { days: 7, label: 'A week' },
-]
-
-const anchorOf = (item: TimelineItem) => (item.date < TODAY ? TODAY : item.date)
-
-const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`
-
 /** Splits an ISO date into the params the calendar route reads. */
 const dayParams = (iso: string) => {
   const { y, m, d } = partsOf(iso)
@@ -48,7 +38,6 @@ function SnoozeMenu({ item, onPush }: { item: TimelineItem; onPush: (by: number)
   // Controlled, because the steps are plain buttons: an uncontrolled popover
   // would stay open over a row that has already moved out from under it.
   const [open, setOpen] = useState(false)
-  const anchor = anchorOf(item)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -65,20 +54,18 @@ function SnoozeMenu({ item, onPush }: { item: TimelineItem; onPush: (by: number)
       </PopoverTrigger>
       <PopoverContent align="end" className="w-48 gap-1 p-1.5">
         <div className="px-1 pb-0.5 text-xs tracking-wide text-text-3 uppercase">Push out by</div>
-        {SNOOZE_STEPS.map((step) => (
-          <button
-            key={step.days}
-            type="button"
-            className={menuItem}
-            onClick={() => {
-              setOpen(false)
-              onPush(step.days)
-            }}
-          >
-            <span className="flex-1 text-left">{step.label}</span>
-            <span className="font-mono text-text-3">{shortDate(addDays(anchor, step.days))}</span>
-          </button>
-        ))}
+        {/* `duration`, not `dated`: the heading above already says these are
+            offsets, and an offset is measured from the anchor whatever the
+            anchor is — so unlike the reminders list this menu cannot name a day
+            the write will not produce. */}
+        <SnoozeSteps
+          date={item.date}
+          spell="duration"
+          onPick={(days) => {
+            setOpen(false)
+            onPush(days)
+          }}
+        />
       </PopoverContent>
     </Popover>
   )
@@ -160,7 +147,7 @@ export function OwedThisWeek() {
     snooze(item.id, by)
     toast({
       title: `${item.title} rescheduled`,
-      description: `Now due ${shortDate(addDays(anchorOf(item), by))}, here and on the calendar.`,
+      description: `Now due ${shortDate(addDays(snoozeAnchor(item.date), by))}, here and on the calendar.`,
       // The date it came from is the one thing a second snooze cannot recover.
       action: { label: 'Undo', onClick: () => reschedule(item.id, before) },
     })

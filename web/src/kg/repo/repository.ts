@@ -42,6 +42,15 @@ export type GraphRows = {
   edges: readonly StoredEdge[]
 }
 
+/** Per-commit overrides. Absent means the ordinary user-performed write. */
+export type CommitOptions = {
+  /**
+   * `false` keeps the entry out of the undo ring and leaves redo alone.
+   * See `Repository.commit`.
+   */
+  stack?: boolean
+}
+
 export interface Repository {
   getSnapshot(): GraphSnapshot
   subscribe(onChange: () => void): () => void
@@ -50,8 +59,21 @@ export interface Repository {
    * Synchronous. Applies the entry's `after` images to the snapshot, appends the
    * journal row, and enqueues the durable ops. Returns the committed entry.
    * The delta log IS the durable op list — there is no separate effects mapper.
+   *
+   * `stack: false` journals and audits the entry without touching the undo ring
+   * or clearing redo. It is for a write the SYSTEM finished, not one the user
+   * performed — the only case today is attaching a file's bytes once they land
+   * on disk, seconds after the drop that the user already undid or did not.
+   * Without it, ⌘Z after dropping a CV reverts the attach and silently unlinks
+   * bytes the user just watched arrive, and a background write arriving while
+   * they are considering a redo destroys it.
+   *
+   * Deliberately not `undoable: false`, which clears the ENTIRE history and
+   * exists for admin tools like a wholesale reset. This is the same distinction
+   * `changesNothing` already draws — "audited, but not a step the user takes
+   * back" — generalised from "changed nothing" to "was not the user's doing".
    */
-  commit(entry: JournalDraft): JournalEntry
+  commit(entry: JournalDraft, options?: CommitOptions): JournalEntry
   /** Replays an entry backwards. Itself a commit, so redo is free. */
   revert(entryId: string): JournalEntry
 
@@ -140,7 +162,19 @@ function reading(s: MutableSnapshot): GraphSnapshot {
   }
 }
 
-const rowOf = (record: StoredNode | StoredEdge): StoredRow => record as unknown as StoredRow
+/**
+ * A checked record on its way back OUT to the store, as an opaque row.
+ *
+ * The mirror of `validateRows`, and exported for the same reason that file
+ * keeps its two casts in one place: this is the only direction in which a
+ * `StoredNode` becomes a `StoredRow`, and `boot.ts` had a byte-identical copy
+ * for the first-run write. Two spellings of one cast is how a third arrives.
+ *
+ * Safe in a way the inbound cast is not — the value has already been through
+ * the trust boundary, and `props` is binary-free by D27 — so it is a widening
+ * to `{ [k: string]: unknown }` and nothing is being asserted about the shape.
+ */
+export const rowOf = (record: StoredNode | StoredEdge): StoredRow => record as unknown as StoredRow
 
 /**
  * One durable op per delta, in the same order.
@@ -286,8 +320,13 @@ export function createRepository(options: RepositoryOptions): Repository {
       return () => listeners.delete(onChange)
     },
 
-    commit(draft) {
+    commit(draft, options) {
       const entry = land(stamp(draft))
+      // Journalled and audited either way — the audit log's job is to record
+      // everything that touched the store, and a background attach is exactly
+      // the kind of write a user later wants an account of. Only the undo ring
+      // is withheld.
+      if (options?.stack === false) return entry
       // An entry that changed nothing is still audited — "you pressed save and
       // nothing happened" is worth being able to see — but it must not take the
       // top of the undo stack, or one no-op save eats the undo the user wanted.

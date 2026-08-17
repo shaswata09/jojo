@@ -1,9 +1,13 @@
 /**
  * The seed the session store starts from.
  *
- * Transcribed from the design mockup. Nothing here is mutated in place — the
- * arrays are the initial value handed to `StoreProvider`, and every edit the
- * user makes lives in that reducer instead.
+ * Transcribed from the design mockup. Nothing here is mutated in place, and
+ * nothing here is state: these arrays are read exactly twice, by `repo/seed.ts`
+ * and by the `memory.reset` tool, each of which COMPILES them into graph nodes.
+ * Every edit the user makes lands on those nodes. (This paragraph used to say
+ * the arrays were "the initial value handed to `StoreProvider`" and that edits
+ * lived "in that reducer" — there has been no reducer since Wave 1, and the
+ * provider never saw the fixtures.)
  *
  * Fixtures only, as of the KG layer. The domain types moved DOWN to
  * `@/kg/core/model` and are re-exported here, so every existing import still
@@ -15,11 +19,15 @@
  * user chose. Everything it carried is derived elsewhere now.
  */
 
-import { daysBetween, shortDate } from '@/data/timeline'
-import { ROLES } from '@/kg/core/model'
-import type { Application, Offer, RoleTag, Stage } from '@/kg/core/model'
+import { shortDate } from '@/kg/core/dates'
+import { STAGE_LABEL, STAGE_VALUES } from '@/kg/core/model'
+import type { Application, Offer, Stage } from '@/kg/core/model'
 
-export { ROLES, SOURCES } from '@/kg/core/model'
+export { ROLES, SOURCES, STAGE_LABEL } from '@/kg/core/model'
+/* `offerDaysLeft` followed `kg/react/use-priority.ts`, its only reader outside
+ * this file's own callers, down into `kg/core/dates.ts`. `respondByLabel` below
+ * stayed: nothing under `src/kg` asks for it. */
+export { offerDaysLeft } from '@/kg/core/dates'
 export type {
   Application,
   Offer,
@@ -47,19 +55,6 @@ export type {
  */
 export function displayName(a: Pick<Application, 'org' | 'role'>) {
   return a.role.trim() ? `${a.org} — ${a.role}` : a.org
-}
-
-/**
- * Negative once the date has passed, so an expired offer reads as expired.
- *
- * `today` is required. It used to default to the fixtures' pinned day, and the
- * default was what every caller passed — so the countdown froze on the day the
- * fixtures were written and an offer whose deadline was last month still said
- * "in 34 days". A date this module cannot know is a date this module must be
- * handed.
- */
-export function offerDaysLeft(offer: Offer, today: string) {
-  return daysBetween(today, offer.respondBy)
 }
 
 /** 'Nov 15'. */
@@ -191,16 +186,38 @@ export const applications: Application[] = [
     submittedOn: '2026-10-02',
   },
   {
-    id: 'meta',
-    org: 'Meta',
+    /**
+     * The second Rice row, and the only pair in the fixtures that shares an
+     * employer.
+     *
+     * Converted from a Meta research-scientist row rather than added beside it,
+     * so the seed is still twelve applications — five separate pieces of
+     * user-facing copy count them out loud ("Twelve applications, a timeline and
+     * a full vault"), and a thirteenth would have made all five wrong to buy one
+     * fixture.
+     *
+     * Two roles at one university is the commonest shape of an academic job
+     * search and this seed had none of it: all twelve employers were distinct,
+     * which made the org-per-employer rule look like an org-per-row rule. It is
+     * also the ONLY fixture that exercises that rule. `memory.reset` compiles
+     * every application in one transaction, calling `org.ensure` and
+     * `ctx.mintSlug` per row, so with twelve distinct employers the repeat case
+     * never ran — the transaction overlay's whole job, a staged node being
+     * visible to the rest of its own transaction, was unobservable from the test
+     * suite. `seed.test.ts` beside this file asserts it; delete this row's
+     * duplicate employer and the first case there fails rather than silently
+     * disarming the other two.
+     */
+    id: 'rice-research',
+    org: 'Rice',
     role: 'Research scientist',
-    note: 'Rolling · referral pending',
+    note: 'Rolling · same committee as the Statistics post',
     roleTag: 'Researcher',
     stage: 'draft',
     lastAction: 'Referral requested',
     daysAgo: 11,
     source: 'Careers page',
-    location: 'Menlo Park, CA',
+    location: 'Houston, TX',
   },
   {
     id: 'unt',
@@ -245,6 +262,15 @@ export const applications: Application[] = [
   },
 ]
 
+/*
+ * `STAGE_LABEL` moved to `kg/core/model.ts`, beside the `STAGE_VALUES` union it
+ * annotates, and is re-exported below so the 52 modules importing it from here
+ * did not move. It left because `kg/tools/support.ts` had to re-export it in
+ * turn — the model's own prose for its own enum was filed under demo data, and
+ * two layers of the service layer reached through the `@/data` alias to read six
+ * words. `STAGE_DOT` stayed: its values are Tailwind class names.
+ */
+
 /**
  * One colour per phase.
  *
@@ -253,68 +279,41 @@ export const applications: Application[] = [
  * it doubled back. The stage tokens are validated in index.css for contrast
  * against the bar track and for separation under colour-blind simulation.
  *
- * `label` is prose and free to change; `id` is the wire format — it is written
- * into '?stage=' links, read back by `useApplicationsParams`, and keys the
- * `--stage-*` tokens. "Screen" became "Screening call" because on its own the
- * word is a verb as often as a noun; the id stayed 'screen' so no saved link
- * broke. Nothing may lay out on a label's length: this one went from 6 to 14
- * characters.
+ * Whole class names, never interpolated: Tailwind scans source text, so
+ * `bg-stage-${id}` would compile to no CSS at all.
  */
-export const STAGES: { id: Stage; label: string; dot: string }[] = [
-  { id: 'draft', label: 'Draft', dot: 'bg-stage-draft' },
-  { id: 'submitted', label: 'Submitted', dot: 'bg-stage-submitted' },
-  { id: 'screen', label: 'Screening call', dot: 'bg-stage-screen' },
-  { id: 'interview', label: 'Interview', dot: 'bg-stage-interview' },
-  { id: 'offer', label: 'Offer', dot: 'bg-stage-offer' },
-  { id: 'closed', label: 'Closed', dot: 'bg-stage-closed' },
-]
-
-export type RoleBucket = { label: string; counts: Record<RoleTag, number> }
-
-/** Compact constructor — counts follow ROLES order. */
-const bucket = (label: string, v: readonly number[]): RoleBucket => ({
-  label,
-  counts: Object.fromEntries(ROLES.map((r, i) => [r, v[i] ?? 0])) as Record<RoleTag, number>,
-})
-
-export type Period = 'week' | 'month' | 'quarter'
+export const STAGE_DOT: Record<Stage, string> = {
+  draft: 'bg-stage-draft',
+  submitted: 'bg-stage-submitted',
+  screen: 'bg-stage-screen',
+  interview: 'bg-stage-interview',
+  offer: 'bg-stage-offer',
+  closed: 'bg-stage-closed',
+}
 
 /**
- * Each period is its own window, so totals differ between them — a quarter view
- * covers earlier searches, a week view only this season. That is how a real
- * range selector behaves.
+ * The six stages in funnel order, which is the order the board columns, the
+ * pipeline bar and the stage menu all read in.
+ *
+ * Derived from `STAGE_VALUES` rather than listed again, so the order is the
+ * model's and the two lookups above are the only place a stage's prose lives.
+ * `STAGE_VALUES` is where a stage is added; the compiler then asks for its label
+ * and its dot before this file will build.
  */
-export const frequencyByPeriod: Record<Period, RoleBucket[]> = {
-  //                        AsstProf Postdoc Researcher MLEng Lecturer
-  week: [
-    bucket('Jul 21', [1, 0, 0, 0, 0]),
-    bucket('Jul 28', [1, 1, 0, 1, 0]),
-    bucket('Aug 4', [1, 0, 1, 0, 0]),
-    bucket('Aug 11', [2, 1, 0, 0, 0]),
-    bucket('Aug 18', [1, 1, 0, 1, 0]),
-    bucket('Aug 25', [2, 1, 1, 1, 0]),
-    bucket('Sep 1', [1, 1, 0, 1, 1]),
-    bucket('Sep 8', [2, 0, 1, 1, 0]),
-    bucket('Sep 15', [1, 0, 1, 1, 0]),
-    bucket('Sep 22', [2, 1, 0, 0, 0]),
-    bucket('Sep 29', [1, 1, 0, 1, 0]),
-    bucket('Oct 6', [1, 0, 1, 1, 0]),
-  ],
-  month: [
-    bucket('Jun', [1, 1, 0, 1, 0]),
-    bucket('Jul', [2, 1, 1, 2, 0]),
-    bucket('Aug', [4, 2, 1, 1, 1]),
-    bucket('Sep', [3, 2, 2, 2, 1]),
-    bucket('Oct', [2, 1, 1, 2, 1]),
-    bucket('Nov', [1, 0, 1, 0, 0]),
-  ],
-  quarter: [
-    bucket('Q1', [1, 1, 1, 2, 0]),
-    bucket('Q2', [3, 2, 1, 2, 1]),
-    bucket('Q3', [7, 4, 3, 3, 1]),
-    bucket('Q4', [6, 4, 4, 5, 1]),
-  ],
-}
+export const STAGES: { id: Stage; label: string; dot: string }[] = STAGE_VALUES.map((id) => ({
+  id,
+  label: STAGE_LABEL[id],
+  dot: STAGE_DOT[id],
+}))
+
+/**
+ * A frozen `frequencyByPeriod` table used to sit here — three ranges of
+ * hand-authored counts, with a `RoleBucket` type and a `bucket()` constructor
+ * that existed only to build it. `ApplicationFrequency` counts the real records
+ * now and has said so in a past-tense comment for two waves, while the table it
+ * replaced stayed exported with no consumer at all. Deleted.
+ */
+export type Period = 'week' | 'month' | 'quarter'
 
 export const PERIODS: { value: Period; label: string }[] = [
   { value: 'week', label: 'Week' },

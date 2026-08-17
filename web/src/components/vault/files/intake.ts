@@ -1,5 +1,4 @@
 import type { VaultFile } from '@/data/vault'
-import { slugify } from '@/lib/ids'
 
 /**
  * Directories, which arrive looking exactly like files and are not.
@@ -38,21 +37,24 @@ export function sortDrop(list: FileList | null, existing: readonly VaultFile[]) 
   const folders = all.length - picked.length
 
   /**
-   * `addFile` mints the id from the name and reads the store as of the last
-   * render, so two files landing in one gesture cannot see each other: both
-   * would take the same id, and from then on they are one row with one
-   * keyword set that one delete takes out together. Deduped on the id the
-   * name would produce rather than on the name itself, because that is the
-   * thing that has to be unique — 'CV 2026.pdf' and 'CV-2026.pdf' slugify to
-   * the same key.
+   * "Already here" means the vault already holds a file by this name. Folded
+   * for case and surrounding space, because that is how a person reads two
+   * filenames as the same document and neither difference is one.
+   *
+   * It used to be `slugify(name)`, from `lib/ids` — a SECOND copy of
+   * `kg/core/ref.slugify` — used to predict the slug `ctx.mintSlug` was about
+   * to mint inside a transaction this function cannot see, so that two files
+   * dropped in one gesture could not collide on an id. Two things retired that.
+   * The runtime dedupes minted slugs against the same transaction now, so a
+   * collision is no longer possible; and predicting another layer's key from a
+   * copy of its function is a contract that breaks silently the first time
+   * either side changes. The consequence is deliberate: 'CV 2026.pdf' and
+   * 'CV-2026.pdf' dropped together are now two records rather than one and a
+   * "1 already here", which is the honest answer — they are two files.
    */
-  const seen = new Set(existing.map((f) => slugify(f.name)))
-  const fresh = picked.filter((file) => {
-    const key = slugify(file.name)
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
+  const fold = (name: string) => name.trim().toLowerCase()
+  const seen = new Set(existing.map((f) => fold(f.name)))
+  const fresh = picked.filter((file) => !seen.has(fold(file.name)))
 
   return {
     total: all.length,

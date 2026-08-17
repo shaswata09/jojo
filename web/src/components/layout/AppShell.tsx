@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
-import { StorageBanner } from '@/components/common/StorageBanner'
+import { StorageBanner } from '@/components/layout/StorageBanner'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 
 export function AppShell() {

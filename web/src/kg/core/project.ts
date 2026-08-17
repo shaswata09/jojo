@@ -91,7 +91,9 @@ export function createProjection<T extends NodeType, R>(
     // snapshot's contents in place rather than minting a fresh one — so this
     // should be unreachable. It is here because the failure it guards is silent
     // and total: every list in the app rendering records that no longer exist,
-    // beside a Settings page correctly reporting the store empty.
+    // beside a Settings page correctly reporting the store empty. Pinned by
+    // 'serves the snapshot it was handed' in `project.test.ts`, since "should be
+    // unreachable" on its own reads as an invitation to delete the line.
     if (g.version < lastVersion) cache.clear()
 
     // Same commit, same answer. Without this the identity check below still
@@ -122,12 +124,26 @@ export function createProjection<T extends NodeType, R>(
       }
 
       // A row that kept its identity can still have MOVED, and a reordered
-      // array with every element identical is a different array. Comparing
-      // position by position is what catches a drag between stages.
+      // array with every element identical is a different array.
+      //
+      // NOT what catches a drag between stages, which this used to say: a stage
+      // change is a `putNode`, so the row's epoch moves and the miss above has
+      // already set `changed`. `ofType` is id-ascending, and a set of rows that
+      // all hit the cache cannot have reordered under that rule — so this is a
+      // backstop, not a live path. It stays because the rule is one line away
+      // from being a reading of `props`, and on that day an unchanged row
+      // moving would republish yesterday's array with no other guard reaching
+      // it.
       if (!changed && lastResult[i] !== value) changed = true
       next.push(value)
     }
 
+    // Reclaiming memory, and only that. A removed id can never be served from
+    // here again — `removeNode` bumps its epoch and a re-add bumps it once
+    // more, so a surviving entry would miss on the epoch — and its removal
+    // already showed up as a length change above. Nothing a caller can read
+    // distinguishes this loop being here from it being gone, which is why there
+    // is no test for it: one would pass either way.
     for (const id of [...cache.keys()]) {
       if (!live.has(id)) {
         cache.delete(id)

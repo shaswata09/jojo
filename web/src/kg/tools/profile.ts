@@ -124,8 +124,11 @@ export const profileSet = defineTool({
 
 export const profileTextSet = defineTool({
   name: 'profile.text.set',
-  title: 'Edit profile',
-  summary: 'Saves one field on the profile.',
+  // 'Edit profile' promised the whole page and generates a two-control form
+  // — pick a field, type a value. The palette builds its form from these two
+  // strings, so a title wider than the input is a form that reads as broken.
+  title: 'Edit one profile field',
+  summary: 'Saves a single field — name, position, email, a link — on the profile.',
   effect: 'update',
   touches: ['profile'],
   input: s.object({

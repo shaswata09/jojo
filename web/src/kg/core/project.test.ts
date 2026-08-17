@@ -118,7 +118,18 @@ describe('createProjection', () => {
     expect(projectRow(g)[0]?.org).toBe('rice-university')
   })
 
-  it('drops a removed row and forgets its cache entry', () => {
+  /**
+   * The row leaving is the assertable half. The cache entry leaving with it is
+   * not, and the name used to claim both.
+   *
+   * Eviction reclaims memory and nothing else: a removed id can never be served
+   * from the cache again, because `removeNode` bumps its epoch and a re-add
+   * bumps it once more, so a stale entry would miss on the epoch anyway. There
+   * is no reading of this projection that can tell the two versions apart —
+   * which is worth saying here, so the next person to notice the gap does not
+   * write a test that passes either way and believe they have closed it.
+   */
+  it('drops a removed row', () => {
     const projectRow = rowProjection()
     const app = application('rice')
     const g = MutableSnapshot.from([app, application('baylor')])
@@ -132,11 +143,48 @@ describe('createProjection', () => {
   })
 
   /**
-   * A row that kept its identity can still have MOVED, and a reordered array
-   * with every element identical is a different array. This is what a drag
-   * between stages looks like from here.
+   * A snapshot whose version went BACKWARDS is a different store, not an earlier
+   * commit of this one.
+   *
+   * The equality check that makes a re-render cheap reads a lower version as
+   * "not the version I cached", walks the rows, and then hits the epoch cache —
+   * and epochs restart at 1 in every store, so a record that is `rice` here and
+   * `baylor` there matches on the number and is served from the wrong one. The
+   * failure is silent and total: every list in the app rendering records that no
+   * longer exist, beside a Settings page correctly reporting the store empty.
+   *
+   * `Repository` keeps `version` monotonic — `replaceAll` and `rehydrate` swap
+   * the snapshot's CONTENTS rather than minting a fresh object — so nothing in
+   * the app reaches this today. That is exactly why it is pinned: the guard is
+   * two words, it protects the worst outcome available to a cache, and the next
+   * person to read "this should be unreachable" is being invited to delete it.
    */
-  it('publishes a new array when the order changes and nothing else does', () => {
+  it('serves the snapshot it was handed, even one older than the last', () => {
+    const projectRow = rowProjection()
+    const id = application('rice').id
+
+    const before = MutableSnapshot.from([{ ...application('rice'), id } as StoredNode])
+    for (let i = 0; i < 4; i += 1) before.commit()
+    expect(projectRow(before).map((r) => r.slug)).toEqual(['rice'])
+
+    // A second store holding a different record under the same id, at a lower
+    // version. This is what a fresh snapshot over the same ids looks like.
+    const replaced = MutableSnapshot.from([{ ...application('baylor'), id } as StoredNode])
+    expect(replaced.version).toBeLessThan(before.version)
+
+    expect(projectRow(replaced).map((r) => r.slug)).toEqual(['baylor'])
+  })
+
+  /**
+   * A row that kept its identity can still have MOVED, and a reordered array
+   * with every element identical is a different array.
+   *
+   * Not a drag between stages, which this used to claim: a stage change is a
+   * `putNode`, so the row's epoch moves and the cache miss alone republishes.
+   * This is an insert AHEAD of the existing rows — `ofType` is id-ascending, so
+   * a record restored by undo lands wherever its id says rather than at the end.
+   */
+  it('publishes a new array when a row is inserted ahead of the others', () => {
     const projectRow = rowProjection()
     const g = MutableSnapshot.from([application('baylor')])
     const before = projectRow(g)

@@ -4,6 +4,8 @@ import { CalendarClock, Check, CircleCheckBig } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { SnoozeSteps } from '@/components/common/SnoozeSteps'
+import { snoozeAnchor } from '@/components/common/snooze'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { addDays, shortDate } from '@/data/timeline'
@@ -31,16 +33,6 @@ const URGENCY_BORDER: Record<DateMark, string> = {
   none: 'border-hairline',
 }
 
-const menuItem =
-  'flex w-full cursor-pointer items-center gap-2 rounded-sm px-1.5 py-1.5 text-xs text-text-2 transition-colors hover:bg-well hover:text-text-1'
-
-/** The same three steps the Owed-this-week rows and the reminders list offer. */
-const SNOOZE_STEPS = [
-  { days: 1, label: 'A day' },
-  { days: 3, label: 'Three days' },
-  { days: 7, label: 'A week' },
-]
-
 /**
  * Done and Snooze for a card that has a dated item behind it.
  *
@@ -56,8 +48,9 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
   const item = get(itemId)
   if (!item) return null
 
-  // Mirrors the store's rule: it counts from today only for an overdue item.
-  const anchor = item.date < TODAY ? TODAY : item.date
+  // The store counts from today only for an overdue item, and the toast below
+  // has to name the same day the write lands on.
+  const anchor = snoozeAnchor(item.date)
 
   const done = () => {
     toggleDone(item.id)
@@ -97,17 +90,7 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
         </PopoverTrigger>
         <PopoverContent align="end" className="w-48 gap-1 p-1.5">
           <div className="px-1 pb-0.5 text-xs tracking-wide text-text-3 uppercase">Push out by</div>
-          {SNOOZE_STEPS.map((step) => (
-            <button
-              key={step.days}
-              type="button"
-              className={menuItem}
-              onClick={() => push(step.days)}
-            >
-              <span className="flex-1 text-left">{step.label}</span>
-              <span className="font-mono text-text-3">{shortDate(addDays(anchor, step.days))}</span>
-            </button>
-          ))}
+          <SnoozeSteps date={item.date} spell="duration" onPick={push} />
         </PopoverContent>
       </Popover>
     </>

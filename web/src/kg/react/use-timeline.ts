@@ -16,7 +16,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { addDays, bucketOf, followUpsOf } from '@/data/timeline'
+import { addDays, bucketOf, followUpsOf } from '@/kg/core/dates'
 import type { TimelineItem } from '@/kg/core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'

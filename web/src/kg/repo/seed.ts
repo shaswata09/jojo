@@ -3,8 +3,19 @@
  *
  * The fixtures stay verbatim — readable and diffable — and are resolved through a
  * slug -> id table in a single pass, so `applicationId`, `org` and
- * `labelsByRecord` all land as real edges. This is the only place `src/data`
- * is read, and it is reached by exactly one tool (`memory.reset`).
+ * `labelsByRecord` all land as real edges.
+ *
+ * WHO CALLS THIS, WHICH IS NOT WHAT THIS HEADER USED TO CLAIM
+ *
+ * It said this was the only place `src/data` is read and that it was reached by
+ * exactly one tool, `memory.reset`. Neither half is true. Several modules under
+ * `src/kg` import `@/data` for a fixture that is not the seed — the label
+ * palette, the stage list, the seed's timeline helpers — and `memory.reset`
+ * does not call this at all: it holds a SECOND compiler over the same fixture
+ * arrays, which `tools/memory.ts` names in its own header as the thing to
+ * reconcile. The real callers are `boot.ts` (a first run, and every in-memory
+ * session) and `lib/data-set.ts` (Settings' "Load demo data"). Those two agree
+ * because they are one function; `memory.reset` is the one that can drift.
  *
  * Three things the compiler does that are worth knowing before changing it:
  *

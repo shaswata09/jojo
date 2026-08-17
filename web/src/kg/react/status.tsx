@@ -36,6 +36,14 @@ export function StoreStatusProvider({ repo, boot, children }: StoreStatusProvide
  * new reading each drain and `useSyncExternalStore` would have compared two
  * fresh objects and re-rendered forever. Copying it into state on the tick is
  * the version that settles.
+ *
+ * The cost, which is the constraint on any future fix: what is on screen is a
+ * COPY taken at the last tick, so the banner cannot self-correct on an unrelated
+ * re-render (AUDIT A5). If the queue's health ever changes without notifying —
+ * a field mutated in place, a path that returns early before `notifyHealth` —
+ * the banner keeps showing the stale reading indefinitely rather than for one
+ * frame. `subscribeHealth` firing on every transition is load-bearing here, not
+ * merely an optimisation over polling.
  */
 function usePersistenceHealth(repo: Repository): PersistenceHealth {
   const [health, setHealth] = useState<PersistenceHealth>(() => repo.health)

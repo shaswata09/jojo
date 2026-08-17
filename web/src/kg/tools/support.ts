@@ -12,43 +12,54 @@
  * Time enters through `ctx.now` (D26). Nothing here reads a clock of its own.
  */
 
-import { STAGES } from '@/data/seed'
-import { daysBetween } from '@/data/timeline'
-import type {
-  ISODate,
-  NodeId,
-  RoleTag,
-  Stage,
-  StoredNode,
-  TimelineKind,
-  Urgency,
-} from '@/kg/core/model'
+import { daysBetween } from '@/kg/core/dates'
+import type { ISODate, NodeId, RoleTag, Urgency } from '@/kg/core/model'
 import type { GraphSnapshot } from '@/kg/core/snapshot'
 import type { ToolContext } from './tool'
 
-export const STAGE_IDS = STAGES.map((stage) => stage.id) as readonly Stage[]
-
 /**
- * The unions as runtime lists, because `s.enum` needs the values and a type
- * cannot be iterated. Declared here rather than in each tool module so a new
- * kind is added in one place — `TimelineKind` grew 'follow-up' late, and the
- * three components that switched on it were found one bug report at a time.
+ * What each stage is called, re-exported and not redeclared.
+ *
+ * `kg/core/model.ts` owns it as a `Record<Stage, string>` annotation on an
+ * object literal beside `STAGE_VALUES`, which is the only spelling where a
+ * missing stage is a compile error. There were five copies of this lookup, each
+ * built as `Object.fromEntries(STAGES.map(…)) as Record<Stage, string>` — and
+ * the `as` turns "a missing stage is a compile error" into "a missing stage
+ * renders `undefined`" in a chip, a toast and an aria-label. The one here was
+ * the fifth.
+ *
+ * The re-export is now only a convenience for tool modules that already import
+ * this file: it used to be load-bearing, because the map lived in `@/data/seed`
+ * and `kg/react/use-applications.ts` may not import a fixture. That hook reads
+ * `@/kg/core/model` directly now.
  */
-export const TIMELINE_KINDS = [
-  'deadline',
-  'interview',
-  'visit',
-  'call',
-  'prep',
-  'admin',
-  'follow-up',
-] as const satisfies readonly TimelineKind[]
+export { STAGE_LABEL } from '@/kg/core/model'
 
-export const URGENCIES = ['red', 'amber', 'gray'] as const satisfies readonly Urgency[]
-
-export const STAGE_LABEL = Object.fromEntries(
-  STAGES.map((stage) => [stage.id, stage.label]),
-) as Record<Stage, string>
+/*
+ * The unions a tool schema is built from are NOT here any more.
+ *
+ * `STAGE_IDS`, `TIMELINE_KINDS` and `URGENCIES` lived in this file as fresh
+ * literals guarded by `satisfies` — which does not guard this. `['a','b'] as
+ * const satisfies readonly Kind[]` asserts every element IS a Kind and says
+ * nothing about every Kind being present, so a SHORTER list still compiles.
+ * That split the model in half across two layers: `core/validate.ts` imports
+ * `TIMELINE_KIND_VALUES` and so accepted a newly-added kind off disk, while
+ * `s.enum(TIMELINE_KINDS)` refused to create or update it — the record loaded,
+ * rendered, and could not be written by the tool that owns it. Journal replay
+ * bypasses schemas, so undo put it back too: a value in the graph that no tool
+ * could produce.
+ *
+ * `STAGE_IDS` was worse. It was `STAGES.map((s) => s.id) as readonly Stage[]` —
+ * the schema for a persisted field, derived from the demo fixtures through a
+ * cast that erased the only check that would have caught a gap.
+ *
+ * So every tool module imports `STAGE_VALUES`, `TIMELINE_KIND_VALUES`,
+ * `URGENCY_VALUES` and the rest from `@/kg/core/model` directly, and the import
+ * line says where the truth is. Where a tool genuinely needs a subset, spell it
+ * as a filter over the const, never as a second list.
+ * `tools.test.ts`'s "every value the model declares" case is what keeps this
+ * from being re-derived by hand the next time.
+ */
 
 /**
  * The calendar day the user is standing in, from the transaction's instant.
@@ -105,11 +116,6 @@ export function displayOf(m: GraphSnapshot, appId: NodeId): string {
   if (!app) return ''
   const org = orgNameOf(m, appId)
   return app.props.role.trim() ? `${org} — ${app.props.role}` : org
-}
-
-export const titleOf = (n: StoredNode): string => {
-  const props = n.props as { title?: string; name?: string; role?: string }
-  return props.title ?? props.name ?? props.role ?? ''
 }
 
 /* ------------------------------- deadlines -------------------------------- */

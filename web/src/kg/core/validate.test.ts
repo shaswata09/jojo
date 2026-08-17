@@ -189,6 +189,52 @@ describe('validateRows', () => {
     expect(rows.nodes).toHaveLength(1)
     expect(rows.skipped[0]?.message).toContain('Appeared twice')
   })
+
+  /**
+   * WHICH of the two it keeps, which the count above cannot see.
+   *
+   * A duplicate primary key cannot come out of IndexedDB, so this only fires on
+   * an import or a merge — and there the two rows are the same record at two
+   * moments, so "last one wins" is "the newer file wins", which is what a
+   * restore means. First-one-wins is the same diagnostic over the wrong record:
+   * the count is right, the content is silently a month old, and nothing on
+   * screen says so. Asserting the count alone left that free to flip.
+   */
+  it('keeps the LATER of two rows sharing an id, not the first', () => {
+    const app = application('rice')
+    const rows = validateRows(
+      [
+        { ...app, props: { ...app.props, note: 'the copy on disk' } },
+        { ...app, props: { ...app.props, note: 'the one being imported' } },
+      ],
+      [],
+    )
+
+    expect(rows.nodes).toHaveLength(1)
+    expect(rows.nodes[0]?.props).toMatchObject({ note: 'the one being imported' })
+  })
+
+  /**
+   * R-1(d) on the EDGE side, which the node side's coverage does not reach.
+   *
+   * The two loops report independently, and an edge is a record too: a `TAGS`
+   * row is the only thing that says a keyword is on an application, so a
+   * malformed one dropped without a diagnostic is a tag that vanishes with
+   * nothing in Diagnostics, nothing counted, and nothing offered to export. The
+   * rejection is the loud half of "never drop silently"; without it the boot
+   * reads clean while the graph is missing a relationship.
+   */
+  it('counts a malformed edge row, rather than dropping it quietly', () => {
+    const app = application('rice')
+    const org = organisation('rice')
+    const good = edge(app, 'AT', org)
+    const rows = validateRows([app, org], [good, { ...good, id: 'not-an-edge-id' }])
+
+    expect(rows.edges).toHaveLength(1)
+    expect(rows.skipped).toEqual([
+      { store: 'edges', id: 'not-an-edge-id', message: 'Its id disagrees with its ends.' },
+    ])
+  })
 })
 
 describe('checkInvariants', () => {

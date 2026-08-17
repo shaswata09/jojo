@@ -1,17 +1,46 @@
+/**
+ * How a dated item LOOKS on the web — and the web import path for how it reads.
+ *
+ * The file used to hold both halves. The half that is a rule — what each kind is
+ * called, how close a date is, and whether `done` outranks the date — moved to
+ * `@/kg/core/timeline-view`, because none of it is web-only and all of it was
+ * being kept in step with the phone by copying the file across. What stayed is
+ * the half that names a renderer: `KIND_ICON` is lucide, `MARK_TEXT` and
+ * `MARK_DOT` are Tailwind class names, and neither means anything to a native
+ * view. That split is the whole point — `kg/react/toast.ts` and
+ * `src/lib/toast-context.ts` are the same shape, the interface below the seam
+ * and the pieces that name a DOM above it.
+ *
+ * `dateMark` and `markOf` are re-bound here rather than re-exported, because the
+ * shared versions take `today` as an argument and these do not: thirteen call
+ * sites ask about a date without holding a clock, and `TODAY` is the web app's
+ * one wall-clock read. Nothing under `src/kg` may import it (D26), so the
+ * binding is what `src/lib` is for.
+ */
+
 import { AlarmClock, CalendarClock, FileText, Plane, Users, Video } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { daysBetween } from '@/data/timeline'
-import type { TimelineItem, TimelineKind } from '@/data/timeline'
+import type { TimelineItem, TimelineKind } from '@/kg/core/model'
+import { dateMarkOn, markOn } from '@/kg/core/timeline-view'
+import type { DateMark } from '@/kg/core/timeline-view'
 import { TODAY } from '@/lib/today'
 
+export { KIND_LABEL, TIMELINE_KINDS } from '@/kg/core/timeline-view'
+export type { DateMark, Mark } from '@/kg/core/timeline-view'
+
 /**
- * How a dated item looks, wherever it appears.
+ * Which glyph each kind draws.
  *
- * Four surfaces render the same timeline item — the dashboard's week, the
- * glance calendar, the Calendar page and the Vault's reminders — and each used
- * to carry its own copy of these maps against its own narrower kind union. A
- * kind added to `TimelineKind` then compiled everywhere and rendered `undefined`
- * as an icon in whichever copy had been missed.
+ * Four surfaces render the same timeline item — the dashboard's week, the glance
+ * calendar, the Calendar page and the Vault's reminders — and each used to carry
+ * its own copy of this map against its own narrower kind union. A kind added to
+ * `TimelineKind` then compiled everywhere and rendered `undefined` as an icon in
+ * whichever copy had been missed.
+ *
+ * `TIMELINE_KINDS` used to be derived from this map's keys. It is derived from
+ * `KIND_LABEL` now — the legend order is a fact about the domain and had no
+ * business depending on a lucide import — and the exhaustive `Record` type here
+ * is what still makes a missing icon a compile error rather than a blank.
  */
 export const KIND_ICON: Record<TimelineKind, LucideIcon> = {
   deadline: CalendarClock,
@@ -23,56 +52,11 @@ export const KIND_ICON: Record<TimelineKind, LucideIcon> = {
   'follow-up': Users,
 }
 
-export const KIND_LABEL: Record<TimelineKind, string> = {
-  deadline: 'Deadline',
-  interview: 'Interview',
-  visit: 'Visit',
-  call: 'Call',
-  prep: 'Prep',
-  admin: 'Admin',
-  'follow-up': 'Follow-up',
-}
+/** `dateMarkOn`, measured against the app's today. */
+export const dateMark = (iso: string) => dateMarkOn(TODAY, iso)
 
-/** Derived from the icon map, so a new kind cannot be missed by a legend. */
-export const TIMELINE_KINDS = Object.keys(KIND_ICON) as TimelineKind[]
-
-/**
- * How close a date is, and the only thing on any surface allowed to carry
- * colour: red is past due and nothing else, amber is inside 48 hours and
- * nothing else.
- *
- * This rule had four copies — `Calendar.tsx`, `GlancePanel.tsx`,
- * `OwedThisWeek.tsx` and `lib/priority.ts` — each spelling the same two
- * thresholds against its own union: `'overdue' | 'soon' | 'none'` twice,
- * `'red' | 'amber' | 'gray'` once, and a fourth that also had to say what a
- * completed item looks like. Four copies of a threshold is how the dashboard
- * and the calendar came to disagree about what "overdue" meant, so there is one
- * copy now and the surfaces differ only in the classes they hang off it.
- */
-export type DateMark = 'overdue' | 'soon' | 'none'
-
-/** A `DateMark` plus the one state a date cannot tell you about. */
-export type Mark = DateMark | 'done'
-
-export function dateMark(iso: string): DateMark {
-  const gap = daysBetween(TODAY, iso)
-  if (gap < 0) return 'overdue'
-  // Today and tomorrow are the only two days amber may claim.
-  return gap <= 1 ? 'soon' : 'none'
-}
-
-/**
- * `done` is checked first and outranked by nothing: a finished item is not past
- * due, whatever its date says. Without that the calendar kept a ticked-off
- * reminder's red dot on screen under a toast saying the thing was done.
- *
- * Takes the two fields it reads rather than the whole item, so a caller holding
- * a projection or a draft can ask without constructing one.
- */
-export function markOf(item: Pick<TimelineItem, 'date' | 'completedOn'>): Mark {
-  if (item.completedOn) return 'done'
-  return dateMark(item.date)
-}
+/** `markOn`, measured against the app's today. */
+export const markOf = (item: Pick<TimelineItem, 'date' | 'completedOn'>) => markOn(TODAY, item)
 
 /**
  * The three date colours, shared.

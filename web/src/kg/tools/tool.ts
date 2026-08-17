@@ -106,11 +106,14 @@ export type ToolContext = {
   /**
    * Unique against stored nodes AND nodes this transaction has already created.
    *
-   * `sortDrop` in `components/vault/files/intake.ts` works around the absence
-   * of the second half by hand:
-   * two files dropped in one gesture both minted their slug from a store read
-   * that predated either of them, took the same id, and from then on were one
-   * row with one keyword set that one delete took out together.
+   * The second half is the one that was missing: two files dropped in one
+   * gesture both minted their slug from a store read that predated either of
+   * them, took the same id, and from then on were one row with one keyword set
+   * that one delete took out together. `sortDrop` in
+   * `components/vault/files/intake.ts` used to predict the slug this mints, to
+   * dedupe a drop before it arrived — a second copy of `slugify` on the far side
+   * of a layer boundary, kept in step by nothing. It dedupes on the folded name
+   * now, and this overlay is what made the prediction unnecessary.
    */
   mintSlug(type: NodeType, base: string): string
   newId(type: NodeType): NodeId

@@ -253,17 +253,23 @@ describe('createMemoryDriver', () => {
     expect(rows.meta).toEqual([{ key: 'store', value: { a: 1 } }])
   })
 
-  it('delivers remote commits and blocking to their subscribers', () => {
+  // Both unsubscribes are exercised, not just the remote one. `onBlocking`'s is
+  // the half `driver-conformance.test.ts` cannot reach — provoking a blocking
+  // event means a second connection upgrading a schema, and this driver has no
+  // schema — so it is pinned here instead.
+  it('delivers remote commits and blocking to their subscribers, and stops on unsubscribe', () => {
     const driver = createMemoryDriver()
     const seen: string[] = []
 
     const offRemote = driver.onRemoteCommit((e) => seen.push(`remote:${e.entryId}`))
-    driver.onBlocking(() => seen.push('blocking'))
+    const offBlocking = driver.onBlocking(() => seen.push('blocking'))
 
     driver.emitRemoteCommit({ kind: 'commit', at: '2026-10-12T00:00:00.000Z', entryId: 'e1' })
     driver.emitBlocking()
     offRemote()
+    offBlocking()
     driver.emitRemoteCommit({ kind: 'commit', at: '2026-10-12T00:00:00.000Z', entryId: 'e2' })
+    driver.emitBlocking()
 
     expect(seen).toEqual(['remote:e1', 'blocking'])
   })

@@ -16,7 +16,7 @@
  * of what that file is now.
  */
 
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import type { Label, LabelTone, NodeId } from '@/kg/core/model'
 import { isNodeId } from '@/kg/core/ref'
 import { useGraph, useKg } from './kg-context'
@@ -30,8 +30,11 @@ import { nothingToRestore } from './patch'
  * that used to disambiguate the six seeded records answering to 'stripe'. With
  * type-prefixed ids the id already says which, so the wrapper is redundant, and
  * `'app:' + 'app:0192…'` is what arrives. Unwrapping it here rather than editing
- * nineteen call sites keeps Wave 1's promise that no consumer file changes;
- * Wave 4's codemod deletes the wrapper and this function with it.
+ * nineteen call sites keeps Wave 1's promise that no consumer file changes.
+ *
+ * This used to end "Wave 4's codemod deletes the wrapper and this function with
+ * it". Wave 4 shipped and did not: the wrapper is gone from new call sites, but
+ * `recordKey` is still reached, so it stays until the last caller does.
  */
 export function recordKey(key: string): NodeId | undefined {
   // Both halves are read BEFORE the guard. `isNodeId` is a predicate over
@@ -45,6 +48,25 @@ export function recordKey(key: string): NodeId | undefined {
   return isNodeId(wrapped) ? wrapped : undefined
 }
 
+/**
+ * The no-keywords answer. Copied on the way out, every time, on purpose.
+ *
+ * This looks like the referential-stability trick it is named after and is not
+ * one: both `labelsOf` returns below spread it, so each call allocates a fresh
+ * array regardless and the shared const saves nothing measurable. The obvious
+ * tidy-up is to return `EMPTY` itself — do not.
+ *
+ * `labelsOf` is typed `Label[]`, so returning the `readonly` const does not
+ * compile, and the cheap way past that error is to widen the return type to
+ * `readonly Label[]`. That is where the bug is: the third return is
+ * `labels.filter(...)`, a genuinely fresh mutable array, so callers have always
+ * been free to sort or splice what they get back. Hand them the module-level
+ * const on the empty path and the first caller that sorts in place populates
+ * every future "this record has no keywords" answer in the session.
+ *
+ * Kept as a const rather than inlining `[]` twice only so this note has
+ * somewhere to live.
+ */
 const EMPTY: readonly Label[] = []
 
 export function useKeywords() {
@@ -181,19 +203,52 @@ export function useKeywords() {
     [graph],
   )
 
-  return {
-    labels,
-    labelsOf,
-    labelIdsOf,
-    addLabel,
-    renameLabel,
-    setTone,
-    removeLabel,
-    toggleOn,
-    setRecord,
-    removeRecord,
-    countFor,
-    countWithin,
-    carries,
-  }
+  /**
+   * Memoised, like the other six hooks in this layer — it was the one that was not.
+   *
+   * Every member above is already individually stable, so for a consumer that
+   * destructures this is invisible, and the asymmetry read as deliberate for long
+   * enough that it needed settling one way or the other. It is not deliberate,
+   * and the cost is one file down: `LabelsProvider` in `src/lib/labels.tsx` puts
+   * the WHOLE object in a dep array (`removeLabel`, which needs both this and its
+   * own selection state). A fresh identity per render therefore re-created that
+   * callback per render, which invalidated the `useMemo` building the
+   * `LabelsContext` value, which handed every chip, filter and count on the page
+   * a new context value on every unrelated render in the tree.
+   *
+   * So the dep array below has to stay exhaustive. Dropping a member from it to
+   * "stabilise" the object would freeze a stale closure into that provider.
+   */
+  return useMemo(
+    () => ({
+      labels,
+      labelsOf,
+      labelIdsOf,
+      addLabel,
+      renameLabel,
+      setTone,
+      removeLabel,
+      toggleOn,
+      setRecord,
+      removeRecord,
+      countFor,
+      countWithin,
+      carries,
+    }),
+    [
+      labels,
+      labelsOf,
+      labelIdsOf,
+      addLabel,
+      renameLabel,
+      setTone,
+      removeLabel,
+      toggleOn,
+      setRecord,
+      removeRecord,
+      countFor,
+      countWithin,
+      carries,
+    ],
+  )
 }

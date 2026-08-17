@@ -10,6 +10,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { isTypingTarget } from '@/components/common/typing-target'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import type { ToolName } from '@/kg/tools'
@@ -260,15 +261,6 @@ export function NewMenu({ className }: { className?: string }) {
   )
 }
 
-/** Fields that swallow a bare letter, because the letter is text you meant to type. */
-function isTypingTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false
-  // Covers descendants too, so a caret anywhere inside a rich-text region counts.
-  if (target.isContentEditable) return true
-  const tag = target.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
-}
-
 /**
  * Opens the create menu on a bare `n`.
  *
@@ -278,11 +270,13 @@ function isTypingTarget(target: EventTarget | null) {
  * text, on an IME still assembling a character, and on an open dialog — where
  * focus is trapped and the menu would mount behind the modal, unreachable.
  *
- * `NewMenu` calls this itself. Call it a second time only if you are rendering
- * your own trigger; two callers means two listeners driving two states, and
- * the key would open whichever menu happened to mount last as well.
+ * `NewMenu` calls this itself, and is the only thing that can: the hook is no
+ * longer exported. It was, and the note here warned against a second caller —
+ * two listeners driving two states, with the key opening whichever menu mounted
+ * last. Un-exporting it made that unrepresentable, which is the better fix, so
+ * the warning is kept only as the reason not to export it again.
  */
-export function useNewShortcut() {
+function useNewShortcut() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {

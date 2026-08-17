@@ -26,8 +26,8 @@
  * hold on a board of sixty cards.
  */
 
-import { compareItems, daysBetween } from '@/data/timeline'
-import { emptyProfile } from '@/data/profile'
+import { compareItems, daysBetween } from '@/kg/core/dates'
+import { emptyProfile } from '@/kg/core/profile'
 import type {
   Application,
   ISODate,

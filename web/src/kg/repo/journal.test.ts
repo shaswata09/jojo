@@ -8,7 +8,15 @@
 
 import { describe, expect, it } from 'vitest'
 import type { Instant, NodeId, StoredEdge, StoredNode } from '../core/model'
-import { AUDIT_CAP, Ring, UNDO_DEPTH, applyJournal, changesNothing, invert } from './journal'
+import {
+  AUDIT_CAP,
+  Ring,
+  UNDO_DEPTH,
+  applyJournal,
+  changesNothing,
+  invert,
+  readJournalRows,
+} from './journal'
 import type { GraphWriter, JournalEntry } from './journal'
 
 const AT: Instant = '2026-10-12T09:00:00.000Z'
@@ -271,6 +279,37 @@ describe('changesNothing', () => {
     )
   })
 
+  /**
+   * Clearing a field is a change, even when the cleared key stays present.
+   *
+   * An explicitly-undefined key is a DIFFERENT record from an absent one
+   * everywhere else in this codebase (D21) — it is why `sameImage` asks `key in
+   * right` rather than comparing the two reads, which are both `undefined`.
+   * Folding them together makes exactly one shape of write vanish: one that
+   * clears one optional field and sets another, so the key COUNTS match and
+   * every remaining key compares equal. That entry is then a no-op, never
+   * reaches the undo ring, and Ctrl+Z silently skips past the edit to the one
+   * before it.
+   */
+  it('is false when a key was cleared and another took its place', () => {
+    const base = application('rice')
+    // Through `unknown`, because `exactOptionalPropertyTypes` is exactly what
+    // forbids writing `comp: undefined` — and a row off disk is not bound by
+    // it. That gap is the reason `sameImage` has to treat present-and-undefined
+    // as its own state rather than trusting the type.
+    const props = base.props as Record<string, unknown>
+    const cleared = { ...base, props: { ...props, comp: undefined } } as unknown as StoredNode
+    const relocated = { ...base, props: { ...props, location: 'Houston' } } as unknown as StoredNode
+
+    // The trap: same key count, and the only key that differs reads `undefined`
+    // on both sides.
+    expect(Object.keys(cleared.props)).toHaveLength(Object.keys(relocated.props).length)
+
+    expect(
+      changesNothing({ nodes: [{ id: base.id, before: cleared, after: relocated }], edges: [] }),
+    ).toBe(false)
+  })
+
   // One real delta among no-ops is still a change, or a bulk write would lose
   // its undo because most of the records it touched happened not to move.
   it('is false when any one delta moved', () => {
@@ -286,6 +325,56 @@ describe('changesNothing', () => {
         edges: [],
       }),
     ).toBe(false)
+  })
+})
+
+describe('readJournalRows', () => {
+  const row = (id: string, at: string): Record<string, unknown> => ({
+    id,
+    at,
+    tool: 'application.note.set',
+    input: {},
+    label: `Change ${id}`,
+    calls: [],
+    nodes: [],
+    edges: [],
+  })
+
+  /**
+   * Oldest first, by `at` and not by the order the store handed them over.
+   *
+   * The `ops` keys autoincrement, so disk order and time order agree right up
+   * until the prune-and-renumber pass on open rewrites the keys — and after
+   * another tab has pruned, a rehydrate reads them back in whatever order the
+   * renumber left. `Ring.load` takes the tail of what it is given, so an
+   * unsorted read does not merely render the audit inside out: it keeps the
+   * WRONG two hundred rows, dropping recent entries and holding the ones the
+   * prune was supposed to remove.
+   */
+  it('returns the rows oldest first, whatever order they arrive in', () => {
+    const rows = [
+      row('c', '2026-10-12T11:00:00.000Z'),
+      row('a', '2026-10-12T09:00:00.000Z'),
+      row('d', '2026-10-12T12:00:00.000Z'),
+      row('b', '2026-10-12T10:00:00.000Z'),
+    ]
+
+    expect(readJournalRows(rows).map((e) => e.id)).toEqual(['a', 'b', 'c', 'd'])
+  })
+
+  /**
+   * A row that is not an entry is dropped, not reported.
+   *
+   * An unreadable audit row is a lost NOTE about a change, not a lost change —
+   * `validateRows` is the path where a rejection means a record vanished, and
+   * that one counts every one. Escalating here would hide a store full of
+   * healthy records behind a recovery panel over a broken log line.
+   */
+  it('drops a row that is not an entry and keeps the rest', () => {
+    const good = row('a', '2026-10-12T09:00:00.000Z')
+    const rows = [good, { id: 'no-timestamp' }, { ...good, id: 'b', nodes: 'not an array' }, 42]
+
+    expect(readJournalRows(rows).map((e) => e.id)).toEqual(['a'])
   })
 })
 

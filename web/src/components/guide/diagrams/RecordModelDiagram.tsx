@@ -22,11 +22,17 @@ import { useId } from 'react'
  * than the three words cost inline, and a reader who has to look away from the
  * picture to decode it has stopped reading the picture.
  *
- * Verified against `src/kg/core/model.ts` (NODE_TYPES, RELS, EDGE_SCHEMA) and
- * `src/lib/graph.ts` (GRAPH_NODE_TYPES, GRAPH_RELS, DRAWN, DRAWN_RELS), not
- * against the architecture document — the two lists agree on the eleven and the
- * seven, and disagree on which eleven and which seven, which is the fact the
- * rule across the middle of this drawing exists to carry.
+ * Verified against `kg/core/model.ts` (NODE_TYPES, RELS, EDGE_SCHEMA) and
+ * against `lib/graph/model.ts` (GRAPH_NODE_TYPES, GRAPH_RELS) plus
+ * `lib/graph/build.ts` (DRAWN_RELS), not against the architecture document —
+ * the two lists agree on the eleven and the seven, and disagree on which eleven
+ * and which seven, which is the fact the rule across the middle of this drawing
+ * exists to carry.
+ *
+ * That pointer used to read `src/lib/graph.ts`, which is now a directory: the
+ * claim this drawing rests on had been unresolvable for a refactor. If it moves
+ * again, move this with it — a hand-drawn figure whose verification claim
+ * points nowhere is a figure nobody can re-check.
  *
  * Colour comes from CSS custom properties only. The guide is read in both
  * themes, and a hex stroke is invisible in one of them.

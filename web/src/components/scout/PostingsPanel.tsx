@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle, Row, RowList } from '@/components/common/Panel'
+import { hostOf } from '@/components/vault/links/url'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,11 +25,6 @@ import { cn } from '@/lib/utils'
  */
 function hrefOf(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`
-}
-
-/** Strips the scheme and any trailing slash, as the Vault's links list does. */
-function hostOf(url: string) {
-  return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
 }
 
 export function PostingsPanel({
@@ -133,7 +129,7 @@ export function PostingsPanel({
                           the claim the disabled button below denies, so only
                           the URL and the date — both real — are shown. */}
                       <span className="mt-0.5 block truncate font-mono text-xs text-text-3">
-                        {hostOf(p.url)} · saved {agoLabel(p.savedOn, TODAY)}
+                        {hostOf(p.url) ?? p.url} · saved {agoLabel(p.savedOn, TODAY)}
                       </span>
                     </a>
                     {application ? (

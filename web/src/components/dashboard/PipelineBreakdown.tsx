@@ -1,4 +1,5 @@
 import { ClipboardList, Plus } from 'lucide-react'
+import { STAGE_DOT } from '@/data/seed'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
@@ -58,7 +59,10 @@ export function PipelineBreakdown() {
                   measured against the same baseline. */}
               <div className="mt-1 h-2 overflow-hidden rounded-sm bg-well">
                 <div
-                  className={cn('h-full rounded-sm', s.dot)}
+                  // `stageCounts` deliberately carries no colour — a Tailwind
+                  // class must not travel through `kg/react`, which mounts
+                  // unchanged on React Native. The web reads the token here.
+                  className={cn('h-full rounded-sm', STAGE_DOT[s.id])}
                   style={{ width: `${(s.count / max) * 100}%` }}
                 />
               </div>

@@ -24,7 +24,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { displayName } from '@/data/seed'
-import type { Application, RoleTag } from '@/data/seed'
+import type { RoleTag } from '@/data/seed'
 import { useApplications } from '@/kg/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
@@ -48,13 +48,11 @@ export function ApplicationDialog({
   onOpenChange,
   mode,
   initial,
-  onSaved,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   mode: 'create' | 'edit'
   initial?: ApplicationInitial
-  onSaved?: (application: Application) => void
 }) {
   const applications = useApplications()
   const { labelIdsOf } = useLabels()
@@ -200,17 +198,15 @@ export function ApplicationDialog({
       return
     }
 
-    // Written out rather than `onSaved?.(create())`: an optional call skips its
-    // own arguments when the callback is undefined, so the write to the store
-    // never happened for any caller that did not pass `onSaved` — which is every
-    // caller going through DialogHost. The dialog closed and nothing was saved.
-    if (mode === 'create') {
-      const created = create()
-      onSaved?.(created)
-    } else if (record) {
-      const updated = save(record)
-      onSaved?.(updated)
-    } else return
+    // There was an `onSaved?: (application) => void` here that no caller ever
+    // passed — `DialogHost` is the only mount site and it passes four props —
+    // and for a while the write itself lived inside the optional call:
+    // `onSaved?.(create())` skips its own arguments when the callback is
+    // undefined, so the dialog closed and nothing was saved, for every caller.
+    // The prop is gone; the write is a statement.
+    if (mode === 'create') create()
+    else if (record) save(record)
+    else return
 
     onOpenChange(false)
   }

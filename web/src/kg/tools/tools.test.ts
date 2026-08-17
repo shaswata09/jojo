@@ -17,6 +17,19 @@
 
 import { describe, expect, it } from 'vitest'
 import { MutableSnapshot } from '@/kg/core/snapshot'
+import {
+  FILE_BUCKET_VALUES,
+  FILE_KIND_VALUES,
+  LABEL_TONE_VALUES,
+  LINK_CATEGORY_VALUES,
+  OUTCOME_VALUES,
+  ROLES,
+  SNIPPET_TAG_VALUES,
+  SOURCES,
+  STAGE_VALUES,
+  TIMELINE_KIND_VALUES,
+  URGENCY_VALUES,
+} from '@/kg/core/model'
 import type { StoredEdge, StoredNode } from '@/kg/core/model'
 import { createRepository } from '@/kg/repo/repository'
 import type { Repository } from '@/kg/repo/repository'
@@ -236,7 +249,19 @@ describe('the transaction', () => {
     expect(h.repo.undoable).toHaveLength(journalDepth)
   })
 
-  it('rejects an edge the schema does not allow', () => {
+  /**
+   * The INPUT schema refuses this, and it is worth being clear that that is all
+   * it proves.
+   *
+   * This case was named "rejects an edge the schema does not allow" and read as
+   * cover for `EDGE_SCHEMA`; it is not. `keyword.attach`'s `keyword` field is
+   * `s.id('keyword')`, so an `app:` id never survives parsing and `tx.link` is
+   * never reached — deleting the `EDGE_SCHEMA` check from `runtime-tx.ts` left
+   * this green. Both layers are worth having, and both are worth testing: the
+   * `tx.link` half is in `transaction.test.ts`, where the call can be made
+   * without a schema in front of it.
+   */
+  it('rejects a badly-typed id before it becomes an edge', () => {
     const h = harness()
     const app = okOr(
       h.runtime.run('application.create', {
@@ -249,6 +274,7 @@ describe('the transaction', () => {
     // An application is not taggable-by-application; TAGS goes keyword -> record.
     const result = h.runtime.run('keyword.attach', { record: app, keyword: app })
     expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.errors[0]?.field).toBe('keyword')
   })
 
   it('mints distinct slugs for records created in the SAME transaction', () => {
@@ -640,6 +666,99 @@ describe('the registry', () => {
     }
   })
 
+  /**
+   * Every value the model declares for a persisted union is a value the tool
+   * that owns that field will accept.
+   *
+   * Nine of the eleven closed unions used to be re-spelled as fresh literals in
+   * `kg/tools`, guarded by `satisfies` — which asserts every element IS a member
+   * and says nothing about every member being present, so a SHORTER list
+   * compiled. `core/validate.ts` reads the model's consts, so the two halves of
+   * the same model disagreed: a newly-added kind loaded off disk and rendered,
+   * and the tool that owns the record refused to write it. Journal replay
+   * bypasses schemas, so undo put it back — a value in the graph no tool could
+   * produce.
+   *
+   * `check` rather than `run`: this is a question about the SCHEMA, and parsing
+   * is the stage where the disagreement lived. Adding a twelfth union means
+   * adding a row here; leaving one out is the only way back to the bug.
+   */
+  it('accepts every value the model declares for the unions tools write', () => {
+    const h = harness()
+    const parses = (name: Parameters<typeof h.runtime.check>[0], input: unknown) =>
+      h.runtime.check(name, input).ok
+
+    // Well-formed but absent: `check` parses and does not touch memory.
+    const APP = 'app:0192f4c1-7b3e-7a41-9c2d-8f5e1a0b6d33'
+    const KW = 'kw:0192f4c1-7b3e-7a41-9c2d-8f5e1a0b6d33'
+    const draft = { org: 'Rice', role: 'CS', roleTag: 'Assistant Professor' as const }
+    for (const stage of STAGE_VALUES) {
+      expect(parses('application.create', { ...draft, stage }), stage).toBe(true)
+      expect(parses('application.stage.set', { id: APP, stage }), stage).toBe(true)
+    }
+    for (const outcome of OUTCOME_VALUES) {
+      expect(parses('application.update', { id: APP, outcome }), outcome).toBe(true)
+      // `application.stage.advance` too, and it is the one that matters most:
+      // it is what the Closed-transition dialog calls, and it owns the second
+      // spelling of this union. Covering outcomes only through `update` left a
+      // mutation that shortens `application-stage.ts`'s list passing the whole
+      // suite — meaning the user could not record "Ghosted" from the single
+      // screen that asks for it, and nothing would have said so.
+      //
+      // NOT `application.stage.set`: a first attempt asserted against that tool,
+      // whose input is `{ id, stage }` with no outcome at all, so the extra key
+      // was ignored and the assertion could never fail — fixing a report about
+      // vacuous tests with a vacuous test.
+      expect(
+        parses('application.stage.advance', { id: APP, stage: 'closed', outcome }),
+        outcome,
+      ).toBe(true)
+    }
+    for (const roleTag of ROLES) {
+      expect(parses('application.create', { ...draft, roleTag, stage: 'draft' }), roleTag).toBe(
+        true,
+      )
+    }
+    for (const source of SOURCES) {
+      expect(parses('application.update', { id: APP, source }), source).toBe(true)
+    }
+
+    for (const kind of TIMELINE_KIND_VALUES) {
+      expect(parses('timeline.item.create', { title: 'T', date: '2026-11-01', kind }), kind).toBe(
+        true,
+      )
+    }
+    for (const urgency of URGENCY_VALUES) {
+      expect(
+        parses('timeline.item.create', {
+          title: 'T',
+          date: '2026-11-01',
+          kind: 'admin',
+          urgency,
+        }),
+        urgency,
+      ).toBe(true)
+    }
+
+    for (const category of LINK_CATEGORY_VALUES) {
+      expect(parses('vault.link.save', { title: 'L', url: 'u', category }), category).toBe(true)
+    }
+    for (const bucket of FILE_BUCKET_VALUES) {
+      const file = { name: 'f.pdf', kind: 'pdf' as const, size: '1 KB', bucket }
+      expect(parses('vault.file.add', { files: [file] }), bucket).toBe(true)
+    }
+    for (const kind of FILE_KIND_VALUES) {
+      const file = { name: 'f', kind, size: '1 KB', bucket: 'To read' as const }
+      expect(parses('vault.file.add', { files: [file] }), kind).toBe(true)
+    }
+    for (const tag of SNIPPET_TAG_VALUES) {
+      expect(parses('vault.snippet.create', { title: 'S', body: 'b', tag }), tag).toBe(true)
+    }
+    for (const tone of LABEL_TONE_VALUES) {
+      expect(parses('keyword.tone.set', { id: KW, tone }), tone).toBe(true)
+    }
+  })
+
   it('offers a node only the tools that touch its type', () => {
     const h = harness()
     const app = okOr(
@@ -655,6 +774,96 @@ describe('the registry', () => {
     expect(names).not.toContain('vault.link.save')
     // `org.ensure` is internal and never offered as a verb on a node.
     expect(names).not.toContain('org.ensure')
+  })
+})
+
+describe('what the user is told', () => {
+  /**
+   * The toast title and the journal label are `describe().title`, and they are
+   * the same string.
+   *
+   * Nothing else in the suite reads one. `run` could pass the tool NAME as the
+   * label and every other assertion here would still hold — the graph would be
+   * right and the Undo toast would read `application.create` instead of *"Rice
+   * — Statistics added"*, in the toast, in the Undo menu and in every audit row
+   * for that session. `defineTool({ title, summary })` is checked by the palette
+   * because the palette generates forms from it; `describe()` is copy with
+   * nothing downstream of it but the user's eyes.
+   */
+  it('labels the toast and the journal row with the tool’s own describe()', () => {
+    const h = harness()
+
+    const result = h.runtime.run('application.create', {
+      org: 'Rice',
+      role: 'Statistics',
+      roleTag: 'Assistant Professor',
+      stage: 'draft',
+      deadline: '2026-11-01',
+    })
+    if (!result.ok) throw new Error(result.errors.map((e) => e.message).join('; '))
+
+    expect(result.announcement.title).toBe('Rice — Statistics added')
+    expect(result.announcement.description).toBe('Deadline Nov 1 is on the calendar.')
+    // The same string, because the Undo toast and the audit row are one label.
+    expect(h.repo.undoable[0]?.label).toBe('Rice — Statistics added')
+
+    // And it names what was just made, from the overlay: the commit has not
+    // happened when `describe` runs, so reading the committed snapshot instead
+    // would leave every create announcing an empty name.
+    expect(result.announcement.title).not.toBe(' added')
+  })
+
+  it('carries the label through undo, so the toast says what is being put back', () => {
+    const h = harness()
+    okOr(h.runtime.run('keyword.create', { name: 'Referral' }))
+
+    const undone = h.runtime.undo()
+
+    expect(undone.ok).toBe(true)
+    if (undone.ok) {
+      expect(undone.announcement.title).toBe('Undone')
+      expect(undone.announcement.description).toBe('Referral added')
+    }
+  })
+})
+
+describe('the nesting guards', () => {
+  /**
+   * A tool that calls itself is refused rather than allowed to blow the stack.
+   *
+   * Staged the same way `re-throws a programmer error` stages one, and for the
+   * same reason: no honest tool does this, so the only way to reach the guard is
+   * to write the bug it exists for. The failure it prevents is a
+   * RangeError out of a click handler — the ErrorBoundary, a blank screen, and
+   * a transaction buffer nobody discarded.
+   *
+   * The MESSAGE is asserted, not just the refusal. `MAX_DEPTH` is eight calls
+   * below this guard and refuses with the same `graph/invariant` code, so a test
+   * that only checked `ok: false` would stay green with the cycle check deleted
+   * and report the wrong cause: "too many nested operations" sends the next
+   * reader looking for a long chain that is not there.
+   */
+  it('refuses a tool that calls itself instead of recursing until the stack goes', () => {
+    const h = harness()
+    const registry = TOOLS as unknown as Record<string, unknown>
+    const original = TOOLS['keyword.tone.set']
+    const looping = { ...original }
+    Object.defineProperty(looping, 'run', {
+      value: (ctx: { call: (n: string, i: unknown) => unknown }, input: unknown) =>
+        ctx.call('keyword.tone.set', input),
+    })
+    registry['keyword.tone.set'] = looping
+    try {
+      const id = okOr(h.runtime.run('keyword.create', { name: 'Read' }))
+      const result = h.runtime.run('keyword.tone.set', { id, tone: 'red' })
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.errors[0]?.message).toBe(`${original.title} called itself.`)
+        expect(result.errors[0]?.code).toBe('graph/invariant')
+      }
+    } finally {
+      registry['keyword.tone.set'] = original
+    }
   })
 })
 

@@ -25,7 +25,7 @@
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { emptyRows } from './driver'
-import type { Driver, DriverResult, DurableOp, Rows } from './driver'
+import type { Driver, DriverResult, DurableOp, Rows, StoreEvent } from './driver'
 import { createIdbDriver } from './idb-driver'
 import { createMemoryDriver } from './memory-driver'
 import type { StoredRow } from './schema'
@@ -38,13 +38,60 @@ import type { StoredRow } from './schema'
  */
 let sequence = 0
 
-const SUBJECTS: readonly { label: string; make: () => Driver }[] = [
-  { label: 'memory-driver', make: () => createMemoryDriver() },
+/**
+ * A driver, plus the shove that stands in for another tab.
+ *
+ * A driver cannot make a remote commit happen to itself: a remote commit is by
+ * definition somebody else's write, and how it arrives is the one part of the
+ * `Driver` contract that is not on the interface. Declaring it here rather than
+ * in a test body is what keeps the bodies written against `Driver` alone, which
+ * is this file's rule — the subject table is where a driver may be named.
+ *
+ * `onBlocking` gets no equivalent, and deliberately. Provoking it means a second
+ * connection upgrading the schema, which is a version number and a migration
+ * list — the memory driver has neither. Its unsubscribe is pinned in each
+ * driver's own file instead, which is what the rule above says to do with a test
+ * only one driver can pass.
+ */
+type Subject = {
+  readonly label: string
+  readonly make: () => { driver: Driver; remoteCommit: (event: StoreEvent) => void }
+}
+
+const SUBJECTS: readonly Subject[] = [
+  {
+    label: 'memory-driver',
+    make: () => {
+      const driver = createMemoryDriver()
+      return { driver, remoteCommit: (event) => driver.emitRemoteCommit(event) }
+    },
+  },
   {
     label: 'idb-driver',
-    // No BroadcastChannel: Node delivers between two drivers in one process,
-    // which is not a thing two browser tabs would do to each other here.
-    make: () => createIdbDriver({ name: `conformance-${String((sequence += 1))}`, channel: null }),
+    // A loopback channel rather than a BroadcastChannel: Node delivers between
+    // two drivers in one process, which is not a thing two browser tabs would do
+    // to each other here. `post` fans out to this driver's own subscribers,
+    // which a real BroadcastChannel never does — harmless, because nothing below
+    // both posts and listens in the same test.
+    make: () => {
+      const listeners = new Set<(event: StoreEvent) => void>()
+      const deliver = (event: StoreEvent) => {
+        for (const fn of [...listeners]) fn(event)
+      }
+      const driver = createIdbDriver({
+        name: `conformance-${String((sequence += 1))}`,
+        channel: {
+          crossTab: true,
+          post: deliver,
+          subscribe: (fn) => {
+            listeners.add(fn)
+            return () => listeners.delete(fn)
+          },
+          close: () => listeners.clear(),
+        },
+      })
+      return { driver, remoteCommit: deliver }
+    },
   },
 ]
 
@@ -111,7 +158,7 @@ for (const subject of SUBJECTS) {
      * flush the tab is closing on.
      */
     it('returns a DriverResult for a row that cannot be stored, rather than throwing', async () => {
-      const driver = subject.make()
+      const { driver } = subject.make()
       await driver.open()
 
       expect(await shapeOf(() => driver.commit([put('ok'), unstorable]))).toBe('DriverResult')
@@ -137,7 +184,7 @@ for (const subject of SUBJECTS) {
      * `commit` reporting failure over it.
      */
     it('leaves nothing behind when a batch fails part-way through', async () => {
-      const driver = subject.make()
+      const { driver } = subject.make()
       await driver.open()
 
       const written = await driver.commit([put('first'), unstorable, put('third')])
@@ -160,7 +207,7 @@ for (const subject of SUBJECTS) {
      * them may throw, because the caller is a queue with no `catch`.
      */
     it('returns a DriverResult from every method after close(), rather than throwing', async () => {
-      const driver = subject.make()
+      const { driver } = subject.make()
       await driver.open()
       driver.close()
 
@@ -184,7 +231,7 @@ for (const subject of SUBJECTS) {
      * for it, not just the one the memory-driver header argues about.
      */
     it('seeds a pristine store once and declines the second time', async () => {
-      const driver = subject.make()
+      const { driver } = subject.make()
       await driver.open()
 
       const first = await driver.seedIfPristine({
@@ -215,7 +262,7 @@ for (const subject of SUBJECTS) {
      * to actually use.
      */
     it('treats a store with meta but no nodes as already seeded', async () => {
-      const driver = subject.make()
+      const { driver } = subject.make()
       await driver.open()
 
       await driver.commit([
@@ -237,8 +284,63 @@ for (const subject of SUBJECTS) {
      * wrong reason on a store written in order, and a different one the first
      * time a row is rewritten.
      */
+    /**
+     * A row goes in and comes back equal, by value — and an absent key stays
+     * absent.
+     *
+     * Two invariants the layer above already reasons about out loud, neither of
+     * which anything asserted.
+     *
+     * ABSENT IS NOT NULL. `repo/seed.ts` narrows `completedOn` instead of
+     * spreading it, and shifts optional dates only where a string is already
+     * there, each with a comment saying why: `'completedOn' in props` must
+     * answer no for something nobody has completed, and `'firstReplyOn' in
+     * props` must answer no for an application nobody has heard back from. Those
+     * are claims about the DRIVER made two layers up, and they hold only for as
+     * long as every driver keeps the distinction. The one most likely to lose it
+     * is the one nobody has written yet — an AsyncStorage or SQLite driver
+     * serialising with `JSON.stringify`, which is what the Expo app's driver
+     * already is. JSON keeps `null` and keeps absent, so it passes this; a
+     * driver that normalises either into the other inverts every `in` check in
+     * the graph on the second launch, and the symptom is a reopened reminder
+     * reading as completed rather than anything that looks like a storage bug.
+     *
+     * BY VALUE, NOT BY REFERENCE. `memory-driver` calls `structuredClone` on the
+     * way in for exactly this: the caller keeps its object and the repository
+     * patches props in place, so a store holding the same array would let a
+     * later edit rewrite what is already committed. Free for anything that
+     * serialises, easy to lose for anything that does not — which is why it
+     * belongs in the contract rather than in the memory driver's own file.
+     */
+    it('stores a row by value, keeping an absent key absent and a null null', async () => {
+      const { driver } = subject.make()
+      await driver.open()
+
+      const keywords = ['ml', 'systems']
+      const row: StoredRow = {
+        id: 'a',
+        type: 'application',
+        props: { org: 'Rice', completedOn: null, keywords },
+      }
+      await driver.commit([{ kind: 'put', store: 'nodes', key: 'a', value: row }])
+
+      // After the commit, so a driver that kept the reference is caught.
+      keywords.push('mutated')
+
+      const rows = await driver.readAll()
+      const props = (rows.ok ? (rows.value.nodes[0]?.['props'] ?? {}) : {}) as Record<
+        string,
+        unknown
+      >
+
+      expect(props).toEqual({ org: 'Rice', completedOn: null, keywords: ['ml', 'systems'] })
+      expect('firstReplyOn' in props).toBe(false)
+
+      driver.close()
+    })
+
     it('reads each store back in ascending key order', async () => {
-      const driver = subject.make()
+      const { driver } = subject.make()
       await driver.open()
 
       await driver.commit([put('c'), put('a'), put('b')])
@@ -260,7 +362,7 @@ for (const subject of SUBJECTS) {
      * needing a second tab.
      */
     it('allocates a fresh key for every keyless journal row', async () => {
-      const driver = subject.make()
+      const { driver } = subject.make()
       await driver.open()
 
       await driver.commit([journal('j1'), journal('j2')])
@@ -272,17 +374,32 @@ for (const subject of SUBJECTS) {
       driver.close()
     })
 
-    /** Both subscriptions hand back an unsubscribe, and it is safe to run twice. */
-    it('returns an unsubscribe from each listener registration', async () => {
-      const driver = subject.make()
+    /**
+     * The unsubscribe actually unsubscribes.
+     *
+     * This case used to register both listeners, call both unsubscribes twice
+     * and assert nothing at all — so `onRemoteCommit: () => () => {}` passed it,
+     * and the leak it is named after was invisible. `repo/boot-live.ts`
+     * resubscribes around a rehydrate; an unsubscribe that does not unsubscribe
+     * leaves the old listener behind, so each remote commit costs another
+     * flush-and-rehydrate — and each of those clears the undo stack.
+     *
+     * Called twice on purpose: `close()` runs the same teardown afterwards, so
+     * an unsubscribe that only survives one call throws on the way out of a tab.
+     */
+    it('stops delivering remote commits once its unsubscribe is called', async () => {
+      const { driver, remoteCommit } = subject.make()
       await driver.open()
 
-      const offRemote = driver.onRemoteCommit(() => {})
-      const offBlocking = driver.onBlocking(() => {})
-      offRemote()
-      offRemote()
-      offBlocking()
-      offBlocking()
+      const seen: string[] = []
+      const off = driver.onRemoteCommit((event) => seen.push(event.entryId))
+
+      remoteCommit({ kind: 'commit', at: '2026-10-12T00:00:00.000Z', entryId: 'before' })
+      off()
+      off()
+      remoteCommit({ kind: 'commit', at: '2026-10-12T00:00:01.000Z', entryId: 'after' })
+
+      expect(seen).toEqual(['before'])
 
       driver.close()
     })

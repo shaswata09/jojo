@@ -20,7 +20,7 @@
  *   for the wrong reason and changed it on the swap.
  */
 
-import { driverFail, driverOk, emptyRows } from './driver'
+import { driverFail, driverOk } from './driver'
 import { classify } from './idb-errors'
 import type {
   Driver,
@@ -328,6 +328,3 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
     },
   }
 }
-
-/** A driver holding nothing, for the first-run path and for most tests. */
-export const emptyMemoryDriver = (): MemoryDriver => createMemoryDriver({ rows: emptyRows() })

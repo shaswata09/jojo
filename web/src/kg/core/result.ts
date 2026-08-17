@@ -11,6 +11,18 @@
  * exception, it is Tuesday: it has a code, a sentence and a recovery path, and
  * making the caller handle it is cheaper than making every caller remember a
  * try/catch it will forget once.
+ *
+ * TWO CONSTRUCTORS, AND NO CATCH HELPER
+ *
+ * `ok` and `fail` are the whole surface. An `err(error)` twin of `ok` and an
+ * `isKgError` predicate shipped here and were never called: every failure in
+ * this codebase is raised from a code, so `fail` is the only door, and the one
+ * place that tests for the class does it with `instanceof` inline. An
+ * `asKgError(thrown, code)` wrapper went with them, and its absence is the more
+ * interesting one — the only layer that catches a foreign throw is `storage`,
+ * which may not import `core`, so it has `classify` in `storage/idb-errors.ts`
+ * instead. That duplication is forced by the layer rule and is not a gap here
+ * to be filled: a wrapper in this file has nobody who could call it.
  */
 
 export type KgErrorCode =
@@ -78,10 +90,6 @@ export function ok<T>(value: T): Result<T> {
   return { ok: true, value }
 }
 
-export function err<T = never>(error: KgError): Result<T> {
-  return { ok: false, error }
-}
-
 /** `fail('graph/not-found')` — the common case, with the sentence already written. */
 export function fail<T = never>(
   code: KgErrorCode,
@@ -89,24 +97,4 @@ export function fail<T = never>(
   options?: { context?: Record<string, unknown>; cause?: unknown },
 ): Result<T> {
   return { ok: false, error: new KgError(code, userMessage, options) }
-}
-
-export function isKgError(e: unknown): e is KgError {
-  return e instanceof KgError
-}
-
-/**
- * Wraps anything thrown into a KgError without losing it.
- *
- * The rule this serves is in `tools/runtime.ts`: an exception that is not a
- * deliberate failure is a programmer error and is re-thrown to the
- * ErrorBoundary. This is for the other case — a boundary that genuinely cannot
- * throw, where swallowing the original message would leave nothing to debug.
- */
-export function asKgError(e: unknown, code: KgErrorCode, userMessage?: string): KgError {
-  if (e instanceof KgError) return e
-  return new KgError(code, userMessage, {
-    cause: e,
-    context: { thrown: e instanceof Error ? e.message : String(e) },
-  })
 }

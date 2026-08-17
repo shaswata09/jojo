@@ -674,6 +674,36 @@ describe('the connection lifecycle', () => {
     held.close()
   })
 
+  /**
+   * The `onBlocking` unsubscribe, which `driver-conformance.test.ts` cannot ask
+   * for: provoking a blocking event needs a second connection at a higher
+   * version, and a version number is not on the `Driver` interface.
+   *
+   * A listener that cannot be removed is a `close()` handler from a torn-down
+   * boot still firing on the next upgrade, closing a connection the current boot
+   * is using.
+   */
+  it('stops telling a listener about `blocking` once its unsubscribe is called', async () => {
+    const name = nextName()
+
+    const held = driverFor(name, MIGRATIONS)
+    await held.open()
+
+    const told: string[] = []
+    held.onBlocking(() => told.push('kept'))
+    const off = held.onBlocking(() => told.push('dropped'))
+    off()
+    off()
+
+    const upgrading = driverFor(name, [...MIGRATIONS, { version: 2, name: 'v2', run: () => {} }])
+    await upgrading.open()
+
+    expect(told).toEqual(['kept'])
+
+    upgrading.close()
+    held.close()
+  })
+
   it('gives up on a blocked upgrade instead of hanging forever', async () => {
     // The other side of the same failure: `openDB` never rejects while another
     // connection holds an older version, so without the grace period the boot

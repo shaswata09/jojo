@@ -190,8 +190,8 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
  * The shape check alone accepts '2026-02-31', which every consumer then renders
  * as a real deadline while `daysBetween` counts to the 3rd of March. Rebuilt
  * through UTC rather than a local Date for the reason the date-handling header
- * above `isoOf` in `data/timeline.ts`
- * gives: a local parse of a date-only string shifts west of Greenwich.
+ * above `isoOf` in `core/dates.ts` gives: a local parse of a date-only string
+ * shifts west of Greenwich.
  */
 function isoDate(o: TextOptions = {}): Schema<string> {
   return define(metaOf('date', o), (input, path) => {

@@ -7,10 +7,29 @@
  * before anything else. Local-first means a silently skipped node is lost work
  * with no server backup and no undo.
  *
- * Two casts live in this file and nowhere else in the codebase. Grep for
- * `as StoredNode` and `as StoredEdge`: if either appears in a second module,
- * some other file has decided it knows what a stored row is, and the guarantee
- * that a malformed record can only enter through a counted diagnostic is gone.
+ * THE TWO CASTS, AND WHAT IS ACTUALLY UNIQUE ABOUT THEM
+ *
+ * `as StoredNode` reads as if it should appear nowhere else, and it does appear
+ * elsewhere — this comment used to say otherwise and a grep refutes it in one
+ * line, which is worse than saying nothing. `snapshot.ts` and
+ * `tools/runtime-overlay.ts` re-assert a type PARAMETER the compiler cannot
+ * carry through a container it fetched by key; `repo/seed.ts` and
+ * `tools/runtime-tx.ts` assemble a record out of values that are already typed.
+ * None of those turns an unchecked value into a record.
+ *
+ * The two in this file are the only casts that turn an unchecked value into a
+ * DOMAIN RECORD. Every field above them has been read and checked one at a
+ * time. A third of that kind anywhere else means some other module has decided
+ * it knows what is on disk, and the guarantee that a malformed record can only
+ * enter through a counted diagnostic is gone.
+ *
+ * Stated that way rather than as "the only casts whose input is `unknown`",
+ * which is what this said a revision ago and is false: `journal.ts`,
+ * `channel.ts`, `meta.ts`, `idb-events.ts`, `react/undo.ts` and `tools/memory.ts`
+ * all widen an `unknown` to `Record<string, unknown>` in order to LOOK at it.
+ * Widening a value to inspect it and asserting it is a `StoredNode` are opposite
+ * acts, and the paragraph above already had to be rewritten once for making an
+ * absolute claim a single grep refuted. Twice is a pattern worth naming.
  */
 
 import type { NodePropsByType, NodeType, Rel, StoredEdge, StoredNode } from './model'
@@ -149,6 +168,15 @@ export const NODE_PROP_SCHEMAS = {
     size: s.string({ label: 'Size' }),
     savedOn: s.isoDate({ label: 'Saved on' }),
     note: s.optional(s.string({ label: 'Note', multiline: true })),
+    // Declared rather than left to unknown-key passthrough, so a wrong value is
+    // caught at the trust boundary instead of reaching `sizeLabel`. The cost is
+    // that a bad value fails the whole node — which is why the restore path,
+    // and only the restore path, passes `salvage` to strip these four and keep
+    // the record. See `SALVAGEABLE_FILE_PROPS`.
+    path: s.optional(s.string({ label: 'File path' })),
+    bytes: s.optional(s.number({ min: 0, label: 'Bytes' })),
+    mtime: s.optional(s.number({ min: 0, label: 'Modified' })),
+    hash: s.optional(s.string({ label: 'Hash' })),
   }),
   snippet: s.object({
     slug,
@@ -330,9 +358,46 @@ export type ValidatedRows = {
  * line running off into empty space, which reads as the layout having broken
  * rather than as a record having gone.
  */
+/**
+ * Props whose only job is pointing at a file, and which a restore may drop.
+ *
+ * A node fails validation as a WHOLE — one bad value and the record, its name,
+ * its note and every edge incident to it are gone. That is right for a store
+ * that came out of a transactional database, and wrong for `jojo/graph.json`,
+ * which is explicitly a disposable mirror on a user's disk that they may copy,
+ * sync, restore from a different moment, or edit by hand.
+ *
+ * Losing an application because one digit of a byte count is wrong, in a field
+ * describing a document that is sitting right there in the same folder, is not
+ * a trade worth making. These four are stripped and the record kept.
+ */
+const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash'] as const
+
+export type ValidateOptions = {
+  /**
+   * Retry a failed node with the file-link props removed, and keep it if that
+   * succeeds. Used ONLY on the restore path — never on the hydrate path, where
+   * a value this wrong means the database is corrupt and should say so.
+   */
+  salvage?: boolean
+}
+
+/** Strips the four link props. Returns `null` when there was nothing to strip. */
+function withoutFileLink(row: unknown): unknown | null {
+  if (!isRow(row)) return null
+  const props = row['props']
+  if (!isRow(props)) return null
+  const present = SALVAGEABLE_FILE_PROPS.filter((k) => k in props)
+  if (present.length === 0) return null
+  const nextProps: Record<string, unknown> = { ...props }
+  for (const k of present) delete nextProps[k]
+  return { ...row, props: nextProps }
+}
+
 export function validateRows(
   nodeRows: readonly unknown[],
   edgeRows: readonly unknown[],
+  options: ValidateOptions = {},
 ): ValidatedRows {
   const nodes: StoredNode[] = []
   const edges: StoredEdge[] = []
@@ -340,7 +405,20 @@ export function validateRows(
   const byId = new Map<string, StoredNode>()
 
   for (const row of nodeRows) {
-    const parsed = validateNode(row)
+    let parsed = validateNode(row)
+    if (!parsed.ok && options.salvage === true) {
+      const stripped = withoutFileLink(row)
+      if (stripped !== null) {
+        const retry = validateNode(stripped)
+        if (retry.ok) {
+          // Reported, not silent. It IS a loss — the record no longer knows
+          // where its document is — and the restore summary says so in its own
+          // sentence rather than folding it in with records that were dropped.
+          skipped.push(diagnostic('nodes', retry.value.id, 'Came back without its document link.'))
+          parsed = retry
+        }
+      }
+    }
     if (!parsed.ok) {
       skipped.push(...parsed.diagnostics)
       continue
@@ -378,13 +456,21 @@ export function validateRows(
 /* ------------------------------- invariants ------------------------------- */
 
 /**
- * The dev-only integrity check R-2 asks for, run on boot behind a flag.
+ * The integrity check R-2 asks for. Every boot, every build, no flag.
  *
  * It answers the question a UUID migration makes urgent and nothing else can:
  * did the seed compiler resolve every slug reference, or did it write an edge
- * to an id that was never minted? Cheap enough to run every boot at this scale;
- * kept separate from `validateRows` because a violation here is a bug in jojo,
- * not a corrupt store, and the two want different recoveries.
+ * to an id that was never minted? R-2 called for a dev-only check and this
+ * comment used to describe one; all three boot paths — the seeded first run,
+ * the in-memory session and `boot-ready`'s hydrate — call it unconditionally,
+ * and the result reaches the user as `Session.problems` in Settings'
+ * Diagnostics. That is the right shape at this scale and worth stating plainly:
+ * a check that only ran in development would be a check that never saw the
+ * store the report is about.
+ *
+ * Kept separate from `validateRows` because a violation here is a bug in jojo,
+ * not a corrupt store, and the two want different recoveries: nothing is
+ * dropped, nothing is skipped, and the app starts either way.
  */
 export function checkInvariants(
   nodes: readonly StoredNode[],
@@ -395,10 +481,11 @@ export function checkInvariants(
 
   const slugs = new Set<string>()
   for (const node of nodes) {
-    // Narrowed on the discriminant rather than through `hasSlug`: a guard over
-    // `node.type` alone tells the compiler nothing about `node.props`, and
-    // reading `props.slug` off the profile branch is exactly the mistake this
-    // loop exists to catch in the data.
+    // Narrowed on the discriminant here rather than through a `hasSlug(type)`
+    // predicate: a guard over the type STRING narrows the string and tells the
+    // compiler nothing about `node.props`, so `props.slug` two lines down would
+    // still be an error on the profile branch. See `SluggedType` in `model.ts`,
+    // where that helper was written, never called, and removed.
     if (node.type === 'profile') continue
 
     const key = `${node.type}\0${node.props.slug}`

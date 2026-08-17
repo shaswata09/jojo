@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { CalendarOff, ClipboardList, Plus } from 'lucide-react'
 import { AllHidden, ChartLegend } from '@/components/charts/ChartLegend'
+import { bucketKey, bucketKeys, bucketLabel, sentOn } from '@/components/charts/frequency-buckets'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { Button } from '@/components/ui/button'
-import { PERIODS, ROLES, type Application, type Period, type RoleTag } from '@/data/seed'
-import { addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
+import { PERIODS, ROLES, type Period, type RoleTag } from '@/data/seed'
 import { useApplications } from '@/kg/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { TODAY } from '@/lib/today'
@@ -37,11 +37,6 @@ const PLOT_H = H - PAD.top - PAD.bottom
 const SEGMENT_GAP = 2
 const RADIUS = 3
 
-/** How far back each period is allowed to run before the axis stops being
- *  readable. Anything older is reported in the footnote instead of silently
- *  vanishing, which is the failure this panel was built to stop repeating. */
-const MAX_BUCKETS: Record<Period, number> = { week: 14, month: 12, quarter: 8 }
-
 const PERIOD_NOUN: Record<Period, string> = { week: 'week', month: 'month', quarter: 'quarter' }
 
 function topRoundedRect(x: number, y: number, w: number, h: number, r: number) {
@@ -58,63 +53,6 @@ function niceDomain(rawMax: number) {
     }
   }
   return { top: rawMax, ticks: [0, rawMax] }
-}
-
-/**
- * The date an application counts against.
- *
- * `submittedOn` is the fallback because the seed records carry that and not
- * `appliedOn` — a chart keyed on `appliedOn` alone would have been empty on
- * the demo data, which is the same class of bug as never reading the store.
- */
-const sentOn = (a: Application) => a.appliedOn ?? a.submittedOn
-
-/** Monday of the week `iso` falls in. */
-function weekStart(iso: string) {
-  const { y, m, d } = partsOf(iso)
-  // getDay() is 0 on Sunday, so Sunday has to reach back six days, not none.
-  return isoOf(y, m, d - ((new Date(y, m - 1, d).getDay() + 6) % 7))
-}
-
-function bucketKey(iso: string, period: Period): string {
-  const { y, m } = partsOf(iso)
-  if (period === 'week') return weekStart(iso)
-  if (period === 'month') return `${y}-${String(m).padStart(2, '0')}`
-  return `${y}-Q${Math.ceil(m / 3)}`
-}
-
-function bucketLabel(key: string, period: Period): string {
-  if (period === 'week') return shortDate(key)
-  // 'Oct 1' → 'Oct'. The month names live in timeline.ts and are not exported;
-  // copying the array here is exactly how the two would drift apart.
-  if (period === 'month') return shortDate(`${key}-01`).split(' ')[0]
-  return key.slice(5)
-}
-
-/**
- * Every bucket between two dates, built from the calendar rather than from the
- * records — a week nobody applied in has to draw a gap. Deriving the axis from
- * the data instead is what turns a quiet fortnight into a straight line.
- */
-function bucketKeys(from: string, to: string, period: Period): string[] {
-  const a = partsOf(from)
-  const b = partsOf(to)
-  const keys: string[] = []
-
-  if (period === 'week') {
-    const end = weekStart(to)
-    for (let cursor = weekStart(from); cursor <= end; cursor = addDays(cursor, 7)) keys.push(cursor)
-  } else if (period === 'month') {
-    const months = (b.y - a.y) * 12 + (b.m - a.m)
-    // isoOf normalises an overflowing month, so month 13 of 2026 is January 2027.
-    for (let i = 0; i <= months; i++) keys.push(bucketKey(isoOf(a.y, a.m + i, 1), 'month'))
-  } else {
-    const first = a.y * 4 + Math.ceil(a.m / 3) - 1
-    const last = b.y * 4 + Math.ceil(b.m / 3) - 1
-    for (let i = first; i <= last; i++) keys.push(`${Math.floor(i / 4)}-Q${(i % 4) + 1}`)
-  }
-
-  return keys.length > MAX_BUCKETS[period] ? keys.slice(-MAX_BUCKETS[period]) : keys
 }
 
 const blankCounts = () => Object.fromEntries(ROLES.map((r) => [r, 0])) as Record<RoleTag, number>

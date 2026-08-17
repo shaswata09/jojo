@@ -22,8 +22,10 @@
  * does for the ones that do not.
  *
  * This lived in `src/lib/undo.ts`, where only the four web cards could reach it.
- * `use-tool.ts` — the hook every card migrates to in Wave 3 — needs the same
- * guard, and `check-platform.mjs` bans `kg/react -> @/lib` outright, correctly:
+ * `use-tool.ts` needs the same guard — it was written as the hook cards would
+ * migrate to, and no card has: it still has zero call sites, so treat the
+ * migration as intended rather than done — and `check-platform.mjs` bans
+ * `kg/react -> @/lib` outright, correctly:
  * `src/lib` is the web app. Nothing below is web-only, so the module came down
  * rather than the ban being argued with, and `src/lib/undo.ts` re-exports it so
  * the four call sites kept their import line. Same move `kg/react/toast.ts`
@@ -44,8 +46,10 @@ import type { ToastOptions } from './toast'
  *
  * Spelled out rather than taking the whole `Repository` so the rule below is
  * testable against a repo built from the memory driver without a React tree —
- * `vitest.config.ts` runs in node on purpose, and a hook that hid its logic
- * inside `useCallback` would have been checkable only by clicking.
+ * the suite runs in node on purpose (`test.environment` in `vite.config.ts`;
+ * there is no separate vitest config here, whatever this comment used to say),
+ * and a hook that hid its logic inside `useCallback` would have been checkable
+ * only by clicking.
  *
  * `getSnapshot` is here because reverting an entry is only safe while the
  * records it touched still look the way it left them — see `movedOn`.

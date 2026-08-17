@@ -9,6 +9,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { createMemoryDriver } from '../storage/memory-driver'
+import { driverFail } from '../storage/driver'
 import type { Driver, DriverResult, DurableOp } from '../storage/driver'
 import { coalesce, createWriteQueue } from './queue'
 import type { PersistenceHealth } from './queue'
@@ -243,6 +244,74 @@ describe('createWriteQueue', () => {
     await queue.flush()
 
     expect(driver.counts().nodes).toBe(0)
+  })
+
+  /**
+   * The same rule, against the ops that arrived WHILE the failed batch was in
+   * flight — which is the only arrangement that can tell the two orders apart.
+   *
+   * The test above queues its delete after the failed attempt has already put
+   * the batch back, so `pending` is empty at the moment of the requeue and both
+   * orders produce the same array. Here the delete is enqueued from inside the
+   * driver, mid-write, so there is something to be put back IN FRONT of: append
+   * instead of prepend and the batch replays as [delete, put], `coalesce` keeps
+   * the last write per key, and the record the user deleted is written back to
+   * disk on the next successful drain with nothing on screen to say so.
+   */
+  it('replays a failed batch ahead of ops that arrived while it was in flight', async () => {
+    let broken = true
+    let deleteIt: (() => void) | null = null
+    const base = createMemoryDriver()
+    const driver: Driver = {
+      ...base,
+      commit: (ops) => {
+        if (!broken) return base.commit(ops)
+        broken = false
+        // The user deletes the record while the write of it is out at the disk.
+        deleteIt?.()
+        return Promise.resolve(driverFail<void>('storage/unavailable', 'locked'))
+      },
+    }
+    const queue = createWriteQueue(driver)
+    deleteIt = () => queue.enqueue([del('a')])
+
+    queue.enqueue([put('a', { id: 'a', n: 1 })])
+    await queue.flush()
+    // The retry, with the requeued put and the delete behind it in one batch.
+    await queue.flush()
+
+    expect(base.counts().nodes).toBe(0)
+  })
+
+  /**
+   * A stopped queue settles the flush it can no longer serve.
+   *
+   * `stop()` is called when the driver closes under us — a `versionchange` from
+   * another tab, or `dispose`. Whatever was queued is not going anywhere, and a
+   * promise nobody resolves is a `pagehide` handler that never returns, which is
+   * a tab that will not close. The early return in `flushAndReport` covers a
+   * flush asked for AFTER the stop; this is the one already waiting when it
+   * happens.
+   */
+  it('settles a flush that was already waiting when the queue stopped', async () => {
+    const base = createMemoryDriver()
+    const driver: Driver = {
+      ...base,
+      // Out at the disk and never coming back — the shape of a connection that
+      // was closed under an in-flight request.
+      commit: () => new Promise<DriverResult<void>>(() => {}),
+    }
+    const queue = createWriteQueue(driver)
+
+    queue.enqueue([put('a', { id: 'a' })])
+    // Let the drain start, so the flush below waits on the write rather than
+    // taking the "nothing pending" path.
+    await Promise.resolve()
+
+    const waiting = queue.flushAndReport()
+    queue.stop()
+
+    expect(await settledWithin(waiting)).toBe('stranded')
   })
 
   it('does nothing at all once stopped', async () => {

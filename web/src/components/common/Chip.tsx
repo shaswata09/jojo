@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import { STAGES, type Stage } from '@/data/seed'
+import { STAGE_DOT, type Stage } from '@/data/seed'
 import { cn } from '@/lib/utils'
 import type { ComponentProps } from 'react'
 
@@ -39,14 +39,6 @@ const chipVariants = cva(
     defaultVariants: { tone: 'gray', size: 'md', shape: 'square' },
   },
 )
-
-/**
- * Derived from STAGES so a stage added to the data cannot be missed here. The
- * class strings themselves live in `seed.ts`, which is what keeps Tailwind's
- * source scan finding them — building them by interpolation would compile to
- * nothing.
- */
-const STAGE_DOT = Object.fromEntries(STAGES.map((s) => [s.id, s.dot])) as Record<Stage, string>
 
 export function Chip({
   className,

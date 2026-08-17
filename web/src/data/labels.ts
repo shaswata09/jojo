@@ -10,7 +10,7 @@
  * One flat namespace across applications, reminders and anything added later:
  * a keyword is only worth setting up if it works everywhere the record appears.
  */
-import type { Label, LabelTone } from '@/kg/core/model'
+import type { Label } from '@/kg/core/model'
 
 export type { Label, LabelTone } from '@/kg/core/model'
 
@@ -91,9 +91,6 @@ export const seedLabelsByRecord: Record<string, string[]> = {
   's-thanks': ['research', 'developer'],
   's-decline': ['negotiating'],
 }
-
-/** A colour for labels the user creates, cycled so two in a row differ. */
-export const NEW_LABEL_TONES: LabelTone[] = ['teal', 'green', 'amber', 'red', 'gray']
 
 /**
  * Seeds an id from a name, at creation only.

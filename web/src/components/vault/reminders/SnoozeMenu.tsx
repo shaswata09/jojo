@@ -1,19 +1,13 @@
 import { useState } from 'react'
 import { Field } from '@/components/common/Field'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { SNOOZE_STEPS, anchorOf } from '@/components/vault/reminders/model'
+import { SnoozeSteps } from '@/components/common/SnoozeSteps'
 import type { RowActions } from '@/components/vault/reminders/model'
-import { addDays, bucketOf, shortDate, whenLabel } from '@/data/timeline'
-import type { TimelineBucket, TimelineItem } from '@/data/timeline'
+import { bucketOf, shortDate, whenLabel } from '@/data/timeline'
+import type { TimelineItem } from '@/data/timeline'
+import { BUCKET_TEXT } from '@/components/common/timeline-buckets'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
-
-const bucketText: Record<TimelineBucket, string> = {
-  overdue: 'text-danger',
-  today: 'text-warning',
-  upcoming: 'text-text-3',
-  done: 'text-text-3',
-}
 
 /** The two-line date block, shared by the snooze trigger and the inert copy. */
 export function DateLines({ item }: { item: TimelineItem }) {
@@ -22,7 +16,7 @@ export function DateLines({ item }: { item: TimelineItem }) {
       <span
         className={cn(
           'block text-xs font-medium whitespace-nowrap',
-          bucketText[bucketOf(item, TODAY)],
+          BUCKET_TEXT[bucketOf(item, TODAY)],
         )}
       >
         {whenLabel(item, TODAY)}
@@ -45,8 +39,6 @@ export function SnoozeMenu({ item, actions }: { item: TimelineItem; actions: Row
   // Seeded from the row so the calendar opens on the month the reminder is in
   // rather than on today, which for an overdue item is the wrong page.
   const [picked, setPicked] = useState(item.date)
-  const anchor = anchorOf(item)
-  const soon = anchor === TODAY
 
   return (
     <Popover
@@ -70,20 +62,16 @@ export function SnoozeMenu({ item, actions }: { item: TimelineItem; actions: Row
       <PopoverContent align="end" className="w-60">
         <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">Snooze</div>
         <div className="flex flex-col">
-          {SNOOZE_STEPS.map((step) => (
-            <button
-              key={step.days}
-              type="button"
-              className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-1.5 py-1.5 text-xs text-text-2 transition-colors hover:bg-well hover:text-text-1"
-              onClick={() => {
-                setOpen(false)
-                actions.snooze(item, step.days)
-              }}
-            >
-              <span className="flex-1 text-left">{soon ? step.soon : step.later}</span>
-              <span className="font-mono text-text-3">{shortDate(addDays(anchor, step.days))}</span>
-            </button>
-          ))}
+          {/* `dated`: this menu hangs off the reminder's own date, so a step has
+              to name the day it lands on rather than a duration. */}
+          <SnoozeSteps
+            date={item.date}
+            spell="dated"
+            onPick={(days) => {
+              setOpen(false)
+              actions.snooze(item, days)
+            }}
+          />
         </div>
 
         <span aria-hidden className="h-px bg-hairline" />

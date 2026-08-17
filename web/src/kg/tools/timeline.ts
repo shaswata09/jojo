@@ -19,12 +19,13 @@
  * remembering to flip the boolean.
  */
 
-import { addDays, shortDate } from '@/data/timeline'
+import { addDays, shortDate } from '@/kg/core/dates'
+import { TIMELINE_KIND_VALUES, URGENCY_VALUES } from '@/kg/core/model'
 import type { ISODate, NodeId } from '@/kg/core/model'
 import { s } from '@/kg/core/schema'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
-import { TIMELINE_KINDS, URGENCIES, dayOf, opt } from './support'
+import { dayOf, opt } from './support'
 
 const itemId = s.id('timelineItem', { label: 'Item' })
 
@@ -35,8 +36,8 @@ const fields = {
   date: s.optional(s.isoDate({ label: 'Date' })),
   startMins: s.optional(s.nullable(s.number({ min: 0, max: 1439, int: true, label: 'Starts at' }))),
   durationMins: s.optional(s.nullable(s.number({ min: 0, int: true, label: 'Lasts' }))),
-  kind: s.optional(s.enum(TIMELINE_KINDS, { label: 'Kind' })),
-  urgency: s.optional(s.enum(URGENCIES, { label: 'Urgency' })),
+  kind: s.optional(s.enum(TIMELINE_KIND_VALUES, { label: 'Kind' })),
+  urgency: s.optional(s.enum(URGENCY_VALUES, { label: 'Urgency' })),
   remind: s.optional(s.boolean({ label: 'Show in Reminders' })),
   location: s.optional(s.string({ label: 'Location' })),
   joinUrl: s.optional(s.string({ label: 'Join link' })),
@@ -73,7 +74,7 @@ export const timelineItemCreate = defineTool({
     ...fields,
     title: s.string({ min: 1, label: 'Title' }),
     date: s.isoDate({ label: 'Date' }),
-    kind: s.enum(TIMELINE_KINDS, { label: 'Kind' }),
+    kind: s.enum(TIMELINE_KIND_VALUES, { label: 'Kind' }),
     /** Something logged after it was done — a call you are recording, not planning. */
     completedOn: s.optional(s.isoDate({ label: 'Completed on' })),
   }),

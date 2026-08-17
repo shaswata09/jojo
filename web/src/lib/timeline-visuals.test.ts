@@ -1,11 +1,14 @@
 /**
- * The date→colour rule, in the one place it now lives.
+ * The web binding of the date→colour rule.
  *
  * There were four copies of these two thresholds — `Calendar.tsx`,
  * `GlancePanel.tsx`, `OwedThisWeek.tsx` and `lib/priority.ts` — and none of them
  * was tested, which is how the dashboard and the calendar came to disagree about
- * what "overdue" meant. The boundaries below are the whole rule: everything else
- * in the app is a class name hung off the answer.
+ * what "overdue" meant. The rule itself now lives in `kg/react/timeline-view.ts`
+ * and is tested there against a day that is written down; what this file still
+ * covers is the part that stayed web-only — that `dateMark` and `markOf` are
+ * bound to `TODAY` and not to some other day, and that the two class maps and
+ * the icon map cover exactly the keys they are asked for.
  */
 
 import { describe, expect, it } from 'vitest'

@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 
 /**
- * The one overflow menu, so a row's actions never move between tabs.
+ * The one overflow menu, so a row's actions never move between screens.
  *
  * Before this, Reminders had a 24px circular ⋯, Files a 28px rounded-square ⋯,
  * and Links and Snippets had no menu at all — a naked pencil and a naked bin
@@ -15,6 +15,14 @@ import { cn } from '@/lib/utils'
  *
  * Order is part of the contract and reads the same everywhere:
  * **Edit · Duplicate · [move section] · Delete**, destructive last and red.
+ *
+ * It lived in `components/vault/` and said "between tabs", and the folder was
+ * what made a second copy look necessary: the applications table hand-rolled
+ * its own ⋯ with the same trigger classes to the byte, the same three items in
+ * the same order, a `w-44` popover instead of `w-48` and an item class missing
+ * `cursor-pointer` — so the app's busiest list was the one row menu whose items
+ * showed an arrow cursor. The claim in the first sentence is only true from a
+ * folder every row can import from.
  */
 
 /** Closes the popover before running the action, so no menu outlives its row. */
@@ -53,7 +61,16 @@ export function RowMenu({
   )
 }
 
-const itemClass =
+/**
+ * One popover row, everywhere there is one.
+ *
+ * Exported because three menus that are not row menus — the two snooze menus on
+ * the dashboard and the detail header's ⋯ — are built out of raw `<button>`s and
+ * were each carrying their own copy of this string. Six spellings of one token,
+ * two of them silently missing `cursor-pointer`. Extend it with `cn()`; do not
+ * retype it. `RowMenu.test.ts` fails if it is spelled twice.
+ */
+export const menuItemClass =
   'flex w-full cursor-pointer items-center gap-2 rounded-sm px-1.5 py-1.5 text-xs text-text-2 transition-colors hover:bg-well hover:text-text-1'
 
 export function MenuItem({
@@ -83,7 +100,7 @@ export function MenuItem({
         onSelect()
       }}
       className={cn(
-        itemClass,
+        menuItemClass,
         danger && 'text-danger hover:bg-danger-soft hover:text-danger',
         // A disabled button still matches :hover, so the hover styling is
         // withheld by branch rather than by a variant.

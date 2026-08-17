@@ -163,10 +163,21 @@ export const TOOLS = {
 
 export type ToolName = keyof typeof TOOLS
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type InputOf<N extends ToolName> = (typeof TOOLS)[N] extends Tool<infer I, any> ? I : never
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type OutputOf<N extends ToolName> = (typeof TOOLS)[N] extends Tool<any, infer O> ? O : never
+/**
+ * The half of `Tool<I, O>` a caller cares about, pulled back off the registry.
+ *
+ * Both used to spell the other half as `any` with an eslint-disable over it.
+ * `infer` is what they wanted: `Tool<infer I, infer O>` matches the same tools
+ * and names nothing, so `unknown` never leaks and the suppression goes with it.
+ * `unknown` in place of the `any` is NOT equivalent and was the reason for the
+ * suppression — `Tool` is invariant in `O` (it is a `run` return AND a
+ * `describe` parameter), so `Tool<I, string>` does not extend `Tool<I, unknown>`
+ * and every tool would have resolved to `never`.
+ */
+export type InputOf<N extends ToolName> =
+  (typeof TOOLS)[N] extends Tool<infer I, infer _O> ? I : never
+export type OutputOf<N extends ToolName> =
+  (typeof TOOLS)[N] extends Tool<infer _I, infer O> ? O : never
 
 /**
  * The registry key is the authority on a tool's name.

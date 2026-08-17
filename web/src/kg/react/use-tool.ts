@@ -10,8 +10,23 @@
  * compatibility hooks use. Every card that exists today already fires its own
  * toast and wires its own Undo; routing those through `useTool` would have put
  * two toasts on screen for one click, one of them describing the operation in
- * words the card had deliberately not chosen. As cards migrate to `useTool` in
- * Wave 3 they drop their own toast in the same commit.
+ * words the card had deliberately not chosen.
+ *
+ * `useTool` HAS NO CALL SITES. This header used to end "as cards migrate to
+ * `useTool` in Wave 3 they drop their own toast in the same commit" — Wave 3
+ * shipped and none did, so the sentence was a TODO in prose, which is why the
+ * repo's zero-TODO count never saw it. Recorded plainly instead, because the two
+ * things it was cited as evidence for do not survive checking:
+ *
+ * - `ToolRunDialog.tsx` does not adopt this hook, it REFUSES it, by name: the
+ *   dialog already renders the refusal in place with the user's input intact,
+ *   and a toast would say the same thing a second time over the top.
+ * - `kg/react/host.ts` mentioned it only inside a paragraph about a React Native
+ *   adapter that had already been written elsewhere.
+ *
+ * It is kept anyway, and the reason is below on `useTool` itself: the Undo it
+ * wires is not the obvious one, and the obvious one is a bug. Deleting the hook
+ * deletes that finding with it.
  */
 
 import { useCallback } from 'react'
@@ -75,9 +90,10 @@ const announced = (a: Announcement, undo: (() => void) | null): ToastOptions => 
  * time, which UNDOES the undo; pressed after the user has written to the same
  * record again, it puts a whole before-image back over what they typed (D12).
  * The first card to adopt this hook would have inherited both, which is why it
- * was worth fixing a hook with no call sites rather than deleting it: the hook
- * is the documented Wave 3 destination — `host.ts` and `ToolRunDialog.tsx` both
- * point at it by name — and the trap is in the one line that is easiest to copy.
+ * was worth fixing a hook with no call sites rather than deleting it: `undo` on
+ * a `ToolResult` is the single most copyable line in the tools API, every
+ * hand-written toast in the app is one paste away from using it, and this is
+ * where the reason not to is written down.
  *
  * `undoableWith` also covers a burst: a tool that calls other tools still lands
  * one entry, but a card that runs two in one handler gets both undone in the

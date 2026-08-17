@@ -11,12 +11,13 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { plural } from '@/components/applications/detail/text'
+import { plural } from '@/components/common/text'
 import { StageMenu } from '@/components/applications/StageMenu'
 import { Chip } from '@/components/common/Chip'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { Panel } from '@/components/common/Panel'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { menuItemClass } from '@/components/common/RowMenu'
 import { displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
 import { useApplications } from '@/kg/react/use-applications'
@@ -25,18 +26,29 @@ import { applicationsPath } from '@/lib/links'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 
-const menuItem =
-  'flex w-full items-center gap-2 rounded-sm px-1.5 py-1.5 text-xs text-text-2 transition-colors hover:bg-well hover:text-text-1 disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-text-2'
+/**
+ * The shared popover item, plus the disabled state only this menu has.
+ *
+ * Extended with `cn()` rather than retyped: the hand-written copy this replaces
+ * had drifted a token — it was missing `cursor-pointer`, so the detail page's ⋯
+ * showed an arrow where the vault's showed a hand.
+ */
+const menuItem = cn(
+  menuItemClass,
+  'disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-text-2',
+)
 
 /**
- * The id on the record's heading.
+ * The id on the record's heading. Local, and a constant rather than a `useId`
+ * because only one record renders at a time so it cannot collide.
  *
- * A constant rather than a `useId`, because its whole purpose is to be named
- * from outside: the sheet that wraps this owns the `role="dialog"` and needs an
- * `aria-labelledby` pointing at the record's name. Only one record renders at a
- * time, so a fixed id cannot collide.
+ * It was exported, with a docstring saying the wrapping sheet points an
+ * `aria-labelledby` at it. `DetailSheet` does not and never did: it names
+ * itself with an `sr-only` `DialogPrimitive.Title` built from the record's
+ * name, which is why it takes a `name` prop. Nothing outside this file has ever
+ * imported this — the export was a contract with no counterparty.
  */
-export const DETAIL_TITLE_ID = 'application-detail-title'
+const DETAIL_TITLE_ID = 'application-detail-title'
 
 /**
  * Who the record is, and everything you can do to it as a whole.

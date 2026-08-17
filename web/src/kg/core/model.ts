@@ -42,7 +42,7 @@ export type Instant = string
  * Kept apart from `Instant` because they are read differently: a deadline is
  * the same day everywhere on earth, and rendering one through a timezone is how
  * a date silently shifts by one — the bug the date-handling header above `isoOf`
- * in `data/timeline.ts` documents.
+ * in `core/dates.ts` documents.
  */
 export type ISODate = string
 
@@ -215,6 +215,36 @@ export const STAGE_VALUES = [
   'closed',
 ] as const
 export type Stage = (typeof STAGE_VALUES)[number]
+
+/**
+ * What each stage is called. Prose, and free to change; the ID is the wire
+ * format — written into '?stage=' links, read back by `useApplicationsParams`,
+ * and keying the `--stage-*` tokens. "Screen" became "Screening call" because on
+ * its own the word is a verb as often as a noun; the id stayed 'screen' so no
+ * saved link broke. Nothing may lay out on a label's length: this one went from
+ * 6 to 14 characters.
+ *
+ * Beside the union rather than in `src/data/seed.ts`, where it used to sit, for
+ * two reasons. The `Record<Stage, string>` annotation on an object literal is
+ * the only spelling in which adding a stage is a compile error, and that check
+ * belongs where the stage is added. And `kg/tools/support.ts` had to re-export
+ * it so `kg/react/use-applications.ts` could read a six-word lookup without
+ * importing a 348-line demo fixture — a hop that only existed because the model's
+ * own prose was filed under demo data. `src/data/seed.ts` re-exports it, so the
+ * 52 modules that import it from there did not move.
+ *
+ * A colour per stage is NOT here. `STAGE_DOT` stays in `src/data/seed.ts`
+ * because its values are Tailwind class names, and a CSS class is the one thing
+ * this layer must never hand a React Native renderer.
+ */
+export const STAGE_LABEL: Record<Stage, string> = {
+  draft: 'Draft',
+  submitted: 'Submitted',
+  screen: 'Screening call',
+  interview: 'Interview',
+  offer: 'Offer',
+  closed: 'Closed',
+}
 
 /** The same four the sources donut splits by, so the two can't drift apart. */
 export const SOURCES = ['Job scout', 'Job board', 'Referral', 'Careers page'] as const
@@ -532,10 +562,35 @@ export type FileProps = {
   name: string
   kind: FileKind
   bucket: FileBucket
-  /** '184 KB' — a label the user reads, not a byte count. No bytes are held. */
+  /** '184 KB' — a label the user reads. `bytes` below is the number. */
   size: string
   savedOn: ISODate
   note?: string
+
+  /*
+   * The four link fields. All optional, and their absence is a valid, complete
+   * state — a record with no `path` is every file that predates the folder, and
+   * every file belonging to a user who has not connected one. Nothing is wrong
+   * with such a record and the UI must not mark it as broken.
+   *
+   * D27's binary-free invariant is intact: these are a path and three facts
+   * about bytes, never the bytes, so `getAll('nodes')` is the same 5 ms
+   * operation it was. What is stale is D27's stated TRIGGER — it said a blobs
+   * store "arrives with the server", and there is no server; the bytes live in
+   * a folder the user picked, reached through `storage/file-store.ts`. If the
+   * architecture doc still reads "no `File` in the graph", that sentence is
+   * describing the trigger and not this field, and there is no numbered
+   * decision recording the port. Do not read the absence as a prohibition.
+   */
+
+  /** Folder-relative POSIX path. Its PRESENCE is the "has bytes" flag. Write-once. */
+  path?: string
+  /** True byte count. `size` is a label rounded into a 1,024-byte window. */
+  bytes?: number
+  /** `File.lastModified`, epoch ms. A tripwire for drift, never identity. */
+  mtime?: number
+  /** 'sha256:<64 hex>'. The only field that can say "these are the same bytes". */
+  hash?: string
 }
 
 export type SnippetProps = {
@@ -586,9 +641,14 @@ export type NodePropsByType = {
   profile: ProfileProps
 }
 
-/** Everything but `profile` carries a slug, and the slug index depends on it. */
+/**
+ * Everything but `profile` carries a slug, and the slug index depends on it.
+ *
+ * The type and no predicate. A `hasSlug(type): type is SluggedType` lived here
+ * and was never called once: a guard over the `type` STRING narrows the string
+ * and tells the compiler nothing about the node's `props`, so every site that
+ * wanted it — the slug loop in `checkInvariants`, the indexes in
+ * `MutableSnapshot` — still had to narrow on `node.type` itself and did. It is
+ * the kind of helper that reads as missing until you write it.
+ */
 export type SluggedType = Exclude<NodeType, 'profile'>
-
-export function hasSlug(type: NodeType): type is SluggedType {
-  return type !== 'profile'
-}

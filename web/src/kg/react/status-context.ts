@@ -2,16 +2,23 @@
  * L4 — StorePhase and PersistenceHealth, as a SEPARATE context.
  *
  * Separate from KgContext on purpose: health ticks on every drain, and folding it
- * into the graph context would re-render all 34 consumers each time a write
- * succeeded.
+ * into the graph context would re-render every consumer of the graph — 47 files
+ * import one of those hooks directly — each time a write succeeded.
  *
- * In Wave 1 the phase is only ever 'ready'. The store is compiled into memory
- * synchronously, so there is nothing to wait for and no way to be blocked or
- * corrupt — but the union is the full one from §3.5 and `StoreGate` is written
- * against all of it, because the arm that appears in Wave 2 is the one that must
- * not be discovered late: `phase !== 'ready'` has to mean no consumer of the
- * graph is mounted, and a gate that only ever saw one arm would be a gate nobody
- * had tested.
+ * `phaseOf` in `src/lib/store.tsx` is the only producer, and it emits four of the
+ * five arms below: 'loading', 'ready', 'unavailable' and 'corrupt'. 'seeding' is
+ * emitted NOWHERE. It is here because §3.5 specifies it, and it has stayed
+ * unreachable through four waves — so treat it as a spec arm awaiting a producer,
+ * not as a state anything has ever been in. (The paragraph this replaces claimed
+ * the opposite of all of that: that the phase was only ever 'ready', which was
+ * true in Wave 1 only, and that 'seeding' was the arm that must not be
+ * discovered late. It is the one arm that never arrived.)
+ *
+ * `StoreGate` does not switch on this union. It reads `useBoot()` from
+ * `@/lib/boot-context` and switches on `BootState`, which is a different and
+ * richer type — it carries the session and the rescued rows, neither of which
+ * belongs in a public reading. Worth knowing before adding an arm here and
+ * expecting the gate to grow one.
  */
 
 import { createContext, useContext } from 'react'
