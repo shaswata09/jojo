@@ -38,6 +38,15 @@ import { fileURLToPath } from 'node:url'
  * guard through `npm -w @jojo/service run lint`.
  */
 const SERVICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+/*
+ * The repo root, because this guard no longer stops at the package edge.
+ *
+ * The one platform-specific file left outside — `mobile/src/kg/storage/
+ * rn-driver.ts` — is precisely the kind of file the layer rule exists for, and
+ * it was the only file in the repo that no import guard had ever read. See
+ * ADAPTERS at the foot of this file.
+ */
+const ROOT = path.resolve(SERVICE, '..')
 const KG = path.join(SERVICE, 'kg')
 /*
  * Declared up here with KG rather than beside the data walk further down,
@@ -226,8 +235,18 @@ const specsIn = (source) =>
   [IMPORT, BARE_IMPORT, DYNAMIC].flatMap((re) => [...source.matchAll(re)].map((m) => m[1]))
 
 const failures = []
-const fail = (file, line, message) =>
-  failures.push(`${path.relative(SERVICE, file)}:${line}  ${message}`)
+/**
+ * Package-relative for the package's own files, repo-relative for the adapters.
+ *
+ * The adapters sit in `mobile/`, so `path.relative(SERVICE, …)` alone printed
+ * `../mobile/src/kg/storage/rn-driver.ts` — a path that is correct and that no
+ * editor jump-to-file understands from the repo root the command was run in.
+ */
+const relOf = (file) => {
+  const inside = path.relative(SERVICE, file)
+  return inside.startsWith('..') ? path.relative(ROOT, file) : inside
+}
+const fail = (file, line, message) => failures.push(`${relOf(file)}:${line}  ${message}`)
 
 for (const file of walk(KG)) {
   const relFromKg = path.relative(KG, file)
@@ -503,6 +522,127 @@ for (const file of walk(DATA)) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The platform adapters, which live in the apps and are checked from here.
+ *
+ * `mobile/src/kg/storage/rn-driver.ts` is the whole reason this section exists.
+ * It is the one file in the repo that implements a kg port outside the package,
+ * and until this ran it was also the one file no import guard had ever read:
+ * these two scripts derived their root from their own location, so they saw
+ * `web/` and nothing else, and 18 layer plus 5 platform violations accumulated
+ * in mobile's copy of `src/kg` for as long as that copy existed. Making both
+ * apps invoke `npm -w @jojo/service run lint` fixes who RUNS the guard; it does
+ * nothing about what the guard LOOKS at. This is that half.
+ *
+ * The rules are the mirror image of the package's own, and deliberately so:
+ *
+ * - Inside `service/`, `@jojo/service/…` is a violation and a relative path is
+ *   the correct spelling. In an adapter it is exactly reversed — the package
+ *   name is the only permitted spelling, because a relative `../../../service/
+ *   kg/storage/driver` bypasses the exports map, and Metro was measured
+ *   resolving relative paths without consulting `exports` at all. That is a
+ *   second copy of a module the graph expects to be a singleton, arriving with
+ *   no error message.
+ * - Only `storage` and `log`. An adapter implements `Driver`, which moves
+ *   opaque rows and a primary key; the moment it imports `core/model` it knows
+ *   what an application is, and `RULES.storage` bans that inside the package
+ *   for the same reason.
+ * - No `@/`. An adapter is BELOW the app it ships in. A driver that reaches up
+ *   into a screen cannot be handed to the conformance suite, and the
+ *   conformance suite is the only thing standing between this file and a store
+ *   that loses rows.
+ *
+ * REACT_PACKAGES is exempted here for one prefix, and the narrower-regex fix
+ * was measured and rejected. `@react-` is the only thing banning React from
+ * `storage`, `repo` and `tools`, all three of which have `packages: true`;
+ * narrowing it to `@react-native-` or `@react-navigation/` would legalise
+ * `@react-three/fiber` and `@react-three/drei` — both already direct
+ * dependencies of `web` — inside those three layers. The false positive it
+ * would have fixed fires on exactly one prefix in exactly one target, so the
+ * exemption is spelled here rather than the ban being weakened everywhere.
+ */
+const ADAPTERS = [
+  {
+    root: path.join(ROOT, 'mobile', 'src', 'kg'),
+    label: 'the React Native adapter',
+    /** Package prefixes that are the point of this adapter existing. */
+    allow: [/^@react-native-async-storage\//],
+  },
+]
+
+/** The service subpaths an adapter may reach: `storage/*` and `log`. */
+const ADAPTER_SUBPATH = /^@jojo\/service\/(storage\/[\w.-]+|log)$/
+
+for (const adapter of ADAPTERS) {
+  for (const file of walk(adapter.root)) {
+    const source = readFileSync(file, 'utf8')
+
+    if (file.endsWith('.tsx')) {
+      fail(file, 1, `is .tsx in ${adapter.label}. An adapter implements a port; it does not render.`)
+    }
+
+    for (const [, spec] of source.matchAll(TODAY_IMPORT)) {
+      fail(
+        file,
+        lineOf(source, spec),
+        `imports TODAY from '${spec}'. D26 applies to an adapter too — a driver that stamps its own timestamps breaks replay exactly like a tool would.`,
+      )
+    }
+
+    for (const spec of specsIn(source)) {
+      const line = lineOf(source, spec)
+
+      if (spec.startsWith('.')) {
+        const resolved = path.resolve(path.dirname(file), spec)
+        if (resolved.startsWith(adapter.root + path.sep)) continue
+        fail(
+          file,
+          line,
+          `reaches outside ${adapter.label} with a relative path ('${spec}'). The service layer is ` +
+            `'@jojo/service/storage/…' and nothing else: a relative path into the package sidesteps ` +
+            `the exports map, and Metro resolves it without consulting 'exports' at all — which loads ` +
+            `a second copy of a module the graph expects to be a singleton.`,
+        )
+        continue
+      }
+
+      if (spec === SELF || spec.startsWith(`${SELF}/`)) {
+        if (ADAPTER_SUBPATH.test(spec)) continue
+        fail(
+          file,
+          line,
+          `imports '${spec}'. ${adapter.label} may reach '@jojo/service/storage/…' and ` +
+            `'@jojo/service/log', nothing else. A Driver moves opaque rows and a primary key; if it ` +
+            `learns what an application is, the boundary that made the model testable without a ` +
+            `device has already failed.`,
+        )
+        continue
+      }
+
+      if (spec.startsWith('@/')) {
+        fail(
+          file,
+          line,
+          `imports '${spec}'. ${adapter.label} sits BELOW the app it ships in — a driver that ` +
+            `reaches up into a screen cannot be handed to the conformance suite, which is the only ` +
+            `thing standing between this file and a store that silently loses rows.`,
+        )
+        continue
+      }
+
+      if (REACT_PACKAGES.test(spec) && !adapter.allow.some((p) => p.test(spec))) {
+        fail(
+          file,
+          line,
+          `${adapter.label} imports '${spec}'. This is a storage adapter, not a component.`,
+        )
+      }
+    }
+  }
+}
+
 if (failures.length > 0) {
   console.error(`\ncheck-layers: ${failures.length} layer violation(s)\n`)
   for (const f of failures) console.error(`  ${f}`)
@@ -511,4 +651,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('check-layers: kg and data import direction is clean')
+console.log('check-layers: kg, data and the platform adapters import in one direction')

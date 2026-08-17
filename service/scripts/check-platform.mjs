@@ -76,6 +76,12 @@ import ts from 'typescript'
  * `npm -w @jojo/service run lint`.
  */
 const SERVICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+/*
+ * The repo root, because the third target below is not in this package. The one
+ * file that implements a kg port outside `service/` is the React Native driver,
+ * and it was never scanned by anything.
+ */
+const ROOT = path.resolve(SERVICE, '..')
 
 /**
  * Why each group is banned, and what to reach for instead.
@@ -390,6 +396,30 @@ const TARGETS = [
     layerOf: () => 'data',
     layers: { data: ['dom', 'node', 'net', 'clock'] },
   },
+  {
+    /*
+     * The React Native adapter, which lives in `mobile/` and is checked from
+     * here.
+     *
+     * `kg/storage` inside the package gets `['clock']` alone, because
+     * `indexedDB` and `BroadcastChannel` are that layer's JOB and a guard that
+     * banned them would fail the driver it exists to protect. This target is
+     * the same layer on a platform where the opposite holds: AsyncStorage is
+     * the platform API here, and `localStorage` or `node:fs` appearing in an RN
+     * driver is not an adapter doing adapter work, it is a browser assumption
+     * that will be a ReferenceError at mount. So `dom`, `node` and `net` come
+     * back on, and `clock` stays on for the reason it is on everywhere — a
+     * driver that stamps its own timestamps breaks replay exactly like a tool
+     * would.
+     *
+     * `timer` stays off. A driver may legitimately coalesce or debounce a
+     * flush, which is durability work, and `repo` is allowed a timer for its
+     * retry backoff for the same reason.
+     */
+    root: path.join(ROOT, 'mobile', 'src', 'kg'),
+    layerOf: () => 'adapter',
+    layers: { adapter: ['dom', 'node', 'net', 'clock'] },
+  },
 ]
 
 /**
@@ -581,7 +611,10 @@ const seen = new Set()
 
 for (const target of TARGETS) {
   for (const file of walk(target.root)) {
-    const rel = path.relative(SERVICE, file)
+    // Package-relative inside `service/`, repo-relative for the adapters, so
+    // the printed path is one an editor can open from where lint was run.
+    const inPackage = path.relative(SERVICE, file)
+    const rel = inPackage.startsWith('..') ? path.relative(ROOT, file) : inPackage
     const layer = target.layerOf(path.relative(target.root, file))
     const groups = target.layers[layer]
 
@@ -688,4 +721,6 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('check-platform: kg and data are free of platform APIs and wall-clock reads')
+console.log(
+  'check-platform: kg, data and the platform adapters are free of the wrong platform and of wall-clock reads',
+)

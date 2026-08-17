@@ -521,10 +521,14 @@ nothing to observe there, and §4.5 is where the real ordering change is recorde
 
 ## 5. The guards
 
-One copy, in `service/scripts/`, run from `service`'s own `lint`, which both apps
-invoke. They used to live in `web/scripts/` and resolve to `web/`, which is why
-mobile's copy of `src/kg` was never checked by them — 18 layer and 5 platform
-violations sat there unreported for as long as the copy existed.
+One copy, in `service/scripts/`, run from `service`'s own `lint`. They used to
+live in `web/scripts/` and resolve to `web/`, which is why mobile's copy of
+`src/kg` was never checked by them — 18 layer and 5 platform violations sat
+there unreported for as long as the copy existed.
+
+*As of Step 7 both apps invoke them and a third guard joined; §8 is where that
+is measured, and it is also where the reason this section's "which both apps
+invoke" was still half-true when it was written gets corrected.*
 
 `check-layers.mjs` walks `kg/` and `data/`. Three edits landed in Step 3:
 
@@ -608,3 +612,222 @@ by luck.
 
 **`npm -w @jojo/service exec tsc -b` is the authority.** The apps' pass over this
 source is incidental and must not be treated as the check.
+
+---
+
+## 8. Step 7 — closing the fork
+
+The migration is finished when a `cp -R` costs more than an import. Steps 2 to 6
+made the import possible; this step is what makes the copy expensive, and it is
+the only step whose whole output is machinery that fires on work nobody has done
+yet.
+
+### 8.1 Two holes, and only one of them was "who runs the guards"
+
+The story told up to here is that web's `lint` ran `check-layers` and
+`check-platform` while mobile's ran `oxlint` alone, so 813 lines of divergence
+accumulated with nothing watching. That is true and it was half the problem.
+
+Making both apps invoke `npm -w @jojo/service run lint` fixes who RUNS the
+guards. It does nothing about what the guards LOOK AT — and both of them derive
+their root from their own location, so after Step 2 they walked `service/` and
+stopped there. Wiring mobile's `lint` and stopping would have produced a mobile
+lint that runs two guards over a tree mobile does not own, and reads clean while
+the one file mobile does own goes unread. `mobile/src/kg/storage/rn-driver.ts`
+was, at the start of this step, the only file in the repository implementing a
+kg port that no import guard had ever seen.
+
+So both halves landed together:
+
+| | before Step 7 | after |
+|---|---|---|
+| `web` lint | service guards + oxlint | unchanged, plus `check-no-copies` |
+| `mobile` lint | oxlint alone | service guards + `check-no-copies` + oxlint |
+| what the guards walk | `service/kg`, `service/data` | + `mobile/src/kg` (the adapter target) |
+
+### 8.2 The adapter target, and the regex that was left alone
+
+`ADAPTERS` in `check-layers.mjs` and the third entry in `check-platform.mjs`'s
+`TARGETS` walk `mobile/src/kg`. The rules there are the **mirror image** of the
+package's own, which is the part worth reading twice:
+
+- Inside `service/`, `@jojo/service/…` is a violation and a relative path is
+  correct. In the adapter it is exactly reversed — the package name is the only
+  permitted spelling, because a relative `../../../service/kg/storage/driver`
+  bypasses the exports map and Metro does not consult `exports` for a relative
+  path at all. That is a second copy of a module the graph holds as a singleton,
+  arriving with no error.
+- Only `storage/*` and `log`. An adapter implements `Driver`, which moves opaque
+  rows and a primary key; `RULES.storage` bans `core` inside the package for the
+  same reason, and the adapter is that layer on a different platform.
+- No `@/`. An adapter sits below the app it ships in.
+- `check-platform` gives it `dom`, `node`, `net` and `clock`. In-package
+  `kg/storage` gets `clock` alone, because `indexedDB` and `BroadcastChannel`
+  are that layer's job; here AsyncStorage is the platform API and `localStorage`
+  would be a browser assumption that is a `ReferenceError` at mount.
+
+**The `REACT_PACKAGES` bug is real and the regex was not narrowed.** `@react-`
+matches `@react-native-async-storage/async-storage`, so the moment the guard
+reached `rn-driver.ts` it flagged the one correctly-platform-specific file in
+the repo as "Only kg/react may import React". The tempting fix — narrow `@react-`
+to `@react-navigation/` or `@react-native-` — was rejected on a measurement:
+`@react-three/drei` and `@react-three/fiber` are direct dependencies of `web`,
+and `@react-` is the *only* rule keeping React out of `storage`, `repo` and
+`tools`, all three of which have `packages: true`. Narrowing it would legalise a
+3-D renderer inside a tool. The exemption is one prefix, in one target,
+allowlisted on the adapter itself — and it was falsified by emptying that
+allowlist, which produced exactly the flag it exists to suppress and nothing
+else.
+
+### 8.3 `check-no-copies.mjs`, and the bug falsifying it found
+
+Four rules: **(a) content** — no app file may share a normalised hash with a
+service file; **(b) specifier** — the package is reached as
+`@jojo/service/<layer>/<name>` or not at all, and the subpath must exist;
+**(c) shape** — `mobile/src/kg` holds the adapter and its contract test,
+`mobile/src/data` does not exist; **(d) twins** — the two apps do not quietly
+grow a third copy of one file between themselves.
+
+Rule (a) has to see through the import lines, because the fork differed from its
+origin in the import lines *alone* on the day it was made — rewriting `@/kg/…`
+into something the second app can resolve is exactly what a paste requires. The
+first implementation canonicalised specifiers by resolving relative paths
+against the file and expressing them relative to the tree root. That is exact,
+and it made the rule **depth-sensitive**:
+
+```
+cp service/data/labels.ts       mobile/src/data/labels.ts   → CAUGHT
+cp service/kg/core/dates.ts     mobile/src/lib/dates.ts     → MISSED
+```
+
+Same operation, same guard, different answer, because `./model` from a file two
+directories deep canonicalises differently than from a file three deep. The rule
+was passing or failing on where the paste happened to land. Reducing a specifier
+to its **final segment** — `model`, from all four spellings — throws away the
+depth and keeps the shape; both lines above are caught now. Two different modules
+sharing a basename would have to be identical in every other byte to collide, and
+if they are, one of them is a copy.
+
+The definitive falsification is the fork itself. Restoring the 90 files deleted
+in Step 4 out of `ab789bb`:
+
+```
+$ git checkout ab789bb -- mobile/src/kg mobile/src/data
+$ node service/scripts/check-no-copies.mjs
+check-no-copies: 108 finding(s)
+   27  is a copy of …          (content-identical to its service original)
+   80  is not one of the two files that belong there
+    1  mobile/src/data exists again
+```
+
+Only 27 of the 90 were still byte-identical — the other 63 are what four months
+of drift looks like, and they are precisely the files rule (a) alone would have
+let through. Rule (c) is what catches them, and that is the argument for having
+both.
+
+### 8.4 `KNOWN_TWINS`, and the entry the plan predicted that does not exist
+
+Rule (d) reports four pairs today, all allowlisted with a reason:
+`lib/labels.tsx`, `lib/labels-context.ts`, `lib/roles.tsx`, `lib/roles-context.ts`
+— UI filter selection, which fails the "does a platform event have to act on it"
+test and stays in the apps. The allowlist is where an open question gets recorded
+so that a *fifth* pair is asked about by the guard rather than by nobody.
+
+Its idiom deliberately differs from `PENDING` in `check-platform.mjs`. A stale
+`PENDING` entry is a failure, because it means a violation was fixed and its
+exemption outlived it. An entry here that stops matching means the two files
+diverged — the normal, permitted end state for two apps' files — so it is silent.
+
+**`lib/today.ts` was the entry the plan named, and it is not one.** It is no
+longer byte-identical: web reads `partsOf` from `@/data/timeline` and mobile from
+`@jojo/service/data/timeline`, which canonicalise to the same thing, but its
+header comment names the tree it is describing and the two trees now have
+different names. It is a near-twin, and a near-twin is exactly what this guard
+does not claim to catch. Its duplication is intended anyway — D26 makes the clock
+the app shell's decision — so nothing is owed here; the plan's allowlist entry
+simply has no work to do.
+
+### 8.5 The negative test: one violation, both apps
+
+A guard that passes proves nothing (§6). This is the same argument applied to the
+wiring rather than the rules: the question is not whether `check-layers` can
+detect a layer violation — §6 established that — but whether a violation in
+`service/` reaches a developer who only ever runs `npm run lint` in the app they
+are working on.
+
+```
+$ # introduce it: kg/core/dates.ts gains `import { createRepository } from '../repo/repository'`
+
+$ npm -w web run lint
+> web@0.0.0 lint
+> npm -w @jojo/service run lint && oxlint
+
+check-layers: 1 layer violation(s)
+
+  kg/core/dates.ts:1  L1 core imports repo ('../repo/repository'). Allowed: core.
+
+The rule: imports point strictly downward, L4 -> L3 -> L2 -> L1 -> L0.
+See docs/KG-ARCHITECTURE.md §2.
+$ echo $?
+1
+
+$ npm -w jojo-mobile run lint
+> jojo-mobile@1.0.0 lint
+> npm -w @jojo/service run lint && oxlint --config .oxlintrc.json src
+
+check-layers: 1 layer violation(s)
+
+  kg/core/dates.ts:1  L1 core imports repo ('../repo/repository'). Allowed: core.
+
+The rule: imports point strictly downward, L4 -> L3 -> L2 -> L1 -> L0.
+See docs/KG-ARCHITECTURE.md §2.
+$ echo $?
+1
+
+$ # reverted; both green.
+```
+
+Identical message, identical exit code, from the two apps. Before this step the
+second command printed nothing but oxlint's warnings and exited 0.
+
+The inverse direction is the half that the adapter target buys, and it is worth
+the second transcript because it is the one that would have caught the original
+fork:
+
+```
+$ # introduce it: mobile/src/kg/storage/rn-driver.ts gains
+$ #   `import { STAGE_LABEL } from '@jojo/service/core/model'`
+
+$ npm -w web run lint
+check-layers: 1 layer violation(s)
+
+  mobile/src/kg/storage/rn-driver.ts:1  imports '@jojo/service/core/model'. the React
+  Native adapter may reach '@jojo/service/storage/…' and '@jojo/service/log', nothing
+  else. A Driver moves opaque rows and a primary key; if it learns what an application
+  is, the boundary that made the model testable without a device has already failed.
+$ echo $?
+1
+```
+
+A violation in mobile's tree, failing **web's** lint. That is the shape of the
+guarantee: there is one boundary and it is checked from one place, so neither app
+can be the one where nobody looked.
+
+### 8.6 What is still not guarded, stated plainly
+
+- **Near-duplicates.** Rule (a) is identity, not similarity, and deliberately so
+  — a similarity threshold is a tuning parameter and an argument, and a guard
+  that fires on a judgement call gets suppressed. Something 90 % copied and 10 %
+  edited passes every rule in this file. What covers that case is the layer
+  guards, the driver conformance contract and one shared test suite; what does
+  not cover it is this script, and pretending otherwise would be the more
+  dangerous outcome.
+- **Screens.** Mobile has 17 tests and none of them renders anything. `tsc` and
+  `vitest` provably cannot see the `buildMonth` class of failure — that is what
+  §4.7 is about — so the by-hand checklist in §4.11 remains the real gate for the
+  phone, and it is still owed.
+- **The apps' own trees.** `check-layers` walks `service/kg`, `service/data` and
+  the mobile adapter. `web/src/kg/storage/idb-*` is checked by web's oxlint and
+  by nothing structural, which is defensible — it is platform code in the app
+  that owns the platform — and is written down here so it is a decision rather
+  than an assumption.

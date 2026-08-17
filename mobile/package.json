@@ -43,7 +43,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "ios": "expo run:ios",
-    "lint": "oxlint --config .oxlintrc.json src",
+    "lint": "npm -w @jojo/service run lint && oxlint --config .oxlintrc.json src",
     "start": "expo start",
     "test": "vitest run",
     "test:watch": "vitest",
