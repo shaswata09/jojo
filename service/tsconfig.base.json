@@ -54,32 +54,23 @@
      */
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noPropertyAccessFromIndexSignature": true
 
     /*
-     * TEMPORARY, and it is the only `@/` specifier this package is allowed.
+     * There is deliberately no `paths` block, and this package must never grow
+     * one.
      *
-     * `repo/seed.ts` and `tools/memory.ts` compile the demo fixtures, and those
-     * fixtures are still `web/src/data` — they move into `service/data` in the
-     * next step, at which point the 22 specifiers become relative and this
-     * mapping is deleted.
+     * It briefly held `"@/data/*": ["../web/src/data/*"]`, because `repo/seed.ts`
+     * and `tools/memory.ts` compile the demo fixtures and the fixtures were
+     * still the web app's. That mapping is gone with them: the fixtures are
+     * `service/data` and all 22 specifiers are relative.
      *
-     * It is spelled as a path mapping rather than rewritten to
-     * `../../../web/src/data/…` deliberately: the relative form would escape the
-     * package, which check-layers.mjs reports as "reaches outside kg with a
-     * relative path", and it would have to be un-written again a step later.
-     * Keeping the `@/data` spelling also keeps DATA_READERS — the allowlist that
-     * says only those two modules may read fixtures — matching, because that
-     * list is written in `@/` vocabulary.
-     *
-     * What this mapping does NOT do is make the specifier correct at runtime for
-     * anyone but web: `@/` resolves against the CONSUMER's root, so on mobile it
-     * would find `mobile/src/data`, a file that exists and has drifted. That is
-     * the hazard the next step removes. Nothing in mobile imports this package
-     * yet, which is what makes the interim safe.
+     * A path mapping here can only ever be half a lie. It teaches `tsc` a
+     * resolution that neither Vite nor Metro shares, and `@/` in particular
+     * resolves against the CONSUMING app's root — so `@/data/seed` type-checked
+     * against web's copy while Metro bound it to `mobile/src/data/seed`, a file
+     * that exists, has drifted, and fails no check. That is the whole hazard
+     * this migration exists to delete.
      */
-    "paths": {
-      "@/data/*": ["../web/src/data/*"]
-    }
   }
 }

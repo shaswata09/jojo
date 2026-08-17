@@ -37,5 +37,22 @@
     "types": [],
     "disableSourceOfProjectReferenceRedirect": true
   },
-  "include": ["kg/core", "kg/repo", "kg/tools", "kg/log.ts", "types/portable-globals.d.ts"]
+  /*
+   * `data` is in the pure half, not a project of its own. The fixtures are read
+   * by `repo/seed.ts` and `tools/memory.ts` and annotated with `kg/core` types,
+   * so they belong under exactly the lib and types those layers get. They were
+   * previously dragged in through the `@/data` mapping, which meant `tsc` only
+   * ever saw the six modules the layer happened to reach; `statistics.ts` and
+   * `calendar.ts` were checked by web's app config alone, with DOM in the lib.
+   * Naming the directory is what makes that coverage complete rather than
+   * incidental.
+   */
+  "include": [
+    "kg/core",
+    "kg/repo",
+    "kg/tools",
+    "kg/log.ts",
+    "data",
+    "types/portable-globals.d.ts"
+  ]
 }

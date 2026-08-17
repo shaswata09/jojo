@@ -56,12 +56,12 @@
  * by itself.
  */
 
-import { seedLabels, seedLabelsByRecord } from '@/data/labels'
-import { seedProfile } from '@/data/profile'
-import { matches, pipelines, savedPostings } from '@/data/scout'
-import { applications } from '@/data/seed'
-import { timeline } from '@/data/timeline'
-import { snippets, vaultFiles, vaultLinks } from '@/data/vault'
+import { seedLabels, seedLabelsByRecord } from '../../data/labels'
+import { seedProfile } from '../../data/profile'
+import { matches, pipelines, savedPostings } from '../../data/scout'
+import { applications } from '../../data/seed'
+import { timeline } from '../../data/timeline'
+import { snippets, vaultFiles, vaultLinks } from '../../data/vault'
 import { NODE_TYPES } from '../core/model'
 import type {
   Instant,

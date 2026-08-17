@@ -1,4 +1,3 @@
-import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 
 /**
@@ -13,19 +12,16 @@ import { defineConfig } from 'vitest/config'
  * IndexedDB tests that DO need a browser-shaped world stayed in web with the
  * IndexedDB driver.
  */
+/*
+ * There is no `resolve.alias` block, and its absence is the point. It used to
+ * map `@/data` at `../web/src/data` so `repo/seed.ts` and `tools/memory.ts`
+ * could reach the fixtures while they still lived in the web app. The fixtures
+ * are `service/data` now and all 22 specifiers are relative, so the mapping and
+ * its twin in tsconfig.base.json are both gone. Nothing replaces them: an alias
+ * here would resolve for vitest and for nobody else, and Metro would keep
+ * binding the same specifier to `mobile/src/data`.
+ */
 export default defineConfig({
-  resolve: {
-    alias: {
-      /*
-       * TEMPORARY, and it mirrors the `paths` entry in tsconfig.base.json —
-       * `repo/seed.ts` and `tools/memory.ts` compile the demo fixtures and the
-       * fixtures are still `web/src/data`. Both mappings are deleted in the next
-       * step, when the fixtures move to `service/data` and the 22 specifiers
-       * become relative.
-       */
-      '@/data': path.resolve(import.meta.dirname, '../web/src/data'),
-    },
-  },
   test: {
     environment: 'node',
     include: ['kg/**/*.test.ts', 'data/**/*.test.ts', 'test/**/*.test.ts'],

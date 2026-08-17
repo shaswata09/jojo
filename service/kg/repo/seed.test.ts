@@ -23,26 +23,26 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { seedLabels, seedLabelsByRecord } from '@/data/labels'
-import { seedProfile } from '@/data/profile'
+import { seedLabels, seedLabelsByRecord } from '../../data/labels'
+import { seedProfile } from '../../data/profile'
 import {
   matches as seedMatches,
   pipelines as seedPipelines,
   savedPostings as seedPostings,
-} from '@/data/scout'
-import { applications as seedApplications } from '@/data/seed'
+} from '../../data/scout'
+import { applications as seedApplications } from '../../data/seed'
 import {
   SEED_TODAY,
   addDays,
   daysBetween,
   partsOf,
   timeline as seedTimeline,
-} from '@/data/timeline'
+} from '../../data/timeline'
 import {
   snippets as seedSnippets,
   vaultFiles as seedFiles,
   vaultLinks as seedLinks,
-} from '@/data/vault'
+} from '../../data/vault'
 import { EDGE_SCHEMA, NODE_TYPES } from '../core/model'
 import type {
   Application,

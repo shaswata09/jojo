@@ -26,7 +26,7 @@
  * Both run in `npm run lint`.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -39,14 +39,31 @@ import { fileURLToPath } from 'node:url'
  */
 const SERVICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const KG = path.join(SERVICE, 'kg')
+/*
+ * Declared up here with KG rather than beside the data walk further down,
+ * because the kg walk now has to recognise a `../../data/…` specifier as the
+ * fixtures. `const` is not hoisted — left where it was, the first `repo/seed.ts`
+ * import would have thrown a ReferenceError out of the temporal dead zone
+ * instead of reporting a violation.
+ */
+const DATA = path.join(SERVICE, 'data')
 
 /**
  * What each layer may import.
  *
  * `internal` is the set of sibling layers under kg. `alias` is the set of
- * `@/…` prefixes outside kg. `packages: false` bans third-party imports
- * outright, which is what "core imports nothing outside core" actually means —
- * not merely "no React".
+ * `@/…` prefixes outside kg — empty for every layer now, and see below.
+ * `packages: false` bans third-party imports outright, which is what "core
+ * imports nothing outside core" actually means — not merely "no React".
+ *
+ * Every `alias` list read `['@/data']` for repo, tools and react until the
+ * fixtures moved into this package. They are all `[]` now, and the emptiness is
+ * the rule rather than a tidy-up: `@/` resolves against the CONSUMING app's
+ * root, so the grant that let `repo/seed.ts` read the fixtures on web would have
+ * bound the identical line to `mobile/src/data` on the phone. The grant itself
+ * survives — the fixtures are `service/data` and DATA_READERS still names the
+ * two modules allowed to read them — but it is spelled relatively and enforced
+ * in the relative branch of the walk.
  */
 const RULES = {
   core: {
@@ -68,17 +85,18 @@ const RULES = {
   repo: {
     label: 'L2 repo',
     internal: ['core', 'storage', 'repo', 'log'],
-    // Only `repo/seed.ts`, and only to compile the fixtures into nodes and
-    // edges. See DATA_READERS — the alias is not enough on its own.
-    alias: ['@/data'],
+    // `repo/seed.ts` compiles the fixtures into nodes and edges. It reads them
+    // as `../../data/…` now; see DATA_READERS.
+    alias: [],
     packages: true,
     react: false,
   },
   tools: {
     label: 'L3 tools',
     internal: ['core', 'tools', 'log'],
-    // Only `tools/memory.ts`, which is `memory.reset`. See DATA_READERS.
-    alias: ['@/data'],
+    // `tools/memory.ts` is `memory.reset`, and reads `../../data/…`. See
+    // DATA_READERS.
+    alias: [],
     packages: true,
     react: false,
     // A tool takes the Repository INTERFACE. Never a driver, never a
@@ -99,9 +117,10 @@ const RULES = {
      * rule nobody can reason from: whichever file you read first tells you the
      * wrong thing. There are no `@/lib` imports under `kg/react` to remove.
      *
-     * `@/data` survives only for tests. See DATA_READERS.
+     * Nothing replaced it. `projections.test.ts` reaches the fixtures, and it
+     * does so relatively like everything else in the package.
      */
-    alias: ['@/data'],
+    alias: [],
     packages: true,
     react: true,
   },
@@ -137,6 +156,29 @@ const DATA_READERS = new Set(['repo/seed.ts', 'tools/memory.ts'])
 
 /** Banned everywhere under kg: a domain write must not reach up into the UI. */
 const UPWARD = ['@/components', '@/routes', '@/kg/../']
+
+/**
+ * The package must never import itself by name. Measured, not theorised.
+ *
+ * With the fixtures relative, `tools/keyword.ts` writing `'../../data/labels'`
+ * is reported by DATA_READERS below. The same file writing
+ * `'@jojo/service/data/labels'` was reported by nothing at all — it is a bare
+ * specifier, so it fell past the relative branch and past the `@/` branch and
+ * out the far side as an ordinary package import, which `tools` is allowed to
+ * make. The transcript read "check-layers: kg and data import direction is
+ * clean", which is the worst possible output for an import that had just
+ * side-stepped the allowlist.
+ *
+ * So the rule that keeps this package 100% relative internally is now a check
+ * rather than a habit. Two independent reasons it has to hold anyway: the
+ * exports map is a TYPE-level boundary and Metro was measured falling back to
+ * file-based resolution with a warning rather than an error on an undeclared
+ * subpath, and a self-import re-enters through the workspace symlink, which
+ * gives the bundler a second copy of a module the graph expects to be a
+ * singleton.
+ */
+const SELF = '@jojo/service'
+const isSelfImport = (spec) => spec === SELF || spec.startsWith(`${SELF}/`)
 
 const REACT_PACKAGES = /^(react|react-dom|react-router|@react-|radix-ui|cmdk|lucide-react)/
 
@@ -220,10 +262,51 @@ for (const file of walk(KG)) {
       continue
     }
 
+    if (isSelfImport(spec)) {
+      fail(
+        file,
+        line,
+        `imports this package by name ('${spec}'). Write it relative. A bare '@jojo/service/…' ` +
+          `specifier is invisible to every allowlist in this file, and it re-enters through the `+
+          `workspace symlink as a second copy of a module the graph expects to be a singleton.`,
+      )
+      continue
+    }
+
     // Resolve to a layer, whether spelled relatively or through the alias.
     let target = null
     if (spec.startsWith('.')) {
       const resolved = path.resolve(path.dirname(file), spec)
+      /*
+       * `../../data/…` is the fixtures, and it is the one relative path that
+       * leaves `kg/` legitimately.
+       *
+       * It has to be recognised HERE rather than allowed by the escape check
+       * below, because the fixtures moving into this package turned the reader
+       * grant inside out. DATA_READERS was written in `@/` vocabulary and the
+       * `@/data/…` branch further down is what enforces it; once `repo/seed.ts`
+       * and `tools/memory.ts` say `../../data/seed` instead, that branch never
+       * runs and the only thing left to see the import was the escape check,
+       * which reported all 22 of them as violations and knew nothing about who
+       * was allowed to write them. Routing the sibling edge into the same slot
+       * keeps the allowlist meaning what its comment says.
+       *
+       * The `@jojo/service/data/…` spelling is the trap this avoids: it is a
+       * bare package specifier, so it lands in neither branch and reads as
+       * clean. That is why the package is 100% relative internally.
+       */
+      if (resolved.startsWith(DATA + path.sep)) {
+        if (!isTest(file) && !DATA_READERS.has(relFromKg.split(path.sep).join('/'))) {
+          fail(
+            file,
+            line,
+            `imports the demo fixtures ('${spec}'). Only ${[...DATA_READERS].join(' and ')} may — ` +
+              `see DATA_READERS in this file. If what you want is date maths, the stage labels or an ` +
+              `empty profile, they are in kg/core (dates.ts, model.ts, profile.ts) and always were the model's.`,
+          )
+        }
+        continue
+      }
       if (!resolved.startsWith(KG)) {
         fail(file, line, `reaches outside kg/ with a relative path ('${spec}').`)
         continue
@@ -283,19 +366,6 @@ for (const file of walk(KG)) {
         )
         continue
       }
-      if (
-        (spec === '@/data' || spec.startsWith('@/data/')) &&
-        !isTest(file) &&
-        !DATA_READERS.has(relFromKg.split(path.sep).join('/'))
-      ) {
-        fail(
-          file,
-          line,
-          `imports the demo fixtures ('${spec}'). Only ${[...DATA_READERS].join(' and ')} may — ` +
-            `see DATA_READERS in this file. If what you want is date maths, the stage labels or an ` +
-            `empty profile, they are in kg/core (dates.ts, model.ts, profile.ts) and always were the model's.`,
-        )
-      }
       continue
     }
 
@@ -317,56 +387,53 @@ for (const file of walk(KG)) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * src/data, which is inside the boundary whether or not it is inside the folder.
+ * `data/`, which is inside the boundary whether or not it is inside `kg/`.
  *
  * This file walked `kg` and stopped there, and the omission was structural
- * rather than an oversight: `src/data` was described as fixtures, and fixtures
- * are leaves. They are not. `repo/seed.ts` and `tools/memory.ts` import this
- * directory, so anything it imports is reachable from the model — a `react`
- * import here would put React inside `repo`, and an `@/lib` import would put the
- * web app underneath `tools`, and until now nothing looked.
+ * rather than an oversight: the fixtures were described as leaves. They are not.
+ * `repo/seed.ts` and `tools/memory.ts` import this directory, so anything it
+ * imports is reachable from the model — a `react` import here would put React
+ * inside `repo`, and an `@/lib` import would have put the web app underneath
+ * `tools`, and until now nothing looked.
  *
- * The type system does not cover the gap either. `tsconfig.core.json` pulls in the
- * six `src/data` modules the layer actually reaches and checks them under
+ * The type system used not to cover the gap either, and that half is now closed
+ * by the move rather than by this script. `tsconfig.core.json` pulled in the six
+ * fixture modules the layer actually reached and checked them under
  * `"lib": ["ES2023"], "types": []` like everything else — but only those six.
- * `statistics.ts` and `calendar.ts` are reached by no kg module, so they are
- * compiled solely by `tsconfig.app.json`, with DOM in the lib and `vite/client`
- * in the types. They are pure domain code that two probes have recommended
- * moving down; the day someone does, whatever they picked up in the meantime
- * comes with them.
+ * `statistics.ts` and `calendar.ts` were reached by no kg module, so they were
+ * compiled solely by web's `tsconfig.app.json`, with DOM in the lib and
+ * `vite/client` in the types. They were pure domain code that two probes had
+ * recommended moving down; they are `kg/core/statistics.ts` and
+ * `kg/core/calendar.ts` now, and whatever they had picked up in the meantime
+ * came with them — eight `noUncheckedIndexedAccess` errors, fixed on arrival.
  *
- * What is allowed: sibling `@/data` modules and `@/kg/core`. `core` is where the
- * types these fixtures are annotated with live, and where the date and profile
- * helpers they used to own now live, so the edge points down and stays there.
- * Nothing else — no packages, no React, no `@/lib`, and no `@/kg/repo`,
- * `@/kg/tools` or `@/kg/react`, which would be a fixture reaching back up into
- * the layers that read it. Tests get vitest and the whole of `@/kg`: `seed.test.ts`
- * builds a real repository to assert the fixtures compile into a valid graph,
- * which is exactly the test worth having.
+ * What is allowed: siblings in `data/`, and `kg/core`. `core` is where the types
+ * these fixtures are annotated with live, and where the date and profile helpers
+ * they used to own now live, so the edge points down and stays there. Nothing
+ * else — no packages, no React, no app code, and no `kg/repo`, `kg/tools` or
+ * `kg/react`, which would be a fixture reaching back up into the layers that
+ * read it. Tests get vitest and the whole of `kg`: `seed.test.ts` builds a real
+ * repository to assert the fixtures compile into a valid graph, which is exactly
+ * the test worth having.
+ *
+ * All of it is spelled relatively now. The `@/data` and `@/kg/core` aliases that
+ * used to be the permitted list are gone with the move — `@/` resolves against
+ * the consuming APP's root, so it was never a specifier this package could keep
+ * once mobile started importing it.
  */
-const DATA = path.join(SERVICE, 'data')
-const DATA_ALIASES = ['@/data', '@/kg/core']
-
-/*
- * `data/` has not moved yet — the demo fixtures are still `web/src/data` and
- * arrive here in the next step. `walk` on a missing directory throws, so the
- * whole guard would fail on the one thing it is not yet responsible for. `kg/`
- * gets no such grace and never should: if that root goes missing, this file
- * should be the thing that notices.
- */
-for (const file of existsSync(DATA) ? walk(DATA) : []) {
+for (const file of walk(DATA)) {
   const source = readFileSync(file, 'utf8')
   const test = isTest(file)
 
   if (file.endsWith('.tsx')) {
-    fail(file, 1, `is .tsx in src/data. Fixtures and domain data are not components.`)
+    fail(file, 1, `is .tsx in data/. Fixtures and domain data are not components.`)
   }
 
   for (const [, spec] of source.matchAll(TODAY_IMPORT)) {
     fail(
       file,
       lineOf(source, spec),
-      `imports TODAY from '${spec}'. D26 applies here too — src/data is read by repo and tools.`,
+      `imports TODAY from '${spec}'. D26 applies here too — data/ is read by repo and tools.`,
     )
   }
 
@@ -374,31 +441,63 @@ for (const file of existsSync(DATA) ? walk(DATA) : []) {
     const line = lineOf(source, spec)
 
     if (UPWARD.some((p) => spec.startsWith(p))) {
-      fail(file, line, `imports '${spec}'. src/data is below the UI, not beside it.`)
+      fail(file, line, `imports '${spec}'. data/ is below the UI, not beside it.`)
       continue
     }
-    if (spec.startsWith('.') || DATA_ALIASES.some((a) => spec === a || spec.startsWith(`${a}/`))) {
-      continue
-    }
-    if (spec.startsWith('@/')) {
-      if (test && spec.startsWith('@/kg/')) continue
+
+    if (isSelfImport(spec)) {
       fail(
         file,
         line,
-        `src/data imports '${spec}'. Allowed: ${DATA_ALIASES.join(', ')} (tests may also reach the rest of @/kg). ` +
-          `repo/seed.ts and tools/memory.ts import this directory, so anything it imports is reachable from the model.`,
+        `imports this package by name ('${spec}'). Write it relative. A bare '@jojo/service/…' ` +
+          `specifier is invisible to every allowlist in this file, and it re-enters through the `+
+          `workspace symlink as a second copy of a module the graph expects to be a singleton.`,
+      )
+      continue
+    }
+    if (spec.startsWith('.')) {
+      /*
+       * A relative path used to be waved through here, which was safe only
+       * because the fixtures lived in a different package from `kg` and could
+       * not reach it relatively at all — the alias list was doing the work. Now
+       * that both are in `service/`, `../kg/repo/boot` is one plausible typo
+       * away and would invert the whole direction, so the target is resolved and
+       * classified instead of trusted.
+       */
+      const resolved = path.resolve(path.dirname(file), spec)
+      if (resolved.startsWith(DATA + path.sep)) continue
+      if (resolved.startsWith(KG + path.sep)) {
+        const targetLayer = layerOf(path.relative(KG, resolved))
+        if (targetLayer === 'core' || (test && RULES[targetLayer])) continue
+        fail(
+          file,
+          line,
+          `data/ imports ${targetLayer} ('${spec}'). Only kg/core — the fixtures are the input to ` +
+            `repo/seed.ts and tools/memory.ts, so an edge back up into those layers is a cycle.`,
+        )
+        continue
+      }
+      fail(file, line, `data/ reaches outside the package with a relative path ('${spec}').`)
+      continue
+    }
+    if (spec.startsWith('@/')) {
+      fail(
+        file,
+        line,
+        `data/ imports '${spec}'. This package is 100% relative internally: '@/' resolves against ` +
+          `the consuming APP's root, so on mobile this binds to mobile/src — a different module, silently.`,
       )
       continue
     }
     if (REACT_PACKAGES.test(spec)) {
-      fail(file, line, `src/data imports '${spec}'. Only kg/react may import React.`)
+      fail(file, line, `data/ imports '${spec}'. Only kg/react may import React.`)
       continue
     }
     if (!(test && TEST_PACKAGES.test(spec))) {
       fail(
         file,
         line,
-        `src/data imports the package '${spec}'. It is reachable from repo and tools, which ship on three platforms.`,
+        `data/ imports the package '${spec}'. It is reachable from repo and tools, which ship on three platforms.`,
       )
     }
   }

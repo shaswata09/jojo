@@ -45,20 +45,20 @@
  *   see, count or remove.
  */
 
-import { seedLabels, seedLabelsByRecord } from '@/data/labels'
-import { seedProfile } from '@/data/profile'
+import { seedLabels, seedLabelsByRecord } from '../../data/labels'
+import { seedProfile } from '../../data/profile'
 import {
   matches as seedMatches,
   pipelines as seedPipelines,
   savedPostings as seedPostings,
-} from '@/data/scout'
-import { applications as seedApplications } from '@/data/seed'
-import { addDays, seedOffset, timeline as seedTimeline } from '@/data/timeline'
+} from '../../data/scout'
+import { applications as seedApplications } from '../../data/seed'
+import { addDays, seedOffset, timeline as seedTimeline } from '../../data/timeline'
 import {
   snippets as seedSnippets,
   vaultFiles as seedFiles,
   vaultLinks as seedLinks,
-} from '@/data/vault'
+} from '../../data/vault'
 import type {
   ApplicationProps,
   FileProps,

@@ -62,7 +62,7 @@
  * zero false positives across all 63 files. See `boundNames` below.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
@@ -367,16 +367,19 @@ const TARGETS = [
      * It started with `clock` alone: a `new Date()` behind the `@/data` alias is
      * a wall-clock read reachable from a tool without the tool ever naming Date,
      * which is the D26 hole `todayISO()` sat in until that rule went live. The
-     * other three were left off on the grounds that src/data is "pure fixtures
-     * and pure date maths" — which described the code but not the guarantee.
-     * Nothing stopped a `document.querySelector` landing here, and the type
-     * system does not cover it: `tsconfig.core.json` type-checks the src/data
-     * modules that kg reaches, under `"lib": ["ES2023"]` with no DOM, but only
-     * those. `statistics.ts` and `calendar.ts` are reached by no kg module, so
-     * the only project that compiles them is `tsconfig.app.json` — DOM in the
-     * lib, `vite/client` in the types. Both are pure domain code that two probes
-     * have recommended moving into `kg/core`; a DOM global picked up in the
-     * meantime would travel with them and break on React Native at mount.
+     * other three were left off on the grounds that the fixtures are "pure
+     * fixtures and pure date maths" — which described the code but not the
+     * guarantee. Nothing stopped a `document.querySelector` landing here.
+     *
+     * The type system did not cover it either, and that half is closed now by
+     * the layout rather than by this file. `tsconfig.core.json` used to reach
+     * only the six fixture modules kg happened to import; it names the whole
+     * `data` directory today. `statistics.ts` and `calendar.ts` were the two
+     * nobody compiled at kg strictness — reached by no kg module, so web's
+     * `tsconfig.app.json` was the only project that saw them, DOM in the lib and
+     * `vite/client` in the types. They are `kg/core/statistics.ts` and
+     * `kg/core/calendar.ts` now. What they had picked up in the meantime came
+     * with them: eight `noUncheckedIndexedAccess` errors, no DOM.
      *
      * No `timer`. Nothing here schedules anything today, but a fixture module is
      * not where determinism is won or lost, and `repo` — the layer that reads
@@ -577,15 +580,6 @@ const failures = []
 const seen = new Set()
 
 for (const target of TARGETS) {
-  /*
-   * `data/` does not exist yet — the demo fixtures are still in `web/src/data`
-   * and arrive here in the next step of the migration. Skipping a missing root
-   * rather than crashing keeps the guard runnable in between; when the folder
-   * lands the rules above apply to it with no further edit. The risk of a root
-   * silently going missing later is covered by `kg/`, which is never absent:
-   * lose that one and `walk` throws.
-   */
-  if (!existsSync(target.root)) continue
   for (const file of walk(target.root)) {
     const rel = path.relative(SERVICE, file)
     const layer = target.layerOf(path.relative(target.root, file))
@@ -694,4 +688,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('check-platform: kg and src/data are free of platform APIs and wall-clock reads')
+console.log('check-platform: kg and data are free of platform APIs and wall-clock reads')

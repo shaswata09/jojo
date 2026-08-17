@@ -12,10 +12,10 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { seedLabels, seedLabelsByRecord } from '@/data/labels'
-import { applications as seedApplications } from '@/data/seed'
-import { timeline as seedTimeline } from '@/data/timeline'
-import { vaultLinks as seedLinks } from '@/data/vault'
+import { seedLabels, seedLabelsByRecord } from '../../data/labels'
+import { applications as seedApplications } from '../../data/seed'
+import { timeline as seedTimeline } from '../../data/timeline'
+import { vaultLinks as seedLinks } from '../../data/vault'
 import type { Instant } from '../core/model'
 import { bootInMemory } from '../repo/boot'
 import type { Repository } from '../repo/repository'
