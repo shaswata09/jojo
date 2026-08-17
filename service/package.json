@@ -1,0 +1,27 @@
+{
+  "name": "@jojo/service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The shared layer: the knowledge graph, its tools, and the React binding. Imported by web and mobile, owned by neither.",
+  "scripts": {
+    "lint": "oxlint kg data && node scripts/check-layers.mjs && node scripts/check-platform.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -b"
+  },
+  "peerDependencies": {
+    "react": ">=19.1.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "fake-indexeddb": "^6.2.2",
+    "oxlint": "^1.75.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.0"
+  }
+}

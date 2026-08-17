@@ -23,3 +23,5 @@ yarn-error.log*
 
 # Local user data — never commit a real jojo export
 jojo-data.json
+
+# npm workspaces: one lockfile at the root, one hoisted tree.
