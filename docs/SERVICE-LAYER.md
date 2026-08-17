@@ -7,7 +7,7 @@ the resolution traps, the guards that are load-bearing rather than decorative,
 and the reconciliations that were decided in writing rather than discovered as
 bugs.
 
-It is written as the migration proceeds. Everything below §3 is Step 3.
+It is written as the migration proceeds. §3 is Step 3; §4 is Step 4.
 
 ---
 
@@ -70,7 +70,7 @@ spelling**. `tools/keyword.ts` importing `'../../data/labels'` is reported by
 reported by *nothing* — a bare specifier falls past the relative branch, past
 the `@/` branch, and out the far side as an ordinary package import, which
 `tools` is allowed to make. `check-layers.mjs` now rejects any specifier
-beginning `@jojo/service` from inside the package. See §5 for the transcript.
+beginning `@jojo/service` from inside the package. See §6 for the transcript.
 
 ---
 
@@ -147,10 +147,10 @@ October on the phone.
 
 | Name | Where it lives | Resolution |
 |---|---|---|
-| `TODAY` | mobile `data/{seed,timeline,calendar}`, re-exported to 19 app sites | **Deleted.** D26: the clock is the app shell's decision and enters the model through `ctx.now`. `mobile/src/lib/today.ts` already exists; Step 4 repoints the app-side readers there. No fixture may read a clock — `check-platform.mjs` bans it in `data/` and the ban is falsified in §5. Note the plan calls the two `today.ts` files byte-identical: they no longer are, and only because Step 2 rewrote web's two import specifiers to `@jojo/service/…` while mobile's still say `@/kg/…`. The bodies are the same. That is an argument for the "duplicate it knowingly, allowlisted" decision rather than against it, but `check-no-copies.mjs`'s content-hash rule must normalise specifiers or the allowlist entry will be the thing keeping the build green. |
-| `NEW_LABEL_TONES` | mobile `data/labels.ts`, read by `SettingsScreen.tsx` | **Keep as the rotation, and see §3.4 — the ordering change reported by two prior documents is not real.** The rotation array moves nowhere; `tools/keyword.ts` owns it as `NEW_KEYWORD_TONES`. Step 4 points `SettingsScreen` at that. |
+| `TODAY` | mobile `data/{seed,timeline,calendar}`, re-exported to 19 app sites | **Deleted.** D26: the clock is the app shell's decision and enters the model through `ctx.now`. `mobile/src/lib/today.ts` already exists; Step 4 repoints the app-side readers there. No fixture may read a clock — `check-platform.mjs` bans it in `data/` and the ban is falsified in §6. Note the plan calls the two `today.ts` files byte-identical: they no longer are, and only because Step 2 rewrote web's two import specifiers to `@jojo/service/…` while mobile's still say `@/kg/…`. The bodies are the same. That is an argument for the "duplicate it knowingly, allowlisted" decision rather than against it, but `check-no-copies.mjs`'s content-hash rule must normalise specifiers or the allowlist entry will be the thing keeping the build green. |
+| `NEW_LABEL_TONES` | mobile `data/labels.ts`, read by `SettingsScreen.tsx` | **Keep as the rotation, and see §3.4 — the ordering change reported by two prior documents is not real.** The rotation array moves nowhere; `tools/keyword.ts` owns it as `NEW_KEYWORD_TONES`. Step 4 points `SettingsScreen` at that. **Superseded by §4.5:** it points at `LABEL_TONE_VALUES` instead, because the swatch picker was never rendering the rotation's *role* — it was rendering the vocabulary, and only the rotation's completeness made that look right. |
 | `frequencyByPeriod` | mobile `data/seed.ts`, read by `StatisticsScreen.tsx` | **Deleted, deliberately, and web deleted it first** — see the comment surviving at `service/data/seed.ts:310`. It was a frozen three-range table of invented counts. `kg/core/statistics.ts` counts from the store instead. Step 4 rewrites `StatisticsScreen` against `statsFor`. Behavioural checklist: the frequency chart still renders. |
-| `stageColor` | mobile `data/seed.ts`, read by `components/ui/Chip.tsx` | **Moves into mobile's own code, unchanged — it is not `STAGE_DOT` and must not be resolved into it.** See §3.4b: they look interchangeable and are not. `stageColor(stage, palette)` is a two-line lookup into a theme object the app passes in, which makes it app code that happened to be filed under `data/`. |
+| `stageColor` | mobile `data/seed.ts`, read by `components/ui/Chip.tsx` | **Moves into mobile's own code, unchanged — it is not `STAGE_DOT` and must not be resolved into it.** See §3.4b: they look interchangeable and are not. `stageColor(stage, palette)` is a two-line lookup into a theme object the app passes in, which makes it app code that happened to be filed under `data/`. **Superseded by §4.4:** measured at Step 4 it has zero importers anywhere — `Chip.tsx` declares a local `const stageColor` and imports only the `Stage` type — so it was deleted rather than moved, and `STAGE_DOT` keeps its `dot` field unread by the phone. |
 | `RoleBucket` | mobile `data/seed.ts`, no consumer outside `src/data` | **Deleted.** Free — it existed only to type `frequencyByPeriod`. |
 | `remindersOf` | mobile `data/timeline.ts`, no consumer outside `src/data` | **Deleted.** Free. `followUpsOf` in `core/dates.ts` is the surviving selector. |
 
@@ -255,7 +255,271 @@ that, and it moved into `service/data/` with the fixtures it tests.
 
 ---
 
-## 4. The guards
+## 4. Step 4 — deleting the mobile fork
+
+79 of mobile's 81 `src/kg` files deleted, all 8 of `src/data` deleted,
+`tools/coverage.test.ts` moved into `service/test/`, `storage/rn-driver.ts` kept.
+131 app-side specifiers repointed. The precondition ran first and is below.
+
+### 4.1 The precondition, which was the plan's biggest gamble
+
+`service/kg` copied to a scratch tree, the 20 shared kg test files overwritten
+with mobile's, run:
+
+```
+Test Files  20 passed (20)
+     Tests  297 passed (297)
+```
+
+**297/297, the number the plan predicted.** No mobile test encodes behaviour the
+shared tree lacks, so the reconciliation is a deletion and not a merge — which is
+the single sentence the whole big-bang shape rests on. Had it come back red the
+fork would have been a real disagreement and Steps 4–8 would have been wrong.
+
+### 4.2 Four of the five "mobile is ahead" deltas are dead code
+
+The plan lists five deltas to re-apply, two of them with the consequence *"`rn-driver`
+will not compile"*. Measured against `mobile/src` before the deletion:
+
+| Delta | Consumers outside its own file | Applied? |
+|---|---|---|
+| `tools/vault.ts` — the `uri` prop | `FileEditor.tsx`, `FileViewer.tsx`, `lib/documents.ts` | **Yes** — §4.3 |
+| `react/use-scout.ts` — `addMatch` | **0 in `mobile/src`, 0 in `web/src`** | No |
+| `storage/schema.ts` — `STORE_SPEC_BY_NAME` | **0**, and `rn-driver.ts` does not import it | No |
+| `storage/memory-driver.ts` — `emptyMemoryDriver()` | **0**; `rn-driver.ts` imports `createMemoryDriver` and `emptyRows` | No |
+| `tools/support.ts` — `titleOf` | **0** | No |
+
+`rn-driver.ts` imports exactly `driverFail`, `emptyRows`, `classify`,
+`createMemoryDriver`, `MemoryDriver`, `kgWarn` and its types. Neither name the
+plan said it needed appears in it. The claim was never measured against the file.
+
+`addMatch` is the one worth stating carefully, because the plan's reason for
+keeping it — *"web has a registered tool with no hook; a naive take-web deletes a
+working function"* — is half right and leads the wrong way. `scout.match.save` is
+registered in both registries and IS exercised, by `coverage.test.ts`, which this
+step moves into the package. What has no caller is the HOOK wrapper, on both
+sides. Re-adding it would have restored dead code over a deletion `use-scout.ts`
+and `tools/scout.ts` already argue for in writing, on the strength of a delta
+that says only "the phone still had it".
+
+**`tsc --noEmit` over `mobile` is the falsification** and it passes: had any of
+the four been load-bearing, deleting them with the fork would have failed there.
+
+### 4.3 `uri`, and the bug that nearly made it look unused
+
+`uri` is real and is now declared, validated and salvageable — `FileProps.uri` in
+`core/model.ts`, `s.optional(s.string())` in `core/validate.ts`, a fifth entry in
+`SALVAGEABLE_FILE_PROPS`, and `uri` on `vault.file.add`'s draft schema.
+
+The instructive part is what the trail looked like on the phone: `FileEditor.tsx`
+put the picked location into its draft, `vault.file.add` declared the field and
+wrote it — **and `useVault().addFile`, the only caller, listed the draft's props
+by hand and left `uri` out.** Every record written through the picker landed with
+no `uri`, so `documentExists(file.uri)` in `FileViewer.tsx` answered false for all
+of them and the Open button never appeared. A field written by nobody reads
+exactly like a field nobody needs, which is how the one genuine delta in the list
+came closest to being dropped. The forward is in `use-vault.ts` now.
+
+Two new cases in `core/salvage.test.ts` pin it, and both were falsified by
+deleting the declaration and watching them fail:
+
+```
+✗ reject a uri that is not a string     — expected [] to have length 0 but got 1
+✗ drops a bad uri and keeps the file    — expected props not to have property "uri"
+```
+
+`uri: 99` reaching `openDocument(file.uri)` was a live bug on the phone,
+independent of this migration. It is closed.
+
+### 4.4 `STAGE_DOT`: the fixture keeps its Tailwind, and mobile ignores it
+
+§3.4b left this as Step 4's decision, between inverting the map (the app supplies
+its own, keyed by `Stage`) and leaving `dot` alone.
+
+**Left alone, and `stageColor` was deleted rather than moved.** The measurement
+that decided it: `stageColor` has **zero importers anywhere in `mobile/src`**.
+`components/ui/Chip.tsx`, named in both prior documents as its consumer, declares
+a *local* `const stageColor = stage ? c.stage[stage] : undefined` and imports only
+the `Stage` type. So there is no mobile reader of `STAGES[].dot` to protect and no
+mobile map to invert into — inverting would have been a change to the fixtures,
+the web app and `use-applications.ts` in service of a caller that does not exist.
+`dot` stays a web-only field on a shared fixture, unread by the phone. Revisit it
+the day mobile wants stage colours from data rather than from its theme.
+
+### 4.5 The `SettingsScreen` tone list was the vocabulary, not the rotation
+
+§3.4 established that the two tone arrays are byte-identical in content and that
+the "new rotation order" divergence was one array compared against the other.
+That is still true, and Step 4 found the reason the two got conflated.
+
+`SettingsScreen.tsx` imported `NEW_LABEL_TONES` — the **rotation**, which decides
+what colour the next auto-created keyword gets — and rendered it as the swatch
+picker in the edit-label sheet. A picker is a **vocabulary**. It was right only by
+accident: the rotation happens to contain all five tones, and would have stopped
+being right the day anyone shortened it to three.
+
+It reads `LABEL_TONE_VALUES` from `core/model.ts` now, which is the array
+`s.enum` validates a saved tone against — so the picker offers exactly what will
+save. **The one visible change in this step:** the swatches reorder from
+teal-green-amber-red-grey to teal-amber-red-green-grey.
+
+### 4.6 `frequencyByPeriod` and the module its deletion pulled down
+
+`StatisticsScreen.tsx` read the frozen `frequencyByPeriod` table, which web
+deleted deliberately at Step 3 (`data/seed.ts` still carries the note). §3.3 says
+to rewrite the screen "against `statsFor`" — but `statsFor` returns role TOTALS
+and the panel plots applications over TIME, so there was nothing there to rewrite
+against.
+
+Web had already solved it: `ApplicationFrequency.tsx` counts real records through
+`components/charts/frequency-buckets.ts`, whose own header read *"WHERE THIS
+SHOULD END UP: beside the date library, wherever that lands — today
+`src/data/timeline.ts`, which the probes want split into `kg/core`."* That landing
+happened at Step 3. So the module moved to **`service/kg/core/frequency.ts`** and
+both apps count through it. `Period` moved with it from `data/seed.ts` down to
+`core/model.ts` as `PERIOD_VALUES`, for the same reason every other union did:
+`core` buckets by it and may not read a fixture. `PERIODS`, the labelled list a
+segmented control renders, stayed with the fixtures.
+
+Two things fell out of the move, and both are the point of making it rather than
+copying the file:
+
+- One `noUncheckedIndexedAccess` error, the ninth of the class §3.6 describes,
+  from `.split(' ')[0]`. Fixed by destructuring with a default, not `!`.
+- **12 tests it could not previously have.** The header also said its year
+  rollover — month 13 of 2026 leaning on `isoOf`, and `y * 4 + ceil(m / 3) - 1`
+  for quarters — had no test and could not have one while it was a closure inside
+  a 200-line SVG component this codebase does not mount (D20). `frequency.test.ts`
+  is that test.
+
+### 4.7 The two arity drifts, resolved as §3.2 predicted
+
+**`offerDaysLeft` failed loudly** — `TS2554 Expected 2 arguments, but got 1` at
+`lib/priority.ts` and `ApplicationDetailScreen.tsx`, and at nothing else. `TODAY`
+threaded from `lib/today.ts` at both.
+
+**`buildMonth` failed at nothing**, which is the whole reason it was scheduled.
+All three call sites — `CalendarScreen.tsx` ×2 and `DateField.tsx` — compiled
+clean against the three-parameter signature and would have silently lost the
+today marker. `TODAY_PARTS` is passed at all three, and each carries a comment
+saying the compiler will not notice if it goes.
+
+`mobile/src/lib/today.ts` already exported `TODAY_PARTS` under that exact name, so
+the `TODAY as TODAY_PARTS` that `@/data/calendar` re-exported had a same-named
+successor waiting. The plan's "19 app-side import sites" of `TODAY` had already
+been repointed in a previous wave; the only remaining fixture-clock readers were
+`data/seed.ts` and `data/calendar.ts` themselves, both deleted.
+
+### 4.8 One driver contract, three drivers
+
+Folded into this commit rather than left for Step 5, because the plan says so in
+those words and because it is the only deletion among the 79 that removed
+coverage instead of duplicating it: `mobile/src/kg/storage/driver-conformance.test.ts`
+was `rn-driver.ts`'s only test, and `rn-driver.ts` is the one genuinely
+platform-specific file in the repo.
+
+The contract is `service/kg/storage/driver-conformance.ts`, exporting
+`describeDriverConformance(subject)`. **Not** a `*.test.ts`, so vitest does not
+collect a file that declares no subject. Three call sites, one per platform:
+`service` over `memory`, `web/src/kg/storage/idb-conformance.test.ts` over `idb`,
+`mobile/src/kg/storage/rn-conformance.test.ts` over `rn`.
+
+It is a function and not a `SUBJECTS` array because an array only reaches drivers
+importable from where the array is, and these three are not: IDB needs
+`fake-indexeddb`, RN needs an AsyncStorage mock, and neither may be a dependency
+of this package. That is exactly why there were two arrays, and why the phone's
+one ran a one-generation-old contract.
+
+`rn-driver` passes the whole contract on its first run, including web's *"stores
+a row by value, keeping an absent key absent and a null null"* — a case whose
+comment names the Expo app as the reason it was written, and which the phone's
+copy predated. Free win, no latent bug, exactly as the probe predicted.
+
+One case is genuinely not portable, and `DriverSubject.crossTab` says so rather
+than a skip: `rn-driver` reports `crossTab: false` because there is no second
+instance of a phone app reading one AsyncStorage, so its `onRemoteCommit` takes a
+listener and never calls it. Asserting delivery would fail it for being correct.
+It runs the other half of the same contract instead — that the unsubscribe is
+real and idempotent — which is the half `boot-live.ts` depends on either way, and
+which nothing else in the suite calls.
+
+### 4.9 What the counts did, and the invariant that actually held
+
+| | before | after |
+|---|---|---|
+| `service` | 417 | **453** |
+| `web` | 190 | **181** |
+| `mobile` | 333 | **17** |
+| total | 940 | **651** |
+
+**The brief's "at least 940" invariant is arithmetically impossible and must not
+be adopted.** Mobile's 333 was 21 copied kg test files running assertions the
+shared suite already makes about the same source; the plan's own §6 says the
+suite is *supposed* to shrink by ~313 here, and 940 − 313 = 627. A count that
+must not fall cannot survive a step whose entire purpose is deleting duplicated
+coverage — and worse, it would be satisfied by re-adding the copies, which is the
+thing being deleted. (Web's 190 → 181 is the memory subject of the conformance
+suite moving to `service`, where it now runs once instead of twice.)
+
+The invariant that does hold is the plan's real one: **title sets, compared, with
+every removal accounted for.** Of 325 leaf test titles under `mobile/src` at
+HEAD, 320 exist verbatim somewhere in the tree afterwards. The five that do not
+are renames, each with a strictly stronger successor:
+
+| removed | successor | why |
+|---|---|---|
+| `delivers remote commits and blocking to their subscribers` | `…, and stops on unsubscribe` | superset |
+| `drops a removed row and forgets its cache entry` | `drops a removed row` + `serves the snapshot it was handed, even one older than the last` | split; the cache half became the epoch-cache guard |
+| `publishes a new array when the order changes and nothing else does` | `publishes a new array when a row is inserted ahead of the others` | same property, named trigger |
+| `rejects an edge the schema does not allow` | `rejects a badly-typed id before it becomes an edge` | same body, plus a `field` assertion |
+| `returns an unsubscribe from each listener registration` | the contract's two unsubscribe cases | the old one registered both listeners, called both unsubscribes twice and asserted nothing at all |
+
+### 4.10 Production Metro, after the copy is gone
+
+```
+› android bundles (1):
+  _expo/static/js/android/index-…hbc (5.03 MB)
+```
+
+`expo export --platform android --clear`, cold. The bundle was then read rather
+than trusted — Hermes keeps string literals, so:
+
+```
+FOUND   "The record was created and could not be read back."   ← service/kg/react/read-back.ts
+FOUND   "Came back without its document link."                 ← service/kg/core/validate.ts
+absent  "frequencyByPeriod"                                    ← the deleted fixture table
+absent  "NEW_LABEL_TONES"                                      ← the deleted rotation
+```
+
+Two strings that exist only in `service/` are compiled into the phone bundle and
+two that existed only in the fork are not, so the app is running the shared
+package rather than a copy Metro found first.
+
+### 4.11 The behavioural checklist, and why it is the gate here
+
+After this step `mobile` has 17 tests: 8 over `lib/fit.ts` and 9 running the
+shared driver contract over `rn-driver`. **Nothing automated covers a mobile
+screen.** `buildMonth` is the proof that this matters — it compiled, it passed,
+and it would have shipped a calendar with no today marker.
+
+By hand, on a device, before this is called done:
+
+- calendar grid shows the today marker
+- the date picker shows the today marker
+- Statistics renders its frequency chart, and it is now EMPTY on an empty store
+  (it could not previously be, which was the bug)
+- Settings shows five label-tone swatches, reordered per §4.5
+- Vault: attach a file, reopen it, confirm it opens — this is `uri` end to end,
+  and the forward in `use-vault.ts` means it should work for the first time
+- Job Scout: save a match, confirm it survives a restart
+- Today screen priority ordering
+
+Not on the list any more: "note the new rotation order". §3.4 established there is
+nothing to observe there, and §4.5 is where the real ordering change is recorded.
+
+---
+
+## 5. The guards
 
 One copy, in `service/scripts/`, run from `service`'s own `lint`, which both apps
 invoke. They used to live in `web/scripts/` and resolve to `web/`, which is why
@@ -286,7 +550,7 @@ keep once mobile started importing it.
 the six fixture modules `kg` happened to import, which is how `statistics.ts` and
 `calendar.ts` went uncompiled at kg strictness for as long as they did.
 
-## 5. Negative-test transcript
+## 6. Negative-test transcript
 
 A guard that passes proves nothing. Each of these was introduced deliberately,
 observed to fail, and reverted.
@@ -331,7 +595,7 @@ Item 9 is worth reading beside `calendar.ts` itself, which calls
 the guard draws is between constructing a date from given parts and *reading the
 clock*, which is the distinction D26 is about.
 
-## 6. What this package's `tsc` covers, and what only looks like it does
+## 7. What this package's `tsc` covers, and what only looks like it does
 
 Service source is type-checked by three programs with three flag sets, and only
 one of them is authoritative. `web/tsconfig.app.json` has `"include": ["src"]`

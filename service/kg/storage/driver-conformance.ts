@@ -1,9 +1,9 @@
 /**
- * The `Driver` contract, run against every shipped driver.
+ * The `Driver` contract as a HARNESS, not as a suite.
  *
  * `driver.ts` opens with "Never throws. Every method returns a Result", and
- * until this file nothing anywhere asserted it. Both drivers had their own
- * tests, each written against its own implementation, so the two could — and
+ * until this contract existed nothing anywhere asserted it. Each driver had its
+ * own tests, each written against its own implementation, so two could — and
  * did — disagree about the same input: a row the structured clone algorithm
  * refuses came back from `idb-driver` as `storage/corrupt` and came OUT of
  * `memory-driver` as a thrown DataCloneError. That divergence is invisible in a
@@ -11,47 +11,44 @@
  * write queue wedging on a rejection it never expected (`commitGuarded` in
  * `kg/repo/queue.ts` is the other half of the answer).
  *
- * So the rule for this file: it may not name a driver. Everything here is
- * written against the `Driver` interface and run over the list below, and the
- * day an AsyncStorage, SQLite or OPFS driver is added, adding it to that list
- * is the whole of its portability test. A test that only one driver can pass
- * belongs in that driver's own file.
+ * So the rule for this file: it may not name a driver. Everything below is
+ * written against the `Driver` interface, and adding a driver is a call to
+ * `describeDriverConformance` from wherever that driver lives. A test that only
+ * one driver can pass belongs in that driver's own file.
  *
- * `fake-indexeddb/auto` gives the IDB subject a real implementation —
- * transactions, key ordering and structured cloning included — so "both drivers
- * agree" is a claim about behaviour rather than about two mocks.
+ * WHY IT IS A FUNCTION AND NOT A `SUBJECTS` ARRAY.
+ *
+ * It was an array, twice — once in the web app over `memory` and `idb`, once in
+ * the phone's copy over `memory` and `rn`. An array only reaches drivers that
+ * can be imported from where the array is, and the three drivers cannot be: the
+ * IndexedDB one needs `fake-indexeddb`, the React Native one needs an
+ * AsyncStorage mock, and neither may be a dependency of this package. So the
+ * list was split by platform, and the split is what let the phone's copy run a
+ * one-generation-old contract against the one file in the repo that nothing else
+ * covers. Inverting it — the contract here, the subject at each call site — is
+ * what makes "every shipped driver" true by construction rather than by three
+ * lists agreeing.
+ *
+ * NOT named `*.test.ts`, deliberately. Vitest collects by that suffix and this
+ * file declares no subject of its own, so a collected copy would be an empty
+ * file in every run. `driver-conformance.test.ts` beside it supplies the one
+ * subject that needs no platform.
  */
 
-import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
-import { emptyRows } from '@jojo/service/storage/driver'
-import type {
-  Driver,
-  DriverResult,
-  DurableOp,
-  Rows,
-  StoreEvent,
-} from '@jojo/service/storage/driver'
-import { createIdbDriver } from './idb-driver'
-import { createMemoryDriver } from '@jojo/service/storage/memory-driver'
-import type { StoredRow } from '@jojo/service/storage/schema'
-
-/**
- * A fresh database per driver, for the same reason `idb-driver.test.ts` does it:
- * a counter rather than a clock, because `check-platform.mjs` bans the wall
- * clock in this layer and a test whose fixture depends on when it ran is a test
- * that fails on someone else's machine.
- */
-let sequence = 0
+import { emptyRows } from './driver'
+import type { Driver, DriverResult, DurableOp, Rows, StoreEvent } from './driver'
+import type { StoredRow } from './schema'
 
 /**
  * A driver, plus the shove that stands in for another tab.
  *
  * A driver cannot make a remote commit happen to itself: a remote commit is by
  * definition somebody else's write, and how it arrives is the one part of the
- * `Driver` contract that is not on the interface. Declaring it here rather than
- * in a test body is what keeps the bodies written against `Driver` alone, which
- * is this file's rule — the subject table is where a driver may be named.
+ * `Driver` contract that is not on the interface. Declaring it in the subject
+ * rather than in a test body is what keeps the bodies written against `Driver`
+ * alone, which is this file's rule — the call site is where a driver may be
+ * named.
  *
  * `onBlocking` gets no equivalent, and deliberately. Provoking it means a second
  * connection upgrading the schema, which is a version number and a migration
@@ -59,47 +56,25 @@ let sequence = 0
  * driver's own file instead, which is what the rule above says to do with a test
  * only one driver can pass.
  */
-type Subject = {
+export type DriverSubject = {
   readonly label: string
   readonly make: () => { driver: Driver; remoteCommit: (event: StoreEvent) => void }
+  /**
+   * Whether anything else can write this driver's store — `OpenInfo.crossTab`,
+   * declared ahead of the run because the last case below branches on it and a
+   * `describe` cannot await an `open()` to find out.
+   *
+   * `false` for `rn-driver`, and that is a fact about the platform rather than a
+   * gap: there is no second instance of a phone app reading one AsyncStorage, so
+   * its `onRemoteCommit` takes the listener and never calls it. Handing such a
+   * driver a `remoteCommit` that does nothing and then asserting delivery would
+   * fail it for being correct, and handing it one that fakes delivery would
+   * assert the mock. It gets the OTHER half of the same contract instead — that
+   * the unsubscribe is real and idempotent — which is the half `boot-live.ts`
+   * depends on either way.
+   */
+  readonly crossTab: boolean
 }
-
-const SUBJECTS: readonly Subject[] = [
-  {
-    label: 'memory-driver',
-    make: () => {
-      const driver = createMemoryDriver()
-      return { driver, remoteCommit: (event) => driver.emitRemoteCommit(event) }
-    },
-  },
-  {
-    label: 'idb-driver',
-    // A loopback channel rather than a BroadcastChannel: Node delivers between
-    // two drivers in one process, which is not a thing two browser tabs would do
-    // to each other here. `post` fans out to this driver's own subscribers,
-    // which a real BroadcastChannel never does — harmless, because nothing below
-    // both posts and listens in the same test.
-    make: () => {
-      const listeners = new Set<(event: StoreEvent) => void>()
-      const deliver = (event: StoreEvent) => {
-        for (const fn of [...listeners]) fn(event)
-      }
-      const driver = createIdbDriver({
-        name: `conformance-${String((sequence += 1))}`,
-        channel: {
-          crossTab: true,
-          post: deliver,
-          subscribe: (fn) => {
-            listeners.add(fn)
-            return () => listeners.delete(fn)
-          },
-          close: () => listeners.clear(),
-        },
-      })
-      return { driver, remoteCommit: deliver }
-    },
-  },
-]
 
 const node = (id: string): StoredRow => ({ id, type: 'application', props: {} })
 
@@ -151,7 +126,15 @@ async function shapeOf(call: () => Promise<DriverResult<unknown>>): Promise<stri
 
 const idsOf = (rows: readonly StoredRow[]): string[] => rows.map((row) => String(row['id']))
 
-for (const subject of SUBJECTS) {
+/**
+ * Run the whole contract over one driver.
+ *
+ * Call it at the top level of a `*.test.ts` that can build the subject. The
+ * suite name carries the label, so three call sites in three packages produce
+ * three distinguishable `Driver conformance: <label>` blocks.
+ */
+export function describeDriverConformance(subject: DriverSubject): void {
+
   describe(`Driver conformance: ${subject.label}`, () => {
     /**
      * Every method answers with a `DriverResult`, on the input designed to make
@@ -393,21 +376,48 @@ for (const subject of SUBJECTS) {
      * Called twice on purpose: `close()` runs the same teardown afterwards, so
      * an unsubscribe that only survives one call throws on the way out of a tab.
      */
-    it('stops delivering remote commits once its unsubscribe is called', async () => {
-      const { driver, remoteCommit } = subject.make()
-      await driver.open()
+    if (subject.crossTab) {
+      it('stops delivering remote commits once its unsubscribe is called', async () => {
+        const { driver, remoteCommit } = subject.make()
+        await driver.open()
 
-      const seen: string[] = []
-      const off = driver.onRemoteCommit((event) => seen.push(event.entryId))
+        const seen: string[] = []
+        const off = driver.onRemoteCommit((event) => seen.push(event.entryId))
 
-      remoteCommit({ kind: 'commit', at: '2026-10-12T00:00:00.000Z', entryId: 'before' })
-      off()
-      off()
-      remoteCommit({ kind: 'commit', at: '2026-10-12T00:00:01.000Z', entryId: 'after' })
+        remoteCommit({ kind: 'commit', at: '2026-10-12T00:00:00.000Z', entryId: 'before' })
+        off()
+        off()
+        remoteCommit({ kind: 'commit', at: '2026-10-12T00:00:01.000Z', entryId: 'after' })
 
-      expect(seen).toEqual(['before'])
+        expect(seen).toEqual(['before'])
 
-      driver.close()
-    })
+        driver.close()
+      })
+    } else {
+      /**
+       * A driver with no second writer still owes the subscription contract.
+       *
+       * `boot-live.ts` subscribes unconditionally and unsubscribes around a
+       * rehydrate, so the two things it needs from a single-instance driver are
+       * that `onRemoteCommit` hands back a function and that calling it twice —
+       * once by the resubscribe, once by `close()` — does not throw on the way
+       * out. Neither is free: the shape it returns is a literal in the driver
+       * body and nothing else in the suite calls it.
+       */
+      it('returns a real, idempotent unsubscribe despite having nothing to deliver', async () => {
+        const { driver } = subject.make()
+        await driver.open()
+
+        const seen: string[] = []
+        const off = driver.onRemoteCommit((event) => seen.push(event.entryId))
+
+        expect(typeof off).toBe('function')
+        off()
+        off()
+        expect(seen).toEqual([])
+
+        driver.close()
+      })
+    }
   })
 }

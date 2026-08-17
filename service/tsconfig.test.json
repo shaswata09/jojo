@@ -1,0 +1,37 @@
+{
+  /*
+   * `service/test/` — the one directory in this package that is allowed a host.
+   *
+   * There is exactly one file in it, and it is here because of what it does
+   * rather than because it is a test: `coverage.test.ts` reads the suite off
+   * disk to prove no registered tool goes unexercised, and `node:fs` is banned
+   * everywhere `check-platform.mjs` looks. Rather than weaken that ban or fake
+   * the read, the file sits outside both guards' roots — `kg/` and `data/` — and
+   * gets its own project, which is the only one in the package with
+   * `"types": ["node"]`.
+   *
+   * The `.test.ts` files under `kg/` and `data/` are NOT here. They are compiled
+   * by the projects that own the code they test, under that code's lib and
+   * types, which is the property that makes them evidence about the shipped
+   * layer rather than about a test environment. Only a test that needs a
+   * platform belongs in this project, and needing one should stay rare enough to
+   * argue about.
+   *
+   * A consequence worth knowing: this project reaches `kg/core`, `kg/repo` and
+   * `kg/tools` through the imports below, so those sources are also compiled
+   * here, with `node` in the types. That is a WEAKER program over them than
+   * tsconfig.core.json's, and it is harmless only because the stricter one still
+   * runs — `tsc -b` builds every project in the solution and a `process` in
+   * `kg/tools` fails there. Do not read a green build of this project alone as
+   * saying anything about those layers.
+   */
+  "extends": "./tsconfig.base.json",
+  "references": [{ "path": "./tsconfig.storage.json" }],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "disableSourceOfProjectReferenceRedirect": true
+  },
+  "include": ["test", "types/portable-globals.d.ts"]
+}

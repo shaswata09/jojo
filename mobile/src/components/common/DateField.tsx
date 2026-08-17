@@ -1,19 +1,13 @@
 import { useState } from 'react'
-import { TODAY } from '@/lib/today'
+import { TODAY, TODAY_PARTS } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { Button, IconButton } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/Field'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
-import {
-  MONTH_LABELS,
-  TODAY as TODAY_PARTS,
-  WEEKDAYS,
-  buildMonth,
-  stepMonth,
-} from '@/data/calendar'
-import { addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
+import { MONTH_LABELS, WEEKDAYS, buildMonth, stepMonth } from '@jojo/service/core/calendar'
+import { addDays, isoOf, partsOf, shortDate } from '@jojo/service/data/timeline'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
@@ -154,7 +148,10 @@ export function MonthPickerSheet({
     if (open) setView({ year: start.y, month: start.m })
   }
 
-  const month = buildMonth(view.year, view.month)
+  // Third argument, and the compiler will not miss it if it goes — see the note
+  // at the same call in `screens/CalendarScreen.tsx`. Without it the date
+  // picker draws a month with no today marker.
+  const month = buildMonth(view.year, view.month, TODAY_PARTS)
   const cells: (number | null)[] = [
     ...Array.from({ length: month.startsOn }, () => null),
     ...Array.from({ length: month.days }, (_, i) => i + 1),

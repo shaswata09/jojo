@@ -12,13 +12,17 @@
  * `y * 4 + ceil(m / 3) - 1` — has no test, and could not have had one while it
  * was a closure in a component this codebase does not mount in tests (D20).
  *
- * WHERE THIS SHOULD END UP: beside the date library, wherever that lands —
- * today `src/data/timeline.ts`, which the probes want split into `kg/core`.
+ * IT ENDED UP HERE, which is where the paragraph this replaces asked for: beside
+ * the date library, which is `core/dates.ts` now. The move happened because the
+ * phone needed it — deleting the mobile fork left `StatisticsScreen` reading a
+ * frozen `frequencyByPeriod` table that no longer exists, and the alternative to
+ * moving this down was a second implementation of the same calendar arithmetic
+ * in a second app, which is the exact shape the extraction is deleting.
  * Everything here is pure and clock-free: `TODAY` is the caller's business.
  */
 
-import { addDays, isoOf, partsOf, shortDate } from '@/data/timeline'
-import type { Application, Period } from '@/data/seed'
+import { addDays, isoOf, partsOf, shortDate } from './dates'
+import type { Application, Period } from './model'
 
 /**
  * How far back each period is allowed to run before the axis stops being
@@ -52,9 +56,18 @@ export function bucketKey(iso: string, period: Period): string {
 
 export function bucketLabel(key: string, period: Period): string {
   if (period === 'week') return shortDate(key)
-  // 'Oct 1' → 'Oct'. The month names live in timeline.ts and are not exported;
-  // copying the array here is exactly how the two would drift apart.
-  if (period === 'month') return shortDate(`${key}-01`).split(' ')[0]
+  // 'Oct 1' → 'Oct'. The month names live in `core/dates.ts` and are not
+  // exported; copying the array here is exactly how the two would drift apart.
+  //
+  // Destructured with a default rather than indexed, because this directory
+  // compiles under `noUncheckedIndexedAccess` and the web app it moved from did
+  // not. `split` always yields at least one element, so the default is
+  // unreachable — but writing `[0]!` to say so is the spelling that stops being
+  // true the day somebody changes what is being split.
+  if (period === 'month') {
+    const [monthName = key] = shortDate(`${key}-01`).split(' ')
+    return monthName
+  }
   return key.slice(5)
 }
 

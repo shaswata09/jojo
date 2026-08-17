@@ -14,6 +14,7 @@
   "references": [
     { "path": "./tsconfig.storage.json" },
     { "path": "./tsconfig.core.json" },
-    { "path": "./tsconfig.react.json" }
+    { "path": "./tsconfig.react.json" },
+    { "path": "./tsconfig.test.json" }
   ]
 }

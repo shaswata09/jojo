@@ -195,6 +195,8 @@ const fileDraft = s.object({
   bucket: s.enum(FILE_BUCKET_VALUES, { label: 'Bucket' }),
   /** '184 KB' — a label the user reads. No bytes are held, ever (D27). */
   size: s.string({ label: 'Size' }),
+  /** Where the copy landed on this device. Native only — see `FileProps.uri`. */
+  uri: s.optional(s.string({ label: 'Location' })),
   note: s.optional(s.string({ label: 'Note' })),
   savedOn: s.optional(s.isoDate()),
   applicationId: s.optional(s.nullable(s.id('application'))),
@@ -240,6 +242,7 @@ export const vaultFileAdd = defineTool({
           bucket: draft.bucket,
           size: draft.size,
           savedOn: draft.savedOn ?? dayOf(ctx.now),
+          ...(draft.uri === undefined ? {} : { uri: draft.uri }),
           ...opt('note', cleared(draft.note)),
         },
         createdAt: ctx.now,

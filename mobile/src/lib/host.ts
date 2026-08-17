@@ -1,5 +1,5 @@
 import { AppState } from 'react-native'
-import type { Host } from '@/kg/react/host'
+import type { Host } from '@jojo/service/react/host'
 
 /** One shared no-op unsubscribe, matching `headlessHost`'s. */
 const unsubscribe = () => {}

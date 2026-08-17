@@ -21,7 +21,7 @@
 
 import { shortDate } from '../kg/core/dates'
 import { STAGE_LABEL, STAGE_VALUES } from '../kg/core/model'
-import type { Application, Offer, Stage } from '../kg/core/model'
+import type { Application, Offer, Period, Stage } from '../kg/core/model'
 
 export { ROLES, SOURCES, STAGE_LABEL } from '../kg/core/model'
 /* `offerDaysLeft` followed `kg/react/use-priority.ts`, its only reader outside
@@ -313,8 +313,14 @@ export const STAGES: { id: Stage; label: string; dot: string }[] = STAGE_VALUES.
  * now and has said so in a past-tense comment for two waves, while the table it
  * replaced stayed exported with no consumer at all. Deleted.
  */
-export type Period = 'week' | 'month' | 'quarter'
+export type { Period } from '../kg/core/model'
 
+/**
+ * The labelled list a segmented control renders. The VALUES moved down to
+ * `core/model.ts` as `PERIOD_VALUES` when `core/frequency.ts` arrived — core
+ * buckets by them and may not read a fixture — so what is left here is the copy,
+ * which is app-facing and belongs beside the rest of the demo content.
+ */
 export const PERIODS: { value: Period; label: string }[] = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },

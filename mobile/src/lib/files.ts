@@ -1,5 +1,5 @@
 import type { FeatherName } from '@/lib/timeline-visuals'
-import type { FileKind } from '@/data/vault'
+import type { FileKind } from '@jojo/service/data/vault'
 
 /**
  * How a picked file becomes a Vault record.

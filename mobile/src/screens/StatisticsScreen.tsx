@@ -19,9 +19,10 @@ import { Columns, Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { PERIODS, ROLES, frequencyByPeriod } from '@/data/seed'
-import type { Period, RoleTag } from '@/data/seed'
-import { searchHealthFor, statsFor } from '@/data/statistics'
+import { PERIODS, ROLES } from '@jojo/service/data/seed'
+import type { Period, RoleTag } from '@jojo/service/data/seed'
+import { bucketKey, bucketKeys, bucketLabel, sentOn } from '@jojo/service/core/frequency'
+import { searchHealthFor, statsFor } from '@jojo/service/core/statistics'
 import { useRoles } from '@/lib/roles-context'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { useSheets } from '@/lib/sheets-context'
@@ -76,6 +77,40 @@ export function StatisticsScreen() {
   const ranked = [...health].sort((a, b) => (a.score ?? 0) - a.target - ((b.score ?? 0) - b.target))
   const radarToggle = useSeriesToggle(['you', 'target'])
 
+  /**
+   * The bars, counted from the records.
+   *
+   * This read `frequencyByPeriod[period]` — a frozen table of hand-authored
+   * counts in the fixtures — so the panel was literally incapable of being
+   * empty and kept narrating a search after the store had been cleared. Web
+   * fixed the same defect in `ApplicationFrequency.tsx` two waves ago and the
+   * bucketing it wrote is `@jojo/service/core/frequency` now, so this is the
+   * same arithmetic rather than a second answer to it.
+   *
+   * The axis is built from the CALENDAR, not from the records, so a week nobody
+   * applied in draws a gap instead of closing up into a straight line.
+   */
+  const buckets = useMemo(() => {
+    const dated = all.filter((a) => sentOn(a) !== undefined)
+    const dates = dated.map((a) => sentOn(a) as string)
+    // Always includes today, so an empty store still draws a frame and a record
+    // dated ahead of today still has a bucket to land in.
+    const from = dates.reduce((min, d) => (d < min ? d : min), TODAY)
+    const to = dates.reduce((max, d) => (d > max ? d : max), TODAY)
+
+    const blank = () => Object.fromEntries(ROLES.map((r) => [r, 0])) as Record<RoleTag, number>
+    const keys = bucketKeys(from, to, period)
+    const counts = new Map(keys.map((k) => [k, blank()]))
+    for (const a of dated) {
+      const row = counts.get(bucketKey(sentOn(a) as string, period))
+      if (row) row[a.roleTag] += 1
+    }
+    return keys.map((key) => ({
+      label: bucketLabel(key, period),
+      counts: counts.get(key) ?? blank(),
+    }))
+  }, [all, period])
+
   // Nothing on this screen survives a zero: a rate has no denominator, a funnel
   // has no first step, and every panel would be an invented search sitting
   // beside a store the user has just emptied.
@@ -99,7 +134,6 @@ export function StatisticsScreen() {
     )
   }
 
-  const buckets = frequencyByPeriod[period]
   const roleColor = (role: RoleTag) => c.series[ROLES.indexOf(role) % c.series.length]
 
   return (

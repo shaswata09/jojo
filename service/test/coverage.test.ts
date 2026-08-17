@@ -21,15 +21,29 @@
  * So the point of this file is not the assertions, which are ordinary. It is the
  * last test in it, which fails if a tool is ever added to the registry without
  * being exercised anywhere. That is the part that stops the gap coming back.
+ *
+ * WHY IT IS IN `service/test/` AND NOT BESIDE THE TOOLS.
+ *
+ * It was written in the mobile app, at `src/kg/tools/coverage.test.ts`, and it
+ * is the only thing either app had that answers this question — web named 35 of
+ * the 62 registered tools across its whole suite and never named the other 27,
+ * most of the Vault and all of the scout among them. So it came across with the
+ * deletion rather than going with it.
+ *
+ * It cannot sit under `kg/` on arrival. It reads the suite off disk, and
+ * `check-platform.mjs` bans `node:fs` throughout the scanned trees — correctly,
+ * because a module in `kg/` that reaches for a filesystem is a module that will
+ * not bundle on a phone. `service/test/` is in vitest's `include` and in neither
+ * guard's root, which is the whole reason the directory exists.
  */
 
 import { describe, expect, it } from 'vitest'
-import { MutableSnapshot } from '@/kg/core/snapshot'
-import type { StoredEdge, StoredNode } from '@/kg/core/model'
-import { createRepository } from '@/kg/repo/repository'
-import type { Repository } from '@/kg/repo/repository'
-import { TOOLS } from './index'
-import { createToolRuntime } from './runtime'
+import { MutableSnapshot } from '../kg/core/snapshot'
+import type { StoredEdge, StoredNode } from '../kg/core/model'
+import { createRepository } from '../kg/repo/repository'
+import type { Repository } from '../kg/repo/repository'
+import { TOOLS } from '../kg/tools/index'
+import { createToolRuntime } from '../kg/tools/runtime'
 
 type Options = Parameters<typeof createRepository>[0]
 
@@ -127,12 +141,35 @@ const aLink = (h: H) =>
     }),
   )
 
-const aFile = (h: H) =>
-  okOr(
+/*
+ * `[0]` is read into a local and checked rather than `!`-asserted, because this
+ * package compiles under `noUncheckedIndexedAccess` and the mobile app that
+ * wrote this file did not. The check is not ceremony either: `vault.file.add`
+ * is the one bulk tool here, and an empty array back from it would otherwise
+ * surface as `undefined` handed to a tool expecting an id, four assertions later.
+ *
+ * The draft carries `uri` so the field crosses the tool boundary at least once
+ * in this suite. It is the only file-location prop either app writes, and it
+ * spent the whole fork undeclared.
+ */
+const aFile = (h: H) => {
+  const ids = okOr(
     h.runtime.run('vault.file.add', {
-      files: [{ name: 'CV.pdf', kind: 'pdf', bucket: 'Applications', size: '212 KB' }],
+      files: [
+        {
+          name: 'CV.pdf',
+          kind: 'pdf',
+          bucket: 'Applications',
+          size: '212 KB',
+          uri: 'file:///data/user/0/dev.jojo/files/CV.pdf',
+        },
+      ],
     }),
-  )[0]
+  )
+  const id = ids[0]
+  if (id === undefined) throw new Error('vault.file.add returned no id.')
+  return id
+}
 
 const aSnippet = (h: H) =>
   okOr(
@@ -391,15 +428,34 @@ describe('timeline and keywords', () => {
 describe('the registry', () => {
   it('has no tool that no test anywhere exercises', async () => {
     const { readFileSync, readdirSync } = await import('node:fs')
-    const { join } = await import('node:path')
+    const { dirname, join } = await import('node:path')
+    const { fileURLToPath } = await import('node:url')
 
+    /*
+     * Walked from this file rather than from `process.cwd()`, and recursively
+     * rather than over a hardcoded list of five directory names.
+     *
+     * Both changes are the move's doing. `process.cwd()` was the mobile app root
+     * and the path underneath it was `src/kg`; neither is true here, and a wrong
+     * path in a `readdirSync` throws, which at least fails loudly. The
+     * hardcoded list is the half that would have failed QUIETLY: a sixth layer
+     * added under `kg/` would simply not be read, the suite string would be
+     * short by that much, and this test would start reporting tools as
+     * unexercised that are exercised — the failure mode of an
+     * accuracy-guarantee is that people stop trusting it, and the reason this
+     * file exists is that somebody has to.
+     */
+    const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
     let suite = ''
-    for (const dir of ['tools', 'repo', 'react', 'core', 'storage']) {
-      const path = join(process.cwd(), 'src/kg', dir)
-      for (const file of readdirSync(path)) {
-        if (file.endsWith('.test.ts')) suite += readFileSync(join(path, file), 'utf8')
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue
+        const full = join(dir, entry.name)
+        if (entry.isDirectory()) walk(full)
+        else if (entry.name.endsWith('.test.ts')) suite += readFileSync(full, 'utf8')
       }
     }
+    walk(ROOT)
 
     const missing = Object.keys(TOOLS).filter(
       (name) => !exercised.has(name) && !suite.includes(`'${name}'`),

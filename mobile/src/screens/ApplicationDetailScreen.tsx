@@ -15,10 +15,10 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { Screen } from '@/components/ui/Screen'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { STAGE_LABEL, displayName, offerDaysLeft, respondByLabel } from '@/data/seed'
-import type { Application, Outcome, Stage } from '@/data/seed'
-import { bucketOf, compareItems, shortDate, timeLabel, whenLabel } from '@/data/timeline'
-import type { TimelineBucket, TimelineItem } from '@/data/timeline'
+import { STAGE_LABEL, displayName, offerDaysLeft, respondByLabel } from '@jojo/service/data/seed'
+import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
+import { bucketOf, compareItems, shortDate, timeLabel, whenLabel } from '@jojo/service/data/timeline'
+import type { TimelineBucket, TimelineItem } from '@jojo/service/data/timeline'
 import { refKey } from '@/lib/ids'
 import { stageNeedsDetails } from '@/lib/stage-transition'
 import { listJoin, plural } from '@/lib/text'
@@ -461,7 +461,8 @@ function OfferBlock({
 }) {
   const c = useColors()
   const offer = a.offer!
-  const daysLeft = offerDaysLeft(offer)
+  // Second argument required, and see the note in `lib/priority.ts`.
+  const daysLeft = offerDaysLeft(offer, TODAY)
   const tone = settled ? 'muted' : daysLeft < 0 ? 'danger' : daysLeft <= 1 ? 'warning' : 'secondary'
 
   return (

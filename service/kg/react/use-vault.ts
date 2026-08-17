@@ -86,6 +86,16 @@ export function useVault() {
             kind: draft.kind,
             bucket: draft.bucket,
             size: draft.size,
+            // `uri` was NOT forwarded here on the phone, and the omission is the
+            // reason it is called out. `FileEditor.tsx` put the picked location
+            // in the draft and `vault.file.add` declared the field, but this
+            // hook — the only caller — listed the props by hand and left it out,
+            // so every record written through the picker landed with no `uri`
+            // and `documentExists(file.uri)` in `FileViewer.tsx` answered false
+            // for all of them. A field written by nobody reads exactly like a
+            // field nobody needs, which is how it nearly got dropped in the
+            // extraction instead of connected.
+            ...present('uri', draft.uri),
             ...present('note', draft.note),
             ...present('savedOn', draft.savedOn),
             ...present('applicationId', draft.applicationId),

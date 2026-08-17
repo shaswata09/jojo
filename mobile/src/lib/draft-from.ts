@@ -13,7 +13,7 @@
  * still has to look at — ApplicationDialog says so in its description.
  */
 
-import type { Application, Source } from '@/data/seed'
+import type { Application, Source } from '@jojo/service/data/seed'
 
 /**
  * 'Stripe — ML engineer'. The em dash with spaces is what `displayName` emits,

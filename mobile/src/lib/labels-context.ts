@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { Label, LabelTone } from '@/data/labels'
+import type { Label, LabelTone } from '@jojo/service/data/labels'
 
 export type LabelsContextValue = {
   /**

@@ -27,9 +27,9 @@
  * every dated label on a timer nobody asked for.
  */
 
-import { partsOf } from '@/data/timeline'
-import type { ISODate, Instant } from '@/kg/core/model'
-import { dayOf } from '@/kg/core/project'
+import { partsOf } from '@jojo/service/data/timeline'
+import type { ISODate, Instant } from '@jojo/service/core/model'
+import { dayOf } from '@jojo/service/core/project'
 
 /**
  * The live clock, for stamping writes.

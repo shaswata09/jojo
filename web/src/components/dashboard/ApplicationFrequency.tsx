@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CalendarOff, ClipboardList, Plus } from 'lucide-react'
 import { AllHidden, ChartLegend } from '@/components/charts/ChartLegend'
-import { bucketKey, bucketKeys, bucketLabel, sentOn } from '@/components/charts/frequency-buckets'
+import { bucketKey, bucketKeys, bucketLabel, sentOn } from '@jojo/service/core/frequency'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'

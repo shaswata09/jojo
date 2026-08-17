@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ROLES, type RoleTag } from '@/data/seed'
+import { ROLES, type RoleTag } from '@jojo/service/data/seed'
 import { RolesContext } from '@/lib/roles-context'
 
 /**

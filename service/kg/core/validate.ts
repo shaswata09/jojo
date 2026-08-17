@@ -171,12 +171,18 @@ export const NODE_PROP_SCHEMAS = {
     // Declared rather than left to unknown-key passthrough, so a wrong value is
     // caught at the trust boundary instead of reaching `sizeLabel`. The cost is
     // that a bad value fails the whole node — which is why the restore path,
-    // and only the restore path, passes `salvage` to strip these four and keep
+    // and only the restore path, passes `salvage` to strip these five and keep
     // the record. See `SALVAGEABLE_FILE_PROPS`.
     path: s.optional(s.string({ label: 'File path' })),
     bytes: s.optional(s.number({ min: 0, label: 'Bytes' })),
     mtime: s.optional(s.number({ min: 0, label: 'Modified' })),
     hash: s.optional(s.string({ label: 'Hash' })),
+    // `uri` is the fifth, and it is the only one of them either app has ever
+    // written. It came across from the phone's fork undeclared, so `s.object`'s
+    // unknown-key passthrough carried it — which is the same door a `uri: 99`
+    // came through, straight into `openDocument()`. Declaring it closes that
+    // without changing what a well-formed record does.
+    uri: s.optional(s.string({ label: 'Location' })),
   }),
   snippet: s.object({
     slug,
@@ -369,9 +375,15 @@ export type ValidatedRows = {
  *
  * Losing an application because one digit of a byte count is wrong, in a field
  * describing a document that is sitting right there in the same folder, is not
- * a trade worth making. These four are stripped and the record kept.
+ * a trade worth making. These five are stripped and the record kept.
+ *
+ * `uri` joined them with the phone's file records. It belongs here for the same
+ * reason and one extra: it is an absolute path into an app document directory
+ * that a reinstall moves, so of the five it is the one most likely to be stale
+ * in a backup a user restores months later. A stale `uri` costs an Open button;
+ * dropping the whole application it was filed under costs the record.
  */
-const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash'] as const
+const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash', 'uri'] as const
 
 export type ValidateOptions = {
   /**
@@ -382,7 +394,7 @@ export type ValidateOptions = {
   salvage?: boolean
 }
 
-/** Strips the four link props. Returns `null` when there was nothing to strip. */
+/** Strips the five location props. Returns `null` when there was nothing to strip. */
 function withoutFileLink(row: unknown): unknown | null {
   if (!isRow(row)) return null
   const props = row['props']

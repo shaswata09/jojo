@@ -5,7 +5,7 @@ import * as IntentLauncher from 'expo-intent-launcher'
 import * as Sharing from 'expo-sharing'
 import { Directory, File, Paths } from 'expo-file-system'
 import { kindOfFile } from '@/lib/files'
-import type { FileBucket, FileKind } from '@/data/vault'
+import type { FileBucket, FileKind } from '@jojo/service/data/vault'
 
 /**
  * Picking a document, and keeping it.

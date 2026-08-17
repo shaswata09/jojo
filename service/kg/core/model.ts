@@ -250,6 +250,18 @@ export const STAGE_LABEL: Record<Stage, string> = {
 export const SOURCES = ['Job scout', 'Job board', 'Referral', 'Careers page'] as const
 export type Source = (typeof SOURCES)[number]
 
+/**
+ * The window "applications over time" buckets into.
+ *
+ * Here rather than in `data/seed.ts`, where it was declared, because
+ * `core/frequency.ts` is keyed by it and `core` may not read the fixtures — the
+ * same reason every other value union in this file moved down. `data/seed.ts`
+ * re-exports it beside `PERIODS`, which is the labelled list a segmented control
+ * renders and stays app-facing.
+ */
+export const PERIOD_VALUES = ['week', 'month', 'quarter'] as const
+export type Period = (typeof PERIOD_VALUES)[number]
+
 /** How a closed application ended. Absent while it is still live. */
 export const OUTCOME_VALUES = ['rejected', 'withdrawn', 'accepted', 'declined', 'ghosted'] as const
 export type Outcome = (typeof OUTCOME_VALUES)[number]
@@ -393,6 +405,8 @@ export type VaultFile = {
   savedOn: string
   note?: string
   applicationId?: string
+  /** See `FileProps.uri`. Projected straight through by `projections.files`. */
+  uri?: string
 }
 
 export const SNIPPET_TAG_VALUES = ['Cover letter', 'Application form', 'Email', 'Bio'] as const
@@ -591,6 +605,34 @@ export type FileProps = {
   mtime?: number
   /** 'sha256:<64 hex>'. The only field that can say "these are the same bytes". */
   hash?: string
+
+  /**
+   * Absolute device URI of a copy inside app storage. NATIVE ONLY, and the
+   * fifth of five location fields rather than a synonym for `path`.
+   *
+   * It arrived here from the phone's fork of this file, where its header called
+   * itself "the one divergence from the web app's copy" — a copy-maintenance
+   * note the extraction made obsolete, which is why it is restated as a fact
+   * about the field instead. `path` above is a folder-RELATIVE name inside a
+   * directory the user granted, resolved through `storage/file-store.ts`;
+   * this is an ABSOLUTE path into the app's own document directory, written by
+   * `expo-file-system` after the picker copied the file there. They describe
+   * different facts, and collapsing either into the other would make the drift
+   * classification in `core/folder.ts` meaningless — a `path` that survives a
+   * reinstall against a `uri` that does not.
+   *
+   * It is declared in `validate.ts` alongside the other four and listed in
+   * `SALVAGEABLE_FILE_PROPS`. Until this move it was declared on the phone and
+   * validated by nobody, so `uri: 99` reached `openDocument(file.uri)` in
+   * `screens/vault/FileViewer.tsx` intact.
+   *
+   * The successor is the RN `FileStore` adapter over `expo-file-system`: once
+   * that satisfies `storage/file-store-conformance.ts`, new records write
+   * `path` and this field stops being written. Existing records keep it, so it
+   * does not become removable by that alone. That adapter is deferred, and this
+   * comment is where the deferral is recorded rather than a line in a document.
+   */
+  uri?: string
 }
 
 export type SnippetProps = {

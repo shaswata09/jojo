@@ -1,5 +1,5 @@
-import { daysBetween } from '@/data/timeline'
-import type { TimelineItem } from '@/data/timeline'
+import { daysBetween } from '@jojo/service/data/timeline'
+import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 import type { Palette } from '@/theme/tokens'
 import type { Tone } from '@/components/ui/Text'

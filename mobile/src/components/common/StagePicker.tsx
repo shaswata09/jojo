@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Pressable } from 'react-native'
 import { Chip } from '@/components/ui/Chip'
 import { MenuSheet } from '@/components/ui/Menu'
-import { STAGES, STAGE_LABEL } from '@/data/seed'
-import type { Stage } from '@/data/seed'
+import { STAGES, STAGE_LABEL } from '@jojo/service/data/seed'
+import type { Stage } from '@jojo/service/data/seed'
 import { useColors } from '@/theme/theme-context'
 
 /**

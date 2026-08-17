@@ -1,5 +1,5 @@
 /**
- * Field-level salvage on the restore path, and the schema for the four link
+ * Field-level salvage on the restore path, and the schema for the five location
  * props it salvages.
  *
  * Both halves exist because of one arithmetic fact about `validateRows`: a node
@@ -31,7 +31,7 @@ const fileRow = (props: Record<string, unknown>) => ({
   },
 })
 
-describe('the four link props', () => {
+describe('the five location props', () => {
   it('are accepted when well formed', () => {
     const out = validateRows(
       [
@@ -66,6 +66,29 @@ describe('the four link props', () => {
 
   it('reject a negative byte count', () => {
     expect(validateRows([fileRow({ bytes: -1 })], []).nodes).toEqual([])
+  })
+
+  /*
+   * `uri` is the fifth, and until the mobile fork was deleted it was the only
+   * one of the five that either app actually wrote — declared on the phone's
+   * copy of `model.ts`, accepted by its `vault.file.add`, and checked by
+   * nothing. `s.object` passes unknown keys through by design, so the value
+   * below round-tripped intact all the way to `openDocument(file.uri)` in
+   * `screens/vault/FileViewer.tsx`. The next two cases are the falsification of
+   * that: without the declaration in `validate.ts` the first one keeps the row.
+   */
+  it('accept a well-formed uri', () => {
+    const out = validateRows([fileRow({ uri: 'file:///data/user/0/dev.jojo/files/CV.pdf' })], [])
+    expect(out.skipped).toEqual([])
+    expect(out.nodes[0]?.props).toMatchObject({
+      uri: 'file:///data/user/0/dev.jojo/files/CV.pdf',
+    })
+  })
+
+  it('reject a uri that is not a string', () => {
+    const out = validateRows([fileRow({ uri: 99 })], [])
+    expect(out.nodes).toEqual([])
+    expect(out.skipped).toHaveLength(1)
   })
 })
 
@@ -102,7 +125,15 @@ describe('salvage', () => {
     expect(validateRows([fileRow({ bytes: 'banana' })], []).nodes).toEqual([])
   })
 
-  /** Salvage is scoped to the four link props, not "retry without whatever failed". */
+  /** A stale `uri` in a restored backup costs an Open button, never the record. */
+  it('drops a bad uri and keeps the file', () => {
+    const out = validateRows([fileRow({ uri: 99 })], [], { salvage: true })
+    expect(out.nodes).toHaveLength(1)
+    expect(out.nodes[0]?.props).toMatchObject({ name: 'CV Rice.pdf' })
+    expect(out.nodes[0]?.props).not.toHaveProperty('uri')
+  })
+
+  /** Salvage is scoped to the five location props, not "retry without whatever failed". */
   it('will not rescue a record broken anywhere else', () => {
     const broken = fileRow({ path: 'Documents/CV.pdf' })
     broken.props.kind = 'not-a-kind'

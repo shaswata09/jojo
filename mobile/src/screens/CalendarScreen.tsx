@@ -11,15 +11,10 @@ import { Screen } from '@/components/ui/Screen'
 import { SettingRow, Toggle } from '@/components/ui/Field'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import {
-  MONTH_LABELS,
-  TODAY as TODAY_PARTS,
-  WEEKDAYS,
-  buildMonth,
-  stepMonth,
-} from '@/data/calendar'
-import { compareItems, isoOf, partsOf, shortDate, timeLabel } from '@/data/timeline'
-import type { TimelineItem } from '@/data/timeline'
+import { MONTH_LABELS, WEEKDAYS, buildMonth, stepMonth } from '@jojo/service/core/calendar'
+import { TODAY_PARTS } from '@/lib/today'
+import { compareItems, isoOf, partsOf, shortDate, timeLabel } from '@jojo/service/data/timeline'
+import type { TimelineItem } from '@jojo/service/data/timeline'
 import { markColor, markOf } from '@/lib/marks'
 import type { Mark } from '@/lib/marks'
 import { useSheets } from '@/lib/sheets-context'
@@ -65,7 +60,17 @@ export function CalendarScreen() {
     setSelected(d)
   }, [route.params?.date])
 
-  const month = useMemo(() => buildMonth(view.year, view.month), [view])
+  /*
+   * `TODAY_PARTS` is passed, and its absence would be SILENT.
+   *
+   * The phone's deleted copy of `buildMonth` closed over a `TODAY` in the
+   * fixtures and took two arguments. The shared one takes the day as an
+   * optional third — optional because `kg/core` may not read a clock (D26) and
+   * omitting it means "no marker" — so both call sites here compiled clean
+   * against the new signature and would have quietly stopped marking today on
+   * the grid. Nothing in `tsc` or the suite can say so; the marker is the test.
+   */
+  const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
   // `forMonth` matches the 'YYYY-MM' prefix, year included — a month-only match
   // would list next October's deadlines under this one.
   const monthItems = useMemo(() => forMonth(view.year, view.month), [forMonth, view])
@@ -97,7 +102,7 @@ export function CalendarScreen() {
     setSelected((day) =>
       next.year === TODAY_PARTS.year && next.month === TODAY_PARTS.month
         ? TODAY_PARTS.day
-        : Math.min(day, buildMonth(next.year, next.month).days),
+        : Math.min(day, buildMonth(next.year, next.month, TODAY_PARTS).days),
     )
   }
 

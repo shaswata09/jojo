@@ -22,11 +22,11 @@
  * replaceable.
  */
 
-export { useApplications } from '@/kg/react/use-applications'
-export type { ApplicationDraft } from '@/kg/react/use-applications'
-export { useTimeline } from '@/kg/react/use-timeline'
-export type { TimelineDraft } from '@/kg/react/use-timeline'
-export { useVault } from '@/kg/react/use-vault'
-export { useScout } from '@/kg/react/use-scout'
-export { useProfile } from '@/kg/react/use-profile'
-export { useStoreAdmin } from '@/kg/react/use-admin'
+export { useApplications } from '@jojo/service/react/use-applications'
+export type { ApplicationDraft } from '@jojo/service/react/use-applications'
+export { useTimeline } from '@jojo/service/react/use-timeline'
+export type { TimelineDraft } from '@jojo/service/react/use-timeline'
+export { useVault } from '@jojo/service/react/use-vault'
+export { useScout } from '@jojo/service/react/use-scout'
+export { useProfile } from '@jojo/service/react/use-profile'
+export { useStoreAdmin } from '@jojo/service/react/use-admin'

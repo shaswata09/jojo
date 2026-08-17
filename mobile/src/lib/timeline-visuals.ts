@@ -1,5 +1,5 @@
-import type { Urgency } from '@/data/seed'
-import type { TimelineKind } from '@/data/timeline'
+import type { Urgency } from '@jojo/service/data/seed'
+import type { TimelineKind } from '@jojo/service/data/timeline'
 import type { Palette } from '@/theme/tokens'
 
 /**

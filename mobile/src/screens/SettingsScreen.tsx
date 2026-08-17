@@ -16,8 +16,8 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { NEW_LABEL_TONES } from '@/data/labels'
-import type { LabelTone } from '@/data/labels'
+import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
+import type { LabelTone } from '@jojo/service/data/labels'
 import { useLabels } from '@/lib/labels-context'
 import { useStoreAdmin } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
@@ -482,8 +482,23 @@ function KeywordManager() {
             <Txt size="xs" tone="secondary" style={{ marginBottom: space[2] }}>
               Colour
             </Txt>
+            {/*
+              The VOCABULARY, not the rotation.
+
+              This read `NEW_LABEL_TONES` from the deleted `@/data/labels` — the
+              array that decides which colour the NEXT auto-created keyword gets.
+              The two arrays hold the same five tones in different orders, so the
+              misuse was invisible: a picker offering all five is right by
+              accident as long as the rotation happens to be complete, and stops
+              being right the day somebody shortens the rotation to three.
+              `LABEL_TONE_VALUES` is what `s.enum` validates a tone against in
+              `core/validate.ts`, so this offers exactly what will save.
+
+              Visible consequence, and the only one in this step: the swatches
+              reorder from teal-green-amber-red-grey to teal-amber-red-green-grey.
+            */}
             <View style={styles.tones}>
-              {NEW_LABEL_TONES.map((tone) => (
+              {LABEL_TONE_VALUES.map((tone) => (
                 <Pressable
                   key={tone}
                   accessibilityRole="radio"
