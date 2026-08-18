@@ -10,11 +10,17 @@
  * In Reanimated 4 the plugin moved out into `react-native-worklets`; the old
  * `react-native-reanimated/plugin` path still exists but forwards here, and
  * listing both would run the transform twice. It must stay last in the list.
+ *
+ * The preset was `babel-preset-expo`, which wraps `@react-native/babel-preset`
+ * and adds Expo's own transforms on top. One of the things it added was the
+ * worklets plugin, automatically — so after this swap the explicit entry below
+ * is the ONLY source of it. Deleting the line as a redundant-looking duplicate
+ * is a silent break: the app still builds and dies on the first drag.
  */
 module.exports = function (api) {
   api.cache(true)
   return {
-    presets: ['babel-preset-expo'],
+    presets: ['module:@react-native/babel-preset'],
     plugins: ['react-native-worklets/plugin'],
   }
 }

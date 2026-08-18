@@ -1,6 +1,8 @@
 # jojo — mobile
 
-The same job tracker as `web/`, as an Android and iOS app. React Native via Expo.
+The same job tracker as `web/`, as an Android and iOS app. Bare React Native —
+no Expo, no framework wrapper, no tool that has to run before the project can be
+opened.
 
 Everything runs on the device. There is no server, no account and no network call
 of any kind. Records are saved on the device and survive closing the app; a
@@ -39,9 +41,10 @@ cd ios && pod install
 xcodebuild -workspace jojo.xcworkspace -scheme jojo -configuration Release
 ```
 
-`npx expo run:android` and `npx expo run:ios` do the same build and then install
-and launch it, which is usually what you want while developing. They are
-wrappers around Gradle and `xcodebuild` — not a different build path.
+`npm run android` and `npm run ios` do the same build and then install and
+launch it with Metro attached, which is usually what you want while developing.
+They are `react-native run-android` / `run-ios`, thin wrappers around Gradle and
+`xcodebuild` — not a different build path.
 
 | Script                            | Does                                                            |
 | --------------------------------- | --------------------------------------------------------------- |
@@ -63,8 +66,8 @@ point the `release` signing config at it.
 
 ### The JDK is pinned, so `JAVA_HOME` does not matter
 
-Gradle 8.14.3 and **Java 17** are the pairing Expo SDK 54 and React Native 0.81
-ship and test against. The build used to take whatever JVM launched it, and both
+Gradle 8.14.3 and **Java 17** are the pairing React Native 0.81 ships and tests
+against. The build used to take whatever JVM launched it, and both
 JVMs commonly present on a Mac are wrong:
 
 | JVM in `JAVA_HOME`                     | What you got                                                          |
@@ -92,51 +95,80 @@ gradle/gradle-daemon-jvm.properties)` as the daemon, and the build is the
 daemon's. Verified building `assembleRelease` with `JAVA_HOME` unset, and with
 it pointed at Android Studio's JBR 25.
 
-**`expo prebuild` regenerates `settings.gradle` and would drop the resolver
-line.** That is the general hazard below, but this is the one place where losing
-the edit brings back an error whose text does not explain itself — so if a
-prebuild ever happens, put those five lines back first.
+Both of those live in `settings.gradle` and `android/gradle/`, which used to be
+regenerable files and are now hand-maintained ones. Nothing rewrites them any
+more, which is the point — but it also means nothing puts them back.
 
-### Why the native projects are committed
+### The native projects are the source, not an output
 
-They were generated once with `npx expo prebuild` and then checked in, which
-makes this a normal React Native project rather than one that has to be
-materialised by a tool before it can be opened.
+`android/` and `ios/` were generated once, long ago, by `expo prebuild`. They are
+now ordinary hand-maintained native projects: there is no `app.json`, no config
+plugin, and nothing that regenerates them. A native change goes in the native
+file, gets committed, and gets reviewed as a diff like any other.
 
-The trade-off is real and worth stating: `expo prebuild` **regenerates** these
-directories from `app.json` and overwrites anything edited by hand. Treat it as
-a bootstrap that has already happened. Native changes now go in the native files
-directly — or into `app.json` followed by a deliberate re-run and a look at the
-diff.
+What that buys is reviewability — every line in those directories is one somebody
+chose. What it costs is that a few things are now nobody's job but yours, and
+none of them announces itself:
 
-### Expo is a library here, not a workflow
+| Now hand-maintained        | Was                                                                                                                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AndroidManifest.xml`      | Permissions, `<queries>`, the `jojo://` filter and `enableOnBackInvokedCallback` were prebuild-injected. Adding a native module that needs a permission is now something you have to notice. |
+| `Info.plist`               | Same, plus the URL types and `RCTRootViewBackgroundColor`.                                                                                                                                   |
+| Icons and splash resources | 38 Android drawables and an iOS asset catalog, generated from `assets/*.png`. Those PNGs are still the human source; regenerating from them is manual.                                       |
+| Font linking               | `expo-font` loaded five TTFs at runtime. They are build-time assets now.                                                                                                                     |
+| The SDK floors             | `expo-build-properties`. See **Platform floor** below for where they live.                                                                                                                   |
+| React Native upgrades      | `expo upgrade`. Now: diff the RN template by hand, every version, across two native projects.                                                                                                |
 
-Removing the Expo _workflow_ did not mean removing every Expo _package_. Ten
-remain, each an ordinary native module linked into the build like any other
-dependency:
+### Expo is gone, and what replaced each piece
 
-| Package                 | Doing                                                      |
-| ----------------------- | ---------------------------------------------------------- |
-| `expo`                  | The module registry the others autolink through            |
-| `expo-font`             | Loads Inter and JetBrains Mono at startup                  |
-| `expo-clipboard`        | Copy, in the vault and on every code block                 |
-| `expo-status-bar`       | Status bar colour, following the theme                     |
-| `expo-system-ui`        | Paints the native root dark before React mounts            |
-| `expo-build-properties` | Writes the SDK floors below into the Gradle and Pod config |
-| `expo-document-picker`  | Choosing a document to file                                |
-| `expo-file-system`      | Keeping the copy, and knowing whether it is still there    |
-| `expo-intent-launcher`  | Opening a document — Android's half                        |
-| `expo-sharing`          | Opening a document — iOS's half                            |
+Expo was ten packages here, each an ordinary native module rather than a
+workflow. They were replaced one at a time, each swap verified on a device
+against a still-working build, so that a failure had one candidate cause instead
+of two:
 
-None of them requires Expo Go, an Expo account, or a network call. If you want
-them gone too, each has a plain React Native equivalent — that is a separate
-piece of work and this README would be lying if it claimed it had been done.
+| Was                     | Is now                                                                  |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `expo`                  | `AppRegistry.registerComponent('main', …)` in `index.ts`                |
+| `@expo/vector-icons`    | `@react-native-vector-icons/feather`, the `/static` entry point         |
+| `expo-font`             | Five TTFs in `android/app/src/main/assets/fonts/`, linked at build time |
+| `expo-clipboard`        | `@react-native-clipboard/clipboard`                                     |
+| `expo-status-bar`       | React Native's own `StatusBar`                                          |
+| `expo-system-ui`        | The window background in `styles.xml`                                   |
+| `expo-build-properties` | `buildscript { ext { … } }` in `android/build.gradle`                   |
+| `expo-document-picker`  | `@react-native-documents/picker`, with `keepLocalCopy()`                |
+| `expo-file-system`      | `react-native-blob-util`, which brings its own `FileProvider`           |
+| `expo-intent-launcher`  | `ReactNativeBlobUtil.android.actionViewIntent`                          |
+| `expo-sharing`          | React Native's own `Share`                                              |
+
+Two things Expo was doing invisibly, that are now written down:
+
+- **The bundler's workspace wiring.** Expo's Metro computed `watchFolders`,
+  `nodeModulesPaths` and `serverRoot` from the root `workspaces` globs, which is
+  how `@jojo/service` resolved for free. Bare Metro defaults to none of that.
+  `metro.config.js` says it explicitly now, and it also carries the `@/` alias
+  shim that replaces the tsconfig-paths resolver `@expo/cli` used to wrap Metro
+  with.
+- **Runtime globals.** `Expo.fx` installed a spec-compliant `URL` and a
+  `structuredClone` before any app code ran. `src/lib/polyfills.ts` is where
+  that happens now — see the caveat further down, because the `URL` one is not
+  a missing global but a wrong one.
+
+`expo-font` is still physically in `node_modules`: `@react-native-vector-icons/common`
+declares it as an optional peer and npm installs it regardless. It is stubbed out
+of the bundle in `metro.config.js`, which explains why at length.
 
 ### Platform floor
 
-**Android 12 (API 31)** and **iOS 16.4**, set in `app.json` through
-`expo-build-properties` and compiled against Android SDK 36. Anything older is
-out of support; do not spend time testing on it.
+**Android 12 (API 31)** and **iOS 16.4**, compiled against Android SDK 36.
+Anything older is out of support; do not spend time testing on it.
+
+The Android floor lives in the `buildscript { ext { … } }` block at the top of
+`android/build.gradle` and nowhere else. It used to be three lines in
+`gradle.properties` that the `expo-root-project` plugin read into
+`rootProject.ext`; deleting that plugin without writing the block by hand would
+have dropped the floor to React Native's default with no error anywhere. The iOS
+floor is `platform :ios, '16.4'` in the Podfile, hardcoded rather than
+`min_ios_version_supported`, which is 15.1.
 
 ---
 
@@ -189,9 +221,14 @@ than an architectural one. Same for the first-run "demo or empty" choice:
 
 ### Two caveats worth stating
 
-`structuredClone` is a browser global Hermes does not have, and the storage layer
-clones every row through it. `lib/polyfills.ts` supplies a JSON round-trip,
-guarded, and imported before anything in `src/kg` evaluates.
+`lib/polyfills.ts` supplies two browser globals, and is imported before anything
+in `src/kg` or `@jojo/service` evaluates. `structuredClone` is simply absent from
+Hermes, and the storage layer clones every row through it — a guarded JSON
+round-trip covers it. `URL` is the harder one: React Native ships a regex-based
+implementation that **never throws**, and the posting parser's validation is
+built entirely on the throw, so `react-native-url-polyfill/auto` replaces it
+outright. Neither is visible to any test in this repo, because vitest runs on
+Node where both already exist and are correct.
 
 The kg **tests did not come across** — 22 files that import `vitest`, which this
 app has no runner for. The layer is covered on the web side and unchanged here,

@@ -33,7 +33,7 @@ for. Metro — not Expo — is what refuses to resolve outside `projectRoot`, an
 bare React Native runs the same Metro. Worse, measured: Expo's Metro was already
 computing `watchFolders: [root/node_modules, service, web, mobile]`,
 `nodeModulesPaths` and `serverRoot: <repo root>` from the root `workspaces`
-globs, for free. The ejection *removes* that automatic wiring and step 1 writes
+globs, for free. The ejection _removes_ that automatic wiring and step 1 writes
 it back by hand. Reuse comes from the workspace migration, with or without Expo.
 
 ## Two things the planning probes corrected
@@ -119,6 +119,64 @@ step that uninstalls the package, and that step deletes it. It pins no paths —
 `npx react-native config` resolves `reactNativePath` and both platform
 `sourceDir`s correctly under workspace hoisting, unaided.
 
+## A sixth thing, found on the last step: one Expo package cannot be uninstalled
+
+`@react-native-vector-icons/common` declares `expo-font` as an **optional peer
+dependency**, and npm installs it regardless. Uninstalling `expo` from the
+workspace therefore does not remove `expo-font`, and `common/index.js`
+re-exports `dynamicLoading/dynamic-loading-setting`, whose top level reads:
+
+```js
+if (Platform.OS === "web" && globalThis.expo) {
+  try {
+    require("expo-font");
+  } catch {}
+}
+```
+
+Three guards, and **Metro honours none of them** — bundling is static, so the
+`require` is a graph edge whatever the conditions say. `createIconSet` sits on
+that path, which means every screen with an icon drags `expo-font` in. Choosing
+the `/static` entry point avoids the _runtime_ dynamic-font path; it does not
+change the import graph, and the plan's step 4 was right about the first and
+silent about the second.
+
+It bundled anyway under Expo, because `expo-asset` — which `expo-font` imports —
+happened to be hoisted where Metro could find it. Uninstalling `expo` left
+`expo-font` hoisted at the workspace root and `expo-asset` nested under
+`node_modules/expo/`, reachable only from there, and the bundle stopped
+building. That resolution had been luck, and it was luck that depended on
+**web's** dependency tree: `expo` survives in this workspace only as a transitive
+of `@react-three/fiber`. Mobile must not be able to break when web changes a
+dependency it does not share.
+
+The fix is a `{ type: 'empty' }` branch in `metro.config.js`'s `resolveRequest`,
+and it is exactly right rather than a lesser evil: that `require` is
+side-effect-only — it exists so importing `expo-font` on **web** registers a
+module — and it cannot execute on a phone, where `Platform.OS` is not `'web'`.
+Nothing reads a binding from it. Feature detection is separate and already
+answers correctly without any of it: `getIsDynamicLoadingSupported` tests
+`globalThis.expo?.modules`, which a bare app does not have.
+
+Verified in the shipped bundle: `expo-asset` and `expo-modules-core` appear zero
+times, and the single remaining `expo-font` occurrence is a string inside a
+vector-icons error message.
+
+## A seventh, cheaper one: `--entry-file` is resolved against `serverRoot` too
+
+The plan writes down that `getJSMainModuleName()` must be `"mobile/index"` rather
+than `"index"` because `unstable_serverRoot` is the repo root. The same rule
+applies to the CLI:
+
+```
+npx react-native bundle --entry-file index.ts    # error: <repo root>/index.ts not found
+npx react-native bundle --entry-file mobile/index.ts   # works
+```
+
+Gradle is unaffected — `entryFile = file("../../index.ts")` is absolute, and an
+absolute path wins over `path.resolve(serverRoot, entryFile)`. So this is a third
+place the same trap shows up, and the second where release builds cannot see it.
+
 ## Two questions the surgery answered
 
 **`app/src/debugOptimized/` is not an orphan.** The `debugOptimized` build type
@@ -141,7 +199,7 @@ written while Expo still works so the riskiest change in the ejection is proven
 on a device against a known-good answer.
 
 `parse-posting.ts` is why the order is load-bearing. It moves into `service/`
-*and* its `new URL` behaviour changes when Expo's spec-compliant `URL` goes away.
+_and_ its `new URL` behaviour changes when Expo's spec-compliant `URL` goes away.
 Land the move first, under the good `URL`, so the shared layer is fixed and green
 before the runtime beneath it changes. Reversed, one file parses three ways —
 one in service's vitest, one in web, one on the phone.

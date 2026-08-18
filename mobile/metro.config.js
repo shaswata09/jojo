@@ -1,15 +1,15 @@
 const path = require('node:path')
 
-// [EJECTION] Ships today in its `expo/metro-config` form so it can be proven on
-// a device while Expo still works. Step 11 swaps this one line for
-// `require('@react-native/metro-config')`.
+// This was `require('expo/metro-config')` until the ejection, and everything
+// else in this file was written under that form and proven on a device before
+// the swap — deliberately, so the change below had to reproduce a known-good
+// answer rather than discover one.
 //
-// That swap is not cosmetic: it also changes `babelTransformerPath`,
-// `unstable_conditionNames`, `unstable_conditionsByPlatform`, `sourceExts` and
-// `assetExts`. One line of diff, a whole transform pipeline underneath. Treat
-// the first failure after the swap as a condition-set problem before suspecting
-// anything else.
-const { getDefaultConfig } = require('expo/metro-config')
+// The swap is one line of diff and a whole transform pipeline underneath. It
+// also changes `babelTransformerPath`, `unstable_conditionNames`,
+// `unstable_conditionsByPlatform`, `sourceExts` and `assetExts`. If a bundle
+// starts failing here, suspect the condition set before anything else.
+const { getDefaultConfig } = require('@react-native/metro-config')
 
 const projectRoot = __dirname
 const workspaceRoot = path.resolve(projectRoot, '..')
@@ -56,11 +56,13 @@ config.server = { ...config.server, unstable_serverRoot: workspaceRoot }
 /*
  * [EJECTION] The replacement for tsconfig `paths`.
  *
- * 945 `@/…` specifiers across 129 files resolve today only because `@expo/cli`
- * wraps Metro's resolver with a tsconfig-paths implementation, in both `start`
+ * 945 `@/…` specifiers across 129 files used to resolve because `@expo/cli`
+ * wrapped Metro's resolver with a tsconfig-paths implementation, in both `start`
  * and `export:embed`. Bare React Native's Metro has no notion of tsconfig paths
- * whatsoever, so without this the bundle fails on the first import of every
- * file.
+ * whatsoever, so from the ejection onward this shim is the only thing standing
+ * between those specifiers and a bundle that fails on the first import of every
+ * file. `tsconfig.json`'s `paths` block now only tells `tsc` what this tells
+ * Metro; the two agree by hand.
  *
  * `extraNodeModules` cannot express it: metro-resolver splits a specifier that
  * begins with `@` at the SECOND slash, so `@/lib/labels` parses as the scoped
@@ -71,8 +73,45 @@ config.server = { ...config.server, unstable_serverRoot: workspaceRoot }
  */
 const ALIASES = [['@/', path.join(projectRoot, 'src') + path.sep]]
 
+/*
+ * The one Expo package that will not leave, stubbed out of the graph.
+ *
+ * `@react-native-vector-icons/common` declares `expo-font` as an OPTIONAL peer
+ * and npm installs it anyway, so uninstalling `expo` from this workspace does
+ * not remove it. `common/index.js` re-exports `dynamicLoading/dynamic-loading-setting`,
+ * whose top level reads:
+ *
+ *     if (Platform.OS === 'web' && globalThis.expo) { try { require('expo-font') } catch {} }
+ *
+ * Three guards, and Metro honours none of them — bundling is static, so the
+ * `require` is a graph edge regardless. `createIconSet` is on that path, which
+ * means every one of the 24 screens with an icon drags `expo-font` in. Using the
+ * `/static` entry point avoids the RUNTIME dynamic-font path; it does not
+ * change the import graph.
+ *
+ * It bundled under Expo only because `expo-asset` — which `expo-font` imports —
+ * happened to be hoisted where it could be found. Uninstalling `expo` left
+ * `expo-font` hoisted at the workspace root and `expo-asset` nested under
+ * `node_modules/expo/`, reachable only from there, and the bundle stopped
+ * building. That resolution was luck, and it was luck that depended on `web`'s
+ * dependency tree: `expo` survives in the workspace only as a transitive of
+ * `@react-three/fiber`. Mobile must not be able to break when web changes a
+ * dependency it does not share.
+ *
+ * `{ type: 'empty' }` is Metro's own empty module, and it is exactly right here
+ * rather than a lesser evil. The `require` above is side-effect-only — it exists
+ * so that importing `expo-font` on WEB registers a module — and it cannot
+ * execute on a phone, where `Platform.OS` is 'android' or 'ios'. Nothing reads a
+ * binding from it. Feature detection is separate and already answers correctly
+ * without any of this: `getIsDynamicLoadingSupported` tests `globalThis.expo?.modules`,
+ * which a bare app does not have, so dynamic loading reports unsupported — the
+ * five faces this app uses are linked natively and none of them wants it.
+ */
+const STUBBED = new Set(['expo-font'])
+
 const upstream = config.resolver.resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (STUBBED.has(moduleName)) return { type: 'empty' }
   for (const [prefix, target] of ALIASES) {
     if (moduleName.startsWith(prefix)) {
       return context.resolveRequest(context, target + moduleName.slice(prefix.length), platform)
