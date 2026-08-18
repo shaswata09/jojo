@@ -4,7 +4,7 @@ import { ping } from '@/lib/llm'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
 import { Pressable, StyleSheet, View } from 'react-native'
-import * as Clipboard from 'expo-clipboard'
+import Clipboard from '@react-native-clipboard/clipboard'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -81,12 +81,15 @@ export function SettingsScreen() {
 
   const dataSet = isEmpty ? 'empty' : 'demo'
 
-  const onExport = async () => {
+  // Not async any more: `setString` is synchronous where `setStringAsync` was
+  // not, and this is only ever an onPress. Keeping the keyword would have left
+  // a promise nobody awaits and a signature that claims work it no longer does.
+  const onExport = () => {
     // There is no downloads folder to write to on a phone, and no file picker
     // wired up. The clipboard is the honest export here: it is the one channel
     // that reaches another app without this build claiming a filesystem it has
     // not asked for.
-    await Clipboard.setStringAsync(exportJSON())
+    Clipboard.setString(exportJSON())
     toast({
       title: 'Copied to the clipboard',
       description: 'The whole store as JSON — paste it into a note or a file to keep it.',

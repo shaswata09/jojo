@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import * as Clipboard from 'expo-clipboard'
+import Clipboard from '@react-native-clipboard/clipboard'
 
 /** How long the copied confirmation stays up. */
 const COPIED_MS = 1600
@@ -21,9 +21,13 @@ export function useCopy() {
 
   useEffect(() => () => clearTimeout(timer.current), [])
 
+  // Still async, and deliberately. `setString` is synchronous where
+  // `setStringAsync` was not, but every caller already awaits this and one of
+  // them is a press handler that reports failures — narrowing the signature
+  // would be a breaking change bought with nothing.
   const copy = useCallback(async (text: string, id = 'default') => {
     clearTimeout(timer.current)
-    await Clipboard.setStringAsync(text)
+    Clipboard.setString(text)
     setCopiedId(id)
     timer.current = setTimeout(() => setCopiedId(null), COPIED_MS)
   }, [])
