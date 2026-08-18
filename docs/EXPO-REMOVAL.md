@@ -295,3 +295,45 @@ and the release JS bundle builds for `--platform ios` (3,084,749 bytes, zero
 `expo-asset` or `expo-modules-core` strings).
 
 `ios/` should be treated as unverified until someone builds it.
+
+## Two constraints the ejection created that nothing enforces
+
+Found by the verification pass, after eleven green steps. Neither is a defect
+today; both are traps for the next change.
+
+**`<queries>` lost three of its four intents.** The baseline manifest carried
+`OPEN_DOCUMENT`, `OPEN_DOCUMENT_TREE` and `SEND` alongside the app's own
+`VIEW/BROWSABLE/https` — contributed by `expo-document-picker`,
+`expo-file-system` and `expo-sharing` respectively. Only the app's own survives.
+
+There is no functional impact, and that was checked rather than assumed: package
+visibility filters `PackageManager` _query_ APIs, not `startActivity`. Every call
+site was read — `actionViewIntent` uses `startActivity` with an
+`ActivityNotFoundException` catch and no `resolveActivity`, RN's `Share` uses
+`createChooser`, the picker uses `startActivityForResult` — and nothing in this
+app calls `resolveActivity`, `queryIntentActivities` or `Linking.canOpenURL`.
+
+**The constraint: adding a `canOpenURL` check anywhere would silently return
+`false`.** Whoever adds one has to add the matching `<queries>` entry too, and
+nothing will tell them.
+
+**`com.facebook.soloader.enabled` flipped `true` → `false`.** The new value is
+SoLoader's own library default; the old `true` was forced by
+`expo-modules-core`'s manifest with `tools:replace`. So the bare build matches
+what a React Native template produces and the classification is _correct, not
+regressed_ — but it changes the native-library loading path at cold start, which
+is the one thing no headless check can exercise. First thing to watch on the
+first launch.
+
+## What a green gate cannot see
+
+The verification found a stale `Expo SDK 54` entry in the mobile Guide's
+"Built with" list — rendered to the user, naming three roles that had all
+stopped being true — which survived every one of the eleven steps. Nothing in
+`tsc`, the layer guards, the tests or the APK diff can see a wrong string inside
+a rendered array.
+
+The general form: **this ejection changed what the app IS, and the only checks
+that can catch a stale claim about that are reading the copy and running the
+app.** The device checklist below is not optional polish; it is the other half
+of the verification.

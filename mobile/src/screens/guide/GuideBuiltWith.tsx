@@ -20,7 +20,14 @@ import { space } from '@/theme/tokens'
 
 const STACK: { name: string; role: string }[] = [
   { name: 'React Native 0.81', role: 'The app itself, on both platforms' },
-  { name: 'Expo SDK 54', role: 'Fonts, clipboard, status bar — as libraries, not a workflow' },
+  // Was "Expo SDK 54 — fonts, clipboard, status bar". All three had stopped
+  // being true: the faces are build-time assets, the clipboard is
+  // @react-native-clipboard/clipboard, and the status bar is React Native's
+  // own. Eleven ejection steps and a green gate all missed it, because nothing
+  // in the toolchain can see a stale string inside a rendered array — and this
+  // is the one the user reads.
+  { name: 'React Native CLI', role: 'The build. No Expo — we own android/ and ios/' },
+  { name: 'blob-util · documents', role: 'Attaching a file, and opening it again' },
   { name: 'React Navigation 7', role: 'The tab bar and the screen stack' },
   { name: 'Reanimated 4', role: "The board's long-press drag, on the UI thread" },
   { name: 'react-native-svg', role: 'The donut, the radar and the graph' },
