@@ -219,3 +219,79 @@ working Expo build; everything after it runs on a working bare build.
 mobile's 81 `kg` files and those tests move to `@jojo/service`. After that, a
 lower mobile count is not a regression — the number to watch is the total across
 `service` + `mobile`.
+
+## iOS, in the end
+
+Done as steps 12 and 13, surgically, the same way Android was. `AppDelegate.swift`
+reparented to `UIResponder`/`UIApplicationDelegate` with `RCTReactNativeFactory`;
+the Podfile rewritten to the template shape with `platform :ios, '16.4'`
+hardcoded and `use_native_modules!` taking no argument;
+`Podfile.properties.json`, `Expo.plist` and the `Supporting` group deleted; the
+Expo bundling `shellScript` replaced; `PrivacyInfo.xcprivacy` added by hand.
+
+Three things worth writing down, because they are not in the plan.
+
+**The `mobile/index` trap has an iOS third form.** It was known for
+`getJSMainModuleName()` and for `jsBundleURL(forBundleRoot:)`. The Xcode bundling
+phase is the third: `react-native-xcode.sh` defaults `ENTRY_FILE` to
+`index.js`, relative, and `react-native bundle` resolves a relative
+`--entry-file` against Metro's `serverRoot`. Measured — `--entry-file index.ts`
+from `mobile/` fails with ``The resource `<repo root>/index.ts` was not found``.
+The phase now exports an absolute `ENTRY_FILE`, which is the same shape as
+gradle's `entryFile = file("../../index.ts")`.
+
+**`PrivacyInfo.xcprivacy` is not purely an Expo debt.** React Native aggregates
+it too: `use_react_native!` defaults `privacy_file_aggregation_enabled` to true,
+and `PrivacyManifestUtils.add_aggregated_privacy_manifest` reads any existing
+file, merges the required-reason APIs of every installed pod into it, and writes
+it back. Committing one by hand is still right — it means the repo states its own
+position (nothing collected, no tracking) rather than inheriting whatever the pod
+set happened to imply — but it is a floor that `pod install` adds to, not a
+snapshot.
+
+**`pod install` is now load-bearing before the first build.**
+`react_native_post_install` writes `REACT_NATIVE_PATH` into the user project's
+build settings, and the bundling phase reads it. The Expo phase did not need it
+because it resolved everything through node.
+
+### The font decision: a third route, and why the plan's two were both wrong
+
+The plan offered `fontFamily: 'Inter'` plus `fontWeight` (idiomatic, re-tunes
+every weight) or patching the five `name` tables (keeps `tokens.ts`
+byte-identical, five unreviewable binaries). Neither was taken.
+
+The first is **broken for these specific files**, and it was measured rather than
+argued about. Only `Inter-Regular` and `Inter-Bold` declare the family `Inter`;
+`Inter_500Medium` and `Inter_600SemiBold` declare the families `Inter Medium` and
+`Inter SemiBold`, with `Inter` only as their typographic family — `name` ID 16,
+which is not what CoreText groups by. So `fontNamesForFamilyName(@"Inter")`
+returns two faces and `RCTFontWithFontProperties` picks the nearest weight among
+those: asking for 500 or 600 yields Bold. Medium and SemiBold would have rendered
+one and two steps too heavy, silently, on a green gate.
+
+The second is unnecessary, because the invariant it was reaching for can be had
+from the other side. The two platforms' rules have exactly one string in common
+per face — Android matches the asset **filename**, iOS falls back to
+`UIFont(name:)` which takes the **PostScript name** — so instead of patching the
+PostScript name to match the filename, the **filename was renamed to match the
+PostScript name**. `Inter_400Regular.ttf` → `Inter-Regular.ttf`, and the five
+strings in `tokens.ts` follow. Five `git mv`s and a five-line diff, no binary
+touched, no weight re-tuned, and no script to lose.
+
+Verified: `assembleRelease` still packages all six fonts at `assets/fonts/*.ttf`
+and the release bundle carries each new name exactly once and none of the old
+ones. The full write-up is in `docs/mobile-fonts.md`.
+
+### What is still unproven, and it is a lot
+
+Only Command Line Tools are installed on the machine this was done on — no Xcode,
+no simulator — and the local CocoaPods cannot load (its Ruby is missing openssl
+1.1). So there has been **no `pod install`, no compile, and no run**. What was
+checked is what a machine without Xcode can check: the pbxproj parses via
+`plutil`, the Swift parses via `swiftc -parse`, the Podfile is valid Ruby, every
+`UIAppFonts` entry resolves to a file that exists or to a pod resource,
+`npx react-native config` reports an iOS podspec for all eleven native modules,
+and the release JS bundle builds for `--platform ios` (3,084,749 bytes, zero
+`expo-asset` or `expo-modules-core` strings).
+
+`ios/` should be treated as unverified until someone builds it.

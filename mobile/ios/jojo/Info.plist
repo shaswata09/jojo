@@ -51,6 +51,11 @@
     <integer>4278848010</integer>
     <key>UIAppFonts</key>
     <array>
+      <string>Inter-Regular.ttf</string>
+      <string>Inter-Medium.ttf</string>
+      <string>Inter-SemiBold.ttf</string>
+      <string>Inter-Bold.ttf</string>
+      <string>JetBrainsMono-Regular.ttf</string>
       <string>Feather.ttf</string>
     </array>
     <key>UILaunchStoryboardName</key>

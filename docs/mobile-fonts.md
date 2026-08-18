@@ -6,45 +6,70 @@ Copied verbatim out of `@expo-google-fonts/inter` and
 `expo-font`; they are linked into the app now.
 
 They live in `mobile/android/app/src/main/assets/fonts/`, because that is the
-only place Android looks. When iOS is done they will be added to the Xcode
-project as a reference to *those* files rather than copied again — five
-binaries no diff can review are bad enough once.
+only place Android looks. The Xcode project references _those_ files rather than
+keeping a second copy — five binaries no diff can review are bad enough once.
 
 This note is here rather than beside them because everything under
 `src/main/assets/` is packaged into the APK, and a README does not belong in
 the app people install.
 
-## Why the filenames matter
+## The filenames are the PostScript names, and that is the whole trick
 
-Android's `ReactFontManager` resolves `fontFamily` against the **asset
-filename** with the extension dropped. That is the whole reason
-`src/theme/tokens.ts` did not have to change: `fontFamily: 'Inter_500Medium'`
-finds `Inter_500Medium.ttf` and every one of the app's `fontFamily:` call sites
-keeps working untouched. Rename a file here and the text silently falls back to
-the platform face.
+Android's `ReactFontManager` resolves `fontFamily` against the **asset filename**
+with the extension dropped: `fonts/<fontFamily>.ttf`. iOS resolves against a
+family name first and, when no family matches, falls back to `UIFont(name:)`,
+which accepts a **PostScript name**.
 
-## iOS does not resolve them, and this was measured, not guessed
+Those two rules have exactly one string in common per face — the PostScript
+name — so the files were renamed to it and `mobile/src/theme/tokens.ts` says it
+five times:
 
-iOS resolves a font by family name or by PostScript name. Neither matches the
-filename for any of the five — read straight out of each `name` table:
+| file                        | family (`name` ID 1) | PostScript (`name` ID 6) |
+| --------------------------- | -------------------- | ------------------------ |
+| `Inter-Regular.ttf`         | `Inter`              | `Inter-Regular`          |
+| `Inter-Medium.ttf`          | `Inter Medium`       | `Inter-Medium`           |
+| `Inter-SemiBold.ttf`        | `Inter SemiBold`     | `Inter-SemiBold`         |
+| `Inter-Bold.ttf`            | `Inter`              | `Inter-Bold`             |
+| `JetBrainsMono-Regular.ttf` | `JetBrains Mono`     | `JetBrainsMono-Regular`  |
 
-| file | family | PostScript |
-|---|---|---|
-| `Inter_400Regular.ttf` | `Inter` | `Inter-Regular` |
-| `Inter_500Medium.ttf` | `Inter Medium` | `Inter-Medium` |
-| `Inter_600SemiBold.ttf` | `Inter SemiBold` | `Inter-SemiBold` |
-| `Inter_700Bold.ttf` | `Inter` | `Inter-Bold` |
-| `JetBrainsMono_400Regular.ttf` | `JetBrains Mono` | `JetBrainsMono-Regular` |
+Rename a file here without changing `tokens.ts` and Android silently falls back
+to the platform face. Rename it to something that is not a PostScript name and
+iOS does the same.
 
-So on iOS all five `fontFamily` strings currently resolve to nothing and the
-app renders in San Francisco — silently, with a green test suite, and with
-every panel's measured layout slightly wrong.
+The files were previously named `Inter_400Regular.ttf` and so on — the
+`@expo-google-fonts` package convention, which matched nothing on iOS.
 
-This is **known and deferred on purpose**, to the iOS steps, at a simulator
-where it can be seen rather than argued about. The two routes are written up in
-`docs/EXPO-REMOVAL.md`: rewrite `tokens.ts` to `fontFamily: 'Inter'` plus
-`fontWeight` (idiomatic, but it re-tunes every weight and reaches into design
-tokens that are marked settled), or patch these five `name` tables so the
-PostScript name equals the filename (keeps `tokens.ts` byte-identical). If the
-patch route is taken it must ship as a committed, re-runnable script — losing
-it would make five unreviewable binaries unreproducible.
+## Why not `fontFamily: 'Inter'` plus `fontWeight`
+
+Because these particular files do not support it, and that was measured rather
+than assumed. Only Regular and Bold declare the family `Inter`. Medium and
+SemiBold declare themselves as the families `Inter Medium` and `Inter SemiBold`;
+`Inter` is only their _typographic_ family (`name` ID 16), which is not what
+CoreText groups by.
+
+So `[UIFont fontNamesForFamilyName:@"Inter"]` returns two faces, Regular and
+Bold. `RCTFontWithFontProperties` then picks the nearest weight among _those_:
+ask for 500 or 600 and you get Bold. Medium and SemiBold would render one and
+two steps too heavy, in an app whose type scale was tuned by eye.
+
+## Registering them on iOS
+
+Two things, and neither is optional:
+
+- The five file references are in **Copy Bundle Resources** in
+  `mobile/ios/jojo.xcodeproj`, pointing at the Android assets directory.
+- Every filename is listed under **`UIAppFonts`** in `mobile/ios/jojo/Info.plist`,
+  alongside `Feather.ttf`. Copying a font into the bundle does not register it;
+  `UIAppFonts` is what does. `Feather.ttf` arrives differently — the
+  `@react-native-vector-icons/feather` podspec declares it as a pod resource —
+  but it still needs the same `Info.plist` entry, which it did not have under
+  Expo because `expo-font` registered it at runtime instead.
+
+## Not verified
+
+Nothing here has run on an iPhone or a simulator. The resolution rules above are
+read out of `RCTFontUtils.mm` and each font's `name` table; what has not been
+observed is the app rendering. The check, when there is a Mac with Xcode: open
+any screen and confirm the four Inter weights are visibly distinct and that the
+Calculator's figures are monospaced. San Francisco has four distinct weights too,
+so "it looks fine" is not the test — compare against the Android build.

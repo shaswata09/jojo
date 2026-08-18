@@ -115,7 +115,8 @@ none of them announces itself:
 | `AndroidManifest.xml`      | Permissions, `<queries>`, the `jojo://` filter and `enableOnBackInvokedCallback` were prebuild-injected. Adding a native module that needs a permission is now something you have to notice. |
 | `Info.plist`               | Same, plus the URL types and `RCTRootViewBackgroundColor`.                                                                                                                                   |
 | Icons and splash resources | 38 Android drawables and an iOS asset catalog, generated from `assets/*.png`. Those PNGs are still the human source; regenerating from them is manual.                                       |
-| Font linking               | `expo-font` loaded five TTFs at runtime. They are build-time assets now.                                                                                                                     |
+| Font linking               | `expo-font` loaded five TTFs at runtime. They are build-time assets now — see `docs/mobile-fonts.md`, because the filenames are load-bearing on both platforms.                              |
+| `PrivacyInfo.xcprivacy`    | Synthesised at `pod install`. It is a committed file now; `use_react_native!` merges pod-required reasons into it rather than replacing it.                                                  |
 | The SDK floors             | `expo-build-properties`. See **Platform floor** below for where they live.                                                                                                                   |
 | React Native upgrades      | `expo upgrade`. Now: diff the RN template by hand, every version, across two native projects.                                                                                                |
 
@@ -126,19 +127,19 @@ workflow. They were replaced one at a time, each swap verified on a device
 against a still-working build, so that a failure had one candidate cause instead
 of two:
 
-| Was                     | Is now                                                                  |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `expo`                  | `AppRegistry.registerComponent('main', …)` in `index.ts`                |
-| `@expo/vector-icons`    | `@react-native-vector-icons/feather`, the `/static` entry point         |
-| `expo-font`             | Five TTFs in `android/app/src/main/assets/fonts/`, linked at build time |
-| `expo-clipboard`        | `@react-native-clipboard/clipboard`                                     |
-| `expo-status-bar`       | React Native's own `StatusBar`                                          |
-| `expo-system-ui`        | The window background in `styles.xml`                                   |
-| `expo-build-properties` | `buildscript { ext { … } }` in `android/build.gradle`                   |
-| `expo-document-picker`  | `@react-native-documents/picker`, with `keepLocalCopy()`                |
-| `expo-file-system`      | `react-native-blob-util`, which brings its own `FileProvider`           |
-| `expo-intent-launcher`  | `ReactNativeBlobUtil.android.actionViewIntent`                          |
-| `expo-sharing`          | React Native's own `Share`                                              |
+| Was                     | Is now                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `expo`                  | `AppRegistry.registerComponent('main', …)` in `index.ts`                                                                                    |
+| `@expo/vector-icons`    | `@react-native-vector-icons/feather`, the `/static` entry point                                                                             |
+| `expo-font`             | Five TTFs in `android/app/src/main/assets/fonts/`, linked at build time; iOS references those same files and registers them in `UIAppFonts` |
+| `expo-clipboard`        | `@react-native-clipboard/clipboard`                                                                                                         |
+| `expo-status-bar`       | React Native's own `StatusBar`                                                                                                              |
+| `expo-system-ui`        | The window background in `styles.xml`                                                                                                       |
+| `expo-build-properties` | `buildscript { ext { … } }` in `android/build.gradle`                                                                                       |
+| `expo-document-picker`  | `@react-native-documents/picker`, with `keepLocalCopy()`                                                                                    |
+| `expo-file-system`      | `react-native-blob-util`, which brings its own `FileProvider`                                                                               |
+| `expo-intent-launcher`  | `ReactNativeBlobUtil.android.actionViewIntent`                                                                                              |
+| `expo-sharing`          | React Native's own `Share`                                                                                                                  |
 
 Two things Expo was doing invisibly, that are now written down:
 
@@ -169,6 +170,19 @@ The Android floor lives in the `buildscript { ext { … } }` block at the top of
 have dropped the floor to React Native's default with no error anywhere. The iOS
 floor is `platform :ios, '16.4'` in the Podfile, hardcoded rather than
 `min_ios_version_supported`, which is 15.1.
+
+### iOS has never been built here
+
+Everything under `ios/` was written against the React Native 0.81 template and
+checked as far as a machine without Xcode allows: the pbxproj parses, the Swift
+parses, `npx react-native config` reports an iOS podspec for all eleven native
+modules, and the release JS bundle builds for `--platform ios`. Nothing has been
+compiled, no pods have been resolved, and no simulator has run it.
+
+The first person with a Mac and Xcode should expect to spend real time here, and
+should start with `cd ios && pod install` — that step is not optional in a new
+way: `react_native_post_install` is what writes `REACT_NATIVE_PATH` into the
+project, and the **Bundle React Native code and images** phase reads it.
 
 ---
 

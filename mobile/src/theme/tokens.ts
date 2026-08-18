@@ -225,10 +225,24 @@ export const radius = { sm: 6, md: 8, lg: 12, xl: 16, full: 999 } as const
  */
 export const TAP = 44
 
+/**
+ * These five strings are each font's PostScript name, and that is the only shape
+ * both platforms agree on. Android matches `fontFamily` against the asset
+ * filename, so the five TTFs were renamed to match; iOS matches against a family
+ * name first and falls back to `UIFont(name:)`, which takes a PostScript name.
+ *
+ * The obvious alternative — `fontFamily: 'Inter'` plus `fontWeight` — is wrong
+ * for these particular files, and it was measured rather than assumed. Only
+ * Regular and Bold carry the family name `Inter`; Medium and SemiBold declare
+ * themselves as the families `Inter Medium` and `Inter SemiBold`. Asking for
+ * `Inter` at weight 500 makes RCTFontWithFontProperties pick the nearest weight
+ * in the `Inter` family, which is Bold. Medium and SemiBold would silently
+ * render one and two steps too heavy.
+ */
 export const fonts = {
-  regular: 'Inter_400Regular',
-  medium: 'Inter_500Medium',
-  semibold: 'Inter_600SemiBold',
-  bold: 'Inter_700Bold',
-  mono: 'JetBrainsMono_400Regular',
+  regular: 'Inter-Regular',
+  medium: 'Inter-Medium',
+  semibold: 'Inter-SemiBold',
+  bold: 'Inter-Bold',
+  mono: 'JetBrainsMono-Regular',
 } as const
