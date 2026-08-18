@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { StyleSheet, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import {
   DarkTheme,
   DefaultTheme,

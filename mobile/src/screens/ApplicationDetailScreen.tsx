@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'

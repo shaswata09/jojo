@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { Txt } from '@/components/ui/Text'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import { useColors } from '@/theme/theme-context'

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import { MonthPickerSheet } from '@/components/common/DateField'

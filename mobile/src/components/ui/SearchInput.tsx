@@ -1,5 +1,5 @@
 import { StyleSheet, TextInput, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { IconButton } from '@/components/ui/Button'
 import { useColors } from '@/theme/theme-context'
 import { fonts, radius, space, type } from '@/theme/tokens'

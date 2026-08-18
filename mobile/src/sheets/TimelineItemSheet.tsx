@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { DateField } from '@/components/common/DateField'
 import { StagedKeywordPicker } from '@/components/common/Labels'
 import { Button } from '@/components/ui/Button'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { TODAY, TODAY_PARTS } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button, IconButton } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/Field'
 import { Sheet } from '@/components/ui/Sheet'
