@@ -1,4 +1,18 @@
 pluginManagement {
+  // Resolved through node rather than the template's literal
+  // `../node_modules/@react-native/gradle-plugin`, because under npm workspaces
+  // react-native is hoisted to the repo root and that relative path does not
+  // exist. The two-hop resolve (gradle-plugin *as seen from* react-native) is
+  // what survives hoisting.
+  //
+  // Deliberately duplicated at the foot of this file: Gradle requires
+  // `pluginManagement {}` to be the first statement in a settings script, so a
+  // shared `def` cannot be hoisted above it, and the closure's locals are not
+  // visible outside it. The template duplicates the literal path for the same
+  // reason. Both includeBuilds are load-bearing — this one supplies the
+  // `com.facebook.react.settings` plugin, the one below substitutes the
+  // `com.facebook.react:react-native-gradle-plugin` classpath dependency in
+  // the root build.gradle.
   def reactNativeGradlePlugin = new File(
     providers.exec {
       workingDir(rootDir)
@@ -6,15 +20,6 @@ pluginManagement {
     }.standardOutput.asText.get().trim()
   ).getParentFile().absolutePath
   includeBuild(reactNativeGradlePlugin)
-  
-  def expoPluginsPath = new File(
-    providers.exec {
-      workingDir(rootDir)
-      commandLine("node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
-    }.standardOutput.asText.get().trim(),
-    "../android/expo-gradle-plugin"
-  ).absolutePath
-  includeBuild(expoPluginsPath)
 }
 
 plugins {
@@ -32,21 +37,29 @@ plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
 
   id("com.facebook.react.settings")
-  id("expo-autolinking-settings")
 }
 
+// The no-arg form runs the React Native CLI's own `config` command. Until the
+// ejection this passed `expoAutolinking.rnConfigCommand`, because Expo does not
+// bypass RN autolinking — it impersonates the config producer.
+//
+// `node_modules/expo/react-native.config.js` is supposed to notice that
+// `useExpoModules()` has gone from this file and stop claiming an Android
+// platform for itself. Measured: it does not — see the note in
+// `mobile/react-native.config.js`, which excludes it by hand until step 11
+// uninstalls the package.
 extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
-  if (System.getenv('EXPO_USE_COMMUNITY_AUTOLINKING') == '1') {
-    ex.autolinkLibrariesFromCommand()
-  } else {
-    ex.autolinkLibrariesFromCommand(expoAutolinking.rnConfigCommand)
-  }
+  ex.autolinkLibrariesFromCommand()
 }
-expoAutolinking.useExpoModules()
 
 rootProject.name = 'jojo'
 
-expoAutolinking.useExpoVersionCatalog()
-
 include ':app'
-includeBuild(expoAutolinking.reactNativeGradlePlugin)
+
+def reactNativeGradlePlugin = new File(
+  providers.exec {
+    workingDir(rootDir)
+    commandLine("node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
+  }.standardOutput.asText.get().trim()
+).getParentFile().absolutePath
+includeBuild(reactNativeGradlePlugin)

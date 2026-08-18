@@ -98,6 +98,41 @@ It is also the first bill for what the ejection buys. Expo did not protect
 against this either, but nobody had to notice before, because no native module
 had been added by hand.
 
+## A fifth thing, found during the surgery: Expo does not let go on its own
+
+`node_modules/expo/react-native.config.js` is written to opt itself out of
+autolinking when the project does not use Expo modules — it greps
+`android/settings.gradle` for `useExpoModules`, which the native surgery
+removes. **It never gets that far.** It locates the project with
+`expo-modules-autolinking`'s `findProjectRootSync()`, which returns a path to
+`package.json` rather than the directory holding it, so the path it stats is
+`mobile/package.json/android/settings.gradle`. That cannot exist, and the miss
+is read as "managed app" — the branch that claims an Android platform.
+
+Left alone, Gradle then autolinks `node_modules/expo/android`, whose
+`build.gradle` applies `expo-module-gradle-plugin` — the plugin the surgery just
+removed from `settings.gradle` — and configuration fails.
+
+The fix is a `mobile/react-native.config.js` that excludes `expo` by name. It is
+**temporary**: it exists only for the window between the native surgery and the
+step that uninstalls the package, and that step deletes it. It pins no paths —
+`npx react-native config` resolves `reactNativePath` and both platform
+`sourceDir`s correctly under workspace hoisting, unaided.
+
+## Two questions the surgery answered
+
+**`app/src/debugOptimized/` is not an orphan.** The `debugOptimized` build type
+is created by the React Native Gradle plugin (`AgpConfiguratorUtils`), not by
+anything of Expo's. Confirmed after the surgery: `:app:tasks --all` still lists
+`installDebugOptimized`. The source set stays.
+
+**Exactly one `FileProvider`.** Before the surgery the merged release manifest
+carried two — `dev.jojo.tracker.provider` from `react-native-blob-util` and
+`dev.jojo.tracker.FileSystemFileProvider`, still contributed because the `expo`
+package depends on `expo-file-system`. With Expo out of the linked set, only
+blob-util's remains, and its `provider_paths` `files-path "."` covers where
+`keepLocalCopy` writes.
+
 ## Sequencing
 
 **The service-layer migration goes first**, steps 2–8 complete and green, with
