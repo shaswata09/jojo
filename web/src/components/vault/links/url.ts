@@ -1,13 +1,49 @@
 /**
- * Reading a pasted address well enough to save it in one gesture.
+ * Reading a pasted address well enough to save it in one gesture, and writing
+ * one back out so a reader recognises it.
  *
- * All of it is deliberately forgiving: the field this feeds is the only way a
- * link gets into the vault, and one that rejected the most common form of paste
- * would read as broken.
+ * All of the reading is deliberately forgiving: the field this feeds is the only
+ * way a link gets into the vault, and one that rejected the most common form of
+ * paste would read as broken.
+ *
+ * The whole app renders addresses from here. There were four spellings of "the
+ * host of this URL" — two byte-identical scheme-strippers, `new URL().hostname`
+ * without `www.`, and `new URL().host` with it — so one saved posting,
+ * `https://www.jobs.rice.edu/postings/1/`, read as `www.jobs.rice.edu/postings/1`
+ * in the vault, `jobs.rice.edu` on the application detail page and
+ * `www.jobs.rice.edu` in the draft dialog. Three strings, one link, and nothing
+ * on screen to say they were the same one. `kg/core/parse-posting.ts` strips
+ * `www.` too and stays separate on purpose: that is parsing, below the layer
+ * boundary, and it may not import this.
  */
 
-/** Strips the scheme and any trailing slash, so the host reads at a glance. */
-export function hostOf(url: string) {
+/**
+ * The host alone — 'jobs.rice.edu' — or `undefined` when the string is not an
+ * address at all.
+ *
+ * `undefined` rather than the input, because the two callers that show a URL
+ * want to fall back to the raw string and the one that fills a `[PORTAL]`
+ * placeholder in a draft must not: a blank there is visible and a half-parsed
+ * one is not. Making the fallback the caller's decision is what stopped this
+ * being copied a fourth time.
+ *
+ * Normalised first, so a posting saved the way it was typed
+ * ('jobs.rice.edu/postings/29411', no scheme) resolves rather than throwing.
+ */
+export function hostOf(url: string): string | undefined {
+  return parseUrl(normalizeUrl(url))?.hostname.replace(/^www\./, '')
+}
+
+/**
+ * The address minus the noise — scheme and trailing slash gone, path kept.
+ *
+ * The vault's links list shows this rather than `hostOf` because a link row's
+ * subject IS the page: five rows on one host are five different documents, and
+ * a list that rendered all five as 'jobs.rice.edu' would be a list of one thing
+ * repeated. Everywhere else the host is the whole point, which is why this is a
+ * second function and not a flag on the first.
+ */
+export function pathLabel(url: string) {
   return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
 }
 

@@ -4,7 +4,7 @@ import { LabelFilter } from '@/components/common/LabelFilter'
 import { Segment } from '@/components/common/Segment'
 import { RoleFilter } from '@/components/layout/RoleFilter'
 import { Input } from '@/components/ui/input'
-import { STAGES, type Application } from '@/data/seed'
+import { STAGES, STAGE_LABEL, type Application } from '@/data/seed'
 import { refKey } from '@/lib/ids'
 import type { ApplicationsView, useApplicationsParams } from '@/lib/links'
 
@@ -75,7 +75,7 @@ export function ApplicationsFilters({
           <BucketFilter
             label="Filter by stage"
             options={STAGES.map((st) => st.id)}
-            labels={Object.fromEntries(STAGES.map((st) => [st.id, st.label]))}
+            labels={STAGE_LABEL}
             counts={stageCounts}
             value={params.stage}
             onChange={(next) => params.set({ stage: next })}

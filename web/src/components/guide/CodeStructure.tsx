@@ -62,16 +62,41 @@ const LAYER_FACTS: LayerFact[] = [
 type DirRow = { dir: string; files: number; tests: number; lines: number; what: string }
 
 const SHAPE: DirRow[] = [
-  { dir: 'src/kg/core', files: 18, tests: 8, lines: 4628, what: 'model, ids, schema, algebra' },
-  { dir: 'src/kg/repo', files: 12, tests: 6, lines: 3928, what: 'transactions, journal, boot' },
-  { dir: 'src/kg/tools', files: 12, tests: 1, lines: 4483, what: '62 named operations' },
-  { dir: 'src/kg/storage', files: 9, tests: 2, lines: 2905, what: 'the IndexedDB adapter' },
-  { dir: 'src/kg/react', files: 18, tests: 2, lines: 2296, what: 'providers and hooks' },
-  { dir: 'src/kg/log.ts', files: 1, tests: 0, lines: 47, what: 'the console is the telemetry' },
-  { dir: 'src/components', files: 112, tests: 1, lines: 23387, what: 'every surface you can see' },
-  { dir: 'src/routes', files: 14, tests: 0, lines: 6479, what: 'thirteen pages' },
-  { dir: 'src/lib', files: 45, tests: 9, lines: 6129, what: 'web-only adapters and URL state' },
-  { dir: 'src/data', files: 8, tests: 0, lines: 1833, what: 'demo fixtures, below the model' },
+  {
+    dir: 'service/kg/core',
+    files: 27,
+    tests: 12,
+    lines: 6159,
+    what: 'model, ids, schema, algebra',
+  },
+  { dir: 'service/kg/repo', files: 15, tests: 7, lines: 5916, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5128, what: '62 named operations' },
+  {
+    dir: 'service/kg/storage',
+    files: 10,
+    tests: 2,
+    lines: 1959,
+    what: 'the port, and no platform',
+  },
+  { dir: 'service/kg/react', files: 22, tests: 3, lines: 3311, what: 'providers and hooks' },
+  { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 47, what: 'the console is the telemetry' },
+  { dir: 'web/src/kg/storage', files: 9, tests: 2, lines: 2335, what: 'the IndexedDB adapter' },
+  {
+    dir: 'web/src/components',
+    files: 219,
+    tests: 10,
+    lines: 32553,
+    what: 'every surface you can see',
+  },
+  { dir: 'web/src/routes', files: 14, tests: 0, lines: 3255, what: 'thirteen pages' },
+  {
+    dir: 'web/src/lib',
+    files: 52,
+    tests: 10,
+    lines: 6005,
+    what: 'web-only adapters and URL state',
+  },
+  { dir: 'web/src/data', files: 9, tests: 1, lines: 1791, what: 'demo fixtures, below the model' },
 ]
 
 type TestGroup = { title: string; files: string; body: string }
@@ -179,9 +204,10 @@ export function CodeStructure() {
           <p className="mt-2.5 text-sm text-text-2">
             Worth being plain about: nothing has mounted this layer on another platform yet. The
             React Native app under <span className="font-mono text-xs">mobile/</span> imports
-            nothing from <span className="font-mono text-xs">src/kg</span> — it is still on its own
-            local state. The boundary is what would make that port a wiring job rather than a
-            rewrite. It is not evidence that the port has happened.
+            nothing from <span className="font-mono text-xs">@jojo/service</span> yet — it is still
+            running a copy of the layer that has drifted from this one. The boundary is what makes
+            deleting that copy a wiring job rather than a rewrite. It is not evidence that the port
+            has happened.
           </p>
         </Panel>
       </section>
@@ -199,7 +225,7 @@ export function CodeStructure() {
             <PanelTitle hint="a regex, deliberately">check-layers.mjs</PanelTitle>
             <p className="text-sm text-text-2">
               It reads import lines and nothing else, which is enough to reject a file under{' '}
-              <span className="font-mono text-xs">src/kg</span> importing from{' '}
+              <span className="font-mono text-xs">service/kg</span> importing from{' '}
               <span className="font-mono text-xs">@/components</span>, a layer importing one it may
               not, a <span className="font-mono text-xs">.tsx</span> outside{' '}
               <span className="font-mono text-xs">kg/react</span>, and any module at all importing
@@ -220,7 +246,7 @@ export function CodeStructure() {
               <span className="font-mono text-xs">window.addEventListener</span> is a global, so no
               amount of reading import lines will ever see it — and a grep for these names is
               useless here: of 28 naive matches under{' '}
-              <span className="font-mono text-xs">src/kg</span>, 23 are prose in a comment or a
+              <span className="font-mono text-xs">service/kg</span>, 23 are prose in a comment or a
               domain noun like <span className="font-mono text-xs">application.location</span>.
             </p>
             <p className="mt-2.5 text-sm text-text-2">
@@ -235,11 +261,11 @@ export function CodeStructure() {
         <Panel className="mt-4 sm:mt-5">
           <PanelTitle hint="the earliest of the three">The compiler carries it too</PanelTitle>
           <p className="text-sm text-text-2">
-            <span className="font-mono text-xs">tsconfig.kg.json</span> compiles core, repo and
-            tools with <Kbd>&quot;lib&quot;: [&quot;ES2023&quot;]</Kbd> and{' '}
+            <span className="font-mono text-xs">service/tsconfig.core.json</span> compiles core,
+            repo and tools with <Kbd>&quot;lib&quot;: [&quot;ES2023&quot;]</Kbd> and{' '}
             <Kbd>&quot;types&quot;: []</Kbd>;{' '}
-            <span className="font-mono text-xs">tsconfig.kg-react.json</span> does the same for the
-            hooks, admitting React and nothing else. No DOM library and no ambient types means{' '}
+            <span className="font-mono text-xs">service/tsconfig.react.json</span> does the same for
+            the hooks, admitting React and nothing else. No DOM library and no ambient types means{' '}
             <span className="font-mono text-xs">document</span> and{' '}
             <span className="font-mono text-xs">process</span> are not names those directories can
             spell, so a stray one is a compile error rather than a review comment.
@@ -250,8 +276,8 @@ export function CodeStructure() {
           <p className="mt-2.5 text-sm text-text-2">
             None of the three made the others redundant, and there is a specific reason for that. A
             lib setting is per project while the script is per layer — &ldquo;no timers anywhere
-            under src/kg&rdquo; would be the wrong rule, since a retry backoff belongs in the write
-            queue and nowhere else. And the rules exist at all because a{' '}
+            under service/kg&rdquo; would be the wrong rule, since a retry backoff belongs in the
+            write queue and nowhere else. And the rules exist at all because a{' '}
             <span className="font-mono text-xs">window</span> listener once sat inside{' '}
             <span className="font-mono text-xs">kg/react/kg.tsx</span> through a clean{' '}
             <Kbd>tsc -b</Kbd>, <Kbd>npm test</Kbd> and <Kbd>npm run lint</Kbd>. On React Native that
@@ -376,9 +402,9 @@ export function CodeStructure() {
               costs one line and it makes the whole table checkable. */}
           <p className="mt-3.5 text-xs text-text-3">
             Counted on the tree these pages were written against, tests included, with{' '}
-            <Kbd>find src/kg/core -name &apos;*.ts*&apos; | xargs wc -l</Kbd>. Re-run it rather than
-            trusting it — <span className="font-mono">src/components</span> in particular moves
-            whenever anything ships.
+            <Kbd>find service/kg/core -name &apos;*.ts*&apos; | xargs wc -l</Kbd>. Re-run it rather
+            than trusting it — <span className="font-mono">web/src/components</span> in particular
+            moves whenever anything ships.
           </p>
         </Panel>
       </section>
@@ -387,17 +413,17 @@ export function CodeStructure() {
         <h2 className="mb-3 text-base font-medium">
           What the tests actually pin
           <small className="ml-2 font-sans text-xs font-normal text-text-3">
-            29 files, 362 tests, about a second
+            49 files, 607 tests, about two seconds
           </small>
         </h2>
 
         <p className="text-sm text-text-2">
           Vitest in a node environment, with{' '}
           <span className="font-mono text-xs">fake-indexeddb</span> standing in for the
-          browser&rsquo;s database. Nineteen of the 29 files sit under{' '}
-          <span className="font-mono text-xs">src/kg</span> and hold 282 of the 362 tests, which is
-          the ratio the project intends: this is the code whose failure is silent and permanent, and
-          local-first means there is nothing to restore from.
+          browser&rsquo;s database. Twenty-six of the 49 files sit in{' '}
+          <span className="font-mono text-xs">service/</span> and hold 413 of the 607 tests, which
+          is the ratio the project intends: this is the code whose failure is silent and permanent,
+          and local-first means there is nothing to restore from.
         </p>
 
         <Panel className="mt-3.5 sm:mt-4">

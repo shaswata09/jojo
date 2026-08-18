@@ -32,12 +32,12 @@
  * mean "when did you last press a button in Settings".
  */
 
-import type { StoreMeta } from '@/kg/repo/meta'
-import type { GraphRows, Repository } from '@/kg/repo/repository'
-import { seedToGraph } from '@/kg/repo/seed'
-import type { Instant } from '@/kg/core/model'
-import type { Result } from '@/kg/core/result'
-import { kgWarn } from '@/kg/log'
+import type { StoreMeta } from '@jojo/service/repo/meta'
+import type { GraphRows, Repository } from '@jojo/service/repo/repository'
+import { seedToGraph } from '@jojo/service/repo/seed'
+import type { Instant } from '@jojo/service/core/model'
+import type { Result } from '@jojo/service/core/result'
+import { kgWarn } from '@jojo/service/log'
 
 /** What the user is choosing between. `'user'` is a state, not a choice. */
 export type DataSetChoice = 'demo' | 'empty'

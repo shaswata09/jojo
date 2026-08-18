@@ -2,8 +2,8 @@ import type { Ref } from 'react'
 import { Link } from 'react-router'
 import { Copy, ExternalLink, Link2, Pencil, Trash2 } from 'lucide-react'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
-import { MenuItem, MenuSection, RowMenu } from '@/components/vault/RowMenu'
-import { hostOf } from '@/components/vault/links/url'
+import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
+import { pathLabel } from '@/components/vault/links/url'
 import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
 import { LINK_CATEGORIES } from '@/data/vault'
@@ -74,7 +74,7 @@ export function LinkRow({
             rel="noopener noreferrer"
             className="group flex min-w-0 items-center gap-1 font-mono underline-offset-2 transition-colors hover:text-accent hover:underline"
           >
-            <span className="truncate">{hostOf(l.url)}</span>
+            <span className="truncate">{pathLabel(l.url)}</span>
             <ExternalLink
               aria-label="Opens in a new tab"
               role="img"

@@ -192,7 +192,7 @@ export const RUNTIME: readonly Credit[] = [
     licence: 'ISC',
     holder: '2016 Jake Archibald',
     what: 'The promise wrapper around IndexedDB — the database your records are actually kept in. One file in the whole codebase may import it, and a check in the lint step fails the build if a second one tries.',
-    where: 'src/kg/storage/idb-driver.ts',
+    where: 'web/src/kg/storage/idb-driver.ts',
   },
   {
     name: 'three',

@@ -5,26 +5,23 @@ import { DatesPanel } from '@/components/applications/detail/DatesPanel'
 import { DetailFacts } from '@/components/applications/detail/DetailFacts'
 import { DetailHeader } from '@/components/applications/detail/DetailHeader'
 import { NotePanel } from '@/components/applications/detail/NotePanel'
-import { listJoin, plural } from '@/components/applications/detail/text'
+import { plainStageMove, stageNeedsDetails } from '@/components/applications/dialog/stage-policy'
 import { OfferBlock } from '@/components/applications/OfferBlock'
 import type { OfferDecision } from '@/components/applications/OfferBlock'
-import { STAGE_LABEL } from '@/components/applications/StageMenu'
-import {
-  StageTransitionDialog,
-  stageNeedsDetails,
-} from '@/components/applications/StageTransitionDialog'
+import { StageTransitionDialog } from '@/components/applications/StageTransitionDialog'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { listJoin, plural } from '@/components/common/text'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { displayName } from '@/data/seed'
+import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, OfferApplication, Stage } from '@/data/seed'
 import { compareItems } from '@/data/timeline'
-import { useApplications } from '@/kg/react/use-applications'
-import { useScout } from '@/kg/react/use-scout'
-import type { TimelineDraft } from '@/kg/react/use-timeline'
-import { useTimeline } from '@/kg/react/use-timeline'
-import { useVault } from '@/kg/react/use-vault'
+import { useApplications } from '@jojo/service/react/use-applications'
+import { useScout } from '@jojo/service/react/use-scout'
+import type { TimelineDraft } from '@jojo/service/react/use-timeline'
+import { useTimeline } from '@jojo/service/react/use-timeline'
+import { useVault } from '@jojo/service/react/use-vault'
 import { useDialogs } from '@/lib/dialogs-context'
 import { appPath, applicationsPath, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
@@ -207,7 +204,7 @@ function Detail({
       setTarget(stage)
       return
     }
-    applyStageMove({ stage, lastAction: `Moved to ${STAGE_LABEL[stage]}` })
+    applyStageMove(plainStageMove(stage))
   }
 
   const onDecide = (decision: OfferDecision) => {

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { TODAY } from '@/lib/today'
-import { offerDaysLeft } from '@/data/seed'
-import { daysBetween, shortDate } from '@/data/timeline'
+import { offerDaysLeft } from '@jojo/service/data/seed'
+import { daysBetween, shortDate } from '@jojo/service/data/timeline'
 import { useApplications, useTimeline } from '@/lib/store-context'
 
 /**
@@ -118,7 +118,13 @@ export function usePriorityActions(): PriorityAction[] {
 
     return [
       ...offers.map((a): PriorityAction => {
-        const daysLeft = offerDaysLeft(a.offer)
+        // `TODAY`, threaded from the app shell. The deleted fixture copy of
+        // this function defaulted the second argument to a `TODAY` frozen at
+        // the fixtures' October, so every offer countdown on the phone was
+        // measured against a date that never moves. D26 makes the clock the
+        // shell's to supply, and the required parameter is what turned that
+        // from a wrong number into a compile error.
+        const daysLeft = offerDaysLeft(a.offer, TODAY)
         return {
           id: `offer-${a.id}`,
           kindLabel: 'Offer',

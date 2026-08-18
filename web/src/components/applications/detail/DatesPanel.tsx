@@ -1,20 +1,14 @@
 import { CalendarPlus, PenLine } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelScroll, PanelTitle } from '@/components/common/Panel'
+import { BUCKET_TEXT } from '@/components/common/timeline-buckets'
 import { Button } from '@/components/ui/button'
 import { bucketOf, shortDate, timeLabel, whenLabel } from '@/data/timeline'
-import type { TimelineBucket, TimelineItem } from '@/data/timeline'
+import type { TimelineItem } from '@/data/timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
-
-const bucketText: Record<TimelineBucket, string> = {
-  overdue: 'text-danger',
-  today: 'text-warning',
-  upcoming: 'text-text-3',
-  done: 'text-text-3',
-}
 
 /**
  * Everything dated that points at this record — overdue, due and done.
@@ -135,7 +129,7 @@ function UpcomingRow({ item, onDraft }: { item: TimelineItem; onDraft: () => voi
         ) : null}
       </div>
       <div className="shrink-0 text-right">
-        <div className={cn('text-xs font-medium whitespace-nowrap', bucketText[bucket])}>
+        <div className={cn('text-xs font-medium whitespace-nowrap', BUCKET_TEXT[bucket])}>
           {whenLabel(item, TODAY)}
         </div>
         <div className="mt-0.5 font-mono text-xs whitespace-nowrap text-text-3">

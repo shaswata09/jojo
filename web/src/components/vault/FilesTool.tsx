@@ -4,15 +4,16 @@ import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
+import { emptyStateFor } from '@/components/vault/empty-state'
+import { matchesQuery } from '@/components/vault/search'
 import { FileViewer } from '@/components/vault/FileViewer'
-import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
-import { filesEmptyState } from '@/components/vault/files/empty-state'
+import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
 import { FileRow } from '@/components/vault/files/FileRow'
 import { sortDrop } from '@/components/vault/files/intake'
 import { useFileDrop } from '@/components/vault/files/use-file-drop'
 import { FILE_BUCKETS } from '@/data/vault'
 import type { FileBucket, VaultFile } from '@/data/vault'
-import { useVault } from '@/kg/react/use-vault'
+import { useVault } from '@jojo/service/react/use-vault'
 import { kindOfFile, sizeLabel } from '@/lib/files'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
@@ -223,15 +224,29 @@ export function FilesTool({ focus }: { focus?: string }) {
     </Button>
   )
 
-  const empty = filesEmptyState({
+  const empty = emptyStateFor({
     total: files.length,
     query,
-    bucket,
-    selectedLabels,
-    addButton,
+    filteredByBucket: bucket !== 'all',
+    filteredByKeyword: selectedLabels.size > 0,
     onClearQuery: () => setQuery(''),
     onClearBucket: () => setBucket('all'),
     onClearKeywords: clearSelected,
+    copy: {
+      zero: {
+        title: 'No files yet',
+        description: 'Drop a posting, a paper or a draft here — or add one from your computer.',
+        action: addButton,
+      },
+      search: (q) => `No file mentions "${q}" in its name, note or bucket.`,
+      both: `No file in ${bucket} carries the selected keywords.`,
+      bucket: {
+        title: `Nothing in ${bucket}`,
+        description: `${files.length} files are filed under the other buckets.`,
+        clearLabel: 'Show all buckets',
+      },
+      keywords: { title: 'No files carry those keywords' },
+    },
   })
 
   return (

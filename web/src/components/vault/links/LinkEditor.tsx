@@ -7,7 +7,7 @@ import { ApplicationPicker } from '@/components/vault/links/ApplicationPicker'
 import { normalizeUrl, parseUrl } from '@/components/vault/links/url'
 import { LINK_CATEGORIES } from '@/data/vault'
 import type { LinkCategory, VaultLink } from '@/data/vault'
-import { useVault } from '@/kg/react/use-vault'
+import { useVault } from '@jojo/service/react/use-vault'
 import { useToast } from '@/lib/toast-context'
 
 /**

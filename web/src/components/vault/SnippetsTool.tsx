@@ -6,15 +6,16 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
-import { snippetsEmptyState } from '@/components/vault/snippets/empty-state'
+import { emptyStateFor } from '@/components/vault/empty-state'
+import { matchesQuery } from '@/components/vault/search'
+import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
 import { keywordKey } from '@/components/vault/snippets/model'
 import type { Clean, Draft, Pending } from '@/components/vault/snippets/model'
 import { SnippetCard } from '@/components/vault/snippets/SnippetCard'
 import { SnippetEditor } from '@/components/vault/snippets/SnippetEditor'
 import { SNIPPET_TAGS } from '@/data/vault'
 import type { Snippet, SnippetTag } from '@/data/vault'
-import { useVault } from '@/kg/react/use-vault'
+import { useVault } from '@jojo/service/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
 import { htmlFromText, textFromHtml } from '@/lib/rich-text'
 import { useToast } from '@/lib/toast-context'
@@ -343,15 +344,35 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     })
   }
 
-  const empty = snippetsEmptyState({
+  const empty = emptyStateFor({
     total: snippets.length,
     query,
-    tagFilter,
-    selectedLabels,
-    onNew: () => requestOpen(),
+    filteredByBucket: tagFilter !== 'all',
+    filteredByKeyword: selectedLabels.size > 0,
     onClearQuery: () => setQuery(''),
-    onClearTag: () => setTagFilter('all'),
+    onClearBucket: () => setTagFilter('all'),
     onClearKeywords: clearSelected,
+    copy: {
+      zero: {
+        title: 'No snippets yet',
+        description:
+          'Save the paragraphs you keep rewriting — the bio, the why-this-department, the follow-up email.',
+        action: (
+          <Button size="sm" onClick={() => requestOpen()}>
+            <Plus className="size-3.5" strokeWidth={2} aria-hidden />
+            New snippet
+          </Button>
+        ),
+      },
+      search: (q) => `No snippet mentions "${q}" in its name, text or kind.`,
+      both: `No ${tagFilter} snippet carries the selected keywords.`,
+      bucket: {
+        title: `No ${tagFilter} snippets`,
+        description: `${snippets.length} snippets are filed under the other kinds.`,
+        clearLabel: 'Show all kinds',
+      },
+      keywords: { title: 'No snippets carry those keywords' },
+    },
   })
 
   return (

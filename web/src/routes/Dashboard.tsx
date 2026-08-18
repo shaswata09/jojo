@@ -5,18 +5,24 @@ import { PipelineBreakdown } from '@/components/dashboard/PipelineBreakdown'
 import { PriorityActions } from '@/components/dashboard/PriorityActions'
 import { RecentApplications } from '@/components/dashboard/RecentApplications'
 import { MONTH_LABELS } from '@/data/calendar'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { useTitle } from '@/lib/links'
 import { TODAY_PARTS } from '@/lib/today'
 
 const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 /**
- * "Monday 12 October", computed once from the mock's pinned today.
+ * "Monday 12 October" — today, spelled out.
  *
  * Built here rather than imported because nothing else in the app spells a date
  * out in full — every other surface uses `shortDate`. Naming the weekday is the
  * point of the header: this is the only screen whose subject is the day itself.
+ *
+ * Computed once at module load because `TODAY_PARTS` is: the clock is sampled
+ * once so that nothing on screen can disagree with anything else about what day
+ * it is. This comment used to say "the mock's pinned today" and give the worked
+ * example as a literal — both were true of the fixture constant and neither has
+ * been true since the wall clock replaced it.
  */
 const TODAY_LABEL = `${
   WEEKDAY_NAMES[new Date(TODAY_PARTS.year, TODAY_PARTS.month - 1, TODAY_PARTS.day).getDay()]

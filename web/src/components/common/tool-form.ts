@@ -21,10 +21,10 @@
  */
 
 import { displayName } from '@/data/seed'
-import type { NodeType, StoredNode } from '@/kg/core/model'
-import type { FieldMeta } from '@/kg/core/schema'
-import type { GraphSnapshot } from '@/kg/core/snapshot'
-import type { AnyTool } from '@/kg/tools/tool'
+import type { NodeType, StoredNode } from '@jojo/service/core/model'
+import type { FieldMeta } from '@jojo/service/core/schema'
+import type { GraphSnapshot } from '@jojo/service/core/snapshot'
+import type { AnyTool } from '@jojo/service/tools/tool'
 
 /** What to render. One per field the form can honestly draw. */
 export type Control = 'text' | 'textarea' | 'number' | 'boolean' | 'enum' | 'date' | 'record'

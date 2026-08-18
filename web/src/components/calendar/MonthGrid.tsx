@@ -11,7 +11,15 @@ import type { Mark } from '@/lib/timeline-visuals'
 import { TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
-/** The mock's fixed "today", as the Today button's tooltip spells it. */
+/**
+ * Today, as the Today button's tooltip spells it.
+ *
+ * Read from `TODAY_PARTS`, which is the wall clock sampled once at module load
+ * — this used to say "the mock's fixed today" and meant it, back when `TODAY`
+ * was the literal 2026-10-12 the fixtures were authored around. Recomposing the
+ * ISO string from the parts rather than importing `TODAY` keeps the marker on
+ * the same day as the grid, which pages by `{year, month}`.
+ */
 const TODAY_ISO = isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
 
 export function MonthGrid({

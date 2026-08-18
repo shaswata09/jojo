@@ -14,7 +14,7 @@
  * the constant that decides where they land.
  *
  * `src/lib` is the web adapter layer and is allowed a platform API; `src/data`
- * and `src/kg` are not, which is why the constant moved here rather than staying
+ * and `service/kg` are not, which is why the constant moved here rather than staying
  * where its callers found it. `data/timeline.ts` deleted its own `todayISO()`
  * for that reason and the reason has not changed — the fixtures keep
  * `SEED_TODAY`, which is a fact about how they were written, not about now.
@@ -28,8 +28,8 @@
  */
 
 import { partsOf } from '@/data/timeline'
-import type { ISODate, Instant } from '@/kg/core/model'
-import { dayOf } from '@/kg/core/project'
+import type { ISODate, Instant } from '@jojo/service/core/model'
+import { dayOf } from '@jojo/service/core/project'
 
 /**
  * The live clock, for stamping writes.

@@ -1,5 +1,6 @@
-import type { Urgency } from '@/data/seed'
-import type { TimelineKind } from '@/data/timeline'
+import type { Urgency } from '@jojo/service/data/seed'
+import type { TimelineKind } from '@jojo/service/data/timeline'
+import type { FeatherIconName } from '@react-native-vector-icons/feather/static'
 import type { Palette } from '@/theme/tokens'
 
 /**
@@ -15,7 +16,12 @@ import type { Palette } from '@/theme/tokens'
  * lucide icons the web app draws. Where Feather has no equivalent the nearest
  * honest glyph is used and noted.
  */
-export type FeatherName = React.ComponentProps<typeof import('@expo/vector-icons').Feather>['name']
+// Named rather than derived. This used to be
+// `React.ComponentProps<typeof import(...).Feather>['name']` — a type-position
+// dynamic import that `tsc` resolved and `vitest` never saw, so the two tools
+// disagreed about what this file depended on. The icon package exports the
+// union directly, so the indirection had nothing left to buy.
+export type FeatherName = FeatherIconName
 
 export const KIND_ICON: Record<TimelineKind, FeatherName> = {
   deadline: 'clock',

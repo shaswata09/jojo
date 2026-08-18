@@ -7,17 +7,18 @@ import { FormField } from '@/components/common/Field'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { VaultSearch, VaultToolbar, matchesQuery } from '@/components/vault/VaultToolbar'
+import { emptyStateFor } from '@/components/vault/empty-state'
+import { matchesQuery } from '@/components/vault/search'
+import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
 import { ApplicationPicker } from '@/components/vault/links/ApplicationPicker'
-import { linksEmptyState } from '@/components/vault/links/empty-state'
 import { LinkEditor } from '@/components/vault/links/LinkEditor'
 import { LinkRow } from '@/components/vault/links/LinkRow'
 import { normalizeUrl, parseUrl, titleFromUrl } from '@/components/vault/links/url'
 import { displayName } from '@/data/seed'
 import { LINK_CATEGORIES } from '@/data/vault'
 import type { LinkCategory, VaultLink } from '@/data/vault'
-import { useApplications } from '@/kg/react/use-applications'
-import { useVault } from '@/kg/react/use-vault'
+import { useApplications } from '@jojo/service/react/use-applications'
+import { useVault } from '@jojo/service/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
@@ -195,15 +196,30 @@ export function LinksTool({ focus }: { focus?: string }) {
     </Button>
   )
 
-  const empty = linksEmptyState({
+  const empty = emptyStateFor({
     total: links.length,
     query,
-    bucket,
-    selectedLabels,
-    addButton,
+    filteredByBucket: bucket !== 'all',
+    filteredByKeyword: selectedLabels.size > 0,
     onClearQuery: () => setQuery(''),
     onClearBucket: () => setBucket('all'),
     onClearKeywords: clearSelected,
+    copy: {
+      zero: {
+        title: 'No links saved yet',
+        description:
+          'Save a URL — a posting, a department page, a person you were told to contact. The title is read off the address.',
+        action: addButton,
+      },
+      search: (q) => `No link mentions "${q}" in its title, address, note or category.`,
+      both: `No ${bucket} link carries the selected keywords.`,
+      bucket: {
+        title: `No links under ${bucket}`,
+        description: `${links.length} links are filed under the other categories.`,
+        clearLabel: 'Show all categories',
+      },
+      keywords: { title: 'No links carry those keywords' },
+    },
   })
 
   return (

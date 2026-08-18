@@ -19,8 +19,8 @@
 
 import { displayName } from '@/data/seed'
 import { agoLabel, partsOf, shortDate } from '@/data/timeline'
-import type { NodeType, StoredNode } from '@/kg/core/model'
-import type { GraphSnapshot } from '@/kg/core/snapshot'
+import type { NodeType, StoredNode } from '@jojo/service/core/model'
+import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import type { Graph, GraphEdge, GraphNode, GraphNodeType, GraphRel } from '@/lib/graph/model'
 import { applicationsPath, appPath, calendarPath, scoutPath, vaultPath } from '@/lib/links'
 import { TODAY } from '@/lib/today'

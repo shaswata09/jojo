@@ -1,5 +1,5 @@
 import type { NavigatorScreenParams } from '@react-navigation/native'
-import type { Stage } from '@/data/seed'
+import type { Stage } from '@jojo/service/data/seed'
 
 /**
  * The five tools the Vault holds. Kept here rather than in the screen so a

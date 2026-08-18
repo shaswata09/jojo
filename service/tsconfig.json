@@ -1,0 +1,20 @@
+{
+  /*
+   * The solution file. `tsc -b` from this package builds all three projects and
+   * is the AUTHORITY on whether this package type-checks.
+   *
+   * Both apps also compile this source, because their own programs reach it
+   * through imports — but under their own `lib` and `types`, and without
+   * `types/portable-globals.d.ts`, which is in no program but the three below.
+   * `console`, `structuredClone` and `setTimeout` therefore resolve from each
+   * app's DOM lib over there and happen to have compatible shapes. That works,
+   * and it works by luck. It is not the check.
+   */
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.storage.json" },
+    { "path": "./tsconfig.core.json" },
+    { "path": "./tsconfig.react.json" },
+    { "path": "./tsconfig.test.json" }
+  ]
+}

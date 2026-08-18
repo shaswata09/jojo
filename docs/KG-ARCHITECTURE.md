@@ -37,6 +37,7 @@
 | D25 | Derived fields | **`daysAgo`, `linked`, `allDay`, `displayName`, `degree` leave storage.** Store `lastActionAt: Instant`, derive the rest in projections. | `daysAgo` is zeroed on every edit (`store-context.ts:328`) and has only ever been right because a reload wipes it. After IDB it lies on the second launch. `linked` needs four write sites to stay honest — that is the rot in miniature. |
 | D26 | Clock | **No module under `src/kg/` reads a clock or imports one. Time enters through `ToolContext.now`.** *(Wave 4: the constant is now `SEED_TODAY` — when the fixtures were written — and the app's today is `src/lib/today.ts`, the single wall-clock read. `check-platform.mjs` enforces both halves over `src/kg` and `src/data`.)* | A completion stamped `2026-10-12` in 2027 is a lie the user will see — and injection makes every time-dependent tool test deterministic for free. |
 | D27 | Binary | **`props` is binary-free, as an invariant stated in the schema doc.** A `blobs` store arrives with the server, keyed by node id, never on the hydrate path. | The moment a Blob lands in `props`, `getAll('nodes')` stops being a 5 ms operation. |
+| D28 | Where the graph lives, now that there are two apps | **Its own package, `@jojo/service` — `service/kg/**` plus `service/data/**`. Every path below that reads `src/kg` is now `service/kg`.** Reached only as `@jojo/service/<layer>/<name>`; no root export, no barrel, no build step. The apps keep exactly the platform: `web/src/kg/storage/idb-*`, `mobile/src/kg/storage/rn-driver.ts`, and the two `lib/` adapters. Enforced by `service/scripts/{check-layers,check-platform,check-no-copies}.mjs`, which **both** apps invoke through `npm -w @jojo/service run lint`. | The alternative was measured, because it is what happened: mobile got the graph by `cp -R` and drifted **813 lines in four months**, silently — mobile's `buildMonth` lost a parameter and every call site still compiled. The copy was not carelessness, it was the cheap option, and it was cheap because Metro could not resolve a package outside the project root and no workspace existed. Both of those are fixed, so the copy is now the expensive option. The rule the boundary is drawn on: **the package owns state a platform event has to act on; the app owns everything a platform does.** A filter chip fails that test and stays in the app; a driver passes it as a *port* and its implementation stays in the app. |
 
 ---
 
@@ -44,7 +45,9 @@
 
 ### The rule
 
-**Imports point strictly downward. L5 → L4 → L3 → L2 → L1 → L0. Never upward, ever. Enforced by `scripts/check-layers.mjs` in `npm run lint`, not by good intentions.**
+**Imports point strictly downward. L5 → L4 → L3 → L2 → L1 → L0. Never upward, ever. Enforced by `service/scripts/check-layers.mjs` in `npm run lint`, not by good intentions.**
+
+*(D28: these layers are `@jojo/service` now. Read `src/kg` below as `service/kg` and `src/data` as `service/data`. The guard runs from the package and is invoked by both apps, and it reaches one file outside it — `mobile/src/kg/storage/rn-driver.ts`, the RN adapter, which gets L0's rules plus the one package prefix that is the point of its existing.)*
 
 - `kg/core/**` imports nothing outside `kg/core` — not React, not `idb`, not `@/data`, not `@/components`.
 - `kg/storage/**` imports nothing from `core`. It moves opaque JSON blobs plus a primary key. If storage learns what an application is, the boundary has already failed.

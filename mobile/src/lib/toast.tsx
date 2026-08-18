@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ToastContext as KgToastContext } from '@/kg/react/toast'
-import type { ToastContextValue as KgToastContextValue } from '@/kg/react/toast'
+import { ToastContext as KgToastContext } from '@jojo/service/react/toast'
+import type { ToastContextValue as KgToastContextValue } from '@jojo/service/react/toast'
 import type { ReactNode } from 'react'
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'

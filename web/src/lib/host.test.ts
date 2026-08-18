@@ -17,7 +17,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { webHost } from './host'
 
-type Handler = (event: unknown) => void
+type Handler = (event: unknown) => unknown
 
 function fakeEventTarget() {
   const listeners = new Map<string, Set<Handler>>()
@@ -30,8 +30,16 @@ function fakeEventTarget() {
     removeEventListener(type: string, fn: Handler) {
       listeners.get(type)?.delete(fn)
     },
-    emit(type: string, event: unknown) {
-      for (const fn of [...(listeners.get(type) ?? [])]) fn(event)
+    /**
+     * Hands back what each listener returned, which the DOM itself discards.
+     *
+     * Kept because that return value is the only observable difference between a
+     * handler that starts a flush and one that awaits it — see "does not await
+     * the flush". An `emit` that dropped it, as this one used to, made that test
+     * pass against `async () => { await run() }`.
+     */
+    emit(type: string, event: unknown): unknown[] {
+      return [...(listeners.get(type) ?? [])].map((fn) => fn(event))
     },
     listenerCount(type: string) {
       return listeners.get(type)?.size ?? 0
@@ -183,12 +191,24 @@ describe('webHost.onSuspend', () => {
     // `queue.flush()` settles on a FAILED attempt on purpose, and a handler that
     // blocked on durability would hang on exactly the failure it exists to
     // survive. The listener has to return before the promise does.
+    //
+    // Asserted as "the listener returned nothing to await". That is the only
+    // thing observable from outside: `addEventListener` discards the return
+    // value, so a listener written `async () => { await run() }` looks identical
+    // from a call site — it is called, it returns immediately, it throws
+    // nothing. Which is why the earlier version of this test, which asserted
+    // exactly those three things, stayed green against that rewrite. What does
+    // change is the returned value: `void run()` yields `undefined`, awaiting
+    // yields a pending promise, and Electron's `before-quit` is a caller that
+    // would await one.
     let settle = () => {}
     const run = vi.fn(() => new Promise<void>((resolve) => (settle = resolve)))
     webHost.onSuspend(run)
 
-    expect(() => win.emit('pagehide', {})).not.toThrow()
+    const returned = win.emit('pagehide', {})
     expect(run).toHaveBeenCalledTimes(1)
+    expect(returned).toEqual([undefined])
+
     settle()
   })
 

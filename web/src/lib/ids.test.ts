@@ -1,83 +1,44 @@
 /**
- * Characterisation tests: what identity does TODAY, pinned before the graph
- * layer replaces it.
+ * The one rule left in `src/lib/ids.ts`, plus the agreement that outlived it.
  *
- * These are not a wish list. Every case below is behaviour some caller already
- * depends on, and the KG layer's `core/ref.ts` has to keep answering the same
- * way for the records already in a user's store — or reproduce the answer
- * deliberately, having read the test that says why.
+ * This file used to characterise `parseRef`, `uniqueId` and `slugify` — "what
+ * identity does TODAY, pinned before the graph layer replaces it". The graph
+ * layer replaced it: `kg/core/ref.ts` owns ids now, `parseNodeId` rejects the
+ * bare key that `parseRef` guessed at, and `uniqueSlug` is `uniqueId` under its
+ * real name with `kg/core/ref.test.ts` running the same four cases against it.
+ * The three characterisations went with the functions.
+ *
+ * The `slugify`/`toLabelId` agreement stayed, and is deliberately imported from
+ * `kg/core/ref` rather than through `src/lib/ids`, which no longer re-exports
+ * it. It is the only test `toLabelId` has, and the two are still separate
+ * spellings of one rule that is read in exports and in the URL.
  */
 
 import { describe, expect, it } from 'vitest'
 import { toLabelId } from '@/data/labels'
-import { parseRef, refKey, slugify, uniqueId } from '@/lib/ids'
+import { slugify } from '@jojo/service/core/ref'
+import { refKey } from '@/lib/ids'
 
-describe('parseRef', () => {
-  it('splits a canonical reference into its kind and id', () => {
-    expect(parseRef('app:stripe')).toEqual({ kind: 'app', id: 'stripe' })
-    expect(parseRef('item:rice-deadline')).toEqual({ kind: 'item', id: 'rice-deadline' })
+describe('refKey', () => {
+  it('joins the kind and the id with a colon', () => {
+    expect(refKey('app', 'stripe')).toBe('app:stripe')
+    expect(refKey('posting', 'rice')).toBe('posting:rice')
   })
 
-  // The label store keys most records by a bare id and only applications by
-  // 'app:rice'. Reading a bare key as anything but an application would drop
-  // every seeded keyword on the floor — silently, since a miss returns [].
-  it('reads a bare key as an application', () => {
-    expect(parseRef('stripe')).toEqual({ kind: 'app', id: 'stripe' })
-  })
-
-  // A pasted URL must survive the round trip. Splitting on 'https' would mint
-  // { kind: 'https', id: '//stripe.com/jobs' } and lose the scheme on the way
-  // back out, turning a working link into a relative path.
-  it('treats an unknown prefix as part of the id, not as a kind', () => {
-    expect(parseRef('https://stripe.com/jobs/4482')).toEqual({
-      kind: 'app',
-      id: 'https://stripe.com/jobs/4482',
-    })
-  })
-
-  // Only the FIRST colon separates, so a known kind in front of a URL keeps the
-  // URL whole rather than truncating it at '//'.
-  it('splits on the first colon only', () => {
-    expect(parseRef('link:https://stripe.com/jobs')).toEqual({
-      kind: 'link',
-      id: 'https://stripe.com/jobs',
-    })
-  })
-
-  it('round-trips whatever refKey mints', () => {
-    expect(parseRef(refKey('posting', 'rice'))).toEqual({ kind: 'posting', id: 'rice' })
-  })
-})
-
-describe('uniqueId', () => {
-  it('hands back the base when nothing has claimed it', () => {
-    expect(uniqueId('unt', [])).toBe('unt')
-    expect(uniqueId('unt', ['rice', 'tamu'])).toBe('unt')
-  })
-
-  // Counting from 2, not 1: the first duplicate is the SECOND record of that
-  // name, and 'unt-1' would imply an 'unt-0' nobody ever minted.
-  it('counts from 2 so the first duplicate reads as the second of its name', () => {
-    expect(uniqueId('unt', ['unt'])).toBe('unt-2')
-  })
-
-  it('walks past every taken suffix', () => {
-    expect(uniqueId('unt', ['unt', 'unt-2', 'unt-3'])).toBe('unt-4')
-  })
-
-  // Gaps are filled rather than skipped — the counter probes, it does not track
-  // a high-water mark.
-  it('fills a gap left by a deleted middle record', () => {
-    expect(uniqueId('unt', ['unt', 'unt-3'])).toBe('unt-2')
+  /**
+   * The wrapper is redundant against a type-prefixed id and `recordKey` in
+   * `kg/react/use-keywords.ts` unwraps it. Pinned because that unwrapping is
+   * what the eight remaining call sites depend on: change the shape here and
+   * every keyword chip on the board silently stops finding its record.
+   */
+  it('double-prefixes an id that already carries its type, which is what recordKey strips', () => {
+    expect(refKey('app', 'app:0192f4c1-7b3e-7a41-9c2d-8f5e1a0b6d33')).toBe(
+      'app:app:0192f4c1-7b3e-7a41-9c2d-8f5e1a0b6d33',
+    )
   })
 })
 
 describe('slugify', () => {
-  it('lowercases and hyphenates runs of whitespace', () => {
-    expect(slugify('UT Austin')).toBe('ut-austin')
-    expect(slugify('  Texas   A&M  ')).toBe('texas-a&m')
-  })
-
   // These two are separate implementations of one rule. They stopped being
   // load-bearing for identity when `addLabel` moved to deduping on the name,
   // but they are still both read in exports and in the URL, and two spellings

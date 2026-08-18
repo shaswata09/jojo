@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { ExternalLink } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { hostOf } from '@/components/vault/links/url'
 import type { Application } from '@/data/seed'
 import { shortDate } from '@/data/timeline'
 
@@ -23,7 +24,7 @@ export function DetailFacts({ application: a }: { application: Application }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-info underline underline-offset-2"
         >
-          {hostOf(a.url)}
+          {hostOf(a.url) ?? a.url}
           <ExternalLink className="size-3 shrink-0" strokeWidth={2} aria-hidden />
         </a>
       ) : undefined,
@@ -47,18 +48,4 @@ export function DetailFacts({ application: a }: { application: Application }) {
       </dl>
     </Panel>
   )
-}
-
-/**
- * 'stripe.com' out of a posting URL, so the link reads as a destination rather
- * than as 180 characters of tracking parameters. A URL the user typed by hand
- * may not parse at all, in which case the raw string is still the honest thing
- * to show.
- */
-function hostOf(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url
-  }
 }

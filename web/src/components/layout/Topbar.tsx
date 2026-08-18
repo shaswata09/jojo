@@ -3,7 +3,7 @@ import { NavLink } from 'react-router'
 import { CircleHelp, Menu, Search, Settings, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
-import { NewMenu } from '@/components/common/NewMenu'
+import { NewMenu } from '@/components/layout/NewMenu'
 import { SpotlightSearch, useSpotlight } from '@/components/layout/SpotlightSearch'
 import { cn } from '@/lib/utils'
 
@@ -84,8 +84,10 @@ export function Topbar({
       {/* Create sits before the account icons: it is an action rather than
           navigation, and until it landed here every route hid its own version
           of "add", so adding a reminder meant first finding the page that owned
-          reminders. `NewMenu` runs the `n` shortcut itself — do not call
-          `useNewShortcut` here as well.
+          reminders. `NewMenu` runs the `n` shortcut itself, and
+          `useNewShortcut` is no longer exported so nothing else can — two
+          callers would be two listeners driving two states, and the key would
+          open whichever menu mounted last as well.
 
           The role filter used to sit beside it. It was pinned globally but
           changed two of a dozen surfaces, so every dashboard number was

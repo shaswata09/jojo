@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { STAGE_LABEL } from '@/components/applications/StageMenu'
 import {
   ClosedFields,
   InterviewFields,
@@ -8,11 +7,16 @@ import {
   SubmittedFields,
 } from '@/components/applications/dialog/TransitionFields'
 import {
-  FORMAT_LABEL,
-  OUTCOME_ACTION,
-  OUTCOME_LABEL,
-} from '@/components/applications/dialog/transition-options'
-import type { Format } from '@/components/applications/dialog/transition-options'
+  buildStageItem,
+  buildStagePatch,
+  initialStageDraft,
+  leavingOffer,
+  plainStageMove,
+  stageBlocker,
+  stageConsequences,
+  stageNeedsDetails,
+} from '@/components/applications/dialog/stage-policy'
+import type { StageTransitionDraft } from '@/components/applications/dialog/stage-policy'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,28 +27,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { displayName } from '@/data/seed'
-import type { Application, Outcome, Stage } from '@/data/seed'
-import { addDays, shortDate } from '@/data/timeline'
-import type { TimelineDraft } from '@/kg/react/use-timeline'
+import { STAGE_LABEL, displayName } from '@/data/seed'
+import type { Application, Stage } from '@/data/seed'
+import type { TimelineDraft } from '@jojo/service/react/use-timeline'
 import { TODAY } from '@/lib/today'
-
-/** The four stages that carry a field block. Draft and Screen collect nothing. */
-const BLOCKED_STAGES: readonly Stage[] = ['submitted', 'interview', 'offer', 'closed']
-
-/**
- * Whether moving this application to `target` has anything to ask about.
- *
- * Call it before opening: a move to Draft or Screen should just happen, and a
- * dialog whose only content is a Confirm button is a speed bump, not a step.
- * Leaving an offer is the exception — the details have to be kept or dropped
- * deliberately, whatever the destination is.
- */
-export function stageNeedsDetails(application: Application, target: Stage) {
-  if (application.stage === target) return false
-  if (application.offer && target !== 'offer') return true
-  return BLOCKED_STAGES.includes(target)
-}
 
 export type StageTransitionDialogProps = {
   open: boolean
@@ -103,7 +89,7 @@ export function StageTransitionDialog({
     }
     if (needs || applied.current) return
     applied.current = true
-    onApply({ stage: target, lastAction: `Moved to ${STAGE_LABEL[target]}` }, undefined, [])
+    onApply(plainStageMove(target), undefined, [])
     onOpenChange(false)
   }, [open, needs, target, onApply, onOpenChange])
 
@@ -151,158 +137,32 @@ function TransitionForm({
   onApply: StageTransitionDialogProps['onApply']
   onClose: () => void
 }) {
-  const [date, setDate] = useState(TODAY)
-  const [portalUrl, setPortalUrl] = useState(application.url ?? '')
-  const [reference, setReference] = useState('')
-
-  const [format, setFormat] = useState<Format>('video')
-  const [mintInterview, setMintInterview] = useState(true)
-
-  // Two weeks is the shortest deadline anyone actually gets, so it is a floor
-  // the user edits down rather than a date they have to invent.
-  const [respondBy, setRespondBy] = useState(application.offer?.respondBy ?? addDays(TODAY, 14))
-  const [offerComp, setOfferComp] = useState(application.offer?.comp ?? application.comp ?? '')
-  const [offerNote, setOfferNote] = useState(application.offer?.note ?? '')
-  const [mintRespondBy, setMintRespondBy] = useState(true)
-
-  const [outcome, setOutcome] = useState<Outcome>(
-    application.stage === 'offer' ? 'declined' : 'rejected',
+  // One bag rather than eleven `useState`s. The eleven were fine while the
+  // rules that read them lived in this file; now that they are a value handed
+  // to `dialog/stage-policy.ts`, keeping them apart meant assembling the bag by
+  // hand at three call sites and forgetting a field at one of them.
+  const [draft, setDraft] = useState<StageTransitionDraft>(() =>
+    initialStageDraft(application, TODAY),
   )
+  const set = <K extends keyof StageTransitionDraft>(key: K, value: StageTransitionDraft[K]) =>
+    setDraft((d) => ({ ...d, [key]: value }))
 
-  /** An offer belongs to the round that produced it, so keeping it is a choice. */
-  const leavingOffer = Boolean(application.offer) && target !== 'offer'
-  const [keepOffer, setKeepOffer] = useState(true)
-
-  /** Empty when the form can be applied; otherwise what is missing. */
-  const blocker =
-    (target === 'submitted' || target === 'interview') && !date
-      ? 'Add the date first'
-      : target === 'offer' && !respondBy
-        ? 'Add a respond-by date first'
-        : undefined
-
-  const buildPatch = (): Partial<Application> => {
-    const patch: Partial<Application> = { stage: target }
-    if (leavingOffer && !keepOffer) patch.offer = undefined
-
-    switch (target) {
-      case 'submitted':
-        patch.submittedOn = date
-        // Only filled where it was empty: the day you first applied is not the
-        // day you got round to recording the submission.
-        patch.appliedOn = application.appliedOn ?? date
-        if (portalUrl.trim()) patch.url = portalUrl.trim()
-        // Application has no field for a confirmation reference, so it rides in
-        // `lastAction` where the activity feed shows it. Worth knowing: the next
-        // stage change overwrites that line, so the reference is not permanent
-        // until the record grows a home for it.
-        patch.lastAction = reference.trim()
-          ? `Submitted · ref ${reference.trim()}`
-          : 'Application submitted'
-        break
-
-      case 'interview':
-        patch.lastAction = `${FORMAT_LABEL[format]} interview scheduled`
-        break
-
-      case 'offer':
-        patch.offer = {
-          respondBy,
-          comp: offerComp.trim() || undefined,
-          note: offerNote.trim(),
-        }
-        patch.lastAction = 'Offer received'
-        break
-
-      case 'closed':
-        patch.outcome = outcome
-        patch.lastAction = OUTCOME_ACTION[outcome]
-        break
-
-      default:
-        patch.lastAction = `Moved to ${STAGE_LABEL[target]}`
-    }
-
-    return patch
-  }
-
-  /**
-   * Neither draft stamps an `urgency`.
-   *
-   * They used to: `'amber'` on the interview and `'red'` on the respond-by, and
-   * both were invented at the keyboard — an interview six weeks out was born
-   * amber and a respond-by three weeks out was born red, with nothing that ever
-   * updated either as the date approached or passed. Nothing reads the field:
-   * the calendar, the glance grid, "Owed this week" and the priority deck all
-   * derive their colour from the date (`lib/timeline-visuals.ts`). Writing a
-   * value nothing reads is how the next person infers a rule that does not
-   * exist and starts colouring something by it.
-   */
-  const buildItem = (): TimelineDraft | undefined => {
-    if (target === 'interview' && mintInterview) {
-      return {
-        title: `${displayName(application)} — ${format} interview`,
-        detail: application.roleTag,
-        date,
-        kind: 'interview',
-        applicationId: application.id,
-        remind: true,
-        location: format === 'onsite' ? application.location : undefined,
-      }
-    }
-    if (target === 'offer' && mintRespondBy) {
-      return {
-        title: `${displayName(application)} — respond to offer`,
-        detail: 'Decision deadline',
-        date: respondBy,
-        kind: 'deadline',
-        applicationId: application.id,
-        remind: true,
-      }
-    }
-    return undefined
-  }
-
-  /**
-   * What the toast should say happened, in the order it happened.
-   *
-   * Only ever states things the user cannot see for themselves once the dialog
-   * has gone: a date that landed on the calendar, details that were dropped.
-   * The stage change itself is the toast's title, so it is not repeated here.
-   */
-  const consequencesOf = (item: TimelineDraft | undefined): string[] => {
-    const lines: string[] = []
-
-    if (target === 'submitted' && reference.trim()) {
-      lines.push(`Reference ${reference.trim()} saved to the activity line.`)
-    }
-    if (target === 'offer') lines.push(`Respond by ${shortDate(respondBy)} recorded.`)
-    if (target === 'closed') {
-      lines.push(`Recorded as ${OUTCOME_LABEL[outcome].toLowerCase()}.`)
-    }
-    if (item) {
-      lines.push(
-        item.kind === 'deadline'
-          ? `Respond by ${shortDate(item.date)} added to your calendar.`
-          : `${FORMAT_LABEL[format]} interview on ${shortDate(item.date)} added to your calendar.`,
-      )
-    }
-    if (leavingOffer && !keepOffer) lines.push('Offer details cleared.')
-
-    return lines
-  }
+  const showKeepOffer = leavingOffer(application, target)
+  const blocker = stageBlocker(target, draft)
 
   const apply = () => {
-    const item = buildItem()
-    onApply(buildPatch(), item, consequencesOf(item))
+    const item = buildStageItem(application, target, draft)
+    onApply(
+      buildStagePatch(application, target, draft),
+      item,
+      stageConsequences(application, target, draft, item),
+    )
     onClose()
   }
 
   /** The stage change with nothing attached — including the offer, kept as-is. */
   const moveWithoutDetails = () => {
-    onApply({ stage: target, lastAction: `Moved to ${STAGE_LABEL[target]}` }, undefined, [
-      'Nothing else on the record changed.',
-    ])
+    onApply(plainStageMove(target), undefined, ['Nothing else on the record changed.'])
     onClose()
   }
 
@@ -325,48 +185,48 @@ function TransitionForm({
       <div className="flex max-h-[55vh] flex-col gap-3 overflow-y-auto">
         {target === 'submitted' ? (
           <SubmittedFields
-            date={date}
-            onDateChange={setDate}
-            portalUrl={portalUrl}
-            onPortalUrlChange={setPortalUrl}
-            reference={reference}
-            onReferenceChange={setReference}
+            date={draft.date}
+            onDateChange={(v) => set('date', v)}
+            portalUrl={draft.portalUrl}
+            onPortalUrlChange={(v) => set('portalUrl', v)}
+            reference={draft.reference}
+            onReferenceChange={(v) => set('reference', v)}
           />
         ) : null}
 
         {target === 'interview' ? (
           <InterviewFields
-            date={date}
-            onDateChange={setDate}
-            format={format}
-            onFormatChange={setFormat}
-            mintInterview={mintInterview}
-            onMintInterviewChange={setMintInterview}
+            date={draft.date}
+            onDateChange={(v) => set('date', v)}
+            format={draft.format}
+            onFormatChange={(v) => set('format', v)}
+            mintInterview={draft.mintInterview}
+            onMintInterviewChange={(v) => set('mintInterview', v)}
           />
         ) : null}
 
         {target === 'offer' ? (
           <OfferFields
-            respondBy={respondBy}
-            onRespondByChange={setRespondBy}
-            offerComp={offerComp}
-            onOfferCompChange={setOfferComp}
-            offerNote={offerNote}
-            onOfferNoteChange={setOfferNote}
-            mintRespondBy={mintRespondBy}
-            onMintRespondByChange={setMintRespondBy}
+            respondBy={draft.respondBy}
+            onRespondByChange={(v) => set('respondBy', v)}
+            offerComp={draft.offerComp}
+            onOfferCompChange={(v) => set('offerComp', v)}
+            offerNote={draft.offerNote}
+            onOfferNoteChange={(v) => set('offerNote', v)}
+            mintRespondBy={draft.mintRespondBy}
+            onMintRespondByChange={(v) => set('mintRespondBy', v)}
           />
         ) : null}
 
         {target === 'closed' ? (
-          <ClosedFields outcome={outcome} onOutcomeChange={setOutcome} />
+          <ClosedFields outcome={draft.outcome} onOutcomeChange={(v) => set('outcome', v)} />
         ) : null}
 
-        {leavingOffer ? (
+        {showKeepOffer ? (
           <KeepOfferRow
             offer={application.offer}
-            keepOffer={keepOffer}
-            onKeepOfferChange={setKeepOffer}
+            keepOffer={draft.keepOffer}
+            onKeepOfferChange={(v) => set('keepOffer', v)}
           />
         ) : null}
       </div>

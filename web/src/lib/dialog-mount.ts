@@ -23,8 +23,9 @@
  * which is why the counter advances on the identity of the open REQUEST rather
  * than on render.
  *
- * Kept out of `dialogs.tsx` so the rule is testable in node: `vitest.config.ts`
- * runs without a DOM and D20 forbids mounting components, so a rule that lived
+ * Kept out of `dialogs.tsx` so the rule is testable in node: the suite runs
+ * without a DOM (`test.environment` in `vite.config.ts` — there is no separate
+ * vitest config here) and D20 forbids mounting components, so a rule that lived
  * inside the host could only ever have been checked by clicking — which is
  * exactly how this one got shipped.
  */

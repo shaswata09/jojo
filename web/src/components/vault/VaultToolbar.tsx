@@ -92,23 +92,3 @@ export function VaultSearch({
     </div>
   )
 }
-
-/**
- * Case- and accent-insensitive substring match across a record's fields.
- *
- * Normalised on both sides so "Andre" finds "André" — a job search collects
- * names typed by other people, and a filter that hides a row because of an
- * accent the user did not type reads as a missing record.
- */
-export function matchesQuery(query: string, ...fields: (string | undefined)[]) {
-  const needle = fold(query)
-  if (!needle) return true
-  return fields.some((field) => field && fold(field).includes(needle))
-}
-
-const fold = (text: string) =>
-  text
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')

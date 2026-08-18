@@ -19,9 +19,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
-import { useGraph, useKg } from '@/kg/react/kg-context'
-import { useRun } from '@/kg/react/use-tool'
-import type { ToolName } from '@/kg/tools'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
+import { useRun } from '@jojo/service/react/use-tool'
+import type { ToolName } from '@jojo/service/tools/index'
 import { useToast } from '@/lib/toast-context'
 
 /** Matches `SELECT_CLASS` in `graph/query/QueryFields.tsx` — the app's one select skin. */

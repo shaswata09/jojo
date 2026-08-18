@@ -3,9 +3,7 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.kg.json" },
-    { "path": "./tsconfig.kg-react.json" },
-    { "path": "./tsconfig.kg-storage.json" }
+    { "path": "./tsconfig.storage.json" }
   ],
   "compilerOptions": {
     "paths": {

@@ -3,7 +3,7 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Textarea } from '@/components/ui/textarea'
 import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
-import { useApplications } from '@/kg/react/use-applications'
+import { useApplications } from '@jojo/service/react/use-applications'
 
 /**
  * The free-text note on the record.

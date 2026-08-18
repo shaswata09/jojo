@@ -21,9 +21,9 @@
 
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
-import { boot, resetBoot } from '@/kg/repo/boot'
+import { boot, resetBoot } from '@jojo/service/repo/boot'
 import { createIdbDriver } from '@/kg/storage/idb-driver'
-import { createToolRuntime } from '@/kg/tools/runtime'
+import { createToolRuntime } from '@jojo/service/tools/runtime'
 
 const NOW = '2026-10-12T12:00:00.000Z'
 const LATER = '2026-10-13T09:30:00.000Z'

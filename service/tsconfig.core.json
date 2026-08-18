@@ -1,0 +1,58 @@
+{
+  /*
+   * L1 core, L2 repo, L3 tools and the logger — the pure-TypeScript half.
+   *
+   * `"lib": ["ES2023"]` with `"types": []` is the point of this file. No DOM, no
+   * Node, no vite/client, so `document`, `window`, `process` and `HTMLElement`
+   * are not names these layers can spell, and `check-platform.mjs` stopped being
+   * the only thing standing between the shared model and a ReferenceError on
+   * React Native. The handful of globals that survive are declared, one at a
+   * time and with a reason each, in types/portable-globals.d.ts.
+   *
+   * `kg/storage` arrives as a project REFERENCE rather than as source. `repo`
+   * imports `driver.ts`, `memory-driver.ts`, `schema.ts` and `migrations.ts`
+   * from it — the port, the in-memory implementation of the port, the store
+   * catalogue and the migration table — so storage is reachable from here
+   * through the import graph, and TypeScript checks everything it reaches. The
+   * reference makes repo type-check against storage's emitted .d.ts instead.
+   * With the IndexedDB driver now in `web/src/kg/storage` there is no DOM left
+   * on the far side of that boundary, but there is `TextEncoder`
+   * (types/text-codec.d.ts), and the same mechanism keeps that out of here too.
+   *
+   * `disableSourceOfProjectReferenceRedirect` is what makes the reference
+   * load-bearing rather than incidental: without it TypeScript may resolve a
+   * reference back to the .ts source when it decides that is more accurate, and
+   * whatever the far side's lib and types grant come with it.
+   *
+   * The `.test.ts` files sit inside these directories and are compiled here with
+   * them. They import `vitest` explicitly, which resolves through node_modules
+   * like any package and needs no `types` entry — `types` governs what is
+   * injected as a GLOBAL, and nothing in this package uses vitest's globals.
+   */
+  "extends": "./tsconfig.base.json",
+  "references": [{ "path": "./tsconfig.storage.json" }],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.core.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": [],
+    "disableSourceOfProjectReferenceRedirect": true
+  },
+  /*
+   * `data` is in the pure half, not a project of its own. The fixtures are read
+   * by `repo/seed.ts` and `tools/memory.ts` and annotated with `kg/core` types,
+   * so they belong under exactly the lib and types those layers get. They were
+   * previously dragged in through the `@/data` mapping, which meant `tsc` only
+   * ever saw the six modules the layer happened to reach; `statistics.ts` and
+   * `calendar.ts` were checked by web's app config alone, with DOM in the lib.
+   * Naming the directory is what makes that coverage complete rather than
+   * incidental.
+   */
+  "include": [
+    "kg/core",
+    "kg/repo",
+    "kg/tools",
+    "kg/log.ts",
+    "data",
+    "types/portable-globals.d.ts"
+  ]
+}

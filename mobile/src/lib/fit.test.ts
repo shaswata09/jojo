@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fitOf } from './fit'
-import type { Profile } from '@/data/profile'
+import type { Profile } from '@jojo/service/data/profile'
 
 /**
  * The scorer's contract, and mostly its refusals.

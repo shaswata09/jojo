@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { StyleSheet, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import {
   DarkTheme,
   DefaultTheme,
@@ -14,7 +14,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { IconButton } from '@/components/ui/Button'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Txt } from '@/components/ui/Text'
-import { bucketOf } from '@/data/timeline'
+import { bucketOf } from '@jojo/service/data/timeline'
 import { CREATE_ACTIONS, useRunCreateAction } from '@/lib/create-actions'
 import { useApplications, useScout, useTimeline } from '@/lib/store-context'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'

@@ -13,6 +13,24 @@ export default defineConfig({
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
     },
+    /*
+     * One React in the bundle, and under the workspace this has to be said.
+     *
+     * `mobile/` pins react 19.1.0 (Expo 54 / RN 0.81) and this app needs
+     * >=19.2.7 for react-router, so the two genuinely cannot meet — npm hoists
+     * mobile's copy to the root and nests web's. That is correct, and harmless
+     * only for as long as nothing pulls the hoisted one into THIS bundle.
+     *
+     * `@jojo/service/react` is what changed the risk: it lives outside this
+     * package and resolves its own `react`, so without deduping, a shared hook
+     * and the component calling it could hold different React instances — which
+     * surfaces as "invalid hook call" or, worse, two separate dispatchers with
+     * silently unshared context.
+     *
+     * `tsconfig.app.json` pins the TYPE side through `paths` for the same
+     * reason; this is the runtime half of that pair.
+     */
+    dedupe: ['react', 'react-dom'],
   },
   /**
    * Vitest reads this file, so the `@/` alias above is the one the tests get —

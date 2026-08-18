@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { RoleTag } from '@/data/seed'
+import type { RoleTag } from '@jojo/service/data/seed'
 
 export type RolesContextValue = {
   /** Empty means "everything" — no filter applied. */

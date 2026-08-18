@@ -4,7 +4,7 @@ import { ping } from '@/lib/llm'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
 import { Pressable, StyleSheet, View } from 'react-native'
-import * as Clipboard from 'expo-clipboard'
+import Clipboard from '@react-native-clipboard/clipboard'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -16,8 +16,8 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { NEW_LABEL_TONES } from '@/data/labels'
-import type { LabelTone } from '@/data/labels'
+import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
+import type { LabelTone } from '@jojo/service/data/labels'
 import { useLabels } from '@/lib/labels-context'
 import { useStoreAdmin } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
@@ -81,12 +81,15 @@ export function SettingsScreen() {
 
   const dataSet = isEmpty ? 'empty' : 'demo'
 
-  const onExport = async () => {
+  // Not async any more: `setString` is synchronous where `setStringAsync` was
+  // not, and this is only ever an onPress. Keeping the keyword would have left
+  // a promise nobody awaits and a signature that claims work it no longer does.
+  const onExport = () => {
     // There is no downloads folder to write to on a phone, and no file picker
     // wired up. The clipboard is the honest export here: it is the one channel
     // that reaches another app without this build claiming a filesystem it has
     // not asked for.
-    await Clipboard.setStringAsync(exportJSON())
+    Clipboard.setString(exportJSON())
     toast({
       title: 'Copied to the clipboard',
       description: 'The whole store as JSON — paste it into a note or a file to keep it.',
@@ -482,8 +485,23 @@ function KeywordManager() {
             <Txt size="xs" tone="secondary" style={{ marginBottom: space[2] }}>
               Colour
             </Txt>
+            {/*
+              The VOCABULARY, not the rotation.
+
+              This read `NEW_LABEL_TONES` from the deleted `@/data/labels` — the
+              array that decides which colour the NEXT auto-created keyword gets.
+              The two arrays hold the same five tones in different orders, so the
+              misuse was invisible: a picker offering all five is right by
+              accident as long as the rotation happens to be complete, and stops
+              being right the day somebody shortens the rotation to three.
+              `LABEL_TONE_VALUES` is what `s.enum` validates a tone against in
+              `core/validate.ts`, so this offers exactly what will save.
+
+              Visible consequence, and the only one in this step: the swatches
+              reorder from teal-green-amber-red-grey to teal-amber-red-green-grey.
+            */}
             <View style={styles.tones}>
-              {NEW_LABEL_TONES.map((tone) => (
+              {LABEL_TONE_VALUES.map((tone) => (
                 <Pressable
                   key={tone}
                   accessibilityRole="radio"

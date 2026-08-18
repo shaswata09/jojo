@@ -1,15 +1,6 @@
-import { StyleSheet, View } from 'react-native'
-import { StatusBar } from 'expo-status-bar'
+import { StatusBar, StyleSheet, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { useFonts } from 'expo-font'
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter'
-import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono'
 import { LabelsProvider } from '@/lib/labels'
 import { RolesProvider } from '@/lib/roles'
 import { SheetsProvider } from '@/lib/sheets'
@@ -36,21 +27,16 @@ import { useTheme } from '@/theme/theme-context'
  *
  * Nothing is persisted and nothing is fetched. A restart is the reset button;
  * Settings is where you switch between the demo records and an empty store.
+ *
+ * THE FONTS ARE NOT LOADED HERE ANY MORE, AND NOTHING REPLACED THAT CODE.
+ * `useFonts` fetched five TTFs at runtime and this function held the first
+ * frame back until they arrived — every panel is measured against Inter's
+ * metrics, so painting in the platform face first was a layout that visibly
+ * resettled. The five files are linked into the app now, present before the
+ * first frame exists, so the gate had nothing left to gate and the blank frame
+ * it showed is gone with it.
  */
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    JetBrainsMono_400Regular,
-  })
-
-  // Held back rather than rendered in the system font and swapped: every panel
-  // in the app is measured against Inter's metrics, so a first paint in the
-  // platform face is a layout that visibly resettles a frame later.
-  if (!fontsLoaded) return <View style={styles.blank} />
-
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
@@ -92,7 +78,11 @@ function Themed() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.page }]}>
-      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+      {/* Dynamic, and it has to stay dynamic. `light-content` means light
+          GLYPHS, which is what a dark page needs; hardcoding it — the obvious
+          reading of expo-status-bar's `style="light"` — leaves the light theme
+          with a white bar full of white icons and no error anywhere. */}
+      <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
       <RootNavigator />
       <SheetHost />
     </View>
@@ -101,8 +91,4 @@ function Themed() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  // The palette is not resolvable before the theme provider mounts, and the
-  // dark page colour is the app's default — so this is what a cold start shows
-  // for the frame or two the fonts take.
-  blank: { flex: 1, backgroundColor: '#0a0a0a' },
 })

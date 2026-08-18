@@ -1,6 +1,22 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+  // These six values were never written down anywhere until the ejection. The
+  // `expo-root-project` plugin read `android.minSdkVersion` /
+  // `android.compileSdkVersion` / `android.targetSdkVersion` out of
+  // gradle.properties and pushed them into `rootProject.ext`, supplying the
+  // other three itself. `app/build.gradle` reads all six off `rootProject.ext`,
+  // so dropping the plugin without writing them here does not fail the build —
+  // it silently loses the Android 12 floor and picks up whatever the React
+  // Native Gradle plugin defaults to.
+  ext {
+    buildToolsVersion = "36.0.0"
+    minSdkVersion = 31
+    compileSdkVersion = 36
+    targetSdkVersion = 36
+    ndkVersion = "27.1.12297006"
+    kotlinVersion = "2.1.20"
+  }
   repositories {
     google()
     mavenCentral()
@@ -20,5 +36,4 @@ allprojects {
   }
 }
 
-apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"

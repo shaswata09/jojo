@@ -23,7 +23,8 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
-import { CREATE_ACTIONS, DIALOG_TOOLS, useRunCreateAction } from '@/components/common/NewMenu'
+import { isTypingTarget } from '@/components/common/typing-target'
+import { CREATE_ACTIONS, DIALOG_TOOLS, useRunCreateAction } from '@/components/layout/NewMenu'
 import { ToolRunDialog } from '@/components/common/ToolRunDialog'
 import { planToolForm } from '@/components/common/tool-form'
 import { GUIDE_PAGE_META } from '@/components/guide/pages'
@@ -40,13 +41,13 @@ import {
 } from '@/components/ui/command'
 import { displayName } from '@/data/seed'
 import { bucketOf, partsOf, shortDate } from '@/data/timeline'
-import type { NodeType } from '@/kg/core/model'
-import { useGraph } from '@/kg/react/kg-context'
-import { useApplications } from '@/kg/react/use-applications'
-import { useTimeline } from '@/kg/react/use-timeline'
-import { TOOLS } from '@/kg/tools'
-import type { ToolName } from '@/kg/tools'
-import type { AnyTool } from '@/kg/tools/tool'
+import type { NodeType } from '@jojo/service/core/model'
+import { useGraph } from '@jojo/service/react/kg-context'
+import { useApplications } from '@jojo/service/react/use-applications'
+import { useTimeline } from '@jojo/service/react/use-timeline'
+import { TOOLS } from '@jojo/service/tools/index'
+import type { ToolName } from '@jojo/service/tools/index'
+import type { AnyTool } from '@jojo/service/tools/tool'
 import { TODAY } from '@/lib/today'
 import {
   appPath,
@@ -434,15 +435,6 @@ export function SpotlightSearch({
       ) : null}
     </>
   )
-}
-
-/** Fields that own the keystroke, because the keystroke is text you meant to type. */
-function isTypingTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false
-  // Inherited, so a caret anywhere inside a rich-text region counts too.
-  if (target.isContentEditable) return true
-  const tag = target.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
 }
 
 /** Opens on ⌘K / Ctrl-K, and ignores the shortcut while you are typing. */

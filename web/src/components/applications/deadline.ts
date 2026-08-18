@@ -1,7 +1,19 @@
 import type { TimelineItem } from '@/data/timeline'
+import { DEADLINE_DETAIL } from '@jojo/service/tools/support'
 
-/** What the seed's application deadlines say, and what ApplicationDialog writes. */
-export const DEADLINE_DETAIL = 'Application deadline'
+/**
+ * Re-exported, not redeclared.
+ *
+ * This file used to spell `'Application deadline'` out a second time, beside a
+ * near-identical copy of the comment below. It is a SENTINEL: the rule that
+ * tells the form's own deadline apart from every other `kind: 'deadline'` on the
+ * same application is `detail.startsWith(DEADLINE_DETAIL)`, and it is applied on
+ * both sides of the tool boundary — `kg/tools/application-fields.ts` reads it
+ * off the graph, this reads it off a projection. Two spellings of a sentinel do
+ * not fail loudly when they drift; they simply stop matching, and the form
+ * silently mints a second deadline on every edit instead of moving the first.
+ */
+export { DEADLINE_DETAIL }
 
 /**
  * The one dated item the application form owns.
@@ -17,7 +29,7 @@ export const DEADLINE_DETAIL = 'Application deadline'
  * different one and an untouched field reads as a change, which mints a second
  * deadline on every edit.
  */
-export const isApplicationDeadline = (item: TimelineItem) =>
+const isApplicationDeadline = (item: TimelineItem) =>
   item.kind === 'deadline' && (item.detail ?? '').startsWith(DEADLINE_DETAIL)
 
 export const applicationDeadlineOf = (items: TimelineItem[]) => items.find(isApplicationDeadline)

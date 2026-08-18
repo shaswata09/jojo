@@ -15,7 +15,7 @@ import type { GraphNodeType } from '@/lib/graph/model'
 import { runQuery } from '@/lib/graph/query'
 import type { GraphQuery } from '@/lib/graph/query'
 import { filterGraph } from '@/lib/graph/traversal'
-import { useGraph } from '@/kg/react/kg-context'
+import { useGraph } from '@jojo/service/react/kg-context'
 import { useTitle } from '@/lib/links'
 
 /**

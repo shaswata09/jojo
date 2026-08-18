@@ -7,9 +7,9 @@ import {
   statisticsPath,
   vaultPath,
 } from '@/lib/links'
-import { useApplications } from '@/kg/react/use-applications'
-import { useScout } from '@/kg/react/use-scout'
-import { useTimeline } from '@/kg/react/use-timeline'
+import { useApplications } from '@jojo/service/react/use-applications'
+import { useScout } from '@jojo/service/react/use-scout'
+import { useTimeline } from '@jojo/service/react/use-timeline'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'

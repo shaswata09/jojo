@@ -1,4 +1,4 @@
-import type { TimelineItem } from '@/data/timeline'
+import type { TimelineItem } from '@jojo/service/data/timeline'
 
 /** What the seed's application deadlines say, and what ApplicationDialog writes. */
 export const DEADLINE_DETAIL = 'Application deadline'

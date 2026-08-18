@@ -15,12 +15,17 @@
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { nullChannel } from './channel'
-import type { Rows, StoreEvent } from './driver'
+import type { Rows, StoreEvent } from '@jojo/service/storage/driver'
 import { createIdbDriver } from './idb-driver'
-import { MIGRATIONS, SCHEMA_VERSION, pendingMigrations, versionOf } from './migrations'
-import type { Migration } from './migrations'
-import { STORE_SPECS } from './schema'
-import type { StoredRow } from './schema'
+import {
+  MIGRATIONS,
+  SCHEMA_VERSION,
+  pendingMigrations,
+  versionOf,
+} from '@jojo/service/storage/migrations'
+import type { Migration } from '@jojo/service/storage/migrations'
+import { STORE_SPECS } from '@jojo/service/storage/schema'
+import type { StoredRow } from '@jojo/service/storage/schema'
 
 /**
  * A fresh database per test.
@@ -669,6 +674,36 @@ describe('the connection lifecycle', () => {
     ])
     expect(written.ok).toBe(false)
     if (!written.ok) expect(written.error.code).toBe('storage/blocked')
+
+    upgrading.close()
+    held.close()
+  })
+
+  /**
+   * The `onBlocking` unsubscribe, which `driver-conformance.test.ts` cannot ask
+   * for: provoking a blocking event needs a second connection at a higher
+   * version, and a version number is not on the `Driver` interface.
+   *
+   * A listener that cannot be removed is a `close()` handler from a torn-down
+   * boot still firing on the next upgrade, closing a connection the current boot
+   * is using.
+   */
+  it('stops telling a listener about `blocking` once its unsubscribe is called', async () => {
+    const name = nextName()
+
+    const held = driverFor(name, MIGRATIONS)
+    await held.open()
+
+    const told: string[] = []
+    held.onBlocking(() => told.push('kept'))
+    const off = held.onBlocking(() => told.push('dropped'))
+    off()
+    off()
+
+    const upgrading = driverFor(name, [...MIGRATIONS, { version: 2, name: 'v2', run: () => {} }])
+    await upgrading.open()
+
+    expect(told).toEqual(['kept'])
 
     upgrading.close()
     held.close()

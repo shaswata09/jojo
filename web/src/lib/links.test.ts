@@ -14,11 +14,14 @@
 
 import { describe, expect, it } from 'vitest'
 import { matchPath } from 'react-router'
-import { resolveAddress } from '@/kg/core/address'
-import type { Instant } from '@/kg/core/model'
-import { createProjections } from '@/kg/react/projections'
-import { bootInMemory } from '@/kg/repo/boot'
-import { appPath } from '@/lib/links'
+import { resolveAddress } from '@jojo/service/core/address'
+import type { Instant } from '@jojo/service/core/model'
+import { createProjections } from '@jojo/service/react/projections'
+import { bootInMemory } from '@jojo/service/repo/boot'
+import { appPath, BASE_TITLE } from '@/lib/links'
+// `?raw` rather than `node:fs`: the app project's `types` is `["vite/client"]`,
+// so `node:fs` does not typecheck here, and vite/client is what declares this.
+import indexHtml from '../../index.html?raw'
 
 const NOW: Instant = new Date('2026-10-12T12:00:00').toISOString()
 const now = () => NOW
@@ -151,5 +154,21 @@ describe('a link that names nothing', () => {
     const found = resolveAddress(graph, 'application', 'stripe')
     expect(found?.type).toBe('application')
     expect(p.application(graph, found!.id)?.org).toBe('Stripe')
+  })
+})
+
+/**
+ * `BASE_TITLE` carried the comment "Matches index.html, so the two cannot
+ * drift", and nothing made that true — it is one string typed into two files,
+ * one of which no test read. This is that sentence, enforced.
+ *
+ * It matters on the way out of a record: `useTitle(null)` restores the base
+ * title, so a drifted copy leaves the tab reading something the page never says.
+ */
+describe('BASE_TITLE', () => {
+  it('is the title index.html ships', () => {
+    const title = /<title>([^<]*)<\/title>/.exec(indexHtml)?.[1]
+
+    expect(title).toBe(BASE_TITLE)
   })
 })

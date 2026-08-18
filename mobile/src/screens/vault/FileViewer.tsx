@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { documentExists, openDocument } from '@/lib/documents'
 import { TODAY } from '@/lib/today'
 import { View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -10,8 +10,8 @@ import { TextField } from '@/components/ui/Field'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { agoLabel } from '@/data/timeline'
-import type { VaultFile } from '@/data/vault'
+import { agoLabel } from '@jojo/service/data/timeline'
+import type { VaultFile } from '@jojo/service/data/vault'
 import { FILE_KIND_ICON } from '@/lib/files'
 import { useApplications, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
@@ -50,18 +50,39 @@ export function FileViewer({
   const [note, setNote] = useState('')
   const [editingNote, setEditingNote] = useState(false)
   const [openError, setOpenError] = useState<string | null>(null)
+  // `null` is "not asked yet". `documentExists` used to be a synchronous getter
+  // read straight out of the render body; no React Native filesystem library
+  // offers a synchronous form, so the answer is now a tick late and this state
+  // exists. It is above the `!file` return because hooks have to be.
+  const [here, setHere] = useState<boolean | null>(null)
+
+  const uri = file?.uri
+  useEffect(() => {
+    if (!uri) return
+    let live = true
+    setHere(null)
+    void documentExists(uri).then((exists) => {
+      if (live) setHere(exists)
+    })
+    // Cancelled on unmount and on a change of file, because this sheet is
+    // reused for whichever row was tapped and a stale answer would light up
+    // the wrong panel for the wrong document.
+    return () => {
+      live = false
+    }
+  }, [uri])
 
   if (!file) return null
 
   const application = file.applicationId ? byId.get(file.applicationId) : undefined
-  const here = documentExists(file.uri)
 
   /**
    * Hands the file to the OS.
    *
-   * `IntentLauncher` on Android because a `file://` URI cannot be given to
-   * another app directly — it needs a content URI, which `getContentUriAsync`
-   * mints. On iOS `Sharing` is the sheet that offers Quick Look among the rest.
+   * An ACTION_VIEW intent on Android, because a `file://` URI cannot be given
+   * to another app directly — it needs a content URI, which the filesystem
+   * module's own FileProvider mints. On iOS it is the share sheet, which is
+   * where Quick Look and "Copy to Files" live.
    */
   const onOpen = async () => {
     if (!file.uri) return
@@ -116,18 +137,37 @@ export function FileViewer({
         {/* Where the document would be. Named for what is missing rather than
             dressed up as a failed load — nothing was attempted, so "could not
             display" would be a lie about a request that never happened. */}
-        {/* Three states, and they are genuinely different. A record with a copy
-            opens it; a record whose copy has gone says so rather than failing
-            on tap; a record that never had one is the typed kind, which is a
-            legitimate way to file something kept elsewhere. */}
-        {here ? (
+        {/* Four states now, and they are genuinely different. A record that
+            never had a copy is the typed kind, which is a legitimate way to
+            file something kept elsewhere — and it is checked FIRST, because it
+            is known without asking the filesystem and must not flicker through
+            the waiting state on its way to being drawn.
+
+            The other three need an answer from disk: still looking, found, and
+            gone. "Still looking" is normally one frame, and it holds the space
+            with the same icon the found state uses rather than rendering
+            nothing, because a panel that appears a frame late is a layout that
+            resettles under the reader's thumb. */}
+        {!file.uri ? (
+          <EmptyState
+            icon={FILE_KIND_ICON[file.kind] ?? 'file-text'}
+            title="Recorded, not stored"
+            description="This one was filed by hand — a name, a type and a size for a document kept somewhere else. Edit it and choose a file to keep a copy here."
+          />
+        ) : here === null ? (
+          <EmptyState
+            icon={FILE_KIND_ICON[file.kind] ?? 'file-text'}
+            title="Looking for the copy"
+            description="Checking whether the file this record points at is still in the app's storage."
+          />
+        ) : here ? (
           <EmptyState
             icon={FILE_KIND_ICON[file.kind] ?? 'file-text'}
             title="Kept on this device"
             description="Opens in whatever app on this phone handles the type. Nothing is uploaded, and nothing here reads what is inside it."
             action={<Button label="Open" icon="external-link" onPress={onOpen} />}
           />
-        ) : file.uri ? (
+        ) : (
           <EmptyState
             icon="alert-triangle"
             title="The copy has gone"
@@ -135,12 +175,6 @@ export function FileViewer({
             action={
               <Button label="Choose it again" variant="outline" onPress={() => onEdit(file)} />
             }
-          />
-        ) : (
-          <EmptyState
-            icon={FILE_KIND_ICON[file.kind] ?? 'file-text'}
-            title="Recorded, not stored"
-            description="This one was filed by hand — a name, a type and a size for a document kept somewhere else. Edit it and choose a file to keep a copy here."
           />
         )}
 

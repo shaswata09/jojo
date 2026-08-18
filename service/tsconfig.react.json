@@ -1,0 +1,56 @@
+{
+  /*
+   * L4 react — ES2023 plus React, and nothing else.
+   *
+   * "React Native is React, so the hooks travel" is the claim this whole package
+   * rests on, and this is where the compiler is told to hold it. No DOM lib, so
+   * `document`, `window` and `localStorage` are not names this directory can
+   * spell. `"types": ["react"]` and nothing more, so `import.meta.env` does not
+   * resolve either, and @types/node — which npm installs for the apps' config
+   * files and which TypeScript would otherwise inject globally into every
+   * project in the repo — cannot hand this layer `process`, `Buffer` or
+   * `__dirname`.
+   *
+   * What `types` does NOT do, and it is worth knowing before trusting it: it
+   * governs which @types packages are included AUTOMATICALLY, as globals. An
+   * explicit `import { createPortal } from 'react-dom'` still resolves through
+   * node_modules like any other package. Those are import edges, and import
+   * edges are check-layers.mjs and check-platform.mjs territory — see the
+   * DOM_MODULES list in the latter, which exists precisely because this config
+   * cannot express that ban.
+   *
+   * The other soft edge: @types/react ships `global.d.ts`, which declares
+   * `HTMLElement`, `KeyboardEvent` and ~150 more as EMPTY interfaces so that
+   * React compiles under `--lib ES6` — that file is written for React Native. So
+   * a bare `el: HTMLElement` annotation still type-checks here; `el.focus()`
+   * does not, because the interface has no members. That gap is why
+   * check-platform.mjs bans those names as identifiers rather than trusting the
+   * lib setting alone.
+   *
+   * `"jsx": "react-jsx"` is inherited from the base. The JSX runtime types
+   * resolve through @types/react; intrinsic elements like <div> resolve to those
+   * empty stubs, which is correct enough — there is no <div> on React Native,
+   * and this directory renders providers, not markup.
+   *
+   * ONE THING TO WATCH THAT WEB'S VERSION OF THIS FILE DID NOT HAVE TO: which
+   * @types/react this project resolves. Hoisting puts web's (^19.2.x) and
+   * mobile's (~19.1.x) in the tree at once, and web's tsconfig.app.json pins
+   * itself to its own copy through `paths` for exactly that reason. This project
+   * takes whatever the root resolves to, which is deliberate — the package must
+   * compile against the OLDER of the two, since that is the floor React Native
+   * sets. `kg/react/kg.tsx` uses React 19's provider-as-component form
+   * (`<KgContext value={…}>`), which is why package.json declares react
+   * >=19.1.0 rather than >=18.
+   */
+  "extends": "./tsconfig.base.json",
+  "references": [{ "path": "./tsconfig.storage.json" }],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.react.tsbuildinfo",
+    "lib": ["ES2023"],
+    "types": ["react"],
+    /* Same reason as tsconfig.core.json: storage is a .d.ts here, never a source
+       file, so `repo`'s driver choice cannot drag a platform up into the hooks. */
+    "disableSourceOfProjectReferenceRedirect": true
+  },
+  "include": ["kg/react", "types/portable-globals.d.ts"]
+}

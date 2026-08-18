@@ -1,4 +1,4 @@
-import type { Application, Stage } from '@/data/seed'
+import type { Application, Stage } from '@jojo/service/data/seed'
 
 /** The four stages that carry a field block. Draft and Screen collect nothing. */
 const BLOCKED_STAGES: readonly Stage[] = ['submitted', 'interview', 'offer', 'closed']

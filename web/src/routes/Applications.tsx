@@ -4,17 +4,22 @@ import { ClipboardList, Plus, X } from 'lucide-react'
 import { ApplicationsFilters } from '@/components/applications/ApplicationsFilters'
 import { ApplicationsBoard } from '@/components/applications/board/ApplicationsBoard'
 import { DetailSheet } from '@/components/applications/detail/DetailSheet'
-import { STAGE_LABEL } from '@/components/applications/StageMenu'
 import { ApplicationsTable } from '@/components/applications/table/ApplicationsTable'
+import {
+  compareApplications,
+  countByStage,
+  emptyReason as emptyReasonFor,
+  filterApplications,
+} from '@/components/applications/list-query'
 import { useRowActions } from '@/components/applications/use-row-actions'
-import { AddByUrl } from '@/components/common/AddByUrl'
+import { AddByUrl } from '@/components/applications/AddByUrl'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { STAGES, displayName, type Stage } from '@/data/seed'
-import { useApplications } from '@/kg/react/use-applications'
+import type { Stage } from '@/data/seed'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
@@ -74,60 +79,26 @@ export function Applications() {
   // 900px screen, and the first thing this page owes is the whole search.
   const [compact, setCompact] = useState(true)
 
-  /**
-   * Everything the page filters by *except* the stage — the pool both views
-   * draw from.
-   *
-   * The board used to read straight from `all`, so a search that emptied the
-   * table left the board showing every record and no sign that a filter was
-   * on at all. Stage is the one exception, below: the board is already grouped
-   * by it.
-   */
-  const pool = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return all.filter((a) => {
-      if (!matches(a.roleTag)) return false
-      if (!keywordMatches(refKey('app', a.id))) return false
-      if (!q) return true
-      // Searches what is on screen plus the stage name, so typing "offer"
-      // finds the row whose only mention of it is a chip.
-      return [a.org, a.role, a.note, a.roleTag, STAGE_LABEL[a.stage]]
-        .join(' ')
-        .toLowerCase()
-        .includes(q)
-    })
-  }, [all, query, matches, keywordMatches])
+  /** The pool both views draw from — every filter except the stage. */
+  const pool = useMemo(
+    () =>
+      filterApplications({
+        all,
+        query,
+        matchesRole: matches,
+        matchesKeyword: (a) => keywordMatches(refKey('app', a.id)),
+      }),
+    [all, query, matches, keywordMatches],
+  )
 
-  /**
-   * Stage counts over the pool, not over everything.
-   *
-   * They were counted before the search and the keyword chips ran, so `All 8`
-   * sat above four rows and each stage chip promised records the table would
-   * not show.
-   */
-  const stageCounts = useMemo(() => {
-    const map: Record<string, number> = {}
-    for (const a of pool) map[a.stage] = (map[a.stage] ?? 0) + 1
-    return map
-  }, [pool])
+  const stageCounts = useMemo(() => countByStage(pool), [pool])
 
   const tableRows = useMemo(
     () => (stageFilter === 'all' ? pool : pool.filter((a) => a.stage === stageFilter)),
     [pool, stageFilter],
   )
 
-  const sorted = useMemo(() => {
-    const dir = sort.dir === 'asc' ? 1 : -1
-    return [...tableRows].sort((a, b) => {
-      if (sort.key === 'daysAgo') return (a.daysAgo - b.daysAgo) * dir
-      if (sort.key === 'stage')
-        return (
-          (STAGES.findIndex((s) => s.id === a.stage) - STAGES.findIndex((s) => s.id === b.stage)) *
-          dir
-        )
-      return displayName(a).localeCompare(displayName(b)) * dir
-    })
-  }, [tableRows, sort])
+  const sorted = useMemo(() => [...tableRows].sort(compareApplications(sort)), [tableRows, sort])
 
   const shown = view === 'table' ? sorted.length : pool.length
   const anyFilter =
@@ -136,27 +107,16 @@ export function Applications() {
     selectedKeywords.size > 0 ||
     selectedRoles.size > 0
 
-  /**
-   * Which filters are holding the list empty, named out loud.
-   *
-   * Four controls can blank it — the search box, the stage chips, the keyword
-   * row and the role filter — and "nothing matches" without saying which one is
-   * doing it leaves the reader hunting across the toolbar for the switch to
-   * flip. The role filter is the one that used to be unnameable here: it lived
-   * in the top bar, so the page could say "nothing carries the Offer stage"
-   * while ten records sat hidden behind a control this page could not reach.
-   */
-  const emptyReason = useMemo(() => {
-    const on = [
-      query.trim() ? 'that search' : '',
-      stageFilter === 'all' ? '' : `the ${STAGE_LABEL[stageFilter]} stage`,
-      selectedKeywords.size > 0 ? 'the selected keywords' : '',
-      selectedRoles.size > 0 ? 'the selected roles' : '',
-    ].filter(Boolean)
-    if (on.length === 0) return 'Nothing here to show.'
-    const joined = on.length === 1 ? on[0] : `${on.slice(0, -1).join(', ')} and ${on.at(-1)}`
-    return `Nothing carries ${joined}.`
-  }, [query, stageFilter, selectedKeywords, selectedRoles])
+  const emptyReason = useMemo(
+    () =>
+      emptyReasonFor({
+        query,
+        stageFilter,
+        keywordCount: selectedKeywords.size,
+        roleCount: selectedRoles.size,
+      }),
+    [query, stageFilter, selectedKeywords, selectedRoles],
+  )
 
   const clearFilters = () => {
     params.set({ q: '', stage: 'all' })

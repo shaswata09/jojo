@@ -13,7 +13,7 @@ import { settingsPath, transferPath } from '@/lib/links'
  * you cannot fill someone's disk or corrupt their database to demonstrate the
  * recovery screen. So they are written out, in the words the banner itself uses,
  * with the answer beside each — which is the whole reason this section exists.
- * Copy verified line by line against `common/StorageBanner.tsx`.
+ * Copy verified line by line against `layout/StorageBanner.tsx`.
  */
 const BANNERS: { says: string; means: ReactNode }[] = [
   {

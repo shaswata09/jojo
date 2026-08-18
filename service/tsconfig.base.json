@@ -1,0 +1,76 @@
+{
+  /*
+   * Shared settings for the three service projects. Never built on its own — it
+   * has no `include` and the solution file does not reference it.
+   *
+   * This is `web/tsconfig.kg.base.json` re-derived, and "re-derived" rather than
+   * "copied" because the old one got half of itself by extending
+   * `web/tsconfig.app.json`: target, module, moduleResolution, jsx, strict, the
+   * bundler-mode flags and the `@/*` alias all arrived from the app that
+   * happened to host the code. A package that two apps import cannot inherit its
+   * compiler settings from one of them, so everything the layers actually depend
+   * on is written out here.
+   *
+   * The three projects differ in `lib`, `types` and `include`. Nothing else.
+   */
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "esnext",
+    "skipLibCheck": true,
+
+    /* Bundler mode. Neither app runs tsc's emit — Vite compiles for web, Metro
+       plus babel-preset-expo for mobile — so this project type-checks only. */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /*
+     * Three flags the apps do not carry, over this package only.
+     *
+     * `noUncheckedIndexedAccess` app-wide is 94 errors in web, 47 of them inside
+     * components/graph/force.ts — a hot physics loop where every array read is
+     * provably in range and the flag is pure noise. Here the same flag is the
+     * difference between `nodes[i]` being a node and being a `TypeError: cannot
+     * read property 'type' of undefined` on a store one record shorter than the
+     * code assumed.
+     *
+     * `exactOptionalPropertyTypes` prevents a bug that only appears once rows
+     * round-trip through a driver: a `Partial<T>` patch carrying an explicit
+     * `undefined` is indistinguishable from an absent key in memory, but
+     * IndexedDB's structured clone preserves it — so the key comes back
+     * present-and-undefined and every `in` check that guarded a field starts
+     * answering the opposite way on the second launch.
+     */
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true
+
+    /*
+     * There is deliberately no `paths` block, and this package must never grow
+     * one.
+     *
+     * It briefly held `"@/data/*": ["../web/src/data/*"]`, because `repo/seed.ts`
+     * and `tools/memory.ts` compile the demo fixtures and the fixtures were
+     * still the web app's. That mapping is gone with them: the fixtures are
+     * `service/data` and all 22 specifiers are relative.
+     *
+     * A path mapping here can only ever be half a lie. It teaches `tsc` a
+     * resolution that neither Vite nor Metro shares, and `@/` in particular
+     * resolves against the CONSUMING app's root — so `@/data/seed` type-checked
+     * against web's copy while Metro bound it to `mobile/src/data/seed`, a file
+     * that exists, has drifted, and fails no check. That is the whole hazard
+     * this migration exists to delete.
+     */
+  }
+}

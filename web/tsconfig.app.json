@@ -25,8 +25,27 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Path aliases */
+    /*
+     * `react` and `react-dom` are pinned to THIS app's copies, and they have
+     * to be under the workspace root.
+     *
+     * Type resolution walks up, so the hoisted root tree — which holds
+     * mobile's `@types/react` (~19.1.x) next to web's (^19.2.x) — put both in
+     * one program. Every React type then existed twice under one name, which
+     * is what "Two different types with this name exist, but they are
+     * unrelated" means on a `ref` prop. `typeRoots` would also fix it and
+     * breaks `vite/client`, which resolves through the same list.
+     *
+     * The two RUNTIME copies are correct and stay: Vite bundles from `web/`,
+     * Metro from `mobile/`, and they never share a bundle. Only the type graph
+     * had to be made single.
+     */
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"]
     }
   },
   "include": ["src"]

@@ -1,5 +1,5 @@
 import { fold } from '@/lib/search'
-import type { Profile } from '@/data/profile'
+import type { Profile } from '@jojo/service/data/profile'
 
 /**
  * How well something matches what you said you are looking for.

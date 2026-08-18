@@ -13,12 +13,12 @@ import type { Palette } from '@/theme/tokens'
  * only a graph can answer — and lays it out radially instead of simulating it.
  */
 
-import type { Label } from '@/data/labels'
-import type { Match, SavedPosting } from '@/data/scout'
-import type { Application } from '@/data/seed'
-import { displayName } from '@/data/seed'
-import type { TimelineItem } from '@/data/timeline'
-import type { Snippet, VaultFile, VaultLink } from '@/data/vault'
+import type { Label } from '@jojo/service/data/labels'
+import type { Match, SavedPosting } from '@jojo/service/data/scout'
+import type { Application } from '@jojo/service/data/seed'
+import { displayName } from '@jojo/service/data/seed'
+import type { TimelineItem } from '@jojo/service/data/timeline'
+import type { Snippet, VaultFile, VaultLink } from '@jojo/service/data/vault'
 
 export const GRAPH_NODE_TYPES = [
   'application',
