@@ -1,9 +1,17 @@
 import { Platform } from 'react-native'
-import * as DocumentPicker from 'expo-document-picker'
+import {
+  errorCodes,
+  isErrorWithCode,
+  keepLocalCopy,
+  pick,
+  type DocumentPickerResponse,
+  type FileToCopy,
+  type NonEmptyArray,
+} from '@react-native-documents/picker'
 import * as FileSystem from 'expo-file-system/legacy'
 import * as IntentLauncher from 'expo-intent-launcher'
 import * as Sharing from 'expo-sharing'
-import { Directory, File, Paths } from 'expo-file-system'
+import { File } from 'expo-file-system'
 import { kindOfFile } from '@/lib/files'
 import type { FileBucket, FileKind } from '@jojo/service/data/vault'
 
@@ -33,8 +41,17 @@ import type { FileBucket, FileKind } from '@jojo/service/data/vault'
  * used to compute it.
  */
 
-/** Where copies live, inside the app's own sandbox. */
-const FOLDER = 'documents'
+/**
+ * WHERE COPIES LIVE — and this is no longer ours to choose.
+ *
+ * There used to be a `documents` folder inside the app's document directory,
+ * created here. `keepLocalCopy` picks its own layout: it mints a fresh UUID
+ * directory under the document directory for every call and puts the file
+ * inside it, on both platforms. That is a better answer than the one it
+ * replaced — two files of the same name can no longer meet — but it means the
+ * app no longer knows the shape of its own storage beyond "whatever URI the
+ * record holds". Nothing walks that tree, so nothing depended on knowing.
+ */
 
 export type PickedDocument = {
   name: string
@@ -59,8 +76,16 @@ export function sizeLabel(bytes: number): string {
  * Two CVs both called `CV.pdf` must not overwrite each other, so the stored
  * copy is prefixed with the moment it was filed. The *record* keeps the name
  * the user recognises — this is only what the bytes are called on disk.
+ *
+ * Kept even though `keepLocalCopy`'s per-call UUID directory has already made
+ * collision impossible. The prefix is now belt to that braces, and it costs
+ * nothing; the sanitising half still earns its keep, because the name goes
+ * onto a filesystem either way.
  */
 const storedName = (name: string, at: number) => `${String(at)}-${name.replace(/[^\w.\- ]+/g, '_')}`
+
+/** The picker's `name` is nullable in theory. A file still has to be called something. */
+const nameOf = (asset: DocumentPickerResponse) => asset.name ?? 'document'
 
 export type PickOutcome =
   | { ok: true; documents: PickedDocument[] }
@@ -76,32 +101,62 @@ export type PickOutcome =
 export async function pickDocuments(bucket: FileBucket): Promise<PickOutcome> {
   void bucket
   try {
-    const result = await DocumentPicker.getDocumentAsync({
-      multiple: true,
-      // Copying is this module's job, not the picker's: its cache copy is
-      // still a temporary the OS may clear.
-      copyToCacheDirectory: true,
-    })
-    if (result.canceled) return { ok: false, cancelled: true }
+    const picked = await pick({ allowMultiSelection: true })
 
-    const folder = new Directory(Paths.document, FOLDER)
-    if (!folder.exists) folder.create({ intermediates: true })
+    // Destructured rather than mapped, because `keepLocalCopy` wants a
+    // NonEmptyArray and `pick` already promises one. A cast would have said the
+    // same thing with less of it checked.
+    const [first, ...rest] = picked
+    const at = Date.now()
+    const toCopy = (asset: DocumentPickerResponse, index: number): FileToCopy => ({
+      uri: asset.uri,
+      fileName: storedName(nameOf(asset), at + index),
+    })
+    const files: NonEmptyArray<FileToCopy> = [toCopy(first, 0), ...rest.map((a, i) => toCopy(a, i + 1))]
+
+    // This replaces the hand-rolled copy that used to be here, and it is not a
+    // convenience: on Android the picker now hands back a raw `content://` SAF
+    // URI whose read grant dies with the activity, and there is no
+    // `copyToCacheDirectory` option any more. Copying it by hand would mean
+    // teaching the copy step to read a content URI. `keepLocalCopy` is the
+    // module's own answer to exactly that, so it is the one used.
+    const copies = await keepLocalCopy({ files, destination: 'documentDirectory' })
 
     const documents: PickedDocument[] = []
-    for (const [index, asset] of result.assets.entries()) {
-      const source = new File(asset.uri)
-      const target = new File(folder, storedName(asset.name, Date.now() + index))
-      source.copy(target)
+    let firstFailure: string | undefined
+    for (const [index, asset] of picked.entries()) {
+      const copy = copies[index]
+      // `keepLocalCopy` resolves even when a file failed, reporting per file.
+      // The old code threw on the first failure and lost the rest of the batch;
+      // this keeps whatever copied and only reports if nothing did.
+      if (!copy || copy.status !== 'success') {
+        firstFailure ??= copy?.status === 'error' ? copy.copyError : 'The copy did not complete.'
+        continue
+      }
 
+      const name = nameOf(asset)
       documents.push({
-        name: asset.name,
-        kind: kindOfFile(asset.name, asset.mimeType),
-        size: sizeLabel(asset.size ?? target.size ?? 0),
-        uri: target.uri,
+        name,
+        // `mimeType` is called `type` here, and it is nullable rather than
+        // optional — `kindOfFile` wants undefined for "not reported".
+        kind: kindOfFile(name, asset.type ?? undefined),
+        size: sizeLabel(asset.size ?? sizeOnDisk(copy.localUri)),
+        uri: copy.localUri,
       })
+    }
+
+    if (documents.length === 0) {
+      return { ok: false, cancelled: false, reason: firstFailure ?? 'Nothing was copied.' }
     }
     return { ok: true, documents }
   } catch (error) {
+    // CANCELLING IS A THROW NOW, NOT A FLAG. `result.canceled` is gone; the
+    // picker rejects with OPERATION_CANCELED instead. Without this branch every
+    // dismissed picker would fall through to the reason below and FileEditor
+    // would print an error for a user who simply changed their mind.
+    if (isErrorWithCode(error) && error.code === errorCodes.OPERATION_CANCELED) {
+      return { ok: false, cancelled: true }
+    }
     // Reported rather than swallowed: a picker that fails silently reads as a
     // button that does nothing, and the commonest cause — a provider the OS
     // refused — is worth naming.
@@ -110,6 +165,15 @@ export async function pickDocuments(bucket: FileBucket): Promise<PickOutcome> {
       cancelled: false,
       reason: error instanceof Error ? error.message : String(error),
     }
+  }
+}
+
+/** Last resort for a file whose size the picker did not report. */
+function sizeOnDisk(uri: string): number {
+  try {
+    return new File(uri).size ?? 0
+  } catch {
+    return 0
   }
 }
 
