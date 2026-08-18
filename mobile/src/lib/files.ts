@@ -56,8 +56,49 @@ export const FILE_KIND_ICON: Record<FileKind, FeatherName> = {
 }
 
 export function kindOfFile(name: string, type?: string): FileKind {
-  const ext = name.split('.').pop()?.toLowerCase() ?? ''
-  return KIND_BY_EXT[ext] ?? (type === 'application/pdf' ? 'pdf' : 'doc')
+  return KIND_BY_EXT[extensionOf(name)] ?? (type === 'application/pdf' ? 'pdf' : 'doc')
+}
+
+const extensionOf = (name: string) => name.split('.').pop()?.toLowerCase() ?? ''
+
+/**
+ * The MIME type an ACTION_VIEW intent needs, from the name alone.
+ *
+ * NEW WORK, AND WORTH SAYING WHY IT EXISTS. Opening a document used to go
+ * through `expo-file-system`'s `getContentUriAsync`, and Android's own content
+ * resolver worked the type out from the provider. `actionViewIntent` takes the
+ * MIME as an argument instead, and the record has nowhere to keep one — a
+ * VaultFile is a name, a kind, a size and a path, and adding a field to it
+ * would change a type the web app shares.
+ *
+ * So it comes back off the extension, which is the same source `kindOfFile`
+ * already trusts and the one thing a stored copy is guaranteed to keep.
+ *
+ * The fallback is the any-type wildcard rather than
+ * `application/octet-stream`. Octet-stream is a claim — "these are bytes and
+ * nothing can read them" — and Android honours it by offering nothing. The
+ * wildcard is the honest shrug: we do not know, so let the phone offer
+ * whatever it has.
+ */
+export function mimeOfFile(name: string): string {
+  return MIME_BY_EXT[extensionOf(name)] ?? '*/*'
+}
+
+const MIME_BY_EXT: Record<string, string> = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  odt: 'application/vnd.oasis.opendocument.text',
+  rtf: 'application/rtf',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  odp: 'application/vnd.oasis.opendocument.presentation',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  csv: 'text/csv',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
 }
 
 /** Spelled the way the seed rows already are — '184 KB', '1.2 MB'. */
