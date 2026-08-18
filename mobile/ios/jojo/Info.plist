@@ -49,6 +49,10 @@
     <true/>
     <key>RCTRootViewBackgroundColor</key>
     <integer>4278848010</integer>
+    <key>UIAppFonts</key>
+    <array>
+      <string>Feather.ttf</string>
+    </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>
