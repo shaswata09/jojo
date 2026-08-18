@@ -1,5 +1,5 @@
 /**
- * Scout fixtures. The three record types moved down to `@/kg/core/model` and
+ * Scout fixtures. The three record types moved down to `kg/core/model` and
  * are re-exported here so every existing import still resolves.
  */
 
@@ -38,14 +38,14 @@ export const matches: Match[] = [
   {
     id: 'unt',
     role: 'UNT — Assistant professor, machine learning',
-    detail: 'Deadline Nov 20 · matches ML systems, teaching focus, TX',
+    detail: 'Matches ML systems, teaching focus, TX',
     fit: 92,
     applicationId: 'unt',
   },
   {
     id: 'utsa',
     role: 'UTSA — Assistant professor, data science',
-    detail: 'Deadline Dec 1 · matches ML, statistics minor',
+    detail: 'Matches ML, statistics minor',
     fit: 85,
   },
   {
@@ -57,7 +57,7 @@ export const matches: Match[] = [
   {
     id: 'tarleton',
     role: 'Tarleton State — Lecturer, CS',
-    detail: 'Deadline Nov 30 · below your seniority target',
+    detail: 'Below your seniority target',
     fit: 41,
   },
 ]

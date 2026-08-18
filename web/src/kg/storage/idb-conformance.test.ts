@@ -32,23 +32,41 @@ describeDriverConformance({
   // which a real BroadcastChannel never does — harmless, because nothing in the
   // contract both posts and listens in the same test.
   crossTab: true,
+  /*
+   * The shared reopen case had no subject anywhere and so had never run.
+   *
+   * `durable` selects the one case in the contract that can tell whether a
+   * driver writes anything at all — it commits, closes, and asks a SECOND
+   * connection to the same store for the rows back. `memory-driver` cannot
+   * supply it honestly (its rows live in a closure, so a second connection
+   * built from `readAll()` would assert the harness rather than the driver),
+   * which is exactly why the case is declared per subject. Both platforms did
+   * cover reopening in their own suites; what was dead was the SHARED case,
+   * and a fourth driver would have inherited it dead.
+   */
+  durable: true,
   make: () => {
     const listeners = new Set<(event: StoreEvent) => void>()
     const deliver = (event: StoreEvent) => {
       for (const fn of [...listeners]) fn(event)
     }
-    const driver = createIdbDriver({
-      name: `conformance-${String((sequence += 1))}`,
-      channel: {
-        crossTab: true,
-        post: deliver,
-        subscribe: (fn) => {
-          listeners.add(fn)
-          return () => listeners.delete(fn)
+    // Named once and captured, so `reopen()` addresses the same database rather
+    // than minting the next name in the sequence — which would open an empty
+    // one and pass the case for the wrong reason.
+    const name = `conformance-${String((sequence += 1))}`
+    const build = () =>
+      createIdbDriver({
+        name,
+        channel: {
+          crossTab: true,
+          post: deliver,
+          subscribe: (fn) => {
+            listeners.add(fn)
+            return () => listeners.delete(fn)
+          },
+          close: () => listeners.clear(),
         },
-        close: () => listeners.clear(),
-      },
-    })
-    return { driver, remoteCommit: deliver }
+      })
+    return { driver: build(), remoteCommit: deliver, reopen: build }
   },
 })

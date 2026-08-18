@@ -6,11 +6,7 @@
  * you saved, filed under a bucket, to come back to.
  */
 
-import {
-  FILE_BUCKET_VALUES,
-  LINK_CATEGORY_VALUES,
-  SNIPPET_TAG_VALUES,
-} from '../kg/core/model'
+import { FILE_BUCKET_VALUES, LINK_CATEGORY_VALUES, SNIPPET_TAG_VALUES } from '../kg/core/model'
 import type {
   FileBucket,
   LinkCategory,
@@ -48,7 +44,7 @@ export const vaultLinks: VaultLink[] = [
     title: 'Rice — Statistics, tenure-track posting',
     url: 'https://jobs.rice.edu/postings/statistics-tt',
     category: 'Posting',
-    note: 'Closes Nov 1 · statements still missing',
+    note: 'Statements still missing',
     savedOn: '2026-10-10',
   },
   {

@@ -10,7 +10,7 @@
  * provider never saw the fixtures.)
  *
  * Fixtures only, as of the KG layer. The domain types moved DOWN to
- * `@/kg/core/model` and are re-exported here, so every existing import still
+ * `kg/core/model` and are re-exported here, so every existing import still
  * resolves — but the model no longer depends on this file, and a demo record is
  * no longer the definition of what a record is. There is deliberately no badge
  * field on an application: rows used to carry a hand-authored `chips` array —
@@ -72,7 +72,7 @@ export const applications: Application[] = [
     id: 'baylor',
     org: 'Baylor',
     role: 'CS',
-    note: 'Respond by Nov 15 · negotiating',
+    note: 'Negotiating the package',
     roleTag: 'Assistant Professor',
     stage: 'offer',
     lastAction: 'Offer received',
@@ -91,7 +91,7 @@ export const applications: Application[] = [
     id: 'stripe',
     org: 'Stripe',
     role: 'ML engineer',
-    note: 'Onsite Oct 30 · 5 rounds',
+    note: 'Onsite · 5 rounds',
     roleTag: 'ML Engineer',
     stage: 'interview',
     lastAction: 'Onsite scheduled',
@@ -106,7 +106,7 @@ export const applications: Application[] = [
     id: 'ut-austin',
     org: 'UT Austin',
     role: 'CS',
-    note: 'Submitted Sep 20 · snapshot saved',
+    note: 'Submitted · snapshot saved',
     roleTag: 'Assistant Professor',
     stage: 'submitted',
     flagged: true,
@@ -120,7 +120,7 @@ export const applications: Application[] = [
     id: 'texas-tech',
     org: 'Texas Tech',
     role: 'ECE',
-    note: 'Zoom with committee Oct 28',
+    note: 'Zoom with the committee',
     roleTag: 'Assistant Professor',
     stage: 'screen',
     lastAction: 'Committee call scheduled',
@@ -134,7 +134,7 @@ export const applications: Application[] = [
     id: 'uh',
     org: 'UH',
     role: 'Assistant professor, CS',
-    note: 'Campus visit Nov 6 · job talk',
+    note: 'Campus visit · job talk',
     roleTag: 'Assistant Professor',
     stage: 'interview',
     lastAction: 'Campus visit confirmed',
@@ -148,7 +148,7 @@ export const applications: Application[] = [
     id: 'rice',
     org: 'Rice',
     role: 'Statistics',
-    note: 'Deadline Nov 1 · statements missing',
+    note: 'Statements still missing',
     roleTag: 'Assistant Professor',
     stage: 'draft',
     lastAction: 'Draft created',
@@ -223,7 +223,7 @@ export const applications: Application[] = [
     id: 'unt',
     org: 'UNT',
     role: 'Assistant professor, CS',
-    note: 'Deadline Nov 20',
+    note: 'Applications open',
     roleTag: 'Assistant Professor',
     stage: 'draft',
     lastAction: 'Added from Job scout',
@@ -235,7 +235,7 @@ export const applications: Application[] = [
     id: 'google',
     org: 'Google',
     role: 'Research eng.',
-    note: 'Rejected Oct 2',
+    note: 'Rejected after the first round',
     roleTag: 'Researcher',
     stage: 'closed',
     lastAction: 'Rejected',

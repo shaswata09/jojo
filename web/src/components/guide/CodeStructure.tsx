@@ -70,7 +70,7 @@ const SHAPE: DirRow[] = [
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 15, tests: 7, lines: 5931, what: 'transactions, journal, boot' },
-  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5138, what: '62 named operations' },
+  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5143, what: '62 named operations' },
   {
     dir: 'service/kg/storage',
     files: 12,
@@ -80,7 +80,7 @@ const SHAPE: DirRow[] = [
   },
   { dir: 'service/kg/react', files: 22, tests: 3, lines: 3330, what: 'providers and hooks' },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 47, what: 'the console is the telemetry' },
-  { dir: 'web/src/kg/storage', files: 9, tests: 2, lines: 2032, what: 'the IndexedDB adapter' },
+  { dir: 'web/src/kg/storage', files: 9, tests: 2, lines: 2050, what: 'the IndexedDB adapter' },
   {
     dir: 'web/src/components',
     files: 218,

@@ -54,7 +54,7 @@ export { STAGE_LABEL } from '../core/model'
  * cast that erased the only check that would have caught a gap.
  *
  * So every tool module imports `STAGE_VALUES`, `TIMELINE_KIND_VALUES`,
- * `URGENCY_VALUES` and the rest from `@/kg/core/model` directly, and the import
+ * `URGENCY_VALUES` and the rest from `kg/core/model` directly, and the import
  * line says where the truth is. Where a tool genuinely needs a subset, spell it
  * as a filter over the const, never as a second list.
  * `tools.test.ts`'s "every value the model declares" case is what keeps this

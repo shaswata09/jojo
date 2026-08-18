@@ -106,15 +106,20 @@ cd ios && pod install && open jojo.xcworkspace
 | `npm run format` / `format:check` | Prettier, configured to match `web/`              |
 
 **Supported platforms: Android 12 (API 31) and up, iOS 16.4 and up** — set in
-`mobile/app.json` through `expo-build-properties`. Anything older is out of
-support and not worth testing on.
+`mobile/android/build.gradle`'s `ext { minSdkVersion }` and the Podfile's
+`platform :ios`. Both were `expo-build-properties` reading `app.json`; that
+file is gone, and the Android floor now exists ONLY as that explicit `ext`
+block, with no build error if it is removed.
 
 Phones and tablets, both orientations. The layout switches to two columns at
 900dp; `mobile/README.md` has the reasoning and which screens opt in.
 
 Two things `mobile/README.md` covers that matter before you ship: the release
-APK is signed with the **debug** keystore out of the box, and `expo prebuild`
-regenerates `android/` and `ios/` and will overwrite hand edits to them.
+APK is signed with the **debug** keystore out of the box, and `android/` and
+`ios/` are now **hand-maintained** — Expo was removed, so there is no
+`expo prebuild` to regenerate them and nothing will restore an edit you lose.
+Earlier this file said to run prebuild; doing so today would destroy both
+native projects.
 
 Before committing: `npm run typecheck && npm run lint && npm run format:check`.
 
@@ -221,14 +226,14 @@ should not call out to a font CDN on every page load.
 
 ### Mobile
 
-|                                                 |                                                                  |
-| ----------------------------------------------- | ---------------------------------------------------------------- |
-| React 19.1 · TypeScript 5.9 · React Native 0.81 | Expo SDK 54 as a module layer; the build is plain Gradle / Xcode |
-| Reanimated 4 + Gesture Handler 2                | the board's long-press drag                                      |
-| React Navigation 7                              | bottom tabs + native stack                                       |
-| react-native-svg                                | the donut, the radar and the graph                               |
-| @expo/vector-icons                              | Feather, the set closest in weight to the web's lucide           |
-| Prettier                                        | same config as `web/`, minus the Tailwind plugin                 |
+|                                                 |                                                                |
+| ----------------------------------------------- | -------------------------------------------------------------- |
+| React 19.1 · TypeScript 5.9 · React Native 0.81 | Bare React Native — no Expo; the build is plain Gradle / Xcode |
+| Reanimated 4 + Gesture Handler 2                | the board's long-press drag                                    |
+| React Navigation 7                              | bottom tabs + native stack                                     |
+| react-native-svg                                | the donut, the radar and the graph                             |
+| @expo/vector-icons                              | Feather, the set closest in weight to the web's lucide         |
+| Prettier                                        | same config as `web/`, minus the Tailwind plugin               |
 
 Inter and JetBrains Mono are bundled through `@expo-google-fonts` for the same
 reason they are self-hosted on the web: an app that promises your data never
@@ -243,12 +248,15 @@ leaves the device should not fetch a font on launch.
 **Not built:** Applications (table + kanban), Job scout, My profile, Assistant, Settings, How to use.
 They render as honest placeholders rather than fake content.
 
-**Mobile:** built — every journey the web app has, as an Expo app for Android and iOS. It shares
-the web app's data, store, statistics and keyword modules verbatim, so the two report the same
-numbers by construction rather than by agreement. See `mobile/README.md`.
+**Mobile:** built — every journey the web app has, as a bare React Native app for Android and iOS.
+Both apps import the same `@jojo/service` package, so they report the same numbers by construction
+rather than by agreement. "Verbatim" used to mean a `cp -R` copy that had drifted 813 lines; the
+copy is deleted and there is one source now. See `mobile/README.md`.
 
-**Not started:** persistence (decided: IndexedDB via Dexie), the localhost bridge, the LLM client,
-and any test suite.
+**Not started:** the localhost bridge and the LLM client.
+
+Persistence shipped: a knowledge graph in IndexedDB on web and AsyncStorage on mobile, behind one
+`Driver` port. Dexie was rejected — see D1 in `docs/KG-ARCHITECTURE.md`.
 
 > The Built / Not built lines above predate several passes on `web/` and understate it — Applications,
 > Calendar, Vault, Job scout, Statistics, Profile, Assistant, Settings, the guide, the graph and the
@@ -256,7 +264,9 @@ and any test suite.
 
 ## Known decisions still open
 
-- **No test suite.** Vitest + Testing Library is the natural fit; not set up yet.
+- **Component tests.** There are 697 Vitest tests across the three workspaces, but D20 rules out
+  jsdom and Testing Library, so nothing mounts a component. UI logic is verified by driving the
+  real apps. That trade is deliberate; what it costs is written up in `docs/AUDIT.md`.
 - **`BrowserRouter` vs `HashRouter`.** Deep links like `/settings` need SPA rewrites on a static host
   and break entirely over `file://`. For an app people may open from disk, `HashRouter` is safer.
 - **The academia/industry track is not persisted** across reloads, though the theme is.

@@ -58,6 +58,20 @@ import { daysBetween } from '../kg/core/dates'
  * Do not move it to keep pace with the calendar. The dates below are authored
  * against it; changing one without the others breaks the seeded story.
  */
+/*
+ * Authored dates live in FIELDS, never in prose.
+ *
+ * `repo/seed.ts` shifts every authored date by `seedOffset(today)` so a demo
+ * opened months later does not show an offer that expired last spring. Prose
+ * is not shifted — it cannot be, it is free text — so a note reading
+ * "Respond by Nov 15" froze while the record's own `respondBy` moved, and one
+ * card rendered both: "Baylor — CS | Sep 21 | Respond by Nov 15". Fourteen
+ * strings across the four fixture files said a date the record was already
+ * rendering, correctly, three inches away.
+ *
+ * If a fixture needs to say when something happens, put it in the field and
+ * let the surface render it.
+ */
 export const SEED_TODAY = '2026-10-12'
 
 /**
@@ -147,7 +161,7 @@ export const timeline: TimelineItem[] = [
   {
     id: 'databricks-chase',
     title: 'Chase recruiter reply',
-    note: 'They said "next week" on Oct 3',
+    note: 'They said "next week" and nothing since',
     date: '2026-10-09',
     allDay: true,
     kind: 'follow-up',
@@ -248,7 +262,7 @@ export const timeline: TimelineItem[] = [
   {
     id: 'uh-travel',
     title: 'Book travel for campus visit',
-    note: 'Visit is Nov 6',
+    note: 'Visit is booked',
     date: '2026-10-24',
     allDay: true,
     kind: 'admin',
