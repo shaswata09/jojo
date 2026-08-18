@@ -420,6 +420,35 @@ const TARGETS = [
     layerOf: () => 'adapter',
     layers: { adapter: ['dom', 'node', 'net', 'clock'] },
   },
+  {
+    /*
+     * The web adapters — the IndexedDB driver, the cross-tab channel, the
+     * storage probe — which live in `web/` and are checked from here.
+     *
+     * This entry exists because the restructure MOVED the fork's precondition
+     * instead of removing it, and that was measured rather than argued: with
+     * only the three targets above, prepending `const _stamp = Date.now()` and
+     * an import of the L1 domain model to `web/src/kg/storage/idb-driver.ts`
+     * left `npm -w web run lint` exiting 0. The identical pair inside mobile's
+     * `rn-driver.ts` failed BOTH apps. Before the move web's driver was guarded
+     * and mobile's was not; after it, exactly the reverse. Half a guard is how
+     * the 813-line fork accumulated in the first place.
+     *
+     * `dom` is deliberately NOT banned: `indexedDB` and `BroadcastChannel` are
+     * this layer's whole job, and a rule that banned them would fail the driver
+     * it exists to protect. That is the same reasoning as `kg/storage` inside
+     * the package, and the mirror image of the RN entry above, where the DOM is
+     * the browser assumption rather than the job.
+     *
+     * `clock` stays banned for the reason it is banned everywhere — a driver
+     * stamping its own timestamps breaks replay exactly like a tool would.
+     * `node` and `net` are banned because neither belongs in a browser adapter.
+     * `timer` stays allowed: coalescing a flush is durability work.
+     */
+    root: path.join(ROOT, 'web', 'src', 'kg'),
+    layerOf: () => 'adapter',
+    layers: { adapter: ['node', 'net', 'clock'] },
+  },
 ]
 
 /**
