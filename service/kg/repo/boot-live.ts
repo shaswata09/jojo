@@ -218,13 +218,19 @@ export function live(
    *
    * What was right about the old stance is that the gate has to be a signal that
    * cannot say "nothing changed" when something did — see `changedElsewhere`,
-   * which is also where the two signals that CAN are written down. Note the two
-   * things it does not distinguish, both of which resolve to adopt-and-announce:
-   * a store whose rows we could not validate, and a flush that settled with ops
-   * still pending (`queue.flush` does, by design). Both put the graph on disk out
-   * of step with ours, both are already visible to the user through the recovery
-   * banner, and both are cases where dropping the undo stack is the right answer
-   * anyway.
+   * which is also where the two signals that CAN are written down.
+   *
+   * There is one case it does not distinguish and one that never reaches it, and
+   * they resolve OPPOSITE ways. A store holding rows we could not validate reads
+   * as changed, and adopt-and-announce is right there: the graph on disk really
+   * is out of step with ours and the recovery banner is already saying so. A
+   * flush that settled with our own ops still pending — which `queue.flush` does
+   * by design, it settles on a failed attempt — never gets this far: the health
+   * check twelve lines below returns first, because `adopt` would take the disk
+   * rows wholesale and overwrite the graph with a version missing exactly the
+   * writes the queue could not save. This paragraph used to list that second case
+   * beside the first as also resolving to adopt-and-announce, which is the
+   * opposite of what the code does and of what the comment at the gate says.
    */
   const unsubscribeResume =
     parts.crossTab || !options.onResume

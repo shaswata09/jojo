@@ -112,9 +112,18 @@ export async function ready(
 
   // One transaction for the two things every open owes the store: the audit
   // trimmed to its cap, and `lastOpenedAt`. Written through the driver rather
-  // than the queue because the repository does not exist yet, and because a
-  // prune that only half-landed would leave the ops keys non-contiguous — which
-  // is what the repository's sequence counter continues from below.
+  // than the queue because the repository does not exist yet, and in one batch
+  // because the `clear` below and the rows that replace it must land together —
+  // a half-landed prune is an audit log that cleared and did not come back.
+  //
+  // NOT because a counter continues from these keys, which is what this used to
+  // say. There is no such counter: `opsFor` in `repository.ts` appends with
+  // `key: null` and the store's own generator allocates, and its comment there
+  // explains at length why a per-repository counter is the bug that destroyed
+  // about half of a concurrent burst's journal rows. Do not read this block as
+  // evidence that one exists. The explicit keys here are ORDER and nothing more,
+  // and they stay below whatever the generator allocates next because `clear()`
+  // does not rewind it.
   const chores: DurableOp[] = []
   for (const id of orphans) chores.push({ kind: 'delete', store: 'edges', key: id })
   if (kept.length < history.length) {

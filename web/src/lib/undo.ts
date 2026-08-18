@@ -1,13 +1,14 @@
 /**
  * The web import path for the Undo a card wires by hand.
  *
- * The implementation is `@/kg/react/undo`. It moved down when `use-tool.ts`
- * needed the same guard — a hook written for cards to migrate to, which none
- * have yet — because
- * `check-platform.mjs` bans `kg/react -> @/lib`: `src/lib` is jojo's web app,
- * and the shared layer reaching into it is how the toast context's DOM types got
- * below the seam the first time. Nothing in the undo rule is web-only, so the
- * module went down rather than the ban being argued with.
+ * The implementation is `@jojo/service/react/undo`. It moved down when
+ * `use-tool.ts` needed the same guard — a hook written for cards to migrate
+ * to, which none have yet — because `check-platform.mjs` bans
+ * `kg/react -> @/lib`:
+ * `src/lib` is jojo's web app, and the shared layer reaching into it is how
+ * the toast context's DOM types got below the seam the first time. Nothing in
+ * the undo rule is web-only, so the module went down rather than the ban being
+ * argued with.
  *
  * Re-exported rather than re-imported at each call site so the four cards that
  * fire these toasts — the profile save, a file note, and the two scout
@@ -21,7 +22,7 @@
  * `supersededToast` has exactly one caller and it is inside the implementation.
  * A shim that re-exports more than its callers use reads as a public surface,
  * which is the opposite of what this file is for: anything reached directly
- * from `@/kg/react/undo` should stay reached that way.
+ * from `@jojo/service/react/undo` should stay reached that way.
  */
 
 export { undoableWith, useUndoable } from '@jojo/service/react/undo'

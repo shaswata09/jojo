@@ -4,7 +4,7 @@
  * Read out of `node_modules`, not out of `package.json`. Two different reasons,
  * and both have bitten acknowledgements pages before:
  *
- *  - VERSIONS. `package.json` holds ranges — `^1.75.0` resolved to 1.77.0 here.
+ *  - VERSIONS. `package.json` holds ranges — `^1.75.0` resolved to 1.78.0 here.
  *    A page that prints the range is telling the reader about a version nobody
  *    is running, and a licence can change between two versions inside one
  *    caret.
@@ -108,7 +108,7 @@ export const RUNTIME: readonly Credit[] = [
   },
   {
     name: 'lucide-react',
-    version: '1.29.0',
+    version: '1.31.0',
     licence: 'ISC',
     holder: '2026 Lucide Icons and Contributors',
     what: 'Every icon in the interface. ISC rather than MIT — it is the credit most often got wrong, and some of the icons carry a second notice as well (see below).',
@@ -156,7 +156,7 @@ export const RUNTIME: readonly Credit[] = [
   },
   {
     name: 'shadcn',
-    version: '4.16.2',
+    version: '4.18.0',
     licence: 'MIT',
     holder: '2023 shadcn',
     what: 'Its stylesheet is imported by the app’s own, and its generator produced the components in src/components/ui. Those files are copies that live in this repository and have been edited since — the package is a source, not a runtime the interface calls into.',
@@ -291,7 +291,7 @@ export const DEVELOPMENT: readonly Credit[] = [
   },
   {
     name: 'oxlint',
-    version: '1.77.0',
+    version: '1.78.0',
     licence: 'MIT',
     holder: '2024–present VoidZero Inc. & Contributors, 2023 Boshen',
     what: 'The first third of the lint step. The other two thirds are this repository’s own scripts.',

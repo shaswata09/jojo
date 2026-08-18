@@ -33,8 +33,10 @@ import { kgWarn } from '@jojo/service/log'
  * journal is capped at 200 entries and pruned on open. Serialising all of it is
  * well under a frame, and it happens off the interaction path anyway — the
  * queue is write-behind, so the UI has already moved on. If this ever holds
- * enough records for that to stop being true, the answer is `expo-sqlite` and a
- * row per key, not a cleverer blob.
+ * enough records for that to stop being true, the answer is SQLite and a row
+ * per key, not a cleverer blob — through whichever binding this app takes then.
+ * This line named `expo-sqlite` until the ejection, which is a package the app
+ * can no longer install.
  *
  * WHAT IT DOES NOT DO.
  *

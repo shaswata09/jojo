@@ -21,6 +21,7 @@ import { agoLabel } from '@jojo/service/data/timeline'
 import { LINK_CATEGORIES } from '@jojo/service/data/vault'
 import type { LinkCategory, VaultLink } from '@jojo/service/data/vault'
 import { useLabels } from '@/lib/labels-context'
+import { vaultEmptyState } from '@/lib/vault-empty'
 import { matchesQuery } from '@/lib/search'
 import { useApplications, useVault } from '@/lib/store-context'
 import { useCopy } from '@/lib/use-copy'
@@ -39,7 +40,7 @@ const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) a
 export function LinksTool() {
   const { links, addLink, updateLink, removeLink } = useVault()
   const { byId } = useApplications()
-  const { matches } = useLabels()
+  const { matches, selected, clearSelected } = useLabels()
   const { toast } = useToast()
   const { copy } = useCopy()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -108,6 +109,34 @@ export function LinksTool() {
     })
   }
 
+  const addButton = <Button label="Save a link" icon="plus" onPress={() => setEditing('new')} />
+
+  const empty = vaultEmptyState({
+    total: links.length,
+    query,
+    filteredByBucket: category !== 'all',
+    filteredByKeyword: selected.size > 0,
+    onClearQuery: () => setQuery(''),
+    onClearBucket: () => setCategory('all'),
+    onClearKeywords: clearSelected,
+    copy: {
+      icon: 'link-2',
+      zero: {
+        title: 'Nothing saved yet',
+        description:
+          'Postings, department pages, people and guides — anything you want to come back to.',
+      },
+      search: (q) => `No link mentions "${q}" in its title, address, note or category.`,
+      both: `No ${category} link carries the selected keywords.`,
+      bucket: {
+        title: `No links under ${category}`,
+        description: `${String(links.length)} links are filed under the other categories.`,
+        clearLabel: 'Show all categories',
+      },
+      keywords: { title: 'No links carry those keywords' },
+    },
+  })
+
   return (
     <>
       <SearchInput
@@ -131,10 +160,20 @@ export function LinksTool() {
         {rows.length === 0 ? (
           <View style={{ padding: space[4] }}>
             <EmptyState
-              icon="link-2"
-              title={links.length === 0 ? 'Nothing saved yet' : 'Nothing in this category'}
-              description="Postings, department pages, people and guides — anything you want to come back to."
-              action={<Button label="Save a link" icon="plus" onPress={() => setEditing('new')} />}
+              icon={empty.icon}
+              title={empty.title}
+              description={empty.description}
+              action={
+                empty.clear ? (
+                  <Button
+                    label={empty.clear.label}
+                    variant="outline"
+                    onPress={empty.clear.onPress}
+                  />
+                ) : (
+                  addButton
+                )
+              }
             />
           </View>
         ) : (

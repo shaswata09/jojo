@@ -37,7 +37,7 @@ import { space } from '@/theme/tokens'
  *   durable path failed precisely so this decision belongs here rather than
  *   being forced by a throw.
  *
- * `now` is the wall clock, injected because no module under `src/kg` may read
+ * `now` is the wall clock, injected because no module under `@jojo/service` may read
  * one. `src/lib` is the layer allowed a platform API — which is why the driver,
  * the host and the clock are all named in this file and nowhere else.
  */

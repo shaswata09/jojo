@@ -76,11 +76,6 @@ describe('lookups', () => {
     expect(g.keywordNamed('read')).toBeUndefined()
   })
 
-  /**
-   * A rename writes the new key before the old one is swept. An unconditional
-   * delete of the old key would take the NEW entry out with it, and the record
-   * would then be unreachable by the name it is displayed under.
-   */
   it('keeps the slug index correct across a rename', () => {
     const app = application('rice')
     const g = MutableSnapshot.from([app])
@@ -89,6 +84,50 @@ describe('lookups', () => {
     expect(g.bySlug('application', 'rice')).toBeUndefined()
     expect(g.bySlug('application', 'rice-statistics')?.id).toBe(app.id)
     expect(g.ofType('application')).toHaveLength(1)
+  })
+
+  /**
+   * Two records answering to one [type, slug], and one of them is removed.
+   *
+   * `#unindexNode` sweeps the slug key only when it still points at the node
+   * being removed. The rationale written above it — and above the rename case
+   * next door — used to be that "a rename writes the new key before the old one
+   * is swept"; it does not, `putNode` unindexes first and both orderings survive
+   * a rename. Making the delete unconditional passed the whole suite, and THIS
+   * is the case it breaks.
+   *
+   * Reachable because `checkInvariants` REPORTS a duplicate [type, slug] and
+   * deliberately drops nothing — "nothing is dropped, nothing is skipped, and
+   * the app starts either way" — so a store that arrived by import or merge
+   * carries both rows. Deleting one of them would then take the survivor's URL
+   * with it: `resolveAddress` reads `bySlug` first, and the detail route renders
+   * "no longer exists" over a record still sitting in the list behind it.
+   */
+  it('leaves the survivor addressable when a duplicate slug is removed', () => {
+    const kept = application('rice')
+    const other = application('rice')
+    const g = MutableSnapshot.from([kept, other])
+
+    // Last one indexed wins, which is `other`.
+    expect(g.bySlug('application', 'rice')?.id).toBe(other.id)
+
+    g.removeNode(kept.id)
+
+    expect(g.node(kept.id)).toBeUndefined()
+    expect(g.bySlug('application', 'rice')?.id).toBe(other.id)
+  })
+
+  /** The same for the folded-name index, which `keyword.create` dedupes on. */
+  it('leaves the surviving keyword findable by name when a duplicate is removed', () => {
+    const kept = keyword('Referral')
+    const other = keyword('referral')
+    const g = MutableSnapshot.from([kept, other])
+
+    expect(g.keywordNamed('REFERRAL')?.id).toBe(other.id)
+
+    g.removeNode(kept.id)
+
+    expect(g.keywordNamed('REFERRAL')?.id).toBe(other.id)
   })
 })
 

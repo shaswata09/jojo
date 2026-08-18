@@ -16,6 +16,7 @@ import { displayName } from '@jojo/service/data/seed'
 import { bucketOf, shortDate, whenLabel } from '@jojo/service/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@jojo/service/data/timeline'
 import { useLabels } from '@/lib/labels-context'
+import { vaultEmptyState } from '@/lib/vault-empty'
 import { matchesQuery } from '@/lib/search'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useTimeline } from '@/lib/store-context'
@@ -54,7 +55,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const c = useColors()
   const { reminders } = useTimeline()
   const { byId } = useApplications()
-  const { matches } = useLabels()
+  const { matches, selected, clearSelected } = useLabels()
   const { open } = useSheets()
   const actions = useItemActions()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -83,6 +84,53 @@ export function RemindersTool({ focus }: { focus?: string }) {
 
   const rows = bucket === 'all' ? pool : pool.filter((r) => bucketOf(r, TODAY) === bucket)
 
+  const addButton = (
+    <Button
+      label="New reminder"
+      icon="plus"
+      onPress={() => open('timelineItem', { mode: 'reminder' })}
+    />
+  )
+
+  const bucketWord = bucket === 'all' ? '' : BUCKET_LABEL[bucket].toLowerCase()
+
+  const empty = vaultEmptyState({
+    total: reminders.length,
+    query,
+    filteredByBucket: bucket !== 'all',
+    filteredByKeyword: selected.size > 0,
+    onClearQuery: () => setQuery(''),
+    onClearBucket: () => setBucket('all'),
+    onClearKeywords: clearSelected,
+    copy: {
+      icon: 'bell',
+      zero: {
+        title: 'No reminders yet',
+        description:
+          'A reminder is a dated record with a nudge switched on. Once its date passes it is owed, and it stays on Today until you tick it off.',
+      },
+      search: (q) => `No reminder mentions "${q}" in its title, note or kind.`,
+      both: `No ${bucketWord} reminder carries the selected keywords.`,
+      // Done is the one bucket that is not a deadline passing: an empty Done
+      // list is not a filter hiding work, so it says something else.
+      bucket:
+        bucket === 'done'
+          ? {
+              icon: 'check',
+              title: 'Nothing completed yet',
+              description:
+                'Reminders you tick off collect here, so one ticked by mistake is still findable.',
+              clearLabel: 'Show all reminders',
+            }
+          : {
+              title: `Nothing ${bucketWord}`,
+              description: `${String(reminders.length)} reminders are filed under the other groups.`,
+              clearLabel: 'Show all reminders',
+            },
+      keywords: { title: 'No reminders carry those keywords' },
+    },
+  })
+
   return (
     <>
       <SearchInput
@@ -110,19 +158,19 @@ export function RemindersTool({ focus }: { focus?: string }) {
         {rows.length === 0 ? (
           <View style={{ padding: space[4] }}>
             <EmptyState
-              icon="bell"
-              title={reminders.length === 0 ? 'No reminders yet' : 'Nothing in this bucket'}
-              description={
-                reminders.length === 0
-                  ? 'A reminder is a dated record with a nudge switched on. Once its date passes it is owed, and it stays on Today until you tick it off.'
-                  : 'Try another bucket, or clear the search.'
-              }
+              icon={empty.icon}
+              title={empty.title}
+              description={empty.description}
               action={
-                <Button
-                  label="New reminder"
-                  icon="plus"
-                  onPress={() => open('timelineItem', { mode: 'reminder' })}
-                />
+                empty.clear ? (
+                  <Button
+                    label={empty.clear.label}
+                    variant="outline"
+                    onPress={empty.clear.onPress}
+                  />
+                ) : (
+                  addButton
+                )
               }
             />
           </View>

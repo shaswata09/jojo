@@ -12,11 +12,19 @@
  * likely to be broken by a swap are the ones nobody thought to tap through, and
  * those are exactly the ones a walkthrough misses.
  *
- * Counting told the real story. Of 60 registered tools, 32 were exercised
- * somewhere in the suite and 28 were not, and the 28 were not a random
- * scattering — they were most of the Vault, all of the scout and both of the
- * profile setters. Every one of those is reachable from a screen this app
- * ships.
+ * Counting told the real story. Barely half the registry was exercised anywhere
+ * in the suite, and the tools that were not were not a random scattering — they
+ * were most of the Vault, all of the scout and both of the profile setters.
+ * Every one of those is reachable from a screen this app ships.
+ *
+ * That sentence used to carry the split as literals, "of 60 registered tools, 32
+ * were exercised", eleven lines above another that said 62. The registry has
+ * held 62 since before the extraction — measured at `b39fa9e` and at HEAD — so
+ * one of the two was simply wrong, and a header that disagrees with itself is
+ * settled by whichever line the next reader happens to read first. The split is
+ * a fact about a suite that has since changed and is not recoverable from here;
+ * `Object.keys(TOOLS).length` is the count, and the last test in this file reads
+ * the registry rather than any number written down.
  *
  * So the point of this file is not the assertions, which are ordinary. It is the
  * last test in it, which fails if a tool is ever added to the registry without

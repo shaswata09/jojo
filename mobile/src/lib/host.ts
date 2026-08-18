@@ -18,6 +18,15 @@ const unsubscribe = () => {}
  * gesture for it would be adding a second, invisible way to revert on a platform
  * where the visible one is already on screen.
  *
+ * That argument covers undo and not redo, and the difference is worth stating
+ * because the code does not: this host is the only thing anywhere that calls
+ * `runtime.redo()` on the web (⇧⌘Z, through `direction: 'redo'`), so returning
+ * nothing here leaves the redo ring maintained on every write and reachable by
+ * nothing. No toast offers it — undoing through a toast puts a fresh toast on
+ * screen, not a Redo button — so redo is unreachable on this platform. That is
+ * a consequence of the line above rather than a decision anybody took, and a
+ * phone that wants it needs a surface, not a host method.
+ *
  * **`onSuspend` is the one that matters.** The write queue is write-behind and
  * drains on a microtask, so at any instant there may be one batch the user has
  * watched land on screen that is not on disk yet. On the web that batch is

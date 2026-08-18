@@ -180,6 +180,123 @@ describe('tx.unlink', () => {
   })
 })
 
+/**
+ * `tx.del` stages the node's incident edges as DELETES, in this buffer.
+ *
+ * This is the write half of D15 and D12, and it was pinned by nothing. Deleting
+ * `dropIncident(id)` from `tx.del` left the whole suite green, because
+ * `withDisplacedEdges` in `repo/repository.ts` recomputes the displaced edges on
+ * every commit and covers for it on the replay path. Two things it does not
+ * cover, both observable before the commit exists:
+ *
+ * - `ctx.memory` inside the transaction. A composite that deletes a record and
+ *   then reads its neighbours would still see the edges it just took out —
+ *   `snapshot.removeNode`'s own doc says the sweep there is silent and that
+ *   "every writer must therefore name the incident edges itself before calling
+ *   this".
+ * - `ToolResult.changed.edges`, which `deltas` builds straight out of this
+ *   buffer. It is what a caller is told changed, and it would come back empty.
+ */
+describe('tx.del takes the edges with it', () => {
+  const wired = () =>
+    transaction(app('app:1', 'rice'), org('org:1', 'rice', 'Rice'), keyword('kw:1', 'ml', 'ML'))
+
+  it('stages every incident edge as a delete, whichever end the node is', () => {
+    const t = wired()
+    // Outgoing from the application, and incoming to it. Both have to go: an
+    // edge with a missing END is what the boot integrity check rejects the whole
+    // graph over, and it does not care which end.
+    t.tx.link('app:1', 'AT', 'org:1')
+    t.tx.link('kw:1', 'TAGS', 'app:1')
+
+    t.tx.del('app:1')
+
+    expect([...t.buf.edges.keys()].sort()).toEqual(['app:1|AT|org:1', 'kw:1|TAGS|app:1'].sort())
+    expect(stagedEdges(t.buf)).toEqual([null, null])
+  })
+
+  it('hides the deleted node edges from the rest of its own transaction', () => {
+    const t = wired()
+    t.tx.link('app:1', 'AT', 'org:1')
+    t.tx.link('kw:1', 'TAGS', 'app:1')
+
+    t.tx.del('app:1')
+
+    // Read from the SURVIVORS' side, which is the side a composite goes on to
+    // touch: unfiling a record, recounting a keyword, relinking an employer.
+    expect(t.read().in('org:1', 'AT')).toEqual([])
+    expect(t.read().out('kw:1', 'TAGS')).toEqual([])
+    expect(t.read().degree('org:1')).toBe(0)
+  })
+
+  it('leaves the records at the other end alone, which is D15', () => {
+    const t = wired()
+    t.tx.link('app:1', 'AT', 'org:1')
+    t.tx.link('kw:1', 'TAGS', 'app:1')
+
+    t.tx.del('app:1')
+
+    // Unlinks, never cascades. The employer and the keyword are still records.
+    expect(t.read().node('org:1')).toBeDefined()
+    expect(t.read().node('kw:1')).toBeDefined()
+    expect(t.buf.nodes.size).toBe(1)
+  })
+})
+
+/**
+ * `tx.unlinkAll`'s `rel` filter, which four live callers depend on.
+ *
+ * Every one of them is the "unfile this record" path — `vault.ts` over
+ * `FILED_UNDER`, `timeline.ts` over `ABOUT`, `scout.ts` twice over `BECAME` —
+ * and every one runs on a record that also carries `TAGS` edges. Both mutations
+ * passed the suite before this block: dropping the filter, and making the whole
+ * call a no-op. Without the filter, clearing a link's application would take the
+ * user's keywords off it in the same gesture and the undo would be the only
+ * evidence.
+ */
+describe('tx.unlinkAll', () => {
+  const filed = () => {
+    const t = transaction({ ...app('app:1', 'rice') }, { ...keyword('kw:1', 'ml', 'ML') }, {
+      id: 'link:1',
+      type: 'link',
+      props: {
+        slug: 'posting',
+        title: 'Posting',
+        url: 'https://x',
+        category: 'Posting',
+        savedOn: '2026-10-12',
+      },
+      createdAt: AT,
+      updatedAt: AT,
+    } as StoredNode<'link'>)
+    t.tx.link('link:1', 'FILED_UNDER', 'app:1')
+    t.tx.link('kw:1', 'TAGS', 'link:1')
+    return t
+  }
+
+  it('drops only the named relation, leaving the keywords attached', () => {
+    const t = filed()
+
+    t.tx.unlinkAll('link:1', { rel: 'FILED_UNDER' })
+
+    expect(t.read().out('link:1', 'FILED_UNDER')).toEqual([])
+    expect(
+      t
+        .read()
+        .in('link:1', 'TAGS')
+        .map((e) => e.from),
+    ).toEqual(['kw:1'])
+  })
+
+  it('drops every incident edge when no relation is named', () => {
+    const t = filed()
+
+    t.tx.unlinkAll('link:1')
+
+    expect(t.read().incident('link:1')).toEqual([])
+  })
+})
+
 describe('the overlay shows a transaction its own writes', () => {
   /**
    * `bySlug` reads the buffer BEFORE the committed store.

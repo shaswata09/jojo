@@ -119,6 +119,45 @@ describe('createProjection', () => {
   })
 
   /**
+   * The other half of the same case, and the one the epoch did not cover.
+   *
+   * `epoch(id)` bumped for the node written and for the two ENDS of any edge
+   * written. Renaming the organisation is a `putNode` on the organisation, so
+   * only the organisation's epoch moved — every application row hit the cache
+   * and kept serving the old employer name, which is the exact failure this
+   * file's subject was chosen to demonstrate and the one `createProjection`'s
+   * own header claims to have solved.
+   *
+   * Latent when it was found: no tool renames an organisation, and
+   * `application.update` changing the employer relinks the `AT` edge, which
+   * bumps the application. It is pinned here rather than left to the day
+   * `org.rename` lands, because on that day every board card, table row and
+   * detail page shows the old employer until something unrelated edits the
+   * application — and the comment that would have warned the author said the
+   * opposite.
+   */
+  it('re-projects a row when a NEIGHBOUR node it reads is rewritten', () => {
+    const projectRow = rowProjection()
+    const app = application('rice')
+    const org = organisation('rice-university')
+    const g = MutableSnapshot.from([app, org])
+    g.putEdge(at(app, org))
+    g.commit()
+
+    const before = projectRow(g)
+    expect(before[0]?.org).toBe('rice-university')
+
+    // The organisation's own record changes. The application's does not, and
+    // neither does the edge between them.
+    g.putNode({ ...org, props: { ...org.props, name: 'Rice University' } })
+    g.commit()
+
+    const after = projectRow(g)
+    expect(after[0]?.org).toBe('Rice University')
+    expect(after[0]).not.toBe(before[0])
+  })
+
+  /**
    * The row leaving is the assertable half. The cache entry leaving with it is
    * not, and the name used to claim both.
    *

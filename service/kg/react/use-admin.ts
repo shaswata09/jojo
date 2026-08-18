@@ -37,9 +37,13 @@ import { useRun } from './use-tool'
 /**
  * Bumped when the shape below changes in a way an importer must notice.
  *
- * It exists so `memory.import` can refuse a file it does not understand rather
- * than half-reading one. An export with no version is not a backup, it is a
- * guess that happens to have worked so far.
+ * It is the ENVELOPE an importer would need, not the refusal itself. An export
+ * with no version is not a backup, it is a guess that happens to have worked so
+ * far — but a version number alone refuses nothing, and this line used to claim
+ * it did. `tools/memory.ts` states the live blocker on `memory.import` and it is
+ * the other half: a validator that can turn a file it does not understand away
+ * whole, rather than half-reading one. Bump this when the shape below changes in
+ * a way such a validator would have to notice.
  */
 const EXPORT_VERSION = 1
 

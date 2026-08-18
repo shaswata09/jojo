@@ -296,6 +296,41 @@ describe('the transaction', () => {
     expect(h.repo.undoable).toHaveLength(1)
   })
 
+  /**
+   * The slug a record is ADDRESSED by, when a composite minted another record
+   * named the same thing first.
+   *
+   * `application.create` calls `org.ensure` through `ctx.call`, so both records
+   * are minted inside one transaction and both fold to 'rice'. The pending set
+   * `ctx.mintSlug` keeps was flat across that transaction, so the organisation
+   * took 'rice' and the application — the record whose slug IS its URL
+   * (`core/address.ts`) — took 'rice-2'. Every first job at a new employer was
+   * addressed `/applications/rice-2`, on a store holding no other Rice.
+   *
+   * Slugs are unique per [type, slug] (D4), so there was never a collision to
+   * avoid: the two records may both be 'rice' and the index keeps them apart.
+   * Asserted on BOTH types, because a fix that scoped the pending set the wrong
+   * way round would move the number onto the organisation instead.
+   */
+  it('addresses the first application at a new employer by the employer name', () => {
+    const h = harness()
+    const app = okOr(
+      h.runtime.run('application.create', {
+        org: 'Rice',
+        role: 'Assistant professor',
+        roleTag: 'Assistant Professor',
+        stage: 'draft',
+      }),
+    )
+
+    const m = h.repo.getSnapshot()
+    expect(m.node(app, 'application')?.props.slug).toBe('rice')
+    expect(m.ofType('organisation').map((n) => n.props.slug)).toEqual(['rice'])
+    // The [type, slug] index keeps two records answering to one name apart.
+    expect(m.bySlug('application', 'rice')?.id).toBe(app)
+    expect(m.bySlug('organisation', 'rice')?.type).toBe('organisation')
+  })
+
   it('rejects input before it touches memory', () => {
     const h = harness()
     const before = graphOf(h.repo)

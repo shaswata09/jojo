@@ -4,17 +4,17 @@ import type { ModelSettings } from '@/lib/llm'
 /**
  * Where the model's address lives.
  *
- * Deliberately NOT in the graph. Everything in `src/kg` is a record — something
+ * Deliberately NOT in the graph. Everything in `@jojo/service` is a record — something
  * the user authored, that belongs to them, that Transfer would carry to another
  * phone. An endpoint is none of those: it describes *this device's* network,
  * and carrying `http://localhost:8000/v1` to a different phone would move a
  * setting that is wrong there by definition. So it sits in AsyncStorage beside
  * the graph rather than inside it, and the journal never sees it.
  *
- * That also keeps the ported layer honest. `src/kg` came from the web app and
- * has no concept of a model endpoint; adding one to `ProfileProps` to save
- * writing this file would have been the first edit to a copied module, made for
- * the convenience of a screen.
+ * That also keeps the shared layer honest. `@jojo/service` is the one copy both
+ * apps import and it has no concept of a model endpoint; adding one to
+ * `ProfileProps` to save writing this file would be a change to the web app's
+ * model, made for the convenience of one screen on one platform.
  */
 
 const KEY_DOC = 'jojo/model-settings/v1'

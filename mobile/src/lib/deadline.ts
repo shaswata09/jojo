@@ -1,7 +1,19 @@
 import type { TimelineItem } from '@jojo/service/data/timeline'
+import { DEADLINE_DETAIL } from '@jojo/service/tools/support'
 
-/** What the seed's application deadlines say, and what ApplicationDialog writes. */
-export const DEADLINE_DETAIL = 'Application deadline'
+/**
+ * Re-exported, not redeclared.
+ *
+ * This file used to spell `'Application deadline'` out a second time. It is a
+ * SENTINEL: the rule that tells the sheet's own deadline apart from every other
+ * `kind: 'deadline'` on the same application is
+ * `detail.startsWith(DEADLINE_DETAIL)`, and it is applied on both sides of the
+ * tool boundary — `kg/tools/application-fields.ts` reads it off the graph, this
+ * reads it off a projection. Two spellings of a sentinel do not fail loudly
+ * when they drift; they simply stop matching, and the sheet silently mints a
+ * second deadline on every edit instead of moving the first.
+ */
+export { DEADLINE_DETAIL }
 
 /**
  * The one dated item the application form owns.

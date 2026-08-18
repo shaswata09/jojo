@@ -2,10 +2,10 @@
  * The web adapter for the toast port, plus the one import path web code uses.
  *
  * The interface — `ToastOptions`, `ToastContextValue`, `ToastContext`,
- * `useToast` — lives in `@/kg/react/toast`, because `kg/react` fires toasts and
- * `kg/react` has to compile with no DOM lib at all. What is left here is
- * everything that only a browser can mean: an `HTMLElement` to hand focus back
- * to, and a CSS selector.
+ * `useToast` — lives in `@jojo/service/react/toast`, because `kg/react` fires
+ * toasts and `kg/react` has to compile with no DOM lib at all. What is left
+ * here is everything that only a browser can mean: an `HTMLElement` to hand
+ * focus back to, and a CSS selector.
  *
  * The port is re-exported rather than re-imported at each call site so the 20-odd
  * components that fire toasts kept their import line when it moved. If you are

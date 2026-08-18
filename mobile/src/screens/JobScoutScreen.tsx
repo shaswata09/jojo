@@ -18,7 +18,12 @@ import { Txt } from '@/components/ui/Text'
 import type { Pipeline } from '@jojo/service/data/scout'
 import { displayName } from '@jojo/service/data/seed'
 import { agoLabel } from '@jojo/service/data/timeline'
-import { draftFromUrl } from '@/lib/draft-from'
+// The parser is the shared one. `src/lib/draft-from.ts` held a 349-line copy of
+// it that was never tested here; the two were checked input for input before it
+// was deleted. `scout.posting.promote` parses a posting's URL through this same
+// module with no screen in the call stack, so a second copy up here could only
+// ever disagree with the store about what a pasted link means.
+import { draftFromUrl } from '@jojo/service/core/parse-posting'
 import { useProfile } from '@jojo/service/react/use-profile'
 import { useApplications, useScout } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'

@@ -9,8 +9,12 @@ require Pod::Executable.execute_command('node', ['-p',
   )', __dir__]).strip
 
 # Hardcoded, NOT `min_ios_version_supported` — that is 15.1, below jojo's floor.
-# The floor is stated in three places (here, IPHONEOS_DEPLOYMENT_TARGET in the
-# pbxproj, and the README) and this is the one CocoaPods reads.
+# This is the one CocoaPods reads. The pbxproj states it four more times —
+# `IPHONEOS_DEPLOYMENT_TARGET` on the jojo target's two configurations and on the
+# PROJECT's two, which Xcode's inspector shows and a new target inherits. Those
+# last two read 15.1 until this was audited: the app still built at 16.4 because
+# the single target overrode them, so a second target would have dropped under
+# the floor with nothing to say so. Nothing checks any of the five.
 platform :ios, '16.4'
 
 prepare_react_native_project!

@@ -221,3 +221,68 @@ describe('webHost.onSuspend', () => {
     expect(doc.listenerCount('visibilitychange')).toBe(0)
   })
 })
+
+/**
+ * The half of the port that had no test at all, which is worth naming: both
+ * halves of this host listen on the same event, and the two guards that tell
+ * them apart are one word each. Dropping `onResume`'s guard — so it answers to
+ * every `visibilitychange` rather than to `visible` — left the whole suite
+ * green.
+ */
+describe('webHost.onResume', () => {
+  /**
+   * `onResume` is optional on the port — a platform with no notion of a tab
+   * going away need not answer — so a test has to say out loud that the web
+   * host does. `webHost.onResume?.(run)` is the shorter spelling and would have
+   * left every "did not fire" assertion below passing against a host that had
+   * dropped the method entirely.
+   */
+  const resume = (run: () => void) => {
+    const bind = webHost.onResume
+    if (!bind) throw new Error('the web host no longer implements onResume')
+    return bind(run)
+  }
+
+  it('reports a tab coming back, and says nothing about one going away', () => {
+    // What the subscriber does with this is not cheap and is not idempotent: it
+    // flushes, re-reads the database, and where another tab has written it
+    // adopts those rows and clears the undo stack. Firing it on the way OUT
+    // runs all of that at the moment the tab is being suspended — and takes ⌘Z
+    // with it on every switch away.
+    const run = vi.fn()
+    resume(run)
+
+    doc.visibilityState = 'hidden'
+    doc.emit('visibilitychange', {})
+    expect(run).not.toHaveBeenCalled()
+
+    doc.visibilityState = 'visible'
+    doc.emit('visibilitychange', {})
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not answer to focus', () => {
+    // Clicking back from the URL bar, or dismissing a native dialog, fires
+    // `focus` without the tab ever having been in the background — and neither
+    // is a moment another tab can have changed the store.
+    const run = vi.fn()
+    resume(run)
+
+    win.emit('focus', {})
+    doc.emit('focus', {})
+
+    expect(run).not.toHaveBeenCalled()
+  })
+
+  it('unbinds on unsubscribe', () => {
+    const run = vi.fn()
+    const stop = resume(run)
+    expect(doc.listenerCount('visibilitychange')).toBe(1)
+    stop()
+    expect(doc.listenerCount('visibilitychange')).toBe(0)
+
+    doc.visibilityState = 'visible'
+    doc.emit('visibilitychange', {})
+    expect(run).not.toHaveBeenCalled()
+  })
+})

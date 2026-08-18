@@ -1,5 +1,6 @@
-import { daysBetween } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
+import { dateMarkOn, markOn } from '@jojo/service/core/timeline-view'
+import type { DateMark, Mark } from '@jojo/service/core/timeline-view'
 import { TODAY } from '@/lib/today'
 import type { Palette } from '@/theme/tokens'
 import type { Tone } from '@/components/ui/Text'
@@ -21,21 +22,22 @@ import type { Tone } from '@/components/ui/Text'
  * Oct 15 overdue while the week strip called Oct 12 amber. One function now,
  * so they cannot.
  */
-export type Mark = 'done' | 'overdue' | 'soon' | 'none'
+export type { Mark }
 
-/** The mark for a bare date. Knows nothing about completion — see `markOf`. */
-export function markOfDate(iso: string, today: string = TODAY): Exclude<Mark, 'done'> {
-  const gap = daysBetween(today, iso)
-  if (gap < 0) return 'overdue'
-  // Today and tomorrow are the only two days amber may claim.
-  return gap <= 1 ? 'soon' : 'none'
-}
+/**
+ * Bound here rather than re-exported, because the shared functions take `today`
+ * as an argument and every call site in this app asks about a date without
+ * holding a clock. `TODAY` is this app's one wall-clock read and nothing under
+ * `@jojo/service` may import it (D26), so the binding is what `src/lib` is for
+ * — the same shape `web/src/lib/timeline-visuals.ts` uses for the same pair.
+ *
+ * The two thresholds themselves are NOT spelled here any more. They were, and
+ * so were web's, and so was the tool layer's, which is the arrangement that let
+ * the calendar call Oct 15 overdue while the week strip called Oct 12 amber.
+ */
+export const markOfDate = (iso: string, today: string = TODAY): DateMark => dateMarkOn(today, iso)
 
-/** The mark for a whole item, completion included. */
-export function markOf(item: TimelineItem, today: string = TODAY): Mark {
-  if (item.completedOn) return 'done'
-  return markOfDate(item.date, today)
-}
+export const markOf = (item: TimelineItem, today: string = TODAY): Mark => markOn(today, item)
 
 /** The text tone a mark maps to, for `Txt`. */
 export const markTone: Record<Mark, Tone> = {

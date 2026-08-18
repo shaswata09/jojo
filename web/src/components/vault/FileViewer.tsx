@@ -195,7 +195,21 @@ export function FileViewer({
     <EmptyState
       icon={FileQuestion}
       title="No preview for this type"
-      description={`Browsers render PDFs natively but not ${file.kind} files. Opening it will hand off to your own application once files are stored locally.`}
+      /*
+       * This used to end "Opening it will hand off to your own application once
+       * files are stored locally" — a promise of work that is not coming. D27
+       * keeps a file's name, size and notes and never its bytes, so there is no
+       * stored document to hand anywhere, and the placeholder page a few lines
+       * above says exactly that. Two states of the same viewer describing the
+       * same file in opposite terms, and the one that read as a roadmap was the
+       * wrong one.
+       *
+       * Says nothing about THIS row's bytes, deliberately, for the reason the
+       * placeholder's own comment gives: a .docx dropped in this session is here
+       * too, held in state and unframed on purpose, and a sentence guessing
+       * which of the two the reader is looking at gets it wrong for one of them.
+       */
+      description={`Browsers render PDFs natively but not ${file.kind} files \u2014 and jojo keeps a file\u2019s name, size and notes rather than its contents, so there is no stored document to open.`}
     />
   )
 

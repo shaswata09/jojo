@@ -33,6 +33,14 @@
  * file declares no subject of its own, so a collected copy would be an empty
  * file in every run. `driver-conformance.test.ts` beside it supplies the one
  * subject that needs no platform.
+ *
+ * WHAT EACH SUBJECT OWES. `crossTab` and `durable` are declared per subject, and
+ * each selects a case. `durable` is the newer of the two and the package's own
+ * subject cannot set it — `memory-driver` has no store to reopen — so the case
+ * it selects runs only where a real one is built: `web/src/kg/storage/
+ * idb-conformance.test.ts` and `mobile/src/kg/storage/rn-conformance.test.ts`.
+ * A durable driver whose subject omits it is running a contract that cannot tell
+ * whether it writes to disk at all.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -58,7 +66,12 @@ import type { StoredRow } from './schema'
  */
 export type DriverSubject = {
   readonly label: string
-  readonly make: () => { driver: Driver; remoteCommit: (event: StoreEvent) => void }
+  readonly make: () => {
+    driver: Driver
+    remoteCommit: (event: StoreEvent) => void
+    /** Required when `durable` is true: a new Driver over the same store. */
+    reopen?: () => Driver
+  }
   /**
    * Whether anything else can write this driver's store — `OpenInfo.crossTab`,
    * declared ahead of the run because the last case below branches on it and a
@@ -74,6 +87,24 @@ export type DriverSubject = {
    * depends on either way.
    */
   readonly crossTab: boolean
+  /**
+   * A SECOND driver over the same backing store, or absent for a driver with no
+   * store to come back to.
+   *
+   * Declared on the subject rather than discovered, exactly like `crossTab`: the
+   * case below is inside an `if` at describe time and a `describe` cannot await
+   * a `make()` to find out. It hangs off `make()`'s RESULT because "the same
+   * store" is a fact about one store rather than about the driver type — the
+   * IndexedDB subject reopens the database its first driver created, the RN
+   * subject reopens the AsyncStorage key its first driver wrote.
+   *
+   * Absent for `memory-driver`, and that is honest rather than a gap: its rows
+   * are in RAM behind the closure, so there is no second connection to hand
+   * back. Handing it one built from `readAll()` would assert the harness. A
+   * driver that claims durability and does not supply this is not covered by the
+   * one case in this file that can tell whether it writes anything at all.
+   */
+  readonly durable?: boolean
 }
 
 const node = (id: string): StoredRow => ({ id, type: 'application', props: {} })
@@ -376,6 +407,60 @@ export function describeDriverConformance(subject: DriverSubject): void {
      * Called twice on purpose: `close()` runs the same teardown afterwards, so
      * an unsubscribe that only survives one call throws on the way out of a tab.
      */
+    /**
+     * A row written by one connection comes back to the next one.
+     *
+     * The hole this closes was structural: not one of the cases above reopens a
+     * store, so a driver that accepted every write, answered every read out of
+     * an in-memory mirror and never touched the disk passed the entire contract.
+     * That is not hypothetical — it was measured on `rn-driver`, which delegates
+     * its reads to the `MemoryDriver` it wraps: replacing `AsyncStorage.setItem`
+     * with a no-op AND `getItem` with `null` left every test green, on the one
+     * thing that file's own header says it owns.
+     *
+     * `close()` then `open()` on the SAME instance is not the same test and
+     * cannot replace this one — a driver is allowed to refuse to reopen after
+     * close, and the case above only asserts that it answers with a
+     * `DriverResult`. What a durable driver owes is that the STORE outlives the
+     * connection, which needs a second connection to ask.
+     *
+     * Both stores are checked, and `ops` deliberately: a journal row is written
+     * with `key: null` and comes back through a generator, so a driver that
+     * round-trips `nodes` by id and loses the audit log is a real shape.
+     */
+    if (subject.durable === true) {
+      it('hands the rows back to a second connection to the same store', async () => {
+        const made = subject.make()
+        const reopen = made.reopen
+        if (!reopen) {
+          throw new Error(
+            `${subject.label} declares durable: true and supplies no reopen(). ` +
+              'The contract cannot tell whether it writes anything without one.',
+          )
+        }
+
+        await made.driver.open()
+        await made.driver.commit([put('kept'), journal('entry')])
+        made.driver.close()
+
+        const second = reopen()
+        const opened = await second.open()
+        expect(opened.ok).toBe(true)
+
+        const rows = await second.readAll()
+        expect(rows.ok && idsOf(rows.value.nodes)).toEqual(['kept'])
+        expect(rows.ok && idsOf(rows.value.ops)).toEqual(['entry'])
+
+        // And the second connection can still write, which a driver that
+        // reopened read-only would fail here rather than on a user's phone.
+        await second.commit([put('added')])
+        const after = await second.readAll()
+        expect(after.ok && idsOf(after.value.nodes)).toEqual(['added', 'kept'])
+
+        second.close()
+      })
+    }
+
     if (subject.crossTab) {
       it('stops delivering remote commits once its unsubscribe is called', async () => {
         const { driver, remoteCommit } = subject.make()

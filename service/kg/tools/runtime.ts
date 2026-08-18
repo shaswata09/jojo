@@ -125,8 +125,20 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
         // together. `sortDrop` in `components/vault/files/intake.ts` used to work
         // that around by predicting this slug with a second copy of `slugify`;
         // the prediction is gone and it now dedupes on the folded name alone.
-        const slug = uniqueSlug(slugify(base) || type, [...taken, ...buf.minted])
-        buf.minted.add(slug)
+        //
+        // Scoped to the type, like the `taken` read above it. It was one flat
+        // set across the whole transaction, and `application.create` is a
+        // composite: `org.ensure` minted 'rice' first, so the application landed
+        // on 'rice-2' and `/applications/rice-2` was the address of the FIRST
+        // job at a new employer. Slugs are unique per [type, slug], so the
+        // collision it was avoiding did not exist.
+        let pending = buf.minted.get(type)
+        if (!pending) {
+          pending = new Set<string>()
+          buf.minted.set(type, pending)
+        }
+        const slug = uniqueSlug(slugify(base) || type, [...taken, ...pending])
+        pending.add(slug)
         return slug
       },
 

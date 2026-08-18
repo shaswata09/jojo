@@ -5,9 +5,14 @@
  * stays as the boot-time constructor and as the oracle to diff against when a
  * mutation is suspected of having drifted.
  *
- * `epoch(id)` bumps when the node OR any incident edge changes, which is what
- * the projection cache keys on — a projection depends on its node and on its
- * edges (the org name), so a WeakMap on the node alone would go stale.
+ * `epoch(id)` bumps when the node changes, when any incident edge changes, or
+ * when a NEIGHBOUR one hop out changes — which is what the projection cache
+ * keys on. The third of those is not decoration: an application's row carries
+ * its organisation's name, and that name is a prop on the organisation's own
+ * node, so an epoch covering only the node and its edges serves a renamed
+ * employer's old name to every row. This paragraph used to say "its node and
+ * its edges (the org name)", which located the org name on the edge and was
+ * the argument for the gap.
  *
  * Nothing here is async and nothing here knows about IndexedDB. A snapshot is a
  * plain in-memory reading that happens to be the source of truth; durability is
@@ -223,6 +228,20 @@ export class MutableSnapshot implements GraphSnapshot {
     if (node.type === 'keyword') this.#keywordNames.set(foldName(node.props.name), node.id)
 
     this.#bump(node.id)
+    // And every neighbour, because a projection reads ONE HOP OUT: an
+    // application's row carries its organisation's NAME, and the name is on the
+    // organisation's node rather than on the edge between them. Bumping the node
+    // and the two ends of a written edge — which is all this used to do — left
+    // renaming an organisation invisible to every application row, so each one
+    // hit the projection cache and kept serving the old employer.
+    //
+    // One hop, not transitive: `react/projections.ts` reads a neighbour's props
+    // in exactly one projector and reads neighbour IDS everywhere else, and an
+    // id only changes when an edge does. A new node has no edges yet, so this
+    // loop is empty on the path that builds a graph.
+    for (const edge of this.incident(node.id)) {
+      this.#bump(edge.from === node.id ? edge.to : edge.from)
+    }
   }
 
   /**
@@ -364,8 +383,16 @@ export class MutableSnapshot implements GraphSnapshot {
 
   /**
    * Slug and keyword-name entries are removed only when they still point at
-   * this node. A rename writes the new key before the old one is swept, and an
-   * unconditional delete would take the new entry out with it.
+   * this node.
+   *
+   * NOT for the reason this used to give — "a rename writes the new key before
+   * the old one is swept". `putNode` sweeps first and writes second, so a rename
+   * survives either spelling and the mutation to an unconditional delete passed
+   * the whole suite. The case that needs the guard is `removeNode` over a
+   * DUPLICATE [type, slug]: `checkInvariants` reports one and drops nothing, so
+   * an imported store can hold two, and removing either would otherwise take the
+   * survivor's index entry with it — leaving a live record that `bySlug`, and
+   * therefore its URL, can no longer find.
    */
   #unindexNode(node: StoredNode): void {
     if (node.type !== 'profile') {

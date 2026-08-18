@@ -510,9 +510,15 @@ export function createIdbDriver(options: IdbDriverOptions = {}): Driver {
     for (const row of rows.nodes) batch.put('nodes', String(row['id'] ?? ''), row)
     for (const row of rows.edges) batch.put('edges', String(row['id'] ?? ''), row)
     for (const row of rows.meta) batch.put('meta', row.key, row)
-    // Renumbered from 1. The keys are a private sequence, not an identity —
-    // `boot` continues from the count it read back — so preserving gaps left by
-    // an earlier prune would only make the next continuation collide.
+    // Renumbered from 1, into a store this same batch has just cleared. The keys
+    // are ordering and nothing else: `readAll` reads every store with `getAll()`,
+    // which hands back values and never keys, so no caller above has ever seen
+    // one. This used to say `boot` continues from the count it read back — it
+    // does not, and has not since journal appends became `key: null` and the
+    // store's own generator took over. What the explicit keys still owe is the
+    // ORDER, which is the whole of what an audit log is; a later append lands
+    // above them because a key generator is not rewound by `clear()` and an
+    // explicit numeric key pushes it past itself.
     rows.ops.forEach((row, index) => batch.put('ops', index + 1, row))
   }
 

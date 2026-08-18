@@ -7,6 +7,7 @@ import { FormField, SettingRow, TextField, Toggle } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
+import { OUTCOME_VALUES } from '@jojo/service/core/model'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
 import { addDays, shortDate } from '@jojo/service/data/timeline'
@@ -27,18 +28,30 @@ const FORMAT_LABEL = Object.fromEntries(FORMATS.map((f) => [f.value, f.label])) 
   string
 >
 
-const OUTCOMES: { value: Outcome; label: string }[] = [
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'withdrawn', label: 'Withdrawn' },
-  { value: 'accepted', label: 'Accepted' },
-  { value: 'declined', label: 'Declined' },
-  { value: 'ghosted', label: 'Ghosted — no reply' },
-]
+const OUTCOME_LABEL: Record<Outcome, string> = {
+  rejected: 'Rejected',
+  withdrawn: 'Withdrawn',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  ghosted: 'Ghosted — no reply',
+}
 
-const OUTCOME_LABEL = Object.fromEntries(OUTCOMES.map((o) => [o.value, o.label])) as Record<
-  Outcome,
-  string
->
+/**
+ * The picker's options, in the model's own order.
+ *
+ * Built from `OUTCOME_VALUES` rather than re-spelled here. The list used to be
+ * written out under a plain `{ value: Outcome; label: string }[]` annotation,
+ * which asserts every entry IS an `Outcome` and never that every `Outcome`
+ * appears — a shorter list compiles, and a sixth outcome added to the model
+ * would simply have gone missing from this picker. Its label map had the
+ * matching hole: `Object.fromEntries(...) as Record<Outcome, string>` is a cast
+ * over a list, so it claimed totality it could not have. `OUTCOME_ACTION`
+ * below was already written the safe way, six lines further down.
+ */
+const OUTCOMES: { value: Outcome; label: string }[] = OUTCOME_VALUES.map((value) => ({
+  value,
+  label: OUTCOME_LABEL[value],
+}))
 
 /** What the activity feed should say afterwards. */
 const OUTCOME_ACTION: Record<Outcome, string> = {
@@ -215,6 +228,20 @@ function TransitionForm({
     return patch
   }
 
+  /**
+   * Neither draft stamps an `urgency`.
+   *
+   * They used to: `'amber'` on the interview and `'red'` on the respond-by,
+   * matching what the web dialog wrote before it stopped. Both were invented at
+   * the keyboard — an interview six weeks out was born amber and a respond-by
+   * three weeks out was born red, with nothing that ever updated either as the
+   * date approached or passed. Nothing reads the field: `lib/marks.ts` derives
+   * every date colour in this app from the date itself, and the web app derives
+   * its own the same way. Writing a value nothing reads is how the next person
+   * infers a rule that does not exist and starts colouring something by it —
+   * and while this sheet still wrote it, the same user action stored a
+   * different record on each platform.
+   */
   const buildItem = (): TimelineDraft | undefined => {
     if (target === 'interview' && mintInterview) {
       return {
@@ -222,7 +249,6 @@ function TransitionForm({
         detail: application.roleTag,
         date,
         kind: 'interview',
-        urgency: 'amber',
         applicationId: application.id,
         remind: true,
         location: format === 'onsite' ? application.location : undefined,
@@ -234,7 +260,6 @@ function TransitionForm({
         detail: 'Decision deadline',
         date: respondBy,
         kind: 'deadline',
-        urgency: 'red',
         applicationId: application.id,
         remind: true,
       }

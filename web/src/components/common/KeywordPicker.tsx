@@ -42,7 +42,13 @@ export function KeywordPicker({
     // Returns the existing id when the name is already taken, so typing a
     // keyword that exists selects it rather than minting a duplicate.
     const labelId = addLabel(name)
-    if (!picked.has(labelId)) onChange([...value, labelId])
+    // And '' when it could not create one at all — a name over the schema's 40
+    // characters, which nothing on this input stops anyone typing. That empty id
+    // used to be pushed into the staged list, where it is invisible: no chip
+    // renders for it, and the id only surfaces at save, when `keyword.record.set`
+    // rejects the whole array and the record is written carrying none of the
+    // keywords that were picked.
+    if (labelId && !picked.has(labelId)) onChange([...value, labelId])
     setDraft('')
   }
 

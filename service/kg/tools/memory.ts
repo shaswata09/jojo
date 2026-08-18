@@ -7,37 +7,41 @@
  * buffer to the durable op list — and after a reset no earlier before-image is
  * safe to replay anyway.
  *
- * `memory.reset` compiles `src/data/*` into nodes and edges. §2 of the
- * architecture names this the one tool allowed to import the fixtures, and the
- * layer checker allows it here for that reason.
+ * ---- THE TWO COMPILERS ARE NOW ONE ----
+ * `memory.reset` used to hold a SECOND compiler over the same fixture arrays,
+ * beside `seedToGraph()` in `repo/seed.ts`. That is the shape of R-1, and it had
+ * already drifted by the time anyone measured it: Wave 4 taught `seedToGraph` to
+ * rebase every authored date by `seedOffset`, and this file never learned it, so
+ * a demo loaded from here carried an offer that expired last spring while the
+ * same fixtures loaded on a first run did not. The slugs differed too — minted
+ * here from the display title, there from the fixture's own id — which made
+ * `/applications/rice-research` a live deep link against one demo and a 404
+ * against the other.
  *
- * ---- READ THIS BEFORE CHANGING A FIXTURE ----
- * `repo/seed.ts` has a `seedToGraph()` doing the same compilation for the
- * first-run boot path, where no runtime exists yet. Two compilers over one set
- * of fixtures is the shape of R-1: a field added to `data/seed.ts` gets picked
- * up by whichever one the author happened to open, and the demo store then
- * differs depending on whether it arrived by first run or by pressing "Demo
- * data".
+ * So this tool calls `seedToGraph` and stages what it returns. `tools` is
+ * allowed to import `repo/seed` by name in `check-layers.mjs`'s `allow` list,
+ * beside `repo/repository` and `repo/journal`, and for the same reason: it is a
+ * pure function over the fixtures, not a driver and not a singleton. There is
+ * one compiler and the divergence is no longer representable — and this file is
+ * no longer a `DATA_READERS` entry, so a third one cannot appear here without
+ * failing lint.
  *
- * That is STILL TRUE, and the plan that used to be recorded here — "reconcile
- * before Wave 2; the cheap fix is to let `tools/` import `repo/seed`" — did not
- * happen. Waves 2, 3 and 4 shipped around it. What happened instead is that
- * `src/lib/data-set.ts` took Settings AWAY from these tools and onto
- * `seedToGraph` + `repo.replaceAll`, for two reasons this file cannot answer:
- * a tool's wipe is only as complete as `RECORD_TYPES` below and its deletes
- * queue behind the write queue, whereas `replaceAll` clears every object store
- * in one transaction; and a tool commit cannot write the `dataSet: 'empty'` meta
- * row D24 needs, because `land()` flips `dataSet` to 'user' on any write. So
- * `repo/seed` is now the compiler the app's own Settings screen trusts.
+ * Settings does not come through here either way. `src/lib/data-set.ts` calls
+ * `seedToGraph` + `repo.replaceAll` directly, for two reasons a tool cannot
+ * answer: a tool's wipe is only as complete as `RECORD_TYPES` below and its
+ * deletes queue behind the write queue, whereas `replaceAll` clears every object
+ * store in one transaction; and a tool commit cannot write the `dataSet: 'empty'`
+ * meta row D24 needs, because `land()` flips `dataSet` to 'user' on any write.
  *
- * These two are nonetheless still LIVE user-facing doors, not leftovers:
- * neither is `internal`, and `SpotlightSearch` lists every non-internal tool, so
- * ⌘K reaches both. The line this header used to carry — "they already go through
- * a confirmation dialog rather than an undo toast" — is true of the Settings
- * path that no longer calls them and false of the palette path that does. Anyone
- * reconciling the two compilers should decide that first: marking both
- * `internal` removes the second door and makes `data-set.ts` the only way in,
- * which is what the rest of the app already assumes.
+ * WHAT REACHES THESE TWO. `memory.clear` is live — `useStoreAdmin().clearAll`,
+ * called by web's `DataPanel` and mobile's `FirstRunChoice`. `memory.reset` has
+ * no caller at all: `useStoreAdmin().reset` is never destructured, and the
+ * palette does not reach it. This header used to claim both were ⌘K doors on the
+ * grounds that neither is `internal`; that is false in both apps. `planToolForm`
+ * in web's `components/common/tool-form.ts` returns null on `effect === 'admin'`
+ * BEFORE it looks at `internal`, which is what `SpotlightSearch` and
+ * `graph/GraphDetail` gate on, and mobile has no tool-running surface. Keep that
+ * in mind before writing anything here that assumes a user can see it.
  *
  * `memory.import` is deliberately absent, but not for the reason recorded here
  * before. The envelope exists — `EXPORT_VERSION` and `exportJSON` in
@@ -56,22 +60,10 @@
  * by itself.
  */
 
-import { seedLabels, seedLabelsByRecord } from '../../data/labels'
-import { seedProfile } from '../../data/profile'
-import { matches, pipelines, savedPostings } from '../../data/scout'
-import { applications } from '../../data/seed'
-import { timeline } from '../../data/timeline'
-import { snippets, vaultFiles, vaultLinks } from '../../data/vault'
 import { NODE_TYPES } from '../core/model'
-import type {
-  Instant,
-  NodeId,
-  NodePropsByType,
-  NodeType,
-  SluggedType,
-  StoredNode,
-} from '../core/model'
+import type { NodeType, ProfileProps } from '../core/model'
 import { s } from '../core/schema'
+import { seedToGraph } from '../repo/seed'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 import { profileNode } from './profile'
@@ -149,16 +141,6 @@ export const memoryClear = defineTool({
 
 /* ---------------------------------- reset --------------------------------- */
 
-/**
- * The seed's `daysAgo` as a real instant.
- *
- * `daysAgo` was a stored count, reset to 0 on every edit, and correct only
- * because a reload wiped the store. Rebasing it against the transaction's own
- * clock is also what stops a demo loaded in 2027 looking abandoned.
- */
-const agoOf = (now: Instant, days: number): Instant =>
-  new Date(Date.parse(now) - days * 86_400_000).toISOString()
-
 export const memoryReset = defineTool({
   name: 'memory.reset',
   title: 'Load demo data',
@@ -170,177 +152,34 @@ export const memoryReset = defineTool({
 
   run(ctx) {
     clearRecords(ctx)
+    // Keywords too. `memory.clear` keeps the user's vocabulary (D14); a reset
+    // replaces the store with the demo's, which has its own.
     for (const keyword of ctx.memory.ofType('keyword')) ctx.tx.del(keyword.id)
 
-    /**
-     * The one cast in this file, over an object built from a fixture the
-     * compiler has already checked field by field. TypeScript cannot see that
-     * `{ ...props, slug }` reconstitutes `NodePropsByType[T]` for a generic `T`.
-     */
-    const put = <T extends SluggedType>(
-      type: T,
-      slugFrom: string,
-      props: Omit<NodePropsByType[T], 'slug'>,
-    ): NodeId => {
-      const id = ctx.newId(type)
-      ctx.tx.put({
-        id,
-        type,
-        props: { ...props, slug: ctx.mintSlug(type, slugFrom) },
-        createdAt: ctx.now,
-        updatedAt: ctx.now,
-      } as StoredNode<T>)
-      return id
-    }
+    // Compiled from the transaction's own instant, so the rebase and every
+    // `createdAt` in the graph are read off one clock. `seedToGraph` also mints
+    // its ids from it, exactly as `ctx.newId` would.
+    const { nodes, edges } = seedToGraph(ctx.now)
 
-    /* keywords, first: the applications below are tagged with them. */
-    const keywordIds = new Map<string, NodeId>()
-    for (const label of seedLabels) {
-      keywordIds.set(label.id, put('keyword', label.name, { name: label.name, tone: label.tone }))
-    }
-
-    /* applications, each with its organisation. */
-    const appIds = new Map<string, NodeId>()
-    for (const a of applications) {
-      const id = put('application', a.org, {
-        role: a.role,
-        note: a.note,
-        roleTag: a.roleTag,
-        stage: a.stage,
-        lastAction: a.lastAction,
-        lastActionAt: agoOf(ctx.now, a.daysAgo),
-        ...(a.flagged === undefined ? {} : { flagged: a.flagged }),
-        ...(a.source === undefined ? {} : { source: a.source }),
-        ...(a.location === undefined ? {} : { location: a.location }),
-        ...(a.comp === undefined ? {} : { comp: a.comp }),
-        ...(a.url === undefined ? {} : { url: a.url }),
-        ...(a.appliedOn === undefined ? {} : { appliedOn: a.appliedOn }),
-        ...(a.submittedOn === undefined ? {} : { submittedOn: a.submittedOn }),
-        ...(a.firstReplyOn === undefined ? {} : { firstReplyOn: a.firstReplyOn }),
-        ...(a.outcome === undefined ? {} : { outcome: a.outcome }),
-        ...(a.offer === undefined ? {} : { offer: a.offer }),
-      })
-      appIds.set(a.id, id)
-      ctx.tx.link(id, 'AT', ctx.call('org.ensure', { name: a.org }))
-    }
-
-    const under = (id: NodeId, rel: 'ABOUT' | 'FILED_UNDER', applicationId?: string) => {
-      const target = applicationId === undefined ? undefined : appIds.get(applicationId)
-      if (target) ctx.tx.link(id, rel, target)
-    }
-
-    /* everything that can point at an application. */
-    const itemIds = new Map<string, NodeId>()
-    for (const i of timeline) {
-      const id = put('timelineItem', i.title, {
-        title: i.title,
-        date: i.date,
-        kind: i.kind,
-        urgency: i.urgency,
-        remind: i.remind,
-        ...(i.detail === undefined ? {} : { detail: i.detail }),
-        ...(i.note === undefined ? {} : { note: i.note }),
-        ...(i.startMins === undefined ? {} : { startMins: i.startMins }),
-        ...(i.durationMins === undefined ? {} : { durationMins: i.durationMins }),
-        // `null` is dropped, not stored: it was the reducer's spelling of
-        // "reopened", and it survives a structured clone as a present key.
-        ...(i.completedOn ? { completedOn: i.completedOn } : {}),
-        ...(i.location === undefined ? {} : { location: i.location }),
-        ...(i.joinUrl === undefined ? {} : { joinUrl: i.joinUrl }),
-      })
-      itemIds.set(i.id, id)
-      under(id, 'ABOUT', i.applicationId)
-    }
-
-    const linkIds = new Map<string, NodeId>()
-    for (const l of vaultLinks) {
-      const id = put('link', l.title, {
-        title: l.title,
-        url: l.url,
-        category: l.category,
-        savedOn: l.savedOn,
-        ...(l.note === undefined ? {} : { note: l.note }),
-      })
-      linkIds.set(l.id, id)
-      under(id, 'FILED_UNDER', l.applicationId)
-    }
-
-    const fileIds = new Map<string, NodeId>()
-    for (const f of vaultFiles) {
-      const id = put('file', f.name, {
-        name: f.name,
-        kind: f.kind,
-        bucket: f.bucket,
-        size: f.size,
-        savedOn: f.savedOn,
-        ...(f.note === undefined ? {} : { note: f.note }),
-      })
-      fileIds.set(f.id, id)
-      under(id, 'FILED_UNDER', f.applicationId)
-    }
-
-    const snippetIds = new Map<string, NodeId>()
-    for (const sn of snippets) {
-      const id = put('snippet', sn.title, { title: sn.title, tag: sn.tag, body: sn.body })
-      snippetIds.set(sn.id, id)
-      under(id, 'FILED_UNDER', sn.applicationId)
-    }
-
-    /* scout. `linked` is not stored — the BECAME edge below IS that boolean. */
-    const pipelineIds = new Map<string, NodeId>()
-    for (const p of pipelines) {
-      pipelineIds.set(
-        p.id,
-        put('pipeline', p.name, {
-          name: p.name,
-          source: p.source,
-          schedule: p.schedule,
-          filter: p.filter,
-          enabled: p.enabled,
-        }),
-      )
-    }
-
-    for (const p of savedPostings) {
-      const id = put('posting', p.title, {
-        title: p.title,
-        url: p.url,
-        savedOn: p.savedOn,
-        size: p.size,
-      })
-      const app = p.applicationId === undefined ? undefined : appIds.get(p.applicationId)
-      if (app) ctx.tx.link(id, 'BECAME', app)
-    }
-
-    for (const mt of matches) {
-      const id = put('match', mt.role, { role: mt.role, detail: mt.detail, fit: mt.fit })
-      const app = mt.applicationId === undefined ? undefined : appIds.get(mt.applicationId)
-      if (app) ctx.tx.link(id, 'BECAME', app)
-    }
-
-    /*
-     * Keyword edges. The fixture keys applications as 'app:rice' and everything
-     * else bare, because six records in the seed answer to 'stripe' and only the
-     * application has keywords on it. That ambiguity is exactly what the
-     * type-prefixed ids delete — this loop is the last place it is read.
-     */
-    const recordOf = (key: string): NodeId | undefined => {
-      if (key.startsWith('app:')) return appIds.get(key.slice(4))
-      return itemIds.get(key) ?? linkIds.get(key) ?? fileIds.get(key) ?? snippetIds.get(key)
-    }
-
-    for (const [key, ids] of Object.entries(seedLabelsByRecord)) {
-      const record = recordOf(key)
-      if (!record) continue
-      for (const labelId of ids) {
-        const keyword = keywordIds.get(labelId)
-        if (keyword) ctx.tx.link(keyword, 'TAGS', record)
+    // Nodes first, or `tx.link` below rejects an edge whose ends are not in the
+    // overlay yet — which is the same check that makes a corrupt edge
+    // unrepresentable rather than a boot-time diagnostic.
+    let seededProfile: ProfileProps | null = null
+    for (const node of nodes) {
+      // The one node this cannot put. A profile is a singleton the graph mints
+      // on first write and `memory.clear` blanks rather than deletes, so putting
+      // the seed's would leave two — and `profileNode` hands back whichever it
+      // found first from then on.
+      if (node.type === 'profile') {
+        seededProfile = node.props
+        continue
       }
+      ctx.tx.put(node)
     }
 
-    /* profile. */
-    const profile = profileNode(ctx)
-    ctx.tx.patch<'profile'>(profile.id, seedProfile())
+    for (const edge of edges) ctx.tx.link(edge.from, edge.rel, edge.to, edge.props)
+
+    if (seededProfile) ctx.tx.patch<'profile'>(profileNode(ctx).id, seededProfile)
   },
 
   describe: () => ({

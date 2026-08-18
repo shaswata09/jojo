@@ -9,14 +9,18 @@
  * shippable on its own.
  *
  * The move matters for one measured reason. `@/…` resolves against the
- * CONSUMER's project root, so when the Expo app imports this service layer,
- * `@/data/timeline` binds to `mobile/src/data/timeline.ts` — a copy that exists,
- * that differs, and that fails no check. A tool asking for `shortDate` would
- * silently get the other app's version. Nothing under `kg` should name a
- * module it does not ship, and after this move nothing does: `src/data` is read
- * by `repo/seed.ts` and `tools/memory.ts` and by nothing else in the layer.
+ * CONSUMER's project root, so a shared module asking for `@/data/timeline` binds
+ * to whatever the app that imported it calls `src/data`. The mobile app had a
+ * copy of this file under exactly that path — one that existed, that differed,
+ * and that failed no check — so a tool asking for `shortDate` would silently
+ * have got the other app's version. That copy is deleted and
+ * `check-no-copies.mjs` forbids `mobile/src/data` from coming back, so the
+ * hazard is historical; the RULE it produced is not, and it is why nothing under
+ * `kg` names a module it does not ship. The fixtures are `service/data`, they
+ * are read relatively, and `check-layers.mjs`'s DATA_READERS is down to one
+ * entry: `repo/seed.ts`.
  *
- * `src/data/timeline.ts` re-exports every name below, so the 53 app call sites
+ * `service/data/timeline.ts` re-exports every name below, so the app call sites
  * did not move and do not need to. It keeps the two things that really are
  * facts about the fixture — `SEED_TODAY` and `seedOffset`.
  *

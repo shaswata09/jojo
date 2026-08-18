@@ -169,7 +169,12 @@ The Android floor lives in the `buildscript { ext { … } }` block at the top of
 `rootProject.ext`; deleting that plugin without writing the block by hand would
 have dropped the floor to React Native's default with no error anywhere. The iOS
 floor is `platform :ios, '16.4'` in the Podfile, hardcoded rather than
-`min_ios_version_supported`, which is 15.1.
+`min_ios_version_supported`, which is 15.1 — plus `IPHONEOS_DEPLOYMENT_TARGET`
+in the pbxproj, on both the target's configurations _and_ the project's. The
+project-level pair still read 15.1 after the ejection: the app built at 16.4
+anyway, because the one target overrides them, so a second target would have
+inherited a floor below the supported one with no error. They are 16.4 now.
+Nothing enforces any of this.
 
 ### iOS has never been built here
 
@@ -186,17 +191,22 @@ project, and the **Bundle React Native code and images** phase reads it.
 
 ---
 
-## The store is the web app's, running here
+## The store is `@jojo/service`, imported
 
-`src/kg/` is `web/src/kg/` — **59 files copied without a line changed**: the graph
-model, the repository, the write queue, the journal, the tool runtime and the
-React hooks. It was built to be portable and it turned out to be: the whole layer
-compiled inside this app on the first try bar three imports, because nothing
-under `core`, `repo`, `tools` or `react` touches a browser API. The only place
-that did was `storage/`, which already had a `Driver` interface and two
-implementations behind it.
+`src/kg/` holds **two files** — `storage/rn-driver.ts` and its test. Everything
+else the graph needs is `@jojo/service`, the workspace package both apps depend
+on, and `service/scripts/check-no-copies.mjs` fails the build if a third file
+appears in this directory.
 
-Three adapters is the entire cost of the port:
+It was not always. This app carried a copy of the whole layer — 59 files taken
+from `web/src/kg` without a line changed, which compiled here on the first try
+bar three imports because nothing under `core`, `repo`, `tools` or `react`
+touches a browser API. By the time the copy was deleted it had drifted from the
+original by 813 substantive lines, in 79 of its 81 files. That is the argument
+the package exists on, and this README described the copy as the end state for
+long enough to be worth saying plainly.
+
+Three adapters are the entire cost of running the shared layer here:
 
 | File                      | What it supplies                                                             |
 | ------------------------- | ---------------------------------------------------------------------------- |
@@ -204,10 +214,10 @@ Three adapters is the entire cost of the port:
 | `lib/host.ts`             | `AppState` for suspend/resume, so a backgrounded app flushes its queue.      |
 | `lib/store.tsx`           | The composition root — the one place a driver, a host and a clock are named. |
 
-`lib/store-context.ts` is now an eight-line shim. It could be, because the
-reducer it replaced had been written against the same hook surface — `all`,
-`byId`, `add`, `update`, `remove`, `setStage`, name for name — so **not one
-screen changed**. The 962-line reducer is gone.
+`lib/store-context.ts` is a 32-line shim that re-exports seven hooks from
+`@jojo/service/react/*`. It could be, because the 962-line reducer it replaced
+had been written against the same hook surface — `all`, `byId`, `add`, `update`,
+`remove`, `setStage`, name for name — so **not one screen changed**.
 
 ### What changed for the user
 
@@ -225,72 +235,80 @@ October that never moves.
 `vault.file.move`, …) with a before-image, which is what makes undo and the
 journal real rather than per-screen bookkeeping.
 
-### Two things this newly makes possible, not yet built
+### Two things this makes possible, not yet built
 
-The audit log and its undo-the-newest were listed above as impossible here
-because this app had no journal. It has one now — `kg/repo/journal.ts` came
-across with everything else — so the Settings panel web has is a UI job rather
-than an architectural one. Same for the first-run "demo or empty" choice:
-`boot()` reports `first-run` and takes a `dataSet`, and nothing reads it yet.
+The audit log and its undo-the-newest were once impossible here, because this app
+had no journal. It has one — `repo/journal.ts` is in the package — so the
+Settings panel web has is a UI job rather than an architectural one. Same for the
+first-run "demo or empty" choice: `boot()` reports `first-run` and takes a
+`dataSet`, and nothing reads it yet.
+
+Redo is a third, smaller one. `runtime.redo()` is reached only through the host's
+undo channel, `lib/host.ts` returns nothing there on purpose (there is no ⌘Z on a
+phone), and no toast offers a Redo — so the redo ring is maintained on every
+write and has no door. Undo does: every destructive write raises a toast with one.
 
 ### Two caveats worth stating
 
 `lib/polyfills.ts` supplies two browser globals, and is imported before anything
-in `src/kg` or `@jojo/service` evaluates. `structuredClone` is simply absent from
-Hermes, and the storage layer clones every row through it — a guarded JSON
-round-trip covers it. `URL` is the harder one: React Native ships a regex-based
-implementation that **never throws**, and the posting parser's validation is
-built entirely on the throw, so `react-native-url-polyfill/auto` replaces it
-outright. Neither is visible to any test in this repo, because vitest runs on
-Node where both already exist and are correct.
+in `@jojo/service` evaluates. `structuredClone` is simply absent from Hermes, and
+the storage layer clones every row through it — a guarded JSON round-trip covers
+it. `URL` is the harder one: React Native ships a regex-based implementation that
+**never throws**, and the posting parser's validation is built entirely on the
+throw, so `react-native-url-polyfill/auto` replaces it outright. Neither is
+visible to any test in this repo, because vitest runs on Node where both already
+exist and are correct.
 
-The kg **tests did not come across** — 22 files that import `vitest`, which this
-app has no runner for. The layer is covered on the web side and unchanged here,
-but "unchanged" is an argument, not a test run.
+The graph layer's **tests run once, in `service/`**, over the same source this
+app imports. What runs here is what only exists here: `lib/fit.ts`,
+`lib/documents.ts`, `lib/vault-empty.ts`, and `kg/storage/rn-driver.ts` — the
+last through the shared `Driver` contract plus the round trip the contract cannot
+express, because it needs two driver instances over one store.
 
 ---
 
 ## What is shared with the web app, and what is not
 
-**Taken from `web/`** — plain TypeScript with no DOM in it, and the reason the
-two apps cannot disagree about a date, a rate or a stage:
+**Imported from `@jojo/service`** — the graph, the fixtures, and every rule
+neither platform owns, which is why the two apps cannot disagree about a date, a
+rate or a stage:
 
 ```
-src/data/     timeline · seed · calendar · vault · scout · profile · labels · statistics
-src/lib/      ids · files · draft-from · deadline · store-context · store
-              labels · labels-context · roles · roles-context · priority
+core/    model · dates · calendar · statistics · frequency · timeline-view
+         files · parse-posting · address · project
+react/   use-applications · use-timeline · use-vault · use-scout · use-profile
+         use-admin · use-keywords · use-priority · kg · toast · undo · status
+repo/    boot · repository (through `boot`, not directly)
+storage/ driver · memory-driver · idb-errors · driver-conformance
+data/    seed · timeline · vault · scout · profile · labels · statistics
+tools/   support (the deadline sentinel and its urgency thresholds)
 ```
 
-`src/data/statistics.ts` in particular is why the funnel here and the funnel on
-the web report the same numbers: both count the same records with the same
+`core/statistics.ts` in particular is why the funnel here and the funnel on the
+web report the same numbers: both count the same records with the same
 `reachedOf` test rather than each deriving its own.
 
 ### Drift, stated plainly
 
-`web/` has since been refactored onto a knowledge-graph store (`web/src/kg/`).
-Its `data/*` modules are now thin re-export shims over `@/kg/core/model`, and
-`web/src/lib/store-context.ts` is a façade its own comment says Wave 4 will
-delete. **Mobile still carries the pre-graph copies.**
+`src/data/` is gone and `src/kg/` holds only the driver — `check-no-copies.mjs`
+forbids both from growing back. What is left in `src/lib` that also exists on the
+web is a set of **near-twins, not copies**: `ids.ts`, `host.ts`, `today.ts` and
+`labels.tsx` each answer the same question with the same rules against a
+different platform. `check-no-copies.mjs` catches whole-file identity only and
+says so, so a file that is 90% shared and 10% edited is a fork it cannot see —
+which is how `priority.ts`, `files.ts`, `timeline-visuals.ts`, `deadline.ts` and
+`draft-from.ts` each came to hold a second copy of a rule that had already moved
+into the package. Those five are repointed; the guard did not find them and would
+not have.
 
-What that costs today: _nothing observable._ Every seeded fixture and every
-enumeration was compared value by value after the refactor — applications,
-timeline, links, files, snippets, pipelines, matches, postings, keywords,
-`ROLES`, `SOURCES`, `STAGE_VALUES`, `LINK_CATEGORIES`, `FILE_BUCKETS`,
-`SNIPPET_TAGS` — and all of them are identical. The divergence is where the
-types live, not what they say.
-
-What it will cost later: the graph layer is the direction of travel, and mobile
-should follow it once `web/src/kg` settles. Until then, treat the list above as
-**"copied, and needing a re-copy when web's Wave 4 lands"** rather than as a
-shared source of truth.
-
-Three edits were deliberate and should survive any re-copy:
+Two divergences are deliberate and should survive any change:
 
 - `data/seed.ts` carried a Tailwind class per stage (`dot: 'bg-stage-draft'`).
   There are no class names on this platform, so stage colour is a palette lookup
-  and `STAGE_LABEL` moved here from the three files that each had a copy.
-- `lib/priority.ts` spelled its destinations as route strings. There are no URLs
-  here, so an action carries the record's id and the caller navigates.
+  and `STAGE_LABEL` moved into the package.
+- The priority deck's actions carry a record id where the web's carry a route
+  string. That is the one field `@jojo/service/react/use-priority` takes as an
+  argument, for exactly this reason.
 - `lib/graph.ts` is a smaller model than the web's, laid out by type rather than
   by a force simulation — see below.
 

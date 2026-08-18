@@ -102,12 +102,15 @@ function ActionButton({ action }: { action: PriorityAction['actions'][number] })
   const { open } = useSheets()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
-  if (action.appId) {
+  // `to` is whatever `lib/priority.ts` handed the shared hook as a destination,
+  // which on a phone is the record's id rather than the web's route string.
+  const to = action.to
+  if (to) {
     return (
       <Button
         label={action.label}
         variant={action.primary ? 'default' : 'ghost'}
-        onPress={() => navigation.navigate('ApplicationDetail', { id: action.appId! })}
+        onPress={() => navigation.navigate('ApplicationDetail', { id: to })}
       />
     )
   }

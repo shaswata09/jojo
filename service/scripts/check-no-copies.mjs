@@ -50,15 +50,38 @@ const ROOT = path.resolve(SERVICE, '..')
 const APPS = [path.join(ROOT, 'web', 'src'), path.join(ROOT, 'mobile', 'src')]
 
 /**
- * What `mobile/src/kg` is allowed to contain, exhaustively.
+ * What each app's `src/kg` is allowed to contain, exhaustively.
  *
  * An allowlist rather than a size limit, because the failure this prevents is a
- * directory that grows one plausible file at a time. Every entry here was
- * argued for in `docs/SERVICE-LAYER.md`: the driver is genuinely
- * platform-specific, and its contract test names a driver so it cannot live in
- * the package that owns the contract.
+ * directory that grows one plausible file at a time. Every entry was argued for
+ * in `docs/SERVICE-LAYER.md`: the driver is genuinely platform-specific, and its
+ * contract test names a driver so it cannot live in the package that owns the
+ * contract.
+ *
+ * Web has one too now. It did not, and the asymmetry was not a decision: the
+ * mobile list was written when mobile's `src/kg` was an 81-file fork and web's
+ * was where the layer had just left from, so nobody wrote the rule for the
+ * directory that looked settled. Measured before adding it — a new `.tsx` under
+ * `web/src/kg` passed all three guards and failed both under `mobile/src/kg`.
+ * Web's list is longer because the IndexedDB driver is genuinely more than one
+ * file: `idb` is wrapped, migrated, batched and channelled, and each of those
+ * pieces is browser-only. That is a reason for the entries, not for the absence
+ * of a list.
  */
-const MOBILE_KG_ALLOWED = new Set(['storage/rn-driver.ts', 'storage/rn-conformance.test.ts'])
+const APP_KG_ALLOWED = {
+  'mobile/src/kg': new Set(['storage/rn-driver.ts', 'storage/rn-conformance.test.ts']),
+  'web/src/kg': new Set([
+    'storage/idb-driver.ts',
+    'storage/idb-driver.test.ts',
+    'storage/idb-conformance.test.ts',
+    'storage/idb-batch.ts',
+    'storage/idb-events.ts',
+    'storage/idb-handles.ts',
+    'storage/idb-migrate.ts',
+    'storage/channel.ts',
+    'storage/probe.ts',
+  ]),
+}
 
 /** Directories that must not come back at all. */
 const FORBIDDEN_DIRS = [
@@ -208,6 +231,36 @@ const EXPORTED = {
   data: 'data',
 }
 
+/**
+ * Modules the exports map reaches and no app may name.
+ *
+ * The map is seven stars, one per layer, and a star is a LAYER boundary rather
+ * than an API boundary: `@jojo/service/tools/runtime-tx` resolves as readily as
+ * `@jojo/service/tools/runtime`. The three transaction internals are the ones
+ * that matter. `makeTx` and `stage` write into a buffer, and `repo.commit` being
+ * the only path from a buffer to the durable op list is the whole of D12 — an
+ * app holding `makeTx` can write to the graph with no journal entry and no
+ * before-image, which is a write that cannot be undone and does not appear in
+ * the audit log. `boot-live` and `boot-ready` are continuations of `boot`, not
+ * entry points, and calling one directly skips the trust boundary in the other.
+ *
+ * Enforced HERE rather than by narrowing the map, deliberately. Replacing
+ * `"./tools/*"` with explicit keys would restrict resolution itself, which is
+ * stronger — but it is also a change to how four resolvers behave, on a package
+ * whose own `//exports` note records that one character across those four cost
+ * two probes to get right. Nothing imports any of these today (measured across
+ * both apps), so what is needed is a rule that says so before the first one does,
+ * and this file already reads every app specifier. The map stays the shape the
+ * bundlers agreed on; the boundary is stated where it can be argued with.
+ */
+const APP_MAY_NOT_IMPORT = {
+  'tools/runtime-tx': 'the transaction writer',
+  'tools/runtime-buffer': 'the transaction buffer',
+  'tools/runtime-overlay': 'the transaction read overlay',
+  'repo/boot-live': 'a continuation of boot(), not an entry point',
+  'repo/boot-ready': 'a continuation of boot(), not an entry point',
+}
+
 const SERVICE_IMPORT = /(['"])(@jojo\/service[^'"]*)\1/g
 const RELATIVE_REACH = /(['"])((?:\.\.\/)+service\/[^'"]*)\1/g
 
@@ -240,6 +293,18 @@ for (const app of APPS) {
         )
         continue
       }
+      const why = APP_MAY_NOT_IMPORT[`${parts[0]}/${name}`]
+      if (why !== undefined) {
+        fail(
+          `${rel(file)} imports '${spec}' — ${why}.\n` +
+            `      The exports map is one star per LAYER, so this resolves; that is a fact about ` +
+            `the map rather\n      than permission. Go through the layer's entry point: the tool ` +
+            `runtime for a write,\n      'repo/boot' for a boot. A transaction written outside ` +
+            `repo.commit has no journal entry and\n      no before-image, which is a write with ` +
+            `no undo and no audit row (D12).\n      See APP_MAY_NOT_IMPORT in this script.`,
+        )
+        continue
+      }
       const suffix = ['.ts', '.tsx'].find((ext) => existsSync(path.join(SERVICE, dir, name + ext)))
       if (suffix === undefined) {
         fail(
@@ -255,16 +320,21 @@ for (const app of APPS) {
 
 /* --- (c) shape ------------------------------------------------------------ */
 
-const mobileKg = path.join(ROOT, 'mobile', 'src', 'kg')
-for (const file of walk(mobileKg)) {
-  const inside = path.relative(mobileKg, file).split(path.sep).join('/')
-  if (MOBILE_KG_ALLOWED.has(inside)) continue
-  fail(
-    `mobile/src/kg/${inside} is not one of the two files that belong there.\n` +
-      `      mobile/src/kg holds ${[...MOBILE_KG_ALLOWED].join(' and ')} — the driver that is ` +
-      `genuinely\n      platform-specific, and the contract test that names it. Everything else ` +
-      `under kg is\n      @jojo/service, shared, and covered by one suite instead of two.`,
-  )
+for (const [appKg, allowed] of Object.entries(APP_KG_ALLOWED)) {
+  const root = path.join(ROOT, ...appKg.split('/'))
+  if (!existsSync(root)) continue
+  for (const file of walk(root)) {
+    const inside = path.relative(root, file).split(path.sep).join('/')
+    if (allowed.has(inside)) continue
+    fail(
+      `${appKg}/${inside} is not one of the ${allowed.size} files that belong there.\n` +
+        `      ${appKg} holds only what is genuinely platform-specific — the driver, the pieces it ` +
+        `is built\n      from, and the contract test that names it. Everything else under kg is ` +
+        `@jojo/service,\n      shared, and covered by one suite instead of two. If this file really ` +
+        `is platform-only,\n      add it to APP_KG_ALLOWED in this script; if it is not, it belongs ` +
+        `in the package.`,
+    )
+  }
 }
 
 for (const { dir, why } of FORBIDDEN_DIRS) {

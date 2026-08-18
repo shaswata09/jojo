@@ -69,6 +69,10 @@ export function FileEditor({
     if (!first) return
     setName(first.name)
     setSize(first.size)
+    // The previous copy is orphaned, not deleted, and that is the same open
+    // end as removing a document: `forgetDocument` exists and nothing calls it,
+    // because an Undo of this edit has to find the old bytes still there. See
+    // `FilesTool`'s `onDelete` for the two constraints a sweep has to satisfy.
     setUri(first.uri)
   }
 

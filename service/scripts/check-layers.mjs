@@ -103,15 +103,20 @@ const RULES = {
   tools: {
     label: 'L3 tools',
     internal: ['core', 'tools', 'log'],
-    // `tools/memory.ts` is `memory.reset`, and reads `../../data/…`. See
-    // DATA_READERS.
     alias: [],
     packages: true,
     react: false,
     // A tool takes the Repository INTERFACE. Never a driver, never a
     // singleton — a tool that reaches for the live repo cannot be run inside
     // someone else's transaction, which is the one thing `ctx.call` needs.
-    allow: ['repo/repository', 'repo/journal'],
+    //
+    // `repo/seed` is on the list for the same reason rather than as an
+    // exception: it is a pure function from the fixtures to nodes and edges.
+    // `tools/memory.ts` calls it, which is what ended the two-compiler split —
+    // and the entry is what lets `tools/memory.ts` come OFF DATA_READERS, so a
+    // third walk over `../../data/…` cannot be written there without failing
+    // this check.
+    allow: ['repo/repository', 'repo/journal', 'repo/seed'],
   },
   react: {
     label: 'L4 react',
@@ -149,19 +154,28 @@ const RULES = {
  * comment describing it stayed accurate-sounding the whole time.
  *
  * It matters beyond tidiness because `@/…` resolves against the CONSUMER's
- * project root. The Expo app in `mobile/` maps `@/*` to its own `src`, so a
- * shared `kg/tools/timeline.ts` asking for `@/data/timeline` gets
- * `mobile/src/data/timeline.ts` — a file that exists, that has drifted from this
- * one, and that fails no check. The failure mode is not a missing module; it is
- * the wrong module, silently. Everything the service layer actually needed moved
- * into `kg/core` (`dates.ts`, `profile.ts`, `STAGE_LABEL` in `model.ts`), and
- * what is left here is genuinely the demo dataset.
+ * project root. The app in `mobile/` maps `@/*` to its own `src`, so a shared
+ * `kg/tools/timeline.ts` asking for `@/data/timeline` used to get
+ * `mobile/src/data/timeline.ts` — a file that existed, that had drifted from
+ * this one, and that failed no check. The failure mode is not a missing module;
+ * it is the wrong module, silently. That copy is deleted and `check-no-copies.
+ * mjs` now forbids `mobile/src/data` from existing at all, so the hazard is
+ * historical rather than live — but the grant stays narrow, because what made it
+ * survivable was never the alias. Everything the service layer actually needed
+ * moved into `kg/core` (`dates.ts`, `profile.ts`, `STAGE_LABEL` in `model.ts`),
+ * and what is left here is genuinely the demo dataset.
+ *
+ * ONE ENTRY, and that is the point of it. `tools/memory.ts` was the second, and
+ * it was a second COMPILER over the same arrays — the R-1 shape, drifted, with
+ * `memory.reset` producing dates and slugs `repo/seed.ts` did not. It calls
+ * `seedToGraph` now and reads no fixture, so a set that has grown back to two
+ * entries is the signal that a second one is being written.
  *
  * Tests are exempt. A test that seeds from the same fixture the seeder reads is
  * asserting against the real input, which is the point of it; the hazard above
  * is about code that SHIPS.
  */
-const DATA_READERS = new Set(['repo/seed.ts', 'tools/memory.ts'])
+const DATA_READERS = new Set(['repo/seed.ts'])
 
 /** Banned everywhere under kg: a domain write must not reach up into the UI. */
 const UPWARD = ['@/components', '@/routes', '@/kg/../']
@@ -569,6 +583,35 @@ const ADAPTERS = [
     label: 'the React Native adapter',
     /** Package prefixes that are the point of this adapter existing. */
     allow: [/^@react-native-async-storage\//],
+  },
+  /*
+   * The IndexedDB adapter, added because it was the half of this guard that
+   * never landed.
+   *
+   * `check-platform.mjs` grew a fourth target for `web/src/kg` and wrote down
+   * why at length — prepending `Date.now()` and an import of the L1 domain model
+   * to `web/src/kg/storage/idb-driver.ts` left `npm -w web run lint` exiting 0,
+   * while the identical pair inside mobile's `rn-driver.ts` failed BOTH apps.
+   * Only the wall-clock half of that pair was actually fixed: the IMPORT axis is
+   * this file's, and `ADAPTERS` still held one entry. Measured before adding
+   * this one: an `import { RELS } from '@jojo/service/core/model'`, an
+   * `import { Panel } from '@/components/common/Panel'`, and a new `.tsx` file
+   * under `web/src/kg` each exited 0 through all three guards, and each failed
+   * immediately under `mobile/src/kg`.
+   *
+   * The import axis is the one that matters most here, because it is the axis
+   * the 813-line fork actually drifted on.
+   */
+  {
+    root: path.join(ROOT, 'web', 'src', 'kg'),
+    label: 'the IndexedDB adapter',
+    /*
+     * `idb` is the wrapper this driver is written on, and it is not matched by
+     * REACT_PACKAGES anyway — the entry is here so that the reason is written
+     * down rather than depending on a regex happening not to fire. The two
+     * genuinely-empty entries would be a lie of a different kind.
+     */
+    allow: [/^idb$/],
   },
 ]
 

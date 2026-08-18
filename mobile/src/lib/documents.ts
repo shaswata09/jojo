@@ -9,7 +9,7 @@ import {
   type NonEmptyArray,
 } from '@react-native-documents/picker'
 import ReactNativeBlobUtil from 'react-native-blob-util'
-import { kindOfFile, mimeOfFile } from '@/lib/files'
+import { kindOfFile, mimeOfFile, sizeLabel } from '@/lib/files'
 import type { FileBucket, FileKind } from '@jojo/service/data/vault'
 
 /**
@@ -58,14 +58,23 @@ export type PickedDocument = {
   uri: string
 }
 
-/** '184 KB' — the label the app has always shown, from a real byte count. */
-export function sizeLabel(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return '—'
-  if (bytes < 1024) return `${String(bytes)} B`
-  const kb = bytes / 1024
-  if (kb < 1024) return `${String(Math.round(kb))} KB`
-  return `${(kb / 1024).toFixed(1)} MB`
-}
+/**
+ * '184 KB', or a dash when nobody could say.
+ *
+ * `sizeLabel` is the shared formatter and it is the only one now. This file
+ * declared a second copy of it during the ejection, differing in one case — a
+ * dash for a count of zero — and that copy is why the same Vault list could
+ * show two spellings of the same size. The disagreement was real, so it is kept
+ * as a rule ABOUT the count rather than as a second formatter: a zero arriving
+ * here means the picker reported no size and `stat` could not find one either,
+ * so the number is missing rather than small, and '—' is already what the app
+ * writes for a size nobody knows (see `FileEditor`). A genuinely empty file
+ * reads '0 B' everywhere else and would be lying if it read '—' — but this
+ * function cannot be reached with a real zero, because `sizeOnDisk` returns 0
+ * only when the stat failed.
+ */
+const sizeOfPick = (bytes: number): string =>
+  Number.isFinite(bytes) && bytes > 0 ? sizeLabel(bytes) : '—'
 
 /**
  * A name that will not collide, and will not surprise.
@@ -155,9 +164,10 @@ export async function pickDocuments(bucket: FileBucket): Promise<PickOutcome> {
         // `mimeType` is called `type` here, and it is nullable rather than
         // optional — `kindOfFile` wants undefined for "not reported".
         kind: kindOfFile(name, asset.type ?? undefined),
-        // `await` inside a `??` chain does not read, so the fallback is
-        // resolved first. It is only reached when the picker reported no size.
-        size: sizeLabel(asset.size ?? (await sizeOnDisk(copy.localUri))),
+        // The `await` is only reached when the picker reported no size —
+        // `??` short-circuits — which is the whole reason it can afford to
+        // touch the disk here.
+        size: sizeOfPick(asset.size ?? (await sizeOnDisk(copy.localUri))),
         uri: copy.localUri,
       })
     }

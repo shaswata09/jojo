@@ -8,7 +8,7 @@
  * a buffer that escaped its transaction is a write with no before-image.
  */
 
-import type { EdgeId, NodeId, StoredEdge, StoredNode } from '../core/model'
+import type { EdgeId, NodeId, NodeType, StoredEdge, StoredNode } from '../core/model'
 import type { ToolName } from './index'
 
 export type Cell<T> = { before: T | null; after: T | null }
@@ -25,15 +25,24 @@ export type Cell<T> = { before: T | null; after: T | null }
 export type Buffer = {
   nodes: Map<NodeId, Cell<StoredNode>>
   edges: Map<EdgeId, Cell<StoredEdge>>
-  /** Slugs handed out by `mintSlug` but not yet attached to a node. */
-  minted: Set<string>
+  /**
+   * Slugs handed out by `mintSlug` but not yet attached to a node, PER TYPE.
+   *
+   * Keyed by type because slugs are unique per [type, slug] (D4's `by-type-slug`
+   * index), so a collision across types is an invented one. It was a flat set,
+   * and `application.create` is a composite: `org.ensure` runs first through
+   * `ctx.call` and puts 'rice' into the set, so the application — the record
+   * whose slug IS its URL (`core/address.ts`) — was pushed to 'rice-2'. Every
+   * first application at a new employer was addressed `/applications/<org>-2`.
+   */
+  minted: Map<NodeType, Set<string>>
   calls: ToolName[]
 }
 
 export const newBuffer = (): Buffer => ({
   nodes: new Map(),
   edges: new Map(),
-  minted: new Set(),
+  minted: new Map(),
   calls: [],
 })
 

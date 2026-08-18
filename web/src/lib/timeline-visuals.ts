@@ -1,15 +1,15 @@
 /**
  * How a dated item LOOKS on the web — and the web import path for how it reads.
  *
- * The file used to hold both halves. The half that is a rule — what each kind is
- * called, how close a date is, and whether `done` outranks the date — moved to
- * `@/kg/core/timeline-view`, because none of it is web-only and all of it was
- * being kept in step with the phone by copying the file across. What stayed is
- * the half that names a renderer: `KIND_ICON` is lucide, `MARK_TEXT` and
- * `MARK_DOT` are Tailwind class names, and neither means anything to a native
- * view. That split is the whole point — `kg/react/toast.ts` and
- * `src/lib/toast-context.ts` are the same shape, the interface below the seam
- * and the pieces that name a DOM above it.
+ * The file used to hold both halves. The half that is a rule — what each kind
+ * is called, how close a date is, and whether `done` outranks the date — moved
+ * to `@jojo/service/core/timeline-view`, because none of it is web-only and
+ * all of it was being kept in step with the phone by copying the file across.
+ * What stayed is the half that names a renderer: `KIND_ICON` is lucide,
+ * `MARK_TEXT` and `MARK_DOT` are Tailwind class names, and neither means
+ * anything to a native view. That split is the whole point —
+ * `kg/react/toast.ts` and `src/lib/toast-context.ts` are the same shape, the
+ * interface below the seam and the pieces that name a DOM above it.
  *
  * `dateMark` and `markOf` are re-bound here rather than re-exported, because the
  * shared versions take `today` as an argument and these do not: thirteen call

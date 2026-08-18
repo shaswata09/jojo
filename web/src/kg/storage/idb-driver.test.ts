@@ -438,6 +438,45 @@ describe('the audit log under concurrent writers', () => {
     driver.close()
     expect(read.ok && read.value.ops.map((r) => r['id'])).toEqual(['kept-1', 'kept-2', 'fresh'])
   })
+
+  /**
+   * `replace` is the only write that carries the audit as ROWS rather than
+   * appending to it, and it is the whole-store path — switching demo data,
+   * restoring an export. Deleting the `ops` line from `rowsIntoBatch` passed
+   * every test in this workspace: the records arrive, the store reopens, the
+   * history is simply gone, and nothing anywhere says so.
+   *
+   * Both halves are asserted because the second is what makes the first safe.
+   * The keys written here are ours, into a store the same batch has just
+   * cleared, and it is IndexedDB's own rule — a key generator is not rewound by
+   * `clear()`, and an explicit numeric key pushes it past itself — that keeps
+   * the next `key: null` append above the imported history instead of on top of
+   * its first row.
+   */
+  it('carries the audit through a wholesale replace, in order, and appends above it', async () => {
+    const name = nextName()
+    const first = driverFor(name)
+    await first.commit([append('before')])
+
+    await first.replace(
+      rows({
+        meta: [{ key: 'store', value: { dataSet: 'demo' } }],
+        ops: [entry('kept-1'), entry('kept-2'), entry('kept-3')],
+      }),
+    )
+    await first.commit([append('after')])
+    first.close()
+
+    const second = driverFor(name)
+    const read = await second.readAll()
+    second.close()
+    expect(read.ok && read.value.ops.map((r) => r['id'])).toEqual([
+      'kept-1',
+      'kept-2',
+      'kept-3',
+      'after',
+    ])
+  })
 })
 
 /* --------------------------------- seeding -------------------------------- */

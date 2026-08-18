@@ -2,45 +2,34 @@ import type { FeatherName } from '@/lib/timeline-visuals'
 import type { FileKind } from '@jojo/service/data/vault'
 
 /**
- * How a picked file becomes a Vault record.
+ * How a picked file becomes a Vault record, on a phone.
  *
- * Two surfaces write files into the same store — the Vault's Files tool and the
- * Profile's Documents panel — and each had grown its own extension map and its
- * own byte formatter. They had already drifted: an .odp deck filed through the
- * Vault got the slides icon and the same deck filed through the Profile got the
- * document one, for the same record in the same list. One reader, so a new
- * extension lands in both places at once.
+ * The two rules that are not about a phone — which of the four kinds an
+ * extension names, and how a byte count reads — are `@jojo/service/core/files`
+ * and are re-exported below rather than declared again. They used to be
+ * declared again: this file and the service module held the same extension map
+ * and the same formatter, which is the arrangement that had already produced a
+ * visible bug once, when the Vault's Files tool and the Profile's Documents
+ * panel each had their own map and an .odp deck got the slides icon through one
+ * and the document icon through the other. A copy on the phone is that same
+ * arrangement at the next size up, and it is what `check-no-copies.mjs` cannot
+ * see once one side is edited.
+ *
+ * What stays here is the half that names something only this app has: a Feather
+ * glyph per kind, and the MIME type an Android ACTION_VIEW intent needs. That is
+ * the same cut `web/src/lib/timeline-visuals.ts` makes against
+ * `core/timeline-view`.
  *
  * Nothing here reads file CONTENT. Only the name, size and reported type, which
- * is all a session-only store has anywhere to put.
+ * is all `vault.file.add` has anywhere to put.
  */
-
-/** Which of the four icons a file gets, by extension. */
-const KIND_BY_EXT: Record<string, FileKind> = {
-  pdf: 'pdf',
-  doc: 'doc',
-  docx: 'doc',
-  odt: 'doc',
-  rtf: 'doc',
-  pages: 'doc',
-  ppt: 'slides',
-  pptx: 'slides',
-  odp: 'slides',
-  key: 'slides',
-  txt: 'note',
-  md: 'note',
-  note: 'note',
-}
 
 /**
- * Extension first, MIME type second: browsers report no type at all for plenty
- * of documents and 'application/octet-stream' for plenty more, while the name is
- * always there. Anything unrecognised is filed as a document rather than given a
- * shape the icon set cannot draw.
- *
- * `type` is optional because one caller has a real `File` and the other only
- * ever had a name — passing it can only ever rescue a PDF the extension missed.
+ * Re-exported rather than re-imported at each call site, so `FileEditor` and
+ * `documents.ts` kept their import line when the implementation moved down.
  */
+export { kindOfFile, sizeLabel } from '@jojo/service/core/files'
+
 /**
  * One glyph per kind, so a deck and a scan are told apart at a glance.
  *
@@ -53,10 +42,6 @@ export const FILE_KIND_ICON: Record<FileKind, FeatherName> = {
   doc: 'file-text',
   slides: 'monitor',
   note: 'edit-3',
-}
-
-export function kindOfFile(name: string, type?: string): FileKind {
-  return KIND_BY_EXT[extensionOf(name)] ?? (type === 'application/pdf' ? 'pdf' : 'doc')
 }
 
 const extensionOf = (name: string) => name.split('.').pop()?.toLowerCase() ?? ''
@@ -99,12 +84,4 @@ const MIME_BY_EXT: Record<string, string> = {
   png: 'image/png',
   jpg: 'image/jpeg',
   jpeg: 'image/jpeg',
-}
-
-/** Spelled the way the seed rows already are — '184 KB', '1.2 MB'. */
-export function sizeLabel(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  const kb = bytes / 1024
-  if (kb < 1024) return `${Math.round(kb)} KB`
-  return `${(kb / 1024).toFixed(1)} MB`
 }

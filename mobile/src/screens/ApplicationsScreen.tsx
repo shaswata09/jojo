@@ -22,7 +22,12 @@ import type { Application, RoleTag, Stage } from '@jojo/service/data/seed'
 import { addDays, agoLabel, compareItems, daysBetween, shortDate } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
-import { draftFromUrl } from '@/lib/draft-from'
+// The parser is the shared one. `src/lib/draft-from.ts` held a 349-line copy of
+// it that was never tested here; the two were checked input for input before it
+// was deleted. `scout.posting.promote` parses a posting's URL through this same
+// module with no screen in the call stack, so a second copy up here could only
+// ever disagree with the store about what a pasted link means.
+import { draftFromUrl } from '@jojo/service/core/parse-posting'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { useRoles } from '@/lib/roles-context'

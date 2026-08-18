@@ -23,10 +23,17 @@ import { space } from '@/theme/tokens'
  * A document, opened.
  *
  * The web app puts the file in an `<iframe>` and lets the browser's own PDF
- * reader handle it. There is no equivalent here and pretending otherwise would
- * be the exact failure this codebase keeps refusing: no picker is wired up, so
- * no record has bytes behind it, so a viewer frame would be a rectangle drawn
- * around nothing. It says that instead, once, in the place you would look.
+ * reader handle it. There is no equivalent here — a React Native view cannot
+ * render a PDF without a native viewer this app does not ship — so this hands
+ * the file to whatever on the phone can open it and says, in the frame, which
+ * of four states the bytes are in: never stored, being looked for, here, or
+ * gone. That last pair is the shape the ejection created: `documentExists` was
+ * a synchronous getter under `expo-file-system` and is a promise now, so
+ * "looking for the copy" is a state this screen had never had to describe.
+ *
+ * (This paragraph used to say no picker was wired up and no record had bytes
+ * behind it. `FileEditor` has picked real documents since the ejection, and the
+ * four panels below are about those bytes.)
  *
  * What it does do is the part that was missing. Tapping a file used to drop
  * straight into the edit form — the app had no way to *look at* a document

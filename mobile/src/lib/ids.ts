@@ -34,9 +34,9 @@ export function refKey(kind: EntityKind, id: string) {
  * Splits a reference back into its parts.
  *
  * Tolerates a bare id with no kind, because the label store still keys most of
- * its records by one: `seedLabelsByRecord` in src/data/labels.ts is a single
+ * its records by one: `seedLabelsByRecord` in `@jojo/service/data/labels` is a single
  * flat map covering reminders, applications, links, files and snippets, and
- * src/lib/labels.tsx carries that shape into state. Applications in it are
+ * `src/lib/labels.tsx` carries that shape into state. Applications in it are
  * spelled 'app:rice' — they are the ones whose ids collide with five other
  * lists — and everything else is still bare, so a bare key has to keep working.
  * It reads as an application, which is what an older stored key would have been.
@@ -59,7 +59,7 @@ export function parseRef(key: string): { kind: EntityKind; id: string } {
 /**
  * Turns a display name into an id.
  *
- * Deliberately the same rules as `toLabelId` in src/data/labels.ts. That used to
+ * Deliberately the same rules as `toLabelId` in `@jojo/service/data/labels`. That used to
  * be load-bearing for correctness — the two drifting would have split a keyword
  * in half — but `addLabel` now dedupes on the name rather than on the slug, so
  * drift costs readability, not identity. Worth keeping in lockstep anyway: these

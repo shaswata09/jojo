@@ -46,10 +46,12 @@ import type { ToastOptions } from './toast'
  *
  * Spelled out rather than taking the whole `Repository` so the rule below is
  * testable against a repo built from the memory driver without a React tree —
- * the suite runs in node on purpose (`test.environment` in `vite.config.ts`;
- * there is no separate vitest config here, whatever this comment used to say),
- * and a hook that hid its logic inside `useCallback` would have been checkable
- * only by clicking.
+ * the suite runs in node on purpose (`environment: 'node'` in
+ * `service/vitest.config.mts`, which is this package's only test config and the
+ * one that runs this file), and a hook that hid its logic inside `useCallback`
+ * would have been checkable only by clicking. The sentence here named web's
+ * `vite.config.ts`; that file is in another workspace and stopped being the
+ * config for this suite when the layer moved out of the app.
  *
  * `getSnapshot` is here because reverting an entry is only safe while the
  * records it touched still look the way it left them — see `movedOn`.

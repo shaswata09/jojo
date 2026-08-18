@@ -187,20 +187,21 @@ export function useApplications() {
   /**
    * `{ id, label, count }`, and deliberately no colour.
    *
-   * This used to spread `STAGES` from `@/data/seed`, which carries a `dot` field
-   * whose values are Tailwind class names — 'bg-stage-draft', 'bg-stage-offer'.
-   * So a CSS class was being minted inside the one layer that is supposed to
-   * mount unchanged on React Native, where it resolves to nothing. Neither guard
-   * could see it: `check-platform.mjs` looks for platform IDENTIFIERS and a class
-   * name is a string literal, and `check-layers.mjs` reads import direction,
-   * which was downward and legal. Built from `STAGE_VALUES` and `STAGE_LABEL`
-   * instead, both of which are the model's own. A web caller that wants the
-   * colour reads `STAGE_DOT[id]` from `@/data/seed`, which is where a Tailwind
-   * token belongs — `PipelineBreakdown` is the one that does.
+   * This used to spread `STAGES` from the seed fixture, which carries a `dot`
+   * field whose values are Tailwind class names — 'bg-stage-draft',
+   * 'bg-stage-offer'. So a CSS class was being minted inside the one layer that
+   * is supposed to mount unchanged on React Native, where it resolves to
+   * nothing. Neither guard could see it: `check-platform.mjs` looks for platform
+   * IDENTIFIERS and a class name is a string literal, and `check-layers.mjs`
+   * reads import direction, which was downward and legal. Built from
+   * `STAGE_VALUES` and `STAGE_LABEL` instead, both of which are the model's own.
+   * A web caller that wants the colour reads `STAGE_DOT` out of `@/data/seed` —
+   * web's own façade onto `@jojo/service/data/seed` — which is where a Tailwind
+   * token belongs; `PipelineBreakdown` is the one that does.
    *
-   * The import that carried it is gone as well: `check-layers.mjs` now names the
-   * only two production modules under `kg` allowed to read `@/data` at all,
-   * and neither is a hook.
+   * The import that carried it is gone as well: `check-layers.mjs`'s
+   * DATA_READERS names the only production module under `kg` allowed to read the
+   * fixtures at all, it is `repo/seed.ts`, and it is not a hook.
    */
   const stageCounts = useMemo(
     () =>

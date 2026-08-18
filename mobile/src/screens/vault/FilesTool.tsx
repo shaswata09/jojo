@@ -20,6 +20,7 @@ import { agoLabel } from '@jojo/service/data/timeline'
 import { FILE_BUCKETS } from '@jojo/service/data/vault'
 import type { FileBucket, VaultFile } from '@jojo/service/data/vault'
 import { useLabels } from '@/lib/labels-context'
+import { vaultEmptyState } from '@/lib/vault-empty'
 import { FileViewer } from '@/screens/vault/FileViewer'
 import { FILE_KIND_ICON } from '@/lib/files'
 import { matchesQuery } from '@/lib/search'
@@ -52,7 +53,7 @@ export function FilesTool() {
   const c = useColors()
   const { files, addFile, updateFile, removeFile } = useVault()
   const { byId } = useApplications()
-  const { matches } = useLabels()
+  const { matches, selected, clearSelected } = useLabels()
   const { toast } = useToast()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
@@ -79,10 +80,17 @@ export function FilesTool() {
 
   const onDelete = (f: VaultFile) => {
     const { restore } = removeFile(f.id)
-    // The copy stays until the undo window is a memory: deleting the bytes here
-    // would make Undo restore a record pointing at nothing, which is a worse
-    // outcome than a few kilobytes surviving a little longer. The sweep on next
-    // launch is what actually reclaims them.
+    // The copy stays, and NOTHING reclaims it. Deleting the bytes here would
+    // make the Undo below restore a record pointing at nothing, which is the
+    // worse of the two outcomes — so removing a document leaks its copy for the
+    // life of the install. `forgetDocument` in `lib/documents.ts` is the delete
+    // half, and it has no caller: this comment used to claim a sweep on next
+    // launch collected them, and there has never been one.
+    //
+    // Two things any sweep has to handle, both already true: a record restored
+    // by Undo must still find its bytes, and `onDuplicate` below copies `uri`
+    // verbatim, so two records can point at one file and deleting either would
+    // take the other's.
     toast({
       title: 'Document removed',
       description: f.name,
@@ -111,6 +119,36 @@ export function FilesTool() {
     })
   }
 
+  const addButton = (
+    <Button label="Record a document" icon="plus" onPress={() => setEditing('new')} />
+  )
+
+  const empty = vaultEmptyState({
+    total: files.length,
+    query,
+    filteredByBucket: bucket !== 'all',
+    filteredByKeyword: selected.size > 0,
+    onClearQuery: () => setQuery(''),
+    onClearBucket: () => setBucket('all'),
+    onClearKeywords: clearSelected,
+    copy: {
+      icon: 'file-text',
+      zero: {
+        title: 'No documents yet',
+        description:
+          'Your CV, statements, talks and admin scans. Names, sizes and types are recorded — nothing reads the file itself.',
+      },
+      search: (q) => `No document mentions "${q}" in its name, note or bucket.`,
+      both: `No document in ${bucket} carries the selected keywords.`,
+      bucket: {
+        title: `Nothing in ${bucket}`,
+        description: `${String(files.length)} documents are filed under the other buckets.`,
+        clearLabel: 'Show all buckets',
+      },
+      keywords: { title: 'No documents carry those keywords' },
+    },
+  })
+
   return (
     <>
       <SearchInput
@@ -134,11 +172,19 @@ export function FilesTool() {
         {rows.length === 0 ? (
           <View style={{ padding: space[4] }}>
             <EmptyState
-              icon="file-text"
-              title={files.length === 0 ? 'No documents yet' : 'Nothing in this bucket'}
-              description="Your CV, statements, talks and admin scans. Names, sizes and types are recorded — nothing reads the file itself."
+              icon={empty.icon}
+              title={empty.title}
+              description={empty.description}
               action={
-                <Button label="Record a document" icon="plus" onPress={() => setEditing('new')} />
+                empty.clear ? (
+                  <Button
+                    label={empty.clear.label}
+                    variant="outline"
+                    onPress={empty.clear.onPress}
+                  />
+                ) : (
+                  addButton
+                )
               }
             />
           </View>

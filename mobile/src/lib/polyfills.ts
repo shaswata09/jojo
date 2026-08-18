@@ -2,7 +2,7 @@
  * What the browser has and Hermes does not.
  *
  * Imported first thing in `index.ts`, before `App` — and therefore before
- * anything under `src/kg` or `@jojo/service` — can be evaluated. Two entries.
+ * anything under `@jojo/service` — can be evaluated. Two entries.
  *
  * Both were being supplied by Expo until the ejection. `Expo.fx`, the
  * side-effecting module that `registerRootComponent` pulled in, installed a
@@ -45,9 +45,10 @@ import 'react-native-url-polyfill/auto'
  *
  * The storage layer clones every row on the way in and on the way out, so that a
  * caller holding a returned row cannot reach back into the store through it.
- * That is the right guarantee and it is web's, unchanged — `memory-driver.ts` is
- * a byte-for-byte copy — but `structuredClone` is a browser global that React
- * Native 0.81 does not ship and Hermes does not implement. Without this the app
+ * That is the right guarantee and it is not this app's to change:
+ * `memory-driver.ts` is `@jojo/service`, the same file the web app runs. But
+ * `structuredClone` is a browser global that React Native 0.81 does not ship
+ * and Hermes does not implement. Without this the app
  * builds, boots, and throws `ReferenceError` on the first read of the store,
  * which is every launch.
  *

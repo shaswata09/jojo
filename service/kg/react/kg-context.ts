@@ -33,9 +33,11 @@ export type KgContextValue = {
    *
    * The reasoning here used to be that the demo's today was PINNED and the graph
    * must not read the wall clock past it. That reversed: the app runs on the
-   * wall clock (`TODAY` in `src/lib/today.ts`, from `now()`), and it is the
-   * fixtures that move — `seedOffset` in `@/data/timeline` shifts the seed's
-   * `SEED_TODAY` to meet whatever day it actually is.
+   * wall clock (`TODAY` in each app's `src/lib/today.ts`, from `now()`), and it
+   * is the fixtures that move — `seedOffset` in this package's `data/timeline.ts`
+   * shifts the seed's `SEED_TODAY` to meet whatever day it actually is. Named
+   * relatively rather than as `@/data/timeline`, which is how this read before
+   * the extraction and which resolves against the consuming APP's root.
    *
    * The injection survives the reversal, so do not undo it while tidying the
    * premise away. What it buys now is that `kg` names no clock at all: a

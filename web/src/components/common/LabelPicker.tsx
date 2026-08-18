@@ -44,7 +44,13 @@ export function LabelPicker({
     const typed = draft.trim()
     if (!typed) return
     const id = addLabel(typed)
-    if (!mine.has(id)) toggleOn(recordId, id)
+    // '' is what `addLabel` reports for a keyword it could not create, and a
+    // name over 40 characters is one the schema refuses — reachable by typing,
+    // since this input has no length of its own. Without the guard `mine.has('')`
+    // was false, so the failed create was followed straight away by an attach of
+    // the keyword that does not exist: two errors at a user who made one
+    // mistake. `LabelFilter` already guarded this way.
+    if (id && !mine.has(id)) toggleOn(recordId, id)
     setDraft('')
   }
 

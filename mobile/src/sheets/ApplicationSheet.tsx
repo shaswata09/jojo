@@ -9,8 +9,14 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { ROLES, SOURCES, STAGES, STAGE_LABEL, displayName } from '@jojo/service/data/seed'
-import type { Application, RoleTag, Source, Stage, Urgency } from '@jojo/service/data/seed'
-import { daysBetween, shortDate } from '@jojo/service/data/timeline'
+import type { Application, RoleTag, Source, Stage } from '@jojo/service/data/seed'
+import { shortDate } from '@jojo/service/data/timeline'
+// Imported, not redeclared. This sheet used to carry its own `deadlineUrgency`
+// with the 7/21-day thresholds spelled a second time. The tool layer's copy is
+// the one the store writes through, so a drift here would have shown the user
+// one colour on the sheet's item and another on everything the tools mint —
+// and the web dialog already imports this one.
+import { deadlineUrgency } from '@jojo/service/tools/support'
 import { DEADLINE_DETAIL, applicationDeadlineOf } from '@/lib/deadline'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
@@ -80,20 +86,6 @@ function validate(form: FormState): Errors {
     errors.url = 'That is not a link a browser can open — include https://.'
   }
   return errors
-}
-
-/**
- * How loud a new deadline reads on the calendar.
- *
- * The seed mixes proximity with readiness — Rice is red at three weeks because
- * nothing is written yet. Readiness is not something a form can know, so this
- * uses the half that is knowable and lets the user override it later.
- */
-function deadlineUrgency(date: string): Urgency {
-  const days = daysBetween(TODAY, date)
-  if (days <= 7) return 'red'
-  if (days <= 21) return 'amber'
-  return 'gray'
 }
 
 /**
@@ -211,7 +203,7 @@ export function ApplicationSheet({
       detail: DEADLINE_DETAIL,
       date,
       kind: 'deadline',
-      urgency: deadlineUrgency(date),
+      urgency: deadlineUrgency(TODAY, date),
       applicationId: application.id,
       allDay: true,
       // Off, like every seeded application deadline: this item's title IS the
@@ -245,7 +237,7 @@ export function ApplicationSheet({
       // item still holds the name this sheet gave it. Once someone has retitled
       // it by hand that title is theirs, not a derived string to overwrite.
       title: existing.title === displayName(previous) ? displayName(next) : existing.title,
-      urgency: dateChanged ? deadlineUrgency(form.deadline) : existing.urgency,
+      urgency: dateChanged ? deadlineUrgency(TODAY, form.deadline) : existing.urgency,
     })
     return null
   }

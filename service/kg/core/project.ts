@@ -69,11 +69,20 @@ type Cached<R> = { epoch: number; value: R }
  * One projection per collection, created once and called on every render.
  *
  * Keyed on `epoch(id)` rather than on the snapshot version, because a
- * projection depends on the node AND on its incident edges: an application's
- * row carries its organisation's name, so renaming the organisation has to
- * re-project the application even though the application's own record did not
- * change. A `WeakMap<StoredNode, R>` cannot see that and would serve the old
- * name until the row was edited for some unrelated reason.
+ * projection depends on the node, on its incident edges, AND on the props of
+ * the neighbours it reads one hop out: an application's row carries its
+ * organisation's name, so renaming the organisation has to re-project the
+ * application even though the application's own record did not change. A
+ * `WeakMap<StoredNode, R>` cannot see that and would serve the old name until
+ * the row was edited for some unrelated reason.
+ *
+ * That third clause is load-bearing and used to be missing here and in
+ * `snapshot.ts`, both of which named this exact case and then located the org
+ * name on the EDGE. It is a prop on the organisation's node, so the epoch moved
+ * for the organisation alone and every application row hit the cache — the
+ * failure the paragraph promised was solved. `MutableSnapshot.putNode` bumps
+ * the neighbours now; a projector that reaches TWO hops out is still outside
+ * what this cache can see.
  */
 export function createProjection<T extends NodeType, R>(
   type: T,

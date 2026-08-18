@@ -1,12 +1,13 @@
 /**
  * The web import path for the priority deck.
  *
- * The implementation is `@/kg/react/use-priority`. It moved down because
- * choosing which three records are worth a decision today — and what sentence
- * goes on each — is a reading of the store, not a fact about a browser, and
- * because this file was one of the modules the phone kept in step by copying it
- * across. The project's own notes list `lib/priority.ts` among the two that
- * "diverge on purpose", on precisely the field this shim now supplies.
+ * The implementation is `@jojo/service/react/use-priority`. It moved down
+ * because choosing which three records are worth a decision today — and what
+ * sentence goes on each — is a reading of the store, not a fact about a
+ * browser, and because this file was one of the modules the phone kept in step
+ * by copying it across. The project's own notes list `lib/priority.ts` among
+ * the two that "diverge on purpose", on precisely the field this shim now
+ * supplies.
  *
  * That field is where an application LIVES: a route string here, a screen and a
  * param on a phone. `appPath` is bound in once, at the only place that knows the

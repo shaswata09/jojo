@@ -246,13 +246,13 @@ export function GuideBuiltWith() {
             </Panel>
 
             <Panel>
-              <PanelTitle hint="49 files, 607 tests">Tested where it counts</PanelTitle>
+              <PanelTitle hint="57 files, 697 tests">Tested where it counts</PanelTitle>
               <p className="text-sm text-text-2">
-                Twenty-six of those files are in <span className="font-mono text-xs">service/</span>
-                , the package both apps import, against a real IndexedDB implementation running in
-                Node. There are no component tests and no browser in the suite — a deliberate line:
-                the record model is where a silent mistake costs you data, and it runs in about a
-                second, which is what makes anyone run it.
+                31 of those files are in <span className="font-mono text-xs">service/</span>, the
+                package both apps import, against a real IndexedDB implementation running in Node.
+                There are no component tests and no browser in the suite — a deliberate line: the
+                record model is where a silent mistake costs you data, and the whole thing runs in
+                about three seconds, which is what makes anyone run it.
               </p>
             </Panel>
 
@@ -268,7 +268,8 @@ export function GuideBuiltWith() {
                 </li>
                 <li>
                   <span className="font-mono text-xs text-text-1">npm run lint</span> — the linter,
-                  then the two guards drawn above.
+                  then three guards: the two drawn above, and the one that fails when a second copy
+                  of the layer starts coming back.
                 </li>
                 <li>
                   <span className="font-mono text-xs text-text-1">prettier</span> — so no diff here

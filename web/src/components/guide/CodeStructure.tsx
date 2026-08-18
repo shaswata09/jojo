@@ -64,28 +64,28 @@ type DirRow = { dir: string; files: number; tests: number; lines: number; what: 
 const SHAPE: DirRow[] = [
   {
     dir: 'service/kg/core',
-    files: 27,
-    tests: 12,
-    lines: 6159,
-    what: 'model, ids, schema, algebra',
+    files: 31,
+    tests: 13,
+    lines: 7093,
+    what: 'model, ids, schema, algebra, dates',
   },
-  { dir: 'service/kg/repo', files: 15, tests: 7, lines: 5916, what: 'transactions, journal, boot' },
-  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5128, what: '62 named operations' },
+  { dir: 'service/kg/repo', files: 15, tests: 7, lines: 5931, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5138, what: '62 named operations' },
   {
     dir: 'service/kg/storage',
-    files: 10,
-    tests: 2,
-    lines: 1959,
+    files: 12,
+    tests: 3,
+    lines: 2496,
     what: 'the port, and no platform',
   },
-  { dir: 'service/kg/react', files: 22, tests: 3, lines: 3311, what: 'providers and hooks' },
+  { dir: 'service/kg/react', files: 22, tests: 3, lines: 3330, what: 'providers and hooks' },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 47, what: 'the console is the telemetry' },
-  { dir: 'web/src/kg/storage', files: 9, tests: 2, lines: 2335, what: 'the IndexedDB adapter' },
+  { dir: 'web/src/kg/storage', files: 9, tests: 2, lines: 2032, what: 'the IndexedDB adapter' },
   {
     dir: 'web/src/components',
-    files: 219,
+    files: 218,
     tests: 10,
-    lines: 32553,
+    lines: 32586,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 14, tests: 0, lines: 3255, what: 'thirteen pages' },
@@ -93,10 +93,23 @@ const SHAPE: DirRow[] = [
     dir: 'web/src/lib',
     files: 52,
     tests: 10,
-    lines: 6005,
+    lines: 6077,
     what: 'web-only adapters and URL state',
   },
-  { dir: 'web/src/data', files: 9, tests: 1, lines: 1791, what: 'demo fixtures, below the model' },
+  {
+    dir: 'service/data',
+    files: 7,
+    tests: 1,
+    lines: 1361,
+    what: 'demo fixtures, below the model',
+  },
+  {
+    dir: 'web/src/data',
+    files: 8,
+    tests: 0,
+    lines: 120,
+    what: 'façades over the row above, marked for deletion',
+  },
 ]
 
 type TestGroup = { title: string; files: string; body: string }
@@ -185,29 +198,44 @@ export function CodeStructure() {
             the bytes land and how a keystroke arrives. So the platform enters through three named
             ports and nowhere else — <span className="font-mono text-xs">Driver</span> for
             durability, <span className="font-mono text-xs">Host</span> for what the graph needs a
-            platform to tell it, and a toast interface for what it needs a platform to say. All
-            three are implemented in <span className="font-mono text-xs">src/lib</span>, which is
-            web-only and allowed to be.
+            platform to tell it, and a toast interface for what it needs a platform to say.{' '}
+            <span className="font-mono text-xs">Host</span> and the toast are implemented in{' '}
+            <span className="font-mono text-xs">src/lib</span>, which is web-only and allowed to be;
+            the <span className="font-mono text-xs">Driver</span> is nine files rather than a
+            binding and lives at <span className="font-mono text-xs">src/kg/storage</span>, which is
+            web-only too and compiled under the package&rsquo;s own strictness rather than the
+            app&rsquo;s.
           </p>
           <p className="mt-2.5 text-sm text-text-2">
-            Storage is a port with two implementations today, and both ship:{' '}
-            <span className="font-mono text-xs">idb-driver.ts</span> is the real one, and{' '}
-            <span className="font-mono text-xs">memory-driver.ts</span> is what every test runs
-            against and what the app falls back to when a browser refuses to open a database at all.
-            That fallback is not a test fixture pressed into service — it is why private browsing
-            still runs the app rather than showing you an error page.
+            Storage is a port with three implementations, and all three ship:{' '}
+            <span className="font-mono text-xs">idb-driver.ts</span> is the real one here,{' '}
+            <span className="font-mono text-xs">rn-driver.ts</span> over AsyncStorage is the real
+            one on the phone, and <span className="font-mono text-xs">memory-driver.ts</span> is
+            what every test runs against and what this app falls back to when a browser refuses to
+            open a database at all. That fallback is not a test fixture pressed into service — it is
+            why private browsing still runs the app rather than showing you an error page.
           </p>
-          {/* The claim this page must not make is that the portability has been
-              proven. It has not — nothing has mounted this layer anywhere but
-              here, and saying otherwise is exactly the kind of promise the rest
-              of the app spends its time refusing to make. */}
+          {/* This paragraph used to say that nothing had mounted the layer
+              anywhere else and that mobile was running a drifted copy of it.
+              Both stopped being true in one week, on the page a contributor
+              reads first, and nothing in the gate can see a wrong sentence
+              inside a rendered element. The rule it was written under is still
+              the right one and is why it wanted rewriting rather than deleting:
+              say what has actually been run, and let the reader see where the
+              evidence stops. */}
           <p className="mt-2.5 text-sm text-text-2">
-            Worth being plain about: nothing has mounted this layer on another platform yet. The
-            React Native app under <span className="font-mono text-xs">mobile/</span> imports
-            nothing from <span className="font-mono text-xs">@jojo/service</span> yet — it is still
-            running a copy of the layer that has drifted from this one. The boundary is what makes
-            deleting that copy a wiring job rather than a rewrite. It is not evidence that the port
-            has happened.
+            The React Native app under <span className="font-mono text-xs">mobile/</span> imports
+            this package now. Its copy of the layer — which had drifted 813 lines in four months —
+            is deleted, and what is left under{' '}
+            <span className="font-mono text-xs">mobile/src/kg</span> is the AsyncStorage driver and
+            nothing else. Web, Android and iOS have each been run against the same seeded fixtures
+            and the numbers on screen compared.
+          </p>
+          <p className="mt-2.5 text-sm text-text-2">
+            Where the evidence stops: Electron is still a sentence at the top of this panel and not
+            a build, and a copy that has been edited is a copy no guard can see — so &ldquo;both
+            apps share this layer&rdquo; is a claim to keep re-checking rather than one the boundary
+            proves on its own.
           </p>
         </Panel>
       </section>
@@ -216,7 +244,7 @@ export function CodeStructure() {
         <h2 className="mb-3 text-base font-medium">
           What holds the rule up
           <small className="ml-2 font-sans text-xs font-normal text-text-3">
-            two scripts, and the compiler
+            three scripts, and the compiler
           </small>
         </h2>
 
@@ -258,8 +286,31 @@ export function CodeStructure() {
           </Panel>
         </div>
 
+        {/* Added late, because the guard is newer than the page — and it was
+            the wrong one to be missing. The other two are about the code that
+            is here; this is the one about there being a second copy of it,
+            which is the whole subject of the section above. */}
         <Panel className="mt-4 sm:mt-5">
-          <PanelTitle hint="the earliest of the three">The compiler carries it too</PanelTitle>
+          <PanelTitle hint="identity, never similarity">check-no-copies.mjs</PanelTitle>
+          <p className="text-sm text-text-2">
+            The other two check the code that is here; this one checks that there is only one of it.
+            It exists because of a measurement rather than a principle:{' '}
+            <span className="font-mono text-xs">mobile/src/kg</span> was a <Kbd>cp -R</Kbd> of this
+            app&rsquo;s, it drifted 813 lines over four months, and nothing in either app&rsquo;s
+            lint could see it. Import specifiers are canonicalised before hashing, because rewriting
+            them is the one edit a paste into a second app always makes — comparing raw bytes would
+            have missed the copy that actually happened, on its first day.
+          </p>
+          <p className="mt-2.5 text-sm text-text-2">
+            It is deliberately not a similarity metric: a near-duplicate detector is a tuning
+            parameter and an argument, and identity is neither. Something 90% copied and then edited
+            is a fork this guard will not catch, and it says so in its own header — the layer rules,
+            the shared conformance contract and one test suite are what have to cover that case.
+          </p>
+        </Panel>
+
+        <Panel className="mt-4 sm:mt-5">
+          <PanelTitle hint="the earliest of the four">The compiler carries it too</PanelTitle>
           <p className="text-sm text-text-2">
             <span className="font-mono text-xs">service/tsconfig.core.json</span> compiles core,
             repo and tools with <Kbd>&quot;lib&quot;: [&quot;ES2023&quot;]</Kbd> and{' '}
@@ -274,10 +325,10 @@ export function CodeStructure() {
               reads as taste; the incident does not, and it is the reason all
               three checks exist instead of whichever one came first. */}
           <p className="mt-2.5 text-sm text-text-2">
-            None of the three made the others redundant, and there is a specific reason for that. A
-            lib setting is per project while the script is per layer — &ldquo;no timers anywhere
-            under service/kg&rdquo; would be the wrong rule, since a retry backoff belongs in the
-            write queue and nowhere else. And the rules exist at all because a{' '}
+            None of these made the others redundant, and there is a specific reason for that. A lib
+            setting is per project while the script is per layer — &ldquo;no timers anywhere under
+            service/kg&rdquo; would be the wrong rule, since a retry backoff belongs in the write
+            queue and nowhere else. And the rules exist at all because a{' '}
             <span className="font-mono text-xs">window</span> listener once sat inside{' '}
             <span className="font-mono text-xs">kg/react/kg.tsx</span> through a clean{' '}
             <Kbd>tsc -b</Kbd>, <Kbd>npm test</Kbd> and <Kbd>npm run lint</Kbd>. On React Native that
@@ -413,17 +464,27 @@ export function CodeStructure() {
         <h2 className="mb-3 text-base font-medium">
           What the tests actually pin
           <small className="ml-2 font-sans text-xs font-normal text-text-3">
-            49 files, 607 tests, about two seconds
+            57 files, 697 tests, about three seconds
           </small>
         </h2>
 
         <p className="text-sm text-text-2">
           Vitest in a node environment, with{' '}
           <span className="font-mono text-xs">fake-indexeddb</span> standing in for the
-          browser&rsquo;s database. Twenty-six of the 49 files sit in{' '}
-          <span className="font-mono text-xs">service/</span> and hold 413 of the 607 tests, which
-          is the ratio the project intends: this is the code whose failure is silent and permanent,
-          and local-first means there is nothing to restore from.
+          browser&rsquo;s database. 31 of those files sit in{' '}
+          <span className="font-mono text-xs">service/</span>, the package both apps import, and
+          hold 466 of the tests; 22 are this app and 4 are the phone. That ratio is the one the
+          project intends: the package is the code whose failure is silent and permanent, and
+          local-first means there is nothing to restore from.
+        </p>
+
+        {/* Same reasoning as the table above, and the same remedy: three
+            workspaces now write into this number and a reader has no way to
+            tell how old it is. */}
+        <p className="mt-2.5 text-xs text-text-3">
+          Counted with <Kbd>npm test</Kbd> in each of <span className="font-mono">service</span>,{' '}
+          <span className="font-mono">web</span> and <span className="font-mono">mobile</span>.
+          Re-run it rather than trusting it.
         </p>
 
         <Panel className="mt-3.5 sm:mt-4">

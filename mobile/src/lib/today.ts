@@ -13,11 +13,13 @@
  * shifts every authored date by a whole number of days at seed time), so this is
  * the constant that decides where they land.
  *
- * `src/lib` is the web adapter layer and is allowed a platform API; `src/data`
- * and `src/kg` are not, which is why the constant moved here rather than staying
- * where its callers found it. `data/timeline.ts` deleted its own `todayISO()`
- * for that reason and the reason has not changed — the fixtures keep
- * `SEED_TODAY`, which is a fact about how they were written, not about now.
+ * `src/lib` is this app's adapter layer and is allowed a platform API; nothing
+ * below the seam is, which is why the constant lives here rather than where its
+ * callers first found it. That seam has moved since: `src/data` is gone and
+ * `src/kg` holds only the AsyncStorage driver, so the layer this must not sit
+ * in is `@jojo/service` — D26, enforced by `check-platform.mjs`. The fixtures
+ * keep `SEED_TODAY`, which is a fact about how they were written, not about
+ * now.
  *
  * Read ONCE at module load, not per call. Two reads a millisecond apart either
  * side of midnight return different days, and a screen where the week strip

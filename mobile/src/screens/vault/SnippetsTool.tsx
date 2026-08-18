@@ -17,6 +17,7 @@ import { displayName } from '@jojo/service/data/seed'
 import { SNIPPET_TAGS } from '@jojo/service/data/vault'
 import type { Snippet, SnippetTag } from '@jojo/service/data/vault'
 import { useLabels } from '@/lib/labels-context'
+import { vaultEmptyState } from '@/lib/vault-empty'
 import { matchesQuery } from '@/lib/search'
 import { useApplications, useVault } from '@/lib/store-context'
 import { useCopy } from '@/lib/use-copy'
@@ -35,7 +36,7 @@ const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record
  */
 export function SnippetsTool() {
   const { snippets, addSnippet, updateSnippet, removeSnippet } = useVault()
-  const { matches } = useLabels()
+  const { matches, selected, clearSelected } = useLabels()
   const { toast } = useToast()
   const { copy, isCopied } = useCopy()
 
@@ -87,6 +88,34 @@ export function SnippetsTool() {
     })
   }
 
+  const addButton = <Button label="New snippet" icon="plus" onPress={() => setEditing('new')} />
+
+  const empty = vaultEmptyState({
+    total: snippets.length,
+    query,
+    filteredByBucket: tag !== 'all',
+    filteredByKeyword: selected.size > 0,
+    onClearQuery: () => setQuery(''),
+    onClearBucket: () => setTag('all'),
+    onClearKeywords: clearSelected,
+    copy: {
+      icon: 'copy',
+      zero: {
+        title: 'No snippets yet',
+        description:
+          'The answers you retype on every form — a short bio, a teaching paragraph, the follow-up email you always send.',
+      },
+      search: (q) => `No snippet mentions "${q}" in its name, text or kind.`,
+      both: `No ${tag} snippet carries the selected keywords.`,
+      bucket: {
+        title: `No ${tag} snippets`,
+        description: `${String(snippets.length)} snippets are filed under the other kinds.`,
+        clearLabel: 'Show all kinds',
+      },
+      keywords: { title: 'No snippets carry those keywords' },
+    },
+  })
+
   return (
     <>
       <SearchInput
@@ -109,10 +138,16 @@ export function SnippetsTool() {
       {rows.length === 0 ? (
         <Panel>
           <EmptyState
-            icon="copy"
-            title={snippets.length === 0 ? 'No snippets yet' : 'Nothing with this tag'}
-            description="The answers you retype on every form — a short bio, a teaching paragraph, the follow-up email you always send."
-            action={<Button label="New snippet" icon="plus" onPress={() => setEditing('new')} />}
+            icon={empty.icon}
+            title={empty.title}
+            description={empty.description}
+            action={
+              empty.clear ? (
+                <Button label={empty.clear.label} variant="outline" onPress={empty.clear.onPress} />
+              ) : (
+                addButton
+              )
+            }
           />
         </Panel>
       ) : (
