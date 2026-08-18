@@ -1,5 +1,4 @@
-import { StyleSheet, View } from 'react-native'
-import { StatusBar } from 'expo-status-bar'
+import { StatusBar, StyleSheet, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { LabelsProvider } from '@/lib/labels'
@@ -79,7 +78,11 @@ function Themed() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.page }]}>
-      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+      {/* Dynamic, and it has to stay dynamic. `light-content` means light
+          GLYPHS, which is what a dark page needs; hardcoding it — the obvious
+          reading of expo-status-bar's `style="light"` — leaves the light theme
+          with a white bar full of white icons and no error anywhere. */}
+      <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
       <RootNavigator />
       <SheetHost />
     </View>

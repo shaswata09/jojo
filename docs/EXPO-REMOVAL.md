@@ -78,6 +78,26 @@ existing comment credits `expo-splash-screen` and is wrong: it is
 and that crash fires **only on process-death restore** — the one path nobody
 tests by hand.
 
+## A fourth thing that breaks silently, found while doing it
+
+**`react-native-blob-util` brings four permissions the app does not use.** Its
+own `AndroidManifest.xml` declares `WAKE_LOCK`, `ACCESS_NETWORK_STATE`,
+`ACCESS_WIFI_STATE` and `DOWNLOAD_WITHOUT_NOTIFICATION`, because it is a
+networking and download library and this app uses only its `fs` and its
+`actionViewIntent`. The manifest merger adds them without a word. Measured by
+diffing `aapt dump badging` on the release APK against the pre-ejection
+baseline: six permissions became ten.
+
+That is a user-visible regression — it is what the Play listing shows — and
+nothing in the build reports it. **The fix belongs to the Android native
+surgery step**, which is already editing `AndroidManifest.xml`: add
+`tools:node="remove"` entries for the four, and confirm against `badging`
+afterwards rather than assuming.
+
+It is also the first bill for what the ejection buys. Expo did not protect
+against this either, but nobody had to notice before, because no native module
+had been added by hand.
+
 ## Sequencing
 
 **The service-layer migration goes first**, steps 2–8 complete and green, with
