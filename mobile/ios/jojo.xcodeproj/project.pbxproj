@@ -8,13 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		1D0F5A2A2E3C4B7A9F1E0002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1D0F5A2A2E3C4B7A9F1E0001 /* PrivacyInfo.xcprivacy */; };
 		2F0E7A1B3C4D5E6F70A20001 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10001 /* Inter-Regular.ttf */; };
 		2F0E7A1B3C4D5E6F70A20002 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10002 /* Inter-Medium.ttf */; };
 		2F0E7A1B3C4D5E6F70A20003 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10003 /* Inter-SemiBold.ttf */; };
 		2F0E7A1B3C4D5E6F70A20004 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10004 /* Inter-Bold.ttf */; };
 		2F0E7A1B3C4D5E6F70A20005 /* JetBrainsMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10005 /* JetBrainsMono-Regular.ttf */; };
+		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		8362739EFF7AC85C7FDA9F46 /* libPods-jojo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 15ADF60E5B5DD7C634A6970B /* libPods-jojo.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -22,13 +23,16 @@
 		13B07F961A680F5B00A75B9A /* jojo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = jojo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = jojo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = jojo/Info.plist; sourceTree = "<group>"; };
-		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = jojo/SplashScreen.storyboard; sourceTree = "<group>"; };
+		15ADF60E5B5DD7C634A6970B /* libPods-jojo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-jojo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D0F5A2A2E3C4B7A9F1E0001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = jojo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		2F0E7A1B3C4D5E6F70A10001 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Inter-Regular.ttf; path = "../android/app/src/main/assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
-		2F0E7A1B3C4D5E6F70A10002 /* Inter-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Inter-Medium.ttf; path = "../android/app/src/main/assets/fonts/Inter-Medium.ttf"; sourceTree = "<group>"; };
-		2F0E7A1B3C4D5E6F70A10003 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Inter-SemiBold.ttf; path = "../android/app/src/main/assets/fonts/Inter-SemiBold.ttf"; sourceTree = "<group>"; };
-		2F0E7A1B3C4D5E6F70A10004 /* Inter-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Inter-Bold.ttf; path = "../android/app/src/main/assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
-		2F0E7A1B3C4D5E6F70A10005 /* JetBrainsMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = JetBrainsMono-Regular.ttf; path = "../android/app/src/main/assets/fonts/JetBrainsMono-Regular.ttf"; sourceTree = "<group>"; };
+		2F0E7A1B3C4D5E6F70A10001 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Regular.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
+		2F0E7A1B3C4D5E6F70A10002 /* Inter-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Medium.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Medium.ttf"; sourceTree = "<group>"; };
+		2F0E7A1B3C4D5E6F70A10003 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-SemiBold.ttf"; path = "../android/app/src/main/assets/fonts/Inter-SemiBold.ttf"; sourceTree = "<group>"; };
+		2F0E7A1B3C4D5E6F70A10004 /* Inter-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Bold.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
+		2F0E7A1B3C4D5E6F70A10005 /* JetBrainsMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "JetBrainsMono-Regular.ttf"; path = "../android/app/src/main/assets/fonts/JetBrainsMono-Regular.ttf"; sourceTree = "<group>"; };
+		9C0FC7706B0317E85FD305AD /* Pods-jojo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jojo.debug.xcconfig"; path = "Target Support Files/Pods-jojo/Pods-jojo.debug.xcconfig"; sourceTree = "<group>"; };
+		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = jojo/SplashScreen.storyboard; sourceTree = "<group>"; };
+		C8A13383FA84CC1F43C30D6C /* Pods-jojo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jojo.release.xcconfig"; path = "Target Support Files/Pods-jojo/Pods-jojo.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = jojo/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* jojo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "jojo-Bridging-Header.h"; path = "jojo/jojo-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -39,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8362739EFF7AC85C7FDA9F46 /* libPods-jojo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +64,15 @@
 			name = jojo;
 			sourceTree = "<group>";
 		};
+		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
+				15ADF60E5B5DD7C634A6970B /* libPods-jojo.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		2F0E7A1B3C4D5E6F70A30001 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
@@ -69,14 +83,6 @@
 				2F0E7A1B3C4D5E6F70A10005 /* JetBrainsMono-Regular.ttf */,
 			);
 			name = Fonts;
-			sourceTree = "<group>";
-		};
-		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -93,6 +99,7 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
+				AB44E543D7BBA13AEFFD412E /* Pods */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,6 +112,16 @@
 				13B07F961A680F5B00A75B9A /* jojo.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AB44E543D7BBA13AEFFD412E /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9C0FC7706B0317E85FD305AD /* Pods-jojo.debug.xcconfig */,
+				C8A13383FA84CC1F43C30D6C /* Pods-jojo.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -120,6 +137,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
+				042174F8391FD740E361D789 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -197,6 +215,24 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\n# [EJECTION] The template defaults ENTRY_FILE to $PROJECT_ROOT/index.js. jojo's\n# entry is index.ts, and it has to be ABSOLUTE: `react-native bundle` resolves a\n# relative --entry-file against Metro's serverRoot, which under this workspace is\n# the repo root, where no index.* exists. Same trap as jsBundleURL(forBundleRoot:),\n# and the same fix as android/app/build.gradle's entryFile = file(\"../../index.ts\").\nexport ENTRY_FILE=\"$PROJECT_DIR/../index.ts\"\n\n# REACT_NATIVE_PATH is written into this project by react_native_post_install, so\n# `pod install` has to have run at least once before this phase can work.\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
+		042174F8391FD740E361D789 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-jojo/Pods-jojo-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-jojo/Pods-jojo-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -226,11 +262,27 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-jojo/Pods-jojo-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/RCTI18nStrings.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNSVG/RNSVGFilters.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/react-native-blob-util/ReactNativeBlobUtilPrivacyInfo.bundle",
+				"${PODS_ROOT}/../../../node_modules/@react-native-vector-icons/feather/fonts/Feather.ttf",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCTI18nStrings.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNSVGFilters.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ReactNativeBlobUtilPrivacyInfo.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Feather.ttf",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -253,9 +305,11 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9C0FC7706B0317E85FD305AD /* Pods-jojo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = jojo/jojo.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -274,22 +328,23 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jojo.tracker";
-				PRODUCT_NAME = "jojo";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.jojo.tracker;
+				PRODUCT_NAME = jojo;
 				SWIFT_OBJC_BRIDGING_HEADER = "jojo/jojo-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				VERSIONING_SYSTEM = "apple-generic";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				CODE_SIGN_ENTITLEMENTS = jojo/jojo.entitlements;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C8A13383FA84CC1F43C30D6C /* Pods-jojo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = jojo/jojo.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = jojo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
@@ -303,13 +358,12 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jojo.tracker";
-				PRODUCT_NAME = "jojo";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.jojo.tracker;
+				PRODUCT_NAME = jojo;
 				SWIFT_OBJC_BRIDGING_HEADER = "jojo/jojo-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				VERSIONING_SYSTEM = "apple-generic";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				CODE_SIGN_ENTITLEMENTS = jojo/jojo.entitlements;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
 		};
@@ -365,10 +419,13 @@
 					/usr/lib/swift,
 					"$(inherited)",
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(inherited)\"";
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				USE_HERMES = true;
 			};
 			name = Debug;
 		};
@@ -417,9 +474,11 @@
 					/usr/lib/swift,
 					"$(inherited)",
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(inherited)\"";
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

@@ -41,5 +41,39 @@ target 'jojo' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
     )
+
+    # fmt 11.0.2, which React Native 0.81 vendors, does not compile under
+    # Xcode 26's clang, and the failure is entirely inside fmt's own headers —
+    # five `call to consteval function ... is not a constant expression` errors
+    # in `format-inl.h`, none reachable from this app's code.
+    #
+    # clang 17+ enforces that a consteval call must itself be a constant
+    # expression; fmt's `FMT_STRING(...)` uses in that file are not. fmt gates
+    # this on `FMT_USE_CONSTEVAL`, but 11.0.2 defines that macro through an
+    # unguarded `#if/#elif` chain with no `#ifndef` — so a `-D` on the command
+    # line is redefined by the header and loses. That was tried first and the
+    # build failed identically, which is how the chain was found.
+    #
+    # So the header is patched instead: the `__cpp_consteval` branch is forced
+    # to 0. Scoped to fmt, applied on every `pod install` (the Pods tree is not
+    # committed), and idempotent. Delete it when React Native ships a newer fmt.
+    fmt_base = File.join(__dir__, 'Pods', 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      src = File.read(fmt_base)
+      # Patch the single CONSUMER of the macro rather than the branches that
+      # set it — the chain has two `= 1` arms and disabling one just falls
+      # through to the other, which is what the first attempt did.
+      marker = "#if FMT_USE_CONSTEVAL\n#  define FMT_CONSTEVAL consteval"
+      patched = "#if 0  // jojo: FMT_USE_CONSTEVAL forced off, Xcode 26 clang, see Podfile\n#  define FMT_CONSTEVAL consteval"
+      unless src.include?(patched)
+        # CocoaPods installs pod sources read-only, so this has to widen the
+        # mode first and put it back afterwards.
+        mode = File.stat(fmt_base).mode
+        File.chmod(0o644, fmt_base)
+        File.write(fmt_base, src.sub(marker, patched))
+        File.chmod(mode & 0o7777, fmt_base)
+        Pod::UI.puts '[jojo] patched fmt/base.h to disable consteval'
+      end
+    end
   end
 end

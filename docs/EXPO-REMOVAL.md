@@ -337,3 +337,56 @@ The general form: **this ejection changed what the app IS, and the only checks
 that can catch a stale claim about that are reading the copy and running the
 app.** The device checklist below is not optional polish; it is the other half
 of the verification.
+
+## iOS: what it took to build the first time
+
+`mobile/ios` had never been compiled. Three things were in the way, and only
+one of them was ours.
+
+**The Xcode license and a simulator runtime** — both the owner's to accept and
+download. Until then `xcrun simctl list runtimes` reports nothing and the
+message it prints is about the license, not the runtimes, which is misleading.
+
+**CocoaPods was unusable** because `GEM_PATH` from an rvm ruby leaks into
+Homebrew's `pod`, which then cannot find its own `rexml`. Running it as
+`env -u GEM_PATH -u GEM_HOME -u RUBYOPT -u BUNDLE_PATH pod …` fixes it without
+touching the ruby install. Worth knowing before reaching for `sudo`.
+
+**`fmt` does not compile under Xcode 26's clang**, and this one is ours to carry
+until React Native ships a newer copy. fmt 11.0.2 marks `basic_format_string`'s
+constructor `consteval`; clang 17+ enforces that a consteval call must itself be
+a constant expression, and the `FMT_STRING(...)` uses inside `format-inl.h` are
+not. Five errors, all in fmt's own headers, none reachable from this app.
+
+The obvious fix does not work, and it is worth writing down why so nobody
+repeats it: fmt gates this on `FMT_USE_CONSTEVAL`, but 11.0.2 defines that macro
+through an **unguarded** `#if/#elif` chain with no `#ifndef`, so a `-D` on the
+command line is redefined by the header and loses. That was tried first and the
+build failed identically. The chain also has two arms that set it to 1, so
+disabling one falls through to the other — that was the second failed attempt.
+
+What works is patching the single **consumer** of the macro, in a `post_install`
+hook that is idempotent, scoped to fmt, and re-applied on every `pod install`
+because `Pods/` is not committed. It also has to widen the file mode first:
+CocoaPods installs pod sources read-only.
+
+**Delete the hook when React Native ships a newer fmt.**
+
+## Verified on all three platforms
+
+Web, Android and iOS were each run and compared against the same seeded graph.
+
+The badge counts initially disagreed — Calendar 6 vs 4, Vault 3 vs 6 — and the
+cause was **stale data, not divergent code**: mobile's AsyncStorage still held
+records seeded before the `src/data` reconciliation. Clearing storage and
+re-seeding made all four badges match web exactly.
+
+The date arithmetic was checked against the fixtures rather than across screens,
+which is the check that cannot be fooled by two platforms being wrong together:
+`SEED_TODAY` is 2026-10-12, the Baylor offer's `respondBy` is 2026-11-15, and on
+2026-08-18 the seed offset is −55 days, so the card must read **Sep 21, 34 days
+away**. iOS renders exactly that.
+
+**Consequence for anyone upgrading rather than installing fresh: an existing
+install carries pre-reconciliation data.** Clearing storage is what picks up the
+shared fixtures.
