@@ -64,11 +64,26 @@ describe('the simulation ends', () => {
 })
 
 describe('the budget', () => {
-  it('finishes a small layout inside one frame and says so', () => {
+  /**
+   * No wall-clock deadline in the assertion.
+   *
+   * This read `expect(settle(sim, 420, 16)).toBe(true)` — a real 16 ms budget
+   * for 192 ticks. Idle that is about 1 ms and it passed; under load it
+   * exceeds 16 ms and `settle` correctly returns false, so the test failed
+   * 5 runs in 6 with ten busy processes and turned the whole gate
+   * load-dependent. It was failing for the right reason, which is worse than
+   * failing for a wrong one: the code was fine and the suite said otherwise.
+   *
+   * An unbounded budget pins the semantics that matter — a small layout
+   * finishes, and finishing is idempotent — and the case below still proves
+   * the budget is honoured, because a zero budget cannot finish 1,200 nodes
+   * however fast the machine is.
+   */
+  it('finishes a small layout, and finishing is idempotent', () => {
     const sim = simOf(30)
-    expect(settle(sim, 420, 16)).toBe(true)
+    expect(settle(sim)).toBe(true)
     // Finished means finished: another call has nothing left to do.
-    expect(settle(sim, 420, 16)).toBe(true)
+    expect(settle(sim)).toBe(true)
   })
 
   it('stops for a layout it cannot finish, and says that too', () => {

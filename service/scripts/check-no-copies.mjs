@@ -148,7 +148,18 @@ const FORBIDDEN_DIRS = [
  * to say about it.
  */
 const KNOWN_TWINS = [
-  { file: 'lib/labels.tsx', why: 'label filter selection — UI state, not graph state (⊙7)' },
+  {
+    file: 'lib/labels.tsx',
+    // Was 'UI state, not graph state'. That reason was wrong and the exemption
+    // it bought cost a live bug: the two copies drifted 58 lines, web learned
+    // to drop a selected keyword that had since been deleted, and mobile did
+    // not — so resetting the demo left the phone's list reading "0 shown, 12
+    // total" with no chip on screen to explain it. WHICH KEYWORDS ARE LIT is
+    // app state; WHICH OF THEM STILL EXIST is a question about the graph, and
+    // that half now lives in `kg/core/label-selection` and is shared. What is
+    // left twinned is the provider wiring around it.
+    why: 'the provider wiring; the rule itself is shared in kg/core/label-selection',
+  },
   { file: 'lib/labels-context.ts', why: 'the context object for the above' },
   { file: 'lib/roles.tsx', why: 'role filter selection — same argument' },
   { file: 'lib/roles-context.ts', why: 'the context object for the above' },

@@ -1,3 +1,4 @@
+import { litSelection } from '@jojo/service/core/label-selection'
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useKeywords } from '@jojo/service/react/use-keywords'
@@ -84,13 +85,31 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
   const clearSelected = useCallback(() => setSelected(new Set<string>()), [])
 
   /**
+   * The lit chips: the selection minus anything that has since been deleted.
+   * `selected` is what the user pressed; this is what the filter means.
+   *
+   * Filtering on the raw `selected` set was a live bug on this platform. A
+   * keyword can go away without the toast's Undo running — Reset the demo
+   * data, Clear every record, Load demo data all replace the store wholesale —
+   * and the filter stayed lit by an id nothing carried any more. Driven on a
+   * device: light Referral, reset the demo, and the Applications list read
+   * "0 shown · 12 total" with every stage at zero and the chip row gone, so
+   * there was not even a chip left to unlight.
+   *
+   * Web had the fix and this file did not, because the two were copies rather
+   * than one module. The rule now lives in `kg/core/label-selection` and both
+   * apps call it.
+   */
+  const lit = useMemo(() => litSelection(selected, labels), [selected, labels])
+
+  /**
    * True when a record should be shown. A record matches if it carries *any*
    * selected keyword — OR rather than AND, because people reach for a second
    * keyword to widen a search, not to narrow it to the intersection.
    */
   const matches = useCallback(
-    (recordId: string) => selected.size === 0 || carries(recordId, selected),
-    [selected, carries],
+    (recordId: string) => lit.size === 0 || carries(recordId, lit),
+    [lit, carries],
   )
 
   const value = useMemo(
@@ -105,7 +124,7 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
       labelIdsOf,
       setRecord,
       removeRecord,
-      selected,
+      selected: lit,
       toggleSelected,
       clearSelected,
       matches,

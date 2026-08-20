@@ -138,3 +138,32 @@ headers says why.
   several record the file's own earlier reasoning as wrong — `tools/scout.ts` names
   both versions of a justification that has been wrong twice. Trust them over any
   summary, including this one.
+
+## Running this package outside a bundler
+
+**You cannot, today, and that is the one real constraint on reuse.**
+
+Every relative import inside this package is extension-less — 459 of them, none
+carrying `.ts`. `tsconfig.base.json` sets `allowImportingTsExtensions`, so the
+extension is permitted and simply never used, because every consumer so far has
+been a bundler: Vite for web, Metro for mobile, Vitest for the tests. Node's own
+ESM resolver needs the extension, so:
+
+```
+$ node --experimental-strip-types -e "import('@jojo/service/repo/boot')"
+ERR_MODULE_NOT_FOUND: Cannot find module '.../service/kg/core/validate'
+```
+
+An Electron main process must therefore be bundled — `electron-vite`, esbuild,
+anything. That is a normal Electron setup rather than a blocker, and it was
+proved rather than assumed: a `Driver` over `node:fs` in 101 lines and a `Host`
+in 16 booted this package headless in Node, seeded 12 applications, ran a tool,
+flushed 59 KB to disk, reopened and read 13 back — with zero changes here.
+
+**The second constraint is architectural and bites earlier.** `Repository` is
+synchronous by contract (D10/D11) because `useGraph()` is a `useSyncExternalStore`
+and `getSnapshot` cannot await. That forecloses the design a desktop app reaches
+for first — graph in the main process, renderer talking to it over IPC. The
+graph must live wherever the React tree lives. That is a correct consequence of
+D10, and it is written here because it is the first thing an Electron author
+will try.

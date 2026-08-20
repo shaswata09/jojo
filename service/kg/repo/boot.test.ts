@@ -195,8 +195,33 @@ describe('reopening', () => {
     expect(carried.meta).toHaveLength(1)
 
     const second = createMemoryDriver({ rows: carried })
-    const result = await bootWith(second, { now: at(LATER) })
 
+    /*
+     * The spy is what makes this test pin the branch it is named for.
+     *
+     * Everything below it passed with `if (stored === null)` replaced by
+     * `if (true)` — because `firstRun` then runs, `seedIfPristine` refuses
+     * (the meta row exists), and the boot falls through to `ready` with the
+     * same records and the same meta. Identical output, so the assertions
+     * could not tell the two paths apart, and a test carrying D24's name was
+     * pinning something else.
+     *
+     * `seedIfPristine` NOT BEING CALLED is the difference. The atomic refusal
+     * is the real protection and is tested on its own; this branch is what
+     * stops a returning boot attempting a write it must not make, on every
+     * single launch.
+     */
+    const seedCalls: number[] = []
+    const watched = {
+      ...second,
+      seedIfPristine: (rows: Parameters<typeof second.seedIfPristine>[0]) => {
+        seedCalls.push(1)
+        return second.seedIfPristine(rows)
+      },
+    }
+    const result = await bootWith(watched as typeof second, { now: at(LATER) })
+
+    expect(seedCalls).toEqual([])
     expect(result.outcome).toBe('ready')
     const two = sessionOf(result)
     expect(two.repo.getSnapshot().nodes()).toEqual([])
