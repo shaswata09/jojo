@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useKeywords } from '@jojo/service/react/use-keywords'
 import { LabelsContext } from '@/lib/labels-context'
+import { litSelection } from '@/lib/label-selection'
 
 /**
  * The keyword filter's selection. That is now the whole of this file.
@@ -20,6 +21,12 @@ import { LabelsContext } from '@/lib/labels-context'
  * What is left is genuinely UI state: which chips are lit, in this tab, right
  * now. It is not a record, it does not belong in an export, and it should not
  * survive a reload — so it stays here and stays out of the graph.
+ *
+ * It is not, however, INDEPENDENT of the graph. Which chips CAN be lit is a fact
+ * about which keywords exist, and every path that deletes one has to be able to
+ * put that right. Keeping the two in step by hand covered one of them — see
+ * `lib/label-selection.ts` for the three it did not, and for why the selection
+ * the filter reads is now derived rather than maintained.
  */
 export function LabelsProvider({ children }: { children: ReactNode }) {
   const keywords = useKeywords()
@@ -41,36 +48,17 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
   } = keywords
 
   /**
-   * Delete, plus the one part of the old three-part undo that is still ours.
+   * Delete. The selection is not touched, and that is the fix rather than an
+   * omission.
    *
-   * Taking the id out of the selection is not tidiness — it is the trap. A
-   * selection holding one id that nothing carries reads as "show me the records
-   * carrying it", which is none of them, so every filtered list on the page
-   * empties at once with no chip left on screen to explain it or to clear. The
-   * chip and the tagging are put back by the journal; the lit state is put back
-   * here.
+   * This used to take the id out of `selected` and put it back inside the
+   * `restore` it returns, which kept the chip honest for exactly one of the
+   * ways a keyword goes away — the toast's Undo button. ⇧⌘Z goes straight to
+   * `runtime.redo()` without passing through here, and so does another tab. The
+   * lit set is derived from the keywords that exist now (`lit` below), so every
+   * one of those paths corrects the chip, and this no longer has an opinion.
    */
-  const removeLabel = useCallback(
-    (id: string) => {
-      const wasSelected = selected.has(id)
-      const { restore } = keywords.removeLabel(id)
-
-      setSelected((prev) => {
-        if (!prev.has(id)) return prev
-        const next = new Set(prev)
-        next.delete(id)
-        return next
-      })
-
-      return {
-        restore() {
-          restore()
-          if (wasSelected) setSelected((prev) => new Set(prev).add(id))
-        },
-      }
-    },
-    [keywords, selected],
-  )
+  const removeLabel = useCallback((id: string) => keywords.removeLabel(id), [keywords])
 
   const toggleSelected = useCallback((labelId: string) => {
     setSelected((prev) => {
@@ -84,13 +72,19 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
   const clearSelected = useCallback(() => setSelected(new Set<string>()), [])
 
   /**
+   * The lit chips, which is the selection minus anything that has since been
+   * deleted. `selected` is what the user pressed; this is what the filter means.
+   */
+  const lit = useMemo(() => litSelection(selected, labels), [selected, labels])
+
+  /**
    * True when a record should be shown. A record matches if it carries *any*
    * selected keyword — OR rather than AND, because people reach for a second
    * keyword to widen a search, not to narrow it to the intersection.
    */
   const matches = useCallback(
-    (recordId: string) => selected.size === 0 || carries(recordId, selected),
-    [selected, carries],
+    (recordId: string) => lit.size === 0 || carries(recordId, lit),
+    [lit, carries],
   )
 
   const value = useMemo(
@@ -105,7 +99,7 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
       labelIdsOf,
       setRecord,
       removeRecord,
-      selected,
+      selected: lit,
       toggleSelected,
       clearSelected,
       matches,
@@ -123,7 +117,7 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
       labelIdsOf,
       setRecord,
       removeRecord,
-      selected,
+      lit,
       toggleSelected,
       clearSelected,
       matches,

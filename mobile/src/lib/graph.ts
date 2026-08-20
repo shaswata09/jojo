@@ -13,6 +13,8 @@ import type { Palette } from '@/theme/tokens'
  * only a graph can answer — and lays it out radially instead of simulating it.
  */
 
+import { incidentEdges, indexIncident, neighbours, otherEnd } from '@jojo/service/core/algebra'
+import { EDGE_SCHEMA } from '@jojo/service/core/model'
 import type { Label } from '@jojo/service/data/labels'
 import type { Match, SavedPosting } from '@jojo/service/data/scout'
 import type { Application } from '@jojo/service/data/seed'
@@ -48,17 +50,45 @@ export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = {
   keyword: 'Keyword',
 }
 
-/** How one node is joined to another. Read as `<from> —REL→ <to>`. */
-export const GRAPH_RELS = ['AT', 'IS', 'ABOUT', 'FILED_UNDER', 'TAGS', 'FROM'] as const
+/**
+ * How one node is joined to another. Read as `<from> —REL→ <to>`.
+ *
+ * Five of the six are stored relations, spelled the way `EDGE_SCHEMA` spells
+ * them. The sixth, `IS`, is drawn from a prop and stored nowhere: a role is a
+ * closed union on the application rather than a record of its own, so there is
+ * no edge to read and the canvas mints the line itself. Web does the same and
+ * says so in `build.ts`.
+ *
+ * `FROM` was here and was WRONG. It is a real relation — but in the model it
+ * runs match/posting → PIPELINE, and a pipeline is not a node this canvas
+ * draws. What this canvas actually had a line for is `BECAME`: the edge behind
+ * `SavedPosting.applicationId` and `Match.applicationId`, both of which
+ * `projections.ts` reads out of `g.one(id, 'BECAME', 'application')`. So the
+ * phone drew the right pair of records joined by the wrong relation, and
+ * printed 'came from' under it where web printed 'became' — and the Guide's
+ * own table had the arrow pointing the other way as well. One relation, three
+ * spellings of it, two of them not true.
+ */
+export const GRAPH_RELS = ['AT', 'IS', 'ABOUT', 'FILED_UNDER', 'TAGS', 'BECAME'] as const
 export type GraphRel = (typeof GRAPH_RELS)[number]
 
+/**
+ * How each relationship reads in a sentence.
+ *
+ * Taken from `EDGE_SCHEMA` rather than written out again. The five stored rels
+ * already carry a `label` there — `EdgeSpec.label`'s own comment says it is
+ * "reused by /graph's sentence builder" — and the two apps had each copied the
+ * strings instead, which is how one of them came to read 'came from' for an
+ * edge the model calls 'became'. `IS` is the one line this file owns, because
+ * it is the one edge the model does not have.
+ */
 export const REL_LABEL: Record<GraphRel, string> = {
-  AT: 'is at',
+  AT: EDGE_SCHEMA.AT.label,
   IS: 'is a',
-  ABOUT: 'is about',
-  FILED_UNDER: 'is filed under',
-  TAGS: 'tags',
-  FROM: 'came from',
+  ABOUT: EDGE_SCHEMA.ABOUT.label,
+  FILED_UNDER: EDGE_SCHEMA.FILED_UNDER.label,
+  TAGS: EDGE_SCHEMA.TAGS.label,
+  BECAME: EDGE_SCHEMA.BECAME.label,
 }
 
 export type GraphNode = {
@@ -72,12 +102,16 @@ export type GraphNode = {
   degree: number
 }
 
-export type GraphEdge = { from: string; to: string; rel: GraphRel }
+/** `${from}|${rel}|${to}` — see `edgeIdOf`. */
+export type GraphEdge = { id: string; from: string; to: string; rel: GraphRel }
 
 export type Graph = {
   nodes: GraphNode[]
   edges: GraphEdge[]
   byId: Map<string, GraphNode>
+  edgeById: Map<string, GraphEdge>
+  /** Node id → the ids of every edge touching it. Built once, in `buildGraph`. */
+  incident: Map<string, string[]>
 }
 
 /**
@@ -85,6 +119,18 @@ export type Graph = {
  * pipeline, a posting and two more — so a node id has to carry its type.
  */
 export const graphNodeId = (type: GraphNodeType, recordId: string) => `${type}:${recordId}`
+
+/**
+ * An edge's identity, which it did not have until the traversal moved out.
+ *
+ * `core/algebra` keys its incident index by edge id, so the id is what buys the
+ * O(1) lookup. Spelled the same way web's `build.ts` spells it, and the same way
+ * `edgeId` in `@jojo/service/core/ref` spells a STORED edge — because a third
+ * spelling of an edge id is how the third spelling of a relation happened.
+ * Uniqueness follows for the same reason it does there: the three parts are the
+ * key, so drawing one relation twice between one pair writes one id twice.
+ */
+const edgeIdOf = (from: string, rel: GraphRel, to: string) => `${from}|${rel}|${to}`
 
 export type GraphInput = {
   applications: readonly Application[]
@@ -112,7 +158,7 @@ export function buildGraph(input: GraphInput): Graph {
   }
 
   const join = (from: string, to: string, rel: GraphRel) => {
-    edges.push({ from, to, rel })
+    edges.push({ id: edgeIdOf(from, rel, to), from, to, rel })
   }
 
   /**
@@ -163,14 +209,18 @@ export function buildGraph(input: GraphInput): Graph {
     tagFrom(id, s.id)
   }
 
+  // `applicationId` on both of these is a BECAME edge — the lead was promoted
+  // and this is the application it turned into. `projections.ts` reads it from
+  // `g.one(id, 'BECAME', 'application')`, so the posting is the FROM end and the
+  // application is the TO end, which is the direction drawn here.
   for (const p of input.postings) {
     const id = add('posting', p.id, p.title, p.url)
-    if (p.applicationId) join(id, graphNodeId('application', p.applicationId), 'FROM')
+    if (p.applicationId) join(id, graphNodeId('application', p.applicationId), 'BECAME')
   }
 
   for (const m of input.matches) {
     const id = add('match', m.id, m.role, `${m.fit}% fit`)
-    if (m.applicationId) join(id, graphNodeId('application', m.applicationId), 'FROM')
+    if (m.applicationId) join(id, graphNodeId('application', m.applicationId), 'BECAME')
   }
 
   // An edge whose other end was never built is not an edge. This can happen the
@@ -186,19 +236,52 @@ export function buildGraph(input: GraphInput): Graph {
     if (to) to.degree += 1
   }
 
-  return { nodes, edges: live, byId }
+  return {
+    nodes,
+    edges: live,
+    byId,
+    edgeById: new Map(live.map((e) => [e.id, e])),
+    incident: indexIncident(live),
+  }
 }
 
-export const incidentEdges = (graph: Graph, nodeId: string) =>
-  graph.edges.filter((e) => e.from === nodeId || e.to === nodeId)
+/* -------------------------------- traversal -------------------------------- */
 
-export const otherEnd = (edge: GraphEdge, nodeId: string) =>
-  edge.from === nodeId ? edge.to : edge.from
-
-export function neighbours(graph: Graph, nodeId: string): GraphNode[] {
-  const ids = new Set(incidentEdges(graph, nodeId).map((e) => otherEnd(e, nodeId)))
-  return [...ids].map((id) => graph.byId.get(id)).filter((n): n is GraphNode => Boolean(n))
-}
+/**
+ * Not written here any more.
+ *
+ * `incidentEdges`, `otherEnd` and `neighbours` were three hand-rolled copies of
+ * functions that already ship in `@jojo/service/core/algebra` — the same three
+ * web deleted from `lib/graph/traversal.ts` when the layer moved down, leaving
+ * `core/algebra` with a web consumer and no phone one. Two things were wrong
+ * with keeping them, and only one of them was tidiness:
+ *
+ * MEASURED. The local `incidentEdges` was `edges.filter(...)`, O(E) per call,
+ * and `hasNeighbourOfType` calls it once per candidate node — so each of the six
+ * worked questions was O(N·E). Over a store of 1,000 applications (3,042 nodes,
+ * 5,000 edges), running all six cost 137 ms and one pattern query 25 ms on a
+ * laptop; ten times the records cost sixty times the time. `core/algebra` reads
+ * a prebuilt `incident` index instead — which is what `edgeById` and `incident`
+ * on `Graph` above are for — and the same three measurements are now:
+ *
+ *     all six worked questions   137 ms  ->  2.4 ms
+ *     one pattern query           25 ms  ->  2.7 ms
+ *     buildGraph                 5.4 ms  ->  7.8 ms
+ *
+ * The third line is the price and it is the right way round: the index is built
+ * once per commit, where the queries run once per render and once per control
+ * the user touches.
+ *
+ * ONE BEHAVIOUR NOTE, since these are not quite the same functions. The old
+ * `neighbours` deduped its answer through a `Set`; `core/algebra`'s maps every
+ * incident edge, so two edges between one pair would report that neighbour
+ * twice. No pair in this model is joined by two relations — an application is
+ * AT one organisation and IS one role, a timeline item is ABOUT an application
+ * and nothing else — and the only caller is `hasNeighbourOfType`, which asks
+ * `.some`. Recorded rather than defended: it is the one difference between the
+ * copy and the original.
+ */
+export { incidentEdges, neighbours, otherEnd }
 
 /* --------------------------------- queries -------------------------------- */
 

@@ -80,17 +80,21 @@ export function FilesTool() {
 
   const onDelete = (f: VaultFile) => {
     const { restore } = removeFile(f.id)
-    // The copy stays, and NOTHING reclaims it. Deleting the bytes here would
-    // make the Undo below restore a record pointing at nothing, which is the
-    // worse of the two outcomes — so removing a document leaks its copy for the
-    // life of the install. `forgetDocument` in `lib/documents.ts` is the delete
-    // half, and it has no caller: this comment used to claim a sweep on next
-    // launch collected them, and there has never been one.
+    // The copy stays. Deleting the bytes here would make the Undo below restore
+    // a record pointing at nothing, which is the worse of the two outcomes — so
+    // removing ONE document still leaks its copy for the life of the install.
     //
-    // Two things any sweep has to handle, both already true: a record restored
-    // by Undo must still find its bytes, and `onDuplicate` below copies `uri`
-    // verbatim, so two records can point at one file and deleting either would
-    // take the other's.
+    // What changed is the other end: `forgetDocument` in `lib/documents.ts` is
+    // no longer callerless. Settings' three wipes call `forgetDocuments`, which
+    // is the case with no Undo on it and therefore the case where deleting the
+    // bytes is unambiguous. This comment used to claim a sweep on next launch
+    // collected them and there has never been one; a wipe is not that sweep and
+    // does not make this row's leak smaller.
+    //
+    // Two things any sweep still has to handle, both already true: a record
+    // restored by Undo must still find its bytes, and `onDuplicate` below
+    // copies `uri` verbatim, so two records can point at one file and deleting
+    // either would take the other's.
     toast({
       title: 'Document removed',
       description: f.name,

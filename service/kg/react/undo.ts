@@ -241,29 +241,41 @@ export function supersededToast(outcome: RestoreOutcome): ToastOptions {
 }
 
 /**
- * `undoableWith`, bound to the repository this tree is mounted against.
+ * `undoableWith`, plus the sentence that makes a declined Undo honest.
  *
  * The toast is fired here rather than by the four cards, so that a card cannot
- * adopt the guard and forget the sentence that makes it honest.
+ * adopt the guard and forget to say anything. Written as a function over its two
+ * collaborators rather than inside the hook below for the reason `UndoJournal`
+ * gives: the rule is then assertable against a repo built from the memory driver
+ * without a React tree, and "the Undo declined and told the user" is the half
+ * most likely to be dropped by a refactor, because every test of the guard
+ * itself still passes without it.
  */
+export function undoableSaying<T>(
+  journal: UndoJournal,
+  toast: (options: ToastOptions) => void,
+  write: () => T,
+): Undoable<T> {
+  const { value, restore } = undoableWith(journal, write)
+  if (!restore) return { value, restore: null }
+
+  return {
+    value,
+    restore: () => {
+      const outcome = restore()
+      if (outcome.superseded.length > 0) toast(supersededToast(outcome))
+      return outcome
+    },
+  }
+}
+
+/** `undoableSaying`, bound to the repository this tree is mounted against. */
 export function useUndoable(): <T>(write: () => T) => Undoable<T> {
   const { repo } = useKg()
   const { toast } = useToast()
 
   return useCallback(
-    <T>(write: () => T): Undoable<T> => {
-      const { value, restore } = undoableWith(repo, write)
-      if (!restore) return { value, restore: null }
-
-      return {
-        value,
-        restore: () => {
-          const outcome = restore()
-          if (outcome.superseded.length > 0) toast(supersededToast(outcome))
-          return outcome
-        },
-      }
-    },
+    <T>(write: () => T): Undoable<T> => undoableSaying(repo, toast, write),
     [repo, toast],
   )
 }

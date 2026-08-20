@@ -398,6 +398,80 @@ describe('the clock', () => {
     expect(moved > today).toBe(true)
   })
 
+  /**
+   * `touch` stamps `lastActionAt`, and nothing asserted that it moves.
+   *
+   * Deleting `lastActionAt` from the patch in `touch` — leaving `lastAction`,
+   * so the sentence still changes and every existing assertion still passes —
+   * was green on all 474 tests. The field is not cosmetic: `daysAgo` is
+   * projected from it and from nothing else (`react/projections.ts`), and that
+   * is the "3 days ago" on the phone's Today screen, the "Last activity"
+   * column, and the DEFAULT SORT of the applications list on both platforms.
+   * D25 moved the field into storage precisely so it would stop lying after a
+   * reload; a silent stop here sinks the row the user just touched to the
+   * bottom of two screens, which is the exact bug `touch`'s own header says it
+   * was written to fix.
+   *
+   * Every tool that calls `touch` is exercised, not one of them, because the
+   * mutation is in the shared helper and a single call site would leave the
+   * other four unpinned.
+   */
+  it('moves lastActionAt on every tool that touches an application', () => {
+    const h = harness()
+    const app = okOr(
+      h.runtime.run('application.create', {
+        org: 'Baylor',
+        role: 'CS',
+        roleTag: 'Assistant Professor',
+        stage: 'submitted',
+      }),
+    )
+
+    const stampOf = () => {
+      const props = h.repo.getSnapshot().node(app, 'application')?.props
+      if (!props) throw new Error('the application went missing')
+      return { at: props.lastActionAt, action: props.lastAction }
+    }
+
+    // `application.create` stamps the field directly rather than through
+    // `touch`, so this is the baseline the five below have to beat.
+    let previous = stampOf()
+    expect(previous.at).toBe(new Date(START).toISOString())
+
+    const run = (name: keyof typeof TOOLS, input: Record<string, unknown>) => {
+      const result = h.runtime.run(name, input as never)
+      if (!result.ok) throw new Error(`${name}: ${result.errors.map((e) => e.message).join('; ')}`)
+    }
+
+    /** Runs a tool that calls `touch` and asserts both halves of the stamp. */
+    const touches = (name: keyof typeof TOOLS, input: Record<string, unknown>, action: string) => {
+      run(name, input)
+      const now = stampOf()
+      expect(now.action, `${name} did not record what it did`).toBe(action)
+      // Strictly later, not merely present: the harness clock advances a second
+      // per read, so a patch that dropped the field would leave the ORIGINAL
+      // stamp in place and still satisfy a truthiness check.
+      expect(now.at > previous.at, `${name} left lastActionAt at ${previous.at}`).toBe(true)
+      previous = now
+    }
+
+    touches('application.stage.advance', { id: app, stage: 'screen' }, 'Moved to Screening call')
+    touches('application.stage.set', { id: app, stage: 'offer' }, 'Moved to Offer')
+    touches('application.note.set', { id: app, note: 'Negotiating' }, 'Note edited')
+
+    // `application.offer.decide` refuses when there is nothing to decide on,
+    // and `application.update` stamps the field itself, so the baseline is
+    // re-read rather than assumed across the setup write.
+    run('application.update', {
+      id: app,
+      offer: { respondBy: '2026-11-15', comp: '$112k', note: 'Negotiating.' },
+    })
+    previous = stampOf()
+
+    touches('application.offer.decide', { id: app, outcome: 'accepted' }, 'Offer accepted')
+    touches('application.offer.clear', { id: app }, 'Offer details cleared')
+  })
+
   it('deletes completedOn on reopen rather than storing a null', () => {
     const h = harness()
     const item = okOr(

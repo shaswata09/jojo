@@ -249,6 +249,39 @@ describe('epochs and version', () => {
     expect(g.epoch(org.id)).toBeGreaterThan(before.org)
   })
 
+  /**
+   * The other half of the same rule, which was not asserted.
+   *
+   * `putEdge` bumps both ends and the case above pins it. `removeEdge` also
+   * bumps both ends, and deleting `this.#bump(edge.to)` from it — leaving the
+   * `from` bump, so the case above still passes — was green on all 474 tests.
+   *
+   * The asymmetry is what makes it worth a case of its own rather than a line
+   * added to the one above: an edge is written by one code path and dropped by
+   * another, and the epoch contract in this file's header ("bumps when the node
+   * changes, when any incident edge changes, or when a NEIGHBOUR one hop out
+   * changes") is a claim about both. `createOneProjection` keys on the epoch and
+   * on nothing else, so an end that does not bump on removal is a cache that
+   * keeps serving a relationship the graph no longer has.
+   *
+   * A TAGS edge, because it is the one whose `to` end is the record rather than
+   * the attribute: `use-keywords.ts` reads a record's keywords as
+   * `graph.in(record, 'TAGS')`, so the record is the end that has to notice.
+   */
+  it('bumps both ends when an edge is removed, not just the from end', () => {
+    const tag = keyword('remote')
+    const app = application('rice')
+    const g = MutableSnapshot.from([tag, app])
+    const edge = link(tag, 'TAGS', app)
+    g.putEdge(edge)
+
+    const before = { tag: g.epoch(tag.id), app: g.epoch(app.id) }
+    g.removeEdge(edge.id)
+
+    expect(g.epoch(tag.id)).toBeGreaterThan(before.tag)
+    expect(g.epoch(app.id)).toBeGreaterThan(before.app)
+  })
+
   it('leaves an untouched node at the epoch it had', () => {
     const app = application('rice')
     const other = application('baylor')

@@ -25,9 +25,14 @@ export type LabelsContextValue = {
    */
   renameLabel: (id: string, name: string) => boolean
   /**
-   * Deletes a keyword everywhere: off every record, and out of the filter
-   * selection. `restore` puts all three back — the chip in its old slot, the
-   * records it tagged, and the filter if it was on.
+   * Deletes a keyword everywhere: the chip, and the tagging on every record.
+   * `restore` puts both back.
+   *
+   * It says nothing about the filter, and used to. The lit set is derived from
+   * the keywords that exist (`litSelection` in `lib/label-selection.ts`), so a
+   * delete un-lights the chip and an undo re-lights it whether it happened
+   * here, on ⌘Z, on ⇧⌘Z or in another tab — which is three more paths than a
+   * `restore` callback could reach.
    */
   removeLabel: (id: string) => { restore: () => void }
   /** Recolours a keyword. Purely cosmetic, and instant — no confirmation. */
@@ -58,7 +63,14 @@ export type LabelsContextValue = {
    * synchronise.
    */
 
-  /** The current filter selection. Empty means "everything", never "nothing". */
+  /**
+   * The lit chips. Empty means "everything", never "nothing".
+   *
+   * Derived rather than stored: it is what the user pressed intersected with the
+   * keywords that still exist. A caller can treat it as the truth about what the
+   * filter is doing; it is not the truth about what has ever been pressed, and
+   * nothing needs the second.
+   */
   selected: ReadonlySet<string>
   toggleSelected: (labelId: string) => void
   clearSelected: () => void

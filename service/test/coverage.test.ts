@@ -339,6 +339,55 @@ describe('scout matches and postings', () => {
 /* ------------------------ profile, offers, the rest ----------------------- */
 
 describe('the profile', () => {
+  /**
+   * `profile.set` is the tool the Save bar on the profile page runs, and until
+   * this test it was the one tool in the registry that nothing anywhere ran.
+   *
+   * It passed the guard at the bottom of this file because the literal
+   * `tool: 'profile.set'` appears in a hand-built journal entry in
+   * `kg/react/undo.test.ts` — a LABEL on a fixture, not a call. Both halves of
+   * the tool could be deleted and all 474 tests stayed green: dropping the
+   * `text` spread makes the page save and silently discard everything typed,
+   * and dropping `matchTerms` makes the scout never store what it matches on.
+   *
+   * So every field it writes is asserted here by name. Asserting the node
+   * merely EXISTS would not have caught either mutation — `profileNode` mints
+   * the record before the patch runs, so the graph changes either way.
+   */
+  it('saves the whole page in one write, undoably', () => {
+    const h = harness()
+
+    roundTrip(
+      h,
+      'profile.set',
+      {
+        text: {
+          fullName: 'A. Mitra',
+          position: 'PhD candidate',
+          location: 'Houston, TX',
+          email: 'a@example.edu',
+          website: 'https://example.edu/~a',
+          scholar: 'https://scholar.example/a',
+          github: 'https://github.com/a',
+          linkedin: 'https://linkedin.com/in/a',
+          targetRoles: 'Assistant professor',
+          regions: 'US, EU',
+        },
+        matchTerms: ['distributed training', 'graph inference'],
+        includeAcademia: false,
+        includeIndustry: true,
+      },
+      () => {
+        const profile = h.repo.getSnapshot().ofType('profile')[0]
+        expect(profile?.props.text.fullName).toBe('A. Mitra')
+        expect(profile?.props.text.regions).toBe('US, EU')
+        expect(profile?.props.matchTerms).toEqual(['distributed training', 'graph inference'])
+        expect(profile?.props.includeAcademia).toBe(false)
+        expect(profile?.props.includeIndustry).toBe(true)
+      },
+    )
+  })
+
   it('adds and removes a match term, each undoably', () => {
     const h = harness()
 
@@ -465,9 +514,45 @@ describe('the registry', () => {
     }
     walk(ROOT)
 
-    const missing = Object.keys(TOOLS).filter(
-      (name) => !exercised.has(name) && !suite.includes(`'${name}'`),
-    )
+    /*
+     * The name has to appear where something RUNS it, not merely where it is
+     * spelled.
+     *
+     * This used to be `suite.includes(`'${name}'`)` — the name in quotes,
+     * anywhere in any test file. That is the accuracy guarantee this whole file
+     * exists to provide, and it had exactly one false positive, which is one
+     * more than it is allowed: `profile.set` satisfied it for the entire life of
+     * the fork because `kg/react/undo.test.ts` builds a journal entry by hand
+     * and a journal entry carries `tool: 'profile.set'` as a LABEL. The tool
+     * that saves the whole profile page on both platforms was never called by
+     * anything, and both halves of its `run` could be deleted with all 474 tests
+     * green.
+     *
+     * A bare-quotes match cannot tell a call from a label, and labels are not
+     * rare here: every hand-built `JournalEntry` fixture in the suite names the
+     * tool that would have produced it. So the shapes that count are enumerated
+     * instead, and they are the four this suite actually uses to run a tool:
+     *
+     *   `.run('name'`         the runtime, directly
+     *   `roundTrip(h, 'name'` this file's helper
+     *   `ctx.call('name'`     a tool calling a tool (`org.ensure`)
+     *   `['name',`            a `[name, input]` case tuple, driven by a loop —
+     *                         `tools.test.ts` runs fifteen tools this way
+     *
+     * `tool: 'name'` and `toContain('name')` are deliberately not among them.
+     * The failure direction is safe: a tool exercised through a fifth shape
+     * reports as missing, which is a visible failure and a one-line fix here,
+     * whereas the shape this replaces failed silently and in the direction of
+     * claiming coverage that did not exist.
+     */
+    const runs = (name: string) => {
+      const n = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      return new RegExp(
+        String.raw`(?:\.run|roundTrip|\.call)\(\s*(?:h\s*,\s*)?'${n}'|\[\s*'${n}'\s*,`,
+      ).test(suite)
+    }
+
+    const missing = Object.keys(TOOLS).filter((name) => !exercised.has(name) && !runs(name))
     expect(missing).toEqual([])
   })
 })

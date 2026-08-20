@@ -58,19 +58,27 @@ const LAYER_FACTS: LayerFact[] = [
  * Counts include each directory's own tests, because they are files someone
  * changing that directory will open. `src/components` moves whenever anything
  * ships, which is exactly why the command is printed underneath.
+ *
+ * The five `web/` rows are also re-measured by `code-structure.test.ts`, so a
+ * directory that grows and a table that does not is now a failing build rather
+ * than a page quietly telling a reader something that was true in August. That
+ * test cannot reach the `service/` rows: `import.meta.glob` is rooted at this
+ * app, and `tsconfig.app.json` grants `vite/client` and not `node:fs`, so those
+ * six stay hand-maintained and stay the ones to distrust. Exported for the test
+ * — the page is the only other reader.
  */
 type DirRow = { dir: string; files: number; tests: number; lines: number; what: string }
 
-const SHAPE: DirRow[] = [
+export const SHAPE: DirRow[] = [
   {
     dir: 'service/kg/core',
-    files: 31,
-    tests: 13,
-    lines: 7093,
+    files: 33,
+    tests: 15,
+    lines: 7700,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 15, tests: 7, lines: 5931, what: 'transactions, journal, boot' },
-  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5143, what: '62 named operations' },
+  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5217, what: '62 named operations' },
   {
     dir: 'service/kg/storage',
     files: 12,
@@ -78,29 +86,29 @@ const SHAPE: DirRow[] = [
     lines: 2496,
     what: 'the port, and no platform',
   },
-  { dir: 'service/kg/react', files: 22, tests: 3, lines: 3330, what: 'providers and hooks' },
+  { dir: 'service/kg/react', files: 23, tests: 4, lines: 3630, what: 'providers and hooks' },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 47, what: 'the console is the telemetry' },
   { dir: 'web/src/kg/storage', files: 9, tests: 2, lines: 2050, what: 'the IndexedDB adapter' },
   {
     dir: 'web/src/components',
-    files: 218,
-    tests: 10,
-    lines: 32586,
+    files: 224,
+    tests: 14,
+    lines: 33419,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 14, tests: 0, lines: 3255, what: 'thirteen pages' },
   {
     dir: 'web/src/lib',
-    files: 52,
-    tests: 10,
-    lines: 6077,
+    files: 56,
+    tests: 13,
+    lines: 6941,
     what: 'web-only adapters and URL state',
   },
   {
     dir: 'service/data',
     files: 7,
     tests: 1,
-    lines: 1361,
+    lines: 1369,
     what: 'demo fixtures, below the model',
   },
   {
@@ -111,6 +119,15 @@ const SHAPE: DirRow[] = [
     what: 'façades over the row above, marked for deletion',
   },
 ]
+
+/**
+ * How many test files this app holds.
+ *
+ * Named and exported for the same reason as `SHAPE`: the sentence under the
+ * heading below splits the suite across three workspaces, and exactly one of
+ * the three can be counted from inside it.
+ */
+export const WEB_TEST_FILES = 29
 
 type TestGroup = { title: string; files: string; body: string }
 
@@ -464,27 +481,30 @@ export function CodeStructure() {
         <h2 className="mb-3 text-base font-medium">
           What the tests actually pin
           <small className="ml-2 font-sans text-xs font-normal text-text-3">
-            57 files, 697 tests, about three seconds
+            73 files, 915 tests, about five seconds
           </small>
         </h2>
 
         <p className="text-sm text-text-2">
           Vitest in a node environment, with{' '}
           <span className="font-mono text-xs">fake-indexeddb</span> standing in for the
-          browser&rsquo;s database. 31 of those files sit in{' '}
+          browser&rsquo;s database. 34 of those files sit in{' '}
           <span className="font-mono text-xs">service/</span>, the package both apps import, and
-          hold 466 of the tests; 22 are this app and 4 are the phone. That ratio is the one the
+          hold 517 of the tests; 29 are this app and 10 are the phone. That ratio is the one the
           project intends: the package is the code whose failure is silent and permanent, and
           local-first means there is nothing to restore from.
         </p>
 
         {/* Same reasoning as the table above, and the same remedy: three
             workspaces now write into this number and a reader has no way to
-            tell how old it is. */}
+            tell how old it is. One of the three is checked — the count of this
+            app's own test files is pinned by `code-structure.test.ts`, which
+            can glob `src` and cannot reach the other two workspaces. */}
         <p className="mt-2.5 text-xs text-text-3">
           Counted with <Kbd>npm test</Kbd> in each of <span className="font-mono">service</span>,{' '}
-          <span className="font-mono">web</span> and <span className="font-mono">mobile</span>.
-          Re-run it rather than trusting it.
+          <span className="font-mono">web</span> and <span className="font-mono">mobile</span>. The
+          29 in this app are re-counted by the suite itself; the other two move under a workspace
+          this app cannot see, so re-run it rather than trusting it.
         </p>
 
         <Panel className="mt-3.5 sm:mt-4">

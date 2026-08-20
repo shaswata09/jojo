@@ -30,7 +30,7 @@ export type Transit = {
 /**
  * Where a snooze counts from, over a whole item.
  *
- * The rule itself is `snoozeAnchor` in `components/common/snooze.tsx` — this
+ * The rule itself is `snoozeAnchor` in `components/common/snooze.ts` — this
  * file, `OwedThisWeek` and `PriorityActions` each used to carry their own copy,
  * and the note that said "change one and change the other" had three targets
  * and named two. `SNOOZE_STEPS` moved there with it.

@@ -4,10 +4,31 @@
  * Three forces, integrated with velocity Verlet: every pair of nodes pushes
  * apart, every edge pulls its two ends together, and a weak pull toward the
  * middle stops disconnected components drifting off the canvas. No library —
- * a local-first app should not take a dependency to draw ninety circles, and at
- * this size the O(n²) repulsion is a few thousand multiplications a frame.
+ * a local-first app should not take a dependency to draw ninety circles.
  *
- * Two things here are load-bearing and easy to get wrong:
+ * WHAT THIS COSTS, MEASURED — the header used to end "and at this size the
+ * O(n²) repulsion is a few thousand multiplications a frame", which was true of
+ * the ninety-node demo store it was written against and stops being true a long
+ * way before the store gets large. On an Apple Silicon laptop, node, warmed:
+ *
+ *     nodes       91      500     1,000     2,000     4,000
+ *     pairs    4,095  124,750   499,500  2.0M      8.0M
+ *     settle    15ms     92ms     377ms  1,562ms   6,017ms
+ *     a tick  0.08ms   0.48ms    1.96ms    8.1ms      31ms
+ *
+ * `settle` is always 192 ticks — `alpha` reaching `ALPHA_MIN` is what ends it,
+ * never the layout going still — so the per-tick row is the row above it
+ * divided by 192 rather than a separate measurement. Timing one tick directly
+ * is not reliable at the small end: at 91 nodes it is under a tenth of a
+ * millisecond and the first call reads twelve times the warmed one.
+ *
+ * Both rows are quadratic, cleanly: each doubling of the node count is a little
+ * under four times the work. So the canvas animates comfortably to about 2,000
+ * nodes (8ms a frame, with the paint still to come) and not at 4,000 (31ms a
+ * frame, before anything is drawn). A quadtree approximation is the answer if it
+ * ever has to be, and nothing here has needed one yet.
+ *
+ * Three things here are load-bearing and easy to get wrong:
  *
  * 1. `alpha` decays every tick and the simulation is declared settled when it
  *    falls below `ALPHA_MIN`. The caller must stop its rAF loop when `step`
@@ -17,6 +38,9 @@
  *    the node's index, never `Math.random`. The same records therefore lay out
  *    the same way twice, which is the difference between a graph you can learn
  *    the shape of and one that rearranges itself every time you visit.
+ * 3. `settle` runs the whole table above on the calling thread. Anything asking
+ *    it to solve a layout it has not budgeted for is asking for the numbers in
+ *    that table as a frozen page — see `budgetMs`.
  */
 
 export type SimNode = {
@@ -186,11 +210,34 @@ export function step(sim: Sim): boolean {
   return moving && sim.alpha > ALPHA_MIN
 }
 
-/** Runs the layout to completion with nothing painted — the reduced-motion path. */
-export function settle(sim: Sim, iterations = 420) {
+/**
+ * Runs the layout with nothing painted — the reduced-motion path.
+ *
+ * Returns true when the layout is finished, false when it ran out of budget and
+ * has more to do. There was no budget and no return value: the one caller ran
+ * all 192 ticks inside a `useLayoutEffect`, which is 15ms at the demo store and
+ * 1.56 SECONDS at two thousand records — a whole-page freeze, on every rebuild,
+ * for the users who asked for less motion rather than more. It is measured on
+ * an Apple Silicon laptop; a phone-class machine is worse.
+ *
+ * The budget is a wall-clock deadline rather than a tick count because the cost
+ * of a tick is quadratic in the node count, so a count that is one frame here is
+ * forty there. The caller resumes what is left; the layout it converges on is
+ * the same one either way, because the steps are the same steps.
+ */
+export function settle(sim: Sim, iterations = 420, budgetMs = Infinity): boolean {
+  const deadline = budgetMs === Infinity ? Infinity : performance.now() + budgetMs
   for (let i = 0; i < iterations; i += 1) {
-    if (!step(sim)) break
+    if (!step(sim)) return true
+    // Checked after the step, not before: a budget of zero still has to make
+    // progress, or a caller that hands one over gets an infinite resumption.
+    if (performance.now() >= deadline) return false
   }
+  // The iteration cap was reached and the layout is still moving. Reported as
+  // unfinished rather than as done, which is the same distinction the budget
+  // makes: this used to `break` and return nothing, so a caller could not tell
+  // "solved" from "gave up" and the only caller assumed the first.
+  return false
 }
 
 /** Puts energy back in after a drag or a filter change. */

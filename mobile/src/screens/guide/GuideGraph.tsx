@@ -34,7 +34,7 @@ const REL_SHAPE: Record<(typeof GRAPH_RELS)[number], string> = {
   ABOUT: 'Date or reminder → Application',
   FILED_UNDER: 'File, link or snippet → Application',
   TAGS: 'Keyword → any record',
-  FROM: 'Application → Saved posting or match',
+  BECAME: 'Saved posting or match → Application',
 }
 
 export function GuideGraph() {

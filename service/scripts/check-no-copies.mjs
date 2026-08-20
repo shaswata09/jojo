@@ -47,7 +47,34 @@ import { fileURLToPath } from 'node:url'
 
 const SERVICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const ROOT = path.resolve(SERVICE, '..')
-const APPS = [path.join(ROOT, 'web', 'src'), path.join(ROOT, 'mobile', 'src')]
+
+/**
+ * Every app in the workspace, read from `package.json` rather than named here.
+ *
+ * This used to be the literal `[web/src, mobile/src]`, and so did the adapter
+ * lists in `check-layers.mjs` and `check-platform.mjs`. That is the one shape
+ * this guard cannot afford: a third app added to the workspace would have been
+ * governed by NOTHING — not this file, not the layer rule, not the platform rule
+ * — while all three still printed a reassuring green line. The fork this script
+ * exists to prevent grew for four months under exactly that condition, and a
+ * third platform is the point of `@jojo/service` existing at all, so the
+ * condition was scheduled to recur on the day the reason for it arrived.
+ *
+ * Discovery rather than a third literal, because a literal has to be remembered
+ * at precisely the moment nobody is thinking about lint. `service` is excluded —
+ * it is what the apps are compared AGAINST — and a workspace with no `src/` is
+ * skipped, so a future tooling or docs package is not a failure.
+ */
+function appRoots() {
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  const names = Array.isArray(manifest.workspaces) ? manifest.workspaces : []
+  return names
+    .filter((name) => name !== 'service')
+    .map((name) => path.join(ROOT, ...name.split('/'), 'src'))
+    .filter((dir) => existsSync(dir))
+}
+
+const APPS = appRoots()
 
 /**
  * What each app's `src/kg` is allowed to contain, exhaustively.
@@ -90,7 +117,7 @@ const FORBIDDEN_DIRS = [
     why:
       'The demo fixtures are `service/data`, read through `@jojo/service/data/…`. Mobile shipped a ' +
       'second copy of them with six names web did not have, and one of those — a `buildMonth` that ' +
-      'closed over its own `TODAY` — differed from web\'s by an ARITY, so every call site compiled ' +
+      "closed over its own `TODAY` — differed from web's by an ARITY, so every call site compiled " +
       'clean while silently losing the today marker.',
   },
 ]
@@ -320,8 +347,20 @@ for (const app of APPS) {
 
 /* --- (c) shape ------------------------------------------------------------ */
 
-for (const [appKg, allowed] of Object.entries(APP_KG_ALLOWED)) {
-  const root = path.join(ROOT, ...appKg.split('/'))
+/*
+ * Driven by the discovered apps, not by the keys of APP_KG_ALLOWED.
+ *
+ * Keying the loop on the allowlist meant an app with no entry was not checked at
+ * all — the absence of a rule read as permission, which is backwards. An
+ * unlisted app now gets an EMPTY allowlist, so the first file under its `src/kg`
+ * fails and says what to do about it. That is the safe direction: a genuinely
+ * new adapter is a deliberate act and a one-line edit here, whereas a silent
+ * second copy of the layer is the failure this whole file is about.
+ */
+for (const appSrc of APPS) {
+  const appKg = `${rel(appSrc)}/kg`
+  const allowed = APP_KG_ALLOWED[appKg] ?? new Set()
+  const root = path.join(appSrc, 'kg')
   if (!existsSync(root)) continue
   for (const file of walk(root)) {
     const inside = path.relative(root, file).split(path.sep).join('/')
@@ -345,23 +384,49 @@ for (const { dir, why } of FORBIDDEN_DIRS) {
 /* --- (d) twins ------------------------------------------------------------ */
 
 const known = new Set(KNOWN_TWINS.map((t) => t.file))
-const webSrc = path.join(ROOT, 'web', 'src')
-const mobileSrc = path.join(ROOT, 'mobile', 'src')
-const web = new Map()
-for (const file of walk(webSrc)) web.set(fingerprint(file), file)
 
-for (const file of walk(mobileSrc)) {
-  const twin = web.get(fingerprint(file))
-  if (twin === undefined) continue
-  const inside = path.relative(mobileSrc, file).split(path.sep).join('/')
-  if (known.has(inside) && rel(twin) === `web/src/${inside}`) continue
-  fail(
-    `${rel(file)} and ${rel(twin)} are the same file.\n` +
-      `      Two apps holding one file is how the last fork started. Either it belongs in ` +
-      `@jojo/service —\n      the test is whether a platform event has to act on it — or the ` +
-      `duplication is deliberate, in which\n      case add it to KNOWN_TWINS in this script with ` +
-      `the reason, so the next one is a decision too.`,
-  )
+/*
+ * Every pair of apps, not web against mobile.
+ *
+ * The comparison was `web/src` on one side and `mobile/src` on the other, which
+ * is exhaustive for two apps and silently partial for three: a file shared by
+ * mobile and a desktop app, or by web and a desktop app, would never have been
+ * looked at. Fingerprints are collected per app and compared across every pair,
+ * so a third app costs a third column rather than leaving two thirds of the
+ * surface unchecked.
+ *
+ * A KNOWN_TWINS entry names a path INSIDE an app, so it exempts that path in
+ * whichever pair it turns up in — the honest reading of the list, whose four
+ * entries say "this file is deliberately duplicated" and not "deliberately
+ * duplicated between these two apps specifically".
+ */
+const printed = new Set()
+const byApp = APPS.map((src) => {
+  const seen = new Map()
+  for (const file of walk(src)) seen.set(fingerprint(file), file)
+  return { src, seen }
+})
+
+for (let i = 0; i < byApp.length; i += 1) {
+  for (let j = i + 1; j < byApp.length; j += 1) {
+    for (const [print, file] of byApp[j].seen) {
+      const twin = byApp[i].seen.get(print)
+      if (twin === undefined) continue
+      const inside = path.relative(byApp[j].src, file).split(path.sep).join('/')
+      const twinInside = path.relative(byApp[i].src, twin).split(path.sep).join('/')
+      if (known.has(inside) && twinInside === inside) continue
+      const key = `${rel(twin)}|${rel(file)}`
+      if (printed.has(key)) continue
+      printed.add(key)
+      fail(
+        `${rel(file)} and ${rel(twin)} are the same file.\n` +
+          `      Two apps holding one file is how the last fork started. Either it belongs in ` +
+          `@jojo/service —\n      the test is whether a platform event has to act on it — or the ` +
+          `duplication is deliberate, in which\n      case add it to KNOWN_TWINS in this script with ` +
+          `the reason, so the next one is a decision too.`,
+      )
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */

@@ -20,6 +20,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   documentExists,
   forgetDocument,
+  forgetDocuments,
   openDocument,
   pickDocuments,
   type PickOutcome,
@@ -171,6 +172,60 @@ describe('the URI a record holds, and the path the filesystem wants', () => {
   it('does not unlink when there is no uri to unlink', async () => {
     await forgetDocument(undefined)
     expect(fsCalls).toEqual([])
+  })
+})
+
+/* ------------------------- clearing every record -------------------------- */
+
+/**
+ * The set form, and the bug it closes.
+ *
+ * Settings' "Clear every record" told the user the vault was going and took
+ * only the rows: every document ever attached stayed in the app's sandbox,
+ * reclaimable by uninstalling and by nothing else. `forgetDocument` had existed
+ * the whole time with no caller.
+ */
+describe('forgetting every copy at once', () => {
+  it('unlinks each one, through the same decode', async () => {
+    onDisk.set('/files/a/CV 2026.pdf', 1)
+    onDisk.set('/files/b/Offer.pdf', 2)
+
+    await forgetDocuments(['file:///files/a/CV%202026.pdf', 'file:///files/b/Offer.pdf'])
+
+    expect(fsCalls.map((c) => c.path).sort()).toEqual([
+      '/files/a/CV 2026.pdf',
+      '/files/b/Offer.pdf',
+    ])
+    expect(onDisk.size).toBe(0)
+  })
+
+  /**
+   * `onDuplicate` in `FilesTool` copies `uri` verbatim, so two rows can name
+   * one file. The dedupe changes no outcome — the second unlink would reject
+   * with ENOENT and be swallowed — but it states the sharing, so a later caller
+   * that reports failures does not report a phantom one.
+   */
+  it('unlinks a file two records share exactly once', async () => {
+    onDisk.set('/files/a/CV.pdf', 1)
+
+    await forgetDocuments(['file:///files/a/CV.pdf', 'file:///files/a/CV.pdf'])
+
+    expect(fsCalls).toHaveLength(1)
+  })
+
+  it('touches nothing for a vault of hand-typed rows', async () => {
+    // The common shape: most file rows describe a document on a laptop or on
+    // paper and have no copy behind them. Measured rather than assumed — the
+    // early return that makes this true is `forgetDocument`'s, not the filter's
+    // here, which exists so the deduped set is a set of strings.
+    await forgetDocuments([undefined, undefined])
+    expect(fsCalls).toEqual([])
+  })
+
+  it('does not reject when a copy has already gone', async () => {
+    // The caller is a press handler that has already emptied the store. There
+    // is nothing left for a rejection here to mean.
+    await expect(forgetDocuments(['file:///gone/CV.pdf'])).resolves.toBeUndefined()
   })
 })
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
 import { ping } from '@/lib/llm'
+import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
 import { Pressable, StyleSheet, View } from 'react-native'
@@ -19,7 +20,7 @@ import { Txt } from '@/components/ui/Text'
 import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
 import type { LabelTone } from '@jojo/service/data/labels'
 import { useLabels } from '@/lib/labels-context'
-import { useStoreAdmin } from '@/lib/store-context'
+import { useStoreAdmin, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { useTheme } from '@/theme/theme-context'
@@ -68,6 +69,9 @@ export function SettingsScreen() {
     save(next)
   }
   const { exportJSON, reset, clearAll, isEmpty } = useStoreAdmin()
+  // Only for the paths below: the copies behind the file rows have to be named
+  // before the rows go, and the rows are the only record of where they are.
+  const { files } = useVault()
   const { toast } = useToast()
 
   // All three start off. They were on by default in a panel whose own copy says
@@ -96,18 +100,43 @@ export function SettingsScreen() {
     })
   }
 
+  /**
+   * Wiping the store, and the bytes the store was pointing at.
+   *
+   * THE DOCUMENTS ARE THE PART THAT WAS MISSING. A file row can hold a real
+   * document copied into this app's sandbox, and the graph only ever holds its
+   * path (D27). Emptying the graph therefore took the rows and left every copy
+   * on the device — reclaimable by uninstalling the app and by nothing else —
+   * while the confirmation the user had just read said the vault was going.
+   * That is the shape of defect this codebase treats as worst: not a crash, a
+   * sentence on screen that is not true.
+   *
+   * All three actions below take every record with them and none of them has an
+   * Undo, which is the condition that makes deleting bytes safe here and unsafe
+   * on a single row — see `onDelete` in `screens/vault/FilesTool.tsx`.
+   *
+   * Read BEFORE the store call, because `files` is the projection this render
+   * closed over: after `clearAll()` it is still the old array, but relying on
+   * that would be relying on a render boundary rather than on a local. Not
+   * awaited, because the unlinks are best-effort and the store is already
+   * empty on screen — see `forgetDocuments`, which never rejects.
+   */
   const applyPending = () => {
+    const attached = files.map((f) => f.uri)
+
     if (pending === 'empty') {
       clearAll()
+      void forgetDocuments(attached)
       toast({
         title: 'Everything cleared',
         description:
-          'Every record is gone, your profile included. Load the demo data again from here.',
+          'Every record is gone, your profile included, and any documents you attached have been deleted from this device. Load the demo data again from here.',
         tone: 'danger',
       })
       return
     }
     reset()
+    void forgetDocuments(attached)
     toast({
       title: pending === 'reset' ? 'Demo data reset' : 'Demo data loaded',
       description:
@@ -120,19 +149,19 @@ export function SettingsScreen() {
       empty: {
         title: 'Clear every record?',
         description:
-          'Applications, the timeline, the vault, saved postings and your profile all go, including anything you added this session. There is no undo — export first if you want them back. Your keywords are kept, but nothing is left carrying them.',
+          'Applications, the timeline, the vault, saved postings and your profile all go, including anything you added this session, and any documents you attached are deleted from this device with them. There is no undo — export first if you want them back. Your keywords are kept, but nothing is left carrying them.',
         confirm: 'Clear everything',
       },
       demo: {
         title: 'Load the demo data?',
         description:
-          'The seeded records come back, tagged with the keywords they shipped with. Anything you have added this session is replaced, not merged, and there is no undo.',
+          'The seeded records come back, tagged with the keywords they shipped with. Anything you have added this session is replaced, not merged, and any documents you attached are deleted from this device. There is no undo.',
         confirm: 'Load demo data',
       },
       reset: {
         title: 'Reset to the demo data?',
         description:
-          'Every edit, addition and deletion from this session is discarded and the seeded records come back exactly as they shipped. Your keyword list itself is left alone. There is no undo.',
+          'Every edit, addition and deletion from this session is discarded and the seeded records come back exactly as they shipped, so any documents you attached are deleted from this device. Your keyword list itself is left alone. There is no undo.',
         confirm: 'Reset data',
       },
     }
@@ -287,17 +316,32 @@ export function SettingsScreen() {
           <PanelTitle>Your data</PanelTitle>
           <View style={styles.dataRow}>
             <Button label="Export as JSON" icon="upload" variant="outline" onPress={onExport} />
+            {/* The blocker sentence is the one `tools/memory.ts` states, not the
+                one that used to be here. "The store can be read but not yet
+                replaced" was false — `repo.replaceAll` exists and web's
+                `lib/data-set.ts` replaces the whole store through it on every
+                data-set switch. The real reason `memory.import` is absent is
+                that reading a backup needs a validator able to REFUSE a file it
+                does not understand, and an importer without one is a data-loss
+                bug with a confirmation dialog in front of it. */}
             <Button
               label="Import"
               icon="download"
               variant="outline"
-              blocker="The store can be read but not yet replaced, so an import would have nowhere to land"
+              blocker="Reading a backup needs a validator that can refuse a file it does not understand, and there is not one yet"
             />
           </View>
+          {/* This paragraph said keywords "live in their own store and are not in
+              it yet". They have not lived in their own store since D14 — a
+              keyword is a node and tagging is a TAGS edge — and `exportJSON` in
+              `@jojo/service/react/use-admin` has carried both `keywords` and
+              `keywordsByRecord` ever since. The sentence told people their
+              backup was lossier than it is, on the screen whose whole job is
+              saying what is in the file, and it is the same claim the service
+              layer's own comment records as having stopped being true. */}
           <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-            The export covers applications, the timeline, the vault, saved postings and your
-            profile. Keywords live in their own store and are not in it yet — the panel below
-            manages those.
+            The export covers applications, the timeline, the vault, saved postings, your keywords
+            and what they tag, and your profile. It is the whole store.
           </Txt>
 
           <View style={{ marginTop: space[3] }}>

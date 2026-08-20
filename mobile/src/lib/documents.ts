@@ -230,9 +230,15 @@ export async function documentExists(uri: string | undefined): Promise<boolean> 
  * deliberate: recognising our own directories would mean pattern-matching a
  * UUID and hoping, and an empty directory is an inode that leaves with the app.
  *
- * Nothing calls this today — it is the delete half of a feature whose delete
- * path was never wired up — which is exactly why it is ported rather than left
- * to rot against an API that has gone.
+ * Called from `forgetDocuments` below and from nowhere else. This comment used
+ * to say nothing called it at all, which was true and was the bug: Settings'
+ * "Clear every record" told the user their vault was going and left every
+ * attached document's bytes in the sandbox, reclaimable only by uninstalling.
+ *
+ * It is still NOT called when a single document row is deleted, and that is a
+ * different question with a different answer — see `onDelete` in
+ * `screens/vault/FilesTool.tsx`. That delete offers an Undo, and bytes deleted
+ * under a restorable record are a record restored to point at nothing.
  */
 export async function forgetDocument(uri: string | undefined): Promise<void> {
   if (!uri) return
@@ -243,6 +249,32 @@ export async function forgetDocument(uri: string | undefined): Promise<void> {
     // and it goes with the app. Not worth failing the delete the user asked
     // for — the record is what they were removing.
   }
+}
+
+/**
+ * Every copy behind a set of records, for the one action that takes them all.
+ *
+ * WHY THIS EXISTS AT ALL. Wiping the store is the only place in this app where
+ * deleting the bytes is unambiguously right: there is no Undo on it — Settings
+ * says so in the confirmation — so there is no restored record left to point at
+ * a file, which is the objection that keeps `forgetDocument` off the
+ * single-row delete path. Without it the store emptied, the confirmation said
+ * the vault was gone, and every document a user had ever attached stayed on the
+ * device until they uninstalled the app.
+ *
+ * DEDUPED, and that is load-bearing rather than tidy. `onDuplicate` in
+ * `FilesTool` copies `uri` verbatim, so two records can and do name one file.
+ * A second unlink of the same path rejects with ENOENT, which `forgetDocument`
+ * swallows — so the dedupe changes no outcome today and states the sharing, so
+ * that a future caller which reports failures does not report a phantom one.
+ *
+ * Never rejects, for the same reason `forgetDocument` never does: the caller is
+ * a press handler that has already emptied the store, and a leaked copy is a
+ * few kilobytes that leave with the app.
+ */
+export async function forgetDocuments(uris: readonly (string | undefined)[]): Promise<void> {
+  const paths = new Set(uris.filter((uri): uri is string => Boolean(uri)))
+  await Promise.all([...paths].map(forgetDocument))
 }
 
 /**

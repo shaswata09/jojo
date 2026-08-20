@@ -26,7 +26,7 @@
  * Both run in `npm run lint`.
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -47,6 +47,19 @@ const SERVICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
  * ADAPTERS at the foot of this file.
  */
 const ROOT = path.resolve(SERVICE, '..')
+
+/**
+ * Every app in the workspace. See `check-no-copies.mjs`, which carries the
+ * reason all three guards stopped naming their two apps by hand.
+ */
+function appRoots() {
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  const names = Array.isArray(manifest.workspaces) ? manifest.workspaces : []
+  return names
+    .filter((name) => name !== 'service')
+    .map((name) => path.join(ROOT, ...name.split('/'), 'src'))
+    .filter((dir) => existsSync(dir))
+}
 const KG = path.join(SERVICE, 'kg')
 /*
  * Declared up here with KG rather than beside the data walk further down,
@@ -300,7 +313,7 @@ for (const file of walk(KG)) {
         file,
         line,
         `imports this package by name ('${spec}'). Write it relative. A bare '@jojo/service/…' ` +
-          `specifier is invisible to every allowlist in this file, and it re-enters through the `+
+          `specifier is invisible to every allowlist in this file, and it re-enters through the ` +
           `workspace symlink as a second copy of a module the graph expects to be a singleton.`,
       )
       continue
@@ -483,7 +496,7 @@ for (const file of walk(DATA)) {
         file,
         line,
         `imports this package by name ('${spec}'). Write it relative. A bare '@jojo/service/…' ` +
-          `specifier is invisible to every allowlist in this file, and it re-enters through the `+
+          `specifier is invisible to every allowlist in this file, and it re-enters through the ` +
           `workspace symlink as a second copy of a module the graph expects to be a singleton.`,
       )
       continue
@@ -577,9 +590,8 @@ for (const file of walk(DATA)) {
  * would have fixed fires on exactly one prefix in exactly one target, so the
  * exemption is spelled here rather than the ban being weakened everywhere.
  */
-const ADAPTERS = [
-  {
-    root: path.join(ROOT, 'mobile', 'src', 'kg'),
+const ADAPTER_ALLOW = {
+  'mobile/src/kg': {
     label: 'the React Native adapter',
     /** Package prefixes that are the point of this adapter existing. */
     allow: [/^@react-native-async-storage\//],
@@ -602,8 +614,7 @@ const ADAPTERS = [
    * The import axis is the one that matters most here, because it is the axis
    * the 813-line fork actually drifted on.
    */
-  {
-    root: path.join(ROOT, 'web', 'src', 'kg'),
+  'web/src/kg': {
     label: 'the IndexedDB adapter',
     /*
      * `idb` is the wrapper this driver is written on, and it is not matched by
@@ -613,7 +624,33 @@ const ADAPTERS = [
      */
     allow: [/^idb$/],
   },
-]
+}
+
+/**
+ * The adapters to scan, discovered from the workspace rather than listed.
+ *
+ * `ADAPTERS` was a two-entry literal, and an app added to the workspace was
+ * therefore not scanned by this file at all — no relative-import rule, no
+ * subpath rule, no `.tsx` rule — while lint still printed green. The same shape
+ * was in all three guards; `check-no-copies.mjs` carries the full reason.
+ *
+ * An app with no entry in ADAPTER_ALLOW gets an EMPTY allow list rather than
+ * being skipped, which is the fail-safe direction: the first genuine adapter
+ * fails on the import of its own storage package, and the fix is one line here
+ * WITH the reason written beside it, which is how both existing entries came to
+ * be written down.
+ */
+const ADAPTERS = appRoots()
+  .map((src) => {
+    const key = `${path.relative(ROOT, src).split(path.sep).join('/')}/kg`
+    const known = ADAPTER_ALLOW[key]
+    return {
+      root: path.join(src, 'kg'),
+      label: known?.label ?? `the ${key.split('/')[0]} adapter`,
+      allow: known?.allow ?? [],
+    }
+  })
+  .filter((adapter) => existsSync(adapter.root))
 
 /** The service subpaths an adapter may reach: `storage/*` and `log`. */
 const ADAPTER_SUBPATH = /^@jojo\/service\/(storage\/[\w.-]+|log)$/
@@ -623,7 +660,11 @@ for (const adapter of ADAPTERS) {
     const source = readFileSync(file, 'utf8')
 
     if (file.endsWith('.tsx')) {
-      fail(file, 1, `is .tsx in ${adapter.label}. An adapter implements a port; it does not render.`)
+      fail(
+        file,
+        1,
+        `is .tsx in ${adapter.label}. An adapter implements a port; it does not render.`,
+      )
     }
 
     for (const [, spec] of source.matchAll(TODAY_IMPORT)) {

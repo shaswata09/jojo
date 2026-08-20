@@ -353,12 +353,30 @@ export class MutableSnapshot implements GraphSnapshot {
   }
 
   /**
-   * A copy the transaction buffer can be thrown away.
+   * A whole-snapshot copy. NO PRODUCTION CALL SITE — `snapshot.test.ts` is the
+   * only caller in the repo.
    *
    * Nodes and edges are treated as immutable, so only the index containers are
-   * copied. At the scale this app reaches — low thousands of nodes — that is
-   * well under a millisecond, and it buys a discard path that cannot half-apply
-   * a failed tool.
+   * copied. The cost claim below held up when it was checked: replicating the
+   * real seed's node mix and edge density, the median is 0.07 ms at the 87-node
+   * seed, 0.50 ms at ~950 nodes and 6.2 ms at ~9,500. "Well under a millisecond
+   * at the scale this app reaches" is therefore still true, and it is written
+   * down as a measurement so the next reader does not have to re-derive it — an
+   * audit reported 8.7 ms at ~950 nodes and that figure did not reproduce.
+   *
+   * What was wrong here was the first line, not the number. It said this buys
+   * "a discard path that cannot half-apply a failed tool", and the transaction
+   * does not work that way and did not when this was written: a tool call writes
+   * into a `Buffer` of before/after cells (`tools/runtime-buffer.ts`), the
+   * overlay reads that on top of the committed snapshot, and `runtime.ts`
+   * discards the BUFFER on failure. The committed snapshot is never cloned, so
+   * nothing half-applies whether this method exists or not.
+   *
+   * Kept rather than deleted, because it is the honest constructor for "a second
+   * reading somebody may mutate" and `MutableSnapshot` is public API — but kept
+   * with its status written down, so the next person to reach for it knows they
+   * are the first, and the next person to cite it as the transaction's safety
+   * net knows it is not.
    */
   clone(): MutableSnapshot {
     const copy = new MutableSnapshot()

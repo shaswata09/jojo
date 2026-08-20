@@ -4,6 +4,19 @@
  *
  * Topologies are built by hand rather than through `buildGraph`, so a failure
  * points at the traversal rather than at a change in the seed fixtures.
+ *
+ * THAT MIGRATION HAS HAPPENED, and it changes what this file is. `traversal.ts`
+ * re-exports all five names from `@jojo/service/core/algebra` now, so everything
+ * below pins the shared package rather than anything web owns — which made this
+ * file's NAME the most misleading thing about the /graph page's coverage. It
+ * reads as the graph's test and `buildGraph` and `runQuery`, the two halves that
+ * stayed here, had none at all. They are covered by `lib/graph/build.test.ts`
+ * and `lib/graph/query.test.ts`; the drawn-vocabulary check that would have
+ * caught the phone shipping a six-relation `GraphRel` is in the first of those.
+ *
+ * This is kept rather than deleted because the contract is worth stating from
+ * the consumer's side: it is the web app asserting what it needs of the shared
+ * traversal, and it fails if the package changes underneath it.
  */
 
 import { describe, expect, it } from 'vitest'

@@ -8,8 +8,8 @@ import { NodeMark } from './canvas/NodeMark'
 import { placeLabels } from './canvas/labels'
 import { useNodeDrag } from './canvas/use-node-drag'
 import { createSim, positionsOf, settle, step } from './force'
-import type { Sim, SimLink } from './force'
-import { nodeRadius } from './visuals'
+import type { Sim } from './force'
+import { structureOf } from './structure'
 
 /**
  * The graph, drawn.
@@ -29,6 +29,21 @@ import { nodeRadius } from './visuals'
  * `canvas/use-node-drag` tells a placement from a click, and `canvas/NodeMark`
  * is one node's markup. What is left is the wiring — the simulation's life
  * cycle, the paint loop, and what is lit.
+ *
+ * TWO RULES ABOUT REBUILDING, both learned the same way. `createSim` sets
+ * `alpha` to 1, so anything that reaches it costs 192 ticks of an O(n²)
+ * repulsion — 15ms at the demo store, 1.56 seconds at two thousand records (the
+ * table in `force.ts`). So:
+ *
+ *   1. Nothing that is not a change to the SHAPE of the graph may reach it.
+ *      `graph` is a fresh object on every commit anywhere in the app, and
+ *      `filterGraph` mints another on every legend toggle, so depending on its
+ *      identity re-simulated the whole canvas when a record on another page
+ *      changed a field. The effect below is keyed on `structure` instead —
+ *      the ids, the sizes and the links, which is the entire input `createSim`
+ *      reads. The note under `litRef` describes this same failure for hover and
+ *      selection and fixed it there; `graph` was the dependency it left behind.
+ *   2. When it IS reached, the work is budgeted. See `reduced` below.
  */
 
 /**
@@ -44,6 +59,20 @@ const MAX_ASPECT = 2.4
 
 /** Below this, a label on every node is legible rather than noise. */
 const LABEL_ALL_BELOW = 26
+
+/**
+ * The reduced-motion solve, in slices.
+ *
+ * `SETTLE_ITERATIONS` is the safety net `settle` has always carried — the
+ * layout reports itself settled at tick 192, so this is never what stops it.
+ * The two budgets are what is new: one frame for the first slice, because at
+ * the demo store the whole solve fits inside it and its behaviour should not
+ * change at all, then half-frame slices so the page keeps answering while a
+ * large graph converges.
+ */
+const SETTLE_ITERATIONS = 420
+const FIRST_SLICE_MS = 16
+const SLICE_MS = 8
 
 type Props = {
   graph: Graph
@@ -114,11 +143,28 @@ export function GraphCanvas({
   const activeRef = useRef<string | null>(null)
   const labelAllRef = useRef(showAllLabels)
 
+  /**
+   * The graph the paint loop reads, in a ref for the reason rule 1 gives.
+   *
+   * `paint` and `layoutLabels` closed over `graph`, so their identity changed
+   * whenever it did, and they are dependencies of the effect that builds the
+   * simulation — which made every commit in the app a full rebuild. Read
+   * through a ref they never change identity, and they always paint the current
+   * graph, because a ref is read at call time rather than captured.
+   *
+   * Synced in a layout effect declared ABOVE the ones that read it, rather than
+   * assigned during render: React may render and throw a commit away, and a ref
+   * written on that pass would point at a graph that never mounted. Effects run
+   * in declaration order, so by the time the simulation effect below paints,
+   * this has already caught up, and the initialiser covers the first mount.
+   */
+  const graphRef = useRef(graph)
+
   const layoutLabels = useCallback(() => {
     const sim = simRef.current
     if (!sim) return
     placeLabels({
-      nodes: graph.nodes,
+      nodes: graphRef.current.nodes,
       sim,
       labelEls: labelEls.current,
       labelWidths: labelWidths.current,
@@ -127,7 +173,7 @@ export function GraphCanvas({
       active: activeRef.current,
       labelAll: labelAllRef.current,
     })
-  }, [graph])
+  }, [])
 
   const paint = useCallback(() => {
     const sim = simRef.current
@@ -138,7 +184,7 @@ export function GraphCanvas({
       if (el) el.setAttribute('transform', `translate(${node.x.toFixed(1)} ${node.y.toFixed(1)})`)
     }
 
-    for (const edge of graph.edges) {
+    for (const edge of graphRef.current.edges) {
       const el = edgeEls.current.get(edge.id)
       if (!el) continue
       const a = sim.nodes[indexRef.current.get(edge.from) ?? -1]
@@ -151,7 +197,7 @@ export function GraphCanvas({
     }
 
     layoutLabels()
-  }, [graph, layoutLabels])
+  }, [layoutLabels])
 
   /**
    * The loop stops the moment the layout settles and is restarted by hand after
@@ -184,22 +230,34 @@ export function GraphCanvas({
     return () => observer.disconnect()
   }, [])
 
+  /**
+   * Everything `createSim` reads, and nothing else — rule 1 at the top. A record
+   * renamed on another page changes `graph` and does not change this, so the
+   * layout it is already showing stays where it is.
+   */
+  const structure = useMemo(() => structureOf(graph), [graph])
+
+  /**
+   * Read through a ref for the same reason as `graphRef`: the effect below must
+   * not list `structure` as a dependency, because the object is new on every
+   * commit even when its `key` is not — and `key` is the whole question.
+   */
+  const structureRef = useRef(structure)
+  const structureKey = structure.key
+
+  // Declared before every effect that reads either ref. No dependency array:
+  // both are mirrors of a value this component was rendered with, so there is
+  // no commit on which they should be allowed to fall behind.
+  useLayoutEffect(() => {
+    graphRef.current = graph
+    structureRef.current = structure
+  })
+
   // Layout effect, not effect: the nodes are rendered before the first tick has
   // run, and without this they would paint at the origin for one frame — every
   // node stacked in the top-left corner, which reads as a broken component.
   useLayoutEffect(() => {
-    const spec = graph.nodes.map((n) => ({
-      id: n.id,
-      radius: nodeRadius(n.degree),
-      degree: n.degree,
-    }))
-    const index = new Map(spec.map((s, i) => [s.id, i]))
-    const links: SimLink[] = []
-    for (const edge of graph.edges) {
-      const a = index.get(edge.from)
-      const b = index.get(edge.to)
-      if (a !== undefined && b !== undefined) links.push({ a, b })
-    }
+    const { spec, index, links } = structureRef.current
 
     const reshuffle = nonceRef.current !== layoutNonce
     nonceRef.current = layoutNonce
@@ -210,10 +268,55 @@ export function GraphCanvas({
     indexRef.current = index
 
     if (reduced) {
-      // Reduced motion means the layout arrives already solved rather than
-      // crawling into place — the same answer, without the movement.
-      settle(sim)
+      /*
+       * Reduced motion means the layout arrives already solved rather than
+       * crawling into place — the same answer, without the movement. The answer
+       * is the same as it always was; what changed is where the thread is while
+       * it is being worked out.
+       *
+       * All 192 ticks used to run right here. That is 15ms at the demo store
+       * and 1.56 seconds at two thousand records, on the main thread, inside a
+       * layout effect — so a user who had asked for less motion got a frozen
+       * page instead of a moving one, and got it again on every rebuild.
+       *
+       * One frame's worth is spent synchronously, which finishes the demo store
+       * outright and leaves its behaviour exactly as it was — one paint, the
+       * solved layout, no spiral flashing up first.
+       *
+       * A layout that needs longer is painted TWICE and not more: once here,
+       * because the nodes are already in the DOM and nothing has written a
+       * transform to them yet, so leaving the paint until convergence stacks
+       * every node in the top-left corner for as long as that takes — which is
+       * the exact failure the "layout effect, not effect" note above this one
+       * was written about, at a hundred times the duration. Then once at the
+       * end. Two positions is a correction; painting each slice would be an
+       * animation, which is the thing the user asked not to have.
+       */
+      const solved = settle(sim, SETTLE_ITERATIONS, FIRST_SLICE_MS)
       paint()
+      if (!solved) {
+        /*
+         * `alpha` decays on every tick whatever else happens, so `step` reports
+         * settled by tick 192 and every slice makes at least one tick of
+         * progress — the resumption terminates on the physics. `slices` is the
+         * belt-and-braces on top of that, and it is here rather than absent for
+         * the same reason `settle` carries an iteration cap: a loop that
+         * reschedules itself has to have a way to stop that does not depend on
+         * the thing it is waiting for being correct.
+         */
+        let slices = SETTLE_ITERATIONS
+        const finish = () => {
+          if (simRef.current !== sim) return
+          slices -= 1
+          if (settle(sim, SETTLE_ITERATIONS, SLICE_MS) || slices <= 0) {
+            framesRef.current = 0
+            paint()
+            return
+          }
+          framesRef.current = requestAnimationFrame(finish)
+        }
+        framesRef.current = requestAnimationFrame(finish)
+      }
     } else {
       paint()
       run()
@@ -224,7 +327,7 @@ export function GraphCanvas({
       framesRef.current = 0
       positionsRef.current = positionsOf(sim)
     }
-  }, [graph, layoutNonce, reduced, width, paint, run])
+  }, [structureKey, layoutNonce, reduced, width, paint, run])
 
   const drag = useNodeDrag({
     svgRef,

@@ -5,6 +5,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { SettingRow } from '@/components/common/Field'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { pendingCopy } from '@/components/settings/data-confirm-copy'
+import { exportFilename } from '@/components/settings/export-name'
 import type { PendingData } from '@/components/settings/data-confirm-copy'
 import { Button } from '@/components/ui/button'
 import { useStoreAdmin } from '@jojo/service/react/use-admin'
@@ -52,6 +53,13 @@ export function DataPanel() {
    * or land as "jojo-data (1).json", which is not a name anyone can choose
    * between six months later.
    *
+   * The BUTTON was not renamed with it and read "Export jojo-data.json" for as
+   * long as the file was called something else — a label naming a filename that
+   * has never once been written, next to a toast naming the real one. It says
+   * "Export a backup" now: the date makes an exact name impossible to print on
+   * a button, so the button stops trying and the toast, which knows the date,
+   * is the one that names the file to look for.
+   *
    *
    * WHAT THIS CAN AND CANNOT HONESTLY CLAIM
    *
@@ -76,7 +84,7 @@ export function DataPanel() {
    * that is false in one.
    */
   const onExport = () => {
-    const name = `jojo-backup-${new Date().toISOString().slice(0, 10)}.json`
+    const name = exportFilename(new Date())
     let href: string | null = null
     try {
       const blob = new Blob([exportJSON()], { type: 'application/json' })
@@ -219,7 +227,7 @@ export function DataPanel() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={onExport}>
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Export jojo-data.json
+            Export a backup
           </Button>
           <Button
             variant="outline"

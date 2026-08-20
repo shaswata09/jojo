@@ -5,7 +5,7 @@
   "type": "module",
   "description": "The shared layer: the knowledge graph, its tools, and the React binding. Imported by web and mobile, owned by neither.",
   "//exports": [
-    "Seven entries, one per layer, each a star whose TARGET names the extension.",
+    "Nine entries: six layer stars whose TARGET names the extension, and three exact keys — `./react/kg`, `./react/status` and `./log`. This line used to read \"Seven entries, one per layer, each a star\", which was wrong in both halves and contradicted the two paragraphs below it that describe the exact keys correctly. A count in prose beside the thing it counts is worth having only if it is the count.",
     "",
     "That last detail is the whole reason a map is viable at all, and it cost two",
     "probes to find. Metro does not extension-probe THROUGH an exports star, so",

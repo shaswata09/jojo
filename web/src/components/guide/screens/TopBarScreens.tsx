@@ -123,10 +123,10 @@ export function SettingsScreen() {
       <h3 className="mt-4 text-sm font-medium">What is real</h3>
       <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-text-2 marker:text-text-3">
         <li>
-          <span className="text-text-1">Export jojo-data.json</span> writes a full versioned backup:
-          applications, timeline, vault, saved postings, your keywords and their tags, and your
-          profile. It is a copy taken at the moment you press it and does not keep up with what you
-          do next.
+          <span className="text-text-1">Export a backup</span> writes a full versioned backup to{' '}
+          <span className="text-text-1">jojo-backup-YYYY-MM-DD.json</span>: applications, timeline,
+          vault, saved postings, your keywords and their tags, and your profile. It is a copy taken
+          at the moment you press it and does not keep up with what you do next.
         </li>
         <li>
           <span className="text-text-1">Load demo data</span>,{' '}

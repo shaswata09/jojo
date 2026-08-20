@@ -7,6 +7,7 @@
  * node come from".
  */
 
+import { EDGE_SCHEMA } from '@jojo/service/core/model'
 import type { TimelineKind } from '@/data/timeline'
 
 export const GRAPH_NODE_TYPES = [
@@ -91,13 +92,27 @@ export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = {
   source: 'Source',
 }
 
-/** How each relationship reads in a sentence, for the pattern builder. */
+/**
+ * How each relationship reads in a sentence, for the pattern builder.
+ *
+ * Six of the seven are read out of `EDGE_SCHEMA` rather than restated here.
+ * They were restated, and the six sentences were byte-identical to the ones the
+ * store already carries — D6's own note says the label is "reused by /graph's
+ * sentence builder", and it was not being reused, it was being copied. A
+ * relation renamed in `core/model.ts` used to leave this map still printing the
+ * old words in the legend, the detail panel and the Answer table.
+ *
+ * `IS` is the exception because it is the one relation with no `EDGE_SCHEMA`
+ * entry to read: an application IS a role tag is synthesised from a prop by
+ * `buildGraph` and is never written down. It is spelled here because here is
+ * the only place it exists.
+ */
 export const REL_LABEL: Record<GraphRel, string> = {
-  AT: 'is at',
   IS: 'is a',
-  ABOUT: 'is about',
-  FILED_UNDER: 'is filed under',
-  TAGS: 'tags',
-  FROM: 'came from',
-  BECAME: 'became',
+  AT: EDGE_SCHEMA.AT.label,
+  ABOUT: EDGE_SCHEMA.ABOUT.label,
+  FILED_UNDER: EDGE_SCHEMA.FILED_UNDER.label,
+  TAGS: EDGE_SCHEMA.TAGS.label,
+  FROM: EDGE_SCHEMA.FROM.label,
+  BECAME: EDGE_SCHEMA.BECAME.label,
 }

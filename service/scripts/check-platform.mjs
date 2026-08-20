@@ -62,7 +62,7 @@
  * zero false positives across all 63 files. See `boundNames` below.
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
@@ -82,6 +82,19 @@ const SERVICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
  * and it was never scanned by anything.
  */
 const ROOT = path.resolve(SERVICE, '..')
+
+/**
+ * Every app in the workspace. See `check-no-copies.mjs`, which carries the
+ * reason all three guards stopped naming their two apps by hand.
+ */
+function appRoots() {
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  const names = Array.isArray(manifest.workspaces) ? manifest.workspaces : []
+  return names
+    .filter((name) => name !== 'service')
+    .map((name) => path.join(ROOT, ...name.split('/'), 'src'))
+    .filter((dir) => existsSync(dir))
+}
 
 /**
  * Why each group is banned, and what to reach for instead.
@@ -637,6 +650,38 @@ function moduleSpecifier(node) {
 
 const failures = []
 const seen = new Set()
+
+/**
+ * Every app's `src/kg` must be named by a TARGETS entry above.
+ *
+ * TARGETS was four hand-written entries, two of which reach into apps, so an app
+ * added to the workspace was simply not scanned — `localStorage` in a third
+ * platform's driver would have gone unreported while this script printed its
+ * green line. `check-no-copies.mjs` carries the full reason all three guards
+ * stopped naming their apps by hand.
+ *
+ * This one asserts COVERAGE rather than inventing a rule for the new app, and
+ * the distinction is the point. The two adapter entries above ban opposite
+ * things — `dom` is this layer's job in a browser and a ReferenceError at mount
+ * on a phone — so which axes a third adapter may use is a judgement about that
+ * platform, not something a default can be right about. Guessing it would
+ * produce a rule with no reason written beside it, which is the one thing every
+ * entry in this file has.
+ */
+for (const src of appRoots()) {
+  const kg = path.join(src, 'kg')
+  if (!existsSync(kg)) continue
+  if (TARGETS.some((target) => target.root === kg)) continue
+  failures.push({
+    rel: path.relative(ROOT, kg),
+    line: 1,
+    text:
+      'is an app adapter directory that no TARGETS entry in check-platform.mjs covers, so nothing ' +
+      'here is checked for the wrong platform. Add an entry naming which of dom/node/net/timer/clock ' +
+      'this platform bans, and why — the web and React Native entries ban opposite things, so there ' +
+      'is no default that is right.',
+  })
+}
 
 for (const target of TARGETS) {
   for (const file of walk(target.root)) {

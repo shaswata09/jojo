@@ -29,14 +29,35 @@ import { kgWarn } from '@jojo/service/log'
  * holding one JSON document is atomic by construction, which buys that
  * invariant for free at the cost of rewriting rows that did not change.
  *
- * That cost is real and bounded: the seed is ~90 nodes and ~120 edges, and the
- * journal is capped at 200 entries and pruned on open. Serialising all of it is
- * well under a frame, and it happens off the interaction path anyway — the
- * queue is write-behind, so the UI has already moved on. If this ever holds
- * enough records for that to stop being true, the answer is SQLite and a row
- * per key, not a cleverer blob — through whichever binding this app takes then.
- * This line named `expo-sqlite` until the ejection, which is a package the app
- * can no longer install.
+ * THAT COST IS REAL, AND THE NUMBER THAT USED TO BE HERE HAS EXPIRED. It said
+ * serialising the whole document is "well under a frame" — true of the ~90-node
+ * seed it was written against, and false by about a thousand records. Measured
+ * by booting this driver on the real seed and replicating the resulting rows,
+ * with AsyncStorage stubbed to a Map so the figures are JS time only, per
+ * single-node commit, median of nine:
+ *
+ *     87 nodes (the seed)      56 KB written    0.6 ms
+ *     957 nodes               626 KB written    4.9 ms
+ *     9,483 nodes           6,235 KB written   54.3 ms
+ *
+ * — before the bridge and before the native write. The half that stays true is
+ * the second half: it is off the interaction path, because the queue is
+ * write-behind and the UI has already moved on. What is no longer true is that
+ * the size does not matter. `readAll` clones every row in all four stores, and
+ * a commit costs the whole store however small the edit — which is also why
+ * coalescing helps here far more than it does on IndexedDB: a batch of sixty
+ * costs what a batch of two does.
+ *
+ * There is a hard edge as well as a slope, and it is Android-only. AsyncStorage
+ * there is capped at 6 MB by the library's own default, which the table above
+ * crosses at roughly 9,300 records. `android/gradle.properties` raises the cap
+ * and carries the rest of that measurement; iOS has no equivalent ceiling.
+ *
+ * The escape hatch is unchanged and is now dated by numbers rather than by a
+ * guess: if this holds enough records for the slope to matter, the answer is
+ * SQLite and a row per key, not a cleverer blob — through whichever binding this
+ * app takes then. This line named `expo-sqlite` until the ejection, which is a
+ * package the app can no longer install.
  *
  * WHAT IT DOES NOT DO.
  *
@@ -69,6 +90,16 @@ async function load(): Promise<Rows | null> {
   try {
     const parsed = JSON.parse(raw) as Persisted
     if (!parsed || typeof parsed !== 'object' || !parsed.rows) return null
+    // The spread makes the declared `Rows` true at runtime, and does nothing
+    // else — measured, because an audit read it as a guard and went looking for
+    // the case it protects. There is none reachable from here: `parsed` is a
+    // cast over whatever was on disk, so a document from a build with three
+    // stores would type-check as `Rows` and be one array short without it — but
+    // the only consumer is `createMemoryDriver`, which takes `Partial<Rows>`,
+    // skips the store it was not given, and answers `readAll` from all four
+    // maps regardless. Deleting the spread changes no observable behaviour, so
+    // it cannot be pinned by a test, and it is kept because the alternative is a
+    // function whose return type is a lie.
     return { ...emptyRows(), ...parsed.rows }
   } catch (e) {
     kgWarn('rn-driver: stored rows could not be parsed, starting empty', {

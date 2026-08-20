@@ -70,9 +70,11 @@ export function FileEditor({
     setName(first.name)
     setSize(first.size)
     // The previous copy is orphaned, not deleted, and that is the same open
-    // end as removing a document: `forgetDocument` exists and nothing calls it,
-    // because an Undo of this edit has to find the old bytes still there. See
-    // `FilesTool`'s `onDelete` for the two constraints a sweep has to satisfy.
+    // end as removing a document: an Undo of this edit has to find the old
+    // bytes still there. `forgetDocument` has a caller now — Settings' three
+    // wipes, through `forgetDocuments` — but it is the caller with no Undo on
+    // it, which is exactly why it is not this one. See `FilesTool`'s `onDelete`
+    // for the two constraints a sweep has to satisfy.
     setUri(first.uri)
   }
 

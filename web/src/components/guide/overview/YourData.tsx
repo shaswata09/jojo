@@ -130,13 +130,15 @@ export function DataSection() {
       <h3 className="mt-4 text-sm font-medium">The controls in Settings</h3>
       <dl className="mt-2 divide-y divide-hairline text-sm">
         <div className="flex flex-wrap gap-x-3 gap-y-1 py-2.5">
-          <dt className="basis-44 font-medium">Export jojo-data.json</dt>
+          <dt className="basis-44 font-medium">Export a backup</dt>
           <dd className="min-w-0 flex-1 basis-64 text-text-2">
             Everything, in one versioned file: applications, timeline, vault, saved postings, your
-            keywords and their tags, and your profile. It is a copy taken at the moment you press it
-            — it does not keep up with what you do next, and it is the only copy of your data that
-            is not on this machine. Export to Excel and Import are switched off and say why when you
-            hover them.
+            keywords and their tags, and your profile. It is written as{' '}
+            <span className="text-text-1">jojo-backup-YYYY-MM-DD.json</span>, dated so a second
+            export does not overwrite the first. It is a copy taken at the moment you press it — it
+            does not keep up with what you do next, and it is the only copy of your data that is not
+            on this machine. Export to Excel and Import are switched off and say why when you hover
+            them.
           </dd>
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1 py-2.5">
