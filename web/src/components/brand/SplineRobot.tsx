@@ -113,6 +113,8 @@ export function SplineRobot({ className }: { className?: string }) {
   const [failed, setFailed] = useState(false)
   const [waiting, setWaiting] = useState<'none' | 'spinner' | 'fallback'>('none')
   const rig = useRef<SplineRig | null>(null)
+  /** The pending arrival greeting; see `onLoad`. */
+  const greeting = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)')
 
   /** The 3D robot is on screen — loaded, and still alive. */
@@ -141,9 +143,32 @@ export function SplineRobot({ className }: { className?: string }) {
     rig.current?.play(pose)
   }, [pose, seq, reduced])
 
-  useEffect(() => () => rig.current?.dispose(), [])
+  useEffect(
+    () => () => {
+      rig.current?.dispose()
+      clearTimeout(greeting.current)
+    },
+    [],
+  )
 
   const onLoad = (app: Application) => {
+    // Fires more than once, against more than one scene. StrictMode runs the
+    // effect that builds the Application twice in dev, and react-spline starts
+    // a load it never cancels on cleanup, so the Application it threw away still
+    // calls back here when it finishes loading.
+    //
+    // Both of those loads used to schedule their own greeting, and the two
+    // landed INTRO_SETTLE_MS apart from two different start points — measured
+    // 199ms apart on this machine. The first bow got 0.335rad into its pitch
+    // and the second one interrupted it, which settles the joints back to rest
+    // in a single frame before restarting: a 19-degree snap, then a bow. That
+    // is the "sudden shake on load, then it behaves" this is here to stop.
+    //
+    // Cheap to get wrong quietly, because it only happens in dev — a production
+    // build mounts once and looks perfect.
+    rig.current?.dispose()
+    clearTimeout(greeting.current)
+
     rig.current = createSplineRig(app)
     setReady(true)
     if (reduced) return
@@ -156,7 +181,7 @@ export function SplineRobot({ className }: { className?: string }) {
     // Greeting inside that window plays the gesture and has it overwritten
     // frame by frame — measured, not guessed.
     if (pending.current.pose !== 'idle') rig.current.play(pending.current.pose)
-    else setTimeout(() => play('bow'), INTRO_SETTLE_MS)
+    else greeting.current = setTimeout(() => play('bow'), INTRO_SETTLE_MS)
   }
 
   /**
@@ -207,6 +232,8 @@ export function SplineRobot({ className }: { className?: string }) {
           // out; disposed here so a gesture cannot reach a dead scene.
           rig.current?.dispose()
           rig.current = null
+          // Nothing left to greet with.
+          clearTimeout(greeting.current)
           setFailed(true)
           setWaiting('fallback')
         }}

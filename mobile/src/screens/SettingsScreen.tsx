@@ -177,7 +177,6 @@ export function SettingsScreen() {
             a file you own, so they survive closing the app. Nothing connects to these fields yet.
           </Txt>
           <View style={{ gap: space[3] }}>
-            <TextField label="Address" mono defaultValue="http://localhost:7423" editable={false} />
             {/* "Bridge" is load-bearing since Transfer arrived: that screen also
                 shows a "Pairing code", and it means something else entirely — one
                 pairs this app with a helper process on a machine, the other pairs

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Chip } from '@/components/common/Chip'
 import { Field, SettingRow } from '@/components/common/Field'
+import { FolderPicker } from '@/components/settings/FolderPicker'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -25,12 +26,11 @@ export function ConnectionsSection() {
       <Panel>
         <PanelTitle hint="optional">Save to a file on this computer</PanelTitle>
         <p className="mb-3 text-sm text-text-2">
-          jojo works fully without this. Your records are already saved in this browser; set this up
-          later and it also keeps a copy in a file you own, outside the browser, kept in step as you
-          work. Nothing connects to these fields yet.
+          jojo works fully without this. Your records are already saved in this browser; choose a
+          folder and it also keeps a copy in files you own, outside the browser. The bridge fields
+          below are not connected yet — the folder is.
         </p>
         <div className="space-y-3">
-          <Field label="Address" defaultValue="http://localhost:7423" mono />
           {/* "Bridge" is load-bearing since Transfer arrived: that page also
               shows a "Pairing code", and it means something else entirely —
               one pairs this tab with a helper process on this machine, the
@@ -38,7 +38,7 @@ export function ConnectionsSection() {
               for two different secrets is how someone ends up typing the
               wrong one into the wrong field. */}
           <Field label="Bridge pairing code" type="password" defaultValue="••••-••••-4F2A" mono />
-          <Field label="Where to save it" defaultValue="~/jobsearch/jojo-data.json" mono />
+          <FolderPicker />
         </div>
         <div className="mt-4">
           {/* Named for what happens to the user's records, not for the

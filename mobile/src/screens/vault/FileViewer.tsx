@@ -12,6 +12,8 @@ import { Divider } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { agoLabel } from '@jojo/service/data/timeline'
 import type { VaultFile } from '@jojo/service/data/vault'
+import { displayName } from '@jojo/service/data/seed'
+import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { FILE_KIND_ICON } from '@/lib/files'
 import { useApplications, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
@@ -57,6 +59,7 @@ export function FileViewer({
   const [note, setNote] = useState('')
   const [editingNote, setEditingNote] = useState(false)
   const [openError, setOpenError] = useState<string | null>(null)
+  const [filing, setFiling] = useState(false)
   // `null` is "not asked yet". `documentExists` used to be a synchronous getter
   // read straight out of the render body; no React Native filesystem library
   // offers a synchronous form, so the answer is now a tick late and this state
@@ -109,6 +112,19 @@ export function FileViewer({
     { label: 'Filed', value: agoLabel(file.savedOn, TODAY) },
     { label: 'Bucket', value: file.bucket },
   ]
+
+  /** Same contract as the row menu's: a present-but-undefined key unfiles it. */
+  const onFileUnder = (applicationId: string | undefined) => {
+    const before = file.applicationId
+    updateFile(file.id, { applicationId })
+    setFiling(false)
+    const now = applicationId ? byId.get(applicationId) : undefined
+    toast({
+      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      description: file.name,
+      action: { label: 'Undo', onPress: () => updateFile(file.id, { applicationId: before }) },
+    })
+  }
 
   const saveNote = () => {
     const before = file.note
@@ -205,14 +221,30 @@ export function FileViewer({
           ))}
         </View>
 
-        {application ? (
-          <View style={{ gap: space[2] }}>
-            <Txt size="xs" tone="secondary" weight="medium">
+        {/* Always shown, including when nothing is filed. Rendering the row
+            only when there IS an application meant an unfiled document gave no
+            sign it could be filed at all — the capability existed and the
+            screen kept it a secret. */}
+        <View style={{ gap: space[2] }}>
+          <View style={s.row}>
+            <Txt size="xs" tone="secondary" weight="medium" style={s.fill}>
               Attached to
             </Txt>
-            <Chip tone="gray">{application.org}</Chip>
+            <Button
+              label={application ? 'Change' : 'File it under a job'}
+              variant="ghost"
+              onPress={() => setFiling(true)}
+            />
           </View>
-        ) : null}
+          {application ? (
+            <Chip tone="gray">{displayName(application)}</Chip>
+          ) : (
+            <Txt size="sm" tone="muted">
+              Not filed under an application. Filing it puts it on that record and lets the graph
+              find it from there.
+            </Txt>
+          )}
+        </View>
 
         <View style={{ gap: space[2] }}>
           <View style={s.row}>
@@ -259,6 +291,12 @@ export function FileViewer({
           )}
         </View>
       </View>
+      <ApplicationPickerSheet
+        open={filing}
+        value={file.applicationId}
+        onClose={() => setFiling(false)}
+        onChange={onFileUnder}
+      />
     </Sheet>
   )
 }

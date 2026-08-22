@@ -1,13 +1,36 @@
 import type { Ref } from 'react'
-import { FileText, FileType, Pencil, Presentation, StickyNote, Trash2 } from 'lucide-react'
+import { Link } from 'react-router'
+import {
+  Briefcase,
+  FileText,
+  FileType,
+  Pencil,
+  Presentation,
+  StickyNote,
+  Trash2,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { Button } from '@/components/ui/button'
 import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
+import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { InlineEdit } from '@/components/vault/files/InlineEdit'
 import { FILE_BUCKETS } from '@/data/vault'
 import type { FileBucket, FileKind, VaultFile } from '@/data/vault'
+import type { Application } from '@/data/seed'
+import { displayName } from '@/data/seed'
+import { appPath } from '@/lib/links'
 import { cn } from '@/lib/utils'
+
+/**
+ * The three things a row can be editing in place.
+ *
+ * `application` joins the two text fields rather than becoming a menu of every
+ * job: the bucket list above it is four fixed words and fits a dropdown, but the
+ * applications are however many you are tracking, and a menu is the one control
+ * that cannot be searched.
+ */
+export type EditableField = 'name' | 'note' | 'application'
 
 const kindIcon: Record<FileKind, LucideIcon> = {
   pdf: FileType,
@@ -20,6 +43,7 @@ export function FileRow({
   file: f,
   focused,
   rowRef,
+  related,
   editingField,
   onDevice,
   previewing,
@@ -28,23 +52,28 @@ export function FileRow({
   onRename,
   onNote,
   onTogglePreview,
+  onFileUnder,
   onMove,
   onDelete,
 }: {
   file: VaultFile
+  /** The application it is filed under — the record, so `appPath` has the slug. */
+  related?: Application
   /** Arrived here from a link that named this row — see `focus` in links.ts. */
   focused?: boolean
   /** Set on the focused row only, so the tool can scroll it into view. */
   rowRef?: Ref<HTMLLIElement>
-  /** Which field is open in the inline editor, if either. */
-  editingField?: 'name' | 'note'
+  /** Which field is open in the inline editor, if any. */
+  editingField?: EditableField
   /** The real bytes are in this session, so Preview shows the document itself. */
   onDevice: boolean
   previewing: boolean
-  onEdit: (field: 'name' | 'note') => void
+  onEdit: (field: EditableField) => void
   onCancelEdit: () => void
   onRename: (file: VaultFile, next: string) => void
   onNote: (file: VaultFile, next: string) => void
+  /** `undefined` unfiles it. The tool turns that into a `null` for the tool layer. */
+  onFileUnder: (file: VaultFile, applicationId: string | undefined) => void
   onTogglePreview: () => void
   onMove: (file: VaultFile, next: FileBucket) => void
   onDelete: (file: VaultFile) => void
@@ -71,13 +100,29 @@ export function FileRow({
             onCancel={onCancelEdit}
             onSave={(next) => onRename(f, next)}
           />
-        ) : editingField ? (
+        ) : editingField === 'note' ? (
           <InlineEdit
             label="Note"
             value={f.note ?? ''}
             onCancel={onCancelEdit}
             onSave={(next) => onNote(f, next)}
           />
+        ) : editingField === 'application' ? (
+          /* No Save button, unlike the two text fields above: a combobox commits
+             on the choice, and a second confirmation for a value you cannot
+             mistype is ceremony. Cancel stays, because opening the wrong row's
+             picker is a mis-tap worth backing out of. */
+          <div className="flex items-center gap-2">
+            <ApplicationPicker
+              what="file"
+              value={f.applicationId}
+              onChange={(id) => onFileUnder(f, id)}
+              className="flex-1"
+            />
+            <Button type="button" variant="ghost" size="sm" onClick={onCancelEdit}>
+              Cancel
+            </Button>
+          </div>
         ) : (
           <>
             {/* A button, not a div. It looked exactly like the
@@ -108,6 +153,14 @@ export function FileRow({
                 </>
               ) : null}
               {f.note ? <span className="truncate">· {f.note}</span> : null}
+              {related ? (
+                <Link
+                  to={appPath(related)}
+                  className="shrink-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
+                >
+                  · {displayName(related)}
+                </Link>
+              ) : null}
               <LabelChips recordId={f.id} className="shrink-0" />
             </div>
           </>
@@ -130,6 +183,9 @@ export function FileRow({
           </MenuItem>
           <MenuItem icon={StickyNote} onSelect={() => onEdit('note')}>
             {f.note ? 'Edit note' : 'Add note'}
+          </MenuItem>
+          <MenuItem icon={Briefcase} onSelect={() => onEdit('application')}>
+            {related ? 'Change application' : 'File under an application'}
           </MenuItem>
           <MenuSection title="Move to">
             {FILE_BUCKETS.map((b) => (

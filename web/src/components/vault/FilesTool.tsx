@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
+import { useApplications } from '@jojo/service/react/use-applications'
+import { displayName } from '@/data/seed'
 import { FileText, Plus, Upload } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -9,6 +11,7 @@ import { matchesQuery } from '@/components/vault/search'
 import { FileViewer } from '@/components/vault/FileViewer'
 import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
 import { FileRow } from '@/components/vault/files/FileRow'
+import type { EditableField } from '@/components/vault/files/FileRow'
 import { sortDrop } from '@/components/vault/files/intake'
 import { useFileDrop } from '@/components/vault/files/use-file-drop'
 import { FILE_BUCKETS } from '@/data/vault'
@@ -36,7 +39,7 @@ export function FilesTool({ focus }: { focus?: string }) {
   const [bucket, setBucket] = useState<FileBucket | 'all'>('all')
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
-  const [editing, setEditing] = useState<{ id: string; field: 'name' | 'note' } | null>(null)
+  const [editing, setEditing] = useState<{ id: string; field: EditableField } | null>(null)
 
   /**
    * The real `File` behind a row added this session, by record id.
@@ -57,6 +60,14 @@ export function FilesTool({ focus }: { focus?: string }) {
     removeRecord,
   } = useLabels()
   const { files, addFile, updateFile, removeFile } = useVault()
+  // Named for the row's link, the toast and the search; the picker reads the
+  // list itself.
+  const { byId } = useApplications()
+
+  const nameOf = (id?: string) => {
+    const app = id ? byId.get(id) : undefined
+    return app ? displayName(app) : undefined
+  }
   const { toast } = useToast()
   // Arrived from a graph node or a query row that named one file — see `focus`
   // in links.ts. Ten files listed with none of them marked is not an arrival.
@@ -74,7 +85,9 @@ export function FilesTool({ focus }: { focus?: string }) {
     (f) =>
       (bucket === 'all' || f.bucket === bucket) &&
       matches(f.id) &&
-      matchesQuery(query, f.name, f.note, f.bucket),
+      // The application's name too, matching the links tool: a document you can
+      // file under a job is one you will look for by that job's name.
+      matchesQuery(query, f.name, f.note, f.bucket, nameOf(f.applicationId)),
   )
   const open = visible.find((f) => f.id === openId) ?? null
 
@@ -174,6 +187,35 @@ export function FilesTool({ focus }: { focus?: string }) {
       action: {
         label: 'Undo',
         onClick: () => updateFile(file.id, { note: before }),
+      },
+    })
+  }
+
+  /**
+   * Files the document under a job, or under none.
+   *
+   * The key is always PRESENT in the patch, including when the value is
+   * undefined — that is what says "set this field" as opposed to "leave it
+   * alone", and `asNull` in `kg/react/patch.ts` turns a present-and-undefined
+   * into the `null` the tool reads as an unfile. Spreading it conditionally
+   * would silently make clearing the field impossible.
+   *
+   * The edge is `fromCardinality: 'one'`, so filing under a second job replaces
+   * the first; there is no step to clear it in between.
+   */
+  const onFileUnder = (file: VaultFile, applicationId: string | undefined) => {
+    const before = file.applicationId
+    updateFile(file.id, { applicationId })
+    setEditing(null)
+    const now = applicationId ? byId.get(applicationId) : undefined
+    toast({
+      title: now ? `${file.name} filed under ${displayName(now)}` : `${file.name} unfiled`,
+      description: now
+        ? 'It shows on that application, and the graph can find it from there.'
+        : 'It stays in the Vault, filed under nothing.',
+      action: {
+        label: 'Undo',
+        onClick: () => updateFile(file.id, { applicationId: before }),
       },
     })
   }
@@ -315,6 +357,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                 file={f}
                 focused={f.id === focus}
                 rowRef={f.id === focus ? focusedRow : undefined}
+                related={f.applicationId ? byId.get(f.applicationId) : undefined}
                 editingField={editing?.id === f.id ? editing.field : undefined}
                 onDevice={Boolean(blobs[f.id])}
                 previewing={openId === f.id}
@@ -323,6 +366,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                 onRename={onRename}
                 onNote={onNote}
                 onTogglePreview={() => setOpenId((prev) => (prev === f.id ? null : f.id))}
+                onFileUnder={onFileUnder}
                 onMove={onMove}
                 onDelete={onDelete}
               />

@@ -3,16 +3,17 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { Meter } from '@/components/charts/Charts'
+import { Pie } from '@/components/charts/Charts'
 import { ItemMenu, SnoozeMenu } from '@/components/common/ItemMenus'
 import { Button, IconButton } from '@/components/ui/Button'
-import { Chip, StageDot } from '@/components/ui/Chip'
+import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { MONTH_LABELS } from '@jojo/service/core/calendar'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
+import type { Stage } from '@jojo/service/data/seed'
 import { addDays, partsOf, shortDate, timeLabel, whenLabel } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
@@ -752,44 +753,55 @@ function RecentApplications() {
  * piling up in one stage. Read top to bottom, which is the order applications
  * actually move through.
  */
+/**
+ * Where everything currently sits. The single most informative thing a job
+ * dashboard can show: totals say how much you have done, this says whether it
+ * is progressing or piling up in one stage.
+ *
+ * A pie, because the question is share-of-total — "is half of this still in
+ * draft?" — and a pie answers it in a glance where six bars ask you to compare
+ * lengths and add up. The same chart, from the same geometry, as the web card.
+ *
+ * Colour is read here rather than upstream: `stageCounts` deliberately carries
+ * none, because it is minted in the shared React layer and a palette lookup is
+ * this platform's business.
+ */
 function PipelineBreakdown() {
   const c = useColors()
   const { all, stageCounts } = useApplications()
   const { open } = useSheets()
-  const max = Math.max(...stageCounts.map((s) => s.count), 1)
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   return (
     <Panel>
       <PanelTitle hint={`${all.length} tracked`}>Pipeline</PanelTitle>
 
       {/* `stageCounts` always returns all six stages, so on an empty store this
-          rendered six labelled bars of zero — technically true and useless. */}
+          rendered six labelled rows of zero — technically true and useless. */}
       {all.length === 0 ? (
         <EmptyState
           icon="clipboard"
           title="Nothing in the pipeline"
-          description="Each application sits in one stage, and this compares how many are in each. Add one and the first bar appears."
+          description="Each application sits in one stage, and this shows how they are spread across them. Add one and the first slice appears."
           action={
             <Button label="New application" icon="plus" onPress={() => open('application')} />
           }
         />
       ) : (
-        <View style={{ gap: space[2.5] }}>
-          {stageCounts.map((stage) => (
-            <View key={stage.id}>
-              <View style={styles.pipelineRow}>
-                <StageDot stage={stage.id} />
-                <Txt size="sm" tone="secondary" style={s.fill} numberOfLines={1}>
-                  {stage.label}
-                </Txt>
-                <Txt size="sm" weight="semibold" mono>
-                  {stage.count}
-                </Txt>
-              </View>
-              <Meter value={stage.count} max={max} color={c.stage[stage.id]} />
-            </View>
-          ))}
-        </View>
+        <Pie
+          data={stageCounts.map((stage) => ({
+            key: stage.id,
+            label: stage.label,
+            value: stage.count,
+            color: c.stage[stage.id],
+          }))}
+          onSelect={(key) =>
+            navigation.navigate('Tabs', {
+              screen: 'Applications',
+              params: { stage: key as Stage },
+            })
+          }
+        />
       )}
     </Panel>
   )
@@ -849,10 +861,4 @@ const styles = StyleSheet.create({
   laterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   recentRow: { paddingVertical: space[2.5] },
   recentChips: { marginTop: space[1.5] },
-  pipelineRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space[2],
-    marginBottom: space[1],
-  },
 })

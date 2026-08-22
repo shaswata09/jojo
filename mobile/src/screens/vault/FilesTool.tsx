@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { FileEditor } from '@/components/common/FileEditor'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
 import { buildRecordMenu } from '@/components/common/recordMenu'
@@ -64,6 +65,10 @@ export function FilesTool() {
   // Opening a document and editing it are two different intentions, and the row
   // used to serve only the second. The tap now reads; the menu still edits.
   const [viewing, setViewing] = useState<VaultFile | null>(null)
+  // The row's own way to file a document under a job. It used to be reachable
+  // only by opening the edit sheet and finding the field two thirds of the way
+  // down it, which is a capability nobody looking for it would find.
+  const [filing, setFiling] = useState<VaultFile | null>(null)
 
   const pool = useMemo(
     () => files.filter((f) => matches(f.id) && matchesQuery(query, f.name, f.note, f.bucket)),
@@ -110,6 +115,30 @@ export function FilesTool() {
       title: 'Document duplicated',
       description: copy.name,
       action: { label: 'Undo', onPress: () => removeFile(copy.id) },
+    })
+  }
+
+  /**
+   * Files the document under a job, or under none.
+   *
+   * `applicationId` is always PRESENT in the patch, including when undefined —
+   * that is what tells the update to set the field rather than leave it alone,
+   * and `asNull` turns a present-and-undefined into the null the tool reads as
+   * an unfile. The edge is one-per-document, so filing under a second job
+   * replaces the first with no step to clear it in between.
+   */
+  const onFileUnder = (f: VaultFile, applicationId: string | undefined) => {
+    const before = f.applicationId
+    updateFile(f.id, { applicationId })
+    setFiling(null)
+    const now = applicationId ? byId.get(applicationId) : undefined
+    toast({
+      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      description: f.name,
+      action: {
+        label: 'Undo',
+        onPress: () => updateFile(f.id, { applicationId: before }),
+      },
     })
   }
 
@@ -263,8 +292,23 @@ export function FilesTool() {
           menuFor
             ? buildRecordMenu({
                 onEdit: () => setEditing(menuFor),
-                editLabel: 'Rename and edit note',
+                // Named for the sheet it opens rather than for two of the five
+                // fields in it. It said 'Rename and edit note', which was true
+                // when those were the only two — the bucket and the related
+                // application are edited in there too, and a menu that does not
+                // mention the application is a menu nobody finds it in.
+                editLabel: 'Edit document',
                 onDuplicate: () => onDuplicate(menuFor),
+                extra: [
+                  {
+                    id: 'file-under',
+                    label: menuFor.applicationId
+                      ? 'Change application'
+                      : 'File under an application',
+                    icon: 'briefcase',
+                    onPress: () => setFiling(menuFor),
+                  },
+                ],
                 move: {
                   label: 'Bucket',
                   options: FILE_BUCKETS,
@@ -276,6 +320,15 @@ export function FilesTool() {
               })
             : []
         }
+      />
+
+      <ApplicationPickerSheet
+        open={filing !== null}
+        value={filing?.applicationId}
+        onClose={() => setFiling(null)}
+        onChange={(id) => {
+          if (filing) onFileUnder(filing, id)
+        }}
       />
 
       <FileViewer

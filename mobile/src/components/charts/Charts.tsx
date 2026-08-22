@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native'
-import Svg, { Circle, G, Line, Polygon } from 'react-native-svg'
+import Svg, { Circle, G, Line, Path, Polygon } from 'react-native-svg'
+import { PIE_VIEWBOX, pieSlices } from '@jojo/service/core/pie'
 import { Txt } from '@/components/ui/Text'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -112,6 +113,105 @@ export function Donut({
 }
 
 /* --------------------------------- radar --------------------------------- */
+
+/* ---------------------------------- pie ---------------------------------- */
+
+export type PieDatum = { key: string; label: string; value: number; color: string }
+
+/**
+ * A pie, and a legend that doubles as the value table.
+ *
+ * The wedge geometry is `@jojo/service/core/pie`, shared with the web — which
+ * renders the identical `d` strings through a browser `<svg>`. Only the colours
+ * and the touch targets are per-platform, which is the split the whole service
+ * layer is organised around: the arithmetic cannot disagree between the two
+ * apps because there is only one copy of it.
+ *
+ * The legend earns its place twice over here. A pie cannot be read to a number,
+ * so the count and the percentage sit beside it — and on a phone the wedges are
+ * small, so the row is the reliable target and the wedge is the shortcut.
+ */
+export function Pie({
+  data,
+  size = 148,
+  onSelect,
+}: {
+  data: PieDatum[]
+  size?: number
+  /** Called with the datum's key, from either the wedge or its legend row. */
+  onSelect?: (key: string) => void
+}) {
+  const c = useColors()
+  const slices = pieSlices(data)
+  const total = data.reduce((n, d) => n + d.value, 0)
+  const byKey = new Map(slices.map((slice) => [slice.key, slice]))
+
+  return (
+    <View style={styles.pieRow}>
+      <Svg width={size} height={size} viewBox={PIE_VIEWBOX}>
+        {slices.map((slice) => {
+          const datum = data.find((d) => d.key === slice.key)
+          return (
+            <Path
+              key={slice.key}
+              d={slice.path}
+              fill={datum?.color ?? c.text3}
+              // The card's own surface divides the wedges, so the pie reads as
+              // one shape rather than as six that happen to touch.
+              stroke={c.panel}
+              strokeWidth={1.5}
+              onPress={onSelect ? () => onSelect(slice.key) : undefined}
+            />
+          )
+        })}
+      </Svg>
+
+      <View style={s.fill}>
+        {data.map((datum) => {
+          const slice = byKey.get(datum.key)
+          const empty = slice === undefined
+          return (
+            <Pressable
+              key={datum.key}
+              accessibilityRole="button"
+              accessibilityLabel={`${datum.label}, ${String(datum.value)}${
+                empty ? '' : `, ${String(slice.percent)}%`
+              }`}
+              // A stage holding nothing keeps its row — the six are a fixed
+              // vocabulary and a legend that reordered itself as records moved
+              // would be unreadable — but there is nothing to go and look at.
+              disabled={empty || !onSelect}
+              onPress={onSelect ? () => onSelect(datum.key) : undefined}
+              style={({ pressed }) => [
+                styles.pieLegendRow,
+                pressed && !empty ? { backgroundColor: c.rowHover } : null,
+              ]}
+            >
+              <View
+                style={[
+                  styles.pieSwatch,
+                  {
+                    backgroundColor: empty ? 'transparent' : datum.color,
+                    borderColor: datum.color,
+                  },
+                ]}
+              />
+              <Txt size="sm" tone={empty ? 'muted' : 'secondary'} style={s.fill} numberOfLines={1}>
+                {datum.label}
+              </Txt>
+              <Txt size="sm" weight="medium" mono>
+                {datum.value}
+              </Txt>
+              <Txt size="xs" tone="muted" mono style={styles.piePercent}>
+                {total > 0 ? (slice?.percent ?? 0) : 0}%
+              </Txt>
+            </Pressable>
+          )
+        })}
+      </View>
+    </View>
+  )
+}
 
 export type RadarSeries = { label: string; color: string; values: number[] }
 
@@ -334,6 +434,19 @@ export function GraphEdge({
 }
 
 const styles = StyleSheet.create({
+  pieRow: { flexDirection: 'row', alignItems: 'center', gap: space[4], flexWrap: 'wrap' },
+  pieLegendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    minHeight: 32,
+    paddingHorizontal: space[1],
+    borderRadius: radius.sm,
+  },
+  pieSwatch: { width: 11, height: 11, borderRadius: 3, borderWidth: 1.5 },
+  /* Right-aligned in a fixed column so the figures form one edge rather than
+     wandering with the width of the count beside them. */
+  piePercent: { width: 34, textAlign: 'right' },
   track: {
     height: 8,
     borderRadius: radius.sm,

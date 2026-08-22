@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { Field, FormField } from '@/components/common/Field'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
 import { Button } from '@/components/ui/button'
-import { ApplicationPicker } from '@/components/vault/links/ApplicationPicker'
+import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { normalizeUrl, parseUrl } from '@/components/vault/links/url'
 import { LINK_CATEGORIES } from '@/data/vault'
 import type { LinkCategory, VaultLink } from '@/data/vault'
@@ -120,7 +120,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
           htmlFor={appFieldId}
           hint="Files the link under a job, so both ends know about the other."
         >
-          <ApplicationPicker id={appFieldId} value={applicationId} onChange={setApplicationId} />
+          <ApplicationPicker id={appFieldId} what="link" value={applicationId} onChange={setApplicationId} />
         </FormField>
       </div>
 

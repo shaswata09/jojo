@@ -364,16 +364,34 @@ export function createSplineRig(app: Application): SplineRig {
 
   return {
     play(pose) {
+      // `idle` is how MascotProvider announces that a gesture's time is up, not
+      // a request to stop one — nothing in the app interrupts a gesture with it.
+      // Cutting the gesture here snapped the robot from wherever it had got to
+      // straight back to rest, because the provider and the rig time the same
+      // gesture on two different clocks: the provider's `setTimeout(POSE_MS)`
+      // starts when `play` is CALLED, the rig's `active.start` when the effect
+      // that forwards it RUNS. The gap between them is React commit latency, so
+      // the rig always finishes that much later than the provider expects.
+      //
+      // Worst at load: the first commit waits on the main thread decoding the
+      // 1.35MB scene, while the reset 1400ms later lands on an idle thread.
+      // Measured 227ms of skew on the arrival bow — the robot was still pitched
+      // forward 0.28rad and sunk when it got teleported upright. Later gestures
+      // skew by about a frame, which is why only the greeting ever glitched.
+      //
+      // Letting the loop run reaches the same rest pose a few frames later:
+      // every gesture's last key is a 0 offset and `step` settles at t=1.
+      if (pose === 'idle') {
+        if (active) return
+        if (frame) cancelAnimationFrame(frame)
+        frame = 0
+        return
+      }
+
       if (frame) cancelAnimationFrame(frame)
       // An interrupted gesture leaves its joints wherever it was; reset them
       // before the next one starts or the two would compound.
       if (active) settle(active.tracks)
-
-      if (pose === 'idle') {
-        active = null
-        frame = 0
-        return
-      }
 
       const tracks = GESTURES[pose]
       if (!tracks) return

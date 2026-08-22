@@ -107,6 +107,17 @@ const APP_KG_ALLOWED = {
     'storage/idb-migrate.ts',
     'storage/channel.ts',
     'storage/probe.ts',
+    // The folder half, and browser-only for the same reason the driver is: the
+    // File System Access API exists in no other host. `fs-file-store.ts` is the
+    // `FileStore` port over a `FileSystemDirectoryHandle`; `folder-connect.ts`
+    // is the picker, the permission model and the remembered handle, which is
+    // the part that needs a user gesture and a native dialog.
+    //
+    // The port, the folder layout and the 23-case contract suite all stayed in
+    // the package, so the phone's adapter — deferred, see `FileProps.uri` — gets
+    // the same contract rather than a second reading of it.
+    'storage/fs-file-store.ts',
+    'storage/folder-connect.ts',
   ]),
 }
 

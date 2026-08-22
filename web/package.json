@@ -13,7 +13,8 @@
     "lint": "npm -w @jojo/service run lint && oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "conformance:fs": "node scripts/fs-conformance.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

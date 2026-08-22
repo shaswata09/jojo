@@ -17,19 +17,26 @@ import { cn } from '@/lib/utils'
 /**
  * Files a record under a job, or under nothing.
  *
- * The same combobox the timeline dialog uses, kept here rather than shared
- * because the two differ in one thing that matters: this one is inline in a
- * list, so its trigger has to survive a narrow column.
+ * The same combobox the timeline dialog uses, kept separate from it because the
+ * two differ in one thing that matters: this one is inline in a list, so its
+ * trigger has to survive a narrow column.
+ *
+ * It sits in `vault/` rather than in `vault/links/` because the files tool needs
+ * exactly this control and a second copy of it is how the two rows would drift
+ * into disagreeing about what clearing the field means.
  */
 export function ApplicationPicker({
   id,
   value,
   onChange,
+  /** What the clear button says it is unfiling — 'link', 'file'. */
+  what = 'record',
   className,
 }: {
   id?: string
   value?: string
   onChange: (id: string | undefined) => void
+  what?: string
   className?: string
 }) {
   const { all, byId } = useApplications()
@@ -90,8 +97,8 @@ export function ApplicationPicker({
           type="button"
           variant="ghost"
           size="icon-sm"
-          title="Unfile this link"
-          aria-label="Unfile this link"
+          title={`Unfile this ${what}`}
+          aria-label={`Unfile this ${what}`}
           onClick={() => onChange(undefined)}
         >
           <X aria-hidden />

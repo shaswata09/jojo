@@ -1,10 +1,10 @@
 import { useState } from 'react'
+import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { pickDocuments } from '@/lib/documents'
 import { Txt } from '@/components/ui/Text'
 import { View } from 'react-native'
 import { Button } from '@/components/ui/Button'
 import { FormField, TextField } from '@/components/ui/Field'
-import { MenuSheet } from '@/components/ui/Menu'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { displayName } from '@jojo/service/data/seed'
@@ -35,7 +35,9 @@ export function FileEditor({
   onClose: () => void
   onSave: (draft: Omit<VaultFile, 'id' | 'savedOn'>) => void
 }) {
-  const { all: applications, byId } = useApplications()
+  // Only the selected record's name is wanted here now; the picker sheet
+  // reads the list itself.
+  const { byId } = useApplications()
   const [name, setName] = useState(initial?.name ?? '')
   const [size, setSize] = useState(initial?.size === '—' ? '' : (initial?.size ?? ''))
   const [note, setNote] = useState(initial?.note ?? '')
@@ -195,21 +197,14 @@ export function FileEditor({
         <TextField label="Note" value={note} multiline onChangeText={setNote} />
       </View>
 
-      <MenuSheet
+      <ApplicationPickerSheet
         open={appPickerOpen}
+        value={applicationId}
         onClose={() => setAppPickerOpen(false)}
-        title="Related application"
-        actions={
-          applications.length === 0
-            ? [{ id: 'none', label: 'No applications yet', disabled: true, onPress: () => {} }]
-            : applications.map((a) => ({
-                id: a.id,
-                label: displayName(a),
-                hint: a.roleTag,
-                checked: a.id === applicationId,
-                onPress: () => setApplicationId(a.id),
-              }))
-        }
+        onChange={(id) => {
+          setApplicationId(id)
+          setAppPickerOpen(false)
+        }}
       />
     </Sheet>
   )

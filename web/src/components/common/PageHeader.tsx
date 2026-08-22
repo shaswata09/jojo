@@ -41,6 +41,15 @@ export function PageHeader({
    * store keyed by route — would put every page's options in a file none of
    * them own. Pages with nothing to configure simply omit it and no control
    * appears, rather than opening an empty panel.
+   *
+   * A page without options starts its title hard against the content edge —
+   * there is no reserved gutter. This file used to keep one, so that the h1
+   * landed on the same x whatever route you were on, and the cost was a 36px
+   * band of empty space on Today, Assistant, Settings, the guide pages and
+   * every placeholder: most of the app, indented for the benefit of the seven
+   * routes that do have a control. Asked for and settled — the title aligns
+   * with the content beneath it, and the h1 shifts by the control's width when
+   * you cross between the two kinds of page. Do not reinstate the spacer.
    */
   settings?: ReactNode
 }) {
@@ -69,14 +78,7 @@ export function PageHeader({
               {settings}
             </PopoverContent>
           </Popover>
-        ) : (
-          /* The gutter is reserved whether or not a page has options, so the
-             h1 lands on the same x on every route. Without it the title jumps
-             46px sideways as you move between a page with a settings control
-             and one without — which reads, every single time, as the layout
-             breaking rather than as a control appearing. */
-          <span aria-hidden className="size-9 shrink-0" />
-        )}
+        ) : null}
 
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold">{title}</h1>
