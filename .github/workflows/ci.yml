@@ -308,10 +308,22 @@ jobs:
           BASE_PATH: /${{ github.event.repository.name }}/
         run: npm -w web run build
 
-      # `enablement: true` turns Pages on for the repository and sets its source
-      # to Actions, instead of failing with "Get Pages site failed" until someone
-      # does it by hand in Settings. The first run does the enabling; every run
-      # after finds it already done and carries on.
+      # `enablement: true` asks the action to turn Pages on if it is off. It is
+      # kept because it is free when the site already exists — but it is NOT a
+      # substitute for enabling Pages once, by hand, and the comment here used
+      # to claim otherwise.
+      #
+      # What it cannot do: CREATE the site on a repository where Pages has never
+      # been switched on. That is `POST /repos/{owner}/{repo}/pages`, which needs
+      # admin, and `GITHUB_TOKEN` never has admin however much this job asks for
+      # in `permissions`. `pages: write` grants the right to DEPLOY to a site
+      # that exists, not to bring one into being. The failure reads:
+      #
+      #   Get Pages site failed. Error: Not Found
+      #   Create Pages site failed. Error: Resource not accessible by integration
+      #
+      # The one-time fix is in the repository, not in this file:
+      # Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
       - uses: actions/configure-pages@v5
         with:
           enablement: true

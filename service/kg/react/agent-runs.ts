@@ -168,6 +168,7 @@ export function createAgentRuns(): AgentRuns {
     waitingSnapshot = [...runs.values()].filter((r) => r.pending !== null)
     // Copied before iterating: a listener that unsubscribes itself while being
     // notified would otherwise mutate the set mid-loop.
+    // eslint-disable-next-line unicorn/no-useless-spread
     for (const listener of [...listeners]) listener()
   }
 
