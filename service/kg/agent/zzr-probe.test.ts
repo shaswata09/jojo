@@ -57,14 +57,16 @@ function rank(query: string) {
 
 const ALWAYS = [...READ_NAMES, 'org.ensure', 'keyword.create']
 
-function retrieve(query: string, k: number) {
+function retrieve(query: string, k: number, mode: 'plain' | 'closure' | 'domain') {
   const top = rank(query).filter((r) => r.score > 0 && !READ_NAMES.includes(r.name)).slice(0, k).map((r) => r.name)
   const set = new Set([...ALWAYS, ...top])
-  // domain completion: any domain with a hit gets its whole domain
-  const doms = new Set(top.map((n) => n.split('.')[0]))
-  for (const e of CATALOG) if (doms.has(e.name.split('.')[0])) set.add(e.name)
-  // closure: everything selected can get the ids it requires
-  for (const n of [...set]) for (const ty of NEEDS[n] ?? []) for (const p of PRODUCERS[ty] ?? []) set.add(p)
+  if (mode === 'domain') {
+    const doms = new Set(top.map((n) => n.split('.')[0]))
+    for (const e of CATALOG) if (doms.has(e.name.split('.')[0])) set.add(e.name)
+  }
+  if (mode !== 'plain') {
+    for (const n of [...set]) for (const ty of NEEDS[n] ?? []) for (const p of PRODUCERS[ty] ?? []) set.add(p)
+  }
   return [...set]
 }
 
@@ -87,20 +89,28 @@ const GOLD: [string, string[]][] = [
   ['what happened with Rice?', []],
 ]
 
-test('retriever', () => {
-  console.log('full catalog tok', tokOf(CATALOG.map((e) => e.name)))
-  console.log('ALWAYS floor tok', tokOf(ALWAYS), ALWAYS.length, 'tools')
-  for (const k of [6, 10]) {
-    let sizes: number[] = []; let miss = 0; let total = 0
-    for (const [q, need] of GOLD) {
-      const set = retrieve(q, k)
-      sizes.push(tokOf(set))
-      const gotAny = need.length === 0 || need.some((n) => set.includes(n))
-      const hits = need.filter((n) => set.includes(n))
-      total += 1; if (!gotAny) miss += 1
-      if (k === 10) console.log(`k=${k} [${set.length} tools ${tokOf(set)} tok] ${gotAny ? 'HIT' : 'MISS'} (${hits.length}/${need.length}) :: ${q}`)
+
+import { describeEntry } from './catalog'
+const menuTok = (resident: readonly string[]) => {
+  const r = new Set(resident)
+  const lines = CATALOG.filter((e) => !r.has(e.name)).map((e) => `${e.wireName}: ${describeEntry(e)}`)
+  return Math.round(lines.join('\n').length / 3.6)
+}
+
+test('variants', () => {
+  console.log('full', tokOf(CATALOG.map((e) => e.name)), 'floor', tokOf(ALWAYS))
+  for (const mode of ['plain', 'closure', 'domain'] as const) {
+    for (const k of [4, 6, 8, 10, 14]) {
+      let sizes: number[] = []; let withMenu: number[] = []; let recall = 0; let need = 0; let anyMiss = 0
+      for (const [q, want] of GOLD) {
+        const set = retrieve(q, k, mode)
+        sizes.push(tokOf(set)); withMenu.push(tokOf(set) + menuTok(set))
+        const hits = want.filter((n) => set.includes(n)).length
+        recall += hits; need += want.length
+        if (want.length && hits === 0) anyMiss += 1
+      }
+      const avg = (a: number[]) => Math.round(a.reduce((x, y) => x + y, 0) / a.length)
+      console.log(`${mode} k=${k}: avg ${avg(sizes)} tok (max ${Math.max(...sizes)}), +menu ${avg(withMenu)}, recall ${recall}/${need}, dead-ends ${anyMiss}/${GOLD.filter(g=>g[1].length).length}`)
     }
-    const avg = Math.round(sizes.reduce((a, b) => a + b, 0) / sizes.length)
-    console.log(`k=${k} avg ${avg} tok, max ${Math.max(...sizes)}, min ${Math.min(...sizes)}, misses ${miss}/${total}`)
   }
 })
