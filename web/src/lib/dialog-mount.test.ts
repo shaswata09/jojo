@@ -106,7 +106,8 @@ describe('DialogHost', () => {
 
     // If this ever reads 0, the regex has drifted rather than the bug being
     // fixed — an empty `every()` passes and would hide exactly this defect.
-    expect(keys.length).toBe(3)
+    // Four since 'Application from a link' joined the host.
+    expect(keys.length).toBe(4)
     for (const key of keys) expect(key).toMatch(/^mountKey\(/)
   })
 
@@ -115,7 +116,7 @@ describe('DialogHost', () => {
     // and reinstate the defect in full: one key for every open.
     const calls = [...dialogsSource.matchAll(/mountKey\([^,]+,\s*([A-Za-z_$][\w$]*)\s*\)/g)]
 
-    expect(calls.length).toBe(3)
+    expect(calls.length).toBe(4)
     for (const call of calls) expect(call[1]).toBe('showing')
   })
 })

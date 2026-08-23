@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { ChevronsUpDown, X } from 'lucide-react'
+import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { FormField } from '@/components/common/Field'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,23 +15,27 @@ import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
 
 /**
- * The application this record is about, picked from a searchable list.
+ * The applications this record is about, picked from a searchable list.
  *
- * `onSelect` rather than a plain setter: linking an application is the strongest
+ * `onToggle` rather than a plain setter: linking an application is the strongest
  * hint the form gets about what kind of record this is, and the caller is the
  * only place that knows whether the user has already chosen a kind themselves.
+ *
+ * MULTI-SELECT, and the popover stays open while you pick — a reference deadline
+ * covers three applications, and a control that closed on the first would teach
+ * people it holds one.
  */
 export function ApplicationLinkField({
   applications,
-  applicationId,
-  selectedApp,
-  onSelect,
+  applicationIds,
+  selectedApps,
+  onToggle,
   onClear,
 }: {
   applications: readonly Application[]
-  applicationId: string | undefined
-  selectedApp: Application | undefined
-  onSelect: (id: string) => void
+  applicationIds: readonly string[]
+  selectedApps: readonly Application[]
+  onToggle: (id: string) => void
   onClear: () => void
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -41,7 +45,7 @@ export function ApplicationLinkField({
     <FormField
       label="Related application"
       htmlFor={appId}
-      hint="Links the two, so the application can list this and this can lead back to it."
+      hint="Links them, so each application lists this and this leads back to any of them."
     >
       <div className="flex items-center gap-1.5">
         <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
@@ -55,7 +59,11 @@ export function ApplicationLinkField({
               className="h-8 min-w-0 flex-1 justify-between font-normal"
             >
               <span className="truncate">
-                {selectedApp ? displayName(selectedApp) : 'Not linked'}
+                {selectedApps.length === 0
+                  ? 'Not linked'
+                  : selectedApps.length === 1 && selectedApps[0]
+                    ? displayName(selectedApps[0])
+                    : `${String(selectedApps.length)} applications`}
               </span>
               <ChevronsUpDown aria-hidden className="size-3.5 opacity-60" />
             </Button>
@@ -78,12 +86,16 @@ export function ApplicationLinkField({
                       // cmdk matches on `value`, so the role and stage are
                       // searchable while the row still reads as one name.
                       value={`${displayName(a)} ${a.roleTag} ${a.stage}`}
-                      data-checked={a.id === applicationId}
+                      data-checked={applicationIds.includes(a.id)}
+                      // Deliberately does NOT close: see the note above.
                       onSelect={() => {
-                        onSelect(a.id)
-                        setPickerOpen(false)
+                        onToggle(a.id)
                       }}
                     >
+                      <Check
+                        aria-hidden
+                        className={`size-3.5 shrink-0 ${applicationIds.includes(a.id) ? 'opacity-100' : 'opacity-0'}`}
+                      />
                       <span className="truncate">{displayName(a)}</span>
                     </CommandItem>
                   ))}
@@ -93,13 +105,13 @@ export function ApplicationLinkField({
           </PopoverContent>
         </Popover>
 
-        {applicationId ? (
+        {applicationIds.length > 0 ? (
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
-            title="Clear the linked application"
-            aria-label="Clear the linked application"
+            title="Clear the linked applications"
+            aria-label="Clear the linked applications"
             onClick={onClear}
           >
             <X aria-hidden />

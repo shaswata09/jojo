@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import { kindOfFile } from './files'
+import type { CaptureEnvelope } from './capture'
 import {
+  CAPTURE_EXTENSIONS,
   CAPTURE_HREF_ATTR,
   CAPTURE_MAX_BYTES,
   CAPTURE_REJECTION_MESSAGE,
   canonicalPostingUrl,
   captureFileName,
+  captureNote,
   hostOf,
   isCaptureSource,
   readCapture,
@@ -67,7 +71,8 @@ describe('remoteRefCount', () => {
     // Measured against a fixture. `&lt;img src="…"&gt;` in the source serialises
     // with real quotes, and an unanchored pattern threw the whole capture away
     // over the posting's own words.
-    const prose = '<p>To embed it write &lt;img src="https://example.com/x.png"&gt; in the body.</p>'
+    const prose =
+      '<p>To embed it write &lt;img src="https://example.com/x.png"&gt; in the body.</p>'
     expect(remoteRefCount(prose)).toBe(0)
   })
 
@@ -99,6 +104,22 @@ describe('remoteRefCount', () => {
     expect(remoteRefCount('<style>.a{background:url("data:image/png;base64,iVBO")}</style>')).toBe(
       0,
     )
+  })
+
+  it('counts a bare @import, which has no url( and no attribute', () => {
+    // The one that got through. The walk sanitises imports it can see in the
+    // page's own <style> blocks; a stylesheet FETCHED by the inliner could carry
+    // its own `@import "https://…"`, which reached a stored capture untouched
+    // and was fetched by the viewer on every open.
+    expect(remoteRefCount('<style>@import "https://cdn.test/x.css";</style>')).toBe(1)
+    expect(remoteRefCount("<style>@import url('https://cdn.test/x.css');</style>")).toBe(1)
+    expect(remoteRefCount('<style>@import url(https://cdn.test/x.css);</style>')).toBe(1)
+    expect(remoteRefCount('<style>@import "//cdn.test/x.css";</style>')).toBe(1)
+  })
+
+  it('does not count an @import the pipeline already resolved', () => {
+    expect(remoteRefCount('<style>@import "data:text/css,a{}";</style>')).toBe(0)
+    expect(remoteRefCount('<style>@import url("__JOJO_ASSET_0__");</style>')).toBe(0)
   })
 
   it('counts a surviving anchor href, because a click inside the frame is a fetch', () => {
@@ -258,5 +279,135 @@ describe('canonicalPostingUrl', () => {
 
   it('answers rather than throwing for something that is not a URL', () => {
     expect(canonicalPostingUrl('nonsense')).toBe('nonsense')
+  })
+})
+
+describe('shadowRoots and the note', () => {
+  it('carries a shadow-root count through the trust boundary', () => {
+    // Both serialisers send one and `readCapture` used to drop it, so the count
+    // was computed on every capture and read by nothing.
+    const read = readCapture(envelope({ shadowRoots: 3 }))
+    expect(read).toMatchObject({ shadowRoots: 3 })
+  })
+
+  it('defaults the count rather than trusting what arrived', () => {
+    expect(readCapture(envelope({ shadowRoots: undefined }))).toMatchObject({ shadowRoots: 0 })
+    expect(readCapture(envelope({ shadowRoots: -2 }))).toMatchObject({ shadowRoots: 0 })
+    expect(readCapture(envelope({ shadowRoots: 'lots' }))).toMatchObject({ shadowRoots: 0 })
+  })
+
+  it('says only what happened', () => {
+    const clean = readCapture(envelope())
+    expect(typeof clean).toBe('object')
+    expect(captureNote(clean as CaptureEnvelope)).toBe('Captured from boards.greenhouse.io')
+  })
+
+  it('names both kinds of loss, and pluralises each', () => {
+    const lossy = readCapture(envelope({ dropped: 1, shadowRoots: 2 })) as CaptureEnvelope
+    expect(captureNote(lossy)).toBe(
+      'Captured from boards.greenhouse.io · 1 asset could not be kept · 2 parts of the page could not be copied',
+    )
+  })
+})
+
+describe('CAPTURE_EXTENSIONS and kindOfFile', () => {
+  it('agree, without one importing the other', () => {
+    // The comment on CAPTURE_EXTENSIONS says the two lists are checked against
+    // each other rather than shared, because collapsing them would put a
+    // capture concern inside a map thirty unrelated extensions live in. This is
+    // that check — without it the claim is decoration.
+    for (const ext of CAPTURE_EXTENSIONS) {
+      expect(kindOfFile(`posting.${ext}`)).toBe('page')
+    }
+  })
+
+  it('does not claim an extension that means something else', () => {
+    expect(kindOfFile('cv.pdf')).toBe('pdf')
+    expect(kindOfFile('notes.md')).toBe('note')
+  })
+})
+
+describe('canonicalising the four boards the scout reads', () => {
+  /*
+   * These were added when the scout started reading search-results pages, which
+   * is what makes them load-bearing rather than tidy: a results page attaches
+   * its own tracking to every row, so the same job reached from a search and
+   * from a saved link read as two different jobs and the scout proposed it
+   * twice. Every pair below is one job under two real spellings.
+   */
+  const same = (a: string, b: string) =>
+    expect(canonicalPostingUrl(a)).toBe(canonicalPostingUrl(b))
+
+  it('folds Greenhouse’s two live hostnames and its search tracking', () => {
+    same(
+      'https://boards.greenhouse.io/anthropic/jobs/5390799008',
+      'https://job-boards.greenhouse.io/anthropic/jobs/5390799008?gh_src=abc123',
+    )
+    expect(canonicalPostingUrl('https://boards.greenhouse.io/anthropic/jobs/5390799008')).toBe(
+      'https://job-boards.greenhouse.io/anthropic/jobs/5390799008',
+    )
+  })
+
+  it('keeps two different Greenhouse jobs apart', () => {
+    expect(canonicalPostingUrl('https://job-boards.greenhouse.io/acme/jobs/1')).not.toBe(
+      canonicalPostingUrl('https://job-boards.greenhouse.io/acme/jobs/2'),
+    )
+  })
+
+  it('reads Lever’s /apply as the same job with the form open', () => {
+    same(
+      'https://jobs.lever.co/matchgroup/1deea0b0-9f37-4f2a-b8c1-0d4e5f6a7b8c',
+      'https://jobs.lever.co/matchgroup/1deea0b0-9f37-4f2a-b8c1-0d4e5f6a7b8c/apply?lever-source=LinkedIn',
+    )
+  })
+
+  it('reads Ashby’s /application the same way', () => {
+    same(
+      'https://jobs.ashbyhq.com/openai/6ba0a5e0-3a1f-4c2b-9d8e-1f2a3b4c5d6e',
+      'https://jobs.ashbyhq.com/openai/6ba0a5e0-3a1f-4c2b-9d8e-1f2a3b4c5d6e/application?utm_source=x',
+    )
+  })
+
+  /*
+   * Workday's own site structure changes between /job/<location>/<slug>_<REQ>
+   * and /details/<slug>_<REQ> for one posting. The req is unique within a
+   * tenant and the tenant is the hostname, so everything between them is
+   * decoration.
+   */
+  it('reduces Workday to its tenant and its requisition number', () => {
+    same(
+      'https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Senior-Software-Engineer_JR1988734',
+      'https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/details/Senior-Software-Engineer_JR1988734?source=LinkedIn',
+    )
+    expect(
+      canonicalPostingUrl(
+        'https://nvidia.wd5.myworkdayjobs.com/en-US/Site/job/Loc/Engineer_JR1988734',
+      ),
+    ).toBe('https://nvidia.wd5.myworkdayjobs.com/JR1988734')
+  })
+
+  it('keeps two tenants apart even at the same requisition number', () => {
+    expect(
+      canonicalPostingUrl('https://a.wd5.myworkdayjobs.com/en-US/S/job/L/E_JR1'),
+    ).not.toBe(canonicalPostingUrl('https://b.wd5.myworkdayjobs.com/en-US/S/job/L/E_JR1'))
+  })
+
+  /*
+   * The philosophy the file states, held as a test: a board this does not
+   * recognise is returned untouched rather than tidied, because plenty of
+   * smaller boards put the posting's identity in a query parameter.
+   */
+  it('leaves a board it does not recognise exactly as it found it', () => {
+    const odd = 'https://jobs.example.test/listing?id=99&utm_source=x#top'
+    expect(canonicalPostingUrl(odd)).toBe(odd)
+  })
+
+  it('leaves a board’s own index page alone rather than inventing an id', () => {
+    expect(canonicalPostingUrl('https://jobs.lever.co/matchgroup')).toBe(
+      'https://jobs.lever.co/matchgroup',
+    )
+    expect(canonicalPostingUrl('https://job-boards.greenhouse.io/anthropic')).toBe(
+      'https://job-boards.greenhouse.io/anthropic',
+    )
   })
 })

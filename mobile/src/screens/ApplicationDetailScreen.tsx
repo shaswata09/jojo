@@ -91,10 +91,20 @@ function Detail({ application: a }: { application: Application }) {
 
   const openCount = items.filter((i) => !i.completedOn).length
   const reminderCount = items.filter((i) => i.remind).length
-  const savedCount = [links, files, snippets, postings, matches].reduce(
-    (n, list) => n + list.filter((r) => r.applicationId === a.id).length,
-    0,
-  )
+  // Two relations, counted separately because they no longer have the same
+  // shape. Links, files and snippets carry a LIST — `FILED_UNDER` is
+  // many-to-many, so one CV counts on every application it went to. Postings
+  // and matches carry a scalar: `BECAME` is still one-to-one, because a lead
+  // is promoted into exactly one application.
+  const savedCount =
+    [links, files, snippets].reduce(
+      (n, list) => n + list.filter((r) => r.applicationIds.includes(a.id)).length,
+      0,
+    ) +
+    [postings, matches].reduce(
+      (n, list) => n + list.filter((r) => r.applicationId === a.id).length,
+      0,
+    )
 
   /**
    * What survives the delete, counted rather than guessed.

@@ -12,7 +12,7 @@ import { s } from '@/theme/styles'
 import { Txt } from '@/components/ui/Text'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import { shortDate, whenLabel } from '@jojo/service/data/timeline'
-import { CREATE_ACTIONS, useRunCreateAction } from '@/lib/create-actions'
+import { useCreateActions, useRunCreateAction } from '@/lib/create-actions'
 import { DESTINATIONS } from '@/lib/destinations'
 import { matchesQuery } from '@/lib/search'
 import { useSheets } from '@/lib/sheets-context'
@@ -46,6 +46,7 @@ export function SearchScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { open } = useSheets()
   const runCreateAction = useRunCreateAction()
+  const createActions = useCreateActions()
 
   const { all: applications } = useApplications()
   const { all: items } = useTimeline()
@@ -197,7 +198,7 @@ export function SearchScreen() {
             <View style={{ paddingHorizontal: space[4], paddingTop: space[3] }}>
               <PanelTitle hint="nothing to find? make it">Create</PanelTitle>
             </View>
-            {CREATE_ACTIONS.map((action, i) => (
+            {createActions.map((action, i) => (
               <View key={action.id}>
                 {i > 0 ? <Divider /> : null}
                 <Pressable

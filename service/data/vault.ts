@@ -38,7 +38,21 @@ export type {
  */
 export const LINK_CATEGORIES: LinkCategory[] = [...LINK_CATEGORY_VALUES]
 
-export const vaultLinks: VaultLink[] = [
+/**
+ * The fixtures write `applicationIds` only when there are some.
+ *
+ * `applicationIds` is required and non-optional on the projected types, because
+ * a consumer that has to tell `undefined` from `[]` will get it wrong. Fixtures
+ * are a different audience: twenty literals each carrying `applicationIds: []`
+ * is noise that hides the four that say something. `filed` supplies the empty
+ * default once, so both readings stay true.
+ */
+const filed = <T extends { applicationIds?: string[] }>(
+  rows: T[],
+): (T & { applicationIds: string[] })[] =>
+  rows.map((row) => ({ ...row, applicationIds: row.applicationIds ?? [] }))
+
+const vaultLinksRaw: (Omit<VaultLink, 'applicationIds'> & { applicationIds?: string[] })[] = [
   {
     id: 'l-rice',
     title: 'Rice — Statistics, tenure-track posting',
@@ -107,7 +121,7 @@ export const vaultLinks: VaultLink[] = [
 
 export const FILE_BUCKETS: FileBucket[] = [...FILE_BUCKET_VALUES]
 
-export const vaultFiles: VaultFile[] = [
+const vaultFilesRaw: (Omit<VaultFile, 'applicationIds'> & { applicationIds?: string[] })[] = [
   {
     id: 'f-rice-ad',
     name: 'Rice-Statistics-position-ad.pdf',
@@ -206,7 +220,7 @@ export const SNIPPET_TAGS: SnippetTag[] = [...SNIPPET_TAG_VALUES]
  * A job search asks the same handful of questions across dozens of forms, and
  * re-writing them from scratch is where most of the evening goes.
  */
-export const snippets: Snippet[] = [
+const snippetsRaw: (Omit<Snippet, 'applicationIds'> & { applicationIds?: string[] })[] = [
   {
     id: 's-bio-short',
     title: 'Short bio — 50 words',
@@ -256,3 +270,9 @@ export const snippets: Snippet[] = [
     body: 'Dear [NAME],\n\nThank you for the offer, and for the care the committee took over my visit. After a great deal of thought I have decided to accept a position elsewhere. I am grateful for the time everyone gave me and hope our paths cross again.\n\nWith best wishes,\n[YOUR NAME]',
   },
 ]
+
+export const vaultLinks: VaultLink[] = filed(vaultLinksRaw)
+
+export const vaultFiles: VaultFile[] = filed(vaultFilesRaw)
+
+export const snippets: Snippet[] = filed(snippetsRaw)

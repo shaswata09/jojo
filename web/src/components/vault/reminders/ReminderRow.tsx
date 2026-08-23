@@ -31,7 +31,8 @@ export function ReminderRow({
    * application was a URL that died on the next reload; `appPath` needs the
    * record to reach for its slug.
    */
-  related?: Application
+  /** Every application it hangs off. Empty, never absent. */
+  related: readonly Application[]
   /** Arrived here from a link that named this row — see `focus` in links.ts. */
   focused?: boolean
   /** Set on the focused row only, so the tool can scroll it into view. */
@@ -137,13 +138,19 @@ export function ReminderRow({
               {/* The edge back to the application — the reason every dated thing
                   became one record with an `applicationId` instead of five lists
                   that could only name a job in prose. */}
-              {related ? (
-                <Link
-                  to={appPath(related)}
-                  className="min-w-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
-                >
-                  {displayName(related)}
-                </Link>
+              {/* One link per application: a reference deadline covering three
+                  jobs is reachable from all three, and naming one would be
+                  picking a favourite the record does not have. */}
+              {related.length > 0 ? (
+                related.map((app) => (
+                  <Link
+                    key={app.id}
+                    to={appPath(app)}
+                    className="min-w-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
+                  >
+                    {displayName(app)}
+                  </Link>
+                ))
               ) : (
                 <span className="shrink-0">Unfiled</span>
               )}

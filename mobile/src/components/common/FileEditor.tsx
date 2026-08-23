@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
+import { ApplicationField } from '@/components/common/ApplicationPickerSheet'
 import { pickDocuments } from '@/lib/documents'
 import { Txt } from '@/components/ui/Text'
 import { View } from 'react-native'
@@ -7,12 +7,9 @@ import { Button } from '@/components/ui/Button'
 import { FormField, TextField } from '@/components/ui/Field'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
-import { displayName } from '@jojo/service/data/seed'
 import { FILE_BUCKETS } from '@jojo/service/data/vault'
 import type { FileBucket, VaultFile } from '@jojo/service/data/vault'
 import { kindOfFile } from '@/lib/files'
-import { useApplications } from '@/lib/store-context'
-import { s } from '@/theme/styles'
 import { space } from '@/theme/tokens'
 
 /**
@@ -35,15 +32,13 @@ export function FileEditor({
   onClose: () => void
   onSave: (draft: Omit<VaultFile, 'id' | 'savedOn'>) => void
 }) {
-  // Only the selected record's name is wanted here now; the picker sheet
-  // reads the list itself.
-  const { byId } = useApplications()
   const [name, setName] = useState(initial?.name ?? '')
   const [size, setSize] = useState(initial?.size === '—' ? '' : (initial?.size ?? ''))
   const [note, setNote] = useState(initial?.note ?? '')
   const [bucket, setBucket] = useState<FileBucket>(initial?.bucket ?? defaultBucket)
-  const [applicationId, setApplicationId] = useState(initial?.applicationId)
-  const [appPickerOpen, setAppPickerOpen] = useState(false)
+  const [applicationIds, setApplicationIds] = useState<readonly string[]>(
+    initial?.applicationIds ?? [],
+  )
   const [attempted, setAttempted] = useState(false)
   // Set when a real file was picked this sitting, so Save records where the
   // copy went. An edit of an existing record keeps whatever it already had.
@@ -80,8 +75,6 @@ export function FileEditor({
     setUri(first.uri)
   }
 
-  const selectedApp = applicationId ? byId.get(applicationId) : undefined
-
   const submit = () => {
     setAttempted(true)
     if (!name.trim()) return
@@ -96,7 +89,7 @@ export function FileEditor({
       // is what the seed uses for "not known".
       size: size.trim() || '—',
       note: note.trim() || undefined,
-      applicationId,
+      applicationIds: [...applicationIds],
     })
   }
 
@@ -171,41 +164,14 @@ export function FileEditor({
           />
         </FormField>
 
-        <FormField
-          label="Related application"
-          hint="What the Profile's Documents panel and the graph read to say what is filed where."
-        >
-          <View style={s.row}>
-            <Button
-              label={selectedApp ? displayName(selectedApp) : 'Not linked'}
-              variant="outline"
-              size="md"
-              style={s.fill}
-              onPress={() => setAppPickerOpen(true)}
-            />
-            {applicationId ? (
-              <Button
-                label="Clear"
-                variant="ghost"
-                size="md"
-                onPress={() => setApplicationId(undefined)}
-              />
-            ) : null}
-          </View>
-        </FormField>
+        <ApplicationField
+          values={applicationIds}
+          onChange={setApplicationIds}
+          hint="What the Profile's Documents panel and the graph read to say what is filed where. As many jobs as the document went to."
+        />
 
         <TextField label="Note" value={note} multiline onChangeText={setNote} />
       </View>
-
-      <ApplicationPickerSheet
-        open={appPickerOpen}
-        value={applicationId}
-        onClose={() => setAppPickerOpen(false)}
-        onChange={(id) => {
-          setApplicationId(id)
-          setAppPickerOpen(false)
-        }}
-      />
     </Sheet>
   )
 }

@@ -15,7 +15,7 @@ import { IconButton } from '@/components/ui/Button'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Txt } from '@/components/ui/Text'
 import { bucketOf } from '@jojo/service/data/timeline'
-import { CREATE_ACTIONS, useRunCreateAction } from '@/lib/create-actions'
+import { useCreateActions, useRunCreateAction } from '@/lib/create-actions'
 import { useApplications, useScout, useTimeline } from '@/lib/store-context'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'
 import { ApplicationDetailScreen } from '@/screens/ApplicationDetailScreen'
@@ -150,6 +150,7 @@ function TabNavigator() {
  */
 function CreateButton() {
   const runCreateAction = useRunCreateAction()
+  const actions = useCreateActions()
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -159,7 +160,7 @@ function CreateButton() {
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         title="Create"
-        actions={CREATE_ACTIONS.map((action) => ({
+        actions={actions.map((action) => ({
           id: action.id,
           label: action.label,
           icon: action.icon,

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
 import { listModels } from '@/lib/llm'
+import { testReader } from '@/lib/markitdown'
+import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
 import { forgetDocuments } from '@/lib/documents'
@@ -77,6 +79,28 @@ export function SettingsScreen() {
   const [testing, setTesting] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
   const [picking, setPicking] = useState(false)
+
+  /*
+   * The document reader, beside the model but separate from it.
+   *
+   * Two programs, and a person may well run one without the other: the model
+   * answers questions and MarkItDown opens documents.
+   */
+  const { reader, setReader } = useModelSettings()
+  const [readerAt, setReaderAt] = useState(reader)
+  const [readerTesting, setReaderTesting] = useState(false)
+  const [readerFailure, setReaderFailure] = useState<string | null>(null)
+  const [readerOk, setReaderOk] = useState(reader.length > 0)
+
+  const onTestReader = async () => {
+    setReaderTesting(true)
+    setReaderFailure(null)
+    const result = await testReader(readerAt)
+    setReaderTesting(false)
+    setReaderOk(result.ok)
+    if (result.ok) setReader(readerAt.trim())
+    else setReaderFailure(result.reason)
+  }
 
   const connected = model.trim().length > 0
   const saved = serverAt(servers, endpoint)
@@ -405,6 +429,72 @@ export function SettingsScreen() {
         </Panel>
 
         <Panel>
+          <PanelTitle hint="optional">Read my documents</PanelTitle>
+          <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
+            The assistant can only see a document’s name until something turns it into text. Run{' '}
+            {MARKITDOWN.name} on a machine this phone can reach and it can read what is inside your
+            PDFs, Word files, decks and spreadsheets.
+          </Txt>
+          <TextField
+            label="Address"
+            mono
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            value={readerAt}
+            placeholder={MARKITDOWN.defaultEndpoint}
+            hint="Where markitdown-mcp is listening. The path ends in /mcp."
+            onChangeText={(next) => {
+              setReaderAt(next)
+              setReaderOk(false)
+              setReaderFailure(null)
+            }}
+          />
+          <View style={{ marginTop: space[3], gap: space[1] }}>
+            <Txt size="xs" tone="muted">
+              Not running it yet?
+            </Txt>
+            <Txt size="xs" tone="secondary" mono>
+              {MARKITDOWN.install}
+            </Txt>
+            <Txt size="xs" tone="secondary" mono>
+              {MARKITDOWN.serve}
+            </Txt>
+          </View>
+          <View style={styles.testRow}>
+            <Button
+              label={readerTesting ? 'Testing…' : readerOk ? 'Test again' : 'Test connection'}
+              variant="outline"
+              disabled={readerTesting || readerAt.trim().length === 0}
+              blocker={readerAt.trim().length === 0 ? 'Fill in an address first.' : undefined}
+              onPress={onTestReader}
+            />
+            {readerOk ? (
+              <Chip tone="green">Connected</Chip>
+            ) : readerFailure ? (
+              <Chip tone="red">No answer</Chip>
+            ) : (
+              <Chip tone="gray">Not connected</Chip>
+            )}
+          </View>
+          {readerFailure ? (
+            <Txt size="xs" tone="danger" style={{ marginTop: space[2] }}>
+              {readerFailure}
+            </Txt>
+          ) : readerOk ? (
+            <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
+              Documents are sent to that address and nowhere else. Nothing is uploaded.
+            </Txt>
+          ) : null}
+          {/* The notice the licence asks for, where the choice is made. */}
+          <Divider style={{ marginVertical: space[3] }} />
+          <Txt size="xs" tone="muted">
+            {MARKITDOWN.name} is a separate program, not part of jojo. {MARKITDOWN.copyright}{' '}
+            {MARKITDOWN.licence}. jojo is not affiliated with Microsoft.
+          </Txt>
+        </Panel>
+
+        <Panel>
           <PanelTitle>Appearance</PanelTitle>
           <SettingRow
             label="Theme"
@@ -418,19 +508,26 @@ export function SettingsScreen() {
           <PanelTitle>Your data</PanelTitle>
           <View style={styles.dataRow}>
             <Button label="Export as JSON" icon="upload" variant="outline" onPress={onExport} />
-            {/* The blocker sentence is the one `tools/memory.ts` states, not the
-                one that used to be here. "The store can be read but not yet
-                replaced" was false — `repo.replaceAll` exists and web's
-                `lib/data-set.ts` replaces the whole store through it on every
-                data-set switch. The real reason `memory.import` is absent is
-                that reading a backup needs a validator able to REFUSE a file it
-                does not understand, and an importer without one is a data-loss
-                bug with a confirmation dialog in front of it. */}
+            {/* The blocker has changed twice and both previous reasons are now
+                false, so it is worth saying which one this is.
+
+                "The store can be read but not yet replaced" was wrong because
+                `repo.replaceAll` exists. "Reading a backup needs a validator
+                able to refuse a file it does not understand" was right when it
+                was written and is not any more: `core/backup.ts`'s `readBackup`
+                is that validator, `repo/restore.ts` is the restore, and the
+                Transfer screen already runs both on every backup that arrives
+                over the network.
+
+                What is missing now is only the FILE half — a picker that hands
+                this app a .json from wherever the person keeps it. That is a
+                `@react-native-documents/picker` call away and is genuinely not
+                built, rather than being a reason not to build it. */}
             <Button
               label="Import"
               icon="download"
               variant="outline"
-              blocker="Reading a backup needs a validator that can refuse a file it does not understand, and there is not one yet"
+              blocker="Reading a backup file needs the document picker wired to it, which is not built — a transfer from your computer already restores one"
             />
           </View>
           {/* This paragraph said keywords "live in their own store and are not in

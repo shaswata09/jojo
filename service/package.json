@@ -1,6 +1,6 @@
 {
   "name": "@jojo/service",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "The shared layer: the knowledge graph, its tools, and the React binding. Imported by web and mobile, owned by neither.",
@@ -42,7 +42,8 @@
     "./react/status": "./kg/react/status.tsx",
     "./react/*": "./kg/react/*.ts",
     "./data/*": "./data/*.ts",
-    "./log": "./kg/log.ts"
+    "./log": "./kg/log.ts",
+    "./crypto/*": "./kg/crypto/*.ts"
   },
   "//source": "No build step, and no `main`. Both apps compile the TypeScript themselves — Vite for web, Metro plus babel-preset-expo for mobile — and web's kg compiled clean under mobile's older tsc at full strictness before any of this moved, which is what made shipping source rather than output safe to choose. `npm -w @jojo/service exec tsc -b` is the authority on whether it type-checks; the apps' own programs also pull this source in through their imports, but they do it under their own lib and types settings and without types/portable-globals.d.ts, so that pass is incidental and must not be treated as the check.",
   "scripts": {
@@ -67,5 +68,10 @@
     "prettier": "^3.9.6",
     "typescript": "~5.9.2",
     "vitest": "^4.0.0"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^2.3.0",
+    "@noble/curves": "^2.3.0",
+    "@noble/hashes": "^2.3.0"
   }
 }

@@ -5,7 +5,14 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
 import { CodeStructure } from '@/components/guide/CodeStructure'
 import { GuideContents } from '@/components/guide/GuideNav'
 import { ImportRule } from '@/components/guide/ImportRule'
-import { DEVELOPMENT, ISC_TEXT, MIT_TEXT, RUNTIME, type Credit } from '@/components/guide/credits'
+import {
+  DEVELOPMENT,
+  ISC_TEXT,
+  MIT_TEXT,
+  PHONE,
+  RUNTIME,
+  type Credit,
+} from '@/components/guide/credits'
 import { useTitle } from '@/lib/links'
 
 /**
@@ -15,20 +22,21 @@ import { useTitle } from '@/lib/links'
  * and its own page because it has a different update cadence from everything
  * else here: it changes when package.json changes and at no other time.
  *
- * Two things on this page are unusual and both are deliberate.
+ * One thing on this page is unusual and it is deliberate.
  *
- * FIRST, it credits three packages that do nothing. `react-icons`,
- * `@dnd-kit/sortable` and `@dnd-kit/utilities` are installed and imported
- * nowhere under `src`. Dropping them would make a shorter and more flattering
- * page; keeping them, labelled, is the true one — they are in the lockfile, a
- * reader can see them in `package.json`, and the useful thing to say is that
- * they are removal candidates rather than contributors.
- *
- * SECOND, it says out loud where the provenance runs out: one package states no
+ * It says out loud where the provenance runs out: one package states no
  * licence at all, and two vendored images have no recorded source. Both are
  * named rather than smoothed over. A credits page is the one page in an app
  * where a confident guess is worse than an admitted gap, because a reader has
  * no way to tell the two apart and every other line loses its weight.
+ *
+ * This page listed three packages that did nothing until 0.1.0 — `react-icons`,
+ * `@dnd-kit/sortable` and `@dnd-kit/utilities`, installed and imported nowhere.
+ * Naming them here rather than quietly crediting them is what made them easy to
+ * find and delete; `react-icons` alone was 85 MB of install for no import. The
+ * page is now a list of packages that all earn their place, and the rule that
+ * got it there stands: credit what is installed, say what it does, and where it
+ * does nothing, say that.
  *
  * The list itself is in `credits.ts` — data, so the page is one shape and the
  * next `npm install` has one file to reconcile.
@@ -72,6 +80,16 @@ export function GuideBuiltWith() {
         <PanelTitle hint={`${RUNTIME.length} packages`}>In the app</PanelTitle>
         <p className="mb-3 text-sm text-text-2">What ships to the browser and does the work.</p>
         <CreditList credits={RUNTIME} />
+      </Panel>
+
+      <Panel>
+        <PanelTitle hint={`${PHONE.length} packages`}>In the phone app</PanelTitle>
+        <p className="mb-3 text-sm text-text-2">
+          None of this is in the bundle you are reading — a browser never loads React Native. It is
+          here because the phone app has no acknowledgements page of its own, and a dependency with
+          nowhere to be credited is a dependency that is not credited.
+        </p>
+        <CreditList credits={PHONE} />
       </Panel>
 
       <Panel>
@@ -162,6 +180,29 @@ export function GuideBuiltWith() {
                 repository to stop the request. Where they originally came from is not written down
                 anywhere in the history, so nothing is claimed about them and nobody is credited for
                 them. That is a gap to close before this app is distributed, not a licence.
+              </>
+            }
+          />
+          <OtherCredit
+            title="Software jojo talks to but does not ship"
+            meta="MarkItDown, and whichever model server you run"
+            body={
+              <>
+                Two programs jojo can reach, both installed and run by you, both at an address you
+                type into Settings. Neither is bundled into either app and no code from either is in
+                this repository. <span className="text-text-1">MarkItDown</span> is
+                Microsoft&rsquo;s, MIT-licensed, and converts your documents — and a job posting,
+                when you add an application from a link — to text the model can read. The{' '}
+                <span className="text-text-1">model server</span> is whichever you point at:{' '}
+                <span className="font-mono text-xs">vLLM</span>,{' '}
+                <span className="font-mono text-xs">Ollama</span>,{' '}
+                <span className="font-mono text-xs">LM Studio</span> or anything else speaking the
+                OpenAI-compatible chat-completions shape. Their names are theirs; jojo is not
+                affiliated with, endorsed by or sponsored by any of them. MarkItDown&rsquo;s licence
+                is reproduced in full in{' '}
+                <span className="font-mono text-xs">THIRD-PARTY-NOTICES.md</span> at the root; the
+                model servers are named rather than licensed here because jojo neither ships nor
+                requires any particular one.
               </>
             }
           />
@@ -315,11 +356,6 @@ function CreditList({ credits }: { credits: readonly Credit[] }) {
                 licence not stated
               </Chip>
             )}
-            {credit.unused ? (
-              <Chip size="sm" tone="amber">
-                installed, unused
-              </Chip>
-            ) : null}
           </div>
           <p className="mt-1 text-sm text-text-2">{credit.what}</p>
           <p className="mt-1 text-xs text-text-3">

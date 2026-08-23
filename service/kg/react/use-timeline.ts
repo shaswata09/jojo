@@ -22,8 +22,18 @@ import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
 import { asNull, asText, nothingToRestore, present } from './patch'
 
-export type TimelineDraft = Omit<TimelineItem, 'id' | 'allDay' | 'remind' | 'urgency'> &
-  Partial<Pick<TimelineItem, 'allDay' | 'remind' | 'urgency'>>
+/**
+ * `applicationIds` is optional here and required on the projection.
+ *
+ * The projection guarantees a list so no reader has to tell `undefined` from
+ * `[]`; a draft is what a form hands in, and requiring it would mean every
+ * caller that files an item under nothing writes `applicationIds: []` to say so.
+ */
+export type TimelineDraft = Omit<
+  TimelineItem,
+  'id' | 'allDay' | 'remind' | 'urgency' | 'applicationIds'
+> &
+  Partial<Pick<TimelineItem, 'allDay' | 'remind' | 'urgency' | 'applicationIds'>>
 
 export function useTimeline() {
   const graph = useGraph()
@@ -36,7 +46,8 @@ export function useTimeline() {
   const get = useCallback((id: string) => byId.get(id), [byId])
 
   const forApplication = useCallback(
-    (appId: string) => all.filter((i) => i.applicationId === appId),
+    // `includes`, not `===`: an item can be about several applications now.
+    (appId: string) => all.filter((i) => i.applicationIds.includes(appId)),
     [all],
   )
 
@@ -67,7 +78,7 @@ export function useTimeline() {
         ...present('remind', draft.remind),
         ...present('location', draft.location),
         ...present('joinUrl', draft.joinUrl),
-        ...present('applicationId', draft.applicationId),
+        ...present('applicationIds', draft.applicationIds),
         ...present('completedOn', draft.completedOn ?? undefined),
       })
       if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not add the item.')
@@ -94,7 +105,7 @@ export function useTimeline() {
         ...asNull('startMins', patch, 'startMins'),
         ...asNull('durationMins', patch, 'durationMins'),
         ...asNull('completedOn', patch, 'completedOn'),
-        ...asNull('applicationId', patch, 'applicationId'),
+        ...asNull('applicationIds', patch, 'applicationIds'),
       })
     },
     [run],

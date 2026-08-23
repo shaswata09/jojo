@@ -1,7 +1,19 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { agentTurn, isConfigured } from '@/lib/llm'
 import { useAgent } from '@jojo/service/react/use-agent'
+import type { AgentEntry } from '@jojo/service/react/use-agent'
+import {
+  toAgentEntries,
+  toThreadEntries,
+  toTranscript,
+  useThreads,
+} from '@jojo/service/react/use-threads'
+import { useApplications } from '@/lib/store-context'
+import { convertDocument } from '@/lib/markitdown'
+import type { NodeId } from '@jojo/service/core/model'
+import { ThreadBar } from '@/components/assistant/ThreadBar'
+import { ThreadListSheet } from '@/components/assistant/ThreadListSheet'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
@@ -12,7 +24,7 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Screen } from '@/components/ui/Screen'
-import { Panel, PanelTitle } from '@/components/ui/Surface'
+import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import type { SnippetTag } from '@jojo/service/data/vault'
 import { useVault } from '@/lib/store-context'
@@ -181,7 +193,41 @@ export function AssistantScreen() {
 function AgentScreen() {
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
-  const { settings } = useModelSettings()
+  const { settings, reader } = useModelSettings()
+  const { byId } = useApplications()
+  const { files } = useVault()
+  const { threads, create, save, rename, file, remove } = useThreads()
+
+  /*
+   * Which conversation is open, in state AND in a ref.
+   *
+   * The ref is what `onSettled` reads. It runs at the end of a run, from a
+   * closure created when the run started, and by then the state it captured may
+   * be a conversation ago — the first exchange of a NEW thread settles into a
+   * thread that did not exist when `send` was called.
+   */
+  const [activeId, setActiveId] = useState<NodeId | null>(null)
+  const activeRef = useRef<NodeId | null>(null)
+  const openThread = (id: NodeId | null) => {
+    activeRef.current = id
+    setActiveId(id)
+  }
+  const active = threads.find((t) => t.id === activeId) ?? null
+  const [browsing, setBrowsing] = useState(false)
+
+  /**
+   * Reopen the most recent conversation on arrival, once.
+   *
+   * Without it a relaunch lands on a blank thread with the whole history one tap
+   * away, which reads as having lost it. Guarded by a ref rather than by
+   * `activeId`, because New sets that back to null on purpose.
+   */
+  const opened = useRef(false)
+  useEffect(() => {
+    if (opened.current || threads.length === 0) return
+    opened.current = true
+    openThread(threads[0]?.id ?? null)
+  }, [threads])
   const [prompt, setPrompt] = useState('')
   const { copy, isCopied } = useCopy()
   const { addSnippet } = useVault()
@@ -216,7 +262,64 @@ function AgentScreen() {
     [settings],
   )
 
-  const { entries, busy, send, stop, clear } = useAgent({ llm, approve })
+  /**
+   * Saves an exchange, creating the conversation if this was the first one.
+   *
+   * Created at the SETTLE rather than at the send: creating it up front would
+   * change the loaded thread's key mid-exchange, and the reload that follows
+   * would replace the live turns with the empty ones just written — the user's
+   * question vanishing as they watch.
+   */
+  const onSettled = useCallback(
+    (settled: readonly AgentEntry[]) => {
+      const stored = toThreadEntries(settled)
+      const id = activeRef.current
+      if (id) {
+        save(id, stored)
+        return
+      }
+      const asked = settled.find((e) => e.kind === 'you')
+      const made = create({ title: asked?.kind === 'you' ? asked.text : '', entries: stored })
+      if (made.ok) openThread(made.output)
+    },
+    [create, save],
+  )
+
+  /**
+   * Reading a document, if a reader is configured.
+   *
+   * `undefined` when it is not, which is what makes `vault.file.read` refuse
+   * with an explanation rather than fail.
+   */
+  const convert = useCallback(
+    async (fileId: string) => {
+      const record = files.find((f) => f.id === fileId)
+      if (!record?.uri) {
+        return {
+          ok: false as const,
+          reason: 'That record has no copy stored on this device, so there is nothing to read.',
+        }
+      }
+      return convertDocument(reader, record.uri, record.name)
+    },
+    [files, reader],
+  )
+
+  const { entries, busy, send, stop, clear } = useAgent({
+    llm,
+    approve,
+    onSettled,
+    ...(reader ? { convert } : {}),
+    ...(active
+      ? {
+          thread: {
+            key: active.id,
+            entries: toAgentEntries(active.entries),
+            history: toTranscript(active.entries),
+          },
+        }
+      : {}),
+  })
 
   const submit = () => {
     const clean = prompt.trim()
@@ -276,7 +379,15 @@ function AgentScreen() {
       subtitle="Connected to your model, and able to act on your records. Everything it does is listed as it happens."
       actions={
         entries.length > 0 ? (
-          <Button label="Clear" variant="ghost" disabled={busy} onPress={clear} />
+          <Button
+            label="Clear"
+            variant="ghost"
+            disabled={busy}
+            onPress={() => {
+              clear()
+              openThread(null)
+            }}
+          />
         ) : null
       }
     >
@@ -289,6 +400,40 @@ function AgentScreen() {
       </Panel>
 
       <Panel>
+        <ThreadBar
+          threads={threads}
+          activeId={activeId}
+          byId={byId}
+          busy={busy}
+          onBrowse={() => setBrowsing(true)}
+          onRename={(id, title) => {
+            rename(id, title)
+          }}
+          onFile={(id, applicationId) => {
+            const result = file(id, applicationId)
+            if (result.ok) {
+              toast({
+                title: result.announcement.title,
+                ...(result.undo ? { action: { label: 'Undo', onPress: result.undo } } : {}),
+              })
+            }
+          }}
+          onDelete={(id) => {
+            const result = remove(id)
+            if (!result.ok) return
+            // The open conversation just stopped existing; showing its turns
+            // under a title that is gone reads as a failed delete.
+            clear()
+            openThread(null)
+            toast({
+              title: 'Conversation deleted',
+              tone: 'danger',
+              ...(result.undo ? { action: { label: 'Undo', onPress: result.undo } } : {}),
+            })
+          }}
+        />
+        <Divider style={{ marginVertical: space[3] }} />
+
         {entries.length === 0 ? (
           <EmptyState
             icon="cpu"
@@ -428,6 +573,19 @@ function AgentScreen() {
           the same undo a button press does.
         </Txt>
       </Panel>
+
+      <ThreadListSheet
+        open={browsing}
+        threads={threads}
+        activeId={activeId}
+        byId={byId}
+        onOpen={openThread}
+        onNew={() => {
+          clear()
+          openThread(null)
+        }}
+        onClose={() => setBrowsing(false)}
+      />
     </Screen>
   )
 }

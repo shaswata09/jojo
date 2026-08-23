@@ -7,8 +7,46 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
+/**
+ * Where the built app will be served from.
+ *
+ * '/' everywhere except GitHub Pages, which serves a project site under the
+ * repository name — so the deploy workflow sets `BASE_PATH=/jojo/` and every
+ * asset URL Vite writes is rewritten to match. An env var rather than a
+ * literal, because the repository name is deployment configuration and not a
+ * fact about this code: a custom domain, or a fork under another name, needs a
+ * different value and no code change.
+ *
+ * `App.tsx` reads the same value back through `import.meta.env.BASE_URL` for
+ * the router's basename. One source, so the two cannot disagree.
+ */
+const base = process.env.BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   plugins: [react(), tailwindcss()],
+  /**
+   * A same-origin path to MarkItDown, because a browser cannot reach it directly.
+   *
+   * `markitdown-mcp` sends no CORS headers and answers the preflight with 405 —
+   * measured against 0.0.1a4, not assumed — so a page on one port cannot POST to
+   * it on another however local both are. React Native has no such rule, which
+   * is why the phone talks to it straight and only the web needs this.
+   *
+   * The proxy is the dev server's, so it is the dev story. A built copy of jojo
+   * needs the same path served by whatever is serving the app; the Settings card
+   * says so rather than leaving someone to discover it from an opaque
+   * `TypeError`.
+   */
+  server: {
+    proxy: {
+      '/reader': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+        rewrite: (at) => at.replace(/^\/reader/, ''),
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),

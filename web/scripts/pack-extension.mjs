@@ -44,9 +44,12 @@ try {
 } catch {
   console.error(
     'pack-extension: no `zip` on PATH.\n' +
-      '  The extension is plain files — the app can still be built, but the\n' +
-      '  download on the install page will 404 until this runs somewhere that\n' +
-      '  has it. macOS and most Linux images ship it.',
+      '  This runs first in both `npm run dev` and `npm run build`, so the app\n' +
+      '  will not start or build until it is available. That is deliberate: the\n' +
+      '  alternative is a Settings page whose Download button hands the user\n' +
+      "  Vite's index.html renamed to .zip, which fails three steps later at the\n" +
+      '  unzip and reads as a corrupt download. macOS and most Linux images ship\n' +
+      '  `zip`; on Debian it is `apt install zip`.',
   )
   process.exit(1)
 }
@@ -63,9 +66,14 @@ cpSync(SOURCE, folder, { recursive: true })
 mkdirSync(PUBLIC, { recursive: true })
 rmSync(OUT, { force: true })
 
-// -X drops the extended attributes macOS otherwise embeds, which show up as
-// `__MACOSX/` entries and a `.DS_Store` that Chrome then complains about.
-execFileSync('zip', ['-r', '-X', '-q', OUT, 'jojo-extension'], { cwd: stage })
+// -X drops the extra file attributes (uid/gid, and on macOS the AppleDouble
+// entries) so the archive is the same bytes wherever it is built. It does NOT
+// exclude `.DS_Store`, which is a real file rather than an attribute — hence the
+// explicit exclusion below, because Chrome refuses to load an unpacked
+// extension whose directory contains files it cannot account for.
+execFileSync('zip', ['-r', '-X', '-q', OUT, 'jojo-extension', '-x', '*.DS_Store', '__MACOSX/*'], {
+  cwd: stage,
+})
 rmSync(stage, { recursive: true, force: true })
 
 const { version } = JSON.parse(readFileSync(join(SOURCE, 'manifest.json'), 'utf8'))

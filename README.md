@@ -1,5 +1,7 @@
 # jojo
 
+[![CI](https://github.com/shaswata09/jojo/actions/workflows/ci.yml/badge.svg)](https://github.com/shaswata09/jojo/actions/workflows/ci.yml)
+
 **J**arvis f**O**r **J**ob **O**rganization — a local-first tracker for academic and industry job applications.
 
 Everything runs on your own machine. Your applications, documents and profile live in your browser;
@@ -277,3 +279,26 @@ Persistence shipped: a knowledge graph in IndexedDB on web and AsyncStorage on m
   and break entirely over `file://`. For an app people may open from disk, `HashRouter` is safer.
 - **The academia/industry track is not persisted** across reloads, though the theme is.
 - **Sidebar badges and the runtime status strip are hardcoded** — they need wiring to real state.
+
+## Software jojo talks to but does not ship
+
+Two things run outside the app, on the user's own machine, at addresses they
+enter in Settings: an OpenAI-compatible model server, and
+[MarkItDown](https://github.com/microsoft/markitdown) — Microsoft's, MIT-licensed
+— which turns PDFs, Word files, decks and spreadsheets into text the assistant
+can read. Neither is vendored here or bundled into either app, and no document or
+message reaches anything the user did not point at.
+
+`THIRD-PARTY-NOTICES.md` reproduces the licence and the attribution.
+
+MarkItDown is reached through its own MCP server:
+
+```
+pip install markitdown-mcp
+markitdown-mcp --http --host 127.0.0.1 --port 3001
+```
+
+The phone app talks to it directly. A browser cannot: `markitdown-mcp` sends no
+CORS headers and answers the preflight with 405, so the web app reaches it
+through a same-origin path — the dev server proxies `/reader` to it, and a hosted
+copy needs the same forwarding.

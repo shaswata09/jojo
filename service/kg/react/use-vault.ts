@@ -23,9 +23,40 @@ import { useReadBack } from './read-back'
 import { useRun } from './use-tool'
 import { asNull, asText, nothingToRestore, present } from './patch'
 
-type LinkDraft = Omit<VaultLink, 'id' | 'savedOn'> & { savedOn?: string }
-type FileDraft = Omit<VaultFile, 'id' | 'savedOn'> & { savedOn?: string }
-type SnippetDraft = Omit<Snippet, 'id'>
+/*
+ * `applicationIds` is OPTIONAL on a draft and required on the projection.
+ *
+ * The projection guarantees a list so no reader has to tell `undefined` from
+ * `[]`. A draft is the other direction — it is what a form hands in — and
+ * requiring it there would mean every caller that files nothing under anything
+ * writes `applicationIds: []` to say so.
+ */
+type Filing = {
+  applicationIds?: string[]
+  /**
+   * A tripwire, not a field.
+   *
+   * `applicationId` was the singular this replaced. Excess-property checking
+   * would have caught a leftover on an object LITERAL, but every caller that
+   * had one wrote it through a conditional spread —
+   * `...(match ? { applicationId: match.id } : {})` — and a spread is exempt
+   * from that check. So both capture paths went on passing the old key, the
+   * draft type went on ignoring it, and a posting that matched an application
+   * silently stopped attaching to it. Nothing failed; it just quietly did less.
+   *
+   * Declaring it `never` makes it a KNOWN property rather than an excess one,
+   * which is the one form of the check a spread cannot slip past.
+   */
+  applicationId?: never
+}
+
+type LinkDraft = Omit<VaultLink, 'id' | 'savedOn' | 'applicationIds'> & {
+  savedOn?: string
+} & Filing
+type FileDraft = Omit<VaultFile, 'id' | 'savedOn' | 'applicationIds'> & {
+  savedOn?: string
+} & Filing
+type SnippetDraft = Omit<Snippet, 'id' | 'applicationIds'> & Filing
 
 export function useVault() {
   const graph = useGraph()
@@ -52,10 +83,12 @@ export function useVault() {
    * sections, and a merged list would have to be re-split by every reader.
    */
   const forApplication = useCallback(
+    // `includes`, not `===`: a record can be filed under several applications
+    // now, and the one being asked about may not be the first of them.
     (appId: string) => ({
-      links: links.filter((l) => l.applicationId === appId),
-      files: files.filter((f) => f.applicationId === appId),
-      snippets: snippets.filter((n) => n.applicationId === appId),
+      links: links.filter((l) => l.applicationIds.includes(appId)),
+      files: files.filter((f) => f.applicationIds.includes(appId)),
+      snippets: snippets.filter((n) => n.applicationIds.includes(appId)),
     }),
     [links, files, snippets],
   )
@@ -68,7 +101,7 @@ export function useVault() {
         category: draft.category,
         ...present('note', draft.note),
         ...present('savedOn', draft.savedOn),
-        ...present('applicationId', draft.applicationId),
+        ...present('applicationIds', draft.applicationIds),
       })
       if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not save the link.')
       return readBack(projections.links, result.output)
@@ -85,7 +118,7 @@ export function useVault() {
         ...present('category', patch.category),
         ...present('savedOn', patch.savedOn),
         ...asText('note', patch, 'note'),
-        ...asNull('applicationId', patch, 'applicationId'),
+        ...asNull('applicationIds', patch, 'applicationIds'),
       })
     },
     [run],
@@ -127,7 +160,7 @@ export function useVault() {
             ...present('capturedAt', draft.capturedAt),
             ...present('note', draft.note),
             ...present('savedOn', draft.savedOn),
-            ...present('applicationId', draft.applicationId),
+            ...present('applicationIds', draft.applicationIds),
           },
         ],
       })
@@ -147,9 +180,14 @@ export function useVault() {
         ...present('kind', patch.kind),
         ...present('bucket', patch.bucket),
         ...present('size', patch.size),
+        // Forwarded for the reason `addFile`'s header gives about this exact
+        // field: this list is by hand, and a field the tool declares and this
+        // omits is written by nobody. It was omitted, and every posting captured
+        // on a phone lost the location of its own bytes.
+        ...present('uri', patch.uri),
         ...present('savedOn', patch.savedOn),
         ...asText('note', patch, 'note'),
-        ...asNull('applicationId', patch, 'applicationId'),
+        ...asNull('applicationIds', patch, 'applicationIds'),
       })
     },
     [run],
@@ -169,7 +207,7 @@ export function useVault() {
         title: draft.title,
         tag: draft.tag,
         body: draft.body,
-        ...present('applicationId', draft.applicationId),
+        ...present('applicationIds', draft.applicationIds),
       })
       if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not save the snippet.')
       return readBack(projections.snippets, result.output)
@@ -184,7 +222,7 @@ export function useVault() {
         ...present('title', patch.title),
         ...present('tag', patch.tag),
         ...present('body', patch.body),
-        ...asNull('applicationId', patch, 'applicationId'),
+        ...asNull('applicationIds', patch, 'applicationIds'),
       })
     },
     [run],

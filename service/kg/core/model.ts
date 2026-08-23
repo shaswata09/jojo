@@ -71,6 +71,28 @@ export const NODE_TYPES = [
   'match',
   'pipeline',
   'profile',
+  /*
+   * A conversation with the assistant.
+   *
+   * It earns a node by the rule at the top of this file — the user can rename it
+   * and annotate it — and it earns its place in the GRAPH by what that buys:
+   * IndexedDB on the web and AsyncStorage on the phone with no second store to
+   * write, `FILED_UNDER` to an application with no second kind of tagging, and
+   * undo, the journal and Transfer for free. A chat log kept beside the graph
+   * would have needed all four again, differently, on two platforms.
+   */
+  'thread',
+  /*
+   * One action an agent wants to take, kept until a person answers.
+   *
+   * A node rather than a side table for the same reason `thread` is one: it
+   * needs to survive a reload, it needs to be filed against the pipeline that
+   * raised it, and it needs to leave with the user when they export. A queue
+   * kept beside the graph would have needed storage, an edge substitute and a
+   * Transfer story invented again, on two platforms, for a record whose whole
+   * life is measured in minutes.
+   */
+  'proposal',
 ] as const
 
 export type NodeType = (typeof NODE_TYPES)[number]
@@ -148,18 +170,33 @@ export const EDGE_SCHEMA: { readonly [R in Rel]: EdgeSpec } = {
   ABOUT: {
     from: ['timelineItem'],
     to: ['application'],
-    fromCardinality: 'one',
+    // Many, since a reminder is often about more than one job at once: a
+    // reference deadline that covers three applications, a conference where you
+    // are meeting two departments. It was 'one' because the projection carried a
+    // scalar `applicationId`, which is the tail wagging the dog — the edge is
+    // the storage and the field was only ever a reading of it.
+    fromCardinality: 'many',
     label: 'is about',
   },
   FILED_UNDER: {
-    from: ['link', 'file', 'snippet'],
+    // A thread files under an application exactly as a document does, which is
+    // the whole reason it is this relation and not a new one: "everything about
+    // the Rice job" should return the conversation alongside the CV.
+    from: ['link', 'file', 'snippet', 'thread'],
     to: ['application'],
-    fromCardinality: 'one',
+    // Many. One CV goes to every application you send it to, and filing it under
+    // whichever you touched last is not filing it — it is losing it from the
+    // other nine. The same is true of a link to a department page shared by two
+    // roles there, and of a snippet reused across a batch.
+    fromCardinality: 'many',
     label: 'is filed under',
   },
   TAGS: { from: ['keyword'], to: TAGGABLE, fromCardinality: 'many', label: 'tags' },
   FROM: {
-    from: ['match', 'posting'],
+    // A proposal came from a pipeline exactly as a match did — same question
+    // ("which saved search raised this?"), so the same relation rather than a
+    // second one that would need its own traversal in `algebra.ts`.
+    from: ['match', 'posting', 'proposal'],
     to: ['pipeline'],
     fromCardinality: 'one',
     label: 'came from',
@@ -365,8 +402,15 @@ export type TimelineItem = {
   durationMins?: number
   kind: TimelineKind
   urgency: Urgency
-  /** The edge the old models were missing — `Application['id']`. */
-  applicationId?: string
+  /**
+   * Every application this is about, newest edge last.
+   *
+   * A LIST, and it replaced a scalar `applicationId`. A reference deadline
+   * covers three applications; a conference is where you meet two departments.
+   * Empty rather than absent, so a caller never has to ask which kind of nothing
+   * it is looking at.
+   */
+  applicationIds: string[]
   /** Whether this surfaces in the Vault's Reminders tool. */
   remind: boolean
   completedOn?: string | null
@@ -385,11 +429,39 @@ export type VaultLink = {
   note?: string
   /** ISO date the record was filed. Rendered through `agoLabel`. */
   savedOn: string
-  /** `Application['id']`. Cleared, never followed, when that application goes. */
-  applicationId?: string
+  /**
+   * Every application this is filed under, newest edge last.
+   *
+   * A LIST, and it replaced a scalar `applicationId`. The scalar was not a
+   * simplification of this, it was a constraint disguised as one: a CV goes to
+   * every job you send it to, and a field that holds one id filed it under
+   * whichever you touched last — which is not filing it, it is losing it from
+   * the other nine. Empty rather than absent, so a caller never has to ask which
+   * kind of nothing it is looking at.
+   */
+  applicationIds: string[]
 }
 
-export const FILE_BUCKET_VALUES = ['To read', 'Applications', 'Talks', 'Admin'] as const
+/**
+ * The five drawers a document can be in.
+ *
+ * 'Job postings' is the newest and is the only one nothing of the user's goes
+ * into by hand: it is where the extension files a captured listing. It exists
+ * because those captures were going to 'Applications', which is the drawer for
+ * the things a person WROTE — the CV, the statements, the cover letters. A
+ * posting is somebody else's document about the job, kept for reference, and
+ * mixing it in meant the Profile page's Documents card — which is that drawer,
+ * filtered — filled up with pages the user never put there.
+ *
+ * Ordered as the filters read, so the two drawers about a job sit together.
+ */
+export const FILE_BUCKET_VALUES = [
+  'To read',
+  'Applications',
+  'Job postings',
+  'Talks',
+  'Admin',
+] as const
 export type FileBucket = (typeof FILE_BUCKET_VALUES)[number]
 
 /**
@@ -422,7 +494,17 @@ export type VaultFile = {
   /** ISO date the record was filed. Rendered through `agoLabel`. */
   savedOn: string
   note?: string
-  applicationId?: string
+  /**
+   * Every application this is filed under, newest edge last.
+   *
+   * A LIST, and it replaced a scalar `applicationId`. The scalar was not a
+   * simplification of this, it was a constraint disguised as one: a CV goes to
+   * every job you send it to, and a field that holds one id filed it under
+   * whichever you touched last — which is not filing it, it is losing it from
+   * the other nine. Empty rather than absent, so a caller never has to ask which
+   * kind of nothing it is looking at.
+   */
+  applicationIds: string[]
   /** See `FileProps.uri`. Projected straight through by `projections.files`. */
   uri?: string
   /** See `FileProps.sourceUrl`. Straight through, and never followed by a viewer. */
@@ -439,7 +521,17 @@ export type Snippet = {
   title: string
   tag: SnippetTag
   body: string
-  applicationId?: string
+  /**
+   * Every application this is filed under, newest edge last.
+   *
+   * A LIST, and it replaced a scalar `applicationId`. The scalar was not a
+   * simplification of this, it was a constraint disguised as one: a CV goes to
+   * every job you send it to, and a field that holds one id filed it under
+   * whichever you touched last — which is not filing it, it is losing it from
+   * the other nine. Empty rather than absent, so a caller never has to ask which
+   * kind of nothing it is looking at.
+   */
+  applicationIds: string[]
 }
 
 export type Pipeline = {
@@ -449,6 +541,33 @@ export type Pipeline = {
   schedule: string
   filter: string
   enabled: boolean
+  /** Absent on every pipeline written before there were two kinds. */
+  kind?: PipelineKind
+  auto?: boolean
+  lastRunAt?: Instant
+  idleRounds?: number
+}
+
+/**
+ * A queued suggestion, as a screen reads it.
+ *
+ * `pipelineId` is the `FROM` edge flattened, exactly as `Match.applicationId`
+ * flattens `BECAME` — the edge is the storage and the scalar is a reading of
+ * it. `null` rather than absent because a card whose pipeline has been deleted
+ * still has to render, and "which pipeline?" then has a real answer: none.
+ */
+export type Proposal = {
+  id: string
+  pipelineId: string | null
+  kind: PipelineKind
+  tool: string
+  input: string
+  title: string
+  rationale: string
+  status: ProposalStatus
+  proposedAt: Instant
+  decidedAt?: Instant
+  error?: string
 }
 
 export type Match = {
@@ -712,11 +831,137 @@ export type PipelineProps = {
   schedule: string
   filter: string
   enabled: boolean
+  /**
+   * Which of the two agents this pipeline runs. Absent means `scout`.
+   *
+   * Optional rather than required, and the default is not arbitrary: every
+   * pipeline that existed before there were two kinds was described on the page
+   * as "a saved search — a board to watch, the terms that matter, and how often
+   * to look", which is what `scout` is. So an old row read under the new type
+   * keeps the meaning it was written with. Making it required would have been
+   * the other choice, and `validateRows` deletes what it cannot parse — the
+   * cost of that decision is measured in the user's saved searches.
+   */
+  kind?: PipelineKind
+  /**
+   * Run without asking. Twin only — see `AUTO_CAPABLE` in `core/proposal.ts`.
+   *
+   * The tools do not enforce this and cannot usefully: a pipeline's kind and its
+   * auto flag are two props on one record, and a tool that refused to set them
+   * inconsistently would still be one commit away from a graph where they are.
+   * The gate is at the point of USE — the driver reads `AUTO_CAPABLE[kind]`
+   * before it decides whether to bypass the queue — which is the only place the
+   * answer matters.
+   */
+  auto?: boolean
+  /** When the last round finished. Absent means it has never run. */
+  lastRunAt?: Instant
+  /** Consecutive rounds that raised nothing. See `shouldOfferShutdown`. */
+  idleRounds?: number
+}
+
+/**
+ * `twin` keeps the graph honest; `scout` looks outward.
+ *
+ * Named for what they are FOR rather than what they do, because both of them
+ * "run an agent over the graph" and that tells a reader nothing. The digital
+ * twin fills in what the user forgot to write down; the scout finds jobs. What
+ * each is ALLOWED to do is `core/proposal.ts`, which is policy and belongs
+ * somewhere testable rather than in a prompt.
+ */
+export const PIPELINE_KINDS = ['twin', 'scout'] as const
+
+export type PipelineKind = (typeof PIPELINE_KINDS)[number]
+
+export const PROPOSAL_STATUSES = ['pending', 'approved', 'discarded', 'failed'] as const
+
+export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number]
+
+/**
+ * One thing an agent wants to do, kept until a person answers.
+ *
+ * `input` is JSON text rather than a structured value, and that is the one
+ * decision in this type worth defending. The alternative is a
+ * `Record<string, unknown>` in the node's props, which the store would happily
+ * keep — but then the shape of a stored proposal depends on the shape of a
+ * tool's input schema at the moment it was written, and a tool whose schema
+ * tightens later has proposals in the store that no longer parse and no way to
+ * tell that from a bug. As text it is inert: it round-trips through storage
+ * unexamined, and the only thing that ever interprets it is `ctx.call`, which
+ * parses it with the target tool's own schema at the moment of approval and
+ * fails cleanly if it no longer fits.
+ */
+export type ProposalProps = {
+  slug: string
+  kind: PipelineKind
+  /** The registry name, `timeline.item.create`. */
+  tool: string
+  /** The tool's input, as JSON text. See the note above. */
+  input: string
+  /** One line, in the user's language: "Add a follow-up reminder for Stripe". */
+  title: string
+  /** Why the agent thinks so — shown under the title on the card. */
+  rationale: string
+  status: ProposalStatus
+  proposedAt: Instant
+  decidedAt?: Instant
+  /**
+   * Why it failed, when `status` is 'failed'. The tool's own sentence.
+   *
+   * Written by a SECOND commit, not by the approval that failed, and the reason
+   * is the transaction: `ctx.call` throwing is what rolls the approval back, so
+   * by the time there is a message to record, the transaction that would have
+   * recorded it no longer exists. `pipeline.proposal.fail` is that second
+   * commit. It only ever runs on the failure path, which is the rare one.
+   *
+   * There is deliberately no `journalId` beside this. An approval's write and
+   * its status change are one transaction and therefore one journal row, so
+   * reverting that row already puts both back — a stored id would name the row
+   * that undo can already find, and a field nothing writes is worse than no
+   * field, as the never-written `FROM` edge on `match` has been demonstrating.
+   */
+  error?: string
 }
 
 export type ProfileProps = Profile
 
 /** The one map that gives L0 and L1 their domain types without either knowing them. */
+/**
+ * One turn of a conversation, as it is kept.
+ *
+ * The DISPLAY shape, not the model-facing one. `kg/agent/transcript.ts` derives
+ * the OpenAI messages from these, so a thread is stored once and read two ways
+ * rather than stored twice and kept in step by hand — which is the failure mode
+ * a chat log invites, because the two drift only in old threads nobody reopens.
+ *
+ * `step` keeps what a person needs to read back: which tool ran, what it was
+ * asked, and what it said. It does NOT keep the undo closure, which cannot
+ * survive a reload — the journal is what takes an agent's writes back after the
+ * conversation has been closed, and it already does.
+ */
+export type ThreadEntry =
+  | { kind: 'you'; text: string }
+  | { kind: 'note'; text: string }
+  | { kind: 'answer'; text: string }
+  | { kind: 'error'; text: string }
+  | {
+      kind: 'step'
+      /** The registry name, `graph.query`. */
+      tool: string
+      title: string
+      effect: string
+      args: unknown
+      status: 'done' | 'failed' | 'declined'
+      detail?: string
+    }
+
+export type ThreadProps = {
+  slug: string
+  /** The user's name for it, or the first thing they said, trimmed. */
+  title: string
+  entries: ThreadEntry[]
+}
+
 export type NodePropsByType = {
   application: ApplicationProps
   organisation: OrganisationProps
@@ -729,6 +974,8 @@ export type NodePropsByType = {
   match: MatchProps
   pipeline: PipelineProps
   profile: ProfileProps
+  thread: ThreadProps
+  proposal: ProposalProps
 }
 
 /**

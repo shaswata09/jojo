@@ -64,7 +64,7 @@ export function useApplicationWrites({
       date: form.deadline,
       kind: 'deadline',
       urgency: deadlineUrgency(TODAY, form.deadline),
-      applicationId: application.id,
+      applicationIds: [application.id],
       allDay: true,
       // Off, like every seeded application deadline. The reminders list and the
       // command palette both caption a reminder with its related application,

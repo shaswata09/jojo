@@ -33,6 +33,7 @@ export type RawCapture = {
   html?: string
   assets?: { href: string; kind: string }[]
   dropped?: number
+  shadowRoots?: number
   message?: string
 }
 
@@ -93,10 +94,31 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
 
       if (asset.kind === 'css') {
         const text = await response.text()
-        const inlinedCss = text.replace(
+        // Its own @imports first, then its own url()s — both queued onto the
+        // list this loop walks, so one pass covers arbitrary nesting. The
+        // @import half was missing and was a live leak: a FETCHED stylesheet
+        // carrying `@import "https://…"` passed through untouched and the viewer
+        // fetched it on every open.
+        const withImports = text.replace(
+          /@import\s+(?:url\(\s*(['"]?)([^'")]+)\1\s*\)|(['"])([^'"]+)\3)[^;]*;?/gi,
+          (whole, _q1: string, viaUrl: string, _q2: string, viaString: string) => {
+            const raw = viaUrl || viaString || ''
+            if (raw.trim().startsWith('data:')) return whole
+            const nested = absolute(raw, asset.href)
+            if (nested === null) {
+              dropped += 1
+              return ''
+            }
+            const at = assets.length
+            assets.push({ href: nested, kind: 'css' })
+            return `__JOJO_ASSET_${String(at)}__`
+          },
+        )
+        const inlinedCss = withImports.replace(
           /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
           (whole, _q: string, url: string) => {
             const value = url.trim()
+            if (value.startsWith('__JOJO_ASSET_')) return whole
             if (value.startsWith('data:')) return whole
             // A same-document reference — `filter='url(#frameNoise)'` inside an
             // inline SVG. Resolving one invents a URL that never existed, which
@@ -159,6 +181,10 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
     html,
     capturedAt: now,
     dropped,
+    // Counted inside the WebView and thrown away here, until this line. The
+    // phone was the only platform whose captures could not tell the user that
+    // part of the page had been unreachable.
+    shadowRoots: raw.shadowRoots,
   })
 
   return typeof read === 'string' ? { ok: false, reason: read } : { ok: true, capture: read }
@@ -178,7 +204,11 @@ async function withTimeout(href: string): Promise<Response> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), ASSET_TIMEOUT_MS)
   try {
-    return await fetch(href, { signal: controller.signal })
+    // `credentials: 'omit'` to match the extension. Without it RN's networking
+    // stack shares the WebView's cookie jar, so the phone would inline
+    // auth-gated assets the browser drops — the same page yielding a different
+    // capture per platform, and this file's own header claiming the opposite.
+    return await fetch(href, { signal: controller.signal, credentials: 'omit' })
   } finally {
     clearTimeout(timer)
   }

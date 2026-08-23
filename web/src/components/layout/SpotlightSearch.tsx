@@ -24,7 +24,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { isTypingTarget } from '@/components/common/typing-target'
-import { CREATE_ACTIONS, DIALOG_TOOLS, useRunCreateAction } from '@/components/layout/NewMenu'
+import { DIALOG_TOOLS, useCreateActions, useRunCreateAction } from '@/components/layout/NewMenu'
 import { ToolRunDialog } from '@/components/common/ToolRunDialog'
 import { planToolForm } from '@/components/common/tool-form'
 import { GUIDE_PAGE_META } from '@/components/guide/pages'
@@ -200,6 +200,7 @@ export function SpotlightSearch({
   const { all: applications, byId } = useApplications()
   const { all: dated, reminders } = useTimeline()
   const runCreate = useRunCreateAction()
+  const createActions = useCreateActions()
   const memory = useGraph()
   /** The tool whose generated form is open, with the plan the row was offered on. */
   const [pending, setPending] = useState<ToolRow | null>(null)
@@ -245,7 +246,7 @@ export function SpotlightSearch({
   const rems: Result[] = useMemo(
     () =>
       reminders.map((r) => {
-        const app = r.applicationId ? byId.get(r.applicationId) : undefined
+        const app = r.applicationIds[0] ? byId.get(r.applicationIds[0]) : undefined
         return {
           id: `r-${r.id}`,
           label: r.title,
@@ -338,7 +339,7 @@ export function SpotlightSearch({
               so a row that became a link cannot still be fired as a dialog
               here. */}
             <CommandGroup heading="Actions">
-              {CREATE_ACTIONS.map((action) => (
+              {createActions.map((action) => (
                 <CommandItem
                   key={action.id}
                   value={`${action.label} ${action.hint ?? ''}`}

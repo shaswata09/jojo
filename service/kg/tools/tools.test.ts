@@ -33,6 +33,7 @@ import {
 import type { StoredEdge, StoredNode } from '../core/model'
 import { createRepository } from '../repo/repository'
 import type { Repository } from '../repo/repository'
+import { SCOUT_TOOLS, TWIN_TOOLS } from '../core/proposal'
 import { TOOLS } from './index'
 import { createToolRuntime } from './runtime'
 import { dayOf, displayOf } from './support'
@@ -162,7 +163,7 @@ describe('the round trip', () => {
         title: 'Stripe — ML engineer',
         url: 'https://stripe.com/jobs/1',
         category: 'Posting',
-        applicationId: app,
+        applicationIds: [app],
       }),
     )
     const before = graphOf(h.repo)
@@ -194,7 +195,7 @@ describe('the round trip', () => {
         title: 'Baylor — respond to offer',
         date: '2026-11-15',
         kind: 'deadline',
-        applicationId: app,
+        applicationIds: [app],
       }),
     )
     const keyword = okOr(h.runtime.run('keyword.create', { name: 'Negotiating' }))
@@ -224,6 +225,119 @@ describe('the round trip', () => {
       h.runtime.undo()
       expect(graphOf(h.repo), `${name} did not undo cleanly`).toEqual(before)
     }
+  })
+})
+
+/**
+ * Duplicating something filed under more than one job.
+ *
+ * `FILED_UNDER` and `ABOUT` became `fromCardinality: 'many'`, and the three
+ * duplicate tools kept copying the filing with `memory.one(...)` — which
+ * returns the FIRST match and does not complain about the rest. So a CV filed
+ * under three applications duplicated to a copy filed under one, silently, and
+ * `vault.link.duplicate` went on summarising itself as "keeping its category
+ * and where it is filed".
+ *
+ * That summary is not decoration: it is the description handed to the model as
+ * a tool definition, so the agent was told the copy keeps its filing while the
+ * copy quietly lost two thirds of it.
+ *
+ * Asserted as a SET of application ids rather than a count, because the failure
+ * this is built to catch keeps exactly one of them and a count of one is what a
+ * legitimately single-filed record has too.
+ */
+describe('duplicating a record filed under several applications', () => {
+  const two = (h: ReturnType<typeof harness>) => [
+    okOr(
+      h.runtime.run('application.create', {
+        org: 'Rice',
+        role: 'Statistics',
+        roleTag: 'Assistant Professor',
+        stage: 'draft',
+      }),
+    ),
+    okOr(
+      h.runtime.run('application.create', {
+        org: 'Baylor',
+        role: 'CS',
+        roleTag: 'Assistant Professor',
+        stage: 'draft',
+      }),
+    ),
+  ]
+
+  /** The applications a record points at, as a sorted set of ids. */
+  const filedUnder = (h: ReturnType<typeof harness>, id: string, rel: 'FILED_UNDER' | 'ABOUT') =>
+    h.repo
+      .getSnapshot()
+      .many(id, rel, 'out', 'application')
+      .map((a) => a.id)
+      .sort()
+
+  it('keeps every application on a duplicated link', () => {
+    const h = harness()
+    const apps = two(h)
+    const link = okOr(
+      h.runtime.run('vault.link.save', {
+        title: 'Reference letter tracker',
+        url: 'https://example.org/tracker',
+        category: 'Guide',
+        applicationIds: apps,
+      }),
+    )
+    expect(filedUnder(h, link, 'FILED_UNDER')).toEqual([...apps].sort())
+
+    const copy = okOr(h.runtime.run('vault.link.duplicate', { id: link }))
+    expect(filedUnder(h, copy, 'FILED_UNDER')).toEqual([...apps].sort())
+  })
+
+  it('keeps every application on a duplicated snippet', () => {
+    const h = harness()
+    const apps = two(h)
+    const snippet = okOr(
+      h.runtime.run('vault.snippet.create', {
+        title: 'Teaching paragraph',
+        tag: 'Cover letter',
+        body: 'Dear [NAME],',
+        applicationIds: apps,
+      }),
+    )
+    const copy = okOr(h.runtime.run('vault.snippet.duplicate', { id: snippet }))
+    expect(filedUnder(h, copy, 'FILED_UNDER')).toEqual([...apps].sort())
+  })
+
+  it('keeps every application on a duplicated timeline item', () => {
+    const h = harness()
+    const apps = two(h)
+    const item = okOr(
+      h.runtime.run('timeline.item.create', {
+        title: 'Chase both referees',
+        date: '2026-11-15',
+        kind: 'follow-up',
+        applicationIds: apps,
+      }),
+    )
+    const copy = okOr(h.runtime.run('timeline.item.duplicate', { id: item }))
+    expect(filedUnder(h, copy, 'ABOUT')).toEqual([...apps].sort())
+  })
+
+  it('undoes a duplicate that carried several edges, byte for byte', () => {
+    const h = harness()
+    const apps = two(h)
+    const link = okOr(
+      h.runtime.run('vault.link.save', {
+        title: 'Reference letter tracker',
+        url: 'https://example.org/tracker',
+        category: 'Guide',
+        applicationIds: apps,
+      }),
+    )
+    // The undo contract is per-EDGE, and copying N edges instead of 1 is exactly
+    // the change that can leave one behind on the way back out.
+    const before = graphOf(h.repo)
+    okOr(h.runtime.run('vault.link.duplicate', { id: link }))
+    h.runtime.undo()
+    expect(graphOf(h.repo)).toEqual(before)
   })
 })
 
@@ -562,7 +676,7 @@ describe('the composites', () => {
         title: 'Rice — reference letters',
         date: '2026-10-25',
         kind: 'deadline',
-        applicationId: app,
+        applicationIds: [app],
       }),
     )
 
@@ -990,5 +1104,332 @@ describe('redo', () => {
   it('refuses when there is nothing to undo', () => {
     const h = harness()
     expect(h.runtime.undo().ok).toBe(false)
+  })
+})
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The queue between an agent's intention and the graph.
+ *
+ * The claim under test is not that a proposal can be stored — it is that
+ * approving one is indistinguishable, to the journal and to undo, from the user
+ * having pressed the button themselves. That is what makes a queued suggestion
+ * safe to accept: it buys the agent no path the user did not already have.
+ */
+describe('the proposal queue', () => {
+  const aPipeline = (h: ReturnType<typeof harness>, kind: 'twin' | 'scout' = 'twin') =>
+    okOr(
+      h.runtime.run('scout.pipeline.create', {
+        name: 'Tidy the graph',
+        source: '—',
+        schedule: 'daily',
+        filter: '—',
+        kind,
+      }),
+    )
+
+  const anApplication = (h: ReturnType<typeof harness>) =>
+    okOr(
+      h.runtime.run('application.create', {
+        org: 'Rice',
+        role: 'Assistant professor',
+        roleTag: 'Assistant Professor',
+        stage: 'draft',
+      }),
+    )
+
+  it('files a raised proposal against the pipeline that raised it', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'Deadline is a Friday.' }),
+        title: 'Note the deadline falls on a Friday',
+        rationale: 'The deadline is 2026-11-06 and nothing records that it is a weekend.',
+      }),
+    )
+
+    const m = h.repo.getSnapshot()
+    const proposal = m.node(id, 'proposal')
+    expect(proposal?.props.status).toBe('pending')
+    expect(proposal?.props.tool).toBe('application.note.set')
+    expect(m.out(id, 'FROM').map((e) => e.to)).toEqual([pipeline])
+  })
+
+  it('refuses a tool the pipeline’s kind is not allowed to use', () => {
+    const h = harness()
+    const pipeline = aPipeline(h, 'scout')
+    const app = anApplication(h)
+
+    const result = h.runtime.run('pipeline.proposal.raise', {
+      pipelineId: pipeline,
+      kind: 'scout',
+      tool: 'application.note.set',
+      input: JSON.stringify({ id: app, note: 'x' }),
+      title: 'Write a note',
+      rationale: 'because',
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.errors[0]?.message).toContain('may not use')
+  })
+
+  it('refuses arguments that are not JSON at all', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const result = h.runtime.run('pipeline.proposal.raise', {
+      pipelineId: pipeline,
+      kind: 'twin',
+      tool: 'application.note.set',
+      input: 'not json',
+      title: 'Write a note',
+      rationale: 'because',
+    })
+    expect(result.ok).toBe(false)
+  })
+
+  /*
+   * The central one. Approving runs the proposed tool for real, and the whole
+   * thing — the note AND the fact that it was approved — is one journal row, so
+   * one Undo puts the graph back exactly as it was.
+   */
+  it('applies the proposed tool in ONE commit that undo reverses completely', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'Deadline is a Friday.' }),
+        title: 'Note the deadline',
+        rationale: 'because',
+      }),
+    )
+
+    const before = graphOf(h.repo)
+    const journalBefore = h.repo.audit.length
+
+    okOr(h.runtime.run('pipeline.proposal.approve', { id }))
+
+    const after = h.repo.getSnapshot()
+    expect(after.node(app, 'application')?.props.note).toBe('Deadline is a Friday.')
+    expect(after.node(id, 'proposal')?.props.status).toBe('approved')
+    expect(after.node(id, 'proposal')?.props.decidedAt).toBeTruthy()
+    expect(h.repo.audit.length - journalBefore).toBe(1)
+
+    h.runtime.undo()
+    expect(graphOf(h.repo)).toEqual(before)
+  })
+
+  it('will not answer the same proposal twice', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'x' }),
+        title: 'Note',
+        rationale: 'because',
+      }),
+    )
+    okOr(h.runtime.run('pipeline.proposal.approve', { id }))
+
+    const again = h.runtime.run('pipeline.proposal.approve', { id })
+    expect(again.ok).toBe(false)
+    const discard = h.runtime.run('pipeline.proposal.discard', { id })
+    expect(discard.ok).toBe(false)
+  })
+
+  /*
+   * A proposal outlives the record it names. Approving one whose target has
+   * been deleted must fail cleanly and change nothing — including not marking
+   * itself approved, which is what makes the rollback observable.
+   */
+  it('rolls back entirely when the proposed tool refuses', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'x' }),
+        title: 'Note',
+        rationale: 'because',
+      }),
+    )
+    okOr(h.runtime.run('application.delete', { id: app }))
+
+    const before = graphOf(h.repo)
+    const result = h.runtime.run('pipeline.proposal.approve', { id })
+
+    expect(result.ok).toBe(false)
+    expect(graphOf(h.repo)).toEqual(before)
+    expect(h.repo.getSnapshot().node(id, 'proposal')?.props.status).toBe('pending')
+  })
+
+  it('records why an approval could not be carried out', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'x' }),
+        title: 'Note',
+        rationale: 'because',
+      }),
+    )
+    okOr(h.runtime.run('pipeline.proposal.fail', { id, error: 'That record is no longer here.' }))
+
+    const proposal = h.repo.getSnapshot().node(id, 'proposal')
+    expect(proposal?.props.status).toBe('failed')
+    expect(proposal?.props.error).toBe('That record is no longer here.')
+  })
+
+  it('discards without touching anything else', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'unwanted' }),
+        title: 'Note',
+        rationale: 'because',
+      }),
+    )
+    okOr(h.runtime.run('pipeline.proposal.discard', { id }))
+
+    const m = h.repo.getSnapshot()
+    expect(m.node(id, 'proposal')?.props.status).toBe('discarded')
+    // `application.create` writes an empty note rather than omitting the key, so
+    // "untouched" is the empty string here, not `undefined`.
+    expect(m.node(app, 'application')?.props.note).toBe('')
+  })
+
+  it('sweeps answered suggestions and leaves the waiting ones', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const raise = (note: string) =>
+      okOr(
+        h.runtime.run('pipeline.proposal.raise', {
+          pipelineId: pipeline,
+          kind: 'twin',
+          tool: 'application.note.set',
+          input: JSON.stringify({ id: app, note }),
+          title: `Note ${note}`,
+          rationale: 'because',
+        }),
+      )
+    const answered = raise('a')
+    const waiting = raise('b')
+    okOr(h.runtime.run('pipeline.proposal.discard', { id: answered }))
+
+    expect(okOr(h.runtime.run('pipeline.proposal.sweep', { pipelineId: pipeline }))).toBe(1)
+    const m = h.repo.getSnapshot()
+    expect(m.node(answered, 'proposal')).toBeUndefined()
+    expect(m.node(waiting, 'proposal')?.props.status).toBe('pending')
+  })
+
+  it('counts consecutive empty rounds and forgets them on a productive one', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const idle = () => h.repo.getSnapshot().node(pipeline, 'pipeline')?.props.idleRounds
+
+    okOr(h.runtime.run('pipeline.run.record', { id: pipeline, raised: 0 }))
+    expect(idle()).toBe(1)
+    okOr(h.runtime.run('pipeline.run.record', { id: pipeline, raised: 0 }))
+    expect(idle()).toBe(2)
+    okOr(h.runtime.run('pipeline.run.record', { id: pipeline, raised: 3 }))
+    expect(idle()).toBe(0)
+    expect(h.repo.getSnapshot().node(pipeline, 'pipeline')?.props.lastRunAt).toBeTruthy()
+  })
+
+  it('refuses to put a scout pipeline into auto mode', () => {
+    const h = harness()
+    const pipeline = aPipeline(h, 'scout')
+    const result = h.runtime.run('scout.pipeline.update', { id: pipeline, auto: true })
+    expect(result.ok).toBe(false)
+    expect(okOr(h.runtime.run('scout.pipeline.update', { id: aPipeline(h), auto: true }))).toBe(
+      undefined,
+    )
+  })
+
+  /*
+   * The check `core/proposal.ts` cannot make for itself: it may not import the
+   * registry, so an allowlist could name a tool that does not exist and every
+   * test over there would still pass while every proposal failed at approval.
+   */
+  it('names only tools that actually exist', () => {
+    for (const tool of [...TWIN_TOOLS, ...SCOUT_TOOLS]) {
+      expect(Object.keys(TOOLS)).toContain(tool)
+    }
+  })
+})
+
+describe('switching a pipeline back on', () => {
+  /*
+   * Found by running the real page. A pipeline that had gone idle kept its
+   * counter across an off/on cycle, so `isDue` stayed on the schedule and a
+   * daily pipeline the user had just switched on sat for a day doing what it
+   * did while off. Flicking the switch is the clearest statement there is that
+   * they want it to look again.
+   */
+  it('clears the idle counter, so it starts looking rather than sleeping', () => {
+    const h = harness()
+    const id = okOr(
+      h.runtime.run('scout.pipeline.create', {
+        name: 'Tidy',
+        source: '—',
+        schedule: 'daily',
+        filter: '—',
+        kind: 'twin',
+      }),
+    )
+    okOr(h.runtime.run('pipeline.run.record', { id, raised: 0 }))
+    okOr(h.runtime.run('pipeline.run.record', { id, raised: 0 }))
+    expect(h.repo.getSnapshot().node(id, 'pipeline')?.props.idleRounds).toBe(2)
+
+    okOr(h.runtime.run('scout.pipeline.enable.set', { id, enabled: false }))
+    okOr(h.runtime.run('scout.pipeline.enable.set', { id, enabled: true }))
+
+    const p = h.repo.getSnapshot().node(id, 'pipeline')
+    expect(p?.props.enabled).toBe(true)
+    expect(p?.props.idleRounds).toBe(0)
+    // The record of what happened is not un-happened by switching it on.
+    expect(p?.props.lastRunAt).toBeTruthy()
+  })
+
+  it('leaves the counter alone when switching one off', () => {
+    const h = harness()
+    const id = okOr(
+      h.runtime.run('scout.pipeline.create', {
+        name: 'Tidy',
+        source: '—',
+        schedule: 'daily',
+        filter: '—',
+        kind: 'twin',
+      }),
+    )
+    okOr(h.runtime.run('pipeline.run.record', { id, raised: 0 }))
+    okOr(h.runtime.run('scout.pipeline.enable.set', { id, enabled: false }))
+    expect(h.repo.getSnapshot().node(id, 'pipeline')?.props.idleRounds).toBe(1)
   })
 })

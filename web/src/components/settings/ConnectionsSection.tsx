@@ -4,10 +4,11 @@ import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
 import type { ModelFailure, ModelServer } from '@jojo/service/core/model-server'
 import { Chip } from '@/components/common/Chip'
 import { Field } from '@/components/common/Field'
-import { DocumentsPanel } from '@/components/settings/DocumentsPanel'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { listModels } from '@/lib/llm'
+import { testReader } from '@/lib/markitdown'
+import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
 
 /**
@@ -21,11 +22,25 @@ import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
  * offers the way to get them out.
  */
 export function ConnectionsSection() {
+  /*
+   * Two cards, and the pairing is the organisation.
+   *
+   * There were three, and the third was `DocumentsPanel` — which is not a
+   * connection at all: it reports how many documents are in this browser and
+   * offers to download them, which is a fact about storage. In a two-column grid
+   * that made an odd number, so "Read my documents" was orphaned on the left
+   * with an empty half-row beside it and a tall gap under the short card. It has
+   * moved next to `DataPanel`, where the rest of "where your records live" is.
+   *
+   * What is left belongs together by shape as well as by subject: both are a
+   * local service you point at, both take an address, and both have a Test
+   * connection that says the same three things. Side by side they read as one
+   * question asked twice.
+   */
   return (
-    <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
-      <DocumentsPanel />
-
+    <div className="grid grid-cols-1 items-start gap-4 sm:gap-5 lg:grid-cols-2">
       <LocalModelPanel />
+      <DocumentReaderPanel />
     </div>
   )
 }
@@ -346,5 +361,139 @@ function SavedServers({
         ))}
       </ul>
     </div>
+  )
+}
+
+/**
+ * Where MarkItDown is, if the user runs it.
+ *
+ * ATTRIBUTION IS PART OF THE CARD, not a footnote elsewhere. The MIT licence
+ * asks that the notice travel with the software; the software here is not
+ * shipped, it is something the person is being asked to install — so the credit,
+ * the licence and the exact command belong at the moment they decide. The full
+ * notice is in `THIRD-PARTY-NOTICES.md`.
+ *
+ * A second card rather than a field on the first, because they are different
+ * programs: one answers questions and one opens documents, and a person may
+ * well run one without the other.
+ */
+/**
+ * The address a BROWSER can reach it at, which is not the one it listens on.
+ *
+ * Measured against markitdown-mcp 0.0.1a4: it sends no CORS headers and answers
+ * the preflight with 405, so a page on one port cannot POST to it on another
+ * however local both are. The dev server proxies `/reader` to `127.0.0.1:3001`
+ * so this path is same-origin and works; a built copy of jojo needs whatever is
+ * serving it to do the same. The phone app has no such rule and talks to
+ * `MARKITDOWN.defaultEndpoint` directly.
+ */
+const PROXY_PATH = '/reader/mcp'
+
+function DocumentReaderPanel() {
+  const { reader, setReader } = useModelSettings()
+  const [endpoint, setEndpoint] = useState(reader || PROXY_PATH)
+  const [testing, setTesting] = useState(false)
+  const [failure, setFailure] = useState<string | null>(null)
+  const [connected, setConnected] = useState(reader.length > 0)
+
+  const onTest = async () => {
+    setTesting(true)
+    setFailure(null)
+    const result = await testReader(endpoint)
+    setTesting(false)
+    setConnected(result.ok)
+    if (result.ok) setReader(endpoint.trim())
+    else setFailure(result.reason)
+  }
+
+  return (
+    <Panel>
+      <PanelTitle hint="optional">Read my documents</PanelTitle>
+      <p className="mb-3 text-sm text-text-2">
+        The assistant can only see a document&apos;s name until something turns it into text. Run{' '}
+        <a
+          href={MARKITDOWN.url}
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-2"
+        >
+          {MARKITDOWN.name}
+        </a>{' '}
+        on this machine and it can read what is inside your PDFs, Word files, decks and
+        spreadsheets.
+      </p>
+
+      <div className="space-y-3">
+        <Field
+          label="Address"
+          mono
+          type="url"
+          spellCheck={false}
+          value={endpoint}
+          placeholder={PROXY_PATH}
+          hint="A path on this site, proxied to markitdown-mcp. See below."
+          onChange={(e) => {
+            setEndpoint(e.target.value)
+            setConnected(false)
+            setFailure(null)
+          }}
+        />
+
+        {/* The two commands, copyable. A setting that needs a program the user
+            has not installed is a setting that has to say how. */}
+        <div className="rounded-md border border-hairline bg-well p-2.5">
+          <p className="text-xs text-text-3">Not running it yet?</p>
+          <pre className="mt-1 font-mono text-xs break-words whitespace-pre-wrap text-text-2">
+            {MARKITDOWN.install}
+            {'\n'}
+            {MARKITDOWN.serve}
+          </pre>
+          {/* Not a footnote. Someone who types the address it prints on startup
+              gets an unexplainable failure, so the explanation goes where they
+              would type it. */}
+          <p className="mt-2 text-xs text-text-3">
+            It listens on <span className="font-mono">{MARKITDOWN.defaultEndpoint}</span>, but it
+            sends no CORS headers — so a browser will not let this page call it across ports. jojo&apos;s
+            dev server forwards <span className="font-mono">{PROXY_PATH}</span> to it; a hosted copy
+            needs the same forwarding. The phone app talks to it directly and needs none of this.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={testing || endpoint.trim().length === 0}
+          title={endpoint.trim().length === 0 ? 'Fill in an address first' : undefined}
+          onClick={() => {
+            void onTest()
+          }}
+        >
+          {testing ? 'Testing…' : connected ? 'Test again' : 'Test connection'}
+        </Button>
+        {connected ? (
+          <Chip tone="green">Connected</Chip>
+        ) : failure ? (
+          <Chip tone="red">No answer</Chip>
+        ) : (
+          <Chip tone="gray">Not connected</Chip>
+        )}
+      </div>
+
+      {failure ? (
+        <p className="mt-2 text-xs text-danger">{failure}</p>
+      ) : connected ? (
+        <p className="mt-2 text-xs text-text-3">
+          Documents are sent to that address and nowhere else. Nothing is uploaded.
+        </p>
+      ) : null}
+
+      {/* The notice the licence asks for, where the choice is made. */}
+      <p className="mt-3 border-t border-hairline pt-3 text-xs text-text-3">
+        {MARKITDOWN.name} is a separate program, not part of jojo. {MARKITDOWN.copyright}{' '}
+        {MARKITDOWN.licence}. jojo is not affiliated with Microsoft.
+      </p>
+    </Panel>
   )
 }

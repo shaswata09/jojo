@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { isConfigured } from '@/lib/llm'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { useSheets } from '@/lib/sheets-context'
 import type { SheetName } from '@/lib/sheets-context'
 import type { FeatherName } from '@/lib/timeline-visuals'
@@ -28,6 +30,22 @@ export type CreateAction = {
    */
   tab?: { screen: keyof TabParamList; params?: Record<string, unknown> }
   screen?: keyof RootStackParamList
+  /**
+   * A capability this row needs before it is worth offering.
+   *
+   * `model` means a local model is configured. The row it gates hands a page to
+   * one and can do nothing without it, and a row that opens a sheet whose only
+   * message is "set a model up first" is a row that wasted the tap. Hidden
+   * rather than disabled, for the same reason the Vault rows navigate rather
+   * than naming sheets that do not exist.
+   *
+   * CONFIGURED, not reachable. Settings draws that difference and probes to
+   * tell them apart; this does not. A row that appears a second late, because a
+   * probe came back, moves the list under the thumb already reaching for it. So
+   * the row shows whenever there is an address to try, and the sheet behind it
+   * reports what actually happened when it tried.
+   */
+  requires?: 'model'
 }
 
 /**
@@ -46,6 +64,14 @@ export const CREATE_ACTIONS: CreateAction[] = [
     label: 'New application',
     icon: 'clipboard',
     sheet: { name: 'application' },
+  },
+  {
+    id: 'new-application-from-link',
+    label: 'Application from a link',
+    icon: 'zap',
+    hint: 'The model reads the posting and fills the form in',
+    sheet: { name: 'applicationFromLink' },
+    requires: 'model',
   },
   {
     id: 'new-reminder',
@@ -92,6 +118,19 @@ export const CREATE_ACTIONS: CreateAction[] = [
     screen: 'JobScout',
   },
 ]
+
+/**
+ * The rows worth offering right now.
+ *
+ * Both surfaces that render `CREATE_ACTIONS` call this rather than the array,
+ * so a gated row cannot appear on the search screen and be missing from the +
+ * menu — which is exactly the drift the one-array note above exists to prevent.
+ */
+export function useCreateActions(): CreateAction[] {
+  const { settings } = useModelSettings()
+  const hasModel = isConfigured(settings)
+  return CREATE_ACTIONS.filter((action) => action.requires !== 'model' || hasModel)
+}
 
 /**
  * Runs one of the rows above, whichever kind it is.

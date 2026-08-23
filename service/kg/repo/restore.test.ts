@@ -10,11 +10,11 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import type { RestorePlan } from '@jojo/service/core/backup'
-import type { Repository } from '@jojo/service/repo/repository'
-import type { StoreMeta } from '@jojo/service/repo/meta'
-import type { VaultBlobs } from '@/lib/vault-blobs'
-import { metaForRestore, restoreBackup } from '@/lib/restore'
+import type { RestorePlan } from '../core/backup'
+import type { Repository } from './repository'
+import type { StoreMeta } from './meta'
+import type { DocumentStore } from './restore'
+import { metaForRestore, restoreBackup } from './restore'
 
 const META: StoreMeta = {
   schemaVersion: 1,
@@ -64,7 +64,10 @@ function stubRepo(result: { ok: boolean; message?: string } = { ok: true }) {
 
 function stubBlobs() {
   const replaceAll = vi.fn(async (docs: readonly { path: string; data: Uint8Array }[]) => docs.length)
-  return { replaceAll } as unknown as Pick<VaultBlobs, 'replaceAll'> & { replaceAll: typeof replaceAll }
+  // No cast: `DocumentStore` is one method, and the stub has it. This used to
+  // widen a stub into the whole browser `VaultBlobs` surface, which is exactly
+  // the coupling the structural port removed.
+  return { replaceAll } satisfies DocumentStore & { replaceAll: typeof replaceAll }
 }
 
 const plan = (over: Partial<RestorePlan> = {}): RestorePlan => ({
@@ -148,7 +151,7 @@ describe('restoreBackup', () => {
       replaceAll: vi.fn(async (docs: readonly { path: string; data: Uint8Array }[]) =>
         docs.filter((d) => d.path.startsWith('Documents/')).length,
       ),
-    } as unknown as Pick<VaultBlobs, 'replaceAll'> & { replaceAll: ReturnType<typeof vi.fn> }
+    } satisfies DocumentStore
 
     const out = await restoreBackup(
       repo,

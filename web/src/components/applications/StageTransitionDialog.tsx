@@ -97,7 +97,7 @@ export function StageTransitionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Move to {STAGE_LABEL[target]}</DialogTitle>
           <DialogDescription>
@@ -182,7 +182,7 @@ function TransitionForm({
         apply()
       }}
     >
-      <div className="flex max-h-[55vh] flex-col gap-3 overflow-y-auto">
+      <div className="-mx-4 flex max-h-[55vh] flex-col gap-3 overflow-y-auto px-4">
         {target === 'submitted' ? (
           <SubmittedFields
             date={draft.date}

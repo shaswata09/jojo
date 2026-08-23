@@ -36,7 +36,21 @@ export function VaultToolbar({
        its own is the only arrangement where neither has to shrink below what it
        draws. */
     <div className="mb-3.5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
-      {filter ? <div className="min-w-0 sm:flex-1">{filter}</div> : null}
+      {/* `flex-auto`, not `flex-1`, and the difference is the whole layout.
+
+          `flex-1` is `flex: 1 1 0%` — a zero base size — so the filter asked for
+          nothing and the search group's `basis-64` took 256px off the top. On a
+          full-width panel the leftover was plenty; with an editor open beside it
+          the panel is ~490px and the leftover was ~113px, which is narrower than
+          one chip. The chips are indivisible, so they stacked one per row and the
+          filter became a column of five pills beside the search box.
+
+          `flex: 1 1 auto` bases the filter on what it actually draws, so the two
+          only share a line when both fit on one. When they do not, the search
+          group wraps to its own row and the chips get the full width — which is
+          the arrangement the note below already argued for at phone widths, now
+          reached by measurement rather than by a breakpoint. */}
+      {filter ? <div className="min-w-0 sm:flex-auto">{filter}</div> : null}
       {/* Its own flex row so search and Add stay together and travel together
           when the filter chips push them onto a second line. */}
       <div className="flex min-w-0 items-center gap-2 sm:flex-1 sm:basis-64 sm:justify-end">

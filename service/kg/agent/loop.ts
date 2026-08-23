@@ -324,7 +324,7 @@ async function performCall(
     }
   }
 
-  const outcome = callTool(host, call.name, call.args)
+  const outcome = await callTool(host, call.name, call.args)
   const detail = renderOutcome(outcome)
   if (!outcome.ok) return settle({ ...base, status: 'failed', detail })
   // Spread conditionally: under `exactOptionalPropertyTypes` an explicit

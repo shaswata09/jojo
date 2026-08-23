@@ -59,7 +59,10 @@ const application = (id: string, org: string, over: Partial<Application> = {}): 
   ...over,
 })
 
-const item = (id: string, applicationId?: string): TimelineItem => ({
+// The four below take a REST list: `FILED_UNDER` and `ABOUT` are many-to-many,
+// so `file('f1', 'a1', 'a2')` is the case that used to be unrepresentable, and
+// the one-argument calls read exactly as they did.
+const item = (id: string, ...applicationIds: string[]): TimelineItem => ({
   id,
   title: `Deadline ${id}`,
   date: '2026-08-20',
@@ -67,34 +70,34 @@ const item = (id: string, applicationId?: string): TimelineItem => ({
   kind: 'deadline',
   urgency: 'gray',
   remind: false,
-  ...(applicationId === undefined ? {} : { applicationId }),
+  applicationIds,
 })
 
-const file = (id: string, applicationId?: string): VaultFile => ({
+const file = (id: string, ...applicationIds: string[]): VaultFile => ({
   id,
   name: `${id}.pdf`,
   kind: 'pdf',
   bucket: 'To read',
   size: '1 KB',
   savedOn: '2026-08-01',
-  ...(applicationId === undefined ? {} : { applicationId }),
+  applicationIds,
 })
 
-const link = (id: string, applicationId?: string): VaultLink => ({
+const link = (id: string, ...applicationIds: string[]): VaultLink => ({
   id,
   title: `Link ${id}`,
   url: 'https://example.test',
   category: 'Posting',
   savedOn: '2026-08-01',
-  ...(applicationId === undefined ? {} : { applicationId }),
+  applicationIds,
 })
 
-const snippet = (id: string, applicationId?: string): Snippet => ({
+const snippet = (id: string, ...applicationIds: string[]): Snippet => ({
   id,
   title: `Snippet ${id}`,
   tag: 'Cover letter',
   body: '',
-  ...(applicationId === undefined ? {} : { applicationId }),
+  applicationIds,
 })
 
 const posting = (id: string, applicationId?: string): SavedPosting => ({
@@ -267,6 +270,29 @@ describe('buildGraph', () => {
     const graph = build({ applications: [application('a1', 'Rice')], timeline: [item('i1', 'a1')] })
 
     expect(wire(graph)).toContain('item:i1 -ABOUT-> application:a1')
+  })
+
+  /**
+   * The many-to-many case, which is the one the single-edge build could not
+   * draw. A reference deadline covering three jobs and a CV sent to two are
+   * both ordinary, and a graph that showed each attached to one of them would
+   * be quietly wrong rather than visibly broken.
+   */
+  it('draws one edge per application, not one per record', () => {
+    const graph = build({
+      applications: [application('a1', 'Rice'), application('a2', 'Baylor')],
+      timeline: [item('i1', 'a1', 'a2')],
+      files: [file('f1', 'a1', 'a2')],
+    })
+
+    expect(wire(graph)).toEqual(
+      expect.arrayContaining([
+        'item:i1 -ABOUT-> application:a1',
+        'item:i1 -ABOUT-> application:a2',
+        'file:f1 -FILED_UNDER-> application:a1',
+        'file:f1 -FILED_UNDER-> application:a2',
+      ]),
+    )
   })
 
   /**

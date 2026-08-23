@@ -19,7 +19,8 @@
 
 import type { NodeId } from '../core/model'
 import { draftFromText, draftFromUrl, roleFromTitle } from '../core/parse-posting'
-import { ROLES } from '../core/model'
+import { PIPELINE_KINDS, ROLES } from '../core/model'
+import { AUTO_CAPABLE } from '../core/proposal'
 import { s } from '../core/schema'
 import { defineTool } from './tool'
 import { dayOf, displayOf, guessRoleTag } from './support'
@@ -34,7 +35,7 @@ const roleTag = s.optional(s.enum(ROLES, { label: 'Role type' }))
 export const scoutPostingSave = defineTool({
   name: 'scout.posting.save',
   title: 'Save posting',
-  summary: 'Files a job advert’s URL. No page is fetched — nothing here can.',
+  summary: 'Files a job advert’s URL so it can be reviewed later. The page itself is not downloaded here.',
   effect: 'create',
   touches: ['posting'],
   input: s.object({
@@ -371,7 +372,12 @@ export const scoutPipelineCreate = defineTool({
   summary: 'Saves a search over a job board for the scout to watch.',
   effect: 'create',
   touches: ['pipeline'],
-  input: s.object({ ...pipelineFields, enabled: s.optional(s.boolean({ label: 'Active' })) }),
+  input: s.object({
+    ...pipelineFields,
+    enabled: s.optional(s.boolean({ label: 'Active' })),
+    kind: s.optional(s.enum(PIPELINE_KINDS, { label: 'Pipeline kind' })),
+    auto: s.optional(s.boolean({ label: 'Run without asking' })),
+  }),
 
   run(ctx, input): NodeId {
     const id = ctx.newId('pipeline')
@@ -388,6 +394,12 @@ export const scoutPipelineCreate = defineTool({
         // nothing runs, and a new pipeline that arrived off would read as a
         // create that failed.
         enabled: input.enabled ?? true,
+        kind: input.kind ?? 'scout',
+        // Auto is never granted at creation, even for a twin and even if asked
+        // for. Handing an agent unattended write access is a decision that
+        // deserves its own gesture on a pipeline the user can already see, not
+        // a checkbox buried in the dialog that made it.
+        auto: false,
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,
@@ -413,15 +425,25 @@ export const scoutPipelineUpdate = defineTool({
     source: s.optional(pipelineFields.source),
     schedule: s.optional(pipelineFields.schedule),
     filter: s.optional(pipelineFields.filter),
+    auto: s.optional(s.boolean({ label: 'Run without asking' })),
   }),
 
   run(ctx, input) {
-    ctx.require('pipeline', input.id)
+    const pipeline = ctx.require('pipeline', input.id)
+    // `kind` is deliberately not editable. A pipeline's kind decides which
+    // agent runs, which tools it may reach and whether auto is even offered;
+    // changing it under a queue of proposals raised by the other agent would
+    // leave cards whose allowlist no longer matches their pipeline. Making a
+    // new one is the cheap, unambiguous alternative.
+    if (input.auto === true && !AUTO_CAPABLE[pipeline.props.kind ?? 'scout']) {
+      ctx.fail('A scout pipeline always asks before adding anything.', { field: 'auto' })
+    }
     ctx.tx.patch<'pipeline'>(input.id, {
       ...(input.name === undefined ? {} : { name: input.name.trim() }),
       ...(input.source === undefined ? {} : { source: input.source.trim() }),
       ...(input.schedule === undefined ? {} : { schedule: input.schedule.trim() }),
       ...(input.filter === undefined ? {} : { filter: input.filter.trim() || '—' }),
+      ...(input.auto === undefined ? {} : { auto: input.auto }),
     })
   },
 
@@ -466,7 +488,23 @@ export const scoutPipelineEnableSet = defineTool({
 
   run(ctx, input) {
     ctx.require('pipeline', input.id)
-    ctx.tx.patch<'pipeline'>(input.id, { enabled: input.enabled })
+    /*
+     * Switching one ON clears the idle counter, and that is not bookkeeping —
+     * it is what makes the switch mean anything.
+     *
+     * A pipeline that has proven it has nothing to do falls back to its
+     * schedule, so a daily one that the user switches off and on again would
+     * otherwise sit for twenty-four hours doing exactly what it did while it
+     * was off. The user flicking the switch is the clearest statement there is
+     * that they want it to look again, and `isDue` reads a cleared counter as
+     * "still working", which means the next round is seconds away rather than
+     * tomorrow. `lastRunAt` is left alone: it is a record of what happened, and
+     * this did not un-happen it.
+     */
+    ctx.tx.patch<'pipeline'>(input.id, {
+      enabled: input.enabled,
+      ...(input.enabled ? { idleRounds: 0 } : {}),
+    })
   },
 
   describe: (input, _output, m) => ({

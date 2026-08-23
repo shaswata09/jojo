@@ -204,7 +204,7 @@ export function ApplicationSheet({
       date,
       kind: 'deadline',
       urgency: deadlineUrgency(TODAY, date),
-      applicationId: application.id,
+      applicationIds: [application.id],
       allDay: true,
       // Off, like every seeded application deadline: this item's title IS the
       // application, so as a reminder the row would print its own name twice.

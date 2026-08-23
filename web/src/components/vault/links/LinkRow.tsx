@@ -23,7 +23,8 @@ export function LinkRow({
 }: {
   link: VaultLink
   /** The application it is filed under — the record, so `appPath` has the slug. */
-  related?: Application
+  /** Every application this link is filed under. Empty, never absent. */
+  related: readonly Application[]
   /** Arrived here from a link that named this row — see `focus` in links.ts. */
   focused?: boolean
   /** Set on the focused row only, so the tool can scroll it into view. */
@@ -83,14 +84,15 @@ export function LinkRow({
             />
           </a>
           {l.note ? <span className="truncate">· {l.note}</span> : null}
-          {related ? (
+          {related.map((app) => (
             <Link
-              to={appPath(related)}
+              key={app.id}
+              to={appPath(app)}
               className="shrink-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
             >
-              · {displayName(related)}
+              · {displayName(app)}
             </Link>
-          ) : null}
+          ))}
           <LabelChips recordId={l.id} className="shrink-0" />
         </div>
       </div>

@@ -26,6 +26,7 @@ import { NODE_TYPES, RELS } from '../core/model'
 import type { NodeId, NodeType, Rel, StoredNode } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import { s } from '../core/schema'
+import { parseSources, readListings } from '../core/board'
 import type { Infer, Schema } from '../core/schema'
 import { GRAPH_QUERY_SCHEMA, runGraphQuery } from './graph-query'
 import type { GraphQuery } from './graph-query'
@@ -44,7 +45,49 @@ export type ReadTool<I = unknown> = {
   readonly summary: string
   readonly effect: 'read'
   readonly input: Schema<I>
-  readonly read: (memory: GraphSnapshot, input: I) => unknown
+  /**
+   * May be async, unlike a write.
+   *
+   * The asymmetry is the point rather than an inconsistency. `tool.ts` forbids
+   * `await` inside a write and explains why: an await on anything that is not
+   * the transaction's own request ends the turn, the transaction auto-commits,
+   * and the next call throws after some of the writes have landed. A read opens
+   * no transaction, so none of that applies — and one read genuinely has to go
+   * out to the network, because reading a PDF means asking MarkItDown.
+   */
+  readonly read: (
+    memory: GraphSnapshot,
+    input: I,
+    ctx: ReadContext,
+  ) => unknown | Promise<unknown>
+}
+
+/**
+ * What a read may reach besides the graph.
+ *
+ * One optional function today, and it is optional because the thing behind it is
+ * something the user chooses to run. A read that needs it and does not have it
+ * says so; it does not fail.
+ */
+export type ReadContext = {
+  /**
+   * A job board's search page, as rows. Absent when nothing can reach one.
+   *
+   * Injected for the same reason `convert` is, plus one more: reading a board
+   * means running the page's own JavaScript, and a portable layer has no DOM to
+   * run it in. See `ToolHost.scan`.
+   */
+  readonly scan?: (
+    url: string,
+  ) => Promise<{ ok: true; rows: unknown } | { ok: false; reason: string }>
+  /**
+   * A stored document, as Markdown. Absent when no reader is configured.
+   *
+   * Supplied by the app, because getting the bytes and sending them are both
+   * platform work: `check-platform` bans the network from this layer, and the
+   * bytes live in IndexedDB on the web and on the filesystem on a phone.
+   */
+  convert?: (fileId: NodeId) => Promise<{ ok: true; markdown: string } | { ok: false; reason: string }>
 }
 
 const defineRead = <I>(t: ReadTool<I>): ReadTool<I> => t
@@ -277,6 +320,105 @@ export const graphQuery = defineRead({
     runGraphQuery(memory, input as unknown as GraphQuery),
 })
 
+/**
+ * Reads a document in the Vault, through MarkItDown.
+ *
+ * The tool the whole integration exists for. Everything else the agent can do
+ * with a file — rename it, file it under a job, delete it — treats the document
+ * as an opaque thing with a name; this is the one that opens it. A model that
+ * can read the posting can answer questions about the posting.
+ *
+ * It refuses rather than fails when nothing is configured, and says what to
+ * install. The alternative is a model that keeps trying and a user who never
+ * learns why it cannot.
+ */
+export const vaultFileRead = defineRead({
+  name: 'vault.file.read',
+  title: 'Read a document',
+  summary:
+    'Read what is inside a stored document — a PDF, a Word file, a deck, a spreadsheet — as text. Use it before answering questions about a posting, a CV or anything else filed in the Vault.',
+  effect: 'read',
+  input: s.object({
+    id: s.id('file', { label: 'Document', description: 'The id of the file to read.' }),
+  }),
+  read: async (memory, input: { id: NodeId }, ctx) => {
+    const node = memory.node(input.id, 'file')
+    if (!node) return { ok: false, hint: 'No document has that id.' }
+    if (!ctx.convert) {
+      return {
+        ok: false,
+        hint: 'No document reader is connected, so the inside of this file cannot be read. Settings is where its address goes.',
+        name: node.props.name,
+      }
+    }
+    const out = await ctx.convert(input.id)
+    return out.ok
+      ? { ok: true, name: node.props.name, markdown: out.markdown }
+      : { ok: false, name: node.props.name, hint: out.reason }
+  },
+})
+
+/**
+ * Reads a job board's search page and returns the postings on it.
+ *
+ * Refuses rather than fails when nothing can reach a board, exactly as
+ * `vault.file.read` does when no document reader is configured — the model
+ * needs to learn that browsing is unavailable here, not that it went wrong.
+ *
+ * The URL is the user's, not the model's invention: it comes from the
+ * pipeline's own `source`, which the prompt lists, and a model that makes one
+ * up gets whatever that address serves. That is the same trust the capture
+ * extension already extends to a link the user pasted, and it is bounded by the
+ * same thing — nothing fetched here is written anywhere without the person
+ * approving the card it becomes.
+ */
+export const boardSearch = defineRead({
+  name: 'board.search',
+  title: 'Read a job board',
+  summary:
+    'Open one of the job boards this pipeline watches and list the postings on it. Use the addresses you were given; do not invent one.',
+  effect: 'read',
+  input: s.object({
+    url: s.string({
+      min: 1,
+      label: 'Board',
+      description: 'The address of the board or search page to read.',
+    }),
+  }),
+  read: async (_memory, input: { url: string }, ctx) => {
+    if (!ctx.scan) {
+      return {
+        ok: false,
+        hint: 'Nothing here can open a web page, so the boards cannot be read. On a computer this is what the jojo browser extension is for; on a phone only boards that work without JavaScript can be read.',
+      }
+    }
+
+    const sources = parseSources(input.url)
+    const target = sources[0]
+    if (target === undefined) {
+      return { ok: false, hint: 'That is not an address I can open. Give me the board’s URL.' }
+    }
+
+    const out = await ctx.scan(target)
+    if (!out.ok) return { ok: false, url: target, hint: out.reason }
+
+    const listings = readListings(out.rows, target)
+    return {
+      ok: true,
+      url: target,
+      count: listings.length,
+      // Said out loud rather than left to be inferred from an empty list: a
+      // board that renders its results in a way this cannot read looks
+      // identical to a board with no jobs on it, and the two want different
+      // next moves from the model.
+      ...(listings.length === 0
+        ? { hint: 'That page listed no postings this could read. It may need a sign-in, or it may render its results in a way nothing here can follow.' }
+        : {}),
+      postings: listings,
+    }
+  },
+})
+
 /** Keyed by name so the catalog and MCP both look them up the same way. */
 export const READS = {
   'memory.overview': memoryOverview,
@@ -285,6 +427,8 @@ export const READS = {
   'memory.search': memorySearch,
   'memory.related': memoryRelated,
   'graph.query': graphQuery,
+  'vault.file.read': vaultFileRead,
+  'board.search': boardSearch,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, ReadTool<any>>
 

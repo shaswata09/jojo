@@ -64,6 +64,8 @@ export const TYPE_PREFIX: { readonly [T in NodeType]: string } = {
   match: 'match',
   pipeline: 'pipeline',
   profile: 'profile',
+  thread: 'thread',
+  proposal: 'proposal',
 }
 
 const TYPE_OF_PREFIX = new Map<string, NodeType>(

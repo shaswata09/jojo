@@ -386,6 +386,23 @@ const TARGETS = [
       // is that a backgrounded app coalesces the timer, which is a reason to
       // flush on suspend through Host, not a reason to delete the backoff.
       repo: ['dom', 'node', 'net', 'clock'],
+      /*
+       * The full ban, including `clock` and `net`.
+       *
+       * This layer implements the `Secrets` port with pure-JS primitives, and it
+       * is imported unchanged by both apps precisely because it has no platform
+       * surface — see its own header for why one implementation rather than two
+       * is a correctness requirement here rather than a convenience.
+       *
+       * `dom` stays banned even though the randomness ultimately comes from
+       * `crypto.getRandomValues`: that call is inside `@noble`, which resolves
+       * it per platform, and reaching for it directly here is exactly the
+       * regression this entry prevents. `core/ref.ts` reads `globalThis.crypto`
+       * with a `Math.random` fallback — correct for ids, catastrophic for a key
+       * — and this ban is what stops that pattern being copied one directory
+       * across.
+       */
+      crypto: ['dom', 'node', 'net', 'timer', 'clock'],
       // React Native is React, so the hooks travel — but only if they never
       // touch a document. `timer` is allowed: a hook may legitimately debounce.
       react: ['dom', 'node', 'net', 'clock'],

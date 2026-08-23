@@ -113,7 +113,21 @@ export function seedOffset(today: string): number {
  * persisted shape — dropping it is a migration, not an edit. It goes when the
  * model does.
  */
-export const timeline: TimelineItem[] = [
+/**
+ * The fixtures write `applicationIds` only when there are some.
+ *
+ * `applicationIds` is required and non-optional on the projected types, because
+ * a consumer that has to tell `undefined` from `[]` will get it wrong. Fixtures
+ * are a different audience: twenty literals each carrying `applicationIds: []`
+ * is noise that hides the four that say something. `filed` supplies the empty
+ * default once, so both readings stay true.
+ */
+const filed = <T extends { applicationIds?: string[] }>(
+  rows: T[],
+): (T & { applicationIds: string[] })[] =>
+  rows.map((row) => ({ ...row, applicationIds: row.applicationIds ?? [] }))
+
+const timelineRaw: (Omit<TimelineItem, 'applicationIds'> & { applicationIds?: string[] })[] = [
   {
     id: 'stripe-referral',
     title: 'Ask D. Chen for a referral',
@@ -121,7 +135,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'admin',
     urgency: 'gray',
-    applicationId: 'stripe',
+    applicationIds: ['stripe'],
     remind: true,
     completedOn: '2026-09-28',
   },
@@ -132,7 +146,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'gray',
-    applicationId: 'tamu',
+    applicationIds: ['tamu'],
     remind: true,
     completedOn: '2026-10-02',
   },
@@ -144,7 +158,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'follow-up',
     urgency: 'red',
-    applicationId: 'ut-austin',
+    applicationIds: ['ut-austin'],
     remind: true,
   },
   {
@@ -155,7 +169,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'follow-up',
     urgency: 'red',
-    applicationId: 'tamu',
+    applicationIds: ['tamu'],
     remind: true,
   },
   {
@@ -166,7 +180,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'follow-up',
     urgency: 'amber',
-    applicationId: 'databricks',
+    applicationIds: ['databricks'],
     remind: true,
   },
   {
@@ -178,7 +192,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'prep',
     urgency: 'red',
-    applicationId: 'ut-austin',
+    applicationIds: ['ut-austin'],
     remind: true,
   },
   {
@@ -191,7 +205,7 @@ export const timeline: TimelineItem[] = [
     durationMins: 30,
     kind: 'call',
     urgency: 'amber',
-    applicationId: 'texas-tech',
+    applicationIds: ['texas-tech'],
     remind: false,
   },
   {
@@ -201,7 +215,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'admin',
     urgency: 'amber',
-    applicationId: 'texas-tech',
+    applicationIds: ['texas-tech'],
     remind: true,
   },
   {
@@ -212,7 +226,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'red',
-    applicationId: 'ut-austin',
+    applicationIds: ['ut-austin'],
     remind: false,
   },
   {
@@ -223,7 +237,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'prep',
     urgency: 'gray',
-    applicationId: 'stripe',
+    applicationIds: ['stripe'],
     remind: true,
   },
   {
@@ -234,7 +248,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'amber',
-    applicationId: 'stripe',
+    applicationIds: ['stripe'],
     remind: false,
   },
   {
@@ -245,7 +259,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'gray',
-    applicationId: 'tamu',
+    applicationIds: ['tamu'],
     remind: false,
   },
   {
@@ -256,7 +270,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'prep',
     urgency: 'gray',
-    applicationId: 'rice',
+    applicationIds: ['rice'],
     remind: false,
   },
   {
@@ -267,7 +281,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'admin',
     urgency: 'gray',
-    applicationId: 'uh',
+    applicationIds: ['uh'],
     remind: true,
   },
   // The Texas Tech deadline existed as a dashboard deadline only — the calendar
@@ -280,7 +294,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'gray',
-    applicationId: 'texas-tech',
+    applicationIds: ['texas-tech'],
     remind: false,
   },
   {
@@ -293,7 +307,7 @@ export const timeline: TimelineItem[] = [
     durationMins: 45,
     kind: 'interview',
     urgency: 'amber',
-    applicationId: 'texas-tech',
+    applicationIds: ['texas-tech'],
     remind: false,
     joinUrl: 'https://zoom.us/j/88451209335',
   },
@@ -307,7 +321,7 @@ export const timeline: TimelineItem[] = [
     durationMins: 6 * 60,
     kind: 'interview',
     urgency: 'amber',
-    applicationId: 'stripe',
+    applicationIds: ['stripe'],
     remind: false,
     location: 'Stripe — South San Francisco',
   },
@@ -322,7 +336,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'red',
-    applicationId: 'rice',
+    applicationIds: ['rice'],
     remind: false,
   },
   {
@@ -335,7 +349,7 @@ export const timeline: TimelineItem[] = [
     durationMins: 90,
     kind: 'prep',
     urgency: 'amber',
-    applicationId: 'uh',
+    applicationIds: ['uh'],
     remind: false,
   },
   {
@@ -346,7 +360,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'visit',
     urgency: 'amber',
-    applicationId: 'uh',
+    applicationIds: ['uh'],
     remind: false,
     location: 'University of Houston',
   },
@@ -359,7 +373,7 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'red',
-    applicationId: 'baylor',
+    applicationIds: ['baylor'],
     remind: true,
   },
   {
@@ -370,7 +384,9 @@ export const timeline: TimelineItem[] = [
     allDay: true,
     kind: 'deadline',
     urgency: 'gray',
-    applicationId: 'unt',
+    applicationIds: ['unt'],
     remind: false,
   },
 ]
+
+export const timeline: TimelineItem[] = filed(timelineRaw)

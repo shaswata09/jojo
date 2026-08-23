@@ -67,6 +67,7 @@ function item(over: Partial<TimelineItem> = {}): TimelineItem {
     title: 'Follow up',
     date: '2026-10-01',
     allDay: true,
+    applicationIds: [],
     kind: 'follow-up',
     urgency: 'gray',
     remind: true,

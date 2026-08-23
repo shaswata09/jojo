@@ -54,14 +54,31 @@ export function StatsCard() {
 
   return (
     <Panel className="flex min-w-0 flex-col">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      {/* The switch is anchored, and the title is what gives way.
+          `flex-wrap` put the control on a second line as soon as the title grew
+          — "Pipeline" is eight characters and "What to work on next" is twenty —
+          so the one control on this card moved every time it was used, which is
+          the worst thing a control can do. No wrap, the heading takes `min-w-0`
+          and truncates, and the switch keeps its place in the corner whatever is
+          being shown. Truncation is theoretical at the widths this card is used
+          at: the longest title measures well inside the space left over. */}
+      <div className="mb-4 flex items-center justify-between gap-3">
         {/* The count stays on Pipeline only. On the other three it would be
             answering a question the view is not asking — "12 tracked" above a
             reply rate reads as the denominator, and it is not. */}
-        <PanelTitle className="mb-0" hint={view === 'pipeline' ? `${all.length} tracked` : undefined}>
+        <PanelTitle
+          className="mb-0 min-w-0 truncate"
+          hint={view === 'pipeline' ? `${all.length} tracked` : undefined}
+        >
           {TITLE[view]}
         </PanelTitle>
-        <Segment label="Statistic" options={VIEWS} value={view} onChange={setView} />
+        <Segment
+          className="shrink-0"
+          label="Statistic"
+          options={VIEWS}
+          value={view}
+          onChange={setView}
+        />
       </div>
 
       {/* Bounded, because the four views are not the same height and this card

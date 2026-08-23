@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { FiledUnderLinks } from '@/components/common/FiledUnderLinks'
 import { ItemMenu, SnoozeMenu } from '@/components/common/ItemMenus'
 import { LabelChips } from '@/components/common/Labels'
 import { BucketFilter } from '@/components/ui/BucketFilter'
@@ -12,17 +11,15 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Divider, Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { displayName } from '@jojo/service/data/seed'
 import { bucketOf, shortDate, whenLabel } from '@jojo/service/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@jojo/service/data/timeline'
 import { useLabels } from '@/lib/labels-context'
 import { vaultEmptyState } from '@/lib/vault-empty'
 import { matchesQuery } from '@/lib/search'
 import { useSheets } from '@/lib/sheets-context'
-import { useApplications, useTimeline } from '@/lib/store-context'
+import { useTimeline } from '@/lib/store-context'
 import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
 import { useItemActions } from '@/lib/use-item-actions'
-import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -54,11 +51,9 @@ const BUCKET_TONE = {
 export function RemindersTool({ focus }: { focus?: string }) {
   const c = useColors()
   const { reminders } = useTimeline()
-  const { byId } = useApplications()
   const { matches, selected, clearSelected } = useLabels()
   const { open } = useSheets()
   const actions = useItemActions()
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const [bucket, setBucket] = useState<TimelineBucket | 'all'>('all')
   const [query, setQuery] = useState('')
@@ -178,7 +173,6 @@ export function RemindersTool({ focus }: { focus?: string }) {
           rows.map((r, i) => {
             const b = bucketOf(r, TODAY)
             const done = Boolean(r.completedOn)
-            const app = r.applicationId ? byId.get(r.applicationId) : undefined
             const when = whenLabel(r, TODAY)
             const date = shortDate(r.date)
 
@@ -241,16 +235,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
                       {when.includes(date) ? '' : ` · ${date}`}
                       {r.detail || r.note ? ` · ${r.detail ?? r.note}` : ''}
                     </Txt>
-                    {app ? (
-                      <Pressable
-                        accessibilityRole="link"
-                        onPress={() => navigation.navigate('ApplicationDetail', { id: app.id })}
-                      >
-                        <Txt size="xs" tone="info" numberOfLines={1}>
-                          {displayName(app)}
-                        </Txt>
-                      </Pressable>
-                    ) : null}
+                    <FiledUnderLinks applicationIds={r.applicationIds} />
                     <LabelChips recordId={r.id} />
                   </Pressable>
 

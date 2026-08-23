@@ -36,6 +36,7 @@ import type {
   NodeId,
   Pipeline,
   Profile,
+  Proposal,
   SavedPosting,
   Snippet,
   StoredNode,
@@ -60,6 +61,7 @@ export type Projections = {
   postings: List<SavedPosting>
   matches: List<Match>
   pipelines: List<Pipeline>
+  proposals: List<Proposal>
   keywords: List<Label>
   profile: (g: GraphSnapshot) => Profile
 }
@@ -67,8 +69,20 @@ export type Projections = {
 /** The application an edge of this kind points at, as an id. Absent, not null. */
 const pointing = (id: NodeId | undefined) => (id === undefined ? {} : { applicationId: id })
 
-const filedUnder = (g: GraphSnapshot, id: NodeId) =>
-  pointing(g.one(id, 'FILED_UNDER', 'application')?.id)
+/**
+ * Every application a record is joined to, by one relation.
+ *
+ * A list because both relations are `fromCardinality: 'many'` now. Always an
+ * array, empty when there are none: a caller that has to distinguish `undefined`
+ * from `[]` from `['']` is a caller that will get one of the three wrong.
+ */
+const joinedTo = (g: GraphSnapshot, id: NodeId, rel: 'FILED_UNDER' | 'ABOUT') => ({
+  // 'out' because both relations are spelled from the record TO the application
+  // — a file is filed under a job, an item is about one.
+  applicationIds: g.many(id, rel, 'out', 'application').map((a) => a.id),
+})
+
+const filedUnder = (g: GraphSnapshot, id: NodeId) => joinedTo(g, id, 'FILED_UNDER')
 
 const became = (g: GraphSnapshot, id: NodeId) => g.one(id, 'BECAME', 'application')?.id
 
@@ -107,7 +121,7 @@ export function createProjections(today: ISODate): Projections {
       ...rest,
       id: n.id,
       allDay: n.props.startMins === undefined,
-      ...pointing(g.one(n.id, 'ABOUT', 'application')?.id),
+      ...joinedTo(g, n.id, 'ABOUT'),
     }
   }
 
@@ -122,10 +136,25 @@ export function createProjections(today: ISODate): Projections {
       return { ...rest, id: n.id, ...filedUnder(g, n.id) }
     }),
 
-    files: createProjection('file', (n, g): VaultFile => {
-      const { slug: _slug, ...rest } = n.props
-      return { ...rest, id: n.id, ...filedUnder(g, n.id) }
-    }),
+    /*
+     * Newest first, unlike everything else here.
+     *
+     * `ofType` is id-ascending, which is creation order, which put the oldest
+     * document at the top of the Vault and the newest below the fold — so the
+     * one you have just added is the one you have to scroll to find. Every other
+     * list in this app is short enough or navigated enough that creation order
+     * is fine; a document drawer is neither.
+     *
+     * Sorted here rather than in the Vault's own component so the Profile page's
+     * Documents card and the phone agree with it without each remembering to.
+     */
+    files: sortedBy(
+      createProjection('file', (n, g): VaultFile => {
+        const { slug: _slug, ...rest } = n.props
+        return { ...rest, id: n.id, ...filedUnder(g, n.id) }
+      }),
+      compareNewestFirst,
+    ),
 
     snippets: createProjection('snippet', (n, g): Snippet => {
       const { slug: _slug, ...rest } = n.props
@@ -148,6 +177,16 @@ export function createProjections(today: ISODate): Projections {
       return { ...rest, id: n.id }
     }),
 
+    /*
+     * Ordered by id, which is creation order, and deliberately not re-sorted by
+     * status: a card that is answered should stay where it was rather than jump
+     * to the bottom of the list under the pointer that just answered it.
+     */
+    proposals: createProjection('proposal', (n, g): Proposal => {
+      const { slug: _slug, ...rest } = n.props
+      return { ...rest, id: n.id, pipelineId: g.one(n.id, 'FROM', 'pipeline')?.id ?? null }
+    }),
+
     keywords: createProjection('keyword', (n): Label => {
       const { slug: _slug, ...rest } = n.props
       return { ...rest, id: n.id }
@@ -161,13 +200,24 @@ export function createProjections(today: ISODate): Projections {
 }
 
 /**
- * The timeline is the one collection whose order is not creation order.
+ * The two collections whose order is not creation order.
  *
  * Sorted by date and start time, because rescheduling is the most common edit
  * there is and an unsorted rail reads as a rendering bug. Memoised on the
  * projected array's identity so the sort runs once per commit that touched a
  * timeline item, not once per render of the calendar.
  */
+/**
+ * Most recently saved first, then most recently created.
+ *
+ * `savedOn` is a calendar day, so a batch dropped in one go all shares it and
+ * the date alone leaves them in an arbitrary order. The id breaks the tie and
+ * breaks it correctly: ids are uuidv7, so comparing them as strings compares the
+ * moment they were minted.
+ */
+const compareNewestFirst = (a: { savedOn: string; id: string }, b: { savedOn: string; id: string }) =>
+  b.savedOn.localeCompare(a.savedOn) || b.id.localeCompare(a.id)
+
 function sortedBy<R>(list: List<R>, compare: (a: R, b: R) => number): List<R> {
   let lastInput: readonly R[] | null = null
   let lastOutput: readonly R[] = []

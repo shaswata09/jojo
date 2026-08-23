@@ -184,7 +184,7 @@ export function buildStageItem(
       detail: application.roleTag,
       date: draft.date,
       kind: 'interview',
-      applicationId: application.id,
+      applicationIds: [application.id],
       remind: true,
       location: draft.format === 'onsite' ? application.location : undefined,
     }
@@ -195,7 +195,7 @@ export function buildStageItem(
       detail: 'Decision deadline',
       date: draft.respondBy,
       kind: 'deadline',
-      applicationId: application.id,
+      applicationIds: [application.id],
       remind: true,
     }
   }

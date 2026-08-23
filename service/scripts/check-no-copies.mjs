@@ -271,6 +271,10 @@ for (const app of APPS) {
  */
 const EXPORTED = {
   core: 'kg/core',
+  // The one layer whose implementation is shared rather than adapted per app:
+  // both ends of a pairing must derive byte-identical keys, so two copies is a
+  // correctness bug rather than duplication. See kg/crypto/noble-secrets.ts.
+  crypto: 'kg/crypto',
   storage: 'kg/storage',
   repo: 'kg/repo',
   tools: 'kg/tools',
@@ -282,7 +286,7 @@ const EXPORTED = {
 /**
  * Modules the exports map reaches and no app may name.
  *
- * The map is seven stars, one per layer, and a star is a LAYER boundary rather
+ * The map is eight stars, one per layer, and a star is a LAYER boundary rather
  * than an API boundary: `@jojo/service/tools/runtime-tx` resolves as readily as
  * `@jojo/service/tools/runtime`. The three transaction internals are the ones
  * that matter. `makeTx` and `stage` write into a buffer, and `repo.commit` being

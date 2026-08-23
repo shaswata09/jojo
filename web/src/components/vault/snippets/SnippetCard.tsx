@@ -29,7 +29,8 @@ export function SnippetCard({
 }: {
   snippet: Snippet
   /** The application it is filed under — the record, so `appPath` has the slug. */
-  related?: Application
+  /** Every application it is filed under. Empty, never absent. */
+  related: readonly Application[]
   /** Set on the focused card only, so the tool can scroll it into view. */
   cardRef?: Ref<HTMLLIElement>
   /** Arrived here from a link that named this card — see `focus` in links.ts. */
@@ -82,14 +83,15 @@ export function SnippetCard({
                 same fact. Without it the tag was only visible by opening the
                 editor, which is the state the application's own page could not
                 explain. */}
-            {related ? (
+            {related.map((app) => (
               <Link
-                to={appPath(related)}
+                key={app.id}
+                to={appPath(app)}
                 className="truncate text-xs text-text-3 underline-offset-2 transition-colors hover:text-accent hover:underline"
               >
-                {displayName(related)}
+                {displayName(app)}
               </Link>
-            ) : null}
+            ))}
             <LabelChips recordId={s.id} />
           </span>
         </div>

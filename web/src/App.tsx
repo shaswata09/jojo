@@ -87,14 +87,29 @@ function ApplicationDetailRoute() {
       // 'event' rather than 'reminder': this button sits beside the record's
       // Upcoming list, so the date is the point. The dialog's own switch still
       // decides whether it also shows up as a reminder.
-      onAddItem={(id) => open('timelineItem', { mode: 'event', initial: { applicationId: id } })}
+      onAddItem={(id) => open('timelineItem', { mode: 'event', initial: { applicationIds: [id] } })}
     />
   )
 }
 
+/**
+ * Where the app is mounted, from Vite's `base`.
+ *
+ * '/' in dev and on a custom domain; '/jojo/' on GitHub Pages, where the site
+ * lives under the repository name. The router has to be told, or every route it
+ * builds is absolute from the domain root — the app would load at
+ * `/jojo/applications` and then navigate to `/applications`, which is a 404
+ * served by GitHub rather than a page.
+ *
+ * Read from `import.meta.env.BASE_URL` rather than hardcoded, so the value is
+ * the SAME one Vite used to rewrite the asset URLs. Two copies of a base path
+ * is the version of this bug that only shows up in production.
+ */
+const BASENAME = import.meta.env.BASE_URL
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASENAME}>
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<Dashboard />} />

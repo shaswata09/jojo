@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ChatMessage } from '../core/model-server'
 import { runAgent } from '../agent/loop'
 import type { AgentStep, Cancellation, LlmTurnFn } from '../agent/loop'
@@ -63,14 +63,46 @@ export type UseAgentOptions = {
   maxSteps?: number
   /** Offer the model only these tools, by registry name. See `loop.ts`. */
   tools?: readonly string[]
+  /**
+   * Turns a stored document into Markdown, when the app has a reader configured.
+   *
+   * Passed in rather than built here for the reason `execute.ts` gives: both
+   * halves — finding the bytes and sending them — are platform work this package
+   * may not do.
+   */
+  convert?: (fileId: string) => Promise<{ ok: true; markdown: string } | { ok: false; reason: string }>
+  /**
+   * A stored conversation to continue.
+   *
+   * `key` is what says "this is a different one" — the entries and history are
+   * arrays rebuilt on every render, so comparing them would reload the hook
+   * continuously. Changing the key swaps the conversation; keeping it while the
+   * arrays change leaves the live one alone, which is what must happen while an
+   * exchange is being saved back into the very thread being read.
+   */
+  thread?: { key: string; entries: readonly AgentEntry[]; history: readonly ChatMessage[] }
+  /**
+   * Called once when an exchange settles, with everything said so far.
+   *
+   * At the END of a run rather than per event: a conversation saved five times
+   * during one exchange is five commits for one thing the user did, and the
+   * intermediate states are a transcript with a half-finished tool call in it.
+   */
+  onSettled?: (entries: readonly AgentEntry[]) => void
 }
 
-export function useAgent({ llm, approve, maxSteps, tools }: UseAgentOptions): AgentState {
+export function useAgent({
+  llm,
+  approve,
+  maxSteps,
+  tools,
+  thread,
+  onSettled,
+  convert,
+}: UseAgentOptions): AgentState {
   const { repo, runtime } = useKg()
-  const [entries, setEntries] = useState<readonly AgentEntry[]>([])
+  const [entries, setEntries] = useState<readonly AgentEntry[]>(thread?.entries ?? [])
   const [busy, setBusy] = useState(false)
-  /** The model-facing transcript, so a follow-up means something. */
-  const history = useRef<ChatMessage[]>([])
   /**
    * A mutable flag rather than an `AbortController`.
    *
@@ -78,8 +110,28 @@ export function useAgent({ llm, approve, maxSteps, tools }: UseAgentOptions): Ag
    * `types/portable-globals.d.ts` — and the loop only ever reads `.aborted`, so
    * a one-key object does the whole job on every platform.
    */
+  /** The model-facing transcript, so a follow-up means something. */
+  const history = useRef<ChatMessage[]>([...(thread?.history ?? [])])
   const abort = useRef<{ aborted: boolean } | null>(null)
   const seq = useRef(0)
+
+  /*
+   * Load a different conversation when the key changes, and only then.
+   *
+   * A layout effect so the swap lands before paint: an effect would show the
+   * outgoing thread's turns under the incoming thread's title for a frame,
+   * which reads as the wrong conversation rather than as a load.
+   */
+  const loaded = useRef<string | null>(thread?.key ?? null)
+  useLayoutEffect(() => {
+    if (!thread || loaded.current === thread.key) return
+    loaded.current = thread.key
+    if (abort.current) abort.current.aborted = true
+    setEntries(thread.entries)
+    history.current = [...thread.history]
+    seq.current = thread.entries.length
+    setBusy(false)
+  }, [thread])
   const nextId = () => `e${String((seq.current += 1))}`
 
   /**
@@ -94,8 +146,9 @@ export function useAgent({ llm, approve, maxSteps, tools }: UseAgentOptions): Ag
       memory: () => repo.getSnapshot(),
       check: (name, input) => runtime.check(name as ToolName, input) as never,
       run: (name, input) => runtime.run(name as ToolName, input as never) as never,
+      ...(convert ? { convert } : {}),
     }),
-    [repo, runtime],
+    [convert, repo, runtime],
   )
 
   const send = useCallback(
@@ -115,7 +168,25 @@ export function useAgent({ llm, approve, maxSteps, tools }: UseAgentOptions): Ag
        * `AgentStep.id` is stable: appending would show the same call twice and
        * make a two-tool run look like a four-tool one.
        */
+      /*
+       * What this exchange produced, accumulated as it goes.
+       *
+       * Kept beside the state because `onSettled` needs the finished list and
+       * `setEntries` is asynchronous — reading `entries` after the run would
+       * hand the caller the conversation as it was before it.
+       */
+      let settled: AgentEntry[] = [
+        ...entries,
+        { kind: 'you', id: nextId(), text: clean } as AgentEntry,
+      ]
+      const record = (entry: AgentEntry) => {
+        const at = settled.findIndex((e) => e.id === entry.id)
+        if (at === -1) settled = [...settled, entry]
+        else settled = settled.map((e, i) => (i === at ? entry : e))
+      }
+
       const onStep = (step: AgentStep) => {
+        record({ kind: 'step', id: `s-${step.id}`, step })
         setEntries((prev) => {
           const at = prev.findIndex((e) => e.kind === 'step' && e.step.id === step.id)
           if (at === -1) return [...prev, { kind: 'step', id: `s-${step.id}`, step }]
@@ -135,12 +206,18 @@ export function useAgent({ llm, approve, maxSteps, tools }: UseAgentOptions): Ag
         ...(approve ? { approve } : {}),
         signal: cancel satisfies Cancellation,
         onEvent: (event) => {
-          if (event.type === 'step') onStep(event.step)
-          else if (event.type === 'note')
-            setEntries((prev) => [...prev, { kind: 'note', id: nextId(), text: event.text }])
-          else if (event.type === 'answer')
-            setEntries((prev) => [...prev, { kind: 'answer', id: nextId(), text: event.text }])
-          else setEntries((prev) => [...prev, { kind: 'error', id: nextId(), text: event.reason }])
+          if (event.type === 'step') {
+            onStep(event.step)
+            return
+          }
+          const entry: AgentEntry =
+            event.type === 'note'
+              ? { kind: 'note', id: nextId(), text: event.text }
+              : event.type === 'answer'
+                ? { kind: 'answer', id: nextId(), text: event.text }
+                : { kind: 'error', id: nextId(), text: event.reason }
+          record(entry)
+          setEntries((prev) => [...prev, entry])
         },
       })
 
@@ -150,8 +227,12 @@ export function useAgent({ llm, approve, maxSteps, tools }: UseAgentOptions): Ag
       history.current = run.messages.slice(1)
       abort.current = null
       setBusy(false)
+      // `settled` rather than `entries`: the state setter above has queued, so
+      // the closure's `entries` is one exchange behind. The events are what
+      // actually happened, in order.
+      onSettled?.(settled)
     },
-    [approve, busy, host, llm, maxSteps, tools],
+    [approve, busy, host, llm, maxSteps, onSettled, tools],
   )
 
   const stop = useCallback(() => {

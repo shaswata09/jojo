@@ -89,13 +89,23 @@ const g: GraphSnapshot = MutableSnapshot.from(graph.nodes, graph.edges)
 /** 'YYYY-MM-DD' out of an Instant. Both ends UTC, so a day is a whole day. */
 const dayOf = (at: Instant) => at.slice(0, 10)
 
-/** The projected id, and what an `applicationId` points back at. */
+/** The projected id, and what an `applicationIds` entry points back at. */
 const slugOf = (id: NodeId | undefined): string | undefined =>
   id === undefined ? undefined : (g.node(id)?.props as { slug?: string } | undefined)?.slug
 
-const filedUnder = (id: NodeId) => slugOf(g.one(id, 'FILED_UNDER', 'application')?.id)
+/** Every application the record is joined to, as slugs. Empty, never absent. */
+const joined = (id: NodeId, rel: 'FILED_UNDER' | 'ABOUT') =>
+  g
+    .many(id, rel, 'out', 'application')
+    .map((a) => slugOf(a.id))
+    .filter((s): s is string => s !== undefined)
 
-/** Present only when the edge is. An `applicationId: undefined` is not the same row. */
+const filedUnder = (id: NodeId) => joined(id, 'FILED_UNDER')
+
+/**
+ * Present only when the edge is. Still used by the two `BECAME` projections,
+ * which stayed one-to-one: a posting becomes at most one application.
+ */
 const pointing = (applicationId: string | undefined) =>
   applicationId === undefined ? {} : { applicationId }
 
@@ -118,23 +128,23 @@ function projectTimelineItem(n: StoredNode<'timelineItem'>): TimelineItem {
     id: slug,
     // The same fact the absence of `startMins` already carried.
     allDay: n.props.startMins === undefined,
-    ...pointing(slugOf(g.one(n.id, 'ABOUT', 'application')?.id)),
+    applicationIds: joined(n.id, 'ABOUT'),
   }
 }
 
 function projectLink(n: StoredNode<'link'>): VaultLink {
   const { slug, ...rest } = n.props
-  return { ...rest, id: slug, ...pointing(filedUnder(n.id)) }
+  return { ...rest, id: slug, applicationIds: filedUnder(n.id) }
 }
 
 function projectFile(n: StoredNode<'file'>): VaultFile {
   const { slug, ...rest } = n.props
-  return { ...rest, id: slug, ...pointing(filedUnder(n.id)) }
+  return { ...rest, id: slug, applicationIds: filedUnder(n.id) }
 }
 
 function projectSnippet(n: StoredNode<'snippet'>): Snippet {
   const { slug, ...rest } = n.props
-  return { ...rest, id: slug, ...pointing(filedUnder(n.id)) }
+  return { ...rest, id: slug, applicationIds: filedUnder(n.id) }
 }
 
 function projectPosting(n: StoredNode<'posting'>): SavedPosting {
@@ -184,6 +194,14 @@ describe('seedToGraph', () => {
       match: seedMatches.length,
       pipeline: seedPipelines.length,
       profile: 1,
+      // Zero, and asserted rather than omitted: the demo ships no conversations,
+      // and a seed that quietly started inventing them would be putting words in
+      // the user's mouth on a page whose whole claim is that it is theirs.
+      thread: 0,
+      // Zero for the same reason, and a stronger one: a proposal is a question
+      // waiting for an answer, so a seeded one would be the demo asking the
+      // user to approve a change to records they have not looked at yet.
+      proposal: 0,
     })
   })
 })
@@ -330,7 +348,16 @@ describe('the seeded graph satisfies its own invariants', () => {
    * the same mistake: `applicationId` in props is an edge the graph cannot see.
    */
   it('stores no derived value and no pointer', () => {
-    const banned = ['daysAgo', 'allDay', 'linked', 'degree', 'displayName', 'applicationId', 'org']
+    const banned = [
+      'daysAgo',
+      'allDay',
+      'linked',
+      'degree',
+      'displayName',
+      'applicationId',
+      'applicationIds',
+      'org',
+    ]
     const offenders = graph.nodes.flatMap((n) =>
       banned.filter((key) => key in n.props).map((key) => `${n.type}.${key}`),
     )

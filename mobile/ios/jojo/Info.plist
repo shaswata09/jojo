@@ -38,6 +38,14 @@
     <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
+    <!--
+      Reading the pairing code off the other device's screen. iOS shows this
+      string verbatim in the permission prompt, so it says what the camera is
+      for and what it is not — a prompt that explains itself is one people can
+      answer, and this is the only camera use in the app.
+    -->
+    <key>NSCameraUsageDescription</key>
+    <string>jojo uses the camera only to read the pairing code shown on your other device. Nothing is recorded, and no image leaves this phone.</string>
     <key>NSAppTransportSecurity</key>
     <dict>
       <key>NSAllowsArbitraryLoads</key>
@@ -86,5 +94,5 @@
     <string>Automatic</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <false/>
-  </dict>
+</dict>
 </plist>

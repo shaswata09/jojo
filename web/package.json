@@ -1,25 +1,24 @@
 {
   "name": "web",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "engines": {
     "node": ">=22.22.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "npm run pack-extension && tsc -b && vite build",
+    "dev": "npm run pack-extension && vite",
+    "build": "npm run pack-extension && tsc -b && vite build && node scripts/spa-fallback.mjs",
     "test": "vitest run",
     "lint": "npm -w @jojo/service run lint && oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
-    "pack-extension": "node scripts/pack-extension.mjs"
+    "pack-extension": "npm run make-extension-icons && node scripts/pack-extension.mjs",
+    "make-extension-icons": "node scripts/make-extension-icons.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@jojo/service": "*",
@@ -36,9 +35,7 @@
     "radix-ui": "^1.6.7",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-icons": "^5.7.0",
     "react-router": "^8.3.0",
-    "shadcn": "^4.16.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
     "three": "^0.185.1",
@@ -54,6 +51,7 @@
     "oxlint": "^1.75.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "shadcn": "^4.16.2",
     "typescript": "~6.0.2",
     "vite": "^8.2.0",
     "vitest": "^4.1.10"

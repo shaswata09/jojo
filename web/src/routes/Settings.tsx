@@ -7,6 +7,7 @@ import { AppearancePanel } from '@/components/settings/AppearancePanel'
 import { CaptureExtensionPanel } from '@/components/settings/CaptureExtensionPanel'
 import { ConnectionsSection } from '@/components/settings/ConnectionsSection'
 import { DataPanel } from '@/components/settings/DataPanel'
+import { DocumentsPanel } from '@/components/settings/DocumentsPanel'
 import { useTitle } from '@/lib/links'
 import { isStorageAvailable } from '@/lib/storage'
 
@@ -40,6 +41,8 @@ export function Settings() {
         </div>
       ) : null}
 
+      {/* The two local services: a model and a document reader. Both take an
+          address and both have a Test connection, so they sit side by side. */}
       <ConnectionsSection />
 
       {/* Beside Connections rather than under Data: both are about something
@@ -49,7 +52,13 @@ export function Settings() {
 
       <AppearancePanel />
 
+      {/* Where the records are, and where the documents are — the same question
+          twice, so they are adjacent. `DocumentsPanel` used to sit up in
+          Connections, which made an odd third card there and answered a question
+          nobody was asking at that point on the page. */}
       <DataPanel />
+
+      <DocumentsPanel />
 
       <KeywordManager />
 

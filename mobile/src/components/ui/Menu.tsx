@@ -14,8 +14,16 @@ export type MenuAction = {
   hint?: string
   icon?: FeatherName
   tone?: 'default' | 'danger'
-  /** Ticked, for a menu that is really a single choice — the stage picker. */
+  /** Ticked, for a menu that is really a choice — the stage picker. */
   checked?: boolean
+  /**
+   * Leaves the sheet up after the press.
+   *
+   * For a menu that is a multi-select rather than a menu — the application
+   * picker, where filing under the second job should not mean reopening the
+   * control you just used to pick the first.
+   */
+  keepOpen?: boolean
   /** A dot in the row's own colour, for the stage picker. */
   dotColor?: string
   disabled?: boolean
@@ -38,6 +46,7 @@ export function MenuSheet({
   description,
   actions,
   children,
+  footer,
 }: {
   open: boolean
   onClose: () => void
@@ -45,11 +54,12 @@ export function MenuSheet({
   description?: string
   actions: MenuAction[]
   children?: ReactNode
+  footer?: ReactNode
 }) {
   const c = useColors()
 
   return (
-    <Sheet open={open} onClose={onClose} title={title} description={description}>
+    <Sheet open={open} onClose={onClose} title={title} description={description} footer={footer}>
       {children}
       <ScrollView style={styles.list} bounces={false}>
         {actions.map((a) => (
@@ -59,7 +69,7 @@ export function MenuSheet({
             accessibilityState={{ disabled: Boolean(a.disabled), checked: a.checked }}
             disabled={a.disabled}
             onPress={() => {
-              onClose()
+              if (!a.keepOpen) onClose()
               a.onPress()
             }}
             style={({ pressed }) => [

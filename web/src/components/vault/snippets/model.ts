@@ -6,8 +6,8 @@ export type Draft = {
   title: string
   tag: SnippetTag
   html: string
-  /** The job it is filed under, or none. */
-  applicationId?: string
+  /** Every job it is filed under. Empty, never absent. */
+  applicationIds: string[]
   /** Staged, not written on click — see `KeywordPicker`. Cancel discards them. */
   keywords: string[]
 }
@@ -23,7 +23,7 @@ export type Clean = {
    * snippet under a job and closing would discard it with no warning — the
    * editor would believe nothing had changed.
    */
-  applicationId?: string
+  applicationIds: string[]
 }
 
 /** Order-insensitive, because picking A then B is the same set as B then A. */

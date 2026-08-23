@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { AddFromLinkDialog } from '@/components/applications/AddFromLinkDialog'
 import { ApplicationDialog } from '@/components/applications/ApplicationDialog'
 import type { ApplicationInitial } from '@/components/applications/ApplicationDialog'
 import { applicationDeadlineOf } from '@/components/applications/deadline'
@@ -158,6 +159,12 @@ export function DialogHost() {
         initial={props.initial}
       />
     )
+  }
+
+  if (current.name === 'applicationFromLink') {
+    // Keyed per open, like the two above: its state is a URL being typed and a
+    // read in flight, and neither should survive a close and reopen.
+    return <AddFromLinkDialog key={mountKey('applicationFromLink', showing)} open />
   }
 
   if (current.name === 'draft') {

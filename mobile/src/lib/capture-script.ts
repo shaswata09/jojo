@@ -87,14 +87,29 @@ export function captureScript(): string {
     // no url( pattern at all and shipped live until this handled it.
     function queueCssUrls(css) {
       return css
-        .replace(/@import\\s+(['"])([^'"]+)\\1/gi, function (whole, q, raw) {
-          if (raw.trim().indexOf('data:') === 0) return whole;
-          var href = absolute(raw);
-          if (href === null) { dropped += 1; return '@import ""'; }
-          return '@import url("' + token(href, 'css') + '")';
-        })
+        /*
+         * An @import is replaced by the STYLESHEET, not by a link to it — that
+         * is what @import means, and rewriting it to url("<token>") made the
+         * inliner substitute the fetched CSS TEXT inside a url(), losing the
+         * sheet entirely. Both spellings here, because the url() form would
+         * otherwise be tokenised as 'css-asset' and fetched as a blob.
+         */
+        .replace(
+          /@import\\s+(?:url\\(\\s*(['"]?)([^'")]+)\\1\\s*\\)|(['"])([^'"]+)\\3)[^;]*;?/gi,
+          function (whole, q1, viaUrl, q2, viaString) {
+            var raw = viaUrl || viaString || '';
+            if (raw.trim().indexOf('data:') === 0) return whole;
+            var href = absolute(raw);
+            if (href === null) { dropped += 1; return ''; }
+            return token(href, 'css');
+          },
+        )
         .replace(/url\\(\\s*(['"]?)([^'")]+)\\1\\s*\\)/gi, function (whole, q, raw) {
           var value = raw.trim();
+          // A token this same chain just produced — the @import rewrite above
+          // emits url("__JOJO_ASSET_n__"), and without this the pattern below
+          // replaced it with 'none', undoing the fix one line later.
+          if (value.indexOf('__JOJO_ASSET_') === 0) return whole;
           if (value.indexOf('data:') === 0) return whole;
           // A same-document SVG filter reference. Resolving one invents a URL
           // that never existed, fetches it, and corrupts a data URI already kept.
@@ -119,20 +134,20 @@ export function captureScript(): string {
     // Whether this element is showing less than it holds. Asked of the RENDERED
     // page rather than of a class name — "clamped" is a computed-style fact and
     // the class that produced it differs on every site.
-    function isClamped(live) {
+    function clampKind(live) {
       try {
         var style = window.getComputedStyle(live);
-        if (style.webkitLineClamp && style.webkitLineClamp !== 'none') return true;
-        if (style.overflow !== 'hidden' && style.overflowY !== 'hidden') return false;
-        if (style.maxHeight === 'none') return false;
-        return live.scrollHeight > live.clientHeight + 4;
+        if (style.webkitLineClamp && style.webkitLineClamp !== 'none') return 'clamp';
+        if (style.overflow !== 'hidden' && style.overflowY !== 'hidden') return null;
+        if (style.maxHeight === 'none') return null;
+        return live.scrollHeight > live.clientHeight + 4 ? 'height' : null;
       } catch (e) {
-        return false;
+        return null;
       }
     }
 
-    function pickImageSrc(node, live) {
-      var current = live && live.currentSrc ? absolute(live.currentSrc) : null;
+    function pickImageSrc(node) {
+      var current = absolute(node.getAttribute('data-jojo-resolved-src'));
       if (current !== null) return current;
       var src = absolute(node.getAttribute('src'));
       if (src !== null) return src;
@@ -144,6 +159,29 @@ export function captureScript(): string {
       for (var k = 0; k < LAZY_ATTRS.length && !had; k += 1) had = node.hasAttribute(LAZY_ATTRS[k]);
       if (had) dropped += 1;
       return null;
+    }
+
+    // 0. everything that needs the LIVE tree, before anything is removed.
+    //    Ordering, and it is load-bearing: step 1 deletes elements from the
+    //    clone, after which the two trees no longer line up and no
+    //    computed-style question can be answered at all. The phone had this
+    //    walk AFTER the removals, so it never un-clamped anything and never
+    //    recovered a CSSOM-only stylesheet.
+    var RESOLVED = 'data-jojo-resolved-src';
+    var cloned0 = Array.prototype.slice.call(doc.querySelectorAll('*'));
+    var living0 = Array.prototype.slice.call(document.documentElement.querySelectorAll('*'));
+    if (cloned0.length === living0.length) {
+      for (var z = 0; z < cloned0.length; z += 1) {
+        var cz = cloned0[z];
+        var lz = living0[z];
+        var kind = clampKind(lz);
+        if (kind !== null) cz.setAttribute(UNCLAMP_ATTR, kind);
+        if (lz.shadowRoot) shadowRoots += 1;
+        if (cz.tagName === 'IMG' && lz.currentSrc) cz.setAttribute(RESOLVED, lz.currentSrc);
+        if (cz.tagName === 'STYLE' && (cz.textContent || '').trim() === '' && lz.sheet) {
+          cz.textContent = rulesOf(lz.sheet);
+        }
+      }
     }
 
     // 1. elements that never survive. <link rel=stylesheet> becomes a <style>
@@ -175,12 +213,9 @@ export function captureScript(): string {
     //    made in this same tick, so the two lists are element-for-element
     //    aligned — which is what makes computed-style questions answerable.
     var cloneAll = Array.prototype.slice.call(doc.querySelectorAll('*'));
-    var liveAll = Array.prototype.slice.call(document.documentElement.querySelectorAll('*'));
-    var aligned = cloneAll.length === liveAll.length;
 
     for (var i = 0; i < cloneAll.length; i += 1) {
       var el = cloneAll[i];
-      var live = aligned ? liveAll[i] : null;
 
       for (var a = 0; a < STRIP_ATTRS.length; a += 1) el.removeAttribute(STRIP_ATTRS[a]);
 
@@ -192,8 +227,12 @@ export function captureScript(): string {
       // An SVG link. tagName on an SVG anchor is lowercase 'a', and xlink:href
       // is invisible to the leak scan (a colon precedes 'href', not whitespace),
       // so both halves of the net missed it.
-      if (el.hasAttribute('xlink:href')) {
-        var xdest = absolute(el.getAttribute('xlink:href'));
+      // A fragment is a reference into THIS document — an inline SVG sprite,
+      // which is how most icon systems work. Resolving it against the page URL
+      // turned every icon into an absolute address and dropped it.
+      var xraw = el.getAttribute('xlink:href') || '';
+      if (el.hasAttribute('xlink:href') && xraw.trim().charAt(0) !== '#') {
+        var xdest = absolute(xraw);
         el.removeAttribute('xlink:href');
         if (xdest !== null) { dropped += 1; el.setAttribute(HREF_ATTR, xdest); }
       }
@@ -205,43 +244,46 @@ export function captureScript(): string {
       }
 
       if (el.tagName === 'IMG') {
-        var src = pickImageSrc(el, live);
+        var src = pickImageSrc(el);
         if (src === null) el.removeAttribute('src');
         else el.setAttribute('src', token(src, 'img'));
       } else {
         for (var c = 0; c < URL_ATTRS.length; c += 1) {
-          if (URL_ATTRS[c] === 'href') continue;
+          // 'href' is NOT skipped. Anchors were handled above; anything else
+          // still holding one is SVG <image>, <area> or an unresolved <link>,
+          // and every one of those is a fetch.
           if (!el.hasAttribute(URL_ATTRS[c])) continue;
+          if (URL_ATTRS[c] === 'href' && (el.getAttribute('href') || '').trim().charAt(0) === '#') continue;
           if (absolute(el.getAttribute(URL_ATTRS[c])) !== null) dropped += 1;
           el.removeAttribute(URL_ATTRS[c]);
         }
         if (el.hasAttribute('background')) el.removeAttribute('background');
       }
 
-      for (var d = 0; d < LAZY_ATTRS.length; d += 1) el.removeAttribute(LAZY_ATTRS[d]);
-
       var inline = el.getAttribute('style');
       if (inline !== null && /url\\(|@import/i.test(inline)) {
         el.setAttribute('style', queueCssUrls(inline));
       }
 
-      if (live !== null && isClamped(live)) el.setAttribute(UNCLAMP_ATTR, '');
-      if (live !== null && live.shadowRoot) shadowRoots += 1;
+      // Read in pickImageSrc, and gone before the document is written out — a
+      // lazy loader's address list has no business sitting in the archive.
+      for (var d2 = 0; d2 < LAZY_ATTRS.length; d2 += 1) el.removeAttribute(LAZY_ATTRS[d2]);
+      el.removeAttribute(RESOLVED);
     }
 
     // 3. inline stylesheets, including the ones with no text. A <style> whose
     //    rules were inserted through the CSSOM (emotion, styled-components in
     //    production) has an EMPTY textContent, and reading only that captured
     //    Workday's markup with almost none of its styling.
-    var liveStyles = Array.prototype.slice.call(document.querySelectorAll('style'));
+    // CSSOM-only sheets were filled in by pass 0, where the live node was still
+    // reachable. Indexing two lists against each other here was wrong anyway:
+    // step 1 inserts <style> elements the live tree does not have, so the two
+    // lists had different lengths and one sheet's rules landed in another.
     var cloneStyles = Array.prototype.slice.call(doc.querySelectorAll('style'));
     for (var s = 0; s < cloneStyles.length; s += 1) {
       var text = cloneStyles[s].textContent || '';
       if (text.indexOf('__JOJO_ASSET_') === 0) continue;
-      if (text.trim() === '' && liveStyles[s] && liveStyles[s].sheet) {
-        text = rulesOf(liveStyles[s].sheet);
-      }
-      cloneStyles[s].textContent = /url\\(|@import/i.test(text) ? queueCssUrls(text) : text;
+      if (/url\\(|@import/i.test(text)) cloneStyles[s].textContent = queueCssUrls(text);
     }
 
     // Constructed stylesheets have no DOM node at all.
@@ -270,11 +312,14 @@ export function captureScript(): string {
     //    specificity. Marked elements only.
     if (doc.querySelector('[' + UNCLAMP_ATTR + ']')) {
       var unclamp = document.createElement('style');
+      // display:block only where a line clamp was actually in force — that
+      // idiom needs display:-webkit-box. Forcing it on every overflow-hidden
+      // container would flatten grids that were never hiding anything.
       unclamp.textContent = '[' + UNCLAMP_ATTR + ']{' +
         '-webkit-line-clamp:unset !important;' +
         'max-height:none !important;' +
-        'overflow:visible !important;' +
-        'display:block !important;}';
+        'overflow:visible !important;}' +
+        '[' + UNCLAMP_ATTR + '=\\'clamp\\']{display:block !important;}';
       (doc.querySelector('head') || doc).appendChild(unclamp);
     }
 

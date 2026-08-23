@@ -65,12 +65,18 @@ const err = (id: JsonRpcId, code: number, message: string): McpResponse => ({
 /**
  * Handles one message.
  *
+ * Async because `tools/call` may be: reading a document goes out to MarkItDown.
+ * Every other method resolves immediately and the promise costs a microtask.
+ *
  * Returns `null` for a notification — a message with no `id`, which JSON-RPC
  * says must not be answered. `notifications/initialized` is the one that
  * actually arrives, and answering it is a protocol violation that some clients
  * treat as fatal.
  */
-export function handleMcp(host: ToolHost, request: unknown): McpResponse | null {
+export async function handleMcp(
+  host: ToolHost,
+  request: unknown,
+): Promise<McpResponse | null> {
   if (typeof request !== 'object' || request === null) {
     return err(null, INVALID_REQUEST, 'Request must be a JSON-RPC object.')
   }
@@ -109,7 +115,7 @@ export function handleMcp(host: ToolHost, request: unknown): McpResponse | null 
       if (!p || typeof p.name !== 'string') {
         return err(id, INVALID_PARAMS, 'tools/call needs a string `name`.')
       }
-      const outcome = callTool(host, p.name, p.arguments)
+      const outcome = await callTool(host, p.name, p.arguments)
       // A refusal is a RESULT, not a JSON-RPC error. The call succeeded; the
       // tool said no, and the model has to see why as content it can act on.
       return ok(id, {

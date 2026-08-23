@@ -20,7 +20,15 @@
  * and neither serialiser carries a list of its own: `web/extension/policy.js`
  * transcribes these arrays under a test that fails on any drift
  * (`web/src/lib/capture-policy.test.ts`), and `mobile/src/lib/capture-script.ts`
- * interpolates them straight into the script it injects.
+ * interpolates them straight into the script it injects, under a test of its own
+ * (`mobile/src/lib/capture-script.test.ts`) that fails when a constant stops
+ * being read.
+ *
+ * One exception, stated rather than glossed: the final SWEEP in each inliner
+ * hardcodes its own attribute list, because it is a regex over a string rather
+ * than a walk over elements and the two cannot share a spelling. It is
+ * deliberately the same list as `REMOTE_REF` below and has to be changed with
+ * it — three places, and nothing checks that they agree.
  *
  * That split is the honest one. Two DOM walks that agree because they were
  * written from one rule set is a maintainable duplication; two rule sets that
@@ -87,6 +95,14 @@ export const CAPTURE_SCHEMES = ['http:', 'https:'] as const
  * Note what is NOT here: `https:`. A capture that kept its remote image URLs
  * would render more faithfully on the day it was taken and would be a beacon
  * every day after.
+ *
+ * READ BY NOTHING, and kept deliberately rather than by neglect. Both walks
+ * decide the same question the other way round — they ask what may be FETCHED
+ * (`CAPTURE_SCHEMES`) and empty everything else — so this list is the statement
+ * of what a well-formed capture may contain, which is what `remoteRefCount`
+ * checks by exclusion. If a third platform ever validates a stored capture
+ * rather than producing one, this is the constant it needs. Anyone deleting it
+ * as dead should delete this paragraph with it and not merely the line.
  */
 export const CAPTURE_SUBRESOURCE_SCHEMES = ['data:', 'about:'] as const
 
@@ -235,7 +251,16 @@ export const CAPTURE_UNCLAMP_ATTR = 'data-jojo-unclamp'
 export const CAPTURE_MAX_BYTES = 8 * 1024 * 1024
 export const CAPTURE_MAX_ASSET_BYTES = 2 * 1024 * 1024
 
-/** Extensions that name a saved page, for `kindOfFile`. */
+/**
+ * Extensions that name a saved page.
+ *
+ * NOT read by `kindOfFile` — that has its own `KIND_BY_EXT` map, which carries
+ * these four among thirty others because it answers a different question ("what
+ * kind is this file") for every kind at once. This list is the capture side's
+ * own statement of what it produces, and the two are checked against each other
+ * in `capture.test.ts` rather than shared, because collapsing them would put a
+ * capture concern inside a map that thirty unrelated extensions also live in.
+ */
 export const CAPTURE_EXTENSIONS = ['html', 'htm', 'mhtml', 'mht'] as const
 
 /**
@@ -258,6 +283,17 @@ export type CaptureEnvelope = {
   capturedAt: Instant
   /** Assets the serialiser could not inline and therefore dropped. Reported, never hidden. */
   dropped: number
+  /**
+   * Shadow roots the walk could not reach, and therefore parts of the page that
+   * are simply absent from the copy.
+   *
+   * A shadow root cannot be serialised at all: `cloneNode` does not copy one and
+   * `outerHTML` never writes one out. So the honest options were to say nothing
+   * — which is a hole in the archive that looks like a page that failed to load
+   * — or to count them and tell the user. This is the count, and it reaches the
+   * file's note; a capture that lost a widget says so.
+   */
+  shadowRoots: number
 }
 
 /** Why a capture was refused. Each maps to a sentence the user reads. */
@@ -333,9 +369,52 @@ const REMOTE_REF =
  */
 const REMOTE_CSS_REF = /url\(\s*(['"]?)\s*(?:https?:|\/\/)[^)'"]*\1\s*\)/gi
 
+/**
+ * The third spelling, and the one that got through.
+ *
+ * `@import "https://…";` is a stylesheet fetch with no `url(` and no attribute,
+ * so neither pattern above sees it. It reached a stored capture through a route
+ * nothing was watching: the walk rewrote the imports it could see in the page's
+ * own `<style>` blocks, then the inliner fetched a stylesheet and rewrote only
+ * that sheet's `url()`s — so an `@import` INSIDE a fetched stylesheet survived
+ * untouched, passed this scan, and was fetched by the viewer every time the
+ * capture was opened.
+ *
+ * A leak that a check misses is worse than one it catches loudly, and this file
+ * says the scan is the only line of defence. It has to know all three.
+ */
+const REMOTE_IMPORT_REF = /@import\s+(?:url\(\s*)?(['"]?)\s*(?:https?:|\/\/)[^)'";]*\1/gi
+
 /** How many remote references survived. Zero is the only acceptable answer. */
 export function remoteRefCount(html: string): number {
-  return [...html.matchAll(REMOTE_REF)].length + [...html.matchAll(REMOTE_CSS_REF)].length
+  /*
+   * Counted as MERGED RANGES, not as three tallies added together.
+   *
+   * The patterns overlap on purpose — `@import url("https://…")` is both an
+   * import and a `url()` — and they do not start at the same offset, so neither
+   * summing them nor de-duplicating by start position gives the right answer.
+   * Summing reported two leaks where there is one.
+   *
+   * The invariant only cares whether this is zero, so none of that changes
+   * whether a capture is accepted. It changes what the user is told, and a
+   * count that says two about one thing is a count nobody can act on.
+   */
+  const spans: [number, number][] = []
+  for (const pattern of [REMOTE_REF, REMOTE_CSS_REF, REMOTE_IMPORT_REF]) {
+    for (const match of html.matchAll(pattern)) {
+      spans.push([match.index, match.index + match[0].length])
+    }
+  }
+  if (spans.length === 0) return 0
+
+  spans.sort((a, b) => a[0] - b[0])
+  let count = 1
+  let end = spans[0]![1]
+  for (const [from, to] of spans.slice(1)) {
+    if (from >= end) count += 1
+    end = Math.max(end, to)
+  }
+  return count
 }
 
 /**
@@ -358,12 +437,16 @@ export function readCapture(value: unknown): CaptureEnvelope | CaptureRejection 
   if (byteLength(html) > CAPTURE_MAX_BYTES) return 'too-large'
   if (remoteRefCount(html) > 0) return 'leaks'
 
+  const count = (value: unknown) =>
+    typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0
+
   return {
     url,
     title: typeof title === 'string' ? title.trim() : '',
     html,
     capturedAt,
-    dropped: typeof dropped === 'number' && Number.isFinite(dropped) ? Math.max(0, dropped) : 0,
+    dropped: count(dropped),
+    shadowRoots: count(raw['shadowRoots']),
   }
 }
 
@@ -423,30 +506,112 @@ export function captureFileName(url: string, title: string, day: string): string
  * is "jojo showed me a login page", and with it the same paste captures cleanly
  * with no sign-in at all.
  *
- * Deliberately narrow. It rewrites LinkedIn and nothing else, because a generic
- * "strip tracking params" rule would eventually drop a query parameter that IS
- * the posting — Workday and Greenhouse both put identity in the path, but plenty
- * of smaller boards use `?id=`. Anything not recognised is returned untouched.
+ * Deliberately per-board, never generic. A blanket "strip tracking params" rule
+ * would eventually drop a query parameter that IS the posting — the four boards
+ * below all put identity in the PATH, but plenty of smaller ones use `?id=`, so
+ * anything not recognised here is returned untouched rather than tidied.
+ *
+ * The other four were added when the scout started reading search-results pages,
+ * and that is the context that makes them necessary rather than tidy: a results
+ * page attaches its own tracking to every row it lists, so the same Greenhouse
+ * job reached from a search and from a saved link differed only by `?gh_src=`
+ * and read as two different jobs. Dedupe is only as good as this function, and
+ * `isKnownPosting` is what the scout's "never propose one twice" promise rests
+ * on — so a board this does not understand is a board the scout will nag about.
  */
 export function canonicalPostingUrl(url: string): string {
   try {
     const parsed = new URL(url)
-    if (!parsed.hostname.endsWith('linkedin.com')) return url
+    const host = parsed.hostname.toLowerCase()
 
-    const fromQuery = parsed.searchParams.get('currentJobId')
-    if (fromQuery !== null && /^\d+$/.test(fromQuery)) {
-      return `https://www.linkedin.com/jobs/view/${fromQuery}/`
-    }
-
-    // `/comm/jobs/view/<id>` and `/jobs/view/<slug>-<id>` alike: take the digits
-    // off the end of the view segment, which is the id in every spelling.
-    const match = /\/jobs\/view\/(?:[^/?#]*?-)?(\d+)/.exec(parsed.pathname)
-    if (match !== null) return `https://www.linkedin.com/jobs/view/${match[1]!}/`
+    if (host.endsWith('linkedin.com')) return linkedIn(parsed)
+    if (host.endsWith('greenhouse.io')) return greenhouse(parsed)
+    if (host.endsWith('lever.co')) return lever(parsed)
+    if (host.endsWith('ashbyhq.com')) return ashby(parsed)
+    if (host.endsWith('myworkdayjobs.com')) return workday(parsed, host)
 
     return url
   } catch {
     return url
   }
+}
+
+function linkedIn(parsed: URL): string {
+  const fromQuery = parsed.searchParams.get('currentJobId')
+  if (fromQuery !== null && /^\d+$/.test(fromQuery)) {
+    return `https://www.linkedin.com/jobs/view/${fromQuery}/`
+  }
+
+  // `/comm/jobs/view/<id>` and `/jobs/view/<slug>-<id>` alike: take the digits
+  // off the end of the view segment, which is the id in every spelling.
+  const match = /\/jobs\/view\/(?:[^/?#]*?-)?(\d+)/.exec(parsed.pathname)
+  if (match !== null) return `https://www.linkedin.com/jobs/view/${match[1]!}/`
+
+  return parsed.href
+}
+
+/**
+ * Two live hostnames for one board, and both are in circulation.
+ *
+ * `boards.greenhouse.io` is the old one and still resolves; `job-boards.` is
+ * what the embed writes today. Folding to one is most of the value here — the
+ * `?gh_src=` a search result carries is the other half.
+ */
+function greenhouse(parsed: URL): string {
+  const match = /^\/(?:embed\/job_app\?for=)?([^/?#]+)\/jobs\/(\d+)/.exec(parsed.pathname)
+  if (match === null) return parsed.href
+  return `https://job-boards.greenhouse.io/${match[1]!}/jobs/${match[2]!}`
+}
+
+/** `/apply` is the same job with the form open, not a second job. */
+function lever(parsed: URL): string {
+  const match = /^\/([^/?#]+)\/([0-9a-f-]{16,})/i.exec(parsed.pathname)
+  if (match === null) return parsed.href
+  return `https://jobs.lever.co/${match[1]!}/${match[2]!.toLowerCase()}`
+}
+
+/** `/application` is Ashby's spelling of the same thing. */
+function ashby(parsed: URL): string {
+  const match = /^\/([^/?#]+)\/([0-9a-f-]{16,})/i.exec(parsed.pathname)
+  if (match === null) return parsed.href
+  return `https://jobs.ashbyhq.com/${match[1]!}/${match[2]!.toLowerCase()}`
+}
+
+/**
+ * Workday puts the requisition id on the end of the last path segment, and the
+ * rest of the path is the tenant's own site structure — which changes between
+ * `/job/<location>/<slug>_<REQ>` and `/details/<slug>_<REQ>` for one posting.
+ *
+ * The req is unique within a tenant, and the tenant is the hostname, so host
+ * plus req is the whole identity and everything between them is decoration.
+ */
+function workday(parsed: URL, host: string): string {
+  const match = /_((?:R|JR|REQ)[-_]?\d{3,})(?:\/|$)/i.exec(parsed.pathname)
+  if (match === null) return parsed.href
+  return `https://${host}/${match[1]!.toUpperCase()}`
+}
+
+/**
+ * The note a captured file carries, in the user's words.
+ *
+ * Written here rather than in each app because it is the same sentence on both
+ * and it is the only place a capture's losses are ever surfaced — the counts
+ * exist to be read, and a count nothing renders is a count nobody should have
+ * bothered to make.
+ */
+export function captureNote(capture: CaptureEnvelope): string {
+  const parts = [`Captured from ${hostOf(capture.url)}`]
+  if (capture.dropped > 0) {
+    parts.push(
+      `${String(capture.dropped)} ${capture.dropped === 1 ? 'asset' : 'assets'} could not be kept`,
+    )
+  }
+  if (capture.shadowRoots > 0) {
+    parts.push(
+      `${String(capture.shadowRoots)} ${capture.shadowRoots === 1 ? 'part' : 'parts'} of the page could not be copied`,
+    )
+  }
+  return parts.join(' · ')
 }
 
 /** `https://boards.greenhouse.io/x/jobs/1` -> `boards.greenhouse.io`. */

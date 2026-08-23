@@ -120,10 +120,14 @@ export function ApplicationsScreen() {
   const nextDates = useMemo(() => {
     const byApp = new Map<string, TimelineItem[]>()
     for (const item of timelineItems) {
-      if (!item.applicationId) continue
-      const list = byApp.get(item.applicationId)
-      if (list) list.push(item)
-      else byApp.set(item.applicationId, [item])
+      // One item can land in several buckets now that `ABOUT` is many-to-many:
+      // a reference deadline that covers three jobs is the next dated thing on
+      // all three, not on whichever id happened to be stored first.
+      for (const appId of item.applicationIds) {
+        const list = byApp.get(appId)
+        if (list) list.push(item)
+        else byApp.set(appId, [item])
+      }
     }
     return new Map([...byApp].map(([id, items]) => [id, nextDateOf(items)]))
   }, [timelineItems])

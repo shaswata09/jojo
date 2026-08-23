@@ -1,5 +1,4 @@
 import {
-  MODEL_TIMEOUT_MS,
   chatRequest,
   isConfigured,
   modelsRequest,
@@ -7,19 +6,24 @@ import {
   readModelsResponse,
   readTurn,
   unconfigured,
-  unreachable,
 } from '@jojo/service/core/model-server'
+import { failed, send } from '@/lib/local-service'
 import type {
   ChatMessage,
   ChatResult,
-  ModelRequest,
-  ModelResponse,
   ModelsResult,
   Turn,
 } from '@jojo/service/core/model-server'
 
 /**
- * The one place this app touches the network.
+ * The model client.
+ *
+ * It used to open by calling itself the one place this app touches the network,
+ * and that stopped being true when the Vault learned to read documents: the
+ * transport now lives in `local-service.ts` and MarkItDown's client is beside
+ * this one. What is still true is the part that matters — nothing is sent to a
+ * server the user did not type in, there is no key, no telemetry and no fallback
+ * host, and both default addresses are loopback.
  *
  * That sentence used to read "this build makes no network requests", and the
  * Settings panel had a permanently disabled Test button explaining as much. It
@@ -70,69 +74,8 @@ export type ModelSettings = { endpoint: string; model: string }
 
 export { isConfigured }
 
-/**
- * Sends a described request and reports what came back.
- *
- * Never throws. A thrown `fetch` is a fact about the network, and the callers
- * turn every fact about the network into the same shape of sentence.
- *
- * The timeout is why this owns an `AbortController` rather than awaiting
- * `fetch` directly. A local model on a cold start can take a long time to
- * answer, but "a long time" and "the server is not there" are the same
- * experience without one.
- */
-async function send(
-  request: ModelRequest,
-  endpoint: string,
-  signal?: AbortSignal,
-): Promise<ModelResponse | { failed: ReturnType<typeof unreachable> }> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => {
-    controller.abort()
-  }, MODEL_TIMEOUT_MS)
-  // The caller's cancel and our timeout both have to reach the same request.
-  signal?.addEventListener('abort', () => {
-    controller.abort()
-  })
-  try {
-    const response = await fetch(request.url, {
-      method: request.method,
-      headers: request.headers,
-      body: request.body,
-      signal: controller.signal,
-      // No cookies, ever. A local server on loopback shares an origin policy
-      // with nothing, and sending credentials it never asked for is how a
-      // request that was meant to be local stops being local.
-      credentials: 'omit',
-    })
-    return { ok: response.ok, status: response.status, text: await response.text().catch(() => '') }
-  } catch (error) {
-    const aborted = error instanceof Error && error.name === 'AbortError'
-    const detail = error instanceof Error ? error.message : String(error)
-    const failure = unreachable(endpoint, detail, aborted)
-    // A timeout is not ambiguous — something was listening long enough to keep
-    // us waiting — so it keeps the plain wording and is not second-guessed.
-    return { failed: aborted ? failure : { ...failure, reason: failure.reason + browserBlocked() } }
-  } finally {
-    clearTimeout(timer)
-  }
-}
 
-const failed = (
-  r: Awaited<ReturnType<typeof send>>,
-): r is { failed: ReturnType<typeof unreachable> } => 'failed' in r
 
-/**
- * What a bare `Failed to fetch` could mean, in the order worth checking.
- *
- * Mixed content is checked first and answered alone because it is the one case
- * that is certain: an https page calling http is blocked by rule, so there is
- * nothing else it could be and offering alternatives would be noise.
- */
-const browserBlocked = () =>
-  window.location.protocol === 'https:'
-    ? ' This page is on https, which browsers forbid from calling a plain http address — serve jojo over http, or put the model behind https.'
-    : ' The browser would not say why. Either nothing is listening there, or the server answered with an error but without the CORS headers a browser needs to read it — vLLM omits them on error responses, so a model that is running can fail this way too.'
 
 /**
  * What a server says it serves.

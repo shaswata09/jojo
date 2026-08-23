@@ -75,18 +75,19 @@ export function RecordModelDiagram() {
         </title>
         <desc id={descId}>
           The application sits at the centre and almost everything points at it. A timeline item is
-          ABOUT an application. A link, a file and a snippet are each FILED_UNDER one. A saved
-          posting or a scout match BECAME one. An application is AT an organisation, and may be a
-          COPY_OF another application. A keyword TAGS five kinds of record — applications, timeline
-          items, links, files and snippets — and it is the only relation a record may carry more
-          than one of; every other relation is at most one per record, so linking again replaces the
-          link that was there. Two stored types are not drawn on the Graph page at all: pipeline,
-          which a saved posting or a match came FROM, and profile, which no relation joins to
-          anything. COPY_OF and that FROM are stored but likewise never drawn, and are dotted here
-          for it. Below the rule are the two things the Graph page draws that the store has never
-          held: role and source. They are properties of an application — its roleTag and its source
-          — shown as nodes joined by an IS edge and a second edge also called FROM, neither of which
-          is written down anywhere.
+          ABOUT an application, and may be about several at once. A link, a file and a snippet are
+          each FILED_UNDER an application, and may be filed under several. A saved posting or a
+          scout match BECAME one. An application is AT an organisation, and may be a COPY_OF another
+          application. A keyword TAGS five kinds of record — applications, timeline items, links,
+          files and snippets. Three of the seven relations may be carried more than once — ABOUT,
+          FILED_UNDER and TAGS; the other four are at most one per record, so linking again replaces
+          the link that was there. Two stored types are not drawn on the Graph page at all:
+          pipeline, which a saved posting or a match came FROM, and profile, which no relation joins
+          to anything. COPY_OF and that FROM are stored but likewise never drawn, and are dotted
+          here for it. Below the rule are the two things the Graph page draws that the store has
+          never held: role and source. They are properties of an application — its roleTag and its
+          source — shown as nodes joined by an IS edge and a second edge also called FROM, neither
+          of which is written down anywhere.
         </desc>
 
         {/* ------------------------------ TAGS ------------------------------ */}
@@ -275,14 +276,17 @@ export function RecordModelDiagram() {
           is decoration with a compliance note attached. */}
       <figcaption className="mt-3 text-sm text-text-2">
         Eleven kinds of record, and seven relations joining them.{' '}
-        <span className="font-mono text-xs text-text-1">TAGS</span> is the only one a record may
-        carry more than one of — every other relation is at most one per record, so linking again
-        replaces the link rather than adding a second. Two stored types are never drawn on the Graph
-        page: <span className="font-mono text-xs text-text-1">pipeline</span>, which a saved posting
-        or a match came from, and <span className="font-mono text-xs text-text-1">profile</span>,
-        which no relation joins to anything at all. Below the rule are the two things the Graph page
-        draws that were never stored: <span className="font-mono text-xs text-text-1">role</span>{' '}
-        and <span className="font-mono text-xs text-text-1">source</span> are properties of an
+        <span className="font-mono text-xs text-text-1">ABOUT</span>,{' '}
+        <span className="font-mono text-xs text-text-1">FILED_UNDER</span> and{' '}
+        <span className="font-mono text-xs text-text-1">TAGS</span> may each be carried more than
+        once — one CV goes to every application you send it to — while the other four are at most
+        one per record, so linking again replaces the link rather than adding a second. Two stored
+        types are never drawn on the Graph page:{' '}
+        <span className="font-mono text-xs text-text-1">pipeline</span>, which a saved posting or a
+        match came from, and <span className="font-mono text-xs text-text-1">profile</span>, which
+        no relation joins to anything at all. Below the rule are the two things the Graph page draws
+        that were never stored: <span className="font-mono text-xs text-text-1">role</span> and{' '}
+        <span className="font-mono text-xs text-text-1">source</span> are properties of an
         application, promoted to nodes for the picture and written down nowhere.
       </figcaption>
     </figure>

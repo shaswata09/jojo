@@ -5,11 +5,13 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Segment } from '@/components/common/Segment'
 import { ReceivePanel } from '@/components/transfer-ui/ReceivePanel'
-import { CodePanel, PayloadPanel } from '@/components/transfer-ui/SendPanel'
+import { DetailsPanel, PayloadPanel } from '@/components/transfer-ui/SendPanel'
 import { TransferStage, type TransferRole } from '@/components/transfer-ui/TransferStage'
 import { totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
-import { makePairingCode } from '@/components/transfer-ui/pairing'
-import { useTransferRun } from '@/components/transfer-ui/use-transfer-run'
+import { ConnectPanel } from '@/components/transfer-ui/ConnectPanel'
+import { useBackup } from '@/lib/backup'
+import { useHandoffSend } from '@/lib/handoff-send'
+import { usePairingSession } from '@/lib/pairing-session'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useApplications } from '@jojo/service/react/use-applications'
@@ -19,7 +21,6 @@ import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
 import { settingsPath, useTitle } from '@/lib/links'
-import { useToast } from '@/lib/toast-context'
 
 const ROLES = [
   { value: 'send', label: 'Send from this device' },
@@ -29,12 +30,29 @@ const ROLES = [
 /**
  * Moving your jojo data to another device.
  *
- * The whole journey is a demonstration: this build opens no sockets, asks for
- * no camera and writes to no store. That is said where a person could act on
- * it — under the code, which is the one thing here that looks like it is
- * broadcasting — rather than in a banner across the top. Everything else is
- * shaped the way the real handoff would be, so the screen is worth walking
- * through even though nothing crosses it.
+ * Every part of this page is now the real thing, which was not true for most of
+ * its life and is worth stating plainly.
+ *
+ * The key on screen is a genuine offer from `core/pairing.ts`, minted with real
+ * X25519 on this device, and it is carried by the animation's own dots rather
+ * than by a symbol laid over them — `core/pulse.ts` says which regions light,
+ * `DataTransferScene` lights them, and a phone's camera reads them back.
+ * `ConnectPanel` then takes the address the phone shows, asks it for its half
+ * of the handshake, and streams the backup in sealed chunks — over the local
+ * network, to a private address, with no server and no relay anywhere in it.
+ *
+ * The last piece of theatre went with `useTransferRun`: the stage card walked a
+ * timer through the groups and finished on "nothing moved" while, a few inches
+ * to the right, a real transfer was reporting real chunks. Two things on one
+ * screen describing the same transfer, one of them lying. `TransferStage` now
+ * reads the send state directly and has nothing in it that moves on its own.
+ *
+ * ## Receiving
+ *
+ * A browser cannot. Not a gap — `TCPServerSocket` is Isolated-Web-Apps only, so
+ * no web page can accept an inbound connection — and the reason the phone is
+ * the listening side in the first place. The receive role says so and points at
+ * the backup file, which is what actually works in that direction.
  *
  * The counts come from the live store rather than from a fixture, which is the
  * point of showing them: what you are about to move is what you actually have.
@@ -47,12 +65,32 @@ export function Transfer() {
   const { pipelines, postings, matches } = useScout()
   const { isBlank: profileIsBlank } = useProfile()
   const { labels } = useLabels()
-  const { toast } = useToast()
 
   const [role, setRole] = useState<TransferRole>('send')
-  // Minted once per visit, like a real pairing code: it identifies this session
-  // of this device, not the device itself.
-  const [code, setCode] = useState(makePairingCode)
+  /*
+   * The live pairing offer.
+   *
+   * Only minted while this device is the one SENDING — the offer holds a private
+   * key and a secret, and a receiving device has no use for either. Switching
+   * role tears the session down, which is what `active` does here.
+   */
+  const pairing = usePairingSession(role === 'send')
+  const backup = useBackup()
+  /*
+   * The transfer itself.
+   *
+   * `build` is passed rather than called: the backup is gathered only after the
+   * phone has answered, so a mistyped code or an unreachable device costs
+   * nothing. `documents: sendFiles` is the switch on the right — the one thing
+   * about the payload a person chooses.
+   */
+  const send = useHandoffSend({
+    // `pairing.complete` returns the keys rather than a flag, deliberately —
+    // reading `pairing.keys` here would read this render's value, which is null
+    // until React re-renders, and the transfer would stop saying it had failed.
+    complete: pairing.complete,
+    build: () => backup.build({ documents: sendFiles }),
+  })
   /**
    * Off by default.
    *
@@ -160,13 +198,20 @@ export function Transfer() {
     [groups, sendFiles, role],
   )
 
-  const run = useTransferRun({ stepCount: offered.length, autoStart: role === 'send' })
-  const { reset } = run
-  const locked = run.phase !== 'waiting'
+  /*
+   * Locked once the transfer is under way.
+   *
+   * Read off the real send rather than a phase of its own: the payload switch
+   * decides what `build()` gathers, and `build()` has already run by `sending`.
+   * A switch that still moved after that would change the label on the card
+   * without changing a byte of what was going across.
+   */
+  const { cancel } = send
+  const locked = send.stage !== 'idle' && send.stage !== 'failed'
 
-  // Switching devices starts a new run. A bar left at 60% from the other side
-  // of the handoff describes something nobody is doing any more.
-  useEffect(() => reset(), [role, reset])
+  // Switching roles abandons a run rather than leaving it going behind a panel
+  // nobody is looking at.
+  useEffect(() => cancel(), [role, cancel])
 
   const empty = totalOf(groups) === 0
 
@@ -219,32 +264,22 @@ export function Transfer() {
         <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           <TransferStage
             role={role}
-            phase={run.phase}
-            progress={run.progress}
+            stage={send.stage}
             groups={offered}
-            activeIndex={run.activeIndex}
-            movedCount={run.movedCount}
             showScene={showScene}
             canStart={offered.length > 0}
-            onSimulate={run.pair}
-            onStart={run.start}
-            onReset={run.reset}
+            frames={pairing.frames}
           />
 
           <div className="flex flex-col gap-4 sm:gap-5">
             {role === 'send' ? (
               <>
-                <CodePanel
-                  code={code}
-                  locked={locked}
-                  onRegenerate={() => {
-                    setCode(makePairingCode())
-                    toast({
-                      title: 'Pairing code replaced',
-                      description: 'The old one no longer pairs — read the new one out instead.',
-                    })
-                  }}
+                <DetailsPanel
+                  groups={offered}
+                  paired={pairing.keys !== null}
+                  target={send.target}
                 />
+                <ConnectPanel send={send} token={pairing.token} />
                 <PayloadPanel
                   sendFiles={sendFiles}
                   fileCount={files.length}
@@ -253,7 +288,7 @@ export function Transfer() {
                 />
               </>
             ) : (
-              <ReceivePanel paired={locked} onPair={run.pair} />
+              <ReceivePanel />
             )}
           </div>
         </div>

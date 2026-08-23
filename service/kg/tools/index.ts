@@ -37,6 +37,21 @@ import {
   keywordRename,
   keywordToneSet,
 } from './keyword'
+import {
+  threadCreate,
+  threadDelete,
+  threadFile,
+  threadRename,
+  threadSet,
+} from './assistant'
+import {
+  pipelineRunRecord,
+  proposalApprove,
+  proposalDiscard,
+  proposalFail,
+  proposalRaise,
+  proposalSweep,
+} from './pipeline'
 import { memoryClear, memoryReset } from './memory'
 import {
   profileDocumentAdd,
@@ -156,6 +171,19 @@ export const TOOLS = {
   'profile.matchTerm.remove': profileMatchTermRemove,
   'profile.preference.set': profilePreferenceSet,
   'profile.document.add': profileDocumentAdd,
+
+  'assistant.thread.create': threadCreate,
+  'assistant.thread.set': threadSet,
+  'assistant.thread.rename': threadRename,
+  'assistant.thread.file': threadFile,
+  'assistant.thread.delete': threadDelete,
+
+  'pipeline.proposal.raise': proposalRaise,
+  'pipeline.proposal.approve': proposalApprove,
+  'pipeline.proposal.discard': proposalDiscard,
+  'pipeline.proposal.fail': proposalFail,
+  'pipeline.proposal.sweep': proposalSweep,
+  'pipeline.run.record': pipelineRunRecord,
 
   'memory.reset': memoryReset,
   'memory.clear': memoryClear,

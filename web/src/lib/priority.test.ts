@@ -42,6 +42,7 @@ const itemOn = (date: string): TimelineItem => ({
   title: 'test',
   date,
   allDay: true,
+  applicationIds: [],
   kind: 'deadline',
   urgency: 'amber',
   remind: true,

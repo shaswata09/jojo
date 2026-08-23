@@ -36,7 +36,7 @@ import { createRepository } from '../kg/repo/repository'
 import { seedToGraph } from '../kg/repo/seed'
 import { TOOLS } from '../kg/tools/index'
 import { createToolRuntime } from '../kg/tools/runtime'
-import { applications } from './seed'
+import { applications, applicationsLabel, filedUnderLabel } from './seed'
 
 type Options = Parameters<typeof createRepository>[0]
 
@@ -165,5 +165,39 @@ describe('memory.reset and the first-run boot compile one graph', () => {
     const found = slugs(reset().ofType('application') as StoredNode[])
     expect(new Set(found).size).toBe(found.length)
     expect(found.filter((s) => s.startsWith('rice'))).toHaveLength(2)
+  })
+})
+
+describe('applicationsLabel', () => {
+  const app = (org: string) => ({ org, role: '' })
+
+  it('is empty for none, so a caller can fall back to its own wording', () => {
+    // Not 'No applications': the trigger says 'Not linked' and the toast says
+    // 'unfiled', and a shared helper that picked one of those for them would
+    // put the wrong word in the other.
+    expect(applicationsLabel([])).toBe('')
+  })
+
+  it('names up to two and counts past that', () => {
+    expect(applicationsLabel([app('Rice'), app('Baylor')])).toBe('Rice and Baylor')
+    expect(applicationsLabel([app('Rice'), app('Baylor'), app('UH')])).toBe('3 applications')
+  })
+})
+
+describe('filedUnderLabel', () => {
+  const app = (org: string) => ({ org, role: '' })
+
+  it('says unfiled rather than "filed under nothing"', () => {
+    expect(filedUnderLabel([])).toBe('unfiled')
+  })
+
+  it('names one and two, and counts three', () => {
+    expect(filedUnderLabel([app('Rice')])).toBe('filed under Rice')
+    expect(filedUnderLabel([app('Rice'), app('Baylor')])).toBe('filed under Rice and Baylor')
+    // The line has to be drawn somewhere and this is where: a sentence naming
+    // five employers is one nobody reads to the end of.
+    expect(filedUnderLabel([app('Rice'), app('Baylor'), app('UH')])).toBe(
+      'filed under 3 applications',
+    )
   })
 })

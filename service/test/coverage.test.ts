@@ -449,7 +449,7 @@ describe('timeline and keywords', () => {
         title: 'Submit',
         kind: 'deadline',
         date: '2026-11-01',
-        applicationId: app,
+        applicationIds: [app],
       }),
     )
 
@@ -469,6 +469,103 @@ describe('timeline and keywords', () => {
     roundTrip(h, 'keyword.detach', { record: app, keyword }, () => {
       expect(h.repo.getSnapshot().node(keyword)).toBeDefined()
       expect(h.repo.getSnapshot().one(app, 'TAGS', 'keyword')).toBeUndefined()
+    })
+  })
+})
+
+describe('conversations', () => {
+  /** Every turn shape, so a reader that mishandles one is caught by the round trip. */
+  const TURNS = [
+    { kind: 'you', text: 'What am I waiting on?' },
+    { kind: 'note', text: 'Let me look.' },
+    { kind: 'step', tool: 'memory.list', title: 'List records', effect: 'read', args: {}, status: 'done', detail: '[]' },
+    { kind: 'answer', text: 'Nothing yet.' },
+    { kind: 'error', text: 'Nothing answered.' },
+  ]
+
+  it('starts one, and files it under an application in the same act', () => {
+    const h = harness()
+    const app = anApplication(h)
+    roundTrip<string>(h, 'assistant.thread.create', { title: 'Rice', applicationId: app }, (id) => {
+      const thread = h.repo.getSnapshot().node(id, 'thread')
+      expect(thread?.props.title).toBe('Rice')
+      // The same edge a document uses, so "everything about the Rice job"
+      // returns the conversation alongside the CV.
+      expect(h.repo.getSnapshot().one(id, 'FILED_UNDER', 'application')?.id).toBe(app)
+    })
+  })
+
+  it('names an untitled one after the first thing said', () => {
+    const h = harness()
+    const id = okOr(
+      h.runtime.run('assistant.thread.create', {
+        title: 'Which of my applications have gone quiet and what should I do about each of them',
+      }),
+    )
+    const title = h.repo.getSnapshot().node(id, 'thread')?.props.title ?? ''
+    expect(title.length).toBeLessThanOrEqual(60)
+    expect(title.endsWith('…')).toBe(true)
+  })
+
+  it('saves every turn shape and reads them back unchanged', () => {
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', {}))
+    exercised.add('assistant.thread.set')
+    okOr(h.runtime.run('assistant.thread.set', { id, entries: TURNS }))
+    expect(h.repo.getSnapshot().node(id, 'thread')?.props.entries).toEqual(TURNS)
+  })
+
+  it('keeps the newest turns when a conversation runs long', () => {
+    // The oldest go, because a conversation is read from the bottom.
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', {}))
+    const many = Array.from({ length: 260 }, (_, i) => ({ kind: 'you', text: `m${String(i)}` }))
+    okOr(h.runtime.run('assistant.thread.set', { id, entries: many }))
+    const kept = h.repo.getSnapshot().node(id, 'thread')?.props.entries ?? []
+    expect(kept).toHaveLength(200)
+    expect((kept[0] as { text: string }).text).toBe('m60')
+  })
+
+  it('is not journalled, because autosaving is not an act anybody undoes', () => {
+    // And because a journal row per exchange would bury the writes the agent
+    // made INSIDE that exchange, which are the ones worth taking back.
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', {}))
+    const before = graphOf(h.repo)
+    okOr(h.runtime.run('assistant.thread.set', { id, entries: TURNS }))
+    h.runtime.undo()
+    // The undo took back the CREATE, not the save.
+    expect(graphOf(h.repo)).not.toEqual(before)
+  })
+
+  it('renames', () => {
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Old' }))
+    roundTrip(h, 'assistant.thread.rename', { id, title: 'New' }, () => {
+      expect(h.repo.getSnapshot().node(id, 'thread')?.props.title).toBe('New')
+    })
+  })
+
+  it('files and unfiles', () => {
+    const h = harness()
+    const app = anApplication(h)
+    const id = okOr(h.runtime.run('assistant.thread.create', {}))
+    roundTrip(h, 'assistant.thread.file', { id, applicationId: app }, () => {
+      expect(h.repo.getSnapshot().one(id, 'FILED_UNDER', 'application')?.id).toBe(app)
+    })
+    okOr(h.runtime.run('assistant.thread.file', { id, applicationId: app }))
+    // `null` unfiles, the same contract `vault.file.move` uses for this edge.
+    okOr(h.runtime.run('assistant.thread.file', { id, applicationId: null }))
+    expect(h.repo.getSnapshot().one(id, 'FILED_UNDER', 'application')).toBeUndefined()
+  })
+
+  it('deletes, and the application it was filed under survives', () => {
+    const h = harness()
+    const app = anApplication(h)
+    const id = okOr(h.runtime.run('assistant.thread.create', { applicationId: app }))
+    roundTrip(h, 'assistant.thread.delete', { id }, () => {
+      expect(h.repo.getSnapshot().node(id)).toBeUndefined()
+      expect(h.repo.getSnapshot().node(app)).toBeDefined()
     })
   })
 })

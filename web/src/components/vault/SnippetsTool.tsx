@@ -120,7 +120,10 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       editing.tag !== clean.tag ||
       body !== clean.body ||
       keywordKey(editing.keywords) !== clean.keywords ||
-      editing.applicationId !== clean.applicationId)
+      // Order-insensitive: picking Rice then Baylor is the same filing as
+      // Baylor then Rice, and a dirty check that disagreed would warn about a
+      // change nobody made.
+      keywordKey(editing.applicationIds) !== keywordKey(clean.applicationIds))
 
   const copy = async (id: string, text: string) => {
     clearTimeout(timer.current)
@@ -145,7 +148,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           title: s.title,
           tag: s.tag,
           html: htmlFromText(s.body),
-          ...(s.applicationId === undefined ? {} : { applicationId: s.applicationId }),
+          applicationIds: s.applicationIds,
           keywords: labelIdsOf(s.id),
         }
       : {
@@ -155,6 +158,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           // filtered does not file it somewhere the list cannot show it.
           tag: tagFilter === 'all' ? 'Cover letter' : tagFilter,
           html: '',
+          applicationIds: [],
           keywords: [],
         }
     setEditing(draft)
@@ -166,7 +170,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       tag: draft.tag,
       body: textFromHtml(draft.html),
       keywords: keywordKey(draft.keywords),
-      applicationId: draft.applicationId,
+      applicationIds: draft.applicationIds,
     })
     setSubmitted(false)
   }
@@ -206,7 +210,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       const before = snippets.find((s) => s.id === id)
       const beforeKeywords = labelIdsOf(id)
 
-      updateSnippet(id, { title, tag: editing.tag, body, applicationId: editing.applicationId })
+      updateSnippet(id, { title, tag: editing.tag, body, applicationIds: editing.applicationIds })
       commitKeywords(id, chosen)
       // The draft takes the trimmed title too, or the dirty check compares
       // 'Short bio ' against the 'Short bio' that was stored and the panel keeps
@@ -217,7 +221,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
         tag: editing.tag,
         body,
         keywords: keywordKey(chosen),
-        applicationId: editing.applicationId,
+        applicationIds: editing.applicationIds,
       })
       toast({
         title: `${title} saved`,
@@ -248,6 +252,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                     tag: before.tag,
                     body: before.body,
                     keywords: keywordKey(beforeKeywords),
+                    applicationIds: before.applicationIds,
                   }
                 : null,
             )
@@ -261,14 +266,14 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       title,
       tag: editing.tag,
       body,
-      ...(editing.applicationId === undefined ? {} : { applicationId: editing.applicationId }),
+      applicationIds: editing.applicationIds,
     })
     commitKeywords(record.id, chosen)
 
     // The editor stays open on the record it just created rather than closing:
     // the first save is usually followed by another edit.
     setEditing({ ...editing, id: record.id, title })
-    setClean({ title, tag: editing.tag, body, keywords: keywordKey(chosen) })
+    setClean({ title, tag: editing.tag, body, keywords: keywordKey(chosen), applicationIds: editing.applicationIds })
 
     // Saved into a list the filters are hiding is the one outcome that looks
     // like a dropped write, so it gets named rather than a bare confirmation.
@@ -435,7 +440,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           <ul className={cn('grid gap-3', editing ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2')}>
             {visible.map((s) => (
               <SnippetCard
-                related={s.applicationId ? byId.get(s.applicationId) : undefined}
+                related={s.applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)}
                 key={s.id}
                 snippet={s}
                 cardRef={s.id === focus ? focusedCard : undefined}

@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { useVault } from '@/lib/store-context'
+import { useThreads } from '@jojo/service/react/use-threads'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import type { RootStackParamList, VaultTool } from '@/navigation/types'
 import { s } from '@/theme/styles'
@@ -15,11 +16,16 @@ import { space } from '@/theme/tokens'
 /**
  * Everything filed under this application.
  *
- * The three vault collections have carried an `applicationId` since the graph
+ * The three vault collections have carried an application since the graph
  * landed, and the delete confirmation on this very screen counted them — "4
  * saved items will be kept" — so the screen knew what was attached and showed
  * none of it. Filing a document under a job and then finding no trace of it on
  * the job is the shape of bug that makes people stop filing.
+ *
+ * That field is a LIST now — `FILED_UNDER` is `fromCardinality: 'many'` — so
+ * one CV appears on every application it was sent to rather than on whichever
+ * one displaced the others. Nothing here changed for it: the filter lives in
+ * `forApplication`, which is the point of having the selector.
  *
  * Three sections rather than one merged list: a link opens a URL, a file opens
  * a document and a snippet is text to copy. They are different rows going to
@@ -44,9 +50,21 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { forApplication } = useVault()
+  const { threads } = useThreads()
   const filed = forApplication(applicationId)
 
-  const total = filed.files.length + filed.links.length + filed.snippets.length
+  /**
+   * Conversations filed here, listed beside the documents.
+   *
+   * They arrive on the same `FILED_UNDER` edge a document does, which is why
+   * they belong on this panel rather than one of their own: a panel headed
+   * "everything filed here" that quietly left one kind out would make the filing
+   * look like it had not worked.
+   */
+  const conversations = threads.filter((t) => t.applicationId === applicationId)
+
+  const total =
+    filed.files.length + filed.links.length + filed.snippets.length + conversations.length
 
   return (
     <Panel>
@@ -56,10 +74,47 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
         <EmptyState
           icon="archive"
           title="Nothing filed under this yet"
-          description="Documents, links and snippets each take one application. File one under this job — from its row menu in the Vault — and it shows up here."
+          description="Documents, links and snippets can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
         />
       ) : (
         <View style={{ gap: space[4] }}>
+          {conversations.length > 0 ? (
+            <View>
+              <View style={[s.row, { marginBottom: space[1.5] }]}>
+                <Feather name="message-square" size={13} color={c.text3} />
+                <Txt size="xs" tone="muted">
+                  Conversations
+                </Txt>
+                <Txt size="xs" tone="muted" mono>
+                  {conversations.length}
+                </Txt>
+              </View>
+              {conversations.map((t) => (
+                <Pressable
+                  key={t.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${t.title} in the Assistant`}
+                  onPress={() => navigation.navigate('Assistant')}
+                  style={({ pressed }) => [
+                    s.row,
+                    {
+                      minHeight: 36,
+                      paddingHorizontal: space[1],
+                      backgroundColor: pressed ? c.rowHover : 'transparent',
+                    },
+                  ]}
+                >
+                  <Txt size="sm" numberOfLines={1} style={s.fill}>
+                    {t.title}
+                  </Txt>
+                  <Txt size="xs" tone="muted" mono>
+                    {t.entries.filter((e) => e.kind === 'you').length}
+                  </Txt>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
+
           {SECTIONS.map((section) => {
             const rows = filed[section.key]
             if (rows.length === 0) return null

@@ -249,7 +249,7 @@ function TransitionForm({
         detail: application.roleTag,
         date,
         kind: 'interview',
-        applicationId: application.id,
+        applicationIds: [application.id],
         remind: true,
         location: format === 'onsite' ? application.location : undefined,
       }
@@ -260,7 +260,7 @@ function TransitionForm({
         detail: 'Decision deadline',
         date: respondBy,
         kind: 'deadline',
-        applicationId: application.id,
+        applicationIds: [application.id],
         remind: true,
       }
     }

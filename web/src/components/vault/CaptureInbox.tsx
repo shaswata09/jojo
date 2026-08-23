@@ -47,9 +47,18 @@ export function CaptureInbox() {
         if (id !== '') kept.push(id)
       }
 
-      // Only now. Anything the app refused, or that threw on the way in, stays
-      // in the extension's queue and can be tried again.
-      await ack(kept)
+      /*
+       * Filed AND permanently refused, together.
+       *
+       * The queue only shrinks on this call, so dropping just the filed ones
+       * left every refusal in it forever — counted on the badge, offered by this
+       * strip on every visit, and failing the same way every time. A refusal is
+       * a verdict rather than a hiccup: nothing about the page or the app will
+       * change between attempts, so the honest thing is to say why once and let
+       * it go. What is NOT acked is anything that threw on the way in, which is
+       * the case that genuinely deserves another try.
+       */
+      await ack([...kept, ...refused.map((r) => r.id).filter((id) => id !== '')])
 
       const attached = filed.filter((f) => f.application !== null)
       const unstored = filed.filter((f) => !f.stored)
@@ -90,7 +99,9 @@ export function CaptureInbox() {
             refused.length === 1
               ? 'One capture could not be kept'
               : `${String(refused.length)} captures could not be kept`,
-          description: [...new Set(refused.map((r) => CAPTURE_REJECTION_MESSAGE[r]))].join(' '),
+          description: [...new Set(refused.map((r) => CAPTURE_REJECTION_MESSAGE[r.reason]))].join(
+            ' ',
+          ),
         })
       }
     } finally {

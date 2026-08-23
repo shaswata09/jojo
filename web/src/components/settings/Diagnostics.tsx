@@ -35,6 +35,8 @@ import { sessionOf, useBoot } from '@/lib/boot-context'
  */
 const TYPE_LABEL: Record<NodeType, string> = {
   application: 'Applications',
+  thread: 'Conversations',
+  proposal: 'Suggestions',
   organisation: 'Organisations',
   timelineItem: 'Timeline items',
   keyword: 'Keywords',

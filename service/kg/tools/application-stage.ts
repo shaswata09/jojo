@@ -98,7 +98,7 @@ export const applicationStageAdvance = defineTool({
     if (input.mint) {
       ctx.call('timeline.item.create', {
         ...input.mint,
-        applicationId: input.id,
+        applicationIds: [input.id],
         remind: input.mint.remind ?? true,
       })
     }

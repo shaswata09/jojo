@@ -37,6 +37,23 @@ export function BucketFilter<T extends string>({
       onClick={() => onChange(key)}
       className={cn(
         'flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors',
+        /*
+         * A chip is indivisible: it wraps to the next row, it never wraps inside
+         * itself.
+         *
+         * Both halves are needed and neither is obvious. A flex item shrinks by
+         * default, so as soon as the panel narrowed — which is exactly what
+         * opening an editor beside it does — the browser compressed the chips
+         * below their content width; and the label here is a bare text node,
+         * which becomes an ANONYMOUS flex item and is free to break. "Cover
+         * letter" split across two lines and the count dropped underneath it, so
+         * a row of pills became a ragged block of words and numbers.
+         *
+         * `shrink-0` stops the compression and `whitespace-nowrap` stops the
+         * break, and the row's own `flex-wrap` then does the only wrapping there
+         * should be: between chips.
+         */
+        'shrink-0 whitespace-nowrap',
         value === key
           ? 'border-accent-border bg-accent-soft font-medium text-accent'
           : 'border-hairline bg-well text-text-2 hover:text-text-1',

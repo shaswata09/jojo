@@ -31,38 +31,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createIdbFileStore, type IdbFileStore } from '@/kg/storage/idb-file-store'
 import { mimeOfFile } from '@jojo/service/core/files'
-
-/** Everything jojo writes lands under one directory, so one `list` finds it. */
-const DIR = 'Documents'
-
-/**
- * Separates the record id from the filename inside one path segment.
- *
- * Two underscores rather than one, and a separator rather than a nested
- * directory: `list` is non-recursive by contract, so `Documents/<id>/<name>`
- * would list as nothing at all and the index would come back empty on every
- * reload — a silent "your files are gone" that reads exactly like data loss.
+/*
+ * The path format lives in `core/blob-path.ts` and is re-exported here, so the
+ * callers in this file and its test keep their imports. It stopped being a
+ * storage layout when `buildBackup` began writing these paths into the backup
+ * file: a phone receiving one over the local network parses them too, and a
+ * format with two implementations is a format with two spellings.
  */
-const SEP = '__'
+import {
+  BLOB_DIR as DIR,
+  blobPath,
+  idOfPath,
+  nameOfPath,
+} from '@jojo/service/core/blob-path'
 
-/** Filenames are user data and go into a key, so the separator has to survive. */
-const encodeName = (name: string) => name.split(SEP).join('_')
-
-export const blobPath = (id: string, name: string) => `${DIR}/${id}${SEP}${encodeName(name)}`
-
-/** `Documents/file_01H…__CV.pdf` -> `file_01H…`. Null for anything else. */
-export function idOfPath(path: string): string | null {
-  if (!path.startsWith(`${DIR}/`)) return null
-  const rest = path.slice(DIR.length + 1)
-  const at = rest.indexOf(SEP)
-  return at <= 0 ? null : rest.slice(0, at)
-}
-
-export const nameOfPath = (path: string): string => {
-  const rest = path.slice(DIR.length + 1)
-  const at = rest.indexOf(SEP)
-  return at < 0 ? rest : rest.slice(at + SEP.length)
-}
+export { blobPath, idOfPath, nameOfPath }
 
 export type VaultBlobs = {
   /** Ids whose bytes are stored. Synchronous, because the list renders it. */
@@ -158,9 +141,37 @@ function bus(): BroadcastChannel | null {
   return channel
 }
 
+/**
+ * Every live `useVaultBlobs()` in THIS page.
+ *
+ * The channel above covers other tabs and cannot cover this one: a
+ * `BroadcastChannel` never delivers to the object that posted, and there is one
+ * shared object here, so a write announced from this page reached no hook in it.
+ *
+ * That was invisible for as long as every writer was also the reader — a file
+ * dropped on `FilesTool` is `put` by `FilesTool`'s own instance, which updates
+ * its own index directly and needs no message. Captures broke the assumption:
+ * `useFileCapture` holds a SECOND instance, so it wrote the bytes, updated its
+ * own index, announced into a void, and `FilesTool` went on believing the record
+ * had none — the viewer then said "no saved copy on this device" about a file
+ * that had just been written a few lines earlier.
+ *
+ * A plain set of callbacks rather than a second channel object, because the
+ * question is "who else in this page holds an index", and that is not something
+ * a message bus should have to answer.
+ */
+const local = new Set<() => void>()
+
 function announce(): void {
   // A bare ping. What changed does not matter — the receiver re-lists, which is
   // one `getAllKeys` and always right, where a diff could drift.
+  //
+  // Both audiences, in this order: the hooks in this page directly, and the
+  // other tabs through the channel. The announcing hook is in the set too and
+  // re-lists needlessly, which is one `getAllKeys` — cheaper than the bookkeeping
+  // to exclude it, and it keeps "announce means everyone re-reads" true with no
+  // exceptions to remember.
+  for (const listener of [...local]) listener()
   bus()?.postMessage(1)
 }
 
@@ -232,16 +243,18 @@ export function useVaultBlobs(): VaultBlobs {
     void purgeOnce().then(() => {
       if (alive) void refresh()
     })
-    // Only another tab reaches this: the shared channel object does not deliver
-    // a message it posted itself, which is what makes one object for both jobs
-    // the right shape rather than a shortcut.
     const onChange = () => {
       if (alive) void refresh()
     }
+    // Two subscriptions, because there are two audiences and the channel can
+    // only serve one of them. `local` is every other hook in this page; the
+    // channel is every other tab.
+    local.add(onChange)
     bus()?.addEventListener('message', onChange)
 
     return () => {
       alive = false
+      local.delete(onChange)
       bus()?.removeEventListener('message', onChange)
     }
   }, [refresh])

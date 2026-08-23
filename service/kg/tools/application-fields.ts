@@ -89,7 +89,7 @@ export function syncDeadline(ctx: ToolContext, id: NodeId, deadline: ISODate | n
       date: deadline,
       kind: 'deadline',
       urgency: deadlineUrgency(dayOf(ctx.now), deadline),
-      applicationId: id,
+      applicationIds: [id],
       // Off, like every seeded application deadline: the reminders list captions
       // a reminder with its related application, and this item's title IS that
       // application, so with `remind` on the row rendered its own name twice.

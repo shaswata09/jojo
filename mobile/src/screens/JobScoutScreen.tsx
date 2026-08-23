@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { fitOf } from '@/lib/fit'
 import { listJoin } from '@/lib/text'
 import { TODAY } from '@/lib/today'
@@ -25,6 +25,13 @@ import { agoLabel } from '@jojo/service/data/timeline'
 // ever disagree with the store about what a pasted link means.
 import { draftFromUrl } from '@jojo/service/core/parse-posting'
 import { useProfile } from '@jojo/service/react/use-profile'
+import { usePipelines, isAuto, kindOf } from '@jojo/service/react/use-pipelines'
+import { AUTO_CAPABLE, PIPELINE_SCHEDULES, scheduleOf } from '@jojo/service/core/proposal'
+import type { PipelineKind } from '@jojo/service/core/model'
+import { ProposalQueue } from '@/components/scout/ProposalQueue'
+import { agentTurn, isConfigured } from '@/lib/llm'
+import { scanBoard } from '@/lib/board-scan'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { useApplications, useScout } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { displayUrl, hrefOf } from '@/lib/urls'
@@ -36,16 +43,30 @@ import { space } from '@/theme/tokens'
 /** Fit bands. A number alone doesn't say whether 64 is good. */
 const fitTone = (fit: number) => (fit >= 80 ? 'green' : fit >= 60 ? 'amber' : 'gray')
 
-const FREQUENCIES = [
-  { value: 'hourly', label: 'Hourly' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
+/*
+ * One list, in the shared layer. It was written out here and again in web's
+ * PipelineDialog, with a `frequencyOf` on each side to cope with a stored value
+ * that matched neither copy — `scheduleOf` is that function, once.
+ */
+const FREQUENCIES = PIPELINE_SCHEDULES.map((value) => ({
+  value,
+  label: value.charAt(0).toUpperCase() + value.slice(1),
+}))
+
+const KINDS = [
+  { value: 'twin', label: 'Keep records complete' },
+  { value: 'scout', label: 'Find postings' },
 ] as const
 
-type Frequency = (typeof FREQUENCIES)[number]['value']
+const KIND_LABEL = { twin: 'Digital twin', scout: 'Job scout' } as const
 
-const frequencyOf = (schedule: string): Frequency =>
-  FREQUENCIES.some((f) => f.value === schedule) ? (schedule as Frequency) : 'daily'
+/** What a row's chip says. Four states, and each is a claim about the world. */
+function statusOf(p: Pipeline, running: boolean, paused: boolean) {
+  if (!p.enabled) return { label: 'off', tone: 'gray' as const, dot: 'off' as const }
+  if (paused) return { label: 'paused', tone: 'amber' as const, dot: 'warn' as const }
+  if (running) return { label: 'running', tone: 'teal' as const, dot: 'on' as const }
+  return { label: 'watching', tone: 'green' as const, dot: 'on' as const }
+}
 
 export function JobScoutScreen() {
   const c = useColors()
@@ -66,23 +87,46 @@ export function JobScoutScreen() {
   const { get } = useApplications()
   const { toast } = useToast()
 
+  /**
+   * The pipelines' engine, identical to web's — the hook is shared and this is
+   * the whole of the platform difference: which `agentTurn` it is handed.
+   *
+   * A pipeline runs while this screen's app is in the FOREGROUND. React Native
+   * suspends JavaScript when the app is backgrounded, so there is no honest way
+   * to promise otherwise without a background-task module this app does not
+   * ship. Everything needed to resume is in the graph, so leaving and coming
+   * back picks up where it left off.
+   */
+  const { settings } = useModelSettings()
+  const llm = useCallback(
+    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+      agentTurn(settings, messages, tools),
+    [settings],
+  )
+  // Module scope and therefore stable, which matters: an unstable port would
+  // rebuild the agent's host on every render and restart a round mid-flight.
+  const engine = usePipelines({ llm: isConfigured(settings) ? llm : null, scan: scanBoard })
+
   const [editing, setEditing] = useState<Pipeline | 'new' | null>(null)
   const [onlyActive, setOnlyActive] = useState(false)
   const [url, setUrl] = useState('')
 
   const visiblePipelines = pipelines.filter((p) => !onlyActive || p.enabled)
 
-  const savePipeline = (draft: Omit<Pipeline, 'id' | 'enabled'>) => {
+  const savePipeline = (draft: PipelineDraft) => {
     if (editing && editing !== 'new') {
       updatePipeline(editing.id, draft)
       toast({ title: 'Pipeline updated', description: draft.name })
     } else {
-      // Switched on, and the banner above already says why nothing runs. A new
-      // pipeline that arrived off would read as a create that failed.
+      // Switched on: one that arrived off would read as a create that failed.
+      // Whether it can run is the model's business, and the toast says which of
+      // the two just happened rather than asserting the pessimistic one.
       const pipeline = addPipeline({ ...draft, enabled: true })
       toast({
         title: 'Pipeline created',
-        description: `${pipeline.name} — paused until a model is connected.`,
+        description: engine.paused
+          ? `${pipeline.name} — paused until a model is connected.`
+          : `${pipeline.name} — it will start looking shortly.`,
       })
     }
     setEditing(null)
@@ -162,16 +206,20 @@ export function JobScoutScreen() {
         />
       }
     >
-      {/* System status, stated plainly rather than implied by a colour. */}
-      <View
-        accessibilityRole="alert"
-        style={[s.banner, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
-      >
-        <Txt size="sm" tone="warning">
-          No local model is connected, so matching is paused. You can still write pipelines and save
-          postings below — both are scored once a model is reachable.
-        </Txt>
-      </View>
+      {/* System status, stated plainly rather than implied by a colour — and
+          read off the model settings rather than hardcoded, which is what it
+          was while nothing could run either way. */}
+      {engine.paused ? (
+        <View
+          accessibilityRole="alert"
+          style={[s.banner, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
+        >
+          <Txt size="sm" tone="warning">
+            No local model is connected, so pipelines are paused. You can still write them and save
+            postings below — they start running once a model is reachable.
+          </Txt>
+        </View>
+      ) : null}
 
       <Panel>
         <PanelTitle hint="run locally on a schedule">Pipelines</PanelTitle>
@@ -198,43 +246,110 @@ export function JobScoutScreen() {
             }
           />
         ) : (
-          visiblePipelines.map((p, i) => (
-            <View key={p.id}>
-              {i > 0 ? <Divider /> : null}
-              <View style={styles.row}>
-                <View style={{ marginTop: 5 }}>
-                  <StatusDot status={p.enabled ? 'warn' : 'off'} />
-                </View>
-                <View style={s.fill}>
-                  <Txt size="sm" weight="medium">
-                    {p.name}
-                  </Txt>
-                  <Txt size="xs" tone="muted" mono numberOfLines={2}>
-                    {p.source} · {p.schedule} · {p.filter}
-                  </Txt>
-                  <View style={{ marginTop: space[1.5], flexDirection: 'row', gap: space[1.5] }}>
-                    <Chip tone={p.enabled ? 'amber' : 'gray'} size="sm">
-                      {p.enabled ? 'paused' : 'off'}
-                    </Chip>
+          visiblePipelines.map((p, i) => {
+            const isRunning = engine.running === p.id
+            const state = statusOf(p, isRunning, engine.paused)
+            const pending = engine.pendingFor(p.id).length
+            const kind = kindOf(p)
+
+            return (
+              <View key={p.id}>
+                {i > 0 ? <Divider /> : null}
+                <View style={styles.row}>
+                  <View style={{ marginTop: 5 }}>
+                    <StatusDot status={state.dot} />
                   </View>
+                  <View style={s.fill}>
+                    <Txt size="sm" weight="medium">
+                      {p.name}
+                    </Txt>
+                    {/* While it is running, the model's own narration replaces
+                        the configuration line — during the one moment the row
+                        could say something specific, "daily · —" is a waste of
+                        the only line there is. */}
+                    <Txt size="xs" tone="muted" mono numberOfLines={2}>
+                      {isRunning && engine.activity
+                        ? engine.activity
+                        : `${p.source} · ${p.schedule} · ${p.filter}`}
+                    </Txt>
+                    <View
+                      style={{
+                        marginTop: space[1.5],
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        gap: space[1.5],
+                      }}
+                    >
+                      <Chip tone="gray" size="sm">
+                        {KIND_LABEL[kind]}
+                      </Chip>
+                      <Chip tone={state.tone} size="sm">
+                        {state.label}
+                      </Chip>
+                      {pending > 0 ? (
+                        <Chip tone="teal" size="sm">
+                          {`${String(pending)} to review`}
+                        </Chip>
+                      ) : null}
+                      {isAuto(p) ? (
+                        <Chip tone="amber" size="sm">
+                          auto
+                        </Chip>
+                      ) : null}
+                    </View>
+                    {/* Auto is offered only where it exists. A scout never runs
+                        unattended — see AUTO_CAPABLE — so a disabled switch
+                        would advertise a setting that is not coming. */}
+                    {AUTO_CAPABLE[kind] ? (
+                      <View style={{ marginTop: space[2] }}>
+                        <SettingRow
+                          label="Run without asking"
+                          description="Apply what it finds and just tell you afterwards."
+                          control={
+                            <Toggle
+                              value={isAuto(p)}
+                              onValueChange={(auto) => engine.setAuto(p, auto)}
+                              label={`Run ${p.name} without asking`}
+                            />
+                          }
+                        />
+                      </View>
+                    ) : null}
+                  </View>
+                  <Toggle
+                    value={p.enabled}
+                    onValueChange={(enabled) => engine.setEnabled(p, enabled)}
+                    label={`Enable ${p.name}`}
+                  />
+                  <IconButton
+                    icon="play"
+                    label={`Run ${p.name} now`}
+                    disabled={engine.paused || engine.running !== null}
+                    onPress={() => engine.runNow(p.id)}
+                  />
+                  <IconButton icon="edit-2" label={`Edit ${p.name}`} onPress={() => setEditing(p)} />
+                  <IconButton
+                    icon="trash-2"
+                    tone="danger"
+                    label={`Delete ${p.name}`}
+                    onPress={() => onDeletePipeline(p)}
+                  />
                 </View>
-                <Toggle
-                  value={p.enabled}
-                  onValueChange={(enabled) => updatePipeline(p.id, { enabled })}
-                  label={`Enable ${p.name}`}
-                />
-                <IconButton icon="edit-2" label={`Edit ${p.name}`} onPress={() => setEditing(p)} />
-                <IconButton
-                  icon="trash-2"
-                  tone="danger"
-                  label={`Delete ${p.name}`}
-                  onPress={() => onDeletePipeline(p)}
-                />
               </View>
-            </View>
-          ))
+            )
+          })
         )}
       </Panel>
+
+      {/* Above the matches and the postings: it is the only panel on the
+          screen that is asking the reader for something. */}
+      <ProposalQueue
+        proposals={engine.proposals}
+        pipelines={engine.pipelines}
+        onApprove={engine.approve}
+        onDiscard={engine.discard}
+        onSweep={engine.sweep}
+      />
 
       <Panel>
         {/* The hint used to read "example scores", because the percentages were
@@ -403,8 +518,28 @@ export function JobScoutScreen() {
       </Panel>
 
       <Txt size="xs" tone="muted">
-        Pipelines would run on your device. Nothing is sent to a third party.
+        Pipelines run on your device, while jojo is open. Nothing is sent to a third party.
       </Txt>
+
+      {/*
+       * Asked when a pipeline has run twice with nothing to show for it.
+       * "Keep it running" is not a no-op — it resets the idle counter, so the
+       * question cannot come straight back on the next round.
+       */}
+      <Sheet
+        open={engine.shutdownOffer !== null}
+        onClose={engine.dismissShutdown}
+        title={`Switch off ${engine.shutdownOffer?.name ?? ''}?`}
+        description="It has run twice without finding anything to suggest, and there is nothing waiting for you to answer. Switching it off stops it looking; everything it has already found stays where it is."
+        footer={
+          <>
+            <Button label="Keep it running" variant="ghost" size="md" onPress={engine.dismissShutdown} />
+            <Button label="Switch it off" size="md" onPress={engine.acceptShutdown} />
+          </>
+        }
+      >
+        <View />
+      </Sheet>
 
       {editing ? (
         <PipelineEditor
@@ -418,6 +553,15 @@ export function JobScoutScreen() {
   )
 }
 
+/** What the form collects. The run-state fields belong to the runner. */
+type PipelineDraft = {
+  name: string
+  source: string
+  schedule: string
+  filter: string
+  kind: PipelineKind
+}
+
 function PipelineEditor({
   initial,
   onClose,
@@ -425,27 +569,36 @@ function PipelineEditor({
 }: {
   initial?: Pipeline
   onClose: () => void
-  onSave: (draft: Omit<Pipeline, 'id' | 'enabled'>) => void
+  onSave: (draft: PipelineDraft) => void
 }) {
+  const [kind, setKind] = useState<PipelineKind>(initial?.kind ?? 'scout')
   const [name, setName] = useState(initial?.name ?? '')
-  const [source, setSource] = useState(initial?.source ?? '')
+  const [source, setSource] = useState(initial?.source === '—' ? '' : (initial?.source ?? ''))
   const [terms, setTerms] = useState(initial?.filter === '—' ? '' : (initial?.filter ?? ''))
-  const [schedule, setSchedule] = useState<Frequency>(frequencyOf(initial?.schedule ?? 'daily'))
+  const [schedule, setSchedule] = useState(scheduleOf(initial?.schedule ?? 'daily'))
   // Raised by a save attempt rather than by typing, so an untouched field is not
   // marked wrong before anyone has reached it.
   const [attempted, setAttempted] = useState(false)
 
+  /*
+   * A twin reads the records it already has, so it has no source to name and
+   * the field would be a question with no answer. The scout keeps the
+   * requirement it always had.
+   */
+  const needsSource = kind === 'scout'
+
   const submit = () => {
     setAttempted(true)
-    if (!name.trim() || !source.trim()) return
+    if (!name.trim() || (needsSource && !source.trim())) return
     onSave({
       name: name.trim(),
-      source: source.trim(),
+      // The seed writes an em dash where a pipeline has nothing to say in a
+      // field, and the row prints these verbatim — an empty string leaves a
+      // dangling separator in the middle of the line.
+      source: source.trim() || '—',
       schedule,
-      // The seed writes an em dash for a pipeline that filters nothing, and the
-      // row prints this field verbatim — an empty string would leave a dangling
-      // separator in the middle of the line.
       filter: terms.trim() || '—',
+      kind,
     })
   }
 
@@ -454,7 +607,7 @@ function PipelineEditor({
       open
       onClose={onClose}
       title={initial ? 'Edit pipeline' : 'New pipeline'}
-      description="A pipeline is a saved search: where to look, what to look for, and how often. Matching itself waits on a local model, so a new one is created paused."
+      description="A pipeline is a standing job for the assistant. It runs on this device while jojo is open, and everything it wants to change is shown to you first."
       footer={
         <>
           <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
@@ -463,39 +616,59 @@ function PipelineEditor({
       }
     >
       <View style={{ gap: space[3.5], paddingBottom: space[2] }}>
+        {/* Only when creating. A pipeline's kind decides which agent runs and
+            which tools it may reach, so changing it under a queue raised by the
+            other one would leave suggestions whose rules no longer match their
+            pipeline. `scout.pipeline.update` refuses it for the same reason. */}
+        {initial ? null : (
+          <FormField
+            label="What it does"
+            hint={
+              kind === 'twin'
+                ? 'Reads what you have and suggests what is missing — notes, reminders, tags, filing.'
+                : 'Looks for postings worth your attention and puts them up for review.'
+            }
+          >
+            <Segment label="What it does" options={KINDS} value={kind} onChange={setKind} />
+          </FormField>
+        )}
         <TextField
           label="Name"
           required
           value={name}
           error={attempted && !name.trim() ? 'Name it after what it watches.' : undefined}
-          placeholder="e.g. CRA faculty job board"
+          placeholder={kind === 'twin' ? 'e.g. Keep my applications tidy' : 'e.g. CRA faculty job board'}
           onChangeText={setName}
         />
+        {needsSource ? (
+          <TextField
+            label="Sources"
+            required
+            mono
+            autoCapitalize="none"
+            value={source}
+            error={
+              attempted && !source.trim() ? 'A scout with no source has nothing to read.' : undefined
+            }
+            hint="The board or careers page it watches. Separate several with commas."
+            placeholder="cra.org/ads"
+            onChangeText={setSource}
+          />
+        ) : null}
         <TextField
-          label="Sources"
-          required
-          mono
-          autoCapitalize="none"
-          value={source}
-          error={
-            attempted && !source.trim()
-              ? 'A pipeline with no source has nothing to read.'
-              : undefined
-          }
-          hint="The board or careers page it reads. Separate several with commas."
-          placeholder="cra.org/ads"
-          onChangeText={setSource}
-        />
-        <TextField
-          label="Match terms"
+          label={kind === 'twin' ? 'What to focus on' : 'Match terms'}
           value={terms}
-          hint="What a posting is scored against. Leave blank to keep everything the source lists."
-          placeholder="assistant professor, CS/ECE"
+          hint={
+            kind === 'twin'
+              ? 'Anything it should pay particular attention to. Leave blank to let it look everywhere.'
+              : 'What a posting is scored against. Leave blank to keep everything the source lists.'
+          }
+          placeholder={kind === 'twin' ? 'follow-ups and deadlines' : 'assistant professor, CS/ECE'}
           onChangeText={setTerms}
         />
-        <FormField label="Frequency" hint="How often it would run once a model is reachable.">
+        <FormField label="How often" hint="How long it waits between rounds.">
           <Segment
-            label="Frequency"
+            label="How often"
             options={FREQUENCIES}
             value={schedule}
             onChange={setSchedule}

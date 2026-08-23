@@ -2,7 +2,7 @@
  * What the browser has and Hermes does not.
  *
  * Imported first thing in `index.ts`, before `App` — and therefore before
- * anything under `@jojo/service` — can be evaluated. Two entries.
+ * anything under `@jojo/service` — can be evaluated. Three entries.
  *
  * Both were being supplied by Expo until the ejection. `Expo.fx`, the
  * side-effecting module that `registerRootComponent` pulled in, installed a
@@ -70,5 +70,33 @@ if (typeof globalThis.structuredClone !== 'function') {
       ? value
       : (JSON.parse(JSON.stringify(value)) as T)) as typeof structuredClone
 }
+
+/**
+ * **`crypto.getRandomValues`** — absent, and the one global that must never be
+ * approximated.
+ *
+ * React Native 0.81.5 ships no `crypto` object at all, so `globalThis.crypto` is
+ * `undefined` on the phone. That is why `@jojo/service`'s `core/ref.ts` mints
+ * node ids from `Math.random` here — which its own comment argues is fine,
+ * correctly, because "ids only need to not collide, they are not a secret".
+ *
+ * Key material is the opposite case, and `kg/crypto/noble-secrets.ts` depends on
+ * this being real: a pairing key drawn from `Math.random` produces a handshake
+ * that SUCCEEDS, a transfer that COMPLETES, and bytes anyone who reproduces the
+ * sequence can read. Nothing on either screen would look wrong.
+ */
+import 'react-native-get-random-values'
+import { guardSecureRandom } from '@/lib/secure-random'
+
+/**
+ * And the guard, which is the point of this entry rather than the import above.
+ *
+ * The package ships a `Math.random()` fallback that announces itself with a
+ * `console.warn` and nothing else. `guardSecureRandom` checks whether the native
+ * module is really there and makes the global throw if it is not, so this device
+ * refuses to pair rather than pairing with predictable keys. Its own file
+ * carries the full reasoning, and a test.
+ */
+guardSecureRandom()
 
 export {}

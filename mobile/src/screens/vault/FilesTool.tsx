@@ -2,10 +2,9 @@ import { useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { FileEditor } from '@/components/common/FileEditor'
+import { FiledUnderLinks } from '@/components/common/FiledUnderLinks'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
 import { buildRecordMenu } from '@/components/common/recordMenu'
 import { BucketFilter } from '@/components/ui/BucketFilter'
@@ -16,7 +15,7 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Divider, Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { displayName } from '@jojo/service/data/seed'
+import { filedUnderLabel } from '@jojo/service/data/seed'
 import { agoLabel } from '@jojo/service/data/timeline'
 import { FILE_BUCKETS } from '@jojo/service/data/vault'
 import type { FileBucket, VaultFile } from '@jojo/service/data/vault'
@@ -25,9 +24,9 @@ import { vaultEmptyState } from '@/lib/vault-empty'
 import { FileViewer } from '@/screens/vault/FileViewer'
 import { FILE_KIND_ICON } from '@/lib/files'
 import { matchesQuery } from '@/lib/search'
+import { capitalize } from '@/lib/text'
 import { useApplications, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
-import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -56,7 +55,6 @@ export function FilesTool({ focus }: { focus?: string }) {
   const { byId } = useApplications()
   const { matches, selected, clearSelected } = useLabels()
   const { toast } = useToast()
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const [bucket, setBucket] = useState<FileBucket | 'all'>('all')
   const [query, setQuery] = useState('')
@@ -68,7 +66,13 @@ export function FilesTool({ focus }: { focus?: string }) {
   // The row's own way to file a document under a job. It used to be reachable
   // only by opening the edit sheet and finding the field two thirds of the way
   // down it, which is a capability nobody looking for it would find.
-  const [filing, setFiling] = useState<VaultFile | null>(null)
+  //
+  // An ID rather than the record, unlike the two above: the picker is a
+  // multi-select that stays open across taps, so it has to be looking at what
+  // the document says NOW. Holding the record froze the ticks at whatever they
+  // were when the sheet opened, and the second tap undid the first.
+  const [filing, setFiling] = useState<string | null>(null)
+  const filingFile = files.find((f) => f.id === filing) ?? null
 
   const pool = useMemo(
     () => files.filter((f) => matches(f.id) && matchesQuery(query, f.name, f.note, f.bucket)),
@@ -119,25 +123,28 @@ export function FilesTool({ focus }: { focus?: string }) {
   }
 
   /**
-   * Files the document under a job, or under none.
+   * Files the document under any number of jobs, or under none.
    *
-   * `applicationId` is always PRESENT in the patch, including when undefined —
+   * `applicationIds` is always PRESENT in the patch, including when empty —
    * that is what tells the update to set the field rather than leave it alone,
    * and `asNull` turns a present-and-undefined into the null the tool reads as
-   * an unfile. The edge is one-per-document, so filing under a second job
-   * replaces the first with no step to clear it in between.
+   * an unfile. The edge is `fromCardinality: 'many'`, so this SETS the whole
+   * list rather than adding to it: what the sheet shows is what the record
+   * ends up with, which is also what makes unticking the last one an unfile.
+   *
+   * The sheet is left open by its own rows and closed by Done, so this does
+   * not dismiss it — see `ApplicationPickerSheet`.
    */
-  const onFileUnder = (f: VaultFile, applicationId: string | undefined) => {
-    const before = f.applicationId
-    updateFile(f.id, { applicationId })
-    setFiling(null)
-    const now = applicationId ? byId.get(applicationId) : undefined
+  const onFileUnder = (f: VaultFile, applicationIds: string[]) => {
+    const before = f.applicationIds
+    updateFile(f.id, { applicationIds })
+    const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      title: capitalize(filedUnderLabel(chosen)),
       description: f.name,
       action: {
         label: 'Undo',
-        onPress: () => updateFile(f.id, { applicationId: before }),
+        onPress: () => updateFile(f.id, { applicationIds: before }),
       },
     })
   }
@@ -223,9 +230,6 @@ export function FilesTool({ focus }: { focus?: string }) {
           </View>
         ) : (
           rows.map((f, i) => {
-            // The edge is cleared, not followed, when an application is deleted
-            // — so a document can name an id whose record has gone.
-            const app = f.applicationId ? byId.get(f.applicationId) : undefined
             return (
               <View key={f.id}>
                 {i > 0 ? <Divider /> : null}
@@ -253,16 +257,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                         {f.note}
                       </Txt>
                     ) : null}
-                    {app ? (
-                      <Pressable
-                        accessibilityRole="link"
-                        onPress={() => navigation.navigate('ApplicationDetail', { id: app.id })}
-                      >
-                        <Txt size="xs" tone="info">
-                          {displayName(app)}
-                        </Txt>
-                      </Pressable>
-                    ) : null}
+                    <FiledUnderLinks applicationIds={f.applicationIds} />
                     <View style={styles.chips}>
                       <Chip size="sm" tone="gray">
                         {f.bucket}
@@ -302,11 +297,12 @@ export function FilesTool({ focus }: { focus?: string }) {
                 extra: [
                   {
                     id: 'file-under',
-                    label: menuFor.applicationId
-                      ? 'Change application'
-                      : 'File under an application',
+                    label:
+                      menuFor.applicationIds.length > 0
+                        ? 'Change applications'
+                        : 'File under an application',
                     icon: 'briefcase',
-                    onPress: () => setFiling(menuFor),
+                    onPress: () => setFiling(menuFor.id),
                   },
                 ],
                 move: {
@@ -323,11 +319,11 @@ export function FilesTool({ focus }: { focus?: string }) {
       />
 
       <ApplicationPickerSheet
-        open={filing !== null}
-        value={filing?.applicationId}
+        open={filingFile !== null}
+        values={filingFile?.applicationIds ?? []}
         onClose={() => setFiling(null)}
-        onChange={(id) => {
-          if (filing) onFileUnder(filing, id)
+        onChange={(ids) => {
+          if (filingFile) onFileUnder(filingFile, ids)
         }}
       />
 

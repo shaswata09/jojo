@@ -1,71 +1,71 @@
-import { RefreshCw } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { SettingRow } from '@/components/common/Field'
-import { SchematicCode } from '@/components/transfer-ui/SchematicCode'
-import { formatCode } from '@/components/transfer-ui/pairing'
-import { Button } from '@/components/ui/button'
+import { totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
 import { Switch } from '@/components/ui/switch'
 
-/** The code, the drawing of it, and the one-line answer to "who else sees this". */
-export function CodePanel({
-  code,
-  locked,
-  onRegenerate,
+/**
+ * What is about to move, and where.
+ *
+ * This card used to be a second copy of the pairing code. It is not needed there
+ * any more — the code now lives inside the animation, which is where a person is
+ * already looking — and a card whose only job was to duplicate something is a
+ * card that can say something instead.
+ *
+ * What it says is the set of facts somebody weighing "should I do this" actually
+ * wants, and each one is true rather than reassuring:
+ *
+ *   - the size, because a transfer of eleven megabytes over wifi is a different
+ *     proposition from one of ninety kilobytes
+ *   - that it is encrypted, and with a key that came off the screen rather than
+ *     off the network
+ *   - that it goes to a private address and never touches the internet, which is
+ *     the honest form of the promise — see `isPrivateAddress` for why "your
+ *     wifi" is a stronger claim than any check can back
+ *
+ * Deliberately not here: a progress bar. `ConnectPanel` owns the run, and two
+ * places describing one transfer is the confusion this page keeps having to
+ * clear up.
+ */
+export function DetailsPanel({
+  groups,
+  paired,
+  target,
 }: {
-  code: string
-  /** True once a run is under way — the code the other device holds cannot change. */
-  locked: boolean
-  onRegenerate: () => void
+  groups: readonly TransferGroup[]
+  /** True once a device has proved it read the code. */
+  paired: boolean
+  /** Where it is going, once that is known. */
+  target: string | null
 }) {
+  const records = totalOf(groups)
+
   return (
     <Panel>
-      <PanelTitle hint="on this device">Pairing code</PanelTitle>
-      <div className="flex flex-col items-center gap-4">
-        <SchematicCode code={code} />
-        <div className="text-center">
-          <p
-            className="tabular font-mono text-xl tracking-[0.18em] text-text-1"
-            aria-label={`Pairing code ${formatCode(code).split('').join(' ')}`}
-          >
-            {formatCode(code)}
-          </p>
-          <p className="mt-1 text-xs text-text-3">
-            Type this into the other device. It is the way in for a device with no camera, and the
-            way in here.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={locked}
-          title={locked ? 'The other device already has this code' : 'Draw a new code'}
-          onClick={onRegenerate}
-        >
-          <RefreshCw className="size-3.5" strokeWidth={1.8} aria-hidden />
-          New code
-        </Button>
-      </div>
-      <p className="mt-4 border-t border-hairline pt-3 text-xs text-text-3">
-        Is this safe? Only your two devices are ever involved: the code pairs them directly on your
-        own network, and there is no jojo server for your records to pass through. In this build
-        nothing is sent at all.
-      </p>
+      <PanelTitle hint="this handoff">Details</PanelTitle>
+      <SettingRow
+        label="Records"
+        description="everything in the groups below"
+        control={<span className="tabular text-sm text-text-1">{records.toLocaleString()}</span>}
+      />
+      <SettingRow
+        label="Encryption"
+        description="AES-256-GCM, key agreed by camera"
+        control={<span className="text-sm text-text-1">{paired ? 'Key agreed' : 'Not yet paired'}</span>}
+      />
+      <SettingRow
+        label="Route"
+        description="a private network address — never the internet"
+        control={<span className="tabular text-sm text-text-1">{target ?? 'Local network'}</span>}
+      />
+      <SettingRow
+        label="Servers"
+        description="no relay, no signalling, nothing hosted"
+        control={<span className="text-sm text-text-1">None</span>}
+      />
     </Panel>
   )
 }
 
-/**
- * The one choice worth making before a handoff.
- *
- * This was four switches over every record group. The records are the point of
- * the transfer — nobody opens this screen to send some of them — so choosing
- * per group was four decisions to reach the default. Files are the exception:
- * they are the bulk, and the one thing a person might reasonably want to leave
- * behind on a slow link, so that is the switch that survived.
- *
- * Off by default, deliberately. The heavier, slower half of a transfer should
- * be something you opt into rather than something you discover afterwards.
- */
 export function PayloadPanel({
   sendFiles,
   onToggleFiles,

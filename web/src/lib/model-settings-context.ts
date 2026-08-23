@@ -23,6 +23,16 @@ import type { ModelSettings } from '@/lib/llm'
 
 export const STORAGE_KEY = 'jojo/model-settings/v1'
 
+/**
+ * Where MarkItDown is, if the user runs it.
+ *
+ * Its own key, and its own setting, because it is a different program: the model
+ * answers questions and the reader opens documents, and a person may well have
+ * one without the other. Storing them together would mean a build that could not
+ * parse one lost both.
+ */
+export const READER_KEY = 'jojo/document-reader/v1'
+
 /** Its own key, so the saved list survives a change to the settings document. */
 export const SERVERS_KEY = 'jojo/model-servers/v1'
 
@@ -46,6 +56,9 @@ export const SUGGESTIONS: readonly { label: string; endpoint: string }[] = [
 
 export type ModelSettingsValue = {
   settings: ModelSettings
+  /** MarkItDown's MCP address, or '' when nothing is configured. */
+  reader: string
+  setReader: (endpoint: string) => void
   /** Every server this browser has connected to, most recently added last. */
   servers: readonly ModelServer[]
   save: (next: ModelSettings) => void

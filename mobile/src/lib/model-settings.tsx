@@ -8,7 +8,13 @@ import {
 } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
 import type { ModelSettings } from '@/lib/llm'
-import { DEFAULTS, ModelSettingsContext, SERVERS_KEY, STORAGE_KEY } from '@/lib/model-settings-context'
+import {
+  DEFAULTS,
+  ModelSettingsContext,
+  READER_KEY,
+  SERVERS_KEY,
+  STORAGE_KEY,
+} from '@/lib/model-settings-context'
 
 /**
  * Reads the model's address and the saved list off the device, and writes back.
@@ -26,14 +32,16 @@ import { DEFAULTS, ModelSettingsContext, SERVERS_KEY, STORAGE_KEY } from '@/lib/
 export function ModelSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<ModelSettings>(DEFAULTS)
   const [servers, setServers] = useState<readonly ModelServer[]>([])
+  const [reader, setReaderState] = useState('')
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     let live = true
-    void AsyncStorage.multiGet([STORAGE_KEY, SERVERS_KEY])
+    void AsyncStorage.multiGet([STORAGE_KEY, SERVERS_KEY, READER_KEY])
       .then((entries) => {
         if (!live) return
         const stored = new Map(entries)
+        setReaderState(stored.get(READER_KEY) ?? '')
         const rawSettings = stored.get(STORAGE_KEY)
         if (rawSettings) {
           try {
@@ -64,6 +72,11 @@ export function ModelSettingsProvider({ children }: { children: ReactNode }) {
     return () => {
       live = false
     }
+  }, [])
+
+  const setReader = useCallback((endpoint: string) => {
+    setReaderState(endpoint)
+    void AsyncStorage.setItem(READER_KEY, endpoint)
   }, [])
 
   const save = useCallback((next: ModelSettings) => {
@@ -110,8 +123,8 @@ export function ModelSettingsProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo(
-    () => ({ settings, servers, ready, save, remember, rename, forget }),
-    [settings, servers, ready, save, remember, rename, forget],
+    () => ({ settings, servers, reader, ready, save, setReader, remember, rename, forget }),
+    [settings, servers, reader, ready, save, setReader, remember, rename, forget],
   )
   return <ModelSettingsContext.Provider value={value}>{children}</ModelSettingsContext.Provider>
 }

@@ -1,8 +1,8 @@
-import { Check, Loader, RotateCcw, Smartphone } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Smartphone } from 'lucide-react'
 import { SceneBackdrop } from '@/components/transfer-ui/SceneBackdrop'
+import type { PulseFrame } from '@jojo/service/core/pulse'
 import { summarise, type TransferGroup } from '@/components/transfer-ui/groups'
-import type { TransferPhase } from '@/components/transfer-ui/use-transfer-run'
+import type { SendStage } from '@/lib/handoff-send'
 import { cn } from '@/lib/utils'
 
 export type TransferRole = 'send' | 'receive'
@@ -10,183 +10,168 @@ export type TransferRole = 'send' | 'receive'
 type Copy = { title: string; body: string }
 
 /**
- * What the screen says at each point in the run.
+ * The one true thing about receiving in a browser.
  *
- * Kept as data rather than as branches in the markup because the two roles
- * describe the same four states from opposite ends, and a reader checking that
- * "receive" never claims something arrived should be able to read all eight
- * sentences in one place.
+ * A web page cannot accept an inbound connection — `TCPServerSocket` exists
+ * only for Isolated Web Apps — so this computer can never be the receiving end
+ * of a live transfer, however both devices are connected. That is a platform
+ * fact rather than a missing feature, which is why it is one sentence repeated
+ * across every stage below instead of a sequence of states to walk through.
+ * `ReceivePanel` carries what to do instead.
  */
-const COPY: Record<TransferRole, Record<TransferPhase, Copy>> = {
+const RECEIVE: Copy = {
+  title: 'This computer cannot receive',
+  body: 'A web page is not allowed to accept a connection, so a phone cannot reach this browser however both devices are connected. Send from the phone with a backup file instead, and open it under Settings.',
+}
+
+const COPY: Record<TransferRole, Record<SendStage, Copy>> = {
   send: {
-    waiting: {
+    idle: {
       title: 'Waiting for the other device',
-      body: 'Open jojo on the other device, choose Receive, and give it the code. Nothing is being broadcast while this waits — the code is text on a screen and no more.',
+      body: 'Open jojo on your phone, choose Receive, and point its camera at this animation. The key is carried by the dots themselves — reading it agrees an encryption key between the two devices, and nothing is broadcast to do it.',
     },
-    paired: {
-      title: 'The other device answered',
-      body: 'Checking the code, then your records start moving.',
+    connecting: {
+      title: 'Reaching your phone',
+      body: 'Asking the address you typed for its half of the handshake. Nothing has been sent yet.',
     },
-    moving: { title: 'Moving your records', body: '' },
+    packing: {
+      title: 'Gathering your records',
+      body: 'Reading everything in the list below out of this device. Still nothing on the network.',
+    },
+    sending: {
+      title: 'Moving your records',
+      body: 'Sealed chunks, straight to your phone over the local network. Progress is beside the code you typed.',
+    },
     done: {
-      title: 'Demonstration finished',
-      body: 'Nothing moved. Your records are exactly where they were, on this device — this is what the handoff would look like, not one that happened.',
+      title: 'Everything moved',
+      body: 'Your phone now holds the records below. Nothing was removed from this device — a transfer is a copy.',
+    },
+    failed: {
+      title: 'The transfer stopped',
+      body: 'Nothing on this device has changed. What went wrong is written beside the code you typed.',
     },
   },
   receive: {
-    waiting: {
-      title: 'Waiting for a code',
-      body: 'Type the code shown on the other device. This device is not listening to the network and never was.',
-    },
-    paired: {
-      title: 'Ready to receive',
-      body: 'The other device is offering the records below. Nothing arrives until you accept.',
-    },
-    moving: { title: 'Receiving', body: '' },
-    done: {
-      title: 'Demonstration finished',
-      body: 'Nothing arrived. What is on this device is unchanged — this is a walkthrough of the handoff, not one that happened.',
-    },
+    idle: RECEIVE,
+    connecting: RECEIVE,
+    packing: RECEIVE,
+    sending: RECEIVE,
+    done: RECEIVE,
+    failed: RECEIVE,
   },
 }
 
+/**
+ * The stage card: the animation, what is about to move, and where the run is.
+ *
+ * ## What used to be here
+ *
+ * A simulation. `useTransferRun` walked a timer through the groups at 900ms
+ * each, ticking them off with spinners, and finished on "Demonstration
+ * finished — nothing moved". That was written when nothing DID move, and it
+ * stopped being true the day `ConnectPanel` started streaming a real backup to
+ * a real phone.
+ *
+ * What was left was worse than a stale sentence. Two progress bars on one
+ * screen, describing the same transfer, disagreeing — one reporting chunks the
+ * phone had acknowledged, the other counting down a timer that would have
+ * reached 100% just the same with the phone switched off. `SendPanel` already
+ * carries the note that says why there is only one bar on this page; this card
+ * was the reason that note had to be written, and the simulation is now gone
+ * rather than annotated.
+ *
+ * So the state below is read from the real send, and there is nothing here that
+ * moves on its own.
+ *
+ * ## What it deliberately does not show
+ *
+ * A progress bar, and a per-group tick list.
+ *
+ * The bar belongs to `ConnectPanel`, beside the field that starts the run. The
+ * tick list cannot be honest at all: a transfer is ONE sealed stream of chunks
+ * — see `core/convoy.ts` — so there is no moment at which "applications" have
+ * arrived and "the timeline" has not. Showing a group going green would be
+ * inventing an order the protocol does not have. The list is a manifest of what
+ * is included, which is a fact, and the counts beside it are the live store's.
+ */
 export function TransferStage({
   role,
-  phase,
-  progress,
+  stage,
   groups,
-  activeIndex,
-  movedCount,
   canStart,
   showScene = true,
-  onSimulate,
-  onStart,
-  onReset,
+  frames = null,
 }: {
   role: TransferRole
-  phase: TransferPhase
-  /** 0 to 1. Drives the bar and the percentage, which read from one number. */
-  progress: number
+  /** The real send state, straight from `useHandoffSend`. */
+  stage: SendStage
   groups: readonly TransferGroup[]
-  activeIndex: number
-  movedCount: number
+  /** False when nothing is selected, which is the only reason to hold back. */
   canStart: boolean
   /** Lets the page put the WebGPU scene away — see Transfer's page options. */
   showScene?: boolean
-  /** Stands in for the second device pointing a camera at this screen. */
-  onSimulate: () => void
-  onStart: () => void
-  onReset: () => void
+  /**
+   * The key, as frames of the animation itself.
+   *
+   * There is no code laid over the picture. The scene is a field of dots that
+   * brighten and fade; these say which AREAS of it brighten, and cycling
+   * through them says the key. Two surfaces — one showing a picture, one
+   * showing a symbol — invited the reading that the picture was decoration,
+   * and it was.
+   */
+  frames?: readonly PulseFrame[] | null
 }) {
-  const copy = COPY[role][phase]
-  const active = activeIndex >= 0 ? groups[activeIndex] : undefined
-  const body =
-    phase === 'moving' && active ? `${active.label.toLowerCase()} — ${active.hint}` : copy.body
+  const copy = COPY[role][stage]
+  // Only while the key is the thing on screen to look at. Once a phone has
+  // answered, the offer it read is spent, and a card still cycling it would be
+  // showing a key that pairs with nothing.
+  const showing = role === 'send' && stage === 'idle' ? frames : null
 
   return (
     <section className="surface relative flex min-h-[24rem] flex-col overflow-hidden rounded-lg px-4 py-4 sm:px-5 sm:py-5">
       {/* Behind the words, never over them. */}
-      {showScene ? <SceneBackdrop /> : null}
+      {showScene ? <SceneBackdrop frames={showing} /> : null}
 
       <div className="relative flex flex-1 flex-col">
         <h2 className="text-lg font-medium">{copy.title}</h2>
-        <p className="mt-1 max-w-md text-sm text-text-2">{body}</p>
+        <p className="mt-1 max-w-md text-sm text-text-2">{copy.body}</p>
 
-        {phase === 'moving' || phase === 'done' ? (
-          <div className="mt-4 max-w-md">
-            <div
-              role="progressbar"
-              aria-label="Transfer progress"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(progress * 100)}
-              className="h-1.5 w-full overflow-hidden rounded-full bg-well"
-            >
-              <div
-                className="h-full rounded-full bg-info transition-[width] duration-100 ease-linear"
-                style={{ width: `${Math.round(progress * 100)}%` }}
-              />
-            </div>
-            <p className="mt-1.5 text-xs text-text-3">
-              {phase === 'done'
-                ? `${movedCount} of ${groups.length} groups walked through`
-                : `${Math.round(progress * 100)}%`}
-            </p>
-          </div>
-        ) : null}
-
-        {groups.length > 0 && phase !== 'waiting' ? (
+        {role === 'send' && groups.length > 0 ? (
           <>
             <ul className="mt-4 max-w-xs space-y-1.5">
-              {groups.map((group, i) => (
+              {groups.map((group) => (
                 <li key={group.id} className="flex items-center gap-2 text-sm">
-                  <StepIcon
-                    state={i < movedCount ? 'moved' : i === activeIndex ? 'moving' : 'idle'}
-                  />
-                  <span className={cn(i < movedCount ? 'text-text-1' : 'text-text-2')}>
+                  {/* A dot, not a tick or a spinner. It marks a line in a list
+                      of what is included; nothing about it is a status. */}
+                  <span aria-hidden className="grid size-3.5 place-items-center">
+                    <span className="size-1.5 rounded-full bg-hairline-strong" />
+                  </span>
+                  <span className={cn(stage === 'done' ? 'text-text-1' : 'text-text-2')}>
                     {group.label}
                   </span>
                   <span className="tabular ml-auto text-xs text-text-3">{group.count}</span>
                 </li>
               ))}
             </ul>
-            {phase === 'done' ? (
-              <p className="mt-3 max-w-md text-sm text-text-2">
-                {summarise(groups)} — that is what would now be on{' '}
-                {role === 'send' ? 'the other device' : 'this one'}.
-              </p>
-            ) : null}
+            <p className="mt-3 max-w-md text-sm text-text-2">
+              {stage === 'done'
+                ? `${summarise(groups)} — that is what is now on the other device.`
+                : `${summarise(groups)} — that is what will move.`}
+            </p>
           </>
         ) : null}
 
-        <div className="mt-auto pt-5">
-          {phase === 'waiting' && role === 'send' ? (
-            <>
-              <Button size="sm" disabled={!canStart} onClick={onSimulate}>
-                <Smartphone className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Stand in for the other device
-              </Button>
-              <p className="mt-1.5 text-xs text-text-3">
-                {canStart
-                  ? 'There is no second device. This button plays its part so you can walk the whole journey.'
-                  : 'Choose at least one group to send.'}
-              </p>
-            </>
-          ) : null}
-
-          {phase === 'paired' && role === 'receive' ? (
-            <Button size="sm" onClick={onStart}>
-              Accept and receive
-            </Button>
-          ) : null}
-
-          {phase === 'done' ? (
-            <Button variant="outline" size="sm" onClick={onReset}>
-              <RotateCcw className="size-3.5" strokeWidth={1.8} aria-hidden />
-              Run it again
-            </Button>
-          ) : null}
-        </div>
+        {role === 'send' && stage === 'idle' ? (
+          <div className="mt-auto pt-5">
+            <p className="flex items-center gap-2 text-xs text-text-3">
+              <Smartphone className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
+              {canStart
+                ? 'Your phone reads the key from this animation, then shows you a short code to type on the right.'
+                : 'Choose at least one group to send.'}
+            </p>
+          </div>
+        ) : null}
       </div>
     </section>
-  )
-}
-
-/**
- * Neutral, not green. A tick that has finished is not a status the app is
- * warning anybody about, and colour here is reserved for dates.
- */
-function StepIcon({ state }: { state: 'idle' | 'moving' | 'moved' }) {
-  if (state === 'moved') {
-    return <Check className="size-3.5 text-text-1" strokeWidth={2} aria-hidden />
-  }
-  if (state === 'moving') {
-    return <Loader className="size-3.5 animate-spin text-text-2" strokeWidth={2} aria-hidden />
-  }
-  // Boxed to the icons' own size so the labels beside it keep one left edge.
-  return (
-    <span aria-hidden className="grid size-3.5 place-items-center">
-      <span className="size-1.5 rounded-full bg-hairline-strong" />
-    </span>
   )
 }

@@ -225,7 +225,11 @@ export function ApplicationDialog({
       }}
     >
       <DialogContent
-        className="sm:max-w-lg"
+        // Two tiers rather than one. Every dialog got wider, and this is the
+        // only one laying two columns of fields out inside that width — at
+        // `lg` the pair sat at about 240px each, which is narrower than the
+        // dates and the compensation line want to be.
+        className="sm:max-w-2xl"
         onOpenAutoFocus={(event) => {
           if (!guessed) return
           // A prefill is a guess, so focus lands on the guessed value with it

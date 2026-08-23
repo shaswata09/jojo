@@ -100,26 +100,76 @@ describe('the projected pointers', () => {
       title: 'Reference letter tracker',
       url: 'https://example.org/tracker',
       category: 'Guide',
-      applicationId: application.id,
+      applicationIds: [application.id],
     })
     expect(saved.ok).toBe(true)
 
     const before = p.links(read(repo)).find((l) => l.title === 'Reference letter tracker')
-    expect(before?.applicationId).toBe(application.id)
+    expect(before?.applicationIds).toEqual([application.id])
 
     const deleted = runtime.run('application.delete', { id: application.id })
     expect(deleted.ok).toBe(true)
 
     const orphaned = p.links(read(repo)).find((l) => l.title === 'Reference letter tracker')
     expect(orphaned).toBeDefined()
-    expect(orphaned?.applicationId).toBeUndefined()
+    // The edge goes with the application; the record stays and is simply unfiled.
+    expect(orphaned?.applicationIds).toEqual([])
     expect(p.applications(read(repo)).some((a) => a.id === application.id)).toBe(false)
 
     if (deleted.ok) deleted.undo?.()
 
     const restored = p.links(read(repo)).find((l) => l.title === 'Reference letter tracker')
-    expect(restored?.applicationId).toBe(application.id)
+    expect(restored?.applicationIds).toEqual([application.id])
     expect(p.applications(read(repo)).some((a) => a.id === application.id)).toBe(true)
+  })
+
+  /**
+   * The whole point of `fromCardinality: 'many'`, asserted where the screens
+   * read it. One CV goes to every application you send it to, and the build
+   * that stored a scalar answered the second filing by silently dropping the
+   * first — so the application you filed it under last week stopped listing it
+   * the moment you filed it under this week's.
+   *
+   * Both directions are checked: the record naming both applications, and each
+   * application finding the record. `ApplicationDetail` and `FiledPanel` do the
+   * second by membership, which is the half a scalar could never have served.
+   */
+  it('files one record under two applications and shows it on both', () => {
+    const { repo, runtime, p } = session()
+    const [first, second] = p.applications(read(repo))
+    if (!first || !second) throw new Error('the seed has fewer than two applications')
+
+    const saved = runtime.run('vault.file.add', {
+      files: [
+        {
+          name: 'CV-2026.pdf',
+          kind: 'pdf',
+          bucket: 'Applications',
+          size: '212 KB',
+          applicationIds: [first.id, second.id],
+        },
+      ],
+    })
+    expect(saved.ok).toBe(true)
+
+    const stored = p.files(read(repo)).find((f) => f.name === 'CV-2026.pdf')
+    expect(stored?.applicationIds).toEqual([first.id, second.id])
+
+    const filedUnder = (appId: string) =>
+      p.files(read(repo)).filter((f) => f.applicationIds.includes(appId))
+    expect(filedUnder(first.id).map((f) => f.name)).toContain('CV-2026.pdf')
+    expect(filedUnder(second.id).map((f) => f.name)).toContain('CV-2026.pdf')
+
+    // Refiling REPLACES the set — that is what the pickers send — and the
+    // application dropped from it stops listing the document.
+    if (!stored) throw new Error('the document was saved and could not be read back')
+    const refiled = runtime.run('vault.file.update', {
+      id: stored.id,
+      applicationIds: [second.id],
+    })
+    expect(refiled.ok).toBe(true)
+    expect(filedUnder(first.id).map((f) => f.name)).not.toContain('CV-2026.pdf')
+    expect(filedUnder(second.id).map((f) => f.name)).toContain('CV-2026.pdf')
   })
 
   it('keeps a record`s identity stable across an unrelated edit', () => {
@@ -207,5 +257,47 @@ describe('the compatibility contract', () => {
     // Deleted, not nulled: an explicit null survives structured clone, and
     // `'completedOn' in props` would then answer yes for an open item.
     expect('completedOn' in (read(repo).node(item.id, 'timelineItem')?.props ?? {})).toBe(false)
+  })
+})
+
+describe('the order documents come back in', () => {
+  const add = (s: ReturnType<typeof session>, name: string, savedOn?: string) =>
+    s.runtime.runOrThrow('vault.file.add', {
+      files: [
+        {
+          name,
+          kind: 'pdf' as const,
+          bucket: 'Applications' as const,
+          size: '1 KB',
+          ...(savedOn === undefined ? {} : { savedOn }),
+        },
+      ],
+    })
+
+  it('is newest first, so the one just added is at the top', () => {
+    // `ofType` is id-ascending, which is creation order, which put the oldest
+    // document at the top of the Vault and the newest below the fold.
+    const s = session()
+    add(s, 'old.pdf', '2026-08-01')
+    add(s, 'new.pdf', '2026-09-20')
+    const names = s.p.files(read(s.repo)).map((f) => f.name)
+    expect(names.indexOf('new.pdf')).toBeLessThan(names.indexOf('old.pdf'))
+  })
+
+  it('breaks a same-day tie by when the record was minted', () => {
+    // A batch dropped in one go shares `savedOn`, so the date alone leaves them
+    // in an arbitrary order. Ids are uuidv7, so comparing them compares time.
+    const s = session()
+    add(s, 'first.pdf', '2026-09-20')
+    add(s, 'second.pdf', '2026-09-20')
+    const names = s.p.files(read(s.repo)).map((f) => f.name)
+    expect(names.indexOf('second.pdf')).toBeLessThan(names.indexOf('first.pdf'))
+  })
+
+  it('puts a document added now above every seeded one', () => {
+    // The case the complaint was actually about.
+    const s = session()
+    add(s, 'just-dropped.pdf')
+    expect(s.p.files(read(s.repo))[0]?.name).toBe('just-dropped.pdf')
   })
 })

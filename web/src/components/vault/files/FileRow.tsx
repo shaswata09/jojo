@@ -63,7 +63,8 @@ export function FileRow({
 }: {
   file: VaultFile
   /** The application it is filed under — the record, so `appPath` has the slug. */
-  related?: Application
+  /** Every application this document is filed under. Empty, never absent. */
+  related: readonly Application[]
   /** Arrived here from a link that named this row — see `focus` in links.ts. */
   focused?: boolean
   /** Set on the focused row only, so the tool can scroll it into view. */
@@ -78,7 +79,7 @@ export function FileRow({
   onRename: (file: VaultFile, next: string) => void
   onNote: (file: VaultFile, next: string) => void
   /** `undefined` unfiles it. The tool turns that into a `null` for the tool layer. */
-  onFileUnder: (file: VaultFile, applicationId: string | undefined) => void
+  onFileUnder: (file: VaultFile, applicationIds: string[]) => void
   onTogglePreview: () => void
   onMove: (file: VaultFile, next: FileBucket) => void
   onDelete: (file: VaultFile) => void
@@ -120,8 +121,8 @@ export function FileRow({
           <div className="flex items-center gap-2">
             <ApplicationPicker
               what="file"
-              value={f.applicationId}
-              onChange={(id) => onFileUnder(f, id)}
+              values={f.applicationIds}
+              onChange={(ids) => onFileUnder(f, ids)}
               className="flex-1"
             />
             <Button type="button" variant="ghost" size="sm" onClick={onCancelEdit}>
@@ -158,14 +159,18 @@ export function FileRow({
                 </>
               ) : null}
               {f.note ? <span className="truncate">· {f.note}</span> : null}
-              {related ? (
+              {/* One link per application, because a document filed under three
+                  jobs is findable from all three and naming one of them would
+                  be picking a favourite the record does not have. */}
+              {related.map((app) => (
                 <Link
-                  to={appPath(related)}
+                  key={app.id}
+                  to={appPath(app)}
                   className="shrink-0 truncate underline-offset-2 transition-colors hover:text-accent hover:underline"
                 >
-                  · {displayName(related)}
+                  · {displayName(app)}
                 </Link>
-              ) : null}
+              ))}
               <LabelChips recordId={f.id} className="shrink-0" />
             </div>
           </>
@@ -190,7 +195,7 @@ export function FileRow({
             {f.note ? 'Edit note' : 'Add note'}
           </MenuItem>
           <MenuItem icon={Briefcase} onSelect={() => onEdit('application')}>
-            {related ? 'Change application' : 'File under an application'}
+            {related.length > 0 ? 'Change applications' : 'File under an application'}
           </MenuItem>
           <MenuSection title="Move to">
             {FILE_BUCKETS.map((b) => (

@@ -499,9 +499,11 @@ What is still honestly absent:
   nothing goes out and crawls a board, so the feed holds only what you put in it.
 - **The localhost bridge is not built.** Settings describes it and the repo's
   `server/` directory is empty. Nothing tries to reach it.
-- **Transfer moves nothing.** It walks the handoff and says, under the pairing
-  code, that no connection is open. Export to the clipboard is the working route
-  between devices.
+- **Transfer is one-directional.** Records move onto this phone and not off it,
+  and that is a platform fact rather than a gap: a browser cannot accept an
+  inbound connection, so the phone has to be the side that listens. Receiving is
+  real end to end — camera, key agreement, socket, decryption, restore. Sending
+  points at Export under Settings.
 
 The graph is a smaller model than the web's: the same node types and
 relationships, laid out by type rather than by a force simulation. The visual

@@ -107,7 +107,7 @@ export function FirstRunChoice() {
     <Dialog open>
       <DialogContent
         showCloseButton={false}
-        className="sm:max-w-lg"
+        className="sm:max-w-xl"
         // Both halves of "no dismiss without choosing". Radix routes the
         // backdrop press, a press on the app behind it and a focus escape
         // through `onInteractOutside`; Escape has its own handler.

@@ -75,7 +75,11 @@ export function CaptureExtensionPanel() {
     <Panel>
       <PanelTitle>Keeping postings</PanelTitle>
 
-      <p className="mb-4 max-w-prose text-sm text-text-2">
+      {/* Full width, matching the numbered steps below it. `max-w-prose` capped
+          this at about sixty characters inside a card twice that wide, so the
+          right half of the card was empty above a list that already spanned it —
+          the paragraph read as a mistake rather than as a measure. */}
+      <p className="mb-4 text-sm text-text-2">
         A job posting is the one document in your search that belongs to somebody else. The listing
         comes down the week after the interview and takes the requirements with it. The jojo
         extension saves a copy — the page as it read the day you filed it, with every image and
@@ -98,7 +102,8 @@ export function CaptureExtensionPanel() {
           <Check className="size-4 shrink-0 text-success" strokeWidth={2.2} aria-hidden />
           <span className="text-text-1">Installed and connected.</span>
           <span className="text-text-3">
-            Open a posting, click the jojo button, then come back to the Vault.
+            Open a posting and click the jojo button in the toolbar — if you cannot see it, it is
+            behind the jigsaw-piece menu and needs pinning. Then come back to the Vault.
             {version !== null ? ` Version ${version}.` : ''}
           </span>
         </div>
@@ -136,8 +141,15 @@ function Install({
     <div className="space-y-4">
       <Button asChild>
         {/* A plain download. There is no API that could make this an install —
-            see the header — so the button says what it does. */}
-        <a href="/jojo-extension.zip" download>
+            see the header — so the button says what it does.
+
+            The file is built by `web/scripts/pack-extension.mjs`, which both
+            `npm run dev` and `npm run build` run first. That matters: Vite's SPA
+            fallback answers a missing path with `index.html`, so without the
+            pack step this button would hand the user an HTML page named
+            `.zip` — a download that fails at the unzip, three steps after the
+            mistake. */}
+        <a href="/jojo-extension.zip" download="jojo-extension.zip">
           <Download className="size-3.5" strokeWidth={2} aria-hidden />
           Download the extension
         </a>
@@ -202,13 +214,25 @@ function Install({
           </Step>
 
           <Step n={5}>
+            <strong className="font-medium text-text-1">Pin it.</strong> Click the jigsaw-piece
+            button in the toolbar and pin jojo.{' '}
+            <span className="text-text-3">
+              Chromium browsers hide every extension behind that menu by default, so the button
+              exists but is not on the toolbar — this is the step people miss, and it looks exactly
+              like the extension failing to install.
+            </span>
+          </Step>
+
+          <Step n={6}>
             Come back here.{' '}
             <span className="text-text-3">This panel notices on its own and turns green.</span>
           </Step>
         </ol>
       )}
 
-      <p className="max-w-prose text-xs text-text-3">
+      {/* Spans too, for the same reason the paragraph above it does: one card
+          with two different measures reads as two cards that failed to align. */}
+      <p className="text-xs text-text-3">
         There is no one-click install for {browser.name}, and that is a browser decision rather than
         a missing feature here: the API that allowed it was removed in 2018, and a signed package
         would still have to come from the Chrome Web Store. Nothing about this extension talks to a

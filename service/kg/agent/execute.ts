@@ -39,6 +39,31 @@ import type { ReadName } from './queries'
  */
 export type ToolHost = {
   memory: () => GraphSnapshot
+  /**
+   * A stored document as Markdown, when the app has a reader configured.
+   *
+   * On the host rather than in the service because both halves are platform
+   * work — the bytes are in IndexedDB or on a filesystem, and the conversion is
+   * a network call `check-platform` forbids this layer to make.
+   */
+  convert?: (fileId: string) => Promise<{ ok: true; markdown: string } | { ok: false; reason: string }>
+  /**
+   * The rows of a job board's search page, when the app can reach one.
+   *
+   * The second capability injected here and the same shape as the first: the
+   * network is banned in this layer by `check-platform`, and reading a board
+   * additionally needs a DOM to run the page's own JavaScript — neither of
+   * which a portable layer has or should. On the web it is the capture
+   * extension driving a background tab; on a phone it is a plain fetch, which
+   * reaches the boards that render on the server and honestly cannot reach the
+   * ones that do not.
+   *
+   * Returns rows UNVETTED. `core/board.ts` decides what is a job, so the rule
+   * has one owner and the extension never has to carry a copy of it.
+   */
+  scan?: (
+    url: string,
+  ) => Promise<{ ok: true; rows: unknown } | { ok: false; reason: string }>
   check: (name: ToolName, input: unknown) => { ok: true; value: unknown } | { ok: false; issues: readonly { path: string; message: string }[] }
   run: (
     name: ToolName,
@@ -62,7 +87,18 @@ export type CallOutcome =
 /** Accepts either spelling, because MCP clients and our own loop use wire names. */
 const lookup = (name: string) => entryForWire(name) ?? entryFor(name)
 
-export function callTool(host: ToolHost, name: string, args: unknown): CallOutcome {
+/**
+ * Async, because one read is.
+ *
+ * Reading a PDF means asking MarkItDown, which is a round trip. Everything else
+ * here resolves immediately, and a write still cannot await anything — see the
+ * note on `ReadTool.read` for why the asymmetry is the safe way round.
+ */
+export async function callTool(
+  host: ToolHost,
+  name: string,
+  args: unknown,
+): Promise<CallOutcome> {
   const entry = lookup(name)
   if (!entry) {
     return {
@@ -82,7 +118,15 @@ export function callTool(host: ToolHost, name: string, args: unknown): CallOutco
     const read = READS[entry.name as ReadName]
     const parsed = read.input.parse(input)
     if (!parsed.ok) return { ok: false, entry, error: formatIssues(parsed.issues) }
-    return { ok: true, entry, result: read.read(host.memory(), parsed.value as never) }
+    const ctx = {
+      ...(host.convert ? { convert: host.convert } : {}),
+      ...(host.scan ? { scan: host.scan } : {}),
+    }
+    return {
+      ok: true,
+      entry,
+      result: await read.read(host.memory(), parsed.value as never, ctx),
+    }
   }
 
   const toolName = entry.name as ToolName

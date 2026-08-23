@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useApplications } from '@jojo/service/react/use-applications'
-import { displayName } from '@/data/seed'
+import { displayName, filedUnderLabel } from '@/data/seed'
 import { FileText, Plus, Upload } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -15,6 +15,7 @@ import { useVaultBlobs } from '@/lib/vault-blobs'
 import { FileRow } from '@/components/vault/files/FileRow'
 import type { EditableField } from '@/components/vault/files/FileRow'
 import { sortDrop } from '@/components/vault/files/intake'
+import { useFileDelete } from '@/lib/use-file-delete'
 import { useFileDrop } from '@/components/vault/files/use-file-drop'
 import { FILE_BUCKETS } from '@/data/vault'
 import type { FileBucket, VaultFile } from '@/data/vault'
@@ -75,14 +76,8 @@ export function FilesTool({ focus }: { focus?: string }) {
    */
   const [openBlob, setOpenBlob] = useState<File | null>(null)
 
-  const {
-    matches,
-    selected: selectedLabels,
-    clearSelected,
-    labelIdsOf,
-    setRecord,
-    removeRecord,
-  } = useLabels()
+  // The keyword half of a delete moved into `useFileDelete` with the rest of it.
+  const { matches, selected: selectedLabels, clearSelected } = useLabels()
   const { files, addFile, updateFile, removeFile } = useVault()
   // Named for the row's link, the toast and the search; the picker reads the
   // list itself.
@@ -93,6 +88,7 @@ export function FilesTool({ focus }: { focus?: string }) {
     return app ? displayName(app) : undefined
   }
   const { toast } = useToast()
+  const deleteFile = useFileDelete()
   // Arrived from a graph node or a query row that named one file — see `focus`
   // in links.ts. Ten files listed with none of them marked is not an arrival.
   const focusedRow = useArrivalScroll<HTMLLIElement>(focus)
@@ -111,7 +107,7 @@ export function FilesTool({ focus }: { focus?: string }) {
       matches(f.id) &&
       // The application's name too, matching the links tool: a document you can
       // file under a job is one you will look for by that job's name.
-      matchesQuery(query, f.name, f.note, f.bucket, nameOf(f.applicationId)),
+      matchesQuery(query, f.name, f.note, f.bucket, ...f.applicationIds.map(nameOf)),
   )
   const open = visible.find((f) => f.id === openId) ?? null
 
@@ -289,22 +285,27 @@ export function FilesTool({ focus }: { focus?: string }) {
    * into the `null` the tool reads as an unfile. Spreading it conditionally
    * would silently make clearing the field impossible.
    *
-   * The edge is `fromCardinality: 'one'`, so filing under a second job replaces
-   * the first; there is no step to clear it in between.
+   * The edge is `fromCardinality: 'many'`, so this SETS the whole list rather
+   * than adding to it: what the picker shows is what the record ends up with.
    */
-  const onFileUnder = (file: VaultFile, applicationId: string | undefined) => {
-    const before = file.applicationId
-    updateFile(file.id, { applicationId })
+  const onFileUnder = (file: VaultFile, applicationIds: string[]) => {
+    const before = file.applicationIds
+    updateFile(file.id, { applicationIds })
     setEditing(null)
-    const now = applicationId ? byId.get(applicationId) : undefined
+    const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: now ? `${file.name} filed under ${displayName(now)}` : `${file.name} unfiled`,
-      description: now
-        ? 'It shows on that application, and the graph can find it from there.'
-        : 'It stays in the Vault, filed under nothing.',
+      // `filedUnderLabel` names up to two and counts past that. It lives in the
+      // service because every surface that files a record — here, the phone's
+      // three vault tools, its file viewer — has the same sentence to build,
+      // and five copies is five places to draw that line differently.
+      title: `${file.name} ${filedUnderLabel(chosen)}`,
+      description:
+        chosen.length > 0
+          ? 'It shows on each of them, and the graph can find it from any.'
+          : 'It stays in the Vault, filed under nothing.',
       action: {
         label: 'Undo',
-        onClick: () => updateFile(file.id, { applicationId: before }),
+        onClick: () => updateFile(file.id, { applicationIds: before }),
       },
     })
   }
@@ -325,44 +326,18 @@ export function FilesTool({ focus }: { focus?: string }) {
    * The dialog that used to stand here asked about the one thing that was never
    * at risk: the document itself, which was never uploaded and is untouched.
    */
+  /**
+   * The same delete the Profile page uses.
+   *
+   * Was written out here; it moved to `lib/use-file-delete` when a second screen
+   * needed it, because a document is four things — the record, its keywords, the
+   * bytes and whatever is on screen showing it — and a second copy would have
+   * got the record and forgotten the bytes.
+   */
   const onDelete = (file: VaultFile) => {
-    const stashed = labelIdsOf(file.id)
-    const { restore } = removeFile(file.id)
-    removeRecord(file.id)
-    // The stored copy goes too. Without this the record disappears and its bytes
-    // stay in IndexedDB for good — invisible, unreachable, and still counted
-    // against a quota the user cannot get back.
-    void blobs.remove(file.id)
-    if (openId === file.id) setOpenId(null)
-    if (editing?.id === file.id) setEditing(null)
-
-    toast({
-      title: `${file.name} deleted`,
-      description:
-        'The row, its keywords and jojo’s copy of the document all go. The original on your computer is untouched.',
-      tone: 'danger',
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          restore()
-          // The document comes back with the row — and if it cannot, say so.
-          // An Undo that restores a record whose document has gone is worse
-          // than no Undo, because the row looks intact and the loss is only
-          // discovered later, by someone opening it.
-          void blobs.restore(file.id).then((came) => {
-            if (came) return
-            toast({
-              title: `${file.name} came back without its document`,
-              description:
-                'The row and its keywords are restored, but the stored copy could not be. Drop the file in again to attach it.',
-              tone: 'danger',
-            })
-          })
-          // Guarded: `setRecord` with an empty list files the record as carrying
-          // no keywords rather than leaving it unmentioned.
-          if (stashed.length > 0) setRecord(file.id, stashed)
-        },
-      },
+    deleteFile(file, (id) => {
+      if (openId === id) setOpenId(null)
+      if (editing?.id === id) setEditing(null)
     })
   }
 
@@ -469,7 +444,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                 file={f}
                 focused={f.id === focus}
                 rowRef={f.id === focus ? focusedRow : undefined}
-                related={f.applicationId ? byId.get(f.applicationId) : undefined}
+                related={f.applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)}
                 editingField={editing?.id === f.id ? editing.field : undefined}
                 onDevice={blobs.has(f.id)}
                 previewing={openId === f.id}

@@ -11,7 +11,7 @@ import { createContext, useContext, useEffect } from 'react'
  * navigates there rather than naming a dialog that does not exist. Add a name
  * back here in the same change that adds its branch to `DialogHost`.
  */
-export type DialogName = 'application' | 'timelineItem' | 'draft'
+export type DialogName = 'application' | 'applicationFromLink' | 'timelineItem' | 'draft'
 
 export type OpenDialog = {
   name: DialogName

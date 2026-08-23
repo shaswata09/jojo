@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { ApplicationField } from '@/components/common/ApplicationPickerSheet'
 import { DateField } from '@/components/common/DateField'
 import { StagedKeywordPicker } from '@/components/common/Labels'
 import { Button } from '@/components/ui/Button'
@@ -9,7 +10,6 @@ import { FormField, SettingRow, TextField, Toggle } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
-import { displayName } from '@jojo/service/data/seed'
 import type { Stage } from '@jojo/service/data/seed'
 import { shortDate, whenLabel } from '@jojo/service/data/timeline'
 import type { TimelineItem, TimelineKind } from '@jojo/service/data/timeline'
@@ -92,7 +92,7 @@ function minutesOf(value: string): number | undefined {
 
 export function TimelineItemSheet({ open, onOpenChange, mode, initial }: TimelineItemSheetProps) {
   const c = useColors()
-  const { all: applications, byId } = useApplications()
+  const { byId } = useApplications()
   const { get, add, update, remove } = useTimeline()
   const { labelIdsOf, setRecord, removeRecord } = useLabels()
   const { toast } = useToast()
@@ -103,7 +103,9 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
   const noun = mode === 'reminder' ? 'reminder' : 'event'
 
   const [title, setTitle] = useState(initial?.title ?? '')
-  const [applicationId, setApplicationId] = useState(initial?.applicationId)
+  const [applicationIds, setApplicationIds] = useState<readonly string[]>(
+    initial?.applicationIds ?? [],
+  )
   const [date, setDate] = useState(initial?.date ?? TODAY)
   const [allDay, setAllDay] = useState(initial?.allDay ?? initial?.startMins === undefined)
   // Held apart from `allDay` so flipping the switch off and on again gives back
@@ -125,24 +127,27 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
    */
   const [keywords, setKeywords] = useState<string[]>(() => (editingId ? labelIdsOf(editingId) : []))
   const [more, setMore] = useState(false)
-  const [appPickerOpen, setAppPickerOpen] = useState(false)
   const [durationOpen, setDurationOpen] = useState(false)
   const [attempted, setAttempted] = useState(false)
 
   const titleError = attempted && !title.trim() ? 'Give it a title you will recognise.' : undefined
   const dateError =
     attempted && !date ? 'Pick a date — an undated item has nowhere to appear.' : undefined
-  const selectedApp = applicationId ? byId.get(applicationId) : undefined
-
   /**
    * Linking an application is the strongest hint the form ever gets about what
    * the record is: "chase" for something submitted, "prep" for an interview.
    * Only applied while the user has not chosen a kind themselves.
+   *
+   * Only the FIRST link hints, now that `ABOUT` is many-to-many. A reference
+   * deadline that already covers three jobs is not re-classified by the fourth
+   * — and taking the hint from whichever was ticked last would mean the kind
+   * moved under the user as they filled the list in.
    */
-  const linkApplication = (id: string | undefined) => {
-    setApplicationId(id)
-    if (kindTouched || !id) return
-    const stage = byId.get(id)?.stage
+  const linkApplications = (ids: string[]) => {
+    const added = ids.filter((id) => !applicationIds.includes(id))
+    setApplicationIds(ids)
+    if (kindTouched || applicationIds.length > 0 || added.length !== 1) return
+    const stage = byId.get(added[0])?.stage
     if (!stage) return
     setKind(mode === 'reminder' ? REMINDER_KIND_FOR_STAGE[stage] : EVENT_KIND_FOR_STAGE[stage])
   }
@@ -178,7 +183,7 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
       // 45-minute span that `timeLabel` prints the moment the switch goes back.
       durationMins: timed ? duration : undefined,
       kind,
-      applicationId,
+      applicationIds: [...applicationIds],
       remind,
     }
 
@@ -296,28 +301,11 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
   )
 
   const applicationField = (
-    <FormField
-      label="Related application"
-      hint="Links the two, so the application lists this and this leads back to it."
-    >
-      <View style={s.row}>
-        <Button
-          label={selectedApp ? displayName(selectedApp) : 'Not linked'}
-          variant="outline"
-          size="md"
-          style={s.fill}
-          onPress={() => setAppPickerOpen(true)}
-        />
-        {applicationId ? (
-          <Button
-            label="Clear"
-            variant="ghost"
-            size="md"
-            onPress={() => setApplicationId(undefined)}
-          />
-        ) : null}
-      </View>
-    </FormField>
+    <ApplicationField
+      values={applicationIds}
+      onChange={linkApplications}
+      hint="Links them, so each application lists this and this leads back to any of them."
+    />
   )
 
   return (
@@ -469,30 +457,6 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
           </>
         ) : null}
       </ScrollView>
-
-      <MenuSheet
-        open={appPickerOpen}
-        onClose={() => setAppPickerOpen(false)}
-        title="Related application"
-        actions={
-          applications.length === 0
-            ? [
-                {
-                  id: 'none',
-                  label: 'No applications yet',
-                  disabled: true,
-                  onPress: () => {},
-                },
-              ]
-            : applications.map((a) => ({
-                id: a.id,
-                label: displayName(a),
-                hint: a.roleTag,
-                checked: a.id === applicationId,
-                onPress: () => linkApplication(a.id),
-              }))
-        }
-      />
 
       <MenuSheet
         open={durationOpen}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Plus, Radar, TriangleAlert } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { draftFromUrl } from '@/components/applications/draft-from'
@@ -8,11 +8,17 @@ import { PipelineDialog } from '@/components/scout/PipelineDialog'
 import type { PipelineDraft } from '@/components/scout/PipelineDialog'
 import { PipelinesPanel } from '@/components/scout/PipelinesPanel'
 import { PostingsPanel } from '@/components/scout/PostingsPanel'
+import { ProposalQueue } from '@/components/scout/ProposalQueue'
+import { ShutdownDialog } from '@/components/scout/ShutdownDialog'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import type { Pipeline } from '@/data/scout'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useScout } from '@jojo/service/react/use-scout'
+import { usePipelines } from '@jojo/service/react/use-pipelines'
+import { agentTurn, isConfigured } from '@/lib/llm'
+import { scanBoard } from '@/lib/capture-bridge'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { appPath, scoutPath, useScoutParams, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
@@ -48,6 +54,27 @@ export function JobScout() {
     removePipeline,
   } = useScout()
   const { get } = useApplications()
+
+  /**
+   * The pipelines' engine.
+   *
+   * `llm` is null when no model is configured, which is what pauses the whole
+   * feature — the hook does not tick and the banner below says so. Everything
+   * else on this page still works without one, which is why the page renders
+   * the same either way rather than branching into a scripted stand-in the way
+   * the Assistant does.
+   */
+  const { settings } = useModelSettings()
+  const llm = useCallback(
+    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+      agentTurn(settings, messages, tools),
+    [settings],
+  )
+  // `scanBoard` is module scope and therefore stable, which matters: an unstable
+  // port would rebuild the agent's host on every render and restart a round
+  // mid-flight.
+  const engine = usePipelines({ llm: isConfigured(settings) ? llm : null, scan: scanBoard })
+
   const navigate = useNavigate()
   // Arrived from a graph node or a query row naming a match or a saved posting.
   // Both lists live on this page and their ids come from different collections,
@@ -64,12 +91,16 @@ export function JobScout() {
       updatePipeline(editing.id, draft)
       toast({ title: 'Pipeline updated', description: draft.name })
     } else {
-      // Switched on, and the banner above already says why nothing runs. A new
-      // pipeline that arrived off would read as a create that failed.
+      // Switched on: a new pipeline that arrived off would read as a create
+      // that failed. Whether it can actually run is the model's business, and
+      // the toast says which of the two just happened rather than asserting the
+      // pessimistic one the way it used to.
       const pipeline = addPipeline({ ...draft, enabled: true })
       toast({
         title: 'Pipeline created',
-        description: `${pipeline.name} — paused until a model is connected.`,
+        description: engine.paused
+          ? `${pipeline.name} — paused until a model is connected.`
+          : `${pipeline.name} — it will start looking shortly.`,
       })
     }
     setEditing(null)
@@ -192,26 +223,47 @@ export function JobScout() {
         }
       />
 
-      {/* System status, stated plainly rather than implied by a colour. */}
-      <div
-        role="status"
-        className="flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning"
-      >
-        <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
-        <p>
-          No local model is connected, so matching is paused. You can still write pipelines and save
-          postings below — both are scored once a model is reachable.
-        </p>
-      </div>
+      {/* System status, stated plainly rather than implied by a colour — and
+          read off the model settings rather than hardcoded, which is what it
+          was while nothing could run either way. */}
+      {engine.paused ? (
+        <div
+          role="status"
+          className="flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning"
+        >
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
+          <p>
+            No local model is connected, so pipelines are paused. You can still write them and save
+            postings below — they start running once a model is reachable.
+          </p>
+        </div>
+      ) : null}
 
       <PipelinesPanel
         pipelines={visiblePipelines}
         onlyActive={onlyActive}
+        running={engine.running}
+        activity={engine.activity}
+        paused={engine.paused}
+        pendingCount={(id) => engine.pendingFor(id).length}
         onShowAll={() => setOnlyActive(false)}
         onNew={() => setEditing('new')}
         onEdit={setEditing}
         onDelete={onDeletePipeline}
-        onToggle={(p, enabled) => updatePipeline(p.id, { enabled })}
+        onToggle={engine.setEnabled}
+        onSetAuto={engine.setAuto}
+        onRunNow={engine.runNow}
+      />
+
+      {/* Above the matches and the postings: it is the only panel on the page
+          that is asking the reader for something. */}
+      <ProposalQueue
+        proposals={engine.proposals}
+        pipelines={engine.pipelines}
+        onApprove={engine.approve}
+        onDiscard={engine.discard}
+        onApproveAll={engine.approveAll}
+        onSweep={engine.sweep}
       />
 
       <MatchesPanel
@@ -236,8 +288,14 @@ export function JobScout() {
 
       <p className="flex items-center gap-2 text-xs text-text-3">
         <Radar className="size-3.5" strokeWidth={1.7} aria-hidden />
-        Pipelines run on your machine. Nothing is sent to a third party.
+        Pipelines run on your machine, while this tab is open. Nothing is sent to a third party.
       </p>
+
+      <ShutdownDialog
+        pipeline={engine.shutdownOffer}
+        onConfirm={engine.acceptShutdown}
+        onDismiss={engine.dismissShutdown}
+      />
 
       {editing ? (
         <PipelineDialog

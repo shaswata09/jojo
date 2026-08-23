@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { ApplicationSheet } from '@/sheets/ApplicationSheet'
 import type { ApplicationInitial } from '@/sheets/ApplicationSheet'
+import { AddFromLinkSheet } from '@/sheets/AddFromLinkSheet'
 import { DraftSheet } from '@/sheets/DraftSheet'
 import type { DraftSheetProps } from '@/sheets/DraftSheet'
 import { TimelineItemSheet } from '@/sheets/TimelineItemSheet'
@@ -95,6 +96,12 @@ export function SheetHost() {
         initial={props.initial}
       />
     )
+  }
+
+  if (current.name === 'applicationFromLink') {
+    // No props and no key: it takes nothing, and its state is a URL being typed
+    // plus a read in flight, neither of which should survive a close.
+    return <AddFromLinkSheet open />
   }
 
   if (current.name === 'draft') {

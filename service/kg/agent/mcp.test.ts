@@ -58,10 +58,10 @@ const call = (h: ToolHost, name: string, args: unknown) =>
   handleMcp(h, { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } })
 
 describe('handshake', () => {
-  it('declares only the capabilities it implements', () => {
+  it('declares only the capabilities it implements', async () => {
     // Declaring one it does not is how a client hangs waiting for a list that
     // never comes.
-    const r = handleMcp(host(), { jsonrpc: '2.0', id: 1, method: 'initialize' })
+    const r = await handleMcp(host(), { jsonrpc: '2.0', id: 1, method: 'initialize' })
     expect(r).toMatchObject({
       id: 1,
       result: {
@@ -73,21 +73,21 @@ describe('handshake', () => {
     expect(Object.keys(caps)).toEqual(['tools'])
   })
 
-  it('never answers a notification', () => {
+  it('never answers a notification', async () => {
     // JSON-RPC says a message with no id must not be replied to, and some
     // clients treat a reply as fatal.
-    expect(handleMcp(host(), { jsonrpc: '2.0', method: 'notifications/initialized' })).toBeNull()
+    expect(await handleMcp(host(), { jsonrpc: '2.0', method: 'notifications/initialized' })).toBeNull()
   })
 
-  it('reports an unknown method as a protocol error', () => {
-    const r = handleMcp(host(), { jsonrpc: '2.0', id: 7, method: 'resources/list' })
+  it('reports an unknown method as a protocol error', async () => {
+    const r = await handleMcp(host(), { jsonrpc: '2.0', id: 7, method: 'resources/list' })
     expect(r).toMatchObject({ id: 7, error: { code: -32601 } })
   })
 })
 
 describe('tools/list', () => {
-  it('lists every catalogued tool with a schema', () => {
-    const r = handleMcp(host(), { jsonrpc: '2.0', id: 2, method: 'tools/list' }) as {
+  it('lists every catalogued tool with a schema', async () => {
+    const r = await handleMcp(host(), { jsonrpc: '2.0', id: 2, method: 'tools/list' }) as {
       result: { tools: { name: string; inputSchema: unknown }[] }
     }
     expect(r.result.tools.length).toBe(mcpManifest().tools.length)
@@ -96,9 +96,9 @@ describe('tools/list', () => {
 })
 
 describe('tools/call', () => {
-  it('runs a write and actually changes the graph', () => {
+  it('runs a write and actually changes the graph', async () => {
     const h = host()
-    const r = call(h, 'application_create', {
+    const r = await call(h, 'application_create', {
       org: 'UT Austin',
       role: 'Assistant professor, CS',
       roleTag: 'Assistant Professor',
@@ -110,17 +110,17 @@ describe('tools/call', () => {
     expect(r.result.content[0]?.text).toContain('id: ')
   })
 
-  it('runs a read without touching anything', () => {
+  it('runs a read without touching anything', async () => {
     const h = host()
-    const r = call(h, 'memory_overview', {}) as { result: { content: { text: string }[] } }
+    const r = await call(h, 'memory_overview', {}) as { result: { content: { text: string }[] } }
     expect(JSON.parse(r.result.content[0]?.text ?? '{}')).toMatchObject({ total: 0 })
   })
 
-  it('treats a tool refusing as a RESULT, not a JSON-RPC error', () => {
+  it('treats a tool refusing as a RESULT, not a JSON-RPC error', async () => {
     // The call succeeded; the tool said no. The model has to see the reason as
     // content it can act on, not as a transport failure.
     const h = host()
-    const r = call(h, 'application_create', { org: '', role: 'x' }) as {
+    const r = await call(h, 'application_create', { org: '', role: 'x' }) as {
       result: { isError: boolean; content: { text: string }[] }
       error?: unknown
     }
@@ -129,18 +129,18 @@ describe('tools/call', () => {
     expect(r.result.content[0]?.text).toContain('Error:')
   })
 
-  it('names the mistake when the tool does not exist', () => {
+  it('names the mistake when the tool does not exist', async () => {
     const h = host()
-    const r = call(h, 'application_summon', {}) as { result: { isError: boolean; content: { text: string }[] } }
+    const r = await call(h, 'application_summon', {}) as { result: { isError: boolean; content: { text: string }[] } }
     expect(r.result.isError).toBe(true)
     expect(r.result.content[0]?.text).toContain('application_summon')
   })
 
-  it('accepts a call with no arguments key at all', () => {
+  it('accepts a call with no arguments key at all', async () => {
     // Models routinely omit it for a tool that takes nothing, and `undefined`
     // fails an object parse that `{}` passes.
     const h = host()
-    const r = handleMcp(h, {
+    const r = await handleMcp(h, {
       jsonrpc: '2.0',
       id: 3,
       method: 'tools/call',
@@ -149,29 +149,29 @@ describe('tools/call', () => {
     expect(r.result.isError).toBe(false)
   })
 
-  it('rejects a call with no name as a protocol error', () => {
-    const r = handleMcp(host(), { jsonrpc: '2.0', id: 4, method: 'tools/call', params: {} })
+  it('rejects a call with no name as a protocol error', async () => {
+    const r = await handleMcp(host(), { jsonrpc: '2.0', id: 4, method: 'tools/call', params: {} })
     expect(r).toMatchObject({ error: { code: -32602 } })
   })
 })
 
 describe('the executor', () => {
-  it('validates before running, so a bad argument never opens a transaction', () => {
+  it('validates before running, so a bad argument never opens a transaction', async () => {
     const h = host()
-    const out = callTool(h, 'application.create', { org: 'X', role: 'Y', roleTag: 'Nope', stage: 'submitted' })
+    const out = await callTool(h, 'application.create', { org: 'X', role: 'Y', roleTag: 'Nope', stage: 'submitted' })
     expect(out.ok).toBe(false)
     expect(h.memory().nodes()).toHaveLength(0)
   })
 
-  it('accepts either spelling of a name', () => {
+  it('accepts either spelling of a name', async () => {
     const h = host()
-    expect(callTool(h, 'memory.overview', {}).ok).toBe(true)
-    expect(callTool(h, 'memory_overview', {}).ok).toBe(true)
+    expect((await callTool(h, 'memory.overview', {})).ok).toBe(true)
+    expect((await callTool(h, 'memory_overview', {})).ok).toBe(true)
   })
 
-  it('hands back an undo for a write, which is what makes an agent safe', () => {
+  it('hands back an undo for a write, which is what makes an agent safe', async () => {
     const h = host()
-    const out = callTool(h, 'application.create', {
+    const out = await callTool(h, 'application.create', {
       org: 'Stripe',
       role: 'ML engineer',
       roleTag: 'ML Engineer',
@@ -183,7 +183,7 @@ describe('the executor', () => {
     expect(h.memory().ofType('application')).toHaveLength(0)
   })
 
-  it('announces a truncation rather than pretending the answer was complete', () => {
+  it('announces a truncation rather than pretending the answer was complete', async () => {
     const h = host()
     for (let i = 0; i < 40; i++) {
       h.run('application.create' as ToolName, {
@@ -193,36 +193,39 @@ describe('the executor', () => {
         stage: 'submitted',
       })
     }
-    const out = callTool(h, 'memory.list', { type: 'application', limit: 200 })
+    const out = await callTool(h, 'memory.list', { type: 'application', limit: 200 })
     const text = renderOutcome(out, 500)
     expect(text).toContain('Truncated')
     expect(text).toContain('Narrow the search')
   })
 
-  it('never throws, whatever it is handed', () => {
+  it('never rejects, whatever it is handed', async () => {
+    // Was `not.toThrow`, which cannot see past a promise: `callTool` is async
+    // now, so a rejection would have been an unhandled promise the assertion
+    // passed straight over. Resolving IS the contract.
     const h = host()
     for (const args of [undefined, null, 'nonsense', 42, [], { wrong: true }]) {
-      expect(() => callTool(h, 'application.update', args)).not.toThrow()
-      expect(() => callTool(h, 'memory.get', args)).not.toThrow()
+      await expect(callTool(h, 'application.update', args)).resolves.toBeDefined()
+      await expect(callTool(h, 'memory.get', args)).resolves.toBeDefined()
     }
   })
 })
 
 describe('the graph is only ever changed on purpose', () => {
-  it('leaves it byte-identical after a whole read-only session', () => {
+  it('leaves it byte-identical after a whole read-only session', async () => {
     const h = host()
-    callTool(h, 'application.create', {
+    await callTool(h, 'application.create', {
       org: 'UT Austin',
       role: 'Assistant professor, CS',
       roleTag: 'Assistant Professor',
       stage: 'submitted',
     })
     const before = JSON.stringify({ n: h.memory().nodes(), e: h.memory().edges() })
-    handleMcp(h, { jsonrpc: '2.0', id: 1, method: 'tools/list' })
-    call(h, 'memory_overview', {})
-    call(h, 'memory_list', { type: 'application' })
-    call(h, 'memory_search', { query: 'austin' })
-    call(h, 'application_summon', {})
+    await handleMcp(h, { jsonrpc: '2.0', id: 1, method: 'tools/list' })
+    await call(h, 'memory_overview', {})
+    await call(h, 'memory_list', { type: 'application' })
+    await call(h, 'memory_search', { query: 'austin' })
+    await call(h, 'application_summon', {})
     expect(JSON.stringify({ n: h.memory().nodes(), e: h.memory().edges() })).toBe(before)
   })
 })

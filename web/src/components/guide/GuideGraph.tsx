@@ -177,11 +177,15 @@ export function GuideGraph() {
 
         <h3 className="mt-5 text-sm font-medium">One pointer, or many</h3>
         <p className="mt-1 text-sm text-text-2">
-          Only tagging is a many-relation. Every other pointer is at most one per record, and
-          linking again replaces what was there in the same write — which is what stops a reminder
-          quietly becoming about two applications at once. The identity of a pointer is the triple
+          Three of the seven are many-relations: tagging, what a dated thing is{' '}
+          <span className="font-mono text-xs text-text-1">ABOUT</span>, and what a vault record is{' '}
+          <span className="font-mono text-xs text-text-1">FILED_UNDER</span>. One CV goes to every
+          application you send it to and one reference deadline covers every job it covers, so those
+          two are lists rather than slots. The other four are at most one per record, and linking
+          again replaces what was there in the same write. The identity of a pointer is the triple
           it joins, so creating one twice is the same pointer and there is no way to end up with two
-          identical lines between the same two records.
+          identical lines between the same two records — which is what makes filing a document under
+          a job it is already filed under do nothing at all.
         </p>
 
         <h3 className="mt-4 text-sm font-medium">

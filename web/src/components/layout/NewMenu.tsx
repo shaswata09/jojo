@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { BellRing, Briefcase, CalendarDays, ClipboardList, Link2, Mail, Plus } from 'lucide-react'
+import {
+  BellRing,
+  Briefcase,
+  CalendarDays,
+  ClipboardList,
+  Link2,
+  Mail,
+  Plus,
+  Sparkles,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Command,
@@ -15,6 +24,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button'
 import type { ToolName } from '@jojo/service/tools/index'
 import { useDialogs } from '@/lib/dialogs-context'
+import { isConfigured } from '@/lib/llm'
+import { useModelSettings } from '@/lib/model-settings-context'
 import type { DialogName } from '@/lib/dialogs-context'
 import { scoutPath, vaultPath } from '@/lib/links'
 import { cn } from '@/lib/utils'
@@ -57,6 +68,25 @@ export type CreateAction = {
    * the palette on its own account.
    */
   tool?: ToolName
+  /**
+   * A capability this row needs before it is worth offering.
+   *
+   * `model` means a local model is configured. The row it gates hands a page to
+   * one and cannot do anything without it, and a row that opens a dialog whose
+   * only message is "set a model up first" is a row that wasted the click. It
+   * is hidden rather than disabled for the same reason the Vault rows navigate
+   * rather than shipping dead: this menu had two dead rows once and they made
+   * "New" read as half-built.
+   *
+   * CONFIGURED, not reachable. `SidebarRuntime` draws the difference — an
+   * endpoint saved on a laptop whose server is down is configured and not
+   * connected — and it probes to tell them apart. This does not: a menu row
+   * that appears a second after the menu does, because a probe came back, moves
+   * the row under the finger already going for it. So the row shows whenever
+   * there is an address to try, and the dialog behind it reports what actually
+   * happened when it tried.
+   */
+  requires?: 'model'
 }
 
 /**
@@ -76,6 +106,14 @@ export const CREATE_ACTIONS: CreateAction[] = [
     icon: ClipboardList,
     dialog: { name: 'application' },
     tool: 'application.create',
+  },
+  {
+    id: 'new-application-from-link',
+    label: 'Application from a link',
+    icon: Sparkles,
+    hint: 'The model reads the posting and fills the form in',
+    dialog: { name: 'applicationFromLink' },
+    requires: 'model',
   },
   {
     id: 'new-reminder',
@@ -117,6 +155,20 @@ export const CREATE_ACTIONS: CreateAction[] = [
     to: scoutPath(),
   },
 ]
+
+/**
+ * The rows worth offering right now.
+ *
+ * Both surfaces that render `CREATE_ACTIONS` call this rather than the array,
+ * so a gated row cannot appear in the palette and be missing from the menu —
+ * which is exactly the drift the one-array note above exists to prevent, and
+ * a `requires` that only one of them honoured would reintroduce it.
+ */
+export function useCreateActions(): CreateAction[] {
+  const { settings } = useModelSettings()
+  const hasModel = isConfigured(settings)
+  return CREATE_ACTIONS.filter((action) => action.requires !== 'model' || hasModel)
+}
 
 /**
  * The tools a row above already covers with a real dialog.
@@ -163,6 +215,7 @@ export function useRunCreateAction() {
  */
 export function NewMenu({ className }: { className?: string }) {
   const run = useRunCreateAction()
+  const actions = useCreateActions()
   const { open, setOpen } = useNewShortcut()
 
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -219,7 +272,7 @@ export function NewMenu({ className }: { className?: string }) {
           <CommandList>
             <CommandEmpty>Nothing to add matches that.</CommandEmpty>
             <CommandGroup>
-              {CREATE_ACTIONS.map((action) => (
+              {actions.map((action) => (
                 <CommandItem
                   key={action.id}
                   value={`${action.label} ${action.hint ?? ''}`}

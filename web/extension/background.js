@@ -13,6 +13,7 @@
  * `chrome.storage.local` on their own machine until jojo collects it.
  */
 
+import { harvest } from './harvest.js'
 import { serialise } from './serialise.js'
 import {
   CAPTURE_HREF_ATTR,
@@ -36,6 +37,128 @@ const POLICY = {
   CAPTURE_SCHEMES,
   CAPTURE_LAZY_ATTRS,
   CAPTURE_UNCLAMP_ATTR,
+}
+
+/* --------------------------------- scanning -------------------------------- */
+
+/**
+ * The most links one harvest hands back, before the package filters them.
+ *
+ * Not a policy number — the policy is `BOARD_MAX_RESULTS` in
+ * `core/board.ts`, and it is applied on the far side. This is only a ceiling on
+ * what crosses `postMessage`, and a board page has a few hundred links on it at
+ * the outside.
+ */
+const HARVEST_LIMIT = 400
+
+/** How long a board gets to load before the attempt is abandoned. */
+const LOAD_TIMEOUT_MS = 25000
+
+/**
+ * How long to wait after `complete` before reading the page.
+ *
+ * `complete` means the document finished loading, which on a board that renders
+ * its results client-side is the moment BEFORE there are any results. There is
+ * no event for "the framework has finished", so this is a wait, and it is the
+ * least honest number in the extension. Two and a half seconds is measured
+ * against LinkedIn and Workday on a warm connection; a slower board returns
+ * fewer rows rather than wrong ones, which is the right way round.
+ */
+const SETTLE_MS = 2500
+
+/** Resolves when the tab reports itself loaded, or when the wait runs out. */
+function waitForLoad(tabId) {
+  return new Promise((resolve) => {
+    let done = false
+    const finish = (loaded) => {
+      if (done) return
+      done = true
+      chrome.tabs.onUpdated.removeListener(onUpdated)
+      clearTimeout(timer)
+      resolve(loaded)
+    }
+    const onUpdated = (id, info) => {
+      if (id === tabId && info.status === 'complete') finish(true)
+    }
+    const timer = setTimeout(() => finish(false), LOAD_TIMEOUT_MS)
+    chrome.tabs.onUpdated.addListener(onUpdated)
+    // It may already be there — a cached page can complete before the listener
+    // is attached, and then nothing would ever fire.
+    chrome.tabs.get(tabId).then(
+      (tab) => {
+        if (tab.status === 'complete') finish(true)
+      },
+      () => finish(false),
+    )
+  })
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Opens a board in a background tab, reads it, and closes it again.
+ *
+ * A TAB rather than a fetch from the worker, and the two reasons are both
+ * decisive on their own. A worker fetch is `credentials: 'omit'` here — see the
+ * note on `inline` — so a board the user is signed into would answer with its
+ * sign-in wall; a tab carries the browser's own session and sees what the user
+ * sees. And a worker has no `DOMParser` and cannot run the page's JavaScript,
+ * so on any board that renders its results client-side the served HTML has no
+ * results in it at all.
+ *
+ * The tab is closed in a `finally`. A scan that throws must not leave a tab
+ * open in the user's window — this runs without them watching, and litter they
+ * did not open is the fastest way to make a background feature feel like
+ * malware.
+ */
+async function scanBoard(url) {
+  let tabId = null
+  try {
+    const tab = await chrome.tabs.create({ url, active: false })
+    tabId = typeof tab.id === 'number' ? tab.id : null
+    if (tabId === null) return { ok: false, reason: 'That board could not be opened.' }
+
+    const loaded = await waitForLoad(tabId)
+    if (!loaded) return { ok: false, reason: 'That board took too long to load.' }
+    await sleep(SETTLE_MS)
+
+    /*
+     * Where it actually ENDED UP, which is not always where it was sent. A board
+     * that wants a sign-in redirects, and the harvest then returns the links on
+     * a login page — a handful of plausible-looking rows that are not jobs. The
+     * host is compared rather than the URL because boards redirect within
+     * themselves constantly (locale prefixes, canonical slugs), and only leaving
+     * the site means what this is looking for.
+     */
+    const landed = await chrome.tabs.get(tabId)
+    if (typeof landed.url === 'string' && landed.url.length > 0) {
+      if (hostOf(landed.url) !== hostOf(url)) {
+        return {
+          ok: false,
+          reason: `That board sent us to ${hostOf(landed.url)}, which usually means it wants a sign-in. Open it in a tab and sign in, then try again.`,
+        }
+      }
+    }
+
+    const [run] = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: harvest,
+      args: [HARVEST_LIMIT],
+    })
+    return { ok: true, rows: Array.isArray(run?.result) ? run.result : [] }
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : String(error) }
+  } finally {
+    if (tabId !== null) await chrome.tabs.remove(tabId).catch(() => undefined)
+  }
+}
+
+function hostOf(url) {
+  try {
+    return new URL(url).hostname.toLowerCase()
+  } catch {
+    return ''
+  }
 }
 
 /** Toolbar click: capture whatever tab the user is looking at. */
@@ -75,6 +198,11 @@ async function capture(tabId) {
       shadowRoots: page.shadowRoots ?? 0,
     })
     await chrome.storage.local.set({ [QUEUE]: queued })
+    // Global as well as per-tab: `setBadgeText` with a tabId sets it for THAT
+    // tab only, so the count vanished the moment the posting was closed and
+    // reappeared as a stale number on whatever tab had been captured before.
+    // The queue is one thing, so the badge is one number.
+    await chrome.action.setBadgeText({ text: String(queued.length) })
     await badge(tabId, String(queued.length), 'Saved — open jojo to file it')
   } catch (error) {
     await badge(tabId, '!', error instanceof Error ? error.message : String(error))
@@ -136,12 +264,38 @@ async function inline(page) {
 
       if (kind === 'css') {
         const text = await response.text()
-        // Its own url()s become tokens appended to the list this loop is
-        // walking, so they are fetched by a later turn of the same loop.
-        const inlinedCss = text.replace(
+        /*
+         * Its own `@import`s FIRST, then its own `url()`s. Both become tokens
+         * appended to the list this loop is walking, so they are fetched by a
+         * later turn of it and one pass covers arbitrary nesting.
+         *
+         * The `@import` half was missing, and it was a live leak rather than a
+         * missing nicety: the walk sanitises the imports it can see in the
+         * page's own `<style>` blocks, but a stylesheet FETCHED here could carry
+         * its own `@import "https://…"`, which passed through untouched, passed
+         * `remoteRefCount` — which knew nothing about `@import` — and was
+         * fetched by the viewer every time the capture was opened.
+         */
+        const withImports = text.replace(
+          /@import\s+(?:url\(\s*(['"]?)([^'")]+)\1\s*\)|(['"])([^'"]+)\3)[^;]*;?/gi,
+          (whole, _q1, viaUrl, _q2, viaString) => {
+            const raw = viaUrl ?? viaString ?? ''
+            if (raw.trim().startsWith('data:')) return whole
+            const nested = absolute(raw, href)
+            if (nested === null) {
+              dropped += 1
+              return ''
+            }
+            const at = assets.length
+            assets.push({ href: nested, kind: 'css' })
+            return `__JOJO_ASSET_${String(at)}__`
+          },
+        )
+        const inlinedCss = withImports.replace(
           /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
           (whole, _q, raw) => {
             const value = raw.trim()
+            if (value.startsWith('__JOJO_ASSET_')) return whole
             if (value.startsWith('data:')) return whole
             // A same-document reference — `filter='url(#frameNoise)'` inside an
             // inline SVG. Resolving one produces a URL that never existed, which
@@ -266,13 +420,45 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       const queued = await read()
       const left = queued.filter((c) => !kept.has(c.id))
       await chrome.storage.local.set({ [QUEUE]: left })
-      await chrome.action.setBadgeText({ text: left.length > 0 ? String(left.length) : '' })
+      const text = left.length > 0 ? String(left.length) : ''
+      await chrome.action.setBadgeText({ text })
+      // The per-tab overrides set at capture time survive a global write, so
+      // they are cleared explicitly — otherwise a filed capture goes on being
+      // counted on the tab it came from.
+      const tabs = await chrome.tabs.query({})
+      await Promise.all(
+        tabs.map((tab) =>
+          typeof tab.id === 'number'
+            ? chrome.action.setBadgeText({ tabId: tab.id, text }).catch(() => undefined)
+            : undefined,
+        ),
+      )
       sendResponse({ remaining: left.length })
     })()
     return true
   }
   if (message?.type === 'jojo:peek-captures') {
     void read().then((queued) => sendResponse({ count: queued.length }))
+    return true
+  }
+  /*
+   * The one verb the app initiates rather than drains.
+   *
+   * Every other message here asks about a queue a human gesture filled. This one
+   * asks the extension to go and do something, which is a different kind of
+   * permission entirely — so it is bounded on both sides: the sender is a content
+   * script on jojo's own origin (the manifest's `matches` sees to that), and the
+   * only thing it can ask for is one page opened and read.
+   */
+  if (message?.type === 'jojo:scan-board') {
+    void (async () => {
+      const url = typeof message.url === 'string' ? message.url : ''
+      if (!/^https?:\/\//i.test(url)) {
+        sendResponse({ ok: false, reason: 'That is not an address I can open.' })
+        return
+      }
+      sendResponse(await scanBoard(url))
+    })()
     return true
   }
   return false

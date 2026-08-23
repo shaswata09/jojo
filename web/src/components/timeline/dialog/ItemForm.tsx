@@ -45,7 +45,7 @@ export function ItemForm({
   const stored = editingId ? get(editingId) : undefined
 
   const [title, setTitle] = useState(initial?.title ?? '')
-  const [applicationId, setApplicationId] = useState(initial?.applicationId)
+  const [applicationIds, setApplicationIds] = useState<string[]>(initial?.applicationIds ?? [])
   const [date, setDate] = useState(initial?.date ?? TODAY)
   const [allDay, setAllDay] = useState(initial?.allDay ?? initial?.startMins === undefined)
   // Held apart from `allDay` so flipping the switch off and on again gives back
@@ -83,16 +83,20 @@ export function ItemForm({
   const dateError =
     submitted && !date ? 'Pick a date — an undated item has nowhere to appear.' : undefined
 
-  const selectedApp = applicationId ? byId.get(applicationId) : undefined
+  const selectedApps = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
 
   /**
    * Linking an application is the strongest hint the dialog ever gets about what
    * the record is: "chase" for something submitted, "prep" for an interview.
    * Only applied while the user has not chosen a kind themselves.
    */
-  const linkApplication = (id: string | undefined) => {
-    setApplicationId(id)
-    if (kindTouched || !id) return
+  const linkApplication = (id: string) => {
+    const on = applicationIds.includes(id)
+    setApplicationIds(on ? applicationIds.filter((v) => v !== id) : [...applicationIds, id])
+    // Only the FIRST link hints at the kind. A second application added to a
+    // reference deadline says nothing new about what kind of record it is, and
+    // re-deriving the kind from it would overwrite a choice already made.
+    if (kindTouched || on || applicationIds.length > 0) return
     const stage = byId.get(id)?.stage
     if (!stage) return
     setKind(mode === 'reminder' ? REMINDER_KIND_FOR_STAGE[stage] : EVENT_KIND_FOR_STAGE[stage])
@@ -136,7 +140,7 @@ export function ItemForm({
       // 45-minute span that `timeLabel` prints the moment the switch goes back.
       durationMins: timed ? duration : undefined,
       kind,
-      applicationId,
+      applicationIds,
       remind,
       // `status`, `when`, `daysLeft` and `urgency` are deliberately absent:
       // `bucketOf` and `whenLabel` derive the first three from the date, and
@@ -239,10 +243,10 @@ export function ItemForm({
   const applicationField = (
     <ApplicationLinkField
       applications={applications}
-      applicationId={applicationId}
-      selectedApp={selectedApp}
-      onSelect={linkApplication}
-      onClear={() => setApplicationId(undefined)}
+      applicationIds={applicationIds}
+      selectedApps={selectedApps}
+      onToggle={linkApplication}
+      onClear={() => setApplicationIds([])}
     />
   )
 
@@ -269,7 +273,9 @@ export function ItemForm({
       onSubmit={submit}
       className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-4"
     >
-      <div className="grid content-start gap-3.5 overflow-x-hidden overflow-y-auto px-0.5 py-0.5">
+      {/* `-mx-4 px-4` cancels the dialog's `p-4` so the scrollbar sits on its
+          edge rather than 16px inside it. See `ApplicationFields`. */}
+      <div className="-mx-4 grid content-start gap-3.5 overflow-x-hidden overflow-y-auto px-4 py-0.5">
         {/* The switch rides beside the title because it decides what the record
             *is* — a reminder with a tick box, or a calendar entry. It used to sit
             below the fold, under the one field nobody scrolls to. */}

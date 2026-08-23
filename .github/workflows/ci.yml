@@ -1,0 +1,145 @@
+# The gate, in CI, plus the deploy that is only allowed to run behind it.
+#
+# `gate.sh` is the local version of the first job and the two are deliberately
+# the same eleven checks in the same order: three workspaces, each typechecked,
+# linted and tested. Anything that is green here is green on a laptop, and the
+# reverse — which is the only property that makes a pipeline worth reading.
+#
+# WHY THE CHECKS ARE SEPARATE STEPS rather than one `./gate.sh`. gate.sh prints
+# a tidy table and exits 1 at the end, so a failure inside it is one red X with
+# eleven checks behind it. Named steps put the failure on the step that caused
+# it, which is what the Actions UI is good at and what someone reading a red
+# build actually needs.
+#
+# The deploy job `needs: gate`, so a broken test cannot reach the published
+# site. It also only runs on `main` — a pull request gets the gate and nothing
+# else, because a PR that could publish is a PR that can deface production.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # So the site can be republished without a commit — a rebuild after changing
+  # a Pages setting, say.
+  workflow_dispatch:
+
+# One in-flight run per branch. A second push while the first is still
+# deploying would otherwise race it to the same environment.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches `engines.node` in the root package.json.
+          node-version: 22
+          cache: npm
+
+      # `ci`, not `install`: it installs exactly the lockfile and fails if the
+      # lockfile and the manifests disagree, which is a thing worth failing on.
+      - name: Install
+        run: npm ci
+
+      # --------------------------------------------------------------- service
+      # First, and not only for tidiness: web and mobile both compile the
+      # service's TypeScript themselves, so a break here is a break everywhere
+      # and is cheapest to read at its source.
+      - name: service — layer guards
+        run: npm -w @jojo/service run lint
+
+      - name: service — typecheck
+        run: npm -w @jojo/service exec -- tsc -b
+
+      - name: service — test
+        run: npm -w @jojo/service run test
+
+      # ------------------------------------------------------------------- web
+      - name: web — typecheck
+        run: npm -w web exec -- tsc -b --force
+
+      - name: web — lint
+        run: npm -w web run lint
+
+      - name: web — test
+        run: npm -w web run test
+
+      # ---------------------------------------------------------------- mobile
+      # Typecheck, lint and unit tests only. There is no Android or iOS build
+      # here: the app is React Native with checked-in `android/` and `ios/`
+      # directories, and building either needs an SDK and a signing identity
+      # that a public runner has no business holding. What CI can prove about
+      # the phone app is that its TypeScript compiles and its logic passes,
+      # which is what these three do.
+      - name: mobile — typecheck
+        run: npm -w jojo-mobile exec -- tsc --noEmit
+
+      - name: mobile — lint
+        run: npm -w jojo-mobile run lint
+
+      - name: mobile — test
+        run: npm -w jojo-mobile run test
+
+      # The bundler half. `gate.sh` deliberately skips this because a build
+      # wipes `dist/` on a working tree; CI has no working tree to protect, and
+      # a bundle that fails to build is a release that cannot ship.
+      - name: web — build
+        run: npm -w web run build
+
+  deploy:
+    name: Deploy to Pages
+    needs: gate
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      # Both are required by the deploy-pages action: one to upload the
+      # artifact, one to prove the workflow is allowed to publish it.
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # `BASE_PATH` is what makes this work under a repository subpath. Vite
+      # rewrites every asset URL with it, and `App.tsx` reads the same value
+      # back for the router's basename. Derived from the repository name rather
+      # than written out, so a fork or a rename needs no edit here.
+      - name: Build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm -w web run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

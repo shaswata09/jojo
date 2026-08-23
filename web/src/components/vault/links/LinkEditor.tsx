@@ -31,7 +31,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
   const [url, setUrl] = useState(link.url)
   const [category, setCategory] = useState<LinkCategory>(link.category)
   const [note, setNote] = useState(link.note ?? '')
-  const [applicationId, setApplicationId] = useState(link.applicationId)
+  const [applicationIds, setApplicationIds] = useState<string[]>(link.applicationIds)
   const [submitted, setSubmitted] = useState(false)
 
   const categoryId = useId()
@@ -56,7 +56,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
       url: link.url,
       category: link.category,
       note: link.note,
-      applicationId: link.applicationId,
+      applicationIds: link.applicationIds,
     }
 
     updateLink(link.id, {
@@ -64,7 +64,7 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
       url: cleanUrl,
       category,
       note: note.trim() || undefined,
-      applicationId,
+      applicationIds,
     })
     toast({
       title: `${title.trim()} updated`,
@@ -120,7 +120,12 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
           htmlFor={appFieldId}
           hint="Files the link under a job, so both ends know about the other."
         >
-          <ApplicationPicker id={appFieldId} what="link" value={applicationId} onChange={setApplicationId} />
+          <ApplicationPicker
+            id={appFieldId}
+            what="link"
+            values={applicationIds}
+            onChange={setApplicationIds}
+          />
         </FormField>
       </div>
 

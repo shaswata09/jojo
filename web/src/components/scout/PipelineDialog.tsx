@@ -12,23 +12,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { PIPELINE_SCHEDULES, scheduleOf } from '@jojo/service/core/proposal'
+import type { PipelineKind } from '@jojo/service/core/model'
 import type { Pipeline } from '@/data/scout'
 
-/** Everything a pipeline is, minus the two fields the list itself owns. */
-export type PipelineDraft = Omit<Pipeline, 'id' | 'enabled'>
+/** What the form collects. Not `Omit<Pipeline, …>`: the run-state fields on a
+ *  pipeline are written by the runner and have no business in a form. */
+export type PipelineDraft = {
+  name: string
+  source: string
+  schedule: string
+  filter: string
+  kind: PipelineKind
+}
 
-const FREQUENCIES = [
-  { value: 'hourly', label: 'Hourly' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
+const FREQUENCIES = PIPELINE_SCHEDULES.map((value) => ({
+  value,
+  label: value.charAt(0).toUpperCase() + value.slice(1),
+}))
+
+const KINDS = [
+  { value: 'twin', label: 'Keep records complete' },
+  { value: 'scout', label: 'Find postings' },
 ] as const
-
-type Frequency = (typeof FREQUENCIES)[number]['value']
-
-/** Seeded pipelines spell their schedule the same way, but a stray value would
- *  otherwise leave the segmented control with nothing selected. */
-const frequencyOf = (schedule: string): Frequency =>
-  FREQUENCIES.some((f) => f.value === schedule) ? (schedule as Frequency) : 'daily'
 
 export function PipelineDialog({
   open,
@@ -42,83 +48,119 @@ export function PipelineDialog({
   initial?: Pipeline
   onSave: (draft: PipelineDraft) => void
 }) {
+  const [kind, setKind] = useState<PipelineKind>(initial?.kind ?? 'scout')
   const [name, setName] = useState(initial?.name ?? '')
-  const [source, setSource] = useState(initial?.source ?? '')
+  const [source, setSource] = useState(initial?.source === '—' ? '' : (initial?.source ?? ''))
   const [terms, setTerms] = useState(initial?.filter === '—' ? '' : (initial?.filter ?? ''))
-  const [schedule, setSchedule] = useState<Frequency>(frequencyOf(initial?.schedule ?? 'daily'))
+  const [schedule, setSchedule] = useState(scheduleOf(initial?.schedule ?? 'daily'))
   // Raised by a save attempt rather than by typing, so an untouched field is
   // not marked wrong before anyone has reached it.
   const [submitted, setSubmitted] = useState(false)
 
+  /*
+   * A twin reads the records it already has, so it has no source to name and
+   * the field would be a question with no answer. The scout keeps the
+   * requirement it always had.
+   */
+  const needsSource = kind === 'scout'
   const nameError = submitted && !name.trim() ? 'Name it after what it watches.' : undefined
   const sourceError =
-    submitted && !source.trim() ? 'A pipeline with no source has nothing to read.' : undefined
+    submitted && needsSource && !source.trim()
+      ? 'A scout with no source has nothing to read.'
+      : undefined
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
     setSubmitted(true)
-    if (!name.trim() || !source.trim()) return
+    if (!name.trim() || (needsSource && !source.trim())) return
 
     onSave({
       name: name.trim(),
-      source: source.trim(),
+      // The seed writes an em dash where a pipeline has nothing to say in a
+      // field, and the row prints these verbatim — an empty string leaves a
+      // dangling separator in the middle of the line.
+      source: source.trim() || '—',
       schedule,
-      // The seed writes an em dash for a pipeline that filters nothing, and the
-      // row prints this field verbatim — an empty string would leave a dangling
-      // separator in the middle of the line.
       filter: terms.trim() || '—',
+      kind,
     })
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{initial ? 'Edit pipeline' : 'New pipeline'}</DialogTitle>
           <DialogDescription>
-            A pipeline is a saved search: where to look, what to look for, and how often. Matching
-            itself waits on a local model, so a new one is created paused.
+            A pipeline is a standing job for the assistant. It runs on this device while jojo is
+            open, and everything it wants to change is shown to you first.
           </DialogDescription>
         </DialogHeader>
 
         {/* noValidate so the browser's own bubble cannot fire ahead of the
             message written for the field. `required` stays on for the a11y tree. */}
         <form noValidate onSubmit={submit} className="grid gap-3.5">
+          {/* Only when creating. A pipeline's kind decides which agent runs and
+              which tools it may reach, so changing it under a queue of
+              suggestions raised by the other one would leave cards whose rules
+              no longer match their pipeline. `scout.pipeline.update` refuses it
+              for the same reason; making a new one is the cheap alternative. */}
+          {initial ? null : (
+            <FormField
+              label="What it does"
+              hint={
+                kind === 'twin'
+                  ? 'Reads what you have and suggests what is missing — notes, reminders, tags, filing.'
+                  : 'Looks for postings worth your attention and puts them up for review.'
+              }
+            >
+              <Segment label="What it does" options={KINDS} value={kind} onChange={setKind} />
+            </FormField>
+          )}
+
           <Field
             label="Name"
             required
             error={nameError}
             value={name}
             autoComplete="off"
-            placeholder="e.g. CRA faculty job board"
+            placeholder={kind === 'twin' ? 'e.g. Keep my applications tidy' : 'e.g. CRA faculty job board'}
             onChange={(event) => setName(event.target.value)}
           />
 
-          <Field
-            label="Sources"
-            required
-            mono
-            error={sourceError}
-            hint="The board or careers page it reads. Separate several with commas."
-            value={source}
-            autoComplete="off"
-            placeholder="cra.org/ads"
-            onChange={(event) => setSource(event.target.value)}
-          />
+          {needsSource ? (
+            <Field
+              label="Sources"
+              required
+              mono
+              error={sourceError}
+              hint="The board or careers page it watches. Separate several with commas."
+              value={source}
+              autoComplete="off"
+              placeholder="cra.org/ads"
+              onChange={(event) => setSource(event.target.value)}
+            />
+          ) : null}
 
           <Field
-            label="Match terms"
-            hint="What a posting is scored against. Leave blank to keep everything the source lists."
+            label={kind === 'twin' ? 'What to focus on' : 'Match terms'}
+            hint={
+              kind === 'twin'
+                ? 'Anything it should pay particular attention to. Leave blank to let it look everywhere.'
+                : 'What a posting is scored against. Leave blank to keep everything the source lists.'
+            }
             value={terms}
             autoComplete="off"
-            placeholder="assistant professor, CS/ECE"
+            placeholder={
+              kind === 'twin' ? 'follow-ups and deadlines' : 'assistant professor, CS/ECE'
+            }
             onChange={(event) => setTerms(event.target.value)}
           />
 
-          <FormField label="Frequency" hint="How often it would run once a model is reachable.">
+          <FormField label="How often" hint="How long it waits between rounds.">
             <Segment
-              label="Frequency"
+              label="How often"
               options={FREQUENCIES}
               value={schedule}
               onChange={setSchedule}

@@ -62,7 +62,7 @@ function world() {
     date: '2026-09-01',
     kind: 'follow-up',
     urgency: 'amber',
-    applicationId: austin,
+    applicationIds: [austin],
   })
   const kw = rt.runOrThrow('keyword.create', { name: 'Teaching', tone: 'teal' }) as NodeId
   rt.runOrThrow('keyword.attach', { keyword: kw, record: austin })

@@ -82,17 +82,42 @@ export function serialise(policy) {
    */
   function queueCssUrls(css) {
     return css
-      .replace(/@import\s+(['"])([^'"]+)\1/gi, (whole, _quote, raw) => {
-        if (raw.trim().startsWith('data:')) return whole
-        const href = absolute(raw)
-        if (href === null) {
-          dropped += 1
-          return '@import ""'
-        }
-        return `@import url("${token(href, 'css')}")`
-      })
+      /*
+       * An `@import` is replaced by the STYLESHEET, not by a link to it.
+       *
+       * The whole statement goes and a bare token takes its place, because that
+       * is what `@import` means — "insert this sheet here" — and because the
+       * alternative was measurably wrong: rewriting it to `url("<token>")` made
+       * the inliner substitute the fetched CSS TEXT inside a `url()`, producing
+       * `@import url("<the entire stylesheet>")` and losing the sheet entirely.
+       *
+       * Both spellings are matched here rather than leaving `@import url(…)` to
+       * the pattern below, which marks its token `css-asset` — a kind the
+       * inliner fetches as a BLOB. An imported sheet base64'd that way loses
+       * every font and image its own `url()`s point at.
+       */
+      .replace(
+        /@import\s+(?:url\(\s*(['\"]?)([^'\")]+)\1\s*\)|(['\"])([^'\"]+)\3)[^;]*;?/gi,
+        (whole, _q1, viaUrl, _q2, viaString) => {
+          const raw = viaUrl ?? viaString ?? ''
+          if (raw.trim().startsWith('data:')) return whole
+          const href = absolute(raw)
+          if (href === null) {
+            dropped += 1
+            return ''
+          }
+          return token(href, 'css')
+        },
+      )
       .replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (whole, _quote, raw) => {
         const value = raw.trim()
+        // A token this same chain just produced. The `@import` rewrite above
+        // emits `url("__JOJO_ASSET_n__")`, and without this the pattern below
+        // matched it, failed to resolve it, and replaced it with `none` — so the
+        // fix for bare `@import` was undone one line later and the stylesheet was
+        // silently dropped AND miscounted. Two replaces in one chain is exactly
+        // the shape where a rewrite gets rewritten.
+        if (value.startsWith('__JOJO_ASSET_')) return whole
         if (value.startsWith('data:')) return whole
         // A same-document reference — `filter='url(#frameNoise)'` inside inline
         // SVG. Resolving one invents a URL that never existed, which is then
@@ -124,7 +149,10 @@ export function serialise(policy) {
         const node = cloned[i]
         const live = living[i]
 
-        if (isClamped(live)) node.setAttribute(CAPTURE_UNCLAMP_ATTR, '')
+        // The value records WHICH kind of hiding was found, because the two
+        // want different repairs.
+        const clamp = clampKind(live)
+        if (clamp !== null) node.setAttribute(CAPTURE_UNCLAMP_ATTR, clamp)
 
         // A shadow root's contents cannot be reached: `cloneNode` does not copy
         // one and `outerHTML` never serialises one. Counted rather than ignored,
@@ -190,11 +218,18 @@ export function serialise(policy) {
     // well, because that pattern needs whitespace or a quote before `href` and
     // here there is a colon. Both halves of the net missed it.
     if (node.hasAttribute('xlink:href')) {
-      const dest = absolute(node.getAttribute('xlink:href'))
-      node.removeAttribute('xlink:href')
-      if (dest !== null) {
-        dropped += 1
-        node.setAttribute(CAPTURE_HREF_ATTR, dest)
+      const raw = node.getAttribute('xlink:href') ?? ''
+      // `<use xlink:href="#icon">` is a reference into THIS document — an inline
+      // SVG sprite, which is how most icon systems work. Resolving it against
+      // the page URL turned every icon into an absolute address, dropped it, and
+      // left the capture with blank squares where the icons were.
+      if (!raw.trim().startsWith('#')) {
+        const dest = absolute(raw)
+        node.removeAttribute('xlink:href')
+        if (dest !== null) {
+          dropped += 1
+          node.setAttribute(CAPTURE_HREF_ATTR, dest)
+        }
       }
     }
 
@@ -218,8 +253,14 @@ export function serialise(policy) {
       else node.setAttribute('src', token(src, 'img'))
     } else {
       for (const attr of CAPTURE_URL_ATTRS) {
-        if (attr === 'href') continue // anchors handled above
+        // `href` is NOT skipped here. Anchors were handled above and no longer
+        // carry one; anything else still holding an `href` is SVG `<image>`,
+        // `<area>` or a `<link>` the strip pass could not resolve, and every one
+        // of those is a fetch. Skipping the attribute outright left them live —
+        // `remoteRefCount` then caught them and refused the whole capture, so
+        // the symptom was "this page cannot be saved" rather than a leak.
         if (!node.hasAttribute(attr)) continue
+        if (attr === 'href' && (node.getAttribute(attr) ?? '').trim().startsWith('#')) continue
         if (absolute(node.getAttribute(attr)) !== null) dropped += 1
         node.removeAttribute(attr)
       }
@@ -285,19 +326,19 @@ export function serialise(policy) {
    * opens a year-old posting and sees five lines and a dead control, with the
    * rest of it in the file and unreachable.
    */
-  function isClamped(live) {
+  function clampKind(live) {
     let style
     try {
       style = window.getComputedStyle(live)
     } catch {
-      return false
+      return null
     }
-    if (style.webkitLineClamp && style.webkitLineClamp !== 'none') return true
-    if (style.overflow !== 'hidden' && style.overflowY !== 'hidden') return false
-    if (style.maxHeight === 'none') return false
+    if (style.webkitLineClamp && style.webkitLineClamp !== 'none') return 'clamp'
+    if (style.overflow !== 'hidden' && style.overflowY !== 'hidden') return null
+    if (style.maxHeight === 'none') return null
     // 4px of slack: a container can overrun its own box by a rounding error
     // without anything being hidden from the reader.
-    return live.scrollHeight > live.clientHeight + 4
+    return live.scrollHeight > live.clientHeight + 4 ? 'height' : null
   }
 
   // ---- 3. inline stylesheets, including the ones with no text ---------------
@@ -362,12 +403,18 @@ export function serialise(policy) {
   if (doc.querySelector(`[${CAPTURE_UNCLAMP_ATTR}]`) !== null) {
     const unclamp = document.createElement('style')
     unclamp.textContent =
+      // `display:block` ONLY where a line clamp was actually in force — that
+      // idiom needs `display:-webkit-box`, and releasing the clamp without
+      // restoring a sane display leaves the text in a broken box. Everywhere
+      // else the element keeps its own display: forcing block on any
+      // overflow-hidden container would flatten grids and flex rows that were
+      // never hiding anything.
       `[${CAPTURE_UNCLAMP_ATTR}]{` +
       '-webkit-line-clamp:unset !important;' +
       'max-height:none !important;' +
       'overflow:visible !important;' +
-      'display:block !important;' +
-      '}'
+      '}' +
+      `[${CAPTURE_UNCLAMP_ATTR}="clamp"]{display:block !important;}`
     const head = doc.querySelector('head') ?? doc
     head.append(unclamp)
   }

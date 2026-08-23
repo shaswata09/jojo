@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
-import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
+import {
+  ApplicationField,
+  ApplicationPickerSheet,
+} from '@/components/common/ApplicationPickerSheet'
+import { FiledUnderLinks } from '@/components/common/FiledUnderLinks'
 import { buildRecordMenu } from '@/components/common/recordMenu'
 import { BucketFilter } from '@/components/ui/BucketFilter'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -14,13 +18,14 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { displayName } from '@jojo/service/data/seed'
+import { filedUnderLabel } from '@jojo/service/data/seed'
 import { SNIPPET_TAGS } from '@jojo/service/data/vault'
 import type { Snippet, SnippetTag } from '@jojo/service/data/vault'
 import { useLabels } from '@/lib/labels-context'
 import { vaultEmptyState } from '@/lib/vault-empty'
 import { matchesQuery } from '@/lib/search'
 import { useApplications, useVault } from '@/lib/store-context'
+import { capitalize } from '@/lib/text'
 import { useCopy } from '@/lib/use-copy'
 import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
@@ -50,8 +55,11 @@ export function SnippetsTool({ focus }: { focus?: string }) {
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<Snippet | 'new' | null>(null)
   // The row's own way to file this under a job — the same action the files
-  // list carries, because the gap was identical here.
-  const [filing, setFiling] = useState<Snippet | null>(null)
+  // list carries, because the gap was identical here. An ID rather than the
+  // record, because the picker is a multi-select that stays open across taps
+  // and has to be reading what the snippet says now, not when it opened.
+  const [filing, setFiling] = useState<string | null>(null)
+  const filingSnippet = snippets.find((x) => x.id === filing) ?? null
   const [menuFor, setMenuFor] = useState<Snippet | null>(null)
 
   const pool = useMemo(
@@ -87,17 +95,17 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     })
   }
 
-  const onFileUnder = (record: Snippet, applicationId: string | undefined) => {
-    const before = record.applicationId
-    updateSnippet(record.id, { applicationId })
-    setFiling(null)
-    const now = applicationId ? byId.get(applicationId) : undefined
+  /** Sets the whole list — `FILED_UNDER` is many, so unticking the last unfiles it. */
+  const onFileUnder = (record: Snippet, applicationIds: string[]) => {
+    const before = record.applicationIds
+    updateSnippet(record.id, { applicationIds })
+    const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      title: capitalize(filedUnderLabel(chosen)),
       description: record.title,
       action: {
         label: 'Undo',
-        onPress: () => updateSnippet(record.id, { applicationId: before }),
+        onPress: () => updateSnippet(record.id, { applicationIds: before }),
       },
     })
   }
@@ -191,6 +199,9 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                   </Chip>
                   <LabelChips recordId={snippet.id} />
                 </View>
+                {/* The card never said what it was filed under, which made the
+                    menu action that files it look like it did nothing. */}
+                <FiledUnderLinks applicationIds={snippet.applicationIds} />
               </View>
               {/* Copy is the point of a snippet, so it is the one action on the
                   card. Delete is not: it costs a menu, like every other. */}
@@ -215,11 +226,11 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       )}
 
       <ApplicationPickerSheet
-        open={filing !== null}
-        value={filing?.applicationId}
+        open={filingSnippet !== null}
+        values={filingSnippet?.applicationIds ?? []}
         onClose={() => setFiling(null)}
-        onChange={(id) => {
-          if (filing) onFileUnder(filing, id)
+        onChange={(ids) => {
+          if (filingSnippet) onFileUnder(filingSnippet, ids)
         }}
       />
 
@@ -236,11 +247,12 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                 extra: [
                   {
                     id: 'file-under',
-                    label: menuFor.applicationId
-                      ? 'Change application'
-                      : 'File under an application',
+                    label:
+                      menuFor.applicationIds.length > 0
+                        ? 'Change applications'
+                        : 'File under an application',
                     icon: 'briefcase',
-                    onPress: () => setFiling(menuFor),
+                    onPress: () => setFiling(menuFor.id),
                   },
                 ],
                 move: {
@@ -288,20 +300,18 @@ function SnippetEditor({
   onClose: () => void
   onSave: (draft: Omit<Snippet, 'id'>) => void
 }) {
-  const { all: applications, byId } = useApplications()
   const [title, setTitle] = useState(initial?.title ?? '')
   const [body, setBody] = useState(initial?.body ?? '')
   const [tag, setTag] = useState<SnippetTag>(initial?.tag ?? 'Cover letter')
-  const [applicationId, setApplicationId] = useState(initial?.applicationId)
-  const [appPickerOpen, setAppPickerOpen] = useState(false)
+  const [applicationIds, setApplicationIds] = useState<readonly string[]>(
+    initial?.applicationIds ?? [],
+  )
   const [attempted, setAttempted] = useState(false)
-
-  const selectedApp = applicationId ? byId.get(applicationId) : undefined
 
   const submit = () => {
     setAttempted(true)
     if (!title.trim() || !body.trim()) return
-    onSave({ title: title.trim(), body: body.trim(), tag, applicationId })
+    onSave({ title: title.trim(), body: body.trim(), tag, applicationIds: [...applicationIds] })
   }
 
   return (
@@ -336,28 +346,11 @@ function SnippetEditor({
             onChange={setTag}
           />
         </FormField>
-        <FormField
-          label="Related application"
-          hint="Optional. A snippet written for one employer can say so."
-        >
-          <View style={s.row}>
-            <Button
-              label={selectedApp ? displayName(selectedApp) : 'Not linked'}
-              variant="outline"
-              size="md"
-              style={s.fill}
-              onPress={() => setAppPickerOpen(true)}
-            />
-            {applicationId ? (
-              <Button
-                label="Clear"
-                variant="ghost"
-                size="md"
-                onPress={() => setApplicationId(undefined)}
-              />
-            ) : null}
-          </View>
-        </FormField>
+        <ApplicationField
+          values={applicationIds}
+          onChange={setApplicationIds}
+          hint="Optional. A snippet written for particular employers can say which."
+        />
         <TextField
           label="Body"
           required
@@ -371,23 +364,6 @@ function SnippetEditor({
           style={{ flex: 1, minHeight: 0 }}
         />
       </View>
-
-      <MenuSheet
-        open={appPickerOpen}
-        onClose={() => setAppPickerOpen(false)}
-        title="Related application"
-        actions={
-          applications.length === 0
-            ? [{ id: 'none', label: 'No applications yet', disabled: true, onPress: () => {} }]
-            : applications.map((a) => ({
-                id: a.id,
-                label: displayName(a),
-                hint: a.roleTag,
-                checked: a.id === applicationId,
-                onPress: () => setApplicationId(a.id),
-              }))
-        }
-      />
     </Sheet>
   )
 }

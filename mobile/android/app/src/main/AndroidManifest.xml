@@ -1,5 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.INTERNET"/>
+  <!--
+    Reading the pairing code off the other device's screen. Requested at the
+    moment the transfer screen asks for it, never at launch — and the app works
+    without it, minus that one feature.
+
+    `uses-feature required="false"` is what keeps the app installable on a device
+    with no camera at all: declaring CAMERA implies the feature, and an implied
+    feature is REQUIRED by default, which would quietly remove jojo from the Play
+    listing for every camera-less device.
+  -->
+  <uses-permission android:name="android.permission.CAMERA"/>
+  <uses-feature android:name="android.hardware.camera" android:required="false"/>
+  <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
@@ -13,11 +26,30 @@
 
     The other three it declares — INTERNET, READ_EXTERNAL_STORAGE,
     WRITE_EXTERNAL_STORAGE — are already ours, above.
+
+    That day came. ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE used to be removed
+    here too, for the same reason as the two below — blob-util declares them and
+    jojo did not want them. Transfer wants them now: @react-native-community/netinfo
+    reads this device's own wifi address so the other device knows where to
+    connect, and neither the removal nor its consequence produces a build
+    warning. The symptom would have been `details.ipAddress` returning null on a
+    phone that is plainly on wifi.
+
+    They are declared positively below rather than merely un-removed, so the
+    reason travels with the line. Re-check the merged result with
+    `aapt dump badging` after touching any of this.
   -->
   <uses-permission android:name="android.permission.WAKE_LOCK" tools:node="remove"/>
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove"/>
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" tools:node="remove"/>
   <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" tools:node="remove"/>
+  <!--
+    Wanted, for exactly one screen. Transfer needs to tell the other device this
+    phone's address on the local network; both are needed for
+    `NetInfo.fetch().details.ipAddress` to be populated across the Android
+    versions jojo supports. Neither grants access to the internet beyond the
+    INTERNET permission already declared, and neither is a runtime prompt.
+  -->
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>

@@ -49,6 +49,7 @@
    */
   "include": [
     "kg/core",
+    "kg/crypto",
     "kg/repo",
     "kg/tools",
     "kg/log.ts",

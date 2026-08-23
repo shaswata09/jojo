@@ -27,18 +27,37 @@ import type { ToolContext } from './tool'
 import { dayOf, opt } from './support'
 
 /** `null` unfiles it; absent leaves the edge alone. The two are not the same. */
-const applicationId = s.optional(s.nullable(s.id('application', { label: 'Filed under' })))
+/**
+ * The applications a record is filed under, as a SET.
+ *
+ * A list, since `FILED_UNDER` became `fromCardinality: 'many'`. Absent means
+ * "leave the filing alone" and an empty list means "file it under nothing",
+ * which are different instructions — renaming a link must not unfile it.
+ */
+const applicationIds = s.optional(
+  s.nullable(s.array(s.id('application'), { label: 'Filed under' })),
+)
 
 const cleared = (value: string | undefined) =>
   value === undefined ? undefined : value.trim() || undefined
 
-/** `FILED_UNDER` is `fromCardinality: 'one'`, so a second link replaces the first. */
-function fileUnder(ctx: ToolContext, id: NodeId, appId: NodeId | null | undefined) {
-  if (appId === undefined) return
-  // Absent had to go on meaning "leave it where it is", or renaming a link
-  // would have unfiled it from the application it was saved against.
-  if (appId === null) ctx.tx.unlinkAll(id, { rel: 'FILED_UNDER' })
-  else ctx.tx.link(id, 'FILED_UNDER', appId)
+/**
+ * Files a record under exactly the applications given.
+ *
+ * A SET operation, not an add: the whole list replaces whatever was there, so a
+ * caller passing three ids gets three edges and passing two of the same three
+ * drops the one it left out. `FILED_UNDER` is `fromCardinality: 'many'` now, so
+ * `tx.link` no longer displaces the previous edge on its own — the `unlinkAll`
+ * is what makes this a set rather than an ever-growing pile.
+ *
+ * Absent still means "leave it where it is", or renaming a link would unfile it
+ * from every application it was saved against.
+ */
+function fileUnder(ctx: ToolContext, id: NodeId, appIds: readonly NodeId[] | null | undefined) {
+  if (appIds === undefined) return
+  ctx.tx.unlinkAll(id, { rel: 'FILED_UNDER' })
+  if (appIds === null) return
+  for (const appId of appIds) ctx.tx.link(id, 'FILED_UNDER', appId)
 }
 
 /* ---------------------------------- links --------------------------------- */
@@ -57,7 +76,7 @@ export const vaultLinkSave = defineTool({
     category: s.enum(LINK_CATEGORY_VALUES, { label: 'Category' }),
     note: s.optional(s.string({ label: 'Note' })),
     savedOn: s.optional(s.isoDate()),
-    applicationId,
+    applicationIds,
   }),
 
   run(ctx, input): NodeId {
@@ -79,7 +98,7 @@ export const vaultLinkSave = defineTool({
       createdAt: ctx.now,
       updatedAt: ctx.now,
     })
-    fileUnder(ctx, id, input.applicationId)
+    fileUnder(ctx, id, input.applicationIds)
     return id
   },
 
@@ -99,7 +118,7 @@ export const vaultLinkUpdate = defineTool({
     category: s.optional(s.enum(LINK_CATEGORY_VALUES, { label: 'Category' })),
     note: s.optional(s.string({ label: 'Note' })),
     savedOn: s.optional(s.isoDate()),
-    applicationId,
+    applicationIds,
   }),
 
   run(ctx, input) {
@@ -111,7 +130,7 @@ export const vaultLinkUpdate = defineTool({
       ...(input.note === undefined ? {} : { note: cleared(input.note) }),
       ...(input.savedOn === undefined ? {} : { savedOn: input.savedOn }),
     })
-    fileUnder(ctx, input.id, input.applicationId)
+    fileUnder(ctx, input.id, input.applicationIds)
   },
 
   describe: (input, _output, m) => ({
@@ -143,7 +162,7 @@ export const vaultLinkDelete = defineTool({
 export const vaultLinkDuplicate = defineTool({
   name: 'vault.link.duplicate',
   title: 'Duplicate link',
-  summary: 'Copies the link, keeping its category and where it is filed.',
+  summary: 'Copies the link, keeping its category and every application it is filed under.',
   effect: 'create',
   touches: ['link'],
   input: s.object({ id: linkId }),
@@ -158,8 +177,13 @@ export const vaultLinkDuplicate = defineTool({
       createdAt: ctx.now,
       updatedAt: ctx.now,
     })
-    const under = ctx.memory.one(input.id, 'FILED_UNDER', 'application')
-    if (under) ctx.tx.link(id, 'FILED_UNDER', under.id)
+    // EVERY filing, not the first. `FILED_UNDER` is `fromCardinality: 'many'`,
+    // and `memory.one` answers with whichever edge it reaches first without
+    // mentioning the others — so a CV filed under three applications duplicated
+    // to a copy filed under one, and nothing said so.
+    for (const under of ctx.memory.many(input.id, 'FILED_UNDER', 'out', 'application')) {
+      ctx.tx.link(id, 'FILED_UNDER', under.id)
+    }
     return id
   },
 
@@ -199,7 +223,7 @@ const fileDraft = s.object({
   uri: s.optional(s.string({ label: 'Location' })),
   note: s.optional(s.string({ label: 'Note' })),
   savedOn: s.optional(s.isoDate()),
-  applicationId: s.optional(s.nullable(s.id('application'))),
+  applicationIds: s.optional(s.nullable(s.array(s.id('application')))),
   /**
    * A capture's provenance. `kind: 'page'` only, and optional even then, because
    * a page the user saved by hand and dropped in has bytes and no address.
@@ -262,7 +286,7 @@ export const vaultFileAdd = defineTool({
         createdAt: ctx.now,
         updatedAt: ctx.now,
       })
-      fileUnder(ctx, id, draft.applicationId)
+      fileUnder(ctx, id, draft.applicationIds)
       return id
     })
   },
@@ -286,8 +310,21 @@ export const vaultFileUpdate = defineTool({
     bucket: s.optional(s.enum(FILE_BUCKET_VALUES, { label: 'Bucket' })),
     note: s.optional(s.string({ label: 'Note' })),
     size: s.optional(s.string({ label: 'Size' })),
+    /*
+     * Writable AFTER the record exists, which is the only order a capture can
+     * use: the file on disk is named after the record's id, so the location
+     * cannot be known until the id is. It was absent here, so
+     * `updateFile(id, { uri })` parsed clean, wrote nothing, and every posting
+     * captured on a phone lost track of its own bytes — the viewer then said
+     * "no saved copy on this device" about a file that was sitting right there.
+     *
+     * The same shape of omission `vault.file.add`'s header describes for this
+     * exact field: declared in one place, not forwarded in another, and
+     * therefore written by nobody.
+     */
+    uri: s.optional(s.string({ label: 'Location' })),
     savedOn: s.optional(s.isoDate()),
-    applicationId,
+    applicationIds,
   }),
 
   run(ctx, input) {
@@ -298,9 +335,10 @@ export const vaultFileUpdate = defineTool({
       ...(input.bucket === undefined ? {} : { bucket: input.bucket }),
       ...(input.note === undefined ? {} : { note: cleared(input.note) }),
       ...(input.size === undefined ? {} : { size: input.size }),
+      ...(input.uri === undefined ? {} : { uri: input.uri }),
       ...(input.savedOn === undefined ? {} : { savedOn: input.savedOn }),
     })
-    fileUnder(ctx, input.id, input.applicationId)
+    fileUnder(ctx, input.id, input.applicationIds)
   },
 
   describe: (input, _output, m) => ({
@@ -375,7 +413,7 @@ export const vaultSnippetCreate = defineTool({
     title: s.string({ min: 1, label: 'Title' }),
     tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Used for' }),
     body: s.string({ label: 'Text', multiline: true }),
-    applicationId,
+    applicationIds,
   }),
 
   run(ctx, input): NodeId {
@@ -392,7 +430,7 @@ export const vaultSnippetCreate = defineTool({
       createdAt: ctx.now,
       updatedAt: ctx.now,
     })
-    fileUnder(ctx, id, input.applicationId)
+    fileUnder(ctx, id, input.applicationIds)
     return id
   },
 
@@ -410,7 +448,7 @@ export const vaultSnippetUpdate = defineTool({
     title: s.optional(s.string({ min: 1, label: 'Title' })),
     tag: s.optional(s.enum(SNIPPET_TAG_VALUES, { label: 'Used for' })),
     body: s.optional(s.string({ label: 'Text', multiline: true })),
-    applicationId,
+    applicationIds,
   }),
 
   run(ctx, input) {
@@ -420,7 +458,7 @@ export const vaultSnippetUpdate = defineTool({
       ...(input.tag === undefined ? {} : { tag: input.tag }),
       ...(input.body === undefined ? {} : { body: input.body }),
     })
-    fileUnder(ctx, input.id, input.applicationId)
+    fileUnder(ctx, input.id, input.applicationIds)
   },
 
   describe: (input, _output, m) => ({
@@ -467,8 +505,13 @@ export const vaultSnippetDuplicate = defineTool({
       createdAt: ctx.now,
       updatedAt: ctx.now,
     })
-    const under = ctx.memory.one(input.id, 'FILED_UNDER', 'application')
-    if (under) ctx.tx.link(id, 'FILED_UNDER', under.id)
+    // EVERY filing, not the first. `FILED_UNDER` is `fromCardinality: 'many'`,
+    // and `memory.one` answers with whichever edge it reaches first without
+    // mentioning the others — so a CV filed under three applications duplicated
+    // to a copy filed under one, and nothing said so.
+    for (const under of ctx.memory.many(input.id, 'FILED_UNDER', 'out', 'application')) {
+      ctx.tx.link(id, 'FILED_UNDER', under.id)
+    }
     return id
   },
 

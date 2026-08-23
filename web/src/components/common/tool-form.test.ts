@@ -70,8 +70,10 @@ describe('planToolForm', () => {
     // No applications yet, but a reminder can still be filed — it just cannot
     // be filed against anything.
     const plan = required('timeline.item.create', nothing)
-    expect(keys(plan)).not.toContain('applicationId')
-    expect(plan.omitted).toContain('Application')
+    // Plural since `ABOUT` became many-to-many: an item can be about several
+    // applications, so the field is a list and the label says so.
+    expect(keys(plan)).not.toContain('applicationIds')
+    expect(plan.omitted).toContain('Applications')
   })
 
   it('puts the required fields first and keeps schema order inside each half', () => {

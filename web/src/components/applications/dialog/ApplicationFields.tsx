@@ -133,7 +133,11 @@ export function ApplicationFields({
   urlRef: RefObject<HTMLInputElement | null>
 }) {
   return (
-    <div className="-mx-1 grid max-h-[min(58vh,30rem)] gap-x-3 gap-y-3.5 overflow-y-auto px-1 pb-1 sm:grid-cols-2">
+    // `-mx-4 px-4` cancels `DialogContent`'s own `p-4` and puts it straight
+    // back inside — `StatsCard` and `OwedThisWeek`'s trick, so the fields keep
+    // their inset and only the scrollbar moves out to the dialog's edge. It
+    // was `-mx-1 px-1`, which left the bar floating 12px short of it.
+    <div className="-mx-4 grid max-h-[min(58vh,30rem)] gap-x-3 gap-y-3.5 overflow-y-auto px-4 pb-1 sm:grid-cols-2">
       <Field
         ref={orgRef}
         label="Organisation"

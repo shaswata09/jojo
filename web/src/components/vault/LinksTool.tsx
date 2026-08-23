@@ -38,7 +38,7 @@ export function LinksTool({ focus }: { focus?: string }) {
   // an action taken once a session, where the other three tabs have one button.
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
-  const [draftApp, setDraftApp] = useState<string | undefined>(undefined)
+  const [draftApp, setDraftApp] = useState<string[]>([])
   const [submitted, setSubmitted] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
@@ -75,7 +75,7 @@ export function LinksTool({ focus }: { focus?: string }) {
     (l) =>
       (bucket === 'all' || l.category === bucket) &&
       matches(l.id) &&
-      matchesQuery(query, l.title, l.url, l.note, l.category, nameOf(l.applicationId)),
+      matchesQuery(query, l.title, l.url, l.note, l.category, ...l.applicationIds.map(nameOf)),
   )
 
   // A new link lands in whatever category is being looked at, so saving while
@@ -94,7 +94,7 @@ export function LinksTool({ focus }: { focus?: string }) {
   const closeAdd = () => {
     setAdding(false)
     setDraft('')
-    setDraftApp(undefined)
+    setDraftApp([])
     setSubmitted(false)
   }
 
@@ -107,7 +107,7 @@ export function LinksTool({ focus }: { focus?: string }) {
       title: titleFromUrl(parsed),
       url: normalizeUrl(draft),
       category: newCategory,
-      applicationId: draftApp,
+      applicationIds: draftApp,
     })
     closeAdd()
 
@@ -130,7 +130,7 @@ export function LinksTool({ focus }: { focus?: string }) {
       url: link.url,
       category: link.category,
       note: link.note,
-      applicationId: link.applicationId,
+      applicationIds: link.applicationIds,
     })
     const keywords = labelIdsOf(link.id)
     if (keywords.length > 0) setRecord(copy.id, keywords)
@@ -284,7 +284,7 @@ export function LinksTool({ focus }: { focus?: string }) {
               />
               <ApplicationPicker
                 id={draftAppId}
-                value={draftApp}
+                values={draftApp}
                 onChange={setDraftApp}
                 className="w-48"
               />
@@ -321,7 +321,7 @@ export function LinksTool({ focus }: { focus?: string }) {
               <LinkRow
                 key={l.id}
                 link={l}
-                related={l.applicationId ? byId.get(l.applicationId) : undefined}
+                related={l.applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)}
                 focused={l.id === focus}
                 rowRef={l.id === focus ? focusedRow : undefined}
                 onEdit={() => setEditingId(l.id)}

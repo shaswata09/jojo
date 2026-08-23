@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import type { CaptureEnvelope } from '@jojo/service/core/capture'
-import { captureFileName, hostOf } from '@jojo/service/core/capture'
+import { captureFileName, captureNote } from '@jojo/service/core/capture'
 import { sizeLabel } from '@jojo/service/core/files'
 import type { Application } from '@/data/seed'
 import type { VaultFile } from '@/data/vault'
@@ -79,19 +79,27 @@ export function useFileCapture(): (capture: CaptureEnvelope) => Promise<FiledCap
       const file = addFile({
         name,
         kind: 'page',
-        // 'Applications' rather than 'To read': a posting kept against a job is
-        // part of that application's paperwork, and the bucket is what the
-        // Vault's filters are built on.
-        bucket: 'Applications',
+        /*
+         * Its own drawer, not 'Applications'.
+         *
+         * This said 'Applications' on the argument that a posting kept against a
+         * job is part of that application's paperwork. It is not: 'Applications'
+         * holds the documents the USER wrote — the CV, the statements, the cover
+         * letters — and the Profile page shows that drawer as "your documents".
+         * Filing captures there meant a page the user never uploaded appeared
+         * among the ones they did, and grew every time they clipped a listing.
+         *
+         * The link to the application is `applicationIds` below, which is what
+         * actually joins them; the bucket was never carrying that weight.
+         */
+        bucket: 'Job postings',
         size: sizeLabel(bytes.byteLength),
         sourceUrl: capture.url,
         capturedAt: capture.capturedAt,
-        ...(match === null ? {} : { applicationId: match.id }),
-        note: `Captured from ${hostOf(capture.url)}${
-          capture.dropped > 0
-            ? ` · ${String(capture.dropped)} ${capture.dropped === 1 ? 'asset' : 'assets'} could not be kept`
-            : ''
-        }`,
+        // A list of one: `FILED_UNDER` is many-to-many, and a capture knows
+        // about exactly the one application whose URL it matched.
+        ...(match === null ? {} : { applicationIds: [match.id] }),
+        note: captureNote(capture),
       })
 
       // `type` is set explicitly because it is what the viewer's `srcdoc` read

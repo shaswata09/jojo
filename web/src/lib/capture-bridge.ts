@@ -38,8 +38,24 @@ const REQUEST = 'jojo:capture-request'
 const REPLY = 'jojo:capture-reply'
 const READY = 'jojo:capture-ready'
 
-/** How long a relay gets to answer before it is treated as absent. */
-const TIMEOUT_MS = 400
+/**
+ * How long a relay gets to answer a PROBE before it is treated as absent.
+ *
+ * Short on purpose: this runs on mount and decides whether to render an install
+ * panel, so a slow answer is worse than a wrong one the poll will correct.
+ */
+const PROBE_TIMEOUT_MS = 400
+
+/**
+ * How long a TAKE gets, which is a different question entirely.
+ *
+ * A take carries every queued capture across `postMessage` — measured at 1–9 MB
+ * each — and structured-cloning that is not instant. Reusing the probe's 400 ms
+ * meant a realistic queue timed out, the app saw no captures, and the strip went
+ * on saying one was waiting: a feature that worked in testing with a 2 KB
+ * fixture and never with a real posting.
+ */
+const TAKE_TIMEOUT_MS = 30000
 
 export type CaptureInbox = {
   /** Whether the relay answered at all. `null` until the first probe settles. */
@@ -64,9 +80,17 @@ export type CaptureInbox = {
    */
   collect: () => Promise<{
     ok: { capture: CaptureEnvelope; id: string }[]
-    refused: CaptureRejection[]
+    /** Why each was refused, and the id it can be dropped by. */
+    refused: { reason: CaptureRejection; id: string }[]
   }>
-  /** Tells the extension which captures were filed, so it can drop those and keep the rest. */
+  /**
+   * Tells the extension which captures to drop.
+   *
+   * Called with what was FILED, and also with what was permanently REFUSED —
+   * because the queue only shrinks on this call, and a capture jojo will never
+   * accept would otherwise sit there being counted forever, with the strip
+   * offering to save it on every visit and failing every time.
+   */
   ack: (ids: string[]) => Promise<void>
   /** Re-asks how many are waiting. */
   refresh: () => void
@@ -77,12 +101,35 @@ type Reply = {
   id: number
   captures?: unknown[]
   count?: number
+  rows?: unknown
+  ok?: boolean
+  error?: string | null
 }
+
+/** What one round trip is asking for. Exactly one of these is ever set. */
+type Ask = {
+  take?: boolean
+  ack?: string[]
+  /** A board to open and read. See `scanBoard`. */
+  scan?: string
+}
+
+/**
+ * How long a SCAN gets, which is longer than anything else here by a lot.
+ *
+ * The worker opens a real tab, waits for the board to finish loading, waits
+ * again for its JavaScript to render the results, reads it and closes it — the
+ * extension's own budget for that is 25s of loading plus 2.5s of settling. This
+ * has to outlast that or the app gives up on a scan that then succeeds into a
+ * void, and the page reports "no boards could be read" about a board that was
+ * read.
+ */
+const SCAN_TIMEOUT_MS = 40000
 
 let nextId = 1
 
 /** One round trip, or null when nothing answers in time. */
-function ask(take: boolean, acked?: string[]): Promise<Reply | null> {
+function ask(request: Ask): Promise<Reply | null> {
   return new Promise((resolve) => {
     const id = nextId++
     let settled = false
@@ -103,10 +150,69 @@ function ask(take: boolean, acked?: string[]): Promise<Reply | null> {
       done(data)
     }
 
-    const timer = window.setTimeout(() => done(null), TIMEOUT_MS)
+    const timeout =
+      request.scan !== undefined
+        ? SCAN_TIMEOUT_MS
+        : request.take === true
+          ? TAKE_TIMEOUT_MS
+          : PROBE_TIMEOUT_MS
+    const timer = window.setTimeout(() => done(null), timeout)
     window.addEventListener('message', onMessage)
-    window.postMessage({ type: REQUEST, id, take, ack: acked }, window.location.origin)
+    window.postMessage(
+      { type: REQUEST, id, take: request.take, ack: request.ack, scan: request.scan },
+      window.location.origin,
+    )
   })
+}
+
+/**
+ * Reads a job board through the extension, for the scout pipeline.
+ *
+ * A plain function rather than a hook because of who calls it: this is handed
+ * to `usePipelines` as a port and ends up inside the agent loop, where React is
+ * not. It is stable by construction — module scope, no state — which is what
+ * keeps the `ToolHost` memo from rebuilding on every render and restarting a
+ * round mid-flight.
+ *
+ * It never throws and never resolves to a raw failure. Everything comes back as
+ * `{ok:false, reason}` with a sentence, because the far end is a language model
+ * deciding what to do next: "no extension" and "that board wants a sign-in" are
+ * different problems with different answers, and a model told only that
+ * something failed will retry the same board until its step cap.
+ */
+export async function scanBoard(
+  url: string,
+): Promise<{ ok: true; rows: unknown } | { ok: false; reason: string }> {
+  const reply = await ask({ scan: url })
+
+  if (reply === null) {
+    return {
+      ok: false,
+      reason:
+        'The jojo browser extension did not answer, so no board could be read. It is what lets jojo open a page you are signed into; Settings has the installer.',
+    }
+  }
+  /*
+   * An extension too old to know the verb, told apart from one that tried and
+   * failed. The older bridge forwards a scan as a PEEK — it only ever looked at
+   * `ack` and `take` — so it answers with a count and none of a scan's fields,
+   * which is indistinguishable from a refusal unless it is named.
+   *
+   * Worth the four lines because an unpacked extension never auto-updates:
+   * there is no channel that would ever fix this for the user, so the only way
+   * they find out is a sentence that says which thing to do.
+   */
+  if (reply.rows === undefined && reply.error == null && reply.ok !== true) {
+    return {
+      ok: false,
+      reason:
+        'The installed jojo extension is too old to read a job board. Settings has the current one; an unpacked extension never updates itself.',
+    }
+  }
+  if (reply.ok !== true) {
+    return { ok: false, reason: reply.error ?? 'That board could not be read.' }
+  }
+  return { ok: true, rows: reply.rows }
 }
 
 export function useCaptureInbox(): CaptureInbox {
@@ -117,7 +223,7 @@ export function useCaptureInbox(): CaptureInbox {
   const alive = useRef(true)
 
   const refresh = useCallback(() => {
-    void ask(false).then((reply) => {
+    void ask({}).then((reply) => {
       if (!alive.current) return
       setInstalled(reply !== null)
       setPending(reply?.count ?? 0)
@@ -169,20 +275,19 @@ export function useCaptureInbox(): CaptureInbox {
   }, [refresh])
 
   const collect = useCallback(async () => {
-    const reply = await ask(true)
+    const reply = await ask({ take: true })
     const ok: { capture: CaptureEnvelope; id: string }[] = []
-    const refused: CaptureRejection[] = []
+    const refused: { reason: CaptureRejection; id: string }[] = []
 
     for (const raw of reply?.captures ?? []) {
-      const read = readCapture(raw)
-      if (typeof read === 'string') {
-        refused.push(read)
-        continue
-      }
       // The id is the extension's handle, not part of the envelope the package
-      // validates — carried alongside so `ack` can name exactly what was filed.
-      const id = (raw as { id?: unknown }).id
-      ok.push({ capture: read, id: typeof id === 'string' ? id : '' })
+      // validates — carried alongside so `ack` can name exactly which ones the
+      // queue may drop, whether they were filed or refused.
+      const handle = (raw as { id?: unknown }).id
+      const id = typeof handle === 'string' ? handle : ''
+      const read = readCapture(raw)
+      if (typeof read === 'string') refused.push({ reason: read, id })
+      else ok.push({ capture: read, id })
     }
 
     return { ok, refused }
@@ -190,7 +295,7 @@ export function useCaptureInbox(): CaptureInbox {
 
   const ack = useCallback(async (ids: string[]) => {
     if (ids.length === 0) return
-    await ask(false, ids)
+    await ask({ ack: ids })
   }, [])
 
   return { installed, pending, version, collect, ack, refresh }

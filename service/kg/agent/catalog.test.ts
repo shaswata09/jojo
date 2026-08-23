@@ -59,12 +59,26 @@ describe('destructiveness', () => {
     expect(CATALOG.find((e) => e.name === 'application.create')?.destructive).toBe(false)
   })
 
-  it('singles out the two operations a user could not undo', () => {
-    // `memory.reset` and `memory.clear` carry `undoable: false`, so they are the
-    // only calls a model could make that leave no way back.
-    const noWayBack = CATALOG.filter((e) => e.effect !== 'read' && !e.undoable)
+  it('singles out the operations that both destroy and cannot be undone', () => {
+    /*
+     * Destructive AND unjournalled, which is a narrower set than either alone.
+     *
+     * This asserted "everything unjournalled" and broke the day
+     * `assistant.thread.set` arrived — a conversation autosaving as you talk,
+     * which is unjournalled because it is not an act anybody undoes, not because
+     * it is dangerous. Conflating the two would have meant either warning a model
+     * off an autosave or, worse, quietly widening what counts as safe. The pair
+     * that matters is the one that empties the store with no way back.
+     */
+    const noWayBack = CATALOG.filter((e) => e.destructive && !e.undoable)
     expect(noWayBack.map((e) => e.name).sort()).toEqual(['memory.clear', 'memory.reset'])
     for (const e of noWayBack) expect(describeEntry(e)).toContain('NOT undoable')
+  })
+
+  it('does not warn about an unjournalled write that destroys nothing', () => {
+    const save = CATALOG.find((e) => e.name === 'assistant.thread.set')
+    expect(save?.destructive).toBe(false)
+    expect(describeEntry(save!)).not.toContain('Destructive')
   })
 
   it('warns a model in prose as well as in a flag it never sees', () => {

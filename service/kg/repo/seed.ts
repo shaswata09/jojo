@@ -220,7 +220,7 @@ export function seedToGraph(now: Instant): SeedGraph {
   /* -------------------------------- timeline -------------------------------- */
 
   for (const item of seedTimeline) {
-    const { id: fixtureId, allDay: _allDay, applicationId, completedOn, ...rest } = item
+    const { id: fixtureId, allDay: _allDay, applicationIds, completedOn, ...rest } = item
     const slug = mintSlug('timelineItem', fixtureId)
     // `allDay` is dropped, not stored: it is `startMins === undefined` and was
     // the same fact written twice, which is one write site away from an item
@@ -233,7 +233,9 @@ export function seedToGraph(now: Instant): SeedGraph {
       ? { ...rest, slug, date: on(rest.date), completedOn: on(completedOn) }
       : { ...rest, slug, date: on(rest.date) }
     const id = add('timelineItem', slug, props)
-    if (applicationId) {
+    // A list now: `ABOUT` is `fromCardinality: 'many'`, so a reference deadline
+    // can be about the three applications it actually covers.
+    for (const applicationId of applicationIds) {
       const target = byRef.get(`application:${applicationId}`)
       if (target) link(id, 'ABOUT', target)
       else unresolved.push(`timelineItem:${fixtureId} -> application:${applicationId}`)
@@ -252,40 +254,43 @@ export function seedToGraph(now: Instant): SeedGraph {
   function filed<T extends 'link' | 'file' | 'snippet'>(
     type: T,
     fixtureId: string,
-    applicationId: string | undefined,
+    applicationIds: readonly string[],
     props: NodePropsByType[T],
   ) {
     const id = add(type, props.slug, props)
-    if (!applicationId) return
-    const target = byRef.get(`application:${applicationId}`)
-    if (target) link(id, 'FILED_UNDER', target)
-    else unresolved.push(`${type}:${fixtureId} -> application:${applicationId}`)
+    // A list now: `FILED_UNDER` is `fromCardinality: 'many'`, so a document can
+    // be filed under every job it was sent to rather than the last one edited.
+    for (const applicationId of applicationIds) {
+      const target = byRef.get(`application:${applicationId}`)
+      if (target) link(id, 'FILED_UNDER', target)
+      else unresolved.push(`${type}:${fixtureId} -> application:${applicationId}`)
+    }
   }
 
   for (const record of seedLinks) {
-    const { id: fixtureId, applicationId, ...rest } = record
+    const { id: fixtureId, applicationIds, ...rest } = record
     const props: LinkProps = {
       ...rest,
       slug: mintSlug('link', fixtureId),
       savedOn: on(rest.savedOn),
     }
-    filed('link', fixtureId, applicationId, props)
+    filed('link', fixtureId, applicationIds, props)
   }
 
   for (const record of seedFiles) {
-    const { id: fixtureId, applicationId, ...rest } = record
+    const { id: fixtureId, applicationIds, ...rest } = record
     const props: FileProps = {
       ...rest,
       slug: mintSlug('file', fixtureId),
       savedOn: on(rest.savedOn),
     }
-    filed('file', fixtureId, applicationId, props)
+    filed('file', fixtureId, applicationIds, props)
   }
 
   for (const record of seedSnippets) {
-    const { id: fixtureId, applicationId, ...rest } = record
+    const { id: fixtureId, applicationIds, ...rest } = record
     const props: SnippetProps = { ...rest, slug: mintSlug('snippet', fixtureId) }
-    filed('snippet', fixtureId, applicationId, props)
+    filed('snippet', fixtureId, applicationIds, props)
   }
 
   /* ---------------------------------- scout --------------------------------- */

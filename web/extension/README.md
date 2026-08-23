@@ -29,9 +29,13 @@ Unpacked, from disk. There is no store listing.
 
 **Chrome, Edge, Brave, Arc**
 
-1. Open `chrome://extensions`
-2. Turn on **Developer mode**
+1. Open `chrome://extensions` (Brave: `brave://extensions`, Edge: `edge://extensions`) — paste it
+   into the address bar, because a web page is not allowed to link to a `chrome://` URL
+2. Turn on **Developer mode**, top right
 3. **Load unpacked** → choose this `web/extension` folder
+4. **Pin it**: click the jigsaw-piece button in the toolbar and pin jojo. Chromium hides every
+   extension behind that menu by default, so without this the button exists and is invisible —
+   which looks exactly like a failed install
 
 **Firefox**
 
@@ -54,7 +58,8 @@ is for trying it out rather than for using it.
 
 1. Open the posting and sign in if it asks you to.
 2. Click the jojo button in the toolbar. The badge shows how many captures are
-   waiting.
+   waiting — on that tab. It is per-tab, so it disappears when you close the
+   posting; the count that matters is the one in jojo's Vault.
 3. Open jojo. The Vault's **Files** tool shows a strip: _"1 posting is waiting to
    be saved here."_ Press **Save it**.
 
@@ -74,10 +79,11 @@ that nothing leaves your device.
 What that costs:
 
 - `<script>`, `<iframe>`, `<object>` and inline `on…` handlers are removed.
-- Links keep their text and lose their destination — the address is preserved
-  beside them in `data-jojo-href` and shown, never followed. A sandbox stops a
-  saved page navigating the tab; it does not stop a click navigating the frame,
-  and that click would be a live request.
+- Links keep their text and lose their destination. The address is preserved
+  beside them in a `data-jojo-href` attribute — present in the saved file, so it
+  survives an export and can be read there, but nothing in the viewer renders it
+  yet. A sandbox stops a saved page navigating the tab; it does not stop a click
+  navigating the frame, and that click would be a live request.
 - Anything that cannot be inlined — an asset behind the same login, one over
   2 MB, one that fails — is dropped and **counted**. The count is on the file's
   note, so a page that looks plainer than you remember tells you why.
@@ -96,8 +102,43 @@ machine, and hands it to jojo the next time you open it.
 | `background.js` | Fetches those addresses, inlines them, sweeps anything left, queues the result.   |
 | `bridge.js`     | Runs on jojo's own origin and relays between the page and the worker.             |
 | `policy.js`     | What may be kept. A transcription of `service/kg/core/capture.ts`, checked below. |
+| `harvest.js`    | The link sweep on a job board. Injected into a background tab; judges nothing.    |
 
 `policy.js` is a hand copy, because an extension loaded from disk cannot import
 from the workspace. It is not trusted to stay in step:
 `web/src/lib/capture-policy.test.ts` compares it against the package's constants
 and fails the build on any drift.
+
+## Reading a job board
+
+The Job Scout page's scout pipeline can ask this extension to read a board it
+watches. That is the one thing here the app starts rather than the user: every
+other message drains a queue a toolbar click filled.
+
+It works by opening the board in a **background tab**, waiting for the page's own
+JavaScript to render its listings, injecting `harvest.js`, and closing the tab
+again. Both halves of that are forced:
+
+- The worker's own `fetch` is `credentials: 'omit'`, so a board you are signed
+  into would answer with its sign-in wall. A tab carries your session.
+- An MV3 service worker has no `DOMParser`, and a board that renders client-side
+  has no listings in its served HTML to parse anyway.
+
+If the board redirects to another host — which is what a sign-in wall does — the
+scan is refused rather than harvested, because the links on a login page are not
+jobs.
+
+`harvest.js` returns **every** link it can see and judges none of them.
+`isJobPostingUrl` in `service/kg/core/board.ts` decides what a posting is, so
+that rule has one owner and is never transcribed. A predicate here would be a
+second `policy.js` — and a regex is far worse to keep in step than a word list.
+
+Nothing read this way is written to your records. It becomes a suggestion card
+you approve or discard.
+
+## Upgrading
+
+Reading boards arrived in **0.2.0**, and it needs the `tabs` permission that
+version added. An unpacked extension never updates itself, so 0.1.0 goes on
+capturing pages perfectly and refuses to read a board — the app says so by name
+rather than reporting a generic failure. Settings has the current build.

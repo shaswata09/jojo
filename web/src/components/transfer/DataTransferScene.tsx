@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { useAspect, useTexture } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { bloom } from 'three/examples/jsm/tsl/display/BloomNode.js'
@@ -14,6 +14,7 @@ import {
   output,
   pass,
   screenUV,
+  mix,
   smoothstep,
   texture,
   uniform,
@@ -22,12 +23,17 @@ import {
   vec3,
 } from 'three/tsl'
 import {
+  DataTexture,
   MeshBasicNodeMaterial,
+  NearestFilter,
+  RedFormat,
   RenderPipeline,
+  UnsignedByteType,
   Vector2,
   WebGPURenderer,
   type Texture,
 } from 'three/webgpu'
+import { PULSE_DIM, PULSE_FPS, PULSE_GRID, type PulseFrame } from '@jojo/service/core/pulse'
 import { useReducedMotion } from '@/lib/use-media-query'
 import { COLOR_MAP, DEPTH_MAP, MAP_HEIGHT, MAP_WIDTH } from './textures'
 
@@ -46,6 +52,60 @@ const TILING = vec2(120.0)
 /** Half-width of the band the flow sweeps through, in depth units. */
 const FLOW_FEATHER = 0.02
 
+/*
+ * ---------------------------------------------------------------------------
+ * Carrying the key
+ * ---------------------------------------------------------------------------
+ *
+ * The scene is already a lattice of red dots. `core/pulse.ts` divides the plane
+ * into a 12x12 grid and says, per frame, which regions are lit — so the picture
+ * does not need anything drawn ON it to carry a key. The dots it is made of are
+ * the signal, brightened and dimmed in blocks, and a phone reads it back with
+ * `core/pulse-read.ts`.
+ *
+ * That is the whole reason there is no code square anywhere on this panel. A
+ * symbol pasted over the animation would have been faster to build and would
+ * have looked like exactly what it was.
+ *
+ * ## The three numbers below, and why they are not the idle ones
+ *
+ * While a key is showing, this stops being decoration and becomes a channel
+ * pointed at a camera lens. Everything the idle scene does for looks works
+ * against that:
+ *
+ * The idle band pushes red to `vec3(10, 0, 0)` so bloom has something well past
+ * its threshold to catch. Ten times over is fine for one thin sweeping band and
+ * ruinous for a grid of bits: a dim region at 0.2 x 10 is still 2.0, which
+ * clamps to full red on screen exactly like a lit one at 10. Both regions
+ * arrive at the camera saturated and the contrast the reader needs is gone.
+ *
+ * So `PULSE_PUNCH` replaces the overshoot with barely any. Lit regions still
+ * reach the top of the range; dim ones land near a fifth of it — the same
+ * ratio the synthesised photograph in `core/pulse-seam.test.ts` decodes from,
+ * which is what makes that test evidence about this shader rather than about
+ * an arbitrary pair of greys.
+ *
+ * And the photograph itself is a varying background under a signal that is read
+ * by thresholding region averages. `PULSE_PICTURE` takes it most of the way
+ * down while a key is up. Not to black: the sculpture staying faintly visible
+ * is what keeps this recognisable as the same animation rather than a code
+ * screen that replaced it.
+ */
+
+/*
+ * `PULSE_DIM` — how bright a dimmed region is against a lit one — is imported
+ * rather than declared. It is the one number here the phone's decoder also
+ * depends on, so it lives beside the protocol in `core/pulse.ts` along with the
+ * reasoning for its value.
+ */
+
+/** The red multiplier while carrying data. Compare `vec3(10, 0, 0)` idle. */
+const PULSE_PUNCH = 1.6
+
+/** How much of the photograph survives underneath the key. */
+const PULSE_PICTURE = 0.12
+
+
 /**
  * Where the flow band parks when the viewer has asked for reduced motion — and
  * the first-frame value of both sweep uniforms.
@@ -61,9 +121,11 @@ function sweep(elapsed: number) {
   return Math.sin(elapsed * 0.5) * 0.5 + 0.5
 }
 
+
 type SceneProps = {
   scaleFactor: number
   reduced: boolean
+  frames: readonly PulseFrame[] | null
 }
 
 /**
@@ -75,12 +137,46 @@ type SceneProps = {
  * something well past the bloom threshold to catch, which is what turns a hard
  * red edge into a glow.
  */
-function Scene({ scaleFactor, reduced }: SceneProps) {
+function Scene({ scaleFactor, reduced, frames }: SceneProps) {
+
   const [rawMap, depthMap] = useTexture([COLOR_MAP, DEPTH_MAP]) as [Texture, Texture]
 
-  const { material, uPointer, uProgress } = useMemo(() => {
+  /**
+   * One byte per region, 0 or 255, uploaded straight to the GPU.
+   *
+   * `NearestFilter` on both axes is `DataTexture`'s own default and is set here
+   * anyway, because it is load-bearing rather than incidental: linear filtering
+   * would interpolate between neighbouring regions and smear every boundary
+   * into a ramp, which is precisely the edge a reader measuring region averages
+   * needs to be sharp. Written down so a later change to "improve" the look
+   * has to argue with a sentence.
+   *
+   * `RedFormat` because a bit is one channel and there is no reason to send
+   * four.
+   *
+   * Built once and mutated in place: a new texture per frame at six frames a
+   * second would mean a GPU allocation and a shader recompile for every bit
+   * pattern.
+   */
+  const pulseTexture = useMemo(() => {
+    const tex = new DataTexture(
+      new Uint8Array(PULSE_GRID * PULSE_GRID),
+      PULSE_GRID,
+      PULSE_GRID,
+      RedFormat,
+      UnsignedByteType,
+    )
+    tex.magFilter = NearestFilter
+    tex.minFilter = NearestFilter
+    tex.needsUpdate = true
+    return tex
+  }, [])
+
+  const { material, uPointer, uProgress, uPulse } = useMemo(() => {
     const uPointer = uniform(new Vector2(0, 0))
     const uProgress = uniform(FROZEN_PROGRESS)
+    /** 0 idle, 1 while a key is on screen. Mixed, never branched on. */
+    const uPulse = uniform(0)
 
     const strength = PARALLAX_STRENGTH
 
@@ -101,18 +197,56 @@ function Scene({ scaleFactor, reduced }: SceneProps) {
     const depth = tDepthMap.r
     const flow = oneMinus(smoothstep(0, FLOW_FEATHER, abs(depth.sub(uProgress))))
 
-    const mask = dot.mul(flow)
+    /*
+     * The key, sampled per region.
+     *
+     * Y is flipped because the two conventions disagree and nothing would say
+     * so. `DataTexture` sets `flipY = false` — unlike an image-backed texture,
+     * which sets it true — so row 0 of the buffer sits at v = 0, and v = 0 is
+     * the BOTTOM of the plane. `PulseFrame[y][x]` counts rows from the top the
+     * way an image does. Sampling at `1 - v` puts frame row 0 back at the top.
+     *
+     * Get this wrong and the frame is
+     * still perfectly readable — mirrored. `pulse-read.ts` tries the four
+     * ROTATIONS a phone might be held at and does not try reflections, quite
+     * rightly, because a reflected frame means the sender is wrong rather than
+     * the holder. So it would simply never decode, at any angle, with no clue
+     * on either screen as to why.
+     */
+    const region = texture(pulseTexture, vec2(uv().x, oneMinus(uv().y))).r
+    const carried = mix(float(PULSE_DIM), float(1), region)
 
-    const final = blendScreen(tMap, mask.mul(vec3(10, 0, 0)))
+    // What decides whether a dot is lit: the sweeping band when idle, the key
+    // when one is up. Mixed rather than branched, so there is one shader and no
+    // recompile at the moment a transfer starts.
+    const lit = mix(flow, carried, uPulse)
+    const punch = mix(float(10), float(PULSE_PUNCH), uPulse)
+    const picture = tMap.mul(mix(float(1), float(PULSE_PICTURE), uPulse))
+
+    const mask = dot.mul(lit)
+
+    const scene = blendScreen(picture, mask.mul(vec3(punch, 0, 0)))
+
+    const final = scene
 
     const material = new MeshBasicNodeMaterial({ colorNode: final })
 
-    return { material, uPointer, uProgress }
-  }, [rawMap, depthMap])
+    return { material, uPointer, uProgress, uPulse }
+  }, [rawMap, depthMap, pulseTexture])
 
   // Both textures outlive React's tree unless something says otherwise: they are
-  // cached by drei's loader, so only the material is ours to free.
+  // cached by drei's loader, so only the material is ours to free. The pulse
+  // texture is this component's own and is not.
   useEffect(() => () => material.dispose(), [material])
+  useEffect(() => () => pulseTexture.dispose(), [pulseTexture])
+
+  /** Which frame is on screen, so the texture is only rewritten when it changes. */
+  const shown = useRef(-1)
+  useEffect(() => {
+    // A new key starts at its first frame rather than wherever the clock
+    // happens to be, and a key going away leaves nothing stale behind.
+    shown.current = -1
+  }, [frames])
 
   useFrame(({ clock, pointer }) => {
     uPointer.value.set(pointer.x, pointer.y)
@@ -121,6 +255,35 @@ function Scene({ scaleFactor, reduced }: SceneProps) {
     // about. The parallax is one percent of a UV and only moves when the
     // viewer's own hand does.
     if (!reduced) uProgress.value = sweep(clock.getElapsedTime())
+
+    if (frames === null || frames.length === 0) {
+      uPulse.value = 0
+      return
+    }
+
+    /*
+     * The key keeps cycling under reduced motion, and that is not an oversight.
+     *
+     * The setting is about movement nobody asked for. This is the only way the
+     * other device can be told the key, it lasts under two seconds, and it runs
+     * because the person pressed a button asking for it. Freezing it would show
+     * one frame in ten of a key forever — a transfer that cannot complete, for
+     * the viewers who can least afford to be told nothing about why.
+     */
+    uPulse.value = 1
+    const index = Math.floor(clock.getElapsedTime() * PULSE_FPS) % frames.length
+    if (index === shown.current) return
+    shown.current = index
+
+    const frame = frames[index]
+    if (frame === undefined) return
+    const data = pulseTexture.image.data as Uint8Array
+    for (let y = 0; y < PULSE_GRID; y += 1) {
+      for (let x = 0; x < PULSE_GRID; x += 1) {
+        data[y * PULSE_GRID + x] = frame[y]?.[x] === true ? 255 : 0
+      }
+    }
+    pulseTexture.needsUpdate = true
   })
 
   const [w, h] = useAspect(MAP_WIDTH, MAP_HEIGHT, scaleFactor)
@@ -182,6 +345,11 @@ function PostProcessing({
     // the scene, which is an artefact nobody asked for rather than a still
     // frame of the animation. The plane's own flow band stays — frozen it reads
     // as a contour on the sculpture, so the scene still looks like itself.
+    //
+    // The line is dropped under the setting even while a beam is running. The
+    // band on the plane already carries the beam's position, and that one is
+    // bounded by the sculpture; this one crosses the whole card, including the
+    // text on top of it.
     const showScan = fullScreenEffect && !reduced
 
     const lit = showScan ? outputPass.add(scanLine()) : outputPass
@@ -210,6 +378,13 @@ export type DataTransferSceneProps = {
   scaleFactor?: number
   /** Whether the red scan line sweeps the whole canvas or only the plane. */
   fullScreenEffect?: boolean
+  /**
+   * The key, as frames of the animation, or null when nothing is being sent.
+   *
+   * The scene's own dots carry it. See the note above `PULSE_DIM` for what
+   * changes about the picture while one is up, and why.
+   */
+  frames?: readonly PulseFrame[] | null
 }
 
 /**
@@ -225,6 +400,7 @@ export function DataTransferScene({
   className,
   scaleFactor = 1,
   fullScreenEffect = true,
+  frames = null,
 }: DataTransferSceneProps) {
   const reduced = useReducedMotion()
 
@@ -248,7 +424,7 @@ export function DataTransferScene({
           it would leave a blank canvas until the images land. */}
       <PostProcessing fullScreenEffect={fullScreenEffect} reduced={reduced} />
       <Suspense fallback={null}>
-        <Scene scaleFactor={scaleFactor} reduced={reduced} />
+        <Scene scaleFactor={scaleFactor} reduced={reduced} frames={frames} />
       </Suspense>
     </Canvas>
   )

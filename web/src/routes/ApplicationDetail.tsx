@@ -146,10 +146,23 @@ function Detail({
   const items = useMemo(() => [...forApplication(a.id)].sort(compareItems), [forApplication, a.id])
 
   const reminderCount = items.filter((i) => i.remind).length
-  const savedCount = [links, files, snippets, postings, matches].reduce(
-    (n, list) => n + list.filter((r) => r.applicationId === a.id).length,
-    0,
-  )
+  /*
+   * Two shapes in one count, because two relations became many and two did not.
+   *
+   * Links, files and snippets carry `applicationIds` — `FILED_UNDER` is
+   * many-to-many, so a CV counts for every job it was sent to. Postings and
+   * matches carry a scalar `applicationId` from `BECAME`, which is genuinely
+   * one: a posting becomes at most one application.
+   */
+  const savedCount =
+    [links, files, snippets].reduce(
+      (n, list) => n + list.filter((r) => r.applicationIds.includes(a.id)).length,
+      0,
+    ) +
+    [postings, matches].reduce(
+      (n, list) => n + list.filter((r) => r.applicationId === a.id).length,
+      0,
+    )
 
   /**
    * What survives the delete, counted rather than guessed.

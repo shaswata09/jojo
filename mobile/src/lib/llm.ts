@@ -1,5 +1,4 @@
 import {
-  MODEL_TIMEOUT_MS,
   chatRequest,
   isConfigured,
   modelsRequest,
@@ -7,19 +6,24 @@ import {
   readModelsResponse,
   readTurn,
   unconfigured,
-  unreachable,
 } from '@jojo/service/core/model-server'
+import { failed, send } from '@/lib/local-service'
 import type {
   ChatMessage,
   ChatResult,
-  ModelRequest,
-  ModelResponse,
   ModelsResult,
   Turn,
 } from '@jojo/service/core/model-server'
 
 /**
- * The one place this app touches the network.
+ * The model client.
+ *
+ * It used to open by calling itself the one place this app touches the network,
+ * and that stopped being true when the Vault learned to read documents: the
+ * transport now lives in `local-service.ts` and MarkItDown's client is beside
+ * this one. What is still true is the part that matters — nothing is sent to a
+ * server the user did not type in, there is no key, no telemetry and no fallback
+ * host, and both default addresses are loopback.
  *
  * OpenAI's shape, because vLLM, Ollama and LM Studio all speak it — pointing at
  * a local server is a URL, not an integration. Nothing is sent anywhere else:
@@ -52,40 +56,7 @@ export type LlmResult = ChatResult
 
 export { isConfigured }
 
-/**
- * Sends a described request and reports what came back.
- *
- * Never throws. A thrown `fetch` is a fact about the network, and the callers
- * turn every fact about the network into the same shape of sentence.
- */
-async function send(
-  request: ModelRequest,
-  endpoint: string,
-  signal?: AbortSignal,
-): Promise<ModelResponse | { failed: ReturnType<typeof unreachable> }> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), MODEL_TIMEOUT_MS)
-  // The caller's cancel and our timeout both have to reach the same request.
-  signal?.addEventListener('abort', () => controller.abort())
-  try {
-    const response = await fetch(request.url, {
-      method: request.method,
-      headers: request.headers,
-      body: request.body,
-      signal: controller.signal,
-    })
-    return { ok: response.ok, status: response.status, text: await response.text().catch(() => '') }
-  } catch (error) {
-    const aborted = error instanceof Error && error.name === 'AbortError'
-    const detail = error instanceof Error ? error.message : String(error)
-    return { failed: unreachable(endpoint, detail, aborted) }
-  } finally {
-    clearTimeout(timer)
-  }
-}
 
-const failed = (r: Awaited<ReturnType<typeof send>>): r is { failed: ReturnType<typeof unreachable> } =>
-  'failed' in r
 
 /**
  * What a server says it serves.

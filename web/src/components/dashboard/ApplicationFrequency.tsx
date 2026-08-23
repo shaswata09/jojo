@@ -158,7 +158,22 @@ export function ApplicationFrequencyBody() {
       {showChart ? (
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Segment label="Period" options={PERIODS} value={period} onChange={setPeriod} />
-          <Segment label="Chart type" options={CHARTS} value={chart} onChange={setChart} />
+          {/* Pushed to the right, because the two controls are not the same kind
+              of thing: the period changes what is being counted and the chart
+              type changes how it is drawn. Separating them across the row says
+              so without a label, and it puts the drawing control on the same
+              edge as the one in the card's title above it.
+
+              `ml-auto` rather than `justify-between` on the row, so that when
+              the two do wrap on a narrow card the second still sits right and
+              does not stretch away from the first. */}
+          <Segment
+            className="ml-auto"
+            label="Chart type"
+            options={CHARTS}
+            value={chart}
+            onChange={setChart}
+          />
         </div>
       ) : null}
 

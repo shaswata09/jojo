@@ -272,7 +272,9 @@ export function ProfileScreen() {
               {documents.map((f) => {
                 // The edge is cleared, not followed, when an application is
                 // deleted — so a file can name an id whose record has gone.
-                const application = f.applicationId ? get(f.applicationId) : undefined
+                // Plural, since `FILED_UNDER` is many: one CV goes to every
+                // application you send it to.
+                const filedUnder = f.applicationIds.map(get).filter((x) => x !== undefined)
                 return (
                   <View
                     key={f.id}
@@ -292,10 +294,14 @@ export function ProfileScreen() {
                         {f.note}
                       </Txt>
                     ) : null}
-                    {application ? (
-                      <Chip tone="teal" size="sm">
-                        {displayName(application)}
-                      </Chip>
+                    {filedUnder.length > 0 ? (
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space[1.5] }}>
+                        {filedUnder.map((application) => (
+                          <Chip key={application.id} tone="teal" size="sm">
+                            {displayName(application)}
+                          </Chip>
+                        ))}
+                      </View>
                     ) : null}
                   </View>
                 )

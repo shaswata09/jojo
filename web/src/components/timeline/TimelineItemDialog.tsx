@@ -39,7 +39,7 @@ export function TimelineItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)] sm:max-w-lg">
+      <DialogContent className="max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)] sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${noun}` : `New ${noun}`}</DialogTitle>
           {/* Identical in both modes on purpose: explaining that these are the

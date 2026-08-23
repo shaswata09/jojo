@@ -3,8 +3,21 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { ArrowUp, Quote, TriangleAlert } from 'lucide-react'
 import { agentTurn, isConfigured } from '@/lib/llm'
+import { convertFile } from '@/lib/markitdown'
+import { useVaultBlobs } from '@/lib/vault-blobs'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useAgent } from '@jojo/service/react/use-agent'
+import type { AgentEntry } from '@jojo/service/react/use-agent'
+import {
+  toAgentEntries,
+  toThreadEntries,
+  toTranscript,
+  useThreads,
+} from '@jojo/service/react/use-threads'
+import { useApplications } from '@jojo/service/react/use-applications'
+import type { NodeId } from '@jojo/service/core/model'
+import { ThreadBar } from '@/components/assistant/ThreadBar'
+import { ThreadList } from '@/components/assistant/ThreadList'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
@@ -186,10 +199,48 @@ export function Assistant() {
  * one that can be computed wrongly.
  */
 function AgentPanel() {
-  const { settings } = useModelSettings()
+  const { settings, reader } = useModelSettings()
+  const blobs = useVaultBlobs()
   const { addSnippet } = useVault()
+  const { all: applications, byId } = useApplications()
+  const { threads, create, save, rename, file, remove } = useThreads()
   const { toast } = useToast()
   const navigate = useNavigate()
+
+  /*
+   * Which conversation is open, in state AND in a ref.
+   *
+   * The ref is what `onSettled` reads. It runs at the end of a run, from a
+   * closure created when the run started, and by then the state it captured may
+   * be a conversation ago — the first exchange of a NEW thread settles into a
+   * thread that did not exist when `send` was called.
+   */
+  const [activeId, setActiveId] = useState<NodeId | null>(null)
+  const activeRef = useRef<NodeId | null>(null)
+  const openThread = (id: NodeId | null) => {
+    activeRef.current = id
+    setActiveId(id)
+  }
+  const active = threads.find((t) => t.id === activeId) ?? null
+
+  /**
+   * Reopen the most recent conversation on arrival, once.
+   *
+   * Without this a reload landed on a blank thread with the whole history one
+   * click away, which reads as having lost it. `useThreads` sorts newest first
+   * for exactly this — a list of conversations is read like an inbox, and the
+   * one you were just in is the one you want back.
+   *
+   * Once, and guarded by a ref rather than by `activeId`: pressing New sets the
+   * pointer back to null on purpose, and an effect keyed on that would drag the
+   * user straight back into the conversation they just left.
+   */
+  const opened = useRef(false)
+  useEffect(() => {
+    if (opened.current || threads.length === 0) return
+    opened.current = true
+    openThread(threads[0]?.id ?? null)
+  }, [threads])
   const [prompt, setPrompt] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [copyFailed, setCopyFailed] = useState(false)
@@ -225,7 +276,66 @@ function AgentPanel() {
     [settings],
   )
 
-  const { entries, busy, send, stop, clear } = useAgent({ llm, approve })
+  /**
+   * Saves an exchange, creating the conversation if this was the first one.
+   *
+   * Created at the SETTLE rather than at the send, and that ordering is the
+   * whole reason this works. Creating it up front would change the loaded
+   * thread's key mid-exchange, and the reload that follows would replace the
+   * live turns with the empty ones just written — the user's question vanishing
+   * as they watch. By the time this runs there is something to store, and the
+   * stored entries and the live ones are the same list.
+   */
+  const onSettled = useCallback(
+    (settled: readonly AgentEntry[]) => {
+      const stored = toThreadEntries(settled)
+      const id = activeRef.current
+      if (id) {
+        save(id, stored)
+        return
+      }
+      const asked = settled.find((e) => e.kind === 'you')
+      const made = create({ title: asked?.kind === 'you' ? asked.text : '', entries: stored })
+      if (made.ok) openThread(made.output)
+    },
+    [create, save],
+  )
+
+  /**
+   * Reading a document, if a reader is configured.
+   *
+   * `undefined` when it is not, which is what makes `vault.file.read` refuse
+   * with an explanation rather than fail — the tool checks for exactly this.
+   */
+  const convert = useCallback(
+    async (fileId: string) => {
+      const file = await blobs.get(fileId)
+      if (!file) {
+        return {
+          ok: false as const,
+          reason: 'No copy of that document is stored in this browser, so there is nothing to read.',
+        }
+      }
+      return convertFile(reader, file)
+    },
+    [blobs, reader],
+  )
+
+  const { entries, busy, send, stop, clear } = useAgent({
+    llm,
+    approve,
+    onSettled,
+    ...(reader ? { convert } : {}),
+    ...(active
+      ? {
+          thread: {
+            key: active.id,
+            entries: toAgentEntries(active.entries),
+            history: toTranscript(active.entries),
+          },
+        }
+      : {}),
+  })
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -295,8 +405,16 @@ function AgentPanel() {
         subtitle="Connected to your model, and able to act on your records. Everything it does is listed as it happens."
         actions={
           entries.length > 0 ? (
-            <Button variant="ghost" size="sm" onClick={clear} disabled={busy}>
-              Clear conversation
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                clear()
+                openThread(null)
+              }}
+            >
+              Clear
             </Button>
           ) : null
         }
@@ -311,7 +429,57 @@ function AgentPanel() {
         on this device. Nothing is sent anywhere else, and every change it makes can be undone.
       </p>
 
-      <Panel className="min-w-0">
+      <div className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)]">
+        <ThreadList
+          threads={threads}
+          activeId={activeId}
+          byId={byId}
+          busy={busy}
+          onOpen={openThread}
+          onNew={() => {
+            clear()
+            openThread(null)
+          }}
+        />
+
+        <Panel className="min-w-0">
+        <ThreadBar
+          threads={threads}
+          activeId={activeId}
+          applications={applications}
+          busy={busy}
+          onRename={(id, title) => {
+            rename(id, title)
+          }}
+          onFile={(id, applicationId) => {
+            const result = file(id, applicationId)
+            if (result.ok) {
+              toast({
+                title: result.announcement.title,
+                ...(result.announcement.description === undefined
+                  ? {}
+                  : { description: result.announcement.description }),
+                ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
+              })
+            }
+          }}
+          onDelete={(id) => {
+            const result = remove(id)
+            if (!result.ok) return
+            // The open conversation just stopped existing; showing its turns
+            // under a title that is gone reads as a failed delete.
+            clear()
+            openThread(null)
+            toast({
+              title: 'Conversation deleted',
+              tone: 'danger',
+              ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
+            })
+          }}
+        />
+
+        <div className="my-3 border-t border-hairline" />
+
         {entries.length === 0 ? (
           <EmptyState
             icon={RobotIcon as unknown as LucideIcon}
@@ -435,6 +603,8 @@ function AgentPanel() {
           )}
         </form>
       </Panel>
+
+      </div>
 
       <Panel className="min-w-0">
         <PanelTitle hint="it will use whatever tools these need">Try one of these</PanelTitle>

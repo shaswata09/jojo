@@ -1,9 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { Link } from 'react-router'
-import { Download, FileText, Plus, Upload, X } from 'lucide-react'
+import { Download, FileText, Plus, Trash2, Upload, X } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
+import { FileViewer } from '@/components/vault/FileViewer'
+import { useFileDrop } from '@/components/vault/files/use-file-drop'
+import { useFileDelete } from '@/lib/use-file-delete'
 import { Field, SettingRow } from '@/components/common/Field'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -106,12 +109,16 @@ export function Profile() {
     })
   }
 
-  const onPicked = async (event: ChangeEvent<HTMLInputElement>) => {
-    const picked = Array.from(event.target.files ?? [])
-    // Cleared straight away, so re-picking the same file fires `change` again.
-    // Without it, correcting a mistake by choosing the same document twice
-    // looks like the second attempt did nothing.
-    event.target.value = ''
+  /**
+   * One intake for both ways in.
+   *
+   * Split out of the change handler when the card learned to accept a drop:
+   * picking and dropping have to file the same record, store the same bytes and
+   * raise the same toast, and two copies of that is how one of them quietly
+   * stops storing the document.
+   */
+  const takeFiles = async (list: FileList | null) => {
+    const picked = Array.from(list ?? [])
     if (picked.length === 0) return
 
     let stored = 0
@@ -146,6 +153,78 @@ export function Profile() {
           },
     )
   }
+
+  const onPicked = (event: ChangeEvent<HTMLInputElement>) => {
+    const { files } = event.target
+    // Cleared straight away, so re-picking the same file fires `change` again.
+    // Without it, correcting a mistake by choosing the same document twice
+    // looks like the second attempt did nothing.
+    event.target.value = ''
+    void takeFiles(files)
+  }
+
+  const drop = useFileDrop((list) => {
+    void takeFiles(list)
+  })
+
+
+  /*
+   * The document being previewed, and its bytes.
+   *
+   * Loaded when the viewer opens rather than held for every row: this card can
+   * show a dozen documents and holding a dozen `File`s — and a dozen blob URLs —
+   * to render a dozen names is a lot of memory for something nobody is looking
+   * at. The same shape the Vault's files tool uses, for the same reason.
+   */
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [openBlob, setOpenBlob] = useState<File | null>(null)
+  const openDoc = documents.find((f) => f.id === openId) ?? null
+  const viewerRef = useRef<HTMLDivElement | null>(null)
+
+  /**
+   * Bring the preview into view when it opens.
+   *
+   * `smooth` and `nearest`: the reader pressed a row they can see, so the page
+   * should move as little as it can to show the result — `start` would yank the
+   * clicked row to the top of the window, which loses the place they were in.
+   */
+  useEffect(() => {
+    if (openId === null) return
+    viewerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [openId])
+
+  /**
+   * The same delete the Vault's files tool performs.
+   *
+   * Through `useFileDelete` rather than `removeFile` alone: a document is the
+   * record, its keywords AND its bytes, and a delete here that dropped only the
+   * record would leave the file in IndexedDB for good — unreachable and still
+   * counted against the quota. It carries the same Undo, which also puts the
+   * bytes back.
+   */
+  const deleteFile = useFileDelete()
+  const onDeleteDocument = (file: (typeof documents)[number]) => {
+    deleteFile(file, (id) => {
+      // The preview is showing a record that has just stopped existing.
+      if (openId === id) setOpenId(null)
+    })
+  }
+
+  useEffect(() => {
+    if (openId === null) {
+      setOpenBlob(null)
+      return
+    }
+    let live = true
+    void blobs.get(openId).then((file) => {
+      // Guarded: the viewer can be closed, or another row opened, while a large
+      // document is still being read out of IndexedDB.
+      if (live) setOpenBlob(file)
+    })
+    return () => {
+      live = false
+    }
+  }, [openId, blobs])
 
   const addTerm = () => {
     const term = termDraft.trim()
@@ -389,52 +468,127 @@ export function Profile() {
           </div>
         </div>
 
-        {documents.length === 0 ? (
-          <EmptyState
-            icon={FileText}
-            title="No documents yet"
-            description={`Add your CV and statements — they are filed in the Vault under ${DOCUMENTS_BUCKET}, where the rest of the app can reach them.`}
-            action={
-              <Button size="sm" onClick={() => fileInput.current?.click()}>
-                <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
-                Upload a document
-              </Button>
-            }
-          />
-        ) : (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {documents.map((f) => {
-              // The edge is cleared, not followed, when an application is
-              // deleted — so a file can name an id whose record has gone.
-              const application = f.applicationId ? get(f.applicationId) : undefined
-              return (
-                <li key={f.id} className="rounded-lg border border-hairline bg-well p-3">
-                  <div className="flex items-center gap-2">
-                    <FileText
-                      className="size-4 shrink-0 text-accent"
-                      strokeWidth={1.7}
-                      aria-hidden
-                    />
-                    <span className="truncate font-mono text-sm">{f.name}</span>
-                  </div>
-                  <p className="tabular mt-1.5 text-xs text-text-3">
-                    {f.size} · saved {agoLabel(f.savedOn, TODAY)}
-                  </p>
-                  {f.note ? (
-                    <p className="mt-1 line-clamp-2 text-xs text-text-3">{f.note}</p>
-                  ) : null}
-                  {application ? (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <Chip tone="teal" size="sm">
-                        {displayName(application)}
-                      </Chip>
-                    </div>
-                  ) : null}
-                </li>
-              )
-            })}
-          </ul>
-        )}
+        {/* The whole list is the drop target, not a strip at the bottom.
+            Someone dragging a CV aims at the documents, and a zone that only
+            accepts below them is a zone they miss. */}
+        <div
+          onDragEnter={drop.onDragEnter}
+          onDragOver={drop.onDragOver}
+          onDragLeave={drop.onDragLeave}
+          onDrop={drop.onDrop}
+          className={`rounded-lg transition-colors ${
+            drop.dragging
+              ? 'outline-2 outline-offset-4 outline-dashed outline-accent'
+              : 'outline-none'
+          }`}
+        >
+          {documents.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="No documents yet"
+              description={`Drop your CV and statements here, or choose them — they are filed in the Vault under ${DOCUMENTS_BUCKET}, where the rest of the app can reach them.`}
+              action={
+                <Button size="sm" onClick={() => fileInput.current?.click()}>
+                  <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
+                  Upload a document
+                </Button>
+              }
+            />
+          ) : (
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {documents.map((f) => {
+                // The edges are cleared, not followed, when an application is
+                // deleted — so a file can name ids whose records have gone.
+                const applications = f.applicationIds
+                  .map((id) => get(id))
+                  .filter((app) => app !== undefined)
+                return (
+                  // `relative`, because the delete sits on top of the open
+                  // button rather than after it. A button inside a button is
+                  // invalid and the browser resolves it by ignoring one of them.
+                  <li key={f.id} className="group relative">
+                    {/* Every row opens, including the ones with no bytes behind
+                        them. `FileViewer` generates a placeholder for those and
+                        says so in it — which is what the Vault's files tool
+                        already does with the same records. Disabling them here
+                        was the first attempt and it was wrong twice over: it
+                        made the seeded documents inert on the page most likely
+                        to be someone's first, and it made the same record
+                        openable in one place and not the other. */}
+                    <button
+                      type="button"
+                      title={`Open ${f.name}`}
+                      onClick={() => setOpenId(f.id)}
+                      className="pressable w-full cursor-pointer rounded-lg border border-hairline bg-well p-3 text-left transition-colors hover:border-hairline-strong"
+                    >
+                      <span className="flex items-center gap-2">
+                        <FileText
+                          className="size-4 shrink-0 text-accent"
+                          strokeWidth={1.7}
+                          aria-hidden
+                        />
+                        <span className="truncate font-mono text-sm">{f.name}</span>
+                      </span>
+                      <span className="tabular mt-1.5 block text-xs text-text-3">
+                        {f.size} · saved {agoLabel(f.savedOn, TODAY)}
+                      </span>
+                      {f.note ? (
+                        <span className="mt-1 line-clamp-2 block text-xs text-text-3">{f.note}</span>
+                      ) : null}
+                      {/* One chip per job. A CV goes to every application you
+                          send it to, and showing one of them would misreport
+                          which. */}
+                      {applications.length > 0 ? (
+                        <span className="mt-2 flex flex-wrap gap-1">
+                          {applications.map((app) => (
+                            <Chip key={app.id} tone="teal" size="sm">
+                              {displayName(app)}
+                            </Chip>
+                          ))}
+                        </span>
+                      ) : null}
+                    </button>
+
+                    {/* Shown on hover and whenever it has focus.
+                        Hover alone would put it out of reach of a keyboard, and
+                        always-visible would put a delete under the pointer on
+                        every tile in a grid people scan. `focus-within` on the
+                        tile covers the tab that lands on the open button, so the
+                        control appears before it is reached. */}
+                    <button
+                      type="button"
+                      aria-label={`Delete ${f.name}`}
+                      title={`Delete ${f.name}`}
+                      onClick={() => {
+                        onDeleteDocument(f)
+                      }}
+                      className="pressable absolute top-2 right-2 cursor-pointer rounded-md p-1.5 text-text-3 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Under the list, not at the foot of the page.
+            `FileViewer` renders inline rather than as an overlay — in the Vault
+            it sits in a second column beside the rows. This page has one column,
+            so at the end of the document it opened four panels below the click
+            and frequently off screen, which reads as nothing having happened.
+            `scrollIntoView` below covers the case where the card itself is near
+            the bottom of the window. */}
+        {openDoc ? (
+          <div ref={viewerRef} className="mt-4">
+            <FileViewer
+              file={openDoc}
+              blob={openBlob ?? undefined}
+              onClose={() => setOpenId(null)}
+            />
+          </div>
+        ) : null}
 
         <p className="mt-4 text-xs text-text-3">
           The same files as the Vault's{' '}
@@ -444,8 +598,8 @@ export function Profile() {
           >
             Files tool
           </Link>
-          , filtered to {DOCUMENTS_BUCKET}. Upload keeps a document's name, size and type — never
-          its contents.
+          , filtered to {DOCUMENTS_BUCKET}. Drop a document here or choose one and the file itself
+          is kept in this browser — nothing is uploaded anywhere. Click one to read it.
         </p>
       </Panel>
 

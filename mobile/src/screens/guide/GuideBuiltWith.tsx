@@ -36,9 +36,9 @@ const STACK: { name: string; role: string }[] = [
 
 const UNFINISHED: { title: string; detail: string }[] = [
   {
-    title: 'The assistant has no model',
+    title: 'The assistant needs a model you supply',
     detail:
-      'Every reply is one of five worked examples, and each carries a badge saying so. Connect a local model in Settings and the panel says what it would take.',
+      'Connect one in Settings and the assistant is a threaded, agentic chat: it calls the app\u2019s own tools to answer, lists every call as it makes it, and saves each thread on this device. Without one, every reply is one of five worked examples and carries a badge saying so.',
   },
   {
     title: 'The scout finds nothing on its own',
@@ -46,9 +46,9 @@ const UNFINISHED: { title: string; detail: string }[] = [
       'Fit percentages are real — computed on this device against the match terms, target roles and regions on your profile, and they say what they matched. What is missing is the crawl: nothing goes out and looks for postings, so the feed only holds what you put in it.',
   },
   {
-    title: 'Nothing leaves this device',
+    title: 'Nothing leaves this device except where you point it',
     detail:
-      'There is no account, no sync and no upload. The one network call the app can make is to the model you point it at in Settings, and it goes to that address and nowhere else.',
+      'There is no account, no sync and no upload. Two addresses can be reached, both yours and both set in Settings: the model, and the document reader \u2014 which also fetches a job posting when you add an application from a link, so that URL goes to your reader rather than to us. Transfer sends a copy straight to your other device over the local network. Nothing else goes anywhere.',
   },
 ]
 

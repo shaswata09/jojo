@@ -109,6 +109,7 @@ describe('the bindings that carry today for their callers', () => {
       kind: 'deadline',
       urgency: 'gray',
       remind: false,
+      applicationIds: [],
       completedOn: '2026-01-01',
     }
     expect(markOf(done, today)).toBe('done')

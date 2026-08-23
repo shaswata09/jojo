@@ -12,7 +12,7 @@ import { createContext, useContext } from 'react'
  *
  * Add a name back here in the same change that adds its branch to `SheetHost`.
  */
-export type SheetName = 'application' | 'timelineItem' | 'draft'
+export type SheetName = 'application' | 'applicationFromLink' | 'timelineItem' | 'draft'
 
 export type OpenSheet = {
   name: SheetName

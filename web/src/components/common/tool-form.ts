@@ -209,6 +209,8 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
       const org = memory.one(node.id, 'AT', 'organisation')?.props.name ?? ''
       return displayName({ org, role: node.props.role })
     }
+    case 'thread':
+      return node.props.title
     case 'organisation':
       return node.props.name
     case 'timelineItem':
@@ -227,6 +229,8 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
       return node.props.role
     case 'pipeline':
       return node.props.name
+    case 'proposal':
+      return node.props.title
     case 'profile':
       // Singleton, and the only node whose props hold no name of its own.
       return 'Your profile'

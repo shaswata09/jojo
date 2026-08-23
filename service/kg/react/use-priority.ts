@@ -148,13 +148,17 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
     // The interview itself lives on the timeline, so the date and the format
     // come from the event rather than from a second copy on the application.
     const interviewEvent = nextInterview
-      ? items.find((i) => i.applicationId === nextInterview.id && i.kind === 'interview')
+      ? items.find((i) => i.applicationIds.includes(nextInterview.id) && i.kind === 'interview')
       : undefined
-    // A deadline holds the application's id, not the record, so both the
-    // headline and the link have to look it up.
+    // A deadline holds application ids, not the records, so both the headline
+    // and the link have to look them up. The FIRST is used, and that is a
+    // presentation choice rather than a claim: a deadline about three
+    // applications still gets one headline, and naming one of them beats
+    // naming none. The panel below it lists them all.
     const appOf = (applicationId?: string) => all.find((a) => a.id === applicationId)
-    const orgOf = (applicationId?: string) => appOf(applicationId)?.org ?? 'Unknown'
-    const deadlineApp = appOf(nextDeadline?.applicationId)
+    const orgOf = (applicationIds: readonly string[]) =>
+      appOf(applicationIds[0])?.org ?? 'Unknown'
+    const deadlineApp = appOf(nextDeadline?.applicationIds[0])
 
     return [
       ...offers.map((a): PriorityAction => {
@@ -181,7 +185,7 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
             {
               id: `deadline-${nextDeadline.id}`,
               kindLabel: 'Deadline',
-              headline: `Submit to ${orgOf(nextDeadline.applicationId)}`,
+              headline: `Submit to ${orgOf(nextDeadline.applicationIds)}`,
               context: sentence(nextDeadline.title, nextDeadline.detail ?? nextDeadline.note),
               timing: `Due ${shortDate(nextDeadline.date)} · ${relativeLabelOn(today, nextDeadline.date)}`,
               urgency: dateMarkOn(today, nextDeadline.date),

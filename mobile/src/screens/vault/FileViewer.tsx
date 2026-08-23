@@ -12,11 +12,12 @@ import { Divider } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { agoLabel } from '@jojo/service/data/timeline'
 import type { VaultFile } from '@jojo/service/data/vault'
-import { displayName } from '@jojo/service/data/seed'
+import { displayName, filedUnderLabel } from '@jojo/service/data/seed'
 import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { PageViewer } from '@/screens/vault/PageViewer'
 import { FILE_KIND_ICON } from '@/lib/files'
 import { useApplications, useVault } from '@/lib/store-context'
+import { capitalize } from '@/lib/text'
 import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -87,7 +88,9 @@ export function FileViewer({
 
   if (!file) return null
 
-  const application = file.applicationId ? byId.get(file.applicationId) : undefined
+  const applications = file.applicationIds
+    .map((id) => byId.get(id))
+    .filter((a) => a !== undefined)
 
   /**
    * Hands the file to the OS.
@@ -116,16 +119,21 @@ export function FileViewer({
     { label: 'Bucket', value: file.bucket },
   ]
 
-  /** Same contract as the row menu's: a present-but-undefined key unfiles it. */
-  const onFileUnder = (applicationId: string | undefined) => {
-    const before = file.applicationId
-    updateFile(file.id, { applicationId })
-    setFiling(false)
-    const now = applicationId ? byId.get(applicationId) : undefined
+  /**
+   * Same contract as the row menu's: the whole list, every time.
+   *
+   * `FILED_UNDER` is `fromCardinality: 'many'`, so an empty array is what
+   * unfiles it — and the sheet is not dismissed here, because it stays up
+   * across taps and closes on Done.
+   */
+  const onFileUnder = (applicationIds: string[]) => {
+    const before = file.applicationIds
+    updateFile(file.id, { applicationIds })
+    const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      title: capitalize(filedUnderLabel(chosen)),
       description: file.name,
-      action: { label: 'Undo', onPress: () => updateFile(file.id, { applicationId: before }) },
+      action: { label: 'Undo', onPress: () => updateFile(file.id, { applicationIds: before }) },
     })
   }
 
@@ -251,17 +259,26 @@ export function FileViewer({
                 Attached to
               </Txt>
               <Button
-                label={application ? 'Change' : 'File it under a job'}
+                label={applications.length > 0 ? 'Change' : 'File it under a job'}
                 variant="ghost"
                 onPress={() => setFiling(true)}
               />
             </View>
-            {application ? (
-              <Chip tone="gray">{displayName(application)}</Chip>
+            {applications.length > 0 ? (
+              // A row of chips rather than one: a CV goes to every job you send
+              // it to, and the panel that names only the first would be wrong
+              // about the other four.
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space[2] }}>
+                {applications.map((a) => (
+                  <Chip key={a.id} tone="gray">
+                    {displayName(a)}
+                  </Chip>
+                ))}
+              </View>
             ) : (
               <Txt size="sm" tone="muted">
-                Not filed under an application. Filing it puts it on that record and lets the graph
-                find it from there.
+                Not filed under an application. Filing it puts it on those records and lets the
+                graph find it from any of them.
               </Txt>
             )}
           </View>
@@ -313,7 +330,7 @@ export function FileViewer({
         </View>
         <ApplicationPickerSheet
           open={filing}
-          value={file.applicationId}
+          values={file.applicationIds}
           onClose={() => setFiling(false)}
           onChange={onFileUnder}
         />

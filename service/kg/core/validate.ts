@@ -32,7 +32,14 @@
  * absolute claim a single grep refuted. Twice is a pattern worth naming.
  */
 
-import type { NodePropsByType, NodeType, Rel, StoredEdge, StoredNode } from './model'
+import type {
+  NodePropsByType,
+  NodeType,
+  Rel,
+  StoredEdge,
+  StoredNode,
+  ThreadEntry,
+} from './model'
 import {
   EDGE_SCHEMA,
   FILE_BUCKET_VALUES,
@@ -41,6 +48,8 @@ import {
   LINK_CATEGORY_VALUES,
   NODE_TYPES,
   OUTCOME_VALUES,
+  PIPELINE_KINDS,
+  PROPOSAL_STATUSES,
   RELS,
   ROLES,
   SNIPPET_TAG_VALUES,
@@ -82,6 +91,19 @@ const diagnostic = (
 export type Validated<T> = { ok: true; value: T } | { ok: false; diagnostics: Diagnostic[] }
 
 /* ------------------------------ props schemas ----------------------------- */
+
+/**
+ * An array of turns, checked as an array and not as turns.
+ *
+ * The cast is the honest expression of the loose check above it: what comes back
+ * is `unknown[]`, and calling it `ThreadEntry[]` here is the same trust boundary
+ * this file already crosses for `props` itself a hundred lines down. It is
+ * declared once, next to its reason, rather than inlined where it would read as
+ * an oversight.
+ */
+const threadEntries = s.array(s.unknown(), { label: 'Messages' }) as unknown as Schema<
+  ThreadEntry[]
+>
 
 const offerSchema = s.object({
   respondBy: s.isoDate({ label: 'Respond by' }),
@@ -199,6 +221,32 @@ export const NODE_PROP_SCHEMAS = {
     tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Tag' }),
     body: s.string({ label: 'Body', multiline: true }),
   }),
+  /**
+   * A conversation, validated loosely on purpose.
+   *
+   * `entries` is `s.unknown()` and every other schema here is exact, so the
+   * exception has to earn itself. Two reasons, and the second is the one that
+   * decides it:
+   *
+   *   1. It is a UNION of five shapes, and `core/schema.ts` has no union
+   *      combinator — deliberately, because `FieldMeta` has to stay drawable as
+   *      a form and a union of five is not a field.
+   *   2. A transcript is append-only history. Every other prop here describes
+   *      something the user can retype if a build rejects it; a chat log is not
+   *      retypable, and a stricter schema would mean a thread written by a newer
+   *      build is DROPPED by an older one. `validateRows` deletes what it cannot
+   *      parse, so strictness here is measured in lost conversations.
+   *
+   * What still holds the line is the reader: `ThreadEntry` is a discriminated
+   * union in TypeScript, and `entriesOf` in `kg/react/use-threads.ts` filters
+   * anything that does not match before a screen ever sees it. Junk in this
+   * array renders as nothing rather than as a crash.
+   */
+  thread: s.object({
+    slug,
+    title: s.string({ min: 1, label: 'Title' }),
+    entries: threadEntries,
+  }),
   posting: s.object({
     slug,
     title: s.string({ min: 1, label: 'Title' }),
@@ -219,6 +267,34 @@ export const NODE_PROP_SCHEMAS = {
     schedule: s.string({ label: 'Schedule' }),
     filter: s.string({ label: 'Filter' }),
     enabled: s.boolean({ label: 'Enabled' }),
+    kind: s.optional(s.enum(PIPELINE_KINDS, { label: 'Pipeline kind' })),
+    auto: s.optional(s.boolean({ label: 'Run without asking' })),
+    lastRunAt: s.optional(s.instant({ label: 'Last run' })),
+    idleRounds: s.optional(s.number({ min: 0, int: true, label: 'Idle rounds' })),
+  }),
+  /**
+   * `input` is `s.string()` and not a parsed shape, on purpose.
+   *
+   * The reasoning is in `ProposalProps` and it is the same reasoning as
+   * `thread.entries` above, arrived at from the other direction: a proposal's
+   * payload is the input to SOME tool, so its shape is whatever that tool's
+   * schema was. Validating it here would mean this file knowing all 67 of them,
+   * and a tool whose schema tightened would silently delete queued proposals on
+   * the next boot. It is text until `ctx.call` parses it at the moment of
+   * approval, where a mismatch is a sentence on the card rather than a
+   * disappearance.
+   */
+  proposal: s.object({
+    slug,
+    kind: s.enum(PIPELINE_KINDS, { label: 'Pipeline kind' }),
+    tool: s.string({ min: 1, label: 'Tool' }),
+    input: s.string({ label: 'Input' }),
+    title: s.string({ min: 1, label: 'Title' }),
+    rationale: s.string({ label: 'Rationale' }),
+    status: s.enum(PROPOSAL_STATUSES, { label: 'Status' }),
+    proposedAt: s.instant({ label: 'Proposed at' }),
+    decidedAt: s.optional(s.instant({ label: 'Decided at' })),
+    error: s.optional(s.string({ label: 'Error' })),
   }),
   profile: s.object({
     text: profileTextSchema,

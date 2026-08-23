@@ -23,16 +23,27 @@ window.addEventListener('message', (event) => {
   if (typeof data !== 'object' || data === null) return
   if (data.type !== REQUEST) return
 
-  // Three verbs on one channel: look, take, and confirm what was kept. The ack
-  // is what lets the worker keep a refused capture instead of destroying it.
+  // Four verbs on one channel: look, take, confirm what was kept — and, unlike
+  // the other three, ask for something to be fetched. The ack is what lets the
+  // worker keep a refused capture instead of destroying it.
+  //
+  // The verb is chosen from the request's SHAPE rather than from a name it
+  // carries, so a page cannot name a message type the worker was not expecting.
+  // `scan` is checked first because it is the only one with an argument, and a
+  // scan request has no `ack` and no `take` to fall through to.
   const wanted =
-    data.ack !== undefined
-      ? 'jojo:ack-captures'
-      : data.take === true
-        ? 'jojo:take-captures'
-        : 'jojo:peek-captures'
+    typeof data.scan === 'string'
+      ? 'jojo:scan-board'
+      : data.ack !== undefined
+        ? 'jojo:ack-captures'
+        : data.take === true
+          ? 'jojo:take-captures'
+          : 'jojo:peek-captures'
 
-  chrome.runtime.sendMessage({ type: wanted, ids: data.ack }, (response) => {
+  // Only these three fields cross, and only ever from this shape. Forwarding
+  // the request wholesale would let anything on jojo's own page hand the worker
+  // fields it never validated.
+  chrome.runtime.sendMessage({ type: wanted, ids: data.ack, url: data.scan }, (response) => {
     // A disconnected service worker is a normal state, not a failure: MV3 stops
     // it when idle. Reading lastError is what stops it logging as unchecked.
     const failed = chrome.runtime.lastError
@@ -42,7 +53,12 @@ window.addEventListener('message', (event) => {
         id: data.id,
         captures: failed ? [] : (response?.captures ?? []),
         count: failed ? 0 : (response?.count ?? response?.remaining ?? 0),
-        error: failed ? failed.message : null,
+        // A scan answers with rows and a reason instead of captures and a
+        // count. Both shapes ride the one reply, because the page correlates on
+        // `id` and already knows which question it asked.
+        rows: failed ? null : (response?.rows ?? null),
+        ok: failed ? false : response?.ok === true,
+        error: failed ? failed.message : (response?.reason ?? null),
       },
       window.location.origin,
     )

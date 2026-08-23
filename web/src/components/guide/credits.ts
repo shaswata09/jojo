@@ -37,155 +37,10 @@ export type Credit = {
   what: string
   /** Where to look. One path, or a short list; the first place that proves it. */
   where?: string
-  /**
-   * Installed and paid for in `package.json`, imported nowhere under `src`.
-   *
-   * Kept on the page rather than quietly dropped. A credits list that shows
-   * only what is used is the more flattering page and the less true one — these
-   * three ship in the lockfile, a reader can see them in `package.json`, and
-   * the useful thing to tell them is that they are candidates for removal.
-   */
-  unused?: true
 }
 
 /** What runs in the app itself. */
 export const RUNTIME: readonly Credit[] = [
-  {
-    name: 'react',
-    version: '19.2.8',
-    licence: 'MIT',
-    holder: 'Meta Platforms, Inc. and affiliates',
-    what: 'Every screen. React 19, so a ref is an ordinary prop and the app carries no forwardRef.',
-    where: 'src/main.tsx',
-  },
-  {
-    name: 'react-dom',
-    version: '19.2.8',
-    licence: 'MIT',
-    holder: 'Meta Platforms, Inc. and affiliates',
-    what: 'Puts React on the page, and portals every dialog and toast out of the layout that summoned it.',
-    where: 'src/main.tsx',
-  },
-  {
-    name: 'react-router',
-    version: '8.3.0',
-    licence: 'MIT',
-    holder: 'React Training LLC, Remix Software Inc., Shopify Inc.',
-    what: 'The routes, and the app’s URL-state store: every shareable link — board or table, stage, sort, which vault tool, which day — is built on its search params rather than on a store of its own.',
-    where: 'src/App.tsx, src/lib/links.ts',
-  },
-  {
-    name: 'tailwindcss',
-    version: '4.3.3',
-    licence: 'MIT',
-    holder: 'Tailwind Labs, Inc.',
-    what: 'Every class in the app, and the token system underneath it — the whole palette, both themes and the six stage colours are declared in one @theme block.',
-    where: 'src/index.css',
-  },
-  {
-    name: '@tailwindcss/vite',
-    version: '4.3.3',
-    licence: 'MIT',
-    holder: 'Tailwind Labs, Inc.',
-    what: 'Compiles that stylesheet during the build and scans the source for the classes actually used.',
-    where: 'vite.config.ts',
-  },
-  {
-    name: 'radix-ui',
-    version: '1.6.7',
-    licence: 'MIT',
-    holder: 'WorkOS',
-    what: 'The behaviour under the dialogs, popovers, switches and separators — focus trapping, Escape, modality, and returning focus to whatever opened the thing. The parts of an overlay that are invisible until they are missing.',
-    where: 'src/components/ui/dialog.tsx, popover.tsx, switch.tsx',
-  },
-  {
-    name: 'cmdk',
-    version: '1.1.1',
-    licence: 'MIT',
-    holder: 'Paco Coursey',
-    what: 'The list and keyboard handling inside the ⌘K palette. The scoring that decides what ranks first is the app’s own.',
-    where: 'src/components/ui/command.tsx',
-  },
-  {
-    name: 'lucide-react',
-    version: '1.31.0',
-    licence: 'ISC',
-    holder: '2026 Lucide Icons and Contributors',
-    what: 'Every icon in the interface. ISC rather than MIT — it is the credit most often got wrong, and some of the icons carry a second notice as well (see below).',
-    where: 'src/components/layout/Topbar.tsx and most other components',
-  },
-  {
-    name: 'react-icons',
-    version: '5.7.0',
-    licence: 'MIT',
-    holder: '2018 kamijin_fanta',
-    what: 'Nothing. It is installed and imported nowhere in the source — a leftover, and a candidate for removal rather than a credit for work done.',
-    unused: true,
-  },
-  {
-    name: 'class-variance-authority',
-    version: '0.7.1',
-    licence: 'Apache-2.0',
-    holder: '2022 Joe Bell',
-    what: 'The variant tables behind the button, the chip and the input group — one place per component where every size and tone is spelled out.',
-    where: 'src/components/ui/button.tsx, src/components/common/Chip.tsx',
-  },
-  {
-    name: 'clsx',
-    version: '2.1.1',
-    licence: 'MIT',
-    holder: 'Luke Edwards',
-    what: 'Half of cn(), the helper nearly every component in the app uses to build a class list.',
-    where: 'src/lib/utils.ts',
-  },
-  {
-    name: 'tailwind-merge',
-    version: '3.6.0',
-    licence: 'MIT',
-    holder: '2021 Dany Castillo',
-    what: 'The other half. It settles two Tailwind utilities that contradict each other, so a caller can override a component’s padding without the component knowing.',
-    where: 'src/lib/utils.ts',
-  },
-  {
-    name: 'tw-animate-css',
-    version: '1.4.0',
-    licence: 'MIT',
-    holder: '2025 Wombosvideo',
-    what: 'The enter and exit animations the dialogs and popovers use — the fade and the slight zoom, and the flattening of both under reduced motion.',
-    where: 'src/index.css',
-  },
-  {
-    name: 'shadcn',
-    version: '4.18.0',
-    licence: 'MIT',
-    holder: '2023 shadcn',
-    what: 'Its stylesheet is imported by the app’s own, and its generator produced the components in src/components/ui. Those files are copies that live in this repository and have been edited since — the package is a source, not a runtime the interface calls into.',
-    where: 'src/index.css, components.json',
-  },
-  {
-    name: '@dnd-kit/core',
-    version: '6.3.1',
-    licence: 'MIT',
-    holder: '2021 Claudéric Demers',
-    what: 'Dragging an application between stage columns on the board, and dragging a dated record onto another day in the calendar. Both go through the same write path a menu would, so both toast and both undo.',
-    where: 'src/routes/Applications.tsx, src/routes/Calendar.tsx',
-  },
-  {
-    name: '@dnd-kit/sortable',
-    version: '10.0.0',
-    licence: 'MIT',
-    holder: '2021 Claudéric Demers',
-    what: 'Nothing. Installed alongside @dnd-kit/core and imported nowhere — the board reorders nothing within a column, so the sortable strategies were never needed.',
-    unused: true,
-  },
-  {
-    name: '@dnd-kit/utilities',
-    version: '3.2.2',
-    licence: 'MIT',
-    holder: '2021 Claudéric Demers',
-    what: 'Nothing. Its transform helper is what a drag preview usually needs; this board draws its preview with a drag overlay instead, so nothing imports it.',
-    unused: true,
-  },
   {
     name: 'idb',
     version: '8.0.3',
@@ -249,6 +104,180 @@ export const RUNTIME: readonly Credit[] = [
     holder: '2020 The JetBrains Mono Project Authors',
     what: 'The monospaced face — keys, ids, file names, and every figure that has to line up in a column. Self-hosted for the same reason.',
     where: 'src/index.css',
+  },
+  {
+    name: '@noble/hashes',
+    version: '2.3.0',
+    licence: 'MIT',
+    holder: 'Paul Miller (paulmillr.com)',
+    what: 'SHA-256 and HKDF for the transfer handshake. Audited, dependency-free and the same code on both apps — which matters more here than anywhere else in this list, because a hash that differs between the two devices is a pairing that never completes.',
+    where: 'kg/crypto',
+  },
+  {
+    name: '@noble/ciphers',
+    version: '2.3.0',
+    licence: 'MIT',
+    holder: 'Paul Miller (paulmillr.com)',
+    what: 'The symmetric cipher that encrypts a transfer once the two devices agree on a key.',
+    where: 'kg/crypto',
+  },
+  {
+    name: '@noble/curves',
+    version: '2.3.0',
+    licence: 'MIT',
+    holder: 'Paul Miller (paulmillr.com)',
+    what: 'The key agreement behind that shared key.',
+    where: 'kg/crypto',
+  },
+]
+
+/**
+ * What the phone app is made of.
+ *
+ * A separate list rather than more rows in `RUNTIME`, because none of it is in
+ * the bundle you are reading this page from — a browser never loads React
+ * Native. It is here at all because "what jojo is built on" is one question and
+ * splitting the answer across two apps would mean the phone's dependencies had
+ * no acknowledgements page anywhere.
+ *
+ * Versions read from `mobile/node_modules`, on the same rule as the lists above.
+ */
+export const PHONE: readonly Credit[] = [
+  {
+    name: 'react-native',
+    version: '0.81.5',
+    licence: 'MIT',
+    holder: 'Meta Platforms, Inc. and affiliates',
+    what: 'The phone app itself, on both Android and iOS. React Native CLI rather than Expo, so `android/` and `ios/` are checked in and ours.',
+    where: 'mobile/src',
+  },
+  {
+    name: '@react-navigation/native',
+    version: '7.3.16',
+    licence: 'MIT',
+    holder: 'React Navigation contributors',
+    what: 'The screen stack, with bottom-tabs 7.18.16 for the tab bar and native-stack 7.18.8 for the push transitions.',
+    where: 'mobile/src/navigation',
+  },
+  {
+    name: 'react-native-reanimated',
+    version: '4.1.7',
+    licence: 'MIT',
+    holder: 'Software Mansion',
+    what: "The board's long-press drag, run on the UI thread so it does not stutter behind a React render.",
+    where: 'mobile/src/screens/ApplicationsScreen.tsx',
+  },
+  {
+    name: 'react-native-gesture-handler',
+    version: '2.28.0',
+    licence: 'MIT',
+    holder: 'Software Mansion',
+    what: 'The gestures those drags are built on, and the sheet dismissal.',
+  },
+  {
+    name: 'react-native-svg',
+    version: '15.12.1',
+    licence: 'MIT',
+    holder: 'Horcrux',
+    what: 'The donut, the radar and the graph canvas — the three drawings the phone shares with the web app.',
+    where: 'mobile/src/components/charts',
+  },
+  {
+    name: '@react-native-vector-icons/feather',
+    version: '13.1.2',
+    licence: 'MIT',
+    holder: 'Joel Arvidsson and contributors',
+    what: "Every icon on the phone. The wrapper; the artwork is Cole Bemis's Feather, credited below.",
+    where: 'mobile/src/lib/timeline-visuals.ts',
+  },
+  {
+    name: '@react-native-async-storage/async-storage',
+    version: '2.2.0',
+    licence: 'MIT',
+    holder: 'React Native Community',
+    what: 'Where the graph lives on the phone — one JSON document, which is what buys the cross-store atomicity IndexedDB gives the browser for free.',
+    where: 'mobile/src/kg/storage/rn-driver.ts',
+  },
+  {
+    name: 'react-native-blob-util',
+    version: '0.24.10',
+    licence: 'MIT',
+    holder: 'RonRadtke',
+    what: 'Reading and writing document bytes on the handset — a saved posting, a picked CV.',
+    where: 'mobile/src/lib/capture.ts',
+  },
+  {
+    name: '@react-native-documents/picker',
+    version: '12.0.2',
+    licence: 'MIT',
+    holder: 'Vojtech Novak',
+    what: 'Choosing a document to attach.',
+    where: 'mobile/src/lib/documents.ts',
+  },
+  {
+    name: 'react-native-webview',
+    version: '14.0.1',
+    licence: 'MIT',
+    holder: 'React Native Community',
+    what: 'The in-app browser that can reach a posting behind a login, and the reader that opens a saved one with scripts off.',
+    where: 'mobile/src/screens/PostingBrowserScreen.tsx',
+  },
+  {
+    name: '@react-native-clipboard/clipboard',
+    version: '1.16.3',
+    licence: 'MIT',
+    holder: 'React Native Community',
+    what: 'Copy, on the one screen where copying is the point — snippets.',
+  },
+  {
+    name: '@react-native-community/netinfo',
+    version: '11.4.1',
+    licence: 'MIT',
+    holder: 'React Native Community',
+    what: 'Whether this phone is on a network, which is what Transfer has to know before it offers to send anything.',
+  },
+  {
+    name: 'react-native-tcp-socket',
+    version: '6.4.2',
+    licence: 'MIT',
+    holder: 'Rapsssito',
+    what: 'The socket a transfer runs over, so a copy goes device to device without a server in between.',
+  },
+  {
+    name: 'react-native-safe-area-context',
+    version: '5.6.2',
+    licence: 'MIT',
+    holder: 'Th3rd Wave',
+    what: 'Keeping content out from under the notch and the home indicator.',
+  },
+  {
+    name: 'react-native-screens',
+    version: '4.16.0',
+    licence: 'MIT',
+    holder: 'Software Mansion',
+    what: 'Native screen containers under React Navigation. Never imported by name — it is linked in and required at runtime, which is why grepping the source for it finds nothing.',
+  },
+  {
+    name: 'react-native-worklets',
+    version: '0.5.1',
+    licence: 'MIT',
+    holder: 'Software Mansion',
+    what: 'Reanimated 4 requires it to run worklets on the UI thread. Never imported by name either.',
+  },
+  {
+    name: 'react-native-get-random-values',
+    version: '2.0.0',
+    licence: 'MIT',
+    holder: 'LinusU',
+    what: 'A real CSPRNG behind `crypto.getRandomValues`, which Hermes does not ship. Record ids and transfer secrets both depend on it, and a weak fallback would be silent.',
+    where: 'mobile/src/lib/secure-random.ts',
+  },
+  {
+    name: 'react-native-url-polyfill',
+    version: '4.0.0',
+    licence: 'MIT',
+    holder: 'Charpeni',
+    what: "A `URL` that parses the way the shared layer expects. Hermes's own is partial, and the posting parser reads pathnames.",
   },
 ]
 

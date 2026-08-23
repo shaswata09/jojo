@@ -60,6 +60,20 @@ function writeLastBackup(at: string): void {
   }
 }
 
+export type BuildOptions = {
+  /**
+   * Whether document bytes go in. Default true.
+   *
+   * False is not a smaller backup so much as a DIFFERENT one: it restores every
+   * record and leaves each document unreachable on this device. That is the
+   * right trade for a channel with a throughput ceiling — a beam through a
+   * camera moves a records-only backup in seconds and a documents-bearing one in
+   * minutes — and the wrong trade for a file someone is keeping as their only
+   * copy, which is why it is opt-out rather than a second entry point.
+   */
+  documents?: boolean
+}
+
 export type BackupState = {
   /** Records touched since the last backup, or since the beginning if never. */
   changed: number
@@ -67,6 +81,17 @@ export type BackupState = {
   lastBackupAt: string | null
   /** Whether `changed` has crossed the threshold worth mentioning. */
   shouldNudge: boolean
+  /**
+   * The backup as bytes, without saving anything.
+   *
+   * Split out from `download` because a backup now has a second destination:
+   * `useHandoffSend` seals these bytes into convoy chunks and streams them to a
+   * phone, and it has no use for a file on disk. Building does NOT record a
+   * backup as having been taken — nothing durable has happened on THIS device,
+   * and `changed` resetting because a transfer started would tell someone they
+   * were safe when the only copy here is still in a tab.
+   */
+  build: (options?: BuildOptions) => Promise<Uint8Array<ArrayBuffer>>
   /**
    * Builds the file and hands it to the browser under `name`.
    *
@@ -96,32 +121,46 @@ export function useBackup(readable?: () => unknown): BackupState {
     return nodes.filter((n) => n.updatedAt > lastBackupAt).length
   }, [graph, lastBackupAt])
 
-  const download = useCallback(async (name: string): Promise<boolean> => {
-    const documents: { path: string; data: Uint8Array }[] = []
-    for (const item of await blobs.all()) {
-      const file = await blobs.get(item.id)
-      // A document that will not read is skipped rather than aborting the whole
-      // backup: a backup missing one file is worth far more than no backup, and
-      // the count in the toast is what the user is told, not what was intended.
-      if (file === null) continue
-      documents.push({
-        path: `Documents/${item.id}__${item.name}`,
-        data: new Uint8Array(await file.arrayBuffer()),
-      })
-    }
+  const build = useCallback(
+    async ({
+      documents: withDocuments = true,
+    }: BuildOptions = {}): Promise<Uint8Array<ArrayBuffer>> => {
+      const documents: { path: string; data: Uint8Array }[] = []
+      if (withDocuments) {
+        for (const item of await blobs.all()) {
+          const file = await blobs.get(item.id)
+          // A document that will not read is skipped rather than aborting the
+          // whole backup: a backup missing one file is worth far more than no
+          // backup, and the count in the toast is what the user is told, not
+          // what was intended.
+          if (file === null) continue
+          documents.push({
+            path: `Documents/${item.id}__${item.name}`,
+            data: new Uint8Array(await file.arrayBuffer()),
+          })
+        }
+      }
 
+      const backup = buildBackup({
+        exportedAt: new Date().toISOString(),
+        nodes: graph.nodes(),
+        edges: graph.edges(),
+        documents,
+        ...(readable === undefined ? {} : { readable: readable() }),
+      })
+
+      return new TextEncoder().encode(JSON.stringify(backup))
+    },
+    [graph, blobs, readable],
+  )
+
+  const download = useCallback(async (name: string): Promise<boolean> => {
     const at = new Date()
-    const backup = buildBackup({
-      exportedAt: at.toISOString(),
-      nodes: graph.nodes(),
-      edges: graph.edges(),
-      documents,
-      ...(readable === undefined ? {} : { readable: readable() }),
-    })
+    const bytes = await build()
 
     let href: string | null = null
     try {
-      href = URL.createObjectURL(new Blob([JSON.stringify(backup)], { type: 'application/json' }))
+      href = URL.createObjectURL(new Blob([bytes], { type: 'application/json' }))
       const anchor = document.createElement('a')
       anchor.href = href
       anchor.download = name
@@ -138,12 +177,13 @@ export function useBackup(readable?: () => unknown): BackupState {
     // that blocked the download left jojo believing the user was safe.
     writeLastBackup(at.toISOString())
     return true
-  }, [graph, blobs, readable])
+  }, [build])
 
   return {
     changed,
     lastBackupAt,
     shouldNudge: changed >= BACKUP_NUDGE_AT,
+    build,
     download,
   }
 }

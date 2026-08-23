@@ -36,7 +36,7 @@ globalThis` answers **true** on a browser that cannot pick a folder at all.
 `folderSupported()` tests `showDirectoryPicker` for that reason and must keep
 doing so.
 
-### 1.2 A deployed HTTPS page cannot reach `http://127.0.0.1`
+### 1.2 A deployed HTTPS page cannot reach `http://127.0.0.1` **unattended**
 
 From `https://example.com`, fetching `http://127.0.0.1:7423`:
 
@@ -53,6 +53,29 @@ Causation confirmed rather than inferred: the identical request **succeeds**
 under `--disable-features=LocalNetworkAccessChecks` and fails without it.
 `Browser.grantPermissions(['localNetworkAccess'])` over CDP was accepted and did
 not unblock it, so this cannot be verified headlessly at all.
+
+> **Correction, 2026-08-22.** The heading above originally read "cannot reach",
+> full stop, and that is stronger than what was measured. `LocalNetworkAccessPermissionDenied`
+> is the **denied** state of a *user permission*, and headless Chrome auto-denies
+> it — which is precisely the condition this section was measured under. With a
+> real window and a person clicking **Allow**, the request goes: Chrome also
+> lifts the mixed-content block for local destinations once the permission is
+> granted, and private IP literals such as `192.168.1.5` are recognised
+> automatically with no `targetAddressSpace` opt-in.
+>
+> So the accurate statement is **"cannot without an explicit user grant, and
+> cannot be measured headlessly."** That distinction did not matter for the
+> deleted helper server — it wanted to run unattended — and it matters a great
+> deal for device-to-device transfer, where a person is present, is deliberately
+> pairing two devices, and a one-time prompt is a reasonable cost.
+>
+> Two limits that survive the correction, and bound anything built on this:
+> **Safari has no Local Network Access implementation at all**, so an HTTPS page
+> can never reach `http://192.168.x.x` there, on macOS or iOS, with no user
+> override — and on iOS every browser is WebKit. **WebRTC is not currently gated
+> by this permission** in Chrome or Firefox, which is why it, rather than
+> `fetch`, is the viable browser-side LAN transport today; both vendors have
+> published an intent to close that gap with no shipped date.
 
 ### 1.3 A localhost page reaches it freely
 
@@ -83,8 +106,10 @@ the machine — to reach parity with a database already in the page.
 
 ## 3. If a server is ever proposed again
 
-Read §1.2 first. A deployed HTTPS page **cannot** reach `http://127.0.0.1` in
-Chromium 151 — that is not a CORS header away, it is a user permission, and the
-only architecture that avoids it is one where the server also serves the app,
+Read §1.2 first, **including the correction**. A deployed HTTPS page cannot
+reach `http://127.0.0.1` in Chromium 151 *without a user granting the permission
+in a real window* — that is not a CORS header away, it is a user permission, and
+a background helper cannot ask for one. The only architecture that avoids it is
+one where the server also serves the app,
 which means a second origin and therefore a second IndexedDB and therefore a
 migration for every existing user. That cost is what killed it, not the code.

@@ -105,13 +105,13 @@ export function SnippetEditor({
 
       <FormField
         label="Related application"
-        hint="One job per snippet. It then shows on that application's page."
+        hint="Any number of jobs. It then shows on each of their pages."
       >
         <ApplicationPicker
           what="snippet"
-          value={editing.applicationId}
-          onChange={(id) =>
-            setEditing((prev) => (prev ? { ...prev, applicationId: id } : prev))
+          values={editing.applicationIds}
+          onChange={(ids) =>
+            setEditing((prev) => (prev ? { ...prev, applicationIds: ids } : prev))
           }
         />
       </FormField>

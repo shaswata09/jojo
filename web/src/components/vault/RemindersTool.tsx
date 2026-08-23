@@ -138,11 +138,19 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const edit = (item: TimelineItem) => open('timelineItem', { mode: 'reminder', initial: item })
 
   const relatedTo = (item: TimelineItem) =>
-    item.applicationId ? byId.get(item.applicationId) : undefined
+    item.applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
 
+  /**
+   * The applications an item is about, in one phrase.
+   *
+   * Named up to two and counted past that: "Rice and Baylor" is worth reading
+   * and a list of five is a sentence nobody finishes in a toast.
+   */
   const relatedName = (item: TimelineItem) => {
-    const app = relatedTo(item)
-    return app ? displayName(app) : undefined
+    const apps = relatedTo(item)
+    if (apps.length === 0) return undefined
+    if (apps.length <= 2) return apps.map((a) => displayName(a)).join(' and ')
+    return `${String(apps.length)} applications`
   }
 
   /** 'Chase recruiter reply · Databricks — ML engineer', for a toast. */

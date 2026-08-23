@@ -108,7 +108,13 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
   const item = itemId ? get(itemId) : undefined
   // The caller's application wins over the item's, so a Draft button that knows
   // which record it sits on is not overruled by a reminder filed elsewhere.
-  const appId = applicationId ?? item?.applicationId
+  //
+  // A reminder can be about several jobs now, and a draft email is addressed to
+  // one. The first is taken rather than none: `fillsFor` uses it for the
+  // employer's name and the greeting, and refusing to fill anything in because
+  // the reminder covers two jobs helps nobody. A Draft opened from an
+  // application passes its own id and never reaches this.
+  const appId = applicationId ?? item?.applicationIds[0]
   const app = appId ? byId.get(appId) : undefined
 
   const emailSnippets = useMemo(() => snippets.filter((s) => s.tag === 'Email'), [snippets])
@@ -160,7 +166,7 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
     // because a vault full of "Draft" is a vault you cannot search.
     const base = emailSnippets.find((s) => s.id === chosenId)?.title ?? 'Draft email'
     const title = app ? `${base} — ${app.org}` : base
-    const saved = addSnippet({ title, tag: 'Email', body: text, applicationId: app?.id })
+    const saved = addSnippet({ title, tag: 'Email', body: text, applicationIds: app ? [app.id] : [] })
     toast({
       title: 'Saved to snippets',
       description: `${saved.title} · tagged Email, in the Vault`,

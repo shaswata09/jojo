@@ -1,5 +1,5 @@
 /**
- * Putting a backup back.
+ * Putting a backup back. L2 repo.
  *
  * Nothing here is new machinery. `Repository.replaceAll` already existed and is
  * documented on the Driver as "Wholesale replace in one transaction: demo /
@@ -34,11 +34,26 @@
  * that no longer exists.
  */
 
-import { validateRows } from '@jojo/service/core/validate'
-import type { RestorePlan } from '@jojo/service/core/backup'
-import type { Repository } from '@jojo/service/repo/repository'
-import type { StoreMeta } from '@jojo/service/repo/meta'
-import type { VaultBlobs } from '@/lib/vault-blobs'
+import { validateRows } from '../core/validate'
+import type { RestorePlan } from '../core/backup'
+import type { Repository } from './repository'
+import type { StoreMeta } from './meta'
+
+/**
+ * Somewhere document bytes can be put, wholesale.
+ *
+ * The narrowest thing a restore needs, stated structurally rather than imported,
+ * so this layer never learns what OPFS or a phone sandbox is. Web passes
+ * `VaultBlobs`, which satisfies it already; the phone passes a writer over its
+ * own document directory.
+ *
+ * Returns how many LANDED, not how many were offered — a store that cannot
+ * place a document is expected to skip it, and the count is what the person is
+ * told.
+ */
+export type DocumentStore = {
+  replaceAll: (documents: readonly { path: string; data: Uint8Array }[]) => Promise<number>
+}
 
 export type RestoreOutcome =
   | {
@@ -68,7 +83,7 @@ export function metaForRestore(current: StoreMeta, at: string): StoreMeta {
 
 export async function restoreBackup(
   repo: Repository,
-  blobs: Pick<VaultBlobs, 'replaceAll'>,
+  blobs: DocumentStore,
   plan: RestorePlan,
   at: string,
 ): Promise<RestoreOutcome> {

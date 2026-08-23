@@ -57,6 +57,31 @@ export function displayName(a: Pick<Application, 'org' | 'role'>) {
   return a.role.trim() ? `${a.org} — ${a.role}` : a.org
 }
 
+/**
+ * 'Rice — ML engineer and Baylor', or '5 applications'. Empty for none.
+ *
+ * `FILED_UNDER` and `ABOUT` are many-to-many, so every surface that names what
+ * a record is filed under has the same list to render and the same place to
+ * stop rendering it: two names is worth reading, and "Rice, Baylor, UH, UNT
+ * and Stripe" is longer than the control it has to fit in. A picker trigger on
+ * a phone, a combobox trigger in a narrow web column and four toasts all drew
+ * that line for themselves; this is the one place it is drawn.
+ *
+ * Takes applications rather than ids because the caller is the one holding the
+ * index, and an id whose record has gone should vanish from the list rather
+ * than turn into a blank between two commas.
+ */
+export function applicationsLabel(apps: readonly Pick<Application, 'org' | 'role'>[]) {
+  if (apps.length === 0) return ''
+  if (apps.length <= 2) return apps.map(displayName).join(' and ')
+  return `${String(apps.length)} applications`
+}
+
+/** 'filed under Rice and Baylor', or 'unfiled'. For the toast that confirms it. */
+export function filedUnderLabel(apps: readonly Pick<Application, 'org' | 'role'>[]) {
+  return apps.length === 0 ? 'unfiled' : `filed under ${applicationsLabel(apps)}`
+}
+
 /** 'Nov 15'. */
 export function respondByLabel(offer: Offer) {
   return shortDate(offer.respondBy)

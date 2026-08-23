@@ -42,26 +42,39 @@ const fields = {
   location: s.optional(s.string({ label: 'Location' })),
   joinUrl: s.optional(s.string({ label: 'Join link' })),
   /** `null` unfiles it; absent leaves the edge alone. */
-  applicationId: s.optional(s.nullable(s.id('application', { label: 'Application' }))),
+  /**
+   * The applications this is about, as a SET.
+   *
+   * A list, since `ABOUT` became `fromCardinality: 'many'`. Absent leaves the
+   * filing alone; an empty list makes it about nothing.
+   */
+  applicationIds: s.optional(s.nullable(s.array(s.id('application'), { label: 'Applications' }))),
 }
 
 const cleared = (value: string | undefined) =>
   value === undefined ? undefined : value.trim() || undefined
 
 /**
- * Files the item under an application, or leaves the edge alone.
+ * Makes the item about exactly the applications given.
  *
- * `ABOUT` is `fromCardinality: 'one'`, so a second link replaces the first in
- * the same commit. That is what the old scalar `applicationId` meant and never
- * enforced — nothing stopped a write leaving a reminder about two applications.
+ * A SET operation, not an add: the list replaces whatever was there. `ABOUT` is
+ * `fromCardinality: 'many'` now — a reference deadline is genuinely about the
+ * three applications it covers — so `tx.link` no longer displaces the previous
+ * edge on its own, and the `unlinkAll` is what keeps this a set rather than a
+ * pile that only grows.
+ *
+ * `null` is the spelling of "this is about nothing now". Absent keeps meaning
+ * "leave it where it is", or every save of a title would unfile the item.
  */
-function fileUnder(ctx: ToolContext, id: NodeId, applicationId: NodeId | null | undefined) {
-  if (applicationId === undefined) return
-  // `null` is the spelling of "this is about nothing now". Absent had to keep
-  // meaning "leave it where it is", or every save of a title would have
-  // unfiled the item from the application it was about.
-  if (applicationId === null) ctx.tx.unlinkAll(id, { rel: 'ABOUT' })
-  else ctx.tx.link(id, 'ABOUT', applicationId)
+function fileUnder(
+  ctx: ToolContext,
+  id: NodeId,
+  applicationIds: readonly NodeId[] | null | undefined,
+) {
+  if (applicationIds === undefined) return
+  ctx.tx.unlinkAll(id, { rel: 'ABOUT' })
+  if (applicationIds === null) return
+  for (const applicationId of applicationIds) ctx.tx.link(id, 'ABOUT', applicationId)
 }
 
 export const timelineItemCreate = defineTool({
@@ -102,7 +115,7 @@ export const timelineItemCreate = defineTool({
       createdAt: ctx.now,
       updatedAt: ctx.now,
     })
-    fileUnder(ctx, id, input.applicationId)
+    fileUnder(ctx, id, input.applicationIds)
     return id
   },
 
@@ -147,7 +160,7 @@ export const timelineItemUpdate = defineTool({
       ...(input.joinUrl === undefined ? {} : { joinUrl: cleared(input.joinUrl) }),
       ...(input.completedOn === undefined ? {} : { completedOn: input.completedOn ?? undefined }),
     })
-    fileUnder(ctx, input.id, input.applicationId)
+    fileUnder(ctx, input.id, input.applicationIds)
   },
 
   describe: (input, _output, m) => ({
@@ -199,8 +212,13 @@ export const timelineItemDuplicate = defineTool({
       updatedAt: ctx.now,
     })
 
-    const about = ctx.memory.one(input.id, 'ABOUT', 'application')
-    if (about) ctx.tx.link(id, 'ABOUT', about.id)
+    // EVERY application, not the first. `ABOUT` is `fromCardinality: 'many'`,
+    // and `memory.one` answers with whichever edge it reaches first — so a
+    // reference deadline covering three jobs duplicated to one covering a
+    // single job, which is a copy that quietly means something else.
+    for (const about of ctx.memory.many(input.id, 'ABOUT', 'out', 'application')) {
+      ctx.tx.link(id, 'ABOUT', about.id)
+    }
     return id
   },
 

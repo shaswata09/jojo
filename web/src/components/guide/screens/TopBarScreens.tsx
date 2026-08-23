@@ -73,34 +73,54 @@ export function AssistantScreen() {
       open="the assistant"
     >
       <p className="text-sm text-text-2">
-        Five prompts a job search actually raises — a cover letter, tailoring a CV, reading a
-        posting, a follow-up email, interview preparation — each answered with a worked example
-        written out in full.
+        A threaded chat with the local model you connected in{' '}
+        <Go to={settingsPath()}>Settings</Go>, and a page of worked examples until you do. Which of
+        the two you get is decided by whether an endpoint is saved — nothing is hidden and there is
+        no switch.
       </p>
 
-      <NotConnected title="The replies are written, not generated">
-        No model is connected, so nothing here reads what you typed and improvises. The five prompts
-        return their own worked example; a message matching none of them returns a reply that opens
-        by saying it is canned, rather than a plausible paragraph about whatever you asked. Every
-        reply on the page carries the same badge —{' '}
-        <span className="text-text-1">Example response · no model connected</span> — and it is not a
-        call site&rsquo;s decision to leave off.
+      <h3 className="mt-4 text-sm font-medium">With a model connected</h3>
+      <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-text-2 marker:text-text-3">
+        <li>
+          It is <span className="text-text-1">agentic</span>: the model is handed the app&rsquo;s own
+          tools and can read and write records to answer you. Every call it makes is listed in the
+          reply as it happens — the tool, its arguments, and what came back — so a write is
+          something you watch rather than discover.
+        </li>
+        <li>
+          Conversations are <span className="text-text-1">threads, and they are saved</span>. They
+          live in this browser&rsquo;s IndexedDB beside everything else, so closing the tab keeps
+          them; the thread bar switches between them, and each can be filed under an application so
+          two searches do not blur into one history.
+        </li>
+        <li>
+          With the document reader configured as well, it can{' '}
+          <span className="text-text-1">read your documents</span> — a PDF, a Word file, a deck —
+          and answer from what is inside them.
+        </li>
+      </ul>
+
+      <NotConnected title="Without one, the replies are written rather than generated">
+        Five prompts a job search actually raises — a cover letter, tailoring a CV, reading a
+        posting, a follow-up email, interview preparation — each answered with a worked example
+        written out in full. A message matching none of them returns a reply that opens by saying it
+        is canned, rather than a plausible paragraph about whatever you asked, and every reply
+        carries the same badge —{' '}
+        <span className="text-text-1">Example response · no model connected</span>.
       </NotConnected>
 
       <ul className="mt-3.5 list-disc space-y-1.5 pl-5 text-sm text-text-2 marker:text-text-3">
         <li>
-          The conversation lives for this visit and is written nowhere.{' '}
-          <span className="text-text-1">Save to snippets</span> is the one write on the page: it
-          files the reply in the <Go to={vaultPath({ tool: 'snippets' })}>Vault</Go> under the tag
-          that reply belongs to, and the toast offers to open it there.
+          <span className="text-text-1">Save to snippets</span> files a reply in the{' '}
+          <Go to={vaultPath({ tool: 'snippets' })}>Vault</Go> under the tag that reply belongs to,
+          and the toast offers to open it there.
         </li>
         <li>
           Copy can be refused outright by a browser, so the button reports the failure instead of
           confirming something that did not happen.
         </li>
         <li>
-          Clearing the conversation offers an Undo rather than a confirmation — canned replies are
-          the cheapest thing in the app to get back.
+          Deleting a thread offers an Undo rather than a confirmation.
         </li>
       </ul>
 

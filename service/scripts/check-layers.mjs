@@ -95,6 +95,28 @@ const RULES = {
     packages: false,
     react: false,
   },
+  /*
+   * The one layer that exists because an implementation must NOT be duplicated.
+   *
+   * Every other adapter in this repo lives in an app, because the platforms
+   * genuinely differ. Cryptography is the exception: both ends of a pairing must
+   * derive byte-identical keys, and two implementations that disagree fail at
+   * the key confirmation — which looks exactly like being under attack. So the
+   * `Secrets` port is implemented once, in pure JavaScript with no platform
+   * surface, and both apps import the same module.
+   *
+   * `packages: true` because it is the whole point: `core` is `packages: false`
+   * and must stay that way, so the primitives cannot live there. It may read
+   * `core` for the port's types and nothing else — a crypto layer that learns
+   * what an application is has stopped being a crypto layer.
+   */
+  crypto: {
+    label: 'L1 crypto',
+    internal: ['core', 'crypto'],
+    alias: [],
+    packages: true,
+    react: false,
+  },
   storage: {
     label: 'L0 storage',
     // Never `core`. This layer moves opaque JSON blobs plus a primary key; if

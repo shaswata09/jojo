@@ -6,6 +6,7 @@ import type { ModelSettings } from '@/lib/llm'
 import {
   DEFAULTS,
   ModelSettingsContext,
+  READER_KEY,
   SERVERS_KEY,
   STORAGE_KEY,
 } from '@/lib/model-settings-context'
@@ -39,6 +40,12 @@ import { readStored, writeStored } from '@/lib/storage'
 export function ModelSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<ModelSettings>(readSettings)
   const [servers, setServers] = useState<readonly ModelServer[]>(readServers)
+  const [reader, setReaderState] = useState<string>(() => readStored(READER_KEY) ?? '')
+
+  const setReader = useCallback((endpoint: string) => {
+    setReaderState(endpoint)
+    writeStored(READER_KEY, endpoint)
+  }, [])
 
   const save = useCallback((next: ModelSettings) => {
     setSettings(next)
@@ -84,8 +91,8 @@ export function ModelSettingsProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo(
-    () => ({ settings, servers, save, remember, rename, forget }),
-    [settings, servers, save, remember, rename, forget],
+    () => ({ settings, servers, reader, save, setReader, remember, rename, forget }),
+    [settings, servers, reader, save, setReader, remember, rename, forget],
   )
   return <ModelSettingsContext.Provider value={value}>{children}</ModelSettingsContext.Provider>
 }

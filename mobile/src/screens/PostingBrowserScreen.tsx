@@ -7,6 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import {
   canonicalPostingUrl,
   captureFileName,
+  captureNote,
   hostOf,
   CAPTURE_REJECTION_MESSAGE,
 } from '@jojo/service/core/capture'
@@ -18,6 +19,7 @@ import { inlineCapture, writeCapture, type RawCapture } from '@/lib/capture'
 import type { RootStackParamList } from '@/navigation/types'
 import { useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
+import { byteLengthOf } from '@/lib/text'
 import { now, TODAY } from '@/lib/today'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -105,7 +107,13 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
           setSaving(false)
           return
         }
-        if (raw.type !== 'jojo:capture' && raw.type !== 'jojo:capture-failed') return
+        if (raw.type !== 'jojo:capture' && raw.type !== 'jojo:capture-failed') {
+          // A page can post anything it likes on this channel. Returning without
+          // clearing the flag left "Keeping…" spinning forever with no way back
+          // — the one state a user cannot recover from without leaving.
+          setSaving(false)
+          return
+        }
 
         try {
           const outcome = await inlineCapture(raw, now())
@@ -129,16 +137,23 @@ export function PostingBrowserScreen({ route, navigation }: Props) {
           const file = addFile({
             name,
             kind: 'page',
-            bucket: 'Applications',
-            size: sizeLabel(capture.html.length),
+            // 'Job postings', matching the web side. A capture is a posting
+            // rather than a document the user wrote, and the two platforms have
+            // to agree or the same Vault filter shows different things depending
+            // on which device filed the row.
+            bucket: 'Job postings',
+            // Byte length, not `.length`. `String.length` counts UTF-16 units,
+            // so a posting in Japanese or with emoji reported roughly half its
+            // real size — and the web side already counts bytes, so the same
+            // capture was labelled differently on the two platforms.
+            size: sizeLabel(byteLengthOf(capture.html)),
             sourceUrl: capture.url,
             capturedAt: capture.capturedAt,
-            ...(applicationId === undefined ? {} : { applicationId }),
-            note: `Captured from ${hostOf(capture.url)}${
-              capture.dropped > 0
-                ? ` · ${String(capture.dropped)} ${capture.dropped === 1 ? 'asset' : 'assets'} could not be kept`
-                : ''
-            }`,
+            // A list of one. This screen is opened FROM an application, so
+            // the id is known rather than guessed — which is exactly why
+            // dropping it silently was worse here than on the web.
+            ...(applicationId === undefined ? {} : { applicationIds: [applicationId] }),
+            note: captureNote(capture),
           })
 
           // `updateFile` rather than a second create: the record exists, and its

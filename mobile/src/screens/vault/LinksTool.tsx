@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
-import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
+import {
+  ApplicationField,
+  ApplicationPickerSheet,
+} from '@/components/common/ApplicationPickerSheet'
+import { FiledUnderLinks } from '@/components/common/FiledUnderLinks'
 import { buildRecordMenu } from '@/components/common/recordMenu'
 import { BucketFilter } from '@/components/ui/BucketFilter'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -17,7 +19,7 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider, Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { displayName } from '@jojo/service/data/seed'
+import { filedUnderLabel } from '@jojo/service/data/seed'
 import { agoLabel } from '@jojo/service/data/timeline'
 import { LINK_CATEGORIES } from '@jojo/service/data/vault'
 import type { LinkCategory, VaultLink } from '@jojo/service/data/vault'
@@ -25,10 +27,10 @@ import { useLabels } from '@/lib/labels-context'
 import { vaultEmptyState } from '@/lib/vault-empty'
 import { matchesQuery } from '@/lib/search'
 import { useApplications, useVault } from '@/lib/store-context'
+import { capitalize } from '@/lib/text'
 import { useCopy } from '@/lib/use-copy'
 import { displayUrl, hrefOf, normalizeUrl } from '@/lib/urls'
 import { useToast } from '@/lib/toast-context'
-import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -47,14 +49,16 @@ export function LinksTool({ focus }: { focus?: string }) {
   const { matches, selected, clearSelected } = useLabels()
   const { toast } = useToast()
   const { copy } = useCopy()
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const [category, setCategory] = useState<LinkCategory | 'all'>('all')
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<VaultLink | 'new' | null>(null)
   // The row's own way to file this under a job — the same action the files
-  // list carries, because the gap was identical here.
-  const [filing, setFiling] = useState<VaultLink | null>(null)
+  // list carries, because the gap was identical here. An ID rather than the
+  // record, because the picker is a multi-select that stays open across taps
+  // and has to be reading what the link says now, not when it opened.
+  const [filing, setFiling] = useState<string | null>(null)
+  const filingLink = links.find((l) => l.id === filing) ?? null
   const [menuFor, setMenuFor] = useState<VaultLink | null>(null)
 
   // The employer is part of the haystack — searching "Rice" should surface the
@@ -72,7 +76,7 @@ export function LinksTool({ focus }: { focus?: string }) {
             l.url,
             l.note,
             l.category,
-            l.applicationId ? byId.get(l.applicationId)?.org : undefined,
+            ...l.applicationIds.map((id) => byId.get(id)?.org),
           ),
       ),
     [links, query, matches, byId],
@@ -106,17 +110,17 @@ export function LinksTool({ focus }: { focus?: string }) {
     })
   }
 
-  const onFileUnder = (record: VaultLink, applicationId: string | undefined) => {
-    const before = record.applicationId
-    updateLink(record.id, { applicationId })
-    setFiling(null)
-    const now = applicationId ? byId.get(applicationId) : undefined
+  /** Sets the whole list — `FILED_UNDER` is many, so unticking the last unfiles it. */
+  const onFileUnder = (record: VaultLink, applicationIds: string[]) => {
+    const before = record.applicationIds
+    updateLink(record.id, { applicationIds })
+    const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
-      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      title: capitalize(filedUnderLabel(chosen)),
       description: record.title,
       action: {
         label: 'Undo',
-        onPress: () => updateLink(record.id, { applicationId: before }),
+        onPress: () => updateLink(record.id, { applicationIds: before }),
       },
     })
   }
@@ -200,7 +204,6 @@ export function LinksTool({ focus }: { focus?: string }) {
           </View>
         ) : (
           rows.map((l, i) => {
-            const app = l.applicationId ? byId.get(l.applicationId) : undefined
             return (
               <View key={l.id}>
                 {i > 0 ? <Divider /> : null}
@@ -222,16 +225,7 @@ export function LinksTool({ focus }: { focus?: string }) {
                         {l.note}
                       </Txt>
                     ) : null}
-                    {app ? (
-                      <Pressable
-                        accessibilityRole="link"
-                        onPress={() => navigation.navigate('ApplicationDetail', { id: app.id })}
-                      >
-                        <Txt size="xs" tone="info">
-                          {displayName(app)}
-                        </Txt>
-                      </Pressable>
-                    ) : null}
+                    <FiledUnderLinks applicationIds={l.applicationIds} />
                     <View style={styles.chips}>
                       <Chip size="sm" tone="gray">
                         {l.category}
@@ -253,11 +247,11 @@ export function LinksTool({ focus }: { focus?: string }) {
       </Panel>
 
       <ApplicationPickerSheet
-        open={filing !== null}
-        value={filing?.applicationId}
+        open={filingLink !== null}
+        values={filingLink?.applicationIds ?? []}
         onClose={() => setFiling(null)}
-        onChange={(id) => {
-          if (filing) onFileUnder(filing, id)
+        onChange={(ids) => {
+          if (filingLink) onFileUnder(filingLink, ids)
         }}
       />
 
@@ -274,11 +268,12 @@ export function LinksTool({ focus }: { focus?: string }) {
                 extra: [
                   {
                     id: 'file-under',
-                    label: menuFor.applicationId
-                      ? 'Change application'
-                      : 'File under an application',
+                    label:
+                      menuFor.applicationIds.length > 0
+                        ? 'Change applications'
+                        : 'File under an application',
                     icon: 'briefcase',
-                    onPress: () => setFiling(menuFor),
+                    onPress: () => setFiling(menuFor.id),
                   },
                   {
                     id: 'open',
@@ -339,16 +334,14 @@ function LinkEditor({
   onClose: () => void
   onSave: (draft: Omit<VaultLink, 'id' | 'savedOn'>) => void
 }) {
-  const { all: applications, byId } = useApplications()
   const [title, setTitle] = useState(initial?.title ?? '')
   const [url, setUrl] = useState(initial?.url ?? '')
   const [note, setNote] = useState(initial?.note ?? '')
   const [category, setCategory] = useState<LinkCategory>(initial?.category ?? 'Posting')
-  const [applicationId, setApplicationId] = useState(initial?.applicationId)
-  const [appPickerOpen, setAppPickerOpen] = useState(false)
+  const [applicationIds, setApplicationIds] = useState<readonly string[]>(
+    initial?.applicationIds ?? [],
+  )
   const [attempted, setAttempted] = useState(false)
-
-  const selectedApp = applicationId ? byId.get(applicationId) : undefined
 
   const submit = () => {
     setAttempted(true)
@@ -358,7 +351,7 @@ function LinkEditor({
       url: normalizeUrl(url),
       note: note.trim() || undefined,
       category,
-      applicationId,
+      applicationIds: [...applicationIds],
     })
   }
 
@@ -408,28 +401,11 @@ function LinkEditor({
         {/* The edge that makes a link worth filing. Without it the Vault is a
             bookmark folder; with it, the application's own screen can count
             what is filed under it and a delete knows what to unlink. */}
-        <FormField
-          label="Related application"
-          hint="Links the two, so the application counts this among what is filed under it."
-        >
-          <View style={s.row}>
-            <Button
-              label={selectedApp ? displayName(selectedApp) : 'Not linked'}
-              variant="outline"
-              size="md"
-              style={s.fill}
-              onPress={() => setAppPickerOpen(true)}
-            />
-            {applicationId ? (
-              <Button
-                label="Clear"
-                variant="ghost"
-                size="md"
-                onPress={() => setApplicationId(undefined)}
-              />
-            ) : null}
-          </View>
-        </FormField>
+        <ApplicationField
+          values={applicationIds}
+          onChange={setApplicationIds}
+          hint="Links the two, so each application counts this among what is filed under it."
+        />
 
         <TextField
           label="Note"
@@ -439,23 +415,6 @@ function LinkEditor({
           onChangeText={setNote}
         />
       </View>
-
-      <MenuSheet
-        open={appPickerOpen}
-        onClose={() => setAppPickerOpen(false)}
-        title="Related application"
-        actions={
-          applications.length === 0
-            ? [{ id: 'none', label: 'No applications yet', disabled: true, onPress: () => {} }]
-            : applications.map((a) => ({
-                id: a.id,
-                label: displayName(a),
-                hint: a.roleTag,
-                checked: a.id === applicationId,
-                onPress: () => setApplicationId(a.id),
-              }))
-        }
-      />
     </Sheet>
   )
 }

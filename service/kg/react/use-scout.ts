@@ -137,6 +137,7 @@ export function useScout() {
         schedule: draft.schedule,
         filter: draft.filter,
         enabled: draft.enabled,
+        ...(draft.kind === undefined ? {} : { kind: draft.kind }),
       })
       if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not add the pipeline.')
       return readBack(projections.pipelines, result.output)
