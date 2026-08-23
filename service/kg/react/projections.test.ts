@@ -74,7 +74,10 @@ describe('the seeded graph', () => {
     }
   })
 
-  it('sorts the timeline by date and the rest by creation order', () => {
+  // "and the rest by creation order" until the Vault's filed lists stopped
+  // using it. The body only ever asserted the timeline half, so the title would
+  // have gone on claiming the other half indefinitely without failing.
+  it('sorts the timeline by date', () => {
     const { repo, p } = session()
     const dates = p.timeline(read(repo)).map((i) => i.date)
     expect([...dates].sort()).toEqual(dates)
@@ -260,6 +263,27 @@ describe('the compatibility contract', () => {
   })
 })
 
+/*
+ * The Vault's four lists, and the one rule they now share.
+ *
+ * Three of them had the same defect: `ofType` is id-ascending, which is
+ * creation order, which puts the OLDEST record at the top and the newest below
+ * the fold. Documents were fixed first, on the complaint the suite below
+ * records; links and snippets were left behind, so the Vault ordered one of its
+ * lists one way and two the other.
+ *
+ * The two sort keys are NOT interchangeable, and the seeded data is what proves
+ * it. The link fixtures happen to be authored in descending `savedOn` order, so
+ * their ids ascend as their dates descend — sorting links by id descending, the
+ * key snippets correctly use, would put the oldest link first and invert the
+ * whole list. That is the trap the last test in the links suite holds shut.
+ *
+ * Reminders are the deliberate exception and are not here at all: they come
+ * from the timeline projection, they stay in due-date order, and `remindersOf`
+ * in `core/dates.ts` carries both the reason and the tests that stop somebody
+ * "finishing the job" later.
+ */
+
 describe('the order documents come back in', () => {
   const add = (s: ReturnType<typeof session>, name: string, savedOn?: string) =>
     s.runtime.runOrThrow('vault.file.add', {
@@ -299,5 +323,146 @@ describe('the order documents come back in', () => {
     const s = session()
     add(s, 'just-dropped.pdf')
     expect(s.p.files(read(s.repo))[0]?.name).toBe('just-dropped.pdf')
+  })
+})
+
+describe('the order links come back in', () => {
+  const add = (s: ReturnType<typeof session>, title: string, savedOn?: string) =>
+    s.runtime.runOrThrow('vault.link.save', {
+      title,
+      url: `https://example.com/${title}`,
+      category: 'Posting' as const,
+      ...(savedOn === undefined ? {} : { savedOn }),
+    })
+
+  it('is newest first, so the one just saved is at the top', () => {
+    const s = session()
+    add(s, 'old', '2026-08-01')
+    add(s, 'new', '2026-09-20')
+    const titles = s.p.links(read(s.repo)).map((l) => l.title)
+    expect(titles.indexOf('new')).toBeLessThan(titles.indexOf('old'))
+  })
+
+  it('breaks a same-day tie by when the record was minted', () => {
+    // Three links saved while reading one posting share a date, and the date
+    // alone would leave them in whatever order the store returned.
+    const s = session()
+    add(s, 'first', '2026-09-20')
+    add(s, 'second', '2026-09-20')
+    const titles = s.p.links(read(s.repo)).map((l) => l.title)
+    expect(titles.indexOf('second')).toBeLessThan(titles.indexOf('first'))
+  })
+
+  it('puts a link added now above every seeded one', () => {
+    // The case the complaint was actually about.
+    const s = session()
+    add(s, 'just-saved')
+    expect(s.p.links(read(s.repo))[0]?.title).toBe('just-saved')
+  })
+
+  it('orders the seeded links by their filed date, not by their ids', () => {
+    /*
+     * The trap. The link fixtures are authored newest-first, so their ids
+     * ASCEND as their dates DESCEND — which means id-descending, the key
+     * snippets correctly use, would invert this list end to end and put the
+     * oldest link at the top.
+     *
+     * Asserted on the seed rather than on records this test made, because the
+     * disagreement between the two keys only exists in data somebody authored
+     * by hand, and that is exactly the data a person loads to look at.
+     */
+    const s = session()
+    const dates = s.p.links(read(s.repo)).map((l) => l.savedOn)
+    expect(dates.length).toBeGreaterThan(1)
+    expect([...dates].sort((a, b) => b.localeCompare(a))).toEqual(dates)
+  })
+})
+
+describe('the order snippets come back in', () => {
+  const add = (s: ReturnType<typeof session>, title: string) =>
+    s.runtime.runOrThrow('vault.snippet.create', {
+      title,
+      tag: 'Cover letter' as const,
+      body: 'x',
+    })
+
+  it('is newest first, so the one just written is at the top', () => {
+    /*
+     * By id alone, because a snippet carries no date at all — see `Snippet` in
+     * `core/model.ts`. That is not the weaker key: ids are uuidv7 with a
+     * monotonic counter, so they order records minted inside one millisecond,
+     * where a `savedOn` day cannot.
+     */
+    const s = session()
+    add(s, 'older')
+    add(s, 'newer')
+    const titles = s.p.snippets(read(s.repo)).map((x) => x.title)
+    expect(titles.indexOf('newer')).toBeLessThan(titles.indexOf('older'))
+  })
+
+  it('orders two written in the same millisecond, which a date could not', () => {
+    const s = session()
+    add(s, 'a')
+    add(s, 'b')
+    add(s, 'c')
+    expect(s.p.snippets(read(s.repo)).map((x) => x.title).slice(0, 3)).toEqual(['c', 'b', 'a'])
+  })
+
+  it('puts a snippet added now above every seeded one', () => {
+    const s = session()
+    add(s, 'just-written')
+    expect(s.p.snippets(read(s.repo))[0]?.title).toBe('just-written')
+  })
+})
+
+describe('a duplicated record lands where the person is looking', () => {
+  /*
+   * Two paths duplicate a link and they disagreed about when the copy was
+   * filed. The row menus on both platforms re-save through `addLink` with no
+   * `savedOn`, so the copy is stamped today; `vault.link.duplicate` spread
+   * `...source.props` and carried the ORIGINAL's date across.
+   *
+   * Oldest-first hid it — every new record went to the bottom either way. With
+   * the newest at the top the two answers are a whole list apart: one puts the
+   * copy at row 1 beside the toast that offers to undo it, the other puts it
+   * halfway down next to its original, off screen.
+   */
+  it('puts a duplicated link at the top, not beside its original', () => {
+    const s = session()
+    const old = s.runtime.runOrThrow('vault.link.save', {
+      title: 'Rice posting',
+      url: 'https://example.com/rice',
+      category: 'Posting' as const,
+      savedOn: '2020-01-01',
+    })
+    s.runtime.runOrThrow('vault.link.save', {
+      title: 'something newer',
+      url: 'https://example.com/newer',
+      category: 'Posting' as const,
+      savedOn: '2026-01-01',
+    })
+    s.runtime.runOrThrow('vault.link.duplicate', { id: old })
+
+    const first = s.p.links(read(s.repo))[0]
+    expect(first?.title).toBe('Rice posting')
+    // Today's date, not 2020's — which is what carries it to the top.
+    expect(first?.savedOn).not.toBe('2020-01-01')
+  })
+
+  it('puts a duplicated snippet at the top', () => {
+    // No date to restamp; the freshly minted id is what does it.
+    const s = session()
+    const old = s.runtime.runOrThrow('vault.snippet.create', {
+      title: 'Short bio',
+      tag: 'Bio' as const,
+      body: 'x',
+    })
+    s.runtime.runOrThrow('vault.snippet.create', {
+      title: 'something newer',
+      tag: 'Bio' as const,
+      body: 'y',
+    })
+    s.runtime.runOrThrow('vault.snippet.duplicate', { id: old })
+    expect(s.p.snippets(read(s.repo))[0]?.title).toBe('Short bio')
   })
 })

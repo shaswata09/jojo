@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Briefcase, MessageSquarePlus, Search } from 'lucide-react'
+import { Briefcase, Loader2, MessageSquarePlus, Search } from 'lucide-react'
 import type { Thread } from '@jojo/service/react/use-threads'
 import type { NodeId } from '@jojo/service/core/model'
 import { agoLabel } from '@jojo/service/core/dates'
+import { useBusyThreads } from '@jojo/service/react/agent-runs-context'
 import { displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -35,14 +36,12 @@ export function ThreadList({
   threads,
   activeId,
   byId,
-  busy,
   onOpen,
   onNew,
 }: {
   threads: readonly Thread[]
   activeId: NodeId | null
   byId: ReadonlyMap<string, Application>
-  busy: boolean
   onOpen: (id: NodeId) => void
   onNew: () => void
 }) {
@@ -75,13 +74,18 @@ export function ThreadList({
     return [...by.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, g]) => g)
   }, [byId, filter, threads])
 
+  const busyThreads = useBusyThreads()
+
   return (
     <Panel className="min-w-0">
       <PanelTitle hint={threads.length > 0 ? `${threads.length} kept here` : undefined}>
         Conversations
       </PanelTitle>
 
-      <Button variant="outline" size="sm" className="w-full" disabled={busy} onClick={onNew}>
+      {/* Not disabled while something is running. Starting a second
+          conversation while the first works is the thing this panel exists for;
+          each run is keyed by its own conversation now, so they do not collide. */}
+      <Button variant="outline" size="sm" className="w-full" onClick={onNew}>
         <MessageSquarePlus className="size-3.5" strokeWidth={1.8} aria-hidden />
         New conversation
       </Button>
@@ -123,11 +127,11 @@ export function ThreadList({
                 {group.threads.map((t) => {
                   const asked = t.entries.filter((e) => e.kind === 'you').length
                   const on = t.id === activeId
+                  const working = busyThreads.includes(t.id)
                   return (
                     <li key={t.id}>
                       <button
                         type="button"
-                        disabled={busy}
                         aria-current={on ? 'true' : undefined}
                         onClick={() => {
                           onOpen(t.id)
@@ -142,9 +146,28 @@ export function ThreadList({
                             thing the person typed, and one line of it is
                             frequently the word "Which". */}
                         <span className="line-clamp-2 text-sm text-text-1">{t.title}</span>
-                        <span className="mt-0.5 block text-xs text-text-3">
-                          {asked} {asked === 1 ? 'question' : 'questions'} ·{' '}
-                          {agoLabel(t.updatedAt.slice(0, 10), TODAY)}
+                        <span className="mt-0.5 flex items-center gap-1.5 text-xs text-text-3">
+                          {/* Said here because it can no longer be inferred:
+                              while every other row was disabled, "something is
+                              running" was obvious from the whole panel being
+                              dead. Now that conversations run side by side, the
+                              only place that fact can live is on the row it is
+                              true of. */}
+                          {working ? (
+                            <>
+                              <Loader2
+                                className="size-3 shrink-0 animate-spin text-accent"
+                                strokeWidth={2}
+                                aria-hidden
+                              />
+                              <span className="text-accent">Working…</span>
+                            </>
+                          ) : (
+                            <span>
+                              {asked} {asked === 1 ? 'question' : 'questions'} ·{' '}
+                              {agoLabel(t.updatedAt.slice(0, 10), TODAY)}
+                            </span>
+                          )}
                         </span>
                       </button>
                     </li>

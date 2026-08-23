@@ -27,6 +27,8 @@ export type Thread = {
   entries: ThreadEntry[]
   /** The application it is filed under, if any. */
   applicationId: NodeId | null
+  /** The agent may write in this conversation without asking first. */
+  autoApprove: boolean
   updatedAt: string
 }
 
@@ -60,6 +62,7 @@ export function useThreads() {
           title: node.props.title,
           entries: entriesOf(node),
           applicationId: graph.one(node.id, 'FILED_UNDER', 'application')?.id ?? null,
+          autoApprove: node.props.autoApprove === true,
           updatedAt: node.updatedAt,
         }))
         // Most recently touched first: a list of conversations is read like an
@@ -77,6 +80,12 @@ export function useThreads() {
         // stored empty and then filled — one commit, one row in the journal.
         ...(opts.entries === undefined ? {} : { entries: [...opts.entries] }),
       }),
+    [runtime],
+  )
+
+  /** Turns asking on or off for one conversation. See `ThreadProps.autoApprove`. */
+  const setAuto = useCallback(
+    (id: NodeId, auto: boolean) => runtime.run('assistant.thread.auto.set', { id, auto }),
     [runtime],
   )
 
@@ -102,7 +111,7 @@ export function useThreads() {
     [runtime],
   )
 
-  return { threads, create, save, rename, file, remove }
+  return { threads, create, save, rename, file, remove, setAuto }
 }
 
 /* ------------------------------ the two readings --------------------------- */

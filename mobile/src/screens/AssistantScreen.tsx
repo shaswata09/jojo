@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { agentTurn, isConfigured } from '@/lib/llm'
 import { useAgent } from '@jojo/service/react/use-agent'
+import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import {
   toAgentEntries,
@@ -24,7 +25,7 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Screen } from '@/components/ui/Screen'
-import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
+import { Divider, Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import type { SnippetTag } from '@jojo/service/data/vault'
 import { useVault } from '@/lib/store-context'
@@ -196,7 +197,7 @@ function AgentScreen() {
   const { settings, reader } = useModelSettings()
   const { byId } = useApplications()
   const { files } = useVault()
-  const { threads, create, save, rename, file, remove } = useThreads()
+  const { threads, create, save, rename, file, remove, setAuto } = useThreads()
 
   /*
    * Which conversation is open, in state AND in a ref.
@@ -241,24 +242,35 @@ function AgentScreen() {
    * genuinely stopped — not racing a sheet — and nothing is written while the
    * question is on screen.
    */
-  const [ask, setAsk] = useState<{ step: AgentStep; decide: (ok: boolean) => void } | null>(null)
-  const approve = useCallback(
-    (step: AgentStep) =>
-      new Promise<boolean>((resolve) => {
-        setAsk({
-          step,
-          decide: (ok) => {
-            setAsk(null)
-            resolve(ok)
-          },
-        })
-      }),
-    [],
-  )
+  /*
+   * The approval question is NOT held here any more.
+   *
+   * It used to be screen state resolved by a sheet rendered from this screen,
+   * so the question existed only while the screen was on the stack. Leaving
+   * mid-run — and every exit from this screen pops it — parked `runAgent` on
+   * `await approve(...)` with nothing able to resolve it, forever, and the
+   * exchange was never saved. The registry keeps it on the run and
+   * `ApprovalSheet` draws it wherever the person is.
+   */
 
+  /**
+   * Built per RUN, so Stop can cancel the request rather than only the loop.
+   *
+   * `agentTurn` has always taken a signal and no caller ever passed one, so
+   * stopping left the socket open until the sixty-second timeout while the UI
+   * already said the run had stopped — and the cancelled turn then arrived as a
+   * red error blaming the model. The controller lives here because
+   * `AbortController` is a platform global the shared layer may not name.
+   */
   const llm = useCallback(
-    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
-      agentTurn(settings, messages, tools),
+    (run: RunSignal) => {
+      const controller = new AbortController()
+      run.onAbort(() => {
+        controller.abort()
+      })
+      return (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+        agentTurn(settings, messages, tools, controller.signal)
+    },
     [settings],
   )
 
@@ -270,19 +282,34 @@ function AgentScreen() {
    * would replace the live turns with the empty ones just written — the user's
    * question vanishing as they watch.
    */
-  const onSettled = useCallback(
-    (settled: readonly AgentEntry[]) => {
-      const stored = toThreadEntries(settled)
-      const id = activeRef.current
-      if (id) {
-        save(id, stored)
-        return
-      }
-      const asked = settled.find((e) => e.kind === 'you')
-      const made = create({ title: asked?.kind === 'you' ? asked.text : '', entries: stored })
-      if (made.ok) openThread(made.output)
+  /**
+   * Mints the conversation for a first question, before the run starts.
+   *
+   * At send rather than at settle, so the run can be keyed by the conversation
+   * it belongs to — and so the question is stored the moment it is asked. On a
+   * phone that second half matters more than on the web: React Native suspends
+   * JavaScript outright when the app leaves the foreground, so an interrupted
+   * run is the ordinary case rather than the unlucky one, and this is what
+   * leaves the question behind rather than nothing at all.
+   */
+  const startThread = useCallback(
+    (asked: string) => {
+      const made = create({ title: asked, entries: [{ kind: 'you', text: asked }] })
+      if (!made.ok) return null
+      openThread(made.output)
+      return made.output
     },
-    [create, save],
+    [create],
+  )
+
+  const onSettled = useCallback(
+    (threadId: NodeId, settled: readonly AgentEntry[]) => {
+      // The conversation this run was FOR, handed back by the registry. Reading
+      // "which is open now" is what used to write one conversation's answer
+      // into another.
+      save(threadId, toThreadEntries(settled))
+    },
+    [save],
   )
 
   /**
@@ -307,18 +334,15 @@ function AgentScreen() {
 
   const { entries, busy, send, stop, clear } = useAgent({
     llm,
-    approve,
     onSettled,
+    startThread,
     ...(reader ? { convert } : {}),
-    ...(active
-      ? {
-          thread: {
-            key: active.id,
-            entries: toAgentEntries(active.entries),
-            history: toTranscript(active.entries),
-          },
-        }
-      : {}),
+    thread: {
+      id: activeId,
+      entries: active ? toAgentEntries(active.entries) : [],
+      history: active ? toTranscript(active.entries) : [],
+      autoApprove: active?.autoApprove ?? false,
+    },
   })
 
   const submit = () => {
@@ -418,6 +442,9 @@ function AgentScreen() {
               })
             }
           }}
+          onSetAuto={(id, auto) => {
+            setAuto(id, auto)
+          }}
           onDelete={(id) => {
             const result = remove(id)
             if (!result.ok) return
@@ -454,23 +481,7 @@ function AgentScreen() {
               }
               if (entry.kind === 'step') {
                 return (
-                  <StepRow
-                    key={entry.id}
-                    step={entry.step}
-                    onUndo={undoStep}
-                    {...(ask && ask.step.id === entry.step.id
-                      ? {
-                          pending: {
-                            allow: () => {
-                              ask.decide(true)
-                            },
-                            decline: () => {
-                              ask.decide(false)
-                            },
-                          },
-                        }
-                      : {})}
-                  />
+                  <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
                 )
               }
               if (entry.kind === 'note') {
@@ -523,6 +534,24 @@ function AgentScreen() {
           </View>
         )}
 
+        {/* Above the composer rather than in a card underneath. They are what
+            a person reads when they do not know what to ask, so they belong
+            beside the box they would type into. */}
+        <View style={[styles.prompts, { marginBottom: space[2] }]}>
+          {AGENT_PROMPTS.map((p) => (
+            <Button
+              key={p}
+              label={p}
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onPress={() => {
+                send(p)
+              }}
+            />
+          ))}
+        </View>
+
         <View style={styles.composer}>
           <TextInput
             value={prompt}
@@ -553,26 +582,10 @@ function AgentScreen() {
         </View>
       </Panel>
 
-      <Panel>
-        <PanelTitle hint="it will use whatever tools these need">Try one of these</PanelTitle>
-        <View style={styles.prompts}>
-          {AGENT_PROMPTS.map((p) => (
-            <Button
-              key={p}
-              label={p}
-              variant="outline"
-              disabled={busy}
-              onPress={() => {
-                void send(p)
-              }}
-            />
-          ))}
-        </View>
-        <Txt size="sm" tone="secondary" style={{ marginTop: space[4] }}>
-          It reads before it writes, asks before it deletes, and every change it makes goes through
-          the same undo a button press does.
-        </Txt>
-      </Panel>
+      <Txt size="sm" tone="secondary">
+        It reads before it writes, asks before each change unless you turn that off for a
+        conversation, and everything it does goes through the same undo a button press does.
+      </Txt>
 
       <ThreadListSheet
         open={browsing}
@@ -739,6 +752,22 @@ function ScriptedScreen() {
           </View>
         )}
 
+        {/* Above the composer, same move as the connected panel's, so the two
+            do not diverge for the person who has not set a model up yet. */}
+        <View style={[styles.prompts, { marginBottom: space[2] }]}>
+          {SCRIPTS.map((s) => (
+            <Button
+              key={s.id}
+              label={s.action}
+              variant="outline"
+              size="sm"
+              onPress={() => {
+                send(s.action)
+              }}
+            />
+          ))}
+        </View>
+
         <View style={styles.composer}>
           <TextInput
             value={prompt}
@@ -766,25 +795,10 @@ function ScriptedScreen() {
         </View>
       </Panel>
 
-      <Panel>
-        <PanelTitle hint="each one answers with an example">Try one of these</PanelTitle>
-        <View style={styles.prompts}>
-          {SCRIPTS.map((s) => (
-            <Button
-              key={s.id}
-              label={s.action}
-              variant="outline"
-              onPress={() => {
-                send(s.action)
-              }}
-            />
-          ))}
-        </View>
-        <Txt size="sm" tone="secondary" style={{ marginTop: space[4] }}>
-          With a model connected each of these reads your profile and documents as context. Because
-          inference is local, your CV and your notes are never uploaded anywhere.
-        </Txt>
-      </Panel>
+      <Txt size="sm" tone="secondary">
+        With a model connected each of these reads your profile and documents as context. Because
+        inference is local, your CV and your notes are never uploaded anywhere.
+      </Txt>
     </Screen>
   )
 }

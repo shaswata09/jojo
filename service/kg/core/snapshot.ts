@@ -342,10 +342,16 @@ export class MutableSnapshot implements GraphSnapshot {
    * the record it used to be.
    */
   reset(nodes: readonly StoredNode[] = [], edges: readonly StoredEdge[] = []): void {
+    // A snapshot, not a copy: the loop body mutates the collection it is
+    // walking, so it has to walk a list taken before the first change.
+    // oxlint-disable-next-line unicorn/no-useless-spread
     for (const id of [...this.#byId.keys()]) this.removeNode(id)
     // `removeNode` only reaches edges incident to a node it can see, so an edge
     // whose endpoints were never in `#byId` would outlive the store it belonged
     // to and show up as a connection to a record the graph does not have.
+    // A snapshot, not a copy: the loop body mutates the collection it is
+    // walking, so it has to walk a list taken before the first change.
+    // oxlint-disable-next-line unicorn/no-useless-spread
     for (const id of [...this.#edgeById.keys()]) this.removeEdge(id)
 
     for (const node of nodes) this.putNode(node)

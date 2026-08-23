@@ -190,6 +190,39 @@ export const followUpsOf = (items: TimelineItem[], today: string): TimelineItem[
   items.filter((i) => i.kind === 'follow-up' && !i.completedOn && i.date <= today)
 
 /**
+ * The Vault's reminders list — every reminder, in due-date order.
+ *
+ * ## Why this is NOT newest-added-first, when the rest of the Vault is
+ *
+ * The Vault's other three lists — links, files, snippets — are ordered newest
+ * first, because a link is an inert thing you filed and "when I saved it" is
+ * the only order it has. A reminder is not inert. It is a commitment with a
+ * date, both Vault reminder tools GROUP these rows by that date (overdue,
+ * today, upcoming, done), and every row prints it.
+ *
+ * So ordering by when it was typed makes the visible dates jump around inside
+ * each group, and the top of Overdue stops being the thing you are most late
+ * on. Measured against the seeded data, newest-added-first put the reminder due
+ * in two days at the BOTTOM of Upcoming, under one due in a month, and the
+ * least-overdue item at the top of Overdue.
+ *
+ * The grouping is what carries the "did I just add it" answer instead: a
+ * reminder for anything near-term lands in Today or the top of Upcoming by its
+ * date alone. Weighed against a list you can triage at a glance, that is the
+ * better trade — and it is a deliberate choice rather than the order this
+ * happened to arrive in, which is why it has a name and tests here.
+ *
+ * ## Order in, order out
+ *
+ * `filter` and nothing else. The source is the `timeline` projection, already
+ * sorted by `compareItems` — date, then all-day, then start time. Re-sorting
+ * here would be a second copy of that rule and a second chance to disagree with
+ * the calendar about what "next" means.
+ */
+export const remindersOf = (items: readonly TimelineItem[]): TimelineItem[] =>
+  items.filter((i) => i.remind)
+
+/**
  * Days until an offer must be answered. Negative once the date has passed, so
  * an expired offer reads as expired.
  *

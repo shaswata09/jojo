@@ -97,7 +97,15 @@ const DAY_MS = 86_400_000
  * Every node in the seed is created at one instant, and every id is minted from
  * it. `uuidv7`'s monotonic counter is what orders them inside that millisecond,
  * so "id-ascending" still means "the order this function wrote them in" — which
- * is the order the fixtures are authored in, which is the order the lists render.
+ * is the order the fixtures are authored in.
+ *
+ * That is STORAGE order and no longer render order. The Vault's filed lists —
+ * links, files and snippets — come back newest first (see the note above
+ * `links` in `react/projections.ts`), so for those the authoring order below is
+ * either reversed or re-keyed on `savedOn` before anybody sees it. Reminders
+ * are the exception in the other direction: they stay in due-date order, which
+ * the fixtures happen to be authored in too. `seed.test.ts` compares against
+ * this order, not the rendered one.
  */
 export function seedToGraph(now: Instant): SeedGraph {
   const atMs = Date.parse(now)

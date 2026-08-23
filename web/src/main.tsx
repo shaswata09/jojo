@@ -3,8 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from '@/App'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { AgentRunsProvider } from '@jojo/service/react/agent-runs-provider'
+import { ApprovalHost } from '@/components/assistant/ApprovalHost'
 import { DialogHost, DialogsProvider } from '@/lib/dialogs'
 import { LabelsProvider } from '@/lib/labels'
+import { PipelinesProvider } from '@/lib/pipelines'
 import { ModelSettingsProvider } from '@/lib/model-settings'
 import { MascotProvider } from '@/lib/mascot'
 import { RolesProvider } from '@/lib/roles'
@@ -36,8 +39,25 @@ createRoot(container).render(
                 <ModelSettingsProvider>
                   <DialogsProvider>
                     <MascotProvider>
-                      <App />
-                      <DialogHost />
+                      {/* Above the router, which starts inside `App`.
+                          A conversation's run is keyed by which conversation it
+                          is and has to outlive the page that started it — the
+                          same reason the toasts and the dialog host are up here.
+                          `ApprovalHost` is a sibling of `DialogHost` for the
+                          sharper version of that reason: a destructive step
+                          reached after the user walked away has to be
+                          answerable from wherever they are, or the run waits
+                          forever and the exchange is never saved. */}
+                      <AgentRunsProvider>
+                        {/* Above the router too, and for the same reason: a
+                            pipeline that stopped when you left Job Scout was a
+                            pipeline that did not do what its own caption said. */}
+                        <PipelinesProvider>
+                          <App />
+                          <DialogHost />
+                          <ApprovalHost />
+                        </PipelinesProvider>
+                      </AgentRunsProvider>
                     </MascotProvider>
                   </DialogsProvider>
                 </ModelSettingsProvider>

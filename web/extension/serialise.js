@@ -97,7 +97,7 @@ export function serialise(policy) {
        * every font and image its own `url()`s point at.
        */
       .replace(
-        /@import\s+(?:url\(\s*(['\"]?)([^'\")]+)\1\s*\)|(['\"])([^'\"]+)\3)[^;]*;?/gi,
+        /@import\s+(?:url\(\s*(['"]?)([^'")]+)\1\s*\)|(['"])([^'"]+)\3)[^;]*;?/gi,
         (whole, _q1, viaUrl, _q2, viaString) => {
           const raw = viaUrl ?? viaString ?? ''
           if (raw.trim().startsWith('data:')) return whole

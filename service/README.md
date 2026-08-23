@@ -38,8 +38,10 @@ Each layer may import the ones above it and never the ones below.
 | `@jojo/service/core/*`    | L1. The domain model, the snapshot and its indexes, validation, projection, dates, statistics. No I/O, no clock, no React. |
 | `@jojo/service/storage/*` | L0/L2. The `Driver` port, its conformance suite, the in-memory driver, schema and migrations.                              |
 | `@jojo/service/repo/*`    | L2. `boot`, the repository, the journal, the write queue, the seed. Durability lives here.                                 |
-| `@jojo/service/tools/*`   | L3. Every write the app can make, as 62 named, undoable, schema-checked operations.                                        |
-| `@jojo/service/react/*`   | L4. Providers and hooks over the repository. Two `.tsx` files, both providers.                                             |
+| `@jojo/service/tools/*`   | L3. Every write the app can make, as 73 named, undoable, schema-checked operations.                                        |
+| `@jojo/service/agent/*`   | L3.5. The model-facing layer: the tool catalogue as JSON Schema, the agent loop, MCP, the read-only query surface, the MarkItDown client and the posting reader. Protocols as data — it may not fetch. |
+| `@jojo/service/crypto/*`  | L1. Hashing, key agreement and the cipher behind Transfer. Sees `core` for the port's types and nothing else.               |
+| `@jojo/service/react/*`   | L4. Providers and hooks over the repository. Three `.tsx` files, all providers.                                            |
 | `@jojo/service/data/*`    | The demo fixtures. Read by `repo/seed.ts` and by `tools/memory.ts`.                                                        |
 | `@jojo/service/log`       | Logging.                                                                                                                   |
 
@@ -125,6 +127,14 @@ out into a function over its collaborators so it can be asserted against a repos
 built from the memory driver — `undoableWith` and `undoableSaying` in `react/undo.ts`
 and `runWithToast` in `react/use-tool.ts` are the worked examples, and each of their
 headers says why.
+
+`npm -w @jojo/service run test:coverage` reports what the suite reaches. Two
+exclusions, both explained in `vitest.config.mts`: the `react/use-*` hooks, which
+a node environment cannot render and which are thin wrappers over tools covered
+directly, and `*-conformance.ts`, which are harnesses for the apps to run rather
+than logic of their own. With those out it is about 93% of statements and 82% of
+branches; counting them in scores this suite on work it is not the right suite
+to do.
 
 ## Where to look for _why_
 

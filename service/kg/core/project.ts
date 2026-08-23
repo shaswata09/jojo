@@ -153,6 +153,9 @@ export function createProjection<T extends NodeType, R>(
     // already showed up as a length change above. Nothing a caller can read
     // distinguishes this loop being here from it being gone, which is why there
     // is no test for it: one would pass either way.
+    // A snapshot, not a copy: the loop body mutates the collection it is
+    // walking, so it has to walk a list taken before the first change.
+    // oxlint-disable-next-line unicorn/no-useless-spread
     for (const id of [...cache.keys()]) {
       if (!live.has(id)) {
         cache.delete(id)

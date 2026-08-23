@@ -4,8 +4,15 @@ The same job tracker as `web/`, as an Android and iOS app. Bare React Native —
 no Expo, no framework wrapper, no tool that has to run before the project can be
 opened.
 
-Everything runs on the device. There is no server, no account and no network call
-of any kind. Records are saved on the device and survive closing the app; a
+Everything runs on the device. There is no server and no account, and nothing is
+sent to us — there is no "us" to send it to. What the app *can* reach is only
+what you point it at, and all of it is optional: a model server and a document
+reader, both at addresses you type into Settings; a job posting, fetched by that
+reader when you add an application from a link, or loaded in the in-app browser
+when you open one; and your other device over the local network during a
+Transfer. With none of that configured it makes no network call at all.
+
+Records are saved on the device and survive closing the app; a
 first launch asks whether to start from the same twelve applications, timeline,
 vault and profile the web prototype ships with, or from nothing. Settings is
 where you change your mind later.
@@ -154,9 +161,18 @@ Two things Expo was doing invisibly, that are now written down:
   that happens now — see the caveat further down, because the `URL` one is not
   a missing global but a wrong one.
 
-`expo-font` is still physically in `node_modules`: `@react-native-vector-icons/common`
-declares it as an optional peer and npm installs it regardless. It is stubbed out
-of the bundle in `metro.config.js`, which explains why at length.
+`expo-font` is no longer in `node_modules` either. It used to be:
+`@react-native-vector-icons/common` declares it as an optional peer and npm 7+
+installs optional peers regardless of whether anything wants them. The root
+`.npmrc` now sets `legacy-peer-deps=true`, which stops that and took the last
+forty-odd Expo packages out of the workspace with it — they were arriving
+through `@react-three/fiber`, a **web** dependency, which is exactly the kind of
+coupling this app should not have.
+
+The stub in `metro.config.js` stays, and is now load-bearing rather than
+tidying: the import edge is still in the icon package's source, and an
+unresolvable `require` is a build error rather than a missing feature. That file
+explains it at length.
 
 ### Platform floor
 
@@ -454,15 +470,18 @@ Four journeys the web app had and this did not, now closed:
 | **Ask the graph a question** | Only the fixed examples. Now a pattern builder — kind, has/missing, which link, other end — the same four parts the web builder has.        |
 | **The guide is four pages**  | One screen against the web's overview / screens / graph / built-with. Now the same four, behind a segmented control rather than a nav rail. |
 
-Two the web app has that this deliberately does not:
+One the web app has that this does not:
 
-- **The audit log.** Settings shows every write, newest first, with an undo on
-  the newest. It reads the graph store's journal; this app's store is a reducer
-  with no journal, so the panel would have nothing to list. Building one is
-  functional work, not mock work.
-- **Storage diagnostics.** They report on browser storage — quota, what was
-  recovered, what was pruned. Nothing here is persisted, so there is nothing to
-  diagnose. The Runtime panel under More says that plainly instead.
+- **Storage diagnostics.** They report on *browser* storage — quota, what was
+  recovered from a failed open, what was pruned. This app persists too, into
+  AsyncStorage by way of `kg/storage/rn-driver.ts`, but the questions are not
+  the same ones: there is no quota API to ask and no eviction to report. The
+  Runtime panel under More says what there is to say instead.
+
+The audit log used to be listed here as a deliberate gap, on the grounds that
+this app's store was "a reducer with no journal". Both halves stopped being true
+when mobile moved onto `@jojo/service`: it is the same repository the web app
+uses, journal and all, and `Settings` renders the same panel.
 
 And one difference of shape rather than coverage: the web app drags calendar
 chips between days. That is still a stage menu and a date picker here, for the
@@ -476,12 +495,14 @@ thumb can aim. The board's drag exists because a 250pt column is.
 Three things that used to be listed here are no longer placeholders, and the
 copy on every screen that claimed otherwise has been corrected:
 
-- **The assistant answers.** Point it at any OpenAI-compatible server in
-  Settings — Ollama, LM Studio, vLLM, one tap each — and it sends a real
-  request, with the last few turns for context. Without one it still falls back
-  to the five worked examples, still badged. A failed request says what failed;
-  it never substitutes a canned answer for a real one silently. This is the only
-  network call the app can make, and it goes to the address you typed.
+- **The assistant answers, and acts.** Point it at any OpenAI-compatible server
+  in Settings — Ollama, LM Studio, vLLM, one tap each — and it becomes a
+  threaded, agentic chat: the model is handed the app's own tools and can read
+  and write records to answer you, every call it makes is listed in the reply as
+  it happens, and each thread is saved on this device and can be filed under an
+  application. Without a server it still falls back to the five worked examples,
+  still badged. A failed request says what failed; it never substitutes a canned
+  answer for a real one silently.
 - **The scout scores.** Fit percentages are computed on the device against the
   match terms, target roles and regions on your profile, weighted in that order,
   and every row says what it matched on. A profile with nothing in it produces

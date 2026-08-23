@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native'
 import type { Thread } from '@jojo/service/react/use-threads'
 import type { NodeId } from '@jojo/service/core/model'
 import { agoLabel } from '@jojo/service/core/dates'
+import { useBusyThreads } from '@jojo/service/react/agent-runs-context'
 import { displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
 import { Button } from '@/components/ui/Button'
@@ -71,6 +72,8 @@ export function ThreadListSheet({
     }
     return [...by.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, g]) => g)
   }, [byId, filter, threads])
+
+  const busyThreads = useBusyThreads()
 
   return (
     <Sheet
@@ -149,12 +152,22 @@ export function ThreadListSheet({
                     {t.title}
                   </Txt>
                   <View style={[s.row, { gap: space[2] }]}>
-                    <Txt size="xs" tone="muted">
-                      {asked} {asked === 1 ? 'question' : 'questions'}
-                    </Txt>
-                    <Txt size="xs" tone="muted">
-                      · {agoLabel(t.updatedAt.slice(0, 10), TODAY)}
-                    </Txt>
+                    {/* A conversation can be working while you read another
+                        one, so the row is the only place that fact can live. */}
+                    {busyThreads.includes(t.id) ? (
+                      <Txt size="xs" tone="accent">
+                        Working…
+                      </Txt>
+                    ) : (
+                      <>
+                        <Txt size="xs" tone="muted">
+                          {asked} {asked === 1 ? 'question' : 'questions'}
+                        </Txt>
+                        <Txt size="xs" tone="muted">
+                          · {agoLabel(t.updatedAt.slice(0, 10), TODAY)}
+                        </Txt>
+                      </>
+                    )}
                   </View>
                 </Pressable>
               )

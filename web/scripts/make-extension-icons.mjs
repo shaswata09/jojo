@@ -13,10 +13,21 @@
  * is readable and editable, and the PNG encoder under it is thirty lines of
  * zlib.
  *
- * The mark is a document with a folded corner and a bookmark, on jojo's own
- * near-black. Deliberately blunt shapes: 16px is the size that actually matters
- * and the one most icons fail, because anything finer than a two-pixel stroke
- * becomes a smudge in a toolbar.
+ * THE MARK IS THE FAVICON — jojo's robot head, the same one in the browser tab.
+ * It used to be a document with a folded corner and a bookmark: a perfectly good
+ * drawing of "save a page" that looked like a different product from the tab
+ * beside it. An extension button and a tab favicon sit inches apart in the same
+ * chrome, and a person should not have to learn that they are the same app.
+ *
+ * The geometry is converted from `web/public/favicon.svg` by dividing its
+ * 512-unit viewBox down to the 48-unit grid this file draws on — see `u()`. That
+ * keeps "the same icon" checkable rather than approximate: move an ear in the
+ * SVG and the divisor says where it goes here.
+ *
+ * Deliberately blunt shapes: 16px is the size that actually matters and the one
+ * most icons fail, because anything finer than a two-pixel stroke becomes a
+ * smudge in a toolbar. The favicon's shading paths are dropped for that reason —
+ * they are a few units wide at 512 and land inside one pixel at 16.
  */
 
 import { deflateSync } from 'node:zlib'
@@ -28,53 +39,67 @@ const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
 const OUT = join(WEB, 'extension', 'icons')
 const SIZES = [16, 32, 48, 128]
 
-/** jojo's palette — `--page`, `--text-1` and `--series-1` from web/src/index.css. */
-const INK = [10, 10, 10]
-const PAPER = [250, 250, 250]
-const FOLD = [200, 200, 200]
-const MARK = [62, 150, 198]
-const RULE = [120, 120, 120]
+/**
+ * The favicon's palette, and the favicon's geometry.
+ *
+ * Both are read off `web/public/favicon.svg` and converted from its 512-unit
+ * viewBox to the 48-unit grid below by dividing by 512/48. Keeping the numbers
+ * derived rather than eyeballed is what makes "the same icon" checkable: if the
+ * favicon moves an ear, the divisor says where the ear goes here.
+ */
+const PLATE = [23, 23, 23] // #171717
+const EAR = [174, 182, 191] // #aeb6bf
+const HEAD = [230, 231, 232] // #e6e7e8
+const VISOR = [87, 89, 107] // #57596b
+const EYE = [113, 220, 239] // #71dcef
+
+/** 512-unit viewBox to this file's 48-unit grid. */
+const K = 48 / 512
+const u = (n) => n * K
+
+/** Inside a rounded rectangle, the same shape an SVG `rx` describes. */
+function inRounded(x, y, rx, ry, w, h, r) {
+  if (x < rx || y < ry || x > rx + w || y > ry + h) return false
+  const cx = Math.min(Math.max(x, rx + r), rx + w - r)
+  const cy = Math.min(Math.max(y, ry + r), ry + h - r)
+  return (x - cx) ** 2 + (y - cy) ** 2 <= r * r
+}
+
+const inCircle = (x, y, cx, cy, r) => (x - cx) ** 2 + (y - cy) ** 2 <= r * r
 
 /**
  * Colour at one point of a 48-unit-square design, or null for transparent.
  *
- * Written against a fixed 48-unit grid so the artwork is size-independent; the
- * caller samples it. Supersampled 4x by `paint`, which is what keeps the rounded
- * corner from stair-stepping at 16px.
+ * THE ROBOT HEAD, the same mark the browser tab shows. It used to be a document
+ * with a folded corner and a bookmark — a perfectly good icon of "save a page"
+ * that had nothing to do with jojo, so the tab and the toolbar button were two
+ * different products as far as anyone glancing at them could tell.
+ *
+ * Cropped to the head for the reason the favicon gives: the full robot collapses
+ * into a smudge at 16px, and the visor with two eyes is the part that survives.
+ * The favicon's shading paths — the darker left edge on the head, visor and each
+ * eye — are left out here. They are a few units wide at 512 and land inside a
+ * single pixel at 16, where they only muddy the colour.
+ *
+ * Tested painter's-algorithm style, front to back: eyes, visor, head, ears,
+ * plate. Supersampled 4x by `paint`, which is what keeps the plate's rounded
+ * corner from stair-stepping.
  */
 function at(x, y) {
-  // Rounded-square tile.
-  const r = 11
-  const inside =
-    x >= 0 &&
-    y >= 0 &&
-    x <= 48 &&
-    y <= 48 &&
-    (() => {
-      const cx = Math.min(Math.max(x, r), 48 - r)
-      const cy = Math.min(Math.max(y, r), 48 - r)
-      return (x - cx) ** 2 + (y - cy) ** 2 <= r * r
-    })()
-  if (!inside) return null
+  // The plate. Everything else is inside it, so it is also the clip.
+  if (!inRounded(x, y, 0, 0, 48, 48, u(115))) return null
 
-  // The bookmark sits proud of the page, so it is tested first.
-  if (x >= 31 && x <= 38 && y >= 24 && y <= 38) {
-    // Notch at the foot: two diagonals meeting in the middle.
-    const notch = y > 34 && Math.abs(x - 34.5) < y - 34
-    if (!notch) return MARK
-  }
+  // Ears, behind the head and poking out either side.
+  if (inRounded(x, y, u(8), u(200), u(56), u(112), u(21))) return EAR
+  if (inRounded(x, y, u(448), u(200), u(56), u(112), u(21))) return EAR
 
-  // The page.
-  if (x >= 11 && x <= 35 && y >= 11 && y <= 39) {
-    // Folded corner: the triangle above the diagonal from (27,11) to (35,19).
-    if (x >= 27 && y <= 19 && x - 27 >= y - 11) return FOLD
-    // Two ruled lines.
-    if (x >= 15 && x <= 27 && y >= 23 && y <= 25.6) return RULE
-    if (x >= 15 && x <= 31 && y >= 28 && y <= 30.6) return RULE
-    return PAPER
-  }
+  // Eyes, then the visor they sit in, then the head around it.
+  if (inCircle(x, y, u(196), u(256), u(41))) return EYE
+  if (inCircle(x, y, u(316), u(256), u(41))) return EYE
+  if (inRounded(x, y, u(106), u(153), u(300), u(206), u(99))) return VISOR
+  if (inRounded(x, y, u(46), u(117), u(420), u(278), u(133))) return HEAD
 
-  return INK
+  return PLATE
 }
 
 /** RGBA bytes for one square icon, 4x supersampled. */

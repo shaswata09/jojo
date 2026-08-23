@@ -4,9 +4,13 @@
 
 **J**arvis f**O**r **J**ob **O**rganization — a local-first tracker for academic and industry job applications.
 
-Everything runs on your own machine. Your applications, documents and profile live in your browser;
-an optional companion server mirrors them to a JSON file on disk, and an optional local LLM powers
-drafting and job matching. Nothing is sent to a third party.
+Everything runs on your own machine. Your applications, documents and profile live in your browser
+or on your phone, and nothing is sent to a third party — there is no account and no backend. What
+the app can reach is only what you point it at, and every piece of it is optional: a local LLM for
+the assistant, the graph box and scout scoring; a local document reader for PDFs, Word files and
+job postings; the browser extension for keeping a posting; and your own other device over the local
+network for Transfer. With none of it configured the app still tracks applications, and a backup
+file you keep is how records move between machines.
 
 ---
 
@@ -20,11 +24,18 @@ bundle. Nothing deploys unless all of it is green.
 | ------------------- | --------------------------- | -------------------------------------------------- |
 | **Web app**         | every push to `main`        | GitHub Pages                                        |
 | **Android APK**     | every push to `main`        | the run's build artifacts, kept 90 days             |
-| **Android release** | a tag matching `v*`         | a **draft** GitHub Release with the `.apk` attached |
+| **Browser extension** | every push to `main`      | the run's build artifacts, kept 90 days             |
+| **Release**         | a tag matching `v*`         | a **draft** GitHub Release with the `.apk` and the extension `.zip` attached |
 
 To cut a release: `git tag v0.1.0 && git push --tags`. The pipeline builds the
-APK, opens a draft release with it attached, and waits for you to write the
-notes and publish — nothing is announced unattended.
+APK and the extension, opens a draft release with both attached, and waits for
+you to write the notes and publish — nothing is announced unattended.
+
+The extension carries its own version in `web/extension/manifest.json`, kept in
+step with the app's — both are 0.1.0. It is loaded unpacked from disk and has no
+store listing, so nothing forces the two apart; if it is ever published to the
+Chrome Web Store, that changes, because Chrome refuses an upload whose version is
+not higher than the last.
 
 ### Signing the APK
 
@@ -53,17 +64,35 @@ architectures that exist on emulators and on no phone anyone owns. Local
 development still builds all four, so `npm -w jojo-mobile run android` works on
 an Intel emulator; only the published artifact is trimmed.
 
+### Why `.npmrc` sets `legacy-peer-deps`
+
+Because otherwise npm reinstalls Expo. Nothing here uses it — the phone app is
+bare React Native — but `@react-three/fiber`, which the web app uses for the
+transfer scene, lists `expo` and three of its packages as **optional** peer
+dependencies for a React Native renderer this app never imports. npm 7+ installs
+optional peers anyway, which dragged in `@expo/cli`, `@expo/metro-config`,
+`babel-preset-expo` and about forty more.
+
+Turning peer auto-install off removes all of it: **1333 packages become 1147**,
+and `npm audit` goes from 24 vulnerabilities to 4 — the remaining four are inside
+Metro, React Native's own bundler. `npm ci` reads the file, so CI installs the
+same tree.
+
 ---
 
-## The three layers
+## What it does, and what each piece adds
 
-jojo works with zero setup and gains capability as you opt in.
+jojo works with zero setup and gains capability as you opt in. Nothing below the
+line you stop at is required, and nothing above it is missing — a screen that
+needs something you have not set up says so by name.
 
 | Layer                      | Requires                           | What you get                                                                                                         |
 | -------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | **1 — Browser only**       | Nothing                            | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage. |
 | **2 — + A backup you keep** | Somewhere to put a file           | One file holding every record, every link and every document. Restoring it puts all three back.                      |
-| **3 — + Local LLM**        | vLLM / Ollama / LM Studio          | Assistant drafts cover letters and follow-ups; scout pipelines crawl boards and score postings against your profile. |
+| **3 — + Local LLM**        | vLLM / Ollama / LM Studio          | A threaded, agentic assistant that can read and write your records; "Ask the graph" in a sentence; scout scoring against your profile. |
+| **4 — + Document reader**  | MarkItDown, running locally        | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you. |
+| **5 — + The extension**    | Chrome, Edge, Brave or Arc         | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board — nothing else here can open a web page. |
 
 Layer 1 is the only one that must work. Everything above it degrades gracefully when disconnected.
 

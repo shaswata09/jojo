@@ -16,7 +16,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { addDays, bucketOf, followUpsOf } from '../core/dates'
+import { addDays, bucketOf, followUpsOf, remindersOf } from '../core/dates'
 import type { TimelineItem } from '../core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
@@ -146,7 +146,12 @@ export function useTimeline() {
     [run],
   )
 
-  const reminders = useMemo(() => all.filter((i) => i.remind), [all])
+  // In due-date order, deliberately — the one Vault list that is NOT newest
+  // added first. The reasoning is in `remindersOf`, in `core/dates.ts`, where
+  // it has tests under it: hooks here are never mounted (D20), so a rule that
+  // only two components could observe would be a rule with nothing holding it.
+  const reminders = useMemo(() => remindersOf(all), [all])
+
   const overdue = useMemo(() => all.filter((i) => bucketOf(i, today) === 'overdue'), [all, today])
   const todayItems = useMemo(() => all.filter((i) => bucketOf(i, today) === 'today'), [all, today])
   const upcoming = useMemo(() => all.filter((i) => bucketOf(i, today) === 'upcoming'), [all, today])

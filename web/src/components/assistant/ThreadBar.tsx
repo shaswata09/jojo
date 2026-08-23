@@ -7,6 +7,7 @@ import type { Application } from '@jojo/service/data/seed'
 import { Chip } from '@/components/common/Chip'
 import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 
 /**
@@ -31,6 +32,7 @@ export function ThreadBar({
   onRename,
   onFile,
   onDelete,
+  onSetAuto,
   busy,
 }: {
   threads: readonly Thread[]
@@ -39,6 +41,8 @@ export function ThreadBar({
   onRename: (id: NodeId, title: string) => void
   onFile: (id: NodeId, applicationId: NodeId | null) => void
   onDelete: (id: NodeId) => void
+  /** Turns "ask me before every change" off for this conversation. */
+  onSetAuto: (id: NodeId, auto: boolean) => void
   busy: boolean
 }) {
   const active = threads.find((t) => t.id === activeId) ?? null
@@ -124,10 +128,24 @@ export function ThreadBar({
             {filedUnder ? 'Change job' : 'File under a job'}
           </Button>
 
+          {/* Per conversation, not per app.
+              The granularity people want is "this one is a cleanup session,
+              stop asking me" — and the safe default has to be the one you get
+              without choosing, so absent means ask. */}
+          <label className="ml-auto flex items-center gap-1.5 text-xs text-text-3">
+            <span>Act without asking</span>
+            <Switch
+              checked={active.autoApprove}
+              onCheckedChange={(auto) => {
+                onSetAuto(active.id, auto)
+              }}
+              aria-label="Let the assistant change things in this conversation without asking"
+            />
+          </label>
+
           <Button
             variant="ghost"
             size="sm"
-            className="ml-auto"
             disabled={busy}
             onClick={() => {
               onDelete(active.id)

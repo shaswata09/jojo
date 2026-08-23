@@ -160,6 +160,41 @@ export const threadFile = defineTool({
   }),
 })
 
+/**
+ * Lets the agent write in this conversation without stopping to ask.
+ *
+ * A conversation-level permission, not a global one — the granularity people
+ * actually want is "this one is a cleanup session". It is the same shape as
+ * `scout.pipeline.update`'s `auto`, including the part that matters: the tool
+ * only records the preference, and the GATE is at the point of use, in the
+ * agent loop. A tool that tried to enforce it would still be one commit away
+ * from a graph that disagreed with it.
+ *
+ * Deliberately undoable and journalled like any other edit. Turning it on is a
+ * decision worth being able to see and take back.
+ */
+export const threadAutoSet = defineTool({
+  name: 'assistant.thread.auto.set',
+  title: 'Act without asking',
+  summary: 'Lets the assistant make changes in this conversation without asking first.',
+  effect: 'update',
+  touches: ['thread'],
+  input: s.object({
+    id: threadId,
+    auto: s.boolean({ label: 'Act without asking' }),
+  }),
+  run(ctx, input): void {
+    ctx.require('thread', input.id)
+    ctx.tx.patch<'thread'>(input.id, { autoApprove: input.auto })
+  },
+  describe: (input) => ({
+    title: input.auto ? 'Acting without asking' : 'Asking before each change',
+    description: input.auto
+      ? 'Changes in this conversation happen straight away.'
+      : 'You will be asked before each change.',
+  }),
+})
+
 export const threadDelete = defineTool({
   name: 'assistant.thread.delete',
   title: 'Delete conversation',

@@ -4,7 +4,8 @@ import { CircleHelp, Menu, Search, Settings, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { NewMenu } from '@/components/layout/NewMenu'
-import { SpotlightSearch, useSpotlight } from '@/components/layout/SpotlightSearch'
+import { SpotlightSearch } from '@/components/layout/SpotlightSearch'
+import { useSpotlight } from '@/lib/use-spotlight'
 import { cn } from '@/lib/utils'
 
 type UtilityLink = { to: string; label: string; icon: LucideIcon }

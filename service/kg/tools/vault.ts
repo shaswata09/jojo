@@ -173,7 +173,25 @@ export const vaultLinkDuplicate = defineTool({
     ctx.tx.put({
       id,
       type: 'link',
-      props: { ...source.props, slug: ctx.mintSlug('link', source.props.title) },
+      /*
+       * Filed NOW, not when the original was.
+       *
+       * `...source.props` carried the source's `savedOn` across, so the copy
+       * took the original's filing date. That was invisible while the Vault
+       * listed links oldest-first — every new record went to the bottom either
+       * way — and it is a full list apart now that the newest is at the top:
+       * the copy would appear next to its original, halfway down, while the
+       * toast announcing it offered an Undo for something off screen.
+       *
+       * The row menus on both platforms already do it this way: they re-save
+       * through `addLink` without a `savedOn`, so it defaults to today. This is
+       * the two paths agreeing rather than a new rule.
+       */
+      props: {
+        ...source.props,
+        savedOn: dayOf(ctx.now),
+        slug: ctx.mintSlug('link', source.props.title),
+      },
       createdAt: ctx.now,
       updatedAt: ctx.now,
     })
@@ -501,6 +519,9 @@ export const vaultSnippetDuplicate = defineTool({
     ctx.tx.put({
       id,
       type: 'snippet',
+      // No `savedOn` to restamp — a snippet carries no date at all, so the id
+      // minted just above is what puts the copy at the top of the list. See the
+      // note on the link duplicate above for why that matters.
       props: { ...source.props, slug: ctx.mintSlug('snippet', source.props.title) },
       createdAt: ctx.now,
       updatedAt: ctx.now,

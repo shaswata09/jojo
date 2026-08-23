@@ -320,6 +320,11 @@ describe('an offer that has gone stale', () => {
 
     // Every byte after the header is accounted for by the three secret values,
     // so there is nowhere for a clock reading to be hiding.
+    // NOT a useless spread, whatever the linter says: `encoded` is a
+    // Uint8Array and its `.slice()` returns another one, so the spread is what
+    // turns it into the plain number[] that `toEqual` compares against an array
+    // literal. Removing it fails this test with a Uint8Array/Array mismatch.
+    // oxlint-disable-next-line unicorn/no-useless-spread
     const body = [...encoded.slice(3)]
     const parts = [...state.offer.publicKey, ...state.offer.secret, ...state.offer.nonce]
     expect(body).toEqual(parts)

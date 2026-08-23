@@ -32,6 +32,7 @@ export function ThreadBar({
   onRename,
   onFile,
   onDelete,
+  onSetAuto,
   busy,
 }: {
   threads: readonly Thread[]
@@ -42,6 +43,8 @@ export function ThreadBar({
   onRename: (id: NodeId, title: string) => void
   onFile: (id: NodeId, applicationId: NodeId | null) => void
   onDelete: (id: NodeId) => void
+  /** Turns "ask me before every change" off for this conversation. */
+  onSetAuto: (id: NodeId, auto: boolean) => void
   busy: boolean
 }) {
   const active = threads.find((t) => t.id === activeId) ?? null
@@ -114,6 +117,21 @@ export function ThreadBar({
               label={filedUnder ? 'Change the job this is about' : 'File under a job'}
               active={Boolean(filedUnder)}
               onPress={() => setFiling(true)}
+            />
+            {/* Per conversation, not per app: the granularity people want is
+                "this one is a cleanup session, stop asking me". Absent means
+                ask, because the safe default has to be the one you get without
+                choosing. */}
+            <IconButton
+              icon={active.autoApprove ? 'zap' : 'shield'}
+              label={
+                active.autoApprove
+                  ? 'Acting without asking — tap to ask before each change'
+                  : 'Asking before each change — tap to act without asking'
+              }
+              onPress={() => {
+                onSetAuto(active.id, !active.autoApprove)
+              }}
             />
             <IconButton
               icon="trash-2"

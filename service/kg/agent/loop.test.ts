@@ -404,3 +404,56 @@ describe('undo', () => {
     expect(h.memory().ofType('application')).toHaveLength(0)
   })
 })
+
+describe('which steps have to be approved', () => {
+  /**
+   * Runs one write and reports every step the gate stopped to ask about.
+   *
+   * `application.note.set` is an `update` — the kind that used to happen with
+   * nobody being asked, which is what "approve actions like edit file" means.
+   */
+  const askedAbout = async (tool: string, gate?: 'destructive' | 'writes') => {
+    const h = host()
+    const made = h.run('application.create' as ToolName, NEW_APP)
+    const id = (made as { ok: true; output: string }).output
+    const seen: string[] = []
+    await runAgent({
+      host: h,
+      llm: scripted([calls(tool, { id, note: 'x' }), says('done')]),
+      history: [],
+      prompt: 'do it',
+      ...(gate === undefined ? {} : { gate }),
+      approve: (step) => {
+        seen.push(step.name)
+        return true
+      },
+      onEvent: () => {},
+    })
+    return seen
+  }
+
+  it('leaves a plain edit alone by default', async () => {
+    expect(await askedAbout('application_note_set')).toEqual([])
+  })
+
+  it('asks about a plain edit once the gate is widened', async () => {
+    expect(await askedAbout('application_note_set', 'writes')).toEqual(['application.note.set'])
+  })
+
+  it('never asks about a read, however wide the gate', async () => {
+    expect(await askedAbout('memory_list', 'writes')).toEqual([])
+  })
+
+  /*
+   * A hallucinated name has `effect: 'unknown'`, and `callTool` refuses it a
+   * line later regardless. Asking a person to approve a call that cannot happen
+   * is asking them to rubber-stamp.
+   */
+  it('never asks about a tool that does not exist', async () => {
+    expect(await askedAbout('not_a_real_tool', 'writes')).toEqual([])
+  })
+
+  it('still asks about a delete when the gate is left at its default', async () => {
+    expect(await askedAbout('application_delete', undefined)).toEqual(['application.delete'])
+  })
+})

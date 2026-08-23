@@ -1433,3 +1433,41 @@ describe('switching a pipeline back on', () => {
     expect(h.repo.getSnapshot().node(id, 'pipeline')?.props.idleRounds).toBe(1)
   })
 })
+
+describe('acting without asking', () => {
+  /*
+   * A conversation-level permission. The tool only records it — the gate is in
+   * the agent loop, at the point of use — which is the same division
+   * `PipelineProps.auto` makes and for the same reason: a tool that tried to
+   * enforce a policy would still be one commit away from a graph that
+   * disagreed with it.
+   */
+  it('remembers that one conversation may be written to without asking', () => {
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Tidy up' }))
+    expect(h.repo.getSnapshot().node(id, 'thread')?.props.autoApprove).toBeUndefined()
+
+    okOr(h.runtime.run('assistant.thread.auto.set', { id, auto: true }))
+    expect(h.repo.getSnapshot().node(id, 'thread')?.props.autoApprove).toBe(true)
+
+    okOr(h.runtime.run('assistant.thread.auto.set', { id, auto: false }))
+    expect(h.repo.getSnapshot().node(id, 'thread')?.props.autoApprove).toBe(false)
+  })
+
+  it('is undoable, because granting it is a decision worth taking back', () => {
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Tidy up' }))
+    const before = graphOf(h.repo)
+    okOr(h.runtime.run('assistant.thread.auto.set', { id, auto: true }))
+    h.runtime.undo()
+    expect(graphOf(h.repo)).toEqual(before)
+  })
+
+  it('leaves every other conversation asking', () => {
+    const h = harness()
+    const one = okOr(h.runtime.run('assistant.thread.create', { title: 'One' }))
+    const two = okOr(h.runtime.run('assistant.thread.create', { title: 'Two' }))
+    okOr(h.runtime.run('assistant.thread.auto.set', { id: one, auto: true }))
+    expect(h.repo.getSnapshot().node(two, 'thread')?.props.autoApprove).toBeUndefined()
+  })
+})

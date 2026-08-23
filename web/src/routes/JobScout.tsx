@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Plus, Radar, TriangleAlert } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { draftFromUrl } from '@/components/applications/draft-from'
@@ -15,10 +15,7 @@ import { Switch } from '@/components/ui/switch'
 import type { Pipeline } from '@/data/scout'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useScout } from '@jojo/service/react/use-scout'
-import { usePipelines } from '@jojo/service/react/use-pipelines'
-import { agentTurn, isConfigured } from '@/lib/llm'
-import { scanBoard } from '@/lib/capture-bridge'
-import { useModelSettings } from '@/lib/model-settings-context'
+import { usePipelinesState } from '@jojo/service/react/pipelines-context'
 import { appPath, scoutPath, useScoutParams, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
@@ -55,25 +52,16 @@ export function JobScout() {
   } = useScout()
   const { get } = useApplications()
 
-  /**
-   * The pipelines' engine.
+  /*
+   * The engine is mounted above the router (`lib/pipelines.tsx`), not here.
    *
-   * `llm` is null when no model is configured, which is what pauses the whole
-   * feature — the hook does not tick and the banner below says so. Everything
-   * else on this page still works without one, which is why the page renders
-   * the same either way rather than branching into a scripted stand-in the way
-   * the Assistant does.
+   * Calling `usePipelines` from this route made a pipeline's lifetime this
+   * page's lifetime: navigating away cleared its interval and aborted the round
+   * in flight, while the panel below went on promising they "work while this tab
+   * is open". This page is a view of the engine now, the same way the Assistant
+   * is a view of a run.
    */
-  const { settings } = useModelSettings()
-  const llm = useCallback(
-    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
-      agentTurn(settings, messages, tools),
-    [settings],
-  )
-  // `scanBoard` is module scope and therefore stable, which matters: an unstable
-  // port would rebuild the agent's host on every render and restart a round
-  // mid-flight.
-  const engine = usePipelines({ llm: isConfigured(settings) ? llm : null, scan: scanBoard })
+  const engine = usePipelinesState()
 
   const navigate = useNavigate()
   // Arrived from a graph node or a query row naming a match or a saved posting.

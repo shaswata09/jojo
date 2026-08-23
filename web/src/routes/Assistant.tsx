@@ -7,6 +7,7 @@ import { convertFile } from '@/lib/markitdown'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useAgent } from '@jojo/service/react/use-agent'
+import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import {
   toAgentEntries,
@@ -27,13 +28,14 @@ import { RobotIcon } from '@/components/brand/RobotIcon'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader } from '@/components/common/PageHeader'
-import { Panel, PanelTitle } from '@/components/common/Panel'
+import { Panel, PanelScroll } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useTitle, vaultPath } from '@/lib/links'
+import { useFillViewport } from '@/lib/use-fill-viewport'
 import { useToast } from '@/lib/toast-context'
 
 /**
@@ -203,7 +205,7 @@ function AgentPanel() {
   const blobs = useVaultBlobs()
   const { addSnippet } = useVault()
   const { all: applications, byId } = useApplications()
-  const { threads, create, save, rename, file, remove } = useThreads()
+  const { threads, create, save, rename, file, remove, setAuto } = useThreads()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -242,37 +244,41 @@ function AgentPanel() {
     openThread(threads[0]?.id ?? null)
   }, [threads])
   const [prompt, setPrompt] = useState('')
+
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [copyFailed, setCopyFailed] = useState(false)
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   useEffect(() => () => clearTimeout(copyTimer.current), [])
 
-  /**
-   * A destructive call, waiting on a person.
+  /*
+   * The approval question is NOT held here any more.
    *
-   * The promise is held open in state until a button is pressed. That is the
-   * whole approval mechanism: `runAgent` awaits `approve`, so the loop is
-   * genuinely stopped — not racing a dialog — and nothing is written while the
-   * question is on screen.
+   * It used to be component state resolved by buttons inside the trace below,
+   * which meant the question existed only while this page was open — walk away
+   * mid-run and the loop parked on `await approve(...)` with nothing able to
+   * resolve it, forever, and the exchange was never saved. The registry keeps it
+   * on the run and `ApprovalHost` draws it wherever the person is, including
+   * here. One control, one place, on every page.
    */
-  const [ask, setAsk] = useState<{ step: AgentStep; decide: (ok: boolean) => void } | null>(null)
-  const approve = useCallback(
-    (step: AgentStep) =>
-      new Promise<boolean>((resolve) => {
-        setAsk({
-          step,
-          decide: (ok) => {
-            setAsk(null)
-            resolve(ok)
-          },
-        })
-      }),
-    [],
-  )
 
+  /**
+   * Built per RUN, so Stop can cancel the request rather than only the loop.
+   *
+   * `agentTurn` has always taken a signal and no caller ever passed one, so
+   * stopping left the socket open until the sixty-second timeout while the UI
+   * already said the run had stopped — and the cancelled turn then arrived as a
+   * red error blaming the model. The controller lives here because
+   * `AbortController` is a platform global the shared layer may not name.
+   */
   const llm = useCallback(
-    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
-      agentTurn(settings, messages, tools),
+    (run: RunSignal) => {
+      const controller = new AbortController()
+      run.onAbort(() => {
+        controller.abort()
+      })
+      return (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+        agentTurn(settings, messages, tools, controller.signal)
+    },
     [settings],
   )
 
@@ -286,17 +292,30 @@ function AgentPanel() {
    * as they watch. By the time this runs there is something to store, and the
    * stored entries and the live ones are the same list.
    */
+  /**
+   * Mints the conversation for a first question, before the run starts.
+   *
+   * At send rather than at settle, which is the ordering that lets a run be
+   * keyed by the conversation it belongs to. It also means the question is in
+   * the store from the moment it is asked — an interrupted run now leaves the
+   * question behind rather than nothing at all.
+   */
+  const startThread = useCallback(
+    (asked: string) => {
+      const made = create({ title: asked, entries: [{ kind: 'you', text: asked }] })
+      if (!made.ok) return null
+      openThread(made.output)
+      return made.output
+    },
+    [create],
+  )
+
   const onSettled = useCallback(
-    (settled: readonly AgentEntry[]) => {
-      const stored = toThreadEntries(settled)
-      const id = activeRef.current
-      if (id) {
-        save(id, stored)
-        return
-      }
-      const asked = settled.find((e) => e.kind === 'you')
-      const made = create({ title: asked?.kind === 'you' ? asked.text : '', entries: stored })
-      if (made.ok) openThread(made.output)
+    (threadId: NodeId, settled: readonly AgentEntry[]) => {
+      // The conversation this run was FOR, handed back by the registry. Reading
+      // "which is open now" is what used to write one conversation's answer
+      // into another the moment thread switching became possible.
+      save(threadId, toThreadEntries(settled))
     },
     [create, save],
   )
@@ -323,19 +342,31 @@ function AgentPanel() {
 
   const { entries, busy, send, stop, clear } = useAgent({
     llm,
-    approve,
     onSettled,
+    startThread,
     ...(reader ? { convert } : {}),
-    ...(active
-      ? {
-          thread: {
-            key: active.id,
-            entries: toAgentEntries(active.entries),
-            history: toTranscript(active.entries),
-          },
-        }
-      : {}),
+    thread: {
+      id: activeId,
+      entries: active ? toAgentEntries(active.entries) : [],
+      history: active ? toTranscript(active.entries) : [],
+      autoApprove: active?.autoApprove ?? false,
+    },
   })
+
+  /**
+   * Keeps the newest turn in view.
+   *
+   * Never needed before, because the document scrolled and the page simply
+   * grew. The transcript is its own scroll region now, so without this a new
+   * answer — and the "Thinking" line while it works — lands below the fold of a
+   * box the reader is looking straight at.
+   */
+  const fill = useFillViewport()
+  const transcriptRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const box = transcriptRef.current
+    if (box) box.scrollTop = box.scrollHeight
+  }, [entries, busy])
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -429,25 +460,42 @@ function AgentPanel() {
         on this device. Nothing is sent anywhere else, and every change it makes can be undone.
       </p>
 
-      <div className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)]">
+      {/* `min-h-0 flex-1` is the seam AppShell documents: it hands a page the
+          height left over, so the conversation can own it instead of the card
+          sitting in the top third of an empty screen. */}
+      <div className="grid min-h-0 min-w-0 flex-1 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
         <ThreadList
           threads={threads}
           activeId={activeId}
           byId={byId}
-          busy={busy}
           onOpen={openThread}
           onNew={() => {
-            clear()
+            // No `clear()`. It forgets the run for the conversation being left,
+            // and leaving a conversation is now exactly when it should keep
+            // going. Opening nothing is the whole of "new".
             openThread(null)
           }}
         />
 
-        <Panel className="min-w-0">
+        {/* Capped by measurement, not by `flex-1`.
+            The shell is `min-h-dvh` — a minimum, not a definite height — so a
+            flex child fills the space when the conversation is short and simply
+            grows when it is long, scrolling the page instead of itself. That is
+            the exact failure `useFillViewport` was written for, and the
+            applications table is the precedent. */}
+        <Panel
+          ref={fill.ref}
+          style={{ maxHeight: fill.maxHeight }}
+          className="flex min-h-0 min-w-0 flex-col"
+        >
         <ThreadBar
           threads={threads}
           activeId={activeId}
           applications={applications}
           busy={busy}
+          onSetAuto={(id, auto) => {
+            setAuto(id, auto)
+          }}
           onRename={(id, title) => {
             rename(id, title)
           }}
@@ -480,6 +528,10 @@ function AgentPanel() {
 
         <div className="my-3 border-t border-hairline" />
 
+        {/* The transcript owns the leftover height and scrolls inside it, so the
+            composer stays put instead of being pushed down the page by a long
+            conversation. */}
+        <PanelScroll axis="y" ref={transcriptRef} className="-mb-0 pb-0">
         {entries.length === 0 ? (
           <EmptyState
             icon={RobotIcon as unknown as LucideIcon}
@@ -500,19 +552,7 @@ function AgentPanel() {
               }
               if (entry.kind === 'step') {
                 return (
-                  <StepRow
-                    key={entry.id}
-                    step={entry.step}
-                    onUndo={undoStep}
-                    {...(ask?.step.id === entry.step.id
-                      ? {
-                          pending: {
-                            allow: () => ask.decide(true),
-                            decline: () => ask.decide(false),
-                          },
-                        }
-                      : {})}
-                  />
+                  <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
                 )
               }
               if (entry.kind === 'note') {
@@ -569,7 +609,30 @@ function AgentPanel() {
           {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
         </p>
 
-        <form onSubmit={onSubmit} className="mt-4 flex gap-2">
+        </PanelScroll>
+
+        {/* The openers, moved up out of a card of their own below the fold.
+            They are what a person reads when they do not know what to ask, so
+            they belong beside the box they would type into — not underneath a
+            conversation they have not had yet. */}
+        <ul className="mt-3 flex flex-wrap gap-1.5">
+          {AGENT_PROMPTS.map((p) => (
+            <li key={p}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  send(p)
+                }}
+              >
+                {p}
+              </Button>
+            </li>
+          ))}
+        </ul>
+
+        <form onSubmit={onSubmit} className="mt-2 flex gap-2">
           <div className="min-w-0 flex-1">
             <Label htmlFor="assistant-prompt" className="sr-only">
               Ask the assistant
@@ -605,30 +668,6 @@ function AgentPanel() {
       </Panel>
 
       </div>
-
-      <Panel className="min-w-0">
-        <PanelTitle hint="it will use whatever tools these need">Try one of these</PanelTitle>
-        <ul className="flex flex-wrap gap-2">
-          {AGENT_PROMPTS.map((p) => (
-            <li key={p}>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={busy}
-                onClick={() => {
-                  void send(p)
-                }}
-              >
-                {p}
-              </Button>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-sm text-text-2">
-          It reads before it writes, asks before it deletes, and every change it makes goes through
-          the same undo a button press does.
-        </p>
-      </Panel>
     </>
   )
 }
@@ -838,7 +877,26 @@ function ScriptedPanel() {
           {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
         </p>
 
-        <form onSubmit={onSubmit} className="mt-4 flex gap-2">
+        {/* Above the composer, not in a card below the fold — same move as the
+            connected panel's, so the two do not visibly diverge for the person
+            who has not set a model up yet. */}
+        <ul className="mt-3 flex flex-wrap gap-1.5">
+          {SCRIPTS.map((s) => (
+            <li key={s.id}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  send(s.action)
+                }}
+              >
+                {s.action}
+              </Button>
+            </li>
+          ))}
+        </ul>
+
+        <form onSubmit={onSubmit} className="mt-2 flex gap-2">
           <div className="min-w-0 flex-1">
             <Label htmlFor="assistant-prompt" className="sr-only">
               Ask the assistant
@@ -863,29 +921,10 @@ function ScriptedPanel() {
         </form>
       </Panel>
 
-      <Panel className="min-w-0">
-        <PanelTitle hint="each one answers with an example">Try one of these</PanelTitle>
-        <ul className="flex flex-wrap gap-2">
-          {SCRIPTS.map((s) => (
-            <li key={s.id}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  send(s.action)
-                }}
-              >
-                {s.action}
-              </Button>
-            </li>
-          ))}
-        </ul>
-
-        <p className="mt-4 text-sm text-text-2">
-          With a model connected each of these reads your profile and documents as context. Because
-          inference is local, your CV and your notes are never uploaded anywhere.
-        </p>
-      </Panel>
+      <p className="text-sm text-text-2">
+        With a model connected each of these reads your profile and documents as context. Because
+        inference is local, your CV and your notes are never uploaded anywhere.
+      </p>
     </>
   )
 }

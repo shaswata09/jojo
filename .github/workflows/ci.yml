@@ -218,6 +218,59 @@ jobs:
             Android will ask you to allow installs from this source. Requires
             Android 12 or newer.
 
+  extension:
+    name: Browser extension
+    needs: gate
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Only to attach the zip to a release, and only on a tag.
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # `pack-extension` on its own, not the whole web build. The extension is
+      # static files plus a manifest — it needs the icon generator and `zip`,
+      # neither of which needs Vite to have run. The site build produces the
+      # same zip, but this job has no reason to wait for a bundler.
+      #
+      # `zip` is on ubuntu-latest already; the script fails loudly if it is not.
+      - name: Pack the extension
+        run: npm -w web run pack-extension
+
+      - name: Publish the extension as a build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jojo-extension-${{ github.run_number }}
+          path: web/public/jojo-extension.zip
+          if-no-files-found: error
+          retention-days: 90
+
+      # Onto the same draft release the APK goes to. `action-gh-release` appends
+      # to an existing release for the tag rather than replacing it, so the two
+      # jobs can run in either order and the release ends up with both files.
+      - name: Attach the extension to a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: web/public/jojo-extension.zip
+          body: |
+            Browser extension for ${{ github.ref_name }}, built by run ${{ github.run_number }}.
+
+            Unzip it, then load it in Chrome or Edge at `chrome://extensions`
+            with Developer mode on and "Load unpacked". It captures the job
+            posting in the current tab and hands it to jojo.
+
   deploy:
     name: Deploy to Pages
     needs: gate
@@ -255,7 +308,13 @@ jobs:
           BASE_PATH: /${{ github.event.repository.name }}/
         run: npm -w web run build
 
+      # `enablement: true` turns Pages on for the repository and sets its source
+      # to Actions, instead of failing with "Get Pages site failed" until someone
+      # does it by hand in Settings. The first run does the enabling; every run
+      # after finds it already done and carries on.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:

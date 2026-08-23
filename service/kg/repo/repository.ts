@@ -273,6 +273,9 @@ export function createRepository(options: RepositoryOptions): Repository {
   let current = reading(snapshot)
 
   const notify = () => {
+    // A snapshot, not a copy: the loop body mutates the collection it is
+    // walking, so it has to walk a list taken before the first change.
+    // oxlint-disable-next-line unicorn/no-useless-spread
     for (const fn of [...listeners]) fn()
   }
 

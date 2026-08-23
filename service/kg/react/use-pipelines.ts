@@ -4,6 +4,14 @@
  * Everything below this file is pure or transactional. This is where the two
  * impure facts live: a clock, and the decision to start a model round.
  *
+ * WHERE THIS IS MOUNTED, AND WHY IT MATTERS. Above the router, through
+ * `pipelines-context.ts` — not from the Job Scout page. Calling it from the page
+ * made a pipeline's lifetime that page's lifetime: the cleanup below cleared the
+ * interval and aborted the round in flight the moment you navigated away, while
+ * the panel went on telling the user they "work while this tab is open". The
+ * promise is the correct one; owning the engine above the router is what makes
+ * it true.
+ *
  * WHAT "RUNS IN THE BACKGROUND" MEANS HERE, EXACTLY. It means "while jojo is
  * open". Neither platform can do better and nothing installed pretends
  * otherwise: the web app has no service worker and a hidden tab's timers are

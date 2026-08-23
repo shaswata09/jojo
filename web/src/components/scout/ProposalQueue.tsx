@@ -126,7 +126,7 @@ function ProposalCard({
       className={
         settled
           ? 'rounded-lg border border-hairline bg-well/40 px-3.5 py-3'
-          : 'rounded-lg border border-hairline bg-surface px-3.5 py-3'
+          : 'rounded-lg border border-hairline bg-panel px-3.5 py-3'
       }
     >
       <div className="flex items-start gap-3">

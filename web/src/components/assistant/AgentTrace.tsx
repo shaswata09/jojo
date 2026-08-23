@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AgentStep } from '@jojo/service/agent/loop'
+import { readStepDetail } from '@jojo/service/agent/execute'
 import { Chip } from '@/components/common/Chip'
 import { Button } from '@/components/ui/button'
 
@@ -120,7 +121,7 @@ export function StepRow({
         <div className="flex flex-wrap items-center gap-2 border-t border-hairline bg-warning-soft px-3 py-2">
           <AlertTriangle className="size-4 shrink-0 text-warning" aria-hidden />
           <p className="min-w-0 flex-1 text-xs text-warning">
-            This removes records and the agent asked to do it. Nothing has changed yet.
+            The agent asked to do this. Nothing has changed yet.
           </p>
           <Button size="sm" variant="outline" onClick={pending.decline}>
             Don&apos;t
@@ -134,7 +135,7 @@ export function StepRow({
       {open ? (
         <div className="space-y-2 border-t border-hairline px-3 py-2">
           <Field label="Arguments" value={JSON.stringify(step.args, null, 2)} />
-          {step.detail ? <Field label="Result" value={step.detail} /> : null}
+          <Result step={step} />
         </div>
       ) : null}
 
@@ -155,6 +156,40 @@ export function StepRow({
         </div>
       ) : null}
     </li>
+  )
+}
+
+/**
+ * A step's result, laid out rather than dumped.
+ *
+ * `detail` is one string carrying two different things — a read comes back as
+ * compact JSON and a write comes back as the toast sentence — and rendering
+ * both the same way meant a read of forty records was a single 6000-character
+ * line in a monospace box. `readStepDetail` tells them apart using the same
+ * predicate that chose the format, so it cannot disagree with it.
+ *
+ * The truncation notice is lifted out of the value and shown as a note. It was
+ * appended to the string by `renderOutcome` for the MODEL's benefit; rendered
+ * inside the box it reads as part of the data.
+ */
+function Result({ step }: { step: AgentStep }) {
+  const detail = readStepDetail(step)
+  if (!detail) return null
+
+  if (detail.kind === 'text') return <Field label="Result" value={detail.value} />
+
+  return (
+    <div>
+      <p className="text-xs font-medium text-text-3">Result</p>
+      <pre className="mt-0.5 max-h-64 overflow-auto rounded-md bg-well p-2 font-mono text-xs whitespace-pre text-text-2">
+        {JSON.stringify(detail.value, null, 2)}
+      </pre>
+      {detail.truncated ? (
+        <p className="mt-1 text-xs text-text-3">
+          Cut short — the agent was told to narrow the search to see the rest.
+        </p>
+      ) : null}
+    </div>
   )
 }
 

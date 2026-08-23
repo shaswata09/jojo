@@ -27,6 +27,12 @@ A content script running in the tab does have that view. That is the whole job.
 
 Unpacked, from disk. There is no store listing.
 
+You do not need a checkout of this repository. **Settings → Keeping postings**
+has a download button, and every tagged release carries `jojo-extension.zip` as
+an attachment. Unzip it and the `jojo-extension` folder is what the steps below
+call "this `web/extension` folder" — the zip is that folder, packed by
+`web/scripts/pack-extension.mjs`.
+
 **Chrome, Edge, Brave, Arc**
 
 1. Open `chrome://extensions` (Brave: `brave://extensions`, Edge: `edge://extensions`) — paste it
@@ -103,6 +109,13 @@ machine, and hands it to jojo the next time you open it.
 | `bridge.js`     | Runs on jojo's own origin and relays between the page and the worker.             |
 | `policy.js`     | What may be kept. A transcription of `service/kg/core/capture.ts`, checked below. |
 | `harvest.js`    | The link sweep on a job board. Injected into a background tab; judges nothing.    |
+| `icons/`        | Four PNGs, 16 to 128. Generated — see below — never edited by hand.               |
+
+The icons are drawn by `web/scripts/make-extension-icons.mjs`, which runs before
+every pack. They are jojo's robot head — the same mark as the browser tab's
+favicon, with the geometry converted from `web/public/favicon.svg`'s own viewBox
+rather than redrawn by eye. Editing the PNGs directly is pointless: the next
+build overwrites them.
 
 `policy.js` is a hand copy, because an extension loaded from disk cannot import
 from the workspace. It is not trusted to stay in step:
@@ -138,7 +151,18 @@ you approve or discard.
 
 ## Upgrading
 
-Reading boards arrived in **0.2.0**, and it needs the `tabs` permission that
-version added. An unpacked extension never updates itself, so 0.1.0 goes on
-capturing pages perfectly and refuses to read a board — the app says so by name
-rather than reporting a generic failure. Settings has the current build.
+An unpacked extension never updates itself. Chrome loads the folder you pointed
+it at and keeps loading that folder, so a build from before board reading landed
+goes on capturing pages perfectly and refuses to read a board — it has no `tabs`
+permission to do it with, and the app says exactly that rather than reporting a
+generic failure.
+
+The fix is to reload it: download the current zip from Settings, unzip over the
+old folder, and press reload on `chrome://extensions`. Settings shows the
+version the browser is actually running, which is the one to compare against the
+number in `manifest.json`.
+
+Versions here restart at 0.1.0 with the app's first tagged release. Earlier
+unpacked builds used the same two numbers to mean different things, which is why
+this section describes the capability rather than the number: what matters is
+whether the build you have can read a board, not what it calls itself.

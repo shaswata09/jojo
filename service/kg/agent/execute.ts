@@ -174,5 +174,60 @@ export function renderOutcome(outcome: CallOutcome, budget = 6000): string {
   }
   const json = JSON.stringify(outcome.result)
   if (json.length <= budget) return json
-  return `${json.slice(0, budget)}\n\n[Truncated at ${String(budget)} characters. Narrow the search or lower the limit to see the rest.]`
+  return `${json.slice(0, budget)}${TRUNCATION_MARK}${String(budget)} characters. Narrow the search or lower the limit to see the rest.]`
+}
+
+/**
+ * The sentence a truncated read carries, split out so it has one author.
+ *
+ * It is appended OUTSIDE the JSON, which is the detail that matters to anyone
+ * reading a result back: the longest results — the only ones anybody actually
+ * needs help reading — are the ones that will not `JSON.parse`. A UI that
+ * sniffed for JSON with a try/catch would beautify every short result and give
+ * up on every long one.
+ */
+const TRUNCATION_MARK = '\n\n[Truncated at '
+
+/**
+ * A step's result, told apart into machine data and prose.
+ *
+ * `detail` is one string carrying two completely different things, because
+ * `renderOutcome` above branches on `effect`: a READ comes back as compact JSON
+ * and a WRITE comes back as the toast sentence the app would have shown. The
+ * trace was rendering both as an undifferentiated wall of monospace, which for
+ * a read of forty records is a single 6000-character line.
+ *
+ * Discriminated on `effect` and `status` rather than by sniffing for a leading
+ * brace, and the difference is not fastidiousness — it is the same predicate
+ * `renderOutcome` used to CHOOSE the format, so it cannot disagree with it. It
+ * also survives storage: `effect` and `status` are both persisted on a stored
+ * step, while `output` — the real object, which would be prettier still — is
+ * not, so anything built on that would look right during a live run and revert
+ * to a wall of text the moment the conversation was reopened.
+ */
+export type StepDetail =
+  | { kind: 'json'; value: unknown; truncated: boolean }
+  | { kind: 'text'; value: string }
+
+export function readStepDetail(step: {
+  effect: string
+  status: string
+  detail?: string
+}): StepDetail | null {
+  const { detail } = step
+  if (detail === undefined || detail.length === 0) return null
+
+  // A write's detail is app-authored prose, and a failed or declined step's is
+  // an error sentence. Neither is ever JSON, whatever it happens to start with.
+  if (step.effect !== 'read' || step.status !== 'done') return { kind: 'text', value: detail }
+
+  const cut = detail.indexOf(TRUNCATION_MARK)
+  const head = cut === -1 ? detail : detail.slice(0, cut)
+  try {
+    return { kind: 'json', value: JSON.parse(head) as unknown, truncated: cut !== -1 }
+  } catch {
+    // A truncated read is cut mid-value, so its head is not parseable. Showing
+    // the raw text is the honest fallback — it is still the result.
+    return { kind: 'text', value: detail }
+  }
 }

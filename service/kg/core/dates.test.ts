@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from 'vitest'
 import type { TimelineItem } from './model'
-import { bucketOf } from './dates'
+import { bucketOf, remindersOf } from './dates'
 
 const TODAY = '2026-08-18'
 
@@ -84,5 +84,82 @@ describe('bucketOf', () => {
   it('compares across a month and a year end', () => {
     expect(bucketOf(item({ date: '2026-07-31' }), '2026-08-01')).toBe('overdue')
     expect(bucketOf(item({ date: '2027-01-01' }), '2026-12-31')).toBe('upcoming')
+  })
+})
+
+describe('remindersOf', () => {
+  /*
+   * The Vault's reminders list, and the decision it records.
+   *
+   * The Vault's other three lists — links, files, snippets — are newest-added
+   * first. Reminders are deliberately NOT, and these tests exist so that
+   * "finish the job" does not quietly become a regression later.
+   *
+   * The reasoning is in `remindersOf`. The measurement behind it: sorting these
+   * by id descending — which is genuinely "last added", and is exactly what
+   * snippets correctly do — renders on the seeded data as exact
+   * reverse-chronological inside every bucket, because the timeline fixtures
+   * are authored in ascending due-date order and the seed mints ids in fixture
+   * order. It put the reminder due in two days at the bottom of Upcoming, under
+   * one due in a month, and the least-overdue row at the top of Overdue.
+   */
+  const remind = (id: string, date: string) => item({ id, date, remind: true })
+
+  it('keeps only reminders', () => {
+    const out = remindersOf([
+      remind('b', '2026-09-01'),
+      item({ id: 'a', date: '2026-09-02', remind: false }),
+    ])
+    expect(out.map((i) => i.id)).toEqual(['b'])
+  })
+
+  it('hands back what it was given, in the order it was given', () => {
+    /*
+     * The source is the `timeline` projection, already sorted by `compareItems`
+     * — date, then all-day, then start time. Re-sorting here would be a second
+     * copy of that rule and a second chance to disagree with the calendar about
+     * what "next" means.
+     */
+    const source = [
+      remind('id-1', '2026-09-01'),
+      remind('id-2', '2026-09-05'),
+      remind('id-3', '2026-09-10'),
+    ]
+    expect(remindersOf(source).map((i) => i.id)).toEqual(['id-1', 'id-2', 'id-3'])
+  })
+
+  it('does not put the newest-added on top, which is the deliberate part', () => {
+    /*
+     * The ids here say the opposite of the dates: `id-3` was written last and is
+     * due FIRST. Newest-added-first would lead with it. Due-date order does not,
+     * and that is the choice — a reminder's meaning is its date, the rows are
+     * grouped by that date, and every row prints it.
+     *
+     * Written as an explicit refusal rather than left implicit, because
+     * "Reminders are the odd one out in the Vault" reads like an oversight and
+     * is not one.
+     */
+    const source = [
+      remind('id-3', '2026-09-01'),
+      remind('id-1', '2026-09-05'),
+      remind('id-2', '2026-09-10'),
+    ]
+    const out = remindersOf(source).map((i) => i.id)
+    expect(out).toEqual(['id-3', 'id-1', 'id-2'])
+    const newestAddedFirst = [...source].sort((a, b) => b.id.localeCompare(a.id)).map((i) => i.id)
+    expect(out).not.toEqual(newestAddedFirst)
+  })
+
+  it('does not reorder what it was given', () => {
+    // `.sort` mutates, and the timeline array is shared with the calendar, the
+    // week strip and every dated rail. Sorting it in place would reorder all of
+    // them from under a list that only meant to reorder itself.
+    const source = [remind('b', '2026-09-05'), remind('a', '2026-09-01')]
+    remindersOf(source)
+    expect(source.map((i) => i.id)).toEqual(['b', 'a'])
+  })
+
+  it('is empty for a timeline with no reminders in it', () => {
+    expect(remindersOf([item({ remind: false })])).toEqual([])
   })
 })

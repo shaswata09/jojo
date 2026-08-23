@@ -1,65 +1,71 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { ChatMessage } from '../core/model-server'
-import { runAgent } from '../agent/loop'
-import type { AgentStep, Cancellation, LlmTurnFn } from '../agent/loop'
-import type { ToolHost } from '../agent/execute'
-import type { ToolName } from '../tools/index'
-import { useKg } from './kg-context'
-
 /**
- * L4 — the agent, as one hook both apps drive.
+ * L4 — useAgent(): one conversation, as the screen showing it sees it.
  *
- * Everything platform-specific was already pushed out before this file existed:
- * the model call is a function the caller supplies (`loop.ts` explains why), the
- * tools come from the registry, and the transcript is plain data. What is left
- * is React state, which is identical on a phone and in a browser — so it is
- * written once here rather than twice in two `src/lib` folders that would then
- * drift. `check-no-copies` would not have caught that drift either: two hooks
- * that agree on 90% of their lines are not twins, they are a fork.
+ * It used to OWN the run. Every piece of a run — the transcript, the busy flag,
+ * the abort object, the pending approval — was state on this hook, which made a
+ * run's lifetime a component's lifetime, and produced three separate failures
+ * that all read as "the chat stopped":
  *
- * WHY THE TRANSCRIPT IS ONE FLAT LIST. What the user asked for is to see what
- * the agent is doing, in order — so the thing the UI renders is the order.
- * Notes, tool calls and the answer go into one array as they happen rather than
- * into three collections a view would have to interleave, because an
- * interleaving computed at render time is one that can be computed wrongly.
+ *   - Leaving the page orphaned the run: the work carried on and still saved,
+ *     but nothing rendered it, and coming back mid-run showed a conversation
+ *     with the question missing and a live composer. Asking again then
+ *     overwrote the first exchange, because `assistant.thread.set` replaces the
+ *     entry list wholesale.
+ *   - Opening another conversation aborted this one, and its answer was then
+ *     written into the conversation now on screen. Unreachable only because the
+ *     thread list disabled every row while anything ran — which is precisely
+ *     the thing a person wanted to do.
+ *   - A destructive step reached after the page closed parked `runAgent` on a
+ *     promise resolved by a button that no longer existed. Forever.
  *
- * WHAT IT KEEPS THAT THE LOOP THROWS AWAY. `runAgent` returns the model-facing
- * transcript; this keeps it as `history` so the next question continues the same
- * conversation, and keeps the steps so their `undo` stays callable after the run
- * has finished. An agent whose work cannot be taken back once it has stopped
- * running is an agent nobody should let write.
+ * The run lives in `agent-runs.ts` now, in a registry above the router, keyed by
+ * conversation. This reads it. What is left here is the part that genuinely is
+ * per-screen: which conversation is being shown, and what to fall back to when
+ * it is not running — the stored transcript.
+ *
+ * WHAT IT KEEPS THAT THE LOOP THROWS AWAY. The registry keeps the steps, so
+ * their `undo` stays callable after the run has finished. An agent whose work
+ * cannot be taken back once it has stopped running is an agent nobody should
+ * let write.
  */
 
-export type AgentEntry =
-  | { kind: 'you'; id: string; text: string }
-  /** Narration the model produced while still working. */
-  | { kind: 'note'; id: string; text: string }
-  | { kind: 'step'; id: string; step: AgentStep }
-  | { kind: 'answer'; id: string; text: string }
-  | { kind: 'error'; id: string; text: string }
+import { useCallback, useMemo } from 'react'
+import type { AgentStep, LlmTurnFn } from '../agent/loop'
+import type { ToolHost } from '../agent/execute'
+import type { ChatMessage } from '../core/model-server'
+import type { NodeId } from '../core/model'
+import { useAgentRun, useAgentRuns } from './agent-runs-context'
+import type { AgentEntry, RunSignal } from './agent-runs'
+import { useKg } from './kg-context'
+import type { ToolName } from '../tools/index'
+
+export type { AgentEntry } from './agent-runs'
 
 export type AgentState = {
   entries: readonly AgentEntry[]
   /** True from the moment a prompt is sent until the run settles. */
   busy: boolean
-  send: (prompt: string) => Promise<void>
+  send: (prompt: string) => void
   stop: () => void
   clear: () => void
-  /** Every step of this session that can still be taken back, newest first. */
+  /** Every step of this conversation that can still be taken back, newest first. */
   undoable: readonly AgentStep[]
 }
 
 export type UseAgentOptions = {
   /**
-   * The model call, or null when nothing is connected.
+   * The model call, built per run, or null when nothing is connected.
+   *
+   * A FACTORY rather than the function itself, so each run can close over its
+   * own cancellation and abort its own HTTP request — pressing Stop used to
+   * leave the socket open to its sixty-second timeout with the UI already
+   * saying the run had stopped. See `RunSignal`.
    *
    * Null rather than a throwing stub: "is there a model" is a question the
    * screen has to answer anyway to decide what to render, and a hook that
    * pretends otherwise until you press send is a hook that fails late.
    */
-  llm: LlmTurnFn | null
-  /** Asked before every destructive call. See `loop.ts`. */
-  approve?: (step: AgentStep) => boolean | Promise<boolean>
+  llm: ((signal: RunSignal) => LlmTurnFn) | null
   maxSteps?: number
   /** Offer the model only these tools, by registry name. See `loop.ts`. */
   tools?: readonly string[]
@@ -70,69 +76,68 @@ export type UseAgentOptions = {
    * halves — finding the bytes and sending them — are platform work this package
    * may not do.
    */
-  convert?: (fileId: string) => Promise<{ ok: true; markdown: string } | { ok: false; reason: string }>
+  convert?: ToolHost['convert']
   /**
-   * A stored conversation to continue.
+   * The conversation on screen, and what is stored for it.
    *
-   * `key` is what says "this is a different one" — the entries and history are
-   * arrays rebuilt on every render, so comparing them would reload the hook
-   * continuously. Changing the key swaps the conversation; keeping it while the
-   * arrays change leaves the live one alone, which is what must happen while an
-   * exchange is being saved back into the very thread being read.
+   * `id` is null for a conversation nobody has started yet. It used to be an
+   * opaque `key`, which was enough to notice a swap and not enough to key a run
+   * — a run has to know which conversation it belongs to, or its answer lands
+   * in whichever one happens to be open when it finishes.
    */
-  thread?: { key: string; entries: readonly AgentEntry[]; history: readonly ChatMessage[] }
+  thread: {
+    id: NodeId | null
+    entries: readonly AgentEntry[]
+    history: readonly ChatMessage[]
+    /**
+     * Whether this conversation may be written to without asking.
+     *
+     * Off means every write stops and asks — not just deletes. That is the
+     * point: "asks before it deletes" left editing a file, retagging a record
+     * and rewriting a note as things that simply happened.
+     */
+    autoApprove?: boolean
+  }
   /**
-   * Called once when an exchange settles, with everything said so far.
+   * Mints a conversation for a first question, and returns its id.
    *
-   * At the END of a run rather than per event: a conversation saved five times
-   * during one exchange is five commits for one thing the user did, and the
-   * intermediate states are a transcript with a half-finished tool call in it.
+   * Called at SEND rather than at settle, which is the ordering that fixes two
+   * things at once: the run gets a stable key before its first token, and the
+   * question is stored immediately, so an interrupted run leaves the question
+   * behind rather than nothing at all.
+   *
+   * The old comment here argued the opposite — that creating up front would
+   * change the loaded thread's key mid-exchange and the reload would replace
+   * the live turns with the empty ones just written. That was true while the
+   * transcript came from storage. It comes from the run now, so a reload of the
+   * stored thread cannot overwrite anything live.
    */
-  onSettled?: (entries: readonly AgentEntry[]) => void
+  startThread?: (prompt: string) => NodeId | null
+  /**
+   * Called once when an exchange settles, with the conversation it was FOR.
+   *
+   * The id is handed back rather than read from "which is open now", which is
+   * what used to let one conversation's answer overwrite another's.
+   */
+  onSettled?: (
+    threadId: NodeId,
+    entries: readonly AgentEntry[],
+    history: readonly ChatMessage[],
+  ) => void
 }
 
 export function useAgent({
   llm,
-  approve,
   maxSteps,
   tools,
-  thread,
-  onSettled,
   convert,
+  thread,
+  startThread,
+  onSettled,
 }: UseAgentOptions): AgentState {
   const { repo, runtime } = useKg()
-  const [entries, setEntries] = useState<readonly AgentEntry[]>(thread?.entries ?? [])
-  const [busy, setBusy] = useState(false)
-  /**
-   * A mutable flag rather than an `AbortController`.
-   *
-   * `AbortController` is a DOM global this package does not have — see
-   * `types/portable-globals.d.ts` — and the loop only ever reads `.aborted`, so
-   * a one-key object does the whole job on every platform.
-   */
-  /** The model-facing transcript, so a follow-up means something. */
-  const history = useRef<ChatMessage[]>([...(thread?.history ?? [])])
-  const abort = useRef<{ aborted: boolean } | null>(null)
-  const seq = useRef(0)
-
-  /*
-   * Load a different conversation when the key changes, and only then.
-   *
-   * A layout effect so the swap lands before paint: an effect would show the
-   * outgoing thread's turns under the incoming thread's title for a frame,
-   * which reads as the wrong conversation rather than as a load.
-   */
-  const loaded = useRef<string | null>(thread?.key ?? null)
-  useLayoutEffect(() => {
-    if (!thread || loaded.current === thread.key) return
-    loaded.current = thread.key
-    if (abort.current) abort.current.aborted = true
-    setEntries(thread.entries)
-    history.current = [...thread.history]
-    seq.current = thread.entries.length
-    setBusy(false)
-  }, [thread])
-  const nextId = () => `e${String((seq.current += 1))}`
+  const runs = useAgentRuns()
+  const run = useAgentRun(thread.id)
 
   /**
    * The three functions the agent is allowed.
@@ -152,98 +157,58 @@ export function useAgent({
   )
 
   const send = useCallback(
-    async (prompt: string) => {
+    (prompt: string) => {
       const clean = prompt.trim()
-      if (!clean || busy || !llm) return
+      if (clean.length === 0 || !llm) return
+      const id = thread.id ?? startThread?.(clean) ?? null
+      if (id === null) return
 
-      const cancel = { aborted: false }
-      abort.current = cancel
-      setBusy(true)
-      setEntries((prev) => [...prev, { kind: 'you', id: nextId(), text: clean }])
-
-      /**
-       * A step arrives twice — running, then settled — under one id.
-       *
-       * Replaced in place rather than appended, which is the whole reason
-       * `AgentStep.id` is stable: appending would show the same call twice and
-       * make a two-tool run look like a four-tool one.
-       */
-      /*
-       * What this exchange produced, accumulated as it goes.
-       *
-       * Kept beside the state because `onSettled` needs the finished list and
-       * `setEntries` is asynchronous — reading `entries` after the run would
-       * hand the caller the conversation as it was before it.
-       */
-      let settled: AgentEntry[] = [
-        ...entries,
-        { kind: 'you', id: nextId(), text: clean } as AgentEntry,
-      ]
-      const record = (entry: AgentEntry) => {
-        const at = settled.findIndex((e) => e.id === entry.id)
-        if (at === -1) settled = [...settled, entry]
-        else settled = settled.map((e, i) => (i === at ? entry : e))
-      }
-
-      const onStep = (step: AgentStep) => {
-        record({ kind: 'step', id: `s-${step.id}`, step })
-        setEntries((prev) => {
-          const at = prev.findIndex((e) => e.kind === 'step' && e.step.id === step.id)
-          if (at === -1) return [...prev, { kind: 'step', id: `s-${step.id}`, step }]
-          const next = [...prev]
-          next[at] = { kind: 'step', id: `s-${step.id}`, step }
-          return next
-        })
-      }
-
-      const run = await runAgent({
-        host,
-        llm,
-        history: history.current,
+      runs.start({
+        threadId: id,
         prompt: clean,
-        ...(maxSteps === undefined ? {} : { maxSteps }),
+        // The stored transcript, because an exchange only starts once the last
+        // one settled and saved. One run per conversation is what makes that
+        // true rather than hopeful.
+        history: thread.history,
+        llm,
+        host,
         ...(tools === undefined ? {} : { tools }),
-        ...(approve ? { approve } : {}),
-        signal: cancel satisfies Cancellation,
-        onEvent: (event) => {
-          if (event.type === 'step') {
-            onStep(event.step)
-            return
-          }
-          const entry: AgentEntry =
-            event.type === 'note'
-              ? { kind: 'note', id: nextId(), text: event.text }
-              : event.type === 'answer'
-                ? { kind: 'answer', id: nextId(), text: event.text }
-                : { kind: 'error', id: nextId(), text: event.reason }
-          record(entry)
-          setEntries((prev) => [...prev, entry])
-        },
+        ...(maxSteps === undefined ? {} : { maxSteps }),
+        gate: thread.autoApprove === true ? 'destructive' : 'writes',
+        ...(onSettled ? { onSettled } : {}),
       })
-
-      // Kept whatever the outcome, including after the cap or an error: the
-      // model needs to see what it already did, or a follow-up starts by
-      // repeating it.
-      history.current = run.messages.slice(1)
-      abort.current = null
-      setBusy(false)
-      // `settled` rather than `entries`: the state setter above has queued, so
-      // the closure's `entries` is one exchange behind. The events are what
-      // actually happened, in order.
-      onSettled?.(settled)
     },
-    [approve, busy, host, llm, maxSteps, onSettled, tools],
+    [
+      host,
+      llm,
+      maxSteps,
+      onSettled,
+      runs,
+      startThread,
+      thread.autoApprove,
+      thread.history,
+      thread.id,
+      tools,
+    ],
   )
 
   const stop = useCallback(() => {
-    if (abort.current) abort.current.aborted = true
-  }, [])
+    if (thread.id !== null) runs.stop(thread.id)
+  }, [runs, thread.id])
 
   const clear = useCallback(() => {
-    if (abort.current) abort.current.aborted = true
-    history.current = []
-    setEntries([])
-  }, [])
+    if (thread.id !== null) runs.forget(thread.id)
+  }, [runs, thread.id])
+
+  /*
+   * The live run when there is one, the stored conversation otherwise.
+   *
+   * In that order, and it is the fix for the symptom people actually saw: come
+   * back to a conversation mid-run and the run has the question and the answer
+   * so far, while storage has neither — the exchange is written once, at the
+   * end. Reading storage first is what made a working conversation look stopped.
+   */
+  const entries = run?.entries ?? thread.entries
 
   /**
    * Newest first, because undoing out of order is how a person un-does the
@@ -259,5 +224,5 @@ export function useAgent({
     [entries],
   )
 
-  return { entries, busy, send, stop, clear, undoable }
+  return { entries, busy: run?.busy ?? false, send, stop, clear, undoable }
 }

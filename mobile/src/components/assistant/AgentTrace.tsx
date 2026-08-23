@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import type { AgentStep } from '@jojo/service/agent/loop'
+import { readStepDetail } from '@jojo/service/agent/execute'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { Txt } from '@/components/ui/Text'
@@ -118,7 +119,7 @@ export function StepRow({
           <View style={[s.row, { gap: space[2] }]}>
             <Feather name="alert-triangle" size={16} color={c.warning} />
             <Txt size="xs" tone="secondary" style={s.fill}>
-              This removes records and the agent asked to do it. Nothing has changed yet.
+              The agent asked to do this. Nothing has changed yet.
             </Txt>
           </View>
           <View style={[s.row, { justifyContent: 'flex-end', gap: space[2] }]}>
@@ -138,7 +139,7 @@ export function StepRow({
           }}
         >
           <Detail label="Arguments" value={JSON.stringify(step.args, null, 2)} />
-          {step.detail ? <Detail label="Result" value={step.detail} /> : null}
+          <Result step={step} />
         </View>
       ) : null}
 
@@ -161,26 +162,63 @@ export function StepRow({
   )
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+/**
+ * A step's result, laid out rather than dumped.
+ *
+ * `detail` is one string carrying two different things — a read comes back as
+ * compact JSON, a write as the toast sentence — and rendering both the same way
+ * made a read of forty records one 6000-character line. `readStepDetail` tells
+ * them apart with the same predicate that chose the format.
+ */
+function Result({ step }: { step: AgentStep }) {
+  const detail = readStepDetail(step)
+  if (!detail) return null
+  if (detail.kind === 'text') return <Detail label="Result" value={detail.value} />
+  return (
+    <Detail
+      label="Result"
+      value={JSON.stringify(detail.value, null, 2)}
+      {...(detail.truncated
+        ? { note: 'Cut short — the agent was told to narrow the search to see the rest.' }
+        : {})}
+    />
+  )
+}
+
+function Detail({ label, value, note }: { label: string; value: string; note?: string }) {
   const c = useColors()
   return (
     <View style={{ gap: space[1] }}>
       <Txt size="xs" tone="muted" weight="medium">
         {label}
       </Txt>
-      {/* Its own horizontal scroller. A 200-character JSON line cannot wrap into
-          380 points and stay readable, and letting it try is what pushes the
-          rest of the row off screen. */}
+      {/*
+       * VERTICAL, not horizontal, and that is a bug fix rather than a
+       * preference. This was a `horizontal` ScrollView with a 180pt cap — and a
+       * horizontal ScrollView does not scroll vertically, so everything past
+       * about ten lines was clipped with no way to reach it. Pretty-printed
+       * arguments already hit that; a pretty-printed result would bury it.
+       *
+       * The trade the old comment was making is real but points the other way
+       * now: pretty-printed JSON is mostly short indented lines, so wrapping
+       * costs little, while losing the tail costs everything. `nestedScroll`
+       * is what lets this scroll inside the screen's own ScrollView.
+       */}
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ maxHeight: 180, backgroundColor: c.well, borderRadius: radius.md }}
+        nestedScrollEnabled
+        showsVerticalScrollIndicator={false}
+        style={{ maxHeight: 220, backgroundColor: c.well, borderRadius: radius.md }}
         contentContainerStyle={{ padding: space[2] }}
       >
-        <Txt size="xs" tone="secondary" mono>
+        <Txt size="xs" tone="secondary" mono selectable>
           {value}
         </Txt>
       </ScrollView>
+      {note ? (
+        <Txt size="xs" tone="muted">
+          {note}
+        </Txt>
+      ) : null}
     </View>
   )
 }

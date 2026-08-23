@@ -115,7 +115,7 @@ export function MoreScreen() {
     {
       screen: 'Guide',
       label: 'How to use',
-      hint: 'The three layers, and a checklist',
+      hint: 'A guided tour, and what each screen is for',
       icon: 'help-circle',
     },
   ]

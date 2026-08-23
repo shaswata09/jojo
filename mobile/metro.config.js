@@ -76,10 +76,16 @@ const ALIASES = [['@/', path.join(projectRoot, 'src') + path.sep]]
 /*
  * The one Expo package that will not leave, stubbed out of the graph.
  *
- * `@react-native-vector-icons/common` declares `expo-font` as an OPTIONAL peer
- * and npm installs it anyway, so uninstalling `expo` from this workspace does
- * not remove it. `common/index.js` re-exports `dynamicLoading/dynamic-loading-setting`,
- * whose top level reads:
+ * `@react-native-vector-icons/common` declares `expo-font` as an OPTIONAL peer.
+ * It is no longer INSTALLED — `legacy-peer-deps=true` in the root `.npmrc` stops
+ * npm auto-installing optional peers, and that took the whole Expo tree out of
+ * the workspace — but the import edge is still in the package's source, and an
+ * unresolvable require is a build error rather than a missing feature. So this
+ * stub went from "the way to keep an unwanted package out of the bundle" to
+ * "the way the bundle resolves at all", which is a promotion, not a retirement.
+ *
+ * `common/index.js` re-exports `dynamicLoading/dynamic-loading-setting`, whose
+ * top level reads:
  *
  *     if (Platform.OS === 'web' && globalThis.expo) { try { require('expo-font') } catch {} }
  *
@@ -90,13 +96,12 @@ const ALIASES = [['@/', path.join(projectRoot, 'src') + path.sep]]
  * change the import graph.
  *
  * It bundled under Expo only because `expo-asset` — which `expo-font` imports —
- * happened to be hoisted where it could be found. Uninstalling `expo` left
- * `expo-font` hoisted at the workspace root and `expo-asset` nested under
- * `node_modules/expo/`, reachable only from there, and the bundle stopped
- * building. That resolution was luck, and it was luck that depended on `web`'s
- * dependency tree: `expo` survives in the workspace only as a transitive of
- * `@react-three/fiber`. Mobile must not be able to break when web changes a
- * dependency it does not share.
+ * happened to be hoisted where it could be found. That resolution was luck, and
+ * it was luck that depended on WEB's dependency tree: `expo` used to survive in
+ * the workspace only as a transitive of `@react-three/fiber`, which mobile does
+ * not use and cannot see. Mobile must not be able to break when web changes a
+ * dependency it does not share, and with this stub it cannot — the edge is cut
+ * here rather than resolved by accident somewhere else.
  *
  * `{ type: 'empty' }` is Metro's own empty module, and it is exactly right here
  * rather than a lesser evil. The `require` above is side-effect-only — it exists

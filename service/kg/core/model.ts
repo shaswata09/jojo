@@ -960,6 +960,24 @@ export type ThreadProps = {
   /** The user's name for it, or the first thing they said, trimmed. */
   title: string
   entries: ThreadEntry[]
+  /**
+   * Let the agent write without stopping to ask. Absent means ask.
+   *
+   * Optional, so every conversation written before this existed keeps the safe
+   * meaning — the same reason `PipelineProps.auto` is optional, and this is
+   * that field's shape transplanted: a boolean on the record, validated as
+   * optional, set by a one-field tool, and enforced at the point of USE rather
+   * than in the tool. A tool that refused to set it could still be one commit
+   * away from a graph where it disagreed with something else.
+   *
+   * Per conversation rather than per device, and that is a real choice with a
+   * real cost. It is a statement about how much this person trusts the agent
+   * for THIS piece of work — "this one is a cleanup session, stop asking me" —
+   * which travels with them, so it is a record and Transfer carries it to the
+   * phone. An endpoint would not be; see `model-settings-context.ts` for the
+   * line that separates the two.
+   */
+  autoApprove?: boolean
 }
 
 export type NodePropsByType = {

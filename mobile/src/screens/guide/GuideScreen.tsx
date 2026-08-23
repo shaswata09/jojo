@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Screen } from '@/components/ui/Screen'
+import { Button } from '@/components/ui/Button'
 import { Segment } from '@/components/ui/Segment'
 import { GuideBuiltWith } from '@/screens/guide/GuideBuiltWith'
 import { GuideGraph } from '@/screens/guide/GuideGraph'
 import { GuideOverview } from '@/screens/guide/GuideOverview'
 import { GuideScreens } from '@/screens/guide/GuideScreens'
+import { GuidedTour } from '@/screens/guide/GuidedTour'
 
 /**
  * The guide, as a section rather than a page.
@@ -40,10 +42,25 @@ const SUBTITLE: Record<Page, string> = {
 
 export function GuideScreen() {
   const [page, setPage] = useState<Page>('overview')
+  const [tour, setTour] = useState(false)
 
   return (
     <Screen title="How to use jojo" subtitle={SUBTITLE[page]}>
       <Segment label="Guide page" options={PAGES} value={page} onChange={setPage} />
+
+      {/* Above the pages, and on every one of them.
+          The tour is offered once during onboarding and then has to live
+          somewhere findable, or "you can always take it later" is a promise the
+          app does not keep. This is where someone looks for it: the screen
+          called How to use. */}
+      <Button
+        label="Take the tour"
+        icon="compass"
+        variant="outline"
+        full
+        onPress={() => setTour(true)}
+      />
+      <GuidedTour open={tour} onClose={() => setTour(false)} />
 
       {page === 'overview' ? <GuideOverview /> : null}
       {page === 'screens' ? <GuideScreens /> : null}

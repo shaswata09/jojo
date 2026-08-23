@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { TextInput, View } from 'react-native'
 import { useAgent } from '@jojo/service/react/use-agent'
+import type { RunSignal } from '@jojo/service/react/agent-runs'
+import type { NodeId } from '@jojo/service/core/model'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { agentTurn, isConfigured } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
@@ -24,6 +26,9 @@ import { radius, space } from '@/theme/tokens'
  * because half these questions name a record and a name has to become something
  * the query can hold.
  */
+/** The scratch key this card's run lives under. See the note at `useAgent`. */
+const GRAPH_ASK = 'ask:graph' as NodeId
+
 const TOOLS = ['graph.query', 'memory.search'] as const
 
 const SUGGESTIONS = [
@@ -43,14 +48,40 @@ export function AskBox({
   const connected = isConfigured(settings)
   const [prompt, setPrompt] = useState('')
 
+  /**
+   * Built per RUN, so Stop can cancel the request rather than only the loop.
+   *
+   * `agentTurn` has always taken a signal and no caller ever passed one, so
+   * stopping left the socket open until the sixty-second timeout while the UI
+   * already said the run had stopped — and the cancelled turn then arrived as a
+   * red error blaming the model. The controller lives here because
+   * `AbortController` is a platform global the shared layer may not name.
+   */
   const llm = useCallback(
-    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
-      agentTurn(settings, messages, tools),
+    (run: RunSignal) => {
+      const controller = new AbortController()
+      run.onAbort(() => {
+        controller.abort()
+      })
+      return (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+        agentTurn(settings, messages, tools, controller.signal)
+    },
     [settings],
   )
 
   // Four rounds is generous for two tools: find a name, ask, answer.
-  const { entries, busy, send, stop, clear } = useAgent({ llm, tools: TOOLS, maxSteps: 4 })
+  /*
+   * A fixed key rather than a conversation's id. A run is keyed by a string and
+   * this card is not a conversation — nothing about it is stored — but it still
+   * wants the same thing every run wants: to survive the page it started on.
+   * Ask the graph something, wander off, come back and the answer is there.
+   */
+  const { entries, busy, send, stop, clear } = useAgent({
+    llm,
+    tools: TOOLS,
+    maxSteps: 4,
+    thread: { id: GRAPH_ASK, entries: [], history: [] },
+  })
 
   const answered = entries
     .filter((e) => e.kind === 'step' && e.step.name === 'graph.query' && e.step.status === 'done')

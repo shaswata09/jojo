@@ -40,6 +40,7 @@
     "./agent/*": "./kg/agent/*.ts",
     "./react/kg": "./kg/react/kg.tsx",
     "./react/status": "./kg/react/status.tsx",
+    "./react/agent-runs-provider": "./kg/react/agent-runs-provider.tsx",
     "./react/*": "./kg/react/*.ts",
     "./data/*": "./data/*.ts",
     "./log": "./kg/log.ts",

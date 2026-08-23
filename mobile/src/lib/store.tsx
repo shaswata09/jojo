@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { View } from 'react-native'
 import { FirstRunChoice } from '@/components/common/FirstRunChoice'
+import { Onboarding } from '@/components/common/Onboarding'
 import { Txt } from '@/components/ui/Text'
 import { kgWarn } from '@jojo/service/log'
 import { KgProvider } from '@jojo/service/react/kg'
@@ -53,6 +54,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // boot would open a second driver over the same file.
   const started = useRef(false)
   const [firstRun, setFirstRun] = useState(false)
+  /*
+   * Whether this session STARTED with the fork, which is not the same as
+   * `firstRun` and outlives it: `firstRun` flips false the moment the fork is
+   * answered, and onboarding needs to know it was a first run for the rest of
+   * the session. Without it the details sheet reads the seeded demo profile,
+   * finds 'Alex Rahman' in it, decides the user has already told us who they
+   * are, and skips itself for exactly the person it exists for.
+   */
+  const [fresh, setFresh] = useState(false)
 
   useEffect(() => {
     if (started.current) return
@@ -124,7 +134,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         {state.phase === 'degraded' ? <DegradedBanner why={state.why} /> : null}
         {children}
         {/* Inside the provider, because answering it runs a tool. */}
-        {firstRun ? <FirstRunChoice onDone={() => setFirstRun(false)} /> : null}
+        {firstRun ? (
+          <FirstRunChoice
+            onDone={() => {
+              setFirstRun(false)
+              setFresh(true)
+            }}
+          />
+        ) : (
+          /* Only once the fork is answered: two sheets at once on a phone means
+             the second one is simply invisible. See `Onboarding`'s header. */
+          <Onboarding fresh={fresh} />
+        )}
       </StoreStatusProvider>
     </KgProvider>
   )

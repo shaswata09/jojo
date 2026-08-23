@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   Archive,
@@ -23,8 +23,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
-import { isTypingTarget } from '@/components/common/typing-target'
-import { DIALOG_TOOLS, useCreateActions, useRunCreateAction } from '@/components/layout/NewMenu'
+import { DIALOG_TOOLS, useCreateActions, useRunCreateAction } from '@/lib/create-actions'
 import { ToolRunDialog } from '@/components/common/ToolRunDialog'
 import { planToolForm } from '@/components/common/tool-form'
 import { GUIDE_PAGE_META } from '@/components/guide/pages'
@@ -436,28 +435,4 @@ export function SpotlightSearch({
       ) : null}
     </>
   )
-}
-
-/** Opens on ⌘K / Ctrl-K, and ignores the shortcut while you are typing. */
-export function useSpotlight() {
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() !== 'k' || !(e.metaKey || e.ctrlKey)) return
-      // The docstring above has always claimed this guard and the check was
-      // never written, so ⌘K fired over the applications search box and over
-      // the note editor, where it is the browser's or the field's to handle.
-      // The trade is that the palette no longer toggles shut from inside its
-      // own input — Escape is what closes it.
-      if (isTypingTarget(e.target)) return
-      if (e.isComposing || e.defaultPrevented) return
-      e.preventDefault()
-      setOpen((prev) => !prev)
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [])
-
-  return { open, setOpen }
 }

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "jojo \u2014 keep this posting",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "Saves a job posting exactly as it reads today, and lets jojo read the job boards you follow. Nothing is uploaded anywhere.",
   "permissions": [
     "scripting",

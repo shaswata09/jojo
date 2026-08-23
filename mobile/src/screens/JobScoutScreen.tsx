@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { fitOf } from '@/lib/fit'
 import { listJoin } from '@/lib/text'
 import { TODAY } from '@/lib/today'
@@ -25,13 +25,11 @@ import { agoLabel } from '@jojo/service/data/timeline'
 // ever disagree with the store about what a pasted link means.
 import { draftFromUrl } from '@jojo/service/core/parse-posting'
 import { useProfile } from '@jojo/service/react/use-profile'
-import { usePipelines, isAuto, kindOf } from '@jojo/service/react/use-pipelines'
+import { isAuto, kindOf } from '@jojo/service/react/use-pipelines'
+import { usePipelinesState } from '@jojo/service/react/pipelines-context'
 import { AUTO_CAPABLE, PIPELINE_SCHEDULES, scheduleOf } from '@jojo/service/core/proposal'
 import type { PipelineKind } from '@jojo/service/core/model'
 import { ProposalQueue } from '@/components/scout/ProposalQueue'
-import { agentTurn, isConfigured } from '@/lib/llm'
-import { scanBoard } from '@/lib/board-scan'
-import { useModelSettings } from '@/lib/model-settings-context'
 import { useApplications, useScout } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { displayUrl, hrefOf } from '@/lib/urls'
@@ -87,25 +85,14 @@ export function JobScoutScreen() {
   const { get } = useApplications()
   const { toast } = useToast()
 
-  /**
-   * The pipelines' engine, identical to web's — the hook is shared and this is
-   * the whole of the platform difference: which `agentTurn` it is handed.
+  /*
+   * The engine is mounted above the navigator (`lib/pipelines.tsx`), not here.
    *
-   * A pipeline runs while this screen's app is in the FOREGROUND. React Native
-   * suspends JavaScript when the app is backgrounded, so there is no honest way
-   * to promise otherwise without a background-task module this app does not
-   * ship. Everything needed to resume is in the graph, so leaving and coming
-   * back picks up where it left off.
+   * Calling `usePipelines` from this screen made a pipeline's lifetime the
+   * screen's lifetime — and every exit from here pops it — so a pipeline
+   * stopped the moment you left, under a footer promising it kept going.
    */
-  const { settings } = useModelSettings()
-  const llm = useCallback(
-    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
-      agentTurn(settings, messages, tools),
-    [settings],
-  )
-  // Module scope and therefore stable, which matters: an unstable port would
-  // rebuild the agent's host on every render and restart a round mid-flight.
-  const engine = usePipelines({ llm: isConfigured(settings) ? llm : null, scan: scanBoard })
+  const engine = usePipelinesState()
 
   const [editing, setEditing] = useState<Pipeline | 'new' | null>(null)
   const [onlyActive, setOnlyActive] = useState(false)

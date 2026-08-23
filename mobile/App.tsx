@@ -5,6 +5,9 @@ import { LabelsProvider } from '@/lib/labels'
 import { RolesProvider } from '@/lib/roles'
 import { SheetsProvider } from '@/lib/sheets'
 import { ModelSettingsProvider } from '@/lib/model-settings'
+import { AgentRunsProvider } from '@jojo/service/react/agent-runs-provider'
+import { ApprovalSheet } from '@/components/assistant/ApprovalSheet'
+import { PipelinesProvider } from '@/lib/pipelines'
 import { StoreProvider } from '@/lib/store'
 import { ToastProvider } from '@/lib/toast'
 import { RootNavigator } from '@/navigation'
@@ -53,7 +56,18 @@ export default function App() {
                       keeps only the filter selection, which is view state. */}
                   <LabelsProvider>
                     <SheetsProvider>
-                      <Themed />
+                      {/* Above the navigator, which `Themed` renders. A
+                          conversation's run has to outlive the screen that
+                          started it, and every exit from the Assistant screen
+                          pops it — it is always the leaf of the stack. */}
+                      <AgentRunsProvider>
+                        {/* Above the navigator too: a pipeline that stopped
+                            when you left Job Scout was a pipeline that did not
+                            do what its own footer said. */}
+                        <PipelinesProvider>
+                          <Themed />
+                        </PipelinesProvider>
+                      </AgentRunsProvider>
                     </SheetsProvider>
                   </LabelsProvider>
                 </StoreProvider>
@@ -85,6 +99,9 @@ function Themed() {
       <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
       <RootNavigator />
       <SheetHost />
+      {/* Beside the sheet host, outside the navigator: an approval for a run
+          whose screen has been popped has nowhere else to be drawn. */}
+      <ApprovalSheet />
     </View>
   )
 }

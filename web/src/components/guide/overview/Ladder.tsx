@@ -1,4 +1,4 @@
-import { Cpu, HardDrive, MonitorSmartphone } from 'lucide-react'
+import { Cpu, FileText, HardDrive, MonitorSmartphone, Puzzle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Kbd } from '@/components/guide/Kbd'
@@ -33,8 +33,25 @@ const LAYERS: Layer[] = [
     icon: Cpu,
     name: '+ Local model',
     requires: 'vLLM, Ollama or LM Studio',
-    gives: 'Would score scout matches and draft against your own documents',
-    active: false,
+    gives:
+      'A threaded, agentic assistant that reads and writes your records, "Ask the graph" in a sentence, and real scout scoring',
+    active: true,
+  },
+  {
+    icon: FileText,
+    name: '+ Document reader',
+    requires: 'MarkItDown, running locally',
+    gives:
+      'The model reads your PDFs, Word files and decks — and a job posting, so New → Application from a link fills the form in',
+    active: true,
+  },
+  {
+    icon: Puzzle,
+    name: '+ The extension',
+    requires: 'Chrome, Edge, Brave or Arc',
+    gives:
+      'Keep a posting exactly as it read. It is also the only thing here that can open a web page, which is what lets a pipeline sweep a board',
+    active: true,
   },
 ]
 
@@ -42,12 +59,12 @@ export function LadderSection() {
   return (
     <section id="ladder" className="scroll-mt-4">
       <h2 className="mb-3 text-base font-medium">
-        What jojo could do with more on the machine
+        What jojo does with more on the machine
         <small className="ml-2 font-sans text-xs font-normal text-text-3">
-          neither is connected in this build
+          every rung is real; each is optional
         </small>
       </h2>
-      <ul className="grid grid-cols-1 gap-3 sm:gap-3.5 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3.5 lg:grid-cols-3">
         {LAYERS.map((l) => (
           <li
             key={l.name}
@@ -60,12 +77,16 @@ export function LadderSection() {
                 aria-hidden
               />
               <h3 className="text-sm font-medium">{l.name}</h3>
+              {/* `active` means "this rung is built", not "you have it set up".
+                  It read "not connected" on the model rung while the assistant
+                  was already agentic against a real endpoint — a page telling
+                  the reader a feature does not exist while they are using it.
+                  Whether YOU have one configured is answered by the runtime tile
+                  in the sidebar, which probes; a static page cannot know. */}
               {l.active ? (
-                <span className="ml-auto text-xs text-accent">active</span>
+                <span className="ml-auto text-xs text-accent">built</span>
               ) : (
-                // "optional" undersold it: neither of these is present in this
-                // build, and the tense of each `gives` line now matches.
-                <span className="ml-auto text-xs text-text-3">not connected</span>
+                <span className="ml-auto text-xs text-text-3">not built</span>
               )}
             </div>
             <p className="mt-2 text-xs text-text-3">{l.requires}</p>
@@ -75,11 +96,11 @@ export function LadderSection() {
       </ul>
 
       <p className="mt-3 text-sm text-text-2">
-        Two pages already say this about themselves where you meet them, rather than making you come
-        back here: <Go to={scoutPath()}>Job scout</Go> saves postings and pipelines for real and
-        badges its scores as examples, and the <Go to={assistantPath()}>Assistant</Go> answers with
-        worked examples and names them as canned rather than improvising a paragraph about whatever
-        you typed. <Go to={guidePath('screens')}>Every screen</Go> goes through the rest, page by
+        Every page says for itself which rung it is on, rather than making you come back here. The{' '}
+        <Go to={assistantPath()}>Assistant</Go> is a threaded agentic chat with a model connected
+        and five worked examples without one, badged either way, and{' '}
+        <Go to={scoutPath()}>Job scout</Go> scores for real against your profile and says what it
+        matched on. <Go to={guidePath('screens')}>Every screen</Go> goes through the rest, page by
         page.
       </p>
 

@@ -113,7 +113,7 @@ export const SYSTEM_PROMPT = [
   // round trip, it cannot show which record is meant, and a model is free to
   // skip it. The gate is code and cannot be talked out of, so it is the only one
   // — and the model is told it exists so it stops inventing its own.
-  'To delete something, call the delete tool. The person is shown exactly what it would remove and approves it before anything happens, so you do not need to ask them first.',
+  'Call the tool you mean directly. Depending on their settings the person may be shown exactly what it would change and asked to approve it before anything happens, so you never need to ask them first in prose.',
   'If you cannot find a record, say so. Never create one so that there is something to act on.',
   'When you are finished, answer in plain prose: what changed, in one or two sentences. No markdown headings, no bullet lists of tool names.',
 ].join(' ')
@@ -162,6 +162,21 @@ export type AgentOptions = {
    * pass one.
    */
   approve?: (step: AgentStep) => boolean | Promise<boolean>
+  /**
+   * Which steps have to be approved. Defaults to `destructive`.
+   *
+   * `destructive` is delete and admin — 13 of the 81 catalog entries, the ones
+   * whose catalog description already warns the model about them. `writes` is
+   * every step that is not a read: 73 of them, which is what "ask me before it
+   * changes anything" actually means.
+   *
+   * The policy is the CALLER'S, which is why it is here rather than widening
+   * `destructive` in `catalog.ts`. That flag is load-bearing elsewhere — it
+   * fills MCP's `destructiveHint` and appends "this removes a record" to the
+   * description the model reads — and marking every create destructive would
+   * lie to both.
+   */
+  gate?: 'destructive' | 'writes'
   signal?: Cancellation
   /**
    * The tools to offer this run, by registry name. All of them when absent.
@@ -221,11 +236,19 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
     if (signal?.aborted) return finish('aborted')
 
     const turn = await llm(messages, tools)
+    /*
+     * Abort is checked BEFORE `!turn.ok`, and the order is the whole point.
+     *
+     * Stopping a run now cancels the HTTP request, and a cancelled fetch comes
+     * back as a failed turn — so with the checks the other way round, pressing
+     * Stop ended the run with a red error entry blaming the model for a failure
+     * the user caused. Reading the flag first means a stop reads as a stop.
+     */
+    if (signal?.aborted) return finish('aborted')
     if (!turn.ok) {
       onEvent({ type: 'error', reason: turn.reason })
       return finish('error')
     }
-    if (signal?.aborted) return finish('aborted')
 
     // No calls: the model is done talking and this is the answer.
     if (turn.toolCalls.length === 0) {
@@ -254,6 +277,16 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
     })
 
     for (const call of turn.toolCalls) {
+      /*
+       * Checked per CALL, not once per round.
+       *
+       * A turn routinely asks for several tools at once, and the check above
+       * runs before the first of them — so a model that requested three writes
+       * performed all three after the user pressed Stop. Only the destructive
+       * ones were caught, and only because the approval gate happened to
+       * decline them.
+       */
+      if (signal?.aborted) return finish('aborted')
       counter += 1
       const step = await performCall(options, call, `s${String(counter)}`)
       steps.push(step)
@@ -312,7 +345,17 @@ async function performCall(options: AgentOptions, call: ToolCall, id: string): P
     })
   }
 
-  if (base.destructive && approve) {
+  /*
+   * `'unknown'` is excluded deliberately: it means the model named a tool that
+   * does not exist, and `callTool` refuses it a line later regardless. Asking a
+   * person to approve a call that cannot happen is asking them to rubber-stamp.
+   */
+  const gated =
+    (options.gate ?? 'destructive') === 'writes'
+      ? base.effect !== 'read' && base.effect !== 'unknown'
+      : base.destructive
+
+  if (gated && approve) {
     const allowed = await approve(base)
     if (!allowed) {
       return settle({

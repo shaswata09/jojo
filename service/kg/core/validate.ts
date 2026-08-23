@@ -246,6 +246,7 @@ export const NODE_PROP_SCHEMAS = {
     slug,
     title: s.string({ min: 1, label: 'Title' }),
     entries: threadEntries,
+    autoApprove: s.optional(s.boolean({ label: 'Act without asking' })),
   }),
   posting: s.object({
     slug,

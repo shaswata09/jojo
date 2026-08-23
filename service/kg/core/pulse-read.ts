@@ -342,7 +342,7 @@ export function readPulse(gray: Uint8Array, width: number, height: number): Puls
      * genuinely far apart — a lit region against a dimmed one — so it puts the
      * threshold in the middle of that space rather than at its edge.
      */
-    const sorted = [...levels.flat()].sort((a, b) => a - b)
+    const sorted = levels.flat().sort((a, b) => a - b)
     let mid = sorted[0]! - 1
     let widest = 0
     for (let i = 1; i < sorted.length; i += 1) {

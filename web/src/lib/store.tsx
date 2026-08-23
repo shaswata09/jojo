@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { FirstRunChoice } from '@/components/common/FirstRunChoice'
+import { Onboarding } from '@/components/common/Onboarding'
 import { StoreGate } from '@/components/common/StoreGate'
 import { boot, bootInMemory, resetBoot } from '@jojo/service/repo/boot'
 import type { BootResult, Session } from '@jojo/service/repo/boot'
@@ -444,6 +445,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                   a hydrating app — and for a returning user `needsDataChoice` is
                   false in the first commit that renders anything at all. */}
               <FirstRunChoice />
+              {/* Runs after the fork, and renders nothing until it is answered.
+                  See its header for why these are three dialogs and not one. */}
+              <Onboarding />
             </KgProvider>
           </StoreStatusProvider>
         ) : null}

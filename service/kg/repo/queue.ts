@@ -178,6 +178,9 @@ export function coalesce(ops: readonly DurableOp[]): DurableOp[] {
 
   for (const op of ops) {
     if (op.kind === 'clear') {
+      // A snapshot, not a copy: the loop body mutates the collection it is
+      // walking, so it has to walk a list taken before the first change.
+      // oxlint-disable-next-line unicorn/no-useless-spread
       for (const slot of [...bySlot.keys()]) {
         if (slot.startsWith(`${op.store}\0`)) bySlot.delete(slot)
       }
@@ -224,6 +227,9 @@ export function createWriteQueue(driver: Driver): WriteQueue {
 
   function setHealth(next: PersistenceHealth) {
     health = next
+    // A snapshot, not a copy: the loop body mutates the collection it is
+    // walking, so it has to walk a list taken before the first change.
+    // oxlint-disable-next-line unicorn/no-useless-spread
     for (const fn of [...listeners]) fn(next)
   }
 

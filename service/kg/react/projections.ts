@@ -131,23 +131,62 @@ export function createProjections(today: ISODate): Projections {
 
     timeline: sortedBy(createProjection('timelineItem', projectTimelineItem), compareItems),
 
-    links: createProjection('link', (n, g): VaultLink => {
-      const { slug: _slug, ...rest } = n.props
-      return { ...rest, id: n.id, ...filedUnder(g, n.id) }
-    }),
-
     /*
-     * Newest first, unlike everything else here.
+     * ------------------------------------------------------------------------
+     * The Vault's filed records, all newest first
+     * ------------------------------------------------------------------------
      *
-     * `ofType` is id-ascending, which is creation order, which put the oldest
-     * document at the top of the Vault and the newest below the fold — so the
-     * one you have just added is the one you have to scroll to find. Every other
-     * list in this app is short enough or navigated enough that creation order
-     * is fine; a document drawer is neither.
+     * `ofType` is id-ascending, which is creation order, which puts the OLDEST
+     * record at the top and the newest below the fold — so the one you have
+     * just added is the one you have to scroll to find. That was fixed for
+     * documents first, on the same complaint, and left the Vault ordering one
+     * of its lists one way and two the other.
      *
-     * Sorted here rather than in the Vault's own component so the Profile page's
-     * Documents card and the phone agree with it without each remembering to.
+     * Reminders are the deliberate exception and are ordered elsewhere: they
+     * are commitments with dates rather than things you filed, the Vault groups
+     * them by those dates, so they stay chronological. See `remindersOf` in
+     * `core/dates.ts`.
+     *
+     * Sorted here rather than in the Vault's own components so that both apps
+     * and every other surface agree without each remembering to. Nothing in
+     * `web/src/components/vault` or `mobile/src/screens/vault` sorts anything —
+     * they filter and group, and the order they group is this one.
+     *
+     * ## Two keys, because the records do not all carry the same fields
+     *
+     * Links and files have `savedOn`, so they use it, tie-broken by id.
+     *
+     * Snippets have no date at all, so they go by id alone. That is not a
+     * lesser key: ids are `uuidv7` with a monotonic counter, so id order IS
+     * creation order, exactly, down to records minted inside one millisecond.
+     * `savedOn` is a DAY, which is why it needs the id tie-break underneath it —
+     * a batch filed in one go shares a date and would otherwise come back in an
+     * arbitrary order.
+     *
+     * ## Why links do not use the id key, which is the more precise one
+     *
+     * Because it would invert them. The link fixtures are authored newest-first,
+     * so their ids ASCEND as their dates DESCEND — id-descending would put the
+     * oldest link at the top of a list whose every row prints `saved 11 months
+     * ago`. A sort key the reader can check against what is on screen beats one
+     * they cannot, and `savedOn` is the one they can see.
+     *
+     * `savedOn` is set to the day of the write on every creation path and no
+     * editor exposes it — both tools strip it on save
+     * (`Omit<VaultLink, 'id' | 'savedOn'>`). It is NOT immutable, though:
+     * `vault.link.update` and `vault.file.update` both accept it, so the
+     * assistant can write one even where a person cannot. If that ever becomes
+     * a way to backdate a record, the id tie-break is what still orders
+     * everything filed on the same day.
      */
+    links: sortedBy(
+      createProjection('link', (n, g): VaultLink => {
+        const { slug: _slug, ...rest } = n.props
+        return { ...rest, id: n.id, ...filedUnder(g, n.id) }
+      }),
+      compareNewestFirst,
+    ),
+
     files: sortedBy(
       createProjection('file', (n, g): VaultFile => {
         const { slug: _slug, ...rest } = n.props
@@ -156,10 +195,13 @@ export function createProjections(today: ISODate): Projections {
       compareNewestFirst,
     ),
 
-    snippets: createProjection('snippet', (n, g): Snippet => {
-      const { slug: _slug, ...rest } = n.props
-      return { ...rest, id: n.id, ...filedUnder(g, n.id) }
-    }),
+    snippets: sortedBy(
+      createProjection('snippet', (n, g): Snippet => {
+        const { slug: _slug, ...rest } = n.props
+        return { ...rest, id: n.id, ...filedUnder(g, n.id) }
+      }),
+      compareNewestById,
+    ),
 
     postings: createProjection('posting', (n, g): SavedPosting => {
       const { slug: _slug, ...rest } = n.props
@@ -200,24 +242,39 @@ export function createProjections(today: ISODate): Projections {
 }
 
 /**
- * The two collections whose order is not creation order.
+ * Newest first by the day a record was filed, then by the instant it was minted.
  *
- * Sorted by date and start time, because rescheduling is the most common edit
- * there is and an unsorted rail reads as a rendering bug. Memoised on the
- * projected array's identity so the sort runs once per commit that touched a
- * timeline item, not once per render of the calendar.
- */
-/**
- * Most recently saved first, then most recently created.
- *
- * `savedOn` is a calendar day, so a batch dropped in one go all shares it and
- * the date alone leaves them in an arbitrary order. The id breaks the tie and
- * breaks it correctly: ids are uuidv7, so comparing them as strings compares the
- * moment they were minted.
+ * The id tie-break is not a formality. `savedOn` is a DAY, so everything filed
+ * in one session shares it — a batch of documents dropped in one go, or three
+ * links saved while reading one posting — and the date alone would leave those
+ * in whatever order the store happened to return them.
  */
 const compareNewestFirst = (a: { savedOn: string; id: string }, b: { savedOn: string; id: string }) =>
   b.savedOn.localeCompare(a.savedOn) || b.id.localeCompare(a.id)
 
+/**
+ * Newest first for records that carry no date of their own.
+ *
+ * Ids are `uuidv7` minted from the write's own instant, with a monotonic
+ * counter ordering records inside a single millisecond — see `core/ref.ts`. So
+ * comparing ids compares creation time, exactly, and it is the more precise of
+ * the two keys rather than the fallback it looks like.
+ *
+ * Snippets are the only list that uses it, because they are the only records
+ * here with no date of any kind. It is deliberately not exported: reminders
+ * looked like a second caller and are not one — they stay in due-date order,
+ * for the reasons in `remindersOf`.
+ */
+const compareNewestById = (a: { id: string }, b: { id: string }) => b.id.localeCompare(a.id)
+
+/**
+ * A projection with an order imposed on it.
+ *
+ * Memoised on the projected array's identity, so the sort runs once per commit
+ * that touched one of these records rather than once per render of every screen
+ * reading them — the calendar re-renders on a great deal that has nothing to do
+ * with the timeline.
+ */
 function sortedBy<R>(list: List<R>, compare: (a: R, b: R) => number): List<R> {
   let lastInput: readonly R[] | null = null
   let lastOutput: readonly R[] = []
