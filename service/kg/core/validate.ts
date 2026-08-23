@@ -183,6 +183,15 @@ export const NODE_PROP_SCHEMAS = {
     // came through, straight into `openDocument()`. Declaring it closes that
     // without changing what a well-formed record does.
     uri: s.optional(s.string({ label: 'Location' })),
+    // A capture's two fields. `sourceUrl` is declared rather than left to
+    // passthrough for the same reason `uri` was: it reaches an `href` in both
+    // apps, and a stored `javascript:` that arrived as an unknown key would get
+    // there intact. The scheme itself is checked by `isCaptureSource` at the
+    // point of rendering — a string is all the trust boundary can promise, and
+    // failing the whole node over a bad scheme would lose the capture's bytes
+    // along with its address.
+    sourceUrl: s.optional(s.string({ label: 'Captured from' })),
+    capturedAt: s.optional(s.instant({ label: 'Captured' })),
   }),
   snippet: s.object({
     slug,

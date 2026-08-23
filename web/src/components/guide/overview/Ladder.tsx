@@ -19,15 +19,15 @@ const LAYERS: Layer[] = [
     icon: MonitorSmartphone,
     name: 'Browser only',
     requires: 'Nothing to set up',
-    gives: 'Track applications, deadlines, follow-ups and documents',
+    gives: 'Track applications and deadlines, and keep the documents you attach',
     active: true,
   },
   {
     icon: HardDrive,
-    name: '+ Localhost bridge',
-    requires: 'A small companion server',
-    gives: 'Would mirror to a JSON file on disk and keep submission snapshots',
-    active: false,
+    name: '+ A backup you keep',
+    requires: 'Somewhere to put a file',
+    gives: 'One file holding every record and every document, restorable in a click',
+    active: true,
   },
   {
     icon: Cpu,
@@ -83,36 +83,38 @@ export function LadderSection() {
         page.
       </p>
 
-      {/* Kept, and kept last. Both of these describe work that is not in this
-          build; they used to sit two thirds of the way up a 370-line page,
-          which meant a first-time reader spent longer on what jojo cannot do
-          than on what it can. */}
+      {/* Kept last. This used to be two panels of unbuilt work — a localhost
+          bridge and a local model — sitting two thirds of the way up a 370-line
+          page, so a first-time reader spent longer on what jojo could not do
+          than on what it could. The bridge half is gone: documents are stored
+          and backups are real, so the first panel now describes something that
+          happens rather than something that would. */}
       <div className="mt-3 grid grid-cols-1 gap-4 sm:mt-3.5 sm:gap-5 lg:grid-cols-2">
         <Panel>
-          <PanelTitle hint="not connected">Add the localhost bridge</PanelTitle>
+          <PanelTitle hint="built in">Keep a backup</PanelTitle>
           <ol className="divide-y divide-hairline text-sm">
             <li className="py-3 first:pt-0 last:pb-0">
-              <p className="font-medium">Run the bridge</p>
+              <p className="font-medium">Your documents are stored here</p>
               <p className="mt-1 text-text-2">
-                Start the companion server and enter its address and pairing token in{' '}
-                <Go to={settingsPath()}>Settings</Go>. The token is what stops other local apps
-                reading your data.
+                The CVs and cover letters you attach are saved in this browser and survive closing
+                the tab. Nothing is uploaded anywhere — and nothing leaves this machine unless you
+                download it yourself.
               </p>
             </li>
             <li className="py-3 first:pt-0 last:pb-0">
-              <p className="font-medium">One file would hold everything</p>
+              <p className="font-medium">One file holds everything</p>
               <p className="mt-1 text-text-2">
-                The bridge mirrors your data to <Kbd>jojo-data.json</Kbd> as you work. Until it is
-                running, Settings can still write that same file on demand — Export is real and does
-                exactly this.
+                <Go to={settingsPath()}>Settings</Go> writes a backup carrying every record, every
+                link between them and every document, all in one file. Restoring it puts all three
+                back.
               </p>
             </li>
             <li className="py-3 first:pt-0 last:pb-0">
-              <p className="font-medium">Submission snapshots</p>
+              <p className="font-medium">Why it matters</p>
               <p className="mt-1 text-text-2">
-                Each submitted application would get a timestamped folder holding the documents you
-                actually sent. Nothing in this build fetches or copies a file, which is why Job
-                scout&rsquo;s snapshot buttons stay greyed out.
+                A browser may clear its own storage when a disk fills up, and{' '}
+                <Kbd>Clear browsing data</Kbd> always will. A backup you have kept is the only copy
+                that is not subject to either.
               </p>
             </li>
           </ol>

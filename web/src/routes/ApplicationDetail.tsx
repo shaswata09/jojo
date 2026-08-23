@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { FileQuestion } from 'lucide-react'
 import { DatesPanel } from '@/components/applications/detail/DatesPanel'
+import { FiledPanel } from '@/components/applications/detail/FiledPanel'
 import { DetailFacts } from '@/components/applications/detail/DetailFacts'
 import { DetailHeader } from '@/components/applications/detail/DetailHeader'
 import { NotePanel } from '@/components/applications/detail/NotePanel'
@@ -296,6 +297,8 @@ function Detail({
       <DatesPanel applicationId={a.id} items={items} onAddItem={onAddItem} />
 
       <NotePanel application={a} />
+
+      <FiledPanel applicationId={a.id} />
 
       {target ? (
         <StageTransitionDialog

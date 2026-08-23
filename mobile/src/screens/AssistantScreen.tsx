@@ -1,6 +1,10 @@
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useModelSettings } from '@/lib/model-settings-context'
-import { complete, isConfigured } from '@/lib/llm'
+import { agentTurn, isConfigured } from '@/lib/llm'
+import { useAgent } from '@jojo/service/react/use-agent'
+import type { AgentStep } from '@jojo/service/agent/loop'
+import { CATALOG } from '@jojo/service/agent/catalog'
+import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
 import { StyleSheet, TextInput, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -15,7 +19,6 @@ import { useVault } from '@/lib/store-context'
 import { useCopy } from '@/lib/use-copy'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
-import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { fonts, radius, space, type } from '@/theme/tokens'
 
@@ -140,20 +143,12 @@ function scriptFor(text: string): Script {
   return SCRIPTS.find((s) => s.cues.some((cue) => haystack.includes(cue))) ?? FALLBACK
 }
 
-/**
- * What the model is told it is. Short on purpose: a long persona spends the
- * context window on itself, and this app's job is the user's own words back in
- * a usable shape rather than a voice.
+/*
+ * The system prompt and the history window both moved into the agent loop,
+ * which owns the model-facing transcript now — see `kg/agent/loop.ts`. They
+ * were duplicated here and in the web route, and a prompt that drifts between
+ * two platforms is two assistants with the same name.
  */
-const SYSTEM_PROMPT =
-  'You help someone manage a job search. Answer in plain prose, ready to paste into an email or a form. No preamble, no markdown headings, no offers to help further.'
-
-/** The last few turns, so a follow-up means something. */
-const history = (messages: readonly Message[]) =>
-  messages.slice(-6).map((m) => ({
-    role: m.role === 'you' ? ('user' as const) : ('assistant' as const),
-    content: m.text,
-  }))
 
 type Message = {
   id: string
@@ -166,13 +161,306 @@ type Message = {
 }
 
 export function AssistantScreen() {
+  const { settings } = useModelSettings()
+  // The split is at the top because the two modes share almost nothing below it:
+  // one has a transcript of messages and the other a trace of tool calls.
+  return isConfigured(settings) ? <AgentScreen /> : <ScriptedScreen />
+}
+
+/* ---------------------------------- agent --------------------------------- */
+
+/**
+ * The assistant with a model behind it, acting on the records.
+ *
+ * The screen is a trace, not a chat. What the model SAID is one entry among
+ * many; what it DID is the rest, and those are the entries a person came to
+ * read. That ordering is `useAgent`'s flat entry list rendered straight through
+ * — nothing here re-sorts or groups it, because an interleaving computed at
+ * render time is one that can be computed wrongly.
+ */
+function AgentScreen() {
+  const c = useColors()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const { settings } = useModelSettings()
+  const [prompt, setPrompt] = useState('')
+  const { copy, isCopied } = useCopy()
+  const { addSnippet } = useVault()
+  const { toast } = useToast()
+
+  /**
+   * A destructive call, waiting on a person.
+   *
+   * The promise is held open in state until a button is pressed. That is the
+   * whole approval mechanism: `runAgent` awaits `approve`, so the loop is
+   * genuinely stopped — not racing a sheet — and nothing is written while the
+   * question is on screen.
+   */
+  const [ask, setAsk] = useState<{ step: AgentStep; decide: (ok: boolean) => void } | null>(null)
+  const approve = useCallback(
+    (step: AgentStep) =>
+      new Promise<boolean>((resolve) => {
+        setAsk({
+          step,
+          decide: (ok) => {
+            setAsk(null)
+            resolve(ok)
+          },
+        })
+      }),
+    [],
+  )
+
+  const llm = useCallback(
+    (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+      agentTurn(settings, messages, tools),
+    [settings],
+  )
+
+  const { entries, busy, send, stop, clear } = useAgent({ llm, approve })
+
+  const submit = () => {
+    const clean = prompt.trim()
+    if (!clean || busy) return
+    setPrompt('')
+    void send(clean)
+  }
+
+  /**
+   * Undoing one step of the agent's work.
+   *
+   * Goes through the same `undo` the toast on a button press would have called,
+   * because it IS that undo. The row stays on screen afterwards: the trace is a
+   * record of what happened, and a step vanishing when it is reverted would make
+   * the record wrong.
+   */
+  const undoStep = (step: AgentStep) => {
+    step.undo?.()
+    toast({
+      title: 'Undone',
+      description: step.announcement?.title ?? step.title,
+      tone: 'danger',
+    })
+  }
+
+  /** The question that produced a given answer, for the snippet's title. */
+  const askedBefore = (index: number) => {
+    for (let i = index - 1; i >= 0; i--) {
+      const e = entries[i]
+      if (e?.kind === 'you') return e.text
+    }
+    return 'Assistant'
+  }
+
+  const saveAnswer = (text: string, asked: string) => {
+    const snippet = addSnippet({
+      // Titled with the question, because an agent answer has no script behind
+      // it to take a title from and "Assistant reply 3" helps nobody find it.
+      title: asked.length > 60 ? `${asked.slice(0, 57)}…` : asked,
+      tag: 'Email',
+      body: text,
+    })
+    toast({
+      title: 'Saved to snippets',
+      description: `${snippet.title} · filed under ${snippet.tag}`,
+      action: {
+        label: 'Open vault',
+        onPress: () =>
+          navigation.navigate('Tabs', { screen: 'Vault', params: { tool: 'snippets' } }),
+      },
+    })
+  }
+
+  return (
+    <Screen
+      title="Assistant"
+      subtitle="Connected to your model, and able to act on your records. Everything it does is listed as it happens."
+      actions={
+        entries.length > 0 ? (
+          <Button label="Clear" variant="ghost" disabled={busy} onPress={clear} />
+        ) : null
+      }
+    >
+      <Panel>
+        <Txt size="sm" tone="secondary">
+          Answering with <Txt mono>{settings.model}</Txt> at <Txt mono>{settings.endpoint}</Txt>,
+          which can call {CATALOG.length} tools on this device. Nothing is sent anywhere else, and
+          every change can be undone.
+        </Txt>
+      </Panel>
+
+      <Panel>
+        {entries.length === 0 ? (
+          <EmptyState
+            icon="cpu"
+            title="Nothing asked yet"
+            description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
+          />
+        ) : (
+          <View style={{ gap: space[3] }}>
+            {entries.map((entry, index) => {
+              if (entry.kind === 'you') {
+                return (
+                  <View key={entry.id} style={{ alignItems: 'flex-end' }}>
+                    <View style={[styles.you, { backgroundColor: c.well }]}>
+                      <Txt size="sm">{entry.text}</Txt>
+                    </View>
+                  </View>
+                )
+              }
+              if (entry.kind === 'step') {
+                return (
+                  <StepRow
+                    key={entry.id}
+                    step={entry.step}
+                    onUndo={undoStep}
+                    {...(ask && ask.step.id === entry.step.id
+                      ? {
+                          pending: {
+                            allow: () => {
+                              ask.decide(true)
+                            },
+                            decline: () => {
+                              ask.decide(false)
+                            },
+                          },
+                        }
+                      : {})}
+                  />
+                )
+              }
+              if (entry.kind === 'note') {
+                // Narration while it is still working. Quieter than an answer on
+                // purpose: it is not the reply, and styling it like one makes a
+                // run look finished when it is not.
+                return (
+                  <Txt key={entry.id} size="sm" tone="muted" style={{ fontStyle: 'italic' }}>
+                    {entry.text}
+                  </Txt>
+                )
+              }
+              if (entry.kind === 'error') {
+                return (
+                  <View
+                    key={entry.id}
+                    style={[styles.reply, { borderColor: c.danger, backgroundColor: c.dangerSoft }]}
+                  >
+                    <Txt size="sm" tone="danger">
+                      {entry.text}
+                    </Txt>
+                  </View>
+                )
+              }
+              return (
+                <View key={entry.id} style={[styles.reply, { borderColor: c.hairline }]}>
+                  <Txt size="sm">{entry.text}</Txt>
+                  <View style={styles.replyActions}>
+                    <Button
+                      label={isCopied(entry.id) ? 'Copied' : 'Copy'}
+                      icon={isCopied(entry.id) ? 'check' : 'copy'}
+                      variant="ghost"
+                      onPress={() => copy(entry.text, entry.id)}
+                    />
+                    <Button
+                      label="Save to snippets"
+                      icon="bookmark"
+                      variant="ghost"
+                      onPress={() => {
+                        saveAnswer(entry.text, askedBefore(index))
+                      }}
+                    />
+                  </View>
+                </View>
+              )
+            })}
+            {/* Only while nothing else is moving. A spinner under a step that is
+                already spinning says the same thing twice. */}
+            {busy && entries.at(-1)?.kind !== 'step' ? <Thinking model={settings.model} /> : null}
+          </View>
+        )}
+
+        <View style={styles.composer}>
+          <TextInput
+            value={prompt}
+            onChangeText={setPrompt}
+            placeholder="Find my UT Austin application, add one, move it along…"
+            placeholderTextColor={c.text3}
+            accessibilityLabel="Ask the assistant"
+            returnKeyType="send"
+            editable={!busy}
+            onSubmitEditing={submit}
+            style={[
+              styles.input,
+              {
+                color: busy ? c.text3 : c.text1,
+                backgroundColor: c.well,
+                borderColor: c.hairlineStrong,
+              },
+            ]}
+          />
+          {busy ? (
+            // Stop rather than a disabled send: a run that has gone wrong is
+            // exactly when a person most needs a control, and the loop checks
+            // the flag between every round.
+            <Button label="Stop" variant="outline" onPress={stop} />
+          ) : (
+            <IconButton icon="arrow-up" label="Send" disabled={!prompt.trim()} onPress={submit} />
+          )}
+        </View>
+      </Panel>
+
+      <Panel>
+        <PanelTitle hint="it will use whatever tools these need">Try one of these</PanelTitle>
+        <View style={styles.prompts}>
+          {AGENT_PROMPTS.map((p) => (
+            <Button
+              key={p}
+              label={p}
+              variant="outline"
+              disabled={busy}
+              onPress={() => {
+                void send(p)
+              }}
+            />
+          ))}
+        </View>
+        <Txt size="sm" tone="secondary" style={{ marginTop: space[4] }}>
+          It reads before it writes, asks before it deletes, and every change it makes goes through
+          the same undo a button press does.
+        </Txt>
+      </Panel>
+    </Screen>
+  )
+}
+
+/**
+ * Openers that exercise the surface rather than showing off.
+ *
+ * Two reads and two writes, and each one is a task with an id in the middle of
+ * it — which is the shape that actually tests whether a small model can chain
+ * `memory.search` into a write instead of inventing an id.
+ */
+const AGENT_PROMPTS = [
+  'What am I waiting on?',
+  'Add an application: ML engineer at Stripe, submitted',
+  'Which applications have no deadline?',
+  'Flag my UT Austin application',
+]
+
+/* --------------------------------- scripted -------------------------------- */
+
+/**
+ * The assistant with no model behind it.
+ *
+ * Everything here is a worked example and says so. This was the whole screen
+ * before Settings could reach a model, and it is unchanged in behaviour — what
+ * changed is that it no longer has to ASK whether one is connected, because
+ * `AssistantScreen` above answered that before rendering it.
+ */
+function ScriptedScreen() {
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [messages, setMessages] = useState<Message[]>([])
   const [prompt, setPrompt] = useState('')
-  const [pending, setPending] = useState(false)
-  const { settings } = useModelSettings()
-  const connected = isConfigured(settings)
   const nextId = useRef(0)
   const { copy, isCopied } = useCopy()
 
@@ -180,50 +468,22 @@ export function AssistantScreen() {
   const { toast } = useToast()
 
   /**
-   * Two paths, and which one ran is always visible on the reply.
+   * The unconnected path, and the only one this screen had for its whole life.
    *
-   * With a model configured this is a real request to it. Without one — or when
-   * the request fails — it falls back to the worked example, carrying the badge
-   * that has been on every canned reply since the first build. What it must
-   * never do is present the fallback as a model's answer, which is why the
-   * failure case says what failed rather than quietly substituting.
+   * No model, no request, no delay. Every message it produces carries
+   * `scriptId`, which is what puts the badge on it.
    */
-  const send = async (text: string) => {
+  const send = (text: string) => {
     const clean = text.trim()
-    if (!clean || pending) return
+    if (!clean) return
     const at = nextId.current
     nextId.current += 2
     setPrompt('')
-
-    if (!isConfigured(settings)) {
-      const script = scriptFor(clean)
-      setMessages((prev) => [
-        ...prev,
-        { id: `m${at}`, role: 'you', text: clean },
-        { id: `m${at + 1}`, role: 'assistant', text: script.reply, scriptId: script.id },
-      ])
-      return
-    }
-
-    setMessages((prev) => [...prev, { id: `m${at}`, role: 'you', text: clean }])
-    setPending(true)
-    const result = await complete(settings, [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...history(messages),
-      { role: 'user', content: clean },
-    ])
-    setPending(false)
-
+    const script = scriptFor(clean)
     setMessages((prev) => [
       ...prev,
-      result.ok
-        ? { id: `m${at + 1}`, role: 'assistant', text: result.text }
-        : {
-            id: `m${at + 1}`,
-            role: 'assistant',
-            text: result.reason,
-            failed: true,
-          },
+      { id: `m${at}`, role: 'you', text: clean },
+      { id: `m${at + 1}`, role: 'assistant', text: script.reply, scriptId: script.id },
     ])
   }
 
@@ -256,7 +516,7 @@ export function AssistantScreen() {
   return (
     <Screen
       title="Assistant"
-      subtitle="Worked examples now. Connect a local model and it drafts from your own records."
+      subtitle="Worked examples now. Connect a local model and it both drafts from your own records and acts on them."
       actions={
         messages.length > 0 ? (
           <Button label="Clear" variant="ghost" onPress={clearConversation} />
@@ -266,39 +526,12 @@ export function AssistantScreen() {
       {/* Stated once, at the top, in the same words the Job scout uses for the
           same fact. The per-reply badge below repeats it because a reply that
           scrolled away from this banner would otherwise read as a real answer. */}
-      {connected ? (
-        <View style={[s.banner, { backgroundColor: c.well, borderColor: c.hairline }]}>
-          <Txt size="sm" tone="secondary">
-            Answering with{' '}
-            <Txt size="sm" weight="medium" mono>
-              {settings.model}
-            </Txt>{' '}
-            at {settings.endpoint}. The request goes to that address and nowhere else.
-          </Txt>
-        </View>
-      ) : (
-        <View
-          accessibilityRole="alert"
-          style={[s.banner, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
-        >
-          <Txt size="sm" tone="warning">
-            No model is connected, so every reply below is a worked example rather than an answer.
-            Point jojo at a local OpenAI-compatible server — vLLM, Ollama or LM Studio — in
-            Settings.
-          </Txt>
-        </View>
-      )}
-
       <Panel>
         {messages.length === 0 ? (
           <EmptyState
             icon="message-square"
             title="Nothing asked yet"
-            description={
-              connected
-                ? 'Pick one of the prompts below, or type anything. It answers on your own device, against the model you connected.'
-                : "Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model's answer."
-            }
+            description="Pick one of the prompts below, or type anything. The replies are written examples — useful to work from, and never presented as a model’s answer."
           />
         ) : (
           <View style={{ gap: space[3] }}>
@@ -311,33 +544,43 @@ export function AssistantScreen() {
                 </View>
               ) : (
                 <View key={m.id} style={[styles.reply, { borderColor: c.hairline }]}>
-                  {/* Not optional, and not a call site's decision — every
-                      assistant message renders through this branch. */}
+                  {/* Keyed to the message, not to the branch. This was an
+                      unconditional amber chip and the comment above it said
+                      that was deliberate — true while every reply on this screen
+                      WAS an example, and false the moment `send` learned to call
+                      a real model. Caught on a device: a genuine 400 from vLLM
+                      was rendered under the words "no model connected", which is
+                      the one thing a badge like this must never say wrongly.
+
+                      Present `scriptId` means example; `failed` means the
+                      request went out and did not come back; neither means it is
+                      a model's answer and wears nothing. */}
                   <Chip tone="amber" size="sm">
                     Example response · no model connected
                   </Chip>
                   <Txt size="sm" style={{ marginTop: space[2] }}>
                     {m.text}
                   </Txt>
-                  <View style={styles.replyActions}>
-                    <Button
-                      label={isCopied(m.id) ? 'Copied' : 'Copy'}
-                      icon={isCopied(m.id) ? 'check' : 'copy'}
-                      variant="ghost"
-                      onPress={() => copy(m.text, m.id)}
-                    />
-                    <Button
-                      label="Save to snippets"
-                      icon="bookmark"
-                      variant="ghost"
-                      onPress={() => saveToSnippets(m)}
-                    />
-                  </View>
+                    <View style={styles.replyActions}>
+                      <Button
+                        label={isCopied(m.id) ? 'Copied' : 'Copy'}
+                        icon={isCopied(m.id) ? 'check' : 'copy'}
+                        variant="ghost"
+                        onPress={() => copy(m.text, m.id)}
+                      />
+                      <Button
+                        label="Save to snippets"
+                        icon="bookmark"
+                        variant="ghost"
+                        onPress={() => saveToSnippets(m)}
+                      />
+                    </View>
                 </View>
               ),
             )}
           </View>
         )}
+
 
         <View style={styles.composer}>
           <TextInput
@@ -347,7 +590,9 @@ export function AssistantScreen() {
             placeholderTextColor={c.text3}
             accessibilityLabel="Ask the assistant"
             returnKeyType="send"
-            onSubmitEditing={() => send(prompt)}
+            onSubmitEditing={() => {
+              send(prompt)
+            }}
             style={[
               styles.input,
               { color: c.text1, backgroundColor: c.well, borderColor: c.hairlineStrong },
@@ -357,7 +602,9 @@ export function AssistantScreen() {
             icon="arrow-up"
             label="Send"
             disabled={!prompt.trim()}
-            onPress={() => send(prompt)}
+            onPress={() => {
+              send(prompt)
+            }}
           />
         </View>
       </Panel>
@@ -366,12 +613,19 @@ export function AssistantScreen() {
         <PanelTitle hint="each one answers with an example">Try one of these</PanelTitle>
         <View style={styles.prompts}>
           {SCRIPTS.map((s) => (
-            <Button key={s.id} label={s.action} variant="outline" onPress={() => send(s.action)} />
+            <Button
+              key={s.id}
+              label={s.action}
+              variant="outline"
+              onPress={() => {
+                send(s.action)
+              }}
+            />
           ))}
         </View>
         <Txt size="sm" tone="secondary" style={{ marginTop: space[4] }}>
           With a model connected each of these reads your profile and documents as context. Because
-          inference would be local, your CV and your notes are never uploaded anywhere.
+          inference is local, your CV and your notes are never uploaded anywhere.
         </Txt>
       </Panel>
     </Screen>
@@ -388,6 +642,9 @@ const styles = StyleSheet.create({
   },
   reply: { borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.lg, padding: space[3] },
   replyActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[2.5] },
+  waiting: {
+    marginTop: space[3],
+  },
   composer: { flexDirection: 'row', alignItems: 'center', gap: space[2], marginTop: space[4] },
   input: {
     flex: 1,

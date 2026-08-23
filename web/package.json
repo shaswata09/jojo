@@ -8,13 +8,13 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run pack-extension && tsc -b && vite build",
     "test": "vitest run",
     "lint": "npm -w @jojo/service run lint && oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
-    "conformance:fs": "node scripts/fs-conformance.mjs"
+    "pack-extension": "node scripts/pack-extension.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

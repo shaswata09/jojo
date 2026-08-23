@@ -8,10 +8,11 @@
  * more, and nothing could catch any of it — D20 rules out mounting the panel,
  * and a filename built inline in a click handler is a rule nothing checks.
  *
- * `jojo-data.json` is still a real name in this app and is deliberately left
- * alone: it is the file the localhost bridge mirrors to, which is a different
- * feature with a different lifetime. Two files, two names, and the collision
- * between them is exactly how the label came to be wrong.
+ * `jojo-data.json` used to be a second real name in this app — the file a
+ * localhost bridge would have mirrored to — and the collision between the two
+ * names is exactly how the label came to be wrong. That bridge was designed,
+ * built and deleted (`docs/NO-SERVER.md`), so the collision is gone with it and
+ * this module is now the only place any backup filename is minted.
  */
 
 /** The stem. Dated at the moment of export, so no button can print the whole name. */
@@ -38,3 +39,14 @@ export const EXPORT_NAME_SHAPE = `${EXPORT_PREFIX}-YYYY-MM-DD.json`
 export function exportFilename(at: Date): string {
   return `${EXPORT_PREFIX}-${at.toISOString().slice(0, 10)}.json`
 }
+
+/**
+ * What the restore picker will accept, in the module that owns the extension.
+ *
+ * Here rather than inline on the input for the same reason the filename is: this
+ * file is the one place that knows what a jojo backup is called, and a literal
+ * beside the control is how the writer and the reader came apart the first time.
+ * `export-name.test.ts` enforces that by refusing any `.json` in the panel, and
+ * an `accept` string is exactly the kind of near-miss that guard is for.
+ */
+export const BACKUP_ACCEPT = 'application/json,.json'

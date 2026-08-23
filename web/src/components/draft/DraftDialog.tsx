@@ -349,15 +349,17 @@ function DraftBody({
           >
             Save as snippet
           </Button>
-          {/* The one thing here that a local model would actually change, and it
-              is not connected. Named for the real blocker rather than swallowing
-              the click — and it cannot navigate either: DialogHost is mounted
-              outside the router, so no route link may be reached from here. */}
+          {/* Named for the real blocker rather than swallowing the click. That
+              blocker used to be "no model is connected", which stopped being
+              true when Settings learned to reach one — and would have left this
+              button explaining a problem the user had already solved. What still
+              stops it is the router: DialogHost is mounted outside it, so no
+              route may be reached from here, connected or not. */}
           <Button
             type="button"
             variant="ghost"
             disabled
-            title="The assistant needs a connected model — see Settings"
+            title="The assistant has its own page — open it from the sidebar"
           >
             <Sparkles className="size-3.5" strokeWidth={1.8} aria-hidden />
             Open in assistant

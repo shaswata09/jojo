@@ -66,7 +66,7 @@ const blankCounts = () => Object.fromEntries(ROLES.map((r) => [r, 0])) as Record
  * Everything below is counted; what cannot be counted is named in the footnote
  * rather than quietly dropped.
  */
-export function ApplicationFrequency() {
+export function ApplicationFrequencyBody() {
   const [hover, setHover] = useState<number | null>(null)
   const [chart, setChart] = useState<ChartType>('bar')
   const [period, setPeriod] = useState<Period>('week')
@@ -146,20 +146,21 @@ export function ApplicationFrequency() {
   if (earlier > 0) gaps.push(`${earlier} ${earlier === 1 ? 'falls' : 'fall'} before ${firstLabel}`)
 
   return (
-    <Panel className="min-w-0">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <PanelTitle className="mb-0" hint={showChart ? `by ${PERIOD_NOUN[period]}` : undefined}>
-          When you applied
-        </PanelTitle>
-        {/* Hidden at zero: a period switch and a chart-type switch over nothing
-            are two controls that change nothing you can see. */}
-        {showChart ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <Segment label="Period" options={PERIODS} value={period} onChange={setPeriod} />
-            <Segment label="Chart type" options={CHARTS} value={chart} onChange={setChart} />
-          </div>
-        ) : null}
-      </div>
+    <>
+      {/* Hidden at zero: a period switch and a chart-type switch over nothing
+          are two controls that change nothing you can see.
+
+          In their own row rather than beside the title, because this body is
+          rendered in two places now — its own panel on Statistics, and inside
+          `StatsCard` on the dashboard, where the title row already carries the
+          switch between statistics. Three segmented controls on one line is a
+          line nobody reads. */}
+      {showChart ? (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <Segment label="Period" options={PERIODS} value={period} onChange={setPeriod} />
+          <Segment label="Chart type" options={CHARTS} value={chart} onChange={setChart} />
+        </div>
+      ) : null}
 
       {showChart ? (
         <ChartLegend
@@ -385,6 +386,23 @@ export function ApplicationFrequency() {
           </table>
         </div>
       ) : null}
+    </>
+  )
+}
+
+/**
+ * The card, for anywhere that wants only this one.
+ *
+ * Split from its contents so `StatsCard` can show them under a shared title
+ * without nesting one Panel inside another. The period hint that used to sit
+ * beside this title went with the split: it read `by week`, and the Period
+ * control that says the same thing is now the first thing under the title.
+ */
+export function ApplicationFrequency() {
+  return (
+    <Panel className="min-w-0">
+      <PanelTitle>When you applied</PanelTitle>
+      <ApplicationFrequencyBody />
     </Panel>
   )
 }

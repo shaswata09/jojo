@@ -4,6 +4,7 @@ import { Diagnostics } from '@/components/settings/Diagnostics'
 import { KeywordManager } from '@/components/settings/KeywordManager'
 import { PageHeader } from '@/components/common/PageHeader'
 import { AppearancePanel } from '@/components/settings/AppearancePanel'
+import { CaptureExtensionPanel } from '@/components/settings/CaptureExtensionPanel'
 import { ConnectionsSection } from '@/components/settings/ConnectionsSection'
 import { DataPanel } from '@/components/settings/DataPanel'
 import { useTitle } from '@/lib/links'
@@ -40,6 +41,11 @@ export function Settings() {
       ) : null}
 
       <ConnectionsSection />
+
+      {/* Beside Connections rather than under Data: both are about something
+          outside jojo that it talks to, and this one has an install state the
+          user may need to check. */}
+      <CaptureExtensionPanel />
 
       <AppearancePanel />
 

@@ -50,7 +50,7 @@ const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Rec
  * on a laptop, or a paper form, is a real thing to track; the viewer tells those
  * two kinds apart rather than treating the second as a failure of the first.
  */
-export function FilesTool() {
+export function FilesTool({ focus }: { focus?: string }) {
   const c = useColors()
   const { files, addFile, updateFile, removeFile } = useVault()
   const { byId } = useApplications()
@@ -229,7 +229,7 @@ export function FilesTool() {
             return (
               <View key={f.id}>
                 {i > 0 ? <Divider /> : null}
-                <View style={styles.row}>
+                <View style={[styles.row, focus === f.id && { backgroundColor: c.accentSoft }]}>
                   <Feather
                     name={FILE_KIND_ICON[f.kind]}
                     size={17}

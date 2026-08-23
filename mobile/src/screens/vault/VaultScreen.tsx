@@ -98,9 +98,9 @@ export function VaultScreen() {
       {scopeIds && scopeIds.length > 0 ? <LabelFilter scopeIds={scopeIds} /> : null}
 
       {tool === 'reminders' ? <RemindersTool focus={route.params?.focus} /> : null}
-      {tool === 'links' ? <LinksTool /> : null}
-      {tool === 'files' ? <FilesTool /> : null}
-      {tool === 'snippets' ? <SnippetsTool /> : null}
+      {tool === 'links' ? <LinksTool focus={route.params?.focus} /> : null}
+      {tool === 'files' ? <FilesTool focus={route.params?.focus} /> : null}
+      {tool === 'snippets' ? <SnippetsTool focus={route.params?.focus} /> : null}
       {tool === 'tools' ? <CalculatorTool /> : null}
     </Screen>
   )

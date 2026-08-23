@@ -38,6 +38,28 @@ export function useVault() {
 
   const readBack = useReadBack()
 
+  /**
+   * Everything filed under one job, in one call.
+   *
+   * The mirror of `useTimeline`'s selector of the same name, and it exists for
+   * the same reason: the application's own page has to show what is attached to
+   * it, and without this every caller writes the same three filters — which is
+   * three chances to compare against the wrong field, and two apps doing it
+   * twice each.
+   *
+   * Returns the three lists separately rather than one merged array. They are
+   * different shapes with different row actions, the page renders them as three
+   * sections, and a merged list would have to be re-split by every reader.
+   */
+  const forApplication = useCallback(
+    (appId: string) => ({
+      links: links.filter((l) => l.applicationId === appId),
+      files: files.filter((f) => f.applicationId === appId),
+      snippets: snippets.filter((n) => n.applicationId === appId),
+    }),
+    [links, files, snippets],
+  )
+
   const addLink = useCallback(
     (draft: LinkDraft): VaultLink => {
       const result = run('vault.link.save', {
@@ -96,6 +118,13 @@ export function useVault() {
             // field nobody needs, which is how it nearly got dropped in the
             // extraction instead of connected.
             ...present('uri', draft.uri),
+            // The two capture fields, forwarded for the reason the paragraph
+            // above exists: this list is by hand, so a field the tool declares
+            // and this omits is written by nobody and reads exactly like a field
+            // nobody needs. `sourceUrl` is what a year-old copy is checked
+            // against; losing it here would lose it silently.
+            ...present('sourceUrl', draft.sourceUrl),
+            ...present('capturedAt', draft.capturedAt),
             ...present('note', draft.note),
             ...present('savedOn', draft.savedOn),
             ...present('applicationId', draft.applicationId),
@@ -172,6 +201,7 @@ export function useVault() {
   return useMemo(
     () => ({
       links,
+      forApplication,
       addLink,
       updateLink,
       removeLink,
@@ -186,6 +216,7 @@ export function useVault() {
     }),
     [
       links,
+      forApplication,
       addLink,
       updateLink,
       removeLink,

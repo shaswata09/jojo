@@ -91,23 +91,23 @@ export const SHAPE: DirRow[] = [
   {
     dir: 'web/src/kg/storage',
     files: 11,
-    tests: 2,
-    lines: 2662,
+    tests: 3,
+    lines: 2649,
     what: 'the IndexedDB adapter, and the folder one',
   },
   {
     dir: 'web/src/components',
-    files: 226,
-    tests: 14,
-    lines: 33846,
+    files: 234,
+    tests: 15,
+    lines: 35866,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 14, tests: 0, lines: 3255, what: 'thirteen pages' },
+  { dir: 'web/src/routes', files: 14, tests: 0, lines: 3664, what: 'thirteen pages' },
   {
     dir: 'web/src/lib',
-    files: 57,
-    tests: 14,
-    lines: 6975,
+    files: 69,
+    tests: 17,
+    lines: 8705,
     what: 'web-only adapters and URL state',
   },
   {
@@ -133,7 +133,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 30
+export const WEB_TEST_FILES = 35
 
 type TestGroup = { title: string; files: string; body: string }
 

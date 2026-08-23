@@ -27,6 +27,9 @@ import type { GraphNode, GraphNodeType, PatternQuery } from '@/lib/graph'
 import { useLabels } from '@/lib/labels-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
 import type { RootStackParamList } from '@/navigation/types'
+import { AskBox } from '@/components/graph/AskBox'
+import { highlightFor, rowsFor } from '@/lib/graph-answer'
+import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
@@ -115,6 +118,26 @@ export function GraphScreen() {
     return positions
   }, [visible, hidden, counts, size])
 
+  /**
+   * The answer to a question asked in words, and the nodes it lights.
+   *
+   * Held beside the two existing question sources rather than folded into them:
+   * the canned examples and the pattern builder each produce this app's own
+   * rows, and this produces the SHARED engine's, which have to be mapped across
+   * by `recordId`. One state, cleared whenever another question is asked,
+   * because two answers on screen leave the lit nodes ambiguous about which one
+   * they belong to.
+   */
+  const [asked, setAsked] = useState<{ answer: GraphQueryResult; question: string } | null>(null)
+  const askedLit = useMemo(
+    () => (asked ? highlightFor(graph, asked.answer) : null),
+    [graph, asked],
+  )
+  const askedRows = useMemo(
+    () => (asked ? rowsFor(graph, asked.answer) : []),
+    [graph, asked],
+  )
+
   const selected = selectedId ? (graph.byId.get(selectedId) ?? null) : null
   const query = QUERY_EXAMPLES.find((q) => q.id === queryId)
   const result = query ? query.run(graph) : null
@@ -177,7 +200,11 @@ export function GraphScreen() {
               const from = layout.get(e.from)
               const to = layout.get(e.to)
               if (!from || !to) return null
-              const lit = selectedId !== null && (e.from === selectedId || e.to === selectedId)
+              // An answer outranks the selection: it is the question the reader
+              // just asked, and the selection is where they happened to tap.
+              const lit = askedLit
+                ? askedLit.has(e.from) && askedLit.has(e.to)
+                : selectedId !== null && (e.from === selectedId || e.to === selectedId)
               return (
                 <Line
                   key={i}
@@ -194,6 +221,10 @@ export function GraphScreen() {
               const at = layout.get(n.id)
               if (!at) return null
               const on = n.id === selectedId
+              // Dimmed rather than hidden: the shape of the whole graph is the
+              // context that makes an answer mean something, and a canvas that
+              // dropped the unmatched nodes would answer a different question.
+              const answered = askedLit?.has(n.id) ?? true
               return (
                 <Circle
                   key={n.id}
@@ -203,6 +234,7 @@ export function GraphScreen() {
                   // eight things matters more than one joined to nothing.
                   r={on ? 8 : 3.5 + Math.min(n.degree, 6) * 0.7}
                   fill={typeColor(n.type, c)}
+                  opacity={answered ? 1 : 0.25}
                   stroke={on ? c.accent : 'transparent'}
                   strokeWidth={2}
                   onPress={() => setSelectedId(n.id)}
@@ -316,6 +348,50 @@ export function GraphScreen() {
       ) : null}
 
       <Panel>
+        <PanelTitle hint="ask in a sentence, or pick one">Ask the graph</PanelTitle>
+        <AskBox
+          onAnswer={(answer, question) => {
+            setAsked({ answer, question })
+            // One question at a time; see the note on `asked`.
+            setQueryId(null)
+          }}
+          onClear={() => {
+            setAsked(null)
+          }}
+        />
+
+        {asked ? (
+          <View style={{ marginTop: space[3], gap: space[2] }}>
+            <Txt size="sm" tone="secondary">
+              {asked.answer.summary}
+            </Txt>
+            {askedRows.slice(0, PATTERN_SHOWN).map((node) => (
+              <Pressable
+                key={node.id}
+                accessibilityRole="button"
+                onPress={() => setSelectedId(node.id)}
+                style={styles.edgeRow}
+              >
+                <View
+                  style={[
+                    styles.swatch,
+                    { backgroundColor: typeColor(node.type, c), borderColor: typeColor(node.type, c) },
+                  ]}
+                />
+                <Txt size="sm" style={s.fill} numberOfLines={1}>
+                  {node.label}
+                </Txt>
+              </Pressable>
+            ))}
+            {askedRows.length > PATTERN_SHOWN ? (
+              <Txt size="xs" tone="muted">
+                and {askedRows.length - PATTERN_SHOWN} more
+              </Txt>
+            ) : null}
+          </View>
+        ) : null}
+
+        <Divider style={{ marginVertical: space[3] }} />
         <PanelTitle hint="answers a list view cannot give">Questions</PanelTitle>
         <View style={{ gap: space[2] }}>
           {QUERY_EXAMPLES.map((q) => (
@@ -323,7 +399,10 @@ export function GraphScreen() {
               key={q.id}
               label={q.question}
               variant={q.id === queryId ? 'default' : 'outline'}
-              onPress={() => setQueryId(q.id === queryId ? null : q.id)}
+              onPress={() => {
+                setAsked(null)
+                setQueryId(q.id === queryId ? null : q.id)
+              }}
             />
           ))}
         </View>
@@ -340,6 +419,7 @@ export function GraphScreen() {
             // Two questions on screen at once would leave the highlighted nodes
             // ambiguous about which one they are answering.
             setQueryId(null)
+            setAsked(null)
           }}
         />
         <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>

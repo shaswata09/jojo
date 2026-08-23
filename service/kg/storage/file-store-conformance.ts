@@ -1,13 +1,17 @@
 /**
  * The contract every `FileStore` must satisfy, as a suite any adapter can run.
  *
- * Exported as a function rather than written as tests, because the two
- * implementations cannot run in the same place. `memory-file-store` runs in
- * Vitest; the File System Access adapter needs a real browser and a real
- * user-granted directory handle, so it is driven from a CDP harness. One suite,
- * two hosts — otherwise the adapter that actually holds the user's documents is
- * the one with no contract test, which is precisely the gap the audit named as
- * the largest portability hole in this codebase.
+ * Exported as a plain array rather than written as tests, so any host can run
+ * it. Both implementations run it in Vitest today — `memory-file-store` on a
+ * Map, `web/src/kg/storage/idb-file-store` on `fake-indexeddb` — which means the
+ * adapter that actually holds the user's documents is checked on every gate.
+ *
+ * That was not always the plan. This file was written when the second
+ * implementation was going to be a File System Access adapter needing a real
+ * browser, a real user-granted directory, and a CDP harness to drive it; the
+ * shape survived the plan being abandoned (`docs/NO-SERVER.md`) and turned out
+ * to be worth having anyway. A suite that is data rather than tests can be run
+ * by a host nobody has thought of yet, which is exactly what happened.
  *
  * The rule these assertions exist to defend: **a `FileStore` method RETURNS a
  * failure, it never throws.** The audit found the write queue wedging silently

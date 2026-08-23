@@ -36,6 +36,14 @@ const KIND_BY_EXT: Record<string, FileKind> = {
   txt: 'note',
   md: 'note',
   note: 'note',
+  // A saved posting. `.mhtml`/`.mht` are here because that is what Chrome's own
+  // "Webpage, Single File" produces, and a user who saved one by hand rather
+  // than through the extension should get the page icon and the page viewer
+  // rather than a document icon and a download prompt.
+  html: 'page',
+  htm: 'page',
+  mhtml: 'page',
+  mht: 'page',
 }
 
 /**
@@ -60,4 +68,57 @@ export function sizeLabel(bytes: number): string {
   const kb = bytes / 1024
   if (kb < 1024) return `${Math.round(kb)} KB`
   return `${(kb / 1024).toFixed(1)} MB`
+}
+
+/**
+ * A content type, from the extension.
+ *
+ * Here rather than in either app because both need it and both had it. Mobile
+ * used it to pick the Android intent that opens a document; web needs it to
+ * rebuild a `File` from stored bytes, where an empty type turns every restored
+ * PDF into a download instead of a preview. Two maps drifted apart the moment
+ * the second one was written — web's knew `webp` and `svg`, mobile's knew `odt`,
+ * `rtf` and `pptx`, and neither knew what the other did.
+ *
+ * From the extension, not from a stored MIME string: `VaultFile` has no field
+ * for one, adding it would change a type both apps share, and the extension is
+ * the one thing a stored copy is guaranteed to keep.
+ *
+ * The FALLBACK is the caller's, because the right answer differs by platform and
+ * the difference is not cosmetic. Android honours `application/octet-stream` by
+ * offering no application at all, so the phone passes the any-type wildcard —
+ * the honest shrug that lets it offer whatever it has. A browser building a
+ * `Blob` needs a real type, so the web passes `application/octet-stream`.
+ */
+export function mimeOfFile(name: string, fallback = 'application/octet-stream'): string {
+  const ext = name.slice(name.lastIndexOf('.') + 1).toLowerCase()
+  return MIME_BY_EXT[ext] ?? fallback
+}
+
+const MIME_BY_EXT: Record<string, string> = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  odt: 'application/vnd.oasis.opendocument.text',
+  rtf: 'application/rtf',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  odp: 'application/vnd.oasis.opendocument.presentation',
+  // A saved posting. Without this a capture rebuilt from stored bytes gets the
+  // caller's fallback, which on web is `application/octet-stream` — and a
+  // `srcdoc` frame fed octet-stream renders nothing at all.
+  html: 'text/html',
+  htm: 'text/html',
+  mhtml: 'multipart/related',
+  mht: 'multipart/related',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  csv: 'text/csv',
+  json: 'application/json',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
 }

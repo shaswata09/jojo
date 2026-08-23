@@ -1,6 +1,7 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react'
 import { X } from 'lucide-react'
 import { Field, FormField } from '@/components/common/Field'
+import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { ExpandButton, FullScreenDialog } from '@/components/common/FullScreen'
 import { KeywordPicker } from '@/components/common/KeywordPicker'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -99,6 +100,19 @@ export function SnippetEditor({
           value={editing.tag}
           onChange={(next) => setEditing((prev) => (prev ? { ...prev, tag: next } : prev))}
           className="flex-wrap gap-1 rounded-xl"
+        />
+      </FormField>
+
+      <FormField
+        label="Related application"
+        hint="One job per snippet. It then shows on that application's page."
+      >
+        <ApplicationPicker
+          what="snippet"
+          value={editing.applicationId}
+          onChange={(id) =>
+            setEditing((prev) => (prev ? { ...prev, applicationId: id } : prev))
+          }
         />
       </FormField>
 

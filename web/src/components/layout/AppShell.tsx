@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
@@ -13,6 +13,8 @@ export function AppShell() {
   const { pathname } = useLocation()
   /** First render is a page load, where the browser already owns focus. */
   const landed = useRef(false)
+  /** Its twin for the scroll below — separate, because they skip for different reasons. */
+  const scrolled = useRef(false)
 
   /** Closes and returns focus to the trigger — for Escape, backdrop and the X. */
   const closeNav = useCallback(() => {
@@ -42,7 +44,47 @@ export function AppShell() {
       landed.current = true
       return
     }
-    mainRef.current?.focus()
+    // preventScroll because the page has just been put where it belongs by the
+    // layout effect below, or by whichever row asked to be brought into view.
+    // Focusing an element the browser thinks is off-screen scrolls it, and this
+    // one is the whole page — so without it, focus is a third opinion about the
+    // scroll position, arriving last and winning.
+    mainRef.current?.focus({ preventScroll: true })
+  }, [pathname])
+
+  /**
+   * Open every page at the top of itself.
+   *
+   * There is no scroll restoration in this app — no `ScrollRestoration`, no
+   * reset anywhere — so a client-side navigation left the document at whatever
+   * offset the previous page had been scrolled to. Read Statistics down to the
+   * role table, click Applications, and the new page opened 442px in: its title
+   * had already gone past the top of the window, and the first thing under the
+   * topbar was the middle of a list. On a page only slightly taller than the
+   * last one the offset is small, which is the version that reads as "the title
+   * is hidden behind the navbar" rather than as a scroll position.
+   *
+   * A `useLayoutEffect`, and that is the whole reason this works. Two places
+   * scroll something specific into view on arrival — `useArrivalScroll` for a
+   * `?focus=` row and Applications' open record — and both do it in a passive
+   * `useEffect`. Effects run child-before-parent, so a passive reset here would
+   * land after theirs and undo them. Every layout effect in a commit runs before
+   * every passive effect, so this one goes first and the targeted scroll still
+   * wins.
+   *
+   * Skipped on the first render, for the same reason the focus above is: that
+   * is a page load, where the browser restores its own scroll position on a
+   * reload and a deep link has not asked for the top of anything.
+   *
+   * Nothing here touches scrolling itself — content still slides under the
+   * topbar and dissolves into the scrim exactly as before.
+   */
+  useLayoutEffect(() => {
+    if (!scrolled.current) {
+      scrolled.current = true
+      return
+    }
+    window.scrollTo(0, 0)
   }, [pathname])
 
   // Escape to dismiss, and lock background scroll while the drawer covers it.

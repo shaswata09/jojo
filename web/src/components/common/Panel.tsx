@@ -53,16 +53,38 @@ export function PanelScroll({
 export function PanelTitle({
   children,
   hint,
+  right,
   className,
   ...props
-}: ComponentProps<'h2'> & { hint?: ReactNode }) {
-  return (
-    <h2 className={cn('mb-3.5 text-base font-medium', className)} {...props}>
+}: ComponentProps<'h2'> & {
+  hint?: ReactNode
+  /**
+   * A control belonging to the panel as a whole, on the title's own line.
+   *
+   * Outside the `<h2>` rather than inside it: a button nested in a heading is
+   * announced as part of the heading text, and a screen reader jumping by
+   * heading would read the control's label as though it were the panel's name.
+   * The wrapper is what keeps them on one line without nesting one in the other.
+   */
+  right?: ReactNode
+}) {
+  const heading = (
+    <h2
+      className={cn('text-base font-medium', right ? 'min-w-0 flex-1' : 'mb-3.5', className)}
+      {...props}
+    >
       {children}
       {hint ? (
         <small className="ml-2 font-sans text-xs font-normal text-text-3">{hint}</small>
       ) : null}
     </h2>
+  )
+  if (!right) return heading
+  return (
+    <div className="mb-3.5 flex items-start gap-2">
+      {heading}
+      {right}
+    </div>
   )
 }
 

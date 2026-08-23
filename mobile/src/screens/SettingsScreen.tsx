@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
-import { ping } from '@/lib/llm'
+import { listModels } from '@/lib/llm'
+import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
+import type { ModelServer } from '@jojo/service/core/model-server'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
@@ -47,26 +49,104 @@ export function SettingsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { pref, setPref } = useTheme()
 
-  // The model's address, held locally while it is being typed and written to
-  // the device on a successful test or on leaving the field.
-  const { settings, save } = useModelSettings()
+  /*
+   * The model connection.
+   *
+   * `model` is the state that carries the meaning here: it is empty until a
+   * server has named itself, and everything else keys off that. An address is
+   * something the user can type; a model id is something only the server knows,
+   * so a filled Model field is the app's record that this address answered.
+   *
+   * It starts from what was stored, which is why a returning user is connected
+   * without pressing anything — the stored value got there by a successful test
+   * in an earlier session, and nothing else can write it.
+   */
+  const { settings, servers, save, remember, rename, forget } = useModelSettings()
   const [endpoint, setEndpoint] = useState(settings.endpoint)
   const [model, setModel] = useState(settings.model)
+  /*
+   * `null` means "not edited in this session", which is different from "" —
+   * a distinction a live run on the web forced, and which matters more here.
+   * The saved list arrives from AsyncStorage a tick after the first render, so
+   * a plain string seeded at mount would be seeded from an empty list; and an
+   * empty Saved-as field for a server the user had named renames it back to the
+   * model id on blur. The stored name is the truth and this is an edit buffer
+   * over it, which also means it simply fills in when the list lands.
+   */
+  const [nameEdit, setNameEdit] = useState<string | null>(null)
   const [testing, setTesting] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'ok' | 'fail'>('idle')
-  const [detail, setDetail] = useState<string | null>(null)
+  const [failure, setFailure] = useState<string | null>(null)
+  const [picking, setPicking] = useState(false)
 
+  const connected = model.trim().length > 0
+  const saved = serverAt(servers, endpoint)
+  const name = nameEdit ?? saved?.name ?? model
+
+  /**
+   * A new address invalidates the model, so typing one clears it.
+   *
+   * Without this, editing the endpoint after a successful test leaves the old
+   * server's model id sitting in an enabled field — and the next request goes to
+   * the new address asking for a model it has never heard of, which fails with a
+   * message about the model rather than about the change the user just made.
+   */
+  const onEndpointChange = (next: string) => {
+    setEndpoint(next)
+    if (normaliseEndpoint(next) !== normaliseEndpoint(endpoint)) {
+      setModel('')
+      setNameEdit(null)
+      setFailure(null)
+    }
+  }
+
+  /** Puts a saved server back in the fields. Already verified, so connected. */
+  const onLoad = (server: ModelServer) => {
+    setEndpoint(server.endpoint)
+    setModel(server.model)
+    setNameEdit(null)
+    setFailure(null)
+    setPicking(false)
+    save({ endpoint: server.endpoint, model: server.model })
+  }
+
+  /**
+   * Asks the server what it serves, and fills the Model field with the answer.
+   *
+   * This is the whole reason the field is disabled until now. A vLLM model id is
+   * the full HuggingFace path — `meta-llama/Meta-Llama-3.1-8B-Instruct` — which
+   * nobody types correctly from memory, and getting it wrong fails at the first
+   * request with a 404 rather than here.
+   */
   const onTest = async () => {
-    const next = { endpoint: endpoint.trim(), model: model.trim() }
     setTesting(true)
-    setDetail(null)
-    const result = await ping(next)
+    setFailure(null)
+    const result = await listModels(endpoint)
     setTesting(false)
-    setStatus(result.ok ? 'ok' : 'fail')
-    setDetail(result.ok ? 'Answered. The assistant will use this model.' : result.reason)
-    // Saved either way: an endpoint that failed today is still the one the user
-    // meant, and losing it on every failed attempt is its own small cruelty.
-    save(next)
+    if (!result.ok) {
+      setFailure(result.reason)
+      setModel('')
+      return
+    }
+    // The first is the one to use. vLLM serves exactly one model and lists it;
+    // Ollama and LM Studio list everything they hold, most-recent first.
+    const found = result.models[0] ?? ''
+    const label = saved?.name ?? found
+    setModel(found)
+    setNameEdit(null)
+    save({ endpoint: endpoint.trim(), model: found })
+    // Saved under the model's own name unless this address already had one the
+    // user chose. That is the "auto-saved" half: connecting is the act, and
+    // keeping the address is a consequence of it rather than a second button.
+    remember({ name: label, endpoint, model: found })
+  }
+
+  /** Renaming the entry on this card renames the row in the list. */
+  const onRename = () => {
+    if (!saved) return
+    rename(saved.id, name)
+    // Back to reading the stored value, which `renameServer` may have replaced
+    // with the model id if the user blanked the field.
+    setNameEdit(null)
   }
   const { exportJSON, reset, clearAll, isEmpty } = useStoreAdmin()
   // Only for the paths below: the copies behind the file rows have to be named
@@ -174,21 +254,8 @@ export function SettingsScreen() {
           <PanelTitle hint="optional">Save to a file on this device</PanelTitle>
           <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
             jojo works fully without this. Set up later and it also keeps a copy of your records in
-            a file you own, so they survive closing the app. Nothing connects to these fields yet.
+            a file you own, so they survive closing the app. Nothing here is connected yet.
           </Txt>
-          <View style={{ gap: space[3] }}>
-            {/* "Bridge" is load-bearing since Transfer arrived: that screen also
-                shows a "Pairing code", and it means something else entirely — one
-                pairs this app with a helper process on a machine, the other pairs
-                this device with a second one. */}
-            <TextField
-              label="Bridge pairing code"
-              mono
-              defaultValue="••••-••••-4F2A"
-              editable={false}
-            />
-          </View>
-
           <View style={{ marginTop: space[2] }}>
             {/* Named for what happens to the user's records, not for the
                 mechanism. "Auto sync" describes an implementation; "save as I
@@ -226,9 +293,22 @@ export function SettingsScreen() {
         </Panel>
 
         <Panel>
-          <PanelTitle hint="OpenAI-compatible">Local model</PanelTitle>
+          <PanelTitle
+            hint="OpenAI-compatible"
+            right={
+              <IconButton
+                icon="link"
+                label="Saved servers"
+                onPress={() => setPicking(true)}
+                disabled={servers.length === 0}
+              />
+            }
+          >
+            Local model
+          </PanelTitle>
           <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            Point at any local server: vLLM, Ollama or LM Studio.
+            Point at any local server: vLLM, Ollama or LM Studio. Test the connection and it will
+            name its own model.
           </Txt>
           <View style={{ gap: space[3] }}>
             <TextField
@@ -236,30 +316,57 @@ export function SettingsScreen() {
               mono
               autoCapitalize="none"
               autoCorrect={false}
+              keyboardType="url"
               value={endpoint}
-              placeholder="http://localhost:11434/v1"
-              hint="The base URL. `chat/completions` is appended to it."
-              onChangeText={setEndpoint}
+              placeholder="http://localhost:8000/v1"
+              hint="The base URL, ending in /v1."
+              onChangeText={onEndpointChange}
             />
+            {/* Empty and unusable until a server has answered. The model id is
+                the server's to state, not the user's to guess, and a field
+                offering to take a guess is a field inviting a 404 later. */}
             <TextField
               label="Model"
               mono
               autoCapitalize="none"
               autoCorrect={false}
               value={model}
-              placeholder="llama3.1:8b"
+              editable={connected}
+              placeholder={connected ? '' : 'Found when you test the connection'}
+              hint={
+                connected
+                  ? 'What the server reported. Change it if you serve more than one.'
+                  : undefined
+              }
               onChangeText={setModel}
+              onBlur={() => {
+                save({ endpoint: endpoint.trim(), model: model.trim() })
+              }}
             />
-            {/* Three servers, one tap each. Typing a port from memory is the
-                step people get wrong, and every one of these is a default. */}
+            {/* Only once there is something to name. Before that it would be a
+                label for a connection that does not exist. */}
+            {connected ? (
+              <TextField
+                label="Saved as"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={name}
+                placeholder={model}
+                hint="What this server is called in the list. Defaults to the model."
+                onChangeText={setNameEdit}
+                onBlur={onRename}
+              />
+            ) : null}
+            {/* Three servers, one tap each. The port is the step people get
+                wrong, and every one of these is a default. */}
             <View style={s.chipRow}>
               {SUGGESTIONS.map((sug) => (
                 <Pressable
                   key={sug.label}
                   accessibilityRole="button"
+                  accessibilityLabel={`Use the ${sug.label} address`}
                   onPress={() => {
-                    setEndpoint(sug.endpoint)
-                    setModel(sug.model)
+                    onEndpointChange(sug.endpoint)
                   }}
                 >
                   <Chip tone="gray">{sug.label}</Chip>
@@ -269,34 +376,30 @@ export function SettingsScreen() {
           </View>
           <View style={styles.testRow}>
             <Button
-              label={testing ? 'Testing…' : 'Test connection'}
+              label={testing ? 'Testing…' : connected ? 'Test again' : 'Test connection'}
               variant="outline"
-              disabled={testing || endpoint.trim().length === 0 || model.trim().length === 0}
-              blocker={
-                endpoint.trim().length === 0 || model.trim().length === 0
-                  ? 'Fill in an endpoint and a model first.'
-                  : undefined
-              }
+              disabled={testing || endpoint.trim().length === 0}
+              blocker={endpoint.trim().length === 0 ? 'Fill in an endpoint first.' : undefined}
               onPress={onTest}
             />
-            {status === 'ok' ? (
+            {connected ? (
               <Chip tone="green">Connected</Chip>
-            ) : status === 'fail' ? (
+            ) : failure ? (
               <Chip tone="red">No answer</Chip>
             ) : (
-              <Chip tone="gray">Not tested</Chip>
+              <Chip tone="gray">Not connected</Chip>
             )}
           </View>
-          {/* The server's own words, not a paraphrase. A wrong port and a model
-              name that does not exist fail differently, and only the endpoint
-              knows which happened. */}
-          {detail ? (
-            <Txt
-              size="xs"
-              tone={status === 'ok' ? 'muted' : 'danger'}
-              style={{ marginTop: space[2] }}
-            >
-              {detail}
+          {/* The server's own words, not a paraphrase. A wrong port and a path
+              missing its /v1 fail differently, and only the endpoint knows
+              which happened. */}
+          {failure ? (
+            <Txt size="xs" tone="danger" style={{ marginTop: space[2] }}>
+              {failure}
+            </Txt>
+          ) : connected ? (
+            <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
+              Kept on this device. The assistant will use this model.
             </Txt>
           ) : null}
         </Panel>
@@ -412,7 +515,109 @@ export function SettingsScreen() {
         tone="danger"
         onConfirm={applyPending}
       />
+
+      <SavedServers
+        open={picking}
+        servers={servers}
+        current={normaliseEndpoint(endpoint)}
+        onClose={() => setPicking(false)}
+        onLoad={onLoad}
+        onForget={forget}
+      />
     </Screen>
+  )
+}
+
+/* ------------------------------ saved servers ----------------------------- */
+
+/**
+ * The addresses this device has connected to before.
+ *
+ * The point of the list is the port. Everyone who runs a local model knows what
+ * they are running and nobody remembers whether it came up on 8000 or 11434, so
+ * the cost of using a model you already have running is retyping a URL — which
+ * is exactly the friction that stops people connecting one at all.
+ *
+ * Only servers that answered get in here. Nothing is written on typing, so a
+ * row in this list is a claim that the address worked at least once, and Load is
+ * safe to treat as connected without a fresh round trip.
+ *
+ * Delete is immediate and unconfirmed, which is deliberate: it forgets an
+ * address, and the recovery is typing it again. A confirmation sheet on top of
+ * the sheet already open would cost more than the mistake does.
+ */
+function SavedServers({
+  open,
+  servers,
+  current,
+  onClose,
+  onLoad,
+  onForget,
+}: {
+  open: boolean
+  servers: readonly ModelServer[]
+  current: string
+  onClose: () => void
+  onLoad: (server: ModelServer) => void
+  onForget: (id: string) => void
+}) {
+  return (
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title="Saved servers"
+      description="Addresses that have answered on this device."
+      footer={<Button label="Done" onPress={onClose} />}
+    >
+      <View>
+        {servers.length === 0 ? (
+          <Txt size="sm" tone="muted">
+            Nothing saved yet. Test a connection and the address is kept here.
+          </Txt>
+        ) : (
+          servers.map((server, i) => (
+            <View key={server.id}>
+              {i > 0 ? <Divider /> : null}
+              <View style={[s.row, { paddingVertical: space[2] }]}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Load ${server.name}`}
+                  style={s.fill}
+                  onPress={() => {
+                    onLoad(server)
+                  }}
+                >
+                  <View style={s.row}>
+                    <Txt size="sm" weight="medium" numberOfLines={1} style={s.fill}>
+                      {server.name}
+                    </Txt>
+                    {/* Which one is in the fields right now. Two saved servers
+                        on the same machine differ by a port, and a list of
+                        near-identical URLs with nothing marked is a list you
+                        have to read character by character. */}
+                    {server.endpoint === current ? <Chip tone="green">In use</Chip> : null}
+                  </View>
+                  <Txt size="xs" tone="muted" mono numberOfLines={1}>
+                    {server.endpoint}
+                  </Txt>
+                  <Txt size="xs" tone="muted" numberOfLines={1}>
+                    {server.model}
+                  </Txt>
+                </Pressable>
+                <IconButton
+                  icon="trash-2"
+                  label={`Forget ${server.name}`}
+                  tone="danger"
+                  onPress={() => {
+                    onForget(server.id)
+                  }}
+                />
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+    </Sheet>
   )
 }
 

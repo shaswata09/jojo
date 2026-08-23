@@ -26,6 +26,8 @@ import { GraphScreen } from '@/screens/GraphScreen'
 import { GuideScreen } from '@/screens/guide/GuideScreen'
 import { JobScoutScreen } from '@/screens/JobScoutScreen'
 import { MoreScreen } from '@/screens/MoreScreen'
+import { hostOf } from '@jojo/service/core/capture'
+import { PostingBrowserScreen } from '@/screens/PostingBrowserScreen'
 import { ProfileScreen } from '@/screens/ProfileScreen'
 import { SearchScreen } from '@/screens/SearchScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
@@ -245,6 +247,18 @@ export function RootNavigator() {
         <Stack.Screen name="Guide" component={GuideScreen} options={{ title: 'How to use' }} />
         <Stack.Screen name="Graph" component={GraphScreen} options={{ title: 'Graph' }} />
         <Stack.Screen name="Transfer" component={TransferScreen} options={{ title: 'Transfer' }} />
+        {/* Titled by the site rather than by the app, because the user is
+            looking at somebody else's page and the header is the only thing
+            saying whose. `headerBackTitle` is emptied so a long host does not
+            get truncated by the word "Back" on iOS. */}
+        <Stack.Screen
+          name="PostingBrowser"
+          component={PostingBrowserScreen}
+          options={({ route }) => ({
+            title: hostOf(route.params.url),
+            headerBackTitle: '',
+          })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   )

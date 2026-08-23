@@ -200,6 +200,18 @@ const fileDraft = s.object({
   note: s.optional(s.string({ label: 'Note' })),
   savedOn: s.optional(s.isoDate()),
   applicationId: s.optional(s.nullable(s.id('application'))),
+  /**
+   * A capture's provenance. `kind: 'page'` only, and optional even then, because
+   * a page the user saved by hand and dropped in has bytes and no address.
+   *
+   * On the draft rather than in a tool of its own: a capture differs from a
+   * dropped PDF in where its bytes came from, not in what filing it means. A
+   * second create tool would be a second slug mint, a second `fileUnder`, a
+   * second undo shape and one more thing to keep in step for no behaviour
+   * anybody asked for.
+   */
+  sourceUrl: s.optional(s.string({ label: 'Captured from' })),
+  capturedAt: s.optional(s.instant({ label: 'Captured' })),
 })
 
 /**
@@ -243,6 +255,8 @@ export const vaultFileAdd = defineTool({
           size: draft.size,
           savedOn: draft.savedOn ?? dayOf(ctx.now),
           ...(draft.uri === undefined ? {} : { uri: draft.uri }),
+          ...(draft.sourceUrl === undefined ? {} : { sourceUrl: draft.sourceUrl }),
+          ...(draft.capturedAt === undefined ? {} : { capturedAt: draft.capturedAt }),
           ...opt('note', cleared(draft.note)),
         },
         createdAt: ctx.now,

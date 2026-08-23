@@ -30,6 +30,14 @@ export type RootStackParamList = {
   Guide: undefined
   Graph: undefined
   Transfer: undefined
+  /**
+   * The in-app browser, and the only screen that reaches the network.
+   *
+   * `url` is where to open; `applicationId` is what a capture taken here gets
+   * filed under, passed in because this screen has no way to work it out — it is
+   * reached from an application's own detail screen, which knows.
+   */
+  PostingBrowser: { url: string; applicationId?: string }
 }
 
 declare global {

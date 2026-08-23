@@ -365,6 +365,20 @@ const TARGETS = [
     layers: {
       core: ['dom', 'node', 'net', 'timer', 'clock'],
       tools: ['dom', 'node', 'net', 'timer', 'clock'],
+      /*
+       * The strictest list, and `net` is the one that matters.
+       *
+       * The agent layer is the one place in this package that exists BECAUSE of
+       * a network call, so the temptation to let it make one is real and the ban
+       * is what keeps the design honest: `loop.ts` takes the model call as a
+       * function its caller supplies, which is why a scripted test can prove the
+       * cap holds without a socket. The day this list gains `net` is the day the
+       * loop stops being testable.
+       *
+       * `clock` too. A trace that stamped its own steps would be a trace that
+       * cannot be replayed, and D26 already says where time enters.
+       */
+      agent: ['dom', 'node', 'net', 'timer', 'clock'],
       log: ['dom', 'node', 'net', 'timer', 'clock'],
       // No `timer`: repo owns durability, and durability means retry. queue.ts
       // backs off between failed drains and cancels that backoff when an

@@ -7,13 +7,15 @@ import { GraphCanvas } from '@/components/graph/GraphCanvas'
 import { GraphDetail } from '@/components/graph/GraphDetail'
 import { GraphLegend } from '@/components/graph/GraphLegend'
 import { QueryPanel } from '@/components/graph/QueryPanel'
+import { toQueryResult } from '@/lib/graph/from-agent'
+import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useDialogs } from '@/lib/dialogs-context'
 import { buildGraph } from '@/lib/graph/build'
 import type { GraphNodeType } from '@/lib/graph/model'
 import { runQuery } from '@/lib/graph/query'
-import type { GraphQuery } from '@/lib/graph/query'
+import type { GraphQuery, QueryResult } from '@/lib/graph/query'
 import { filterGraph } from '@/lib/graph/traversal'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { useTitle } from '@/lib/links'
@@ -67,7 +69,27 @@ export function Graph() {
    * the files you happen to have left visible — an answer that changed when you
    * pressed a legend row would be worse than no answer.
    */
-  const result = useMemo(() => (query ? runQuery(graph, query) : null), [graph, query])
+  const built = useMemo(() => (query ? runQuery(graph, query) : null), [graph, query])
+
+  /**
+   * The answer to a question asked in words, which outranks the builder's.
+   *
+   * Held here rather than in the panel because the CANVAS needs it: the lit
+   * subgraph and the answer table are two readings of one result, and putting
+   * them on different sources is how they come to disagree. Asking a new
+   * question through the builder clears it, because two answers on screen with
+   * one table between them is worse than either.
+   */
+  const [asked, setAsked] = useState<{ result: QueryResult; question: string } | null>(null)
+  const result = asked?.result ?? built
+
+  const onAsk = useCallback(
+    (answer: GraphQueryResult, question: string) => {
+      setAsked({ result: toQueryResult(graph, answer), question })
+      setQuery(null)
+    },
+    [graph],
+  )
 
   // A record can be deleted from another page while this one is mounted.
   useEffect(() => {
@@ -219,8 +241,17 @@ export function Graph() {
       <QueryPanel
         graph={graph}
         query={query}
-        onQueryChange={setQuery}
+        onQueryChange={(next) => {
+          // The builder and the model are two ways to ask, and only one answer
+          // can be on screen. Touching the builder means you meant the builder.
+          setAsked(null)
+          setQuery(next)
+        }}
         result={result}
+        onAsk={onAsk}
+        onAskClear={() => {
+          setAsked(null)
+        }}
         selectedId={selectedId}
         onSelectNode={setSelectedId}
       />

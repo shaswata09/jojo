@@ -39,8 +39,20 @@ const tab = (screen: 'Today' | 'Applications' | 'Calendar' | 'More') => (nav: Na
 const vault = (tool: VaultTool) => (nav: Nav) =>
   nav.navigate('Tabs', { screen: 'Vault', params: { tool } })
 
+/*
+ * The screens you can simply go to, which is the ones that need no parameters.
+ * `PostingBrowser` joins the excluded list for the same reason
+ * `ApplicationDetail` is on it: it opens a specific URL, so "go there" is not a
+ * destination anybody can search for — it is an action taken from a record that
+ * already knows which address it means.
+ */
 const push =
-  (screen: keyof Omit<RootStackParamList, 'Tabs' | 'ApplicationDetail' | 'JobScout'>) =>
+  (
+    screen: keyof Omit<
+      RootStackParamList,
+      'Tabs' | 'ApplicationDetail' | 'JobScout' | 'PostingBrowser'
+    >,
+  ) =>
   (nav: Nav) =>
     nav.navigate(screen)
 

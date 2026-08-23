@@ -5,6 +5,7 @@ import App from '@/App'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { DialogHost, DialogsProvider } from '@/lib/dialogs'
 import { LabelsProvider } from '@/lib/labels'
+import { ModelSettingsProvider } from '@/lib/model-settings'
 import { MascotProvider } from '@/lib/mascot'
 import { RolesProvider } from '@/lib/roles'
 import { StoreProvider } from '@/lib/store'
@@ -29,12 +30,17 @@ createRoot(container).render(
                   chips the filter has lit, which is UI state and belongs to
                   this tab rather than to the records. */}
               <LabelsProvider>
-                <DialogsProvider>
-                  <MascotProvider>
-                    <App />
-                    <DialogHost />
-                  </MascotProvider>
-                </DialogsProvider>
+                {/* Outside the store on purpose: an endpoint describes this
+                    machine's network, not the user's records, so it must not
+                    travel with a Transfer. See `model-settings-context`. */}
+                <ModelSettingsProvider>
+                  <DialogsProvider>
+                    <MascotProvider>
+                      <App />
+                      <DialogHost />
+                    </MascotProvider>
+                  </DialogsProvider>
+                </ModelSettingsProvider>
               </LabelsProvider>
             </StoreProvider>
           </ToastProvider>

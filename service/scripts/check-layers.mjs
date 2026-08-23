@@ -131,9 +131,36 @@ const RULES = {
     // this check.
     allow: ['repo/repository', 'repo/journal', 'repo/seed'],
   },
+  agent: {
+    /*
+     * L3.5 — above tools, below react. It reads the tool REGISTRY, which is why
+     * it may name `tools`; it is not a tool, which is why nothing under `tools`
+     * may name it back, and the downward rule is what enforces that.
+     *
+     * `repo` is deliberately absent. The agent is handed a `ToolHost` — three
+     * functions it can call — rather than a repository it could reach into, for
+     * the same reason `tools` takes the Repository interface: a module that can
+     * find the live store cannot be run inside someone else's transaction, and
+     * cannot be tested against a two-line fake.
+     *
+     * No React either, though it is what the UI drives. The loop emits events
+     * through a callback the caller supplies; a hook here would put the one
+     * piece of this feature worth testing behind a renderer.
+     */
+    label: 'L3.5 agent',
+    internal: ['core', 'tools', 'agent', 'log'],
+    // Tests only. See `allowInTests` at the enforcement site for why this is not
+    // a plain `allow`: the agent's tests run against a real repository so that
+    // "the agent changed the graph" is a claim about the graph, while its
+    // production code may only ever hold a `ToolHost`.
+    allowInTests: ['repo/repository'],
+    alias: [],
+    packages: true,
+    react: false,
+  },
   react: {
     label: 'L4 react',
-    internal: ['core', 'storage', 'repo', 'tools', 'react', 'log'],
+    internal: ['core', 'storage', 'repo', 'tools', 'agent', 'react', 'log'],
     /*
      * `@/lib` is gone, and it is worth saying why rather than leaving a shorter
      * list. It was allowed here because the toast context used to live in
@@ -390,9 +417,26 @@ for (const file of walk(KG)) {
 
     if (target !== null) {
       const targetLayer = layerOf(target)
+      /*
+       * `allowInTests` is the same grant as `allow`, restricted to test files.
+       *
+       * Written because `agent` needed one and `allow` was too blunt for it: the
+       * agent's tests build a REAL repository on purpose — the undo and journal
+       * bookkeeping is the repository's, and a hand-written fake would be
+       * testing the fake — while the agent's production code must keep taking a
+       * three-function `ToolHost` it cannot reach past. A plain `allow` would
+       * have bought the tests their import and silently handed production the
+       * same one, which is the shape of grant this file's own comments describe
+       * going wrong before: "a grant written for two files had quietly become a
+       * grant for twelve".
+       */
+      const grants = [
+        ...(rule.allow ?? []),
+        ...(isTest(file) ? (rule.allowInTests ?? []) : []),
+      ]
       const allowed =
         rule.internal.includes(targetLayer) ||
-        (rule.allow ?? []).some((a) => target === a || target.startsWith(`${a}.`))
+        grants.some((a) => target === a || target.startsWith(`${a}.`))
       if (!allowed) {
         fail(
           file,

@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FileQuestion, FileWarning, PanelRightClose, PanelRightOpen, X } from 'lucide-react'
+import {
+  Download,
+  FileQuestion,
+  FileWarning,
+  PanelRightClose,
+  PanelRightOpen,
+  X,
+} from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ExpandButton, FullScreenDialog } from '@/components/common/FullScreen'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -8,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { agoLabel } from '@/data/timeline'
 import type { VaultFile } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
+import { hostOf, isCaptureSource } from '@jojo/service/core/capture'
 import { pdfObjectUrl, placeholderPdf } from '@/lib/placeholder-pdf'
 import { htmlFromText, textFromHtml } from '@/lib/rich-text'
 import { useToast } from '@/lib/toast-context'
@@ -89,6 +97,47 @@ export function FileViewer({
   // a download prompt where they asked for a preview.
   const real = file.kind === 'pdf' ? blob : undefined
 
+  /**
+   * A captured posting takes the other path entirely.
+   *
+   * `srcdoc` rather than a blob URL, and that is a security decision rather than
+   * a convenience one. The frame has to be sandboxed — this is markup a job
+   * board wrote, kept for a year, rendered inside the user's own app — and the
+   * sandbox that makes it safe is the one with NO tokens at all: no scripts, no
+   * same-origin, no popups, no top navigation, no forms. A `blob:` URL will not
+   * load in a frame with an opaque origin, so pointing `src` at one and then
+   * sandboxing it is a preview that renders nothing. `srcdoc` puts the document
+   * inline, where the opaque origin costs nothing: every asset is already a
+   * `data:` URI, which needs no origin to resolve.
+   *
+   * Read as text rather than handed over as bytes because that is what `srcdoc`
+   * takes, and because it is the last point at which the app sees the document
+   * as a value it could inspect.
+   */
+  const pageBlob = file.kind === 'page' ? blob : undefined
+  const [pageHtml, setPageHtml] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!pageBlob) {
+      setPageHtml(null)
+      return
+    }
+    let alive = true
+    pageBlob.text().then(
+      (text) => {
+        if (alive) setPageHtml(text)
+      },
+      (error: unknown) => {
+        if (!alive) return
+        setPageHtml(null)
+        setPreviewError(error instanceof Error ? error.message : String(error))
+      },
+    )
+    return () => {
+      alive = false
+    }
+  }, [pageBlob])
+
   const pdf = useMemo(
     () =>
       file.kind === 'pdf' && !real
@@ -110,16 +159,21 @@ export function FileViewer({
                * its bytes, so the `File` behind a real preview lives in React
                * state and goes at the next reload while the row it created
                * survives. After that reload a seeded row and the user's own
-               * file are indistinguishable here: both arrive with no blob. The
-               * old sentence guessed, guessed wrong for the user's file, and
-               * told them their own document was a fixture.
+               * file were indistinguishable here: both arrived with no blob.
                *
-               * So it no longer guesses. What is said instead is true of both:
-               * jojo never held the contents, which is the actual reason there
-               * is nothing to render, and it is worth the user knowing anyway.
+               * That is no longer the shape of it. Documents ARE stored now, in
+               * IndexedDB, and they survive the reload — so reaching this
+               * placeholder means the row genuinely has no bytes: a demo record,
+               * or one filed before this existed, or a write that failed.
+               *
+               * The sentence that stood here said jojo keeps "never its
+               * contents", which was true when it was written and is now the
+               * opposite of true — told to the user at the exact moment they are
+               * looking for a document they believe they saved. A comment can go
+               * stale quietly; this one was load-bearing copy.
                */
               {
-                text: 'jojo keeps a file\u2019s name, size and notes — never its contents — so there is no document stored here to show. A file added in this session previews for real until the page reloads.',
+                text: 'There is no document stored for this row — it came with the demo data, or it was filed before jojo kept documents. Drop the file in again and it will preview here and stay.',
                 gap: 14,
               },
             ],
@@ -170,59 +224,138 @@ export function FileViewer({
   }, [pdf, real])
 
   /**
+   * Hands the document to the browser's downloader.
+   *
+   * Built from `blob`, which the viewer already holds, rather than going back to
+   * the store: the bytes are in memory, and a second read would be a second copy
+   * of a file that can be tens of megabytes.
+   */
+  const onSave = () => {
+    if (!blob) return
+    const href = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = href
+    anchor.download = blob.name
+    anchor.click()
+    // Revoked next frame, not immediately: a synchronous revoke races the
+    // download the click just started and the file arrives empty.
+    setTimeout(() => URL.revokeObjectURL(href), 0)
+  }
+
+  /**
    * The frame, built once and rendered in whichever box is showing.
    *
    * `key={url}` and nothing else identifying: expanding remounts the iframe and
    * the PDF reloads from the same blob, which costs the reader their scroll
    * position and nothing more.
    */
-  const frame = url ? (
-    <iframe
-      key={url}
-      src={url}
-      title={`${file.name} preview`}
-      className="w-full flex-1 rounded-md border border-hairline bg-well"
-    />
-  ) : previewError ? (
-    <EmptyState
-      icon={FileWarning}
-      title="This browser would not open the preview"
-      // Names the record as untouched, because the failure is in the viewer and
-      // a user watching a preview fail has no way to know the row is fine.
-      description={`${previewError}. The file's record in your vault is unaffected — only the preview could not be built.`}
-    />
-  ) : (
-    <EmptyState
-      icon={FileQuestion}
-      title="No preview for this type"
+  const frame =
+    pageHtml !== null ? (
       /*
-       * This used to end "Opening it will hand off to your own application once
-       * files are stored locally" — a promise of work that is not coming. D27
-       * keeps a file's name, size and notes and never its bytes, so there is no
-       * stored document to hand anywhere, and the placeholder page a few lines
-       * above says exactly that. Two states of the same viewer describing the
-       * same file in opposite terms, and the one that read as a roadmap was the
-       * wrong one.
+       * `sandbox=""` — every restriction on, nothing granted back.
        *
-       * Says nothing about THIS row's bytes, deliberately, for the reason the
-       * placeholder's own comment gives: a .docx dropped in this session is here
-       * too, held in state and unframed on purpose, and a sentence guessing
-       * which of the two the reader is looking at gets it wrong for one of them.
+       * Spelled as an empty string rather than omitted, because an absent
+       * `sandbox` attribute means NO sandbox: the frame would run the site's
+       * scripts with the app's own origin. The empty value is the opposite, and
+       * the two look alike enough in a diff that it is worth saying which one this
+       * is. `referrerPolicy` and the missing `allow` are belt to the same braces:
+       * a capture has nothing left to fetch, and if one ever did, this frame is
+       * not the thing that lets it.
        */
-      description={`Browsers render PDFs natively but not ${file.kind} files \u2014 and jojo keeps a file\u2019s name, size and notes rather than its contents, so there is no stored document to open.`}
-    />
-  )
+      <iframe
+        key={file.id}
+        srcDoc={pageHtml}
+        sandbox=""
+        referrerPolicy="no-referrer"
+        title={`${file.name}, as it was captured`}
+        className="w-full flex-1 rounded-md border border-hairline bg-white"
+      />
+    ) : url ? (
+      <iframe
+        key={url}
+        src={url}
+        title={`${file.name} preview`}
+        className="w-full flex-1 rounded-md border border-hairline bg-well"
+      />
+    ) : previewError ? (
+      <EmptyState
+        icon={FileWarning}
+        title="This browser would not open the preview"
+        // Names the record as untouched, because the failure is in the viewer and
+        // a user watching a preview fail has no way to know the row is fine.
+        description={`${previewError}. The file's record in your vault is unaffected — only the preview could not be built.`}
+      />
+    ) : (
+      <EmptyState
+        icon={FileQuestion}
+        title="No preview for this type"
+        /*
+         * This used to end "Opening it will hand off to your own application once
+         * files are stored locally" — a promise of work that was not coming when
+         * it was written, and has since arrived: documents ARE stored, and the
+         * Save button in this viewer's header is the hand-off.
+         *
+         * The sentence still says nothing about THIS row's bytes, and now for a
+         * better reason than the original. Reaching here means the row has none —
+         * a demo record, a page captured on another device, or a write that
+         * failed — and which of those it is decides the repair, so a sentence
+         * guessing between them gets it wrong for two out of three.
+         *
+         * Says nothing about THIS row's bytes, deliberately, for the reason the
+         * placeholder's own comment gives: a .docx dropped in this session is here
+         * too, held in state and unframed on purpose, and a sentence guessing
+         * which of the two the reader is looking at gets it wrong for one of them.
+         */
+        description={
+          file.kind === 'page'
+            ? // A page with no bytes is a different failure from a .docx, and
+              // saying "browsers cannot render page files" would be nonsense \u2014 a
+              // browser is the one thing that certainly can. What is missing here
+              // is the capture, not the capability.
+              'This posting has no saved copy on this device. Captures are kept where they were taken, so one made on your phone is not here \u2014 and a row restored from a backup carries the record without the page.'
+            : `Browsers render PDFs natively but not ${file.kind} files \u2014 and there is no stored document behind this row to hand to anything else.`
+        }
+      />
+    )
 
   return (
     <Panel className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="mb-3 flex items-start justify-between gap-3">
-        <PanelTitle className="mb-0 truncate font-mono text-sm">{file.name}</PanelTitle>
+        <div className="min-w-0">
+          <PanelTitle className="mb-0 truncate font-mono text-sm">{file.name}</PanelTitle>
+          {/* Where a capture came from, as TEXT and never as a link.
+              The address is half of what makes a year-old copy trustworthy, and
+              a click that left for the live site would be the one network
+              request this whole feature exists to avoid. The scheme is re-checked
+              here rather than trusted from storage — `sourceUrl` is a validated
+              string, not a validated URL. */}
+          {file.kind === 'page' && file.sourceUrl && isCaptureSource(file.sourceUrl) ? (
+            <p className="mt-0.5 truncate text-xs text-text-3" title={file.sourceUrl}>
+              Captured from {hostOf(file.sourceUrl)}
+              {file.capturedAt ? ` · ${agoLabel(file.capturedAt.slice(0, 10), TODAY)}` : ''}
+            </p>
+          ) : null}
+        </div>
         <div className="flex shrink-0 items-center gap-1">
           {/* Only offered when there is something to enlarge. On the
               no-preview state the button would open a bigger copy of a
               sentence explaining that there is nothing to see. */}
-          {url ? (
+          {url !== null || pageHtml !== null ? (
             <ExpandButton onClick={() => setFull(true)} label="Open the preview full screen" />
+          ) : null}
+          {/* Offered only for a real document, because the placeholder is
+              generated here and saving it would hand the user a PDF explaining
+              that there is no PDF.
+
+              It exists at all because until now the ONLY way to get a document
+              back out was Settings' download-everything: a person looking at the
+              one CV they wanted had to leave, save all of them, and find it in
+              their downloads folder. */}
+          {blob ? (
+            <Button variant="ghost" size="sm" onClick={onSave}>
+              <Download className="size-3.5" strokeWidth={2} aria-hidden />
+              Save
+            </Button>
           ) : null}
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="size-3.5" strokeWidth={2} aria-hidden />

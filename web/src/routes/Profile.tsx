@@ -19,6 +19,7 @@ import { useVault } from '@jojo/service/react/use-vault'
 import { kindOfFile, sizeLabel } from '@/lib/files'
 import { useTitle, vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
+import { useVaultBlobs } from '@/lib/vault-blobs'
 import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
 
@@ -61,6 +62,7 @@ export function Profile() {
   const [termDraft, setTermDraft] = useState('')
 
   const { files, addFile } = useVault()
+  const blobs = useVaultBlobs()
   const { get } = useApplications()
   const { toast } = useToast()
   const undoable = useUndoable()
@@ -104,7 +106,7 @@ export function Profile() {
     })
   }
 
-  const onPicked = (event: ChangeEvent<HTMLInputElement>) => {
+  const onPicked = async (event: ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(event.target.files ?? [])
     // Cleared straight away, so re-picking the same file fires `change` again.
     // Without it, correcting a mistake by choosing the same document twice
@@ -112,22 +114,37 @@ export function Profile() {
     event.target.value = ''
     if (picked.length === 0) return
 
+    let stored = 0
     for (const file of picked) {
-      // Name, size and kind only — the same three facts a drop target would
-      // have. Nothing here reads the bytes, and a preview built from a file
-      // that was never opened would be an invention.
-      addFile({
+      const record = addFile({
         name: file.name,
         kind: kindOfFile(file.name, file.type),
         bucket: DOCUMENTS_BUCKET,
         size: sizeLabel(file.size),
       })
+      // The document itself, not just the three facts about it.
+      //
+      // This used to file the name, size and kind and drop the bytes on the
+      // floor — correct when nothing in jojo stored a document, and a silent
+      // inconsistency once the Vault did: the same CV kept its contents when
+      // dropped on the Vault and lost them when uploaded here, which is the
+      // screen a person is most likely to upload a CV from.
+      if (await blobs.put(record.id, file)) stored += 1
     }
 
-    toast({
-      title: picked.length === 1 ? 'Document added' : `${picked.length} documents added`,
-      description: `Filed in the Vault under ${DOCUMENTS_BUCKET}. The name, size and type are kept — the file itself is not read.`,
-    })
+    toast(
+      stored === picked.length
+        ? {
+            title: picked.length === 1 ? 'Document added' : `${picked.length} documents added`,
+            description: `Filed in the Vault under ${DOCUMENTS_BUCKET} and saved in this browser. Nothing was uploaded anywhere.`,
+          }
+        : {
+            title: `${picked.length - stored} could not be saved`,
+            description:
+              'The rows are filed, but this browser refused to store the documents — usually because its storage is full. Free some space and upload them again.',
+            tone: 'danger',
+          },
+    )
   }
 
   const addTerm = () => {
@@ -354,7 +371,7 @@ export function Profile() {
               multiple
               accept=".pdf,.doc,.docx,.odt,.rtf,.ppt,.pptx,.key,.txt,.md"
               className="hidden"
-              onChange={onPicked}
+              onChange={(e) => void onPicked(e)}
             />
             <Button variant="ghost" size="sm" onClick={() => fileInput.current?.click()}>
               <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />

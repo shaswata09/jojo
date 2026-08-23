@@ -62,9 +62,11 @@ describe('the exported filename', () => {
 describe('what the app tells the user to look for', () => {
   it('never labels the export with a filename it cannot write', () => {
     // `jojo-data.json` is the localhost bridge's mirror file and is a real name
-    // in this app — see `ConnectionsSection` and the Ladder guide. What must not
-    // happen is a control or a guide entry naming it as the EXPORT, which is
-    // where the two features collided.
+    // in this app — see the Ladder guide and the README's tier table. It is no
+    // longer in `ConnectionsSection`: that panel's bridge fields were removed,
+    // so the name now lives only where the bridge is DESCRIBED rather than
+    // where it looked configurable. What must not happen is a control or a
+    // guide entry naming it as the EXPORT, which is where the two collided.
     const offenders = appSources()
       .filter(([, source]) => /Export\s+jojo-data\.json|Export\s*\{'\s*'\}\s*jojo-data/.test(source))
       .map(([path]) => path)

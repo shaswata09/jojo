@@ -115,9 +115,9 @@ export function SettingsScreen() {
   return (
     <Screen id={S.settings} title="Settings" where="the gear icon, top bar" to={settingsPath()}>
       <p className="text-sm text-text-2">
-        Seven panels: the localhost bridge, a local model, appearance, your data, your keywords,
-        diagnostics, and the audit log. The two runtime tiles at the foot of the sidebar both land
-        here, which is what they are for.
+        Seven panels: your documents, a local model, appearance, your data, your keywords,
+        diagnostics, and the audit log. The runtime tile at the foot of the sidebar lands here,
+        which is what it is for.
       </p>
 
       <h3 className="mt-4 text-sm font-medium">What is real</h3>
@@ -155,11 +155,12 @@ export function SettingsScreen() {
         </li>
       </ul>
 
-      <NotConnected title="Two panels and two buttons are switched off">
-        The bridge&rsquo;s address, pairing code, save path and three switches accept what you type
-        and reach nothing, and <span className="text-text-1">Test connection</span> is disabled
-        beside them. The local-model endpoint is the same: a field, and a Test button that says why
-        it cannot run. <span className="text-text-1">Export to Excel</span> and{' '}
+      <NotConnected title="One panel and one button are switched off">
+        The local-model endpoint is a field, and a Test button that says why it cannot run.
+        The panel that used to sit beside it — a bridge address, a pairing code, a save path and
+        three switches, all of which accepted what you typed and reached nothing — is gone;
+        documents are stored for real now, and{' '}
+        <span className="text-text-1">Your documents</span> says where. <span className="text-text-1">Export to Excel</span> and{' '}
         <span className="text-text-1">Import</span> are disabled with their reasons on hover — no
         spreadsheet writer is bundled, and reading a backup back in needs a validator that can
         refuse a file it does not understand. What each of those would give you is on{' '}

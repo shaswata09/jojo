@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useApplications } from '@jojo/service/react/use-applications'
 import type { FormEvent } from 'react'
 import { Plus, Quote } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
@@ -63,6 +64,8 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     removeRecord,
   } = useLabels()
   const { snippets, addSnippet, updateSnippet, removeSnippet } = useVault()
+  // Named for the card's link; the editor's picker reads the list itself.
+  const { byId } = useApplications()
   const { toast } = useToast()
   // Arrived from a graph node or a query row that named one snippet — see
   // `focus` in links.ts. These are cards on a two-column grid, so which one was
@@ -116,7 +119,8 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     (editing.title !== clean.title ||
       editing.tag !== clean.tag ||
       body !== clean.body ||
-      keywordKey(editing.keywords) !== clean.keywords)
+      keywordKey(editing.keywords) !== clean.keywords ||
+      editing.applicationId !== clean.applicationId)
 
   const copy = async (id: string, text: string) => {
     clearTimeout(timer.current)
@@ -141,6 +145,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           title: s.title,
           tag: s.tag,
           html: htmlFromText(s.body),
+          ...(s.applicationId === undefined ? {} : { applicationId: s.applicationId }),
           keywords: labelIdsOf(s.id),
         }
       : {
@@ -161,6 +166,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       tag: draft.tag,
       body: textFromHtml(draft.html),
       keywords: keywordKey(draft.keywords),
+      applicationId: draft.applicationId,
     })
     setSubmitted(false)
   }
@@ -200,13 +206,19 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       const before = snippets.find((s) => s.id === id)
       const beforeKeywords = labelIdsOf(id)
 
-      updateSnippet(id, { title, tag: editing.tag, body })
+      updateSnippet(id, { title, tag: editing.tag, body, applicationId: editing.applicationId })
       commitKeywords(id, chosen)
       // The draft takes the trimmed title too, or the dirty check compares
       // 'Short bio ' against the 'Short bio' that was stored and the panel keeps
       // claiming unsaved changes forever.
       setEditing((prev) => (prev ? { ...prev, title } : prev))
-      setClean({ title, tag: editing.tag, body, keywords: keywordKey(chosen) })
+      setClean({
+        title,
+        tag: editing.tag,
+        body,
+        keywords: keywordKey(chosen),
+        applicationId: editing.applicationId,
+      })
       toast({
         title: `${title} saved`,
         description: `Filed under ${editing.tag}, ready to copy from the list.`,
@@ -245,7 +257,12 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       return
     }
 
-    const record = addSnippet({ title, tag: editing.tag, body })
+    const record = addSnippet({
+      title,
+      tag: editing.tag,
+      body,
+      ...(editing.applicationId === undefined ? {} : { applicationId: editing.applicationId }),
+    })
     commitKeywords(record.id, chosen)
 
     // The editor stays open on the record it just created rather than closing:
@@ -418,6 +435,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           <ul className={cn('grid gap-3', editing ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2')}>
             {visible.map((s) => (
               <SnippetCard
+                related={s.applicationId ? byId.get(s.applicationId) : undefined}
                 key={s.id}
                 snippet={s}
                 cardRef={s.id === focus ? focusedCard : undefined}

@@ -72,9 +72,8 @@ const DOORS: { name: ReactNode; where: ReactNode }[] = [
     name: <Go to={settingsPath()}>Settings</Go>,
     where: (
       <>
-        The gear icon in the top bar. The <span className="text-text-1">Localhost bridge</span> and{' '}
-        <span className="text-text-1">Local model</span> tiles land here too — they are where each
-        is configured.
+        The gear icon in the top bar. The <span className="text-text-1">Local model</span> tile
+        lands here too — it is where that is configured.
       </>
     ),
   },

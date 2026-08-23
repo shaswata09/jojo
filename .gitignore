@@ -25,3 +25,6 @@ yarn-error.log*
 jojo-data.json
 
 # npm workspaces: one lockfile at the root, one hoisted tree.
+
+# Built from web/extension by web/scripts/pack-extension.mjs
+web/public/jojo-extension.zip

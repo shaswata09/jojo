@@ -392,7 +392,25 @@ export type VaultLink = {
 export const FILE_BUCKET_VALUES = ['To read', 'Applications', 'Talks', 'Admin'] as const
 export type FileBucket = (typeof FILE_BUCKET_VALUES)[number]
 
-export const FILE_KIND_VALUES = ['pdf', 'doc', 'slides', 'note'] as const
+/**
+ * `page` is the fifth, and it is the first kind whose bytes jojo produced rather
+ * than received.
+ *
+ * A job posting is the one document in a search that belongs to somebody else
+ * and disappears on their schedule — the listing is pulled the week after the
+ * interview, and with it the requirements the user is about to be asked about.
+ * So a page is a CAPTURE: the posting as it read on the day it was filed,
+ * serialised with every stylesheet, image and font rewritten to a `data:` URI so
+ * that opening it a year later reads the same and reaches nothing.
+ *
+ * That last clause is the reason it is a kind of its own rather than a `doc`
+ * with an .html name. Every other kind is inert to a viewer — a PDF reader
+ * cannot be talked into fetching a tracking pixel. This one is live markup from
+ * a site nobody here controls, so it carries a rule the other four do not: it is
+ * rendered with scripts off and no network, and `core/capture.ts` owns what
+ * counts as a well-formed one.
+ */
+export const FILE_KIND_VALUES = ['pdf', 'doc', 'slides', 'note', 'page'] as const
 export type FileKind = (typeof FILE_KIND_VALUES)[number]
 
 export type VaultFile = {
@@ -407,6 +425,10 @@ export type VaultFile = {
   applicationId?: string
   /** See `FileProps.uri`. Projected straight through by `projections.files`. */
   uri?: string
+  /** See `FileProps.sourceUrl`. Straight through, and never followed by a viewer. */
+  sourceUrl?: string
+  /** See `FileProps.capturedAt`. Straight through. */
+  capturedAt?: Instant
 }
 
 export const SNIPPET_TAG_VALUES = ['Cover letter', 'Application form', 'Email', 'Bio'] as const
@@ -633,6 +655,32 @@ export type FileProps = {
    * comment is where the deferral is recorded rather than a line in a document.
    */
   uri?: string
+
+  /**
+   * The page this file was captured from. `kind: 'page'` only.
+   *
+   * Kept because the capture is a copy of something that had an address, and the
+   * address is half of what makes the copy trustworthy a year later: it is what
+   * the record can be checked against while the original still exists, and what
+   * the user reads when they are trying to remember which of four Workday
+   * listings this was. It is NOT a fallback the viewer may quietly follow —
+   * opening a capture must never reach the network, or the archive becomes a
+   * tracker that fires every time somebody revisits their own notes.
+   *
+   * Validated as a string here and re-checked against `CAPTURE_SCHEMES` before
+   * anything renders it as a link, because a stored `javascript:` would
+   * otherwise arrive at an `href` intact.
+   */
+  sourceUrl?: string
+  /**
+   * When the capture was taken, which is not `savedOn`.
+   *
+   * `savedOn` is a date and means "when this record was filed"; a posting saved
+   * from a tab left open for a week was captured on a day the user may care
+   * about separately. Instant rather than ISODate so a second capture of the
+   * same posting sorts against the first.
+   */
+  capturedAt?: Instant
 }
 
 export type SnippetProps = {

@@ -95,7 +95,11 @@ export function TextField({
         style={[
           styles.input,
           {
-            color: c.text1,
+            // A field that cannot be typed in has to look like one. RN dims the
+            // text on neither platform, so an `editable={false}` field with the
+            // same ink as the one above it reads as a field the user is failing
+            // to focus rather than one that is waiting on something.
+            color: rest.editable === false ? c.text3 : c.text1,
             backgroundColor: c.well,
             fontFamily: mono ? fonts.mono : fonts.regular,
             // The focus ring is the accent at full opacity. The web app

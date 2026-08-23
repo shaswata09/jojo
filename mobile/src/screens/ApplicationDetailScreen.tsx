@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
-import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native'
+import { Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
+import { FiledPanel } from '@/components/common/FiledPanel'
 import { StagePicker } from '@/components/common/StagePicker'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
@@ -292,7 +293,27 @@ function Detail({ application: a }: { application: Application }) {
               ) : f.url ? (
                 <Pressable
                   accessibilityRole="link"
-                  onPress={() => Linking.openURL(f.url!)}
+                  accessibilityHint="Opens the posting inside jojo, where you can keep a copy of it"
+                  /*
+                   * Inside the app rather than out to the system browser, and
+                   * the change is the whole feature rather than a preference.
+                   *
+                   * A posting is the one document in a search that belongs to
+                   * somebody else and disappears on their schedule. Keeping a
+                   * copy needs the page as the user sees it — signed in, and
+                   * after its scripts have run — and the only context that has
+                   * both is a browser the user is signed into. Safari and
+                   * Chrome are such browsers and will not hand jojo the DOM;
+                   * the WebView on `PostingBrowser` is one too, and does.
+                   *
+                   * So the tap that used to leave now arrives somewhere with a
+                   * "Keep a copy" button in the corner. `Linking.openURL` is
+                   * still what the vault's link rows use — this is the one
+                   * address in the app that is worth archiving.
+                   */
+                  onPress={() =>
+                    navigation.navigate('PostingBrowser', { url: f.url!, applicationId: a.id })
+                  }
                   style={styles.linkRow}
                 >
                   {/* A URL is one unbroken token, so it cannot wrap and will
@@ -301,7 +322,7 @@ function Detail({ application: a }: { application: Application }) {
                   <Txt size="base" tone="info" style={s.fill} numberOfLines={1}>
                     {f.value}
                   </Txt>
-                  <Feather name="external-link" size={13} color={c.info} />
+                  <Feather name="globe" size={13} color={c.info} />
                 </Pressable>
               ) : (
                 <Txt size="base">{f.value}</Txt>
@@ -386,6 +407,8 @@ function Detail({ application: a }: { application: Application }) {
           </Txt>
         ) : null}
       </Panel>
+
+      <FiledPanel applicationId={a.id} />
 
       <MenuSheet
         open={menuOpen}

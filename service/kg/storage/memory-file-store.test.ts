@@ -1,11 +1,15 @@
 /**
  * `memory-file-store` against the shared contract, plus the seams only it has.
  *
- * The conformance cases are the same ones the File System Access adapter will be
- * driven through from a CDP harness in Wave 1. Running them here first means the
- * contract is pinned before the implementation that actually holds the user's
- * documents exists — the reverse of how the `Driver` port got its conformance
- * suite, which was written only after the audit found the gap.
+ * The conformance cases are the same ones `idb-file-store` runs — the adapter
+ * that actually holds the user's documents. Running them against a Map as well
+ * is not redundant: this implementation is the readable one, so a case that
+ * fails here names the contract clause, while the same failure against a real
+ * database could as easily be the database.
+ *
+ * The contract was pinned before either real implementation existed, which is
+ * the reverse of how the `Driver` port got its suite — that one was written only
+ * after an audit found the gap.
  */
 
 import { describe, expect, it } from 'vitest'

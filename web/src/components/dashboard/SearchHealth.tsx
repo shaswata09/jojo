@@ -39,7 +39,7 @@ const RADAR_SERIES = [
  */
 const MIN_AXES = 3
 
-export function SearchHealth() {
+export function SearchHealthBody() {
   const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(RADAR_SERIES.map((s) => s.key))
   const { all } = useApplications()
   const { all: timeline } = useTimeline()
@@ -59,21 +59,20 @@ export function SearchHealth() {
   )
 
   return (
-    <Panel className="min-w-0">
-      <PanelTitle
-        hint={
-          measured.length >= MIN_AXES ? (
-            <>
-              your figures against a typical search{' '}
-              <Chip size="sm" className="font-normal" title="Only the typical ring is illustrative">
-                Sample
-              </Chip>
-            </>
-          ) : undefined
-        }
-      >
-        What to work on next
-      </PanelTitle>
+    <>
+      {/* The "Sample" chip rides with the body rather than the title, because
+          the body is rendered in two places now and only one of them owns a
+          title. It is the one part of that hint that is load-bearing: without
+          it the typical ring reads as measured data about other people, which
+          it is not. */}
+      {measured.length >= MIN_AXES ? (
+        <p className="mb-3 text-xs text-text-3">
+          your figures against a typical search{' '}
+          <Chip size="sm" className="font-normal" title="Only the typical ring is illustrative">
+            Sample
+          </Chip>
+        </p>
+      ) : null}
 
       {measured.length < MIN_AXES ? (
         <EmptyState
@@ -87,7 +86,14 @@ export function SearchHealth() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+          // A CONTAINER query, not `lg:`. The viewport breakpoint was right while
+          // this only ever rendered full-width on Statistics, and wrong the moment
+          // `StatsCard` put it in the dashboard's ~460px column: the viewport was
+          // still `lg`, so the two-column rule applied and 320px of radar left the
+          // list beside it about 140px — one word per line, and the panel three
+          // times its intended height. `@container` asks the card how wide it is,
+          // which is the question that was always being asked.
+        <div className="@container/health grid grid-cols-1 gap-5 @[36rem]/health:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
           <div>
             {allHidden ? (
               <AllHidden onShowAll={showAll} />
@@ -140,6 +146,21 @@ export function SearchHealth() {
           </div>
         </div>
       )}
+    </>
+  )
+}
+
+/**
+ * The card, for anywhere that wants only this one.
+ *
+ * Split from its contents so `StatsCard` can show them under a shared title
+ * without nesting one Panel inside another.
+ */
+export function SearchHealth() {
+  return (
+    <Panel className="min-w-0">
+      <PanelTitle>What to work on next</PanelTitle>
+      <SearchHealthBody />
     </Panel>
   )
 }

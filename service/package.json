@@ -37,6 +37,7 @@
     "./storage/*": "./kg/storage/*.ts",
     "./repo/*": "./kg/repo/*.ts",
     "./tools/*": "./kg/tools/*.ts",
+    "./agent/*": "./kg/agent/*.ts",
     "./react/kg": "./kg/react/kg.tsx",
     "./react/status": "./kg/react/status.tsx",
     "./react/*": "./kg/react/*.ts",

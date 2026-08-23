@@ -14,8 +14,8 @@ jojo works with zero setup and gains capability as you opt in.
 
 | Layer                      | Requires                           | What you get                                                                                                         |
 | -------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **1 — Browser only**       | Nothing                            | Track applications, deadlines, follow-ups, documents. Data lives in browser storage.                                 |
-| **2 — + Localhost bridge** | A companion server on your machine | Mirrors data to `jojo-data.json` on disk; keeps timestamped submission snapshots.                                    |
+| **1 — Browser only**       | Nothing                            | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage. |
+| **2 — + A backup you keep** | Somewhere to put a file           | One file holding every record, every link and every document. Restoring it puts all three back.                      |
 | **3 — + Local LLM**        | vLLM / Ollama / LM Studio          | Assistant drafts cover letters and follow-ups; scout pipelines crawl boards and score postings against your profile. |
 
 Layer 1 is the only one that must work. Everything above it degrades gracefully when disconnected.
@@ -33,7 +33,6 @@ jojo/
 ├── mobile/              React Native app for Android and iOS
 │   ├── android/         Committed Gradle project
 │   └── ios/             Committed Xcode project
-├── server/              (empty) localhost bridge
 │   ├── linux/
 │   ├── mac/
 │   └── windows/
@@ -253,7 +252,14 @@ Both apps import the same `@jojo/service` package, so they report the same numbe
 rather than by agreement. "Verbatim" used to mean a `cp -R` copy that had drifted 813 lines; the
 copy is deleted and there is one source now. See `mobile/README.md`.
 
-**Not started:** the localhost bridge and the LLM client.
+**Not started:** the LLM client.
+
+**Deliberately not built:** a localhost bridge. One was designed and written —
+loopback HTTP, a session token, path confinement, five cross-compiled binaries —
+and then deleted, because documents only ever needed to survive a reload and be
+previewable and downloadable, and IndexedDB does all three in every browser jojo
+runs in. `docs/NO-SERVER.md` records what was measured, including why a deployed
+HTTPS page cannot reach `http://127.0.0.1` at all in current Chromium.
 
 Persistence shipped: a knowledge graph in IndexedDB on web and AsyncStorage on mobile, behind one
 `Driver` port. Dexie was rejected — see D1 in `docs/KG-ARCHITECTURE.md`.

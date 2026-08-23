@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/common/PageHeader'
 import { GlancePanel } from '@/components/dashboard/GlancePanel'
 import { OwedThisWeek } from '@/components/dashboard/OwedThisWeek'
-import { PipelineBreakdown } from '@/components/dashboard/PipelineBreakdown'
+import { StatsCard } from '@/components/dashboard/StatsCard'
 import { PriorityActions } from '@/components/dashboard/PriorityActions'
 import { RecentApplications } from '@/components/dashboard/RecentApplications'
 import { MONTH_LABELS } from '@/data/calendar'
@@ -70,7 +70,7 @@ export function Dashboard() {
         <OwedThisWeek />
         <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
           <RecentApplications />
-          <PipelineBreakdown />
+          <StatsCard />
         </div>
       </div>
     </>

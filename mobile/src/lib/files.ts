@@ -1,3 +1,4 @@
+import { mimeOfFile as sharedMime } from '@jojo/service/core/files'
 import type { FeatherName } from '@/lib/timeline-visuals'
 import type { FileKind } from '@jojo/service/data/vault'
 
@@ -42,9 +43,12 @@ export const FILE_KIND_ICON: Record<FileKind, FeatherName> = {
   doc: 'file-text',
   slides: 'monitor',
   note: 'edit-3',
+  // A captured posting. The globe says "this came off the web" — which is the
+  // one thing a reader needs before opening it, because it is the only kind
+  // here whose contents someone else wrote.
+  page: 'globe',
 }
 
-const extensionOf = (name: string) => name.split('.').pop()?.toLowerCase() ?? ''
 
 /**
  * The MIME type an ACTION_VIEW intent needs, from the name alone.
@@ -66,22 +70,11 @@ const extensionOf = (name: string) => name.split('.').pop()?.toLowerCase() ?? ''
  * whatever it has.
  */
 export function mimeOfFile(name: string): string {
-  return MIME_BY_EXT[extensionOf(name)] ?? '*/*'
+  // `*/*` rather than the shared default: Android honours
+  // `application/octet-stream` by offering no application at all, so the
+  // wildcard is the honest shrug that lets the phone offer whatever it has.
+  // The MAP itself now lives in `@jojo/service/core/files` — this file and the
+  // web app each had one, and they had already drifted.
+  return sharedMime(name, '*/*')
 }
 
-const MIME_BY_EXT: Record<string, string> = {
-  pdf: 'application/pdf',
-  doc: 'application/msword',
-  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  odt: 'application/vnd.oasis.opendocument.text',
-  rtf: 'application/rtf',
-  ppt: 'application/vnd.ms-powerpoint',
-  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  odp: 'application/vnd.oasis.opendocument.presentation',
-  txt: 'text/plain',
-  md: 'text/markdown',
-  csv: 'text/csv',
-  png: 'image/png',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-}

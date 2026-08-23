@@ -4,6 +4,7 @@ import {
   Briefcase,
   FileText,
   FileType,
+  Globe,
   Pencil,
   Presentation,
   StickyNote,
@@ -37,6 +38,10 @@ const kindIcon: Record<FileKind, LucideIcon> = {
   doc: FileText,
   slides: Presentation,
   note: StickyNote,
+  // A captured posting. The globe says "this came off the web" — which is the
+  // one thing a reader needs to know before opening it, because it is the only
+  // kind here whose contents someone else wrote.
+  page: Globe,
 }
 
 export function FileRow({

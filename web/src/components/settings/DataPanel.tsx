@@ -1,21 +1,75 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Download, Share2, Sparkles, Trash2, Upload } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { SettingRow } from '@/components/common/Field'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { pendingCopy } from '@/components/settings/data-confirm-copy'
-import { exportFilename } from '@/components/settings/export-name'
+import { BACKUP_ACCEPT, exportFilename } from '@/components/settings/export-name'
 import type { PendingData } from '@/components/settings/data-confirm-copy'
 import { Button } from '@/components/ui/button'
 import { useStoreAdmin } from '@jojo/service/react/use-admin'
 import { useBoot } from '@/lib/boot-context'
 import { transferPath } from '@/lib/links'
 import { clearSiteData } from '@/lib/storage'
+import { useBackup } from '@/lib/backup'
+import { restoreBackup } from '@/lib/restore'
+import { useVaultBlobs } from '@/lib/vault-blobs'
+import { readBackup, describeBackup } from '@jojo/service/core/backup'
+import type { RestorePlan } from '@jojo/service/core/backup'
+import { useKg } from '@jojo/service/react/kg-context'
 import { useToast } from '@/lib/toast-context'
 
 export function DataPanel() {
   const { exportJSON, clearAll, isEmpty, dataSet } = useStoreAdmin()
+  // The readable half is still `exportJSON`'s projections; the restorable half is
+  // the raw rows and the document bytes that `useBackup` adds around them.
+  const backup = useBackup(exportJSON)
+  const blobs = useVaultBlobs()
+  const { repo } = useKg()
+  /** A validated backup waiting for the user to confirm replacing everything. */
+  const [staged, setStaged] = useState<RestorePlan | null>(null)
+  const importRef = useRef<HTMLInputElement>(null)
+
+  /**
+   * Reads a chosen file and stages it. Nothing is replaced until the dialog is
+   * confirmed — a restore is not undoable, because `replaceAll` clears the
+   * journal along with everything else.
+   */
+  const onPickBackup = async (list: FileList | null) => {
+    const file = list?.[0]
+    if (!file) return
+    const read = readBackup(await file.text())
+    if (!read.ok) {
+      toast({
+        title: 'That file cannot be restored',
+        description: `${read.error.message}. Nothing has been changed.`,
+        tone: 'danger',
+      })
+      return
+    }
+    setStaged(read.value)
+  }
+
+  const onRestore = async () => {
+    if (staged === null) return
+    const plan = staged
+    setStaged(null)
+    const done = await restoreBackup(repo, blobs, plan, new Date().toISOString())
+    if (!done.ok) {
+      toast({ title: 'The restore failed', description: done.message, tone: 'danger' })
+      return
+    }
+    toast({
+      title: 'Restored',
+      description:
+        `${done.nodes} records and ${done.documents} document${done.documents === 1 ? '' : 's'} are back` +
+        (done.skipped > 0 ? `. ${done.skipped} could not be read and were left out.` : '.'),
+    })
+    // Reloaded because every projection, cache and epoch in the page describes
+    // the store that was just replaced.
+    window.location.reload()
+  }
   const { state, closeStore, chooseDataSet, busy } = useBoot()
   const { toast } = useToast()
   const [pending, setPending] = useState<PendingData | null>(null)
@@ -83,32 +137,37 @@ export function DataPanel() {
    * to look for, which is true in every case, rather than asserting an outcome
    * that is false in one.
    */
+  /**
+   * Writes a backup that can actually be restored.
+   *
+   * This used to write `exportJSON()` alone — the projections, which are
+   * denormalised views with no record of the nodes and edges behind them, and
+   * therefore readable but not restorable. Worse, the documents were not in it
+   * at all, so the one file a person was told was "the only copy of your records
+   * outside this device" did not contain their CV.
+   *
+   * The readable half is still in there, under `readable`, so the file opens
+   * into something recognisable.
+   */
   const onExport = () => {
     const name = exportFilename(new Date())
-    let href: string | null = null
-    try {
-      const blob = new Blob([exportJSON()], { type: 'application/json' })
-      href = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = href
-      anchor.download = name
-      anchor.click()
-    } catch (error) {
+    void backup.download(name).then((started) => {
+      if (!started) {
+        toast({
+          title: 'The backup could not be written',
+          description:
+            'Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.',
+          tone: 'danger',
+        })
+        return
+      }
       toast({
-        title: 'The export could not be written',
-        description: `${error instanceof Error ? error.message : String(error)}. Your records are unchanged, and nothing was saved to your downloads.`,
-        tone: 'danger',
+        title: 'Backup started',
+        // Named, not asserted. The click is the last thing this page can
+        // observe — the browser's decision after it fires no event — so what is
+        // said is what to look for rather than that it arrived.
+        description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
       })
-      return
-    } finally {
-      // In a `finally` so a throw between minting the URL and clicking the
-      // anchor still releases it. A Blob URL pins the whole store in memory
-      // until it is revoked.
-      if (href !== null) URL.revokeObjectURL(href)
-    }
-    toast({
-      title: 'Export started',
-      description: `Look for ${name} in your downloads. If it is not there, your browser blocked it — check its download settings, because this file is the only copy of your records outside this device.`,
     })
   }
 
@@ -227,8 +286,25 @@ export function DataPanel() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={onExport}>
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Export a backup
+            Download a backup
           </Button>
+          <Button variant="outline" size="sm" onClick={() => importRef.current?.click()}>
+            <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
+            Restore a backup
+          </Button>
+          <input
+            ref={importRef}
+            type="file"
+            accept={BACKUP_ACCEPT}
+            className="hidden"
+            onChange={(e) => {
+              void onPickBackup(e.target.files)
+              // Cleared so choosing the SAME file twice fires change again — a
+              // restore that silently does nothing the second time is worse than
+              // one that fails.
+              e.target.value = ''
+            }}
+          />
           <Button
             variant="outline"
             size="sm"
@@ -335,7 +411,7 @@ export function DataPanel() {
               jojo on the machine at all. */}
           <SettingRow
             label="Clear browser storage"
-            description="Empties everything this site has stored in your browser — your records and their database, preferences, caches and cookies — then reloads jojo as if it were new."
+            description="Empties everything this site has stored in your browser — your records and their database, every document you have attached, preferences, caches and cookies — then reloads jojo as if it were new. Documents are only here; download them first if you want to keep them."
             control={
               <Button
                 variant="outline"
@@ -380,6 +456,25 @@ export function DataPanel() {
         confirmLabel={pending ? copy[pending].confirm : 'Continue'}
         tone="danger"
         onConfirm={applyPending}
+      />
+
+      {/* Separate from the dialog above because what it must say is different:
+          that one asks about data the user can see, this one names what is in a
+          file they cannot. `describeBackup` is that sentence. */}
+      <ConfirmDialog
+        open={staged !== null}
+        onOpenChange={(open) => {
+          if (!open) setStaged(null)
+        }}
+        title="Replace everything with this backup?"
+        description={
+          staged === null
+            ? ''
+            : `That file holds ${describeBackup(staged)}. Restoring replaces every record and every document you have now, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.`
+        }
+        confirmLabel="Replace everything"
+        tone="danger"
+        onConfirm={() => void onRestore()}
       />
     </>
   )

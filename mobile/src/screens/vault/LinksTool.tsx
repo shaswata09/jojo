@@ -4,6 +4,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
+import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { buildRecordMenu } from '@/components/common/recordMenu'
 import { BucketFilter } from '@/components/ui/BucketFilter'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -29,6 +30,7 @@ import { displayUrl, hrefOf, normalizeUrl } from '@/lib/urls'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
+import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 
 const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) as Record<
@@ -37,7 +39,9 @@ const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) a
 >
 
 /** Postings, department pages, people and guides — anything to come back to. */
-export function LinksTool() {
+export function LinksTool({ focus }: { focus?: string }) {
+  // Only the arrival highlight needs the palette here.
+  const c = useColors()
   const { links, addLink, updateLink, removeLink } = useVault()
   const { byId } = useApplications()
   const { matches, selected, clearSelected } = useLabels()
@@ -48,6 +52,9 @@ export function LinksTool() {
   const [category, setCategory] = useState<LinkCategory | 'all'>('all')
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<VaultLink | 'new' | null>(null)
+  // The row's own way to file this under a job — the same action the files
+  // list carries, because the gap was identical here.
+  const [filing, setFiling] = useState<VaultLink | null>(null)
   const [menuFor, setMenuFor] = useState<VaultLink | null>(null)
 
   // The employer is part of the haystack — searching "Rice" should surface the
@@ -96,6 +103,21 @@ export function LinksTool() {
       title: 'Link duplicated',
       description: copyRecord.title,
       action: { label: 'Undo', onPress: () => removeLink(copyRecord.id) },
+    })
+  }
+
+  const onFileUnder = (record: VaultLink, applicationId: string | undefined) => {
+    const before = record.applicationId
+    updateLink(record.id, { applicationId })
+    setFiling(null)
+    const now = applicationId ? byId.get(applicationId) : undefined
+    toast({
+      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      description: record.title,
+      action: {
+        label: 'Undo',
+        onPress: () => updateLink(record.id, { applicationId: before }),
+      },
     })
   }
 
@@ -182,7 +204,7 @@ export function LinksTool() {
             return (
               <View key={l.id}>
                 {i > 0 ? <Divider /> : null}
-                <View style={styles.row}>
+                <View style={[styles.row, focus === l.id && { backgroundColor: c.accentSoft }]}>
                   <Pressable
                     accessibilityRole="link"
                     accessibilityLabel={`Open ${l.title}`}
@@ -230,6 +252,15 @@ export function LinksTool() {
         )}
       </Panel>
 
+      <ApplicationPickerSheet
+        open={filing !== null}
+        value={filing?.applicationId}
+        onClose={() => setFiling(null)}
+        onChange={(id) => {
+          if (filing) onFileUnder(filing, id)
+        }}
+      />
+
       <MenuSheet
         open={menuFor !== null}
         onClose={() => setMenuFor(null)}
@@ -241,6 +272,14 @@ export function LinksTool() {
                 onEdit: () => setEditing(menuFor),
                 onDuplicate: () => onDuplicate(menuFor),
                 extra: [
+                  {
+                    id: 'file-under',
+                    label: menuFor.applicationId
+                      ? 'Change application'
+                      : 'File under an application',
+                    icon: 'briefcase',
+                    onPress: () => setFiling(menuFor),
+                  },
                   {
                     id: 'open',
                     label: 'Open link',

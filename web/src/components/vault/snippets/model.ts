@@ -6,12 +6,25 @@ export type Draft = {
   title: string
   tag: SnippetTag
   html: string
+  /** The job it is filed under, or none. */
+  applicationId?: string
   /** Staged, not written on click — see `KeywordPicker`. Cancel discards them. */
   keywords: string[]
 }
 
 /** What the draft looked like when it was opened, for the dirty check. */
-export type Clean = { title: string; tag: SnippetTag; body: string; keywords: string }
+export type Clean = {
+  title: string
+  tag: SnippetTag
+  body: string
+  keywords: string
+  /**
+   * In the dirty check because it is an edit like any other. Left out, filing a
+   * snippet under a job and closing would discard it with no warning — the
+   * editor would believe nothing had changed.
+   */
+  applicationId?: string
+}
 
 /** Order-insensitive, because picking A then B is the same set as B then A. */
 export const keywordKey = (ids: readonly string[]) => [...ids].sort().join(',')

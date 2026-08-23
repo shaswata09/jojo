@@ -1,8 +1,12 @@
+import { Link } from 'react-router'
 import type { Ref } from 'react'
 import { CopyPlus, Pencil, Trash2 } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { CopyFeedback } from '@/components/common/CopyFeedback'
 import { LabelChips, LabelPicker } from '@/components/common/LabelPicker'
+import { displayName } from '@/data/seed'
+import type { Application } from '@/data/seed'
+import { appPath } from '@/lib/links'
 import { Button } from '@/components/ui/button'
 import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
 import { SNIPPET_TAGS } from '@/data/vault'
@@ -11,6 +15,7 @@ import { cn } from '@/lib/utils'
 
 export function SnippetCard({
   snippet: s,
+  related,
   cardRef,
   focused,
   active,
@@ -23,6 +28,8 @@ export function SnippetCard({
   onDelete,
 }: {
   snippet: Snippet
+  /** The application it is filed under — the record, so `appPath` has the slug. */
+  related?: Application
   /** Set on the focused card only, so the tool can scroll it into view. */
   cardRef?: Ref<HTMLLIElement>
   /** Arrived here from a link that named this card — see `focus` in links.ts. */
@@ -71,6 +78,18 @@ export function SnippetCard({
             <Chip shape="capsule" tone="gray">
               {s.tag}
             </Chip>
+            {/* The job it is filed under, where the file and link rows put the
+                same fact. Without it the tag was only visible by opening the
+                editor, which is the state the application's own page could not
+                explain. */}
+            {related ? (
+              <Link
+                to={appPath(related)}
+                className="truncate text-xs text-text-3 underline-offset-2 transition-colors hover:text-accent hover:underline"
+              >
+                {displayName(related)}
+              </Link>
+            ) : null}
             <LabelChips recordId={s.id} />
           </span>
         </div>

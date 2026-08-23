@@ -1,5 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { AskBox } from '@/components/graph/AskBox'
+import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { Segment } from '@/components/common/Segment'
 import type { Graph, GraphNode, GraphNodeType } from '@/lib/graph/model'
 import { describeQuery } from '@/lib/graph/pseudo-query'
@@ -55,6 +57,8 @@ export function QueryPanel({
   result,
   selectedId,
   onSelectNode,
+  onAsk,
+  onAskClear,
 }: {
   graph: Graph
   /** Null until the first question is asked, so the canvas starts undimmed. */
@@ -63,6 +67,9 @@ export function QueryPanel({
   result: QueryResult | null
   selectedId: string | null
   onSelectNode: (id: string) => void
+  /** A model-written query's answer, which takes over the table and the canvas. */
+  onAsk: (answer: GraphQueryResult, asked: string) => void
+  onAskClear: () => void
 }) {
   const fieldId = useId()
   const [mode, setMode] = useState<'pattern' | 'path'>('pattern')
@@ -124,9 +131,22 @@ export function QueryPanel({
 
   return (
     <Panel className="min-w-0">
-      <PanelTitle hint="A preview of the query view — illustrative, not a language jojo runs">
+      <PanelTitle
+        hint={
+          // The old hint said this was "illustrative, not a language jojo runs".
+          // Half of that was always wrong — the engine has run these queries
+          // since the builder shipped — and the other half stopped being true
+          // when a model learned to write one. What IS illustrative is the
+          // pseudo-SQL below, and that line now says so where it appears.
+          'Ask in a sentence, or build the question by hand'
+        }
+      >
         Ask the graph
       </PanelTitle>
+
+      <div className="mb-4">
+        <AskBox onAnswer={onAsk} onClear={onAskClear} />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-5">
         <div className="min-w-0 space-y-3">
@@ -181,7 +201,8 @@ export function QueryPanel({
               {describeQuery(graph, active)}
             </pre>
             <p className="mt-1 text-xs text-text-3">
-              Illustrative — it shows the shape of the question, and nothing here parses it.
+              The shape of the question, in SQL's words for readability. The query that actually
+              runs is the structured one above it — nothing parses this line.
             </p>
           </div>
         </div>

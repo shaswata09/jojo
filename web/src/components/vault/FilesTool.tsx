@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { displayName } from '@/data/seed'
 import { FileText, Plus, Upload } from 'lucide-react'
@@ -8,8 +8,10 @@ import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { emptyStateFor } from '@/components/vault/empty-state'
 import { matchesQuery } from '@/components/vault/search'
+import { CaptureInbox } from '@/components/vault/CaptureInbox'
 import { FileViewer } from '@/components/vault/FileViewer'
 import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
+import { useVaultBlobs } from '@/lib/vault-blobs'
 import { FileRow } from '@/components/vault/files/FileRow'
 import type { EditableField } from '@/components/vault/files/FileRow'
 import { sortDrop } from '@/components/vault/files/intake'
@@ -26,14 +28,20 @@ import { cn } from '@/lib/utils'
 /**
  * Read-later files, in buckets.
  *
- * Adding is real but stays on this machine: only the name, size and type of a
- * dropped file are read, and the `File` itself is kept in memory for as long as
- * the tab lives. Nothing is uploaded and no contents are parsed.
+ * Adding is real and stays on this machine: the dropped file's bytes are stored
+ * in IndexedDB (`lib/vault-blobs`) and survive closing the tab. Nothing is
+ * uploaded and no contents are parsed.
  *
- * Preview opens the document beside the list rather than in a new tab. A file
- * dropped this session previews for real — `URL.createObjectURL` hands the
- * actual bytes to the browser's own PDF reader — while the rows that shipped
- * with the app have no bytes behind them and get a labelled placeholder.
+ * This paragraph used to say the opposite — "only the name, size and type of a
+ * dropped file are read, and the `File` itself is kept in memory for as long as
+ * the tab lives" — which was true and was the bug: the record naming a document
+ * outlived the document. A comment describing a design that has been replaced is
+ * worse than none, because it is the thing a reader trusts.
+ *
+ * Preview opens the document beside the list rather than in a new tab, from the
+ * stored bytes, on any visit rather than only the one that filed it. A row still
+ * gets a labelled placeholder when it genuinely has no document — a demo record,
+ * a page captured on another device, or a write that failed.
  */
 export function FilesTool({ focus }: { focus?: string }) {
   const [bucket, setBucket] = useState<FileBucket | 'all'>('all')
@@ -49,7 +57,23 @@ export function FilesTool({ focus }: { focus?: string }) {
    * a delete can be undone, and a record that came back with a dead preview
    * would not be an undo.
    */
-  const [blobs, setBlobs] = useState<Record<string, File>>({})
+  /**
+   * Bytes, in IndexedDB rather than in React state.
+   *
+   * This was `useState<Record<string, File>>({})`: the dropped file was read and
+   * previewed, and then discarded when the tab closed, leaving the record that
+   * named it behind. For a vault whose whole job is the documents tailored to
+   * each application, that is the one thing it must not do.
+   */
+  const blobs = useVaultBlobs()
+  /**
+   * The open document's bytes.
+   *
+   * Loaded when the viewer opens rather than held for every row: the list can
+   * hold hundreds of records and reading them all to render a list would pull
+   * every document into memory to show a filename.
+   */
+  const [openBlob, setOpenBlob] = useState<File | null>(null)
 
   const {
     matches,
@@ -95,8 +119,29 @@ export function FilesTool({ focus }: { focus?: string }) {
   // cannot file something into a list that is not on screen.
   const target: FileBucket = bucket === 'all' ? 'To read' : bucket
 
+  useEffect(() => {
+    if (openId === null) {
+      setOpenBlob(null)
+      return
+    }
+    let alive = true
+    void blobs.get(openId).then((file) => {
+      // Guarded: the viewer can be closed, or another row opened, while a large
+      // document is still being read, and the late answer would otherwise
+      // replace what is now on screen.
+      if (alive) setOpenBlob(file)
+    })
+    return () => {
+      alive = false
+    }
+  }, [openId, blobs])
+
   const addFiles = (list: FileList | null) => {
-    const { total, picked, fresh, folders, skipped } = sortDrop(list, files)
+    // `blobs.has` so a record left without its document — a write refused on
+    // quota — is refillable rather than rejected as a duplicate of itself.
+    const { total, picked, fresh, refill, folders, skipped } = sortDrop(list, files, (f) =>
+      blobs.has(f.id),
+    )
     if (total === 0) return
 
     if (picked.length === 0) {
@@ -108,6 +153,26 @@ export function FilesTool({ focus }: { focus?: string }) {
       return
     }
 
+    // Refills first: they add no rows, so the toast below can still speak about
+    // what was newly filed without counting them twice.
+    for (const { file, record } of refill) {
+      void blobs.put(record.id, file).then((stored) => {
+        toast(
+          stored
+            ? {
+                title: `${file.name} is attached again`,
+                description: 'The row was already here without its document. It has one now.',
+              }
+            : {
+                title: `${file.name} still could not be saved`,
+                description:
+                  'This browser refused to store it again — its storage is probably still full.',
+                tone: 'danger',
+              },
+        )
+      })
+    }
+
     const added: string[] = []
     for (const file of fresh) {
       const record = addFile({
@@ -117,10 +182,26 @@ export function FilesTool({ focus }: { focus?: string }) {
         size: sizeLabel(file.size),
       })
       added.push(record.id)
-      setBlobs((prev) => ({ ...prev, [record.id]: file }))
+      // Not awaited, so the row appears immediately — a 5 MB write measured 15 ms
+      // but a slow disk or a full quota can take much longer, and blocking the
+      // drop on it would make filing feel broken.
+      //
+      // The RESULT is not discarded, though. It used to be, and the toast said
+      // "added" either way: a write that failed on quota left a row on screen
+      // naming a document that was never stored, which is the failure this whole
+      // feature exists to end. A refusal now says so.
+      void blobs.put(record.id, file).then((stored) => {
+        if (stored) return
+        toast({
+          title: `${file.name} was filed, but not saved`,
+          description:
+            'The row is here, but this browser refused to store the document — usually because its storage is full. Free some space and drop the same file in again; it will attach to this row rather than making a second one.',
+          tone: 'danger',
+        })
+      })
     }
 
-    if (fresh.length === 0) {
+    if (fresh.length === 0 && refill.length === 0) {
       toast({
         title: skipped === 1 ? 'That file is already here' : 'Those files are already here',
         description: 'A file of the same name is already in the vault.',
@@ -137,10 +218,18 @@ export function FilesTool({ focus }: { focus?: string }) {
       title: `${named} added`,
       description: hidden
         ? `Filed under ${target} — hidden while the keyword filter is on.`
-        : `Filed under ${target}. Name and size only — nothing was uploaded.`,
+        : `Filed under ${target} and saved in this browser. Nothing was uploaded anywhere.`,
       action: {
         label: 'Undo',
-        onClick: () => added.forEach((id) => removeFile(id)),
+        onClick: () =>
+          added.forEach((id) => {
+            removeFile(id)
+            // The second place a record can go away, and it needs the same
+            // treatment as `onDelete`: undoing an add that has already stored
+            // its bytes would otherwise leave them in IndexedDB with no record
+            // pointing at them and no way to reach them again.
+            void blobs.remove(id)
+          }),
       },
     })
     if (skipped > 0) {
@@ -240,17 +329,35 @@ export function FilesTool({ focus }: { focus?: string }) {
     const stashed = labelIdsOf(file.id)
     const { restore } = removeFile(file.id)
     removeRecord(file.id)
+    // The stored copy goes too. Without this the record disappears and its bytes
+    // stay in IndexedDB for good — invisible, unreachable, and still counted
+    // against a quota the user cannot get back.
+    void blobs.remove(file.id)
     if (openId === file.id) setOpenId(null)
     if (editing?.id === file.id) setEditing(null)
 
     toast({
       title: `${file.name} deleted`,
-      description: 'The row, its note and its keywords go. The file on your computer is untouched.',
+      description:
+        'The row, its keywords and jojo’s copy of the document all go. The original on your computer is untouched.',
       tone: 'danger',
       action: {
         label: 'Undo',
         onClick: () => {
           restore()
+          // The document comes back with the row — and if it cannot, say so.
+          // An Undo that restores a record whose document has gone is worse
+          // than no Undo, because the row looks intact and the loss is only
+          // discovered later, by someone opening it.
+          void blobs.restore(file.id).then((came) => {
+            if (came) return
+            toast({
+              title: `${file.name} came back without its document`,
+              description:
+                'The row and its keywords are restored, but the stored copy could not be. Drop the file in again to attach it.',
+              tone: 'danger',
+            })
+          })
           // Guarded: `setRecord` with an empty list files the record as carrying
           // no keywords rather than leaving it unmentioned.
           if (stashed.length > 0) setRecord(file.id, stashed)
@@ -318,6 +425,11 @@ export function FilesTool({ focus }: { focus?: string }) {
           }}
         />
 
+        {/* Above the toolbar rather than in it: this is about documents that
+            are not in the list yet, so a control that filters the list is the
+            wrong neighbourhood. It renders nothing when nothing is waiting. */}
+        <CaptureInbox />
+
         {files.length > 0 ? (
           <VaultToolbar
             filter={
@@ -359,7 +471,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                 rowRef={f.id === focus ? focusedRow : undefined}
                 related={f.applicationId ? byId.get(f.applicationId) : undefined}
                 editingField={editing?.id === f.id ? editing.field : undefined}
-                onDevice={Boolean(blobs[f.id])}
+                onDevice={blobs.has(f.id)}
                 previewing={openId === f.id}
                 onEdit={(field) => setEditing({ id: f.id, field })}
                 onCancelEdit={() => setEditing(null)}
@@ -402,9 +514,9 @@ export function FilesTool({ focus }: { focus?: string }) {
       {open ? (
         <FileViewer
           file={open}
-          // Present only for a file added this session — that is what turns the
-          // placeholder into the actual document.
-          blob={blobs[open.id]}
+          // The stored bytes, once they have been read back. Absent for a seed
+          // row, which falls back to the generated placeholder.
+          blob={openBlob ?? undefined}
           onClose={() => setOpenId(null)}
         />
       ) : null}

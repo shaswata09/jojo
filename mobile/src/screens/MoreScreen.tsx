@@ -193,12 +193,6 @@ export function MoreScreen() {
               status: storageStatus(health),
               icon: 'database' as const,
             },
-            {
-              label: 'Localhost bridge',
-              meta: 'no bridge',
-              status: 'off' as const,
-              icon: 'link' as const,
-            },
             { label: 'Local model', meta: 'offline', status: 'off' as const, icon: 'cpu' as const },
             {
               label: 'Transfer',

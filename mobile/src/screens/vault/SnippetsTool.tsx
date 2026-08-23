@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
+import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { buildRecordMenu } from '@/components/common/recordMenu'
 import { BucketFilter } from '@/components/ui/BucketFilter'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -23,6 +24,7 @@ import { useApplications, useVault } from '@/lib/store-context'
 import { useCopy } from '@/lib/use-copy'
 import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
+import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 
 const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record<SnippetTag, string>
@@ -34,8 +36,12 @@ const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record
  * overflow onto the card. Everything else — edit, duplicate, retag, delete —
  * lives behind the ⋯ in the order every list in the app uses.
  */
-export function SnippetsTool() {
+export function SnippetsTool({ focus }: { focus?: string }) {
+  // Only the arrival highlight needs the palette here.
+  const c = useColors()
   const { snippets, addSnippet, updateSnippet, removeSnippet } = useVault()
+  // Named for the filing toast; the picker sheet reads the list itself.
+  const { byId } = useApplications()
   const { matches, selected, clearSelected } = useLabels()
   const { toast } = useToast()
   const { copy, isCopied } = useCopy()
@@ -43,6 +49,9 @@ export function SnippetsTool() {
   const [tag, setTag] = useState<SnippetTag | 'all'>('all')
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<Snippet | 'new' | null>(null)
+  // The row's own way to file this under a job — the same action the files
+  // list carries, because the gap was identical here.
+  const [filing, setFiling] = useState<Snippet | null>(null)
   const [menuFor, setMenuFor] = useState<Snippet | null>(null)
 
   const pool = useMemo(
@@ -75,6 +84,21 @@ export function SnippetsTool() {
       title: 'Snippet duplicated',
       description: made.title,
       action: { label: 'Undo', onPress: () => removeSnippet(made.id) },
+    })
+  }
+
+  const onFileUnder = (record: Snippet, applicationId: string | undefined) => {
+    const before = record.applicationId
+    updateSnippet(record.id, { applicationId })
+    setFiling(null)
+    const now = applicationId ? byId.get(applicationId) : undefined
+    toast({
+      title: now ? `Filed under ${displayName(now)}` : 'Unfiled',
+      description: record.title,
+      action: {
+        label: 'Undo',
+        onPress: () => updateSnippet(record.id, { applicationId: before }),
+      },
     })
   }
 
@@ -152,7 +176,10 @@ export function SnippetsTool() {
         </Panel>
       ) : (
         rows.map((snippet) => (
-          <Panel key={snippet.id}>
+          <Panel
+            key={snippet.id}
+            style={focus === snippet.id ? { borderColor: c.accentBorder } : undefined}
+          >
             <View style={styles.head}>
               <View style={s.fill}>
                 <Txt size="base" weight="medium">
@@ -187,6 +214,15 @@ export function SnippetsTool() {
         ))
       )}
 
+      <ApplicationPickerSheet
+        open={filing !== null}
+        value={filing?.applicationId}
+        onClose={() => setFiling(null)}
+        onChange={(id) => {
+          if (filing) onFileUnder(filing, id)
+        }}
+      />
+
       <MenuSheet
         open={menuFor !== null}
         onClose={() => setMenuFor(null)}
@@ -197,6 +233,16 @@ export function SnippetsTool() {
             ? buildRecordMenu({
                 onEdit: () => setEditing(menuFor),
                 onDuplicate: () => onDuplicate(menuFor),
+                extra: [
+                  {
+                    id: 'file-under',
+                    label: menuFor.applicationId
+                      ? 'Change application'
+                      : 'File under an application',
+                    icon: 'briefcase',
+                    onPress: () => setFiling(menuFor),
+                  },
+                ],
                 move: {
                   label: 'Tag',
                   options: SNIPPET_TAGS,

@@ -673,8 +673,12 @@ The `by-type-updated` index was **not** added. Nothing measured asked for it.
 
 **The owner's boundaries, restated:**
 
-- **No server.** Nothing in `src/kg/**` may `fetch`. The driver interface has no remote implementation and no place for one.
-- **No physical file bytes.** File *records* are graph data; `props` stays binary-free as a documented invariant. No `blobs` store, no `File` in the graph. `data/files.ts:12-13` — *"Nothing here reads file CONTENT"* — is the existing statement of this and it holds.
+- **No server.** Nothing in `src/kg/**` may `fetch`. The driver interface has no remote implementation and no place for one. **Still true, and re-confirmed the hard way:** a localhost helper process was designed and built to give browsers without a directory picker somewhere to put documents, then deleted unbuilt-upon once IndexedDB proved sufficient. `docs/NO-SERVER.md` records what was measured, including why a deployed HTTPS page cannot reach `http://127.0.0.1` at all in current Chromium.
+- **~~No physical file bytes.~~ REVISED — see below.** The graph half still holds: file *records* are graph data, `props` stays binary-free, and no `File` goes in the graph. What changed is the second half. jojo now stores document BYTES, in a separate IndexedDB database (`jojo-files`) behind the `FileStore` port — never in the graph, never in `props`, and never through the `Driver`. The two are deliberately different databases so the graph's migrations and a document's bytes cannot wedge each other.
+
+  Revised because the boundary cost the feature its point: a user attaches a CV, a cover letter and a research statement tailored to one application, and a record naming a document the app cannot show them is a filing cabinet full of labels. The bytes were already being read and previewed from React state — they were simply discarded when the tab closed, which is the worst of both readings of this rule. See `docs/NO-SERVER.md` for the alternatives measured and rejected, and `web/src/kg/storage/idb-file-store.ts` for what replaced it.
+
+  `data/files.ts` still reads no file content, and the seed fixtures still carry none.
 - **No cross-device transfer.** Multi-*tab* is in scope (same origin, same disk, real deadlock risk). Cross-device is not: no sync protocol, no merge, no CRDT, no vector clocks. The persisted `ops` log is left as the correct seam and nothing more.
 - **No AI.** No manifest generation, no tool-calling adapter, no embeddings, no vLLM client. The three properties that keep the seam free — `run` never imports React, `input` stays introspectable, failures are structured `ToolError[]` — are things you want anyway.
 

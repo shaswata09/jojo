@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { kindOfFile, sizeLabel } from './files'
+import { kindOfFile, sizeLabel, mimeOfFile } from './files'
 
 describe('kindOfFile', () => {
   it('reads the extension, case-insensitively', () => {
@@ -67,5 +67,32 @@ describe('sizeLabel', () => {
     expect(sizeLabel(1024)).toBe('1 KB')
     expect(sizeLabel(1024 * 1024 - 1)).toBe('1024 KB')
     expect(sizeLabel(1024 * 1024)).toBe('1.0 MB')
+  })
+})
+
+describe('mimeOfFile', () => {
+  it('knows the types both apps needed, which neither map knew alone', () => {
+    // web's copy knew webp and svg; mobile's knew odt, rtf and pptx. One map now.
+    expect(mimeOfFile('CV.pdf')).toBe('application/pdf')
+    expect(mimeOfFile('letter.odt')).toBe('application/vnd.oasis.opendocument.text')
+    expect(mimeOfFile('deck.pptx')).toBe(
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    )
+    expect(mimeOfFile('shot.webp')).toBe('image/webp')
+    expect(mimeOfFile('logo.svg')).toBe('image/svg+xml')
+  })
+
+  it('is case- and path-insensitive, because filenames are neither', () => {
+    expect(mimeOfFile('CV.PDF')).toBe('application/pdf')
+    expect(mimeOfFile('Documents/My CV.Pdf')).toBe('application/pdf')
+    expect(mimeOfFile('a.b.c.pdf')).toBe('application/pdf')
+  })
+
+  it("lets the caller choose the fallback, because the platforms disagree", () => {
+    // Android offers no application at all for octet-stream, so the phone asks
+    // for the wildcard; a browser building a Blob needs a real type.
+    expect(mimeOfFile('mystery.zzz')).toBe('application/octet-stream')
+    expect(mimeOfFile('mystery.zzz', '*/*')).toBe('*/*')
+    expect(mimeOfFile('noextension')).toBe('application/octet-stream')
   })
 })

@@ -35,13 +35,6 @@ const LAYERS: Layer[] = [
     active: true,
   },
   {
-    icon: 'hard-drive',
-    name: '+ Localhost bridge',
-    requires: 'A small companion server',
-    gives: 'Would mirror to a JSON file on disk and keep submission snapshots',
-    active: false,
-  },
-  {
     icon: 'cpu',
     name: '+ Local model',
     requires: 'vLLM, Ollama or LM Studio',

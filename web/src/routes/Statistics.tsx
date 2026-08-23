@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel, PanelScroll, PanelTitle } from '@/components/common/Panel'
 import { ApplicationFrequency } from '@/components/dashboard/ApplicationFrequency'
+import { HeadlineRatesBody } from '@/components/dashboard/HeadlineRates'
 import { ApplicationSources } from '@/components/dashboard/ApplicationSources'
 import { SearchHealth } from '@/components/dashboard/SearchHealth'
 import { Button } from '@/components/ui/button'
@@ -41,7 +42,7 @@ export function Statistics() {
   const { all } = useApplications()
   const { open } = useDialogs()
 
-  const { sent, kpis, funnel, outcomes, roles } = useMemo(() => statsFor(all), [all])
+  const { sent, funnel, outcomes, roles } = useMemo(() => statsFor(all), [all])
 
   const outcomeToggle = useSeriesToggle(outcomes.map((o) => o.label))
   const visibleOutcomes = outcomes.filter((o) => !outcomeToggle.isHidden(o.label))
@@ -104,29 +105,18 @@ export function Statistics() {
         }
       />
 
-      {/* KPI row — headline numbers, so stat tiles rather than a chart.
-          Rendered only once something has actually been sent: a rate over an
-          empty denominator is a made-up number, and the funnel panel below
-          carries the one explanation for the whole page. */}
+      {/* The tiles moved to `dashboard/HeadlineRates` when the dashboard's
+          StatsCard needed the same four. They were written inline here and could
+          only ever appear here; a second copy would have been a second
+          definition of what "reply rate" means.
+
+          `showTypical` stays this page's business: the sample comparison is a
+          reading aid for a page about figures, and the dashboard card has no
+          room for a second number under each one. */}
       {sent > 0 ? (
         <section>
           <h2 className="mb-3.5 text-base font-medium">Headline rates</h2>
-          <div className="grid grid-cols-2 gap-3 sm:gap-3.5 lg:grid-cols-4">
-            {kpis.map((k) => (
-              <div key={k.label} className="surface rounded-lg px-4 py-3.5 sm:px-5 sm:py-4">
-                <div className="text-xs text-text-2">{k.label}</div>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold">{k.value}</span>
-                  {/* No arrow and no colour. This slot used to hold "+6 points"
-                      under an up arrow — a claim about change over time that
-                      the store has no history to support, painted in the two
-                      colours reserved for overdue and due-soon work. */}
-                  {showTypical ? <span className="text-xs text-text-3">{k.typical}</span> : null}
-                </div>
-                <div className="mt-1 text-xs text-text-3">{k.note}</div>
-              </div>
-            ))}
-          </div>
+          <HeadlineRatesBody showTypical={showTypical} />
         </section>
       ) : null}
 

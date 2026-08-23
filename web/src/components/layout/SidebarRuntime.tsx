@@ -5,8 +5,11 @@ import type { StoreStatus } from '@jojo/service/react/status-context'
 import { useBoot } from '@/lib/boot-context'
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
-import { Cable, Cpu, Database, Share2 } from 'lucide-react'
+import { Cpu, PlugZap, Share, Waypoints } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
+import { listModels } from '@/lib/llm'
+import { useModelSettings } from '@/lib/model-settings-context'
 
 type RuntimeTile = {
   label: string
@@ -39,7 +42,11 @@ function storageTile(status: StoreStatus, interrupted: boolean): RuntimeTile {
   // Storage opens the Graph rather than Settings. The tile says where your
   // records are being held, and the graph is the honest answer to that — the
   // records themselves, drawn. Settings only has a notice about the same thing.
-  const tile = { label: 'Browser storage', icon: Database, to: graphPath() }
+  // `Waypoints` — nodes joined by edges — rather than the `Database` cylinder
+  // this used to carry. The tile opens the GRAPH, and the graph is what it is
+  // reporting on: a database drum says "a table somewhere", which is neither
+  // what jojo stores nor where the click lands.
+  const tile = { label: 'Browser storage', icon: Waypoints, to: graphPath() }
 
   if (interrupted || status.boot.phase === 'unavailable' || status.health.state === 'off') {
     return {
@@ -83,27 +90,125 @@ function storageTile(status: StoreStatus, interrupted: boolean): RuntimeTile {
  * to find out whether their data is safe. Each now states the real state, and
  * the tile still opens Settings, where each is configured.
  */
-function runtimeTiles(status: StoreStatus, interrupted: boolean): RuntimeTile[] {
+/** What the model tile can be. `probing` only ever shows for the first moment. */
+type ModelState = 'unset' | 'probing' | 'connected' | 'unreachable'
+
+/**
+ * The model tile, answered by asking the model rather than by reading a setting.
+ *
+ * It was the constant `{ meta: 'offline', status: 'off' }`, which was true when
+ * nothing could reach a model and became false the moment something could.
+ *
+ * Configured is NOT connected, and the difference is the whole point of the
+ * tile: an endpoint saved months ago on a laptop whose Ollama is not running
+ * would report "connected" on a settings read, and a person would believe the
+ * assistant was available until it failed. So this probes — `listModels` is the
+ * same call the Test button makes.
+ *
+ * Once per endpoint, not on a timer. This is a 50px tile, not a monitor, and a
+ * poll every few seconds against someone's localhost for a status nobody is
+ * watching is a cost with no reader. It re-probes when the endpoint changes,
+ * which is the moment the answer can actually differ.
+ */
+function useModelState(): ModelState {
+  const { settings } = useModelSettings()
+  const endpoint = settings.endpoint.trim()
+  const [state, setState] = useState<ModelState>(endpoint === '' ? 'unset' : 'probing')
+
+  useEffect(() => {
+    if (endpoint === '') {
+      setState('unset')
+      return
+    }
+    setState('probing')
+    // Aborted on unmount and on an endpoint change, so a slow answer for the
+    // previous endpoint cannot arrive and overwrite the current one.
+    const stop = new AbortController()
+    void listModels(endpoint, stop.signal)
+      .then((result) => {
+        if (!stop.signal.aborted) setState(result.ok ? 'connected' : 'unreachable')
+      })
+      .catch(() => {
+        if (!stop.signal.aborted) setState('unreachable')
+      })
+    return () => stop.abort()
+  }, [endpoint])
+
+  return state
+}
+
+function modelTile(state: ModelState): RuntimeTile {
+  const tile = { label: 'Local model', to: settingsPath() }
+  switch (state) {
+    case 'connected':
+      return {
+        ...tile,
+        meta: 'connected',
+        status: 'on',
+        // The one tile that changes its icon as well as its dot. A plug with
+        // current in it reads at 50px where a second processor chip does not.
+        icon: PlugZap,
+        detail: 'a local model answered — the assistant and scout scoring can use it',
+      }
+    case 'unreachable':
+      return {
+        ...tile,
+        meta: 'no answer',
+        status: 'warn',
+        icon: Cpu,
+        detail: 'a model is configured but did not answer — check it is running',
+      }
+    case 'probing':
+      return { ...tile, meta: 'checking', status: 'off', icon: Cpu, detail: 'asking the model whether it is there' }
+    default:
+      return {
+        ...tile,
+        meta: 'not set up',
+        status: 'off',
+        icon: Cpu,
+        detail: 'no model endpoint yet — Settings is where one goes',
+      }
+  }
+}
+
+function runtimeTiles(status: StoreStatus, interrupted: boolean, model: ModelState): RuntimeTile[] {
   return [
     storageTile(status, interrupted),
-    // 'no bridge', not 'not connected': at four across a tile is ~50px, and
-    // 'connected' neither fits on one line nor breaks anywhere useful, so it
-    // ran straight through the tile's borders on both sides. Every meta on this
-    // row is now two short words at most, and the full state is in the tooltip
-    // and the accessible name.
+    // A 'Localhost bridge' tile stood here and pointed at a Settings panel that
+    // no longer exists. It went with the panel: documents are stored in the
+    // browser now, so there is no companion process to be connected to and no
+    // state for a tile to report. Every meta on this row is two short words at
+    // most — at four across a tile is ~50px, and a longer word ran straight
+    // through the borders on both sides.
+    modelTile(model),
+    // Last on the row because it belongs to the same subject as the first: where
+    // the records live, and how they get to another device.
+    //
+    // The one tile that names what it DOES rather than what state it is in, and
+    // it can afford to because it is the odd one out on a two-column row and
+    // spans both. The other two are statuses read off something live — the store
+    // is saving or it is not, the model answered or it did not — while nothing
+    // about Transfer changes until someone starts it. 'no device' was the
+    // status, and it was accurate and useless: a person reading it learned that
+    // a thing they had not heard of was not doing anything.
+    //
+    // The status did not go, it moved to the tooltip, where there is room for it
+    // and where it is not the first thing read.
+    //
+    // `Share` — the box with an arrow leaving it — rather than `Share2`, which
+    // is three connected dots and had become the second node-graph glyph on this
+    // row once storage took `Waypoints`. Two tiles that look like the same
+    // diagram are two tiles nobody can tell apart at 50px. `Download` and
+    // `Upload` were not available to borrow: DataPanel already spends both on
+    // backup and restore, and a third meaning would blunt those.
     {
-      label: 'Localhost bridge',
-      meta: 'no bridge',
+      label: 'Transfer',
+      meta: 'Sync with Other Device',
       status: 'off',
-      icon: Cable,
-      to: settingsPath(),
+      icon: Share,
+      to: transferPath(),
+      detail: 'no device is paired yet — Transfer is where one is added',
     },
-    { label: 'Local model', meta: 'offline', status: 'off', icon: Cpu, to: settingsPath() },
-    // Fourth on the row because it belongs to the same subject: where the records
-    // live, and how they get to another device. 'no device' rather than a
-    // readiness word — nothing is paired, and a tile that read 'ready' would be
-    // claiming a connection this build never opens.
-    { label: 'Transfer', meta: 'no device', status: 'off', icon: Share2, to: transferPath() },
   ]
 }
 
@@ -121,11 +226,12 @@ const RUNTIME_TONE: Record<DotStatus, string> = {
   off: 'text-text-3',
 }
 
-/** The four runtime tiles, pinned to the foot of the column. */
+/** The three runtime tiles, pinned to the foot of the column. */
 export function SidebarRuntime({ tabIndex }: { tabIndex?: number }) {
   const status = useStoreStatus()
   const { interrupted } = useBoot()
-  const runtime = runtimeTiles(status, interrupted)
+  const model = useModelState()
+  const runtime = runtimeTiles(status, interrupted, model)
   const navigate = useNavigate()
 
   return (
@@ -142,11 +248,17 @@ export function SidebarRuntime({ tabIndex }: { tabIndex?: number }) {
           about, drawn), Transfer opens the handoff, and the bridge and the
           model still open Settings, where they are configured. The `title`
           says which, so no tile takes a click somewhere unannounced. */}
-      {/* Two by two rather than four across. A quarter of a 232px rail is
+      {/* Two columns rather than one per tile. A quarter of a 232px rail is
           ~50px, which is narrower than the words it has to hold — half is
-          ~110px, so every value fits on one line and the icons stop being
-          the only thing readable at a glance. */}
-      <div className="grid grid-cols-2 gap-1.5">
+          ~110px, so every value fits on one line and the icons stop being the
+          only thing readable at a glance.
+ 
+          There were four tiles and this was a tidy 2x2. Removing the localhost
+          bridge left three, and an odd count in a two-column grid leaves a hole
+          beside the last one — which reads as a tile that failed to render
+          rather than as a row that happens to be odd. The last tile spans both
+          columns instead, so the block still ends on a straight edge. */}
+      <div className="grid grid-cols-2 gap-1.5 [&>*:last-child:nth-child(odd)]:col-span-2">
         {runtime.map((r) => (
           <button
             key={r.label}
