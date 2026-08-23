@@ -25,5 +25,31 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['kg/**/*.test.ts', 'data/**/*.test.ts', 'test/**/*.test.ts'],
+
+    /**
+     * What the coverage number is a number OF.
+     *
+     * `npm run test:coverage`. Two exclusions, and both are the difference
+     * between a figure someone can act on and one they learn to ignore.
+     *
+     * `kg/react/use-*.ts` are React hooks. This suite is `environment: 'node'`
+     * and renders nothing, so every one of them sits at 0% and drags the total
+     * down by about nine points — not because they are untested in effect, but
+     * because they are thin wrappers over the tools underneath, and those tools
+     * are covered here directly. Counting them scores this suite on work it is
+     * not the right suite to do. If they ever get a renderer, delete this line
+     * before the tests, not after.
+     *
+     * `*-conformance.ts` are test HARNESSES — the shared driver and file-store
+     * suites that web and mobile run against their own implementations. Their
+     * uncovered branches are the harness's own failure paths, which only fire
+     * when an implementation is broken. Measuring a ruler with itself.
+     */
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary'],
+      include: ['kg/**/*.ts'],
+      exclude: ['**/*.test.ts', 'kg/react/use-*.ts', 'kg/**/*-conformance.ts'],
+    },
   },
 })

@@ -218,14 +218,6 @@ export const space = {
 export const radius = { sm: 6, md: 8, lg: 12, xl: 16, full: 999 } as const
 
 /**
- * 44pt is the floor for anything a finger lands on. The web app spends a whole
- * `@media (pointer: coarse)` block reaching this with invisible catch areas
- * around 28px buttons; on a platform where everything is touch, controls are
- * simply drawn at the size they need to be.
- */
-export const TAP = 44
-
-/**
  * These five strings are each font's PostScript name, and that is the only shape
  * both platforms agree on. Android matches `fontFamily` against the asset
  * filename, so the five TTFs were renamed to match; iOS matches against a family

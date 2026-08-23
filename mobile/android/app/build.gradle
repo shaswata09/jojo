@@ -95,7 +95,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0.0"
+        versionName "0.1.0"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
@@ -106,15 +106,48 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // A real upload key, when one is supplied, and nothing when it is not.
+        //
+        // The four properties are set by CI from repository secrets and can
+        // also be put in ~/.gradle/gradle.properties to build a signed APK by
+        // hand. They are deliberately NOT read from a file in this repository:
+        // a keystore committed beside the code it signs is not a key, it is a
+        // formality, and anyone with the repo could publish as us.
+        //
+        // Absent, this config is left unconfigured and `release` below falls
+        // back to the debug key — which still produces an installable APK, so a
+        // fork or a first-time contributor gets a working build without having
+        // to invent a keystore first. What it does not produce is one that can
+        // ever be an UPDATE to a store-published app, because the signature
+        // differs; see the note on the release buildType.
+        release {
+            if (project.hasProperty('JOJO_STORE_FILE')) {
+                storeFile file(project.property('JOJO_STORE_FILE'))
+                storePassword project.property('JOJO_STORE_PASSWORD')
+                keyAlias project.property('JOJO_KEY_ALIAS')
+                keyPassword project.property('JOJO_KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // The upload key if one was supplied, the debug key otherwise.
+            //
+            // This read `signingConfigs.debug` unconditionally, which is React
+            // Native's template default and carries its own "Caution!" for the
+            // reason above it: an APK signed with the debug key is installable
+            // but is signed with a key every Android developer on earth has a
+            // copy of. Fine for "download it and try it", never for a store.
+            //
+            // The choice is made on whether `JOJO_STORE_FILE` was given, so the
+            // build is honest about which one it used rather than silently
+            // producing a debug-signed artifact labelled release.
+            signingConfig project.hasProperty('JOJO_STORE_FILE')
+                ? signingConfigs.release
+                : signingConfigs.debug
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds

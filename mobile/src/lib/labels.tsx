@@ -142,7 +142,13 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
       labelIdsOf,
       setRecord,
       removeRecord,
-      selected,
+      // `lit`, not `selected`: the value above exposes `selected: lit`, and a
+      // memo that depends on the raw set while returning the derived one is
+      // correct today only because `lit`'s own deps happen to be a subset of
+      // this list. Web has always named `lit` here; the phone kept `selected`
+      // when the derived selection landed, which is the drift a shared
+      // provider written twice produces.
+      lit,
       toggleSelected,
       clearSelected,
       matches,

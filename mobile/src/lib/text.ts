@@ -16,10 +16,6 @@ export function listJoin(parts: string[]) {
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
 }
 
-/** Sentence fragments joined by the app's one separator. Empty parts drop out. */
-export const sentence = (...parts: (string | undefined | false | null)[]) =>
-  parts.filter(Boolean).join(' · ')
-
 /** 'yesterday' → 'Yesterday'. For a label that stands alone rather than mid-phrase. */
 export const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 

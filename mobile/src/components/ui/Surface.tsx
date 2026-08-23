@@ -34,20 +34,6 @@ export function Panel({
     </View>
   )
 }
-
-/** A recessed secondary surface — chart tracks, day cells, inset wells. */
-export function Well({ children, style, ...rest }: ViewProps & { children?: ReactNode }) {
-  const c = useColors()
-  return (
-    <View
-      {...rest}
-      style={[styles.well, { backgroundColor: c.well, borderColor: c.hairline }, style]}
-    >
-      {children}
-    </View>
-  )
-}
-
 /**
  * A panel's heading, with an optional quiet hint beside it.
  *
@@ -116,7 +102,6 @@ export function RowList({ children }: { children: ReactNode[] }) {
 const styles = StyleSheet.create({
   panel: { borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.lg },
   panelPad: { padding: space[4] },
-  well: { borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.md },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',

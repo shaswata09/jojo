@@ -20,6 +20,10 @@ name: CI
 on:
   push:
     branches: [main]
+    # A tag is what cuts a release: the APK job attaches its build to a
+    # GitHub Release so it can be downloaded without a login, which a plain
+    # Actions artifact cannot be.
+    tags: ['v*']
   pull_request:
     branches: [main]
   # So the site can be republished without a commit — a rebuild after changing
@@ -97,6 +101,122 @@ jobs:
       # a bundle that fails to build is a release that cannot ship.
       - name: web — build
         run: npm -w web run build
+
+  android:
+    name: Android APK
+    needs: gate
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Only to create the release below, and only on a tag. Every other job
+      # here stays on the read-only default.
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Gradle compiles the JS bundle into the APK by way of the React Native
+      # plugin, so the JS dependencies have to be here before Gradle starts.
+      - name: Install
+        run: npm ci
+
+      # Temurin 17: React Native 0.81's Android Gradle Plugin requires 17 and
+      # does not yet support 21. Pinned rather than "latest" for that reason.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      # Installs the command-line tools and accepts the SDK licences. Gradle
+      # then downloads compileSdk 36, build-tools 36.0.0 and NDK 27 itself,
+      # which the New Architecture needs because it compiles C++ from source.
+      - uses: android-actions/setup-android@v3
+
+      # Decode the key and build, in ONE step and with no `if:` on it.
+      #
+      # The obvious shape — a conditional "decode" step guarded by
+      # `if: env.KEYSTORE_B64 != ''` — does not work: a step's own `env:` block
+      # is not in scope for that step's `if`, so the condition reads empty
+      # always and the key is never decoded. Testing the secret in bash instead
+      # sidesteps the whole question of which contexts are visible where.
+      #
+      # With no `ANDROID_KEYSTORE_BASE64` secret the build still runs and
+      # produces an installable APK signed with the debug key. See the note in
+      # `app/build.gradle` for why that is fine to hand someone and wrong to
+      # publish. The keystore is written to RUNNER_TEMP rather than the
+      # workspace so no artifact glob can ever pick it up.
+      # `reactNativeArchitectures` is React Native's own knob and the only one
+      # that works: an `abiFilters` block in the release buildType is overridden
+      # by it, and was measured doing nothing at all.
+      #
+      # ARM only for the published APK. A universal build is 95 MB and 36 MB of
+      # that is x86 and x86_64 — architectures that exist on emulators and on no
+      # phone anyone owns. Measured compressed: arm64-v8a 17.1 MB, armeabi-v7a
+      # 11.8 MB, x86 18.2 MB, x86_64 17.7 MB. Passing it here rather than
+      # editing `gradle.properties` leaves local development building all four,
+      # so `run-android` still works on an Intel emulator. It also skips
+      # COMPILING the two, which is most of the saving on a CI clock.
+      - name: Build the release APK
+        working-directory: mobile/android
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -n "${KEYSTORE_B64:-}" ]; then
+            printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+            echo "Signing with the upload key."
+            ./gradlew --no-daemon assembleRelease \
+              -PreactNativeArchitectures=arm64-v8a,armeabi-v7a \
+              -PJOJO_STORE_FILE="$RUNNER_TEMP/upload.jks" \
+              -PJOJO_STORE_PASSWORD="$STORE_PASSWORD" \
+              -PJOJO_KEY_ALIAS="$KEY_ALIAS" \
+              -PJOJO_KEY_PASSWORD="$KEY_PASSWORD"
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret set — signing with the debug key."
+            echo "The APK will install, but cannot update a store-published app."
+            ./gradlew --no-daemon assembleRelease \
+              -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+          fi
+
+      # Named with the run number so a downloaded file is traceable to the build
+      # that made it. Ninety days is the Actions maximum for a public repo.
+      - name: Publish the APK as a build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jojo-android-${{ github.run_number }}
+          path: mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 90
+
+      # Anyone can download a release asset; an Actions artifact needs a GitHub
+      # login and expires. So a tagged build publishes the APK where a person
+      # with an Android phone can actually get at it.
+      #
+      # `draft: true` on purpose — the release is created with the APK attached
+      # and waits for a human to write the notes and press publish. A pipeline
+      # that publishes to the world unattended is one bad tag away from an
+      # announcement nobody meant to make.
+      - name: Attach the APK to a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: mobile/android/app/build/outputs/apk/release/*.apk
+          body: |
+            Android APK for ${{ github.ref_name }}, built by run ${{ github.run_number }}.
+
+            Install it by downloading the `.apk` and opening it on the phone —
+            Android will ask you to allow installs from this source. Requires
+            Android 12 or newer.
 
   deploy:
     name: Deploy to Pages

@@ -49,8 +49,6 @@ import type { ToastOptions } from './toast'
 import { useUndoable } from './undo'
 import type { Undoable } from './undo'
 
-export type Run<N extends ToolName> = (input: InputOf<N>) => ToolResult<OutputOf<N>>
-
 /**
  * Runs a tool and says nothing.
  *

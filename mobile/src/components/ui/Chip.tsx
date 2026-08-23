@@ -73,22 +73,6 @@ export function Chip({
     </View>
   )
 }
-
-/** The six-pixel stage marker on its own — a board column, a pipeline bar. */
-export function StageDot({ stage, size = 7 }: { stage: Stage; size?: number }) {
-  const c = useColors()
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: c.stage[stage],
-      }}
-    />
-  )
-}
-
 /** Runtime health, as a dot. Green is on, amber is degraded, grey is off. */
 export function StatusDot({ status }: { status: 'on' | 'warn' | 'off' }) {
   const c = useColors()

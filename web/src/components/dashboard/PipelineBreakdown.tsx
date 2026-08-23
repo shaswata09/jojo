@@ -4,7 +4,6 @@ import type { Stage } from '@jojo/service/data/seed'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { Pie } from '@/components/charts/Pie'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath } from '@/lib/links'
@@ -49,23 +48,6 @@ const STAGE_FILL: Record<Stage, string> = {
   closed: 'var(--stage-closed)',
 }
 
-/**
- * The card, for anywhere that wants only this one.
- *
- * Split from its own contents so `StatsCard` can show them under a shared title
- * without a Panel inside a Panel. Both call sites read the same hooks; they are
- * context reads, not queries.
- */
-export function PipelineBreakdown() {
-  const { all } = useApplications()
-  return (
-    <Panel className="flex flex-col">
-      <PanelTitle hint={`${all.length} tracked`}>Pipeline</PanelTitle>
-      <PipelineBody />
-    </Panel>
-  )
-}
-
 /** How many applications sit in each stage. */
 export function PipelineBody() {
   const { all, stageCounts } = useApplications()
@@ -74,7 +56,6 @@ export function PipelineBody() {
 
   return (
     <>
-
       {/* `stageCounts` always returns all six stages, so on an empty store this
           rendered six labelled rows of zero — technically true and useless, and
           reachable now that Settings can clear the records. A chart with

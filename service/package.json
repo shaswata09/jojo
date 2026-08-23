@@ -5,7 +5,7 @@
   "type": "module",
   "description": "The shared layer: the knowledge graph, its tools, and the React binding. Imported by web and mobile, owned by neither.",
   "//exports": [
-    "Nine entries: six layer stars whose TARGET names the extension, and three exact keys — `./react/kg`, `./react/status` and `./log`. This line used to read \"Seven entries, one per layer, each a star\", which was wrong in both halves and contradicted the two paragraphs below it that describe the exact keys correctly. A count in prose beside the thing it counts is worth having only if it is the count.",
+    "Nine entries: six layer stars whose TARGET names the extension, and three exact keys \u2014 `./react/kg`, `./react/status` and `./log`. This line used to read \"Seven entries, one per layer, each a star\", which was wrong in both halves and contradicted the two paragraphs below it that describe the exact keys correctly. A count in prose beside the thing it counts is worth having only if it is the count.",
     "",
     "That last detail is the whole reason a map is viable at all, and it cost two",
     "probes to find. Metro does not extension-probe THROUGH an exports star, so",
@@ -45,13 +45,14 @@
     "./log": "./kg/log.ts",
     "./crypto/*": "./kg/crypto/*.ts"
   },
-  "//source": "No build step, and no `main`. Both apps compile the TypeScript themselves — Vite for web, Metro plus babel-preset-expo for mobile — and web's kg compiled clean under mobile's older tsc at full strictness before any of this moved, which is what made shipping source rather than output safe to choose. `npm -w @jojo/service exec tsc -b` is the authority on whether it type-checks; the apps' own programs also pull this source in through their imports, but they do it under their own lib and types settings and without types/portable-globals.d.ts, so that pass is incidental and must not be treated as the check.",
+  "//source": "No build step, and no `main`. Both apps compile the TypeScript themselves \u2014 Vite for web, Metro plus babel-preset-expo for mobile \u2014 and web's kg compiled clean under mobile's older tsc at full strictness before any of this moved, which is what made shipping source rather than output safe to choose. `npm -w @jojo/service exec tsc -b` is the authority on whether it type-checks; the apps' own programs also pull this source in through their imports, but they do it under their own lib and types settings and without types/portable-globals.d.ts, so that pass is incidental and must not be treated as the check.",
   "scripts": {
     "lint": "oxlint kg && node scripts/check-layers.mjs && node scripts/check-platform.mjs && node scripts/check-no-copies.mjs",
     "test": "vitest run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
     "react": ">=19.1.0"
@@ -63,6 +64,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
+    "@vitest/coverage-v8": "^4.1.11",
     "fake-indexeddb": "^6.2.2",
     "oxlint": "^1.75.0",
     "prettier": "^3.9.6",

@@ -8,12 +8,7 @@ import {
   unconfigured,
 } from '@jojo/service/core/model-server'
 import { failed, send } from '@/lib/local-service'
-import type {
-  ChatMessage,
-  ChatResult,
-  ModelsResult,
-  Turn,
-} from '@jojo/service/core/model-server'
+import type { ChatMessage, ChatResult, ModelsResult, Turn } from '@jojo/service/core/model-server'
 
 /**
  * The model client.
@@ -51,12 +46,7 @@ export type { ChatMessage, ChatResult, ModelsResult, Turn }
 /** Base URL, OpenAI-style: '…/v1'. The paths are appended by the protocol. */
 export type ModelSettings = { endpoint: string; model: string }
 
-/** Kept as the old name so the callers that read `.text` are unchanged. */
-export type LlmResult = ChatResult
-
 export { isConfigured }
-
-
 
 /**
  * What a server says it serves.

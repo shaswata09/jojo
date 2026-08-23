@@ -118,8 +118,6 @@ export const initializedNotification = (endpoint: string): ModelRequest => ({
   body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
 })
 
-export const listToolsRequest = (endpoint: string): ModelRequest => rpc(endpoint, 2, 'tools/list')
-
 /** One document, as a `data:` URI. */
 /**
  * `uri`, not `dataUri`, and the rename is the point.

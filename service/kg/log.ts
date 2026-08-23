@@ -16,11 +16,6 @@ const PREFIX = '[kg]'
 
 let enabled = true
 
-/** Off for the duration of a test that asserts on a failure path it expects. */
-export function setKgLogging(on: boolean): void {
-  enabled = on
-}
-
 export function kgLog(message: string, context?: Record<string, unknown>): void {
   if (!enabled) return
   if (context) console.log(PREFIX, message, context)

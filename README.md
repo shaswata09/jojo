@@ -10,6 +10,51 @@ drafting and job matching. Nothing is sent to a third party.
 
 ---
 
+## Builds and releases
+
+Every push and pull request runs the same eleven checks `./gate.sh` runs
+locally — three workspaces, each typechecked, linted and tested — plus the web
+bundle. Nothing deploys unless all of it is green.
+
+| What                | When                        | Where it lands                                     |
+| ------------------- | --------------------------- | -------------------------------------------------- |
+| **Web app**         | every push to `main`        | GitHub Pages                                        |
+| **Android APK**     | every push to `main`        | the run's build artifacts, kept 90 days             |
+| **Android release** | a tag matching `v*`         | a **draft** GitHub Release with the `.apk` attached |
+
+To cut a release: `git tag v0.1.0 && git push --tags`. The pipeline builds the
+APK, opens a draft release with it attached, and waits for you to write the
+notes and publish — nothing is announced unattended.
+
+### Signing the APK
+
+Without any configuration the APK is signed with Android's debug key. It
+installs fine, which is what makes a fork or a first clone work with no setup,
+but it can never be an *update* to a store-published app because the signature
+differs. To sign with a real upload key, set four repository secrets:
+
+| Secret                     | What                                        |
+| -------------------------- | ------------------------------------------- |
+| `ANDROID_KEYSTORE_BASE64`  | the keystore, `base64 -i upload.jks`        |
+| `ANDROID_STORE_PASSWORD`   | its store password                          |
+| `ANDROID_KEY_ALIAS`        | the key alias inside it                     |
+| `ANDROID_KEY_PASSWORD`     | that key's password                         |
+
+The build picks the upload key when `ANDROID_KEYSTORE_BASE64` is set and the
+debug key when it is not, and says in the log which one it used. The keystore is
+never written into the workspace, so no artifact upload can pick it up.
+
+Installing: download the `.apk`, open it on the phone, and allow installs from
+that source when Android asks. Requires Android 12 or newer (`minSdk 31`).
+
+The published APK is about 59 MB and carries `arm64-v8a` and `armeabi-v7a` only.
+A universal build is 95 MB, and the 36 MB difference is `x86` and `x86_64` —
+architectures that exist on emulators and on no phone anyone owns. Local
+development still builds all four, so `npm -w jojo-mobile run android` works on
+an Intel emulator; only the published artifact is trimmed.
+
+---
+
 ## The three layers
 
 jojo works with zero setup and gains capability as you opt in.

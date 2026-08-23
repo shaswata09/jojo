@@ -30,7 +30,7 @@
 
 import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
-import { CATALOG, describeEntry, functionSpecs } from './catalog'
+import { CATALOG, functionSpecs } from './catalog'
 import type { Effect } from './catalog'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
@@ -191,7 +191,9 @@ const DEFAULT_MAX_STEPS = 8
 const toolsFor = (only: readonly string[] | undefined) => {
   const all = functionSpecs()
   if (!only) return all
-  const wanted = new Set(only.map((n) => CATALOG.find((e) => e.name === n || e.wireName === n)?.wireName))
+  const wanted = new Set(
+    only.map((n) => CATALOG.find((e) => e.name === n || e.wireName === n)?.wireName),
+  )
   return all.filter((t) => wanted.has(t.function.name))
 }
 
@@ -208,10 +210,12 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   const steps: AgentStep[] = []
   let counter = 0
 
-  const finish = (
-    stopped: AgentRun['stopped'],
-    answer: string | null = null,
-  ): AgentRun => ({ messages, answer, steps, stopped })
+  const finish = (stopped: AgentRun['stopped'], answer: string | null = null): AgentRun => ({
+    messages,
+    answer,
+    steps,
+    stopped,
+  })
 
   for (let round = 0; round < maxSteps; round++) {
     if (signal?.aborted) return finish('aborted')
@@ -277,11 +281,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
  * Emits twice — `running` then settled — so the UI can show a row appear and
  * then resolve. Both carry the same id.
  */
-async function performCall(
-  options: AgentOptions,
-  call: ToolCall,
-  id: string,
-): Promise<AgentStep> {
+async function performCall(options: AgentOptions, call: ToolCall, id: string): Promise<AgentStep> {
   const { host, onEvent, approve } = options
   const entry = CATALOG.find((e) => e.wireName === call.name || e.name === call.name)
 
@@ -339,21 +339,3 @@ async function performCall(
     ...(outcome.undo ? { undo: outcome.undo } : {}),
   })
 }
-
-/**
- * Every catalogued tool as one block of text.
- *
- * For a settings screen or a guide page that wants to show what the model can
- * reach — not for the model, which gets the structured `tools` array. It exists
- * because "what can this thing actually do to my records" deserves an answer a
- * person can read.
- */
-export const catalogSummary = () =>
-  CATALOG.map((e) => ({
-    name: e.name,
-    title: e.title,
-    effect: e.effect,
-    destructive: e.destructive,
-    undoable: e.undoable,
-    description: describeEntry(e),
-  }))

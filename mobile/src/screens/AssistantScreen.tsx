@@ -719,26 +719,25 @@ function ScriptedScreen() {
                   <Txt size="sm" style={{ marginTop: space[2] }}>
                     {m.text}
                   </Txt>
-                    <View style={styles.replyActions}>
-                      <Button
-                        label={isCopied(m.id) ? 'Copied' : 'Copy'}
-                        icon={isCopied(m.id) ? 'check' : 'copy'}
-                        variant="ghost"
-                        onPress={() => copy(m.text, m.id)}
-                      />
-                      <Button
-                        label="Save to snippets"
-                        icon="bookmark"
-                        variant="ghost"
-                        onPress={() => saveToSnippets(m)}
-                      />
-                    </View>
+                  <View style={styles.replyActions}>
+                    <Button
+                      label={isCopied(m.id) ? 'Copied' : 'Copy'}
+                      icon={isCopied(m.id) ? 'check' : 'copy'}
+                      variant="ghost"
+                      onPress={() => copy(m.text, m.id)}
+                    />
+                    <Button
+                      label="Save to snippets"
+                      icon="bookmark"
+                      variant="ghost"
+                      onPress={() => saveToSnippets(m)}
+                    />
+                  </View>
                 </View>
               ),
             )}
           </View>
         )}
-
 
         <View style={styles.composer}>
           <TextInput
@@ -800,9 +799,6 @@ const styles = StyleSheet.create({
   },
   reply: { borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.lg, padding: space[3] },
   replyActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[2.5] },
-  waiting: {
-    marginTop: space[3],
-  },
   composer: { flexDirection: 'row', alignItems: 'center', gap: space[2], marginTop: space[4] },
   input: {
     flex: 1,
