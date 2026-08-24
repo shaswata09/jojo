@@ -51,11 +51,21 @@ export function CrashPanel() {
   return (
     <Panel className="min-w-0">
       <PanelTitle hint="this browser only">Crash reports</PanelTitle>
-      <p className="mb-3 text-sm text-text-2">
+      {/* The same words as the setup step, because a person who reads both and
+          finds them different has learned that one of them is marketing. */}
+      <p className="mb-2 text-sm text-text-2">
         When something breaks, jojo can keep the error so you can read it back — useful when the
-        thing that failed has already scrolled away. Reports stay on this device: nothing is
-        uploaded, and a backup file does not carry them. Keys, addresses and your home directory are
-        stripped out before a report is written.
+        thing that failed has already scrolled away. A report holds the error message, where in jojo
+        it happened, and the stack trace. It never holds your applications, documents, notes,
+        profile or conversations, and API keys, addresses, your home directory and email addresses
+        are stripped out before a report is written.
+      </p>
+      <p className="mb-3 text-sm text-text-2">
+        In this browser and in the extension they <span className="text-text-1">stay on this
+        device</span> — nothing is uploaded, and a backup file does not carry them. The phone app
+        also sends them to Firebase Crashlytics, which adds the device model, its OS version and a
+        random id used to count how many people hit the same crash. This is about crashes only:
+        jojo has no analytics and does not record what you do in it.
       </p>
 
       <SettingRow

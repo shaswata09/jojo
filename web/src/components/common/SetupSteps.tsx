@@ -210,15 +210,51 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
           </DialogTitle>
           <DialogDescription>
             When something breaks, jojo can keep the error so you can read it back instead of
-            describing it from memory. Reports stay on this device — nothing is uploaded, and a
-            backup file does not carry them. Keys, addresses and your home directory are stripped
-            out before a report is written.
+            describing it from memory. Only the error is kept — never your records.
           </DialogDescription>
         </DialogHeader>
 
+        {/*
+         * SPECIFIC RATHER THAN REASSURING, and the two are not the same thing.
+         *
+         * The easy copy here is "no personal data is collected", and it is the
+         * one sentence this feature is not allowed to say. On the web it would
+         * be true and unfalsifiable — nothing is sent, so there is nothing to
+         * check — and on the phone it would be false: Firebase Crashlytics
+         * sends a per-install identifier and a device profile, by design and by
+         * Google's own documentation. A promise a reader cannot check is worth
+         * less than a list they can, and this list is checkable: the reports are
+         * shown to them on the next screen.
+         */}
+        <div className="rounded-md border border-hairline bg-well p-3">
+          <p className="text-xs font-medium text-text-1">What is in a report</p>
+          <ul className="mt-1.5 space-y-1 text-xs text-text-2">
+            <li>· The error message and where in jojo it happened.</li>
+            <li>· The stack trace, which names the code that failed.</li>
+          </ul>
+          <p className="mt-2.5 text-xs font-medium text-text-1">What is never in one</p>
+          <ul className="mt-1.5 space-y-1 text-xs text-text-2">
+            <li>· Your applications, documents, notes, profile or conversations.</li>
+            <li>
+              · Your API keys, the addresses you use, your home directory, or any email address —
+              these are stripped out before a report is written, not before it is sent.
+            </li>
+          </ul>
+        </div>
+
         <p className="text-sm text-text-2">
-          This covers jojo in this browser and the jojo extension, if you installed it. You can
-          change it at any time under Settings, and turning it off throws away what was kept.
+          In this browser and in the jojo extension, reports <span className="text-text-1">stay on
+          this device</span>: nothing is uploaded, and a backup file does not carry them. You read
+          them yourself under Settings. On the jojo phone app the same report is also sent to
+          Google&apos;s Firebase Crashlytics, which adds your device model, its operating system
+          version, and a random id it uses to count how many people hit the same crash — no name, no
+          account, nothing tied to you.
+        </p>
+
+        <p className="text-sm text-text-2">
+          This is about crashes only. jojo has no analytics and does not record what you do in it.
+          You can change this at any time under Settings, and turning it off throws away what was
+          kept.
         </p>
 
         <DialogFooter>

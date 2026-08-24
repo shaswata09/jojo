@@ -30,6 +30,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
  * error. `crashCapability` reads the build flag; this reads whether the SDK is
  * actually there; and the user's switch decides the rest. All three must say yes.
  *
+ * ## What actually leaves the phone, stated because the app has to state it
+ *
+ * The redacted message and stack, plus whatever Crashlytics adds on its own:
+ * per Google's own privacy documentation that is the device model, CPU
+ * architecture, RAM and disk, the OS name and version, and a Crashlytics
+ * installation UUID used to count how many people hit one crash. Retained by
+ * Google for 90 days.
+ *
+ * It is NOT "no data about the user" and jojo must not say that it is. What is
+ * true, and is what the screens say, is that no RECORD leaves: not an
+ * application, a document, a note, a profile or a conversation, and not a key —
+ * `core/crash.ts` strips those before a report exists, so there is nothing to
+ * send even if a code path nobody thought about hands one over.
+ *
  * ## It records locally as well, always
  *
  * Even with Crashlytics sending, the report is kept on the device — because the
