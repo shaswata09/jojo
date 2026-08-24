@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fitOf } from './fit'
-import type { Profile } from '@jojo/service/data/profile'
+import type { Profile } from './model'
 
 /**
  * The scorer's contract, and mostly its refusals.
@@ -87,5 +87,50 @@ describe('fitOf', () => {
     // academic posting scores full marks and the ranking says nothing.
     const fit = fitOf(profile({ targetRoles: 'assistant professor' }), 'Professor of Music')
     expect(fit.score).toBe(0)
+  })
+
+  it('splits on the interpunct the profile placeholders ask for', () => {
+    // Both Profile screens suggest `Assistant professor (TT) · Research
+    // scientist`. Splitting on commas alone made that one unmatchable phrase,
+    // so a user who typed what they were shown scored zero on the field.
+    const fit = fitOf(
+      profile({ targetRoles: 'Assistant professor · Research scientist' }),
+      'Assistant Professor of Computer Science, tenure track',
+    )
+    expect(fit.score).toBe(50)
+    expect(fit.matched).toEqual(['assistant professor'])
+  })
+
+  it('will not find a two-letter region in the middle of a word', () => {
+    // The seeded profile's region is 'US'. As a substring it is inside Austin,
+    // focus, campus and industry, which awarded the region bonus to nearly
+    // every posting and printed `matched: us` under it.
+    const fit = fitOf(
+      profile({ regions: 'US' }, ['graph inference']),
+      'Postdoc, Austin — focus on graph inference',
+    )
+    expect(fit.matched).not.toContain('us')
+    expect(fit.score).toBe(86)
+  })
+
+  it('still finds a short term standing on its own', () => {
+    const fit = fitOf(
+      profile({ regions: 'US' }, ['graph inference']),
+      'Postdoc in graph inference — US, remote',
+    )
+    expect(fit.matched).toContain('us')
+    expect(fit.score).toBe(100)
+  })
+
+  it('keeps the substring test for terms long enough to be safe', () => {
+    // 'inference' matching 'inferences' is the whole reason the loose test is
+    // there; the short-term rule must not cost it.
+    expect(fitOf(profile({}, ['inference']), 'Work on inferences at scale').score).toBe(100)
+  })
+
+  it('survives a term made of punctuation', () => {
+    // 'c++' is short enough for the whole-word rule, and a trailing boundary
+    // after a plus sign would never match.
+    expect(fitOf(profile({}, ['c++']), 'Systems work in C++ and Rust').score).toBe(100)
   })
 })

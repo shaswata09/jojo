@@ -5,6 +5,7 @@ import {
   readChatResponse,
   readModelsResponse,
   readTurnFor,
+  guardTruncation,
   unconfigured,
 } from '@jojo/service/core/model-server'
 import { endpointOf } from '@jojo/service/core/provider'
@@ -66,9 +67,21 @@ export { isConfigured }
  * For vLLM that id is the full HuggingFace path, which nobody types correctly
  * from memory.
  */
-export async function listModels(endpoint: string, signal?: AbortSignal): Promise<ModelsResult> {
+export async function listModels(
+  /*
+   * The whole settings object, not just an address.
+   *
+   * A cloud provider will not answer an unauthenticated request, and the cost
+   * of that was not a poor error message — it was that Claude and OpenAI could
+   * be configured and never connected. The list 401'd, the Model field stayed
+   * empty and disabled, and there was no way forward from the screen.
+   */
+  settings: ModelSettings,
+  signal?: AbortSignal,
+): Promise<ModelsResult> {
+  const endpoint = endpointOf(settings)
   if (endpoint.trim().length === 0) return unconfigured()
-  const response = await send(modelsRequest(endpoint), endpoint, signal)
+  const response = await send(modelsRequest(settings), endpoint, signal)
   return failed(response) ? response.failed : readModelsResponse(response, endpoint)
 }
 
@@ -112,10 +125,22 @@ export async function agentTurn(
    * of the call. Anthropic blocks browser origins unless the caller opts in by
    * name; there is no origin to opt in for on a phone.
    */
-  const response = await send(
-    chatRequest(settings, messages, tools, false),
-    endpointOf(settings),
-    signal,
-  )
-  return failed(response) ? response.failed : readTurnFor(settings, response)
+  const request = chatRequest(settings, messages, tools, false)
+  const response = await send(request, endpointOf(settings), signal)
+  if (failed(response)) return response.failed
+
+  const turn = readTurnFor(settings, response)
+
+  /*
+   * The check for a server that quietly threw most of the prompt away.
+   *
+   * The worst failure this app can have and the only one a client can detect: a
+   * window smaller than the request does not always produce an error, and the
+   * model then answers confidently having never seen the tools or the question.
+   *
+   * The decision lives in `guardTruncation` rather than here, because it was
+   * written twice — once in each app — and because a `fetch` sits between this
+   * function and anything a test can reach.
+   */
+  return guardTruncation(request.body ?? '', turn)
 }

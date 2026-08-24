@@ -2,7 +2,7 @@
   "name": "jojo",
   "version": "0.1.0",
   "private": true,
-  "description": "Local-first job-application tracker. One shared service layer, two apps.",
+  "description": "Agentic job-search assistant, local-first. One shared service layer, two apps.",
   "workspaces": [
     "service",
     "web",

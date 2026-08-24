@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "The shared layer: the knowledge graph, its tools, and the React binding. Imported by web and mobile, owned by neither.",
+  "description": "The shared layer: the knowledge graph, its tools, the agent that drives them, and the React binding. Imported by web and mobile, owned by neither.",
   "//exports": [
     "Nine entries: six layer stars whose TARGET names the extension, and three exact keys \u2014 `./react/kg`, `./react/status` and `./log`. This line used to read \"Seven entries, one per layer, each a star\", which was wrong in both halves and contradicted the two paragraphs below it that describe the exact keys correctly. A count in prose beside the thing it counts is worth having only if it is the count.",
     "",

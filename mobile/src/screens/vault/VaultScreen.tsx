@@ -11,6 +11,7 @@ import { CalculatorTool } from '@/screens/vault/CalculatorTool'
 import { FilesTool } from '@/screens/vault/FilesTool'
 import { LinksTool } from '@/screens/vault/LinksTool'
 import { RemindersTool } from '@/screens/vault/RemindersTool'
+import { PeopleTool } from '@/screens/vault/PeopleTool'
 import { SnippetsTool } from '@/screens/vault/SnippetsTool'
 
 const TOOLS = [
@@ -18,6 +19,7 @@ const TOOLS = [
   { value: 'links', label: 'Links' },
   { value: 'files', label: 'Files' },
   { value: 'snippets', label: 'Snippets' },
+  { value: 'people', label: 'People' },
   { value: 'tools', label: 'Tools' },
 ] as const satisfies readonly { value: VaultTool; label: string }[]
 
@@ -36,12 +38,12 @@ const TOOLS = [
 export function VaultScreen() {
   const route = useRoute<RouteProp<TabParamList, 'Vault'>>()
   const [tool, setTool] = useState<VaultTool>(route.params?.tool ?? 'reminders')
-  // The web page makes this a switch too. Four totals is the right default —
+  // The web page makes this a switch too. The totals are the right default —
   // it is the only place the vault says how much is in it — but it is also the
   // longest subtitle in the app, and on a narrow phone it wraps to two lines.
   const [showCounts, setShowCounts] = useState(true)
   const { reminders } = useTimeline()
-  const { links, files, snippets } = useVault()
+  const { links, files, snippets, people } = useVault()
 
   // A link from elsewhere names a tool; the shell has to follow it even when
   // this screen was already mounted on another tab.
@@ -64,7 +66,9 @@ export function VaultScreen() {
           ? files.map((f) => f.id)
           : tool === 'snippets'
             ? snippets.map((x) => x.id)
-            : null
+            : tool === 'people'
+              ? people.map((x) => x.id)
+              : null
 
   /**
    * Four totals, counted the same way.
@@ -75,8 +79,8 @@ export function VaultScreen() {
    * split belongs to the reminders bucket filter, where you can act on it.
    */
   const subtitle = showCounts
-    ? `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets`
-    : 'Reminders, links, files and snippets'
+    ? `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets · ${people.length} people`
+    : 'Reminders, links, files, snippets and people'
 
   return (
     <Screen
@@ -101,6 +105,7 @@ export function VaultScreen() {
       {tool === 'links' ? <LinksTool focus={route.params?.focus} /> : null}
       {tool === 'files' ? <FilesTool focus={route.params?.focus} /> : null}
       {tool === 'snippets' ? <SnippetsTool focus={route.params?.focus} /> : null}
+      {tool === 'people' ? <PeopleTool focus={route.params?.focus} /> : null}
       {tool === 'tools' ? <CalculatorTool /> : null}
     </Screen>
   )

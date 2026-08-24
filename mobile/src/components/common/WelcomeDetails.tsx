@@ -52,7 +52,7 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
   // Blank on a first run, whatever the store holds.
   //
   // Choosing the demo records seeds a whole profile, so prefilling here would
-  // put 'Alex Rahman' in a field labelled "Full name" and a stranger's address
+  // put 'Shaswata Mitra' in a field labelled "Full name" and a stranger's address
   // in "Email" — a form that answers its own questions with somebody else's
   // answers. `ProfileScreen` makes the same point about placeholders: grey
   // examples ask a question, black text answers one.
@@ -111,7 +111,7 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
           label="Full name"
           value={draft.fullName}
           autoComplete="name"
-          placeholder="e.g. Alex Rahman"
+          placeholder="e.g. Shaswata Mitra"
           onChangeText={set('fullName')}
         />
         <TextField
@@ -123,7 +123,7 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
         <TextField
           label="Location"
           value={draft.location}
-          placeholder="e.g. Lubbock, TX (open to relocate)"
+          placeholder="e.g. Santa Clara, CA"
           onChangeText={set('location')}
         />
         <TextField

@@ -11,7 +11,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { hostOf, normalizeUrl, parseUrl, pathLabel, titleFromUrl } from './url'
+import { hostOf, normalizeUrl, openHref, parseUrl, pathLabel, titleFromUrl } from './url'
 
 const RICE = 'https://www.jobs.rice.edu/postings/1/'
 
@@ -48,7 +48,7 @@ describe('pathLabel', () => {
   })
 
   it('is what the vault rendered before hostOf existed, unchanged', () => {
-    expect(pathLabel('https://linkedin.com/in/alexr')).toBe('linkedin.com/in/alexr')
+    expect(pathLabel('https://linkedin.com/in/shaswatamitra')).toBe('linkedin.com/in/shaswatamitra')
   })
 })
 
@@ -61,12 +61,66 @@ describe('the readers hostOf is built on', () => {
 
   it('parseUrl refuses a dotless host and a non-http scheme', () => {
     expect(parseUrl('https://localhost')).toBeNull()
-    expect(parseUrl('mailto:alex@university.edu')).toBeNull()
+    expect(parseUrl('mailto:mockemail@email.com')).toBeNull()
     expect(parseUrl('https://jobs.rice.edu')?.hostname).toBe('jobs.rice.edu')
   })
 
   it('titleFromUrl leads with the page and keeps the host for context', () => {
     expect(titleFromUrl(new URL(RICE))).toBe('jobs.rice.edu — 1')
     expect(titleFromUrl(new URL('https://www.jobs.rice.edu/'))).toBe('jobs.rice.edu')
+  })
+})
+
+/**
+ * What the open button beside a URL field is allowed to navigate to.
+ *
+ * The refusals are the interesting half. This runs on a value the user is still
+ * typing, so it is asked about half-written nonsense far more often than about
+ * a finished address, and every case below is a string that reaches it.
+ */
+describe('openHref', () => {
+  it('opens a full address unchanged, query string and all', () => {
+    expect(openHref('https://scholar.google.com/citations?user=drsx2nkAAAAJ&hl=en')).toBe(
+      'https://scholar.google.com/citations?user=drsx2nkAAAAJ&hl=en',
+    )
+  })
+
+  it('fills in the scheme people leave off', () => {
+    expect(openHref('github.com/shaswata09')).toBe('https://github.com/shaswata09')
+    expect(openHref('  linkedin.com/in/shaswatamitra  ')).toBe(
+      'https://linkedin.com/in/shaswatamitra',
+    )
+  })
+
+  it('offers nothing for an empty or half-typed field', () => {
+    expect(openHref('')).toBeUndefined()
+    expect(openHref('   ')).toBeUndefined()
+    expect(openHref('htt')).toBeUndefined()
+    expect(openHref('my site')).toBeUndefined()
+  })
+
+  it('refuses a host with no dot in it', () => {
+    // `new URL` is happy with these and a link to one goes nowhere.
+    expect(openHref('http://localhost:11434')).toBeUndefined()
+    expect(openHref('notes')).toBeUndefined()
+  })
+
+  it('refuses a scheme that is not http', () => {
+    expect(openHref('javascript:alert(1)')).toBeUndefined()
+    expect(openHref('ftp://files.rice.edu')).toBeUndefined()
+    expect(openHref('data:text/html,hi')).toBeUndefined()
+  })
+
+  it('refuses an email rather than normalising it into a website', () => {
+    // The trap: `normalizeUrl` only looks for `scheme://`, so this would become
+    // `https://mailto:mockemail@email.com` — which parses, as username `mailto`
+    // on host `email.com`, and offers to open a site nobody named.
+    expect(openHref('mailto:mockemail@email.com')).toBeUndefined()
+    expect(openHref('tel:+15550100')).toBeUndefined()
+  })
+
+  it('still normalises a host that carries a port', () => {
+    // `jobs.rice.edu:8080` looks like an opaque scheme to a careless regex.
+    expect(openHref('jobs.rice.edu:8080/postings')).toBe('https://jobs.rice.edu:8080/postings')
   })
 })

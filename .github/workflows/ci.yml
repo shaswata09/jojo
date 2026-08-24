@@ -299,6 +299,20 @@ jobs:
       - name: Install
         run: npm ci
 
+      # IF YOU EVER PUT THIS ON A CUSTOM DOMAIN, CHANGE THIS LINE.
+      #
+      # A custom domain serves the site at the ROOT — `https://jojo.app/`, not
+      # `https://jojo.app/jojo/` — while the line below unconditionally bakes in
+      # `/<repo>/`. Every asset and every in-app link would then be prefixed with
+      # a path segment that does not exist, which is the same failure that put
+      # the 2D mascot on the sidebar and sent "Start the tour" to a 404, arrived
+      # at from the other direction. With a CNAME, this becomes `BASE_PATH: /`.
+      #
+      # The app itself is base-agnostic and does not need touching: it reads
+      # `import.meta.env.BASE_URL` for the router's basename and for every
+      # vendored asset (`src/lib/public-url.ts`), and it was verified running at
+      # `/`, `/jojo/` and `/tools/jojo/`.
+      #
       # `BASE_PATH` is what makes this work under a repository subpath. Vite
       # rewrites every asset URL with it, and `App.tsx` reads the same value
       # back for the router's basename. Derived from the repository name rather

@@ -476,6 +476,27 @@ html[data-theme='dark'] {
     background: var(--well);
     border: 1px solid var(--hairline);
   }
+
+  /*
+   * Guide figures: hairlines that stay hairlines.
+   *
+   * Every diagram is responsive — `w-full` under a `max-w-[520px]` cap over a
+   * viewBox around 420 units — so the drawing is scaled by whatever the column
+   * happens to be, and never by a whole number. A `stroke-width: 1` then lands
+   * at 1.24 device pixels, straddles the pixel grid, and is antialiased into a
+   * soft two-pixel smear that is darker in some places than others. Eight
+   * figures of that reads as wobbly, hand-drawn lines.
+   *
+   * `non-scaling-stroke` measures the stroke in rendered pixels instead of
+   * viewBox units, so it is one crisp pixel at every width.
+   *
+   * As a descendant SELECTOR rather than on the `<svg>`: `vector-effect` is not
+   * an inherited property, so setting it on a parent `<g>` — which is how the
+   * record-model figure groups its lines — would do nothing at all.
+   */
+  .diagram :is(line, path, rect, circle, ellipse, polyline, polygon) {
+    vector-effect: non-scaling-stroke;
+  }
 }
 
 /* Brand card: a slow scan sweep and a breathing glow. Both are compositor-only

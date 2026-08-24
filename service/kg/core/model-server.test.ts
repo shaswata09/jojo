@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   chatRequest,
   chatUrl,
+  guardTruncation,
   readTurn,
   readTurnFor,
   readOllamaTurn,
@@ -24,6 +25,8 @@ import {
   unconfigured,
   unreachable,
 } from './model-server'
+import { ANTHROPIC_VERSION } from './anthropic'
+import type { Turn } from './model-server'
 import type { ModelServer } from './model-server'
 
 const server = (over: Partial<ModelServer> = {}): ModelServer => ({
@@ -128,7 +131,13 @@ describe('the saved list', () => {
 
 describe('the protocol, as data', () => {
   it('describes a model-list request without performing one', () => {
-    expect(modelsRequest('http://localhost:8000/v1/')).toEqual({
+    expect(
+      modelsRequest({
+        provider: 'openai-compatible',
+        endpoint: 'http://localhost:8000/v1/',
+        model: '',
+      }),
+    ).toEqual({
       url: 'http://localhost:8000/v1/models',
       method: 'GET',
       headers: { Accept: 'application/json' },
@@ -430,5 +439,98 @@ describe('the dialects', () => {
       expect(req.headers['x-api-key']).toBe('sk-a')
       expect(req.headers['anthropic-dangerous-direct-browser-access']).toBe('true')
     })
+  })
+})
+
+describe('asking a provider what it serves', () => {
+  /**
+   * This carried no credentials once, and the cost was not a poor error
+   * message: a cloud provider could be CONFIGURED and never CONNECTED. The
+   * list 401'd, the model field stayed empty and disabled, `isConfigured` never
+   * turned true, and there was no way forward from the screen.
+   */
+  it('sends a bearer token to an OpenAI-shaped cloud provider', () => {
+    const req = modelsRequest({ provider: 'openai', endpoint: '', model: '', apiKey: 'sk-1' })
+    expect(req.url).toBe('https://api.openai.com/v1/models')
+    expect(req.headers['Authorization']).toBe('Bearer sk-1')
+  })
+
+  it('sends Anthropic’s own headers, which are not a bearer token', () => {
+    const req = modelsRequest({ provider: 'anthropic', endpoint: '', model: '', apiKey: 'sk-a' })
+    expect(req.headers['x-api-key']).toBe('sk-a')
+    expect(req.headers['anthropic-version']).toBe(ANTHROPIC_VERSION)
+    expect(req.headers['Authorization']).toBeUndefined()
+  })
+
+  it('sends nothing to a local server', () => {
+    const req = modelsRequest({
+      provider: 'openai-compatible',
+      endpoint: 'http://localhost:8000/v1',
+      model: '',
+      apiKey: 'sk-1',
+    })
+    expect(req.headers['Authorization']).toBeUndefined()
+  })
+
+  it('asks Ollama at its own path, which is not /models', () => {
+    const req = modelsRequest({ provider: 'ollama', endpoint: 'http://localhost:11434', model: '' })
+    expect(req.url).toBe('http://localhost:11434/api/tags')
+  })
+
+  it('reads Ollama’s list shape as well as everyone else’s', () => {
+    // `{models:[{model}]}` rather than `{data:[{id}]}`. A list of model names is
+    // a list of model names; a caller that had to say which spelling it wanted
+    // would be one more place to pair them up wrongly.
+    expect(readModelIds({ models: [{ model: 'qwen3:14b' }, { model: 'llama3.1' }] })).toEqual([
+      'qwen3:14b',
+      'llama3.1',
+    ])
+    expect(readModelIds({ data: [{ id: 'gpt-4o' }] })).toEqual(['gpt-4o'])
+  })
+})
+
+describe('the truncation guard, which is what the apps actually call', () => {
+  /**
+   * `truncationOf` was tested from the day it was written and never called by
+   * anything — the detection existed and no user could ever have seen it. This
+   * is the function that closes that gap, so it is the one that needs holding.
+   */
+  const big = 'x'.repeat(72_000) // ~20,000 tokens
+  const good: Turn = { ok: true, text: 'hello', toolCalls: [], finishReason: 'stop' }
+
+  it('passes a healthy turn straight through', () => {
+    const turn = { ...good, usage: { promptTokens: 19_000, completionTokens: 5 } }
+    expect(guardTruncation(big, turn)).toBe(turn)
+  })
+
+  it('passes a turn through when the server said nothing about usage', () => {
+    // Never accuse a server that did not speak.
+    expect(guardTruncation(big, good)).toBe(good)
+  })
+
+  it('turns a truncated turn into a refusal, not a warning on a good answer', () => {
+    /*
+     * The judgement this encodes. An answer built on a prompt the model never
+     * fully read is not degraded, it is wrong — and passing it through with a
+     * note attached is how the failure stays invisible.
+     */
+    const turn = { ...good, usage: { promptTokens: 4_096, completionTokens: 5 } }
+    const out = guardTruncation(big, turn)
+    expect(out.ok).toBe(false)
+    if (out.ok) return
+    expect(out.kind).toBe('refused')
+    expect(out.reason).toContain('4,096')
+    expect(out.reason).toContain('context window')
+  })
+
+  it('leaves an already-failed turn alone', () => {
+    // A refusal must not be relabelled as a truncation.
+    const failure: Turn = { ok: false, kind: 'unreachable', reason: 'nothing answered' }
+    expect(guardTruncation(big, failure)).toBe(failure)
+  })
+
+  it('says nothing on a small prompt, where the estimate is noise', () => {
+    const turn = { ...good, usage: { promptTokens: 1, completionTokens: 1 } }
+    expect(guardTruncation('hello', turn)).toBe(turn)
   })
 })

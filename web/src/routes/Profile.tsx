@@ -60,13 +60,15 @@ export function Profile() {
    * already told the user it took effect, and asking them to confirm it again
    * from a bar at the foot of the page reads as the click not having landed.
    */
-  const { matchTerms, includeAcademia, includeIndustry } = profile
+  const { matchTerms, roles, includeAcademia, includeIndustry } = profile
   const [addingTerm, setAddingTerm] = useState(false)
+  const [roleDraft, setRoleDraft] = useState('')
+  const [addingRole, setAddingRole] = useState(false)
   const [termDraft, setTermDraft] = useState('')
 
   const { files, addFile } = useVault()
   const blobs = useVaultBlobs()
-  const { get } = useApplications()
+  const { get, all } = useApplications()
   const { toast } = useToast()
   const undoable = useUndoable()
   const fileInput = useRef<HTMLInputElement>(null)
@@ -167,7 +169,6 @@ export function Profile() {
     void takeFiles(list)
   })
 
-
   /*
    * The document being previewed, and its bytes.
    *
@@ -233,6 +234,23 @@ export function Profile() {
     setAddingTerm(false)
   }
 
+  const addRole = () => {
+    const role = roleDraft.trim()
+    if (role && !roles.includes(role)) update({ roles: [...roles, role] })
+    setRoleDraft('')
+    setAddingRole(false)
+  }
+
+  /**
+   * Removing a role does NOT rewrite the applications carrying it.
+   *
+   * `roleVocabulary` keeps a tag that is still in use visible in the filter and
+   * the charts whether or not it is on this list, so deleting one here takes it
+   * out of the picker without hiding anything you have already filed. The count
+   * on the chip is what makes that legible before the press.
+   */
+  const removeRole = (role: string) => update({ roles: roles.filter((x) => x !== role) })
+
   return (
     <>
       <PageHeader
@@ -270,7 +288,7 @@ export function Profile() {
               label="Full name"
               value={draft.fullName}
               autoComplete="name"
-              placeholder="e.g. Alex Rahman"
+              placeholder="e.g. Shaswata Mitra"
               onChange={set('fullName')}
             />
             <Field
@@ -282,7 +300,7 @@ export function Profile() {
             <Field
               label="Location"
               value={draft.location}
-              placeholder="e.g. Lubbock, TX (open to relocate)"
+              placeholder="e.g. Santa Clara, CA"
               onChange={set('location')}
             />
             <Field
@@ -395,6 +413,64 @@ export function Profile() {
           </ul>
         </div>
 
+        <div className="mt-4">
+          {/* The one required field on every application, and until now a list
+              of five this app chose. `useRoleVocabulary` explains why that was
+              not a default so much as a limit on whose search jojo was for. */}
+          <p className="mb-1 text-xs text-text-2">Role tags</p>
+          <p className="mb-2 text-xs text-text-3">
+            The kinds of role you are tracking. Every application is filed under one, and the role
+            filter and the per-role figures in Statistics both read it. Removing one here leaves the
+            applications that carry it exactly where they are.
+          </p>
+          <ul className="flex flex-wrap gap-1.5">
+            {roles.map((role) => {
+              const used = all.filter((a) => a.roleTag === role).length
+              return (
+                <li key={role}>
+                  <Chip className="pr-1">
+                    {role}
+                    <span className="tabular ml-1 text-text-3">{used}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeRole(role)}
+                      aria-label={`Remove ${role}, used on ${String(used)} applications`}
+                      className="ml-0.5 rounded-sm p-0.5 hover:bg-accent-border/40"
+                    >
+                      <X className="size-3" aria-hidden />
+                    </button>
+                  </Chip>
+                </li>
+              )
+            })}
+            <li>
+              {addingRole ? (
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault()
+                    addRole()
+                  }}
+                >
+                  <Input
+                    autoFocus
+                    value={roleDraft}
+                    aria-label="New role tag"
+                    placeholder="e.g. Data scientist"
+                    className="h-7 w-44 text-xs"
+                    onChange={(event) => setRoleDraft(event.target.value)}
+                    onBlur={() => setAddingRole(false)}
+                  />
+                </form>
+              ) : (
+                <Button variant="ghost" size="sm" onClick={() => setAddingRole(true)}>
+                  <Plus className="size-3" strokeWidth={2} aria-hidden />
+                  Add
+                </Button>
+              )}
+            </li>
+          </ul>
+        </div>
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field
             label="Target roles"
@@ -478,7 +554,7 @@ export function Profile() {
           onDrop={drop.onDrop}
           className={`rounded-lg transition-colors ${
             drop.dragging
-              ? 'outline-2 outline-offset-4 outline-dashed outline-accent'
+              ? 'outline-2 outline-offset-4 outline-accent outline-dashed'
               : 'outline-none'
           }`}
         >
@@ -533,7 +609,9 @@ export function Profile() {
                         {f.size} · saved {agoLabel(f.savedOn, TODAY)}
                       </span>
                       {f.note ? (
-                        <span className="mt-1 line-clamp-2 block text-xs text-text-3">{f.note}</span>
+                        <span className="mt-1 line-clamp-2 block text-xs text-text-3">
+                          {f.note}
+                        </span>
                       ) : null}
                       {/* One chip per job. A CV goes to every application you
                           send it to, and showing one of them would misreport
@@ -562,7 +640,7 @@ export function Profile() {
                       onClick={() => {
                         onDeleteDocument(f)
                       }}
-                      className="pressable absolute top-2 right-2 cursor-pointer rounded-md p-1.5 text-text-3 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      className="pressable absolute top-2 right-2 cursor-pointer rounded-md p-1.5 text-text-3 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     >
                       <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
                     </button>

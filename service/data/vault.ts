@@ -10,6 +10,7 @@ import { FILE_BUCKET_VALUES, LINK_CATEGORY_VALUES, SNIPPET_TAG_VALUES } from '..
 import type {
   FileBucket,
   LinkCategory,
+  Person,
   Snippet,
   SnippetTag,
   VaultFile,
@@ -20,6 +21,7 @@ export type {
   FileBucket,
   FileKind,
   LinkCategory,
+  Person,
   Snippet,
   SnippetTag,
   VaultFile,
@@ -274,5 +276,70 @@ const snippetsRaw: (Omit<Snippet, 'applicationIds'> & { applicationIds?: string[
 export const vaultLinks: VaultLink[] = filed(vaultLinksRaw)
 
 export const vaultFiles: VaultFile[] = filed(vaultFilesRaw)
+
+/**
+ * The people a search is actually made of.
+ *
+ * These existed before the record type did, as prose inside reminders — "Chase
+ * the third reference letter for Texas Tech", "Ask D. Chen for a referral" —
+ * which is what a fixture set does when the model has nowhere to put a person.
+ * Those reminders stay: chasing a letter is a dated task and belongs on the
+ * timeline. What changes is that the person being chased is now a record the
+ * app can count, file and find.
+ *
+ * Filed under several applications where that is the truth of it. A referee
+ * writes for every job you name them on, and the whole argument for
+ * `FILED_UNDER` being many-to-many is that filing them under the last one
+ * edited would lose them from the other two.
+ */
+const peopleRaw: (Omit<Person, 'applicationIds'> & { applicationIds?: string[] })[] = [
+  {
+    id: 'p-mehta',
+    name: 'Anita Mehta',
+    role: 'Referee — advisor',
+    affiliation: 'Texas Tech',
+    email: 'a.mehta@ttu.edu',
+    note: 'Third letter still outstanding. Said to remind her the week of the deadline.',
+    applicationIds: ['texas-tech', 'rice', 'unt'],
+  },
+  {
+    id: 'p-chen',
+    name: 'D. Chen',
+    role: 'Referral — former colleague',
+    affiliation: 'Stripe',
+    email: 'dchen@stripe.com',
+    note: 'Offered to put the ML engineer application in front of the hiring manager.',
+    applicationIds: ['stripe'],
+  },
+  {
+    id: 'p-okafor',
+    name: 'Prof. Ngozi Okafor',
+    role: 'Search committee chair',
+    affiliation: 'Rice',
+    email: 'n.okafor@rice.edu',
+    note: 'Ran the first call. Asked for the teaching statement to say more about assessment.',
+    applicationIds: ['rice', 'rice-research'],
+  },
+  {
+    id: 'p-alvarez',
+    name: 'Sam Alvarez',
+    role: 'Recruiter',
+    affiliation: 'Databricks',
+    email: 'salvarez@databricks.com',
+    phone: '+1 415 555 0134',
+    applicationIds: ['databricks'],
+  },
+  {
+    id: 'p-lindqvist',
+    name: 'Erik Lindqvist',
+    role: 'Referee',
+    affiliation: 'KTH',
+    email: 'lindqvist@kth.se',
+    note: 'Submitted for Baylor and UT Austin already.',
+    applicationIds: ['baylor', 'ut-austin'],
+  },
+]
+
+export const people: Person[] = filed(peopleRaw)
 
 export const snippets: Snippet[] = filed(snippetsRaw)

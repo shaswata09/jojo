@@ -25,8 +25,10 @@ import {
 } from '@/components/ui/dialog'
 import { displayName } from '@/data/seed'
 import type { RoleTag } from '@/data/seed'
+import { duplicateMessage, findDuplicate } from '@jojo/service/core/duplicates'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
+import { appPath, hrefOutsideRouter } from '@/lib/links'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 
@@ -101,6 +103,21 @@ export function ApplicationDialog({
 
   /** Guessed values need checking; typed ones do not. See `draft-from.ts`. */
   const guessed = mode === 'create' && Boolean(initial?.org || initial?.role || initial?.url)
+
+  /**
+   * Whether this job is already in the store.
+   *
+   * A NOTICE, never a blocker. Three roles at one university is the case this
+   * product is for, so the rule in `core/duplicates.ts` only fires on the same
+   * posting URL or the same employer AND role — and even then the reader gets a
+   * link to what they already have beside a form that still saves. Recomputed as
+   * they type, because the address is usually pasted after the employer.
+   */
+  const duplicate = findDuplicate(
+    applications.all,
+    { org: form.org, role: form.role, url: form.url },
+    mode === 'edit' ? id : undefined,
+  )
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -251,6 +268,22 @@ export function ApplicationDialog({
                 : 'Track a job you are applying for. Starred fields are required.'}
           </DialogDescription>
         </DialogHeader>
+
+        {duplicate ? (
+          <div className="rounded-lg border border-warning-border bg-warning-soft px-3 py-2 text-xs text-warning">
+            {duplicateMessage(duplicate.reason, displayName(duplicate.record))}{' '}
+            {/* An anchor, not a `<Link>`: `DialogHost` mounts this outside the
+                router, where `<Link>` throws on a null context and takes the
+                app down with it. `hrefOutsideRouter` explains the basename. */}
+            <a
+              href={hrefOutsideRouter(appPath(duplicate.record))}
+              className="underline underline-offset-2"
+            >
+              Open the one you have
+            </a>
+            , or carry on and add this as a second record.
+          </div>
+        ) : null}
 
         {/* Native validation is off: it fires its own bubble before the submit
             handler runs, which would pre-empt the errors written below. */}

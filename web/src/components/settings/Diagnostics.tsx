@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import type { NodeType } from '@jojo/service/core/model'
@@ -9,6 +9,9 @@ import type { DataSet } from '@jojo/service/repo/meta'
 import { estimateStorage, isStoragePersisted } from '@/kg/storage/probe'
 import type { StorageEstimate } from '@/kg/storage/probe'
 import { sessionOf, useBoot } from '@/lib/boot-context'
+import { useSettingsParams } from '@/lib/links'
+import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
+import { cn } from '@/lib/utils'
 
 /**
  * What the store actually is, rather than what the app hopes it is.
@@ -43,6 +46,7 @@ const TYPE_LABEL: Record<NodeType, string> = {
   link: 'Links',
   file: 'Files',
   snippet: 'Snippets',
+  person: 'People',
   posting: 'Saved postings',
   match: 'Scout matches',
   pipeline: 'Scout pipelines',
@@ -72,21 +76,65 @@ function at(instant: string | null | undefined): string {
   return Number.isNaN(parsed.getTime()) ? instant : parsed.toLocaleString()
 }
 
-function Line({ label, value }: { label: string; value: ReactNode }) {
+/**
+ * One measurement.
+ *
+ * `tone` is deliberately not a general facility — exactly one row uses it. Every
+ * line here is a fact and most facts are unremarkable, so colouring them by
+ * default would spend the reader's attention on nothing. A row a banner sends
+ * somebody to find is the exception.
+ *
+ * `truncate` is dropped when there is a tone, because the value in that case is
+ * a list of record ids and the ids are the entire point of the row — clipping
+ * them at the panel edge is how a diagnostic becomes undiagnosable.
+ */
+const Line = forwardRef<
+  HTMLDivElement,
+  { label: string; value: ReactNode; tone?: 'warning'; className?: string }
+>(function Line({ label, value, tone, className }, ref) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-t border-hairline py-1.5 first:border-t-0">
-      <span className="text-xs text-text-3">{label}</span>
-      <span className="min-w-0 truncate text-right text-xs text-text-2">{value}</span>
+    <div
+      ref={ref}
+      className={cn(
+        'flex items-baseline justify-between gap-4 border-t border-hairline py-1.5 first:border-t-0',
+        tone === 'warning' && 'rounded-sm border-t-0 bg-warning-soft px-2',
+        className,
+      )}
+    >
+      <span className={cn('text-xs', tone === 'warning' ? 'text-text-1' : 'text-text-3')}>
+        {label}
+      </span>
+      <span
+        className={cn(
+          'min-w-0 text-right text-xs',
+          tone === 'warning' ? 'wrap-anywhere text-text-1' : 'truncate text-text-2',
+        )}
+      >
+        {value}
+      </span>
     </div>
   )
-}
+})
 
 export function Diagnostics() {
   const { state } = useBoot()
+  /*
+   * The deep link from `StorageBanner`. Scrolled to and lit rather than merely
+   * present, because "present" is what it already was when this was reported as
+   * missing.
+   */
+  const { focus, clearFocus } = useSettingsParams()
+  const skippedRef = useRef<HTMLDivElement>(null)
+  useArrivalHighlight(focus, clearFocus)
+  useEffect(() => {
+    if (focus !== 'skipped') return
+    skippedRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [focus])
   const { health } = useStoreStatus()
   const { repo } = useKg()
   const graph = useGraph()
   const session = sessionOf(state)
+  const skippedCount = session?.skipped.length ?? 0
 
   /**
    * Asked once when the panel opens, never at boot.
@@ -213,11 +261,33 @@ export function Diagnostics() {
            * and not on screen, and the id is the only thing that makes it
            * findable again.
            */}
+          {/*
+           * THE ROW THE BANNER SENDS PEOPLE TO, which is why it is the only one
+           * here that is allowed to shout.
+           *
+           * It used to read "Records skipped as corrupt" in the same grey as
+           * "Last opened" and "Space used", sixth in a column of telemetry, in
+           * the seventh of nine panels, three and a half screens down. The
+           * banner promises "Settings → Diagnostics lists what they are" and it
+           * technically did — but a reader who had been told about records that
+           * "could not be read" was scanning for those words, and the line in
+           * front of them said "skipped as corrupt". Reported as "could not
+           * find anything in diagnostics", and they were right to.
+           *
+           * Three things changed and all three were needed: the label now uses
+           * the banner's words, the row takes a warning tone when the count is
+           * not zero, and `focus` lights it on arrival so the link lands ON it
+           * rather than near it. Zero stays unremarkable — "none" is good news
+           * and should not look like an alert.
+           */}
           <Line
-            label="Records skipped as corrupt"
+            ref={skippedRef}
+            tone={skippedCount > 0 ? 'warning' : undefined}
+            className={focus === 'skipped' ? 'arrival-highlight' : undefined}
+            label="Records that could not be read"
             value={
-              session && session.skipped.length > 0
-                ? `${session.skipped.length} — ${session.skipped.map((d) => d.id).join(', ')}`
+              skippedCount > 0
+                ? `${skippedCount} — ${(session?.skipped ?? []).map((d) => d.id).join(', ')}`
                 : 'none'
             }
           />

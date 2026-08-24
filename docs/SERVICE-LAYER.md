@@ -1,7 +1,8 @@
 # The service layer
 
-`@jojo/service` is the knowledge graph, its tools, its React binding and the demo
-fixtures — imported by `web` and by `mobile`, owned by neither. This file records
+`@jojo/service` is the knowledge graph, its tools, the agent that drives them,
+its React binding and the demo fixtures — imported by `web` and by `mobile`,
+owned by neither. This file records
 the things about that boundary that are true but not obvious from reading it:
 the resolution traps, the guards that are load-bearing rather than decorative,
 and the reconciliations that were decided in writing rather than discovered as

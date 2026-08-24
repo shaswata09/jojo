@@ -337,6 +337,7 @@ describe('the meta row a choice writes', () => {
       lastOpenedAt: NOW,
       dataSet: 'user' as const,
       seededAt: NOW,
+      handoverAt: null,
     }
 
     const next = metaFor(current, 'empty', LATER)

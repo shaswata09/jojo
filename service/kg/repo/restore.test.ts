@@ -22,6 +22,7 @@ const META: StoreMeta = {
   lastOpenedAt: '2026-01-01T00:00:00.000Z',
   dataSet: 'demo',
   seededAt: '2026-01-01T00:00:00.000Z',
+  handoverAt: null,
 }
 
 /**

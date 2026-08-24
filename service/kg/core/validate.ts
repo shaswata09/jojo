@@ -32,14 +32,7 @@
  * absolute claim a single grep refuted. Twice is a pattern worth naming.
  */
 
-import type {
-  NodePropsByType,
-  NodeType,
-  Rel,
-  StoredEdge,
-  StoredNode,
-  ThreadEntry,
-} from './model'
+import type { NodePropsByType, NodeType, Rel, StoredEdge, StoredNode, ThreadEntry } from './model'
 import {
   EDGE_SCHEMA,
   FILE_BUCKET_VALUES,
@@ -51,7 +44,6 @@ import {
   PIPELINE_KINDS,
   PROPOSAL_STATUSES,
   RELS,
-  ROLES,
   SNIPPET_TAG_VALUES,
   SOURCES,
   STAGE_VALUES,
@@ -138,7 +130,10 @@ export const NODE_PROP_SCHEMAS = {
     slug,
     role: s.string({ label: 'Role' }),
     note: s.string({ label: 'Note', multiline: true }),
-    roleTag: s.enum(ROLES, { label: 'Role type' }),
+    // Free text, not an enum. The vocabulary is the profile's `roles`
+    // now, so a schema that pinned it to five would refuse the sixth the
+    // moment a user added one. `roleVocabulary` is what offers the list.
+    roleTag: s.string({ min: 1, label: 'Role type' }),
     stage: s.enum(STAGE_VALUES, { label: 'Stage' }),
     flagged: s.optional(s.boolean({ label: 'Flagged' })),
     lastAction: s.string({ label: 'Last action' }),
@@ -222,6 +217,26 @@ export const NODE_PROP_SCHEMAS = {
     body: s.string({ label: 'Body', multiline: true }),
   }),
   /**
+   * Someone in the search. Only the name is required.
+   *
+   * Every other field is optional because the first thing recorded about a
+   * referee is usually that they exist and have not sent the letter — and a
+   * schema that demanded an email before it would keep a name is a schema
+   * people work around by typing the name into a note, which is the state this
+   * replaces. `email` is not validated as an address: half of what lands here
+   * is pasted out of a signature block, and rejecting `a.chen (at) rice.edu`
+   * would lose the only contact detail the user has.
+   */
+  person: s.object({
+    slug,
+    name: s.string({ min: 1, label: 'Name' }),
+    role: s.optional(s.string({ label: 'Role' })),
+    affiliation: s.optional(s.string({ label: 'Affiliation' })),
+    email: s.optional(s.string({ label: 'Email' })),
+    phone: s.optional(s.string({ label: 'Phone' })),
+    note: s.optional(s.string({ label: 'Note', multiline: true })),
+  }),
+  /**
    * A conversation, validated loosely on purpose.
    *
    * `entries` is `s.unknown()` and every other schema here is exact, so the
@@ -300,6 +315,7 @@ export const NODE_PROP_SCHEMAS = {
   profile: s.object({
     text: profileTextSchema,
     matchTerms: s.array(s.string({ min: 1 }), { label: 'Match terms' }),
+    roles: s.array(s.string({ min: 1 }), { label: 'Role tags' }),
     includeAcademia: s.boolean({ label: 'Include academia' }),
     includeIndustry: s.boolean({ label: 'Include industry' }),
   }),

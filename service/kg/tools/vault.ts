@@ -60,6 +60,124 @@ function fileUnder(ctx: ToolContext, id: NodeId, appIds: readonly NodeId[] | nul
   for (const appId of appIds) ctx.tx.link(id, 'FILED_UNDER', appId)
 }
 
+/* --------------------------------- people --------------------------------- */
+
+const personId = s.id('person', { label: 'Person' })
+
+/**
+ * The optional half of a person, in one place.
+ *
+ * Everything except the name is optional, and `cleared` above is what makes an
+ * emptied field actually empty rather than a stored `''` — a note wiped in the
+ * form has to leave the record, or the Vault goes on rendering a blank line
+ * under the name forever.
+ */
+const personDetails = {
+  role: s.optional(s.string({ label: 'Role' })),
+  affiliation: s.optional(s.string({ label: 'Affiliation' })),
+  email: s.optional(s.string({ label: 'Email' })),
+  phone: s.optional(s.string({ label: 'Phone' })),
+  note: s.optional(s.string({ label: 'Note', multiline: true })),
+}
+
+export const vaultPersonCreate = defineTool({
+  name: 'vault.person.create',
+  title: 'Add person',
+  summary: 'Remembers someone in the search — a referee, a chair, a recruiter.',
+  effect: 'create',
+  touches: ['person'],
+  input: s.object({
+    name: s.string({ min: 1, label: 'Name' }),
+    ...personDetails,
+    applicationIds,
+  }),
+
+  run(ctx, input): NodeId {
+    const id = ctx.newId('person')
+    // Bound before the spread rather than called inside it: under
+    // `exactOptionalPropertyTypes` a property whose value is `string |
+    // undefined` is not the same type as an absent one, and only the binding
+    // narrows it. A blank field has to be ABSENT, not stored as '', or the
+    // Vault renders an empty line under the name for ever.
+    const role = cleared(input.role)
+    const affiliation = cleared(input.affiliation)
+    const email = cleared(input.email)
+    const phone = cleared(input.phone)
+    const note = cleared(input.note)
+    ctx.tx.put({
+      id,
+      type: 'person',
+      props: {
+        slug: ctx.mintSlug('person', input.name),
+        name: input.name.trim(),
+        ...(role === undefined ? {} : { role }),
+        ...(affiliation === undefined ? {} : { affiliation }),
+        ...(email === undefined ? {} : { email }),
+        ...(phone === undefined ? {} : { phone }),
+        ...(note === undefined ? {} : { note }),
+      },
+      createdAt: ctx.now,
+      updatedAt: ctx.now,
+    })
+    fileUnder(ctx, id, input.applicationIds)
+    return id
+  },
+
+  describe: (input) => ({ title: 'Person saved', description: input.name.trim() }),
+})
+
+export const vaultPersonUpdate = defineTool({
+  name: 'vault.person.update',
+  title: 'Edit person',
+  summary: 'Saves what you know about them, and which jobs they are named on.',
+  effect: 'update',
+  touches: ['person'],
+  input: s.object({
+    id: personId,
+    name: s.optional(s.string({ min: 1, label: 'Name' })),
+    ...personDetails,
+    applicationIds,
+  }),
+
+  run(ctx, input) {
+    ctx.require('person', input.id)
+    ctx.tx.patch<'person'>(input.id, {
+      ...(input.name === undefined ? {} : { name: input.name.trim() }),
+      ...(input.role === undefined ? {} : { role: cleared(input.role) }),
+      ...(input.affiliation === undefined ? {} : { affiliation: cleared(input.affiliation) }),
+      ...(input.email === undefined ? {} : { email: cleared(input.email) }),
+      ...(input.phone === undefined ? {} : { phone: cleared(input.phone) }),
+      ...(input.note === undefined ? {} : { note: cleared(input.note) }),
+    })
+    fileUnder(ctx, input.id, input.applicationIds)
+  },
+
+  describe: (input, _output, m) => ({
+    title: 'Person saved',
+    description: m.node(input.id, 'person')?.props.name ?? '',
+  }),
+})
+
+export const vaultPersonDelete = defineTool({
+  name: 'vault.person.delete',
+  title: 'Remove person',
+  summary: 'Removes them from the Vault. The jobs they were named on are untouched.',
+  effect: 'delete',
+  touches: ['person'],
+  input: s.object({ id: personId }),
+
+  run(ctx, input) {
+    ctx.require('person', input.id)
+    ctx.tx.del(input.id)
+  },
+
+  describe: (input, _output, m) => ({
+    title: 'Person removed',
+    description: m.node(input.id, 'person')?.props.name ?? '',
+    tone: 'danger',
+  }),
+})
+
 /* ---------------------------------- links --------------------------------- */
 
 const linkId = s.id('link', { label: 'Link' })

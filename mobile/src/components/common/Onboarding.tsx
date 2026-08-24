@@ -69,7 +69,7 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
 
   if (!offered.details && (fresh || isBlank)) {
     // `fresh` is what makes the demo path work. Choosing the demo records seeds
-    // a whole profile — 'Alex Rahman' and a stranger's links — so `isBlank` is
+    // a whole profile — 'Shaswata Mitra' and a stranger's links — so `isBlank` is
     // false and this step would skip itself for the newest user there is.
     return <WelcomeDetails fresh={fresh} onDone={() => finish('details')} />
   }

@@ -55,6 +55,7 @@ import {
 import { applications as seedApplications } from '../../data/seed'
 import { addDays, seedOffset, timeline as seedTimeline } from '../../data/timeline'
 import {
+  people as seedPeople,
   snippets as seedSnippets,
   vaultFiles as seedFiles,
   vaultLinks as seedLinks,
@@ -70,6 +71,7 @@ import type {
   NodeId,
   NodePropsByType,
   NodeType,
+  PersonProps,
   PipelineProps,
   PostingProps,
   Rel,
@@ -259,7 +261,7 @@ export function seedToGraph(now: Instant): SeedGraph {
    * a store the user has actually filed things in, and for the round-trip test
    * to keep proving that "unlink, never cascade" has something to unlink.
    */
-  function filed<T extends 'link' | 'file' | 'snippet'>(
+  function filed<T extends 'link' | 'file' | 'snippet' | 'person'>(
     type: T,
     fixtureId: string,
     applicationIds: readonly string[],
@@ -299,6 +301,15 @@ export function seedToGraph(now: Instant): SeedGraph {
     const { id: fixtureId, applicationIds, ...rest } = record
     const props: SnippetProps = { ...rest, slug: mintSlug('snippet', fixtureId) }
     filed('snippet', fixtureId, applicationIds, props)
+  }
+
+  // The first fixtures with FILED_UNDER edges in them, and deliberately so: a
+  // referee who writes for three jobs is the case the many-to-many cardinality
+  // was argued for, and until now the seeded graph demonstrated it nowhere.
+  for (const record of seedPeople) {
+    const { id: fixtureId, applicationIds, ...rest } = record
+    const props: PersonProps = { ...rest, slug: mintSlug('person', fixtureId) }
+    filed('person', fixtureId, applicationIds, props)
   }
 
   /* ---------------------------------- scout --------------------------------- */

@@ -72,6 +72,23 @@ export const NODE_TYPES = [
   'pipeline',
   'profile',
   /*
+   * Someone in the search: a referee, a hiring chair, a recruiter, the person
+   * who ran the screening call.
+   *
+   * A node rather than a field on the application, because the whole point of
+   * a person is that they are not attached to one job. A referee writes for
+   * nine applications and is chased once; a chair interviews you for two roles
+   * in the same department. Modelled as a field, each of those becomes a copy
+   * per application, and "who have I not thanked" stops being answerable.
+   *
+   * They were free text until now, and the seeded data shows what that cost:
+   * "Chase the third reference letter for Texas Tech" is a REMINDER, because a
+   * reminder was the only shape available for a fact about a person. Nothing
+   * could count outstanding letters, list everyone at one university, or notice
+   * that the same referee is late for three jobs.
+   */
+  'person',
+  /*
    * A conversation with the assistant.
    *
    * It earns a node by the rule at the top of this file — the user can rename it
@@ -114,7 +131,14 @@ export const RELS = ['AT', 'ABOUT', 'FILED_UNDER', 'TAGS', 'FROM', 'BECAME', 'CO
 export type Rel = (typeof RELS)[number]
 
 /** The record types a keyword may sit on. One flat namespace, deliberately. */
-export const TAGGABLE = ['application', 'timelineItem', 'link', 'file', 'snippet'] as const
+export const TAGGABLE = [
+  'application',
+  'timelineItem',
+  'link',
+  'file',
+  'snippet',
+  'person',
+] as const
 
 export type Taggable = (typeof TAGGABLE)[number]
 
@@ -182,7 +206,10 @@ export const EDGE_SCHEMA: { readonly [R in Rel]: EdgeSpec } = {
     // A thread files under an application exactly as a document does, which is
     // the whole reason it is this relation and not a new one: "everything about
     // the Rice job" should return the conversation alongside the CV.
-    from: ['link', 'file', 'snippet', 'thread'],
+    // A person files under an application exactly as a CV does, and for exactly
+    // the reason the cardinality note below gives: one referee goes to every job
+    // you name them on.
+    from: ['link', 'file', 'snippet', 'thread', 'person'],
     to: ['application'],
     // Many. One CV goes to every application you send it to, and filing it under
     // whichever you touched last is not filing it — it is losing it from the
@@ -366,14 +393,32 @@ export type OfferApplication = Application & { offer: NonNullable<Application['o
  * postdoc and a lecturer are both academia but nothing like each other, and
  * the split told you nothing you could act on.
  */
-export const ROLES = [
+export const DEFAULT_ROLES = [
   'Assistant Professor',
   'Postdoc',
   'Researcher',
   'ML Engineer',
   'Lecturer',
 ] as const
-export type RoleTag = (typeof ROLES)[number]
+
+/**
+ * A role tag is now any string, and the five above are only where a new store
+ * starts.
+ *
+ * They were a closed union, and `roleTag` is REQUIRED on every application and
+ * drives the role filter and every per-role figure in Statistics — so the five
+ * were not a default, they were the only shapes a job search was allowed to
+ * take. Anyone outside academic CS had to file their search under a label that
+ * was not true, and because the charts read the field, a wrong tag quietly
+ * corrupted the analysis the app is best at.
+ *
+ * The vocabulary lives on the profile now, beside `matchTerms`, for the reason
+ * that list is there: it is a fact about this person's search rather than about
+ * the code. `ROLES` stays exported as an alias so nothing that only wanted the
+ * seed's five had to change.
+ */
+export type RoleTag = string
+export const ROLES = DEFAULT_ROLES
 
 export const TIMELINE_KIND_VALUES = [
   'deadline',
@@ -621,8 +666,36 @@ export type Profile = {
    * see the panel copy, which has to keep the two apart for the reader too.
    */
   matchTerms: string[]
+  /**
+   * The role tags this search uses, in the order they are offered.
+   *
+   * Seeded from `DEFAULT_ROLES` and editable in Profile. An application may
+   * still carry a tag that is no longer in here — deleting a role must not
+   * rewrite records — so every reader that needs the full vocabulary takes the
+   * union of this and what is actually in use. `roleVocabulary` does that.
+   */
+  roles: string[]
   includeAcademia: boolean
   includeIndustry: boolean
+}
+
+/**
+ * Every role tag worth offering: the profile's list, plus any still on a record.
+ *
+ * The second half is what makes deleting a role safe. Without it, removing
+ * "Lecturer" from the profile would hide every lecturer application from the
+ * filter and drop them out of the per-role table — the records would still be
+ * there and the app would have stopped admitting it.
+ */
+export function roleVocabulary(
+  roles: readonly string[],
+  inUse: readonly { roleTag: string }[],
+): string[] {
+  const out = [...roles]
+  for (const record of inUse) {
+    if (record.roleTag && !out.includes(record.roleTag)) out.push(record.roleTag)
+  }
+  return out
 }
 
 /* ----------------------------- stored props ------------------------------- */
@@ -980,6 +1053,71 @@ export type ThreadProps = {
   autoApprove?: boolean
 }
 
+/**
+ * What is worth keeping about someone, and deliberately not more.
+ *
+ * `name` is the only required field, because the first thing anyone records
+ * about a referee is that they exist and are late. Everything else is filled in
+ * when it turns out to matter — a form that demanded an email before it would
+ * remember a name would be a form people work around in the note field, which
+ * is the state this replaces.
+ *
+ * `role` is THEIR role, not the job's: "Hiring chair", "Referee", "Recruiter".
+ * It is free text rather than a union for the reason `ROLES` is a union and
+ * should not be — the shapes a search takes are not knowable from here, and a
+ * closed list would send half of them into the note.
+ *
+ * `affiliation` AND NOT `org`, and the name is the point. On an application,
+ * `org` is a pointer — the employer is the `organisation` node on the other end
+ * of `AT`, and `seed.test.ts` bans the key outright to keep it that way. A
+ * person's affiliation is not that: a referee at KTH is named on two Baylor
+ * applications and there is no KTH organisation in the store, nor should there
+ * be. It is a fact about them, in their own words, and it points at nothing.
+ */
+export type PersonProps = {
+  slug: string
+  name: string
+  role?: string
+  affiliation?: string
+  email?: string
+  phone?: string
+  note?: string
+}
+
+/**
+ * An employer, with the applications you have made to it.
+ *
+ * The node has existed since the graph did — every application points `AT` one —
+ * and nothing ever showed it. Apply for three roles at one university, which the
+ * seeded data itself does, and there was no way to see them together or to
+ * notice that two of them share a deadline week and a search chair.
+ *
+ * DERIVED FROM THE EDGES rather than stored: `applicationIds` is the `AT`
+ * relation read backwards, which is the rule this file states at the top —
+ * the edge is the storage and a field would be a copy of it.
+ */
+export type Organisation = {
+  id: string
+  name: string
+  slug: string
+  /** Every application at this employer, newest edge last. */
+  applicationIds: string[]
+}
+
+/** A person, with the jobs they are named on. See `PersonProps`. */
+export type Person = {
+  id: string
+  name: string
+  role?: string
+  /** Where they are, in their own words. Not a pointer — see `PersonProps`. */
+  affiliation?: string
+  email?: string
+  phone?: string
+  note?: string
+  /** Every application this person is named on, newest edge last. */
+  applicationIds: string[]
+}
+
 export type NodePropsByType = {
   application: ApplicationProps
   organisation: OrganisationProps
@@ -992,6 +1130,7 @@ export type NodePropsByType = {
   match: MatchProps
   pipeline: PipelineProps
   profile: ProfileProps
+  person: PersonProps
   thread: ThreadProps
   proposal: ProposalProps
 }

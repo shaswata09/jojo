@@ -13,6 +13,7 @@
  * fixture module in fact as well as in name.
  */
 
+import { DEFAULT_ROLES } from './model'
 import type { Profile, ProfileText } from './model'
 
 const BLANK_TEXT: ProfileText = {
@@ -44,6 +45,10 @@ const BLANK_TEXT: ProfileText = {
 export const emptyProfile = (): Profile => ({
   text: { ...BLANK_TEXT },
   matchTerms: [],
+  // Seeded even on an empty profile, because `roleTag` is required on every
+  // application: a store with no roles in it would open a create form whose
+  // one mandatory picker had nothing to pick.
+  roles: [...DEFAULT_ROLES],
   includeAcademia: true,
   includeIndustry: true,
 })

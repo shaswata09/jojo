@@ -1,7 +1,8 @@
 # jojo — keep this posting
 
-A browser extension that saves a job posting into your jojo vault, exactly as it
-reads today.
+A browser extension with two jobs: it saves a job posting into your jojo vault
+exactly as it reads today, and it is how the Job Scout agent reads a job board —
+nothing else in jojo can open a web page.
 
 It exists because a job posting is the one document in a search that belongs to
 somebody else. The listing comes down the week after the interview and takes the

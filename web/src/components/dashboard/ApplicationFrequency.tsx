@@ -6,13 +6,14 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { Button } from '@/components/ui/button'
-import { PERIODS, ROLES, type Period, type RoleTag } from '@/data/seed'
+import { PERIODS, type Period, type RoleTag } from '@/data/seed'
+import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { TODAY } from '@/lib/today'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 
-/** Chart slots, indexed by ROLES order so a role keeps its colour whichever
+/** Chart slots, indexed by the store's role order so a role keeps its colour whichever
  *  other roles happen to be in the store. */
 const SLOT = [
   'var(--series-1)',
@@ -55,7 +56,8 @@ function niceDomain(rawMax: number) {
   return { top: rawMax, ticks: [0, rawMax] }
 }
 
-const blankCounts = () => Object.fromEntries(ROLES.map((r) => [r, 0])) as Record<RoleTag, number>
+const blankCounts = (roles: readonly string[]) =>
+  Object.fromEntries(roles.map((r) => [r, 0])) as Record<RoleTag, number>
 
 /**
  * When you applied, from your own records.
@@ -72,6 +74,7 @@ export function ApplicationFrequencyBody() {
   const [period, setPeriod] = useState<Period>('week')
 
   const { all } = useApplications()
+  const vocabulary = useRoleVocabulary()
   const { open } = useDialogs()
 
   const { data, series, inWindow, undated, earlier, firstLabel } = useMemo(() => {
@@ -84,7 +87,7 @@ export function ApplicationFrequencyBody() {
     const to = dates.reduce((max, d) => (d > max ? d : max), TODAY)
     const keys = bucketKeys(from, to, period)
 
-    const counts = new Map(keys.map((k) => [k, blankCounts()]))
+    const counts = new Map(keys.map((k) => [k, blankCounts(vocabulary)]))
     let hit = 0
     for (const a of dated) {
       const row = counts.get(bucketKey(sentOn(a) as string, period))
@@ -97,17 +100,17 @@ export function ApplicationFrequencyBody() {
       data: keys.map((key) => ({ label: bucketLabel(key, period), counts: counts.get(key)! })),
       // Only the roles actually present get a series — an always-empty legend
       // entry is a filter that filters nothing.
-      series: ROLES.filter((role) => dated.some((a) => a.roleTag === role)).map((role) => ({
+      series: vocabulary.filter((role) => dated.some((a) => a.roleTag === role)).map((role) => ({
         key: role,
         label: role,
-        color: SLOT[ROLES.indexOf(role) % SLOT.length],
+        color: SLOT[vocabulary.indexOf(role) % SLOT.length],
       })),
       inWindow: hit,
       undated: all.length - dated.length,
       earlier: dated.length - hit,
       firstLabel: keys.length > 0 ? bucketLabel(keys[0], period) : '',
     }
-  }, [all, period])
+  }, [all, period, vocabulary])
 
   const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(series.map((s) => s.key))
   const visible = series.filter((s) => !isHidden(s.key))

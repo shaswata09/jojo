@@ -234,7 +234,7 @@ export const STEPS: TourStep[] = [
       kind: 'route',
       label: 'Open the Vault',
       to: vaultPath(),
-      note: 'Reminders, links, files, snippets and a calculator — the five tools that are not the applications list.',
+      note: 'Reminders, links, files, snippets, the people the search runs through, and a calculator — everything that is not the applications list.',
     },
   },
 ]

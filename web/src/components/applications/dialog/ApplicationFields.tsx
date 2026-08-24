@@ -15,7 +15,8 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ROLES, SOURCES, STAGES } from '@/data/seed'
+import { SOURCES, STAGES } from '@/data/seed'
+import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import type { RoleTag, Source } from '@/data/seed'
 import { cn } from '@/lib/utils'
 
@@ -38,6 +39,7 @@ function RoleTagField({
   error?: string
   onSelect: (role: RoleTag) => void
 }) {
+  const vocabulary = useRoleVocabulary()
   const [rolesOpen, setRolesOpen] = useState(false)
   // A <button> is a labelable element, so pointing the field's label at the
   // trigger both names it and makes the label click through to it.
@@ -74,7 +76,7 @@ function RoleTagField({
             <CommandList>
               <CommandEmpty>No role tag matches.</CommandEmpty>
               <CommandGroup>
-                {ROLES.map((role) => (
+                {vocabulary.map((role) => (
                   <CommandItem
                     key={role}
                     value={role}

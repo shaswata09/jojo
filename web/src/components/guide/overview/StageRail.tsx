@@ -32,7 +32,7 @@ export function StageRail() {
       viewBox={`0 0 200 ${height}`}
       role="img"
       aria-labelledby="stage-rail-title stage-rail-desc"
-      className="h-auto w-full max-w-[260px]"
+      className="diagram h-auto w-full max-w-[260px]"
     >
       <title id="stage-rail-title">The six stages an application moves through</title>
       <desc id="stage-rail-desc">

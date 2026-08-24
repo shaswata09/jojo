@@ -39,6 +39,20 @@ export type StoreMeta = {
   dataSet: DataSet
   /** null when the user explicitly chose an empty store. */
   seededAt: Instant | null
+  /**
+   * When this store last took part in a Transfer — sent or received.
+   *
+   * `null` on a store that has never been in one, which is most of them. It
+   * exists so the app can say how far the OTHER device has drifted: Transfer is
+   * one-directional and manual, so two devices start disagreeing the moment
+   * either is used after a handover, and nothing said so. Divergence you can see
+   * is a different thing from divergence you discover.
+   *
+   * Optional in the reader below rather than required, because every store
+   * written before this field existed has no value for it and a boot that
+   * called those corrupt would lose people their records over a status line.
+   */
+  handoverAt: Instant | null
 }
 
 const DATA_SETS: readonly DataSet[] = ['demo', 'empty', 'user']
@@ -55,6 +69,7 @@ export function freshMeta(now: Instant, dataSet: DataSet): StoreMeta {
     // A store the user asked to be empty was never seeded, and saying otherwise
     // would be the one field that could talk boot into replacing their choice.
     seededAt: dataSet === 'demo' ? now : null,
+    handoverAt: null,
   }
 }
 
@@ -88,6 +103,9 @@ export function readMeta(rows: readonly MetaRow[]): StoreMeta | null | 'corrupt'
     lastOpenedAt: m['lastOpenedAt'],
     dataSet: m['dataSet'],
     seededAt: m['seededAt'] as Instant | null,
+    // Absent on every store written before the field existed. Read as "never
+    // handed over", which is true of them, rather than as damage.
+    handoverAt: typeof m['handoverAt'] === 'string' ? (m['handoverAt'] as Instant) : null,
   }
 }
 
@@ -108,3 +126,16 @@ export const opened = (meta: StoreMeta, now: Instant): StoreMeta => ({
  */
 export const touched = (meta: StoreMeta): StoreMeta =>
   meta.dataSet === 'user' ? meta : { ...meta, dataSet: 'user' }
+
+/**
+ * Stamped when a Transfer completes, at either end.
+ *
+ * Both ends, and that is the point: the sender needs it to know how much it has
+ * changed since the copy it handed over, and the receiver needs it to know how
+ * old the copy it is holding is. One field, two readings, and `handoverStatus`
+ * in `core/handover.ts` turns either into a sentence.
+ */
+export const handedOver = (meta: StoreMeta, now: Instant): StoreMeta => ({
+  ...meta,
+  handoverAt: now,
+})

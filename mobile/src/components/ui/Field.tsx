@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Pressable, StyleSheet, Switch, TextInput, View } from 'react-native'
+import { Linking, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native'
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
+import { IconButton } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
+import { openHref } from '@/lib/urls'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { fonts, radius, space, type } from '@/theme/tokens'
@@ -78,41 +80,75 @@ export function TextField({
   const c = useColors()
   const [focused, setFocused] = useState(false)
 
+  /*
+   * The button that opens what a URL field holds.
+   *
+   * A saved link sitting in a text box is somewhere you cannot go: on a phone,
+   * visiting it means long-pressing, selecting, copying and pasting into a
+   * browser. Four of those sit on the profile screen alone.
+   *
+   * It keys off `keyboardType` rather than a prop of its own — a field that
+   * asks for the URL keyboard has already said the thing this needs to know, so
+   * the affordance arrives on every URL field at once rather than wherever
+   * somebody remembered to ask for it. `openHref` keeps it honest: an empty
+   * field, a half-typed one, `localhost` and `javascript:` all produce no
+   * button. Single-line only, because a multi-line field holds prose.
+   */
+  const href =
+    rest.keyboardType === 'url' && !multiline ? openHref(String(rest.value ?? '')) : undefined
+
   return (
     <FormField label={label} hint={hint} error={error} required={required} style={style}>
-      <TextInput
-        {...rest}
-        multiline={multiline}
-        placeholderTextColor={c.text3}
-        onFocus={(e) => {
-          setFocused(true)
-          rest.onFocus?.(e)
-        }}
-        onBlur={(e) => {
-          setFocused(false)
-          rest.onBlur?.(e)
-        }}
-        style={[
-          styles.input,
-          {
-            // A field that cannot be typed in has to look like one. RN dims the
-            // text on neither platform, so an `editable={false}` field with the
-            // same ink as the one above it reads as a field the user is failing
-            // to focus rather than one that is waiting on something.
-            color: rest.editable === false ? c.text3 : c.text1,
-            backgroundColor: c.well,
-            fontFamily: mono ? fonts.mono : fonts.regular,
-            // The focus ring is the accent at full opacity. The web app
-            // measured its old translucent ring at 2.97:1 and 1.83:1 — it
-            // failed WCAG 1.4.11 in both themes, on every hand-rolled control.
-            borderColor: error ? c.danger : focused ? c.accent : c.hairlineStrong,
-            borderWidth: focused || error ? 1.5 : StyleSheet.hairlineWidth,
-            minHeight: multiline ? 96 : 44,
-            textAlignVertical: multiline ? 'top' : 'center',
-            paddingTop: multiline ? space[2.5] : 0,
-          },
-        ]}
-      />
+      <View>
+        <TextInput
+          {...rest}
+          multiline={multiline}
+          placeholderTextColor={c.text3}
+          onFocus={(e) => {
+            setFocused(true)
+            rest.onFocus?.(e)
+          }}
+          onBlur={(e) => {
+            setFocused(false)
+            rest.onBlur?.(e)
+          }}
+          style={[
+            styles.input,
+            {
+              // A field that cannot be typed in has to look like one. RN dims the
+              // text on neither platform, so an `editable={false}` field with the
+              // same ink as the one above it reads as a field the user is failing
+              // to focus rather than one that is waiting on something.
+              color: rest.editable === false ? c.text3 : c.text1,
+              backgroundColor: c.well,
+              fontFamily: mono ? fonts.mono : fonts.regular,
+              // The focus ring is the accent at full opacity. The web app
+              // measured its old translucent ring at 2.97:1 and 1.83:1 — it
+              // failed WCAG 1.4.11 in both themes, on every hand-rolled control.
+              borderColor: error ? c.danger : focused ? c.accent : c.hairlineStrong,
+              borderWidth: focused || error ? 1.5 : StyleSheet.hairlineWidth,
+              minHeight: multiline ? 96 : 44,
+              textAlignVertical: multiline ? 'top' : 'center',
+              paddingTop: multiline ? space[2.5] : 0,
+              // Conditional, because the button is: a URL field with nothing
+              // openable in it must not sit indented for a control that is not
+              // there.
+              paddingRight: href ? 44 : space[3],
+            },
+          ]}
+        />
+        {href ? (
+          <IconButton
+            icon="external-link"
+            label={`Open ${label}`}
+            size={36}
+            style={styles.open}
+            onPress={() => {
+              void Linking.openURL(href)
+            }}
+          />
+        ) : null}
+      </View>
     </FormField>
   )
 }
@@ -196,6 +232,8 @@ const styles = StyleSheet.create({
     fontSize: type.base,
   },
   hint: { marginTop: 0 },
+  // Centred against the input's 44pt minimum height.
+  open: { position: 'absolute', right: 4, top: 4 },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',

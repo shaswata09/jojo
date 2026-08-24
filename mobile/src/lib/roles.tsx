@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ROLES, type RoleTag } from '@jojo/service/data/seed'
+import type { RoleTag } from '@jojo/service/data/seed'
 import { RolesContext } from '@/lib/roles-context'
 
 /**
@@ -12,6 +12,13 @@ import { RolesContext } from '@/lib/roles-context'
  * An empty selection means "everything" rather than "nothing", so the app
  * opens unfiltered and clearing the filter is the same gesture as never
  * having set one.
+ *
+ * SELECTION ONLY. It used to hold `activeRoles` too, derived from the five-entry
+ * `ROLES` constant — but the vocabulary is the profile's now and this provider
+ * sits above the store, so it cannot read one. `useRoleVocabulary` does, and a
+ * consumer that wants "the roles currently showing" filters that list through
+ * `matches`. Keeping the selection out here is what lets the filter survive
+ * a route change, which is why it was above the store in the first place.
  */
 export function RolesProvider({ children }: { children: ReactNode }) {
   const [selected, setSelected] = useState<ReadonlySet<RoleTag>>(() => new Set<RoleTag>())
@@ -33,14 +40,9 @@ export function RolesProvider({ children }: { children: ReactNode }) {
     [selected],
   )
 
-  const activeRoles = useMemo(
-    () => (selected.size === 0 ? [...ROLES] : ROLES.filter((r) => selected.has(r))),
-    [selected],
-  )
-
   const value = useMemo(
-    () => ({ selected, toggle, setAll, clear, matches, activeRoles }),
-    [selected, toggle, setAll, clear, matches, activeRoles],
+    () => ({ selected, toggle, setAll, clear, matches }),
+    [selected, toggle, setAll, clear, matches],
   )
 
   return <RolesContext value={value}>{children}</RolesContext>

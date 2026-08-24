@@ -1,8 +1,16 @@
-import { fold } from '@/lib/search'
-import type { Profile } from '@jojo/service/data/profile'
+import type { Profile } from './model'
+import { fold } from './text'
 
 /**
  * How well something matches what you said you are looking for.
+ *
+ * IN `core` RATHER THAN ON ONE PLATFORM, and that is the whole reason it moved.
+ * It lived in `mobile/src/lib`, so the phone computed a real percentage against
+ * the user's own profile while the web app went on rendering the seeded fixture
+ * numbers under a panel captioned "example scores". Same product, same profile,
+ * two different answers — and the more capable one was on the smaller screen.
+ * Nothing in here is a phone: it is arithmetic over a profile and a string, so
+ * it belongs where both apps can reach it.
  *
  * The seed shipped fit percentages as fixtures and the panel that showed them
  * was labelled "example scores", which was honest and also useless: a number
@@ -41,12 +49,42 @@ export type Fit = {
   reason?: string
 }
 
-/** Splits a comma- or newline-separated field into terms worth matching. */
+/**
+ * Splits a separated field into terms worth matching.
+ *
+ * The interpunct is in there because both Profile screens ask for one: their
+ * placeholders read `e.g. Assistant professor (TT) · Research scientist` and
+ * `e.g. Texas · remote`. Splitting on commas alone meant anyone who did as they
+ * were told handed the scorer a single long phrase that could not match
+ * anything, so their target roles and regions were worth exactly zero and the
+ * field looked broken rather than unmatched. The seeded demo profile used to be
+ * written that way too, which is how it went unnoticed: its own roles and
+ * regions scored nothing.
+ */
 const termsOf = (raw: string): string[] =>
   raw
-    .split(/[,\n;]/)
+    .split(/[,\n;·]/)
     .map((t) => fold(t).trim())
     .filter((t) => t.length > 1)
+
+/** A word character, on text that `fold` has already lowercased and stripped. */
+const WORDISH = /[a-z0-9_]/
+
+/**
+ * `term` as a whole word, bounded on whichever side ends in a word character.
+ *
+ * The condition matters for terms like `c++`, where a trailing `\b` would
+ * demand a word character after the plus signs and never match.
+ */
+function wholeWord(term: string, text: string): boolean {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const lead = WORDISH.test(term[0] ?? '') ? '\\b' : ''
+  const tail = WORDISH.test(term[term.length - 1] ?? '') ? '\\b' : ''
+  return new RegExp(`${lead}${escaped}${tail}`).test(text)
+}
+
+/** At most this long, and a single word, and it has to match a whole word. */
+const SHORT = 3
 
 /**
  * A term hits if it appears in the text, or if every word of it does.
@@ -55,8 +93,21 @@ const termsOf = (raw: string): string[] =>
  * Professor of Computer Science, tenure track" — a substring test alone is too
  * strict for phrases, and any-word is far too loose ("professor" would hit
  * everything in an academic search and rank nothing).
+ *
+ * SHORT TERMS ARE THE EXCEPTION, and a region of `US` is why. Two letters, and
+ * a substring test finds them inside Austin, focus, campus and industry — so
+ * the region bonus went to nearly every posting and the row's explanation said,
+ * in as many words, `matched: us`. A number that is always awarded ranks
+ * nothing, and an explanation that points at the middle of "Austin" is worse
+ * than no explanation. Anything up to three characters has to match a whole
+ * word: `ml`, `ai`, `uk`, `nlp`.
+ *
+ * Longer terms keep the substring test deliberately. It is what lets
+ * "inference" match "inferences", and giving that up to guard against a
+ * collision that needs a word of three letters or fewer is a bad trade.
  */
 function hits(term: string, text: string): boolean {
+  if (term.length <= SHORT && !term.includes(' ')) return wholeWord(term, text)
   if (text.includes(term)) return true
   const words = term.split(/\s+/).filter((w) => w.length > 2)
   return words.length > 1 && words.every((w) => text.includes(w))

@@ -38,7 +38,24 @@ export function PanelScroll({
   return (
     <div
       className={cn(
-        'min-h-0 flex-1',
+        /*
+         * `relative` is load-bearing, and the bug it fixes is not obvious.
+         *
+         * An absolutely positioned descendant resolves against its nearest
+         * POSITIONED ancestor, and contributes to that ancestor's scrollable
+         * overflow. With nothing positioned between it and the page, a
+         * `sr-only` live region sitting at the bottom of a long transcript
+         * resolved against the initial containing block — so its static
+         * position, a thousand pixels down inside this scroller, extended the
+         * DOCUMENT instead of this box. The result was a page-level scrollbar
+         * next to a panel that was already scrolling correctly, 355px of empty
+         * page below a layout that otherwise fitted the viewport exactly.
+         *
+         * Making every scroller a containing block means an absolutely
+         * positioned child is clipped by the box it lives in, which is what
+         * anybody writing one inside a scroll region already assumes.
+         */
+        'relative min-h-0 flex-1',
         inset === 'tight'
           ? '-mx-2 -mb-2 px-2 pb-2'
           : '-mx-4 -mb-4 px-4 pb-4 sm:-mx-5 sm:-mb-5 sm:px-5 sm:pb-5',

@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Box, Connector } from '@/components/guide/diagrams/parts'
 
 /**
  * Why the assistant is never offered a tool it cannot finish using.
@@ -52,7 +53,7 @@ export function ToolGraphDiagram() {
     <figure className="m-0">
       <svg
         viewBox={`0 0 440 ${String(height)}`}
-        className="h-auto w-full max-w-[560px]"
+        className="diagram h-auto w-full max-w-[560px]"
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
@@ -82,15 +83,7 @@ export function ToolGraphDiagram() {
           const mid = y + BOX_H / 2
           return (
             <g key={pull.asked}>
-              <rect
-                x={4}
-                y={y}
-                width={BOX_W}
-                height={BOX_H}
-                rx={7}
-                fill="var(--well)"
-                stroke="var(--hairline-strong)"
-              />
+              <Box x={4} y={y} w={BOX_W} h={BOX_H} />
               <text x={12} y={mid + 4} fontSize={10.5} fontFamily="ui-monospace, monospace" fill="var(--text-1)">
                 {pull.asked}
               </text>
@@ -98,28 +91,12 @@ export function ToolGraphDiagram() {
               {/* The requirement, sitting on the arrow rather than beside it —
                   at 390px a separate column of prose wraps to two lines and the
                   row stops reading as one sentence. */}
-              <line
-                x1={BOX_W + 8}
-                y1={mid}
-                x2={294}
-                y2={mid}
-                stroke="var(--hairline-strong)"
-                strokeWidth={1}
-              />
-              <path d={`M 294 ${String(mid)} l -6 -3.5 v 7 z`} fill="var(--hairline-strong)" />
+              <Connector from={[BOX_W + 8, mid]} to={[298, mid]} dir="right" />
               <text x={190} y={mid - 6} fontSize={10} fill="var(--text-2)">
                 {pull.needs}
               </text>
 
-              <rect
-                x={298}
-                y={y}
-                width={BOX_W}
-                height={BOX_H}
-                rx={7}
-                fill="var(--well)"
-                stroke="var(--accent)"
-              />
+              <Box x={298} y={y} w={BOX_W} h={BOX_H} stroke="var(--accent)" />
               <text
                 x={306}
                 y={mid + 4}

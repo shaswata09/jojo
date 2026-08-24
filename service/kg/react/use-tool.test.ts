@@ -58,6 +58,7 @@ function harness() {
       lastOpenedAt: new Date(START).toISOString(),
       dataSet: 'empty',
       seededAt: null,
+      handoverAt: null,
     },
     now,
   })

@@ -410,6 +410,61 @@ export function draftFromUrl(u: string): Partial<Application> {
   return draft
 }
 
+/**
+ * The first http(s) address in a block of text, if there is one.
+ *
+ * Deliberately loose about what follows it. A shared string frequently ends in
+ * punctuation the sender never meant as part of the link — a full stop, a
+ * closing bracket, a quotation mark — so those are trimmed off the tail rather
+ * than being handed to `new URL`, which would keep them and produce a 404 the
+ * user cannot see the cause of.
+ */
+const URL_IN_TEXT = /https?:\/\/[^\s<>"']+/i
+
+function firstUrl(text: string): string | undefined {
+  const hit = URL_IN_TEXT.exec(text)?.[0]
+  return hit?.replace(/[.,;:!?)\]}>'"]+$/, '')
+}
+
+/**
+ * A draft from whatever another app handed over.
+ *
+ * WHAT A SHARE ACTUALLY LOOKS LIKE, and why `draftFromUrl` alone was not
+ * enough. Android's share sheet almost never sends a bare link: Chrome sends
+ * the page title and the URL together, and so does nearly every job board's own
+ * share button. Handed the whole string, `draftFromUrl` finds no URL, falls
+ * through to `draftFromText`, and files the record under an employer called
+ * "Assistant Professor of Computer Science https://jobs.rice.edu/postings/29411"
+ * — which is what the first version of the Android share target did.
+ *
+ * So the link is pulled out and parsed as a link, which is the half that knows
+ * the employer and the board. The words around it are kept as the ROLE when the
+ * URL could not supply one, because a human-written title is a better role than
+ * a slug — and dropped when it could, because the two would disagree and the
+ * shorter one is usually right.
+ */
+export function draftFromShare(shared: string): Partial<Application> {
+  const text = shared.trim().replace(/\s+/g, ' ')
+  if (!text) return {}
+
+  const url = firstUrl(text)
+  if (!url) return draftFromText(text)
+
+  const draft = draftFromUrl(url)
+  const words = text
+    .replace(url, '')
+    .trim()
+    .replace(/^[-—–|·:]+|[-—–|·:]+$/g, '')
+    .trim()
+  if (!words || draft.role) return draft
+
+  // No role came out of the address, so the title is the best one available —
+  // and if it carries an 'employer — role' separator, that split wins over the
+  // host-derived employer for the same reason `draftFromText` trusts it.
+  const fromWords = draftFromText(words)
+  return { ...draft, ...(fromWords.role ? fromWords : { role: words }) }
+}
+
 /** A percent-escape can be malformed; a bad segment is skipped, not thrown. */
 function decodeSegment(segment: string) {
   try {

@@ -64,29 +64,40 @@ const LAYER_FACTS: LayerFact[] = [
  * than a page quietly telling a reader something that was true in August. That
  * test cannot reach the `service/` rows: `import.meta.glob` is rooted at this
  * app, and `tsconfig.app.json` grants `vite/client` and not `node:fs`, so those
- * six stay hand-maintained and stay the ones to distrust. Exported for the test
- * — the page is the only other reader.
+ * seven stay hand-maintained and stay the ones to distrust — and they had, by
+ * 2026-08: `service/kg/core` was printing half its real size, and there was no
+ * `service/kg/agent` row at all, which made the half of the codebase that runs
+ * the assistant and the pipelines invisible on the page that claims to show the
+ * shape of it. Re-measured here. Exported for the test — the page is the only
+ * other reader.
  */
 type DirRow = { dir: string; files: number; tests: number; lines: number; what: string }
 
 export const SHAPE: DirRow[] = [
   {
     dir: 'service/kg/core',
-    files: 33,
-    tests: 15,
-    lines: 7700,
+    files: 77,
+    tests: 36,
+    lines: 20173,
     what: 'model, ids, schema, algebra, dates',
   },
-  { dir: 'service/kg/repo', files: 15, tests: 7, lines: 5931, what: 'transactions, journal, boot' },
-  { dir: 'service/kg/tools', files: 19, tests: 2, lines: 5217, what: '62 named operations' },
+  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 6311, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/tools', files: 21, tests: 2, lines: 6538, what: '77 named write operations' },
+  {
+    dir: 'service/kg/agent',
+    files: 30,
+    tests: 14,
+    lines: 8835,
+    what: 'the loop, the catalog, 9 reads, the pipelines',
+  },
   {
     dir: 'service/kg/storage',
     files: 12,
     tests: 3,
-    lines: 2496,
+    lines: 2510,
     what: 'the port, and no platform',
   },
-  { dir: 'service/kg/react', files: 23, tests: 4, lines: 3630, what: 'providers and hooks' },
+  { dir: 'service/kg/react', files: 32, tests: 6, lines: 5947, what: 'providers and hooks' },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 47, what: 'the console is the telemetry' },
   {
     dir: 'web/src/kg/storage',
@@ -97,24 +108,24 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'web/src/components',
-    files: 243,
-    tests: 15,
-    lines: 37145,
+    files: 258,
+    tests: 17,
+    lines: 41387,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 14, tests: 0, lines: 4103, what: 'thirteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4504, what: 'fourteen pages' },
   {
     dir: 'web/src/lib',
-    files: 81,
-    tests: 18,
-    lines: 10102,
+    files: 84,
+    tests: 19,
+    lines: 10485,
     what: 'web-only adapters and URL state',
   },
   {
     dir: 'service/data',
     files: 7,
     tests: 1,
-    lines: 1369,
+    lines: 1482,
     what: 'demo fixtures, below the model',
   },
   {
@@ -133,7 +144,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 36
+export const WEB_TEST_FILES = 39
 
 type TestGroup = { title: string; files: string; body: string }
 

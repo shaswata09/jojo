@@ -114,6 +114,10 @@ const MIME_BY_EXT: Record<string, string> = {
   txt: 'text/plain',
   md: 'text/markdown',
   csv: 'text/csv',
+  // The calendar export. Without it Android's `actionViewIntent` gets the
+  // wildcard fallback and offers a text editor beside the calendar app, which
+  // is a chooser the user has to get right for the export to do anything.
+  ics: 'text/calendar',
   json: 'application/json',
   png: 'image/png',
   jpg: 'image/jpeg',

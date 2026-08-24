@@ -19,7 +19,10 @@ import { MCP_PROTOCOL_VERSION, handleMcp, mcpManifest } from './mcp'
 const START = Date.parse('2026-08-22T09:00:00.000Z')
 
 const nullDriver = () => ({
-  open: async () => ({ ok: true as const, value: { version: 1, from: 0, migrated: [], crossTab: false } }),
+  open: async () => ({
+    ok: true as const,
+    value: { version: 1, from: 0, migrated: [], crossTab: false },
+  }),
   readAll: async () => ({ ok: true as const, value: { nodes: [], edges: [], meta: [], ops: [] } }),
   commit: async () => ({ ok: true as const, value: undefined }),
   replace: async () => ({ ok: true as const, value: undefined }),
@@ -76,7 +79,9 @@ describe('handshake', () => {
   it('never answers a notification', async () => {
     // JSON-RPC says a message with no id must not be replied to, and some
     // clients treat a reply as fatal.
-    expect(await handleMcp(host(), { jsonrpc: '2.0', method: 'notifications/initialized' })).toBeNull()
+    expect(
+      await handleMcp(host(), { jsonrpc: '2.0', method: 'notifications/initialized' }),
+    ).toBeNull()
   })
 
   it('reports an unknown method as a protocol error', async () => {
@@ -87,7 +92,7 @@ describe('handshake', () => {
 
 describe('tools/list', () => {
   it('lists every catalogued tool with a schema', async () => {
-    const r = await handleMcp(host(), { jsonrpc: '2.0', id: 2, method: 'tools/list' }) as {
+    const r = (await handleMcp(host(), { jsonrpc: '2.0', id: 2, method: 'tools/list' })) as {
       result: { tools: { name: string; inputSchema: unknown }[] }
     }
     expect(r.result.tools.length).toBe(mcpManifest().tools.length)
@@ -98,12 +103,12 @@ describe('tools/list', () => {
 describe('tools/call', () => {
   it('runs a write and actually changes the graph', async () => {
     const h = host()
-    const r = await call(h, 'application_create', {
+    const r = (await call(h, 'application_create', {
       org: 'UT Austin',
       role: 'Assistant professor, CS',
       roleTag: 'Assistant Professor',
       stage: 'submitted',
-    }) as { result: { isError: boolean; content: { text: string }[] } }
+    })) as { result: { isError: boolean; content: { text: string }[] } }
     expect(r.result.isError).toBe(false)
     expect(h.memory().ofType('application')).toHaveLength(1)
     // The sentence the app's own toast would have shown, plus the new id.
@@ -112,7 +117,7 @@ describe('tools/call', () => {
 
   it('runs a read without touching anything', async () => {
     const h = host()
-    const r = await call(h, 'memory_overview', {}) as { result: { content: { text: string }[] } }
+    const r = (await call(h, 'memory_overview', {})) as { result: { content: { text: string }[] } }
     expect(JSON.parse(r.result.content[0]?.text ?? '{}')).toMatchObject({ total: 0 })
   })
 
@@ -120,7 +125,7 @@ describe('tools/call', () => {
     // The call succeeded; the tool said no. The model has to see the reason as
     // content it can act on, not as a transport failure.
     const h = host()
-    const r = await call(h, 'application_create', { org: '', role: 'x' }) as {
+    const r = (await call(h, 'application_create', { org: '', role: 'x' })) as {
       result: { isError: boolean; content: { text: string }[] }
       error?: unknown
     }
@@ -131,7 +136,9 @@ describe('tools/call', () => {
 
   it('names the mistake when the tool does not exist', async () => {
     const h = host()
-    const r = await call(h, 'application_summon', {}) as { result: { isError: boolean; content: { text: string }[] } }
+    const r = (await call(h, 'application_summon', {})) as {
+      result: { isError: boolean; content: { text: string }[] }
+    }
     expect(r.result.isError).toBe(true)
     expect(r.result.content[0]?.text).toContain('application_summon')
   })
@@ -140,12 +147,12 @@ describe('tools/call', () => {
     // Models routinely omit it for a tool that takes nothing, and `undefined`
     // fails an object parse that `{}` passes.
     const h = host()
-    const r = await handleMcp(h, {
+    const r = (await handleMcp(h, {
       jsonrpc: '2.0',
       id: 3,
       method: 'tools/call',
       params: { name: 'memory_overview' },
-    }) as { result: { isError: boolean } }
+    })) as { result: { isError: boolean } }
     expect(r.result.isError).toBe(false)
   })
 
@@ -158,7 +165,16 @@ describe('tools/call', () => {
 describe('the executor', () => {
   it('validates before running, so a bad argument never opens a transaction', async () => {
     const h = host()
-    const out = await callTool(h, 'application.create', { org: 'X', role: 'Y', roleTag: 'Nope', stage: 'submitted' })
+    // A bad STAGE, not a bad role tag. The role vocabulary is the profile's
+    // now and any non-empty string is legal there, so the argument this used to
+    // reject — `roleTag: 'Nope'` — is a role somebody could genuinely be
+    // tracking. Stage is still a closed union and still the right example.
+    const out = await callTool(h, 'application.create', {
+      org: 'X',
+      role: 'Y',
+      roleTag: 'Assistant Professor',
+      stage: 'Nope',
+    })
     expect(out.ok).toBe(false)
     expect(h.memory().nodes()).toHaveLength(0)
   })

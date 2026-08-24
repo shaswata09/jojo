@@ -17,7 +17,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import type { Snippet, VaultFile, VaultLink } from '../core/model'
+import type { Person, Snippet, VaultFile, VaultLink } from '../core/model'
 import { useGraph, useKg } from './kg-context'
 import { useReadBack } from './read-back'
 import { useRun } from './use-tool'
@@ -57,6 +57,7 @@ type FileDraft = Omit<VaultFile, 'id' | 'savedOn' | 'applicationIds'> & {
   savedOn?: string
 } & Filing
 type SnippetDraft = Omit<Snippet, 'id' | 'applicationIds'> & Filing
+type PersonDraft = Omit<Person, 'id' | 'applicationIds'> & Filing
 
 export function useVault() {
   const graph = useGraph()
@@ -66,6 +67,7 @@ export function useVault() {
   const links = projections.links(graph)
   const files = projections.files(graph)
   const snippets = projections.snippets(graph)
+  const people = projections.people(graph)
 
   const readBack = useReadBack()
 
@@ -89,8 +91,9 @@ export function useVault() {
       links: links.filter((l) => l.applicationIds.includes(appId)),
       files: files.filter((f) => f.applicationIds.includes(appId)),
       snippets: snippets.filter((n) => n.applicationIds.includes(appId)),
+      people: people.filter((n) => n.applicationIds.includes(appId)),
     }),
-    [links, files, snippets],
+    [links, files, snippets, people],
   )
 
   const addLink = useCallback(
@@ -236,6 +239,47 @@ export function useVault() {
     [run],
   )
 
+  const addPerson = useCallback(
+    (draft: PersonDraft): Person => {
+      const result = run('vault.person.create', {
+        name: draft.name,
+        ...present('role', draft.role),
+        ...present('affiliation', draft.affiliation),
+        ...present('email', draft.email),
+        ...present('phone', draft.phone),
+        ...present('note', draft.note),
+        ...present('applicationIds', draft.applicationIds),
+      })
+      if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not save the person.')
+      return readBack(projections.people, result.output)
+    },
+    [run, readBack, projections],
+  )
+
+  const updatePerson = useCallback(
+    (id: string, patch: Partial<Person>) => {
+      run('vault.person.update', {
+        id,
+        ...present('name', patch.name),
+        ...present('role', patch.role),
+        ...present('affiliation', patch.affiliation),
+        ...present('email', patch.email),
+        ...present('phone', patch.phone),
+        ...present('note', patch.note),
+        ...asNull('applicationIds', patch, 'applicationIds'),
+      })
+    },
+    [run],
+  )
+
+  const removePerson = useCallback(
+    (id: string) => {
+      const result = run('vault.person.delete', { id })
+      return { restore: (result.ok && result.undo) || nothingToRestore }
+    },
+    [run],
+  )
+
   return useMemo(
     () => ({
       links,
@@ -251,6 +295,10 @@ export function useVault() {
       addSnippet,
       updateSnippet,
       removeSnippet,
+      people,
+      addPerson,
+      updatePerson,
+      removePerson,
     }),
     [
       links,
@@ -266,6 +314,10 @@ export function useVault() {
       addSnippet,
       updateSnippet,
       removeSnippet,
+      people,
+      addPerson,
+      updatePerson,
+      removePerson,
     ],
   )
 }

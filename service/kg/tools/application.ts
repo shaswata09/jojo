@@ -22,7 +22,7 @@
  */
 
 import { shortDate } from '../core/dates'
-import { OUTCOME_VALUES, ROLES, SOURCES, STAGE_VALUES } from '../core/model'
+import { OUTCOME_VALUES, SOURCES, STAGE_VALUES } from '../core/model'
 import type { NodeId } from '../core/model'
 import { foldName } from '../core/ref'
 import { s } from '../core/schema'
@@ -85,7 +85,10 @@ export const applicationCreate = defineTool({
     ...fields,
     org: s.string({ min: 1, label: 'Employer' }),
     role: s.string({ label: 'Role' }),
-    roleTag: s.enum(ROLES, { label: 'Role type' }),
+    // Free text, not an enum. The vocabulary is the profile's `roles`
+    // now, so a schema that pinned it to five would refuse the sixth the
+    // moment a user added one. `roleVocabulary` is what offers the list.
+    roleTag: s.string({ min: 1, label: 'Role type' }),
     stage: s.enum(STAGE_VALUES, { label: 'Stage' }),
     lastAction: s.optional(s.string()),
     deadline: s.optional(s.isoDate({ label: 'Deadline' })),

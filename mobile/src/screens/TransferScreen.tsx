@@ -5,6 +5,7 @@ import { Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
+import { HandoverStatus } from '@/components/transfer/HandoverStatus'
 import { ReceivePanel } from '@/components/transfer/ReceivePanel'
 import { useLabels } from '@/lib/labels-context'
 import { useApplications, useProfile, useScout, useTimeline, useVault } from '@/lib/store-context'
@@ -151,6 +152,10 @@ export function TransferScreen() {
       title="Transfer"
       subtitle="Take everything from your computer onto this phone, over your local network. Nothing goes to the internet and nothing is stored anywhere else."
     >
+      {/* Above the direction switch: it is true of the whole screen, and on
+          this device it is the answer to "how old is what I am holding". */}
+      <HandoverStatus />
+
       <Segment label="Direction" options={ROLES} value={role} onChange={setRole} />
 
       {role === 'send' ? (
@@ -174,29 +179,29 @@ export function TransferScreen() {
         <PanelTitle hint={`${total} records`}>What is on this phone now</PanelTitle>
 
         {groups.map((g, i) => (
-            <View key={g.id}>
-              {i > 0 ? <Divider /> : null}
-              <View style={styles.groupRow}>
-                <View style={s.fill}>
-                  <Txt size="base" tone={g.count === 0 ? 'muted' : 'primary'}>
-                    {g.label}
-                  </Txt>
-                  <Txt size="xs" tone="muted">
-                    {g.hint}
-                  </Txt>
-                </View>
-                {g.count === 0 ? (
-                  <Chip size="sm" tone="gray">
-                    empty
-                  </Chip>
-                ) : (
-                  <Txt size="base" weight="semibold" mono>
-                    {g.count}
-                  </Txt>
-                )}
+          <View key={g.id}>
+            {i > 0 ? <Divider /> : null}
+            <View style={styles.groupRow}>
+              <View style={s.fill}>
+                <Txt size="base" tone={g.count === 0 ? 'muted' : 'primary'}>
+                  {g.label}
+                </Txt>
+                <Txt size="xs" tone="muted">
+                  {g.hint}
+                </Txt>
               </View>
+              {g.count === 0 ? (
+                <Chip size="sm" tone="gray">
+                  empty
+                </Chip>
+              ) : (
+                <Txt size="base" weight="semibold" mono>
+                  {g.count}
+                </Txt>
+              )}
             </View>
-          ))}
+          </View>
+        ))}
 
         <Divider style={{ marginVertical: space[3] }} />
 

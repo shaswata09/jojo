@@ -44,13 +44,14 @@ const vault = (tool: VaultTool) => (nav: Nav) =>
  * `PostingBrowser` joins the excluded list for the same reason
  * `ApplicationDetail` is on it: it opens a specific URL, so "go there" is not a
  * destination anybody can search for — it is an action taken from a record that
- * already knows which address it means.
+ * already knows which address it means. `Organisation` is excluded on the same
+ * grounds: there is no "the employer screen", only one employer's.
  */
 const push =
   (
     screen: keyof Omit<
       RootStackParamList,
-      'Tabs' | 'ApplicationDetail' | 'JobScout' | 'PostingBrowser'
+      'Tabs' | 'ApplicationDetail' | 'JobScout' | 'PostingBrowser' | 'Organisation'
     >,
   ) =>
   (nav: Nav) =>

@@ -18,7 +18,13 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { STAGE_LABEL, displayName, offerDaysLeft, respondByLabel } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
-import { bucketOf, compareItems, shortDate, timeLabel, whenLabel } from '@jojo/service/data/timeline'
+import {
+  bucketOf,
+  compareItems,
+  shortDate,
+  timeLabel,
+  whenLabel,
+} from '@jojo/service/data/timeline'
 import type { TimelineBucket, TimelineItem } from '@jojo/service/data/timeline'
 import { refKey } from '@/lib/ids'
 import { stageNeedsDetails } from '@/lib/stage-transition'
@@ -26,6 +32,7 @@ import { listJoin, plural } from '@/lib/text'
 import { hostOf } from '@/lib/urls'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useScout, useTimeline, useVault } from '@/lib/store-context'
+import { useOrganisations } from '@jojo/service/react/use-organisations'
 import type { TimelineDraft } from '@/lib/store-context'
 import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
@@ -71,6 +78,7 @@ export function ApplicationDetailScreen() {
 }
 
 function Detail({ application: a }: { application: Application }) {
+  const { byName: orgByName } = useOrganisations()
   const c = useColors()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { toast } = useToast()
@@ -223,7 +231,28 @@ function Detail({ application: a }: { application: Application }) {
     navigation.goBack()
   }
 
-  const facts: { label: string; value?: string; url?: string }[] = [
+  const employer = orgByName(a.org)
+
+  const facts: { label: string; value?: string; url?: string; go?: () => void }[] = [
+    /*
+     * The way in to the employer's own screen, and the only one there is.
+     *
+     * `organisation` has been a node since the graph existed and nothing linked
+     * to it, so three roles at one university were three rows in a list with
+     * nothing saying they belonged together. On the record rather than in the
+     * title, because the title is the JOB and only half of it is the employer.
+     */
+    {
+      label: 'Employer',
+      value: employer
+        ? employer.applicationIds.length > 1
+          ? `${employer.name} · ${String(employer.applicationIds.length)} jobs here`
+          : employer.name
+        : a.org,
+      ...(employer
+        ? { go: () => navigation.navigate('Organisation', { key: employer.slug }) }
+        : {}),
+    },
     { label: 'Source', value: a.source },
     { label: 'Location', value: a.location },
     // Falls through to the offer: Baylor states "$112k + $15k startup" in its
@@ -333,6 +362,13 @@ function Detail({ application: a }: { application: Application }) {
                     {f.value}
                   </Txt>
                   <Feather name="globe" size={13} color={c.info} />
+                </Pressable>
+              ) : f.go ? (
+                <Pressable accessibilityRole="link" onPress={f.go} style={styles.linkRow}>
+                  <Txt size="base" tone="info" style={s.fill} numberOfLines={1}>
+                    {f.value}
+                  </Txt>
+                  <Feather name="chevron-right" size={14} color={c.info} />
                 </Pressable>
               ) : (
                 <Txt size="base">{f.value}</Txt>

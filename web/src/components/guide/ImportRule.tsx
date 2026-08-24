@@ -139,7 +139,7 @@ export function ImportRule() {
     <figure className="m-0">
       <svg
         viewBox={`0 0 420 ${HEIGHT}`}
-        className="h-auto w-full max-w-[560px]"
+        className="diagram h-auto w-full max-w-[560px]"
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >

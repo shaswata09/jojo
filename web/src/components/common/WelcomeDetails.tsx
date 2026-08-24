@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { UserRound } from 'lucide-react'
 import { useProfile } from '@jojo/service/react/use-profile'
 import { Button } from '@/components/ui/button'
@@ -70,7 +71,7 @@ export function WelcomeDetails({
   // Blank on a first run, whatever the store holds.
   //
   // Choosing the demo records seeds a whole profile, so prefilling would put
-  // 'Alex Rahman' in a field labelled "Full name" and a stranger's address in
+  // 'Shaswata Mitra' in a field labelled "Full name" and a stranger's address in
   // "Email" — a form answering its own questions with somebody else's answers.
   // `routes/Profile.tsx` makes the same point about placeholders: grey examples
   // ask a question, black text answers one.
@@ -140,7 +141,7 @@ export function WelcomeDetails({
             value={draft.fullName}
             autoComplete="name"
             autoFocus
-            placeholder="e.g. Alex Rahman"
+            placeholder="e.g. Shaswata Mitra"
             onChange={set('fullName')}
           />
           <Field
@@ -152,7 +153,7 @@ export function WelcomeDetails({
           <Field
             label="Location"
             value={draft.location}
-            placeholder="e.g. Lubbock, TX (open to relocate)"
+            placeholder="e.g. Santa Clara, CA"
             onChange={set('location')}
           />
           <Field
@@ -180,9 +181,13 @@ export function WelcomeDetails({
 
         <p className="text-xs text-text-3">
           The rest — links, target roles, the terms the scout matches on — lives under{' '}
-          <a className="text-text-1 underline underline-offset-2" href={profilePath()}>
+          {/* A router Link: a bare anchor skips `basename`, so this pointed at
+              the domain root and 404ed wherever the app is served from a
+              subpath — and it reloaded the document, which kills any agent run
+              still working. */}
+          <Link className="text-text-1 underline underline-offset-2" to={profilePath()}>
             Profile
-          </a>
+          </Link>
           .
         </p>
       </DialogContent>

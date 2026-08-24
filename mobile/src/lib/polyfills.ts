@@ -29,7 +29,7 @@
  * being rejected and gets stored as a link. `service/types/portable-globals.d.ts`
  * writes that requirement down and names this exact import as the fix; here is
  * where it gets honoured. `src/lib/urls.ts` — `hostOf`, `hostOrNothing`,
- * `isOpenableUrl` — leans on the same behaviour.
+ * `isOpenableUrl`, `openHref` — leans on the same behaviour.
  *
  * `/auto` rather than calling `setupURLPolyfill()` by hand: the auto entry
  * checks `Platform.OS !== 'web'` first, so it is a no-op wherever the platform

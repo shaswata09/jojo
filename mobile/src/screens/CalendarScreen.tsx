@@ -17,8 +17,10 @@ import { compareItems, isoOf, partsOf, shortDate, timeLabel } from '@jojo/servic
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { markColor, markOf } from '@/lib/marks'
 import type { Mark } from '@/lib/marks'
+import { exportCalendar } from '@/lib/calendar-export'
 import { useSheets } from '@/lib/sheets-context'
-import { useTimeline } from '@/lib/store-context'
+import { useToast } from '@/lib/toast-context'
+import { useApplications, useTimeline } from '@/lib/store-context'
 import { KIND_ICON, KIND_LABEL } from '@/lib/timeline-visuals'
 import { useItemActions } from '@/lib/use-item-actions'
 import type { TabParamList } from '@/navigation/types'
@@ -33,7 +35,9 @@ export function CalendarScreen() {
   const c = useColors()
   const route = useRoute<RouteProp<TabParamList, 'Calendar'>>()
   const { open } = useSheets()
-  const { forMonth } = useTimeline()
+  const { all: allItems, forMonth } = useTimeline()
+  const { all: allApplications } = useApplications()
+  const { toast } = useToast()
   const actions = useItemActions()
 
   // One shape for both entry points: a link from elsewhere names a day, and
@@ -146,13 +150,43 @@ export function CalendarScreen() {
       title="Calendar"
       subtitle="Deadlines, interviews and prep in one view"
       actions={
-        <Button
-          label="Add"
-          icon="plus"
-          // Prefilled with the day on screen: on a calendar, "add" almost always
-          // means "add to the day I am looking at".
-          onPress={() => addOn(selectedISO)}
-        />
+        <>
+          {/*
+            The phone has no notifications of its own, so this is the only way
+            one of these dates reaches somebody who is not holding the app. It
+            writes the file and hands it straight to whatever opens a calendar
+            here, which is the same handoff a Vault document uses.
+          */}
+          <IconButton
+            icon="share"
+            label="Export to my calendar"
+            onPress={() => {
+              void exportCalendar({ items: allItems, applications: allApplications })
+                .then((count) => {
+                  toast({
+                    title: `${String(count)} date${count === 1 ? '' : 's'} exported`,
+                    description:
+                      'Your calendar will offer to import them, with a reminder on each.',
+                  })
+                })
+                .catch(() => {
+                  toast({
+                    title: 'Nothing here opens a calendar file',
+                    description:
+                      'The file is saved on this phone. A calendar app that accepts .ics can open it.',
+                    tone: 'danger',
+                  })
+                })
+            }}
+          />
+          <Button
+            label="Add"
+            icon="plus"
+            // Prefilled with the day on screen: on a calendar, "add" almost always
+            // means "add to the day I am looking at".
+            onPress={() => addOn(selectedISO)}
+          />
+        </>
       }
       options={
         <SettingRow

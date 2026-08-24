@@ -104,6 +104,14 @@ export function CalendarScreen() {
           <span className="text-text-1">Add event</span> is prefilled with the day on screen, which
           on a calendar is almost always the day you meant.
         </li>
+        <li>
+          <span className="text-text-1">Export to my calendar</span> writes every date jojo holds as
+          an <Code>.ics</Code>, with a reminder on each. It is here because jojo sends no
+          notifications of its own: the calendar you already get alerts from is the only thing that
+          can warn you about a deadline while this app is shut. It includes each offer&rsquo;s
+          respond-by, which lives on the application rather than on the timeline and so has never
+          appeared on this grid. The file is a copy taken now — change a date and export again.
+        </li>
       </ul>
 
       <Address>
@@ -121,11 +129,11 @@ export function CalendarScreen() {
 
 export function VaultScreen() {
   return (
-    <Screen id={S.vault} title="Vault" where="sidebar · five tools, one page" to={vaultPath()}>
+    <Screen id={S.vault} title="Vault" where="sidebar · six tools, one page" to={vaultPath()}>
       <p className="text-sm text-text-2">
         Everything you set aside to come back to. The segmented control in the header switches
-        between five tools and only one is on screen at a time, which is the thing most people miss:
-        the Vault is not a list, and four of its five tools are behind a tab.
+        between six tools and only one is on screen at a time, which is the thing most people miss:
+        the Vault is not a list, and five of its six tools are behind a tab.
       </p>
 
       <dl className="mt-3.5 divide-y divide-hairline text-sm">
@@ -163,6 +171,18 @@ export function VaultScreen() {
             Tagged Cover letter, Application form, Email or Bio. These are what the{' '}
             <span className="text-text-1">Draft a message</span> dialog is built out of, and where
             the Assistant files a reply you save.
+          </dd>
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 py-2.5">
+          <dt className="basis-24 font-medium">
+            <Go to={vaultPath({ tool: 'people' })}>People</Go>
+          </dt>
+          <dd className="min-w-0 flex-1 basis-64 text-text-2">
+            Referees, search chairs, recruiters — anyone the search actually runs through. They file
+            under a job exactly as a CV does, and for the same reason it is a list rather than one
+            id: a referee writes for every position you name them on. Before this they lived inside
+            the text of a reminder, which is why nothing could answer &ldquo;whose letter is still
+            outstanding&rdquo;.
           </dd>
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1 py-2.5 last:pb-0">
@@ -242,13 +262,14 @@ export function ScoutScreen() {
         </li>
       </ul>
 
-      <NotConnected title="Scores and snapshots wait on a local model">
-        The matches are the ones that shipped with the demo data and their percentages are labelled{' '}
-        <span className="text-text-1">example scores</span>. Nothing has ever run, no pipeline has
-        ever been executed, and no figure on this page was produced by scoring anything.{' '}
-        <span className="text-text-1">Open snapshot</span> is disabled on every saved posting and
-        says why when you hover it: no page was ever fetched, so there is no copy to open, and
-        showing one would claim a file jojo does not have.
+      <NotConnected title="Snapshots wait on a local model. The scores do not.">
+        The matches are still the ones that shipped with the demo data — nothing has crawled a board
+        — but the percentage on each is computed here, on this device, against the match terms,
+        target roles and regions on your profile, and every row says what it matched on. A profile
+        with nothing in it reads <span className="text-text-1">not scored</span> rather than a
+        confident number over nothing. <span className="text-text-1">Open snapshot</span> is the
+        part that does wait: it is disabled on every saved posting and says why when you hover it,
+        because no page was ever fetched and showing one would claim a file jojo does not have.
       </NotConnected>
 
       <Address>

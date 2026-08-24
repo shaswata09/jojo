@@ -13,7 +13,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { TOOLS } from '../tools/index'
-import { COMPOSES, NEEDS, PRODUCERS, ROOTS, closeOver, idSlots } from './tool-graph'
+import { COMPOSES, NEEDS, NEEDS_ANY, PRODUCERS, ROOTS, closeOver, idSlots } from './tool-graph'
 import { s } from '../core/schema'
 
 describe('reading id slots out of a schema', () => {
@@ -163,5 +163,62 @@ describe('the authored table names only real tools', () => {
 
   it('is not empty, which would make the lint guard vacuous', () => {
     expect(COMPOSES.size).toBeGreaterThan(3)
+  })
+})
+
+describe('a polymorphic slot is a disjunction, not a conjunction', () => {
+  /**
+   * The correction this suite exists to hold in place.
+   *
+   * `keyword.attach` takes a `record` id with no node type, because a keyword
+   * may sit on any taggable record. The first version of the graph folded those
+   * candidates into `NEEDS`, which said the tool required an application AND a
+   * timeline item AND a link AND a file AND a snippet, simultaneously, before it
+   * could run.
+   *
+   * That was wrong the whole time and invisible while every taggable type
+   * happened to have a producer. It became visible the moment `person` was
+   * added to the model without a tool that creates one: the graph then claimed
+   * `keyword.attach` could never be grounded — which is plainly false, since
+   * tagging an application works today.
+   */
+  it('does not put the candidates in NEEDS, where they would all be required', () => {
+    const needs = NEEDS.get('keyword.attach') ?? new Set()
+    // The keyword half IS required and belongs there.
+    expect(needs.has('keyword')).toBe(true)
+    // The record half is a choice and does not.
+    expect(needs.has('application')).toBe(false)
+    expect(needs.has('snippet')).toBe(false)
+  })
+
+  it('puts them in NEEDS_ANY, where one is enough', () => {
+    const any = NEEDS_ANY.get('keyword.attach') ?? new Set()
+    expect(any.has('application')).toBe(true)
+    expect(any.size).toBeGreaterThan(1)
+  })
+
+  it('survives a taggable type that nothing can create yet', () => {
+    /*
+     * A node type can be declared before the tool that makes one lands — that
+     * is how a feature arrives in pieces. The graph must not conclude that
+     * every tagging tool is unusable because one of its candidate types has no
+     * producer.
+     */
+    const any = NEEDS_ANY.get('keyword.attach') ?? new Set()
+    const withProducers = [...any].filter((t) => (PRODUCERS.get(t)?.size ?? 0) > 0)
+    expect(withProducers.length).toBeGreaterThan(0)
+  })
+
+  it('still closes over every candidate, because widening is the safe direction', () => {
+    // One candidate is required; offering the producers of all of them costs
+    // tokens, and a missing producer costs the person their answer.
+    const out = closeOver(['keyword.attach'])
+    expect(out.has('keyword.create')).toBe(true)
+    expect(out.has('application.create')).toBe(true)
+  })
+
+  it('does not count a polymorphic tool as a root', () => {
+    // It needs SOMETHING, even if it does not mind what.
+    expect(ROOTS).not.toContain('keyword.attach')
   })
 })

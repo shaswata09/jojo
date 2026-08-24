@@ -7,6 +7,7 @@ import { Calculator } from '@/components/vault/Calculator'
 import { FilesTool } from '@/components/vault/FilesTool'
 import { LinksTool } from '@/components/vault/LinksTool'
 import { RemindersTool } from '@/components/vault/RemindersTool'
+import { PeopleTool } from '@/components/vault/PeopleTool'
 import { SnippetsTool } from '@/components/vault/SnippetsTool'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useVault } from '@jojo/service/react/use-vault'
@@ -24,6 +25,7 @@ const TOOLS = [
   { value: 'links', label: 'Links' },
   { value: 'files', label: 'Files' },
   { value: 'snippets', label: 'Snippets' },
+  { value: 'people', label: 'People' },
   { value: 'tools', label: 'Tools' },
 ] as const satisfies readonly { value: VaultTool; label: string }[]
 
@@ -47,7 +49,7 @@ export function Vault() {
   // nobody is looking at any more.
   useArrivalHighlight(focus, () => set({ focus: undefined }))
   const { reminders } = useTimeline()
-  const { links, files, snippets } = useVault()
+  const { links, files, snippets, people } = useVault()
   // Counts in the subtitle are informative but noisy on a narrow screen.
   const [showCounts, setShowCounts] = useState(true)
 
@@ -89,10 +91,12 @@ export function Vault() {
           ? files.map((f) => f.id)
           : tool === 'snippets'
             ? snippets.map((s) => s.id)
-            : null
+            : tool === 'people'
+              ? people.map((p) => p.id)
+              : null
 
   /**
-   * Four totals, counted the same way.
+   * Five totals, counted the same way.
    *
    * This used to lead with the number of *open* reminders and follow it with
    * three totals, within 100px of a control reading "8 open · 2 completed" —
@@ -101,7 +105,7 @@ export function Vault() {
    * can act on it; up here every figure means "records in this tab".
    */
   const subtitle = showCounts
-    ? `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets`
+    ? `${reminders.length} reminders · ${links.length} links · ${files.length} files · ${snippets.length} snippets · ${people.length} people`
     : 'Everything you set aside to come back to'
 
   return (
@@ -184,6 +188,7 @@ export function Vault() {
       {tool === 'links' ? <LinksTool focus={focus} /> : null}
       {tool === 'files' ? <FilesTool focus={focus} /> : null}
       {tool === 'snippets' ? <SnippetsTool focus={focus} /> : null}
+      {tool === 'people' ? <PeopleTool focus={focus} /> : null}
       {tool === 'tools' ? <Calculator /> : null}
     </>
   )

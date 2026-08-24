@@ -115,10 +115,10 @@ The core sweep additionally drove this end-to-end in a real browser and read the
 **Evidence (react sweep, real clicks + IndexedDB ground truth — the page's own `draft` state survives an undo and would have hidden this):**
 
 ```
-0 START      ui academia=true    idb {fullName:"Alex RahmanXX",   academia:true}
-1 AFTER SAVE ui academia=true    idb {fullName:"Alex RahmanXXQQ", academia:true}   toast[Undo]
-2 AFTER FLIP ui academia=false   idb {fullName:"Alex RahmanXXQQ", academia:false}
-3 AFTER UNDO ui academia=true    idb {fullName:"Alex RahmanXX",   academia:true}   ← flip gone
+0 START      ui academia=true    idb {fullName:"Shaswata MitraXX",   academia:true}
+1 AFTER SAVE ui academia=true    idb {fullName:"Shaswata MitraXXQQ", academia:true}   toast[Undo]
+2 AFTER FLIP ui academia=false   idb {fullName:"Shaswata MitraXXQQ", academia:false}
+3 AFTER UNDO ui academia=true    idb {fullName:"Shaswata MitraXX",   academia:true}   ← flip gone
 ```
 
 Deterministic across 4 of 5 runs; the one negative was a missed click, re-run identically and reproduced. I verified the mechanism independently by reading `undo.ts:88` and `journal.ts:80-92`.

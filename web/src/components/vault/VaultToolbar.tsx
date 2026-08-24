@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
 /**
- * One toolbar shape for all four Vault tools: `[filter] … [search] [Add]`.
+  * One toolbar shape for every Vault tool: `[filter] … [search] [Add]`.
  *
  * The tabs used to disagree about everything above the list. Reminders led with
  * a prose count and a segmented control on the right; Links opened with a

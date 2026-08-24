@@ -1,12 +1,16 @@
 /**
  * Choosing which tools to offer, from what the person actually asked. L3.
  *
- * The Assistant offers all 82 tools on every request — about 15,600 tokens
- * before anybody has typed anything. That is survivable on a large window and
- * fatal on a small one, and either way it asks a model to pick one name out of
- * eighty-two when the question was "add a reminder for Thursday". This narrows
- * it, using the graph in `tool-graph.ts` so that narrowing can never hand the
- * model a chain it cannot finish.
+ * The Assistant offers the WHOLE catalog on every request — comfortably over
+ * fifteen thousand tokens before anybody has typed anything. That is survivable
+ * on a large window and fatal on a small one, and either way it asks a model to
+ * pick one name out of eighty-odd when the question was "add a reminder for
+ * Thursday". This narrows it, using the graph in `tool-graph.ts` so that
+ * narrowing can never hand the model a chain it cannot finish.
+ *
+ * Deliberately no exact count anywhere below. The registry grows, and a comment
+ * carrying a number goes stale silently — this one said 82 and was wrong within
+ * a day.
  *
  * ## The safety property, which everything else is subordinate to
  *
@@ -25,8 +29,9 @@
  *
  * Because there is no embedding endpoint in this app and adding one means a
  * second model on the user's machine to save tokens off a prefix the server
- * already caches. The corpus is 82 titles and summaries — a few thousand words
- * of deliberately plain English written for exactly this purpose.
+ * already caches. The corpus is the catalog's own titles and summaries — a few
+ * thousand words of deliberately plain English, written for exactly this
+ * purpose and kept current by being the same text the model reads.
  *
  * ## Why it runs once per run and not per round
  *
@@ -44,7 +49,7 @@ import { closeOver } from './tool-graph'
 /**
  * The reads, always offered, whatever the question.
  *
- * 58 of the 82 tools need an id that only a read can produce, and the system
+ * Most of the catalog needs an id that only a read can produce, and the system
  * prompt tells the model to look before it writes. A narrowed set that dropped
  * the reads would make that instruction unfollowable — and they are 1,750
  * tokens, the cheapest part of the catalog to keep.
@@ -208,10 +213,12 @@ export function select(message: string): Set<string> | null {
 /**
  * The two operations a narrowed set must never quietly include.
  *
- * `memory.reset` and `memory.clear` replace or empty the whole store, and they
- * are the only two things a model can do here that a person cannot then undo —
- * `Tool.undoable: false`, so they are not in the journal. They are also ROOTS:
- * callable with no id at all, from a standing start.
+ * `memory.reset` and `memory.clear` replace or empty the whole store. They are
+ * not the only writes outside the journal — `assistant.thread.set` is
+ * `undoable: false` too — but they are the only ones that are also DESTRUCTIVE,
+ * which is the property that matters here: the others lose bookkeeping, these
+ * lose the person's records. They are also ROOTS, callable with no id at all,
+ * from a standing start.
  *
  * A retriever that keeps every root resident would put both in every prompt
  * forever, which is a safety regression wearing an optimisation's clothes. They

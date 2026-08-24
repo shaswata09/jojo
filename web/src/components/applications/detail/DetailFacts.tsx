@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 import { ExternalLink } from 'lucide-react'
+import { Link } from 'react-router'
+import { useOrganisations } from '@jojo/service/react/use-organisations'
+import { orgPath } from '@/lib/links'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { hostOf } from '@/components/vault/links/url'
 import type { Application } from '@/data/seed'
@@ -7,7 +10,36 @@ import { shortDate } from '@/data/timeline'
 
 /** The record's flat fields, two columns wide when there is room for two. */
 export function DetailFacts({ application: a }: { application: Application }) {
+  const { byName } = useOrganisations()
+  const employer = byName(a.org)
+
   const facts: { label: string; value: ReactNode }[] = [
+    /*
+     * The way in to the employer's own page, and the only one there is.
+     *
+     * `organisation` has been a node since the graph existed and nothing linked
+     * to it, so three roles at one university were three rows in a list of
+     * twelve with nothing saying they belonged together. The link is here rather
+     * than on the dialog's title because the title is the job — "Rice —
+     * Statistics" — and only half of that is the employer.
+     */
+    {
+      label: 'Employer',
+      value: employer ? (
+        <Link
+          to={orgPath(employer.slug)}
+          className="text-info underline underline-offset-2"
+          title={`Everything filed under ${employer.name}`}
+        >
+          {employer.name}
+          {employer.applicationIds.length > 1
+            ? ` · ${String(employer.applicationIds.length)} jobs here`
+            : ''}
+        </Link>
+      ) : (
+        a.org
+      ),
+    },
     { label: 'Source', value: a.source },
     { label: 'Location', value: a.location },
     // Falls through to the offer. Baylor's record states "$112k + $15k startup"

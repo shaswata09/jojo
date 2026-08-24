@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { Archive, FileText, Link2, MessageSquare, Scissors } from 'lucide-react'
+import { Archive, FileText, Link2, MessageSquare, Scissors, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -35,9 +35,13 @@ const SECTIONS = [
   { key: 'files', tool: 'files', label: 'Files', icon: FileText },
   { key: 'links', tool: 'links', label: 'Links', icon: Link2 },
   { key: 'snippets', tool: 'snippets', label: 'Snippets', icon: Scissors },
+  // People arrive on the same `FILED_UNDER` edge a CV does, so they belong on
+  // the panel headed "everything filed here" rather than on one of their own.
+  // "Who did I talk to at Rice" is answered on the Rice record or nowhere.
+  { key: 'people', tool: 'people', label: 'People', icon: UserRound },
 ] as const satisfies readonly {
-  key: 'files' | 'links' | 'snippets'
-  tool: 'files' | 'links' | 'snippets'
+  key: 'files' | 'links' | 'snippets' | 'people'
+  tool: 'files' | 'links' | 'snippets' | 'people'
   label: string
   icon: LucideIcon
 }[]
@@ -59,7 +63,11 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
   const conversations = threads.filter((t) => t.applicationId === applicationId)
 
   const total =
-    filed.files.length + filed.links.length + filed.snippets.length + conversations.length
+    filed.files.length +
+    filed.links.length +
+    filed.snippets.length +
+    filed.people.length +
+    conversations.length
 
   return (
     <Panel>
@@ -69,7 +77,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
         <EmptyState
           icon={Archive}
           title="Nothing filed under this yet"
-          description="Documents, links and snippets can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
+          description="Documents, links, snippets and people can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
         />
       ) : (
         <div className="space-y-4">
@@ -123,10 +131,19 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                         </span>
                         {/* The one word that says which of its own list it is
                             in — a bucket, a category, a tag. Not the same field
-                            on the three shapes, which is why it is read here
-                            rather than declared in SECTIONS. */}
+                            on the four shapes, which is why it is read here
+                            rather than declared in SECTIONS. A person's is their
+                            role, and unlike the other three it can be absent:
+                            the only thing a person is required to have is a
+                            name. */}
                         <span className="shrink-0 text-xs text-text-3">
-                          {'bucket' in row ? row.bucket : 'category' in row ? row.category : row.tag}
+                          {'bucket' in row
+                            ? row.bucket
+                            : 'category' in row
+                              ? row.category
+                              : 'tag' in row
+                                ? row.tag
+                                : row.role}
                         </span>
                       </Link>
                     </li>

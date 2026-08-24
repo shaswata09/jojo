@@ -59,7 +59,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
    * `firstRun` and outlives it: `firstRun` flips false the moment the fork is
    * answered, and onboarding needs to know it was a first run for the rest of
    * the session. Without it the details sheet reads the seeded demo profile,
-   * finds 'Alex Rahman' in it, decides the user has already told us who they
+   * finds 'Shaswata Mitra' in it, decides the user has already told us who they
    * are, and skips itself for exactly the person it exists for.
    */
   const [fresh, setFresh] = useState(false)

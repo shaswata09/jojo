@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import type { Pipeline } from '@/data/scout'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { useProfile } from '@jojo/service/react/use-profile'
 import { useScout } from '@jojo/service/react/use-scout'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
 import { appPath, scoutPath, useScoutParams, useTitle } from '@/lib/links'
@@ -51,6 +52,8 @@ export function JobScout() {
     removePipeline,
   } = useScout()
   const { get } = useApplications()
+  // The matches are scored against this rather than shipped with a number.
+  const { profile } = useProfile()
 
   /*
    * The engine is mounted above the router (`lib/pipelines.tsx`), not here.
@@ -257,6 +260,7 @@ export function JobScout() {
       <MatchesPanel
         matches={matches}
         getApplication={get}
+        profile={profile}
         focus={focus}
         focusedRow={focusedRow}
         onPromote={onPromote}

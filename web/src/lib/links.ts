@@ -33,7 +33,7 @@ export type SortDir = 'asc' | 'desc'
  * builder here understands fails to compile rather than producing a link that
  * silently lands on the default tool.
  */
-export const VAULT_TOOLS = ['reminders', 'links', 'files', 'snippets', 'tools'] as const
+export const VAULT_TOOLS = ['reminders', 'links', 'files', 'snippets', 'people', 'tools'] as const
 export type VaultTool = (typeof VAULT_TOOLS)[number]
 
 const SORT_KEYS: readonly ApplicationsSortKey[] = ['role', 'stage', 'daysAgo']
@@ -101,8 +101,40 @@ export function profilePath() {
   return '/profile'
 }
 
-export function settingsPath() {
-  return '/settings'
+/**
+ * Settings, optionally pointing at one row.
+ *
+ * `focus` exists for the same reason the Vault's does: a banner that says "go
+ * and look in Settings" is asking the reader to find one line on a page three
+ * and a half screens tall, and the unreadable-records row sits in the seventh
+ * of nine panels styled exactly like the fifteen telemetry lines around it. A
+ * link that lands on the row and lights it is the difference between a promise
+ * kept and a promise made.
+ */
+export function settingsPath(p?: { focus?: string }) {
+  const focus = p?.focus
+  return focus ? `/settings?focus=${encodeURIComponent(focus)}` : '/settings'
+}
+
+/** The row a link is pointing at, if any. Cleared once the highlight fades. */
+export function useSettingsParams() {
+  const [params, setParams] = useSearchParams()
+  const focus = params.get('focus') ?? undefined
+
+  const clearFocus = useCallback(() => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('focus')
+        return next
+      },
+      // Replace, so an expired highlight does not become a Back entry — the
+      // same reason `useVaultParams` replaces.
+      { replace: true },
+    )
+  }, [setParams])
+
+  return { focus, clearFocus }
 }
 
 /**
@@ -186,6 +218,35 @@ export function transferPath() {
  */
 export function appPath(a: Addressable) {
   return `/applications/${encodeURIComponent(addressOf(a))}`
+}
+
+/**
+ * One employer's page.
+ *
+ * Takes the SLUG rather than the name, for the reason `appPath` does: the name
+ * can be edited on the application that first supplied it, and a link built out
+ * of a name breaks the day somebody fixes a typo in it.
+ */
+/**
+ * A path as a real href, for the handful of components that live OUTSIDE the
+ * router and therefore cannot use `<Link>`.
+ *
+ * `DialogHost` and `ApprovalHost` are mounted beside `<App />` in `main.tsx`
+ * rather than inside it, because a dialog and an agent's approval both have to
+ * outlive the page that raised them. The cost is that neither has router
+ * context: a `<Link>` in one throws "Cannot destructure property 'basename'"
+ * and takes the whole app down with it, which is not a subtle failure but is a
+ * surprising one to meet in a dialog.
+ *
+ * The basename has to be applied by hand for the same reason — `<Link>` is what
+ * usually adds it, and on GitHub Pages every path here is served under `/jojo/`.
+ */
+export function hrefOutsideRouter(path: string) {
+  return `${import.meta.env.BASE_URL.replace(/\/$/, '')}${path}`
+}
+
+export function orgPath(slug: string) {
+  return `/employers/${encodeURIComponent(slug)}`
 }
 
 /**
@@ -476,4 +537,4 @@ export function useTitle(title: string | null) {
  * reads `index.html` and asserts they are equal, which is what that sentence
  * was promising.
  */
-export const BASE_TITLE = 'jojo — local-first job tracker'
+export const BASE_TITLE = 'jojo — agentic job-search assistant'

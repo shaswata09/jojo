@@ -17,7 +17,7 @@
  * already have running.
  */
 
-import { anthropicChatRequest, readAnthropicTurn } from './anthropic'
+import { ANTHROPIC_VERSION, anthropicChatRequest, readAnthropicTurn } from './anthropic'
 import { endpointOf, providerMeta, type ModelSettings } from './provider'
 
 /** A server the user has connected to and kept. */
@@ -72,13 +72,34 @@ export const chatUrl = (endpoint: string) => `${normaliseEndpoint(endpoint)}/cha
  */
 export function readModelIds(payload: unknown): string[] {
   if (typeof payload !== 'object' || payload === null) return []
+
+  /*
+   * Two shapes, because Ollama's native endpoint answers differently from
+   * everything else: `{models:[{model:'…'}]}` rather than `{data:[{id:'…'}]}`.
+   * Both are read here rather than behind a dialect branch, because a list of
+   * model names is a list of model names — and a caller that had to say which
+   * spelling it expected would be one more place to get the pairing wrong.
+   * Anthropic's `/v1/models` already uses the `data[].id` shape unchanged.
+   */
   const data = (payload as { data?: unknown }).data
-  if (!Array.isArray(data)) return []
-  return data
-    .map((entry) =>
-      typeof entry === 'object' && entry !== null ? (entry as { id?: unknown }).id : undefined,
-    )
-    .filter((id): id is string => typeof id === 'string' && id.length > 0)
+  if (Array.isArray(data)) {
+    return data
+      .map((entry) =>
+        typeof entry === 'object' && entry !== null ? (entry as { id?: unknown }).id : undefined,
+      )
+      .filter((id): id is string => typeof id === 'string' && id.length > 0)
+  }
+
+  const models = (payload as { models?: unknown }).models
+  if (Array.isArray(models)) {
+    return models
+      .map((entry) =>
+        typeof entry === 'object' && entry !== null ? (entry as { model?: unknown }).model : undefined,
+      )
+      .filter((id): id is string => typeof id === 'string' && id.length > 0)
+  }
+
+  return []
 }
 
 /**
@@ -240,12 +261,45 @@ export const MODEL_TIMEOUT_MS = 60_000
  */
 export { isConfigured } from './provider'
 
-/** Ask a server what it serves. */
-export const modelsRequest = (endpoint: string): ModelRequest => ({
-  url: modelsUrl(endpoint),
-  method: 'GET',
-  headers: { Accept: 'application/json' },
-})
+/**
+ * Ask a provider what it serves.
+ *
+ * This took a whole `ModelSettings` rather than an endpoint because a cloud
+ * provider will not answer an unauthenticated request — and the consequence of
+ * getting that wrong was not a bad error message, it was that Claude and OpenAI
+ * could be CONFIGURED and never CONNECTED. "Test connection" 401'd, the model
+ * field stayed empty and disabled, `isConfigured` never turned true, and there
+ * was no way forward from the screen.
+ *
+ * Ollama's native path lists somewhere else again — `/api/tags`, in a different
+ * shape — so the dialect decides the URL as well as the headers.
+ */
+export const modelsRequest = (settings: ModelSettings): ModelRequest => {
+  const meta = providerMeta(settings.provider)
+  const endpoint = endpointOf(settings)
+  const key = (settings.apiKey ?? '').trim()
+
+  if (meta.dialect === 'ollama') {
+    return {
+      url: `${normaliseEndpoint(endpoint).replace(/\/v\d+$/, '')}/api/tags`,
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    }
+  }
+
+  return {
+    url: modelsUrl(endpoint),
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      ...(meta.dialect === 'anthropic'
+        ? { 'x-api-key': key, 'anthropic-version': ANTHROPIC_VERSION }
+        : meta.needsKey && key
+          ? { Authorization: `Bearer ${key}` }
+          : {}),
+    },
+  }
+}
 
 /**
  * A request to whichever provider is configured.
@@ -684,6 +738,27 @@ export function truncationOf(sentBody: string, usage: Usage | null): number | nu
  * on "something went wrong". And it gives the two fixes in the order of
  * likelihood: raise the window, or ask for less.
  */
+/**
+ * A turn, unless the server quietly read only part of what it was sent.
+ *
+ * The decision and the sentence in one place, called by both apps, because the
+ * first version of this was twelve lines written twice — once in each app's
+ * `llm.ts` — which is the copy this repo has a lint rule against. It was also
+ * untestable there: `agentTurn` does a real `fetch`, so nothing held the wiring
+ * and removing it broke no test.
+ *
+ * Reported as a REFUSAL rather than passed through with a warning attached. An
+ * answer built on a prompt the model never fully read is not a degraded answer,
+ * it is a wrong one delivered confidently, and letting it reach the screen is
+ * how this failure stays invisible.
+ */
+export function guardTruncation(sentBody: string, turn: Turn): Turn {
+  if (!turn.ok) return turn
+  const evaluated = truncationOf(sentBody, turn.usage ?? null)
+  if (evaluated === null) return turn
+  return { ok: false, kind: 'refused', reason: truncationWarning(evaluated, estimateTokens(sentBody)) }
+}
+
 export const truncationWarning = (evaluated: number, sent: number): string =>
   `The server read about ${String(evaluated).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} tokens of the roughly ` +
   `${String(sent).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} jojo sent, so it silently dropped the rest — ` +

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { TODAY } from '@/lib/today'
-import { ScrollView, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { DateField } from '@/components/common/DateField'
 import { StagedKeywordPicker } from '@/components/common/Labels'
 import { Button } from '@/components/ui/Button'
@@ -8,7 +8,9 @@ import { FormField, TextField } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
-import { ROLES, SOURCES, STAGES, STAGE_LABEL, displayName } from '@jojo/service/data/seed'
+import { Txt } from '@/components/ui/Text'
+import { SOURCES, STAGES, STAGE_LABEL, displayName } from '@jojo/service/data/seed'
+import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import type { Application, RoleTag, Source, Stage } from '@jojo/service/data/seed'
 import { shortDate } from '@jojo/service/data/timeline'
 // Imported, not redeclared. This sheet used to carry its own `deadlineUrgency`
@@ -23,7 +25,12 @@ import { useLabels } from '@/lib/labels-context'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useTimeline } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
+import { useColors } from '@/theme/theme-context'
 import { isOpenableUrl } from '@/lib/urls'
+import { duplicateMessage, findDuplicate } from '@jojo/service/core/duplicates'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import type { RootStackParamList } from '@/navigation/types'
 import { space } from '@/theme/tokens'
 
 /**
@@ -114,7 +121,10 @@ export function ApplicationSheet({
   const timeline = useTimeline()
   const { labelIdsOf, setRecord, removeRecord } = useLabels()
   const { toast } = useToast()
+  const vocabulary = useRoleVocabulary()
   const { open: openSheet } = useSheets()
+  const c = useColors()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const [form, setForm] = useState<FormState>(() => formFrom(initial))
   const [keywords, setKeywords] = useState<string[]>(() => keywordsOf(initial, labelIdsOf))
@@ -129,6 +139,21 @@ export function ApplicationSheet({
 
   /** Guessed values need checking; typed ones do not. See `lib/draft-from.ts`. */
   const guessed = mode === 'create' && Boolean(initial?.org || initial?.role || initial?.url)
+
+  /**
+   * Whether this job is already in the store.
+   *
+   * A NOTICE, never a blocker — three roles at one university is the case this
+   * product is for, so `core/duplicates.ts` fires only on the same posting URL
+   * or the same employer AND role. It matters more on a phone than on the web,
+   * because the share sheet makes adding a job a two-tap action and the same
+   * board gets read on the bus twice a week.
+   */
+  const duplicate = findDuplicate(
+    applications.all,
+    { org: form.org, role: form.role, url: form.url },
+    mode === 'edit' ? id : undefined,
+  )
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -328,6 +353,26 @@ export function ApplicationSheet({
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ gap: space[3.5], paddingBottom: space[2] }}
       >
+        {duplicate ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={`Open ${displayName(duplicate.record)}, which you already have`}
+            onPress={() => {
+              onDismiss()
+              navigation.navigate('ApplicationDetail', { id: duplicate.record.id })
+            }}
+            style={[
+              styles.duplicate,
+              { backgroundColor: c.warningSoft, borderColor: c.warningBorder },
+            ]}
+          >
+            <Txt size="xs" style={{ color: c.warning }}>
+              {duplicateMessage(duplicate.reason, displayName(duplicate.record))} Tap to open it, or
+              carry on and add this as a second record.
+            </Txt>
+          </Pressable>
+        ) : null}
+
         <TextField
           label="Organisation"
           required
@@ -431,7 +476,7 @@ export function ApplicationSheet({
         onClose={() => setRolesOpen(false)}
         title="Role tag"
         description="The axis the role filter and the charts read."
-        actions={ROLES.map((role) => ({
+        actions={vocabulary.map((role) => ({
           id: role,
           label: role,
           checked: role === form.roleTag,
@@ -464,3 +509,12 @@ function keywordsOf(
 
 /** Re-exported so the detail screen can name the type without the sheet. */
 export type { Application }
+
+const styles = StyleSheet.create({
+  duplicate: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
+    paddingHorizontal: space[3],
+    paddingVertical: space[2.5],
+  },
+})

@@ -3,11 +3,12 @@ import { Delete, History, Trash2 } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { cn } from '@/lib/utils'
-
-type Op = '+' | '−' | '×' | '÷' | '^'
-
-/** Longest result we will show before falling back to exponent form. */
-const MAX_DIGITS = 12
+import { UNARY, apply, format, toggleSign } from '@jojo/service/core/calculator'
+import type { Op } from '@jojo/service/core/calculator'
+// `MAX_DIGITS` is imported rather than redeclared: the keypad caps typed input
+// at the same width the shared `format` caps output at, and the two drifting
+// apart would let someone type a number the display could not print back.
+import { MAX_DIGITS } from '@jojo/service/core/calculator'
 
 /** History is a short memory, not an audit log. */
 const MAX_HISTORY = 30
@@ -21,64 +22,21 @@ type Mode = (typeof MODES)[number]['value']
 type Entry = { id: number; expr: string; value: string }
 
 /**
- * Trims the float noise arithmetic leaves behind.
- *
- * 0.1 + 0.2 is 0.30000000000000004 in binary floating point, and a calculator
- * that prints that is a calculator nobody trusts. Rounding to the precision a
- * double can actually represent gives 0.3 without inventing accuracy.
- */
-function format(value: number) {
-  if (!Number.isFinite(value)) return 'Error'
-  const rounded = Number.parseFloat(value.toPrecision(MAX_DIGITS))
-  const text = String(rounded)
-  return text.length > MAX_DIGITS + 2 ? rounded.toExponential(6) : text
-}
-
-function apply(a: number, b: number, op: Op) {
-  switch (op) {
-    case '+':
-      return a + b
-    case '−':
-      return a - b
-    case '×':
-      return a * b
-    case '÷':
-      return b === 0 ? Number.NaN : a / b
-    case '^':
-      return a ** b
-  }
-}
-
-/**
- * The scientific keys, as pure functions of the displayed value.
- *
- * Trig takes degrees, and the recorded expression says so. Silently using
- * radians would make sin(90) come out as 0.894 — correct, and not what anyone
- * pressing a calculator button meant.
- */
-const UNARY: {
-  key: string
-  label: string
-  expr: (n: string) => string
-  fn: (n: number) => number
-}[] = [
-  { key: 'sqr', label: 'x²', expr: (n) => `${n}²`, fn: (n) => n * n },
-  { key: 'sqrt', label: '√', expr: (n) => `√(${n})`, fn: Math.sqrt },
-  { key: 'inv', label: '1/x', expr: (n) => `1/(${n})`, fn: (n) => (n === 0 ? Number.NaN : 1 / n) },
-  { key: 'pct', label: '%', expr: (n) => `${n}%`, fn: (n) => n / 100 },
-  { key: 'sin', label: 'sin', expr: (n) => `sin(${n}°)`, fn: (n) => Math.sin((n * Math.PI) / 180) },
-  { key: 'cos', label: 'cos', expr: (n) => `cos(${n}°)`, fn: (n) => Math.cos((n * Math.PI) / 180) },
-  { key: 'tan', label: 'tan', expr: (n) => `tan(${n}°)`, fn: (n) => Math.tan((n * Math.PI) / 180) },
-  { key: 'ln', label: 'ln', expr: (n) => `ln(${n})`, fn: Math.log },
-]
-
-/**
  * A four-function calculator with an optional scientific pad and a running
  * history.
  *
- * Fully working rather than a mock: arithmetic needs no local store, so this is
- * one of the few things in the app that is finished today. The history is
- * session-only, like every other edit until persistence lands.
+ * THE KEYPAD ONLY. The arithmetic is `@jojo/service/core/calculator`, shared
+ * with the phone and tested there. It used to be inlined here — `format`,
+ * `apply` and a `UNARY` table, sixty-odd lines with no test file beside them,
+ * while `mobile` had the same three extracted and covered. `check-no-copies`
+ * could not see it because the two were never byte-identical, and they had
+ * already drifted: this pad was missing `log` and `±`, and called x² by a
+ * different key than the phone did — and both had a `±` that did a different
+ * thing, which briefly showed up as two of them side by side in this pad.
+ *
+ * The history is still session-only. That is now the one thing in this file
+ * that is unfinished rather than a consequence of persistence not existing —
+ * it does exist.
  */
 export function Calculator() {
   const [display, setDisplay] = useState('0')
@@ -143,7 +101,7 @@ export function Calculator() {
   const unary = useCallback(
     (u: (typeof UNARY)[number]) => {
       const current = Number.parseFloat(display)
-      const out = format(u.fn(current))
+      const out = format(u.run(current))
       record(u.expr(format(current)), out)
       setDisplay(out)
       setReplace(true)
@@ -152,7 +110,7 @@ export function Calculator() {
   )
 
   const negate = useCallback(() => {
-    setDisplay((prev) => (prev.startsWith('-') ? prev.slice(1) : prev === '0' ? prev : `-${prev}`))
+    setDisplay(toggleSign)
   }, [])
 
   const constant = useCallback((value: number) => {

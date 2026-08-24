@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { RefreshCw, TriangleAlert } from 'lucide-react'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useStoreStatus } from '@jojo/service/react/status-context'
 import { estimateStorage } from '@/kg/storage/probe'
 import { sessionOf, useBoot } from '@/lib/boot-context'
+import { settingsPath } from '@/lib/links'
 
 /**
  * The three ways a session that booted can stop being able to save, said out
@@ -251,6 +253,15 @@ export function StorageBanner() {
    * A banner rather than a toast, for the same reason as everything else here:
    * it describes a condition that persists until the rows are fixed or dropped,
    * and it points at the panel that names them.
+   *
+   * IT POINTS WITH A LINK NOW, not with the words "Settings → Diagnostics".
+   * That instruction was accurate and unfollowable: the row it refers to is the
+   * sixth line of the seventh of nine panels, three and a half screens down a
+   * settings page, in the same grey as "Last opened", and it was labelled
+   * "Records skipped as corrupt" while this sentence says "could not be read".
+   * Someone sent there looked, found nothing they recognised, and reported the
+   * feature as broken — which, as a promise, it was. The link lands on the row
+   * and lights it.
    */
   const skipped = sessionOf(state)?.skipped ?? []
   if (skipped.length > 0) {
@@ -258,8 +269,14 @@ export function StorageBanner() {
       <Banner tone="warning">
         {skipped.length === 1 ? '1 record' : `${skipped.length} records`} on this device could not
         be read and {skipped.length === 1 ? 'is' : 'are'} not being shown. Nothing has been deleted
-        — Settings → Diagnostics lists what they are, and an export from there includes everything
-        jojo could read.
+        — <Link
+          to={settingsPath({ focus: 'skipped' })}
+          className="underline underline-offset-2 hover:text-text-1"
+        >
+          Diagnostics
+        </Link>{' '}
+        {skipped.length === 1 ? 'names it' : 'names them'}, and an export from there includes
+        everything jojo could read.
       </Banner>
     )
   }

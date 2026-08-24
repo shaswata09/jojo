@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { draftFromText, draftFromUrl, roleFromTitle } from './parse-posting'
+import { draftFromShare, draftFromText, draftFromUrl, roleFromTitle } from './parse-posting'
 
 describe('draftFromText', () => {
   it('splits on the first separator only', () => {
@@ -152,5 +152,66 @@ describe('roleFromTitle', () => {
     expect(roleFromTitle('Assistant Professor of Computer Science', '')).toBe(
       'Assistant Professor of Computer Science',
     )
+  })
+})
+
+/**
+ * What arrives from Android's share sheet.
+ *
+ * Every case here is a real shape a share takes, and the first one is the bug:
+ * Chrome sends the page title and the URL in one string, and the version of the
+ * share target that shipped before this handed the whole thing to
+ * `draftFromUrl` — which found no URL, fell through to `draftFromText`, and
+ * filed the job under an employer named after the entire share.
+ */
+describe('draftFromShare', () => {
+  it('pulls the link out of a title-and-URL share', () => {
+    const d = draftFromShare(
+      'Assistant Professor of Computer Science https://jobs.rice.edu/postings/29411',
+    )
+    expect(d.url).toBe('https://jobs.rice.edu/postings/29411')
+    expect(d.org).not.toContain('https')
+    expect(d.org).toBe('Rice')
+  })
+
+  it('keeps the shared words as the role when the address has none', () => {
+    const d = draftFromShare('Assistant Professor of Computer Science https://rice.edu/careers')
+    expect(d.role).toBe('Assistant Professor of Computer Science')
+  })
+
+  it('takes an employer — role split out of the shared words', () => {
+    const d = draftFromShare('Rice — Assistant Professor https://rice.edu/careers')
+    expect(d.org).toBe('Rice')
+    expect(d.role).toBe('Assistant Professor')
+  })
+
+  it('handles a bare link exactly as a paste would', () => {
+    expect(draftFromShare('https://boards.greenhouse.io/acme/jobs/4')).toEqual(
+      draftFromUrl('https://boards.greenhouse.io/acme/jobs/4'),
+    )
+  })
+
+  it('survives a share with no link in it at all', () => {
+    expect(draftFromShare('Rice — Statistics')).toEqual({ org: 'Rice', role: 'Statistics' })
+    expect(draftFromShare('   ')).toEqual({})
+  })
+
+  it('trims punctuation the sender never meant as part of the link', () => {
+    expect(draftFromShare('Look at this: https://rice.edu/careers.').url).toBe(
+      'https://rice.edu/careers',
+    )
+    expect(draftFromShare('(https://rice.edu/careers)').url).toBe('https://rice.edu/careers')
+  })
+
+  it('takes the first link when a share carries several', () => {
+    expect(draftFromShare('https://rice.edu/a and https://example.com/b').url).toBe(
+      'https://rice.edu/a',
+    )
+  })
+
+  it('copes with the newline Chrome actually sends', () => {
+    const d = draftFromShare('Assistant Professor, CS\nhttps://jobs.rice.edu/postings/29411')
+    expect(d.url).toBe('https://jobs.rice.edu/postings/29411')
+    expect(d.role).toBe('Assistant Professor, CS')
   })
 })

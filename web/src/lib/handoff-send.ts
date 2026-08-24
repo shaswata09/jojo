@@ -23,6 +23,9 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { planConvoy } from '@jojo/service/core/convoy'
+import { handedOver } from '@jojo/service/repo/meta'
+import { useKg } from '@jojo/service/react/kg-context'
+import type { Instant } from '@jojo/service/core/model'
 import { createSecrets } from '@jojo/service/crypto/noble-secrets'
 import { decodeAddress, formatAddress, type DialFailure } from '@jojo/service/core/dial'
 import type { SessionKeys } from '@jojo/service/core/pairing'
@@ -62,9 +65,11 @@ export type SendState = {
 
 /** What to say when the twelve characters do not parse. */
 const DIAL_ADVICE: Record<DialFailure, string> = {
-  'dial/unreadable': 'That code has characters jojo does not use. Check it against the other screen.',
+  'dial/unreadable':
+    'That code has characters jojo does not use. Check it against the other screen.',
   'dial/length': 'That code is the wrong length. It is twelve characters, in three groups of four.',
-  'dial/mistyped': 'That code does not check out — a character is wrong somewhere. Try typing it again.',
+  'dial/mistyped':
+    'That code does not check out — a character is wrong somewhere. Try typing it again.',
 }
 
 export function useHandoffSend({
@@ -76,6 +81,7 @@ export function useHandoffSend({
   /** Produces the backup bytes. Called late, and only once. */
   build: () => Promise<Uint8Array>
 }): SendState {
+  const { repo } = useKg()
   // One instance for the life of the hook. Stateless and cheap, but a new
   // object identity on every render would churn the callbacks below.
   const secrets = useMemo(() => createSecrets(), [])
@@ -150,9 +156,19 @@ export function useHandoffSend({
         setProgress((seq + 1) / plan.chunks)
       }
 
+      /*
+       * Recorded on this device, not sent with the bytes.
+       *
+       * `handoverAt` is a fact about THIS store — when it last agreed with
+       * another one — so it belongs to the sender as much as to the receiver,
+       * and each keeps its own. It is what lets the Transfer page say how far
+       * this device has drifted since, which is the one thing a one-directional
+       * transfer never told anybody.
+       */
+      repo.setMeta(handedOver(repo.meta, new Date().toISOString() as Instant))
       setStage('done')
     },
-    [build, complete, secrets, stop],
+    [build, complete, secrets, stop, repo],
   )
 
   const cancel = useCallback(() => {

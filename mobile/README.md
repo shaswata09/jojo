@@ -1,8 +1,9 @@
 # jojo — mobile
 
-The same job tracker as `web/`, as an Android and iOS app. Bare React Native —
-no Expo, no framework wrapper, no tool that has to run before the project can be
-opened.
+The same agentic job-search assistant as `web/`, as an Android and iOS app —
+the same tracker, the same records, and the same assistant working on them once
+you point it at a model. Bare React Native — no Expo, no framework wrapper, no
+tool that has to run before the project can be opened.
 
 Everything runs on the device. There is no server and no account, and nothing is
 sent to us — there is no "us" to send it to. What the app _can_ reach is only
@@ -537,6 +538,39 @@ thumb can aim. The board's drag exists because a 250pt column is.
 
 ---
 
+### Sharing into jojo, and links out of it
+
+A job found in the browser reaches this app through the share sheet: jojo
+registers `ACTION_SEND` for `text/plain`, and `MainActivity` rewrites the intent
+into `jojo://applications?shared=…` before React starts. Everything after that is
+JavaScript — the linking config in `src/navigation/linking.ts` turns it into a
+route parameter and the Applications screen opens the create sheet on it.
+
+The rewrite is what avoids a native module. `EXTRA_TEXT` is not something React
+Native's `Linking` exposes, and the usual answer is a bridge or a third-party
+package; converting the share into the deep link the app already understands
+needs neither.
+
+`draftFromShare` rather than `draftFromUrl` parses what arrives, and the
+difference is not cosmetic: Chrome shares the page **title and the URL together**,
+and the URL parser handed that pair finds no link, falls through to the text
+parser, and files the job under an employer named after the entire share. That is
+what the first build of this did.
+
+The `jojo://` scheme itself now resolves — every tab, every stack screen, and
+`jojo://application/<slug-or-id>` for one record. It had been declared in both
+native projects since they were generated and listened to by nothing, which is
+worse than not claiming it: a link that silently does nothing reads as a broken
+app rather than a missing feature.
+
+**iOS gets the deep links and not the share sheet.** Receiving a share there
+needs a Share Extension, which is a second Xcode target with its own bundle id,
+entitlements and app group — and this repo has never built for iOS (see
+**iOS has never been built here**), so adding an unverifiable target would be
+worse than the honest gap.
+
+---
+
 ## What is honest about being unfinished
 
 Three things that used to be listed here are no longer placeholders, and the
@@ -563,6 +597,13 @@ copy on every screen that claimed otherwise has been corrected:
 
 What is still honestly absent:
 
+- **Nothing here notifies you.** The app has no local notifications, so a
+  deadline reaches you only when you open it. The Calendar's export is the
+  answer that exists today: it writes every date — the timeline and each offer's
+  respond-by — as an `.ics` with a reminder on each, and hands it to whatever
+  opens a calendar file on this phone, so the alert comes from the calendar you
+  already carry. It is a copy taken now, so it needs re-exporting when the dates
+  change. Real notifications would remove that step and are not built.
 - **The scout finds nothing on its own.** It scores what is in front of it;
   nothing goes out and crawls a board, so the feed holds only what you put in it.
 - **The localhost bridge is not built.** Settings describes it and the repo's

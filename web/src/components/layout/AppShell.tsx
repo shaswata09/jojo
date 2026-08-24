@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
+import { Onboarding } from '@/components/common/Onboarding'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { StorageBanner } from '@/components/layout/StorageBanner'
@@ -185,6 +186,13 @@ export function AppShell() {
           </main>
         </div>
       </div>
+
+      {/* Inside the router on purpose. It links to the guide and to Profile,
+          and a dialog mounted above the router can only reach them with a bare
+          `<a href>` — which skips `basename` and 404s wherever the app is
+          served from a subpath, and reloads the document, which kills any agent
+          run still working. It renders nothing until there is something to ask. */}
+      <Onboarding />
     </>
   )
 }

@@ -1,4 +1,6 @@
 import { useId } from 'react'
+import { Box, Connector, DASH, Rule } from '@/components/guide/diagrams/parts'
+import { CATALOG } from '@jojo/service/agent/catalog'
 
 /**
  * The path a request takes, and the two places it can be stopped.
@@ -18,9 +20,21 @@ import { useId } from 'react'
  * sequence — and the order is the content.
  */
 
+/*
+ * Read from the catalog, not typed.
+ *
+ * This said "all 82" and was wrong within a day of being written — four tools
+ * were added and the figure carried on claiming a number that had stopped being
+ * true. A count in a diagram is exactly as prone to going stale as a count in
+ * prose, and this page argues that jojo does not let that happen.
+ */
 const STEPS = [
   { label: 'what you typed', tone: 'plain' as const, note: '' },
-  { label: 'pick the likely tools', tone: 'gate' as const, note: 'unclear? offer all 82' },
+  {
+    label: 'pick the likely tools',
+    tone: 'gate' as const,
+    note: `unclear? offer all ${String(CATALOG.length)}`,
+  },
   { label: 'add what those tools need', tone: 'plain' as const, note: 'so no chain dead-ends' },
   { label: 'the model chooses one', tone: 'plain' as const, note: '' },
   { label: 'was it offered?', tone: 'stop' as const, note: 'no? refused, nothing runs' },
@@ -41,14 +55,14 @@ export function ToolGateDiagram() {
     <figure className="m-0">
       <svg
         viewBox={`0 0 420 ${String(height)}`}
-        className="h-auto w-full max-w-[520px]"
+        className="diagram h-auto w-full max-w-[520px]"
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
         <title id={titleId}>The two gates between a question and a change to your records</title>
         <desc id={descId}>
           Six steps, top to bottom. One, what you typed. Two, jojo picks the tools your words point
-          at — and if your words are unclear it offers all eighty-two rather than guessing. Three,
+          at — and if your words are unclear it offers all of them rather than guessing. Three,
           it adds whatever those tools depend on, so no chain can dead-end. Four, the model chooses
           one tool. Five, jojo checks whether that tool was actually offered; if it was not, the
           call is refused and nothing runs. Six, only then do your records change. The fifth step is
@@ -67,16 +81,7 @@ export function ToolGateDiagram() {
                 : 'var(--hairline-strong)'
           return (
             <g key={step.label}>
-              <rect
-                x={4}
-                y={y}
-                width={W}
-                height={H}
-                rx={7}
-                fill="var(--well)"
-                stroke={stroke}
-                strokeWidth={step.tone === 'plain' ? 1 : 1.5}
-              />
+              <Box x={4} y={y} w={W} h={H} stroke={stroke} width={step.tone === 'plain' ? 1 : 1.5} />
               <text x={14} y={mid + 4} fontSize={11} fill="var(--text-1)">
                 {step.label}
               </text>
@@ -86,15 +91,7 @@ export function ToolGateDiagram() {
                   and drawing them inline would imply they do. */}
               {step.note ? (
                 <>
-                  <line
-                    x1={W + 8}
-                    y1={mid}
-                    x2={228}
-                    y2={mid}
-                    stroke={stroke}
-                    strokeWidth={1}
-                    strokeDasharray="3 3"
-                  />
+                  <Rule x1={W + 8} y1={mid} x2={228} y2={mid} stroke={stroke} dash={DASH.soft} />
                   <text x={234} y={mid + 4} fontSize={10} fill="var(--text-2)">
                     {step.note}
                   </text>
@@ -102,20 +99,11 @@ export function ToolGateDiagram() {
               ) : null}
 
               {i < STEPS.length - 1 ? (
-                <>
-                  <line
-                    x1={W / 2}
-                    y1={y + H}
-                    x2={W / 2}
-                    y2={y + PITCH}
-                    stroke="var(--hairline-strong)"
-                    strokeWidth={1}
-                  />
-                  <path
-                    d={`M ${String(W / 2)} ${String(y + PITCH)} l -3.5 -6 h 7 z`}
-                    fill="var(--hairline-strong)"
-                  />
-                </>
+                <Connector
+                  from={[W / 2, y + H]}
+                  to={[W / 2, y + PITCH]}
+                  dir="down"
+                />
               ) : null}
             </g>
           )

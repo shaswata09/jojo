@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
-import { ROLES, type RoleTag } from '@/data/seed'
+import type { RoleTag } from '@/data/seed'
+import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useRoles } from '@/lib/roles-context'
 import { cn } from '@/lib/utils'
@@ -32,6 +33,7 @@ const INLINE = 2
 export function RoleFilter() {
   const [open, setOpen] = useState(false)
   const { selected, toggle, setAll, clear } = useRoles()
+  const vocabulary = useRoleVocabulary()
   const { all } = useApplications()
 
   /**
@@ -42,17 +44,17 @@ export function RoleFilter() {
    */
   const counts = useMemo(
     () =>
-      ROLES.reduce(
+      vocabulary.reduce(
         (acc, role) => {
           acc[role] = all.filter((a) => a.roleTag === role).length
           return acc
         },
         {} as Record<RoleTag, number>,
       ),
-    [all],
+    [all, vocabulary],
   )
 
-  const chosen = ROLES.filter((r) => selected.has(r))
+  const chosen = vocabulary.filter((r) => selected.has(r))
   const inline = chosen.slice(0, INLINE)
   const overflow = chosen.length - inline.length
 
@@ -83,7 +85,7 @@ export function RoleFilter() {
             <CommandList>
               <CommandEmpty>No role matches.</CommandEmpty>
               <CommandGroup>
-                {ROLES.map((role) => {
+                {vocabulary.map((role) => {
                   const on = selected.has(role)
                   return (
                     <CommandItem
@@ -115,7 +117,7 @@ export function RoleFilter() {
 
               <Separator />
               <CommandGroup>
-                <CommandItem onSelect={() => setAll([...ROLES])} className="justify-center text-xs">
+                <CommandItem onSelect={() => setAll([...vocabulary])} className="justify-center text-xs">
                   Select all
                 </CommandItem>
                 {selected.size > 0 ? (

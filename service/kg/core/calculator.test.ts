@@ -18,10 +18,16 @@
  * comment says it does, and not a screen difference that does not exist.
  *
  * Everything else here IS a screen difference, and each case says which.
+ *
+ * MOVED FROM `mobile/src/lib/calculator.test.ts` when the arithmetic moved to
+ * `core`. It was testing one of two copies: `web`'s calculator inlined its own
+ * `format`, `apply` and `UNARY` with nothing exercising them, and the two pads
+ * had already drifted — see this module's header for the three ways. These
+ * cases now cover both apps because both apps import the code they describe.
  */
 
 import { describe, expect, it } from 'vitest'
-import { UNARY, apply, format } from './calculator'
+import { UNARY, apply, format, toggleSign } from './calculator'
 import type { Op } from './calculator'
 
 /** The one key by name, so a case reads as the button that was pressed. */
@@ -137,7 +143,40 @@ describe('the scientific keys take degrees', () => {
     expect(format(unary('sqrt').run(9))).toBe('3')
     expect(format(unary('sq').run(7))).toBe('49')
     expect(format(unary('pct').run(50))).toBe('0.5')
-    expect(format(unary('neg').run(5))).toBe('-5')
+    // `neg` used to be asserted here. It is deliberately no longer a UNARY key
+    // — `±` is a display edit rather than an operation — and `toggleSign`
+    // below covers what replaced it.
     expect(format(unary('ln').run(1))).toBe('0')
+  })
+})
+
+describe('toggleSign', () => {
+  /*
+   * The `±` key, which this app briefly shipped twice — see the module header.
+   * These pin the three things that make it a keypad key rather than an
+   * operation: it round-trips, it leaves a bare zero alone, and it is a text
+   * edit, so it never reformats what the user typed.
+   */
+  it('flips the sign and flips it back', () => {
+    expect(toggleSign('5')).toBe('-5')
+    expect(toggleSign('-5')).toBe('5')
+    expect(toggleSign(toggleSign('5'))).toBe('5')
+  })
+
+  it('leaves a bare zero alone, because nobody typed minus zero', () => {
+    expect(toggleSign('0')).toBe('0')
+  })
+
+  it('does not reformat what is being typed', () => {
+    // A half-typed number must survive: '1.' is mid-entry, and rounding it to
+    // '1' here would delete the decimal point the user just pressed.
+    expect(toggleSign('1.')).toBe('-1.')
+    expect(toggleSign('0.50')).toBe('-0.50')
+    expect(toggleSign('-0.50')).toBe('0.50')
+  })
+
+  it('is not in UNARY, so no pad renders two of it', () => {
+    expect(UNARY.map((u) => u.key)).not.toContain('neg')
+    expect(UNARY.map((u) => u.label)).not.toContain('±')
   })
 })

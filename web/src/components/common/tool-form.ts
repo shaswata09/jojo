@@ -223,6 +223,8 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
       return node.props.name
     case 'snippet':
       return node.props.title
+    case 'person':
+      return node.props.name
     case 'posting':
       return node.props.title
     case 'match':

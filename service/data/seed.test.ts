@@ -77,6 +77,7 @@ function reset() {
       lastOpenedAt: AT,
       dataSet: 'empty',
       seededAt: null,
+      handoverAt: null,
     },
     now,
   })

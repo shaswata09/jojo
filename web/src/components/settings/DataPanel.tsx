@@ -5,9 +5,19 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { SettingRow } from '@/components/common/Field'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { pendingCopy } from '@/components/settings/data-confirm-copy'
+import { restoreSummary } from '@/components/settings/restore-report'
+import type { RestoreReport } from '@/components/settings/restore-report'
 import { BACKUP_ACCEPT, exportFilename } from '@/components/settings/export-name'
 import type { PendingData } from '@/components/settings/data-confirm-copy'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useStoreAdmin } from '@jojo/service/react/use-admin'
 import { useBoot } from '@/lib/boot-context'
 import { transferPath } from '@/lib/links'
@@ -29,6 +39,18 @@ export function DataPanel() {
   const { repo } = useKg()
   /** A validated backup waiting for the user to confirm replacing everything. */
   const [staged, setStaged] = useState<RestorePlan | null>(null)
+  /**
+   * What the restore did, held on screen until the reader has acknowledged it.
+   *
+   * The reload below is why this is state rather than a toast. `onRestore` used
+   * to raise a toast and call `window.location.reload()` on the next line; the
+   * reload fires about 200ms later and takes the toast with it, so the one
+   * sentence that mattered — "188 could not be read and were left out" — was
+   * composed correctly and never rendered once. A restore that quietly drops
+   * records is the exact failure `core/backup.ts` says the reader exists to
+   * prevent, and it was being reported into a message nobody could see.
+   */
+  const [outcome, setOutcome] = useState<RestoreReport | null>(null)
   const importRef = useRef<HTMLInputElement>(null)
 
   /**
@@ -60,15 +82,21 @@ export function DataPanel() {
       toast({ title: 'The restore failed', description: done.message, tone: 'danger' })
       return
     }
-    toast({
-      title: 'Restored',
-      description:
-        `${done.nodes} records and ${done.documents} document${done.documents === 1 ? '' : 's'} are back` +
-        (done.skipped > 0 ? `. ${done.skipped} could not be read and were left out.` : '.'),
+    /*
+     * The reload waits for the reader.
+     *
+     * Every projection, cache and epoch in this page describes the store that
+     * was just replaced, so the page has to go — but it goes when the outcome
+     * has been read, not before it has been drawn. `held` is what the file
+     * promised, so the dialog can say both numbers when they disagree instead
+     * of reporting only the smaller one.
+     */
+    setOutcome({
+      held: plan.nodes.length,
+      nodes: done.nodes,
+      documents: done.documents,
+      skipped: done.skipped,
     })
-    // Reloaded because every projection, cache and epoch in the page describes
-    // the store that was just replaced.
-    window.location.reload()
   }
   const { state, closeStore, chooseDataSet, busy } = useBoot()
   const { toast } = useToast()
@@ -458,6 +486,19 @@ export function DataPanel() {
         onConfirm={applyPending}
       />
 
+      {/*
+        What the restore did, and the only way off it is the reload.
+        
+        Not a `ConfirmDialog`, because that one offers Cancel and there is
+        nothing left to cancel — the store was replaced before this rendered.
+        Escape and the backdrop reload too: every projection in the page behind
+        this describes a store that no longer exists, so there is no state here
+        worth returning to.
+      */}
+      {outcome === null ? null : (
+        <RestoreOutcomeDialog report={outcome} onDone={() => window.location.reload()} />
+      )}
+
       {/* Separate from the dialog above because what it must say is different:
           that one asks about data the user can see, this one names what is in a
           file they cannot. `describeBackup` is that sentence. */}
@@ -477,5 +518,36 @@ export function DataPanel() {
         onConfirm={() => void onRestore()}
       />
     </>
+  )
+}
+
+/**
+ * The last thing a restore says, held on screen until it is acknowledged.
+ *
+ * One action. A restore is not undoable — `replaceAll` clears the journal with
+ * everything else — so a second button would have to be a lie or a no-op.
+ */
+function RestoreOutcomeDialog({ report, onDone }: { report: RestoreReport; onDone: () => void }) {
+  const summary = restoreSummary(report)
+
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onDone()
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className={summary.tone === 'danger' ? 'text-danger' : undefined}>
+            {summary.title}
+          </DialogTitle>
+          <DialogDescription>{summary.description}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button onClick={onDone}>Reload jojo</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

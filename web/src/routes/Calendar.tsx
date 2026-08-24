@@ -8,7 +8,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { Plus } from 'lucide-react'
+import { CalendarArrowDown, Plus } from 'lucide-react'
 import { DayRail } from '@/components/calendar/DayRail'
 import { EventChip } from '@/components/calendar/EventChip'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
@@ -21,6 +21,8 @@ import { compareItems, isoOf, partsOf, shortDate } from '@/data/timeline'
 import type { TimelineItem } from '@/data/timeline'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
+import { useCalendarExport } from '@/lib/calendar-export'
+import { ICS_FILENAME } from '@jojo/service/core/ics'
 import { useCalendarParams, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { TODAY_PARTS } from '@/lib/today'
@@ -42,6 +44,7 @@ export function Calendar() {
   const selected = d
   const { open } = useDialogs()
   const { toast } = useToast()
+  const calendar = useCalendarExport()
 
   // Page options, both wired straight into the grid below.
   const [dotsOnly, setDotsOnly] = useState(false)
@@ -101,6 +104,27 @@ export function Calendar() {
     open('timelineItem', { mode: item.remind ? 'reminder' : 'event', initial: item })
 
   const addOn = (iso: string) => open('timelineItem', { mode: 'event', initial: { date: iso } })
+
+  /**
+   * The file is downloaded, not installed — so the toast says what is left to
+   * do. A message that stopped at "exported" would leave the reader believing
+   * their phone will now warn them, which is the belief this whole export
+   * exists to make true.
+   */
+  const exportCalendar = () => {
+    if (!calendar.download()) {
+      toast({
+        title: 'The calendar file could not be written',
+        description: 'The browser refused the download. Nothing has changed here.',
+        tone: 'danger',
+      })
+      return
+    }
+    toast({
+      title: `${String(calendar.count)} date${calendar.count === 1 ? '' : 's'} exported`,
+      description: `${ICS_FILENAME} is in your downloads. Open it and your calendar will offer to import them, with a reminder on each.`,
+    })
+  }
 
   const onDelete = (item: TimelineItem) => {
     const { restore } = remove(item.id)
@@ -166,15 +190,27 @@ export function Calendar() {
           </>
         }
         actions={
-          <Button
-            size="sm"
-            // Prefilled with the day on screen: on a calendar, "add" almost
-            // always means "add to the day I am looking at".
-            onClick={() => addOn(selectedISO)}
-          >
-            <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            Add event
-          </Button>
+          <>
+            {/*
+              jojo has no notifications, so this is the only way one of these
+              dates reaches somebody who is not looking at the app. It sits here
+              rather than in Settings because this is the page a person is on
+              when they are thinking about dates.
+            */}
+            <Button variant="outline" size="sm" onClick={exportCalendar}>
+              <CalendarArrowDown className="size-3.5" strokeWidth={2} aria-hidden />
+              Export to my calendar
+            </Button>
+            <Button
+              size="sm"
+              // Prefilled with the day on screen: on a calendar, "add" almost
+              // always means "add to the day I am looking at".
+              onClick={() => addOn(selectedISO)}
+            >
+              <Plus className="size-3.5" strokeWidth={2} aria-hidden />
+              Add event
+            </Button>
+          </>
         }
       />
 

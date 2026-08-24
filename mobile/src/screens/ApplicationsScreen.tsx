@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -17,9 +17,16 @@ import { Segment } from '@/components/ui/Segment'
 import { Divider, Panel } from '@/components/ui/Surface'
 import { SettingRow, Toggle } from '@/components/ui/Field'
 import { Txt } from '@/components/ui/Text'
-import { ROLES, STAGES, STAGE_LABEL, displayName } from '@jojo/service/data/seed'
+import { STAGES, STAGE_LABEL, displayName } from '@jojo/service/data/seed'
+import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import type { Application, RoleTag, Stage } from '@jojo/service/data/seed'
-import { addDays, agoLabel, compareItems, daysBetween, shortDate } from '@jojo/service/data/timeline'
+import {
+  addDays,
+  agoLabel,
+  compareItems,
+  daysBetween,
+  shortDate,
+} from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 // The parser is the shared one. `src/lib/draft-from.ts` held a 349-line copy of
@@ -27,7 +34,7 @@ import { TODAY } from '@/lib/today'
 // was deleted. `scout.posting.promote` parses a posting's URL through this same
 // module with no screen in the call stack, so a second copy up here could only
 // ever disagree with the store about what a pasted link means.
-import { draftFromUrl } from '@jojo/service/core/parse-posting'
+import { draftFromShare, draftFromUrl } from '@jojo/service/core/parse-posting'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { useRoles } from '@/lib/roles-context'
@@ -104,6 +111,26 @@ export function ApplicationsScreen() {
   const [sort, setSort] = useState<SortKey>(route.params?.sort ?? 'daysAgo')
   const [dir, setDir] = useState<SortDir>('asc')
   const [sortOpen, setSortOpen] = useState(false)
+
+  /*
+   * A share from another app lands here.
+   *
+   * `MainActivity` turns an `ACTION_SEND` into `jojo://applications?shared=…`
+   * and the linking config turns that into this parameter, so a URL shared from
+   * a browser arrives as an ordinary route param and nothing native reaches
+   * into React. `draftFromUrl` handles a bare link and a scrap of text alike,
+   * which matters because Android shares are usually a title AND a URL.
+   *
+   * Cleared as it is consumed. Without that, going back to this tab later would
+   * reopen the sheet on a link the user already dealt with — a route param is
+   * an instruction here, not a filter.
+   */
+  const shared = route.params?.shared
+  useEffect(() => {
+    if (!shared) return
+    navigation.setParams({ shared: undefined })
+    open('application', { initial: draftFromShare(shared) })
+  }, [shared, navigation, open])
   const [rolesOpen, setRolesOpen] = useState(false)
   const [showNotes, setShowNotes] = useState(true)
   // Lives here rather than in `Board` because the scroller it has to freeze is
@@ -502,6 +529,7 @@ function ApplicationRow({
  * whole search.
  */
 function RoleFilterSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const vocabulary = useRoleVocabulary()
   const { selected, toggle, clear } = useRoles()
   const { all } = useApplications()
 
@@ -514,7 +542,7 @@ function RoleFilterSheet({ open, onClose }: { open: boolean; onClose: () => void
       title="Filter by role"
       description="Nothing selected means everything — clearing the filter is the same as never having set one."
       actions={[
-        ...ROLES.map((role) => ({
+        ...vocabulary.map((role) => ({
           id: role,
           label: role,
           hint: `${countOf(role)} tracked`,

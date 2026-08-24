@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { fitOf } from '@/lib/fit'
+import { fitOf } from '@jojo/service/core/fit'
 import { listJoin } from '@/lib/text'
 import { TODAY } from '@/lib/today'
 import { Linking, Pressable, StyleSheet, View } from 'react-native'

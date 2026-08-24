@@ -1,5 +1,7 @@
 import { useId } from 'react'
 import type { ComponentProps, ReactNode } from 'react'
+import { ExternalLink } from 'lucide-react'
+import { openHref } from '@/components/vault/links/url'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -61,6 +63,42 @@ function FieldMessages({
   )
 }
 
+/**
+ * The button that opens what a URL field holds.
+ *
+ * A saved link sitting in a text box is somewhere you cannot go: the address is
+ * right there and the only way to visit it is to select it, copy it and paste it
+ * into the address bar. Four of those sit on the profile page alone.
+ *
+ * WHY IT KEYS OFF `type="url"` rather than a prop of its own. A field that
+ * declares itself a URL field has already said the thing this needs to know, and
+ * every URL field in the app is one — so the affordance arrives everywhere at
+ * once instead of wherever somebody remembered to ask for it. It is still
+ * self-limiting: `openHref` returns nothing unless the value parses as http(s)
+ * with a real host, so an empty field, a half-typed one, `localhost` and
+ * `javascript:` all render no button at all.
+ *
+ * It is a real anchor rather than a button that navigates, so middle-click and
+ * "open in new tab" work and the browser shows the destination on hover.
+ * `noreferrer` as well as `noopener`, matching the vault's link rows: where
+ * someone keeps their links is not the destination's business.
+ */
+function OpenLink({ href, label }: { href: string; label: string }) {
+  const title = `Open ${label} in a new tab`
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={title}
+      title={title}
+      className="absolute top-1/2 right-1 grid size-6 -translate-y-1/2 place-items-center rounded-md border border-transparent text-text-3 transition-colors outline-none hover:bg-row-hover hover:text-accent focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 [@media(pointer:coarse)]:size-9"
+    >
+      <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
+    </a>
+  )
+}
+
 /** Error first: it supersedes the guidance underneath it, so it is read first. */
 function describedBy(error: ReactNode, errorId: string, hint: ReactNode, hintId: string) {
   const ids = [error ? errorId : '', hint ? hintId : ''].filter(Boolean)
@@ -108,17 +146,26 @@ export function Field({
   const hintId = `${fieldId}-hint`
   const errorId = `${fieldId}-error`
 
+  // Nothing to open unless the field says it holds a URL and the value is one.
+  const href = props.type === 'url' ? openHref(String(props.value ?? '')) : undefined
+
   return (
     <div className={cn('space-y-1.5', className)}>
       <FieldLabel htmlFor={fieldId} label={label} required={required} />
-      <Input
-        id={fieldId}
-        required={required}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(error, errorId, hint, hintId)}
-        className={cn(mono && 'font-mono text-xs')}
-        {...props}
-      />
+      <div className="relative">
+        <Input
+          id={fieldId}
+          required={required}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy(error, errorId, hint, hintId)}
+          // The padding is conditional because the button is: a URL field with
+          // nothing openable in it must not sit indented for a control that is
+          // not there.
+          className={cn(mono && 'font-mono text-xs', href && 'pr-8 [@media(pointer:coarse)]:pr-11')}
+          {...props}
+        />
+        {href ? <OpenLink href={href} label={label} /> : null}
+      </div>
       <FieldMessages
         error={error}
         errorId={errorId}

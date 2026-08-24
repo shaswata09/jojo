@@ -1,3 +1,4 @@
+import { DEFAULT_ROLES } from '../core/model'
 /**
  * L3 — the profile tools.
  *
@@ -67,6 +68,7 @@ export function profileNode(ctx: ToolContext) {
     type: 'profile',
     props: {
       text: { ...BLANK_TEXT },
+      roles: [...DEFAULT_ROLES],
       matchTerms: [],
       // Both switches start on: an untouched profile filters nothing out, and a
       // scout that silently excluded half the boards would be a setting nobody

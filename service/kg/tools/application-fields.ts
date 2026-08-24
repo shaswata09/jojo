@@ -14,7 +14,7 @@
  * `components/applications/dialog/transition-options.ts`.
  */
 
-import { ROLES, SOURCES, STAGE_VALUES } from '../core/model'
+import { SOURCES, STAGE_VALUES } from '../core/model'
 import type { ISODate, NodeId } from '../core/model'
 import { s } from '../core/schema'
 import {
@@ -32,7 +32,7 @@ export const appId = s.id('application', { label: 'Application' })
 export const fields = {
   org: s.optional(s.string({ min: 1, label: 'Employer' })),
   role: s.optional(s.string({ label: 'Role' })),
-  roleTag: s.optional(s.enum(ROLES, { label: 'Role type' })),
+  roleTag: s.optional(s.string({ min: 1, label: 'Role type' })),
   stage: s.optional(s.enum(STAGE_VALUES, { label: 'Stage' })),
   note: s.optional(s.string({ label: 'Note', multiline: true })),
   source: s.optional(s.enum(SOURCES, { label: 'Where it came from' })),

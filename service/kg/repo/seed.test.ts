@@ -39,6 +39,7 @@ import {
   timeline as seedTimeline,
 } from '../../data/timeline'
 import {
+  people as seedPeople,
   snippets as seedSnippets,
   vaultFiles as seedFiles,
   vaultLinks as seedLinks,
@@ -190,6 +191,10 @@ describe('seedToGraph', () => {
       link: seedLinks.length,
       file: seedFiles.length,
       snippet: seedSnippets.length,
+      // The first fixtures that carry FILED_UNDER edges. A referee who writes
+      // for three jobs is the case the many-to-many cardinality was argued
+      // for, and until people existed the seeded graph demonstrated it nowhere.
+      person: seedPeople.length,
       posting: seedPostings.length,
       match: seedMatches.length,
       pipeline: seedPipelines.length,

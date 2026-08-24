@@ -15,6 +15,7 @@ import { ApplicationDetail } from '@/routes/ApplicationDetail'
 import { Applications } from '@/routes/Applications'
 import { Assistant } from '@/routes/Assistant'
 import { Calendar } from '@/routes/Calendar'
+import { Organisation } from '@/routes/Organisation'
 import { Dashboard } from '@/routes/Dashboard'
 import { Guide } from '@/routes/Guide'
 import { JobScout } from '@/routes/JobScout'
@@ -126,6 +127,11 @@ export default function App() {
                 compared the raw segment against a NodeId. */}
             <Route path=":key" element={<ApplicationDetailRoute />} />
           </Route>
+          {/* 'employers', not 'organisations'. The word in the interface is
+              the employer's own — the model calls it an organisation because
+              that is what the node is, and a URL a person may read should use
+              the word they would say. */}
+          <Route path="employers/:key" element={<Organisation />} />
           <Route path="calendar" element={<Calendar />} />
           <Route path="vault" element={<Vault />} />
           {/* Reminders became one tool inside the Vault. Kept as a redirect so

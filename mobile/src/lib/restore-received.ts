@@ -29,12 +29,10 @@
 import { readBackup } from '@jojo/service/core/backup'
 import { decodeUtf8 } from '@jojo/service/core/utf8'
 import { restoreBackup, type RestoreOutcome } from '@jojo/service/repo/restore'
+import { handedOver } from '@jojo/service/repo/meta'
+import type { Instant } from '@jojo/service/core/model'
 import type { Repository } from '@jojo/service/repo/repository'
-import {
-  createDocumentStore,
-  plannedUris,
-  withDocumentUris,
-} from '@/lib/restore-documents'
+import { createDocumentStore, plannedUris, withDocumentUris } from '@/lib/restore-documents'
 
 /**
  * Replaces everything on this phone with what arrived.
@@ -59,10 +57,21 @@ export async function applyReceived(
   const plan = read.value
 
   const uris = plannedUris(plan.documents)
-  return restoreBackup(
+  const outcome = await restoreBackup(
     repo,
     createDocumentStore(),
     { ...plan, nodes: withDocumentUris(plan.nodes, uris) },
     at,
   )
+
+  /*
+   * Stamped only on success, and only here rather than inside `restoreBackup`.
+   *
+   * That function serves two callers with different meanings: this one, which is
+   * a handover from another device, and Settings' Restore, which is a file the
+   * user kept. Recording the second as a transfer would tell them a device is
+   * holding a copy when none is.
+   */
+  if (outcome.ok) repo.setMeta(handedOver(repo.meta, at as Instant))
+  return outcome
 }

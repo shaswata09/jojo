@@ -7,15 +7,17 @@
     "node": ">=22.22.0"
   },
   "scripts": {
+    "build": "npm run pack-extension && npm run make-pwa-icons && tsc -b && vite build && node scripts/spa-fallback.mjs && npm run make-sw",
     "dev": "npm run pack-extension && vite",
-    "build": "npm run pack-extension && tsc -b && vite build && node scripts/spa-fallback.mjs",
-    "test": "vitest run",
-    "lint": "npm -w @jojo/service run lint && oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preview": "vite preview",
+    "lint": "npm -w @jojo/service run lint && oxlint",
+    "make-extension-icons": "node scripts/make-extension-icons.mjs",
+    "make-pwa-icons": "node scripts/make-pwa-icons.mjs",
+    "make-sw": "node scripts/make-sw.mjs",
     "pack-extension": "npm run make-extension-icons && node scripts/pack-extension.mjs",
-    "make-extension-icons": "node scripts/make-extension-icons.mjs"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

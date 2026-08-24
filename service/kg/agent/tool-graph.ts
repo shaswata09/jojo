@@ -46,21 +46,27 @@
  */
 
 import { TOOLS } from '../tools/index'
+import { TAGGABLE } from '../core/model'
 import type { NodeType } from '../core/model'
 import type { FieldMeta } from '../core/schema'
 import { READS } from './queries'
 
-/**
- * The types a polymorphic id slot could point at.
+/*
+ * The types a polymorphic id slot could point at — imported, not listed.
  *
- * Three tools — `keyword.attach`, `keyword.detach`, `keyword.record.set` — take
- * a `record` id with no node type, because a keyword may sit on any of five
- * kinds of record. The schema checks the value against `TAGGABLE` at parse
- * time; here the slot expands to the whole union, so the closure offers every
- * producer that could satisfy it. A union, never a hole: a slot this cannot
- * type must widen the graph, not silently leave it disconnected.
+ * Three tools (`keyword.attach`, `keyword.detach`, `keyword.record.set`) take a
+ * `record` id with no node type, because a keyword may sit on several kinds of
+ * record. The schema checks the value against `TAGGABLE` at parse time; here
+ * the slot expands to the whole union, so the closure offers every producer
+ * that could satisfy it. A union, never a hole: a slot this cannot type must
+ * widen the graph rather than silently leave it disconnected.
+ *
+ * This was a hand-written copy of the same five names, and the copy went stale
+ * within a day — a sixth taggable type was added to the model and the graph
+ * carried on expanding to five, quietly offering a narrower set than the tools
+ * actually accept. Importing it is the whole fix, and it is the rule this repo
+ * states everywhere else.
  */
-const TAGGABLE: readonly NodeType[] = ['application', 'timelineItem', 'link', 'file', 'snippet']
 
 /** One id-shaped field, wherever it sits in a nested input. */
 export type IdSlot = {
@@ -86,21 +92,58 @@ export function idSlots(meta: FieldMeta, inherited = true): IdSlot[] {
   return out
 }
 
-/** The node types a tool must be handed an id of before it can run at all. */
+/**
+ * The node types a tool must be handed an id of before it can run at all.
+ *
+ * EVERY type in this set is required — it is a conjunction. `keyword.attach`
+ * needs a keyword AND something to attach it to, and a closure that supplied
+ * only one of them has still handed the model a dead end.
+ */
 export const NEEDS: ReadonlyMap<string, ReadonlySet<NodeType>> = (() => {
   const out = new Map<string, Set<NodeType>>()
   for (const tool of Object.values(TOOLS)) {
     const types = new Set<NodeType>()
     for (const slot of idSlots(tool.input.meta)) {
-      if (!slot.required) continue
-      if (slot.nodeType === null) for (const t of TAGGABLE) types.add(t)
-      else types.add(slot.nodeType)
+      if (!slot.required || slot.nodeType === null) continue
+      types.add(slot.nodeType)
     }
     out.set(tool.name, types)
   }
   // Reads are excluded deliberately. A read's id comes from another read, and
   // every read is always offered, so expanding them would add nothing and pull
   // half the registry in behind `memory.get`.
+  for (const read of Object.values(READS)) out.set(read.name, new Set())
+  return out
+})()
+
+/**
+ * The types an UNTYPED required id slot could be filled with — a disjunction.
+ *
+ * Separate from `NEEDS`, and the separation is a correction rather than a
+ * refinement. `keyword.attach` takes a `record` id with no node type, because a
+ * keyword may sit on any taggable record, and the first version of this folded
+ * those candidates straight into `NEEDS` — which said the tool required an
+ * application AND a timeline item AND a link AND a file AND a snippet, all at
+ * once, to run.
+ *
+ * That read was wrong and stayed invisible while every taggable type happened
+ * to have a producer. It stopped being invisible the moment `person` was added
+ * to the model without a tool that creates one: the graph then claimed
+ * `keyword.attach` could never be grounded, which is plainly false — you can
+ * tag an application today.
+ *
+ * ONE of these is enough. That is what a polymorphic slot means.
+ */
+export const NEEDS_ANY: ReadonlyMap<string, ReadonlySet<NodeType>> = (() => {
+  const out = new Map<string, Set<NodeType>>()
+  for (const tool of Object.values(TOOLS)) {
+    const types = new Set<NodeType>()
+    for (const slot of idSlots(tool.input.meta)) {
+      if (!slot.required || slot.nodeType !== null) continue
+      for (const t of TAGGABLE) types.add(t)
+    }
+    out.set(tool.name, types)
+  }
   for (const read of Object.values(READS)) out.set(read.name, new Set())
   return out
 })()
@@ -187,7 +230,7 @@ export const COMPOSES: ReadonlyMap<string, readonly string[]> = new Map([
 
 /** Callable with nothing in hand — where a run with no ids can start. */
 export const ROOTS: readonly string[] = Object.values(TOOLS)
-  .filter((t) => (NEEDS.get(t.name)?.size ?? 0) === 0)
+  .filter((t) => (NEEDS.get(t.name)?.size ?? 0) === 0 && (NEEDS_ANY.get(t.name)?.size ?? 0) === 0)
   .map((t) => t.name)
 
 /**
@@ -205,8 +248,12 @@ export function closeOver(seed: Iterable<string>): Set<string> {
   let growing = true
   while (growing) {
     growing = false
+    // Both maps widen the set. For `NEEDS_ANY` only one candidate is actually
+    // required, but offering the producers of all of them is the safe
+    // direction: a slightly wider set costs tokens, and a missing producer
+    // costs the person their answer.
     for (const name of [...set]) {
-      for (const type of NEEDS.get(name) ?? []) {
+      for (const type of [...(NEEDS.get(name) ?? []), ...(NEEDS_ANY.get(name) ?? [])]) {
         for (const producer of PRODUCERS.get(type) ?? []) {
           if (set.has(producer)) continue
           set.add(producer)

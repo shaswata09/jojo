@@ -2,15 +2,28 @@
 
 [![CI](https://github.com/shaswata09/jojo/actions/workflows/ci.yml/badge.svg)](https://github.com/shaswata09/jojo/actions/workflows/ci.yml)
 
-**J**arvis f**O**r **J**ob **O**rganization — a local-first tracker for academic and industry job applications.
+**J**arvis f**O**r **J**ob **O**rganization — an agentic assistant that tracks, organises and works on your search for academic and industry jobs.
+
+It is a tracker you can talk to and hand work to. Connect a model and jojo will answer questions
+about your search, draft the follow-ups and cover letters, keep your records complete by proposing
+the notes, tags and reminders you have not got round to, and watch the job boards you follow for
+postings worth your attention. Every change it wants to make is shown to you first and goes through
+the same undo a button press does.
 
 Everything runs on your own machine. Your applications, documents and profile live in your browser
 or on your phone, and nothing is sent to a third party — there is no account and no backend. What
 the app can reach is only what you point it at, and every piece of it is optional: a local LLM for
-the assistant, the graph box and scout scoring; a local document reader for PDFs, Word files and
-job postings; the browser extension for keeping a posting; and your own other device over the local
-network for Transfer. With none of it configured the app still tracks applications, and a backup
-file you keep is how records move between machines.
+the assistant, the pipelines, the graph box and scout scoring; a local document reader for PDFs,
+Word files and job postings; the browser extension for keeping a posting and reading a job board;
+and your own other device over the local network for Transfer. With none of it configured the app
+is still a complete tracker, and a backup file you keep is how records move between machines.
+
+The web app opens with the network down. A service worker keeps the shell and the boot bundle, so
+a reload on a plane gets the dashboard rather than the browser's offline page — which it has to,
+because the records were never anywhere else. The same manifest makes it installable to a dock or
+a home screen. And because jojo has no notifications of its own, the Calendar exports every date it
+holds as an `.ics`, with a reminder on each: the calendar you already get alerts from is the only
+thing that can warn you about a deadline while the app is closed.
 
 ---
 
@@ -20,12 +33,12 @@ Every push and pull request runs the same eleven checks `./gate.sh` runs
 locally — three workspaces, each typechecked, linted and tested — plus the web
 bundle. Nothing deploys unless all of it is green.
 
-| What                | When                        | Where it lands                                     |
-| ------------------- | --------------------------- | -------------------------------------------------- |
-| **Web app**         | every push to `main`        | GitHub Pages                                        |
-| **Android APK**     | every push to `main`        | the run's build artifacts, kept 90 days             |
-| **Browser extension** | every push to `main`      | the run's build artifacts, kept 90 days             |
-| **Release**         | a tag matching `v*`         | a **draft** GitHub Release with the `.apk` and the extension `.zip` attached |
+| What                  | When                 | Where it lands                                                               |
+| --------------------- | -------------------- | ---------------------------------------------------------------------------- |
+| **Web app**           | every push to `main` | GitHub Pages                                                                 |
+| **Android APK**       | every push to `main` | the run's build artifacts, kept 90 days                                      |
+| **Browser extension** | every push to `main` | the run's build artifacts, kept 90 days                                      |
+| **Release**           | a tag matching `v*`  | a **draft** GitHub Release with the `.apk` and the extension `.zip` attached |
 
 To cut a release: `git tag v0.1.0 && git push --tags`. The pipeline builds the
 APK and the extension, opens a draft release with both attached, and waits for
@@ -41,15 +54,15 @@ not higher than the last.
 
 Without any configuration the APK is signed with Android's debug key. It
 installs fine, which is what makes a fork or a first clone work with no setup,
-but it can never be an *update* to a store-published app because the signature
+but it can never be an _update_ to a store-published app because the signature
 differs. To sign with a real upload key, set four repository secrets:
 
-| Secret                     | What                                        |
-| -------------------------- | ------------------------------------------- |
-| `ANDROID_KEYSTORE_BASE64`  | the keystore, `base64 -i upload.jks`        |
-| `ANDROID_STORE_PASSWORD`   | its store password                          |
-| `ANDROID_KEY_ALIAS`        | the key alias inside it                     |
-| `ANDROID_KEY_PASSWORD`     | that key's password                         |
+| Secret                    | What                                 |
+| ------------------------- | ------------------------------------ |
+| `ANDROID_KEYSTORE_BASE64` | the keystore, `base64 -i upload.jks` |
+| `ANDROID_STORE_PASSWORD`  | its store password                   |
+| `ANDROID_KEY_ALIAS`       | the key alias inside it              |
+| `ANDROID_KEY_PASSWORD`    | that key's password                  |
 
 The build picks the upload key when `ANDROID_KEYSTORE_BASE64` is set and the
 debug key when it is not, and says in the log which one it used. The keystore is
@@ -84,15 +97,16 @@ same tree.
 
 jojo works with zero setup and gains capability as you opt in. Nothing below the
 line you stop at is required, and nothing above it is missing — a screen that
-needs something you have not set up says so by name.
+needs something you have not set up says so by name. The agentic half starts at
+layer 3; the two below it are a tracker that never asks you for anything.
 
-| Layer                      | Requires                           | What you get                                                                                                         |
-| -------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **1 — Browser only**       | Nothing                            | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage. |
-| **2 — + A backup you keep** | Somewhere to put a file           | One file holding every record, every link and every document. Restoring it puts all three back.                      |
-| **3 — + Local LLM**        | vLLM / Ollama / LM Studio          | A threaded, agentic assistant that can read and write your records; "Ask the graph" in a sentence; scout scoring against your profile. |
-| **4 — + Document reader**  | MarkItDown, running locally        | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you. |
-| **5 — + The extension**    | Chrome, Edge, Brave or Arc         | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board — nothing else here can open a web page. |
+| Layer                       | Requires                    | What you get                                                                                                                                                                                                                                       |
+| --------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 — Browser only**        | Nothing                     | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage.                                                                                                                              |
+| **2 — + A backup you keep** | Somewhere to put a file     | One file holding every record, every link and every document. Restoring it puts all three back.                                                                                                                                                    |
+| **3 — + Local LLM**         | vLLM / Ollama / LM Studio   | The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and scoring against what you are looking for. |
+| **4 — + Document reader**   | MarkItDown, running locally | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you.                                                                                                         |
+| **5 — + The extension**     | Chrome, Edge, Brave or Arc  | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board — nothing else here can open a web page.                                                                                       |
 
 Layer 1 is the only one that must work. Everything above it degrades gracefully when disconnected.
 
@@ -102,9 +116,10 @@ Layer 1 is the only one that must work. Everything above it degrades gracefully 
 
 ```
 jojo/
-├── service/             @jojo/service — the knowledge graph, its tools and the
-│                        React binding. No build step; both apps compile the
-│                        TypeScript. Owned by neither of them.
+├── service/             @jojo/service — the knowledge graph, its tools, the
+│                        agent that drives them and the React binding. No build
+│                        step; both apps compile the TypeScript. Owned by
+│                        neither of them.
 ├── web/                 React single-page app
 ├── mobile/              React Native app for Android and iOS
 │   ├── android/         Committed Gradle project
@@ -274,12 +289,24 @@ browser chrome doesn't clip them.
 ### Theming
 
 Two themes, dark by default. `data-theme="light|dark"` on `<html>` selects the token set; the `dark`
-class is kept in sync for shadcn's `dark:` variants. `ThemeProvider` follows the OS until the user
-overrides it, then remembers the choice.
+class is kept in sync for shadcn's `dark:` variants.
+
+**Dark, not the OS setting.** `ThemeProvider` opens dark on a store with no preference in it, which
+is how the phone has always behaved — `mobile/src/theme/theme.tsx` carries the original argument.
+Following the OS reads as the polite default and is not: it hands the app's own identity to a setting
+that has nothing to do with it, and since most machines sit on light it shipped a light app to nearly
+everyone, when these palettes were tuned dark first. Light and System are both one press away in
+Settings, and the choice is remembered.
+
+`system` is now WRITTEN to storage rather than encoded as the absence of a key. That absence used to
+mean "follow the OS"; it means "dark" now, so leaving System unstored would have let it look right
+for the session and come back Dark on the next load.
 
 A small inline script in `index.html` resolves the theme before first paint to avoid a flash of the
-wrong theme. **It duplicates the storage key and attribute logic from `lib/theme-context.ts` — change
-both together.**
+wrong theme. **It duplicates `readPref` and the attribute logic from `lib/theme.tsx` (the key itself
+is `THEME_STORAGE_KEY` in `lib/theme-context.ts`) — change both together, the dark fallback
+included.** `<html>` ships painted dark, so the default resolves with no reflow and only an explicit
+Light or System repaints.
 
 ---
 
@@ -318,17 +345,28 @@ leaves the device should not fetch a font on launch.
 
 ## Status
 
-**Built:** design system, theming, app shell, routing, Dashboard.
+This section was rewritten on 2026-08-23, because the version before it listed
+Applications, Job scout, Assistant and Settings as "not built" and the LLM
+client as "not started" — all four had shipped, and one of them is now half of
+what the app is. It carried its own footnote saying so, addressed to "whoever
+owns that section", which is a README asking to be believed and disbelieved in
+the same breath.
 
-**Not built:** Applications (table + kanban), Job scout, My profile, Assistant, Settings, How to use.
-They render as honest placeholders rather than fake content.
+**The tracker:** built. Applications as a table and a board, Calendar, Vault,
+Job scout, Statistics, Profile, the graph, Transfer, Settings and the guide are
+all real on web; every one of them is real on mobile too. Both apps import the
+same `@jojo/service`, so they report the same numbers by construction rather
+than by agreement — "verbatim" used to mean a `cp -R` copy that had drifted 813
+lines, and that copy is deleted. See `mobile/README.md`.
 
-**Mobile:** built — every journey the web app has, as a bare React Native app for Android and iOS.
-Both apps import the same `@jojo/service` package, so they report the same numbers by construction
-rather than by agreement. "Verbatim" used to mean a `cp -R` copy that had drifted 813 lines; the
-copy is deleted and there is one source now. See `mobile/README.md`.
-
-**Not started:** the LLM client.
+**The agent:** built, and optional. A threaded assistant whose runs keep going
+when you leave the page, `service/kg/agent`'s loop over 77 named write tools and 9 reads, "Ask the
+graph" in a sentence, and two Job Scout pipelines — one that proposes what your
+records are missing, one that reads the boards you follow through the extension.
+Every step that writes is shown to you and waits for a yes; turning a thread to
+auto-approve drops that to the destructive steps only, which is a floor and not
+a setting. It needs a model you point it at, and without one every screen that
+uses it says so by name rather than pretending.
 
 **Deliberately not built:** a localhost bridge. One was designed and written —
 loopback HTTP, a session token, path confinement, five cross-compiled binaries —
@@ -337,16 +375,39 @@ previewable and downloadable, and IndexedDB does all three in every browser jojo
 runs in. `docs/NO-SERVER.md` records what was measured, including why a deployed
 HTTPS page cannot reach `http://127.0.0.1` at all in current Chromium.
 
+**The search, not just the applications:** people, employers and offers are
+records now rather than prose. A `person` node — referee, chair, recruiter —
+files under every job they are named on through the same many-to-many relation a
+CV uses; an employer has a page of its own, showing the applications, dates and
+people at it, from `AT` edges that had existed since the graph did and had never
+been shown; and two live offers put a comparison on the dashboard, with the
+yearly figure read out of whatever you typed in the package field rather than
+asked for a second time. Role tags are your list, seeded with five and edited in
+Profile — they were fixed, which quietly meant anyone outside academic CS filed
+their search under a label that was not true and then read it back off the
+charts. Adding a job already tracked says so, matching on the posting URL or on
+employer-and-role, and never on employer alone: three roles at one university is
+the case this product is for.
+
+**Two devices:** still one-directional, and now honest about the cost. Transfer
+records when it last happened at both ends, so each side can say how far it has
+drifted since — "last transfer 6 days ago, and 11 changes have been made here
+since". That is not sync and does not pretend to be; it is the number you want
+before the button that overwrites the other device.
+
+**Reaching you when the app is shut:** partly. Every date exports as an `.ics` from the Calendar on
+both platforms — timeline items and the offer respond-by, which is a field on the application and so
+has never appeared on the calendar page itself. Built by `service/kg/core/ics.ts`, which is pure and
+shared, and handed to whatever opens a calendar file. Local notifications are the half not built:
+the export means a deadline can reach a phone today, and it needs the user to re-export when the
+dates change.
+
 Persistence shipped: a knowledge graph in IndexedDB on web and AsyncStorage on mobile, behind one
 `Driver` port. Dexie was rejected — see D1 in `docs/KG-ARCHITECTURE.md`.
 
-> The Built / Not built lines above predate several passes on `web/` and understate it — Applications,
-> Calendar, Vault, Job scout, Statistics, Profile, Assistant, Settings, the guide, the graph and the
-> transfer screen are all real now. Left for whoever owns that section to rewrite.
-
 ## Known decisions still open
 
-- **Component tests.** There are 697 Vitest tests across the three workspaces, but D20 rules out
+- **Component tests.** There are 1,803 Vitest tests across the three workspaces, but D20 rules out
   jsdom and Testing Library, so nothing mounts a component. UI logic is verified by driving the
   real apps. That trade is deliberate; what it costs is written up in `docs/AUDIT.md`.
 - **`BrowserRouter` vs `HashRouter`.** Deep links like `/settings` need SPA rewrites on a static host

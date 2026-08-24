@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link2, Trash2 } from 'lucide-react'
 import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
 import type { ModelFailure, ModelServer } from '@jojo/service/core/model-server'
@@ -27,6 +28,16 @@ import {
  * gone — see `DocumentsPanel`, which says where documents actually live and
  * offers the way to get them out.
  */
+/**
+ * A card on the Settings page, a plain block inside a dialog.
+ *
+ * The first run already has chrome around it, and a card inside a card is the
+ * tell that a settings panel has been reused somewhere it was not drawn for.
+ */
+function Shell({ bare, children }: { bare: boolean; children: ReactNode }) {
+  return bare ? <div className="space-y-3">{children}</div> : <Panel>{children}</Panel>
+}
+
 export function ConnectionsSection() {
   /*
    * Two cards, and the pairing is the organisation.
@@ -67,7 +78,16 @@ export function ConnectionsSection() {
  * Retyping it is the friction that stops people connecting a model they already
  * have running, and a list of addresses that have worked before removes it.
  */
-function LocalModelPanel() {
+/**
+ * Exported because the first run asks the same question the Settings page does.
+ *
+ * `bare` is the whole of the difference: inside a dialog the surrounding chrome
+ * is already a card, and nesting one inside another is the giveaway that a
+ * settings panel has been dropped somewhere it was not designed for. The
+ * FIELDS are identical either way — a first run that asked for the endpoint
+ * differently from Settings would be two things to keep in step.
+ */
+export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
   const { settings, servers, save, remember, rename, forget } = useModelSettings()
   /*
    * Started from what was stored, which is why a returning user is connected
@@ -125,7 +145,7 @@ function LocalModelPanel() {
   const onTest = async () => {
     setTesting(true)
     setFailure(null)
-    const result = await listModels(endpoint)
+    const result = await listModels({ ...settings, endpoint: endpoint.trim() })
     setTesting(false)
     if (!result.ok) {
       setFailure(result)
@@ -155,7 +175,7 @@ function LocalModelPanel() {
   }
 
   return (
-    <Panel>
+    <Shell bare={bare}>
       <PanelTitle
         hint="OpenAI-compatible"
         right={
@@ -206,7 +226,22 @@ function LocalModelPanel() {
              * for a reason nobody could guess from the screen.
              */
             setEndpoint(meta.endpoint)
-            save({ ...settings, provider: next, endpoint: meta.endpoint, model: '' })
+            /*
+             * The key is DROPPED, not carried.
+             *
+             * Keeping it looked harmless and was not: switching Anthropic to
+             * OpenAI without pasting a new one would have sent the Anthropic
+             * key to OpenAI in an `Authorization` header. A credential going to
+             * the wrong company is not a style question, and the cost of
+             * clearing it is one paste.
+             */
+            save({
+              ...settings,
+              provider: next,
+              endpoint: meta.endpoint,
+              model: '',
+              apiKey: '',
+            })
             setModel('')
           }}
         >
@@ -357,7 +392,7 @@ function LocalModelPanel() {
           Kept in this browser. The assistant will use this model.
         </p>
       ) : null}
-    </Panel>
+    </Shell>
   )
 }
 
@@ -454,7 +489,8 @@ function SavedServers({
  */
 const PROXY_PATH = '/reader/mcp'
 
-function DocumentReaderPanel() {
+/** Exported for the first run, on the same terms as `LocalModelPanel`. */
+export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
   const { reader, setReader } = useModelSettings()
   const [endpoint, setEndpoint] = useState(reader || PROXY_PATH)
   const [testing, setTesting] = useState(false)
@@ -472,7 +508,7 @@ function DocumentReaderPanel() {
   }
 
   return (
-    <Panel>
+    <Shell bare={bare}>
       <PanelTitle hint="optional">Read my documents</PanelTitle>
       <p className="mb-3 text-sm text-text-2">
         The assistant can only see a document&apos;s name until something turns it into text. Run{' '}
@@ -559,6 +595,6 @@ function DocumentReaderPanel() {
         {MARKITDOWN.name} is a separate program, not part of jojo. {MARKITDOWN.copyright}{' '}
         {MARKITDOWN.licence}. jojo is not affiliated with Microsoft.
       </p>
-    </Panel>
+    </Shell>
   )
 }

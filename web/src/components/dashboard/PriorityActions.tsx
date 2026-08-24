@@ -5,6 +5,7 @@ import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { SnoozeSteps } from '@/components/common/SnoozeSteps'
+import { checklistClosed, checklistOpened, closeChecklist, openChecklist } from '@/lib/onboarding'
 import { snoozeAnchor } from '@/components/common/snooze'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -334,30 +335,48 @@ export function PriorityActions() {
   const progress = useFirstStepsProgress()
 
   /**
-   * The checklist is latched open, not re-derived from the condition that
-   * opened it.
+   * The checklist is remembered, not re-derived from the condition that opened
+   * it and not latched to this mount.
    *
-   * It rendered only while the store held no applications — so pressing its own
-   * "New application" button, which is step 1 and the obvious first move,
-   * created the record that closed the gate and took steps 2 and 3 with it. The
-   * counter could never reach 3 of 3 and the panel's own promise that each step
-   * "ticks itself once a record exists" was unobservable for two thirds of it.
+   * It used to render only while the store held no applications — so pressing
+   * its own "New application" button, which is step 1 and the obvious first
+   * move, created the record that closed the gate and took steps 2 and 3 with
+   * it. Latching it per mount fixed that only for a reader who never left the
+   * dashboard: clicking Applications in the sidebar, adding the first job
+   * there and coming back destroyed the card at 1 of 3, permanently, because
+   * the latch went with the unmount. The exploring user is the one who needs
+   * the remaining steps and was exactly the one who lost them.
    *
-   * It now opens on a bare store and closes only when the user closes it, so
-   * the journey can finish. The latch is per-mount: navigating away mid-way
-   * drops it, which is the price of not putting a piece of onboarding chrome in
-   * the store beside the user's records.
+   * `lib/onboarding.ts` now holds the two flags, beside the ones the first-run
+   * dialogs use — a browser preference about a panel, not a record the user
+   * authored, so it stays out of the store for the reasons that file gives.
    */
   const bare = !progress.application && !progress.dated && !progress.reminder
-  const [checklistOpen, setChecklistOpen] = useState(bare)
+  const [opened, setOpened] = useState(checklistOpened)
+  const [closed, setClosed] = useState(checklistClosed)
+
   useEffect(() => {
-    // Reopens if the store is emptied later in the session — Settings → Records
-    // → Clear everything lands the user back on exactly this screen.
-    if (bare) setChecklistOpen(true)
+    // A bare store opens it and un-dismisses it, so emptying the records in
+    // Settings lands the user back on the walkthrough rather than on a deck
+    // that computes "nothing needs deciding" from nothing.
+    if (!bare) return
+    openChecklist()
+    setOpened(true)
+    setClosed(false)
   }, [bare])
 
+  const checklistOpen = opened && !closed
+
   if (checklistOpen) {
-    return <FirstSteps progress={progress} onClose={() => setChecklistOpen(false)} />
+    return (
+      <FirstSteps
+        progress={progress}
+        onClose={() => {
+          closeChecklist()
+          setClosed(true)
+        }}
+      />
+    )
   }
 
   // Clearing the deck with records still in the store is an achievement, and

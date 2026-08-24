@@ -1,6 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 
-/** Never collapse past this, however little room is left. */
+/**
+ * The least room worth capping into.
+ *
+ * NOT a floor to clamp to — a threshold to give up at, and the difference is
+ * the whole behaviour. Clamping was what this did, and on a 390px-wide screen
+ * the Assistant's panel was clamped to 220px while its thread bar and composer
+ * wanted all 220 between them: the transcript came out ZERO pixels tall, a chat
+ * with no chat in it, and the page scrolled anyway because the clamp had
+ * stopped tracking the viewport.
+ *
+ * So below this, it does not cap at all. A panel that cannot fit the space left
+ * should take its natural height and let the page scroll, which is the ordinary
+ * reading behaviour and is honest: the content genuinely does not fit. Capping
+ * to the viewport is the better answer only where there is a viewport's worth
+ * of room to cap into.
+ */
 const MIN_HEIGHT = 220
 
 /**
@@ -17,7 +32,13 @@ const MIN_HEIGHT = 220
  * screens where the cap matters most. Measuring the element's own offset costs
  * one layout read per resize and cannot drift.
  */
-export function useFillViewport(bottomGap = 20) {
+/**
+ * @param minHeight below this much free space, do not cap — see `MIN_HEIGHT`.
+ *   A panel with chrome of its own (a toolbar above the scroller, a composer
+ *   below it) should pass the height at which its SCROLLER stops being usable,
+ *   not the height at which the panel does.
+ */
+export function useFillViewport(bottomGap = 20, minHeight = MIN_HEIGHT) {
   const [maxHeight, setMaxHeight] = useState<number>()
 
   const [node, setNode] = useState<HTMLElement | null>(null)
@@ -31,7 +52,9 @@ export function useFillViewport(bottomGap = 20) {
       // the same distance. Once the cap applies the page stops scrolling, and
       // the reading settles.
       const top = node.getBoundingClientRect().top + window.scrollY
-      setMaxHeight(Math.max(MIN_HEIGHT, window.innerHeight - top - bottomGap))
+      const room = window.innerHeight - top - bottomGap
+      // `undefined` removes the cap rather than shrinking it to nothing.
+      setMaxHeight(room >= minHeight ? room : undefined)
     }
 
     measure()
@@ -46,7 +69,7 @@ export function useFillViewport(bottomGap = 20) {
       window.removeEventListener('resize', measure)
       observer.disconnect()
     }
-  }, [node, bottomGap])
+  }, [node, bottomGap, minHeight])
 
   return { ref, maxHeight }
 }

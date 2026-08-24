@@ -78,6 +78,7 @@ function harness() {
     lastOpenedAt: new Date(START).toISOString(),
     dataSet: 'empty',
     seededAt: null,
+    handoverAt: null,
   }
 
   const repo = createRepository({
@@ -304,6 +305,65 @@ describe('duplicating a record filed under several applications', () => {
     )
     const copy = okOr(h.runtime.run('vault.snippet.duplicate', { id: snippet }))
     expect(filedUnder(h, copy, 'FILED_UNDER')).toEqual([...apps].sort())
+  })
+
+  /**
+   * People, which is the newest thing the Vault holds and the first record type
+   * whose whole point is being filed under more than one job.
+   *
+   * A referee writes for every application you name them on. Every assertion
+   * here is about that: the edges, what happens when the list is rewritten, and
+   * that removing the person leaves the jobs alone.
+   */
+  it('files a person under every job they are named on', () => {
+    const h = harness()
+    const apps = two(h)
+    const person = okOr(
+      h.runtime.run('vault.person.create', {
+        name: 'Anita Mehta',
+        role: 'Referee',
+        affiliation: 'Texas Tech',
+        email: 'a.mehta@ttu.edu',
+        applicationIds: apps,
+      }),
+    )
+    expect(filedUnder(h, person, 'FILED_UNDER')).toEqual([...apps].sort())
+  })
+
+  it('replaces the filing rather than adding to it', () => {
+    const h = harness()
+    const apps = two(h)
+    const person = okOr(
+      h.runtime.run('vault.person.create', { name: 'D. Chen', applicationIds: apps }),
+    )
+    const kept = apps.slice(0, 1)
+    okOr(h.runtime.run('vault.person.update', { id: person, applicationIds: kept }))
+    expect(filedUnder(h, person, 'FILED_UNDER')).toEqual(kept)
+  })
+
+  it('stores nothing for a detail left blank, rather than an empty string', () => {
+    // A note wiped in the form has to LEAVE the record. Stored as '', the Vault
+    // renders a blank line under the name for ever and nothing can tell the
+    // difference between "no note" and "a note somebody deleted".
+    const h = harness()
+    const person = okOr(h.runtime.run('vault.person.create', { name: 'Sam Alvarez', note: '   ' }))
+    expect(h.repo.getSnapshot().node(person, 'person')?.props).not.toHaveProperty('note')
+
+    okOr(h.runtime.run('vault.person.update', { id: person, role: 'Recruiter' }))
+    expect(h.repo.getSnapshot().node(person, 'person')?.props.role).toBe('Recruiter')
+    okOr(h.runtime.run('vault.person.update', { id: person, role: '' }))
+    expect(h.repo.getSnapshot().node(person, 'person')?.props.role).toBeUndefined()
+  })
+
+  it('removing a person leaves the applications they were named on', () => {
+    const h = harness()
+    const apps = two(h)
+    const person = okOr(
+      h.runtime.run('vault.person.create', { name: 'Erik Lindqvist', applicationIds: apps }),
+    )
+    okOr(h.runtime.run('vault.person.delete', { id: person }))
+    expect(h.repo.getSnapshot().node(person)).toBeUndefined()
+    for (const app of apps) expect(h.repo.getSnapshot().node(app)).toBeDefined()
   })
 
   it('keeps every application on a duplicated timeline item', () => {

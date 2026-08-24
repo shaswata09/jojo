@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { FirstRunChoice } from '@/components/common/FirstRunChoice'
-import { Onboarding } from '@/components/common/Onboarding'
 import { StoreGate } from '@/components/common/StoreGate'
 import { boot, bootInMemory, resetBoot } from '@jojo/service/repo/boot'
 import type { BootResult, Session } from '@jojo/service/repo/boot'
@@ -445,9 +444,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                   a hydrating app — and for a returning user `needsDataChoice` is
                   false in the first commit that renders anything at all. */}
               <FirstRunChoice />
-              {/* Runs after the fork, and renders nothing until it is answered.
-                  See its header for why these are three dialogs and not one. */}
-              <Onboarding />
+              {/* `Onboarding` used to be here, beside this one, and moved into
+                  `AppShell` — which is inside the router. It links to the guide
+                  and to Profile, and out here those had to be bare `<a href>`s:
+                  no router context, so no `basename`, so on GitHub Pages
+                  "Start the tour" went to `github.io/guide` rather than
+                  `github.io/jojo/guide` and 404ed.
+
+                  The gate property this comment defends is unchanged: `AppShell`
+                  is rendered by `{children}` above, inside this same gate, so it
+                  still cannot flash over a hydrating app. */}
             </KgProvider>
           </StoreStatusProvider>
         ) : null}

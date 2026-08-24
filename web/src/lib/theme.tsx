@@ -1,13 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { readStored, removeStored, writeStored } from '@/lib/storage'
+import { readStored, writeStored } from '@/lib/storage'
 import { THEME_STORAGE_KEY, ThemeContext, type Theme, type ThemePref } from '@/lib/theme-context'
 
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 
+/**
+ * What the user chose, or dark.
+ *
+ * DARK IS THE DEFAULT, not 'system', and the phone has shipped that way from the
+ * start — `mobile/src/theme/theme.tsx` carries the original argument. Following
+ * the OS sounds like the polite choice, but it hands the app's own identity to a
+ * setting that has nothing to do with it, and in practice most machines sit on
+ * light, so "follow the system" shipped a light app to nearly everyone. These
+ * palettes were tuned dark first: the accent, the stage colours and the chart
+ * series were all picked against the dark ground.
+ *
+ * 'system' IS STORED NOW, and that is the part this change turned on. It used to
+ * be the absence of a key — `setPref('system')` removed it — which was a fine
+ * encoding while absence meant "follow the OS" and becomes a bug the moment
+ * absence means "dark": choosing System would have looked right for the session
+ * and come back Dark on the next load, with nothing on screen to explain it.
+ */
 function readPref(): ThemePref {
   const stored = readStored(THEME_STORAGE_KEY)
-  return stored === 'light' || stored === 'dark' ? stored : 'system'
+  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+  return 'dark'
 }
 
 function systemTheme(): Theme {
@@ -51,9 +69,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setPref = useCallback((next: ThemePref) => {
     setPrefState(next)
-    // Storage may be unavailable; the theme still applies for this session.
-    if (next === 'system') removeStored(THEME_STORAGE_KEY)
-    else writeStored(THEME_STORAGE_KEY, next)
+    // Every choice is written, 'system' included — see `readPref` for why an
+    // absent key can no longer stand in for it. Storage may be unavailable; the
+    // theme still applies for this session.
+    writeStored(THEME_STORAGE_KEY, next)
   }, [])
 
   // Toggling picks the opposite of what's on screen, which drops out of

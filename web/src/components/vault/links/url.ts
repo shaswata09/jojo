@@ -74,6 +74,37 @@ export function parseUrl(raw: string) {
   }
 }
 
+/**
+ * A scheme that carries no `//` — `mailto:`, `tel:`, `javascript:`, `data:`.
+ *
+ * `.` is deliberately absent from the scheme characters, so a host with a port
+ * and no scheme (`jobs.rice.edu:8080/x`) is not mistaken for one of these and
+ * still normalises. Anything WITH `//` after the colon falls through to
+ * `parseUrl`, which refuses the non-http schemes itself.
+ */
+const OPAQUE_SCHEME = /^[a-z][a-z0-9+-]*:(?!\/\/)/i
+
+/**
+ * The address to open, or `undefined` when the field holds nothing openable.
+ *
+ * Feeds the open button beside a URL field in `common/Field.tsx`, and every
+ * piece of it is load-bearing there. `normalizeUrl` is why a link typed the way
+ * people type them — `github.com/you`, no scheme — still offers to open.
+ * `parseUrl` is why `javascript:alert(1)` and a bare `notes` do not: a button
+ * that navigates has to refuse anything that is not http.
+ *
+ * `OPAQUE_SCHEME` is the case neither of those catches. `normalizeUrl` only
+ * looks for `scheme://`, so it would turn `mailto:you@dept.edu` into
+ * `https://mailto:you@dept.edu` — which parses perfectly, as username `mailto`
+ * on host `dept.edu`, and offers to send someone to a university they never
+ * mentioned.
+ */
+export function openHref(raw: string): string | undefined {
+  const trimmed = raw.trim()
+  if (OPAQUE_SCHEME.test(trimmed)) return undefined
+  return parseUrl(normalizeUrl(trimmed))?.toString()
+}
+
 /** A stray '%' is not an escape sequence, and `decodeURIComponent` throws on it. */
 function safeDecode(segment: string) {
   try {

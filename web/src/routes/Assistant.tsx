@@ -19,6 +19,7 @@ import { useApplications } from '@jojo/service/react/use-applications'
 import type { NodeId } from '@jojo/service/core/model'
 import { ThreadBar } from '@/components/assistant/ThreadBar'
 import { ThreadList } from '@/components/assistant/ThreadList'
+import { Mark } from '@/components/assistant/Mark'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
@@ -361,7 +362,31 @@ function AgentPanel() {
    * answer — and the "Thinking" line while it works — lands below the fold of a
    * box the reader is looking straight at.
    */
-  const fill = useFillViewport()
+  /*
+   * A higher give-up threshold than the default, because this panel is not just
+   * a scroller.
+   *
+   * The cap applies to the PANEL; the transcript gets whatever the thread bar
+   * above it and the composer below it leave behind, and those two want a
+   * little over 300px together. So capping into anything less than about 420px
+   * buys a page that does not scroll at the price of a conversation you cannot
+   * read — which is the wrong trade. Below that this does not cap at all: the
+   * panel takes its full height and the page scrolls, the way a narrow screen
+   * normally does.
+   */
+  /*
+   * Search lives here rather than in `ThreadList`, because two things need it:
+   * the list, to decide which conversations to show, and the transcript, to
+   * mark the same words inside the one you then open. Finding the conversation
+   * and then hunting the sentence by eye is half a feature.
+   *
+   * Not in the URL, deliberately, unlike the Vault's tool and focus. Those name
+   * a place worth linking to; this is a find-in-page, and a query string that
+   * survives a reload would re-filter a list the reader had finished with.
+   */
+  const [search, setSearch] = useState('')
+
+  const fill = useFillViewport(20, 420)
   const transcriptRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const box = transcriptRef.current
@@ -468,6 +493,8 @@ function AgentPanel() {
           threads={threads}
           activeId={activeId}
           byId={byId}
+          query={search}
+          onQuery={setSearch}
           onOpen={openThread}
           onNew={() => {
             // No `clear()`. It forgets the run for the conversation being left,
@@ -544,8 +571,8 @@ function AgentPanel() {
               if (entry.kind === 'you') {
                 return (
                   <li key={entry.id} className="flex justify-end">
-                    <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm text-text-1">
-                      {entry.text}
+                    <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere text-text-1">
+                      <Mark text={entry.text} query={search} />
                     </p>
                   </li>
                 )
@@ -560,8 +587,8 @@ function AgentPanel() {
                 // purpose: it is not the reply, and styling it like one makes a
                 // run look finished when it is not.
                 return (
-                  <li key={entry.id} className="px-1 text-sm text-text-3 italic">
-                    {entry.text}
+                  <li key={entry.id} className="px-1 text-sm wrap-anywhere text-text-3 italic">
+                    <Mark text={entry.text} query={search} />
                   </li>
                 )
               }
@@ -569,7 +596,7 @@ function AgentPanel() {
                 return (
                   <li
                     key={entry.id}
-                    className="rounded-lg border border-danger-border bg-danger-soft px-3 py-2 text-sm text-danger"
+                    className="rounded-lg border border-danger-border bg-danger-soft px-3 py-2 text-sm wrap-anywhere text-danger"
                   >
                     {entry.text}
                   </li>
@@ -580,7 +607,9 @@ function AgentPanel() {
                   <div className="mb-2 flex items-center gap-2">
                     <RobotIcon className="size-4 shrink-0" aria-hidden />
                   </div>
-                  <p className="text-sm whitespace-pre-line text-text-1">{entry.text}</p>
+                  <p className="text-sm whitespace-pre-line wrap-anywhere text-text-1">
+                    <Mark text={entry.text} query={search} />
+                  </p>
                   <div className="mt-2.5 flex flex-wrap gap-2">
                     <Button variant="ghost" size="sm" onClick={() => copy(entry.id, entry.text)}>
                       <CopyFeedback copied={copiedId === entry.id} failed={copyFailed} />
@@ -605,11 +634,18 @@ function AgentPanel() {
           </ul>
         )}
 
+        </PanelScroll>
+
+        {/* Outside the scroller, deliberately. This is an announcement rather
+            than part of the conversation, and `sr-only` is `position:absolute`
+            — inside the transcript its static position sat below a thousand
+            pixels of turns, which extended the page rather than the box. It is
+            also simply the wrong place for it: nothing in a live region belongs
+            in a list a reader scrolls. `PanelScroll` is now a containing block
+            so this cannot recur, and this one no longer relies on that. */}
         <p aria-live="polite" className="sr-only">
           {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
         </p>
-
-        </PanelScroll>
 
         {/* The openers, moved up out of a card of their own below the fold.
             They are what a person reads when they do not know what to ask, so
@@ -837,7 +873,7 @@ function ScriptedPanel() {
             {messages.map((m) =>
               m.role === 'you' ? (
                 <li key={m.id} className="flex justify-end">
-                  <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm text-text-1">
+                  <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere text-text-1">
                     {m.text}
                   </p>
                 </li>
@@ -853,7 +889,7 @@ function ScriptedPanel() {
                   </div>
 
                   {/* whitespace-pre-line so the drafts keep their paragraphs. */}
-                  <p className="text-sm whitespace-pre-line text-text-1">{m.text}</p>
+                  <p className="text-sm whitespace-pre-line wrap-anywhere text-text-1">{m.text}</p>
 
                     <div className="mt-2.5 flex flex-wrap gap-2">
                       <Button variant="ghost" size="sm" onClick={() => copy(m.id, m.text)}>

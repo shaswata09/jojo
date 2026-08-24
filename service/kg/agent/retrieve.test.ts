@@ -204,3 +204,46 @@ describe('terms', () => {
     expect(terms('has')).not.toContain('ha')
   })
 })
+
+describe('the irreversible tools are derived from the catalog, not remembered', () => {
+  /**
+   * A hand-written list of dangerous tools goes stale the day somebody adds
+   * one, and the failure is silent: the retriever simply starts offering it.
+   *
+   * This is the guard. `NEVER_IMPLICIT` names the operations that both DESTROY
+   * records and cannot be undone; if the registry ever grows another, this
+   * fails rather than the assistant quietly gaining the ability to reach for it
+   * unasked.
+   *
+   * Written after the registry gained a third non-undoable tool — a bookkeeping
+   * write that is not destructive, and so correctly outside this set. The
+   * comment describing them as "the only two a person cannot undo" had become
+   * false while the CODE stayed right, which is the near miss worth a test.
+   */
+  const irreversible = CATALOG.filter((e) => e.destructive && !e.undoable).map((e) => e.name)
+
+  it('finds some, or the predicate has rotted', () => {
+    // Guards the guard: an empty set would make every assertion below vacuous.
+    expect(irreversible.length).toBeGreaterThan(0)
+  })
+
+  it('offers none of them for a message that did not ask', () => {
+    for (const message of ['remind me on Thursday', 'add my Rice application', 'what CVs do I have']) {
+      const out = offeredFor(message, null)
+      for (const name of irreversible) {
+        expect(out?.has(name) ?? false, `${name} for "${message}"`).toBe(false)
+      }
+    }
+  })
+
+  it('does not strip a merely non-undoable tool, which is a different thing', () => {
+    /*
+     * `assistant.thread.set` cannot be undone either, because conversation
+     * bookkeeping is not journalled. It loses no records, so stripping it would
+     * be caution applied to the wrong property — and would break the Assistant.
+     */
+    const bookkeeping = CATALOG.filter((e) => !e.undoable && !e.destructive).map((e) => e.name)
+    expect(bookkeeping.length).toBeGreaterThan(0)
+    for (const name of bookkeeping) expect(irreversible).not.toContain(name)
+  })
+})

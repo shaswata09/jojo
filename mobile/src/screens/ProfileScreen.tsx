@@ -47,12 +47,14 @@ export function ProfileScreen() {
    * bar's model. A control whose whole affordance is the change it makes has
    * already told the user it took effect.
    */
-  const { matchTerms, includeAcademia, includeIndustry } = profile
+  const { matchTerms, roles, includeAcademia, includeIndustry } = profile
   const [termDraft, setTermDraft] = useState('')
   const [addingTerm, setAddingTerm] = useState(false)
+  const [roleDraft, setRoleDraft] = useState('')
+  const [addingRole, setAddingRole] = useState(false)
 
   const { files, addFile } = useVault()
-  const { get } = useApplications()
+  const { get, all } = useApplications()
   const { toast } = useToast()
   const [adding, setAdding] = useState(false)
 
@@ -81,6 +83,13 @@ export function ProfileScreen() {
     setAddingTerm(false)
   }
 
+  const addRole = () => {
+    const role = roleDraft.trim()
+    if (role && !roles.includes(role)) update({ roles: [...roles, role] })
+    setRoleDraft('')
+    setAddingRole(false)
+  }
+
   return (
     <Screen
       title="My profile"
@@ -99,7 +108,7 @@ export function ProfileScreen() {
             <TextField
               label="Full name"
               value={draft.fullName}
-              placeholder="e.g. Alex Rahman"
+              placeholder="e.g. Shaswata Mitra"
               onChangeText={set('fullName')}
             />
             <TextField
@@ -111,7 +120,7 @@ export function ProfileScreen() {
             <TextField
               label="Location"
               value={draft.location}
-              placeholder="e.g. Lubbock, TX (open to relocate)"
+              placeholder="e.g. Santa Clara, CA"
               onChangeText={set('location')}
             />
             <TextField
@@ -198,6 +207,35 @@ export function ProfileScreen() {
               </View>
             ))}
             <Button label="Add" icon="plus" variant="outline" onPress={() => setAddingTerm(true)} />
+          </View>
+
+          {/* The one required field on every application, and until now a list
+              of five this app chose. Removing one here leaves the applications
+              carrying it exactly where they are — `roleVocabulary` keeps a tag
+              that is in use visible whether or not it is still on the list. */}
+          <Txt size="xs" tone="secondary" weight="medium" style={{ marginTop: space[4] }}>
+            Role tags
+          </Txt>
+          <Txt size="xs" tone="muted" style={{ marginTop: 2, marginBottom: space[2] }}>
+            The kinds of role you are tracking. Every application is filed under one, and the role
+            filter and the per-role figures read it.
+          </Txt>
+
+          <View style={styles.terms}>
+            {roles.map((role) => (
+              <View key={role} style={styles.termRow}>
+                <Chip shape="capsule">
+                  {role} {all.filter((a) => a.roleTag === role).length}
+                </Chip>
+                <IconButton
+                  icon="x"
+                  size={30}
+                  label={`Remove ${role}`}
+                  onPress={() => update({ roles: roles.filter((x) => x !== role) })}
+                />
+              </View>
+            ))}
+            <Button label="Add" icon="plus" variant="outline" onPress={() => setAddingRole(true)} />
           </View>
 
           <View style={{ gap: space[3], marginTop: space[4] }}>
@@ -367,6 +405,30 @@ export function ProfileScreen() {
             placeholder="e.g. distributed training"
             onChangeText={setTermDraft}
             onSubmitEditing={addTerm}
+          />
+        </View>
+      </Sheet>
+
+      <Sheet
+        open={addingRole}
+        onClose={() => setAddingRole(false)}
+        title="Add a role tag"
+        description="A kind of role you are tracking. It becomes one of the choices on every application."
+        footer={
+          <>
+            <Button label="Cancel" variant="ghost" size="md" onPress={() => setAddingRole(false)} />
+            <Button label="Add" size="md" onPress={addRole} />
+          </>
+        }
+      >
+        <View style={{ paddingBottom: space[2] }}>
+          <TextField
+            label="Role tag"
+            value={roleDraft}
+            autoFocus
+            placeholder="e.g. Data scientist"
+            onChangeText={setRoleDraft}
+            onSubmitEditing={addRole}
           />
         </View>
       </Sheet>

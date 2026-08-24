@@ -7,6 +7,7 @@
  * props it really sets. A fixture would test the fixture.
  */
 import { describe, expect, it } from 'vitest'
+import { FUNCTION_NAMES } from '../core/expression'
 import { MutableSnapshot } from '../core/snapshot'
 import { createRepository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
@@ -351,5 +352,104 @@ describe('reading a job board', () => {
 
   it('is offered to the model as a read, so it never counts as work done', () => {
     expect(board.effect).toBe('read')
+  })
+})
+
+describe('working out a number', () => {
+  const calc = READS['calc.eval']
+  const memory = new MutableSnapshot()
+
+  /** The tool's own return shape, narrowed so a case reads as one line. */
+  type Row = {
+    expression: string
+    ok: boolean
+    value?: number
+    display?: string
+    read?: readonly number[]
+    error?: string
+  }
+  const run = (...expressions: string[]) =>
+    calc.read(memory, { expressions } as never, {}) as {
+      results: Row[]
+      hint?: string
+    }
+
+  it('computes what it is given, and says so both ways', () => {
+    const out = run('58000 / 9 * 12')
+    expect(out.results[0]?.ok).toBe(true)
+    expect(out.results[0]?.value).toBeCloseTo(77333.333, 3)
+    // `display` is the rounded text for a person; `value` is the double for the
+    // next expression. A tool that returned only the rounded one would have the
+    // model compute with 77333.3.
+    expect(out.results[0]?.display).toBe('77333.3333333')
+  })
+
+  it('answers several at once, because one answer usually needs several figures', () => {
+    const out = run('sum(58000, 72000)', 'mean(58000, 72000)', '72000 - 58000')
+    expect(out.results.map((r) => r.value)).toEqual([130000, 65000, 14000])
+    expect(out.hint).toBeUndefined()
+  })
+
+  it('echoes the numbers it read, so an unreadable separator is visible', () => {
+    // `72,500` has no leading zero, so it cannot be told apart from two
+    // arguments. The tool does not guess — it reports what it read, next to the
+    // answer, in the same reply.
+    const out = run('mean(72,500, 65,250)')
+    expect(out.results[0]?.read).toEqual([72, 500, 65, 250])
+    expect(run('mean(72500, 65250)').results[0]?.read).toEqual([72500, 65250])
+  })
+
+  it('refuses the separated form that cannot be anything else', () => {
+    const out = run('mean(50,000, 72,000)')
+    expect(out.results[0]?.ok).toBe(false)
+    expect(out.results[0]?.error).toMatch(/leading zero/i)
+  })
+
+  it('lets one bad expression fail without costing the others', () => {
+    const out = run('2 + 2', 'sqrt(', '10 / 2')
+    expect(out.results.map((r) => r.ok)).toEqual([true, false, true])
+    expect(out.results[0]?.value).toBe(4)
+    expect(out.results[2]?.value).toBe(5)
+    // `sqrt(` fails at the empty inner expression before it reaches the
+    // bracket check, so this is the message it gets rather than "never closed".
+    // Both are true; the assertion follows the code rather than my guess.
+    expect(out.results[1]?.error).toMatch(/stops before it finishes/i)
+  })
+
+  it('warns the model in its own description that a separator becomes two numbers', () => {
+    // The description used to say "no thousand separators (50000, never 50,000)"
+    // and nothing about why. The why is the part that transfers.
+    expect(calc.summary).toMatch(/silently becomes two numbers/i)
+    expect(calc.summary).toMatch(/echoes the numbers it actually read/i)
+  })
+
+  it('tells the model out loud when something failed', () => {
+    /*
+     * The failure this exists to stop: a model skims a list of three, reads a
+     * number off the two that worked, and states a total that silently omits
+     * the third. Counting the failures is left to nobody.
+     */
+    const out = run('1 + 1', '1 / 0')
+    expect(out.hint).toMatch(/1 of 2/)
+    expect(out.hint).toMatch(/do not state a number/i)
+  })
+
+  it('is a read: it touches no records and needs no context', () => {
+    // Called with an empty ReadContext above throughout — no `scan`, no
+    // `convert`. If this ever needs either, it has stopped being arithmetic.
+    expect(run('2 + 2').results[0]?.value).toBe(4)
+    expect(calc.effect).toBe('read')
+  })
+
+  it('publishes a summary that lists the functions it actually has', () => {
+    // The summary is built from `FUNCTION_NAMES`, so this pins that it stayed
+    // built from them rather than being retyped by hand.
+    for (const name of FUNCTION_NAMES) expect(calc.summary).toContain(name)
+    expect(calc.summary).not.toContain('sin')
+  })
+
+  it('rejects a call with no expressions at the schema, not in the body', () => {
+    expect(calc.input.parse({ expressions: [] }, '').ok).toBe(false)
+    expect(calc.input.parse({ expressions: ['1+1'] }, '').ok).toBe(true)
   })
 })

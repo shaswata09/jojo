@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from '@/App'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { startOffline } from '@/lib/offline'
 import { AgentRunsProvider } from '@jojo/service/react/agent-runs-provider'
 import { ApprovalHost } from '@/components/assistant/ApprovalHost'
 import { DialogHost, DialogsProvider } from '@/lib/dialogs'
@@ -69,3 +70,12 @@ createRoot(container).render(
     </ErrorBoundary>
   </StrictMode>,
 )
+
+/*
+ * Last, and deliberately.
+ *
+ * The install fetches the whole precache list; starting it before React has the
+ * page would put that in front of the first paint, trading a slower start for an
+ * offline copy nobody needs in the first two seconds.
+ */
+startOffline()

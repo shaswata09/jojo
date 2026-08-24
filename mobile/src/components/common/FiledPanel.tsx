@@ -39,8 +39,11 @@ const SECTIONS = [
   { key: 'files', tool: 'files', label: 'Files', icon: 'file-text' },
   { key: 'links', tool: 'links', label: 'Links', icon: 'link-2' },
   { key: 'snippets', tool: 'snippets', label: 'Snippets', icon: 'scissors' },
+  // People arrive on the same `FILED_UNDER` edge a CV does, so they belong on
+  // the panel headed "everything filed here" rather than on one of their own.
+  { key: 'people', tool: 'people', label: 'People', icon: 'user' },
 ] as const satisfies readonly {
-  key: 'files' | 'links' | 'snippets'
+  key: 'files' | 'links' | 'snippets' | 'people'
   tool: VaultTool
   label: string
   icon: FeatherName
@@ -64,7 +67,11 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
   const conversations = threads.filter((t) => t.applicationId === applicationId)
 
   const total =
-    filed.files.length + filed.links.length + filed.snippets.length + conversations.length
+    filed.files.length +
+    filed.links.length +
+    filed.snippets.length +
+    filed.people.length +
+    conversations.length
 
   return (
     <Panel>
@@ -74,7 +81,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
         <EmptyState
           icon="archive"
           title="Nothing filed under this yet"
-          description="Documents, links and snippets can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
+          description="Documents, links, snippets and people can each be filed under as many jobs as they went to. File one under this job — from its row menu in the Vault — and it shows up here."
         />
       ) : (
         <View style={{ gap: space[4] }}>
@@ -153,19 +160,22 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                       },
                     ]}
                   >
-                    <Txt
-                      size="sm"
-                      style={s.fill}
-                      numberOfLines={1}
-                      mono={section.key === 'files'}
-                    >
+                    <Txt size="sm" style={s.fill} numberOfLines={1} mono={section.key === 'files'}>
                       {'name' in row ? row.name : row.title}
                     </Txt>
                     {/* The one word saying which of its own lists it sits in.
                         Read here rather than declared in SECTIONS because it is
-                        a different field on each of the three shapes. */}
+                        a different field on each of the four shapes — and on a
+                        person it can be absent, since a name is the only thing
+                        they are required to have. */}
                     <Txt size="xs" tone="muted" numberOfLines={1}>
-                      {'bucket' in row ? row.bucket : 'category' in row ? row.category : row.tag}
+                      {'bucket' in row
+                        ? row.bucket
+                        : 'category' in row
+                          ? row.category
+                          : 'tag' in row
+                            ? row.tag
+                            : row.role}
                     </Txt>
                   </Pressable>
                 ))}

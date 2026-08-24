@@ -26,6 +26,21 @@ type Layer = {
   active: boolean
 }
 
+/*
+ * `active` means "this rung is built", not "you have it set up" — the same
+ * distinction the web ladder's own comment spells out, and the same bug it had
+ * to fix. The model rung here read `active: false` and "Would score scout
+ * matches", in the future tense, while `AssistantScreen` was already running
+ * `runAgent` against a real endpoint with an approval sheet in front of every
+ * write. A page telling somebody a feature does not exist while they are using
+ * it is worse than a page that says nothing.
+ *
+ * There are four rungs rather than two for the same reason: the reader and
+ * Transfer were both built and neither was listed, so the ladder was answering
+ * "what can this thing do" with a third of the truth. The extension rung is
+ * genuinely absent — it is a desktop browser extension and there is nothing to
+ * install here.
+ */
 const LAYERS: Layer[] = [
   {
     icon: 'smartphone',
@@ -38,8 +53,24 @@ const LAYERS: Layer[] = [
     icon: 'cpu',
     name: '+ Local model',
     requires: 'vLLM, Ollama or LM Studio',
-    gives: 'Would score scout matches and draft against your own documents',
-    active: false,
+    gives:
+      'A threaded assistant that reads and writes your records — every change shown to you first — and "Ask the graph" in a sentence',
+    active: true,
+  },
+  {
+    icon: 'file-text',
+    name: '+ Document reader',
+    requires: 'MarkItDown, at an address you type in',
+    gives:
+      'The assistant reads what is inside your CVs and saved postings, and a posting you add from a link fills its own form in',
+    active: true,
+  },
+  {
+    icon: 'refresh-cw',
+    name: '+ Your computer',
+    requires: 'Both on the same network',
+    gives: 'Transfer moves the whole vault between this phone and your computer, with nothing in between',
+    active: true,
   },
 ]
 

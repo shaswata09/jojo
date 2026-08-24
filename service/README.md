@@ -1,7 +1,7 @@
 # `@jojo/service`
 
-The shared layer: the knowledge graph, its tools, and the React binding. Imported by
-`web` and `mobile`, owned by neither.
+The shared layer: the knowledge graph, its tools, the agent that drives them, and the
+React binding. Imported by `web` and `mobile`, owned by neither.
 
 This file exists because the package had no prose entry point — a hundred-odd files
 imported from ~350 sites across two apps, whose only assembled description of the

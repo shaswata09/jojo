@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Arrow, DASH } from '@/components/guide/diagrams/parts'
 
 /**
  * What deleting an application does to everything pointing at it.
@@ -52,7 +53,7 @@ export function UnlinkDiagram() {
     <figure className="m-0">
       <svg
         viewBox="0 0 420 278"
-        className="h-auto w-full max-w-[520px]"
+        className="diagram h-auto w-full max-w-[520px]"
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
@@ -112,10 +113,7 @@ export function UnlinkDiagram() {
                 stroke="var(--hairline-strong)"
                 strokeWidth={1}
               />
-              <path
-                d={`M ${landing - 3.5} ${BEFORE_APP_Y + SLOT_H + 5} L ${landing + 3.5} ${BEFORE_APP_Y + SLOT_H + 5} L ${landing} ${BEFORE_APP_Y + SLOT_H} Z`}
-                fill="var(--hairline-strong)"
-              />
+              <Arrow x={landing} y={BEFORE_APP_Y + SLOT_H} dir="up" />
               <Record x={x} y={BEFORE_REC_Y} type={record.type} note={record.rel} mono />
             </g>
           )
@@ -130,10 +128,7 @@ export function UnlinkDiagram() {
           stroke="var(--hairline-strong)"
           strokeWidth={1}
         />
-        <path
-          d={`M ${APP_CX - 3.5} ${162} L ${APP_CX + 3.5} ${162} L ${APP_CX} ${168} Z`}
-          fill="var(--hairline-strong)"
-        />
+        <Arrow x={APP_CX} y={168} dir="down" />
         <text x={APP_CX + 12} y={159} className="font-mono" fontSize={9.5} fill="var(--text-2)">
           application.delete
         </text>
@@ -152,7 +147,7 @@ export function UnlinkDiagram() {
           fill="none"
           stroke="var(--hairline-strong)"
           strokeWidth={1}
-          strokeDasharray="3 3"
+          strokeDasharray={DASH.soft}
         />
         <text
           x={APP_CX}

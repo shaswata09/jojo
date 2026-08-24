@@ -9,6 +9,7 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Columns, Screen } from '@/components/ui/Screen'
+import { OfferComparison } from '@/components/dashboard/OfferComparison'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { MONTH_LABELS } from '@jojo/service/core/calendar'
@@ -65,6 +66,8 @@ export function TodayScreen() {
           left, where the eye lands. */}
       <Columns>
         <PriorityActions />
+        {/* Renders nothing below two offers. See the panel's own header. */}
+        <OfferComparison />
         <GlancePanel />
         <OwedThisWeek />
         <RecentApplications />

@@ -124,7 +124,7 @@ function useModelState(): ModelState {
     // Aborted on unmount and on an endpoint change, so a slow answer for the
     // previous endpoint cannot arrive and overwrite the current one.
     const stop = new AbortController()
-    void listModels(endpoint, stop.signal)
+    void listModels(settings, stop.signal)
       .then((result) => {
         if (!stop.signal.aborted) setState(result.ok ? 'connected' : 'unreachable')
       })

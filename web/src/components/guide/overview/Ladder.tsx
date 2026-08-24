@@ -34,7 +34,7 @@ const LAYERS: Layer[] = [
     name: '+ Local model',
     requires: 'vLLM, Ollama or LM Studio',
     gives:
-      'A threaded, agentic assistant that reads and writes your records, "Ask the graph" in a sentence, and real scout scoring',
+      'The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and real scout scoring',
     active: true,
   },
   {
@@ -64,6 +64,14 @@ export function LadderSection() {
           every rung is real; each is optional
         </small>
       </h2>
+      {/* The first two rungs are a tracker; the third is where it starts working
+          on the search for you. Worth saying once here, because the cards below
+          are a list of capabilities and a list does not have a turning point. */}
+      <p className="mb-3 text-sm text-text-2">
+        The first two rungs are a tracker that never asks you for anything. From the third it
+        becomes an assistant that works on the search with you — and every rung above that is still
+        yours to skip.
+      </p>
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3.5 lg:grid-cols-3">
         {LAYERS.map((l) => (
           <li

@@ -5,8 +5,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Segment } from '@/components/ui/Segment'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { UNARY, apply, format } from '@/lib/calculator'
-import type { Op } from '@/lib/calculator'
+import { UNARY, apply, format, toggleSign } from '@jojo/service/core/calculator'
+import type { Op } from '@jojo/service/core/calculator'
 import { useCopy } from '@/lib/use-copy'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -33,7 +33,8 @@ type Entry = { id: number; expr: string; value: string }
  * place. It keeps a short history because the second number is almost always
  * compared against the first.
  *
- * The arithmetic lives in `lib/calculator.ts`; this is the keypad.
+ * The arithmetic lives in `@jojo/service/core/calculator`, shared with web; this
+ * is the keypad.
  */
 export function CalculatorTool() {
   const c = useColors()
@@ -205,6 +206,23 @@ export function CalculatorTool() {
                 </Txt>
               </Pressable>
             ))}
+            {/* Explicit rather than a `UNARY` row: `±` edits the display and
+                records nothing, which is not what the entries in that table do.
+                It used to be one of them, which is why pressing it here filled
+                the history with sign flips. See `core/calculator.ts`. */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="plus or minus"
+              onPress={() => setDisplay(toggleSign)}
+              style={({ pressed }) => [
+                styles.sciKey,
+                { backgroundColor: pressed ? c.rowHover : c.well, borderColor: c.hairline },
+              ]}
+            >
+              <Txt size="sm" weight="medium" tone="secondary">
+                ±
+              </Txt>
+            </Pressable>
           </View>
         ) : null}
 

@@ -20,8 +20,8 @@
  */
 
 import { shortDate } from '../kg/core/dates'
-import { STAGE_LABEL, STAGE_VALUES } from '../kg/core/model'
 import type { Application, Offer, Period, Stage } from '../kg/core/model'
+import { STAGE_LABEL, STAGE_VALUES } from '../kg/core/model'
 
 export { ROLES, SOURCES, STAGE_LABEL } from '../kg/core/model'
 /* `offerDaysLeft` followed `kg/react/use-priority.ts`, its only reader outside
@@ -151,7 +151,7 @@ export const applications: Application[] = [
     lastAction: 'Committee call scheduled',
     daysAgo: 4,
     source: 'Job scout',
-    location: 'Lubbock, TX',
+    location: 'Santa Clara, CA',
     submittedOn: '2026-09-08',
     firstReplyOn: '2026-10-05',
   },

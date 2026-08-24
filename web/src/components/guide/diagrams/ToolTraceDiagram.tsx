@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Arrow, DASH } from '@/components/guide/diagrams/parts'
 
 /**
  * One feature, traced through the layers: what happens when someone adds an
@@ -65,7 +66,7 @@ export function ToolTraceDiagram() {
     <figure className="m-0">
       <svg
         viewBox="0 0 400 404"
-        className="h-auto w-full max-w-[520px]"
+        className="diagram h-auto w-full max-w-[520px]"
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
@@ -120,7 +121,7 @@ export function ToolTraceDiagram() {
                 fill={aboveSeam ? 'var(--panel)' : 'var(--well)'}
                 stroke={aboveSeam ? 'var(--hairline-strong)' : 'var(--hairline)'}
                 strokeWidth={1}
-                strokeDasharray={aboveSeam ? '4 3' : undefined}
+                strokeDasharray={aboveSeam ? DASH.soft : undefined}
               />
               <circle
                 cx={X}
@@ -176,12 +177,9 @@ export function ToolTraceDiagram() {
                 y2={to}
                 stroke="var(--hairline-strong)"
                 strokeWidth={1}
-                strokeDasharray={last ? '3 3' : undefined}
+                strokeDasharray={last ? DASH.soft : undefined}
               />
-              <path
-                d={`M 221.5 ${to} L 228.5 ${to} L 225 ${to + 5} Z`}
-                fill="var(--hairline-strong)"
-              />
+              <Arrow x={225} y={to + 5} dir="down" />
               {last ? (
                 <text x={240} y={to + 2} fontSize={9.5} fill="var(--text-3)">
                   nothing awaits this

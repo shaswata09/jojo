@@ -6,21 +6,27 @@ import { GuideBuiltWith } from '@/screens/guide/GuideBuiltWith'
 import { GuideGraph } from '@/screens/guide/GuideGraph'
 import { GuideOverview } from '@/screens/guide/GuideOverview'
 import { GuideScreens } from '@/screens/guide/GuideScreens'
+import { GuideTools } from '@/screens/guide/GuideTools'
 import { GuidedTour } from '@/screens/guide/GuidedTour'
 
 /**
  * The guide, as a section rather than a page.
  *
- * The web app makes this four routes behind a nav rail — overview, screens,
- * graph, built with — because one page holding all of it scrolls for a minute
- * and nobody reaches the end. The same is true here and more so, so the same
- * four pages exist; what changes is the control. A rail needs a column this
+ * The web app makes this five routes behind a nav rail — overview, screens,
+ * graph, tools, built with — because one page holding all of it scrolls for a
+ * minute and nobody reaches the end. The same is true here and more so, so the
+ * same five pages exist; what changes is the control. A rail needs a column this
  * layout does not have, so the pages sit behind the segmented control the rest
  * of the app already uses for the Vault's tools and the board's two views.
  *
+ * Five is one more than fits a 390pt track, so the control scrolls — the same
+ * answer the Vault reached at five tools. A label clipped at the edge is at
+ * least a label that says there is more of it; five squeezed onto one line is
+ * five that cannot be read.
+ *
  * Which page you are on is state, not a route. Deep-linking to a guide page is
  * a thing a URL bar makes worth having and a phone does not — and making it a
- * route would put four more entries in the back stack between a reader and the
+ * route would put five more entries in the back stack between a reader and the
  * screen they came from.
  */
 
@@ -28,6 +34,7 @@ const PAGES = [
   { value: 'overview', label: 'Overview' },
   { value: 'screens', label: 'Screens' },
   { value: 'graph', label: 'Graph' },
+  { value: 'tools', label: 'Tools' },
   { value: 'built', label: 'Built with' },
 ] as const
 
@@ -37,6 +44,7 @@ const SUBTITLE: Record<Page, string> = {
   overview: 'Everything runs on your device. Start simple, add power when you want it.',
   screens: 'What each screen is for, and a way straight into it.',
   graph: 'The record model underneath the seven lists.',
+  tools: 'What the assistant can do to your records, and what stops it.',
   built: 'What this is made of, and what is still a placeholder.',
 }
 
@@ -46,7 +54,7 @@ export function GuideScreen() {
 
   return (
     <Screen title="How to use jojo" subtitle={SUBTITLE[page]}>
-      <Segment label="Guide page" options={PAGES} value={page} onChange={setPage} />
+      <Segment label="Guide page" scroll options={PAGES} value={page} onChange={setPage} />
 
       {/* Above the pages, and on every one of them.
           The tour is offered once during onboarding and then has to live
@@ -65,6 +73,7 @@ export function GuideScreen() {
       {page === 'overview' ? <GuideOverview /> : null}
       {page === 'screens' ? <GuideScreens /> : null}
       {page === 'graph' ? <GuideGraph /> : null}
+      {page === 'tools' ? <GuideTools /> : null}
       {page === 'built' ? <GuideBuiltWith /> : null}
     </Screen>
   )

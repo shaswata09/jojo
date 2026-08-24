@@ -68,6 +68,44 @@ export function hostOrNothing(url?: string): string | undefined {
 }
 
 /**
+ * A scheme that carries no `//` — `mailto:`, `tel:`, `javascript:`, `data:`.
+ *
+ * `.` is deliberately absent from the scheme characters, so a host with a port
+ * and no scheme (`jobs.rice.edu:8080/x`) is not mistaken for one of these and
+ * still normalises.
+ */
+const OPAQUE_SCHEME = /^[a-z][a-z0-9+-]*:(?!\/\/)/i
+
+/**
+ * The address to open, or `undefined` when the field holds nothing openable.
+ *
+ * Feeds the open button beside a URL field in `components/ui/Field.tsx`, and is
+ * deliberately the forgiving twin of `isOpenableUrl` below rather than a second
+ * spelling of it. That one is a VALIDATOR: it refuses a scheme-less string so
+ * the sheet can say "that is not a full URL" and mean it. This one is an
+ * AFFORDANCE, and someone who typed `github.com/you` plainly meant a place — so
+ * it normalises first and offers to go there.
+ *
+ * Both refuse `javascript:` and a host with no dot, because a button that
+ * navigates has to. `OPAQUE_SCHEME` is the case normalising alone would miss:
+ * `normalizeUrl` only looks for `scheme://`, so `mailto:you@dept.edu` would
+ * become `https://mailto:you@dept.edu`, which parses as username `mailto` on
+ * host `dept.edu` and goes somewhere nobody asked for.
+ */
+export function openHref(raw: string): string | undefined {
+  const trimmed = raw.trim()
+  if (!trimmed || OPAQUE_SCHEME.test(trimmed)) return undefined
+  try {
+    const url = new URL(normalizeUrl(trimmed))
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined
+    if (!url.hostname.includes('.')) return undefined
+    return url.toString()
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * A URL a browser can actually open, for validation.
  *
  * `new URL` alone is not the test: 'javascript:alert(1)' parses perfectly and

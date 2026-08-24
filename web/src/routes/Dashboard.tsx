@@ -3,6 +3,7 @@ import { GlancePanel } from '@/components/dashboard/GlancePanel'
 import { OwedThisWeek } from '@/components/dashboard/OwedThisWeek'
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { PriorityActions } from '@/components/dashboard/PriorityActions'
+import { OfferComparison } from '@/components/dashboard/OfferComparison'
 import { RecentApplications } from '@/components/dashboard/RecentApplications'
 import { MONTH_LABELS } from '@/data/calendar'
 import { useApplications } from '@jojo/service/react/use-applications'
@@ -54,6 +55,8 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 items-stretch gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
         <PriorityActions />
+        {/* Renders nothing below two offers. See the panel's own header. */}
+        <OfferComparison />
         <GlancePanel />
       </div>
 

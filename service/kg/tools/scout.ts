@@ -19,7 +19,7 @@
 
 import type { NodeId } from '../core/model'
 import { draftFromText, draftFromUrl, roleFromTitle } from '../core/parse-posting'
-import { PIPELINE_KINDS, ROLES } from '../core/model'
+import { PIPELINE_KINDS } from '../core/model'
 import { AUTO_CAPABLE } from '../core/proposal'
 import { s } from '../core/schema'
 import { defineTool } from './tool'
@@ -28,7 +28,7 @@ import { dayOf, displayOf, guessRoleTag } from './support'
 const postingId = s.id('posting', { label: 'Posting' })
 const matchId = s.id('match', { label: 'Match' })
 const pipelineId = s.id('pipeline', { label: 'Pipeline' })
-const roleTag = s.optional(s.enum(ROLES, { label: 'Role type' }))
+const roleTag = s.optional(s.string({ min: 1, label: 'Role type' }))
 
 /* -------------------------------- postings -------------------------------- */
 

@@ -96,6 +96,19 @@ export interface Repository {
    */
   replaceAll(graph: GraphRows, meta: StoreMeta): Promise<Result<void>>
   /**
+   * Writes the meta row and nothing else.
+   *
+   * The light counterpart to `replaceAll`, which flushes the queue and rewrites
+   * every row in the store — far too much for stamping a date. Both ends of a
+   * Transfer need to record that one happened, and the sender has no other
+   * reason to touch the graph at all.
+   *
+   * Queued rather than awaited, exactly like a commit's own meta write above:
+   * the flag it carries is a status line, and a status line is not worth
+   * blocking the interface on a disk that is being slow.
+   */
+  setMeta(next: StoreMeta): void
+  /**
    * Adopts rows that were read back off disk. Writes NOTHING.
    *
    * The other half of `replaceAll`, and the distinction is the whole of D23's
@@ -317,6 +330,12 @@ export function createRepository(options: RepositoryOptions): Repository {
 
   return {
     getSnapshot: () => current,
+    setMeta(next) {
+      meta = next
+      const row = metaRow(meta)
+      queue.enqueue([{ kind: 'put', store: 'meta', key: row.key, value: row }])
+      notify()
+    },
 
     subscribe(onChange) {
       listeners.add(onChange)

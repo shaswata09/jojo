@@ -11,7 +11,7 @@
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Kbd } from '@/components/guide/Kbd'
 import { Go } from '@/components/guide/overview/Go'
-import { applicationsPath, graphPath, guidePath, settingsPath } from '@/lib/links'
+import { applicationsPath, graphPath, guidePath, profilePath, settingsPath } from '@/lib/links'
 
 /* ----------------------------- keys and undo ------------------------------ */
 
@@ -116,11 +116,14 @@ export function KeywordsSection() {
           </p>
         </div>
         <div className="surface rounded-lg p-4">
-          <h3 className="text-sm font-medium">Role tags are a fixed list</h3>
+          <h3 className="text-sm font-medium">Role tags are your list</h3>
           <p className="mt-1.5 text-sm text-text-2">
-            Assistant Professor, Postdoc, Researcher, ML Engineer, Lecturer. Five, chosen by the
-            app, not editable — they are what the statistics compare, and a per-user list would make
-            the comparison meaningless.
+            A new store starts with five — Assistant Professor, Postdoc, Researcher, ML Engineer,
+            Lecturer — and <Go to={profilePath()}>Profile</Go> edits them. They used to be fixed,
+            and the argument for that was that the statistics compare across them; what it actually
+            meant was that anyone outside academic CS filed their whole search under a label that
+            was not true, and the charts then read that label back as if it were. Removing one
+            leaves every application carrying it exactly where it is.
           </p>
           <p className="mt-2 text-sm text-text-2">
             Only applications carry one, and the role filter sits in the{' '}

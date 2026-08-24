@@ -19,11 +19,12 @@ import { Columns, Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { PERIODS, ROLES } from '@jojo/service/data/seed'
+import { PERIODS } from '@jojo/service/data/seed'
 import type { Period, RoleTag } from '@jojo/service/data/seed'
 import { bucketKey, bucketKeys, bucketLabel, sentOn } from '@jojo/service/core/frequency'
 import { searchHealthFor, statsFor } from '@jojo/service/core/statistics'
 import { useRoles } from '@/lib/roles-context'
+import { useRoleVocabulary } from '@jojo/service/react/use-roles'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useTimeline } from '@/lib/store-context'
@@ -44,7 +45,12 @@ export function StatisticsScreen() {
   const { all, sourceCounts } = useApplications()
   const { all: timeline } = useTimeline()
   const { open } = useSheets()
-  const { activeRoles } = useRoles()
+  const { matches: roleMatches } = useRoles()
+  const vocabulary = useRoleVocabulary()
+  // "The roles currently showing" — the store's vocabulary, filtered by the
+  // global role filter. It used to be a field on the provider, back when the
+  // vocabulary was a constant the provider could read.
+  const activeRoles = vocabulary.filter(roleMatches)
 
   const [showTypical, setShowTypical] = useState(true)
   const [period, setPeriod] = useState<Period>('month')
@@ -98,7 +104,8 @@ export function StatisticsScreen() {
     const from = dates.reduce((min, d) => (d < min ? d : min), TODAY)
     const to = dates.reduce((max, d) => (d > max ? d : max), TODAY)
 
-    const blank = () => Object.fromEntries(ROLES.map((r) => [r, 0])) as Record<RoleTag, number>
+    const blank = () =>
+      Object.fromEntries(vocabulary.map((r) => [r, 0])) as Record<RoleTag, number>
     const keys = bucketKeys(from, to, period)
     const counts = new Map(keys.map((k) => [k, blank()]))
     for (const a of dated) {
@@ -109,7 +116,7 @@ export function StatisticsScreen() {
       label: bucketLabel(key, period),
       counts: counts.get(key) ?? blank(),
     }))
-  }, [all, period])
+  }, [all, period, vocabulary])
 
   // Nothing on this screen survives a zero: a rate has no denominator, a funnel
   // has no first step, and every panel would be an invented search sitting
@@ -134,7 +141,9 @@ export function StatisticsScreen() {
     )
   }
 
-  const roleColor = (role: RoleTag) => c.series[ROLES.indexOf(role) % c.series.length]
+  // Indexed by the store's vocabulary, so a role keeps its colour as long as
+  // the list keeps its order — and a role only on a record still gets one.
+  const roleColor = (role: RoleTag) => c.series[vocabulary.indexOf(role) % c.series.length]
 
   return (
     <Screen

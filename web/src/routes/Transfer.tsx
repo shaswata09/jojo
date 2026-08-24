@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { Smartphone } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
+import { HandoverStatus } from '@/components/transfer-ui/HandoverStatus'
 import { Segment } from '@/components/common/Segment'
 import { ReceivePanel } from '@/components/transfer-ui/ReceivePanel'
 import { DetailsPanel, PayloadPanel } from '@/components/transfer-ui/SendPanel'
@@ -246,6 +247,11 @@ export function Transfer() {
           <Segment label="This device's part" options={ROLES} value={role} onChange={setRole} />
         }
       />
+
+      {/* Above the panels rather than inside one: it is true of the whole page
+          and of both roles, and it belongs before the button that overwrites
+          the other device rather than beside it. */}
+      <HandoverStatus />
 
       {empty ? (
         <section className="surface rounded-lg px-4 py-4 sm:px-5 sm:py-5">

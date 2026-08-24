@@ -17,8 +17,10 @@ import { Txt } from '@/components/ui/Text'
 import { bucketOf } from '@jojo/service/data/timeline'
 import { useCreateActions, useRunCreateAction } from '@/lib/create-actions'
 import { useApplications, useScout, useTimeline } from '@/lib/store-context'
+import { linking } from '@/navigation/linking'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'
 import { ApplicationDetailScreen } from '@/screens/ApplicationDetailScreen'
+import { OrganisationScreen } from '@/screens/OrganisationScreen'
 import { ApplicationsScreen } from '@/screens/ApplicationsScreen'
 import { AssistantScreen } from '@/screens/AssistantScreen'
 import { CalendarScreen } from '@/screens/CalendarScreen'
@@ -202,7 +204,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer theme={navTheme} ref={navigationRef}>
+    <NavigationContainer theme={navTheme} ref={navigationRef} linking={linking}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: c.page },
@@ -230,6 +232,11 @@ export function RootNavigator() {
           name="ApplicationDetail"
           component={ApplicationDetailScreen}
           options={{ title: 'Application' }}
+        />
+        <Stack.Screen
+          name="Organisation"
+          component={OrganisationScreen}
+          options={{ title: 'Employer' }}
         />
         <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Search' }} />
         <Stack.Screen name="JobScout" component={JobScoutScreen} options={{ title: 'Job scout' }} />

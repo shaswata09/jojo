@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Arrow, DASH, Elbow, Rule } from '@/components/guide/diagrams/parts'
 
 /**
  * The eleven record types and the seven relations, drawn as the graph they are.
@@ -66,7 +67,7 @@ export function RecordModelDiagram() {
     <figure className="m-0">
       <svg
         viewBox="0 0 420 404"
-        className="h-auto w-full max-w-[560px]"
+        className="diagram h-auto w-full max-w-[560px]"
         role="img"
         aria-labelledby={`${titleId} ${descId}`}
       >
@@ -98,11 +99,14 @@ export function RecordModelDiagram() {
         <text x={92} y={28} className="font-mono" fontSize={9.5} fill="var(--text-1)">
           TAGS
         </text>
-        <path
-          d={`M 94 ${BAND_1} L 88 ${BAND_1} L 88 ${BAND_2 + APP_H} L 94 ${BAND_2 + APP_H}`}
-          fill="none"
-          stroke="var(--hairline-strong)"
-          strokeWidth={1.2}
+        <Elbow
+          points={[
+            [94, BAND_1],
+            [88, BAND_1],
+            [88, BAND_2 + APP_H],
+            [94, BAND_2 + APP_H],
+          ]}
+          r={4}
         />
         <Box x={6} y={114} w={76} h={BOX_H} label="keyword" />
         <line x1={82} y1={127} x2={84} y2={127} stroke="var(--hairline-strong)" strokeWidth={1} />
@@ -115,13 +119,19 @@ export function RecordModelDiagram() {
 
         {/* FILED_UNDER, as one bus. Three separate diagonals said "three
             relations" to every reader it was shown to; it is one. */}
-        <g stroke="var(--hairline-strong)" strokeWidth={1} fill="none">
-          <line x1={215} y1={BAND_1 + BOX_H} x2={215} y2={78} />
-          <line x1={296} y1={BAND_1 + BOX_H} x2={296} y2={78} />
-          <line x1={377} y1={BAND_1 + BOX_H} x2={377} y2={78} />
-          <line x1={215} y1={78} x2={377} y2={78} />
-          <line x1={270} y1={78} x2={270} y2={BAND_2 - 6} />
-        </g>
+        {/* The outer drops and the crossbar are ONE path, so the two corners
+            round instead of meeting at a right angle; the middle drop and the
+            stem down to `application` are plain tees into it. */}
+        <Elbow
+          points={[
+            [215, BAND_1 + BOX_H],
+            [215, 78],
+            [377, 78],
+            [377, BAND_1 + BOX_H],
+          ]}
+        />
+        <Rule x1={296} y1={BAND_1 + BOX_H} x2={296} y2={78} />
+        <Rule x1={270} y1={78} x2={270} y2={BAND_2 - 6} />
         <Arrow x={270} y={BAND_2} dir="down" />
         {/* Left of centre on the bus: at the right-hand end it landed across
             the drop line from `snippet` and read as two labels overlapping. */}
@@ -130,9 +140,14 @@ export function RecordModelDiagram() {
         </text>
 
         {/* ABOUT, as an elbow — a diagonal from here crossed the bus. */}
-        <g stroke="var(--hairline-strong)" strokeWidth={1} fill="none">
-          <path d={`M 134 ${BAND_1 + BOX_H} L 134 96 L 200 96 L 200 ${BAND_2 - 6}`} />
-        </g>
+        <Elbow
+          points={[
+            [134, BAND_1 + BOX_H],
+            [134, 96],
+            [200, 96],
+            [200, BAND_2 - 6],
+          ]}
+        />
         <Arrow x={200} y={BAND_2} dir="down" />
         <text x={138} y={92} className="font-mono" fontSize={9.5} fill="var(--text-2)">
           ABOUT
@@ -167,7 +182,7 @@ export function RecordModelDiagram() {
           fill="none"
           stroke="var(--hairline-strong)"
           strokeWidth={1}
-          strokeDasharray="1.5 2.5"
+          strokeDasharray={DASH.derived}
         />
         <Arrow x={APP_X + APP_W} y={136} dir="left" />
         <text x={318} y={131} className="font-mono" fontSize={9} fill="var(--text-2)">
@@ -212,12 +227,12 @@ export function RecordModelDiagram() {
           fill="none"
           stroke="var(--hairline-strong)"
           strokeWidth={1}
-          strokeDasharray="1.5 2.5"
+          strokeDasharray={DASH.derived}
         />
         <Box x={96} y={BAND_4} w={76} h={BOX_H} label="pipeline" />
         <Box x={178} y={BAND_4} w={76} h={BOX_H} label="profile" />
 
-        <g stroke="var(--hairline-strong)" strokeWidth={1} fill="none" strokeDasharray="1.5 2.5">
+        <g stroke="var(--hairline-strong)" strokeWidth={1} fill="none" strokeDasharray={DASH.derived}>
           <line x1={134} y1={BAND_3 + BOX_H} x2={134} y2={BAND_4 - 5} />
           <line x1={216} y1={BAND_3 + BOX_H} x2={160} y2={BAND_4 - 5} />
         </g>
@@ -241,7 +256,7 @@ export function RecordModelDiagram() {
           y2={312}
           stroke="var(--hairline-strong)"
           strokeWidth={1}
-          strokeDasharray="3 4"
+          strokeDasharray={DASH.soft}
         />
         <text x={6} y={326} fontSize={9.5} fill="var(--text-2)">
           drawn on the Graph page, never written down
@@ -251,7 +266,7 @@ export function RecordModelDiagram() {
         <Box x={170} y={336} w={70} h={24} label="role" dashed />
         <Box x={170} y={372} w={70} h={24} label="source" dashed />
 
-        <g stroke="var(--hairline-strong)" strokeWidth={1} fill="none" strokeDasharray="3 3">
+        <g stroke="var(--hairline-strong)" strokeWidth={1} fill="none" strokeDasharray={DASH.soft}>
           <line x1={102} y1={353} x2={162} y2={348} />
           <line x1={102} y1={362} x2={162} y2={382} />
         </g>
@@ -343,15 +358,4 @@ function Box({
   )
 }
 
-/** An arrowhead at the point it lands on, pointing one of four ways. */
-function Arrow({ x, y, dir }: { x: number; y: number; dir: 'up' | 'down' | 'left' | 'right' }) {
-  const d =
-    dir === 'down'
-      ? `M ${x - 3.5} ${y - 5} L ${x + 3.5} ${y - 5} L ${x} ${y} Z`
-      : dir === 'up'
-        ? `M ${x - 3.5} ${y + 5} L ${x + 3.5} ${y + 5} L ${x} ${y} Z`
-        : dir === 'right'
-          ? `M ${x - 5} ${y - 3.5} L ${x - 5} ${y + 3.5} L ${x} ${y} Z`
-          : `M ${x + 5} ${y - 3.5} L ${x + 5} ${y + 3.5} L ${x} ${y} Z`
-  return <path d={d} fill="var(--hairline-strong)" />
-}
+

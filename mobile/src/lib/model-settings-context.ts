@@ -58,20 +58,15 @@ export const READER_KEY = 'jojo/document-reader/v1'
 /** Its own key, so the saved list survives a change to the settings document. */
 export const SERVERS_KEY = 'jojo/model-servers/v1'
 
-/**
- * The three servers worth offering by name, with the port each ships with.
+/*
+ * The three address chips that used to live here are gone.
  *
- * The port is the whole value of this list. Everyone who runs a local model
- * knows what they are running; nobody remembers whether Ollama is 11434 or
- * 11343. No model is suggested alongside it any more — the server is asked for
- * that now, and a guess printed in the field where the answer goes is a guess
- * the user has to notice is wrong.
+ * They existed so nobody had to remember whether Ollama is 11434 or 11343, and
+ * the provider picker in Settings now sets the address as a consequence of
+ * choosing the provider — the same help, arriving earlier and from the table in
+ * `@jojo/service/core/provider` that the request builder reads too. Two lists of
+ * ports, one of them local to this file, is how they end up disagreeing.
  */
-export const SUGGESTIONS: readonly { label: string; endpoint: string }[] = [
-  { label: 'vLLM', endpoint: 'http://localhost:8000/v1' },
-  { label: 'Ollama', endpoint: 'http://localhost:11434/v1' },
-  { label: 'LM Studio', endpoint: 'http://localhost:1234/v1' },
-]
 
 export type ModelSettingsValue = {
   settings: ModelSettings

@@ -1,24 +1,14 @@
 /**
- * Case- and accent-insensitive substring match across a record's fields.
+ * The phone's door to the shared search predicate.
  *
- * Normalised on both sides so "Andre" finds "André" — a job search collects
- * names typed by other people, and a filter that hides a row because of an
- * accent the user did not type reads as a missing record.
+ * `matchesQuery` and `fold` were declared here and, byte for byte, again in
+ * `web/src/components/vault/search.ts`. They are now `@jojo/service/core/text`,
+ * which is where the web copy's own header said they should end up — and what
+ * finally moved them was `core/fit.ts` needing the same fold to score a posting
+ * against a profile. A third copy in a repo whose lint step exists to stop the
+ * service layer being copied was not a thing to write.
  *
- * Every list that filters by typing goes through this: the four Vault tools,
- * the applications list and the search screen. They were each doing their own
- * `.toLowerCase().includes()`, which meant six lists and one of them treating
- * "Muñoz" as unfindable.
+ * This file stays as the import path every screen already uses, so nothing that
+ * filters a list had to change to gain a shared implementation.
  */
-export function matchesQuery(query: string, ...fields: (string | undefined | null)[]) {
-  const needle = fold(query)
-  if (!needle) return true
-  return fields.some((field) => field && fold(field).includes(needle))
-}
-
-export const fold = (text: string) =>
-  text
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
+export { fold, matchesQuery } from '@jojo/service/core/text'

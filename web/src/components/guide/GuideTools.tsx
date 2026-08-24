@@ -4,6 +4,15 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { ToolGateDiagram } from '@/components/guide/diagrams/ToolGateDiagram'
 import { ToolGraphDiagram } from '@/components/guide/diagrams/ToolGraphDiagram'
+import { ToolEvalTable } from '@/components/guide/ToolEvalTable'
+import { ToolBenchTable } from '@/components/guide/ToolBenchTable'
+import { BenchAxesDiagram } from '@/components/guide/diagrams/BenchAxesDiagram'
+import { BenchAmbiguityDiagram } from '@/components/guide/diagrams/BenchAmbiguityDiagram'
+import { BenchPreviewer } from '@/components/guide/BenchPreviewer'
+import {
+  CONVERSATIONS as BENCH_CONVERSATIONS,
+  GROUPS as BENCH_GROUPS,
+} from '@jojo/service/agent/bench-conversations'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import { assistantPath, guidePath, settingsPath, useTitle } from '@/lib/links'
 
@@ -32,6 +41,16 @@ export function GuideTools() {
   const reads = CATALOG.filter((e) => e.effect === 'read').length
   const destructive = CATALOG.filter((e) => e.destructive).length
   const writes = CATALOG.length - reads
+  /*
+   * Derived, not typed as "two".
+   *
+   * It happens to be two, and it happened to STAY two only because the tool
+   * added since this was written is non-undoable without being destructive —
+   * so it fell outside the denominator by luck rather than by the sentence
+   * being right. A count in prose that survives on a coincidence is a count
+   * waiting to be wrong.
+   */
+  const irreversible = CATALOG.filter((e) => e.destructive && !e.undoable).length
 
   return (
     <>
@@ -58,9 +77,10 @@ export function GuideTools() {
         </div>
 
         <p className="mt-4 text-sm text-text-2">
-          Two of those {String(destructive)} cannot be undone at all — the ones that replace or
-          empty the whole store. Those are never offered to the assistant unless your own words ask
-          for them, and they stop for a confirmation even then.
+          {irreversible === 1 ? 'One' : irreversible === 2 ? 'Two' : String(irreversible)} of those{' '}
+          {String(destructive)} cannot be undone at all — the ones that replace or empty the whole
+          store. Those are never offered to the assistant unless your own words ask for them, and
+          they stop for a confirmation even then.
         </p>
       </Panel>
 
@@ -97,8 +117,8 @@ export function GuideTools() {
       <Panel>
         <PanelTitle hint="so a request never stops halfway">How it picks the right one</PanelTitle>
         <p className="text-sm text-text-2">
-          Showing a model all {String(CATALOG.length)} tools at once costs about fifteen thousand
-          words of the space it has to think in — before you have typed anything. On a small model
+          Showing a model all {String(CATALOG.length)} tools at once costs well over fifteen
+          thousand words of the space it has to think in — before you have typed anything. On a small model
           running on your own machine, that can be more space than it has. So jojo narrows the list
           to what your words point at.
         </p>
@@ -123,6 +143,125 @@ export function GuideTools() {
         <p className="mt-3 text-sm text-text-2">
           A conversation only ever gains tools. Nothing you have already used is taken away by a
           later question.
+        </p>
+      </Panel>
+
+      {/* -------------------------- the evidence --------------------------- */}
+
+      <Panel>
+        <PanelTitle hint="run against real models, not asserted">Does it actually work?</PanelTitle>
+        <p className="text-sm text-text-2">
+          Everything above is a design. Whether a given model can actually pick the right tool out
+          of jojo&rsquo;s catalog is a question about that model, and the only way to answer it is
+          to ask. So there is a suite of scenarios — reading, writing, chains that need a lookup
+          first, and cases where the right answer is to do nothing — and it runs against real
+          servers.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          Each scenario runs twice: once with the whole catalog, and once with the narrowed set.
+          That second run is the one that matters. Narrowing is meant to help a smaller model by
+          giving it fewer names to confuse — but it could just as easily hurt by removing something
+          needed, and a claim like that is worth nothing without the control beside it.
+        </p>
+
+        <div className="mt-4">
+          <ToolEvalTable />
+        </div>
+
+        <h3 className="mt-5 text-sm font-medium">What the suite is looking for</h3>
+        <p className="mt-1.5 text-sm text-text-2">
+          Not whether a model is clever. Whether it reaches for a document tool when you gave it a
+          URL, files a second application instead of updating the one you named, invents an id
+          rather than looking one up, or — the case that matters most — hears &ldquo;clear the
+          deadline&rdquo; and reaches for the operation that empties your whole store.
+        </p>
+      </Panel>
+
+      {/* ------------------------ the harder benchmark --------------------- */}
+
+      <Panel>
+        <PanelTitle hint="a real store, and what it looked like afterwards">
+          Can it hold a conversation?
+        </PanelTitle>
+        <p className="text-sm text-text-2">
+          The suite above asks a model one question and checks whether it named a sensible tool.
+          That is the easy half, and it flatters everyone. Real work is not one question: you ask
+          what stage something is at, then say &ldquo;move it to interview&rdquo; — and the record
+          you mean is in the previous answer, not in the sentence.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          So there is a second benchmark. It builds a real store — six applications, a calendar, a
+          vault, keywords — hands the assistant a script of {String(BENCH_CONVERSATIONS.length)}{' '}
+          conversations across {String(BENCH_GROUPS.length)} kinds of work, and lets the tool calls
+          actually run. Then it looks at what is in the store afterwards. Three things are
+          scored separately, because a model can pass one and fail another:
+        </p>
+        <ul className="mt-3 space-y-1.5 text-sm text-text-2">
+          <li>
+            <span className="text-text-1">What it called</span> — was each turn defensible.
+          </li>
+          <li>
+            <span className="text-text-1">How it got there</span> — did it look a record up before
+            changing it, or write from the sentence alone.
+          </li>
+          <li>
+            <span className="text-text-1">What it left behind</span> — is the store right, and did
+            anything change that should not have.
+          </li>
+        </ul>
+
+        <div className="mt-4">
+          <BenchAxesDiagram />
+        </div>
+
+        <div className="mt-5">
+          <ToolBenchTable />
+        </div>
+      </Panel>
+
+      {/* --------------------------- the previewer ------------------------- */}
+
+      <Panel>
+        <PanelTitle hint="every case, verbatim">What it was evaluated against</PanelTitle>
+        <p className="text-sm text-text-2">
+          A score is only worth what its cases are worth, and somebody chose the denominator. So the
+          whole benchmark is here to read: the store it ran against, every sentence the assistant
+          was sent, and what had to be true of your records afterwards.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          This is read from the same list the benchmark runs, not a description of it — so a case
+          added tomorrow appears here with its prompts, and one that is quietly dropped disappears.
+        </p>
+
+        <div className="mt-4">
+          <BenchPreviewer />
+        </div>
+      </Panel>
+
+      {/* ------------------------- the failure that matters ---------------- */}
+
+      <Panel>
+        <PanelTitle hint="the reason the benchmark exists">When two records match</PanelTitle>
+        <p className="text-sm text-text-2">
+          The store deliberately holds two Rice applications and two UT campuses, because that is
+          what a real job search looks like after a few months — and it is the situation where an
+          assistant can do real damage while appearing to work perfectly.
+        </p>
+
+        <div className="mt-4">
+          <BenchAmbiguityDiagram />
+        </div>
+
+        <p className="mt-4 text-sm text-text-2">
+          This is why jojo is built the way the rest of this page describes. A model cannot be
+          relied on to stop, so the things that cannot be undone are never offered unless you ask
+          for them by name, every write is checked against what was actually offered, and every
+          change lands in your history where you can undo it.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          It is also worth saying plainly: one pass of a benchmark ranks models loosely at best.
+          Scores moved between runs on the same hardware with the same settings. What does not move
+          is the shape of the failure — and that is the part worth designing against.
         </p>
       </Panel>
 

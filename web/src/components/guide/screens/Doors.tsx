@@ -21,7 +21,7 @@ export function Doors() {
       viewBox="0 0 340 176"
       role="img"
       aria-labelledby="doors-title doors-desc"
-      className="h-auto w-full max-w-[460px]"
+      className="diagram h-auto w-full max-w-[460px]"
     >
       <title id="doors-title">Where each page is reached from</title>
       <desc id="doors-desc">

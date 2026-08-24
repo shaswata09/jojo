@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { listModels } from '@/lib/llm'
 import { testReader } from '@/lib/markitdown'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
+import { PROVIDERS, cleanKey, providerMeta } from '@jojo/service/core/provider'
+import type { ProviderId } from '@jojo/service/core/provider'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
@@ -16,6 +18,7 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { SettingRow, TextField, Toggle } from '@/components/ui/Field'
+import { MenuSheet } from '@/components/ui/Menu'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
@@ -79,6 +82,9 @@ export function SettingsScreen() {
   const [testing, setTesting] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
   const [picking, setPicking] = useState(false)
+  const [choosing, setChoosing] = useState(false)
+  /** Everything that differs between providers, looked up once per render. */
+  const provider = providerMeta(settings.provider)
 
   /*
    * The document reader, beside the model but separate from it.
@@ -123,6 +129,24 @@ export function SettingsScreen() {
     }
   }
 
+  /**
+   * Switching provider, which rewrites the address rather than keeping it.
+   *
+   * A fixed-endpoint provider ignores whatever is stored anyway, and carrying
+   * `http://localhost:11434` across into a Claude request would fail for a
+   * reason nobody could guess from the screen. The model goes with it for the
+   * reason `onEndpointChange` clears it: an id one server named means nothing
+   * to the next one.
+   */
+  const onProvider = (next: ProviderId) => {
+    const meta = providerMeta(next)
+    setEndpoint(meta.endpoint)
+    setModel('')
+    setNameEdit(null)
+    setFailure(null)
+    save({ ...settings, provider: next, endpoint: meta.endpoint, model: '' })
+  }
+
   /** Puts a saved server back in the fields. Already verified, so connected. */
   const onLoad = (server: ModelServer) => {
     setEndpoint(server.endpoint)
@@ -144,7 +168,7 @@ export function SettingsScreen() {
   const onTest = async () => {
     setTesting(true)
     setFailure(null)
-    const result = await listModels(endpoint)
+    const result = await listModels({ ...settings, endpoint: endpoint.trim() })
     setTesting(false)
     if (!result.ok) {
       setFailure(result.reason)
@@ -317,8 +341,10 @@ export function SettingsScreen() {
         </Panel>
 
         <Panel>
+          {/* Was "Local model", and that stopped being true the moment this
+              panel could reach Claude. A heading that names one of the two
+              answers is a heading that is wrong half the time. */}
           <PanelTitle
-            hint="OpenAI-compatible"
             right={
               <IconButton
                 icon="link"
@@ -328,24 +354,78 @@ export function SettingsScreen() {
               />
             }
           >
-            Local model
+            Model
           </PanelTitle>
           <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            Point at any local server: vLLM, Ollama or LM Studio. Test the connection and it will
-            name its own model.
+            A model on a machine you can reach, or one you pay for. Local is the default because it
+            is the only arrangement where your records never leave this device.
           </Txt>
+
+          {/* The provider first, because every field under it depends on the
+              answer: a local server needs an address, a cloud one needs a key
+              and has its address already.
+
+              A sheet rather than the segmented control the rest of this screen
+              uses. Six options, one of them labelled "A local server (vLLM, LM
+              Studio, llama.cpp)", do not fit a 390pt track — scrolled sideways
+              they become a row you have to swipe to discover, which is the one
+              thing a picker must not be. */}
+          <SettingRow
+            label="Provider"
+            description={provider.label}
+            onPress={() => setChoosing(true)}
+          />
+          {provider.cloud ? (
+            <Txt size="xs" tone="warning" style={{ marginBottom: space[3] }}>
+              Everything you ask goes to {provider.label} and is billed to your account. jojo is
+              local-first; this is the one part that is not.
+            </Txt>
+          ) : null}
           <View style={{ gap: space[3] }}>
-            <TextField
-              label="Endpoint"
-              mono
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              value={endpoint}
-              placeholder="http://localhost:8000/v1"
-              hint="The base URL, ending in /v1."
-              onChangeText={onEndpointChange}
-            />
+            {/* Not offered at all when the provider's address is fixed. An
+                editable field over a value the request builder is going to
+                ignore is a field that can only mislead. */}
+            {provider.fixedEndpoint ? null : (
+              <TextField
+                label="Endpoint"
+                mono
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                value={endpoint}
+                placeholder={provider.endpoint || 'http://localhost:8000/v1'}
+                hint={
+                  provider.dialect === 'ollama'
+                    ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
+                    : 'The base URL, ending in /v1.'
+                }
+                onChangeText={onEndpointChange}
+              />
+            )}
+
+            {/* Written straight to the settings document, which lives in
+                AsyncStorage BESIDE the graph rather than inside it — so a
+                backup, which is nodes, edges and documents, cannot carry a key
+                even by accident. `textContentType="none"` is the other half of
+                keeping it there: iOS offers to save anything in a secure field
+                to the keychain, and a provider key is not the user's password. */}
+            {provider.needsKey ? (
+              <TextField
+                label="API key"
+                mono
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+                textContentType="none"
+                value={settings.apiKey ?? ''}
+                placeholder="sk-…"
+                hint="Kept on this device only. It is never put in a backup and never sent anywhere but the provider."
+                onChangeText={(next) => {
+                  save({ ...settings, apiKey: cleanKey(next) })
+                }}
+              />
+            ) : null}
             {/* Empty and unusable until a server has answered. The model id is
                 the server's to state, not the user's to guess, and a field
                 offering to take a guess is a field inviting a 404 later. */}
@@ -381,22 +461,14 @@ export function SettingsScreen() {
                 onBlur={onRename}
               />
             ) : null}
-            {/* Three servers, one tap each. The port is the step people get
-                wrong, and every one of these is a default. */}
-            <View style={s.chipRow}>
-              {SUGGESTIONS.map((sug) => (
-                <Pressable
-                  key={sug.label}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Use the ${sug.label} address`}
-                  onPress={() => {
-                    onEndpointChange(sug.endpoint)
-                  }}
-                >
-                  <Chip tone="gray">{sug.label}</Chip>
-                </Pressable>
-              ))}
-            </View>
+            {/*
+              The three address chips that used to sit here are gone. They
+              existed to save somebody remembering whether Ollama is 11434 or
+              11343 — and the provider row above now sets the address as a
+              consequence of choosing the provider, which is the same help
+              arriving earlier. Two controls writing one field is how they end
+              up disagreeing.
+            */}
           </View>
           <View style={styles.testRow}>
             <Button
@@ -613,6 +685,13 @@ export function SettingsScreen() {
         onConfirm={applyPending}
       />
 
+      <ProviderPicker
+        open={choosing}
+        current={settings.provider}
+        onClose={() => setChoosing(false)}
+        onPick={onProvider}
+      />
+
       <SavedServers
         open={picking}
         servers={servers}
@@ -622,6 +701,52 @@ export function SettingsScreen() {
         onForget={forget}
       />
     </Screen>
+  )
+}
+
+/* ------------------------------- providers -------------------------------- */
+
+/**
+ * Who is going to answer, as a sheet of six.
+ *
+ * The list is `PROVIDERS` verbatim — order included, which puts the two that
+ * cost nothing and send nothing at the top, where a local-first app should put
+ * them. Nothing about a provider is restated here; the hint under each row is
+ * read off the same table the request builder consults, so a seventh provider
+ * added in `@jojo/service/core/provider` appears with the right caption and
+ * nobody has to remember this file exists.
+ */
+function ProviderPicker({
+  open,
+  current,
+  onClose,
+  onPick,
+}: {
+  open: boolean
+  current: string
+  onClose: () => void
+  onPick: (next: ProviderId) => void
+}) {
+  return (
+    <MenuSheet
+      open={open}
+      onClose={onClose}
+      title="Provider"
+      description="Choosing one sets its address for you. The cloud ones need a key and bill you per question."
+      actions={PROVIDERS.map((p) => ({
+        id: p.id,
+        label: p.label,
+        hint: p.cloud
+          ? 'Your words go to this company, and are billed to you'
+          : p.needsKey
+            ? 'On a machine you control. Needs a key.'
+            : 'On a machine you control. Nothing leaves it.',
+        checked: p.id === current,
+        onPress: () => {
+          onPick(p.id)
+        },
+      }))}
+    />
   )
 }
 

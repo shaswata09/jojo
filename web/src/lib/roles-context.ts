@@ -9,8 +9,6 @@ export type RolesContextValue = {
   clear: () => void
   /** True when a record with this role should be shown. */
   matches: (role: RoleTag) => boolean
-  /** Roles actually rendered by charts: the selection, or all when empty. */
-  activeRoles: RoleTag[]
 }
 
 export const RolesContext = createContext<RolesContextValue | null>(null)

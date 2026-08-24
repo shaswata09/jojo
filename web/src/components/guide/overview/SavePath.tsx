@@ -1,3 +1,4 @@
+import { DASH } from '@/components/guide/diagrams/parts'
 /**
  * What happens between pressing Save and the record being on disk.
  *
@@ -43,7 +44,7 @@ export function SavePath() {
       viewBox={`0 0 ${width} 124`}
       role="img"
       aria-labelledby="save-path-title save-path-desc"
-      className="h-auto w-full max-w-lg"
+      className="diagram h-auto w-full max-w-lg"
     >
       <title id="save-path-title">What happens when you save something</title>
       <desc id="save-path-desc">
@@ -108,7 +109,7 @@ export function SavePath() {
         y2="72"
         style={{ stroke: 'var(--warning-border)' }}
         strokeWidth="1.5"
-        strokeDasharray="3 3"
+        strokeDasharray={DASH.soft}
       />
       <rect
         x={lastRight - 170}
@@ -118,7 +119,7 @@ export function SavePath() {
         rx="8"
         fill="none"
         style={{ stroke: 'var(--warning-border)' }}
-        strokeDasharray="3 3"
+        strokeDasharray={DASH.soft}
       />
       <text
         x={lastRight - 158}

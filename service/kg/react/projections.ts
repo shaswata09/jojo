@@ -34,6 +34,8 @@ import type {
   Label,
   Match,
   NodeId,
+  Organisation,
+  Person,
   Pipeline,
   Profile,
   Proposal,
@@ -58,6 +60,8 @@ export type Projections = {
   links: List<VaultLink>
   files: List<VaultFile>
   snippets: List<Snippet>
+  people: List<Person>
+  organisations: List<Organisation>
   postings: List<SavedPosting>
   matches: List<Match>
   pipelines: List<Pipeline>
@@ -132,6 +136,25 @@ export function createProjections(today: ISODate): Projections {
     timeline: sortedBy(createProjection('timelineItem', projectTimelineItem), compareItems),
 
     /*
+     * Employers, each with the applications made to it.
+     *
+     * `'in'` rather than `'out'`: `AT` is spelled from the application to the
+     * organisation, so from this end it is the incoming edge that answers
+     * "which jobs are here". Sorted by name, unlike everything else in this
+     * file — an employer list is looked up by name far more often than it is
+     * read newest-first, and there is no recency to a university.
+     */
+    organisations: sortedBy(
+      createProjection('organisation', (n, g): Organisation => ({
+        id: n.id,
+        name: n.props.name,
+        slug: n.props.slug,
+        applicationIds: g.many(n.id, 'AT', 'in', 'application').map((a) => a.id),
+      })),
+      (a, b) => a.name.localeCompare(b.name),
+    ),
+
+    /*
      * ------------------------------------------------------------------------
      * The Vault's filed records, all newest first
      * ------------------------------------------------------------------------
@@ -202,6 +225,21 @@ export function createProjections(today: ISODate): Projections {
       }),
       compareNewestById,
     ),
+    /*
+     * People, newest first like everything else the Vault holds.
+     *
+     * Not sorted by name, which is the obvious alternative and the wrong one
+     * here: the list answers "who is in this search" far more often than "find
+     * a specific person", and a referee added yesterday is the one being chased
+     * today. The search box is what finds a name.
+     */
+    people: sortedBy(
+      createProjection('person', (n, g): Person => {
+        const { slug: _slug, ...rest } = n.props
+        return { ...rest, id: n.id, ...filedUnder(g, n.id) }
+      }),
+      compareNewestById,
+    ),
 
     postings: createProjection('posting', (n, g): SavedPosting => {
       const { slug: _slug, ...rest } = n.props
@@ -249,8 +287,10 @@ export function createProjections(today: ISODate): Projections {
  * links saved while reading one posting — and the date alone would leave those
  * in whatever order the store happened to return them.
  */
-const compareNewestFirst = (a: { savedOn: string; id: string }, b: { savedOn: string; id: string }) =>
-  b.savedOn.localeCompare(a.savedOn) || b.id.localeCompare(a.id)
+const compareNewestFirst = (
+  a: { savedOn: string; id: string },
+  b: { savedOn: string; id: string },
+) => b.savedOn.localeCompare(a.savedOn) || b.id.localeCompare(a.id)
 
 /**
  * Newest first for records that carry no date of their own.
