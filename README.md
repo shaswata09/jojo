@@ -28,7 +28,8 @@ while answering, go to that provider. Four of the five bill you for it; NVIDIA's
 it the way to run the agentic half without either a GPU or a card. jojo says which providers are
 which where you pick one, and keeps "this leaves your device" and "this costs money" as separate
 sentences, because they are separate questions. Your API key is stored beside the graph rather than inside it, so a backup file cannot
-carry it.
+carry it. Connections are remembered whole — provider, address, model and key — so a
+provider is set up once and picked from a list afterwards, the same way a local server is.
 
 The web app opens with the network down. A service worker keeps the shell and the boot bundle, so
 a reload on a plane gets the dashboard rather than the browser's offline page — which it has to,

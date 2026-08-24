@@ -70,7 +70,15 @@ export type ModelSettingsValue = {
   servers: readonly ModelServer[]
   save: (next: ModelSettings) => void
   /** Records a server that answered. Called on a successful test, not on typing. */
-  remember: (entry: { name: string; endpoint: string; model: string }) => void
+  remember: (entry: {
+    name: string
+    endpoint: string
+    model: string
+    /** Carried so a saved row loads back as the same provider, not a guess. */
+    provider?: string
+    /** Carried so a saved row loads back usable. Never enters the graph. */
+    apiKey?: string
+  }) => void
   rename: (id: string, name: string) => void
   forget: (id: string) => void
 }

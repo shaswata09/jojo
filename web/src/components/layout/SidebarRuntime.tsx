@@ -105,15 +105,47 @@ type ModelState = 'unset' | 'probing' | 'connected' | 'unreachable'
  * assistant was available until it failed. So this probes — `listModels` is the
  * same call the Test button makes.
  *
- * Once per endpoint, not on a timer. This is a 50px tile, not a monitor, and a
- * poll every few seconds against someone's localhost for a status nobody is
- * watching is a cost with no reader. It re-probes when the endpoint changes,
- * which is the moment the answer can actually differ.
+ * Not on a timer. This is a 50px tile, not a monitor, and a poll every few
+ * seconds against someone's localhost for a status nobody is watching is a cost
+ * with no reader.
+ *
+ * But once per endpoint was too few, and the gap was the whole complaint: the
+ * commonest way to see this tile is to notice it says "no answer", go and start
+ * Ollama, and come back — at which point nothing had changed that this effect
+ * watched, so it went on saying "no answer" for the rest of the session while a
+ * model sat there answering. The endpoint changing is not the only moment the
+ * answer can differ; it is only the moment the SETTINGS can.
+ *
+ * So it also re-probes when the tab is looked at again. That is the exact moment
+ * somebody who has just started a server switches back, it costs one request per
+ * return rather than one per interval, and it costs nothing at all while the tab
+ * sits in the background — which is where a tab spends most of its life.
  */
 function useModelState(): ModelState {
   const { settings } = useModelSettings()
   const endpoint = settings.endpoint.trim()
   const [state, setState] = useState<ModelState>(endpoint === '' ? 'unset' : 'probing')
+
+  /*
+   * Bumped to ask again. A counter rather than a boolean because the same
+   * answer twice is a real outcome — "still not there" has to re-run the effect.
+   */
+  const [recheck, setRecheck] = useState(0)
+
+  useEffect(() => {
+    // Only when the tab is actually being looked at. `visibilitychange` fires on
+    // tab switches; `focus` covers coming back from another window, which is
+    // where the terminal that just started the server lives.
+    const again = () => {
+      if (document.visibilityState === 'visible') setRecheck((n) => n + 1)
+    }
+    window.addEventListener('focus', again)
+    document.addEventListener('visibilitychange', again)
+    return () => {
+      window.removeEventListener('focus', again)
+      document.removeEventListener('visibilitychange', again)
+    }
+  }, [])
 
   useEffect(() => {
     if (endpoint === '') {
@@ -138,7 +170,7 @@ function useModelState(): ModelState {
     // changed nothing this effect watched. The tile then read "configured but
     // did not answer" for the rest of the session, on every page, while the
     // assistant worked. Only a reload cleared it.
-  }, [endpoint, settings])
+  }, [endpoint, settings, recheck])
 
   return state
 }

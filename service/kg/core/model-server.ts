@@ -35,6 +35,32 @@ export type ModelServer = {
   name: string
   /** Base URL, OpenAI-style: '…/v1'. Normalised — no trailing slash. */
   endpoint: string
+  /**
+   * Which provider this is, so loading a row restores the dialect too.
+   *
+   * Absent on rows written before cloud providers could be saved, and read as
+   * `openai-compatible` — which is what every one of those rows actually was.
+   */
+  provider?: string
+  /**
+   * The key this connection needs, when it needs one.
+   *
+   * HERE RATHER THAN NOWHERE, and the alternative was worse. A key lived only in
+   * the current settings document, so switching from Claude to NVIDIA and back
+   * meant pasting a key each time — and the saved list, whose entire purpose is
+   * "do not set this up again", was useless for exactly the providers that need
+   * the most setting up.
+   *
+   * WHAT "STORED SECURELY" CAN HONESTLY MEAN HERE. Not encrypted at rest: there
+   * is no passphrase, and a cipher whose key sits in the same store as the
+   * ciphertext is theatre that reads as protection. What is true, and is the
+   * property that matters, is that this never leaves the device by any path the
+   * app controls — `core/backup.ts` serialises nodes, edges and documents, and
+   * this is none of those, so a backup file cannot carry it and neither can a
+   * Transfer. It is browser storage on the user's own machine, alongside the
+   * settings document that already held it.
+   */
+  apiKey?: string
   /** The model id requests are sent with, as the server reported it. */
   model: string
 }
@@ -134,17 +160,33 @@ export function readReply(payload: unknown): string | null {
  */
 export function saveServer(
   list: readonly ModelServer[],
-  entry: { name: string; endpoint: string; model: string },
+  entry: { name: string; endpoint: string; model: string; provider?: string; apiKey?: string },
 ): ModelServer[] {
   const endpoint = normaliseEndpoint(entry.endpoint)
   const existing = list.find((s) => s.endpoint === endpoint)
+  /*
+   * `provider` and `apiKey` are omitted rather than written as undefined, so a
+   * row keeps its stored key when a caller that does not know about keys saves
+   * it. `exactOptionalPropertyTypes` is on, which makes that the only spelling
+   * that compiles — and it is also the correct behaviour.
+   */
+  const extras = {
+    ...(entry.provider === undefined ? {} : { provider: entry.provider }),
+    ...(entry.apiKey === undefined || entry.apiKey === '' ? {} : { apiKey: entry.apiKey }),
+  }
   if (!existing) {
     return [
       ...list,
-      { id: serverId(endpoint), name: entry.name || entry.model, endpoint, model: entry.model },
+      {
+        id: serverId(endpoint),
+        name: entry.name || entry.model,
+        endpoint,
+        model: entry.model,
+        ...extras,
+      },
     ]
   }
-  return list.map((s) => (s.endpoint === endpoint ? { ...s, model: entry.model } : s))
+  return list.map((s) => (s.endpoint === endpoint ? { ...s, model: entry.model, ...extras } : s))
 }
 
 /**

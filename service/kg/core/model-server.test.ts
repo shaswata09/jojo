@@ -583,3 +583,70 @@ describe('a rate limit, which the free tier makes routine', () => {
     }
   })
 })
+
+describe('a saved connection, whole', () => {
+  /*
+   * The point of the list is "do not set this up again", and for a cloud
+   * provider that means four things, not two: the address, the model, WHICH
+   * provider it is, and the key. It used to keep the first two, so a saved
+   * NVIDIA row loaded back as an anonymous OpenAI-compatible server with no
+   * credentials — useless for exactly the providers that take the most setting
+   * up, while working fine for vLLM, which needs neither.
+   */
+  const nvidia = {
+    name: 'NVIDIA',
+    endpoint: 'https://integrate.api.nvidia.com/v1',
+    model: 'nvidia/nemotron-3.5-lightning-30b-a3b',
+    provider: 'nvidia',
+    apiKey: 'nvapi-secret',
+  }
+
+  it('keeps the provider and the key alongside the address and model', () => {
+    const [saved] = saveServer([], nvidia)
+    expect(saved).toMatchObject({
+      endpoint: 'https://integrate.api.nvidia.com/v1',
+      model: 'nvidia/nemotron-3.5-lightning-30b-a3b',
+      provider: 'nvidia',
+      apiKey: 'nvapi-secret',
+    })
+  })
+
+  it('behaves the same for a local server, which simply has neither', () => {
+    // The vLLM case must not change: same call, same shape, no key invented.
+    const [saved] = saveServer([], {
+      name: 'Workstation',
+      endpoint: 'http://localhost:8000/v1',
+      model: 'meta-llama/Llama-3.1-8B',
+    })
+    expect(saved?.provider).toBeUndefined()
+    expect(saved?.apiKey).toBeUndefined()
+    expect(saved?.endpoint).toBe('http://localhost:8000/v1')
+  })
+
+  it('refreshes the model and the key on reconnect, and keeps the user’s name', () => {
+    const first = saveServer([], { ...nvidia, name: 'My NVIDIA' })
+    const again = saveServer(first, { ...nvidia, name: 'ignored', model: 'other/model', apiKey: 'nvapi-rotated' })
+    expect(again).toHaveLength(1)
+    expect(again[0]?.name).toBe('My NVIDIA')
+    expect(again[0]?.model).toBe('other/model')
+    // A rotated key must replace the old one, or the row keeps failing.
+    expect(again[0]?.apiKey).toBe('nvapi-rotated')
+  })
+
+  it('does not wipe a stored key when a caller saves without one', () => {
+    // `exactOptionalPropertyTypes` makes omitting the only spelling that
+    // compiles, and it is also the behaviour that does not lose a credential.
+    const first = saveServer([], nvidia)
+    const again = saveServer(first, { name: 'NVIDIA', endpoint: nvidia.endpoint, model: 'x' })
+    expect(again[0]?.apiKey).toBe('nvapi-secret')
+  })
+
+  it('is one row per provider, because their endpoints are fixed', () => {
+    // Keyed on endpoint, so connecting to Claude twice is one saved setup.
+    const list = saveServer(
+      saveServer([], { name: 'Claude', endpoint: 'https://api.anthropic.com/v1', model: 'claude-sonnet-4-5', provider: 'anthropic', apiKey: 'sk-ant-1' }),
+      { name: 'Claude', endpoint: 'https://api.anthropic.com/v1/', model: 'claude-sonnet-4-5', provider: 'anthropic', apiKey: 'sk-ant-1' },
+    )
+    expect(list).toHaveLength(1)
+  })
+})

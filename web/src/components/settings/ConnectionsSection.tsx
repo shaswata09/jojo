@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link2, Trash2 } from 'lucide-react'
+import { KeyRound, Link2, Trash2 } from 'lucide-react'
 import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
 import type { ModelFailure, ModelServer } from '@jojo/service/core/model-server'
 import { Chip } from '@/components/common/Chip'
@@ -134,13 +134,33 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
   }
 
   /** Puts a saved server back in the fields. Already verified, so connected. */
+  /*
+   * Restores the WHOLE connection, not just its address.
+   *
+   * It used to put back the endpoint and the model, which is everything a local
+   * server is. A cloud one is also a provider and a key, and without those a
+   * saved NVIDIA row loaded as an `openai-compatible` server with no
+   * credentials — the list's whole purpose is "do not set this up again", and it
+   * was useless for exactly the providers that take the most setting up.
+   */
   const onLoad = (server: ModelServer) => {
     setEndpoint(server.endpoint)
     setModel(server.model)
     setNameEdit(null)
     setFailure(null)
     setListOpen(false)
-    save({ ...settings, endpoint: server.endpoint, model: server.model })
+    save({
+      ...settings,
+      // Through `providerMeta`, which never returns undefined: a row written by
+      // a newer build naming a provider this one has not heard of reads as the
+      // open-ended OpenAI-compatible entry, which is what it most likely is.
+      provider: providerMeta(server.provider ?? settings.provider).id,
+      endpoint: server.endpoint,
+      model: server.model,
+      // An entry saved before keys were kept has none; leaving what is already
+      // typed is better than clearing a key the user just pasted.
+      apiKey: server.apiKey ?? settings.apiKey,
+    })
   }
 
   const onTest = async () => {
@@ -180,7 +200,15 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
     // Saved under the model's own name unless this address already had one the
     // user chose. That is the "auto-saved" half: connecting is the act, and
     // keeping the address is a consequence of it rather than a second button.
-    remember({ name: label, endpoint, model: found })
+    remember({
+      name: label,
+      endpoint,
+      model: found,
+      // Kept so the row can be loaded back whole. Never reaches the graph, so a
+      // backup file cannot carry it — see `ModelServer.apiKey`.
+      provider: settings.provider,
+      ...(settings.apiKey ? { apiKey: settings.apiKey } : {}),
+    })
   }
 
   /** Renaming the entry on this card renames the row in the list. */
@@ -484,7 +512,8 @@ function SavedServers({
   return (
     <div className="mb-4 overflow-hidden rounded-lg border border-hairline">
       <p className="border-b border-hairline bg-well px-3 py-2 text-xs text-text-3">
-        Saved servers — addresses that have answered here.
+        Saved connections — everything that has answered here, ready to load back whole. A key is
+        kept beside the address on this device; it never enters a backup.
       </p>
       <ul className="divide-y divide-hairline">
         {servers.map((server) => (
@@ -508,7 +537,23 @@ function SavedServers({
                 {server.endpoint}
               </span>
               <span className="block truncate text-xs text-text-3">{server.model}</span>
-              <span className="sr-only">Load {server.name}</span>
+              {/* Which provider, and whether it can be used without pasting a
+                  key again. A list of addresses answered "which server"; a list
+                  that has to cover Claude and NVIDIA has to answer "which
+                  setup", and the key is the part that used to be missing. */}
+              <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-text-3">
+                <span>{providerMeta(server.provider ?? 'openai-compatible').label.split(' —')[0]}</span>
+                {server.apiKey ? (
+                  <span className="flex items-center gap-1 text-text-3">
+                    <KeyRound className="size-3" strokeWidth={1.8} aria-hidden />
+                    key kept
+                  </span>
+                ) : null}
+              </span>
+              <span className="sr-only">
+                Load {server.name}
+                {server.apiKey ? ', including its key' : ''}
+              </span>
             </button>
             <button
               type="button"
