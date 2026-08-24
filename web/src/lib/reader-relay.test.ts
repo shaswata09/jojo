@@ -19,6 +19,7 @@ import backgroundSource from '../../extension/background.js?raw'
 
 import bridgeCallerSource from './capture-bridge.ts?raw'
 import policySource from '../../extension/policy.js?raw'
+import bridgeSource from '../../extension/bridge.js?raw'
 
 /*
  * Read as source, not imported. The extension is plain JS with no declarations —
@@ -120,7 +121,8 @@ describe('the relay is wired into the extension it ships with', () => {
     expect(backgroundSource).toContain("'jojo:read-document'")
     // And checks the address before fetching, not after.
     const handler = backgroundSource.slice(backgroundSource.indexOf("'jojo:read-document'"))
-    expect(handler.indexOf('isLoopback')).toBeLessThan(handler.indexOf('relayToReader'))
+    // The address is checked BEFORE anything is fetched, not after.
+    expect(handler.indexOf('isLoopback')).toBeLessThan(handler.indexOf('await relay('))
   })
 })
 
@@ -190,5 +192,57 @@ describe('the page actually sends the relayed shapes across the wire', () => {
     )
     expect(chooser).toContain('request.read !== undefined')
     expect(chooser).toContain('request.model !== undefined')
+  })
+})
+
+describe('a relayed GET carries no body', () => {
+  /*
+   * The bug this pins, reported from a real connection test:
+   *
+   *   Failed to execute 'fetch' on 'WorkerGlobalScope':
+   *   Request with GET/HEAD method cannot have body.
+   *
+   * The bridge rebuilt an absent body as `''`, and an empty string is still a
+   * body. The model list is a GET, so every connection test through the relay
+   * died on it — and the message blamed the server for not running.
+   */
+  it('the bridge omits an absent body rather than sending an empty string', () => {
+    const rebuild = bridgeSource.slice(
+      bridgeSource.indexOf('const read ='),
+      bridgeSource.indexOf('chrome.runtime.sendMessage'),
+    )
+    expect(rebuild).not.toContain("body: typeof relayed.body === 'string' ? relayed.body : ''")
+    expect(rebuild).toMatch(/\.\.\.\(typeof relayed\.body === 'string' && relayed\.body !== ''/)
+  })
+
+  it('and the worker refuses to attach one to a GET or HEAD at all', () => {
+    // Belt and braces: the bridge is one caller, and the worker is the thing
+    // that actually calls `fetch`.
+    const fn = backgroundSource.slice(
+      backgroundSource.indexOf('async function relay('),
+      backgroundSource.indexOf('/* --------------------------------- scanning'),
+    )
+    expect(fn).toContain("method !== 'GET' && method !== 'HEAD'")
+    expect(fn).toContain('sendsBody')
+  })
+
+  it('names what it was calling, rather than saying "reader" for everything', () => {
+    expect(backgroundSource).toContain("relay(request, 'reader')")
+    expect(backgroundSource).toContain("relay(request, 'model provider')")
+  })
+})
+
+describe('installing the extension reaches tabs that are already open', () => {
+  /*
+   * "MarkItDown does not show connected until you refresh." Nothing was broken:
+   * a manifest content script runs on navigation and not retroactively, so the
+   * tab somebody installed FROM — jojo's own Settings page, every time, because
+   * that is where the installer is — had no bridge and no way to get one.
+   */
+  it('injects on install, using the manifest’s own patterns', () => {
+    expect(backgroundSource).toContain('chrome.runtime.onInstalled.addListener')
+    expect(backgroundSource).toContain('injectIntoOpenTabs')
+    // Read from the manifest rather than repeated, so the port list has one owner.
+    expect(backgroundSource).toContain('chrome.runtime.getManifest().content_scripts')
   })
 })

@@ -83,7 +83,17 @@ window.addEventListener('message', (event) => {
           url: typeof relayed.url === 'string' ? relayed.url : '',
           method: typeof relayed.method === 'string' ? relayed.method : 'POST',
           headers: relayed.headers && typeof relayed.headers === 'object' ? relayed.headers : {},
-          body: typeof relayed.body === 'string' ? relayed.body : '',
+          /*
+           * OMITTED when there is none, not coerced to ''.
+           *
+           * An empty string is still a body, and `fetch` throws on a GET that
+           * has one: "Request with GET/HEAD method cannot have body". The model
+           * list is a GET, so every connection test through the relay died on
+           * this — and the message blamed the server for not running.
+           */
+          ...(typeof relayed.body === 'string' && relayed.body !== ''
+            ? { body: relayed.body }
+            : {}),
         }
       : undefined
 

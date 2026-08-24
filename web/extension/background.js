@@ -40,6 +40,53 @@ const POLICY = {
   CAPTURE_UNCLAMP_ATTR,
 }
 
+/* ------------------------------- installing -------------------------------- */
+
+/**
+ * Injects the bridge into jojo tabs that were ALREADY OPEN.
+ *
+ * A content script listed in the manifest runs on navigation. It does not run
+ * retroactively, so the tab somebody installed the extension from — which is
+ * jojo's own Settings page, every time, because that is where the installer
+ * lives — has no bridge in it and no way to get one except a reload.
+ *
+ * That is the whole of "MarkItDown does not show connected until you refresh".
+ * Nothing was broken: the page was asking a relay that had never been injected
+ * into it, correctly getting no answer, and correctly reporting that.
+ *
+ * The patterns are read out of the manifest rather than repeated here, so the
+ * list of ports this app runs on has one owner. Failures are swallowed per tab:
+ * a tab that has since navigated away, or a restricted page, is not an error —
+ * it is a tab that does not need one.
+ */
+async function injectIntoOpenTabs() {
+  const scripts = chrome.runtime.getManifest().content_scripts ?? []
+  for (const entry of scripts) {
+    const matches = entry.matches ?? []
+    if (matches.length === 0) continue
+    let tabs = []
+    try {
+      tabs = await chrome.tabs.query({ url: matches })
+    } catch {
+      continue
+    }
+    for (const tab of tabs) {
+      if (typeof tab.id !== 'number') continue
+      try {
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: entry.js ?? [] })
+      } catch {
+        // Already injected, navigated away, or not scriptable. All fine.
+      }
+    }
+  }
+}
+
+// `onInstalled` also fires on update and on a reload of an unpacked extension,
+// which is exactly when a developer needs this too.
+chrome.runtime.onInstalled.addListener(() => {
+  void injectIntoOpenTabs()
+})
+
 /* ------------------------------ reading docs ------------------------------- */
 
 /**
@@ -108,16 +155,22 @@ function isKnownModelHost(raw) {
  * The answer comes back as `{ ok, status, text }`, the same shape the page's own
  * transport returns, so the caller cannot tell which route was taken.
  */
-async function relayToReader(request) {
+async function relay(request, what) {
   const controller = new AbortController()
   const timer = setTimeout(() => {
     controller.abort()
   }, READ_TIMEOUT_MS)
+  const method = typeof request.method === 'string' ? request.method : 'POST'
+  // A GET or HEAD may not carry one, and `fetch` throws rather than ignoring it:
+  // "Request with GET/HEAD method cannot have body". The model list is a GET.
+  const sendsBody = method !== 'GET' && method !== 'HEAD'
   try {
     const response = await fetch(request.url, {
-      method: typeof request.method === 'string' ? request.method : 'POST',
+      method,
       headers: request.headers && typeof request.headers === 'object' ? request.headers : {},
-      body: typeof request.body === 'string' ? request.body : undefined,
+      ...(sendsBody && typeof request.body === 'string' && request.body !== ''
+        ? { body: request.body }
+        : {}),
       signal: controller.signal,
       // Same rule as the page's transport: a loopback server shares an origin
       // policy with nothing, and credentials it never asked for are how a local
@@ -135,9 +188,12 @@ async function relayToReader(request) {
       ok: false,
       status: 0,
       text: '',
+      // Named by what was being called. This said "the reader" for everything,
+      // so a failed model request reported a document reader that was not
+      // involved — two wrong nouns in one sentence about a third thing.
       reason: aborted
-        ? `The reader did not answer within ${String(READ_TIMEOUT_MS / 1000)} seconds.`
-        : `Could not reach the reader at ${request.url} — ${String(error && error.message ? error.message : error)}. Is it still running?`,
+        ? `The ${what} did not answer within ${String(READ_TIMEOUT_MS / 1000)} seconds.`
+        : `Could not reach the ${what} at ${request.url} — ${String(error && error.message ? error.message : error)}.`,
     }
   } finally {
     clearTimeout(timer)
@@ -593,7 +649,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         })
         return
       }
-      sendResponse(await relayToReader(request))
+      sendResponse(await relay(request, 'reader'))
     })()
     return true
   }
@@ -622,7 +678,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         })
         return
       }
-      sendResponse(await relayToReader(request))
+      sendResponse(await relay(request, 'model provider'))
     })()
     return true
   }

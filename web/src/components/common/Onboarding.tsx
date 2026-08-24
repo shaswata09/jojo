@@ -131,13 +131,27 @@ export function Onboarding() {
    * that we ASKED, and we did not. Someone who connects a model next week gets
    * the question then, which is exactly when it starts being worth answering.
    */
-  if (!readerOffered && isConfigured(settings)) {
-    return <DocumentReaderStep onSkip={() => finish('reader')} onDone={() => finish('reader')} />
-  }
-
-  // Independent of the model: keeping a posting is worth doing on its own.
+  /*
+   * THE EXTENSION COMES BEFORE THE READER, and the order is a dependency rather
+   * than a preference.
+   *
+   * markitdown-mcp sends no CORS headers, so a page cannot call it across ports;
+   * the dev server proxies that away, and a hosted copy has no proxy. The
+   * extension is what carries the request. So asking somebody to set up and TEST
+   * a reader before they have the thing that can reach it is asking them to
+   * watch it fail — and the failure is indistinguishable, on screen, from a
+   * reader they installed wrongly.
+   *
+   * It is still independent of the model: keeping a posting is worth doing on
+   * its own, which is why it is not gated on `isConfigured` the way the reader
+   * is.
+   */
   if (!extensionOffered) {
     return <ExtensionStep onSkip={() => finish('extension')} onDone={() => finish('extension')} />
+  }
+
+  if (!readerOffered && isConfigured(settings)) {
+    return <DocumentReaderStep onSkip={() => finish('reader')} onDone={() => finish('reader')} />
   }
 
   if (!tourOffered) {

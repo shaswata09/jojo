@@ -112,7 +112,24 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
   const [failure, setFailure] = useState<ModelFailure | null>(null)
   const [listOpen, setListOpen] = useState(false)
 
-  const connected = model.trim().length > 0
+  /*
+   * A SUCCESSFUL TEST, not a non-empty box.
+   *
+   * This was `model.trim().length > 0`, which was true enough while the model
+   * could only be filled in BY a successful test — the field was disabled until
+   * then. It stopped being true the moment the field became typeable for hosted
+   * catalogues: typing a model id, or pasting a key and typing the id NVIDIA's
+   * own site gave you, flipped the chip to "Connected" without a single request
+   * having been made. A green light that means "you have typed something" is
+   * worse than no light.
+   *
+   * `null` is the third state and it matters: nothing has been tried yet, which
+   * is neither connected nor failed. Cleared back to null whenever an input
+   * changes, because an answer about the old address says nothing about the new
+   * one.
+   */
+  const [tested, setTested] = useState<boolean | null>(null)
+  const connected = tested === true
   const saved = serverAt(servers, endpoint)
   const name = nameEdit ?? saved?.name ?? model
 
@@ -130,6 +147,8 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
       setModel('')
       setNameEdit(null)
       setFailure(null)
+      // A different address has not been reached, whatever the last one did.
+      setTested(null)
     }
   }
 
@@ -149,6 +168,14 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
     setNameEdit(null)
     setFailure(null)
     setListOpen(false)
+    /*
+     * Unknown, not connected. The row was verified when it was SAVED, which was
+     * possibly months and one laptop reboot ago — the header on this component
+     * makes exactly this argument about the sidebar tile, and it applies here.
+     * The fields are filled in and one press of Test says whether it still
+     * answers.
+     */
+    setTested(null)
     save({
       ...settings,
       // Through `providerMeta`, which never returns undefined: a row written by
@@ -170,9 +197,23 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
     setTesting(false)
     if (!result.ok) {
       setFailure(result)
-      setModel('')
+      setTested(false)
+      /*
+       * The model is NOT cleared any more.
+       *
+       * It used to be, on the reasoning that a model id belongs to a server that
+       * answered. That reads as "reset the form" the moment the id is something
+       * the user typed rather than something the server reported — press Test
+       * against NVIDIA, get a transport error, and the id you pasted from their
+       * site is gone and has to be found again. A local server never showed this
+       * because its test rarely fails and its id was never hand-typed.
+       *
+       * The failure is already reported in words underneath. Deleting the user's
+       * input as well is punishing them for a request that did not arrive.
+       */
       return
     }
+    setTested(true)
     /*
      * The user's choice wins when the server confirms it exists.
      *
@@ -272,6 +313,9 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
              * for a reason nobody could guess from the screen.
              */
             setEndpoint(meta.endpoint)
+            // Switching provider switches everything the test was about.
+            setTested(null)
+            setFailure(null)
             /*
              * The key is DROPPED, not carried.
              *
@@ -369,6 +413,10 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
              */
             hint="Kept in this browser only. It is never put in a backup and never sent anywhere but the provider."
             onChange={(e) => {
+              // A new key is a new question. Leaving the previous verdict up
+              // would show "Connected" for credentials nothing has tried.
+              setTested(null)
+              setFailure(null)
               save({ ...settings, apiKey: cleanKey(e.target.value) })
             }}
           />
@@ -416,6 +464,9 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
               : 'Test the connection to fill this from the server, or type the id yourself.'
           }
           onChange={(e) => {
+            // Typing a model id is not evidence that anything answered — which
+            // is exactly the bug this replaced.
+            setTested(null)
             setModel(e.target.value)
           }}
           onBlur={() => {
