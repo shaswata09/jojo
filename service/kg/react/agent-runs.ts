@@ -132,6 +132,14 @@ export type StartOptions = {
   host: ToolHost
   /** Which steps to stop and ask about. See `AgentOptions.gate`. */
   gate?: 'destructive' | 'writes'
+  /**
+   * The conversation as it is stored, for a run the registry has never seen.
+   *
+   * Only read when there is no live run for the thread — see `start`. Stored
+   * entries carry `t0…tn` ids and the registry mints `e0…en`, so the two can
+   * never collide.
+   */
+  entries?: readonly AgentEntry[]
   tools?: readonly string[]
   maxSteps?: number
   /**
@@ -244,8 +252,31 @@ export function createAgentRuns(): AgentRuns {
         for (const fn of listeners.splice(0)) fn()
       },
     }
+    /*
+     * A run starts from what is ALREADY IN THE CONVERSATION, not only from what
+     * this session happens to remember.
+     *
+     * The registry lives in memory above the router, which is what lets a run
+     * survive navigation — and what empties it on a reload. `entries` used to be
+     * seeded from `runs.get(threadId)` alone, so a conversation opened after a
+     * reload (or after Clear, or simply picked from the list without having been
+     * run this session) started with an empty list. `onSettled` then hands that
+     * list to `assistant.thread.set`, which REPLACES the stored entries — and
+     * `threadSet` is `undoable: false`.
+     *
+     * So: reload, ask a follow-up, and every earlier turn was destroyed on
+     * screen and on disk, with no undo and nothing to indicate it. Measured — a
+     * conversation of two questions and two answers came back as one question
+     * and one answer, while the model still answered correctly because `history`
+     * was passed separately and was right.
+     *
+     * `options.entries` is the stored transcript. It is used only when the
+     * registry has nothing, because an in-session run already holds those turns
+     * and taking both would duplicate them.
+     */
     const existing = runs.get(threadId)
-    const seq = (inner.get(threadId)?.seq ?? existing?.entries.length ?? 0) + 1
+    const before = existing?.entries ?? options.entries ?? []
+    const seq = (inner.get(threadId)?.seq ?? before.length) + 1
     inner.set(threadId, { cancel, seq })
 
     const nextId = () => {
@@ -257,7 +288,7 @@ export function createAgentRuns(): AgentRuns {
 
     runs.set(threadId, {
       threadId,
-      entries: [...(existing?.entries ?? []), { kind: 'you', id: `e${String(seq)}`, text: clean }],
+      entries: [...before, { kind: 'you', id: `e${String(seq)}`, text: clean }],
       busy: true,
       pending: null,
     })

@@ -170,6 +170,14 @@ export function useAgent({
         // one settled and saved. One run per conversation is what makes that
         // true rather than hopeful.
         history: thread.history,
+        /*
+         * The same conversation as ENTRIES, for the registry to start from when
+         * it has never seen this thread. `history` is what the model reads and
+         * was always right; `entries` is what gets written back, and without
+         * this it started empty after a reload and replaced the stored turns
+         * with only the new one. See `agent-runs.ts` `start`.
+         */
+        entries: thread.entries,
         llm,
         host,
         ...(tools === undefined ? {} : { tools }),
@@ -186,6 +194,7 @@ export function useAgent({
       runs,
       startThread,
       thread.autoApprove,
+      thread.entries,
       thread.history,
       thread.id,
       tools,
