@@ -207,6 +207,83 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      # ---------------------------------------------------------------- #
+      # Firebase App Distribution and Test Lab.
+      #
+      # BOTH ARE SKIPPED WHEN THE SECRETS ARE ABSENT, which is the important
+      # property: a fork, a pull request from one, and a first clone all still
+      # go green. A CI file that fails without credentials nobody outside the
+      # project can have turns a contributor's first PR into a red tick they
+      # cannot fix, and the APK above is built and uploaded either way.
+      #
+      # One service-account key does both, because both are the same Google
+      # project — see `docs/RELEASE.md` for exactly which roles it needs and
+      # where the App ID comes from.
+      # ---------------------------------------------------------------- #
+      - name: Is Firebase configured?
+        id: firebase
+        run: |
+          if [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ] && [ -n "${{ secrets.FIREBASE_ANDROID_APP_ID }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Firebase secrets are not set; skipping App Distribution and Test Lab."
+          fi
+
+      - name: Write the service-account key
+        if: steps.firebase.outputs.ready == 'true'
+        run: |
+          # Written to the runner's temp dir rather than the workspace, so it
+          # cannot be picked up by a later step that globs the checkout.
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/firebase-key.json"
+
+      # Testers get the build before a tag exists, which is the whole point of
+      # App Distribution: the feedback is meant to arrive BEFORE the release.
+      - name: Send the APK to testers
+        if: steps.firebase.outputs.ready == 'true'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
+        run: |
+          npm install -g firebase-tools@13
+          APK=$(ls mobile/android/app/build/outputs/apk/release/*.apk | head -1)
+          # `--groups` names a tester group created in the Firebase console. An
+          # absent group is not an error worth failing a build over — the binary
+          # is already an artifact — so this reports and carries on.
+          firebase appdistribution:distribute "$APK" \
+            --app "${{ secrets.FIREBASE_ANDROID_APP_ID }}" \
+            --release-notes "jojo ${{ github.ref_name }} · run ${{ github.run_number }} · ${{ github.sha }}" \
+            --groups "${{ vars.FIREBASE_TESTER_GROUP || 'testers' }}" \
+          || echo "::warning::App Distribution upload failed; the APK is still attached to this run."
+
+      # A Robo test drives the app on a real Android VM with no test code at
+      # all: it opens the app, walks the UI and reports a crash or an ANR. That
+      # is exactly the gap the audit could not cover — nothing here has ever run
+      # the phone app on a device.
+      #
+      # The free tier is 10 virtual-device runs a day, so this is deliberately
+      # NOT on every push: only on a tag, and only on one device.
+      - name: Smoke the APK on a real device (Test Lab)
+        if: steps.firebase.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
+        run: |
+          APK=$(ls mobile/android/app/build/outputs/apk/release/*.apk | head -1)
+          gcloud auth activate-service-account --key-file "$GOOGLE_APPLICATION_CREDENTIALS"
+          gcloud config set project "${{ secrets.FIREBASE_PROJECT_ID }}"
+          # `--device` pins an API level at or above the floor jojo declares
+          # (Android 12 = API 31). Testing below it would fail for a reason that
+          # is documented rather than a bug.
+          gcloud firebase test android run \
+            --type robo \
+            --app "$APK" \
+            --device model=MediumPhone.arm,version=33,locale=en,orientation=portrait \
+            --timeout 4m \
+            --no-record-video
+
+      - name: Forget the key
+        if: always() && steps.firebase.outputs.ready == 'true'
+        run: rm -f "$RUNNER_TEMP/firebase-key.json"
+
       # Anyone can download a release asset; an Actions artifact needs a GitHub
       # login and expires. So a tagged build publishes the APK where a person
       # with an Android phone can actually get at it.
@@ -227,6 +304,141 @@ jobs:
             Install it by downloading the `.apk` and opening it on the phone —
             Android will ask you to allow installs from this source. Requires
             Android 12 or newer.
+
+  # ------------------------------------------------------------------ #
+  # iOS, and why it is shaped differently from the Android job above.
+  #
+  # ONLY ON A TAG. A macOS runner bills at ten times a Linux one, and nothing
+  # here catches a bug the gate does not: `tsc`, `eslint` and `vitest` already
+  # ran on Linux against the same source. What this job produces is a BINARY,
+  # and a binary is only wanted at a release.
+  #
+  # SKIPPED ENTIRELY WITHOUT SIGNING SECRETS, like the Firebase steps above. An
+  # iOS archive cannot be produced unsigned in any form a tester can install, so
+  # there is no useful half-measure — either the certificates are there or this
+  # job has nothing to make.
+  #
+  # NOT VERIFIED IN THIS REPOSITORY. There is no Apple developer account here to
+  # run it against, so unlike every other job in this file it has never been
+  # watched to go green. Treat the first run as the test.
+  # ------------------------------------------------------------------ #
+  ios:
+    name: iOS (release builds only)
+    needs: gate
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Both flags are computed HERE rather than tested inline further down.
+      # The `secrets` context is not dependable inside a step-level `if`, and a
+      # condition that silently evaluates to false is worse than one that fails:
+      # the job goes green having built nothing.
+      - name: Which secrets are set?
+        id: apple
+        run: |
+          if [ -n "${{ secrets.IOS_CERTIFICATE_BASE64 }}" ] && [ -n "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Apple signing secrets are not set; skipping the iOS build."
+          fi
+          if [ -n "${{ secrets.FIREBASE_IOS_APP_ID }}" ] && [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ]; then
+            echo "distribute=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "distribute=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # A throwaway keychain, deleted in the final step. Importing into the
+      # runner's default keychain would leave the certificate readable by
+      # anything else scheduled onto the same machine.
+      - name: Import the signing certificate
+        if: steps.apple.outputs.ready == 'true'
+        env:
+          CERT: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain"
+          security create-keychain -p runner "$KEYCHAIN"
+          security set-keychain-settings -lut 900 "$KEYCHAIN"
+          security unlock-keychain -p runner "$KEYCHAIN"
+          echo "$CERT" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k runner "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/jojo.mobileprovision
+          rm -f "$RUNNER_TEMP/cert.p12"
+
+      - name: Pods
+        if: steps.apple.outputs.ready == 'true'
+        working-directory: mobile/ios
+        run: pod install --repo-update
+
+      - name: Archive and export
+        if: steps.apple.outputs.ready == 'true'
+        working-directory: mobile/ios
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          xcodebuild -workspace jojo.xcworkspace -scheme jojo \
+            -configuration Release -archivePath "$RUNNER_TEMP/jojo.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" archive
+          cat > "$RUNNER_TEMP/export.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>ad-hoc</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>compileBitcode</key><false/>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/jojo.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/export.plist" \
+            -exportPath "$RUNNER_TEMP/export"
+
+      - name: Send the IPA to testers
+        if: steps.apple.outputs.ready == 'true' && steps.apple.outputs.distribute == 'true'
+        run: |
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/firebase-key.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-key.json"
+          npm install -g firebase-tools@13
+          IPA=$(ls "$RUNNER_TEMP"/export/*.ipa | head -1)
+          firebase appdistribution:distribute "$IPA" \
+            --app "${{ secrets.FIREBASE_IOS_APP_ID }}" \
+            --release-notes "jojo ${{ github.ref_name }} · run ${{ github.run_number }}" \
+            --groups "${{ vars.FIREBASE_TESTER_GROUP || 'testers' }}" \
+          || echo "::warning::App Distribution upload failed; the IPA is still an artifact."
+          rm -f "$RUNNER_TEMP/firebase-key.json"
+
+      - name: Publish the IPA as a build artifact
+        if: steps.apple.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jojo-ios-${{ github.run_number }}
+          path: ${{ runner.temp }}/export/*.ipa
+          if-no-files-found: error
+          retention-days: 90
+
+      # Runs even when a step above failed, because a keychain left behind on a
+      # runner is the failure that matters.
+      - name: Forget the certificate
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/build.keychain" 2>/dev/null || true
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/jojo.mobileprovision
 
   extension:
     name: Browser extension

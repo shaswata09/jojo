@@ -42,6 +42,8 @@
   },
   "scripts": {
     "android": "react-native run-android",
+    "distribute:android": "node scripts/distribute.mjs android",
+    "distribute:ios": "node scripts/distribute.mjs ios",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "ios": "react-native run-ios",
@@ -50,6 +52,7 @@
     "start": "react-native start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "testlab": "node scripts/testlab.mjs",
     "typecheck": "tsc --noEmit"
   },
   "private": true

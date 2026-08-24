@@ -83,6 +83,14 @@ store listing, so nothing forces the two apart; if it is ever published to the
 Chrome Web Store, that changes, because Chrome refuses an upload whose version is
 not higher than the last.
 
+### Getting a build to testers
+
+App Distribution and Test Lab are wired into CI and skipped when their secrets
+are absent, so a fork still goes green. Neither puts an SDK in the app — a build
+that went to testers is byte-identical to one that did not. `docs/RELEASE.md` has
+the Firebase setup, the exact values to copy, and the commands for doing it from
+your own machine without pushing a tag.
+
 ### Signing the APK
 
 Without any configuration the APK is signed with Android's debug key. It
