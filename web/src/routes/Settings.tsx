@@ -4,6 +4,7 @@ import { Diagnostics } from '@/components/settings/Diagnostics'
 import { KeywordManager } from '@/components/settings/KeywordManager'
 import { PageHeader } from '@/components/common/PageHeader'
 import { AppearancePanel } from '@/components/settings/AppearancePanel'
+import { CrashPanel } from '@/components/settings/CrashPanel'
 import { CaptureExtensionPanel } from '@/components/settings/CaptureExtensionPanel'
 import { ConnectionsSection } from '@/components/settings/ConnectionsSection'
 import { DataPanel } from '@/components/settings/DataPanel'
@@ -61,6 +62,10 @@ export function Settings() {
       <DocumentsPanel />
 
       <KeywordManager />
+
+      {/* Above Diagnostics: a crash report is the thing somebody came here to
+          find, and Diagnostics is where they end up looking for it. */}
+      <CrashPanel />
 
       <Diagnostics />
 

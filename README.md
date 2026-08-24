@@ -19,6 +19,16 @@ local document reader from a hosted copy;
 and your own other device over the local network for Transfer. With none of it configured the app
 is still a complete tracker, and a backup file you keep is how records move between machines.
 
+**Crash reports are off, and are the one thing that can leave a phone.** jojo can keep the error when
+something breaks, so you can read it back instead of describing it from memory. On the web that is
+all it does — the reports stay on the device, in Settings, and a backup file does not carry them,
+because Google ships no browser Crashlytics and there is nowhere honest to send them. On Android and
+iOS, and only when you turn it on, the same report also goes to Firebase Crashlytics. Keys, query
+strings, home directories and email addresses are stripped before a report exists, so what is kept
+and what is sent are the same redacted text. Two switches govern it and both must say yes: a build
+flag (`VITE_CRASH_REPORTING` on web, `CRASH_REPORTING` on the phone) decides whether a copy of jojo
+can report at all, and a setting decides whether it does. Both default to off.
+
 **The one thing that can leave your device is the assistant, and only if you send it there.** jojo
 speaks to a local model — Ollama, vLLM, LM Studio — and that is the default, with nothing leaving
 the machine. It also speaks to Anthropic, OpenAI, OpenRouter, Groq and **NVIDIA**, which need an API

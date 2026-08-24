@@ -2,7 +2,13 @@
  * kgLog / kgWarn / kgError.
  *
  * Local-first means there is no telemetry endpoint and no server log, so the
- * console is the only place a dropped record can announce itself. Every
+ * console is the only place a dropped record can announce itself.
+ *
+ * Still true after crash reporting arrived, and worth saying because it looks
+ * like it should not be: `core/crash.ts` records CRASHES, opt-in, and this
+ * records the ordinary business of a store that is working. Nothing here is
+ * transmitted anywhere by anything, and a dropped record still announces itself
+ * on the console and nowhere else. Every
  * validation rejection and every persistence retry goes through here rather than
  * through a bare `console.log`, so they are greppable and can be silenced as a
  * group.

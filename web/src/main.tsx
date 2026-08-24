@@ -15,9 +15,22 @@ import { RolesProvider } from '@/lib/roles'
 import { StoreProvider } from '@/lib/store'
 import { ThemeProvider } from '@/lib/theme'
 import { ToastProvider } from '@/lib/toast'
+import { crashEnabled, listenForCrashes } from '@/lib/crash-log'
 
 const container = document.getElementById('root')
 if (!container) throw new Error('Root element #root not found in index.html')
+
+/*
+ * Installed before the app mounts, so a crash during boot is caught too.
+ *
+ * `crashEnabled` is passed as a getter rather than a value: these listeners live
+ * for the life of the tab and the setting changes under them.
+ *
+ * Nothing is recorded unless the build allows it AND the user opted in — see
+ * `core/crash-config.ts`. With the default build and the default setting this
+ * costs two no-op listeners and writes nothing.
+ */
+listenForCrashes(crashEnabled)
 
 createRoot(container).render(
   <StrictMode>
