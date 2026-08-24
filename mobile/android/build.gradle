@@ -25,6 +25,19 @@ buildscript {
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+    /*
+     * On the classpath, and NOT applied here.
+     *
+     * Firebase's console gives this as `plugins { id '…' apply false }`, which
+     * is the modern spelling and does not work in this file — there is no
+     * top-level `plugins` block, and adding one alongside `buildscript` is a
+     * configuration error rather than a style difference. This is the same
+     * thing said the way the rest of this project says it.
+     *
+     * Downloading the plugin is free; `app/build.gradle` decides whether to
+     * apply it, and only does when a `google-services.json` is actually there.
+     */
+    classpath('com.google.gms:google-services:4.5.0')
   }
 }
 

@@ -2,6 +2,29 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+/*
+ * Firebase, but only when this checkout actually has a Firebase project.
+ *
+ * The console's instructions apply this unconditionally, and unconditionally is
+ * wrong here for a reason that only shows up in somebody else's clone: the
+ * plugin FAILS THE BUILD when `google-services.json` is missing, and that file
+ * is deliberately not committed (see `mobile/.gitignore` for why). Applied
+ * flatly, adding Firebase would break every fork, every pull request from one,
+ * and CI — all of which build the APK today and none of which have the file.
+ *
+ * So it is conditional, which is the same bargain the signing config below
+ * strikes: a real key when one is supplied, the debug key when it is not, and a
+ * first clone that works with no setup either way. With the file present this is
+ * exactly what the console asked for; without it the app builds and the Firebase
+ * code paths no-op, which is what `mobile/src/lib/crash.ts` already expects —
+ * it resolves the native module lazily and treats its absence as normal.
+ */
+if (file('google-services.json').exists()) {
+    apply plugin: "com.google.gms.google-services"
+} else {
+    logger.lifecycle("jojo: no google-services.json — building without Firebase.")
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.

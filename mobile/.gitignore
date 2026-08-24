@@ -57,3 +57,20 @@ yarn-error.*
 /ios/Pods/
 /ios/*.xcworkspace/xcuserdata/
 /ios/*.xcodeproj/xcuserdata/
+
+# Firebase's per-project config, kept out on purpose.
+#
+# Google calls these non-secret and they are, in the sense that the key inside is
+# restricted to a package name and a signing certificate. What they are NOT is
+# harmless in a PUBLIC repository: anyone who takes a copy can point crash
+# reports and analytics at this project, and the first sign of it is a console
+# full of events from a build nobody here made.
+#
+# So they are supplied rather than committed — by whoever is building, or by CI
+# from a secret — which is the same bargain `android/app/build.gradle` already
+# strikes over the upload keystore: "a keystore committed beside the code it
+# signs is not a key". `build.gradle` applies the Google plugin only when the
+# file is actually there, so a fork and a first clone still build.
+/android/app/google-services.json
+/ios/GoogleService-Info.plist
+/ios/jojo/GoogleService-Info.plist
