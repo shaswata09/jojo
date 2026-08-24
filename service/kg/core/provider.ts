@@ -127,6 +127,16 @@ export type ProviderMeta = {
    * onboarding, and somebody who cannot find that page does not get an agent.
    */
   readonly keyUrl: string
+  /**
+   * A real model id from this catalogue, for the placeholder.
+   *
+   * Empty for the local providers, where the server states its own and a guess
+   * would be worse than blank. It exists because a hosted catalogue's ids are
+   * long and structured — `nvidia/nemotron-3-ultra-550b-a55b` — and someone
+   * typing one into an empty box has no way to tell whether the shape is right
+   * until a request fails.
+   */
+  readonly modelLooksLike: string
 }
 
 /**
@@ -148,6 +158,7 @@ export const PROVIDERS = [
     cloud: false,
     // The reason this provider has its own dialect at all.
     canSetContext: true,
+    modelLooksLike: '',
     keyLooksLike: '',
     keyUrl: '',
     defaultContext: 32768,
@@ -161,6 +172,7 @@ export const PROVIDERS = [
     needsKey: false,
     billed: false,
     cloud: false,
+    modelLooksLike: '',
     keyLooksLike: '',
     keyUrl: '',
     defaultContext: 32768,
@@ -176,6 +188,7 @@ export const PROVIDERS = [
     billed: true,
     cloud: true,
     canSetContext: false,
+    modelLooksLike: 'claude-sonnet-4-5',
     keyLooksLike: 'sk-ant-…',
     keyUrl: 'https://console.anthropic.com/settings/keys',
     defaultContext: 200_000,
@@ -190,6 +203,7 @@ export const PROVIDERS = [
     billed: true,
     cloud: true,
     canSetContext: false,
+    modelLooksLike: 'gpt-4o',
     keyLooksLike: 'sk-…',
     keyUrl: 'https://platform.openai.com/api-keys',
     defaultContext: 128_000,
@@ -204,6 +218,7 @@ export const PROVIDERS = [
     billed: true,
     cloud: true,
     canSetContext: false,
+    modelLooksLike: 'meta-llama/llama-3.3-70b-instruct',
     keyLooksLike: 'sk-or-…',
     keyUrl: 'https://openrouter.ai/keys',
     defaultContext: 128_000,
@@ -218,6 +233,7 @@ export const PROVIDERS = [
     billed: true,
     cloud: true,
     canSetContext: false,
+    modelLooksLike: 'llama-3.3-70b-versatile',
     keyLooksLike: 'gsk_…',
     keyUrl: 'https://console.groq.com/keys',
     defaultContext: 128_000,
@@ -251,6 +267,7 @@ export const PROVIDERS = [
     billed: false,
     cloud: true,
     canSetContext: false,
+    modelLooksLike: 'nvidia/nemotron-3-ultra-550b-a55b',
     keyLooksLike: 'nvapi-…',
     keyUrl: 'https://build.nvidia.com/',
     defaultContext: 128_000,

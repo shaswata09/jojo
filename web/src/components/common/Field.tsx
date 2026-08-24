@@ -1,6 +1,6 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import type { ComponentProps, ReactNode } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { Eye, EyeOff, ExternalLink } from 'lucide-react'
 import { openHref } from '@/components/vault/links/url'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -149,6 +149,20 @@ export function Field({
   // Nothing to open unless the field says it holds a URL and the value is one.
   const href = props.type === 'url' ? openHref(String(props.value ?? '')) : undefined
 
+  /*
+   * Revealing a secret, which every password field here wants and none had.
+   *
+   * An API key is pasted, not typed from memory, and the one thing a person
+   * needs to do afterwards is check that it arrived whole — a truncated paste
+   * and a wrong key fail identically, with a 401 that names neither. Dots make
+   * that impossible to see. The toggle is per-field state and starts hidden, so
+   * a screenshot or a shoulder still shows nothing unless it was asked for.
+   */
+  const secret = props.type === 'password'
+  const [shown, setShown] = useState(false)
+  const type = secret && shown ? 'text' : props.type
+  const button = href !== undefined || secret
+
   return (
     <div className={cn('space-y-1.5', className)}>
       <FieldLabel htmlFor={fieldId} label={label} required={required} />
@@ -161,10 +175,33 @@ export function Field({
           // The padding is conditional because the button is: a URL field with
           // nothing openable in it must not sit indented for a control that is
           // not there.
-          className={cn(mono && 'font-mono text-xs', href && 'pr-8 [@media(pointer:coarse)]:pr-11')}
+          className={cn(
+            mono && 'font-mono text-xs',
+            button && 'pr-8 [@media(pointer:coarse)]:pr-11',
+          )}
           {...props}
+          type={type}
         />
         {href ? <OpenLink href={href} label={label} /> : null}
+        {secret ? (
+          <button
+            type="button"
+            // Labelled by what pressing it DOES, not by what is on screen: a
+            // control announced as "eye" tells a screen reader nothing.
+            aria-label={shown ? `Hide ${label}` : `Show ${label}`}
+            aria-pressed={shown}
+            onClick={() => {
+              setShown((was) => !was)
+            }}
+            className="absolute top-1/2 right-1.5 -translate-y-1/2 cursor-pointer rounded-sm p-1.5 text-text-3 transition-colors hover:text-text-1"
+          >
+            {shown ? (
+              <EyeOff className="size-3.5" strokeWidth={1.8} aria-hidden />
+            ) : (
+              <Eye className="size-3.5" strokeWidth={1.8} aria-hidden />
+            )}
+          </button>
+        ) : null}
       </div>
       <FieldMessages
         error={error}

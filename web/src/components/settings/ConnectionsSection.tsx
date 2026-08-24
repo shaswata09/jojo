@@ -153,9 +153,26 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
       setModel('')
       return
     }
-    // The first is the one to use. vLLM serves exactly one model and lists it;
-    // Ollama and LM Studio list everything they hold, most-recent first.
-    const found = result.models[0] ?? ''
+    /*
+     * The user's choice wins when the server confirms it exists.
+     *
+     * This took `result.models[0]` unconditionally, on the reasoning that vLLM
+     * serves exactly one model and lists it, and Ollama lists most-recent first.
+     * Both true, and both about servers with a handful of models.
+     *
+     * A hosted catalogue breaks it. NVIDIA lists over a hundred, alphabetically,
+     * so the first is `01-ai/yi-large` — and pressing Test connection silently
+     * replaced a deliberately typed `nvidia/nemotron-3.5-lightning-30b-a3b` with
+     * a model the account cannot call. Measured against the live API: three
+     * `200`s with the typed model, then `404 Function not found for account`
+     * after the test overwrote it.
+     *
+     * So: keep what is there when the server lists it, and only fall back to the
+     * first when the box is empty or names something the server does not have.
+     */
+    const current = model.trim()
+    const found =
+      current && result.models.includes(current) ? current : (result.models[0] ?? '')
     const label = saved?.name ?? found
     setModel(found)
     setNameEdit(null)
@@ -344,20 +361,31 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             {provider.billed ? null : ' — free, no card.'}
           </p>
         ) : null}
-        {/* Empty and unusable until a server has answered. The model id is the
-            server's to state, not the user's to guess, and a field offering to
-            take a guess is a field inviting a 404 later. */}
+        {/*
+         * TYPEABLE, always. It used to be disabled until a connection had been
+         * tested, on the argument that "the model id is the server's to state,
+         * not the user's to guess". That argument holds for a local server,
+         * which lists what it is serving and will 404 a guess — and it fails
+         * completely for a hosted catalogue.
+         *
+         * NVIDIA is the case that broke it. Its `/v1/models` cannot be read from
+         * a page at all, so `connected` never becomes true, so the field never
+         * unlocks, so there is no way to enter `nvidia/nemotron-3-ultra-550b-a55b`
+         * — a name the user got from the provider's own website and is not
+         * guessing at. A control that cannot be filled in is worse than one that
+         * accepts a wrong answer: the wrong answer produces a 404 that names
+         * itself.
+         */}
         <Field
           label="Model"
           mono
           spellCheck={false}
           value={model}
-          disabled={!connected}
-          placeholder={connected ? '' : 'Found when you test the connection'}
+          placeholder={connected ? '' : provider.modelLooksLike || 'The model id, from your provider'}
           hint={
             connected
               ? 'What the server reported. Change it if you serve more than one.'
-              : undefined
+              : 'Test the connection to fill this from the server, or type the id yourself.'
           }
           onChange={(e) => {
             setModel(e.target.value)

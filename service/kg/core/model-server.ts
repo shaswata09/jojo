@@ -94,7 +94,9 @@ export function readModelIds(payload: unknown): string[] {
   if (Array.isArray(models)) {
     return models
       .map((entry) =>
-        typeof entry === 'object' && entry !== null ? (entry as { model?: unknown }).model : undefined,
+        typeof entry === 'object' && entry !== null
+          ? (entry as { model?: unknown }).model
+          : undefined,
       )
       .filter((id): id is string => typeof id === 'string' && id.length > 0)
   }
@@ -137,7 +139,10 @@ export function saveServer(
   const endpoint = normaliseEndpoint(entry.endpoint)
   const existing = list.find((s) => s.endpoint === endpoint)
   if (!existing) {
-    return [...list, { id: serverId(endpoint), name: entry.name || entry.model, endpoint, model: entry.model }]
+    return [
+      ...list,
+      { id: serverId(endpoint), name: entry.name || entry.model, endpoint, model: entry.model },
+    ]
   }
   return list.map((s) => (s.endpoint === endpoint ? { ...s, model: entry.model } : s))
 }
@@ -455,14 +460,35 @@ const rateLimited = (retryAfter: string | null): ModelFailure => ({
     'Nothing was lost; ask again when it clears.',
 })
 
+/**
+ * Status 0 is not an answer, and must never be reported as one.
+ *
+ * A server cannot reply 0. It is what a browser puts on a response it refused to
+ * let the page read — an opaque or CORS-blocked one — and the old wording turned
+ * that into "The server answered 0.", which reads as a broken server and sent
+ * people to check a provider that was working perfectly. Confirmed against
+ * NVIDIA: Chrome reports `PreflightMissingAllowOriginHeader` and the page is
+ * handed a zero.
+ */
+const blockedByBrowser = (): ModelFailure => ({
+  ok: false,
+  kind: 'unreachable',
+  reason:
+    'The browser blocked the reply, so nothing here ever saw it — that is not the server failing. ' +
+    'It happens when a provider answers without the CORS headers a page needs, which several do. ' +
+    'Install the jojo browser extension and it will make the call instead; Settings has it.',
+})
+
 const refused = (status: number, body: string, retryAfter: string | null = null): ModelFailure =>
-  status === 429
-    ? rateLimited(retryAfter)
-    : {
-        ok: false,
-        kind: 'refused',
-        reason: `The server answered ${String(status)}${body.trim() ? ` — ${body.trim().slice(0, 200)}` : ''}.`,
-      }
+  status === 0
+    ? blockedByBrowser()
+    : status === 429
+      ? rateLimited(retryAfter)
+      : {
+          ok: false,
+          kind: 'refused',
+          reason: `The server answered ${String(status)}${body.trim() ? ` — ${body.trim().slice(0, 200)}` : ''}.`,
+        }
 
 const parse = (text: string): unknown => {
   try {
@@ -796,7 +822,11 @@ export function guardTruncation(sentBody: string, turn: Turn): Turn {
   if (!turn.ok) return turn
   const evaluated = truncationOf(sentBody, turn.usage ?? null)
   if (evaluated === null) return turn
-  return { ok: false, kind: 'refused', reason: truncationWarning(evaluated, estimateTokens(sentBody)) }
+  return {
+    ok: false,
+    kind: 'refused',
+    reason: truncationWarning(evaluated, estimateTokens(sentBody)),
+  }
 }
 
 export const truncationWarning = (evaluated: number, sent: number): string =>

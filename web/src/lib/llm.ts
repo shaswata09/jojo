@@ -10,6 +10,53 @@ import {
 } from '@jojo/service/core/model-server'
 import { endpointOf } from '@jojo/service/core/provider'
 import { failed, send } from '@/lib/local-service'
+import type { Sent } from '@/lib/local-service'
+import { callModel } from '@/lib/capture-bridge'
+import { providerMeta } from '@jojo/service/core/provider'
+
+/**
+ * The model's transport, chosen by who is answering.
+ *
+ * A LOCAL server goes direct and always has: it is on this machine, and the
+ * page can reach it.
+ *
+ * A CLOUD provider goes through the extension when one is installed, because
+ * several of them cannot be called from a page at all. Measured against
+ * `integrate.api.nvidia.com`: the preflight answers 200 with `vary: Origin` and
+ * no `access-control-allow-origin`, so the browser blocks the real request and
+ * the page gets a bare "Failed to fetch" naming nothing. The extension fetches
+ * under its own permissions and is not subject to that; the worker will only
+ * relay to hosts in its transcribed provider list.
+ *
+ * FALLS BACK TO DIRECT, and this one is a deliberate exception to the rule that
+ * `markitdown.ts` states. There the direct path provably cannot work, so trying
+ * it would be a doomed request every time. Here it is genuinely unknown: some
+ * providers do send the headers, people are using them today, and silently
+ * routing everyone through an extension they may not have installed would break
+ * a setup that works. So: relay if the extension is there, direct if it is not.
+ */
+async function sendToModel(
+  request: Parameters<typeof send>[0],
+  endpoint: string,
+  provider: string,
+  signal?: AbortSignal,
+): Promise<Sent> {
+  if (!providerMeta(provider).cloud) return send(request, endpoint, signal)
+
+  const relayed = await callModel({
+    url: request.url,
+    method: request.method,
+    headers: request.headers,
+    ...(request.body === undefined ? {} : { body: request.body }),
+  })
+  if (!('failed' in relayed)) return relayed
+
+  // Only "no extension" falls through. A provider that answered badly is an
+  // answer, and retrying it directly would just ask the same question twice.
+  const noExtension = /extension did not answer|too old/i.test(relayed.failed.reason)
+  if (!noExtension) return { failed: { ok: false, kind: 'unreachable', reason: relayed.failed.reason } }
+  return send(request, endpoint, signal)
+}
 import type {
   ChatMessage,
   ChatResult,
@@ -110,7 +157,7 @@ export async function listModels(
 ): Promise<ModelsResult> {
   const endpoint = endpointOf(settings)
   if (endpoint.trim().length === 0) return unconfigured()
-  const response = await send(modelsRequest(settings), endpoint, signal)
+  const response = await sendToModel(modelsRequest(settings), endpoint, settings.provider, signal)
   return failed(response) ? response.failed : readModelsResponse(response, endpoint)
 }
 
@@ -120,9 +167,10 @@ export async function complete(
   signal?: AbortSignal,
 ): Promise<ChatResult> {
   if (!isConfigured(settings)) return unconfigured()
-  const response = await send(
+  const response = await sendToModel(
     chatRequest(settings, messages, undefined, true),
     endpointOf(settings),
+    settings.provider,
     signal,
   )
   return failed(response) ? response.failed : readChatResponse(response)
@@ -155,7 +203,7 @@ export async function agentTurn(
    * name; there is no origin to opt in for on a phone.
    */
   const request = chatRequest(settings, messages, tools, true)
-  const response = await send(request, endpointOf(settings), signal)
+  const response = await sendToModel(request, endpointOf(settings), settings.provider, signal)
   if (failed(response)) return response.failed
 
   const turn = readTurnFor(settings, response)

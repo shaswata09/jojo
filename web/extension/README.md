@@ -5,8 +5,8 @@ different hats: **it is the part of jojo that is not a page.**
 
 1. It saves a job posting into your jojo vault exactly as it reads today.
 2. It is how the Job Scout agent reads a job board.
-3. It is how a hosted copy of jojo reaches a document reader running on your own
-   machine.
+3. It is how jojo reaches a document reader running on your own machine, and how
+   it reaches a model provider that sends no CORS headers.
 
 Nothing else in jojo can open a web page, and nothing else can call a server on
 `127.0.0.1` from a page served over https.
@@ -14,6 +14,37 @@ Nothing else in jojo can open a web page, and nothing else can call a server on
 It exists because a job posting is the one document in a search that belongs to
 somebody else. The listing comes down the week after the interview and takes the
 requirements with it — the ones you are about to be asked about.
+
+## Where the bridge runs
+
+`content_scripts.matches` in `manifest.json` decides, on which origins,
+`bridge.js` exists at all. It is the whole of the security boundary — a content
+script cannot ask a page to prove who it is — and it is also the most common way
+for this extension to look broken.
+
+Two rules, both learned the hard way:
+
+- **Every pattern needs a path.** `https://example.com` is invalid;
+  `https://example.com/*` is not. Chrome's response to ONE invalid pattern is to
+  drop the entire `content_scripts` block, so the extension installs, reports
+  itself healthy, and injects nothing anywhere. The only symptom is the app
+  saying "the jojo browser extension did not answer".
+- **The deployed origin has to be listed.** It is
+  `https://shaswata09.github.io/jojo/*`. Without it the hosted app cannot reach
+  a reader or a model on your own machine at all — an `https://` page may not
+  fetch `http://127.0.0.1`, and relaying that hop is the reason this extension
+  exists. A fork served from somewhere else sets `JOJO_APP_ORIGIN` when packing:
+
+  ```
+  JOJO_APP_ORIGIN=https://you.github.io/jojo npm -w web run pack-extension
+  ```
+
+The dev entries are written out one port at a time rather than as a single
+wildcard. A wildcard handed this bridge to every page on every local server —
+any second dev server could have taken the capture queue.
+
+`npm -w web run pack-extension` refuses to build if any script in this directory
+fails to parse, because that failure is otherwise completely silent.
 
 ## Why an extension and not the app
 
@@ -70,6 +101,24 @@ function out of `background.js` and asserts exactly that case.
 Board scanning is deliberately different — opening a public page IS its feature,
 and it has its own guards. Reading a document has no business leaving this
 machine, so it cannot.
+
+## And the same argument again, for model providers
+
+Several of the providers in jojo's list cannot be called from a page either, for
+the first of the two reasons above. Measured against `integrate.api.nvidia.com`,
+which is the free one and therefore the one most people will meet: the preflight
+answers **200** carrying `vary: Origin` and **no `access-control-allow-origin`
+at all**, so the browser blocks the real request and the page reports a bare
+`Failed to fetch` that names nothing.
+
+`jojo:call-model` relays those, and its allowlist is loopback **plus** the
+provider hosts in `policy.js` — transcribed from `service/kg/core/provider.ts`
+and checked against it by `web/src/lib/capture-policy.test.ts`, so a host cannot
+drift in or out unnoticed. Exact hostname match, not a suffix test, because
+`endsWith('openai.com')` also accepts `evil-openai.com`.
+
+A local model server needs none of this and does not use it: it is on this
+machine, and the page reaches it directly.
 
 ## Loading it
 

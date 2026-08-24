@@ -25,6 +25,7 @@ import {
   CAPTURE_STRIP_TAGS,
   CAPTURE_UNCLAMP_ATTR,
   CAPTURE_URL_ATTRS,
+  MODEL_HOSTS,
 } from './policy.js'
 
 const QUEUE = 'jojo.captures'
@@ -66,6 +67,35 @@ function isLoopback(raw) {
 
 /** How long the reader gets. Converting a large PDF is genuinely slow. */
 const READ_TIMEOUT_MS = 120000
+
+/**
+ * A model provider jojo knows about, over https.
+ *
+ * Several of them send no CORS headers — measured against
+ * `integrate.api.nvidia.com`, whose preflight answers 200 with `vary: Origin`
+ * and no `access-control-allow-origin`, so the browser blocks the real request
+ * and the page reports a bare "Failed to fetch". The extension is not a page and
+ * is not subject to that.
+ *
+ * An allowlist rather than "any https", for the same reason `isLoopback` exists:
+ * this relays a request the page composed using the extension's own permissions,
+ * and without a list any script on jojo's origin could read any site on the web
+ * through it. `MODEL_HOSTS` is transcribed from the provider table and the gate
+ * checks the transcription.
+ *
+ * Exact host match, not a suffix test: `endsWith('openai.com')` also accepts
+ * `evil-openai.com`, which is how allowlists usually fail.
+ */
+function isKnownModelHost(raw) {
+  let url
+  try {
+    url = new URL(raw)
+  } catch {
+    return false
+  }
+  if (url.protocol !== 'https:') return false
+  return MODEL_HOSTS.includes(url.hostname)
+}
 
 /**
  * One request to the reader, relayed verbatim.
@@ -560,6 +590,35 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           reason:
             'The reader address has to be on this machine — http://127.0.0.1 or http://localhost. ' +
             'The extension only relays to loopback.',
+        })
+        return
+      }
+      sendResponse(await relayToReader(request))
+    })()
+    return true
+  }
+
+  /*
+   * A model request, relayed for the same reason a document read is.
+   *
+   * Separate from `jojo:read-document` rather than one verb with a mode, because
+   * the two have different allowlists and keeping each minimal is the point: a
+   * reader may only ever be on this machine, and a model may be on this machine
+   * OR at one of the providers in the table. One verb taking a flag would be one
+   * place to get that wrong.
+   */
+  if (message?.type === 'jojo:call-model') {
+    void (async () => {
+      const request = message.request
+      const url = typeof request?.url === 'string' ? request.url : ''
+      if (!isLoopback(url) && !isKnownModelHost(url)) {
+        sendResponse({
+          ok: false,
+          status: 0,
+          text: '',
+          reason:
+            'That address is not a model provider jojo knows about, and not on this machine. ' +
+            'The extension only relays to loopback and to the providers in its own list.',
         })
         return
       }

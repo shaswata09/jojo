@@ -117,6 +117,8 @@ type Ask = {
   scan?: string
   /** A request to relay to a reader on this machine. See `readDocument`. */
   read?: { url: string; method: string; headers: Record<string, string>; body?: string }
+  /** A request to relay to a model provider. See `callModel`. */
+  model?: { url: string; method: string; headers: Record<string, string>; body?: string }
 }
 
 /**
@@ -155,8 +157,16 @@ function ask(request: Ask): Promise<Reply | null> {
       done(data)
     }
 
+    /*
+     * A relayed request waits on somebody else's server, so it gets the scan's
+     * budget rather than the probe's. This defaulted to PROBE_TIMEOUT_MS — 400ms
+     * — which is right for "is the extension there" and absurd for converting a
+     * PDF or waiting on a 70B model: every relayed call would have been
+     * abandoned before it started and reported as "the extension did not
+     * answer".
+     */
     const timeout =
-      request.scan !== undefined
+      request.scan !== undefined || request.read !== undefined || request.model !== undefined
         ? SCAN_TIMEOUT_MS
         : request.take === true
           ? TAKE_TIMEOUT_MS
@@ -164,7 +174,18 @@ function ask(request: Ask): Promise<Reply | null> {
     const timer = window.setTimeout(() => done(null), timeout)
     window.addEventListener('message', onMessage)
     window.postMessage(
-      { type: REQUEST, id, take: request.take, ack: request.ack, scan: request.scan },
+      {
+        type: REQUEST,
+        id,
+        take: request.take,
+        ack: request.ack,
+        scan: request.scan,
+        // Forwarded, which they were not. The bridge picks its verb from the
+        // SHAPE of what arrives, so a `read` that never crossed the wire was
+        // read as a peek — the relay could not have worked at all.
+        read: request.read,
+        model: request.model,
+      },
       window.location.origin,
     )
   })
@@ -278,6 +299,73 @@ export async function readDocument(request: {
   // a status even when it is a bad one, and belongs to the protocol layer.
   if (reply.error != null && !reply.status) return { failed: { reason: reply.error } }
 
+  return { ok: reply.ok === true, status: reply.status ?? 0, text: reply.text ?? '' }
+}
+
+/**
+ * One request to a model provider, sent by the extension instead of the page.
+ *
+ * The same move as `readDocument` and for the same reason, one host further out.
+ * Several providers send no CORS headers: measured against
+ * `integrate.api.nvidia.com`, the preflight answers 200 carrying `vary: Origin`
+ * and no `access-control-allow-origin`, so the browser refuses to let the page
+ * read the reply and reports a bare "Failed to fetch" that names nothing. The
+ * extension fetches under its own permissions and is not subject to that.
+ *
+ * The worker will only relay to loopback or to a host in its transcribed
+ * provider list, so this cannot be used to read the web.
+ */
+export async function callModel(request: {
+  url: string
+  method: string
+  headers: Record<string, string>
+  body?: string
+}): Promise<{ ok: boolean; status: number; text: string } | { failed: { reason: string } }> {
+  /*
+   * Asked first, and cheaply, whether there is an extension at all.
+   *
+   * A relayed request needs a long budget — it waits on somebody else's model —
+   * but "is anything listening" needs 400ms, and conflating them cost 40 seconds
+   * on every call for anyone without the extension: the relay sat waiting for a
+   * bridge that was never going to answer, and only then fell back to a direct
+   * request. Measured at 40.5s to a message.
+   *
+   * The probe is the same one the install prompt uses, so this adds a round trip
+   * to a relay that was going to happen anyway and removes a 40-second stall
+   * from one that was not.
+   */
+  if ((await ask({})) === null) {
+    return {
+      failed: {
+        reason:
+          'The jojo browser extension did not answer, so the provider could not be reached. Providers that send no CORS headers can only be called through it; Settings has the installer.',
+      },
+    }
+  }
+
+  const reply = await ask({ model: request })
+
+  if (reply === null) {
+    return {
+      failed: {
+        reason:
+          'The jojo browser extension did not answer, so the provider could not be reached. Providers that send no CORS headers can only be called through it; Settings has the installer.',
+      },
+    }
+  }
+
+  // The same "too old to know the verb" trap `scanBoard` documents: an older
+  // bridge forwards an unknown shape as a peek and answers with a count.
+  if (reply.status === undefined && reply.error == null && reply.ok !== true) {
+    return {
+      failed: {
+        reason:
+          'The installed jojo extension is too old to reach a model provider. Settings has the current one; an unpacked extension never updates itself.',
+      },
+    }
+  }
+
+  if (reply.error != null && !reply.status) return { failed: { reason: reply.error } }
   return { ok: reply.ok === true, status: reply.status ?? 0, text: reply.text ?? '' }
 }
 

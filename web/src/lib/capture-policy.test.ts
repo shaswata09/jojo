@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import policySource from '../../extension/policy.js?raw'
+import { PROVIDERS } from '@jojo/service/core/provider'
 import {
   CAPTURE_HREF_ATTR,
   CAPTURE_LAZY_ATTRS,
@@ -88,5 +89,31 @@ describe('the extension carries the same capture policy as the package', () => {
     expect(policySource).toContain('CAPTURE_STRIP_TAGS')
     expect(CAPTURE_STRIP_TAGS.length).toBeGreaterThan(5)
     expect(() => arrayLiteral('CAPTURE_NOT_A_REAL_LIST')).toThrow()
+  })
+})
+
+
+describe("the extension's model-host list matches the provider table", () => {
+  /*
+   * The same bargain as every other list in `policy.js`: the extension cannot
+   * import from `@jojo/service`, so the hosts are transcribed — and the
+   * transcription is checked, so the rule still has one owner.
+   *
+   * It matters more than the capture lists because this one is a security
+   * boundary. The worker relays a page-composed request under its own
+   * `https://*` permission, and the list is what stops that being an open proxy.
+   * A host that drifts OUT silently breaks a provider; one that drifts IN
+   * silently widens what the extension can be asked to fetch.
+   */
+  it('names exactly the cloud providers jojo knows about', () => {
+    const transcribed = arrayLiteral('MODEL_HOSTS')
+    const fromTable = PROVIDERS.filter((p) => p.cloud).map((p) => new URL(p.endpoint).hostname)
+    expect([...transcribed].sort()).toEqual([...new Set(fromTable)].sort())
+  })
+
+  it('lists no local provider, which loopback allows instead', () => {
+    const transcribed = arrayLiteral('MODEL_HOSTS')
+    expect(transcribed).not.toContain('localhost')
+    expect(transcribed).not.toContain('127.0.0.1')
   })
 })
