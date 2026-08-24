@@ -10,6 +10,7 @@ import {
   readCrashes,
   setCrashEnabled,
 } from '@/lib/crash-log'
+import { syncExtensionCrashReporting } from '@/lib/capture-bridge'
 
 /**
  * Crash reports, and the switch that decides whether there are any.
@@ -66,6 +67,10 @@ export function CrashPanel() {
             onCheckedChange={(next) => {
               setCrashEnabled(next)
               setOn(next)
+              // The extension is the other half of the same answer. It cannot
+              // read this setting, so it is told — and told to throw away what
+              // it kept when the answer becomes no.
+              void syncExtensionCrashReporting(next, !next)
             }}
             aria-label="Keep crash reports"
           />
@@ -84,6 +89,7 @@ export function CrashPanel() {
               onClick={() => {
                 clearCrashes()
                 setReports([])
+                void syncExtensionCrashReporting(on, true)
               }}
             >
               <Trash2 className="size-3" strokeWidth={1.8} aria-hidden />

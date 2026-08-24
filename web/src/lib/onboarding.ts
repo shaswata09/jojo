@@ -53,6 +53,14 @@ const KEYS = {
   reader: 'jojo.onboarding.reader',
   /** Install the capture extension. Nothing to do with the model. */
   extension: 'jojo.onboarding.extension',
+  /*
+   * Its own key like every other stage, so answering it once is remembered even
+   * though the answer it stores lives elsewhere. Without this the question
+   * would be asked again on every launch of a browser where the answer was no —
+   * and a consent question that keeps asking until it gets a yes is not a
+   * consent question.
+   */
+  crash: 'jojo.onboarding.crash',
   tour: 'jojo.onboarding.tour',
 } as const
 

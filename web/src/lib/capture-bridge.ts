@@ -39,6 +39,26 @@ const REPLY = 'jojo:capture-reply'
 const READY = 'jojo:capture-ready'
 
 /**
+ * The bridge revision a relayed request needs. See `extension/bridge.js`.
+ *
+ * Separate from the extension's VERSION, which is pinned and read by people. An
+ * unpacked extension never auto-updates, so a browser can hold a bridge that
+ * predates a verb indefinitely — and an old bridge does not refuse an unknown
+ * shape, it picks the nearest verb it knows. That is how a stale copy turned a
+ * model request into a capture peek and produced "Request with GET/HEAD method
+ * cannot have body", attributed to the provider.
+ *
+ * Checked before relaying rather than after failing, so the answer is "reload
+ * the extension" instead of a transport error about a server never contacted.
+ */
+const NEEDS_PROTOCOL = 3
+
+/** Said the same way wherever a stale bridge is found, because the fix is one thing. */
+const STALE =
+  'The jojo extension loaded in this browser is older than this page and cannot carry the request. ' +
+  'Open chrome://extensions and press Reload on jojo — an unpacked extension never updates itself.'
+
+/**
  * How long a relay gets to answer a PROBE before it is treated as absent.
  *
  * Short on purpose: this runs on mount and decides whether to render an install
@@ -60,6 +80,14 @@ const TAKE_TIMEOUT_MS = 30000
 export type CaptureInbox = {
   /** Whether the relay answered at all. `null` until the first probe settles. */
   installed: boolean | null
+  /**
+   * True when the extension is present but older than this page needs.
+   *
+   * Its own state because it wants its own sentence: "install it" and "reload
+   * the one you have" are different instructions, and an unpacked extension in
+   * the second state can sit there for months.
+   */
+  stale: boolean
   /** How many captures are waiting, as of the last probe. */
   pending: number
   /**
@@ -99,6 +127,11 @@ export type CaptureInbox = {
 type Reply = {
   type: string
   id: number
+  /** The bridge revision that answered. Absent from any bridge before 3. */
+  protocol?: number
+  /** The worker's stored crash-reporting setting, and what it has kept. */
+  crashOn?: boolean
+  crashes?: unknown[]
   captures?: unknown[]
   count?: number
   rows?: unknown
@@ -119,6 +152,8 @@ type Ask = {
   read?: { url: string; method: string; headers: Record<string, string>; body?: string }
   /** A request to relay to a model provider. See `callModel`. */
   model?: { url: string; method: string; headers: Record<string, string>; body?: string }
+  /** The crash-reporting choice, and a request for what the worker has kept. */
+  crash?: { on?: boolean; clear?: boolean }
 }
 
 /**
@@ -185,6 +220,7 @@ function ask(request: Ask): Promise<Reply | null> {
         // read as a peek — the relay could not have worked at all.
         read: request.read,
         model: request.model,
+        crash: request.crash,
       },
       window.location.origin,
     )
@@ -228,13 +264,12 @@ export async function scanBoard(
    * there is no channel that would ever fix this for the user, so the only way
    * they find out is a sentence that says which thing to do.
    */
-  if (reply.rows === undefined && reply.error == null && reply.ok !== true) {
-    return {
-      ok: false,
-      reason:
-        'The installed jojo extension is too old to read a job board. Settings has the current one; an unpacked extension never updates itself.',
-    }
-  }
+  /*
+   * Scanning needs revision 2. Checked by number now rather than inferred from a
+   * missing `rows` field — the inference was right and could only ever say "too
+   * old", where the number can also say how to fix it.
+   */
+  if ((reply.protocol ?? 0) < 2) return { ok: false, reason: STALE }
   if (reply.ok !== true) {
     return { ok: false, reason: reply.error ?? 'That board could not be read.' }
   }
@@ -277,23 +312,10 @@ export async function readDocument(request: {
     }
   }
 
-  /*
-   * An extension too old to know the verb, told apart from one that tried.
-   *
-   * The same trap `scanBoard` documents: an older bridge picks its verb by
-   * looking for `scan`, `ack` and `take`, so it forwards a read as a PEEK and
-   * answers with a count and none of a read's fields. Worth naming, because an
-   * unpacked extension never auto-updates — no channel will ever fix it for the
-   * user, so the only way they find out is a sentence that says what to do.
-   */
-  if (reply.status === undefined && reply.error == null && reply.ok !== true) {
-    return {
-      failed: {
-        reason:
-          'The installed jojo extension is too old to reach the reader. Settings has the current one; an unpacked extension never updates itself.',
-      },
-    }
-  }
+  // Named by revision rather than guessed at from a missing field. A bridge
+  // that predates `read` answers a peek, which is indistinguishable from a
+  // refusal unless the revision is asked for.
+  if ((reply.protocol ?? 0) < NEEDS_PROTOCOL) return { failed: { reason: STALE } }
 
   // A transport failure carries a reason and no status; an HTTP answer carries
   // a status even when it is a bad one, and belongs to the protocol layer.
@@ -354,19 +376,34 @@ export async function callModel(request: {
     }
   }
 
-  // The same "too old to know the verb" trap `scanBoard` documents: an older
-  // bridge forwards an unknown shape as a peek and answers with a count.
-  if (reply.status === undefined && reply.error == null && reply.ok !== true) {
-    return {
-      failed: {
-        reason:
-          'The installed jojo extension is too old to reach a model provider. Settings has the current one; an unpacked extension never updates itself.',
-      },
-    }
-  }
+  if ((reply.protocol ?? 0) < NEEDS_PROTOCOL) return { failed: { reason: STALE } }
 
   if (reply.error != null && !reply.status) return { failed: { reason: reply.error } }
   return { ok: reply.ok === true, status: reply.status ?? 0, text: reply.text ?? '' }
+}
+
+/**
+ * Tells the extension what the user chose, and reads back what it has kept.
+ *
+ * ONE CHOICE, BOTH HALVES. There is one person and they answered once, so the
+ * page owns the answer and pushes it here. The worker cannot read the page's
+ * storage and the page cannot read a service worker's, so without this the
+ * extension would either default to reporting — which is the wrong default for
+ * something nobody agreed to — or need its own switch, which is one setting
+ * asked twice.
+ *
+ * Silently a no-op on a bridge that predates the verb: this is a preference,
+ * not a request, and refusing to relay a MODEL call over a stale bridge is
+ * worth a sentence where failing to sync a toggle is not. The extension's own
+ * default is off, so an unreachable worker records nothing.
+ */
+export async function syncExtensionCrashReporting(
+  on: boolean,
+  clear = false,
+): Promise<{ on: boolean; crashes: unknown[] } | null> {
+  const reply = await ask({ crash: { on, clear } })
+  if (reply === null || (reply.protocol ?? 0) < 4) return null
+  return { on: reply.crashOn === true, crashes: reply.crashes ?? [] }
 }
 
 export function useCaptureInbox(): CaptureInbox {
@@ -376,11 +413,16 @@ export function useCaptureInbox(): CaptureInbox {
   /** Guards against a probe that resolves after the component has gone. */
   const alive = useRef(true)
 
+  const [stale, setStale] = useState(false)
+
   const refresh = useCallback(() => {
     void ask({}).then((reply) => {
       if (!alive.current) return
       setInstalled(reply !== null)
       setPending(reply?.count ?? 0)
+      // Present but behind. Read from the probe so the warning is up before
+      // anything is attempted, rather than after a request has already failed.
+      setStale(reply !== null && (reply.protocol ?? 0) < NEEDS_PROTOCOL)
     })
   }, [])
 
@@ -452,5 +494,5 @@ export function useCaptureInbox(): CaptureInbox {
     await ask({ ack: ids })
   }, [])
 
-  return { installed, pending, version, collect, ack, refresh }
+  return { installed, stale, pending, version, collect, ack, refresh }
 }

@@ -184,6 +184,13 @@ async function relay(request, what) {
     }
   } catch (error) {
     const aborted = error && error.name === 'AbortError'
+    // The worker's own failures are the ones the app cannot see: a page has no
+    // access to a service worker's console, so without this a relay error is
+    // invisible unless somebody opens chrome://extensions and inspects it.
+    void recordExtensionCrash(
+      `${what}: ${String(error && error.message ? error.message : error)} (${request.url})`,
+      'relay',
+    )
     return {
       ok: false,
       status: 0,

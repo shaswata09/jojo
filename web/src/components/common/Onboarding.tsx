@@ -4,11 +4,13 @@ import { Compass } from 'lucide-react'
 import { useProfile } from '@jojo/service/react/use-profile'
 import {
   ConnectModelStep,
+  CrashStep,
   DocumentReaderStep,
   ExtensionStep,
 } from '@/components/common/SetupSteps'
 import { isConfigured } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { CRASH_CAPABILITY } from '@/lib/crash-log'
 import { WelcomeDetails } from '@/components/common/WelcomeDetails'
 import { Button } from '@/components/ui/button'
 import {
@@ -87,6 +89,7 @@ export function Onboarding() {
   const [modelOffered, setModelOffered] = useState(() => wasOffered('model'))
   const [readerOffered, setReaderOffered] = useState(() => wasOffered('reader'))
   const [extensionOffered, setExtensionOffered] = useState(() => wasOffered('extension'))
+  const [crashOffered, setCrashOffered] = useState(() => wasOffered('crash'))
   const [tourOffered, setTourOffered] = useState(() => wasOffered('tour'))
 
   const ADVANCE: Record<OnboardingStage, (v: boolean) => void> = {
@@ -94,6 +97,7 @@ export function Onboarding() {
     model: setModelOffered,
     reader: setReaderOffered,
     extension: setExtensionOffered,
+    crash: setCrashOffered,
     tour: setTourOffered,
   }
 
@@ -152,6 +156,22 @@ export function Onboarding() {
 
   if (!readerOffered && isConfigured(settings)) {
     return <DocumentReaderStep onSkip={() => finish('reader')} onDone={() => finish('reader')} />
+  }
+
+  /*
+   * LAST OF THE SETUP STEPS, and immediately before the tour rather than after
+   * it — the tour navigates away the moment it is accepted, so a question asked
+   * after it is a question asked of somebody who has already left.
+   *
+   * `CrashStep` renders nothing when the build has reporting compiled out, so
+   * this advances rather than showing an empty dialog.
+   */
+  if (!crashOffered) {
+    if (CRASH_CAPABILITY === 'off') {
+      finish('crash')
+      return null
+    }
+    return <CrashStep onSkip={() => finish('crash')} onDone={() => finish('crash')} />
   }
 
   if (!tourOffered) {

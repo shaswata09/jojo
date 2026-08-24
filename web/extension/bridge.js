@@ -38,6 +38,33 @@
 const REQUEST = 'jojo:capture-request'
 const REPLY = 'jojo:capture-reply'
 
+/*
+ * `protocol` is NOT the version, and it exists because the version cannot do
+ * this job.
+ *
+ * The manifest version is what a person reads and is deliberately pinned — it
+ * does not move when this bridge learns a new verb. So a page had no way to
+ * tell a bridge that speaks `read`/`model` from one that predates them, and an
+ * old bridge does not refuse an unknown shape: it picks the closest verb it
+ * knows, forwards a peek, and the page reports a transport error about a server
+ * that was never contacted.
+ *
+ * That is not hypothetical. An unpacked extension never auto-updates, so a
+ * bridge from before `read` existed went on coercing an absent body to `''`, and
+ * every relayed GET failed with "Request with GET/HEAD method cannot have body"
+ * — blamed on the model provider. Nobody seeing that could guess the answer was
+ * to press Reload on chrome://extensions.
+ *
+ * Bump this whenever the SHAPE crossing this boundary changes. The page carries
+ * the minimum it needs and names the fix when the number is short.
+ *
+ *   1 — capture only: peek, take, ack
+ *   2 — + scan (job boards)
+ *   3 — + read and model (relayed requests; a body only when there is one)
+ *   4 — + crash (one crash-reporting choice, governing both halves)
+ */
+const BRIDGE_PROTOCOL = 4
+
 window.addEventListener('message', (event) => {
   if (event.source !== window) return
   const data = event.data
@@ -53,17 +80,19 @@ window.addEventListener('message', (event) => {
   // `scan` is checked first because it is the only one with an argument, and a
   // scan request has no `ack` and no `take` to fall through to.
   const wanted =
-    data.model !== undefined && data.model !== null
-      ? 'jojo:call-model'
-      : data.read !== undefined && data.read !== null
-        ? 'jojo:read-document'
-        : typeof data.scan === 'string'
-          ? 'jojo:scan-board'
-          : data.ack !== undefined
-            ? 'jojo:ack-captures'
-            : data.take === true
-              ? 'jojo:take-captures'
-              : 'jojo:peek-captures'
+    data.crash !== undefined && data.crash !== null
+      ? 'jojo:crash-reporting'
+      : data.model !== undefined && data.model !== null
+        ? 'jojo:call-model'
+        : data.read !== undefined && data.read !== null
+          ? 'jojo:read-document'
+          : typeof data.scan === 'string'
+            ? 'jojo:scan-board'
+            : data.ack !== undefined
+              ? 'jojo:ack-captures'
+              : data.take === true
+                ? 'jojo:take-captures'
+                : 'jojo:peek-captures'
 
   // Only these three fields cross, and only ever from this shape. Forwarding
   // the request wholesale would let anything on jojo's own page hand the worker
@@ -97,8 +126,25 @@ window.addEventListener('message', (event) => {
         }
       : undefined
 
+  // Only the two fields the crash verb takes cross, on the same terms as the
+  // rest: the worker must never receive a shape the page composed freely.
+  const crash =
+    data.crash && typeof data.crash === 'object'
+      ? {
+          on: typeof data.crash.on === 'boolean' ? data.crash.on : undefined,
+          clear: data.crash.clear === true,
+        }
+      : undefined
+
   chrome.runtime.sendMessage(
-    { type: wanted, ids: data.ack, url: data.scan, request: read },
+    {
+      type: wanted,
+      ids: data.ack,
+      url: data.scan,
+      request: read,
+      on: crash ? crash.on : undefined,
+      clear: crash ? crash.clear : undefined,
+    },
     (response) => {
       // A disconnected service worker is a normal state, not a failure: MV3 stops
       // it when idle. Reading lastError is what stops it logging as unchecked.
@@ -107,6 +153,12 @@ window.addEventListener('message', (event) => {
         {
           type: REPLY,
           id: data.id,
+          // On every reply, not only on the announce: READY fires when the
+          // bridge loads, which for a tab that was already open is never.
+          protocol: BRIDGE_PROTOCOL,
+          // The crash verb answers with the stored setting and the kept list.
+          crashOn: failed ? false : response?.on === true,
+          crashes: failed ? [] : (response?.crashes ?? []),
           captures: failed ? [] : (response?.captures ?? []),
           count: failed ? 0 : (response?.count ?? response?.remaining ?? 0),
           // A scan answers with rows and a reason instead of captures and a
@@ -135,6 +187,10 @@ window.addEventListener('message', (event) => {
 // this is the only way a user finds out theirs is older than the app expects,
 // and it costs one field.
 window.postMessage(
-  { type: 'jojo:capture-ready', version: chrome.runtime.getManifest().version },
+  {
+    type: 'jojo:capture-ready',
+    version: chrome.runtime.getManifest().version,
+    protocol: BRIDGE_PROTOCOL,
+  },
   window.location.origin,
 )
