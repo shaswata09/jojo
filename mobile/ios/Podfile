@@ -25,7 +25,52 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+# ---------------------------------------------------------------------------
+# Firebase resolves through CocoaPods, NOT Swift Package Manager.
+#
+# react-native-firebase 26 defaults to pulling firebase-ios-sdk over SPM, and
+# that combination does not work here — `pod install` refuses it outright:
+#
+#   [!] [react-native-firebase] SPM + static linkage is not supported.
+#
+# firebase-ios-sdk's SPM products are automatic libraries rather than
+# `type: .dynamic`, so each of the three RNFB pods embeds its own copy of
+# Firebase and they collide at link time as duplicate symbols. This project
+# links statically — `use_frameworks!` above is opt-in through USE_FRAMEWORKS
+# and unset by default, which is the React Native 0.81 default and what the New
+# Architecture build expects.
+#
+# The alternative the error offers is `use_frameworks! :linkage => :dynamic`,
+# which would change how EVERY pod in this project links in order to
+# accommodate one of them. This line changes one.
+#
+# The Firebase console suggests adding the SDK through Xcode's own package
+# manager (File ▸ Add Packages). Do not: RNFB's pods would still bring their own
+# Firebase, and two copies is the same duplicate-symbol failure arrived at from
+# a direction `pod install` cannot warn about.
+$RNFirebaseDisableSPM = true
+
 target 'jojo' do
+  # Module maps for the three C pods Firebase's Swift code imports.
+  #
+  # `pod install` refuses the install without these:
+  #
+  #   The Swift pod `FirebaseCrashlytics` depends upon `GoogleDataTransport`,
+  #   `GoogleUtilities`, and `nanopb`, which do not define modules.
+  #
+  # A Swift target cannot `import` a static Objective-C library that ships no
+  # module map, and these three ship none. CocoaPods will generate one per pod
+  # on request, which is what this is.
+  #
+  # NAMED INDIVIDUALLY rather than `use_modular_headers!` at the top of the
+  # file. The global switch turns modular headers on for every pod in the
+  # project, React Native's twenty-odd included, and several of those rely on
+  # non-modular header imports that then stop compiling. Three lines here
+  # change three pods.
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
+
   # No argument: this runs `npx react-native config`. The Expo Podfile passed an
   # explicit `expo-modules-autolinking react-native-config` command here, which
   # impersonated that output. Verified against the real thing — all eleven native

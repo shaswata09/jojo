@@ -3,8 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 /**
  * What a new arrival has already been shown.
  *
- * The phone's half of `web/src/lib/onboarding.ts`, and the same three stages in
- * the same order: pick a data set, say who you are, be offered the tour. The
+ * The phone's half of `web/src/lib/onboarding.ts`, in the same order: pick a
+ * data set, say who you are, answer the reporting question, be offered the
+ * tour. The
  * reasoning for why they are three separate questions rather than one wizard is
  * on the web file and on `FirstRunChoice`; what differs here is only where the
  * flags live.
@@ -26,6 +27,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const KEYS = {
   details: 'jojo/onboarding/details',
+  /*
+   * Crash reports and usage analytics, asked immediately before the tour.
+   *
+   * Before it rather than after, because the tour navigates away as soon as it
+   * is accepted — a question asked afterwards is a question asked of the people
+   * who declined the tour and nobody else. Same placement as the web flow.
+   */
+  reporting: 'jojo/onboarding/reporting',
   tour: 'jojo/onboarding/tour',
 } as const
 
@@ -44,14 +53,15 @@ export type OnboardingStage = keyof typeof KEYS
  */
 export async function readOffered(): Promise<Record<OnboardingStage, boolean>> {
   try {
-    const rows = await AsyncStorage.multiGet([KEYS.details, KEYS.tour])
+    const rows = await AsyncStorage.multiGet([KEYS.details, KEYS.reporting, KEYS.tour])
     const map = new Map(rows)
     return {
       details: (map.get(KEYS.details) ?? null) !== null,
+      reporting: (map.get(KEYS.reporting) ?? null) !== null,
       tour: (map.get(KEYS.tour) ?? null) !== null,
     }
   } catch {
-    return { details: false, tour: false }
+    return { details: false, reporting: false, tour: false }
   }
 }
 

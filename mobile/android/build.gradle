@@ -38,6 +38,19 @@ buildscript {
      * apply it, and only does when a `google-services.json` is actually there.
      */
     classpath('com.google.gms:google-services:4.5.0')
+    /*
+     * Crashlytics' own plugin, which is a different thing from the one above.
+     *
+     * `google-services` reads the JSON and generates the config the SDKs read.
+     * This one uploads the mapping file, so a stack trace from a MINIFIED
+     * release build arrives in the console with real method names instead of
+     * `a.b.c(SourceFile:1)`. Without it a release crash report is technically
+     * present and practically unreadable, which is the failure mode where
+     * somebody concludes crash reporting does not work.
+     *
+     * Applied under the same condition as the other one — see `app/build.gradle`.
+     */
+    classpath('com.google.firebase:firebase-crashlytics-gradle:3.0.6')
   }
 }
 

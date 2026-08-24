@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { TODAY } from '@/lib/today'
+import { report } from '@/lib/analytics'
+import { SCREENS } from '@jojo/service/core/analytics'
 import { StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import {
@@ -184,6 +186,36 @@ function HeaderActions({ onSearch }: { onSearch: () => void }) {
   )
 }
 
+/**
+ * Which screen each route counts as, for usage analytics.
+ *
+ * A LOOKUP rather than the route name itself, and the difference matters: this
+ * navigator's routes carry parameters, and `ApplicationDetail`'s parameter is an
+ * application id — one of the user's records. Reporting the route name plus its
+ * params is the natural implementation and would put that id in an analytics
+ * console. Here a route resolves to a name from `SCREENS` or to nothing, and the
+ * params are never looked at.
+ *
+ * Routes deliberately absent: `Organisation` (its key is an employer's name),
+ * `Search`, and `PostingBrowser` (its parameter is a URL somebody is reading).
+ * Those simply are not reported.
+ */
+const SCREEN_FOR_ROUTE: Readonly<Record<string, (typeof SCREENS)[number]>> = {
+  Today: 'dashboard',
+  Applications: 'applications',
+  ApplicationDetail: 'applications',
+  Calendar: 'calendar',
+  Vault: 'vault',
+  JobScout: 'scout',
+  Statistics: 'statistics',
+  Assistant: 'assistant',
+  Graph: 'graph',
+  Profile: 'profile',
+  Settings: 'settings',
+  Guide: 'guide',
+  Transfer: 'transfer',
+}
+
 export function RootNavigator() {
   const { theme, colors: c } = useTheme()
   // A container ref rather than `useNavigation`: `headerRight` is rendered by
@@ -204,7 +236,30 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer theme={navTheme} ref={navigationRef} linking={linking}>
+    <NavigationContainer
+      theme={navTheme}
+      ref={navigationRef}
+      linking={linking}
+      /*
+       * Screen views, reported from the one place that sees every navigation.
+       *
+       * `getCurrentRoute` resolves through nested navigators, so a tab change
+       * inside `Tabs` reports the tab rather than the word "Tabs". Firebase's own
+       * automatic screen tracking is switched OFF in `lib/analytics.ts`, and this
+       * is what replaces it — because the automatic version reports the native
+       * class name and ignores whether anybody consented.
+       *
+       * `onReady` as well as `onStateChange`: the first screen is not a state
+       * CHANGE, and without it the most-viewed screen in the app would never
+       * appear in the numbers.
+       */
+      onReady={() => {
+        reportScreen(navigationRef.getCurrentRoute()?.name)
+      }}
+      onStateChange={() => {
+        reportScreen(navigationRef.getCurrentRoute()?.name)
+      }}
+    >
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: c.page },
@@ -275,3 +330,10 @@ export function RootNavigator() {
 const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: space[1] },
 })
+
+function reportScreen(route: string | undefined): void {
+  const screen = route === undefined ? undefined : SCREEN_FOR_ROUTE[route]
+  // An unmapped route is not reported at all. Falling back to the route name
+  // would defeat the point of the table above.
+  if (screen) void report('screen_viewed', { screen })
+}

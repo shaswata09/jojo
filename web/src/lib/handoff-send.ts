@@ -29,6 +29,8 @@ import type { Instant } from '@jojo/service/core/model'
 import { createSecrets } from '@jojo/service/crypto/noble-secrets'
 import { decodeAddress, formatAddress, type DialFailure } from '@jojo/service/core/dial'
 import type { SessionKeys } from '@jojo/service/core/pairing'
+import { report } from '@/lib/analytics'
+import { bucket } from '@jojo/service/core/analytics'
 import {
   HANDOFF_ADVICE,
   fetchPairingResponse,
@@ -167,6 +169,13 @@ export function useHandoffSend({
        */
       repo.setMeta(handedOver(repo.meta, new Date().toISOString() as Instant))
       setStage('done')
+      /*
+       * Only from the SENDER, and only once the bytes have landed. The receiving
+       * device reports nothing — one transfer is one event, and counting both
+       * ends would double every figure while making it look like transfers are
+       * twice as common as they are.
+       */
+      report('transfer_completed', { records: bucket(repo.getSnapshot().nodes().length) })
     },
     [build, complete, secrets, stop, repo],
   )

@@ -200,11 +200,19 @@ describe('the two dials', () => {
     expect(crashReportingOn('off', { enabled: false })).toBe(false)
   })
 
-  it('ships off, because the app’s own copy is only true while it is', () => {
-    // README: "nothing is uploaded anywhere". AssistantScreen: "Nothing is sent
-    // anywhere else." Both stay true for anyone who has not opted in.
-    expect(CRASH_DEFAULTS.enabled).toBe(false)
-    expect(crashReportingOn('allowed', CRASH_DEFAULTS)).toBe(false)
+  it('ships on where the build allows it, and the build is still the veto', () => {
+    // Changed deliberately — see the header of `crash-config.ts`. The default
+    // is on so that the crashes reported are a sample of everybody rather than
+    // of the people who go looking through Settings.
+    expect(CRASH_DEFAULTS.enabled).toBe(true)
+    expect(crashReportingOn('allowed', CRASH_DEFAULTS)).toBe(true)
+    /*
+     * And this is the line that keeps the default honest: a build that did not
+     * ask for the capability reports nothing, whatever the default says. That
+     * is what a packager who needs opt-in ships, and it is why flipping the
+     * default above cannot turn reporting on anywhere it was previously off.
+     */
+    expect(crashReportingOn('off', CRASH_DEFAULTS)).toBe(false)
   })
 
   it('reads only an explicit yes out of a build flag', () => {

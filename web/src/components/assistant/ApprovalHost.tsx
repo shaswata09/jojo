@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button'
 import { useAgentRuns, useWaitingRuns } from '@jojo/service/react/agent-runs-context'
 import { useThreads } from '@jojo/service/react/use-threads'
 import { proposalDetail } from '@jojo/service/core/proposal'
+import { CATALOG } from '@jojo/service/agent/catalog'
+import { report } from '@/lib/analytics'
 
 /**
  * Answers a destructive step from wherever the person happens to be.
@@ -43,6 +45,14 @@ export function ApprovalHost() {
         if (!step) return null
         const named = threads.find((t) => t.id === run.threadId)
         const detail = proposalDetail(JSON.stringify(step.args ?? {}))
+        /*
+         * Looked up rather than reported, because `step.name` is a tool id and
+         * the vocabulary has no parameter for one. What is worth knowing is
+         * whether people approve the dangerous ones as readily as the safe ones
+         * — that is a product question about the approval gate itself, and it
+         * needs one boolean rather than a tool name.
+         */
+        const destructive = CATALOG.find((t) => t.name === step.name)?.destructive ?? true
 
         return (
           <div
@@ -90,6 +100,7 @@ export function ApprovalHost() {
                 size="sm"
                 onClick={() => {
                   runs.decide(run.threadId, false)
+                  report('assistant_tool_decided', { decision: 'declined', destructive })
                 }}
               >
                 Don’t
@@ -99,6 +110,7 @@ export function ApprovalHost() {
                 size="sm"
                 onClick={() => {
                   runs.decide(run.threadId, true)
+                  report('assistant_tool_decided', { decision: 'approved', destructive })
                 }}
               >
                 Allow

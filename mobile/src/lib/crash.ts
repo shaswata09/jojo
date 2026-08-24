@@ -4,8 +4,9 @@ import {
   toCrashReport,
   type CrashReport,
 } from '@jojo/service/core/crash'
-import { crashCapability, crashReportingOn } from '@jojo/service/core/crash-config'
+import { CRASH_DEFAULTS, crashCapability, crashReportingOn } from '@jojo/service/core/crash-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { REPORTING } from '@/lib/reporting-config'
 
 /**
  * Crash reporting on the phone, which is the only platform where Crashlytics
@@ -58,11 +59,12 @@ const ENABLED_KEY = 'jojo/crash-reporting/v1'
 /**
  * What this build allows.
  *
- * `process.env.CRASH_REPORTING` is inlined by the RN bundler at build time, so
- * a build made without it cannot report whatever the settings say — the same
- * contract `VITE_CRASH_REPORTING` gives the web app.
+ * From `lib/reporting-config.ts`, NOT an environment variable — React Native
+ * has no mechanism that would inline one, which is exactly the bug that file
+ * exists to have fixed. A build with it false cannot report whatever the
+ * settings say, the same contract `VITE_CRASH_REPORTING` gives the web app.
  */
-export const CRASH_CAPABILITY = crashCapability(process.env['CRASH_REPORTING'])
+export const CRASH_CAPABILITY = crashCapability(REPORTING.crashes)
 
 /**
  * The native module, or null.
@@ -74,7 +76,11 @@ export const CRASH_CAPABILITY = crashCapability(process.env['CRASH_REPORTING'])
  * rediscover the same nothing.
  */
 let resolved = false
-let crashlytics: { recordError: (e: Error) => void; log: (m: string) => void } | null = null
+let crashlytics: {
+  recordError: (e: Error) => void
+  log: (m: string) => void
+  setCrashlyticsCollectionEnabled: (enabled: boolean) => Promise<void>
+} | null = null
 
 function nativeCrashlytics() {
   if (resolved) return crashlytics
@@ -90,10 +96,21 @@ function nativeCrashlytics() {
   return crashlytics
 }
 
-/** Whether the user has opted in. Read from storage; off unless it says on. */
+/** Whether crash reporting is on. Read from storage; the default is below. */
+/*
+ * UNSET MEANS ON, and the shape of this expression is the whole point.
+ *
+ * `=== 'on'` would make an unanswered question read as "no", which was the old
+ * default. Now only an explicit 'off' turns it off, so somebody who has never
+ * opened Settings gets the default from `CRASH_DEFAULTS` and somebody who said
+ * no keeps saying no across restarts. Reading it as `!== 'off'` rather than
+ * storing a default on first launch means there is no migration and no moment
+ * where a fresh install and a cleared storage disagree.
+ */
 export async function crashEnabled(): Promise<boolean> {
   try {
-    return (await AsyncStorage.getItem(ENABLED_KEY)) === 'on'
+    const stored = await AsyncStorage.getItem(ENABLED_KEY)
+    return stored === null ? CRASH_DEFAULTS.enabled : stored !== 'off'
   } catch {
     return false
   }
@@ -105,6 +122,41 @@ export async function setCrashEnabled(on: boolean): Promise<void> {
   } catch {
     // A phone that cannot write its settings is a bigger problem than this one.
   }
+  await applyCollection(on)
+}
+
+/**
+ * Tells the native SDK what the answer is.
+ *
+ * `AndroidManifest.xml` sets `firebase_crashlytics_collection_enabled=false`, so
+ * the SDK starts every launch collecting NOTHING — that is what stops it
+ * reporting a startup crash from a person who was never asked. The consequence
+ * is that this call is not optional: without it the switch in Settings would
+ * write a preference the SDK never hears about, and crash reporting would be
+ * permanently off however many times somebody turned it on.
+ *
+ * Called from `setUp` at launch as well as from the switch, because the native
+ * default is off on EVERY launch rather than only the first.
+ */
+async function applyCollection(on: boolean): Promise<void> {
+  try {
+    const native = nativeCrashlytics()
+    if (!native) return
+    // Never on when the BUILD says no, whatever is stored.
+    await native.setCrashlyticsCollectionEnabled(CRASH_CAPABILITY === 'allowed' && on)
+  } catch {
+    /* never let the reporter break a launch */
+  }
+}
+
+/**
+ * Called once at startup, before anything can crash that we would want to send.
+ *
+ * The twin of `analytics.setUp`, and it exists for the same reason: a stored
+ * "yes" that the SDK is never told about is a setting that does nothing.
+ */
+export async function setUp(): Promise<void> {
+  await applyCollection(await crashEnabled())
 }
 
 export async function readCrashes(): Promise<CrashReport[]> {

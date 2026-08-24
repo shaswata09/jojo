@@ -8,7 +8,9 @@ import { Field } from '@/components/common/Field'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { listModels } from '@/lib/llm'
-import { testReader } from '@/lib/markitdown'
+import { needsExtension, testReader } from '@/lib/markitdown'
+import { report } from '@/lib/analytics'
+import { reportableProvider } from '@jojo/service/core/analytics'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { publicUrl } from '@/lib/public-url'
@@ -214,6 +216,14 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
       return
     }
     setTested(true)
+    /*
+     * Which KIND of provider people actually get working — not the address,
+     * which is frequently a hostname on the user's own network and therefore a
+     * fact about them rather than about jojo. Reported on success only: a list
+     * of failed attempts would say more about someone's network than about
+     * whether this feature works.
+     */
+    report('model_connected', { provider: reportableProvider(settings.provider) })
     /*
      * The user's choice wins when the server confirms it exists.
      *
@@ -699,8 +709,13 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
     const result = await testReader(endpoint)
     setTesting(false)
     setConnected(result.ok)
-    if (result.ok) setReader(endpoint.trim())
-    else setFailure(result.reason)
+    if (result.ok) {
+      setReader(endpoint.trim())
+      // How the reader was reached, not where. `via` distinguishes the three
+      // routes that exist — the extension relay is the one whose usage is
+      // genuinely unknown, and it is the reason this event is worth having.
+      report('reader_connected', { via: needsExtension(endpoint) ? 'extension' : 'direct' })
+    } else setFailure(result.reason)
   }
 
   return (

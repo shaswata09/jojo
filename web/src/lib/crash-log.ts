@@ -4,7 +4,7 @@ import {
   toCrashReport,
   type CrashReport,
 } from '@jojo/service/core/crash'
-import { crashCapability, crashReportingOn } from '@jojo/service/core/crash-config'
+import { CRASH_DEFAULTS, crashCapability, crashReportingOn } from '@jojo/service/core/crash-config'
 import { readStored, writeStored } from '@/lib/storage'
 
 /**
@@ -43,8 +43,21 @@ const KEY = 'jojo/crashes/v1'
 const ENABLED_KEY = 'jojo/crash-reporting/v1'
 
 /** Whether the user has opted in. Off unless the stored value says otherwise. */
+/*
+ * UNSET MEANS ON, and the shape of this expression is the whole point.
+ *
+ * `=== 'on'` would make an unanswered question read as "no", which was the old
+ * default. Now only an explicit 'off' turns it off, so somebody who has never
+ * opened Settings gets the default from `CRASH_DEFAULTS` and somebody who said
+ * no keeps saying no across restarts. Reading it as `!== 'off'` rather than
+ * storing a default on first launch means there is no migration and no moment
+ * where a fresh install and a cleared storage disagree.
+ */
 export function crashEnabled(): boolean {
-  return readStored(ENABLED_KEY) === 'on'
+  const stored = readStored(ENABLED_KEY)
+  return stored === null || stored === undefined || stored === ''
+    ? CRASH_DEFAULTS.enabled
+    : stored !== 'off'
 }
 
 export function setCrashEnabled(on: boolean): void {

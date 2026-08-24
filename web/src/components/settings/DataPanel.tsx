@@ -10,6 +10,8 @@ import type { RestoreReport } from '@/components/settings/restore-report'
 import { BACKUP_ACCEPT, exportFilename } from '@/components/settings/export-name'
 import type { PendingData } from '@/components/settings/data-confirm-copy'
 import { Button } from '@/components/ui/button'
+import { report } from '@/lib/analytics'
+import { bucket } from '@jojo/service/core/analytics'
 import {
   Dialog,
   DialogContent,
@@ -82,6 +84,9 @@ export function DataPanel() {
       toast({ title: 'The restore failed', description: done.message, tone: 'danger' })
       return
     }
+    // After the outcome is known, so a failed restore is not counted as one.
+    // Bucketed, like the export half — see `core/analytics.ts`.
+    report('backup_used', { direction: 'restore', records: bucket(done.nodes) })
     /*
      * The reload waits for the reader.
      *

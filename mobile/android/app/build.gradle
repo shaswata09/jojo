@@ -21,6 +21,9 @@ apply plugin: "com.facebook.react"
  */
 if (file('google-services.json').exists()) {
     apply plugin: "com.google.gms.google-services"
+    // Symbolicated release crashes. See the classpath comment in the project's
+    // own build.gradle for why this is a second plugin rather than a setting.
+    apply plugin: "com.google.firebase.crashlytics"
 } else {
     logger.lifecycle("jojo: no google-services.json — building without Firebase.")
 }

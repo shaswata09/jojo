@@ -22,6 +22,7 @@ import { htmlFromText, textFromHtml } from '@/lib/rich-text'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
+import { report } from '@/lib/analytics'
 
 /** How long the copied confirmation stays up. */
 const COPIED_MS = 1600
@@ -269,6 +270,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       applicationIds: editing.applicationIds,
     })
     commitKeywords(record.id, chosen)
+    report('vault_item_added', { kind: 'snippet' })
 
     // The editor stays open on the record it just created rather than closing:
     // the first save is usually followed by another edit.

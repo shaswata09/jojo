@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>jojo</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <!--
+      No inline script and no inline handler anywhere in this file.
+
+      MV3's default extension CSP is `script-src 'self'`, which refuses both —
+      an `onclick=` attribute or a `<script>` block here does not run and does
+      not say why. Everything is wired by id in popup.js.
+    -->
+    <header class="head">
+      <img class="mark" src="icons/icon-48.png" alt="" width="24" height="24" />
+      <div class="head-text">
+        <h1>jojo</h1>
+        <p id="version">extension</p>
+      </div>
+    </header>
+
+    <!-- Capture ------------------------------------------------------------->
+    <section class="block">
+      <div class="row">
+        <h2>This page</h2>
+      </div>
+      <p id="tab-title" class="tab-title">Reading the current tab…</p>
+      <p id="tab-url" class="tab-url mono"></p>
+      <button id="capture" class="primary" type="button" disabled>Keep this page</button>
+      <p id="capture-note" class="note" role="status"></p>
+    </section>
+
+    <!-- Kept ---------------------------------------------------------------->
+    <section class="block">
+      <div class="row">
+        <h2>Kept pages</h2>
+        <button id="clear" class="link danger" type="button" hidden>Delete all</button>
+      </div>
+      <p id="kept-empty" class="note">
+        Nothing kept yet. Keeping a page stores it here until jojo files it.
+      </p>
+      <ul id="kept" class="kept"></ul>
+      <p class="note subtle">
+        Open jojo to file these into applications. They stay here until it does.
+      </p>
+    </section>
+
+    <!-- Document reader ------------------------------------------------------>
+    <section class="block">
+      <div class="row">
+        <h2>Document reader</h2>
+        <label class="switch">
+          <input id="reader-on" type="checkbox" />
+          <span class="track" aria-hidden="true"></span>
+          <span class="sr">Route document reading through this extension</span>
+        </label>
+      </div>
+      <p class="note">
+        MarkItDown on your own machine. jojo's hosted copy is served over https and
+        cannot reach it directly — this relays that one hop.
+      </p>
+      <div class="field">
+        <input id="reader-endpoint" class="mono" type="text" spellcheck="false" />
+        <button id="reader-test" class="secondary" type="button">Test</button>
+      </div>
+      <p id="reader-status" class="status" role="status"><span class="dot idle"></span>Not checked</p>
+    </section>
+
+    <!-- Model routing -------------------------------------------------------->
+    <section class="block">
+      <div class="row">
+        <h2>Model providers</h2>
+      </div>
+      <p class="note">
+        Switch off a provider and this extension refuses to carry anything to it.
+        A model on your own machine is never routed here and is unaffected.
+      </p>
+      <ul id="models" class="models"></ul>
+    </section>
+
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

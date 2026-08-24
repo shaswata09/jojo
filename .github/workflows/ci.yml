@@ -172,6 +172,33 @@ jobs:
       # editing `gradle.properties` leaves local development building all four,
       # so `run-android` still works on an Intel emulator. It also skips
       # COMPILING the two, which is most of the saving on a CI clock.
+      # Firebase's config file, which is gitignored because it is per-project
+      # rather than secret-secret: it identifies a Firebase project and anyone
+      # holding an APK can read it out of the package. It is kept out of the
+      # repository so a fork does not silently report ITS crashes into THIS
+      # project's console.
+      #
+      # Without the secret this writes nothing, `app/build.gradle` skips both
+      # Google plugins, and the APK builds with no Firebase in it — which is
+      # exactly what a fork should get. `lib/crash.ts` and `lib/analytics.ts`
+      # both treat a missing native module as a normal state, so that APK runs.
+      - name: Put the Firebase config in place
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -n "${GOOGLE_SERVICES_JSON:-}" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode \
+              > mobile/android/app/google-services.json
+            # Fail loudly on a mangled paste rather than building a Firebase-less
+            # APK that looks like a successful build. A truncated secret is the
+            # commonest way this goes wrong and the hardest to spot afterwards.
+            node -e "JSON.parse(require('fs').readFileSync('mobile/android/app/google-services.json','utf8'))"
+            echo "Firebase config in place — Crashlytics and Analytics are compiled in."
+          else
+            echo "No GOOGLE_SERVICES_JSON secret — building without Firebase."
+          fi
+
       - name: Build the release APK
         working-directory: mobile/android
         env:
@@ -382,6 +409,30 @@ jobs:
           echo "$PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/jojo.mobileprovision
           rm -f "$RUNNER_TEMP/cert.p12"
 
+      # The iOS half of the Android job's "Put the Firebase config in place".
+      # Gitignored for the same reason — a fork must not report into this
+      # project's console — so CI writes it from a secret or not at all.
+      #
+      # `AppDelegate.swift` calls `FirebaseApp.configure()` only when this file
+      # is actually in the bundle, so a run without the secret produces a working
+      # IPA with no Firebase rather than one that crashes on launch.
+      - name: Put the Firebase config in place
+        if: steps.apple.outputs.ready == 'true'
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          set -euo pipefail
+          if [ -n "${GOOGLE_SERVICE_INFO_PLIST:-}" ]; then
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode \
+              > mobile/ios/jojo/GoogleService-Info.plist
+            # Fail loudly on a mangled paste rather than shipping a
+            # Firebase-less build that looks like a successful one.
+            plutil -lint mobile/ios/jojo/GoogleService-Info.plist
+            echo "Firebase config in place — Crashlytics and Analytics are compiled in."
+          else
+            echo "No GOOGLE_SERVICE_INFO_PLIST secret — building without Firebase."
+          fi
+
       - name: Pods
         if: steps.apple.outputs.ready == 'true'
         working-directory: mobile/ios
@@ -549,9 +600,30 @@ jobs:
       # rewrites every asset URL with it, and `App.tsx` reads the same value
       # back for the router's basename. Derived from the repository name rather
       # than written out, so a fork or a rename needs no edit here.
+      #
+      # The Firebase values come from repository VARIABLES, not secrets, and the
+      # distinction is deliberate: Google publishes these as non-secret, every
+      # one of them ends up readable in the deployed bundle, and `apiKey`
+      # identifies a project rather than authorising anything. Putting them in
+      # `secrets` would imply a confidentiality this data does not have, and
+      # would mask them in the logs where seeing a truncated paste is the
+      # quickest way to diagnose analytics silently reporting nothing.
+      #
+      # A fork sets none of them, `ANALYTICS_CAPABILITY` reads `off`, and the
+      # deployed site contains no analytics code path that can run — which is
+      # what should happen, since a fork's traffic is not this project's.
       - name: Build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_CRASH_REPORTING: ${{ vars.CRASH_REPORTING }}
+          VITE_ANALYTICS: ${{ vars.ANALYTICS }}
+          VITE_FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+          VITE_ANALYTICS_ID: ${{ vars.ANALYTICS_ID }}
         run: npm -w web run build
 
       # `enablement: true` asks the action to turn Pages on if it is off. It is

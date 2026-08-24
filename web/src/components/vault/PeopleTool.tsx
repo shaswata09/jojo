@@ -13,6 +13,7 @@ import { useVault } from '@jojo/service/react/use-vault'
 import type { Person } from '@jojo/service/core/model'
 import { displayName } from '@jojo/service/data/seed'
 import { useToast } from '@/lib/toast-context'
+import { report } from '@/lib/analytics'
 
 /**
  * The people a job search is actually made of.
@@ -98,7 +99,12 @@ export function PeopleTool({ focus }: { focus?: string }) {
           }}
           onSave={(draft) => {
             if (editing) updatePerson(editing.id, draft)
-            else addPerson(draft)
+            else {
+              addPerson(draft)
+              // Only on a new one. An edit is not a filing, and counting it as
+              // one would make the vault look busier than it is.
+              report('vault_item_added', { kind: 'person' })
+            }
             setAdding(false)
             setEditing(null)
             toast({ title: 'Person saved', description: draft.name })

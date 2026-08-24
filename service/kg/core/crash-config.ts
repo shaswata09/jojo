@@ -7,12 +7,25 @@
  * privacy-sensitive audience needs. A USER sets whether the capability is used.
  * The build can only ever take away.
  *
- * OFF BY DEFAULT, and this is a promise rather than a preference. jojo's README
- * says "there is no account, no backend of ours, and nothing is uploaded
- * anywhere", and the Assistant screen says "Nothing is sent anywhere else".
- * Those sentences have to stay true for anybody who has not deliberately made
- * them false, so the default is off and the switch is opt-in. A default-on
- * reporter would make the app's own copy a lie on first launch.
+ * ON BY DEFAULT once a build allows it — changed deliberately, and the reasoning
+ * is worth keeping because it used to be the other way round.
+ *
+ * The old default was off, on the argument that jojo's own copy ("nothing is
+ * uploaded anywhere") had to stay true for anybody who had not deliberately made
+ * it false. That copy has been corrected instead: what the app now claims, on
+ * every screen that mentions this, is the narrower thing that stays true either
+ * way — no RECORD of yours leaves, which `core/crash.ts` and `core/analytics.ts`
+ * enforce rather than promise.
+ *
+ * The reason to flip it is that opt-in reporting from a product with no backend
+ * produces a sample of people who go looking through Settings, which is not the
+ * population whose crashes matter. The cost is that a build shipped to the EU
+ * needs its consent step SEEN before first use rather than merely available —
+ * which is why the setup flow asks on the last page and Settings keeps both
+ * switches, and why the build dial below still exists: a packager who needs
+ * opt-in ships with the capability off and turns nothing on.
+ *
+ * The BUILD dial is unchanged and still can only take away.
  *
  * NO NETWORK HERE, as everywhere in core. This decides; an app shell injects
  * something that can send. Firebase Crashlytics is a native SDK and lives in
@@ -29,8 +42,12 @@ export type CrashSettings = {
 }
 
 export const CRASH_DEFAULTS: CrashSettings = {
-  // See the header: the app's own copy is only true while this is false.
-  enabled: false,
+  /*
+   * True, and it only ever applies where a build already said `allowed` —
+   * `crashReportingOn` needs both, so this cannot switch anything on by itself.
+   * The stored answer, once somebody gives one, always wins over this.
+   */
+  enabled: true,
 }
 
 /**

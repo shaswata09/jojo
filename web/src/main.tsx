@@ -16,6 +16,7 @@ import { StoreProvider } from '@/lib/store'
 import { ThemeProvider } from '@/lib/theme'
 import { ToastProvider } from '@/lib/toast'
 import { crashEnabled, listenForCrashes } from '@/lib/crash-log'
+import { report } from '@/lib/analytics'
 
 const container = document.getElementById('root')
 if (!container) throw new Error('Root element #root not found in index.html')
@@ -31,6 +32,16 @@ if (!container) throw new Error('Root element #root not found in index.html')
  * costs two no-op listeners and writes nothing.
  */
 listenForCrashes(crashEnabled)
+
+/*
+ * The denominator for every other number.
+ *
+ * Sent once per page load, before the app mounts, and — like every event —
+ * only when the build allows analytics and the person using it has said yes.
+ * Without it a rise in "vault opened" cannot be told apart from a rise in
+ * people opening jojo at all.
+ */
+report('app_opened', {})
 
 createRoot(container).render(
   <StrictMode>

@@ -27,6 +27,8 @@ import { useCallback, useMemo } from 'react'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { buildBackup } from '@jojo/service/core/backup'
 import { useVaultBlobs } from '@/lib/vault-blobs'
+import { report } from '@/lib/analytics'
+import { bucket } from '@jojo/service/core/analytics'
 
 /** Where the last backup's instant lives. Per origin, like everything else. */
 const LAST_BACKUP_KEY = 'jojo.lastBackupAt'
@@ -190,9 +192,18 @@ export function useBackup(readable?: () => unknown): BackupState {
       // Recorded only after the click. Recording it first would mean a browser
       // that blocked the download left jojo believing the user was safe.
       writeLastBackup(at.toISOString())
+      /*
+       * Reported here for the same reason `writeLastBackup` is: this is the
+       * first line that runs only when a file actually reached the user. The
+       * The count is how much the person has in jojo, BUCKETED — which answers
+       * "is this feature used by people with real stores or only on empty
+       * demos", while an exact number would be a small fingerprint and answer
+       * nothing extra.
+       */
+      report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
       return true
     },
-    [build],
+    [build, graph],
   )
 
   return {

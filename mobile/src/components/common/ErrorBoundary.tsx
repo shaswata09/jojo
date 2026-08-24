@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import type { ErrorInfo, ReactNode } from 'react'
+import { recordCrash } from '@/lib/crash'
 
 type Props = { children: ReactNode }
 type State = { error: Error | null }
@@ -44,11 +45,21 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
-    // Local-first: there is no telemetry endpoint to report to, so this is a
-    // console line in development and nothing at all in release. It is still
-    // worth writing — `adb logcat` is how a bug report from a real device gets
-    // its stack.
+    // `adb logcat` is how a bug report from a real device gets its stack, so
+    // this line stays even though the recorder below covers release builds.
     console.error('Render error caught by the app boundary:', error, info.componentStack)
+    /*
+     * Not awaited, and it cannot throw — see `lib/crash.ts`. This is the ONE
+     * import in this file that reaches outside React Native's own primitives,
+     * and it is safe to make because `crash.ts` renders nothing: the reason
+     * everything else here is hand-rolled is that a provider failure must not
+     * take the error screen down, and a storage write cannot.
+     *
+     * `where` is the boundary rather than the component, because the component
+     * stack is a name from the user's own render tree and the report is a thing
+     * that may leave the device.
+     */
+    void recordCrash(error, 'render')
   }
 
   override render() {

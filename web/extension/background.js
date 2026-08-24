@@ -30,6 +30,54 @@ import {
 
 const QUEUE = 'jojo.captures'
 
+/**
+ * Which relays are switched on, and where the reader lives.
+ *
+ * Two relays leave this machine's control in different ways, so they are two
+ * switches rather than one: the READER hop stays on loopback and is the private
+ * option; the MODEL hop goes to a named provider on the internet and is billed.
+ * Somebody who wants the reader and not the cloud can have exactly that, and
+ * the popup is where they say so.
+ *
+ * Per PROVIDER rather than one flag for all of them, because the providers are
+ * not interchangeable to the person paying: a key for one is not a key for
+ * another, and "route to NVIDIA but not to OpenAI" is a real preference.
+ *
+ * Absent means ON. An extension that arrives switched off looks broken, and the
+ * failure — a relay that refuses — reads exactly like the bug this whole file
+ * exists to work around. Defaults live in `defaultRouting`.
+ */
+const ROUTING = 'jojo.routing'
+
+const READER_DEFAULT = 'http://127.0.0.1:3001/mcp'
+
+function defaultRouting() {
+  return {
+    reader: { enabled: true, endpoint: READER_DEFAULT },
+    models: Object.fromEntries(MODEL_HOSTS.map((host) => [host, true])),
+  }
+}
+
+async function routing() {
+  const stored = await chrome.storage.local.get(ROUTING)
+  const saved = stored[ROUTING]
+  const base = defaultRouting()
+  if (!saved || typeof saved !== 'object') return base
+  return {
+    reader: {
+      enabled: saved.reader?.enabled !== false,
+      endpoint:
+        typeof saved.reader?.endpoint === 'string' && saved.reader.endpoint.trim()
+          ? saved.reader.endpoint.trim()
+          : READER_DEFAULT,
+    },
+    // Rebuilt from MODEL_HOSTS rather than trusted wholesale, so a provider
+    // added to the allowlist appears switched on instead of missing, and one
+    // removed from it cannot linger in storage as a route that no longer exists.
+    models: Object.fromEntries(MODEL_HOSTS.map((host) => [host, saved.models?.[host] !== false])),
+  }
+}
+
 const POLICY = {
   CAPTURE_STRIP_TAGS,
   CAPTURE_STRIP_ATTRS,
@@ -329,11 +377,18 @@ function hostOf(url) {
   }
 }
 
-/** Toolbar click: capture whatever tab the user is looking at. */
-chrome.action.onClicked.addListener((tab) => {
-  if (typeof tab.id !== 'number') return
-  void capture(tab.id)
-})
+/*
+ * There is no `onClicked` listener any more, and that is not an omission.
+ *
+ * The action declares a `default_popup`, and Chrome does not fire
+ * `chrome.action.onClicked` for an action that has one — the popup opens
+ * instead. A listener left here would never run, which is the most expensive
+ * kind of dead code: it reads as the live capture path to anyone skimming, so
+ * the next person changes it and nothing happens.
+ *
+ * `capture()` below is now reached from the popup's Capture button, through the
+ * `jojo:capture-tab` verb. Same function, same badge, one more hop.
+ */
 
 async function capture(tabId) {
   await badge(tabId, '…')
@@ -567,7 +622,173 @@ async function badge(tabId, text, title) {
  * gets a fresh id on every load, and a delivery path keyed on the id would work
  * for a published build and for nobody developing against it.
  */
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  /* ------------------------- the popup's own verbs ------------------------ */
+
+  /*
+   * These five are answered only for the extension's OWN pages.
+   *
+   * The test is the sender's own URL: an extension page reports
+   * `chrome-extension://<this id>/…`, while a content script reports the WEB
+   * page it is running in, whatever that page is. So this admits the popup and
+   * anything else served out of this extension, and admits no page on the web —
+   * jojo's own included.
+   *
+   * `!sender.tab` would also identify the popup and was the first version, but
+   * it refuses an extension page opened in a tab, which is what an options page
+   * is and what makes any of this testable.
+   *
+   * The check matters because these verbs are not the careful, narrow ones the
+   * web app gets: `jojo:capture-tab` runs a script in a tab of its choosing and
+   * `jojo:set-routing` changes what the relays will carry.
+   */
+  const fromOwnPage =
+    sender?.id === chrome.runtime.id &&
+    typeof sender.url === 'string' &&
+    sender.url.startsWith(chrome.runtime.getURL(''))
+
+  if (message?.type === 'jojo:list-captures' && fromOwnPage) {
+    void (async () => {
+      const queued = await read()
+      // WITHOUT `html`. A capture is a whole inlined page — often megabytes —
+      // and the popup only ever draws a title, an address and a size. Sending
+      // the bodies would cost a structured clone of the entire queue every time
+      // the popup opens, to render nothing with them.
+      sendResponse({
+        captures: queued.map((c) => ({
+          id: c.id,
+          url: c.url,
+          title: c.title,
+          capturedAt: c.capturedAt,
+          bytes: byteLength(c.html ?? ''),
+          dropped: c.dropped ?? 0,
+        })),
+      })
+    })()
+    return true
+  }
+
+  if (message?.type === 'jojo:delete-capture' && fromOwnPage) {
+    void (async () => {
+      const id = typeof message.id === 'string' ? message.id : ''
+      const queued = await read()
+      const kept = queued.filter((c) => c.id !== id)
+      await chrome.storage.local.set({ [QUEUE]: kept })
+      await chrome.action.setBadgeText({ text: kept.length > 0 ? String(kept.length) : '' })
+      sendResponse({ ok: true, remaining: kept.length })
+    })()
+    return true
+  }
+
+  if (message?.type === 'jojo:clear-captures' && fromOwnPage) {
+    void (async () => {
+      await chrome.storage.local.set({ [QUEUE]: [] })
+      await chrome.action.setBadgeText({ text: '' })
+      sendResponse({ ok: true, remaining: 0 })
+    })()
+    return true
+  }
+
+  if (message?.type === 'jojo:capture-tab' && fromOwnPage) {
+    void (async () => {
+      const tabId = typeof message.tabId === 'number' ? message.tabId : null
+      if (tabId === null) {
+        sendResponse({ ok: false, reason: 'No page to capture.' })
+        return
+      }
+      await capture(tabId)
+      const queued = await read()
+      sendResponse({ ok: true, count: queued.length })
+    })()
+    return true
+  }
+
+  if (message?.type === 'jojo:get-routing' && fromOwnPage) {
+    void (async () => {
+      sendResponse({ routing: await routing(), hosts: MODEL_HOSTS })
+    })()
+    return true
+  }
+
+  if (message?.type === 'jojo:set-routing' && fromOwnPage) {
+    void (async () => {
+      const current = await routing()
+      const next = {
+        reader: {
+          enabled:
+            typeof message.reader?.enabled === 'boolean'
+              ? message.reader.enabled
+              : current.reader.enabled,
+          endpoint:
+            typeof message.reader?.endpoint === 'string' && message.reader.endpoint.trim()
+              ? message.reader.endpoint.trim()
+              : current.reader.endpoint,
+        },
+        // Only hosts the allowlist already names can be switched at all, so a
+        // crafted message cannot add a route by writing a key.
+        models: Object.fromEntries(
+          MODEL_HOSTS.map((host) => [
+            host,
+            typeof message.models?.[host] === 'boolean'
+              ? message.models[host]
+              : current.models[host],
+          ]),
+        ),
+      }
+      await chrome.storage.local.set({ [ROUTING]: next })
+      sendResponse({ routing: next })
+    })()
+    return true
+  }
+
+  /*
+   * Is the reader actually answering?
+   *
+   * An MCP `initialize` rather than a HEAD or a bare GET: markitdown-mcp
+   * answers a GET with 307 and a HEAD with a redirect too, so either would
+   * report "reachable" for a server that cannot speak the protocol. A handshake
+   * that returns a `result` is the only answer that means what the dot claims.
+   */
+  if (message?.type === 'jojo:probe-reader' && fromOwnPage) {
+    void (async () => {
+      const url =
+        typeof message.endpoint === 'string' && message.endpoint.trim()
+          ? message.endpoint.trim()
+          : (await routing()).reader.endpoint
+      if (!isLoopback(url)) {
+        sendResponse({ ok: false, reason: 'The reader address has to be on this machine.' })
+        return
+      }
+      const answer = await relay(
+        {
+          url,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json, text/event-stream',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+              protocolVersion: '2024-11-05',
+              capabilities: {},
+              clientInfo: { name: 'jojo-extension', version: chrome.runtime.getManifest().version },
+            },
+          }),
+        },
+        'reader',
+      )
+      sendResponse({
+        ok: answer.ok === true && /"result"/.test(answer.text ?? ''),
+        status: answer.status ?? 0,
+        reason: answer.reason ?? null,
+      })
+    })()
+    return true
+  }
+
   if (message?.type === 'jojo:take-captures') {
     void (async () => {
       // Handed over, NOT deleted.
@@ -645,6 +866,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     void (async () => {
       const request = message.request
       const url = typeof request?.url === 'string' ? request.url : ''
+      // The switch, before the address check. Somebody who turned the reader
+      // relay off wants to be told that, not told their address is wrong.
+      const routes = await routing()
+      if (!routes.reader.enabled) {
+        sendResponse({
+          ok: false,
+          status: 0,
+          text: '',
+          reason:
+            'Document reading is switched off in the jojo extension. ' +
+            'Open the extension and turn "Document reader" back on.',
+        })
+        return
+      }
       if (!isLoopback(url)) {
         sendResponse({
           ok: false,
@@ -674,6 +909,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     void (async () => {
       const request = message.request
       const url = typeof request?.url === 'string' ? request.url : ''
+      const routes = await routing()
+      const host = hostOf(url)
+      // A provider the person switched off is refused BY NAME, so the message
+      // says which one and where to change it. Loopback is not a provider and
+      // is not gated here — a local model never left the machine.
+      if (host && !isLoopback(url) && routes.models[host] === false) {
+        sendResponse({
+          ok: false,
+          status: 0,
+          text: '',
+          reason: `Routing to ${host} is switched off in the jojo extension.`,
+        })
+        return
+      }
       if (!isLoopback(url) && !isKnownModelHost(url)) {
         sendResponse({
           ok: false,

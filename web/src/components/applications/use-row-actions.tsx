@@ -4,6 +4,7 @@ import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/s
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useToast } from '@/lib/toast-context'
+import { report } from '@/lib/analytics'
 
 /**
  * Everything a row or card can do to its record, in one place.
@@ -51,6 +52,13 @@ export function useRowActions() {
       // daysAgo is the list's default sort.
       const before = { stage: a.stage, lastAction: a.lastAction, daysAgo: a.daysAgo }
       setStage(a.id, stage)
+      /*
+       * Moving BACK to draft is not an advance and the vocabulary has no value
+       * for it, so it is not reported. That is the vocabulary being right rather
+       * than incomplete: the question this event answers is how far people get,
+       * and a correction back to draft is not an answer to it.
+       */
+      if (stage !== 'draft') report('application_advanced', { to: stage })
       toast({
         title: `${displayName(a)} moved to ${STAGE_LABEL[stage]}`,
         description: `It was in ${STAGE_LABEL[before.stage]}. The dashboard pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,

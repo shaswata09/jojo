@@ -37,7 +37,7 @@ let shookHands: string | null = null
  * it is same-origin, which is what the dev server's proxy buys — so this asks
  * "is this a hop the page is allowed to make".
  */
-const needsExtension = (endpoint: string) => /^https?:\/\//i.test(endpoint.trim())
+export const needsExtension = (endpoint: string) => /^https?:\/\//i.test(endpoint.trim())
 
 /**
  * The reader's transport, chosen per address.

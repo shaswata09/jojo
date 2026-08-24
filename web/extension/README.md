@@ -15,6 +15,39 @@ It exists because a job posting is the one document in a search that belongs to
 somebody else. The listing comes down the week after the interview and takes the
 requirements with it — the ones you are about to be asked about.
 
+## The toolbar panel
+
+Clicking the jojo icon opens `popup.html`. It does four things, and each is
+something about the EXTENSION rather than about a page — which is why they are
+here and not in the app:
+
+- **Keep this page** — the capture that used to happen on the click itself.
+  Disabled with a reason on a page browsers do not let an extension read
+  (`chrome://`, the Web Store, a PDF), rather than offered and then failing.
+- **Kept pages** — what is queued, with its address, age and size. Delete one,
+  or all. Before this the queue was invisible and a page kept by accident could
+  only be removed by clearing the extension's storage.
+- **Document reader** — the loopback MarkItDown hop, with a switch, the address,
+  and a dot that means something: the check is a real MCP `initialize`, because
+  markitdown-mcp answers a GET with a 307 and that would make an unreachable
+  server look fine.
+- **Model providers** — one switch per provider on the allowlist. Switch one off
+  and the relay refuses to carry anything to it, naming the provider. A model on
+  your own machine is loopback, is never routed through here, and is unaffected.
+
+Both switches default to ON. An extension that arrives switched off looks
+broken, and its refusal reads exactly like the bug the relay exists to fix.
+
+`chrome.action.onClicked` no longer has a listener: Chrome does not fire it for
+an action that declares a `default_popup`. The capture path is the same
+function, reached from the popup through `jojo:capture-tab`.
+
+The popup's five verbs are answered only for pages served out of this extension
+— the check is the sender's own URL, in `background.js`. They are more powerful
+than the ones the web app gets (`jojo:capture-tab` scripts a tab of its
+choosing; `jojo:set-routing` changes what the relays carry) and no page on the
+web can reach them, jojo's own included.
+
 ## Where the bridge runs
 
 `content_scripts.matches` in `manifest.json` decides, on which origins,

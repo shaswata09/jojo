@@ -25,6 +25,7 @@ import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
+import { report } from '@/lib/analytics'
 
 /**
  * Read-later files, in buckets.
@@ -178,6 +179,10 @@ export function FilesTool({ focus }: { focus?: string }) {
         size: sizeLabel(file.size),
       })
       added.push(record.id)
+      // Per file, inside the loop: dropping six documents at once is six
+      // filings, and counting the gesture instead of the documents would make a
+      // bulk drop look like a single use of the feature.
+      report('vault_item_added', { kind: 'file' })
       // Not awaited, so the row appears immediately — a 5 MB write measured 15 ms
       // but a slow disk or a full quota can take much longer, and blocking the
       // drop on it would make filing feel broken.

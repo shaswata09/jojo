@@ -22,6 +22,7 @@ import { useVault } from '@jojo/service/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
+import { report } from '@/lib/analytics'
 
 /**
  * Saved URLs, filed by what they are.
@@ -110,6 +111,7 @@ export function LinksTool({ focus }: { focus?: string }) {
       applicationIds: draftApp,
     })
     closeAdd()
+    report('vault_item_added', { kind: 'link' })
 
     // A link saved while a keyword filter is up carries no keywords yet, so it
     // is filed correctly and rendered nowhere. Saying "saved" and showing an

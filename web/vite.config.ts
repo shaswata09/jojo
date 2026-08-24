@@ -3,6 +3,7 @@ import path from 'node:path'
 // accept the `test` block below. Imported from 'vite', `test` is an excess
 // property and the config fails to typecheck.
 import { defineConfig } from 'vitest/config'
+import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -25,6 +26,19 @@ const base = process.env.BASE_PATH ?? '/'
 export default defineConfig({
   base,
   plugins: [react(), tailwindcss()],
+  /*
+   * `.env` lives at the REPO ROOT, not in `web/`.
+   *
+   * Vite's default is its own root, which is this directory — and that would put
+   * the Firebase config and the two reporting flags inside the web workspace,
+   * where the phone build cannot see them and where a second copy would appear
+   * the first time somebody needed one of the same values elsewhere. One file at
+   * the top, gitignored, listed in `.env.example`.
+   *
+   * The VITE_ prefix rule still applies and is the safety mechanism: anything in
+   * that file without the prefix is not exposed to the bundle at all.
+   */
+  envDir: fileURLToPath(new URL('..', import.meta.url)),
   /**
    * A same-origin path to MarkItDown, because a browser cannot reach it directly.
    *

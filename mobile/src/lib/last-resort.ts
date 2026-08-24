@@ -10,12 +10,26 @@
  * WHAT THIS DOES NOT DO is recover. There is nothing to recover: by the time a
  * rejection is unhandled the work is already lost. What it buys is a line in
  * `adb logcat` naming what failed, which is the difference between a bug report
- * that can be acted on and "it stopped working". With no backend and no crash
- * reporter, that log line is the only diagnostic the product has.
+ * that can be acted on and "it stopped working".
+ *
+ * ## It also hands the failure to the crash recorder
+ *
+ * The console line above used to be the ONLY diagnostic, which is fine while
+ * somebody has the phone plugged into a laptop and useless for the release
+ * builds where these failures actually happen. `recordCrash` keeps the report on
+ * the device so the person who hit it can read it back, and sends it on to
+ * Crashlytics if — and only if — the build allows it and that person said yes.
+ * All of that is decided inside `lib/crash.ts`; nothing here needs to know.
+ *
+ * The call is deliberately not awaited and deliberately cannot throw: this runs
+ * inside the handler of an error that has already happened, and a reporter that
+ * fails here would replace the real failure with its own.
  *
  * `ErrorUtils` is React Native's own global hook and is not in any type
  * definition, hence the guarded lookup rather than an import.
  */
+
+import { recordCrash } from '@/lib/crash'
 
 type GlobalHandler = (error: unknown, isFatal?: boolean) => void
 type ErrorUtilsShape = {
@@ -37,6 +51,9 @@ export function installLastResortHandlers(): void {
     const previous = errorUtils.getGlobalHandler()
     errorUtils.setGlobalHandler((error, isFatal) => {
       console.error(`Uncaught error${isFatal === true ? ' (fatal)' : ''}:`, error)
+      void recordCrash(error, isFatal === true ? 'fatal' : 'uncaught')
+      // LAST, and this ordering matters: on a fatal, React Native's own handler
+      // is what ends the process. Anything after it may never run.
       previous(error, isFatal)
     })
   }
@@ -54,6 +71,7 @@ export function installLastResortHandlers(): void {
     allRejections: true,
     onUnhandled: (id: number, error: unknown) => {
       console.error(`Unhandled promise rejection (#${String(id)}):`, error)
+      void recordCrash(error, 'unhandled-rejection')
     },
     onHandled: (id: number) => {
       console.warn(`Promise rejection #${String(id)} was handled late, after being reported.`)

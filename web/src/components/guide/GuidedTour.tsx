@@ -6,6 +6,7 @@ import { TourFooter } from '@/components/guide/tour/TourFooter'
 import { clearProgress, readProgress, writeProgress } from '@/components/guide/tour/progress'
 import { STEPS, type Handoff } from '@/components/guide/tour/steps'
 import { Button } from '@/components/ui/button'
+import { report } from '@/lib/analytics'
 import {
   Dialog,
   DialogContent,
@@ -115,6 +116,11 @@ export function TourLauncher({ className }: { className?: string }) {
     clearProgress()
     setStep(0)
     setOpen(false)
+    // The other half of the pair below. `started` vs `finished` is the whole
+    // question the tour raises — people opening it and not reaching the end is
+    // the failure worth knowing about, and one count without the other cannot
+    // show it.
+    report('tour_used', { outcome: 'finished' })
   }, [])
 
   /**
@@ -174,7 +180,10 @@ export function TourLauncher({ className }: { className?: string }) {
       <Button
         variant="outline"
         className={cn('gap-1.5', className)}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true)
+          report('tour_used', { outcome: 'started' })
+        }}
         aria-haspopup="dialog"
       >
         <Compass aria-hidden />

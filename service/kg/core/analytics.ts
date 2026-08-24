@@ -149,6 +149,53 @@ export type EventParams = {
   tour_used: { outcome: (typeof OUTCOMES)[number] }
 }
 
+/**
+ * A provider id, narrowed to something reportable.
+ *
+ * `PROVIDER_IDS` and `PROVIDERS_REPORTED` currently hold the same names, and
+ * this function exists for the moment they stop doing so. Reporting
+ * `settings.provider` directly would work today and would silently start
+ * reporting whatever string a future provider — or a saved server from an older
+ * version, or a hand-edited backup — happens to carry.
+ *
+ * Anything unrecognised answers 'other', which is a real answer: it says a
+ * provider was connected without claiming to know which.
+ */
+export function reportableProvider(id: string): (typeof PROVIDERS_REPORTED)[number] {
+  return (PROVIDERS_REPORTED as readonly string[]).includes(id)
+    ? (id as (typeof PROVIDERS_REPORTED)[number])
+    : 'other'
+}
+
+/**
+ * The screen a path is on, or null when it is not one jojo reports.
+ *
+ * ## Why this is a function and not `pathname`
+ *
+ * The obvious implementation of screen tracking is to report the path, and in
+ * this app the path is frequently a record: `/applications/app:01a1-2b3c` is an
+ * identifier for one of the user's applications, and `/employers/rice-university`
+ * is the name of a place somebody is applying to, spelled out in the URL.
+ *
+ * So only the FIRST segment is looked at, and only when it is a name declared in
+ * `SCREENS`. Everything deeper is dropped without being examined, which is what
+ * makes an id unreportable rather than merely unreported: there is no branch
+ * here that can return one.
+ *
+ * A path jojo does not recognise answers null — including `/employers/…`, which
+ * is a real screen deliberately left out of `SCREENS` because its own segment is
+ * an employer's name.
+ */
+export function screenForPath(pathname: string): (typeof SCREENS)[number] | null {
+  if (typeof pathname !== 'string') return null
+  const first = pathname.split('?')[0]?.split('#')[0]?.split('/').filter(Boolean)[0]
+  // The root is the dashboard, which has no segment of its own.
+  if (first === undefined) return 'dashboard'
+  return (SCREENS as readonly string[]).includes(first)
+    ? (first as (typeof SCREENS)[number])
+    : null
+}
+
 /** One reportable thing, as the ports take it. */
 export type Reportable<E extends AnalyticsEvent = AnalyticsEvent> = {
   event: E

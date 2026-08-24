@@ -25,6 +25,7 @@ import type { NodeId } from '@jojo/service/core/model'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import { useAgent } from '@jojo/service/react/use-agent'
+import { report } from '@/lib/analytics'
 import { useApplications } from '@jojo/service/react/use-applications'
 import {
   toAgentEntries,
@@ -400,6 +401,19 @@ function AgentPanel() {
     const clean = prompt.trim()
     if (!clean || busy) return
     setPrompt('')
+    /*
+     * That a question was asked, and NOTHING about the question.
+     *
+     * `tools_available` and `has_model` are what actually explain the assistant's
+     * numbers: a person with no model connected gets a different product, and
+     * counting their questions alongside everybody else's makes both figures
+     * mean nothing. The text itself is never reported and there is no parameter
+     * it could travel in — see `core/analytics.ts`.
+     */
+    report('assistant_asked', {
+      tools_available: CATALOG.length,
+      has_model: settings.model.trim().length > 0,
+    })
     void send(clean)
   }
 

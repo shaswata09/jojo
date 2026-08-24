@@ -7,6 +7,8 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { StorageBanner } from '@/components/layout/StorageBanner'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
+import { report } from '@/lib/analytics'
+import { screenForPath } from '@jojo/service/core/analytics'
 
 export function AppShell() {
   const [navOpen, setNavOpen] = useState(false)
@@ -28,6 +30,23 @@ export function AppShell() {
   // Navigating away should dismiss the drawer, but focus belongs with the new
   // page rather than back on the hamburger.
   useEffect(() => setNavOpen(false), [pathname])
+
+  /*
+   * Screen views, from the one component every route renders inside.
+   *
+   * `screenForPath` rather than `pathname`, and that is the whole safety story:
+   * this app's URLs contain application ids and employer names, so reporting the
+   * path would put records into an analytics console while looking exactly like
+   * ordinary page tracking. See `core/analytics.ts`.
+   *
+   * `report` itself is a no-op unless the build allows analytics and the user
+   * said yes, so with the default build this effect costs one function call per
+   * navigation and sends nothing.
+   */
+  useEffect(() => {
+    const screen = screenForPath(pathname)
+    if (screen) report('screen_viewed', { screen })
+  }, [pathname])
 
   /**
    * Move focus to the new page on navigation.

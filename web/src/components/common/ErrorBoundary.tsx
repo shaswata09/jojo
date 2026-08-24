@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
+import { crashEnabled, recordCrash } from '@/lib/crash-log'
 
 type Props = {
   children: ReactNode
@@ -27,8 +28,19 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
-    // Local-first: no telemetry endpoint to report to, so the console is it.
-    //
+    /*
+     * Recorded, and this is not redundant with `listenForCrashes`.
+     *
+     * That listener is on `window.onerror` and `unhandledrejection`, and React
+     * catches a render error before it reaches either — so every crash this
+     * boundary exists for was missing from the list in Settings, which is the
+     * one place a person is told to look. The console line below is a developer
+     * with the tab open; this is the person who hit it three days ago.
+     *
+     * Web reports stay on this device: Google ships no browser Crashlytics.
+     */
+    recordCrash(error, 'render', crashEnabled())
+
     // Named for what this boundary DID, not "unhandled render error", which is
     // what it used to say. Every line it prints is by definition one it caught,
     // and the widget boundaries print it on their designed path — a machine with

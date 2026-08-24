@@ -4,6 +4,7 @@ import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
+import { REPORTING_ASKABLE, ReportingStep } from '@/components/common/ReportingStep'
 import { WelcomeDetails } from '@/components/common/WelcomeDetails'
 import { GuidedTour } from '@/screens/guide/GuidedTour'
 import { markOffered, readOffered } from '@/lib/onboarding'
@@ -72,6 +73,15 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
     // a whole profile — 'Shaswata Mitra' and a stranger's links — so `isBlank` is
     // false and this step would skip itself for the newest user there is.
     return <WelcomeDetails fresh={fresh} onDone={() => finish('details')} />
+  }
+
+  /*
+   * After the details and BEFORE the tour, matching the web flow. The tour
+   * navigates away the moment it is accepted, so a question asked after it is a
+   * question asked only of the people who said no to it.
+   */
+  if (!offered.reporting && REPORTING_ASKABLE) {
+    return <ReportingStep onDone={() => finish('reporting')} />
   }
 
   if (!offered.tour) {

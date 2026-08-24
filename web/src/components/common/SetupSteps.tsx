@@ -14,8 +14,8 @@ import { CaptureExtensionPanel } from '@/components/settings/CaptureExtensionPan
 import { DocumentReaderPanel, LocalModelPanel } from '@/components/settings/ConnectionsSection'
 import { isConfigured } from '@/lib/llm'
 import { syncExtensionCrashReporting, useCaptureInbox } from '@/lib/capture-bridge'
-import { CRASH_CAPABILITY, setCrashEnabled } from '@/lib/crash-log'
-import { ANALYTICS_CAPABILITY, setAnalyticsEnabled } from '@/lib/analytics'
+import { CRASH_CAPABILITY, crashEnabled, setCrashEnabled } from '@/lib/crash-log'
+import { ANALYTICS_CAPABILITY, analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics'
 import { SettingRow } from '@/components/common/Field'
 import { Switch } from '@/components/ui/switch'
 import { useModelSettings } from '@/lib/model-settings-context'
@@ -191,8 +191,18 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
    * One dialog, because two consecutive consent dialogs is a wall somebody
    * clicks through, and clicking through is not consent either.
    */
-  const [crashes, setCrashes] = useState(false)
-  const [usage, setUsage] = useState(false)
+  /*
+   * BOTH START ON, matching the shipped default rather than showing two off
+   * switches and then reporting anyway. A dialog whose controls disagree with
+   * what the app is doing is worse than no dialog: it tells somebody they have
+   * opted out when they have not.
+   *
+   * Read from the live setting rather than hardcoded `true`, so somebody who
+   * reaches this step a second time — a reset, a second browser — sees what is
+   * actually set.
+   */
+  const [crashes, setCrashes] = useState(crashEnabled)
+  const [usage, setUsage] = useState(analyticsEnabled)
 
   const choose = (crashesOn: boolean, usageOn: boolean) => {
     setCrashEnabled(crashesOn)
@@ -230,8 +240,9 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
             Crash reports and usage
           </DialogTitle>
           <DialogDescription>
-            Two separate things, both off unless you turn them on. Neither can carry your records:
-            not an application, a document, a note, a profile or a conversation.
+            Two separate things, both on — turn off either one here or later in Settings. Neither
+            can carry your records: not an application, a document, a note, a profile or a
+            conversation.
           </DialogDescription>
         </DialogHeader>
 
@@ -264,12 +275,13 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         </div>
 
         <p className="text-sm text-text-2">
-          In this browser and in the jojo extension, reports <span className="text-text-1">stay on
-          this device</span>: nothing is uploaded, and a backup file does not carry them. You read
+          In this browser and in the jojo extension, crash reports <span className="text-text-1">stay
+          on this device</span>: nothing is uploaded, and a backup file does not carry them. You read
           them yourself under Settings. On the jojo phone app the same report is also sent to
           Google&apos;s Firebase Crashlytics, which adds your device model, its operating system
           version, and a random id it uses to count how many people hit the same crash — no name, no
-          account, nothing tied to you.
+          account, nothing tied to you. Usage counts, the second switch below, go to Google
+          Analytics from every version including this one.
         </p>
 
         <div className="space-y-1">
@@ -319,7 +331,7 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
               choose(false, false)
             }}
           >
-            No to both
+            Turn both off
           </Button>
           <Button
             type="button"
@@ -332,7 +344,8 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         </DialogFooter>
 
         <p className="text-xs text-text-3">
-          Off unless you say otherwise. Nothing has been recorded up to this point.
+          You can change either of these at any time under Settings, and turning one off also
+          discards what it kept.
         </p>
       </DialogContent>
     </Dialog>

@@ -19,9 +19,13 @@ import {
   EVENTS,
   bucket,
   isReportable,
+  reportableProvider,
+  screenForPath,
+  PROVIDERS_REPORTED,
   type AnalyticsEvent,
   type EventParams,
 } from './analytics'
+import { PROVIDER_IDS } from './provider'
 
 describe('the vocabulary is closed', () => {
   it('accepts only the events declared here', () => {
@@ -113,6 +117,80 @@ describe('the parameter table itself carries no free text', () => {
     type NoBareString = string extends AnyParamValue ? 'A PARAM IS A BARE STRING' : 'ok'
     const check: NoBareString = 'ok'
     expect(check).toBe('ok')
+  })
+})
+
+describe('narrowing a provider', () => {
+  it('keeps the providers jojo ships', () => {
+    for (const id of PROVIDER_IDS) {
+      expect(reportableProvider(id), id).toBe(id)
+      expect(isReportable({ event: 'model_connected', params: { provider: reportableProvider(id) } })).toBe(
+        true,
+      )
+    }
+  })
+
+  it('answers `other` for anything else, rather than passing it through', () => {
+    // A saved server from a future version, a hand-edited backup, an endpoint
+    // somebody typed into a field this app did not expect.
+    for (const junk of ['', 'my-companys-gateway', 'http://10.0.0.4:8000', 'OLLAMA']) {
+      expect(reportableProvider(junk), junk).toBe('other')
+    }
+  })
+
+  it('every provider jojo ships is one the vocabulary names', () => {
+    // Not the same claim as the first test: this one fails when somebody adds a
+    // provider to `core/provider.ts` and forgets this file, which is the moment
+    // real usage would start being filed under 'other'.
+    for (const id of PROVIDER_IDS) {
+      expect(PROVIDERS_REPORTED as readonly string[], id).toContain(id)
+    }
+  })
+})
+
+describe('turning a path into a screen', () => {
+  it('reports the screen for the paths jojo has', () => {
+    expect(screenForPath('/')).toBe('dashboard')
+    expect(screenForPath('')).toBe('dashboard')
+    expect(screenForPath('/applications')).toBe('applications')
+    expect(screenForPath('/vault')).toBe('vault')
+    expect(screenForPath('/guide/tools')).toBe('guide')
+    expect(screenForPath('/settings?tab=model')).toBe('settings')
+    // No segment at all is the root, however it is spelled.
+    expect(screenForPath('//')).toBe('dashboard')
+  })
+
+  it('never lets a record out through the path', () => {
+    /*
+     * The whole reason this function exists. Each of these is a real URL this
+     * app produces, and each one has somebody's record in it — reporting
+     * `pathname` would put an application id and an employer's name into an
+     * analytics console, and it would look exactly like normal screen tracking.
+     */
+    expect(screenForPath('/applications/app:01a1-2b3c')).toBe('applications')
+    expect(screenForPath('/employers/rice-university')).toBe(null)
+    expect(screenForPath('/employers/some-startup?from=scout')).toBe(null)
+  })
+
+  it('answers null rather than inventing a screen', () => {
+    for (const junk of ['/nope', '/../etc', '/APPLICATIONS', '/applications2']) {
+      expect(screenForPath(junk), junk).toBe(null)
+    }
+  })
+
+  it('only ever answers something reportable', () => {
+    for (const path of ['/', '/vault', '/applications/x', '/employers/y', '/nope', '/graph']) {
+      const screen = screenForPath(path)
+      if (screen === null) continue
+      expect(isReportable({ event: 'screen_viewed', params: { screen } }), path).toBe(true)
+    }
+  })
+
+  it('does not throw on input that is not a path', () => {
+    for (const junk of [null, undefined, 42, {}]) {
+      expect(() => screenForPath(junk as unknown as string), String(junk)).not.toThrow()
+      expect(screenForPath(junk as unknown as string), String(junk)).toBe(null)
+    }
   })
 })
 

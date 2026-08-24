@@ -21,6 +21,8 @@ import { appPath, scoutPath, useScoutParams, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
+import { report } from '@/lib/analytics'
+import { kindOf } from '@jojo/service/react/use-pipelines'
 
 export function JobScout() {
   useTitle('Job scout')
@@ -243,7 +245,17 @@ export function JobScout() {
         onDelete={onDeletePipeline}
         onToggle={engine.setEnabled}
         onSetAuto={engine.setAuto}
-        onRunNow={engine.runNow}
+        onRunNow={(id) => {
+          engine.runNow(id)
+          /*
+           * The KIND, not the pipeline — its name is a saved search somebody
+           * wrote, which frequently contains a role and a city. `kindOf` is the
+           * same lookup the engine uses to pick the prompt, so the two agree by
+           * construction rather than by a second list kept in step by hand.
+           */
+          const pipeline = engine.pipelines.find((p) => p.id === id)
+          if (pipeline) report('scout_pipeline_started', { kind: kindOf(pipeline) })
+        }}
       />
 
       {/* Above the matches and the postings: it is the only panel on the page
@@ -251,8 +263,14 @@ export function JobScout() {
       <ProposalQueue
         proposals={engine.proposals}
         pipelines={engine.pipelines}
-        onApprove={engine.approve}
-        onDiscard={engine.discard}
+        onApprove={(id) => {
+          engine.approve(id)
+          report('scout_proposal_decided', { decision: 'approved' })
+        }}
+        onDiscard={(id) => {
+          engine.discard(id)
+          report('scout_proposal_decided', { decision: 'declined' })
+        }}
         onApproveAll={engine.approveAll}
         onSweep={engine.sweep}
       />

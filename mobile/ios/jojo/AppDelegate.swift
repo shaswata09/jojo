@@ -2,6 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
+import FirebaseCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,6 +15,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    /*
+     * Firebase, BEFORE React Native starts.
+     *
+     * Crashlytics installs its signal handlers inside `configure()`, so a crash
+     * during React Native's own startup — a bad bundle, a native module that
+     * throws while linking — is only caught if this ran first. That is also the
+     * class of crash least likely to be reproducible on a developer's machine,
+     * which makes it the class most worth catching.
+     *
+     * GUARDED, and the guard is not defensive programming. `FirebaseApp
+     * .configure()` raises an uncaught NSException when GoogleService-Info.plist
+     * is missing, which on iOS is an immediate crash on launch with no message a
+     * user could act on. That file is gitignored — deliberately, so a fork does
+     * not report ITS crashes into THIS project's console — so "missing" is the
+     * normal state for anybody who has cloned jojo and pressed Run. Without this
+     * check their first build would launch and die, and the reason would be a
+     * file they were never told about.
+     *
+     * The JavaScript side already treats an absent Firebase as normal: see
+     * `mobile/src/lib/crash.ts` and `mobile/src/lib/analytics.ts`, both of which
+     * resolve the native module lazily and no-op when it is not there.
+     */
+    if Bundle.main.url(forResource: "GoogleService-Info", withExtension: "plist") != nil {
+      FirebaseApp.configure()
+    } else {
+      NSLog("jojo: no GoogleService-Info.plist — running without Firebase.")
+    }
+
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()

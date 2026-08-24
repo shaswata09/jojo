@@ -5,6 +5,7 @@ import type { Application, RoleTag } from '@/data/seed'
 import { shortDate } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
+import { report } from '@/lib/analytics'
 // Imported, not redeclared. This file used to carry its own `deadlineUrgency`
 // with the 7/21-day thresholds spelled a second time, twenty lines from a
 // comment explaining that the seed's colours mix proximity with readiness. The
@@ -131,6 +132,10 @@ export function useApplicationWrites({
 
       setRecord(refKey('app', record.id), keywords)
       if (form.deadline) mintDeadline(record)
+      // 'manual' because this is the dialog: somebody typed it in. The other
+      // three sources in the vocabulary belong to the scout, the link importer
+      // and the browser capture, and each reports its own.
+      report('application_created', { source: 'manual' })
       return record
     })
 

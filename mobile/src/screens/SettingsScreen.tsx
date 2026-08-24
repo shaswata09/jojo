@@ -10,6 +10,7 @@ import type { ProviderId } from '@jojo/service/core/provider'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
+import { CrashPanel } from '@/components/common/CrashPanel'
 import { Pressable, StyleSheet, View } from 'react-native'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { useNavigation } from '@react-navigation/native'
@@ -663,14 +664,20 @@ export function SettingsScreen() {
             ]}
           >
             <Txt size="sm" tone="warning">
-              Your records are saved on this device and survive closing the app. Nothing leaves it:
-              there is no account, no sync and no network call. Export writes a copy to the
-              clipboard if you want one somewhere else.
+              Your records are saved on this device and survive closing the app. There is no
+              account and no sync, and no record ever leaves the phone — not through the model, not
+              through a crash report. Export writes a copy to the clipboard if you want one
+              somewhere else.
             </Txt>
           </View>
         </Panel>
 
         <KeywordManager />
+
+        {/* Below the data panel on purpose: it is the same subject — what jojo
+            keeps and what leaves the phone — and the panel above now has to be
+            read alongside it rather than instead of it. */}
+        <CrashPanel />
 
         <AuditLog />
       </Columns>

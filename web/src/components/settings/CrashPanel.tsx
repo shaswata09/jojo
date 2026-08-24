@@ -63,16 +63,16 @@ export function CrashPanel() {
         are stripped out before a report is written.
       </p>
       <p className="mb-3 text-sm text-text-2">
-        In this browser and in the extension they <span className="text-text-1">stay on this
-        device</span> — nothing is uploaded, and a backup file does not carry them. The phone app
+        In this browser and in the extension, crash reports <span className="text-text-1">stay on
+        this device</span> — nothing is uploaded, and a backup file does not carry them. The phone app
         also sends them to Firebase Crashlytics, which adds the device model, its OS version and a
-        random id used to count how many people hit the same crash. This is about crashes only:
-        jojo has no analytics and does not record what you do in it.
+        random id used to count how many people hit the same crash. Crash reports are about crashes
+        only — what you do in jojo is the separate question below, answered separately.
       </p>
 
       <SettingRow
         label="Keep crash reports"
-        description="Off by default. Nothing is recorded until you turn this on."
+        description="On, so a crash you hit is one we can see. Turn it off and nothing is recorded."
         control={
           <Switch
             checked={on}
