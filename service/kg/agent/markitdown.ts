@@ -175,8 +175,57 @@ const pathHint = (endpoint: string) =>
     ? ''
     : ' Check the address ends in /mcp — that is what markitdown-mcp serves on.'
 
+/** A path on the site serving jojo, rather than an address of its own. */
+const isSameOriginPath = (endpoint: string) => endpoint.trim().startsWith('/')
+
+/** The answer is a web page, not JSON-RPC — so a web server replied, not the reader. */
+const looksLikeHtml = (text: string) => /^\s*(<!doctype|<html|<head|<body)/i.test(text)
+
+/**
+ * What a 404/405 from a same-origin path actually means, said in those terms.
+ *
+ * THE FAILURE THIS REPLACES. The default reader address is a path on the site
+ * rather than a URL, because markitdown-mcp sends no CORS headers and answers
+ * the preflight with 405 — so the only way a browser can reach it is if
+ * whatever serves jojo forwards the path. The dev server does. A static host
+ * cannot: there is nothing there to forward with.
+ *
+ * On a deployed copy the POST therefore lands on the file server, which replies
+ * 405 with its own HTML error page, and the message read:
+ *
+ *     The reader answered 405 — <html> <head><title>405 Not Allowed</title>…
+ *
+ * Every word of that is true and none of it is usable. It names the status of a
+ * server the reader is not, quotes markup at somebody who asked about a PDF, and
+ * says nothing about the one thing that is wrong — that the address is a path
+ * and nothing is forwarding it. A raw status is the right answer from a real
+ * MCP server having a bad day; it is the wrong answer to "this is not the
+ * reader at all", and the two are distinguishable.
+ */
+export function readerPathNotForwarded(
+  status: number,
+  text: string,
+  endpoint: string,
+): string | null {
+  if (!isSameOriginPath(endpoint)) return null
+  // 405 is a file server refusing POST; 404 is one that has no such path. An
+  // HTML body settles it either way — the reader speaks JSON-RPC and nothing
+  // else.
+  if (status !== 404 && status !== 405 && !looksLikeHtml(text)) return null
+  return (
+    `Nothing is forwarding ${endpoint.trim()} to markitdown-mcp — that answer came from the ` +
+    'web server hosting jojo, not from the reader. ' +
+    'The address is a path rather than a URL because markitdown-mcp sends no CORS headers, so a ' +
+    'browser can only reach it through the site it is already on. A static host has nothing to ' +
+    'forward with, so on a hosted copy this cannot work: run jojo on the same machine as the ' +
+    'reader, or give a full https:// address of a reader that sends CORS headers.'
+  )
+}
+
 export function readHandshake(response: ModelResponse, endpoint = ''): ConvertResult {
   if (!response.ok) {
+    const notForwarded = readerPathNotForwarded(response.status, response.text, endpoint)
+    if (notForwarded) return { ok: false, reason: notForwarded }
     return {
       ok: false,
       reason: `The reader answered ${String(response.status)}${response.text.trim() ? ` — ${response.text.trim().slice(0, 160)}` : ''}.${pathHint(endpoint)}`,
@@ -200,8 +249,12 @@ export function readHandshake(response: ModelResponse, endpoint = ''): ConvertRe
  * convention from the server side. A password-protected PDF arrives that way,
  * and the reason is the useful half.
  */
-export function readConvertResponse(response: ModelResponse): ConvertResult {
+export function readConvertResponse(response: ModelResponse, endpoint = ''): ConvertResult {
   if (!response.ok) {
+    // Reachable with a saved address: the test can pass on a machine that was
+    // proxying and the same store then opens on a hosted copy that is not.
+    const notForwarded = readerPathNotForwarded(response.status, response.text, endpoint)
+    if (notForwarded) return { ok: false, reason: notForwarded }
     return {
       ok: false,
       reason: `The reader answered ${String(response.status)}${response.text.trim() ? ` — ${response.text.trim().slice(0, 200)}` : ''}.`,

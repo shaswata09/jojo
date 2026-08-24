@@ -100,11 +100,13 @@ export function ApplicationFrequencyBody() {
       data: keys.map((key) => ({ label: bucketLabel(key, period), counts: counts.get(key)! })),
       // Only the roles actually present get a series — an always-empty legend
       // entry is a filter that filters nothing.
-      series: vocabulary.filter((role) => dated.some((a) => a.roleTag === role)).map((role) => ({
-        key: role,
-        label: role,
-        color: SLOT[vocabulary.indexOf(role) % SLOT.length],
-      })),
+      series: vocabulary
+        .filter((role) => dated.some((a) => a.roleTag === role))
+        .map((role) => ({
+          key: role,
+          label: role,
+          color: SLOT[vocabulary.indexOf(role) % SLOT.length],
+        })),
       inWindow: hit,
       undated: all.length - dated.length,
       earlier: dated.length - hit,
@@ -328,14 +330,23 @@ export function ApplicationFrequencyBody() {
                 width={slot}
                 height={PLOT_H}
                 fill="transparent"
-                tabIndex={0}
-                role="button"
-                aria-label={`${d.label}: ${visible.map((s) => `${d.counts[s.key]} ${s.label}`).join(', ')}`}
-                className="cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
+                /*
+                 * Not focusable, and not a button.
+                 *
+                 * The <svg> around these carries role="img", which makes its
+                 * whole subtree presentational — so a screen reader announced
+                 * none of these while the keyboard still stopped on all twelve.
+                 * Twelve tab stops that say nothing is worse than none.
+                 *
+                 * The alternative already exists and is better: Statistics
+                 * renders an sr-only <table> of the same numbers. These stay as
+                 * pointer affordances for the hover tooltip, which is what they
+                 * were really for.
+                 */
+                aria-hidden
+                className="cursor-pointer"
                 onMouseEnter={() => setHover(i)}
                 onMouseLeave={() => setHover(null)}
-                onFocus={() => setHover(i)}
-                onBlur={() => setHover(null)}
                 onTouchStart={() => setHover(i)}
               />
             ))}

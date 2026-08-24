@@ -301,6 +301,22 @@ export type Stage = (typeof STAGE_VALUES)[number]
  * because its values are Tailwind class names, and a CSS class is the one thing
  * this layer must never hand a React Native renderer.
  */
+/**
+ * 'Rice — ML engineer', or just 'Rice'.
+ *
+ * Only the employer is required on an application, and a posting promoted from
+ * a URL that names no job ('jobs.rice.edu/postings/29411') arrives with the
+ * role blank. Interpolating it regardless left a dangling separator on the end
+ * of the name — punctuation promising a second half that is not there.
+ *
+ * IN CORE rather than in `data/seed.ts` where it started: `core/stage-policy.ts`
+ * builds record labels with it and core may not read `data/`. `data/seed.ts`
+ * re-exports it, so every existing importer is unaffected.
+ */
+export function displayName(a: Pick<Application, 'org' | 'role'>) {
+  return a.role.trim() ? `${a.org} — ${a.role}` : a.org
+}
+
 export const STAGE_LABEL: Record<Stage, string> = {
   draft: 'Draft',
   submitted: 'Submitted',
@@ -744,6 +760,24 @@ export type OrganisationProps = {
   slug: string
   name: string
 }
+
+/**
+ * What a form hands in to create a timeline item.
+ *
+ * Derived from `TimelineItem` rather than written out, so a field added to the
+ * record cannot be forgotten here. The four made optional are the ones the
+ * projection guarantees on the way out but a caller should not have to state on
+ * the way in — `applicationIds: []` to say "filed under nothing" is noise.
+ *
+ * IN CORE rather than beside `useTimeline`, because `core/stage-policy.ts`
+ * returns one and core may not import the React layer. `kg/react/use-timeline`
+ * re-exports it, so every existing importer is unaffected.
+ */
+export type TimelineDraft = Omit<
+  TimelineItem,
+  'id' | 'allDay' | 'remind' | 'urgency' | 'applicationIds'
+> &
+  Partial<Pick<TimelineItem, 'allDay' | 'remind' | 'urgency' | 'applicationIds'>>
 
 export type TimelineItemProps = {
   slug: string

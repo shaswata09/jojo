@@ -2,6 +2,13 @@ All paths below are relative to `/Users/shaswatamitra/Desktop/Files/Work/Project
 
 # jojo — build plan to a complete interactive prototype
 
+> **SUPERSEDED — kept as a record, not as guidance.**
+>
+> Its central decision — a session-only `useReducer` store — was replaced
+> wholesale by the knowledge graph. There is no `useReducer` anywhere in
+> `web/src` and no `src/lib/store-context.ts`. Several things it lists under "do
+> not build" have since been built.
+
 ## 0. Decisions that close the contradictions
 
 | # | Conflict in the findings | Decision | Why |

@@ -10,8 +10,8 @@
  * file and passed silently at the top.
  */
 
-import { OUTCOME_VALUES } from '@jojo/service/core/model'
-import type { Outcome } from '@/data/seed'
+import { OUTCOME_VALUES } from './model'
+import type { Outcome } from './model'
 
 export const FORMATS = [
   { value: 'phone', label: 'Phone' },

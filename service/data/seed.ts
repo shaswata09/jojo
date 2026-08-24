@@ -53,9 +53,11 @@ export type {
  * role blank. Interpolating it regardless left a dangling separator on the end
  * of the name — punctuation promising a second half that is not there.
  */
-export function displayName(a: Pick<Application, 'org' | 'role'>) {
-  return a.role.trim() ? `${a.org} — ${a.role}` : a.org
-}
+// Moved to `kg/core/model.ts` and re-exported here, where every caller already
+// looks for it. It moved because `kg/core/stage-policy.ts` needs it and core
+// may not import `data/` — see DATA_READERS in `check-layers.mjs`.
+export { displayName } from '../kg/core/model'
+import { displayName } from '../kg/core/model'
 
 /**
  * 'Rice — ML engineer and Baylor', or '5 applications'. Empty for none.

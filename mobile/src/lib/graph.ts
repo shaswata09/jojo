@@ -195,22 +195,19 @@ export function buildGraph(input: GraphInput): Graph {
 
   for (const f of input.files) {
     const id = add('file', f.id, f.name, `${f.bucket} · ${f.size}`)
-    for (const appId of f.applicationIds)
-      join(id, graphNodeId('application', appId), 'FILED_UNDER')
+    for (const appId of f.applicationIds) join(id, graphNodeId('application', appId), 'FILED_UNDER')
     tagFrom(id, f.id)
   }
 
   for (const l of input.links) {
     const id = add('link', l.id, l.title, l.category)
-    for (const appId of l.applicationIds)
-      join(id, graphNodeId('application', appId), 'FILED_UNDER')
+    for (const appId of l.applicationIds) join(id, graphNodeId('application', appId), 'FILED_UNDER')
     tagFrom(id, l.id)
   }
 
   for (const s of input.snippets) {
     const id = add('snippet', s.id, s.title, s.tag)
-    for (const appId of s.applicationIds)
-      join(id, graphNodeId('application', appId), 'FILED_UNDER')
+    for (const appId of s.applicationIds) join(id, graphNodeId('application', appId), 'FILED_UNDER')
     tagFrom(id, s.id)
   }
 

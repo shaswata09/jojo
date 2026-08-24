@@ -1,6 +1,32 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.INTERNET"/>
   <!--
+    Four permissions that arrive from library manifests and that jojo does not
+    use. They have to be removed by name: deleting a line from this file only
+    stops US declaring it, while the merger still folds in whatever
+    `react-native`, `ReactNativeBlobUtil` and friends declare in theirs — which
+    is how all four reached the release APK while nothing in `src/` referenced
+    them.
+
+    SYSTEM_ALERT_WINDOW is the draw-over-other-apps permission. Play reviews it
+    hard, because it is the one tapjacking malware wants, and the React Native
+    template ships it for the dev overlay. It stays in `src/debug/`, which is
+    where the dev overlay actually runs.
+
+    READ_ and WRITE_EXTERNAL_STORAGE are no-ops here twice over: `minSdk` is 31,
+    where WRITE has done nothing since API 30, and every path jojo writes is
+    under `DocumentDir` — app-private internal storage, which needs no
+    permission at all. Both are USER_SENSITIVE in the Play console and drag the
+    listing into the sensitive-permission declaration flow for nothing.
+
+    VIBRATE has no caller: there is no haptic anywhere in `mobile/src`.
+  -->
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" tools:node="remove"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
+  <uses-permission android:name="android.permission.VIBRATE" tools:node="remove"/>
+  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" tools:node="remove"/>
+  <!--
     Reading the pairing code off the other device's screen. Requested at the
     moment the transfer screen asks for it, never at launch — and the app works
     without it, minus that one feature.
@@ -13,10 +39,6 @@
   <uses-permission android:name="android.permission.CAMERA"/>
   <uses-feature android:name="android.hardware.camera" android:required="false"/>
   <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-  <uses-permission android:name="android.permission.VIBRATE"/>
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <!--
     react-native-blob-util's own manifest declares seven permissions, for a
     download manager this app never calls. The merger adds them silently and
@@ -57,7 +79,7 @@
       <data android:scheme="https"/>
     </intent>
   </queries>
-  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false">
+  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:networkSecurityConfig="@xml/network_security_config" android:theme="@style/AppTheme" android:supportsRtl="true">
     <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="unspecified">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

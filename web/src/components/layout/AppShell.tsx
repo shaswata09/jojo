@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Onboarding } from '@/components/common/Onboarding'
+import { RouteFailure } from '@/components/common/RouteFailure'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { StorageBanner } from '@/components/layout/StorageBanner'
@@ -182,7 +184,24 @@ export function AppShell() {
             tabIndex={-1}
             className="flex min-h-0 flex-1 flex-col gap-4 outline-none sm:gap-5"
           >
-            <Outlet />
+            {/*
+             * A boundary per ROUTE, inside the shell.
+             *
+             * The only other boundary is at the root, above the router — so any
+             * render throw in any view replaced the whole app, navigation and
+             * all, with a full-page error screen. Its "Try again" re-rendered
+             * the same route, so a deterministic failure (one malformed record,
+             * a NaN reaching a chart) trapped the user with nothing to press
+             * and no way out but editing the URL.
+             *
+             * `key={pathname}` is what makes recovery real: React discards a
+             * boundary's error state when its key changes, so navigating
+             * somewhere else clears it. The sidebar stays up, which means there
+             * is somewhere else to navigate TO.
+             */}
+            <ErrorBoundary key={pathname} fallback={<RouteFailure />}>
+              <Outlet />
+            </ErrorBoundary>
           </main>
         </div>
       </div>

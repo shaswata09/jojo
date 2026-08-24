@@ -15,8 +15,8 @@ import {
   stageBlocker,
   stageConsequences,
   stageNeedsDetails,
-} from '@/components/applications/dialog/stage-policy'
-import type { StageTransitionDraft } from '@/components/applications/dialog/stage-policy'
+} from '@jojo/service/core/stage-policy'
+import type { StageTransitionDraft } from '@jojo/service/core/stage-policy'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,

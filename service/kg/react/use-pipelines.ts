@@ -189,9 +189,25 @@ export function usePipelines({
       // it as a rationale. See `ProposalSink.rationale`.
       let latest = ''
 
+      /*
+       * The boards THIS pipeline may open, from the field the person typed.
+       *
+       * Same `parseSources` call the prompt uses a few lines down, deliberately:
+       * the model is told exactly the set it is allowed, so the allowlist and
+       * the instructions cannot drift apart. Passed even when empty, because an
+       * empty list is a real answer — a pipeline whose `source` is prose has no
+       * board to read, and `board.search` says so rather than opening whatever
+       * the model came up with instead. See `ToolHost.boards`.
+       */
+      const withBoards: ToolHost = { ...host, boards: parseSources(pipeline.source) }
+
       const agentHost = auto
-        ? host
-        : proposingHost(host, { pipelineId: pipeline.id as never, kind, rationale: () => latest })
+        ? withBoards
+        : proposingHost(withBoards, {
+            pipelineId: pipeline.id as never,
+            kind,
+            rationale: () => latest,
+          })
 
       const result = await runAgent({
         host: agentHost,

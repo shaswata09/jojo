@@ -17,7 +17,10 @@ const html = (body: string) => ({
 })
 
 const stubFetch = (value: unknown) => {
-  vi.stubGlobal('fetch', vi.fn(async () => value))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => value),
+  )
 }
 
 afterEach(() => {

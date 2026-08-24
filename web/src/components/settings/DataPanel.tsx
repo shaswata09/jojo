@@ -179,24 +179,31 @@ export function DataPanel() {
    */
   const onExport = () => {
     const name = exportFilename(new Date())
-    void backup.download(name).then((started) => {
-      if (!started) {
+    // `.catch` as well as `.then`. `download` now catches its own failures and
+    // resolves `false`, so this should never fire — which is exactly why it is
+    // here: without it, one unguarded throw inside that promise went nowhere at
+    // all, and the user pressed Export and watched nothing happen.
+    void backup
+      .download(name)
+      .catch(() => false)
+      .then((started) => {
+        if (!started) {
+          toast({
+            title: 'The backup could not be written',
+            description:
+              'Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.',
+            tone: 'danger',
+          })
+          return
+        }
         toast({
-          title: 'The backup could not be written',
-          description:
-            'Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.',
-          tone: 'danger',
+          title: 'Backup started',
+          // Named, not asserted. The click is the last thing this page can
+          // observe — the browser's decision after it fires no event — so what is
+          // said is what to look for rather than that it arrived.
+          description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
         })
-        return
-      }
-      toast({
-        title: 'Backup started',
-        // Named, not asserted. The click is the last thing this page can
-        // observe — the browser's decision after it fires no event — so what is
-        // said is what to look for rather than that it arrived.
-        description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
       })
-    })
   }
 
   /**

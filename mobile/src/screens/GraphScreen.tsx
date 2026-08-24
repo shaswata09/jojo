@@ -129,14 +129,8 @@ export function GraphScreen() {
    * they belong to.
    */
   const [asked, setAsked] = useState<{ answer: GraphQueryResult; question: string } | null>(null)
-  const askedLit = useMemo(
-    () => (asked ? highlightFor(graph, asked.answer) : null),
-    [graph, asked],
-  )
-  const askedRows = useMemo(
-    () => (asked ? rowsFor(graph, asked.answer) : []),
-    [graph, asked],
-  )
+  const askedLit = useMemo(() => (asked ? highlightFor(graph, asked.answer) : null), [graph, asked])
+  const askedRows = useMemo(() => (asked ? rowsFor(graph, asked.answer) : []), [graph, asked])
 
   const selected = selectedId ? (graph.byId.get(selectedId) ?? null) : null
   const query = QUERY_EXAMPLES.find((q) => q.id === queryId)
@@ -375,7 +369,10 @@ export function GraphScreen() {
                 <View
                   style={[
                     styles.swatch,
-                    { backgroundColor: typeColor(node.type, c), borderColor: typeColor(node.type, c) },
+                    {
+                      backgroundColor: typeColor(node.type, c),
+                      borderColor: typeColor(node.type, c),
+                    },
                   ]}
                 />
                 <Txt size="sm" style={s.fill} numberOfLines={1}>

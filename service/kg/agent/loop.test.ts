@@ -561,7 +561,7 @@ describe('the retriever, when the caller has not chosen', () => {
    * it narrow from what the person actually asked, without any caller that
    * ALREADY narrowed being second-guessed.
    */
-  const toolNames = (llm: ReturnType<typeof scripted>) =>
+  const _toolNames = (llm: ReturnType<typeof scripted>) =>
     (llm.seenTools ?? []).map((t) => (t as { function: { name: string } }).function.name)
 
   it('narrows a clear request, and still runs what it offered', async () => {

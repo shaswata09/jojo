@@ -33,16 +33,11 @@
  * type. Nothing here is web-specific; a phone asks the same questions.
  */
 
-import {
-  FORMAT_LABEL,
-  OUTCOME_ACTION,
-  OUTCOME_LABEL,
-} from '@/components/applications/dialog/transition-options'
-import type { Format } from '@/components/applications/dialog/transition-options'
-import { STAGE_LABEL, displayName } from '@/data/seed'
-import type { Application, Outcome, Stage } from '@/data/seed'
-import { addDays, shortDate } from '@/data/timeline'
-import type { TimelineDraft } from '@jojo/service/react/use-timeline'
+import { FORMAT_LABEL, OUTCOME_ACTION, OUTCOME_LABEL } from './transition-options'
+import type { Format } from './transition-options'
+import { addDays, shortDate } from './dates'
+import { STAGE_LABEL, displayName } from './model'
+import type { Application, Outcome, Stage, TimelineDraft } from './model'
 
 /** The four stages that carry a field block. Draft and Screen collect nothing. */
 const BLOCKED_STAGES: readonly Stage[] = ['submitted', 'interview', 'offer', 'closed']
@@ -112,12 +107,23 @@ export function stageBlocker(target: Stage, draft: StageTransitionDraft): string
   return undefined
 }
 
+/**
+ * A patch in which an explicit `undefined` means CLEAR, not "leave alone".
+ *
+ * `Partial<Application>` cannot say that under `exactOptionalPropertyTypes`,
+ * which this package compiles with and the web app did not — so `offer:
+ * undefined`, the whole mechanism by which leaving the offer stage drops the
+ * offer, was a type error waiting behind a looser setting. Spelling it out here
+ * makes the distinction the callers already rely on part of the signature.
+ */
+export type ApplicationPatch = { [K in keyof Application]?: Application[K] | undefined }
+
 export function buildStagePatch(
   application: Application,
   target: Stage,
   draft: StageTransitionDraft,
-): Partial<Application> {
-  const patch: Partial<Application> = { stage: target }
+): ApplicationPatch {
+  const patch: ApplicationPatch = { stage: target }
   if (leavingOffer(application, target) && !draft.keepOffer) patch.offer = undefined
 
   switch (target) {
@@ -143,7 +149,10 @@ export function buildStagePatch(
     case 'offer':
       patch.offer = {
         respondBy: draft.respondBy,
-        comp: draft.offerComp.trim() || undefined,
+        // Conditional spread rather than `comp: … || undefined`: `Offer.comp`
+        // is optional, and under `exactOptionalPropertyTypes` "absent" and
+        // "present and undefined" are different things.
+        ...(draft.offerComp.trim() ? { comp: draft.offerComp.trim() } : {}),
         note: draft.offerNote.trim(),
       }
       patch.lastAction = 'Offer received'
@@ -186,7 +195,11 @@ export function buildStageItem(
       kind: 'interview',
       applicationIds: [application.id],
       remind: true,
-      location: draft.format === 'onsite' ? application.location : undefined,
+      // Same reason as `comp` above: an onsite interview carries the record's
+      // location, and every other format carries no location at all.
+      ...(draft.format === 'onsite' && application.location
+        ? { location: application.location }
+        : {}),
     }
   }
   if (target === 'offer' && draft.mintRespondBy) {

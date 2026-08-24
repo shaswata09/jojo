@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Application, Stage } from '@/data/seed'
+import type { Application, Stage } from '../../data/seed'
 import {
   RESPOND_BY_FLOOR_DAYS,
   buildStageItem,

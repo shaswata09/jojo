@@ -88,9 +88,7 @@ export function FileViewer({
 
   if (!file) return null
 
-  const applications = file.applicationIds
-    .map((id) => byId.get(id))
-    .filter((a) => a !== undefined)
+  const applications = file.applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
 
   /**
    * Hands the file to the OS.

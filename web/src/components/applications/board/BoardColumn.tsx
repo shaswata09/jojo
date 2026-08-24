@@ -37,7 +37,11 @@ export function BoardColumn({
     >
       <div className="flex items-center gap-2 px-1 pb-2">
         <span className={cn('size-1.5 rounded-full', stage.dot)} aria-hidden />
-        <h3 className="min-w-0 truncate text-xs font-medium text-text-2">{stage.label}</h3>
+        {/* h2, not h3: the page h1 is "Applications" and there is no heading
+            between it and these, so h3 skipped a level and the board read as a
+            gap in the outline to anyone navigating by heading. Size is a class,
+            not the tag. */}
+        <h2 className="min-w-0 truncate text-xs font-medium text-text-2">{stage.label}</h2>
         <span className="tabular ml-auto rounded-sm border border-hairline bg-panel px-1.5 text-xs text-text-3">
           {items.length}
         </span>

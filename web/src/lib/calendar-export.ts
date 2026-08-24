@@ -43,13 +43,17 @@ export function useCalendarExport() {
       anchor.href = href
       anchor.download = ICS_FILENAME
       anchor.click()
+      // Revoked on the next task, not synchronously: a synchronous revoke races
+      // the download the click just started and the file arrives empty. The
+      // Blob URL still gets released — one task later — so it does not pin its
+      // bytes for the life of the tab.
+      const url = href
+      setTimeout(() => URL.revokeObjectURL(url), 0)
       return true
     } catch {
-      return false
-    } finally {
-      // In a `finally` so a throw between minting the URL and clicking still
-      // releases it — a Blob URL pins its bytes for the life of the tab.
+      // Only on the throwing path, where no download was started to race.
       if (href !== null) URL.revokeObjectURL(href)
+      return false
     }
   }, [timeline.all, applications.all])
 

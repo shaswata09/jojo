@@ -7,60 +7,29 @@ import { FormField, SettingRow, TextField, Toggle } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
-import { OUTCOME_VALUES } from '@jojo/service/core/model'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
 import { addDays, shortDate } from '@jojo/service/data/timeline'
+import { FORMATS, OUTCOMES, OUTCOME_LABEL } from '@jojo/service/core/transition-options'
+import type { Format } from '@jojo/service/core/transition-options'
+import {
+  buildStageItem,
+  buildStagePatch,
+  stageBlocker,
+  stageConsequences,
+} from '@jojo/service/core/stage-policy'
+import type { StageTransitionDraft } from '@jojo/service/core/stage-policy'
 import { stageNeedsDetails } from '@/lib/stage-transition'
 import type { TimelineDraft } from '@/lib/store-context'
 import { space } from '@/theme/tokens'
 
-const FORMATS = [
-  { value: 'phone', label: 'Phone' },
-  { value: 'video', label: 'Video' },
-  { value: 'onsite', label: 'Onsite' },
-] as const
-
-type Format = (typeof FORMATS)[number]['value']
-
-const FORMAT_LABEL = Object.fromEntries(FORMATS.map((f) => [f.value, f.label])) as Record<
-  Format,
-  string
->
-
-const OUTCOME_LABEL: Record<Outcome, string> = {
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-  accepted: 'Accepted',
-  declined: 'Declined',
-  ghosted: 'Ghosted — no reply',
-}
-
-/**
- * The picker's options, in the model's own order.
- *
- * Built from `OUTCOME_VALUES` rather than re-spelled here. The list used to be
- * written out under a plain `{ value: Outcome; label: string }[]` annotation,
- * which asserts every entry IS an `Outcome` and never that every `Outcome`
- * appears — a shorter list compiles, and a sixth outcome added to the model
- * would simply have gone missing from this picker. Its label map had the
- * matching hole: `Object.fromEntries(...) as Record<Outcome, string>` is a cast
- * over a list, so it claimed totality it could not have. `OUTCOME_ACTION`
- * below was already written the safe way, six lines further down.
+/*
+ * FORMATS, FORMAT_LABEL, OUTCOME_LABEL, OUTCOMES and OUTCOME_ACTION were all
+ * declared here, identically to the web dialog, down to the paragraph
+ * explaining why OUTCOMES is derived from OUTCOME_VALUES rather than written
+ * out. They live in `core/transition-options` now — the same move that took
+ * the stage policy itself — so a label the user reads is written once.
  */
-const OUTCOMES: { value: Outcome; label: string }[] = OUTCOME_VALUES.map((value) => ({
-  value,
-  label: OUTCOME_LABEL[value],
-}))
-
-/** What the activity feed should say afterwards. */
-const OUTCOME_ACTION: Record<Outcome, string> = {
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-  accepted: 'Offer accepted',
-  declined: 'Offer declined',
-  ghosted: 'Closed with no reply',
-}
 
 export type StageTransitionSheetProps = {
   open: boolean
@@ -179,123 +148,45 @@ function TransitionForm({
   const leavingOffer = Boolean(application.offer) && target !== 'offer'
   const [keepOffer, setKeepOffer] = useState(true)
 
+  /*
+   * Every field the form collects, in the shape the shared policy expects.
+   *
+   * This sheet used to carry its own `buildPatch`, `buildItem` and
+   * `consequencesOf` — about 100 lines that were a copy of the web dialog's,
+   * comments included, and untested on this side. They had already drifted:
+   * the web copy named the two-week floor `RESPOND_BY_FLOOR_DAYS` while this
+   * one hardcoded `addDays(TODAY, 14)`, so changing the policy would have
+   * fixed one platform and silently left the other alone.
+   *
+   * The policy is `@jojo/service/core/stage-policy` now, with the web dialog's
+   * 19 tests moved alongside it. What stays here is what genuinely belongs to a
+   * phone: the state, the sheet, and the fields.
+   */
+  const draft: StageTransitionDraft = {
+    date,
+    portalUrl,
+    reference,
+    format,
+    mintInterview,
+    respondBy,
+    offerComp,
+    offerNote,
+    mintRespondBy,
+    outcome,
+    keepOffer,
+  }
+
   /** Empty when the form can be applied; otherwise what is missing. */
-  const blocker =
-    (target === 'submitted' || target === 'interview') && !date
-      ? 'Add the date first'
-      : target === 'offer' && !respondBy
-        ? 'Add a respond-by date first'
-        : undefined
-
-  const buildPatch = (): Partial<Application> => {
-    const patch: Partial<Application> = { stage: target }
-    if (leavingOffer && !keepOffer) patch.offer = undefined
-
-    switch (target) {
-      case 'submitted':
-        patch.submittedOn = date
-        // Only filled where it was empty: the day you first applied is not the
-        // day you got round to recording the submission.
-        patch.appliedOn = application.appliedOn ?? date
-        if (portalUrl.trim()) patch.url = portalUrl.trim()
-        // Application has no field for a confirmation reference, so it rides in
-        // `lastAction` where the activity feed shows it. Worth knowing: the next
-        // stage change overwrites that line, so the reference is not permanent
-        // until the record grows a home for it.
-        patch.lastAction = reference.trim()
-          ? `Submitted · ref ${reference.trim()}`
-          : 'Application submitted'
-        break
-
-      case 'interview':
-        patch.lastAction = `${FORMAT_LABEL[format]} interview scheduled`
-        break
-
-      case 'offer':
-        patch.offer = { respondBy, comp: offerComp.trim() || undefined, note: offerNote.trim() }
-        patch.lastAction = 'Offer received'
-        break
-
-      case 'closed':
-        patch.outcome = outcome
-        patch.lastAction = OUTCOME_ACTION[outcome]
-        break
-
-      default:
-        patch.lastAction = `Moved to ${STAGE_LABEL[target]}`
-    }
-
-    return patch
-  }
-
-  /**
-   * Neither draft stamps an `urgency`.
-   *
-   * They used to: `'amber'` on the interview and `'red'` on the respond-by,
-   * matching what the web dialog wrote before it stopped. Both were invented at
-   * the keyboard — an interview six weeks out was born amber and a respond-by
-   * three weeks out was born red, with nothing that ever updated either as the
-   * date approached or passed. Nothing reads the field: `lib/marks.ts` derives
-   * every date colour in this app from the date itself, and the web app derives
-   * its own the same way. Writing a value nothing reads is how the next person
-   * infers a rule that does not exist and starts colouring something by it —
-   * and while this sheet still wrote it, the same user action stored a
-   * different record on each platform.
-   */
-  const buildItem = (): TimelineDraft | undefined => {
-    if (target === 'interview' && mintInterview) {
-      return {
-        title: `${displayName(application)} — ${format} interview`,
-        detail: application.roleTag,
-        date,
-        kind: 'interview',
-        applicationIds: [application.id],
-        remind: true,
-        location: format === 'onsite' ? application.location : undefined,
-      }
-    }
-    if (target === 'offer' && mintRespondBy) {
-      return {
-        title: `${displayName(application)} — respond to offer`,
-        detail: 'Decision deadline',
-        date: respondBy,
-        kind: 'deadline',
-        applicationIds: [application.id],
-        remind: true,
-      }
-    }
-    return undefined
-  }
-
-  /**
-   * What the toast should say happened, in the order it happened.
-   *
-   * Only ever states things the user cannot see for themselves once the sheet
-   * has gone: a date that landed on the calendar, details that were dropped.
-   * The stage change itself is the toast's title, so it is not repeated here.
-   */
-  const consequencesOf = (item: TimelineDraft | undefined): string[] => {
-    const lines: string[] = []
-    if (target === 'submitted' && reference.trim()) {
-      lines.push(`Reference ${reference.trim()} saved to the activity line.`)
-    }
-    if (target === 'offer') lines.push(`Respond by ${shortDate(respondBy)} recorded.`)
-    if (target === 'closed') lines.push(`Recorded as ${OUTCOME_LABEL[outcome].toLowerCase()}.`)
-    if (item) {
-      lines.push(
-        item.kind === 'deadline'
-          ? `Respond by ${shortDate(item.date)} added to your calendar.`
-          : `${FORMAT_LABEL[format]} interview on ${shortDate(item.date)} added to your calendar.`,
-      )
-    }
-    if (leavingOffer && !keepOffer) lines.push('Offer details cleared.')
-    return lines
-  }
+  const blocker = stageBlocker(target, draft)
 
   const apply = () => {
     if (blocker) return
-    const item = buildItem()
-    onApply(buildPatch(), item, consequencesOf(item))
+    const item = buildStageItem(application, target, draft)
+    onApply(
+      buildStagePatch(application, target, draft),
+      item,
+      stageConsequences(application, target, draft, item),
+    )
     onClose()
   }
 

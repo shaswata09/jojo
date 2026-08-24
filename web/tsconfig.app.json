@@ -2,7 +2,11 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "es2023",
-    "lib": ["ES2023", "DOM"],
+    // `DOM.Iterable` because this is a browser app and the DOM collections it
+    // touches are iterable at runtime — `[...db.objectStoreNames]` and friends.
+    // `DOM` alone declares only the indexed form, which fails to typecheck code
+    // that describes real behaviour correctly.
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,

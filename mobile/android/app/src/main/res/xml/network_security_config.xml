@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext HTTP is permitted. This file exists to say so deliberately, and to
+  record why, because the alternative is a product that silently inverts itself.
+
+  WHAT BREAKS WITHOUT IT. `targetSdk` is 36 and Android has denied cleartext by
+  default since API 28. Every local model endpoint jojo offers is plain HTTP and
+  always will be: Ollama serves `http://localhost:11434`, vLLM and LM Studio
+  serve `http://<the machine on your desk>:8000/v1`, and the document reader
+  serves `http://127.0.0.1:3001/mcp`. None ships a certificate. With cleartext
+  denied, the release APK can reach the four CLOUD providers and none of the
+  local ones — so the private option is the one that breaks, and it breaks ONLY
+  in release, because `src/debug/AndroidManifest.xml` sets
+  `usesCleartextTraffic="true"` and every developer therefore sees it working.
+
+  WHY NOT AN ALLOWLIST OF PRIVATE RANGES, which is the obvious answer and does
+  not work. `<domain>` matches a hostname suffix or an IP LITERAL, exactly.
+  There is no CIDR form, and `includeSubdomains` applies to DNS labels rather
+  than to address prefixes — so `192.168.0.0` matches the host called
+  "192.168.0.0" and nothing else. An allowlist here could cover `localhost` and
+  `127.0.0.1` and would still refuse the case the feature is for: a phone
+  talking to a desktop across the room at whatever address the router handed it.
+
+  WHAT CARRIES THE SECURITY INSTEAD. jojo never picks an `http://` endpoint on
+  a person's behalf. The scheme comes from a URL they typed into Settings, and
+  the transfer dialler separately refuses anything that is not a private address
+  (`service/kg/core/dial.ts`). This permits cleartext where the user asked for
+  cleartext; it does not permit a silent downgrade of anything jojo chose.
+-->
+<network-security-config>
+  <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

@@ -28,3 +28,7 @@ jojo-data.json
 
 # Built from web/extension by web/scripts/pack-extension.mjs
 web/public/jojo-extension.zip
+
+# Scratch CDP driver scripts, which have been committed by accident before.
+__rt*.mjs
+.vscode/

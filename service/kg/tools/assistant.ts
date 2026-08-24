@@ -103,9 +103,14 @@ export const threadSet = defineTool({
     'Records what has been said in a conversation so far. The app calls this as the conversation happens — you never need to, and calling it would rewrite the record of what you did.',
   effect: 'update',
   touches: ['thread'],
-  // Not journalled. A conversation saving itself as you talk is not an action
-  // anybody undoes, and a journal row per exchange would bury the writes the
-  // agent made INSIDE that exchange — which are the ones worth taking back.
+  // Kept off the undo stack. A conversation saving itself as you talk is not an
+  // action anybody undoes, and an undo entry per exchange would bury the writes
+  // the agent made INSIDE that exchange — which are the ones worth taking back.
+  //
+  // It IS journalled and audited: the write goes through `repo.commit` like
+  // every other, and `undoable: false` now resolves to `{ stack: false }` there.
+  // It used to resolve to `clearHistory()`, which meant asking one question
+  // emptied the undo and redo stacks outright — see the note in `runtime.ts`.
   undoable: false,
   input: s.object({ id: threadId, entries }),
   run(ctx, input): void {

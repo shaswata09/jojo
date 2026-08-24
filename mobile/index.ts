@@ -1,6 +1,7 @@
 import { AppRegistry } from 'react-native'
 
 import '@/lib/polyfills'
+import { installLastResortHandlers } from '@/lib/last-resort'
 import App from './App'
 
 /*
@@ -18,4 +19,11 @@ import App from './App'
  * storage layer, and the storage layer touches `structuredClone` and `URL` as
  * soon as it evaluates.
  */
+/*
+ * Before the app, so a failure while the store is booting is still reported.
+ * The error boundary in `App.tsx` covers render; this covers everything else —
+ * unawaited promises, timers, native callbacks.
+ */
+installLastResortHandlers()
+
 AppRegistry.registerComponent('main', () => App)

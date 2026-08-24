@@ -1,32 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { ArrowUp, Quote, TriangleAlert } from 'lucide-react'
-import { agentTurn, isConfigured } from '@/lib/llm'
-import { convertFile } from '@/lib/markitdown'
-import { useVaultBlobs } from '@/lib/vault-blobs'
-import { useModelSettings } from '@/lib/model-settings-context'
-import { useAgent } from '@jojo/service/react/use-agent'
-import type { RunSignal } from '@jojo/service/react/agent-runs'
-import type { AgentEntry } from '@jojo/service/react/use-agent'
-import {
-  toAgentEntries,
-  toThreadEntries,
-  toTranscript,
-  useThreads,
-} from '@jojo/service/react/use-threads'
-import { useApplications } from '@jojo/service/react/use-applications'
-import type { NodeId } from '@jojo/service/core/model'
+import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
+import { Mark } from '@/components/assistant/Mark'
 import { ThreadBar } from '@/components/assistant/ThreadBar'
 import { ThreadList } from '@/components/assistant/ThreadList'
-import { Mark } from '@/components/assistant/Mark'
-import type { AgentStep } from '@jojo/service/agent/loop'
-import { CATALOG } from '@jojo/service/agent/catalog'
-import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
-import { CopyFeedback } from '@/components/common/CopyFeedback'
-import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { Chip } from '@/components/common/Chip'
+import { CopyFeedback } from '@/components/common/CopyFeedback'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelScroll } from '@/components/common/Panel'
@@ -34,10 +12,32 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
-import { useVault } from '@jojo/service/react/use-vault'
 import { useTitle, vaultPath } from '@/lib/links'
-import { useFillViewport } from '@/lib/use-fill-viewport'
+import { agentTurn, isConfigured } from '@/lib/llm'
+import { convertFile } from '@/lib/markitdown'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
+import { useFillViewport } from '@/lib/use-fill-viewport'
+import { useVaultBlobs } from '@/lib/vault-blobs'
+import { CATALOG } from '@jojo/service/agent/catalog'
+import type { AgentStep } from '@jojo/service/agent/loop'
+import type { NodeId } from '@jojo/service/core/model'
+import type { RunSignal } from '@jojo/service/react/agent-runs'
+import type { AgentEntry } from '@jojo/service/react/use-agent'
+import { useAgent } from '@jojo/service/react/use-agent'
+import { useApplications } from '@jojo/service/react/use-applications'
+import {
+  toAgentEntries,
+  toThreadEntries,
+  toTranscript,
+  useThreads,
+} from '@jojo/service/react/use-threads'
+import { useVault } from '@jojo/service/react/use-vault'
+import type { LucideIcon } from 'lucide-react'
+import { ArrowUp, Quote, TriangleAlert } from 'lucide-react'
+import type { FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router'
 
 /**
  * A worked example, and the prompt that produces it.
@@ -176,7 +176,6 @@ type Message = {
   /** Set when a real request failed, so the row can say what went wrong. */
   failed?: boolean
 }
-
 
 /** How long the copied confirmation stays up, as in the Vault's snippets tool. */
 const COPIED_MS = 1600
@@ -318,7 +317,9 @@ function AgentPanel() {
       // into another the moment thread switching became possible.
       save(threadId, toThreadEntries(settled))
     },
-    [create, save],
+    // `create` is not read here. A dependency the body never touches rebuilds
+    // this callback whenever it changes, for nothing.
+    [save],
   )
 
   /**
@@ -333,7 +334,8 @@ function AgentPanel() {
       if (!file) {
         return {
           ok: false as const,
-          reason: 'No copy of that document is stored in this browser, so there is nothing to read.',
+          reason:
+            'No copy of that document is stored in this browser, so there is nothing to read.',
         }
       }
       return convertFile(reader, file)
@@ -482,7 +484,7 @@ function AgentPanel() {
         <Link to="/guide" className="underline underline-offset-2">
           {CATALOG.length} tools
         </Link>{' '}
-        on this device. Nothing is sent anywhere else, and every change it makes can be undone.
+        on this device. Nothing is sent anywhere else.
       </p>
 
       {/* `min-h-0 flex-1` is the seam AppShell documents: it hands a page the
@@ -515,194 +517,196 @@ function AgentPanel() {
           style={{ maxHeight: fill.maxHeight }}
           className="flex min-h-0 min-w-0 flex-col"
         >
-        <ThreadBar
-          threads={threads}
-          activeId={activeId}
-          applications={applications}
-          busy={busy}
-          onSetAuto={(id, auto) => {
-            setAuto(id, auto)
-          }}
-          onRename={(id, title) => {
-            rename(id, title)
-          }}
-          onFile={(id, applicationId) => {
-            const result = file(id, applicationId)
-            if (result.ok) {
+          <ThreadBar
+            threads={threads}
+            activeId={activeId}
+            applications={applications}
+            busy={busy}
+            onSetAuto={(id, auto) => {
+              setAuto(id, auto)
+            }}
+            onRename={(id, title) => {
+              rename(id, title)
+            }}
+            onFile={(id, applicationId) => {
+              const result = file(id, applicationId)
+              if (result.ok) {
+                toast({
+                  title: result.announcement.title,
+                  ...(result.announcement.description === undefined
+                    ? {}
+                    : { description: result.announcement.description }),
+                  ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
+                })
+              }
+            }}
+            onDelete={(id) => {
+              const result = remove(id)
+              if (!result.ok) return
+              // The open conversation just stopped existing; showing its turns
+              // under a title that is gone reads as a failed delete.
+              clear()
+              openThread(null)
               toast({
-                title: result.announcement.title,
-                ...(result.announcement.description === undefined
-                  ? {}
-                  : { description: result.announcement.description }),
+                title: 'Conversation deleted',
+                tone: 'danger',
                 ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
               })
-            }
-          }}
-          onDelete={(id) => {
-            const result = remove(id)
-            if (!result.ok) return
-            // The open conversation just stopped existing; showing its turns
-            // under a title that is gone reads as a failed delete.
-            clear()
-            openThread(null)
-            toast({
-              title: 'Conversation deleted',
-              tone: 'danger',
-              ...(result.undo ? { action: { label: 'Undo', onClick: result.undo } } : {}),
-            })
-          }}
-        />
+            }}
+          />
 
-        <div className="my-3 border-t border-hairline" />
+          <div className="my-3 border-t border-hairline" />
 
-        {/* The transcript owns the leftover height and scrolls inside it, so the
+          {/* The transcript owns the leftover height and scrolls inside it, so the
             composer stays put instead of being pushed down the page by a long
             conversation. */}
-        <PanelScroll axis="y" ref={transcriptRef} className="-mb-0 pb-0">
-        {entries.length === 0 ? (
-          <EmptyState
-            icon={RobotIcon as unknown as LucideIcon}
-            title="Nothing asked yet"
-            description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
-          />
-        ) : (
-          <ul aria-live="polite" className="space-y-3">
-            {entries.map((entry, index) => {
-              if (entry.kind === 'you') {
-                return (
-                  <li key={entry.id} className="flex justify-end">
-                    <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere text-text-1">
-                      <Mark text={entry.text} query={search} />
-                    </p>
-                  </li>
-                )
-              }
-              if (entry.kind === 'step') {
-                return (
-                  <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
-                )
-              }
-              if (entry.kind === 'note') {
-                // Narration while it is still working. Quieter than an answer on
-                // purpose: it is not the reply, and styling it like one makes a
-                // run look finished when it is not.
-                return (
-                  <li key={entry.id} className="px-1 text-sm wrap-anywhere text-text-3 italic">
-                    <Mark text={entry.text} query={search} />
-                  </li>
-                )
-              }
-              if (entry.kind === 'error') {
-                return (
-                  <li
-                    key={entry.id}
-                    className="rounded-lg border border-danger-border bg-danger-soft px-3 py-2 text-sm wrap-anywhere text-danger"
-                  >
-                    {entry.text}
-                  </li>
-                )
-              }
-              return (
-                <li key={entry.id} className="rounded-lg border border-hairline p-3">
-                  <div className="mb-2 flex items-center gap-2">
-                    <RobotIcon className="size-4 shrink-0" aria-hidden />
-                  </div>
-                  <p className="text-sm whitespace-pre-line wrap-anywhere text-text-1">
-                    <Mark text={entry.text} query={search} />
-                  </p>
-                  <div className="mt-2.5 flex flex-wrap gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => copy(entry.id, entry.text)}>
-                      <CopyFeedback copied={copiedId === entry.id} failed={copyFailed} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        saveAnswer(entry.text, askedBefore(index))
-                      }}
-                    >
-                      <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />
-                      Save to snippets
-                    </Button>
-                  </div>
-                </li>
-              )
-            })}
-            {/* Only while nothing else is moving. A spinner under a step that is
+          <PanelScroll axis="y" ref={transcriptRef} className="-mb-0 pb-0">
+            {entries.length === 0 ? (
+              <EmptyState
+                icon={RobotIcon as unknown as LucideIcon}
+                title="Nothing asked yet"
+                description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
+              />
+            ) : (
+              <ul aria-live="polite" className="space-y-3">
+                {entries.map((entry, index) => {
+                  if (entry.kind === 'you') {
+                    return (
+                      <li key={entry.id} className="flex justify-end">
+                        <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere text-text-1">
+                          <Mark text={entry.text} query={search} />
+                        </p>
+                      </li>
+                    )
+                  }
+                  if (entry.kind === 'step') {
+                    return <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
+                  }
+                  if (entry.kind === 'note') {
+                    // Narration while it is still working. Quieter than an answer on
+                    // purpose: it is not the reply, and styling it like one makes a
+                    // run look finished when it is not.
+                    return (
+                      <li key={entry.id} className="px-1 text-sm wrap-anywhere text-text-3 italic">
+                        <Mark text={entry.text} query={search} />
+                      </li>
+                    )
+                  }
+                  if (entry.kind === 'error') {
+                    return (
+                      <li
+                        key={entry.id}
+                        className="rounded-lg border border-danger-border bg-danger-soft px-3 py-2 text-sm wrap-anywhere text-danger"
+                      >
+                        {entry.text}
+                      </li>
+                    )
+                  }
+                  return (
+                    <li key={entry.id} className="rounded-lg border border-hairline p-3">
+                      <div className="mb-2 flex items-center gap-2">
+                        <RobotIcon className="size-4 shrink-0" aria-hidden />
+                      </div>
+                      <p className="text-sm wrap-anywhere whitespace-pre-line text-text-1">
+                        <Mark text={entry.text} query={search} />
+                      </p>
+                      <div className="mt-2.5 flex flex-wrap gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copy(entry.id, entry.text)}
+                        >
+                          <CopyFeedback copied={copiedId === entry.id} failed={copyFailed} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            saveAnswer(entry.text, askedBefore(index))
+                          }}
+                        >
+                          <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />
+                          Save to snippets
+                        </Button>
+                      </div>
+                    </li>
+                  )
+                })}
+                {/* Only while nothing else is moving. A spinner under a step that is
                 already spinning says the same thing twice. */}
-            {busy && entries.at(-1)?.kind !== 'step' ? <Thinking model={settings.model} /> : null}
-          </ul>
-        )}
+                {busy && entries.at(-1)?.kind !== 'step' ? (
+                  <Thinking model={settings.model} />
+                ) : null}
+              </ul>
+            )}
+          </PanelScroll>
 
-        </PanelScroll>
-
-        {/* Outside the scroller, deliberately. This is an announcement rather
+          {/* Outside the scroller, deliberately. This is an announcement rather
             than part of the conversation, and `sr-only` is `position:absolute`
             — inside the transcript its static position sat below a thousand
             pixels of turns, which extended the page rather than the box. It is
             also simply the wrong place for it: nothing in a live region belongs
             in a list a reader scrolls. `PanelScroll` is now a containing block
             so this cannot recur, and this one no longer relies on that. */}
-        <p aria-live="polite" className="sr-only">
-          {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
-        </p>
+          <p aria-live="polite" className="sr-only">
+            {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
+          </p>
 
-        {/* The openers, moved up out of a card of their own below the fold.
+          {/* The openers, moved up out of a card of their own below the fold.
             They are what a person reads when they do not know what to ask, so
             they belong beside the box they would type into — not underneath a
             conversation they have not had yet. */}
-        <ul className="mt-3 flex flex-wrap gap-1.5">
-          {AGENT_PROMPTS.map((p) => (
-            <li key={p}>
-              <Button
-                variant="outline"
-                size="sm"
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {AGENT_PROMPTS.map((p) => (
+              <li key={p}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => {
+                    send(p)
+                  }}
+                >
+                  {p}
+                </Button>
+              </li>
+            ))}
+          </ul>
+
+          <form onSubmit={onSubmit} className="mt-2 flex gap-2">
+            <div className="min-w-0 flex-1">
+              <Label htmlFor="assistant-prompt" className="sr-only">
+                Ask the assistant
+              </Label>
+              <Input
+                id="assistant-prompt"
+                value={prompt}
+                autoComplete="off"
                 disabled={busy}
-                onClick={() => {
-                  send(p)
-                }}
-              >
-                {p}
+                placeholder="Find my UT Austin application, or add one, or move it to interview…"
+                onChange={(event) => setPrompt(event.target.value)}
+              />
+            </div>
+            {busy ? (
+              // Stop rather than a disabled send: a run that has gone wrong is
+              // exactly when a person most needs a control, and the loop checks
+              // the flag between every round.
+              <Button type="button" variant="outline" onClick={stop} title="Stop the agent">
+                Stop
               </Button>
-            </li>
-          ))}
-        </ul>
-
-        <form onSubmit={onSubmit} className="mt-2 flex gap-2">
-          <div className="min-w-0 flex-1">
-            <Label htmlFor="assistant-prompt" className="sr-only">
-              Ask the assistant
-            </Label>
-            <Input
-              id="assistant-prompt"
-              value={prompt}
-              autoComplete="off"
-              disabled={busy}
-              placeholder="Find my UT Austin application, or add one, or move it to interview…"
-              onChange={(event) => setPrompt(event.target.value)}
-            />
-          </div>
-          {busy ? (
-            // Stop rather than a disabled send: a run that has gone wrong is
-            // exactly when a person most needs a control, and the loop checks
-            // the flag between every round.
-            <Button type="button" variant="outline" onClick={stop} title="Stop the agent">
-              Stop
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              size="icon"
-              aria-label="Send"
-              disabled={!prompt.trim()}
-              title={prompt.trim() ? 'Send' : 'Type a message first'}
-            >
-              <ArrowUp className="size-4" strokeWidth={2} aria-hidden />
-            </Button>
-          )}
-        </form>
-      </Panel>
-
+            ) : (
+              <Button
+                type="submit"
+                size="icon"
+                aria-label="Send"
+                disabled={!prompt.trim()}
+                title={prompt.trim() ? 'Send' : 'Type a message first'}
+              >
+                <ArrowUp className="size-4" strokeWidth={2} aria-hidden />
+              </Button>
+            )}
+          </form>
+        </Panel>
       </div>
     </>
   )
@@ -889,23 +893,22 @@ function ScriptedPanel() {
                   </div>
 
                   {/* whitespace-pre-line so the drafts keep their paragraphs. */}
-                  <p className="text-sm whitespace-pre-line wrap-anywhere text-text-1">{m.text}</p>
+                  <p className="text-sm wrap-anywhere whitespace-pre-line text-text-1">{m.text}</p>
 
-                    <div className="mt-2.5 flex flex-wrap gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => copy(m.id, m.text)}>
-                        <CopyFeedback copied={copiedId === m.id} failed={copyFailed} />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => saveToSnippets(m)}>
-                        <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />
-                        Save to snippets
-                      </Button>
-                    </div>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => copy(m.id, m.text)}>
+                      <CopyFeedback copied={copiedId === m.id} failed={copyFailed} />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => saveToSnippets(m)}>
+                      <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />
+                      Save to snippets
+                    </Button>
+                  </div>
                 </li>
               ),
             )}
           </ul>
         )}
-
 
         {/* Announced rather than only shown: the confirmation appears on a
             button the user has just left, and a swapped icon is easy to miss. */}

@@ -201,6 +201,15 @@ export type ModelResponse = {
   status: number
   /** The raw body. Parsed here, so a malformed body is this layer's problem. */
   text: string
+  /**
+   * `Retry-After`, when the server sent one. Optional, and absent is normal.
+   *
+   * The only response header this layer has any use for, and it is here rather
+   * than a whole headers map on purpose: a map would invite this layer to start
+   * reading things that differ per provider, which is how a core module ends up
+   * knowing which vendor it is talking to.
+   */
+  retryAfter?: string | null
 }
 
 /**
@@ -418,11 +427,42 @@ function ollamaChatRequest(
  * model name with the list of names it does have. Truncated, because some of
  * them answer with an HTML error page.
  */
-const refused = (status: number, body: string): ModelFailure => ({
+/**
+ * A rate limit, named rather than quoted.
+ *
+ * 429 is the one status where the body is reliably useless — providers answer it
+ * with `{"detail":"Too Many Requests"}` or an HTML page or nothing at all — and
+ * the one where the reader's next move is completely determined: wait. Quoting
+ * the server here produced "The server answered 429 — Too Many Requests.",
+ * which spends its whole length restating the number.
+ *
+ * It matters more than it looks because of NVIDIA's free tier, which is in the
+ * provider list precisely so somebody without a card can run the agent. Meeting
+ * the limit there is not a misconfiguration, it is Tuesday, and an agent run
+ * that stops with a puzzling error reads as broken rather than as throttled.
+ *
+ * `retry-after` is passed through when the server sent one, because the only
+ * thing better than "wait" is knowing how long.
+ */
+const rateLimited = (retryAfter: string | null): ModelFailure => ({
   ok: false,
   kind: 'refused',
-  reason: `The server answered ${String(status)}${body.trim() ? ` — ${body.trim().slice(0, 200)}` : ''}.`,
+  reason:
+    'That model is rate limited right now, so this request was refused rather than answered. ' +
+    (retryAfter && /^\d+$/.test(retryAfter.trim())
+      ? `The server asked for ${retryAfter.trim()} seconds before the next one. `
+      : 'Free tiers refill on a timer — a minute is usually enough. ') +
+    'Nothing was lost; ask again when it clears.',
 })
+
+const refused = (status: number, body: string, retryAfter: string | null = null): ModelFailure =>
+  status === 429
+    ? rateLimited(retryAfter)
+    : {
+        ok: false,
+        kind: 'refused',
+        reason: `The server answered ${String(status)}${body.trim() ? ` — ${body.trim().slice(0, 200)}` : ''}.`,
+      }
 
 const parse = (text: string): unknown => {
   try {
@@ -455,7 +495,7 @@ const pathHint = (endpoint: string) =>
 
 export function readModelsResponse(response: ModelResponse, endpoint: string): ModelsResult {
   if (!response.ok) {
-    const fail = refused(response.status, response.text)
+    const fail = refused(response.status, response.text, response.retryAfter ?? null)
     return { ...fail, reason: fail.reason + pathHint(endpoint) }
   }
   const models = readModelIds(parse(response.text))
@@ -577,7 +617,7 @@ export function readTurnFor(settings: ModelSettings, response: ModelResponse): T
  * model called something.
  */
 export function readOllamaTurn(response: ModelResponse): Turn {
-  if (!response.ok) return refused(response.status, response.text)
+  if (!response.ok) return refused(response.status, response.text, response.retryAfter ?? null)
   const payload = parse(response.text)
   if (typeof payload !== 'object' || payload === null) {
     return { ok: false, kind: 'malformed', reason: 'The server answered, but not in JSON.' }
@@ -641,7 +681,7 @@ export function readOllamaTurn(response: ModelResponse): Turn {
 }
 
 export function readTurn(response: ModelResponse): Turn {
-  if (!response.ok) return refused(response.status, response.text)
+  if (!response.ok) return refused(response.status, response.text, response.retryAfter ?? null)
   const payload = parse(response.text)
   const choice = firstChoice(payload)
   if (!choice) {

@@ -247,3 +247,28 @@ describe('the irreversible tools are derived from the catalog, not remembered', 
     for (const name of bookkeeping) expect(irreversible).not.toContain(name)
   })
 })
+
+describe('words that collide with Object.prototype', () => {
+  /**
+   * `ALIASES` was a plain object literal, so `ALIASES['constructor']` returned
+   * `Object.prototype.constructor` — truthy, so the `??` fallback never fired,
+   * and iterating a function threw out of `terms()` into the promise driving an
+   * agent run, which has no catch. The thread spun forever and the exchange was
+   * lost. "How did the constructor round go" is an ordinary sentence here.
+   */
+  it('does not throw on any of them', () => {
+    for (const message of [
+      'how did the constructor round go',
+      'constructors at rice',
+      'the valueOf my offer',
+      'what does toString mean here',
+      'hasOwnProperty of the offer',
+    ]) {
+      expect(() => terms(message)).not.toThrow()
+    }
+  })
+
+  it('still treats them as ordinary words', () => {
+    expect([...terms('how did the constructor round go')]).toContain('constructor')
+  })
+})

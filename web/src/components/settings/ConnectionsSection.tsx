@@ -11,6 +11,7 @@ import { listModels } from '@/lib/llm'
 import { testReader } from '@/lib/markitdown'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { publicUrl } from '@/lib/public-url'
 import {
   PROVIDERS,
   cleanKey,
@@ -251,10 +252,25 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             </option>
           ))}
         </select>
+        {/*
+         * Two facts, said separately, because a provider can be one and not the
+         * other. This used to be one sentence ending "and is billed to your
+         * account", which is false on a free tier — and telling somebody they
+         * are being charged for something free, on the screen where they decide
+         * whether to use it, is not a small inaccuracy.
+         */}
         {provider.cloud ? (
           <p className="mt-1.5 text-xs text-warn">
-            Everything you ask goes to {provider.label} and is billed to your account. jojo is
-            local-first; this is the one part that is not.
+            {/* The label's own qualifier is trimmed here. The dropdown entry
+                reads "NVIDIA (build.nvidia.com) — free, rate limited", which is
+                right in a list of choices and reads as a stammer inside a
+                sentence that is about to say the same thing: "goes to NVIDIA —
+                free, rate limited — free, within its rate limits". */}
+            Everything you ask goes to {provider.label.split(' —')[0]}
+            {provider.billed
+              ? ' and is billed to your account.'
+              : ' — free, within its rate limits, and it will refuse rather than charge you when you reach them.'}{' '}
+            jojo is local-first; this is the one part that is not.
           </p>
         ) : null}
       </div>
@@ -296,7 +312,10 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             spellCheck={false}
             autoComplete="off"
             value={settings.apiKey ?? ''}
-            placeholder="sk-…"
+            // Per provider. It read `sk-…` for everybody, which is OpenAI's
+            // shape and nobody else's — a wrong prefix in the one field where a
+            // person is checking whether they pasted the right thing.
+            placeholder={provider.keyLooksLike}
             /*
              * Said plainly, because a person pasting a key deserves to know
              * where it goes. It is stored beside the app's other settings, not
@@ -308,6 +327,22 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
               save({ ...settings, apiKey: cleanKey(e.target.value) })
             }}
           />
+        ) : null}
+        {/* Where to get one. It matters most for the free provider, where "sign
+            in and it hands you a key" is the entire setup and somebody who
+            cannot find the page does not get an agent at all. */}
+        {provider.needsKey && provider.keyUrl ? (
+          <p className="-mt-1 text-xs text-text-3">
+            <a
+              href={provider.keyUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-2 hover:text-text-1"
+            >
+              Get a key from {provider.label.split(' —')[0].split(' (')[0]}
+            </a>
+            {provider.billed ? null : ' — free, no card.'}
+          </p>
         ) : null}
         {/* Empty and unusable until a server has answered. The model id is the
             server's to state, not the user's to guess, and a field offering to
@@ -487,12 +522,49 @@ function SavedServers({
  * serving it to do the same. The phone app has no such rule and talks to
  * `MARKITDOWN.defaultEndpoint` directly.
  */
-const PROXY_PATH = '/reader/mcp'
+/*
+ * Through `publicUrl`, and the bug it fixes is the one "Start the tour" had.
+ *
+ * This was the literal '/reader/mcp', which is a path from the DOMAIN root. A
+ * copy served from a subpath — `example.com/jojo/`, which is what GitHub Pages
+ * gives you — then POSTed to `example.com/reader/mcp`: not the app's own path,
+ * not anything the app controls, a different site's root. Measured against a
+ * built copy served at /jojo/: the request went to `/reader/mcp/` with the base
+ * missing entirely.
+ *
+ * `import.meta.env.BASE_URL` is the runtime base, so this is right at `/` and
+ * right under a subpath. It does not by itself make a hosted copy work — a
+ * static host has nothing to forward the path WITH, which is what the failure
+ * message now says — but it is the difference between "the forwarding is not
+ * set up" and "the request never had a chance of arriving".
+ */
+const PROXY_PATH = publicUrl('reader/mcp')
+
+/**
+ * What to put in the box before anyone types, which is not one answer.
+ *
+ * On localhost the dev server proxies `/reader/mcp`, so the path is the simplest
+ * thing that works and needs no extension. Anywhere else that path leads to a
+ * file server that will answer 405, and the address that DOES work is the
+ * reader's own — reached by the extension, which fetches under its own
+ * permissions rather than this page's origin.
+ *
+ * Decided from where the page is served rather than from whether the extension
+ * is installed: the default has to be stable while someone is reading the panel,
+ * and the extension's presence is discovered asynchronously. Both are editable
+ * either way, and the copy below says which is which.
+ */
+const localHost = () => {
+  const host = globalThis.location?.hostname ?? ''
+  return host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === ''
+}
+
+const defaultReaderAddress = () => (localHost() ? PROXY_PATH : MARKITDOWN.defaultEndpoint)
 
 /** Exported for the first run, on the same terms as `LocalModelPanel`. */
 export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
   const { reader, setReader } = useModelSettings()
-  const [endpoint, setEndpoint] = useState(reader || PROXY_PATH)
+  const [endpoint, setEndpoint] = useState(reader || defaultReaderAddress())
   const [testing, setTesting] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
   const [connected, setConnected] = useState(reader.length > 0)
@@ -531,8 +603,8 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
           type="url"
           spellCheck={false}
           value={endpoint}
-          placeholder={PROXY_PATH}
-          hint="A path on this site, proxied to markitdown-mcp. See below."
+          placeholder={defaultReaderAddress()}
+          hint="A path on this site in development, or the reader’s own address with the extension installed. See below."
           onChange={(e) => {
             setEndpoint(e.target.value)
             setConnected(false)
@@ -554,9 +626,32 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
               would type it. */}
           <p className="mt-2 text-xs text-text-3">
             It listens on <span className="font-mono">{MARKITDOWN.defaultEndpoint}</span>, but it
-            sends no CORS headers — so a browser will not let this page call it across ports. jojo&apos;s
-            dev server forwards <span className="font-mono">{PROXY_PATH}</span> to it; a hosted copy
-            needs the same forwarding. The phone app talks to it directly and needs none of this.
+            sends no CORS headers — so a browser will not let this page call it across ports.
+            jojo&apos;s dev server forwards <span className="font-mono">{PROXY_PATH}</span> to it,
+            which is why the address above is a path rather than a URL. The phone app talks to it
+            directly and needs none of this.
+          </p>
+          {/*
+           * Said plainly, because "a hosted copy needs the same forwarding" was
+           * what this used to say and it reads as a configuration step. On a
+           * static host it is not a step, it is impossible: there is no server
+           * process to forward with. Someone reading the old sentence went
+           * looking for the setting, found a 405, and reported a bug.
+           */}
+          {/*
+           * This used to say a hosted copy could not work at all, which was
+           * true of the PAGE and is no longer true of jojo. The extension
+           * fetches under its own permissions, so it can reach a reader on this
+           * machine when the page cannot — the same reason board scanning lives
+           * there.
+           */}
+          <p className="mt-2 text-xs text-text-3">
+            <span className="text-text-2">On a hosted copy, install the extension.</span> A page
+            served from the web cannot call <span className="font-mono">127.0.0.1</span> — there is
+            no proxy to forward a path, and https:// pages are barred from the local network. The
+            extension is not a page: it reaches the reader directly, and jojo asks it to. Put the
+            reader&apos;s own address above and it relays each request; it will only ever relay to
+            this machine.
           </p>
         </div>
       </div>

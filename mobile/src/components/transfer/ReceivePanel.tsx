@@ -8,11 +8,7 @@ import { encodeAddress, groupCode } from '@jojo/service/core/dial'
 import { sizeLabel } from '@jojo/service/core/files'
 import { canPair } from '@jojo/service/crypto/noble-secrets'
 import { useKg } from '@jojo/service/react/kg-context'
-import {
-  RECEIVE_ADVICE,
-  beginReceiving,
-  type ReceiveSession,
-} from '@/lib/handoff-receive'
+import { RECEIVE_ADVICE, beginReceiving, type ReceiveSession } from '@/lib/handoff-receive'
 import { applyReceived } from '@/lib/restore-received'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -123,7 +119,9 @@ export function ReceivePanel() {
           return
         }
         const files =
-          done.documents === 0 ? '' : `, ${String(done.documents)} document${done.documents === 1 ? '' : 's'}`
+          done.documents === 0
+            ? ''
+            : `, ${String(done.documents)} document${done.documents === 1 ? '' : 's'}`
         // The skipped count is said out loud rather than rounded away. A person
         // checking their records against the other device needs to know the
         // number is short before they go looking for what is missing.
@@ -198,7 +196,11 @@ export function ReceivePanel() {
                     : 'Open jojo on your computer, choose Transfer, and scan the code it shows.')}
               </Txt>
               {access === 'blocked' ? null : (
-                <Pressable onPress={start} style={[styles.action, { borderColor: c.hairline }]}>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={start}
+                  style={[styles.action, { borderColor: c.hairline }]}
+                >
                   <Txt size="sm" weight="semibold">
                     {failed === null && access === null ? 'Scan the code' : 'Try again'}
                   </Txt>

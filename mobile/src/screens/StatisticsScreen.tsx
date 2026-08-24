@@ -104,8 +104,7 @@ export function StatisticsScreen() {
     const from = dates.reduce((min, d) => (d < min ? d : min), TODAY)
     const to = dates.reduce((max, d) => (d > max ? d : max), TODAY)
 
-    const blank = () =>
-      Object.fromEntries(vocabulary.map((r) => [r, 0])) as Record<RoleTag, number>
+    const blank = () => Object.fromEntries(vocabulary.map((r) => [r, 0])) as Record<RoleTag, number>
     const keys = bucketKeys(from, to, period)
     const counts = new Map(keys.map((k) => [k, blank()]))
     for (const a of dated) {

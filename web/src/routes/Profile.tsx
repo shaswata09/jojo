@@ -293,12 +293,14 @@ export function Profile() {
             />
             <Field
               label="Current position"
+              autoComplete="organization-title"
               value={draft.position}
               placeholder="e.g. PhD candidate, Computer Science"
               onChange={set('position')}
             />
             <Field
               label="Location"
+              autoComplete="address-level2"
               value={draft.location}
               placeholder="e.g. Santa Clara, CA"
               onChange={set('location')}
@@ -320,6 +322,7 @@ export function Profile() {
           <div className="space-y-3">
             <Field
               label="Website"
+              autoComplete="url"
               type="url"
               value={draft.website}
               mono

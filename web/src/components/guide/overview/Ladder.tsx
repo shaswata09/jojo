@@ -32,7 +32,7 @@ const LAYERS: Layer[] = [
   {
     icon: Cpu,
     name: '+ Local model',
-    requires: 'vLLM, Ollama or LM Studio',
+    requires: 'Ollama, vLLM or LM Studio — or a free NVIDIA key',
     gives:
       'The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and real scout scoring',
     active: true,
@@ -50,7 +50,7 @@ const LAYERS: Layer[] = [
     name: '+ The extension',
     requires: 'Chrome, Edge, Brave or Arc',
     gives:
-      'Keep a posting exactly as it read. It is also the only thing here that can open a web page, which is what lets a pipeline sweep a board',
+      'Keep a posting exactly as it read. It is also the only part of jojo that is not a page — which is what lets a pipeline sweep a board, and what lets a hosted copy reach a document reader on your own machine',
     active: true,
   },
 ]
@@ -156,7 +156,9 @@ export function LadderSection() {
               <p className="font-medium">Connect it</p>
               <p className="mt-1 text-text-2">
                 Run vLLM, Ollama or LM Studio and enter the endpoint in{' '}
-                <Go to={settingsPath()}>Settings</Go>. Any OpenAI-compatible server works.
+                <Go to={settingsPath()}>Settings</Go>. Any OpenAI-compatible server works. No GPU?
+                A free key from build.nvidia.com runs the same agent from the same screen — rate
+                limited rather than billed, and the only cost is that your records leave the device.
               </p>
             </li>
             <li className="py-3 first:pt-0 last:pb-0">

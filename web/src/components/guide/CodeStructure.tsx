@@ -108,17 +108,17 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'web/src/components',
-    files: 258,
-    tests: 17,
+    files: 256,
+    tests: 16,
     lines: 41387,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4504, what: 'fourteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4504, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
-    files: 84,
-    tests: 19,
-    lines: 10485,
+    files: 85,
+    tests: 20,
+    lines: 10770,
     what: 'web-only adapters and URL state',
   },
   {
@@ -505,9 +505,9 @@ export function CodeStructure() {
         <p className="text-sm text-text-2">
           Vitest in a node environment, with{' '}
           <span className="font-mono text-xs">fake-indexeddb</span> standing in for the
-          browser&rsquo;s database. 34 of those files sit in{' '}
+          browser&rsquo;s database. 82 of those files sit in{' '}
           <span className="font-mono text-xs">service/</span>, the package both apps import, and
-          hold 517 of the tests; 29 are this app and 10 are the phone. That ratio is the one the
+          hold most of the tests; 39 are this app and 13 are the phone. That ratio is the one the
           project intends: the package is the code whose failure is silent and permanent, and
           local-first means there is nothing to restore from.
         </p>
@@ -520,7 +520,7 @@ export function CodeStructure() {
         <p className="mt-2.5 text-xs text-text-3">
           Counted with <Kbd>npm test</Kbd> in each of <span className="font-mono">service</span>,{' '}
           <span className="font-mono">web</span> and <span className="font-mono">mobile</span>. The
-          29 in this app are re-counted by the suite itself; the other two move under a workspace
+          39 in this app are re-counted by the suite itself; the other two move under a workspace
           this app cannot see, so re-run it rather than trusting it.
         </p>
 

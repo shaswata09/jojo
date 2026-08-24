@@ -31,7 +31,18 @@
   "extends": "./tsconfig.adapters.base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.storage.tsbuildinfo",
-    "lib": ["ES2023", "DOM"],
+    /*
+     * `DOM.Iterable` alongside `DOM`, because the adapter's own tests spread the
+     * collections IndexedDB hands back — `[...db.objectStoreNames]` — and those
+     * are iterable at runtime in every browser while `DOM` alone declares only
+     * the indexed form. Without it the project fails to typecheck on three lines
+     * that describe real behaviour correctly.
+     *
+     * It widens the lib, not `types`: still no `vite/client`, still no
+     * `@types/node`, so the paragraph above about a driver reaching for `fs`
+     * still holds.
+     */
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": []
   },
   "include": ["src/kg/storage"]

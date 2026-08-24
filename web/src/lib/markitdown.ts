@@ -10,6 +10,8 @@ import {
 } from '@jojo/service/agent/markitdown'
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
 import { failed, send } from '@/lib/local-service'
+import type { Sent } from '@/lib/local-service'
+import { readDocument } from '@/lib/capture-bridge'
 
 /**
  * Reading a document, through MarkItDown running on this machine.
@@ -26,15 +28,59 @@ import { failed, send } from '@/lib/local-service'
 /** Kept for the session: MCP wants a handshake before the first call. */
 let shookHands: string | null = null
 
+/**
+ * An address on this machine, which the page itself cannot call.
+ *
+ * The two rules that decide it: markitdown-mcp sends no CORS headers, so a
+ * cross-port POST from a page is refused whatever the ports; and an https://
+ * page may not touch `127.0.0.1` at all. A relative path is exempt from both —
+ * it is same-origin, which is what the dev server's proxy buys — so this asks
+ * "is this a hop the page is allowed to make".
+ */
+const needsExtension = (endpoint: string) => /^https?:\/\//i.test(endpoint.trim())
+
+/**
+ * The reader's transport, chosen per address.
+ *
+ * A path goes direct, because same-origin is same-origin and the dev proxy is
+ * the whole reason the default is a path. A full `http://…` address goes through
+ * the extension, which fetches under its own `host_permissions` rather than the
+ * page's origin — the only route that exists from a deployed copy to a reader
+ * on the user's own machine.
+ *
+ * Deliberately NOT a fallback chain. Trying direct first and relaying on failure
+ * would cost every call a doomed request plus a browser console error nobody can
+ * act on, and "it failed, so try the other way" is how one transport bug becomes
+ * two that mask each other.
+ */
+async function sendToReader(
+  request: ReturnType<typeof initializeRequest>,
+  endpoint: string,
+  signal?: AbortSignal,
+): Promise<Sent> {
+  if (!needsExtension(endpoint)) return send(request, endpoint, signal)
+  const relayed = await readDocument({
+    url: request.url,
+    method: request.method,
+    headers: request.headers,
+    ...(request.body === undefined ? {} : { body: request.body }),
+  })
+  // `unreachable` is the same kind the direct transport reports for a hop that
+  // never landed — the relay not answering is that, one layer out.
+  return 'failed' in relayed
+    ? { failed: { ok: false, kind: 'unreachable', reason: relayed.failed.reason } }
+    : relayed
+}
+
 async function handshake(endpoint: string): Promise<ConvertResult> {
   if (shookHands === endpoint) return { ok: true, markdown: '' }
-  const opened = await send(initializeRequest(endpoint), endpoint)
+  const opened = await sendToReader(initializeRequest(endpoint), endpoint)
   if (failed(opened)) return { ok: false, reason: opened.failed.reason }
   const read = readHandshake(opened, endpoint)
   if (!read.ok) return read
   // Fire-and-forget: JSON-RPC forbids a reply to a notification, so there is
   // nothing to wait for and a server that ignores it is within spec.
-  void send(initializedNotification(endpoint), endpoint)
+  void sendToReader(initializedNotification(endpoint), endpoint)
   shookHands = endpoint
   return { ok: true, markdown: '' }
 }
@@ -45,7 +91,7 @@ export async function testReader(endpoint: string): Promise<ConvertResult> {
   if (endpoint.trim().length === 0) {
     return { ok: false, reason: 'No address yet. See Settings.' }
   }
-  const opened = await send(initializeRequest(endpoint), endpoint)
+  const opened = await sendToReader(initializeRequest(endpoint), endpoint)
   if (failed(opened)) return { ok: false, reason: opened.failed.reason }
   return readHandshake(opened, endpoint)
 }
@@ -95,14 +141,14 @@ export async function convertFile(endpoint: string, file: File): Promise<Convert
     return { ok: false, reason: error instanceof Error ? error.message : String(error) }
   }
 
-  const answer = await send(convertRequest(endpoint, dataUri(file.type, base64)), endpoint)
+  const answer = await sendToReader(convertRequest(endpoint, dataUri(file.type, base64)), endpoint)
   if (failed(answer)) {
     // The handshake is per-connection; a dropped one has to be redone rather
     // than remembered as good.
     shookHands = null
     return { ok: false, reason: answer.failed.reason }
   }
-  const out = readConvertResponse(answer)
+  const out = readConvertResponse(answer, endpoint)
   return out.ok ? { ok: true, markdown: trimForModel(out.markdown) } : out
 }
 
@@ -135,11 +181,11 @@ export async function convertUrl(
   const ready = await handshake(endpoint)
   if (!ready.ok) return ready
 
-  const answer = await send(convertRequest(endpoint, url), endpoint, signal)
+  const answer = await sendToReader(convertRequest(endpoint, url), endpoint, signal)
   if (failed(answer)) {
     shookHands = null
     return { ok: false, reason: answer.failed.reason }
   }
-  const out = readConvertResponse(answer)
+  const out = readConvertResponse(answer, endpoint)
   return out.ok ? { ok: true, markdown: trimForModel(out.markdown) } : out
 }

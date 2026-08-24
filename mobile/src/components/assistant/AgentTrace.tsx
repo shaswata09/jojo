@@ -23,7 +23,11 @@ import { radius, space } from '@/theme/tokens'
  * sentence `describe` already wrote for the toast.
  */
 
-type StatusLook = { icon: string; colour: (c: ReturnType<typeof useColors>) => string; label: string }
+type StatusLook = {
+  icon: string
+  colour: (c: ReturnType<typeof useColors>) => string
+  label: string
+}
 
 const STATUS: Record<AgentStep['status'], StatusLook> = {
   running: { icon: 'loader', colour: (c) => c.text3, label: 'Running' },
@@ -33,7 +37,10 @@ const STATUS: Record<AgentStep['status'], StatusLook> = {
 }
 
 /** A read is grey and everything that writes is not. Delete is red. */
-const EFFECT: Record<AgentStep['effect'], { tone: 'gray' | 'teal' | 'amber' | 'red'; label: string }> = {
+const EFFECT: Record<
+  AgentStep['effect'],
+  { tone: 'gray' | 'teal' | 'amber' | 'red'; label: string }
+> = {
   read: { tone: 'gray', label: 'read' },
   // A tool that does not exist. Amber rather than grey: it is not a harmless
   // read, it is a call that never had a meaning.
@@ -147,7 +154,9 @@ export function StepRow({
           cannot be taken back once it has stopped running is one nobody should
           let write. */}
       {step.status === 'done' && step.undo && onUndo ? (
-        <View style={{ borderTopWidth: 1, borderTopColor: c.hairline, paddingHorizontal: space[2] }}>
+        <View
+          style={{ borderTopWidth: 1, borderTopColor: c.hairline, paddingHorizontal: space[2] }}
+        >
           <Button
             label="Undo this step"
             icon="rotate-ccw"

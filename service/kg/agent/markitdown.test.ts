@@ -8,18 +8,7 @@
  * the live check against `markitdown-mcp` is for.
  */
 import { describe, expect, it } from 'vitest'
-import {
-  CONTEXT_BUDGET,
-  MARKITDOWN,
-  MAX_BYTES,
-  convertRequest,
-  dataUri,
-  initializeRequest,
-  initializedNotification,
-  readConvertResponse,
-  readHandshake,
-  trimForModel,
-} from './markitdown'
+import { CONTEXT_BUDGET, MARKITDOWN, MAX_BYTES, convertRequest, dataUri, initializeRequest, initializedNotification, readConvertResponse, readHandshake, readerPathNotForwarded, trimForModel } from './markitdown'
 
 const json = (body: unknown) => ({ ok: true, status: 200, text: JSON.stringify(body) })
 
@@ -192,5 +181,71 @@ describe('what reaches the model', () => {
     const out = trimForModel(long)
     expect(out).toContain('Cut off here')
     expect(out).toContain(String(long.length))
+  })
+})
+
+describe('a path nothing is forwarding', () => {
+  /*
+   * The report this exists for: markitdown-mcp running fine on 127.0.0.1:3001,
+   * the dev server proxying it, and the DEPLOYED copy answering
+   *
+   *   The reader answered 405 — <html> <head><title>405 Not Allowed</title>…
+   *
+   * That is the file server hosting jojo refusing a POST, quoted verbatim at
+   * somebody who asked about a PDF. True, and useless.
+   */
+  const html =
+    '<html>\r\n<head><title>405 Not Allowed</title></head>\r\n<body bgcolor="white">\r\n<center><h1>405 Not Allowed</h1></center>\r\n</body>\r\n</html>\r\n'
+
+  it('names the real problem instead of quoting the web server', () => {
+    const said = readerPathNotForwarded(405, html, '/jojo/reader/mcp')
+    expect(said).not.toBeNull()
+    expect(said).toContain('Nothing is forwarding /jojo/reader/mcp')
+    // The two things a reader can actually do about it.
+    expect(said).toMatch(/run jojo on the same machine/i)
+    expect(said).toMatch(/https:\/\/ address/i)
+    // And not the markup.
+    expect(said).not.toContain('<html')
+  })
+
+  it('covers 404 as well as 405, because it depends who is refusing', () => {
+    expect(readerPathNotForwarded(404, 'Not Found', '/reader/mcp')).not.toBeNull()
+    expect(readerPathNotForwarded(405, '', '/reader/mcp')).not.toBeNull()
+  })
+
+  it('fires on an HTML body whatever the status, since the reader speaks JSON-RPC', () => {
+    expect(readerPathNotForwarded(500, html, '/reader/mcp')).not.toBeNull()
+  })
+
+  it('stays out of the way when the address is a real URL', () => {
+    /*
+     * A full address reaches something specific and that something answered.
+     * Telling its owner about proxy forwarding would be a guess about a setup
+     * this cannot see — the raw status is the honest answer there.
+     */
+    expect(readerPathNotForwarded(405, html, 'http://127.0.0.1:3001/mcp')).toBeNull()
+    expect(readerPathNotForwarded(404, 'Not Found', 'https://reader.example.com/mcp')).toBeNull()
+  })
+
+  it('leaves a genuine reader error alone', () => {
+    // A real MCP server having a bad day answers JSON, not markup. That status
+    // is worth quoting, and the old message is still the right one.
+    expect(readerPathNotForwarded(500, '{"error":{"message":"boom"}}', '/reader/mcp')).toBeNull()
+    expect(readerPathNotForwarded(400, '{"jsonrpc":"2.0"}', '/reader/mcp')).toBeNull()
+  })
+
+  it('is what readHandshake actually says on a hosted copy', () => {
+    const out = readHandshake({ ok: false, status: 405, text: html }, '/jojo/reader/mcp')
+    expect(out.ok).toBe(false)
+    if (!out.ok) {
+      expect(out.reason).toContain('Nothing is forwarding')
+      expect(out.reason).not.toContain('<html')
+    }
+  })
+
+  it('and readConvertResponse says it too, for an address saved before the move', () => {
+    const out = readConvertResponse({ ok: false, status: 405, text: html }, '/reader/mcp')
+    expect(out.ok).toBe(false)
+    if (!out.ok) expect(out.reason).toContain('Nothing is forwarding')
   })
 })

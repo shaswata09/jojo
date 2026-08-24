@@ -270,22 +270,39 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
       // the label that `describe` returns.
       const announcement = tool.describe(input, output, overlay(repo.getSnapshot(), buf))
 
-      const entry = repo.commit({
-        tool: name,
-        input,
-        label: announcement.title,
-        calls: buf.calls,
-        nodes,
-        edges,
-      })
-
       // `undoable: false` is enforced on the STACK, not on the journal.
       // `repo.commit` is the only path from a transaction buffer to the durable
-      // op list (D19), so an admin tool has to go through it — and after a reset
-      // no earlier before-image is safe to replay anyway, which is the same
-      // reason a remote commit clears the stack (D23).
+      // op list (D19), so the write still has to go through it.
       const undoable = tool.undoable !== false
-      if (!undoable) repo.clearHistory()
+
+      // `stack: false` is what "not undoable" should always have meant: journal
+      // and audit the write, leave the user's undo ring alone.
+      //
+      // IT USED TO BE `clearHistory()` FOR EVERY SUCH TOOL, which is right for
+      // an admin tool and catastrophic for the other one that carries the flag.
+      // `assistant.thread.set` is `effect: 'update'` and the app commits it
+      // after EVERY exchange with the assistant — so asking one question wiped
+      // the undo AND redo stacks, and every hand-made edit earlier in the
+      // session became unreachable by ⌘Z. In an app with no server copy, undo
+      // is the safety net.
+      //
+      // Only an admin tool invalidates the stack, and it invalidates it for a
+      // reason that is about the DATA rather than about the flag: after a reset
+      // or a clear, no earlier before-image is safe to replay, which is the same
+      // reason a remote commit clears the stack (D23).
+      const entry = repo.commit(
+        {
+          tool: name,
+          input,
+          label: announcement.title,
+          calls: buf.calls,
+          nodes,
+          edges,
+        },
+        undoable && tool.system !== true ? undefined : { stack: false },
+      )
+
+      if (!undoable && tool.effect === 'admin') repo.clearHistory()
 
       return {
         ok: true,

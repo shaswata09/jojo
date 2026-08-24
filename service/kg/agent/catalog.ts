@@ -8,7 +8,7 @@
  * point: a tool added to `TOOLS` is callable by a model, and listed over MCP, on
  * the same day, without anybody remembering to update a manifest.
  *
- * WHAT IS IN IT. All fifty-nine write tools plus the five reads. Internal tools
+ * WHAT IS IN IT. All 77 write tools plus the 9 reads. Internal tools
  * are included, and that is a change of position worth stating: `Tool.internal`
  * means "hidden from the palette and the inspector", which is a claim about
  * screen space, not about safety — `org.ensure` is exactly the kind of thing a

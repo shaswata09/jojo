@@ -26,6 +26,20 @@ export type TxtProps = TextProps & {
   color?: string
   center?: boolean
   uppercase?: boolean
+  /**
+   * Marks this string as a heading for TalkBack and VoiceOver.
+   *
+   * The phone app had no `accessibilityRole="header"` anywhere across 85
+   * component files, so both screen readers' heading rotors were empty on every
+   * screen — there was no way to skim a screen structurally, which is the
+   * mobile equivalent of a web page with no `<h1>`. The web app's heading
+   * structure is careful; this is the same care, in the vocabulary the phone
+   * uses.
+   *
+   * A prop rather than a size rule: `xl` is a screen title in one place and a
+   * figure in a stat tile in another, and only one of those is a heading.
+   */
+  heading?: boolean
 }
 
 export function Txt({
@@ -36,6 +50,7 @@ export function Txt({
   color,
   center,
   uppercase,
+  heading,
   style,
   ...rest
 }: TxtProps) {
@@ -57,5 +72,11 @@ export function Txt({
   if (size === 'xl') base.letterSpacing = -0.3
   if (size === 'xxl') base.letterSpacing = -0.6
 
-  return <RNText {...rest} style={[base, style]} />
+  return (
+    <RNText
+      {...(heading === true ? { accessibilityRole: 'header' as const } : {})}
+      {...rest}
+      style={[base, style]}
+    />
+  )
 }

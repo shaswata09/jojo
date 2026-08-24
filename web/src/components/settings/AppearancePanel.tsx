@@ -46,8 +46,12 @@ export function AppearancePanel() {
                 so whatever this measures is a hard floor for the row — at 72
                 the ten gestures plus the robot plate pushed the Settings page
                 into a sideways scroll. Wrapping into an extra line costs
-                nothing; the page scrolling does not. */}
-            <div className="flex max-w-56 flex-wrap justify-end gap-1.5 sm:max-w-72">
+                nothing; the page scrolling does not.
+                56 was still too wide at 320px, the narrowest viewport WCAG
+                reflow asks about: 56 + the 14 plate + the gap left the label
+                column no room and the page scrolled sideways again. 36 fits two
+                gestures a line there and the `sm:` step restores the rest. */}
+            <div className="flex max-w-36 flex-wrap justify-end gap-1.5 min-[380px]:max-w-56 sm:max-w-72">
               {GESTURES.map(({ pose: g, label }) => (
                 <Button key={g} variant="outline" size="sm" onClick={() => play(g)}>
                   {label}

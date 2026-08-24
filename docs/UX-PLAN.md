@@ -1,5 +1,15 @@
 # jojo — plan to platform standard
 
+> **SUPERSEDED — kept as a record, not as guidance.**
+>
+> Its diagnosis describes an app that no longer exists ("cannot track anything",
+> "lies about state"), and it prescribes two libraries that were evaluated and
+> rejected: Dexie, and Sonner. Neither is in the lockfile. It also names
+> components that were never built under those names.
+>
+> The UX decisions that actually shipped are in `docs/UX-FINALISATION.md` and in
+> the components themselves.
+
 Derived from a seven-track UX audit (Nielsen heuristics, WCAG 2.2 AA, task-flow
 analysis, state coverage, information architecture, interaction patterns, and the
 Material 3 / HIG / Fluent 2 comparison), plus the `apple-design` skill.

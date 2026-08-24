@@ -71,6 +71,7 @@ export const proposalRaise = defineTool({
   effect: 'create',
   touches: ['proposal'],
   internal: true,
+  system: true,
   input: s.object({
     pipelineId: s.id('pipeline', { label: 'Pipeline' }),
     kind: s.enum(PIPELINE_KINDS, { label: 'Pipeline kind' }),
@@ -209,6 +210,7 @@ export const proposalFail = defineTool({
   effect: 'update',
   touches: ['proposal'],
   internal: true,
+  system: true,
   input: s.object({ id: proposalId, error: s.string({ min: 1, label: 'Reason' }) }),
   run(ctx, input): void {
     ctx.require('proposal', input.id)
@@ -271,6 +273,7 @@ export const pipelineRunRecord = defineTool({
   effect: 'update',
   touches: ['pipeline'],
   internal: true,
+  system: true,
   input: s.object({
     id: s.id('pipeline', { label: 'Pipeline' }),
     /** How many suggestions this round raised. Zero is what makes it idle. */

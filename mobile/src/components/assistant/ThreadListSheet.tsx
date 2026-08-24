@@ -56,8 +56,7 @@ export function ThreadListSheet({
     }
     const matching = needle
       ? threads.filter(
-          (t) =>
-            t.title.toLowerCase().includes(needle) || nameOf(t).toLowerCase().includes(needle),
+          (t) => t.title.toLowerCase().includes(needle) || nameOf(t).toLowerCase().includes(needle),
         )
       : threads
     const by = new Map<string, { label: string; threads: Thread[] }>()

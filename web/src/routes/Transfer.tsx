@@ -211,8 +211,16 @@ export function Transfer() {
   const locked = send.stage !== 'idle' && send.stage !== 'failed'
 
   // Switching roles abandons a run rather than leaving it going behind a panel
-  // nobody is looking at.
-  useEffect(() => cancel(), [role, cancel])
+  // nobody is looking at — and so does LEAVING THE PAGE, which is why `cancel`
+  // is returned rather than called.
+  //
+  // `() => cancel()` invoked it as the effect body and handed React its
+  // `undefined` return as the cleanup, so unmount cancelled nothing: the chunk
+  // loop kept posting, then recorded a completed handover for a transfer the
+  // user had walked away from. Coming back offered a fresh pairing and a second
+  // convoy to the same phone. Returning the function covers both — React runs
+  // cleanup before re-running the effect, so a role switch still cancels.
+  useEffect(() => cancel, [role, cancel])
 
   const empty = totalOf(groups) === 0
 

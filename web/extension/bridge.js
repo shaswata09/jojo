@@ -32,18 +32,38 @@ window.addEventListener('message', (event) => {
   // `scan` is checked first because it is the only one with an argument, and a
   // scan request has no `ack` and no `take` to fall through to.
   const wanted =
-    typeof data.scan === 'string'
-      ? 'jojo:scan-board'
-      : data.ack !== undefined
-        ? 'jojo:ack-captures'
-        : data.take === true
-          ? 'jojo:take-captures'
-          : 'jojo:peek-captures'
+    data.read !== undefined && data.read !== null
+      ? 'jojo:read-document'
+      : typeof data.scan === 'string'
+        ? 'jojo:scan-board'
+        : data.ack !== undefined
+          ? 'jojo:ack-captures'
+          : data.take === true
+            ? 'jojo:take-captures'
+            : 'jojo:peek-captures'
 
   // Only these three fields cross, and only ever from this shape. Forwarding
   // the request wholesale would let anything on jojo's own page hand the worker
   // fields it never validated.
-  chrome.runtime.sendMessage({ type: wanted, ids: data.ack, url: data.scan }, (response) => {
+  /*
+   * `read` carries a whole request — url, method, headers, body — where the
+   * others carry a field or nothing. It is rebuilt here field by field rather
+   * than passed through, for the same reason the line below names its three:
+   * the worker must never receive a shape the page composed freely. Anything
+   * else on the object is dropped, and the worker checks the url again anyway.
+   */
+  const read =
+    data.read && typeof data.read === 'object'
+      ? {
+          url: typeof data.read.url === 'string' ? data.read.url : '',
+          method: typeof data.read.method === 'string' ? data.read.method : 'POST',
+          headers:
+            data.read.headers && typeof data.read.headers === 'object' ? data.read.headers : {},
+          body: typeof data.read.body === 'string' ? data.read.body : '',
+        }
+      : undefined
+
+  chrome.runtime.sendMessage({ type: wanted, ids: data.ack, url: data.scan, request: read }, (response) => {
     // A disconnected service worker is a normal state, not a failure: MV3 stops
     // it when idle. Reading lastError is what stops it logging as unchecked.
     const failed = chrome.runtime.lastError
@@ -58,6 +78,11 @@ window.addEventListener('message', (event) => {
         // `id` and already knows which question it asked.
         rows: failed ? null : (response?.rows ?? null),
         ok: failed ? false : response?.ok === true,
+        // A read answers with an HTTP status and a body. Carried on the same
+        // reply as everything else, because the page correlates on `id` and
+        // already knows which question it asked.
+        status: failed ? 0 : (response?.status ?? 0),
+        text: failed ? '' : (response?.text ?? ''),
         error: failed ? failed.message : (response?.reason ?? null),
       },
       window.location.origin,

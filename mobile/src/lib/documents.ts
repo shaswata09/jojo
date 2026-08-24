@@ -136,7 +136,10 @@ export async function pickDocuments(bucket: FileBucket): Promise<PickOutcome> {
       uri: asset.uri,
       fileName: storedName(nameOf(asset), at + index),
     })
-    const files: NonEmptyArray<FileToCopy> = [toCopy(first, 0), ...rest.map((a, i) => toCopy(a, i + 1))]
+    const files: NonEmptyArray<FileToCopy> = [
+      toCopy(first, 0),
+      ...rest.map((a, i) => toCopy(a, i + 1)),
+    ]
 
     // This replaces the hand-rolled copy that used to be here, and it is not a
     // convenience: on Android the picker now hands back a raw `content://` SAF

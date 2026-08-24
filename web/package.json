@@ -11,7 +11,7 @@
     "dev": "npm run pack-extension && vite",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "npm -w @jojo/service run lint && oxlint",
+    "lint": "npm -w @jojo/service run lint && oxlint --config .oxlintrc.json src",
     "make-extension-icons": "node scripts/make-extension-icons.mjs",
     "make-pwa-icons": "node scripts/make-pwa-icons.mjs",
     "make-sw": "node scripts/make-sw.mjs",

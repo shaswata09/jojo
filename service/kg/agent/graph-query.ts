@@ -73,9 +73,15 @@ export type PatternQuery = {
 
 export type PathQuery = {
   kind: 'path'
-  /** An id, or a label to match. See `resolve`. */
-  from: string
-  to: string
+  /**
+   * An id, or a label to match. See `resolve`.
+   *
+   * Optional here because the SCHEMA makes them optional — one input shape is
+   * shared by both query kinds, and a pattern query names neither. Declaring
+   * them required was the lie that let `runPath` call `.trim()` on undefined.
+   */
+  from?: string
+  to?: string
 }
 
 export type GraphQuery = PatternQuery | PathQuery
@@ -292,10 +298,29 @@ const keywordOk = (memory: GraphSnapshot, node: StoredNode, keyword: string | un
 }
 
 function runPath(memory: GraphSnapshot, q: PathQuery): GraphQueryResult {
-  const from = resolve(memory, q.from)
-  const to = resolve(memory, q.to)
+  // `from` and `to` are REQUIRED on `PathQuery` and OPTIONAL on the schema the
+  // model is handed, so the type says they are here and the runtime does not
+  // agree. `{"kind":"path"}` and `{"kind":"path","from":"Rice"}` both parse,
+  // and `resolve` then called `.trim()` on undefined — a TypeError thrown out
+  // of a READ tool, which `execute` promises never throws, straight through the
+  // agent run and into a thread that could not be recovered.
+  //
+  // Answered rather than thrown: a path question missing an endpoint is the
+  // same KIND of failure as one naming a record that does not exist, so it gets
+  // the same sentence. The model reads it and can ask again.
+  const asked = { from: q.from ?? '', to: q.to ?? '' }
+  if (asked.from.trim() === '' || asked.to.trim() === '') {
+    return {
+      summary: 'A path needs two records — name the one to start from and the one to reach.',
+      rows: [],
+      highlight: [],
+    }
+  }
+
+  const from = resolve(memory, asked.from)
+  const to = resolve(memory, asked.to)
   if (!from || !to) {
-    const missing = !from ? q.from : q.to
+    const missing = !from ? asked.from : asked.to
     return {
       // Named, not "no results". A path question that failed because a name
       // matched nothing is a different answer from one that failed because the

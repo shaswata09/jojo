@@ -44,6 +44,7 @@ export const PROVIDER_IDS = [
   'anthropic',
   'openrouter',
   'groq',
+  'nvidia',
 ] as const
 
 export type ProviderId = (typeof PROVIDER_IDS)[number]
@@ -79,8 +80,26 @@ export type ProviderMeta = {
   readonly fixedEndpoint: boolean
   /** True when a key is required for anything to work. */
   readonly needsKey: boolean
-  /** Whether this provider bills the user per token. Drives the warning copy. */
+  /**
+   * Whether the request leaves this machine.
+   *
+   * The privacy fact, and the one that matters in a local-first app. It used to
+   * carry a second claim as well — the warning copy read "and is billed to your
+   * account" — which was true of every cloud provider here until NVIDIA, whose
+   * free tier bills nothing and rate-limits instead. Telling someone they are
+   * being charged for something that is free is not a small inaccuracy on the
+   * screen where they decide whether to use it, so the two facts are separate
+   * fields now.
+   */
   readonly cloud: boolean
+  /**
+   * Whether using it costs money.
+   *
+   * Separate from `cloud` because "my records are leaving this device" and "this
+   * is running up a bill" are different worries and a person may accept one and
+   * not the other.
+   */
+  readonly billed: boolean
   /**
    * Whether jojo can set the context window in the request.
    *
@@ -91,6 +110,23 @@ export type ProviderMeta = {
   readonly canSetContext: boolean
   /** A sensible starting window, and what the preflight check assumes. */
   readonly defaultContext: number
+  /**
+   * What this provider's keys look like, for the placeholder.
+   *
+   * The field said `sk-…` for everybody, which is OpenAI's shape and nobody
+   * else's: Anthropic's are `sk-ant-…` and NVIDIA's are `nvapi-…`. A placeholder
+   * showing the wrong prefix is a small lie in the one field where a person is
+   * checking whether they pasted the right thing.
+   */
+  readonly keyLooksLike: string
+  /**
+   * Where to get one, when there is a page for it.
+   *
+   * Empty for the local providers, which need no key. It earns its place on the
+   * free tier especially: "sign in and it gives you a key" is the whole
+   * onboarding, and somebody who cannot find that page does not get an agent.
+   */
+  readonly keyUrl: string
 }
 
 /**
@@ -108,9 +144,12 @@ export const PROVIDERS = [
     dialect: 'ollama',
     fixedEndpoint: false,
     needsKey: false,
+    billed: false,
     cloud: false,
     // The reason this provider has its own dialect at all.
     canSetContext: true,
+    keyLooksLike: '',
+    keyUrl: '',
     defaultContext: 32768,
   },
   {
@@ -120,7 +159,10 @@ export const PROVIDERS = [
     dialect: 'openai',
     fixedEndpoint: false,
     needsKey: false,
+    billed: false,
     cloud: false,
+    keyLooksLike: '',
+    keyUrl: '',
     defaultContext: 32768,
     canSetContext: false,
   },
@@ -131,8 +173,11 @@ export const PROVIDERS = [
     dialect: 'anthropic',
     fixedEndpoint: true,
     needsKey: true,
+    billed: true,
     cloud: true,
     canSetContext: false,
+    keyLooksLike: 'sk-ant-…',
+    keyUrl: 'https://console.anthropic.com/settings/keys',
     defaultContext: 200_000,
   },
   {
@@ -142,8 +187,11 @@ export const PROVIDERS = [
     dialect: 'openai',
     fixedEndpoint: true,
     needsKey: true,
+    billed: true,
     cloud: true,
     canSetContext: false,
+    keyLooksLike: 'sk-…',
+    keyUrl: 'https://platform.openai.com/api-keys',
     defaultContext: 128_000,
   },
   {
@@ -153,8 +201,11 @@ export const PROVIDERS = [
     dialect: 'openai',
     fixedEndpoint: true,
     needsKey: true,
+    billed: true,
     cloud: true,
     canSetContext: false,
+    keyLooksLike: 'sk-or-…',
+    keyUrl: 'https://openrouter.ai/keys',
     defaultContext: 128_000,
   },
   {
@@ -164,8 +215,44 @@ export const PROVIDERS = [
     dialect: 'openai',
     fixedEndpoint: true,
     needsKey: true,
+    billed: true,
     cloud: true,
     canSetContext: false,
+    keyLooksLike: 'gsk_…',
+    keyUrl: 'https://console.groq.com/keys',
+    defaultContext: 128_000,
+  },
+  {
+    /*
+     * NVIDIA's hosted catalogue at build.nvidia.com.
+     *
+     * Here because it is the one entry in this table that a person can use
+     * without paying anything: an account gives credits that refresh, the API is
+     * OpenAI-shaped, and the models on it include several large open-weight ones
+     * that this app's tool catalog actually fits inside. For somebody who cannot
+     * run a 70B locally and will not put a card down, it is the difference
+     * between an agentic jojo and a filing cabinet.
+     *
+     * `billed: false` and `cloud: true` together, and the pair is the honest
+     * reading: nothing is charged, and the records still leave the device. This
+     * is the provider that made those two separate fields.
+     *
+     * Rate limits are the cost instead, and they are strict enough that a person
+     * WILL meet them — which is why `model-server.ts` learned to name a 429
+     * rather than quoting it. Nothing here retries on the user's behalf: a
+     * silent retry against a rate limit is how one slow answer becomes four.
+     */
+    id: 'nvidia',
+    label: 'NVIDIA (build.nvidia.com) — free, rate limited',
+    endpoint: 'https://integrate.api.nvidia.com/v1',
+    dialect: 'openai',
+    fixedEndpoint: true,
+    needsKey: true,
+    billed: false,
+    cloud: true,
+    canSetContext: false,
+    keyLooksLike: 'nvapi-…',
+    keyUrl: 'https://build.nvidia.com/',
     defaultContext: 128_000,
   },
 ] as const satisfies readonly ProviderMeta[]

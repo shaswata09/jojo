@@ -11,12 +11,24 @@ postings worth your attention. Every change it wants to make is shown to you fir
 the same undo a button press does.
 
 Everything runs on your own machine. Your applications, documents and profile live in your browser
-or on your phone, and nothing is sent to a third party — there is no account and no backend. What
-the app can reach is only what you point it at, and every piece of it is optional: a local LLM for
-the assistant, the pipelines, the graph box and scout scoring; a local document reader for PDFs,
-Word files and job postings; the browser extension for keeping a posting and reading a job board;
+or on your phone — there is no account, no backend of ours, and nothing is uploaded anywhere by
+default. What the app can reach is only what you point it at, and every piece of it is optional: an
+LLM for the assistant, the pipelines, the graph box and scout scoring; a document reader for PDFs,
+Word files and job postings; the browser extension for keeping a posting, reading a job board, and reaching a
+local document reader from a hosted copy;
 and your own other device over the local network for Transfer. With none of it configured the app
 is still a complete tracker, and a backup file you keep is how records move between machines.
+
+**The one thing that can leave your device is the assistant, and only if you send it there.** jojo
+speaks to a local model — Ollama, vLLM, LM Studio — and that is the default, with nothing leaving
+the machine. It also speaks to Anthropic, OpenAI, OpenRouter, Groq and **NVIDIA**, which need an API
+key you supply in Settings. Choose one of those and your prompts, and the records the assistant reads
+while answering, go to that provider. Four of the five bill you for it; NVIDIA's
+[build.nvidia.com](https://build.nvidia.com/) does not — it is free within a rate limit, which makes
+it the way to run the agentic half without either a GPU or a card. jojo says which providers are
+which where you pick one, and keeps "this leaves your device" and "this costs money" as separate
+sentences, because they are separate questions. Your API key is stored beside the graph rather than inside it, so a backup file cannot
+carry it.
 
 The web app opens with the network down. A service worker keeps the shell and the boot bundle, so
 a reload on a plane gets the dashboard rather than the browser's offline page — which it has to,
@@ -29,7 +41,7 @@ thing that can warn you about a deadline while the app is closed.
 
 ## Builds and releases
 
-Every push and pull request runs the same eleven checks `./gate.sh` runs
+Every push and pull request runs the same nine checks `./gate.sh` runs
 locally — three workspaces, each typechecked, linted and tested — plus the web
 bundle. Nothing deploys unless all of it is green.
 
@@ -100,13 +112,13 @@ line you stop at is required, and nothing above it is missing — a screen that
 needs something you have not set up says so by name. The agentic half starts at
 layer 3; the two below it are a tracker that never asks you for anything.
 
-| Layer                       | Requires                    | What you get                                                                                                                                                                                                                                       |
-| --------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 — Browser only**        | Nothing                     | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage.                                                                                                                              |
-| **2 — + A backup you keep** | Somewhere to put a file     | One file holding every record, every link and every document. Restoring it puts all three back.                                                                                                                                                    |
-| **3 — + Local LLM**         | vLLM / Ollama / LM Studio   | The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and scoring against what you are looking for. |
-| **4 — + Document reader**   | MarkItDown, running locally | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you.                                                                                                         |
-| **5 — + The extension**     | Chrome, Edge, Brave or Arc  | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board — nothing else here can open a web page.                                                                                       |
+| Layer                       | Requires                    | What you get                                                                                                                                                                                                                                                                        |
+| --------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 — Browser only**        | Nothing                     | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage.                                                                                                                                                               |
+| **2 — + A backup you keep** | Somewhere to put a file     | One file holding every record, every link and every document. Restoring it puts all three back.                                                                                                                                                                                     |
+| **3 — + A model**           | Ollama, vLLM or LM Studio locally — or a free NVIDIA key | The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and scoring against what you are looking for.                                  |
+| **4 — + Document reader**   | MarkItDown, running locally | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you.                                                                                                                                          |
+| **5 — + The extension**     | Chrome, Edge, Brave or Arc  | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board, and what lets a **hosted** copy reach the document reader on your own machine — nothing else here can open a web page, or call `127.0.0.1` from an https page. |
 
 Layer 1 is the only one that must work. Everything above it degrades gracefully when disconnected.
 
@@ -407,9 +419,9 @@ Persistence shipped: a knowledge graph in IndexedDB on web and AsyncStorage on m
 
 ## Known decisions still open
 
-- **Component tests.** There are 1,803 Vitest tests across the three workspaces, but D20 rules out
+- **Component tests.** There are more than 1,900 Vitest tests across the three workspaces, but D20 rules out
   jsdom and Testing Library, so nothing mounts a component. UI logic is verified by driving the
-  real apps. That trade is deliberate; what it costs is written up in `docs/AUDIT.md`.
+  real apps. That trade is deliberate; what it cost at the time is written up in `docs/AUDIT.md`, which is a record of a past audit rather than a live defect list.
 - **`BrowserRouter` vs `HashRouter`.** Deep links like `/settings` need SPA rewrites on a static host
   and break entirely over `file://`. For an app people may open from disk, `HashRouter` is safer.
 - **The academia/industry track is not persisted** across reloads, though the theme is.

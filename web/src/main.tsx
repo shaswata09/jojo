@@ -72,6 +72,29 @@ createRoot(container).render(
 )
 
 /*
+ * The two failures the error boundary cannot see.
+ *
+ * A boundary catches a throw during RENDER. It does nothing about a rejected
+ * promise nobody awaited, and there are ~56 deliberately fire-and-forget
+ * promises in `web/src` — every rejection out of one was discarded in silence.
+ * With no backend and no crash reporter, the console is the only diagnostic
+ * this product has, so the least it can do is write to it.
+ *
+ * Reporting, not recovering: by the time a rejection is unhandled the work is
+ * already lost. `preventDefault` is deliberately NOT called, so the browser
+ * still logs its own richer trace underneath.
+ */
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason)
+})
+
+window.addEventListener('error', (event) => {
+  // Resource load failures (a missing image) arrive here with no `error`.
+  // Those are not bugs worth a line; a real uncaught exception is.
+  if (event.error) console.error('Uncaught error:', event.error)
+})
+
+/*
  * Last, and deliberately.
  *
  * The install fetches the whole precache list; starting it before React has the

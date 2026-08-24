@@ -1,13 +1,13 @@
 # The gate, in CI, plus the deploy that is only allowed to run behind it.
 #
 # `gate.sh` is the local version of the first job and the two are deliberately
-# the same eleven checks in the same order: three workspaces, each typechecked,
+# the same nine checks in the same order: three workspaces, each typechecked,
 # linted and tested. Anything that is green here is green on a laptop, and the
 # reverse — which is the only property that makes a pipeline worth reading.
 #
 # WHY THE CHECKS ARE SEPARATE STEPS rather than one `./gate.sh`. gate.sh prints
 # a tidy table and exits 1 at the end, so a failure inside it is one red X with
-# eleven checks behind it. Named steps put the failure on the step that caused
+# nine checks behind it. Named steps put the failure on the step that caused
 # it, which is what the Actions UI is good at and what someone reading a red
 # build actually needs.
 #
@@ -44,7 +44,12 @@ jobs:
     name: Gate
     runs-on: ubuntu-latest
     steps:
+      # `persist-credentials: false` so the job's token is not written into
+      # `.git/config`, where any later step — or anything a postinstall script
+      # runs — can read it. Nothing here pushes, so nothing needs it there.
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -113,7 +118,12 @@ jobs:
       contents: write
 
     steps:
+      # `persist-credentials: false` so the job's token is not written into
+      # `.git/config`, where any later step — or anything a postinstall script
+      # runs — can read it. Nothing here pushes, so nothing needs it there.
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -228,7 +238,12 @@ jobs:
       contents: write
 
     steps:
+      # `persist-credentials: false` so the job's token is not written into
+      # `.git/config`, where any later step — or anything a postinstall script
+      # runs — can read it. Nothing here pushes, so nothing needs it there.
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -289,7 +304,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # `persist-credentials: false` so the job's token is not written into
+      # `.git/config`, where any later step — or anything a postinstall script
+      # runs — can read it. Nothing here pushes, so nothing needs it there.
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:

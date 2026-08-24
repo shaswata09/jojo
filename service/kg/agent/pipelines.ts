@@ -272,6 +272,7 @@ export function proposingHost(real: ToolHost, sink: ProposalSink): ToolHost {
      */
     ...(real.convert ? { convert: real.convert } : {}),
     ...(real.scan ? { scan: real.scan } : {}),
+    ...(real.boards ? { boards: real.boards } : {}),
     check: real.check,
 
     run: (name, input) => {

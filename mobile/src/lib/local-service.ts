@@ -42,7 +42,14 @@ export async function send(
       body: request.body,
       signal: controller.signal,
     })
-    return { ok: response.ok, status: response.status, text: await response.text().catch(() => '') }
+    return {
+      ok: response.ok,
+      status: response.status,
+      text: await response.text().catch(() => ''),
+      // Read here because only the platform half has a `Response`. Absent on
+      // almost every answer, which is why the core treats it as optional.
+      retryAfter: response.headers.get('retry-after'),
+    }
   } catch (error) {
     const aborted = error instanceof Error && error.name === 'AbortError'
     const detail = error instanceof Error ? error.message : String(error)

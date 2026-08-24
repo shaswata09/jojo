@@ -1,5 +1,16 @@
 # jojo — code audit
 
+> **SUPERSEDED — kept as a record, not as guidance.**
+>
+> Every defect this document reports has been fixed, and in most cases the fix is
+> commented at the line it cites, naming this audit. Every `src/kg/…` path in it
+> is dead: that tree moved to `service/kg/` when the service layer was split out.
+> Every count is stale — tests, files, lines, tool count, circular imports.
+>
+> Read it to understand what the codebase learned. Do not read it to find out
+> what is wrong with the codebase now; for that, the gate and the guards are the
+> current answer.
+
 Run 2026-08-11 against `c696c90`. Six dimensions swept independently, each then attacked by a
 skeptic instructed to refute it, then synthesised. 61,265 lines / 363 files.
 

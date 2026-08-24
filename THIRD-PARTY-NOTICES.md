@@ -86,3 +86,50 @@ running.
 The icon artwork is credited there too: Lucide (ISC) on the web, Feather (MIT,
 Cole Bemis) for the icons Lucide carried over from it and for the whole of the
 phone app's set.
+
+**On the phone, Guide → Built with is a short prose list rather than the
+generated table.** It names what the app is built from and does not carry
+versions or licence names, so this file — not that screen — is the attribution
+of record for anyone reading the APK.
+
+## Fonts
+
+Inter and JetBrains Mono are used on both platforms and both are licensed under
+the **SIL Open Font License, Version 1.1**.
+
+On the web they arrive through the `@fontsource-variable` packages, so the
+licence text travels inside `node_modules` and into nothing that is
+redistributed. On the phone the `.ttf` files are vendored directly into
+`mobile/android/app/src/main/assets/fonts/` and are compiled into the APK — and
+OFL §2 requires the copyright notice and the licence to accompany the font files
+wherever they go. They now do: `OFL.txt` sits in that directory and ships with
+them.
+
+- Inter — Copyright 2016 The Inter Project Authors, https://github.com/rsms/inter
+- JetBrains Mono — Copyright 2020 The JetBrains Mono Project Authors,
+  https://github.com/JetBrains/JetBrainsMono
+
+## Unresolved: @splinetool/runtime
+
+**The 3D mascot's runtime ships with no licence grant, and this is a
+distribution question that has not been answered.**
+
+`@splinetool/runtime` (1.12.98) declares no `license` field, carries no LICENSE
+file, records no licence in `package-lock.json`, and describes itself as
+"© 2025 Spline, Inc.". It is compiled into two chunks of the published web
+bundle. Absent a grant, there is no stated permission to redistribute it.
+
+`web/src/components/guide/credits.ts` already refuses to guess at the terms and
+says so on the Built with page, which is the right instinct; this note exists so
+the question is recorded where a licence audit will find it rather than only in
+a source comment.
+
+Two ways to close it, and one of them has to happen before wide distribution:
+obtain terms from Spline in writing, or drop the mascot. Nothing else in the
+tree depends on it — it is decoration on the sidebar, and the 2D fallback
+already renders whenever WebGPU is unavailable.
+
+The scene file `public/mascot.splinecode` and `public/spline/process.wasm` come
+from the same vendor and inherit the same question. `process.wasm` additionally
+has no lockfile entry at all, having been vendored from
+`@splinetool/modelling-wasm` rather than installed.

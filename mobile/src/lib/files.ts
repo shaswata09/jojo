@@ -49,7 +49,6 @@ export const FILE_KIND_ICON: Record<FileKind, FeatherName> = {
   page: 'globe',
 }
 
-
 /**
  * The MIME type an ACTION_VIEW intent needs, from the name alone.
  *
@@ -77,4 +76,3 @@ export function mimeOfFile(name: string): string {
   // web app each had one, and they had already drifted.
   return sharedMime(name, '*/*')
 }
-

@@ -68,7 +68,11 @@ export function ProposalQueue({
                         gap: space[1.5],
                       }}
                     >
-                      <Txt size="sm" weight="medium" tone={p.status === 'pending' ? 'primary' : 'muted'}>
+                      <Txt
+                        size="sm"
+                        weight="medium"
+                        tone={p.status === 'pending' ? 'primary' : 'muted'}
+                      >
                         {p.title}
                       </Txt>
                       {p.status === 'approved' ? (
@@ -113,7 +117,13 @@ export function ProposalQueue({
                     {/* What it would actually run. A person approving a write
                         to their own records is entitled to know which
                         operation they are approving; the title is a paraphrase. */}
-                    <Txt size="xs" tone="muted" mono numberOfLines={1} style={{ marginTop: space[1] }}>
+                    <Txt
+                      size="xs"
+                      tone="muted"
+                      mono
+                      numberOfLines={1}
+                      style={{ marginTop: space[1] }}
+                    >
                       {p.tool} · from {nameOf(p.pipelineId)}
                     </Txt>
                   </View>

@@ -63,7 +63,13 @@ function DialogOverlay({
       data-slot="dialog-overlay"
       ref={setRef}
       className={cn(
-        'fixed inset-0 isolate z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs',
+        // NOT `isolate`. It creates a stacking context, which makes this element
+        // its own backdrop root — so `backdrop-filter` samples an empty backdrop
+        // and paints the whole page behind the dialog near-black. It only shows
+        // in light theme, where the correct result is a blurred light page and
+        // the wrong one is unmistakable. `DetailSheet` renders the identical
+        // classes without it and has always looked right.
+        'fixed inset-0 z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs',
         // The scrim is context, not the event — it settles while the panel is
         // still on its way in, and it is dropped from the reduced-motion path
         // because the CSS reset would only stutter it.

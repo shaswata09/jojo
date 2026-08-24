@@ -104,9 +104,8 @@ describe('when it is not', () => {
     // before offering to pair at all.
     present = false
     ;(await load())()
-    const { canPair, createSecrets, SecretsUnavailable } = await import(
-      '@jojo/service/crypto/noble-secrets'
-    )
+    const { canPair, createSecrets, SecretsUnavailable } =
+      await import('@jojo/service/crypto/noble-secrets')
     expect(canPair()).toBe(false)
     expect(() => createSecrets().random(32)).toThrow(SecretsUnavailable)
   })

@@ -1,6 +1,7 @@
 import { StatusBar, StyleSheet, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { LabelsProvider } from '@/lib/labels'
 import { RolesProvider } from '@/lib/roles'
 import { SheetsProvider } from '@/lib/sheets'
@@ -28,7 +29,9 @@ import { useTheme } from '@/theme/theme-context'
  * that application's keywords — the reducer cannot do it, since keywords live in
  * a provider above it and are not part of `StoreState`.
  *
- * Nothing is persisted and nothing is fetched. A restart is the reset button;
+ * Records ARE persisted — the graph lives in AsyncStorage behind
+ * `createRnDriver`, so a restart keeps everything. This paragraph used to say
+ * the opposite, from when the phone app was a prototype over `useState`.
  * Settings is where you switch between the demo records and an empty store.
  *
  * THE FONTS ARE NOT LOADED HERE ANY MORE, AND NOTHING REPLACED THAT CODE.
@@ -42,40 +45,47 @@ import { useTheme } from '@/theme/theme-context'
 export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <RolesProvider>
-            <ToastProvider>
-              <ModelSettingsProvider>
-                <StoreProvider>
-                  {/* Inside the store, because keywords are records now. They
-                      used to be `useState` in this provider — a second set
-                      beside the graph's own, which meant the seven keyword
-                      tools were unreachable and nothing you tagged survived a
-                      restart. `useKeywords` is the graph's, so this provider
-                      keeps only the filter selection, which is view state. */}
-                  <LabelsProvider>
-                    <SheetsProvider>
-                      {/* Above the navigator, which `Themed` renders. A
-                          conversation's run has to outlive the screen that
-                          started it, and every exit from the Assistant screen
-                          pops it — it is always the leaf of the stack. */}
-                      <AgentRunsProvider>
-                        {/* Above the navigator too: a pipeline that stopped
-                            when you left Job Scout was a pipeline that did not
-                            do what its own footer said. */}
-                        <PipelinesProvider>
-                          <Themed />
-                        </PipelinesProvider>
-                      </AgentRunsProvider>
-                    </SheetsProvider>
-                  </LabelsProvider>
-                </StoreProvider>
-              </ModelSettingsProvider>
-            </ToastProvider>
-          </RolesProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
+      {/* Outside every provider on purpose. Both apps mount the same shared
+          hooks, and a throw out of one of them used to leave the phone with a
+          blank frame and no way back — in a release build there is no red box
+          and no console. It renders in plain React Native primitives so that a
+          failure in ThemeProvider cannot take the error screen down with it. */}
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <RolesProvider>
+              <ToastProvider>
+                <ModelSettingsProvider>
+                  <StoreProvider>
+                    {/* Inside the store, because keywords are records now. They
+                        used to be `useState` in this provider — a second set
+                        beside the graph's own, which meant the seven keyword
+                        tools were unreachable and nothing you tagged survived a
+                        restart. `useKeywords` is the graph's, so this provider
+                        keeps only the filter selection, which is view state. */}
+                    <LabelsProvider>
+                      <SheetsProvider>
+                        {/* Above the navigator, which `Themed` renders. A
+                            conversation's run has to outlive the screen that
+                            started it, and every exit from the Assistant screen
+                            pops it — it is always the leaf of the stack. */}
+                        <AgentRunsProvider>
+                          {/* Above the navigator too: a pipeline that stopped
+                              when you left Job Scout was a pipeline that did not
+                              do what its own footer said. */}
+                          <PipelinesProvider>
+                            <Themed />
+                          </PipelinesProvider>
+                        </AgentRunsProvider>
+                      </SheetsProvider>
+                    </LabelsProvider>
+                  </StoreProvider>
+                </ModelSettingsProvider>
+              </ToastProvider>
+            </RolesProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   )
 }

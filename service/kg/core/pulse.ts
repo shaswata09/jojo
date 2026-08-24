@@ -29,10 +29,11 @@
  * hunting four small squares, and a viewer sees the picture framed in light
  * rather than tagged in three corners.
  *
- * ## Framing is deliberately not `beam.ts`
+ * ## Framing is deliberately tiny
  *
- * `beam.ts` carries a 19-byte header, which is right when a frame holds
- * hundreds of bytes and absurd when it holds nine. So a frame here is 100 bits:
+ * A conventional packet header — a few bytes of type and length with a 24-bit
+ * checksum behind them — is right when a frame holds hundreds of bytes and
+ * absurd when it holds nine. So a frame here is 100 bits:
  * six of index, six of total, sixteen of CRC, and seventy-two of payload. Nine
  * bytes a frame, ten frames for an offer, a second and a quarter of animation.
  *
@@ -135,7 +136,8 @@ export type PulseFrame = readonly (readonly boolean[])[]
 /**
  * CRC-16/CCITT-FALSE over the frame's own bits.
  *
- * Sixteen bits rather than the twenty-four `beam.ts` uses, because a frame here
+ * Sixteen bits rather than the twenty-four a conventional frame checksum uses,
+ * because a frame here
  * is a hundred bits and three bytes of checksum would be a fifth of it. One in
  * sixty-five thousand is the right trade when a bad frame is dropped and retried
  * rather than acted on — and `pairing.ts`'s confirmation tag stands behind the

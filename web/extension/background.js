@@ -39,6 +39,81 @@ const POLICY = {
   CAPTURE_UNCLAMP_ATTR,
 }
 
+/* ------------------------------ reading docs ------------------------------- */
+
+/**
+ * Is this an address on this machine?
+ *
+ * Parsed rather than pattern-matched on the string, because `http://127.0.0.1@evil.example.com/`
+ * passes a naive `startsWith` and is a request to evil.example.com. `URL` puts
+ * the real host in `hostname`, where a check means what it looks like.
+ *
+ * `http` only: there is no https story for a loopback server without a
+ * certificate, and allowing it here would suggest there is.
+ */
+function isLoopback(raw) {
+  let url
+  try {
+    url = new URL(raw)
+  } catch {
+    return false
+  }
+  if (url.protocol !== 'http:') return false
+  const host = url.hostname
+  // The bracketed form is what `URL` gives back for IPv6.
+  return host === '127.0.0.1' || host === 'localhost' || host === '[::1]' || host === '::1'
+}
+
+/** How long the reader gets. Converting a large PDF is genuinely slow. */
+const READ_TIMEOUT_MS = 120000
+
+/**
+ * One request to the reader, relayed verbatim.
+ *
+ * The page owns the MCP protocol — the handshake, the JSON-RPC envelope, the
+ * session header — and this owns only the hop. Keeping the split there means
+ * the protocol stays in `@jojo/service/agent/markitdown`, where it is tested,
+ * instead of being half-reimplemented in an extension nothing can test.
+ *
+ * The answer comes back as `{ ok, status, text }`, the same shape the page's own
+ * transport returns, so the caller cannot tell which route was taken.
+ */
+async function relayToReader(request) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => {
+    controller.abort()
+  }, READ_TIMEOUT_MS)
+  try {
+    const response = await fetch(request.url, {
+      method: typeof request.method === 'string' ? request.method : 'POST',
+      headers: request.headers && typeof request.headers === 'object' ? request.headers : {},
+      body: typeof request.body === 'string' ? request.body : undefined,
+      signal: controller.signal,
+      // Same rule as the page's transport: a loopback server shares an origin
+      // policy with nothing, and credentials it never asked for are how a local
+      // request stops being local.
+      credentials: 'omit',
+    })
+    return {
+      ok: response.ok,
+      status: response.status,
+      text: await response.text().catch(() => ''),
+    }
+  } catch (error) {
+    const aborted = error && error.name === 'AbortError'
+    return {
+      ok: false,
+      status: 0,
+      text: '',
+      reason: aborted
+        ? `The reader did not answer within ${String(READ_TIMEOUT_MS / 1000)} seconds.`
+        : `Could not reach the reader at ${request.url} — ${String(error && error.message ? error.message : error)}. Is it still running?`,
+    }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 /* --------------------------------- scanning -------------------------------- */
 
 /**
@@ -450,6 +525,49 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
    * script on jojo's own origin (the manifest's `matches` sees to that), and the
    * only thing it can ask for is one page opened and read.
    */
+  /*
+   * Reading a document through the reader running on this machine.
+   *
+   * WHY THIS IS HERE AT ALL. markitdown-mcp sends no CORS headers and answers
+   * the preflight with 405, so a page cannot POST to it across ports however
+   * local both are. The dev server sidesteps that by proxying `/reader/mcp`, so
+   * the request is same-origin — but a hosted copy has no proxy to use, and an
+   * https:// page is additionally barred from `127.0.0.1` by Chrome's Local
+   * Network Access gate. Between them those two rules mean the deployed app can
+   * never talk to a local reader from the page.
+   *
+   * An extension is the one part of jojo that is not a page. It fetches under
+   * its own `host_permissions` rather than the page's origin, which is exactly
+   * why board scanning already lives here. This is the same move for documents.
+   *
+   * LOOPBACK ONLY, and that restriction is the point rather than caution. This
+   * relays a request written by the page, so without it any script that got onto
+   * jojo's origin could use the extension's privileges to fetch anything on the
+   * web and read the answer — an open proxy wearing jojo's permissions.
+   * `scanBoard` is deliberately different: opening a public page IS its feature,
+   * and it has its own guards. Reading a document has no business leaving this
+   * machine, so it cannot.
+   */
+  if (message?.type === 'jojo:read-document') {
+    void (async () => {
+      const request = message.request
+      const url = typeof request?.url === 'string' ? request.url : ''
+      if (!isLoopback(url)) {
+        sendResponse({
+          ok: false,
+          status: 0,
+          text: '',
+          reason:
+            'The reader address has to be on this machine — http://127.0.0.1 or http://localhost. ' +
+            'The extension only relays to loopback.',
+        })
+        return
+      }
+      sendResponse(await relayToReader(request))
+    })()
+    return true
+  }
+
   if (message?.type === 'jojo:scan-board') {
     void (async () => {
       const url = typeof message.url === 'string' ? message.url : ''

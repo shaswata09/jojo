@@ -9,10 +9,42 @@
          named because the app has two: --page is #f5f5f5 light, #0a0a0a dark. -->
     <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <!--
+      A content security policy, and an honest one about what it cannot do.
+
+      GitHub Pages sets no custom headers, so a meta tag is the only mechanism
+      available; `frame-ancestors` and `report-uri` are header-only and are
+      therefore absent rather than forgotten.
+
+      WHAT IS HERE IS FREE AND WORTH HAVING:
+        object-src 'none'  — no plugin can be injected; jojo embeds none.
+        base-uri 'self'    — a <base href> injected into the page cannot
+                             re-point every relative URL at another origin,
+                             which is the trick that turns one injected tag into
+                             a whole-page hijack.
+        form-action 'self' — an injected <form> cannot post the page's contents
+                             somewhere else.
+
+      WHAT IS DELIBERATELY NOT HERE:
+        connect-src        — the whole point of the app is that the user chooses
+                             the model endpoint. It can be Ollama on localhost,
+                             a vLLM box on their LAN, or one of four cloud
+                             providers, and it is free text in Settings. Any
+                             list here would either be wrong or be `*`.
+        script-src         — the theme resolver below is an inline script and
+                             must run before first paint. Locking this down
+                             means hashing it and every inline script Vite
+                             emits, which is worth doing and is not a one-line
+                             change.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="jojo — an agentic assistant that tracks, organises and works on your job search. Everything runs on your own machine; your data never leaves your device."
+      content="jojo — an agentic assistant that tracks, organises and works on your job search. Local-first: no account, no backend, and your records stay on your device unless you point the assistant at a cloud model yourself."
     />
     <title>jojo — agentic job-search assistant</title>
     <script>

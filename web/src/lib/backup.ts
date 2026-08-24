@@ -122,9 +122,9 @@ export function useBackup(readable?: () => unknown): BackupState {
   }, [graph, lastBackupAt])
 
   const build = useCallback(
-    async ({
-      documents: withDocuments = true,
-    }: BuildOptions = {}): Promise<Uint8Array<ArrayBuffer>> => {
+    async ({ documents: withDocuments = true }: BuildOptions = {}): Promise<
+      Uint8Array<ArrayBuffer>
+    > => {
       const documents: { path: string; data: Uint8Array }[] = []
       if (withDocuments) {
         for (const item of await blobs.all()) {
@@ -154,30 +154,46 @@ export function useBackup(readable?: () => unknown): BackupState {
     [graph, blobs, readable],
   )
 
-  const download = useCallback(async (name: string): Promise<boolean> => {
-    const at = new Date()
-    const bytes = await build()
+  const download = useCallback(
+    async (name: string): Promise<boolean> => {
+      const at = new Date()
 
-    let href: string | null = null
-    try {
-      href = URL.createObjectURL(new Blob([bytes], { type: 'application/json' }))
-      const anchor = document.createElement('a')
-      anchor.href = href
-      anchor.download = name
-      anchor.click()
-    } catch {
-      return false
-    } finally {
-      // In a `finally` so a throw between minting the URL and clicking still
-      // releases it — a Blob URL pins the entire backup in memory.
-      if (href !== null) URL.revokeObjectURL(href)
-    }
+      // `build()` INSIDE the try. It reads every document's bytes and stringifies
+      // the lot, so it throws on a quota read, on a missing blob, and on a store
+      // large enough for `JSON.stringify` to exceed V8's string limit. It used to
+      // sit above the try, where a throw rejected this promise — and the only
+      // caller does `void download(...).then(...)` with no `.catch`, so the user
+      // got no file, no toast and no error. A button that does nothing reads as a
+      // broken button, not as a warning about their records.
+      let href: string | null = null
+      try {
+        const bytes = await build()
+        href = URL.createObjectURL(new Blob([bytes], { type: 'application/json' }))
+        const anchor = document.createElement('a')
+        anchor.href = href
+        anchor.download = name
+        anchor.click()
+      } catch {
+        if (href !== null) URL.revokeObjectURL(href)
+        return false
+      }
 
-    // Recorded only after the click. Recording it first would mean a browser
-    // that blocked the download left jojo believing the user was safe.
-    writeLastBackup(at.toISOString())
-    return true
-  }, [build])
+      // Revoked on the next task, NOT synchronously and not in a `finally`.
+      // A synchronous revoke races the download the click just started and the
+      // file arrives EMPTY — which is the worst possible outcome here, because
+      // the user has a file named like a backup that contains nothing, and
+      // `writeLastBackup` below has just told them they are safe.
+      // `vault-blobs.ts` learned this first; this path had kept the racy form.
+      const url = href
+      setTimeout(() => URL.revokeObjectURL(url), 0)
+
+      // Recorded only after the click. Recording it first would mean a browser
+      // that blocked the download left jojo believing the user was safe.
+      writeLastBackup(at.toISOString())
+      return true
+    },
+    [build],
+  )
 
   return {
     changed,

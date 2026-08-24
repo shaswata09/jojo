@@ -166,7 +166,12 @@ export function DraftSheet({ open, onOpenChange, itemId, applicationId }: DraftS
     // because a vault full of "Draft" is a vault you cannot search.
     const base = emailSnippets.find((s) => s.id === chosenId)?.title ?? 'Draft email'
     const title = app ? `${base} — ${app.org}` : base
-    const saved = addSnippet({ title, tag: 'Email', body: text, applicationIds: app ? [app.id] : [] })
+    const saved = addSnippet({
+      title,
+      tag: 'Email',
+      body: text,
+      applicationIds: app ? [app.id] : [],
+    })
     toast({
       title: 'Saved to snippets',
       description: `${saved.title} · tagged Email, in the Vault`,

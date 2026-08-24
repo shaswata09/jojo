@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel } from '@/components/common/Panel'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/button'
-import { dashboardPath } from '@/lib/links'
+import { dashboardPath, useTitle } from '@/lib/links'
 
 /**
  * The catch-all route.
@@ -17,6 +17,11 @@ import { dashboardPath } from '@/lib/links'
  * press.
  */
 export function Placeholder({ title, subtitle }: { title: string; subtitle: string }) {
+  // Every other route titles itself, so a mistyped URL was the one page that
+  // left the tab reading "jojo — agentic job-search assistant" while the page
+  // itself said "Not found". A background tab has nothing but its title.
+  useTitle(title)
+
   return (
     <>
       <PageHeader title={title} subtitle={subtitle} />

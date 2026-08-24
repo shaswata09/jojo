@@ -291,3 +291,30 @@ describe('it never writes', () => {
     expect(JSON.stringify({ n: w.memory().nodes(), e: w.memory().edges() })).toBe(before)
   })
 })
+
+describe('a path query missing an endpoint', () => {
+  /**
+   * `from` and `to` are optional on the schema the model is handed — one input
+   * shape serves both query kinds — while `PathQuery` declared them required.
+   * So `{"kind":"path"}` parsed, and `resolve` called `.trim()` on undefined.
+   *
+   * A read tool that throws is worse than one that answers badly: `execute`
+   * promises reads never throw, so nothing above catches it, and the thread it
+   * was running in could not be recovered. The Graph page offers this tool and
+   * suggests exactly the kind of question that produces it.
+   */
+  it('is answered, not thrown', () => {
+    const memory = new MutableSnapshot([], []) as unknown as GraphSnapshot
+    for (const q of [
+      { kind: 'path' },
+      { kind: 'path', from: 'Rice' },
+      { kind: 'path', to: 'Rice' },
+      { kind: 'path', from: '   ', to: 'Rice' },
+    ] as GraphQuery[]) {
+      expect(() => runGraphQuery(memory, q)).not.toThrow()
+      const result = runGraphQuery(memory, q)
+      expect(result.rows).toEqual([])
+      expect(result.summary).toContain('two records')
+    }
+  })
+})

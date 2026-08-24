@@ -153,22 +153,37 @@ export function Statistics() {
                 const pct = (step.count / sent) * 100
                 const prev = i === 0 ? null : funnel[i - 1]
                 return (
-                  <div key={step.stage}>
-                    <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-sm text-text-2">{step.stage}</dt>
-                      <dd className="font-mono text-sm text-text-1">
-                        {step.count}
-                        <span className="ml-1.5 text-xs text-text-3">{Math.round(pct)}%</span>
-                      </dd>
-                    </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-sm bg-well">
+                  /*
+                   * Grid rather than a nested flex row, so <dt> and <dd> are
+                   * DIRECT children of this group.
+                   *
+                   * A <div> wrapping each pair inside a <dl> is valid HTML, but
+                   * only when the <dt>/<dd> are its own children. They used to
+                   * sit one level deeper, inside a flex row, which put two
+                   * elements between the list and its terms and broke the
+                   * pairing — a screen reader read ten orphaned items rather
+                   * than five term-and-value pairs.
+                   *
+                   * Two columns for the term and its figure; the bar and the
+                   * carry-through line span both.
+                   */
+                  <div
+                    key={step.stage}
+                    className="grid grid-cols-[1fr_auto] items-baseline gap-x-3"
+                  >
+                    <dt className="text-sm text-text-2">{step.stage}</dt>
+                    <dd className="font-mono text-sm text-text-1">
+                      {step.count}
+                      <span className="ml-1.5 text-xs text-text-3">{Math.round(pct)}%</span>
+                    </dd>
+                    <div className="col-span-2 mt-1.5 h-2 overflow-hidden rounded-sm bg-well">
                       <div
                         className="h-full rounded-sm"
                         style={{ width: `${pct}%`, background: 'var(--info)' }}
                       />
                     </div>
                     {prev ? (
-                      <div className="mt-1 text-xs text-text-3">
+                      <div className="col-span-2 mt-1 text-xs text-text-3">
                         {share(step.count, prev.count)}% carried through
                       </div>
                     ) : null}

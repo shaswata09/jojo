@@ -77,6 +77,23 @@ not unblock it, so this cannot be verified headlessly at all.
 > `fetch`, is the viable browser-side LAN transport today; both vendors have
 > published an intent to close that gap with no shipped date.
 
+### 1.2b The exception, added later: an extension is not a page
+
+Everything in §1.2 is about a **page**. An MV3 extension fetches under its own
+`host_permissions`, not under the origin of any page, so neither the CORS refusal
+nor the Local Network Access gate applies to it.
+
+That is the route jojo's document reader takes on a hosted copy: the page hands
+the request to the extension's service worker and the worker makes the hop to
+`127.0.0.1`. See `web/extension/README.md`. The worker refuses any address that
+is not loopback, because it is relaying a request the page composed and its own
+permissions are `http://*` and `https://*`.
+
+This does not weaken §1.2's conclusion for the bridge that was deleted — a
+background helper still cannot ask for a permission, and an extension is not a
+background helper. It narrows the claim to what was actually measured: a PAGE
+cannot reach `127.0.0.1` unattended.
+
 ### 1.3 A localhost page reaches it freely
 
 From `http://127.0.0.1:4300`, the same fetch to `http://127.0.0.1:7423`

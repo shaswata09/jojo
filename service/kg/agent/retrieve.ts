@@ -68,7 +68,20 @@ export const RESIDENT: readonly string[] = Object.keys(READS)
  * Each family needs a test fixture, so deleting one fails loudly rather than
  * quietly costing recall.
  */
-const ALIASES: Readonly<Record<string, readonly string[]>> = {
+/**
+ * Prototype-less, and that is load-bearing rather than tidy.
+ *
+ * A plain object literal inherits from `Object.prototype`, so `ALIASES['constructor']`
+ * returns a FUNCTION rather than undefined. The `??` fallback below never fires
+ * on it, and iterating a function throws `TypeError: function is not iterable` —
+ * out of `terms()`, out of the retriever, and into the bare promise that drives
+ * an agent run, where nothing catches it and the thread spins forever.
+ *
+ * "How did the constructor round go" is an ordinary sentence for the people this
+ * app is built for. `toString`, `valueOf` and the rest are safe only by accident
+ * of lower-casing; `constructor` is already lower case.
+ */
+const ALIASES: Readonly<Record<string, readonly string[]>> = Object.assign(Object.create(null), {
   reject: ['stage', 'application'],
   rejected: ['stage', 'application'],
   offer: ['stage', 'application'],
@@ -101,7 +114,7 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = {
   clear: ['memory'],
   delete: ['delete'],
   remove: ['delete'],
-}
+})
 
 /** Words that carry no signal about a tool. */
 const STOP = new Set([

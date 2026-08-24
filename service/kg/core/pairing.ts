@@ -7,7 +7,8 @@
  * something no attacker on the network can see, and everything below is built on
  * that one asymmetry.
  *
- * `beam.ts` carries the bytes. This decides what they are and what they prove.
+ * `pulse.ts` puts the offer on the screen and `convoy.ts` carries the transfer
+ * itself. This file decides what those bytes are and what they prove.
  *
  * ## Why the code carries a secret and not only a public key
  *

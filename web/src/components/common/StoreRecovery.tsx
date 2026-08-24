@@ -68,7 +68,12 @@ export function StoreRecovery({ detail, rescued }: { detail: string; rescued: Ro
     anchor.href = href
     anchor.download = 'jojo-rescued-rows.json'
     anchor.click()
-    URL.revokeObjectURL(href)
+    // Next task, not now. A synchronous revoke races the download the click
+    // just started and hands back an EMPTY file — and this is the rescue
+    // export from a store that will not open, so it is the one download in the
+    // app where an empty file is the difference between keeping their records
+    // and losing them.
+    setTimeout(() => URL.revokeObjectURL(href), 0)
   }
 
   const rescuedCount = rescued ? rescued.nodes.length + rescued.edges.length : 0

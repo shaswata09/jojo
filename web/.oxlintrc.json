@@ -1,9 +1,13 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc"],
-  "ignorePatterns": ["dist", "dist-*", "node_modules", "coverage"],
+  "ignorePatterns": ["node_modules", "dist", "extension"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react-hooks/exhaustive-deps": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "no-unused-vars": "error",
+    "typescript/no-unused-vars": "error",
+    "oxc/no-barrel-file": "off"
   }
 }

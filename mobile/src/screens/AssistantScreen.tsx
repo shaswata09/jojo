@@ -480,9 +480,7 @@ function AgentScreen() {
                 )
               }
               if (entry.kind === 'step') {
-                return (
-                  <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
-                )
+                return <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
               }
               if (entry.kind === 'note') {
                 // Narration while it is still working. Quieter than an answer on

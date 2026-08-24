@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Textarea } from '@/components/ui/textarea'
 import { displayName } from '@/data/seed'
@@ -36,6 +36,25 @@ export function NotePanel({ application: a }: { application: Application }) {
     update(a.id, { note: next, lastAction: 'Note edited' })
     setNoteSaved(true)
   }
+
+  /*
+   * The same commit, on the way out.
+   *
+   * `onBlur` alone lost the edit whenever the drawer closed WITHOUT the field
+   * blurring first — which is what Escape does, and Escape is the documented way
+   * to dismiss it. Type a note, press Escape, reopen: gone, with no warning and
+   * no unsaved marker. Clicking away inside the drawer saved correctly, so the
+   * loss was unpredictable rather than obvious, which is worse.
+   *
+   * Through a ref because the cleanup must not re-run on every keystroke: the
+   * effect stays mounted for the life of the panel and reads the latest draft
+   * when it finally tears down. `commitNote` is idempotent — it returns early
+   * when nothing changed — so a blur immediately followed by an unmount writes
+   * once.
+   */
+  const latest = useRef(commitNote)
+  latest.current = commitNote
+  useEffect(() => () => latest.current(), [])
 
   return (
     <Panel className="min-w-0">

@@ -103,7 +103,13 @@ export type AgentEvent =
  * user said the word "remove" in a sentence about something else.
  */
 export const SYSTEM_PROMPT = [
-  'You are jojo, a job-search tracker. Every record is on this device and nothing leaves it.',
+  // Deliberately NOT "nothing leaves this device". This string is sent to
+  // whichever model is configured — which may be Anthropic, OpenAI, OpenRouter
+  // or Groq — so on a cloud provider the sentence was transmitted to a third
+  // party alongside the very records it claimed never left. What the model
+  // needs from this line is the operating assumption, not a privacy promise it
+  // is in no position to keep.
+  'You are jojo, a job-search tracker. Every record lives in this one store — there is no server to ask and no other copy to reconcile with.',
   'You act by calling tools. Do not describe what you would do — do it, then say what you did.',
   'Ids are never invented. Read a record before acting on it: memory.overview, then memory.search or memory.list, gives you the id.',
   // This line used to read "Ask before deleting anything… wait for the person to

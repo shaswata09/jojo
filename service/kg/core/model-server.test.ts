@@ -534,3 +534,52 @@ describe('the truncation guard, which is what the apps actually call', () => {
     expect(guardTruncation('hello', turn)).toBe(turn)
   })
 })
+
+describe('a rate limit, which the free tier makes routine', () => {
+  /*
+   * NVIDIA's free tier is in the provider table precisely so somebody without a
+   * card can run the agent, and meeting its limit is not a misconfiguration —
+   * it is Tuesday. A run that stops with a quoted status reads as broken; one
+   * that says "rate limited, ask again" reads as throttled, which is what it is.
+   */
+  const askWith = (status: number, text: string, retryAfter?: string | null) =>
+    readChatResponse({ ok: false, status, text, ...(retryAfter === undefined ? {} : { retryAfter }) })
+
+  it('names a 429 instead of quoting it', () => {
+    const out = askWith(429, '{"detail":"Too Many Requests"}')
+    expect(out.ok).toBe(false)
+    if (!out.ok) {
+      expect(out.reason).toMatch(/rate limited/i)
+      expect(out.reason).toMatch(/ask again/i)
+      // The body is what it does NOT say: restating the number spends the whole
+      // sentence on something the reader cannot act on.
+      expect(out.reason).not.toContain('Too Many Requests')
+      expect(out.reason).not.toContain('429')
+    }
+  })
+
+  it('passes on how long to wait when the server said', () => {
+    const out = askWith(429, '', '30')
+    expect(out.ok).toBe(false)
+    if (!out.ok) expect(out.reason).toContain('30 seconds')
+  })
+
+  it('falls back to a usable guess when it did not', () => {
+    for (const header of [null, undefined, '', 'Wed, 21 Oct 2026 07:28:00 GMT']) {
+      const out = askWith(429, '', header)
+      expect(out.ok).toBe(false)
+      // An HTTP-date is legal in `Retry-After` and is not a number of seconds;
+      // printing it raw would read as gibberish, so it takes the fallback.
+      if (!out.ok) expect(out.reason, String(header)).toMatch(/a minute is usually enough|\d+ seconds/)
+    }
+  })
+
+  it('leaves every other status quoting the server, which is where the detail is', () => {
+    const out = askWith(404, '{"error":"model not found: llama-3.3"}')
+    expect(out.ok).toBe(false)
+    if (!out.ok) {
+      expect(out.reason).toContain('404')
+      expect(out.reason).toContain('model not found')
+    }
+  })
+})

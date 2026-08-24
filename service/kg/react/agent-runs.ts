@@ -286,53 +286,85 @@ export function createAgentRuns(): AgentRuns {
         patch(threadId, { pending: { step, decide } })
       })
 
+    /*
+     * `try/finally` around the whole run, and the `finally` is the point.
+     *
+     * Everything below can throw, and until this wrapper existed nothing caught
+     * it: the promise was driven by a bare `void (async () => …)()`, so a throw
+     * anywhere under `runAgent` left `busy: true` set forever. The composer
+     * stayed disabled, the spinner never stopped, `onSettled` never fired, and
+     * `stop()` could not clear it because the run had already left the loop it
+     * polls. The exchange was simply lost, with no error on screen.
+     *
+     * Two reachable throws found it — a message containing the word
+     * "constructor" (see `agent/retrieve.ts`) and a `graph.query` for a path
+     * with an endpoint missing. Both are fixed at their source, and neither fix
+     * would have prevented the NEXT one. A thread that cannot get stuck is a
+     * property of this function, not of the code beneath it.
+     *
+     * The error is recorded as an entry as well as being cleared, because a
+     * conversation that silently stops answering reads as a broken app rather
+     * than as a failed request.
+     */
     void (async () => {
-      const run = await runAgent({
-        host,
-        llm: llm(cancel),
-        history,
-        prompt: clean,
-        ...(options.maxSteps === undefined ? {} : { maxSteps: options.maxSteps }),
-        ...(options.tools === undefined ? {} : { tools: options.tools }),
-        /*
-         * The retriever, on for the Assistant and nothing else.
-         *
-         * `tools` wins outright when a caller named one — AskBox and the
-         * pipelines choose deliberately, and this must not second-guess them.
-         * The Assistant names nothing, which is exactly the surface that was
-         * sending all 82 tools on every request.
-         *
-         * `fromHistory` is a correctness condition rather than a nicety. Thread
-         * entries live in the graph, so after a reload the transcript replays
-         * tool calls from earlier turns — and a freshly chosen set that did not
-         * contain one of them would leave the conversation naming a tool that is
-         * no longer available.
-         */
-        retrieve: { carried: null, fromHistory: namesCalledIn(history) },
-        ...(options.gate === undefined ? {} : { gate: options.gate }),
-        approve,
-        signal: cancel satisfies Cancellation,
-        onEvent: (event) => {
-          if (event.type === 'step') {
-            record(threadId, { kind: 'step', id: `s-${event.step.id}`, step: event.step })
-            return
-          }
-          record(
-            threadId,
-            event.type === 'note'
-              ? { kind: 'note', id: nextId(), text: event.text }
-              : event.type === 'answer'
-                ? { kind: 'answer', id: nextId(), text: event.text }
-                : { kind: 'error', id: nextId(), text: event.reason },
-          )
-        },
-      })
+      try {
+        const run = await runAgent({
+          host,
+          llm: llm(cancel),
+          history,
+          prompt: clean,
+          ...(options.maxSteps === undefined ? {} : { maxSteps: options.maxSteps }),
+          ...(options.tools === undefined ? {} : { tools: options.tools }),
+          /*
+           * The retriever, on for the Assistant and nothing else.
+           *
+           * `tools` wins outright when a caller named one — AskBox and the
+           * pipelines choose deliberately, and this must not second-guess them.
+           * The Assistant names nothing, which is exactly the surface that was
+           * sending all 82 tools on every request.
+           *
+           * `fromHistory` is a correctness condition rather than a nicety. Thread
+           * entries live in the graph, so after a reload the transcript replays
+           * tool calls from earlier turns — and a freshly chosen set that did not
+           * contain one of them would leave the conversation naming a tool that is
+           * no longer available.
+           */
+          retrieve: { carried: null, fromHistory: namesCalledIn(history) },
+          ...(options.gate === undefined ? {} : { gate: options.gate }),
+          approve,
+          signal: cancel satisfies Cancellation,
+          onEvent: (event) => {
+            if (event.type === 'step') {
+              record(threadId, { kind: 'step', id: `s-${event.step.id}`, step: event.step })
+              return
+            }
+            record(
+              threadId,
+              event.type === 'note'
+                ? { kind: 'note', id: nextId(), text: event.text }
+                : event.type === 'answer'
+                  ? { kind: 'answer', id: nextId(), text: event.text }
+                  : { kind: 'error', id: nextId(), text: event.reason },
+            )
+          },
+        })
 
-      const finished = runs.get(threadId)
-      patch(threadId, { busy: false, pending: null })
-      inner.delete(threadId)
-      // The run's OWN thread, not whichever one is on screen now.
-      onSettled?.(threadId, finished?.entries ?? [], run.messages.slice(1))
+        const finished = runs.get(threadId)
+        // The run's OWN thread, not whichever one is on screen now.
+        onSettled?.(threadId, finished?.entries ?? [], run.messages.slice(1))
+      } catch (e) {
+        record(threadId, {
+          kind: 'error',
+          id: nextId(),
+          text:
+            e instanceof Error && e.message
+              ? `Something went wrong answering that: ${e.message}`
+              : 'Something went wrong answering that.',
+        })
+      } finally {
+        patch(threadId, { busy: false, pending: null })
+        inner.delete(threadId)
+      }
     })()
   }
 

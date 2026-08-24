@@ -52,7 +52,7 @@ const LAYERS: Layer[] = [
   {
     icon: 'cpu',
     name: '+ Local model',
-    requires: 'vLLM, Ollama or LM Studio',
+    requires: 'Ollama, vLLM or LM Studio — or a free NVIDIA key',
     gives:
       'A threaded assistant that reads and writes your records — every change shown to you first — and "Ask the graph" in a sentence',
     active: true,
@@ -69,7 +69,8 @@ const LAYERS: Layer[] = [
     icon: 'refresh-cw',
     name: '+ Your computer',
     requires: 'Both on the same network',
-    gives: 'Transfer moves the whole vault between this phone and your computer, with nothing in between',
+    gives:
+      'Transfer moves the whole vault between this phone and your computer, with nothing in between',
     active: true,
   },
 ]

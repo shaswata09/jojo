@@ -12,7 +12,7 @@ import type { ReactNode } from 'react'
  */
 export function Go({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="text-accent underline-offset-4 hover:underline">
+    <Link to={to} className="text-accent underline decoration-1 underline-offset-4 hover:decoration-2">
       {children}
     </Link>
   )

@@ -240,13 +240,21 @@ anyway, because the one target overrides them, so a second target would have
 inherited a floor below the supported one with no error. They are 16.4 now.
 Nothing enforces any of this.
 
-### iOS has never been built here
+### iOS is built but unproven
 
-Everything under `ios/` was written against the React Native 0.81 template and
-checked as far as a machine without Xcode allows: the pbxproj parses, the Swift
-parses, `npx react-native config` reports an iOS podspec for all eleven native
-modules, and the release JS bundle builds for `--platform ios`. Nothing has been
-compiled, no pods have been resolved, and no simulator has run it.
+Everything under `ios/` was written against the React Native 0.81 template. It
+has since been compiled: pods resolve, and a debug build runs in the simulator.
+Neither the pods nor the build products are committed — `mobile/.gitignore`
+excludes `ios/Pods/` and `ios/build/` — so a fresh clone still starts from
+`pod install`, and this section used to say, wrongly, that none of it had ever
+happened.
+
+What is still true is the important half: **nothing here has run on a device, no
+Share Extension exists, and no release build has been signed or archived.** A
+simulator build proves the project compiles and links. It does not prove the
+camera works, that the local-network prompt appears with the right wording, or
+that Transfer can bind a socket — which are exactly the features iOS gates
+behind entitlements and purpose strings the simulator does not enforce.
 
 The first person with a Mac and Xcode should expect to spend real time here, and
 should start with `cd ios && pod install` — that step is not optional in a new
@@ -565,9 +573,12 @@ app rather than a missing feature.
 
 **iOS gets the deep links and not the share sheet.** Receiving a share there
 needs a Share Extension, which is a second Xcode target with its own bundle id,
-entitlements and app group — and this repo has never built for iOS (see
-**iOS has never been built here**), so adding an unverifiable target would be
-worse than the honest gap.
+entitlements and app group. The old reason given here — that the repo had never
+built for iOS — no longer holds (see **iOS is built but unproven**). The reason
+that does hold is narrower: a Share Extension cannot be verified in a simulator,
+because the share sheet it registers with is a device behaviour. It stays an
+honest gap until somebody has a device to test it on, not because it cannot be
+written.
 
 ---
 

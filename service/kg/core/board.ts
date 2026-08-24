@@ -178,6 +178,37 @@ export function parseSources(source: string): string[] {
   return out
 }
 
+/**
+ * Is `url` on the same host as one of `allowed`?
+ *
+ * Host-only, because a board paginates: a person who typed `cra.org/ads` means
+ * that board, including `cra.org/ads?page=2` and `cra.org/ads/senior`. Matching
+ * the full URL would refuse the second page of the only thing the pipeline is
+ * for.
+ *
+ * Exact host, though — no suffix matching. `evil-cra.org` does not end up
+ * allowed by `cra.org`, and neither does `cra.org.attacker.net`, which is what
+ * a careless `endsWith` would admit. A subdomain the user did not name is a
+ * different server and is refused; if that turns out to bite, the fix is for
+ * them to name it, not for this to guess.
+ *
+ * Both sides go through `parseSources` first, so both are absolute URLs by the
+ * time they arrive and `new URL` cannot throw. It is still wrapped, because a
+ * refusal is the right answer to a string this cannot parse.
+ */
+export function onOneOf(url: string, allowed: readonly string[]): boolean {
+  const hostOf = (value: string): string | null => {
+    try {
+      return new URL(value).hostname.toLowerCase()
+    } catch {
+      return null
+    }
+  }
+  const host = hostOf(url)
+  if (host === null) return false
+  return allowed.some((entry) => hostOf(entry) === host)
+}
+
 /* ------------------------------ the trust boundary ------------------------ */
 
 /**

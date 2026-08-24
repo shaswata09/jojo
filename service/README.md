@@ -33,17 +33,17 @@ Two consequences that are worth knowing before reading any file:
 
 Each layer may import the ones above it and never the ones below.
 
-| Subpath                   | What it is                                                                                                                 |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `@jojo/service/core/*`    | L1. The domain model, the snapshot and its indexes, validation, projection, dates, statistics. No I/O, no clock, no React. |
-| `@jojo/service/storage/*` | L0/L2. The `Driver` port, its conformance suite, the in-memory driver, schema and migrations.                              |
-| `@jojo/service/repo/*`    | L2. `boot`, the repository, the journal, the write queue, the seed. Durability lives here.                                 |
-| `@jojo/service/tools/*`   | L3. Every write the app can make, as 73 named, undoable, schema-checked operations.                                        |
+| Subpath                   | What it is                                                                                                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@jojo/service/core/*`    | L1. The domain model, the snapshot and its indexes, validation, projection, dates, statistics. No I/O, no clock, no React.                                                                             |
+| `@jojo/service/storage/*` | L0/L2. The `Driver` port, its conformance suite, the in-memory driver, schema and migrations.                                                                                                          |
+| `@jojo/service/repo/*`    | L2. `boot`, the repository, the journal, the write queue, the seed. Durability lives here.                                                                                                             |
+| `@jojo/service/tools/*`   | L3. Every write the app can make, as 77 named, undoable, schema-checked operations.                                                                                                                    |
 | `@jojo/service/agent/*`   | L3.5. The model-facing layer: the tool catalogue as JSON Schema, the agent loop, MCP, the read-only query surface, the MarkItDown client and the posting reader. Protocols as data — it may not fetch. |
-| `@jojo/service/crypto/*`  | L1. Hashing, key agreement and the cipher behind Transfer. Sees `core` for the port's types and nothing else.               |
-| `@jojo/service/react/*`   | L4. Providers and hooks over the repository. Three `.tsx` files, all providers.                                            |
-| `@jojo/service/data/*`    | The demo fixtures. Read by `repo/seed.ts` and by `tools/memory.ts`.                                                        |
-| `@jojo/service/log`       | Logging.                                                                                                                   |
+| `@jojo/service/crypto/*`  | L1. Hashing, key agreement and the cipher behind Transfer. Sees `core` for the port's types and nothing else.                                                                                          |
+| `@jojo/service/react/*`   | L4. Providers and hooks over the repository. Three `.tsx` files, all providers.                                                                                                                        |
+| `@jojo/service/data/*`    | The demo fixtures. Read by `repo/seed.ts` and by `tools/memory.ts`.                                                                                                                                    |
+| `@jojo/service/log`       | Logging.                                                                                                                                                                                               |
 
 `package.json`'s `//exports` block explains why the map is hand-maintained, why every
 target names its extension, why there are no barrels, and why there is no `conditions`
@@ -72,13 +72,23 @@ state as one another, which is worth saying plainly.
 - **`ToastContextValue`** — `react/toast.ts`. Carries no toast list, deliberately.
   One wart: `ToastAction.onClick` is DOM vocabulary in a platform-free file, and the
   React Native adapter pays for it with a documented bridging shim.
-- **`FileStore`** — `storage/file-store.ts`. **Zero implementations. Neither app
-  imports it, and neither app imports `core/folder.ts`, which is built on it.** The
-  shape is careful and the conformance suite is written, but a conformance suite that
-  only ever runs against the in-memory stand-in proves the stand-in satisfies the
-  port and nothing else. `host.ts` states the rule this is on the wrong side of: a
-  port whose second implementation is hypothetical is a port designed against a
-  guess. Treat it as a proposal, not as settled surface.
+- **`FileStore`** — `storage/file-store.ts`. **One real implementation, and it is
+  where documents actually live.** `web/src/kg/storage/idb-file-store.ts` implements
+  it and `idb-file-store.test.ts` runs the shared conformance suite against the real
+  IndexedDB store rather than the stand-in — so the port is settled surface, not a
+  proposal. `check-no-copies.mjs` puts it more plainly than this file did: the IDB
+  file store is "the DEFAULT rather than a fallback: Brave, Firefox and Safari ship
+  no directory picker, so this is where a user's documents actually live."
+
+  This paragraph used to read "Zero implementations. Neither app imports it", and
+  told the reader to treat the port as a guess. Both halves were wrong, and the
+  advice that followed from them was worse than the error — a reader acting on it
+  would have redesigned a port that two platforms already satisfy.
+
+  What IS still unused is the other half: `core/folder.ts` (291 lines) is imported by
+  nothing but its own test. `pairFolder`, `planRebuild`, `classifyFile` and
+  `documentPath` have no production caller. That is the piece to treat as a proposal
+  — or to delete.
 
 ## Writes go through tools
 
@@ -99,7 +109,7 @@ Two rules that are easy to break and are guarded:
 
 ## The guards
 
-`npm -w @jojo/service run lint` runs oxlint and three scripts. **Both apps run them
+`npm -w @jojo/service run lint` runs oxlint and four scripts. **Both apps run them
 too**, so a violation in mobile's tree fails web's lint.
 
 - `scripts/check-layers.mjs` — the import direction above, plus what an app's adapter
@@ -138,7 +148,7 @@ to do.
 
 ## Where to look for _why_
 
-- `docs/KG-ARCHITECTURE.md` — 27 numbered decisions with their reasons. The best
+- `docs/KG-ARCHITECTURE.md` — 28 numbered decisions with their reasons. The best
   artefact in the repo for why anything is the way it is. **§3 "Public API" has
   drifted** (see the top of this file); §1 and §5 are accurate.
 - `docs/SERVICE-LAYER.md` — the migration log, written as it happened. §8.3

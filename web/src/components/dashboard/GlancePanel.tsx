@@ -299,7 +299,13 @@ export function GlancePanel() {
                   aria-label={`${month.label} ${day}${
                     count ? `, ${count} event${count > 1 ? 's' : ''}` : ', no events'
                   }${mark === 'done' ? ', all done' : ''}`}
-                  className="flex cursor-pointer flex-col items-center gap-0.5 rounded-sm py-0.5"
+                  // `touch-target` for WCAG 2.5.8: the cell draws at about
+                  // 21.7x30 in this narrow column, and the criterion wants 24
+                  // in both directions for EVERY pointer, not just a finger.
+                  // The marker inside cannot grow — it is capped at 20px so it
+                  // never outruns its track, see below — so the catch area is
+                  // the lever, exactly as it is for the keyword chevron.
+                  className="touch-target flex cursor-pointer flex-col items-center gap-0.5 rounded-sm py-0.5"
                 >
                   <span
                     className={cn(

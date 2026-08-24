@@ -29,11 +29,11 @@ import { asNull, asText, nothingToRestore, present } from './patch'
  * `[]`; a draft is what a form hands in, and requiring it would mean every
  * caller that files an item under nothing writes `applicationIds: []` to say so.
  */
-export type TimelineDraft = Omit<
-  TimelineItem,
-  'id' | 'allDay' | 'remind' | 'urgency' | 'applicationIds'
-> &
-  Partial<Pick<TimelineItem, 'allDay' | 'remind' | 'urgency' | 'applicationIds'>>
+// Defined in `core/model.ts` and re-exported here, where every caller already
+// looks for it. It moved because `core/stage-policy.ts` returns one and core
+// may not import this layer.
+export type { TimelineDraft } from '../core/model'
+import type { TimelineDraft } from '../core/model'
 
 export function useTimeline() {
   const graph = useGraph()

@@ -97,7 +97,7 @@ function KeywordMenu({
       >
         <Trash2 className="size-3.5 shrink-0" strokeWidth={1.9} aria-hidden />
         Delete keyword
-        <span className="tabular ml-auto opacity-70">{usage(used)}</span>
+        <span className="tabular ml-auto">{usage(used)}</span>
       </button>
     </>
   )
@@ -151,7 +151,7 @@ export function KeywordChip({
           className="flex cursor-pointer items-center gap-1.5 rounded-l-full py-1 pr-1 pl-2.5"
         >
           {label.name}
-          <span className="tabular opacity-70">{count}</span>
+          <span className="tabular text-text-3">{count}</span>
         </button>
 
         <PopoverTrigger

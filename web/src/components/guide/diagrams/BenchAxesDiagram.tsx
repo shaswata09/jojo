@@ -107,7 +107,7 @@ export function BenchAxesDiagram() {
                 width={filled}
                 height={BAR_H}
                 rx={4}
-                fill={last ? 'var(--warn)' : 'var(--text-3)'}
+                fill={last ? 'var(--warning)' : 'var(--text-3)'}
               />
 
               <text
@@ -115,7 +115,7 @@ export function BenchAxesDiagram() {
                 y={y + BAR_H - 3}
                 fontSize={11}
                 className="tabular"
-                fill={last ? 'var(--warn)' : 'var(--text-1)'}
+                fill={last ? 'var(--warning)' : 'var(--text-1)'}
               >
                 {Math.round(pct(bar) * 100)}%
               </text>

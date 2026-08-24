@@ -51,7 +51,10 @@ export function Screen({
   const header = (
     <View style={styles.header}>
       <View style={s.fill}>
-        <Txt size="xl" weight="semibold">
+        {/* The screen's heading, and the phone's equivalent of an <h1>. Every
+            screen goes through this frame, so one prop here gives TalkBack and
+            VoiceOver a heading to land on everywhere. */}
+        <Txt size="xl" weight="semibold" heading>
           {title}
         </Txt>
         {subtitle ? (

@@ -103,6 +103,9 @@ type Reply = {
   count?: number
   rows?: unknown
   ok?: boolean
+  /** A relayed reader answer. See `readDocument`. */
+  status?: number
+  text?: string
   error?: string | null
 }
 
@@ -112,6 +115,8 @@ type Ask = {
   ack?: string[]
   /** A board to open and read. See `scanBoard`. */
   scan?: string
+  /** A request to relay to a reader on this machine. See `readDocument`. */
+  read?: { url: string; method: string; headers: Record<string, string>; body?: string }
 }
 
 /**
@@ -213,6 +218,67 @@ export async function scanBoard(
     return { ok: false, reason: reply.error ?? 'That board could not be read.' }
   }
   return { ok: true, rows: reply.rows }
+}
+
+/**
+ * One request to the local reader, sent by the extension instead of the page.
+ *
+ * THE PROBLEM. markitdown-mcp sends no CORS headers and answers the preflight
+ * with 405, so a page cannot POST to it across ports. The dev server hides that
+ * by proxying `/reader/mcp` into same-origin territory; a hosted copy has no
+ * proxy, and an https:// page is barred from `127.0.0.1` besides, by Chrome's
+ * Local Network Access gate. Between them, the deployed app could never reach a
+ * reader running on the user's own machine.
+ *
+ * The extension is the one part of jojo that is not a page. It fetches under
+ * its own `host_permissions`, which is why board scanning already lives there —
+ * this is the same move for documents, and the worker only relays to loopback.
+ *
+ * Returns the SAME shape as `local-service`'s `send`, so `markitdown.ts` can
+ * choose a route without the protocol code above it knowing there was a choice.
+ */
+export async function readDocument(request: {
+  url: string
+  method: string
+  headers: Record<string, string>
+  body?: string
+}): Promise<
+  { ok: boolean; status: number; text: string } | { failed: { reason: string } }
+> {
+  const reply = await ask({ read: request })
+
+  if (reply === null) {
+    return {
+      failed: {
+        reason:
+          'The jojo browser extension did not answer, so the reader could not be reached. It is what lets this page talk to a reader on your own machine; Settings has the installer.',
+      },
+    }
+  }
+
+  /*
+   * An extension too old to know the verb, told apart from one that tried.
+   *
+   * The same trap `scanBoard` documents: an older bridge picks its verb by
+   * looking for `scan`, `ack` and `take`, so it forwards a read as a PEEK and
+   * answers with a count and none of a read's fields. Worth naming, because an
+   * unpacked extension never auto-updates — no channel will ever fix it for the
+   * user, so the only way they find out is a sentence that says what to do.
+   */
+  if (reply.status === undefined && reply.error == null && reply.ok !== true) {
+    return {
+      failed: {
+        reason:
+          'The installed jojo extension is too old to reach the reader. Settings has the current one; an unpacked extension never updates itself.',
+      },
+    }
+  }
+
+  // A transport failure carries a reason and no status; an HTTP answer carries
+  // a status even when it is a bad one, and belongs to the protocol layer.
+  if (reply.error != null && !reply.status) return { failed: { reason: reply.error } }
+
+  return { ok: reply.ok === true, status: reply.status ?? 0, text: reply.text ?? '' }
 }
 
 export function useCaptureInbox(): CaptureInbox {

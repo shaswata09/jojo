@@ -132,7 +132,13 @@ function useModelState(): ModelState {
         if (!stop.signal.aborted) setState('unreachable')
       })
     return () => stop.abort()
-  }, [endpoint])
+    // `settings`, not `endpoint`. `listModels` reads the key and the provider
+    // too, and the cloud providers pin their endpoint — so choosing Anthropic
+    // saved an endpoint with an empty key, the probe 401'd, and pasting the key
+    // changed nothing this effect watched. The tile then read "configured but
+    // did not answer" for the rest of the session, on every page, while the
+    // assistant worked. Only a reload cleared it.
+  }, [endpoint, settings])
 
   return state
 }

@@ -63,8 +63,8 @@ export function GuideBuiltWith() {
           </p>
           <p>
             That matters more than it sounds.{' '}
-            <span className="font-mono text-xs">package.json</span> holds ranges rather than
-            versions, so a page built from it names software nobody is running. And the obvious
+            <span className="font-mono text-xs break-all">package.json</span> holds ranges rather
+            than versions, so a page built from it names software nobody is running. And the obvious
             guess is wrong often enough to be worthless: two of these are ISC rather than MIT, three
             are Apache-2.0, the two typefaces are under the SIL Open Font License, and one states
             nothing at all.
@@ -111,11 +111,11 @@ export function GuideBuiltWith() {
               <>
                 Inter is by Rasmus Andersson and the Inter Project Authors; JetBrains Mono is by
                 JetBrains and the JetBrains Mono Project Authors. Both are self-hosted from their{' '}
-                <span className="font-mono text-xs">@fontsource-variable</span> packages, which is
-                why loading jojo fetches no font from anyone else&rsquo;s server. The OFL asks that
-                the copyright notice and the licence travel with the font files; both do, inside
-                those packages, and the notices are listed above. Reserved Font Names apply — a
-                modified copy of either face may not keep its name.
+                <span className="font-mono text-xs break-all">@fontsource-variable</span> packages,
+                which is why loading jojo fetches no font from anyone else&rsquo;s server. The OFL
+                asks that the copyright notice and the licence travel with the font files; both do,
+                inside those packages, and the notices are listed above. Reserved Font Names apply —
+                a modified copy of either face may not keep its name.
               </>
             }
           />
@@ -125,15 +125,16 @@ export function GuideBuiltWith() {
             body={
               <>
                 The scene in the sidebar is a Spline export, served from this app&rsquo;s own origin
-                as <span className="font-mono text-xs">public/mascot.splinecode</span> rather than
-                from Spline&rsquo;s CDN — a request on a page carrying somebody&rsquo;s job
-                applications would have made the promise on the dashboard false. The runtime needs a
-                492kB WebAssembly module to build the scene&rsquo;s geometry, and that is vendored
-                too, at <span className="font-mono text-xs">public/spline/process.wasm</span>, from{' '}
-                <span className="font-mono text-xs">@splinetool/modelling-wasm</span> at the version
-                matching the runtime. Credit to Spline, Inc. The scene asset&rsquo;s own terms are a
-                separate grant from the npm package&rsquo;s and have to be confirmed separately —
-                that has not been done here.
+                as <span className="font-mono text-xs break-all">public/mascot.splinecode</span>{' '}
+                rather than from Spline&rsquo;s CDN — a request on a page carrying somebody&rsquo;s
+                job applications would have made the promise on the dashboard false. The runtime
+                needs a 492kB WebAssembly module to build the scene&rsquo;s geometry, and that is
+                vendored too, at{' '}
+                <span className="font-mono text-xs break-all">public/spline/process.wasm</span>,
+                from <span className="font-mono text-xs break-all">@splinetool/modelling-wasm</span>{' '}
+                at the version matching the runtime. Credit to Spline, Inc. The scene asset&rsquo;s
+                own terms are a separate grant from the npm package&rsquo;s and have to be confirmed
+                separately — that has not been done here.
               </>
             }
           />
@@ -143,11 +144,11 @@ export function GuideBuiltWith() {
             body={
               <>
                 The thirteen components in{' '}
-                <span className="font-mono text-xs">src/components/ui</span> — button, command,
-                dialog, input, input group, label, popover, separator, spotlight, splite, switch,
-                textarea, toast — began as shadcn/ui output and live in this repository, edited
-                since. The app does not import them from a package; it owns them. Copyright (c) 2023
-                shadcn.
+                <span className="font-mono text-xs break-all">src/components/ui</span> — button,
+                command, dialog, input, input group, label, popover, separator, spotlight, splite,
+                switch, textarea, toast — began as shadcn/ui output and live in this repository,
+                edited since. The app does not import them from a package; it owns them. Copyright
+                (c) 2023 shadcn.
               </>
             }
           />
@@ -174,12 +175,13 @@ export function GuideBuiltWith() {
             warn
             body={
               <>
-                <span className="font-mono text-xs">public/transfer/scene.png</span> and{' '}
-                <span className="font-mono text-xs">scene-depth.webp</span> were pulled from a
-                third-party image host by an earlier version of that page and vendored into this
-                repository to stop the request. Where they originally came from is not written down
-                anywhere in the history, so nothing is claimed about them and nobody is credited for
-                them. That is a gap to close before this app is distributed, not a licence.
+                <span className="font-mono text-xs break-all">public/transfer/scene.png</span> and{' '}
+                <span className="font-mono text-xs break-all">scene-depth.webp</span> were pulled
+                from a third-party image host by an earlier version of that page and vendored into
+                this repository to stop the request. Where they originally came from is not written
+                down anywhere in the history, so nothing is claimed about them and nobody is
+                credited for them. That is a gap to close before this app is distributed, not a
+                licence.
               </>
             }
           />
@@ -194,15 +196,15 @@ export function GuideBuiltWith() {
                 Microsoft&rsquo;s, MIT-licensed, and converts your documents — and a job posting,
                 when you add an application from a link — to text the model can read. The{' '}
                 <span className="text-text-1">model server</span> is whichever you point at:{' '}
-                <span className="font-mono text-xs">vLLM</span>,{' '}
-                <span className="font-mono text-xs">Ollama</span>,{' '}
-                <span className="font-mono text-xs">LM Studio</span> or anything else speaking the
-                OpenAI-compatible chat-completions shape. Their names are theirs; jojo is not
-                affiliated with, endorsed by or sponsored by any of them. MarkItDown&rsquo;s licence
-                is reproduced in full in{' '}
-                <span className="font-mono text-xs">THIRD-PARTY-NOTICES.md</span> at the root; the
-                model servers are named rather than licensed here because jojo neither ships nor
-                requires any particular one.
+                <span className="font-mono text-xs break-all">vLLM</span>,{' '}
+                <span className="font-mono text-xs break-all">Ollama</span>,{' '}
+                <span className="font-mono text-xs break-all">LM Studio</span> or anything else
+                speaking the OpenAI-compatible chat-completions shape. Their names are theirs; jojo
+                is not affiliated with, endorsed by or sponsored by any of them. MarkItDown&rsquo;s
+                licence is reproduced in full in{' '}
+                <span className="font-mono text-xs break-all">THIRD-PARTY-NOTICES.md</span> at the
+                root; the model servers are named rather than licensed here because jojo neither
+                ships nor requires any particular one.
               </>
             }
           />
@@ -211,8 +213,8 @@ export function GuideBuiltWith() {
             meta="MIT — Copyright (c) 2026 Shaswata Mitra"
             body={
               <>
-                The full text is in <span className="font-mono text-xs">LICENSE</span> at the root
-                of the repository, and it is the same three paragraphs reproduced below.
+                The full text is in <span className="font-mono text-xs break-all">LICENSE</span> at
+                the root of the repository, and it is the same three paragraphs reproduced below.
               </>
             }
           />
@@ -233,13 +235,16 @@ export function GuideBuiltWith() {
         <div className="mt-4 space-y-2 border-t border-hairline pt-4 text-sm text-text-2">
           <p>
             <span className="font-medium text-text-1">Apache License 2.0</span> — covering{' '}
-            <span className="font-mono text-xs">class-variance-authority</span>,{' '}
-            <span className="font-mono text-xs">typescript</span> and{' '}
-            <span className="font-mono text-xs">fake-indexeddb</span>. It runs to some eleven
-            thousand words and is not reproduced here; the full text ships with each of those
+            <span className="font-mono text-xs break-all">class-variance-authority</span>,{' '}
+            <span className="font-mono text-xs break-all">typescript</span> and{' '}
+            <span className="font-mono text-xs break-all">fake-indexeddb</span>. It runs to some
+            eleven thousand words and is not reproduced here; the full text ships with each of those
             packages, at{' '}
-            <span className="font-mono text-xs">node_modules/&lt;package&gt;/LICENSE</span>. None of
-            the three carries a NOTICE file, so there is no additional attribution text to pass on.
+            <span className="font-mono text-xs break-all">
+              node_modules/&lt;package&gt;/LICENSE
+            </span>
+            . None of the three carries a NOTICE file, so there is no additional attribution text to
+            pass on.
           </p>
           <p>
             <span className="font-medium text-text-1">SIL Open Font License 1.1</span> — covering
@@ -278,22 +283,24 @@ export function GuideBuiltWith() {
               <PanelTitle hint="62">Every write is a named operation</PanelTitle>
               <p className="text-sm text-text-2">
                 Not "save this object" —{' '}
-                <span className="font-mono text-xs">application.create</span>,{' '}
-                <span className="font-mono text-xs">timeline.item.snooze</span>,{' '}
-                <span className="font-mono text-xs">keyword.detach</span>. One registry holds all
-                62, which is what the ⌘K palette runs, what the audit log lists by name, and what
-                the undo message is titled after. An action that writes nothing is not one of them.
+                <span className="font-mono text-xs break-all">application.create</span>,{' '}
+                <span className="font-mono text-xs break-all">timeline.item.snooze</span>,{' '}
+                <span className="font-mono text-xs break-all">keyword.detach</span>. One registry
+                holds all 62, which is what the ⌘K palette runs, what the audit log lists by name,
+                and what the undo message is titled after. An action that writes nothing is not one
+                of them.
               </p>
             </Panel>
 
             <Panel>
               <PanelTitle hint="57 files, 697 tests">Tested where it counts</PanelTitle>
               <p className="text-sm text-text-2">
-                31 of those files are in <span className="font-mono text-xs">service/</span>, the
-                package both apps import, against a real IndexedDB implementation running in Node.
-                There are no component tests and no browser in the suite — a deliberate line: the
-                record model is where a silent mistake costs you data, and the whole thing runs in
-                about three seconds, which is what makes anyone run it.
+                31 of those files are in{' '}
+                <span className="font-mono text-xs break-all">service/</span>, the package both apps
+                import, against a real IndexedDB implementation running in Node. There are no
+                component tests and no browser in the suite — a deliberate line: the record model is
+                where a silent mistake costs you data, and the whole thing runs in about three
+                seconds, which is what makes anyone run it.
               </p>
             </Panel>
 

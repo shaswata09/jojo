@@ -1,6 +1,6 @@
 import { useId } from 'react'
-import { FORMATS, OUTCOMES } from '@/components/applications/dialog/transition-options'
-import type { Format } from '@/components/applications/dialog/transition-options'
+import { FORMATS, OUTCOMES } from '@jojo/service/core/transition-options'
+import type { Format } from '@jojo/service/core/transition-options'
 import { Field, FormField, SettingRow, TextareaField } from '@/components/common/Field'
 import { Segment } from '@/components/common/Segment'
 import { Switch } from '@/components/ui/switch'

@@ -87,11 +87,35 @@ export async function restoreBackup(
   plan: RestorePlan,
   at: string,
 ): Promise<RestoreOutcome> {
+  // An empty backup is well-formed and must still be refused.
+  //
+  // `readBackup` checks that `nodes` IS an array and never that it holds
+  // anything, so `{graph:{nodes:[],edges:[]}}` passes every validation above
+  // this line. Without this guard the swap below runs with nothing in it, every
+  // record is replaced by no records, and the caller is handed `ok: true` to
+  // report as a success. `replaceAll` commits with `ops: []`, so there is no
+  // undo to reach for afterwards.
+  //
+  // It is reachable without anybody doing anything strange: export from a
+  // device that has just been set up, or receive a handoff from one, then
+  // restore that file onto the machine that holds the real records.
+  //
+  // Deliberately BEFORE the salvage check below, so the message names what is
+  // actually wrong with the file rather than blaming a validator that never
+  // rejected anything.
+  if (plan.nodes.length === 0) {
+    return {
+      ok: false,
+      message:
+        'That backup holds no records at all. Nothing has been changed — restoring it would have emptied this device.',
+    }
+  }
+
   // Salvage rather than refuse: `validateRows` drops a row it cannot read and
   // reports it, which is the right trade when the alternative is refusing a
   // whole backup over one damaged record.
   const checked = validateRows(plan.nodes, plan.edges, { salvage: true })
-  if (checked.nodes.length === 0 && plan.nodes.length > 0) {
+  if (checked.nodes.length === 0) {
     return {
       ok: false,
       message: 'Not one record in that file could be read. Nothing has been changed.',

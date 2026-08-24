@@ -314,7 +314,11 @@ export function JobScoutScreen() {
                     disabled={engine.paused || engine.running !== null}
                     onPress={() => engine.runNow(p.id)}
                   />
-                  <IconButton icon="edit-2" label={`Edit ${p.name}`} onPress={() => setEditing(p)} />
+                  <IconButton
+                    icon="edit-2"
+                    label={`Edit ${p.name}`}
+                    onPress={() => setEditing(p)}
+                  />
                   <IconButton
                     icon="trash-2"
                     tone="danger"
@@ -520,7 +524,12 @@ export function JobScoutScreen() {
         description="It has run twice without finding anything to suggest, and there is nothing waiting for you to answer. Switching it off stops it looking; everything it has already found stays where it is."
         footer={
           <>
-            <Button label="Keep it running" variant="ghost" size="md" onPress={engine.dismissShutdown} />
+            <Button
+              label="Keep it running"
+              variant="ghost"
+              size="md"
+              onPress={engine.dismissShutdown}
+            />
             <Button label="Switch it off" size="md" onPress={engine.acceptShutdown} />
           </>
         }
@@ -624,7 +633,9 @@ function PipelineEditor({
           required
           value={name}
           error={attempted && !name.trim() ? 'Name it after what it watches.' : undefined}
-          placeholder={kind === 'twin' ? 'e.g. Keep my applications tidy' : 'e.g. CRA faculty job board'}
+          placeholder={
+            kind === 'twin' ? 'e.g. Keep my applications tidy' : 'e.g. CRA faculty job board'
+          }
           onChangeText={setName}
         />
         {needsSource ? (
@@ -635,7 +646,9 @@ function PipelineEditor({
             autoCapitalize="none"
             value={source}
             error={
-              attempted && !source.trim() ? 'A scout with no source has nothing to read.' : undefined
+              attempted && !source.trim()
+                ? 'A scout with no source has nothing to read.'
+                : undefined
             }
             hint="The board or careers page it watches. Separate several with commas."
             placeholder="cra.org/ads"

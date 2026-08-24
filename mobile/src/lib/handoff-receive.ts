@@ -51,8 +51,7 @@ export type ReceiveSession = {
 }
 
 export type ReceiveResult =
-  | { ok: true; value: ReceiveSession }
-  | { ok: false; error: ReceiveProblem }
+  { ok: true; value: ReceiveSession } | { ok: false; error: ReceiveProblem }
 
 /** This device's address on the local network, or why there is not one. */
 async function localAddress(port: number): Promise<ReceiveResult | DialAddress> {

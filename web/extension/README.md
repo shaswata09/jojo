@@ -1,8 +1,15 @@
 # jojo — keep this posting
 
-A browser extension with two jobs: it saves a job posting into your jojo vault
-exactly as it reads today, and it is how the Job Scout agent reads a job board —
-nothing else in jojo can open a web page.
+A browser extension with three jobs, and they are all the same job wearing
+different hats: **it is the part of jojo that is not a page.**
+
+1. It saves a job posting into your jojo vault exactly as it reads today.
+2. It is how the Job Scout agent reads a job board.
+3. It is how a hosted copy of jojo reaches a document reader running on your own
+   machine.
+
+Nothing else in jojo can open a web page, and nothing else can call a server on
+`127.0.0.1` from a page served over https.
 
 It exists because a job posting is the one document in a search that belongs to
 somebody else. The listing comes down the week after the interview and takes the
@@ -23,6 +30,46 @@ with your cookies attached. Nothing else has that view:
 - A localhost helper would be no better. A server has no session either.
 
 A content script running in the tab does have that view. That is the whole job.
+
+## The same argument, for the document reader
+
+jojo can read what is inside your PDFs and Word files by asking
+[MarkItDown](https://github.com/microsoft/markitdown) — `markitdown-mcp`, run by
+you, listening on `127.0.0.1:3001`. A page cannot call it, and there are two
+independent reasons rather than one:
+
+- **No CORS headers.** Measured against markitdown 1.8.1: the response carries no
+  `access-control-allow-origin` at all, and the preflight `OPTIONS` answers
+  **405**. So a page on one port cannot POST to it on another, however local both
+  are.
+- **Local Network Access.** An `https://` page may not reach `127.0.0.1` even
+  with the headers, because Chrome made it a user permission rather than a header
+  negotiation. `docs/NO-SERVER.md` §1.2 has the measurement, including the
+  control that confirms causation.
+
+Running jojo from the dev server hides the first and sidesteps the second: the
+server proxies `/reader/mcp`, so the request is same-origin. A **hosted** copy has
+no proxy to use — a static host has no process to forward anything with — so
+before this the deployed app simply could not use a local reader.
+
+The extension is not a page. It fetches under its own `host_permissions`, so
+neither rule applies to it. jojo now hands it the reader request and it makes the
+hop.
+
+**Loopback only, and that is the point rather than caution.** This relays a
+request the page composed, using the extension's permissions. Without a check on
+the address, any script that got onto jojo's origin could ask the worker to fetch
+anything on the web and read the answer back — an open proxy wearing jojo's
+permissions, which is a much worse bug than the one it fixes. So the worker
+parses the address and refuses anything that is not `127.0.0.1`, `localhost` or
+`[::1]` over plain http. It is parsed rather than string-matched because
+`http://127.0.0.1@evil.example.com/` passes a `startsWith` test and is a request
+to evil.example.com; `web/src/lib/reader-relay.test.ts` executes the real
+function out of `background.js` and asserts exactly that case.
+
+Board scanning is deliberately different — opening a public page IS its feature,
+and it has its own guards. Reading a document has no business leaving this
+machine, so it cannot.
 
 ## Loading it
 

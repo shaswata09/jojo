@@ -142,6 +142,22 @@ export type Tool<I, O = void> = {
   /** Hidden from the palette and the inspector: `org.ensure` and friends. */
   readonly internal?: boolean
   /**
+   * A write the SYSTEM performs, so it stays out of the user's undo ring.
+   *
+   * Distinct from `internal`, which is only about whether a tool shows up in
+   * the palette — `profile.set` is internal and is very much a user's own edit,
+   * so the two must not be conflated. This flag means nobody pressed anything:
+   * the pipeline timer fired and something had to be recorded.
+   *
+   * Without it, ⌘Z after a background round undoes "Pipeline ran" instead of
+   * whatever the person actually did — and because that restores the previous
+   * `lastRunAt`, the pipeline immediately runs again.
+   *
+   * The write is still journalled and still audited. This changes which stack
+   * it lands on, nothing else.
+   */
+  readonly system?: boolean
+  /**
    * Excluded from the journal.
    *
    * The admin tools already go through a confirmation dialog rather than an undo

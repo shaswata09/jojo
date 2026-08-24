@@ -55,7 +55,10 @@ export function PanelTitle({
   return (
     <View style={[styles.titleRow, style]}>
       <View style={s.fill}>
-        <Txt size="md" weight="medium">
+        {/* The section heading inside a screen — the level below `Screen`'s
+            title. Marked so a rotor can step through the panels on a screen
+            rather than only landing on its title. */}
+        <Txt size="md" weight="medium" heading>
           {children}
         </Txt>
         {hint ? (
