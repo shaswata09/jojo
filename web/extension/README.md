@@ -113,9 +113,12 @@ machine, and hands it to jojo the next time you open it.
 
 The icons are drawn by `web/scripts/make-extension-icons.mjs`, which runs before
 every pack. They are jojo's robot head — the same mark as the browser tab's
-favicon, with the geometry converted from `web/public/favicon.svg`'s own viewBox
-rather than redrawn by eye. Editing the PNGs directly is pointless: the next
-build overwrites them.
+favicon and as both app launchers, and the drawing is shared rather than
+repeated: `scripts/jojo-mark.mjs` at the root of the repo holds the geometry,
+copied out of `web/public/favicon.svg`'s own 512-unit viewBox rather than
+redrawn by eye, and `mobile/scripts/make-app-icons.mjs` draws the phone icons
+from the same file. Editing the PNGs directly is pointless: the next build
+overwrites them.
 
 `policy.js` is a hand copy, because an extension loaded from disk cannot import
 from the workspace. It is not trusted to stay in step:

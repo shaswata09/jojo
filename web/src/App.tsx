@@ -7,6 +7,7 @@ import { GuideBuiltWith } from '@/components/guide/GuideBuiltWith'
 import { GuideGraph } from '@/components/guide/GuideGraph'
 import { GuideOverview } from '@/components/guide/GuideOverview'
 import { GuideScreens } from '@/components/guide/GuideScreens'
+import { GuideTools } from '@/components/guide/GuideTools'
 import { AppShell } from '@/components/layout/AppShell'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useTitle } from '@/lib/links'
@@ -167,6 +168,7 @@ export default function App() {
             <Route index element={<GuideOverview />} />
             <Route path="screens" element={<GuideScreens />} />
             <Route path="graph" element={<GuideGraph />} />
+            <Route path="tools" element={<GuideTools />} />
             <Route path="built-with" element={<GuideBuiltWith />} />
           </Route>
           <Route

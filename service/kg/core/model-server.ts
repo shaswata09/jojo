@@ -17,6 +17,9 @@
  * already have running.
  */
 
+import { anthropicChatRequest, readAnthropicTurn } from './anthropic'
+import { endpointOf, providerMeta, type ModelSettings } from './provider'
+
 /** A server the user has connected to and kept. */
 export type ModelServer = {
   /**
@@ -223,8 +226,19 @@ export type ModelFailure = {
 /** Long enough for a cold local model, short enough to not read as a hang. */
 export const MODEL_TIMEOUT_MS = 60_000
 
-export const isConfigured = (settings: { endpoint: string; model: string }): boolean =>
-  settings.endpoint.trim().length > 0 && settings.model.trim().length > 0
+/*
+ * `isConfigured` used to live here and asked two questions: is there an
+ * endpoint, and is there a model. That was the whole of "configured" while
+ * every provider was a URL the user typed. It is not any more — a cloud
+ * provider has a fixed endpoint and needs a key — so the rule moved to
+ * `provider.ts` next to the table it has to consult, and is re-exported here so
+ * that callers importing it from the module that always had it keep working.
+ *
+ * Re-exported rather than reimplemented. Two functions with this name answering
+ * slightly different questions is exactly the drift `check-no-copies` exists to
+ * prevent and cannot see, because it compares files rather than exported names.
+ */
+export { isConfigured } from './provider'
 
 /** Ask a server what it serves. */
 export const modelsRequest = (endpoint: string): ModelRequest => ({
@@ -233,8 +247,21 @@ export const modelsRequest = (endpoint: string): ModelRequest => ({
   headers: { Accept: 'application/json' },
 })
 
+/**
+ * A request to whichever provider is configured.
+ *
+ * Three dialects behind one signature. The caller — nine lines of `fetch` in
+ * each app — posts `url`, `method`, `headers` and `body` without knowing which
+ * of them it is talking to, which is what kept adding Claude to a change in
+ * this file rather than a change in both apps.
+ *
+ * `browser` is passed rather than detected because this layer has no globals to
+ * detect with, and because the answer differs per app rather than per call:
+ * Anthropic blocks browser origins unless the caller opts in by name, and there
+ * is no origin to opt in for on a phone.
+ */
 export const chatRequest = (
-  settings: { endpoint: string; model: string },
+  settings: ModelSettings,
   messages: readonly ChatMessage[],
   /**
    * The tools the model may call this turn, in OpenAI's `tools` shape.
@@ -245,21 +272,90 @@ export const chatRequest = (
    * template is a 400 rather than a plain answer.
    */
   tools?: readonly unknown[],
-): ModelRequest => ({
-  url: chatUrl(settings.endpoint),
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    model: settings.model.trim(),
-    messages,
-    ...(tools && tools.length > 0 ? { tools, tool_choice: 'auto' } : {}),
-    // Streaming would be nicer and is a bigger change: it needs a reader on a
-    // platform whose fetch does not give one without a polyfill. A local model
-    // answers fast enough that the wait is tolerable, and a partial answer that
-    // stops mid-sentence on a dropped socket is its own problem.
-    stream: false,
-  }),
-})
+  browser = false,
+): ModelRequest => {
+  const meta = providerMeta(settings.provider)
+  const endpoint = endpointOf(settings)
+  const key = (settings.apiKey ?? '').trim()
+
+  if (meta.dialect === 'anthropic') {
+    return anthropicChatRequest({ ...settings, endpoint }, messages, tools, browser)
+  }
+
+  if (meta.dialect === 'ollama') return ollamaChatRequest(settings, endpoint, messages, tools)
+
+  return {
+    url: chatUrl(endpoint),
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // Only when the provider actually wants one. A bearer header sent to a
+      // local server is harmless but it is also a key leaving the machine for
+      // no reason, and this app should not do that by accident.
+      ...(meta.needsKey && key ? { Authorization: `Bearer ${key}` } : {}),
+    },
+    body: JSON.stringify({
+      model: settings.model.trim(),
+      messages,
+      ...(tools && tools.length > 0 ? { tools, tool_choice: 'auto' } : {}),
+      // Streaming would be nicer and is a bigger change: it needs a reader on a
+      // platform whose fetch does not give one without a polyfill. A local model
+      // answers fast enough that the wait is tolerable, and a partial answer that
+      // stops mid-sentence on a dropped socket is its own problem.
+      stream: false,
+    }),
+  }
+}
+
+/**
+ * Ollama's own endpoint, for the two things its OpenAI shim cannot express.
+ *
+ * `/v1/chat/completions` on Ollama silently discards any key it does not
+ * recognise, and it recognises no context control at all — so a setting offered
+ * through it would appear to work and do nothing, which is worse than not
+ * offering one. The native path takes both of the fields that matter:
+ *
+ * **`shift: false`** is the prize, and it is not `num_ctx`. By default Ollama
+ * TRUNCATES a prompt that will not fit — dropping whole messages from the front
+ * and, when even the last one is too big, sending it anyway. Nothing on the wire
+ * says so. With `shift:false` it answers 400 with a sentence a person can act
+ * on, and Ollama's CORS headers are global, so unlike vLLM that sentence is
+ * actually readable from a browser.
+ *
+ * **`options.num_ctx`**, and only when the user stored a number themselves.
+ * Sending one from a default would be worse than sending none: it disables
+ * Ollama's own VRAM back-off, and asking for 32k on a laptop that cannot hold
+ * it turns a degraded answer into a failed load. `contextOf` is the number jojo
+ * PLANS against; `settings.contextWindow` is the number it INSTRUCTS with, and
+ * they are deliberately different reads.
+ */
+function ollamaChatRequest(
+  settings: ModelSettings,
+  endpoint: string,
+  messages: readonly ChatMessage[],
+  tools?: readonly unknown[],
+): ModelRequest {
+  // A stored endpoint may carry the `/v1` the shim wanted; native must not.
+  const base = normaliseEndpoint(endpoint).replace(/\/v\d+$/, '')
+  const explicit = settings.contextWindow
+  return {
+    url: `${base}/api/chat`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: settings.model.trim(),
+      messages,
+      ...(tools && tools.length > 0 ? { tools } : {}),
+      // Native defaults `stream` to TRUE, where the shim defaults it to false.
+      stream: false,
+      // Refuse rather than lie. See the header.
+      shift: false,
+      // Stops the model unloading between turns of one conversation.
+      keep_alive: '30m',
+      ...(typeof explicit === 'number' && explicit > 0 ? { options: { num_ctx: explicit } } : {}),
+    }),
+  }
+}
 
 /**
  * Turns a non-200 into a sentence, quoting the server rather than paraphrasing.
@@ -362,9 +458,133 @@ export type ToolCall = {
  * also calling the read. Neither is not: a turn with no text and no calls is a
  * server answering nothing, and is reported as malformed rather than looping.
  */
+/**
+ * What the server says it actually read, when it says anything.
+ *
+ * `prompt_tokens` is the number that matters and it is the only way a client
+ * can catch the worst failure this app has. A server whose context window is
+ * smaller than the request does not always refuse: Ollama TRUNCATES, and what
+ * gets dropped is the front of the prompt — which, in a tool-calling chat
+ * template, is the tool list and the system prompt. The model then answers
+ * confidently, having never seen the question or the tools, and the person
+ * reads that as a stupid assistant rather than a misconfigured server.
+ *
+ * Nothing in the response says "I truncated". But `usage.prompt_tokens` is the
+ * server's own count of what it evaluated, and the client knows what it sent —
+ * so the two disagreeing IS the signal. See `readTurn` and `truncationOf`.
+ */
+export type Usage = {
+  /** Tokens the server says it evaluated of the prompt. */
+  readonly promptTokens: number | null
+  readonly completionTokens: number | null
+}
+
 export type Turn =
-  | { ok: true; text: string | null; toolCalls: readonly ToolCall[]; finishReason: string | null }
+  | {
+      ok: true
+      text: string | null
+      toolCalls: readonly ToolCall[]
+      finishReason: string | null
+      /**
+       * Absent on servers that do not report it, and never invented.
+       *
+       * Optional rather than `Usage | null` so that every existing way of
+       * building a Turn — the tests' scripted models, the pipelines' fakes —
+       * stays valid. A turn that says nothing about usage is a legitimate
+       * turn; only a turn that CLAIMS a small prompt count is evidence.
+       */
+      usage?: Usage | null
+    }
   | ModelFailure
+
+/**
+ * The answer, whichever dialect it came back in.
+ *
+ * Dispatches on the same fact `chatRequest` did. Passing the settings rather
+ * than remembering what was sent keeps the two halves impossible to mismatch —
+ * a response parsed as the wrong dialect reports "not in the expected shape",
+ * which sends a reader to entirely the wrong problem.
+ */
+export function readTurnFor(settings: ModelSettings, response: ModelResponse): Turn {
+  const meta = providerMeta(settings.provider)
+  if (meta.dialect === 'anthropic') return readAnthropicTurn(response)
+  if (meta.dialect === 'ollama') return readOllamaTurn(response)
+  return readTurn(response)
+}
+
+/**
+ * Ollama's native answer, which is its OpenAI shim's answer with the wrapping off.
+ *
+ * Four differences, and the second is the one that would have gone unnoticed:
+ * there is no `choices` array; `tool_calls[].function.arguments` is an OBJECT
+ * rather than a JSON string, so the existing parser would have read every call
+ * as having no arguments at all; there is no `type: 'function'` and often no
+ * id; and the finish reason is `done_reason`, which says "stop" even when the
+ * model called something.
+ */
+export function readOllamaTurn(response: ModelResponse): Turn {
+  if (!response.ok) return refused(response.status, response.text)
+  const payload = parse(response.text)
+  if (typeof payload !== 'object' || payload === null) {
+    return { ok: false, kind: 'malformed', reason: 'The server answered, but not in JSON.' }
+  }
+  const message = (payload as { message?: unknown }).message
+  if (typeof message !== 'object' || message === null) {
+    return {
+      ok: false,
+      kind: 'malformed',
+      reason: 'The server answered, but not in the shape Ollama uses.',
+    }
+  }
+
+  const content = readContent(message)
+  const raw = (message as { tool_calls?: unknown }).tool_calls
+  const toolCalls: ToolCall[] = []
+  if (Array.isArray(raw)) {
+    for (const [index, entry] of raw.entries()) {
+      if (typeof entry !== 'object' || entry === null) continue
+      const fn = (entry as { function?: unknown }).function
+      if (typeof fn !== 'object' || fn === null) continue
+      const name = (fn as { name?: unknown }).name
+      if (typeof name !== 'string' || name.length === 0) continue
+      // An object here, not a string. Read as a string it would be `''`, and
+      // every native tool call would run with no arguments.
+      const args = (fn as { arguments?: unknown }).arguments ?? {}
+      const id = (entry as { id?: unknown }).id
+      toolCalls.push({
+        id: typeof id === 'string' && id.length > 0 ? id : `call_${String(index)}`,
+        name,
+        args,
+        raw: JSON.stringify(args),
+      })
+    }
+  }
+
+  if (content === null && toolCalls.length === 0) {
+    return {
+      ok: false,
+      kind: 'malformed',
+      reason: 'The model returned an empty turn — no answer and no tool call.',
+    }
+  }
+
+  const done = (payload as { done_reason?: unknown }).done_reason
+  const prompt = (payload as { prompt_eval_count?: unknown }).prompt_eval_count
+  const completion = (payload as { eval_count?: unknown }).eval_count
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null)
+  return {
+    ok: true,
+    text: content,
+    toolCalls,
+    // `done_reason` says "stop" even with calls present — the shim rewrites it
+    // and native does not — so the calls above are the honest signal, not this.
+    finishReason: typeof done === 'string' ? done : null,
+    usage:
+      num(prompt) === null && num(completion) === null
+        ? null
+        : { promptTokens: num(prompt), completionTokens: num(completion) },
+  }
+}
 
 export function readTurn(response: ModelResponse): Turn {
   if (!response.ok) return refused(response.status, response.text)
@@ -393,8 +613,81 @@ export function readTurn(response: ModelResponse): Turn {
     text: content,
     toolCalls,
     finishReason: typeof finish === 'string' ? finish : null,
+    usage: readUsage(payload),
   }
 }
+
+/**
+ * `usage`, when the server sends it. Null rather than zeroes when it does not.
+ *
+ * The distinction is the whole point: a server that reports nothing must not be
+ * accused of truncating, and a zero would do exactly that. vLLM, Ollama and LM
+ * Studio all send this block; the null branch exists for anything that does not.
+ */
+function readUsage(payload: unknown): Usage | null {
+  if (typeof payload !== 'object' || payload === null) return null
+  const usage = (payload as { usage?: unknown }).usage
+  if (typeof usage !== 'object' || usage === null) return null
+  const num = (v: unknown): number | null =>
+    typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null
+  const prompt = num((usage as { prompt_tokens?: unknown }).prompt_tokens)
+  const completion = num((usage as { completion_tokens?: unknown }).completion_tokens)
+  if (prompt === null && completion === null) return null
+  return { promptTokens: prompt, completionTokens: completion }
+}
+
+/**
+ * Roughly how many tokens a request body is, without a tokeniser.
+ *
+ * `chars / 3.6`, which is deliberately crude and deliberately documented as
+ * such. A real tokeniser would be a dependency per model family, and this
+ * number is never used to make a decision that needs to be exact — only to
+ * notice a server that evaluated a small FRACTION of what it was sent. The
+ * divisor was calibrated against this app's own catalog: 56,071 characters of
+ * tool schema measured as 15,575 tokens.
+ */
+export const estimateTokens = (body: string): number => Math.round(body.length / 3.6)
+
+/**
+ * How much of the prompt the server appears to have thrown away.
+ *
+ * Returns null when there is nothing to say — no usage reported, or the counts
+ * broadly agree. A number is only produced when the server evaluated
+ * materially less than was sent, which is the case worth interrupting someone
+ * over.
+ *
+ * ## Why the threshold is generous
+ *
+ * Because the estimate is crude and the two numbers are counting slightly
+ * different things. A chat template adds control tokens the client never sees;
+ * a tokeniser splits JSON punctuation in ways `chars/3.6` cannot predict; and
+ * a server with a warm prefix cache may report cached tokens differently. All
+ * of that is noise in the tens of percent, and none of it is the failure being
+ * looked for — truncation to a 4k window from a 19k prompt is a FOUR-FOLD
+ * disagreement. Half is comfortably outside the noise and comfortably inside
+ * the thing worth catching.
+ */
+export const TRUNCATION_RATIO = 0.5
+
+export function truncationOf(sentBody: string, usage: Usage | null): number | null {
+  if (usage?.promptTokens == null) return null
+  const sent = estimateTokens(sentBody)
+  // A tiny prompt has too little signal; the ratio is meaningless on 40 tokens.
+  if (sent < 1000) return null
+  return usage.promptTokens < sent * TRUNCATION_RATIO ? usage.promptTokens : null
+}
+
+/**
+ * The sentence for a server that quietly dropped most of the prompt.
+ *
+ * It names both numbers, because the person can act on the gap and cannot act
+ * on "something went wrong". And it gives the two fixes in the order of
+ * likelihood: raise the window, or ask for less.
+ */
+export const truncationWarning = (evaluated: number, sent: number): string =>
+  `The server read about ${String(evaluated).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} tokens of the roughly ` +
+  `${String(sent).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} jojo sent, so it silently dropped the rest — ` +
+  `including, most likely, the tool list and your question. Raise the model's context window, or ask from a page that offers fewer tools.`
 
 function firstChoice(payload: unknown): unknown {
   if (typeof payload !== 'object' || payload === null) return undefined

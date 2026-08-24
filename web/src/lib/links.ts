@@ -115,7 +115,7 @@ export function assistantPath() {
 }
 
 /**
- * The documentation section: four pages under one path.
+ * The documentation section: five pages under one path.
  *
  * The order is part of the contract rather than a detail of whichever component
  * draws the list — the rail numbers these, the pager walks them, and a "next"
@@ -128,7 +128,7 @@ export function assistantPath() {
  * landing somewhere real. Same rule as everywhere else in this file: the
  * default is omitted from the URL.
  */
-export const GUIDE_PAGES = ['overview', 'screens', 'graph', 'built-with'] as const
+export const GUIDE_PAGES = ['overview', 'screens', 'graph', 'tools', 'built-with'] as const
 export type GuidePage = (typeof GUIDE_PAGES)[number]
 
 const GUIDE_DEFAULTS = { page: 'overview' } as const

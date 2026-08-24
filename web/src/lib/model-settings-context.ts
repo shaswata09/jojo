@@ -37,22 +37,29 @@ export const READER_KEY = 'jojo/document-reader/v1'
 export const SERVERS_KEY = 'jojo/model-servers/v1'
 
 /** Empty rather than a guess: an unconfigured app must read as unconfigured. */
-export const DEFAULTS: ModelSettings = { endpoint: '', model: '' }
+export const DEFAULTS: ModelSettings = {
+  /*
+   * The open-ended provider, not a named one.
+   *
+   * An unconfigured app must read as unconfigured — the same reason `endpoint`
+   * and `model` are empty rather than guessed. Defaulting to a specific
+   * provider would put its name on screen before the person has chosen, and a
+   * guess printed where the answer goes is a guess they have to notice is
+   * wrong.
+   */
+  provider: 'openai-compatible',
+  endpoint: '',
+  model: '',
+}
 
-/**
- * The three servers worth offering by name, with the port each ships with.
+/*
+ * The three suggested addresses moved into `core/provider.ts`.
  *
- * The port is the whole value of this list. Everyone who runs a local model
- * knows what they are running; nobody remembers whether Ollama is 11434 or
- * 11343. No model is suggested alongside it — the server is asked for that now,
- * and a guess printed in the field where the answer goes is a guess the user has
- * to notice is wrong.
+ * They were a label and a port; a provider is a label, a port, a dialect, a
+ * key requirement and a context default, and every one of those is needed at
+ * the same moment. Keeping a second list of two of the five fields beside the
+ * real one is how the two end up disagreeing about which port Ollama uses.
  */
-export const SUGGESTIONS: readonly { label: string; endpoint: string }[] = [
-  { label: 'vLLM', endpoint: 'http://localhost:8000/v1' },
-  { label: 'Ollama', endpoint: 'http://localhost:11434/v1' },
-  { label: 'LM Studio', endpoint: 'http://localhost:1234/v1' },
-]
 
 export type ModelSettingsValue = {
   settings: ModelSettings

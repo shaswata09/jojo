@@ -9,7 +9,13 @@ import { Button } from '@/components/ui/button'
 import { listModels } from '@/lib/llm'
 import { testReader } from '@/lib/markitdown'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
-import { SUGGESTIONS, useModelSettings } from '@/lib/model-settings-context'
+import { useModelSettings } from '@/lib/model-settings-context'
+import {
+  PROVIDERS,
+  cleanKey,
+  providerMeta,
+  type ProviderId,
+} from '@jojo/service/core/provider'
 
 /**
  * Where the user's documents are, and the one thing jojo can talk to outside
@@ -68,6 +74,8 @@ function LocalModelPanel() {
    * without pressing anything: the stored model got there by a successful test
    * in an earlier session.
    */
+  /** Everything that differs between providers, looked up once per render. */
+  const provider = providerMeta(settings.provider)
   const [endpoint, setEndpoint] = useState(settings.endpoint)
   const [model, setModel] = useState(settings.model)
   /*
@@ -111,7 +119,7 @@ function LocalModelPanel() {
     setNameEdit(null)
     setFailure(null)
     setListOpen(false)
-    save({ endpoint: server.endpoint, model: server.model })
+    save({ ...settings, endpoint: server.endpoint, model: server.model })
   }
 
   const onTest = async () => {
@@ -130,7 +138,7 @@ function LocalModelPanel() {
     const label = saved?.name ?? found
     setModel(found)
     setNameEdit(null)
-    save({ endpoint: endpoint.trim(), model: found })
+    save({ ...settings, endpoint: endpoint.trim(), model: found })
     // Saved under the model's own name unless this address already had one the
     // user chose. That is the "auto-saved" half: connecting is the act, and
     // keeping the address is a consequence of it rather than a second button.
@@ -170,12 +178,51 @@ function LocalModelPanel() {
           </button>
         }
       >
-        Local model
+        Model
       </PanelTitle>
       <p className="mb-3 text-sm text-text-2">
-        Point at any local server: vLLM, Ollama or LM Studio. Test the connection and it will name
-        its own model.
+        A model on this machine, or one you pay for. Local is the default because it is the only
+        option where your records never leave the device.
       </p>
+
+      {/* The provider first, because every field under it depends on the answer:
+          a local server needs an address, a cloud one needs a key and has its
+          address already. */}
+      <div className="mb-3">
+        <label className="mb-1.5 block text-sm font-medium" htmlFor="provider">
+          Provider
+        </label>
+        <select
+          id="provider"
+          className="h-9 w-full rounded-md border border-hairline bg-panel px-2.5 text-sm"
+          value={settings.provider}
+          onChange={(e) => {
+            const next = e.target.value as ProviderId
+            const meta = providerMeta(next)
+            /*
+             * The endpoint is replaced rather than kept. A fixed-endpoint
+             * provider ignores what is stored anyway, and carrying
+             * `http://localhost:11434` across into a Claude request would fail
+             * for a reason nobody could guess from the screen.
+             */
+            setEndpoint(meta.endpoint)
+            save({ ...settings, provider: next, endpoint: meta.endpoint, model: '' })
+            setModel('')
+          }}
+        >
+          {PROVIDERS.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+        {provider.cloud ? (
+          <p className="mt-1.5 text-xs text-warn">
+            Everything you ask goes to {provider.label} and is billed to your account. jojo is
+            local-first; this is the one part that is not.
+          </p>
+        ) : null}
+      </div>
 
       {listOpen ? (
         <SavedServers
@@ -187,18 +234,46 @@ function LocalModelPanel() {
       ) : null}
 
       <div className="space-y-3">
-        <Field
-          label="Endpoint"
-          mono
-          type="url"
-          spellCheck={false}
-          value={endpoint}
-          placeholder="http://localhost:8000/v1"
-          hint="The base URL, ending in /v1."
-          onChange={(e) => {
-            onEndpointChange(e.target.value)
-          }}
-        />
+        {provider.fixedEndpoint ? null : (
+          <Field
+            label="Endpoint"
+            mono
+            type="url"
+            spellCheck={false}
+            value={endpoint}
+            placeholder={provider.endpoint || 'http://localhost:8000/v1'}
+            hint={
+              provider.dialect === 'ollama'
+                ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
+                : 'The base URL, ending in /v1.'
+            }
+            onChange={(e) => {
+              onEndpointChange(e.target.value)
+            }}
+          />
+        )}
+
+        {provider.needsKey ? (
+          <Field
+            label="API key"
+            mono
+            type="password"
+            spellCheck={false}
+            autoComplete="off"
+            value={settings.apiKey ?? ''}
+            placeholder="sk-…"
+            /*
+             * Said plainly, because a person pasting a key deserves to know
+             * where it goes. It is stored beside the app's other settings, not
+             * inside the records — which is why a backup export cannot contain
+             * it even by accident.
+             */
+            hint="Kept in this browser only. It is never put in a backup and never sent anywhere but the provider."
+            onChange={(e) => {
+              save({ ...settings, apiKey: cleanKey(e.target.value) })
+            }}
+          />
+        ) : null}
         {/* Empty and unusable until a server has answered. The model id is the
             server's to state, not the user's to guess, and a field offering to
             take a guess is a field inviting a 404 later. */}
@@ -218,7 +293,7 @@ function LocalModelPanel() {
             setModel(e.target.value)
           }}
           onBlur={() => {
-            save({ endpoint: endpoint.trim(), model: model.trim() })
+            save({ ...settings, endpoint: endpoint.trim(), model: model.trim() })
           }}
         />
         {/* Only once there is something to name. Before that it would be a
@@ -236,23 +311,13 @@ function LocalModelPanel() {
             onBlur={onRename}
           />
         ) : null}
-        {/* Three servers, one click each. The port is the step people get
-            wrong, and every one of these is a default. */}
-        <div className="flex flex-wrap gap-2">
-          {SUGGESTIONS.map((sug) => (
-            <button
-              key={sug.label}
-              type="button"
-              className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              onClick={() => {
-                onEndpointChange(sug.endpoint)
-              }}
-            >
-              <Chip tone="gray">{sug.label}</Chip>
-              <span className="sr-only">Use the {sug.label} address</span>
-            </button>
-          ))}
-        </div>
+        {/*
+          The three address chips that used to sit here are gone. They existed
+          to save somebody remembering whether Ollama is 11434 or 11343 — and
+          the provider picker above now sets the address as a consequence of
+          choosing the provider, which is the same help arriving earlier. Two
+          controls writing one field is how they end up disagreeing.
+        */}
       </div>
 
       <div className="mt-4 flex items-center gap-3">

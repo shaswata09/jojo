@@ -130,7 +130,7 @@ export function SettingsScreen() {
     setNameEdit(null)
     setFailure(null)
     setPicking(false)
-    save({ endpoint: server.endpoint, model: server.model })
+    save({ ...settings, endpoint: server.endpoint, model: server.model })
   }
 
   /**
@@ -157,7 +157,7 @@ export function SettingsScreen() {
     const label = saved?.name ?? found
     setModel(found)
     setNameEdit(null)
-    save({ endpoint: endpoint.trim(), model: found })
+    save({ ...settings, endpoint: endpoint.trim(), model: found })
     // Saved under the model's own name unless this address already had one the
     // user chose. That is the "auto-saved" half: connecting is the act, and
     // keeping the address is a consequence of it rather than a second button.
@@ -364,7 +364,7 @@ export function SettingsScreen() {
               }
               onChangeText={setModel}
               onBlur={() => {
-                save({ endpoint: endpoint.trim(), model: model.trim() })
+                save({ ...settings, endpoint: endpoint.trim(), model: model.trim() })
               }}
             />
             {/* Only once there is something to name. Before that it would be a

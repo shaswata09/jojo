@@ -31,6 +31,7 @@
 import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
+import { inCatalogOrder, offeredFor } from './retrieve'
 import type { Effect } from './catalog'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
@@ -188,8 +189,38 @@ export type AgentOptions = {
    * chances to do something the card cannot render. Unknown names are ignored
    * rather than throwing — a caller naming a tool that has been renamed should
    * lose that tool, not the whole feature.
+   *
+   * ## It is an ALLOWLIST, not a suggestion
+   *
+   * This used to narrow only the prompt. The executor resolved every call
+   * against the whole catalog — `performCall` searched `CATALOG` and `callTool`
+   * searched it again — so a tool that was never offered ran anyway if the model
+   * named it. That is not a theoretical hole: the Graph page's card offers two
+   * READS, and a model that answered "Ask the graph" with `application_create`
+   * had the record written. A read-only card could write to the store.
+   *
+   * Narrowing the prompt is a hint to a model that may ignore it. Narrowing the
+   * executor is the part that holds. Both happen here now, from one list, so
+   * they cannot disagree about what was offered.
    */
   tools?: readonly string[]
+  /**
+   * Let the retriever choose the tools when the caller has not.
+   *
+   * Off by default and opt-in on purpose. A caller that already narrowed —
+   * AskBox with two reads, the pipelines with `toolsForKind` — has made a
+   * deliberate decision, and a retriever that second-guessed it would be
+   * offering an opinion about a choice already made in code. `tools` therefore
+   * always wins: this only ever applies to a caller that named nothing.
+   *
+   * See `retrieve.ts` for what it does and, more importantly, when it abstains.
+   */
+  retrieve?: {
+    /** What the conversation has already accumulated. Only ever grows. */
+    carried?: readonly string[] | null
+    /** Names the stored transcript shows being called. Always kept. */
+    fromHistory?: readonly string[]
+  }
 }
 
 export type AgentRun = {
@@ -202,20 +233,67 @@ export type AgentRun = {
 
 const DEFAULT_MAX_STEPS = 8
 
-/** The whole catalog, or the named subset of it. */
-const toolsFor = (only: readonly string[] | undefined) => {
+/**
+ * The registry names a caller offered, resolved and de-aliased.
+ *
+ * Both spellings are accepted — `application.create` and `application_create` —
+ * because callers write the registry name and the wire carries the other, and a
+ * caller that had to know which one this wanted would eventually pick wrong.
+ * Unknown names drop out rather than throwing: a caller naming a tool that has
+ * been renamed should lose that tool, not the whole feature.
+ *
+ * `undefined` in, `null` out, and `null` means "everything" everywhere below —
+ * an empty Set would mean "nothing", and the two must never be confused.
+ */
+const resolveOffered = (only: readonly string[] | undefined): Set<string> | null => {
+  if (!only) return null
+  const out = new Set<string>()
+  for (const name of only) {
+    const entry = CATALOG.find((e) => e.name === name || e.wireName === name)
+    if (entry) {
+      out.add(entry.name)
+      out.add(entry.wireName)
+    }
+  }
+  return out
+}
+
+/** The whole catalog, or the named subset of it, in the model's own shape. */
+const toolsFor = (offered: Set<string> | null) => {
   const all = functionSpecs()
-  if (!only) return all
-  const wanted = new Set(
-    only.map((n) => CATALOG.find((e) => e.name === n || e.wireName === n)?.wireName),
-  )
-  return all.filter((t) => wanted.has(t.function.name))
+  if (!offered) return all
+  return all.filter((t) => offered.has(t.function.name))
 }
 
 export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   const { llm, onEvent, signal } = options
   const maxSteps = options.maxSteps ?? DEFAULT_MAX_STEPS
-  const tools = toolsFor(options.tools)
+  // Resolved ONCE, and used twice: to build the prompt's tool list, and to
+  // refuse a call for anything outside it. One list, so the offer and the
+  // enforcement cannot describe different sets.
+  /*
+   * An explicit list wins outright; the retriever only speaks when nobody else
+   * has. `offeredFor` returns null for a message it does not understand, which
+   * lands back on "offer everything" — the behaviour this app had before the
+   * retriever existed, so being unsure costs tokens and never an answer.
+   */
+  const chosen =
+    options.tools ??
+    (options.retrieve
+      ? inCatalogOrder(
+          offeredFor(
+            options.prompt,
+            options.retrieve.carried ? new Set(options.retrieve.carried) : null,
+            options.retrieve.fromHistory ?? [],
+          ) ?? new Set(CATALOG.map((e) => e.name)),
+        )
+      : undefined)
+
+  // Resolved ONCE, and used twice: to build the prompt's tool list, and to
+  // refuse a call for anything outside it. One list, so the offer and the
+  // enforcement cannot describe different sets.
+  const offered = resolveOffered(chosen)
+  const tools = toolsFor(offered)
 
   const messages: ChatMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
@@ -288,7 +366,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
        */
       if (signal?.aborted) return finish('aborted')
       counter += 1
-      const step = await performCall(options, call, `s${String(counter)}`)
+      const step = await performCall(options, call, `s${String(counter)}`, offered)
       steps.push(step)
       // Every call gets a reply, including the ones that failed. A model left
       // waiting on a result it never receives will re-issue the same call
@@ -314,9 +392,45 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
  * Emits twice — `running` then settled — so the UI can show a row appear and
  * then resolve. Both carry the same id.
  */
-async function performCall(options: AgentOptions, call: ToolCall, id: string): Promise<AgentStep> {
+async function performCall(
+  options: AgentOptions,
+  call: ToolCall,
+  id: string,
+  /** What this run was allowed to call. `null` is the whole catalog. */
+  offered: Set<string> | null,
+): Promise<AgentStep> {
   const { host, onEvent, approve } = options
   const entry = CATALOG.find((e) => e.wireName === call.name || e.name === call.name)
+
+  /*
+   * Refused before anything is looked up, let alone run.
+   *
+   * A model handed two read tools can still emit a write — small models do,
+   * and the whole point of `AgentOptions.tools` is the caller saying which
+   * operations belong to this surface. Until this check existed the caller was
+   * only asking politely, and `callTool` would happily resolve and RUN a tool
+   * that was never on the list.
+   *
+   * The sentence is the same shape as the unknown-name one on purpose. From the
+   * model's side these are the same fact — that name is not available here — and
+   * a different phrasing would invite it to retry the same call expecting a
+   * different answer. It is emphatically NOT told the tool exists elsewhere,
+   * because a model told that will ask for it again.
+   */
+  if (entry && offered && !offered.has(entry.name)) {
+    const step: AgentStep = {
+      id,
+      name: entry.name,
+      title: entry.title,
+      effect: entry.effect,
+      destructive: entry.destructive,
+      args: call.args,
+      status: 'failed',
+      detail: `No tool is called ${call.name}. Use one of the names given in the tool list, exactly as spelled.`,
+    }
+    onEvent({ type: 'step', step })
+    return step
+  }
 
   const base: AgentStep = {
     id,

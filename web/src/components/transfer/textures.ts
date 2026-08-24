@@ -10,8 +10,10 @@
  * Named here rather than inlined so the still fallback and the shader cannot
  * drift onto different images.
  */
-export const COLOR_MAP = '/transfer/scene.png'
-export const DEPTH_MAP = '/transfer/scene-depth.webp'
+import { publicUrl } from '@/lib/public-url'
+
+export const COLOR_MAP = publicUrl('transfer/scene.png')
+export const DEPTH_MAP = publicUrl('transfer/scene-depth.webp')
 
 /** Intrinsic size of both maps — the plane's aspect comes from this. */
 export const MAP_WIDTH = 626

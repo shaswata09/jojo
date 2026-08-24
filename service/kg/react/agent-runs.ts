@@ -43,6 +43,23 @@ import type { ToolHost } from '../agent/execute'
 import type { ChatMessage } from '../core/model-server'
 import type { NodeId } from '../core/model'
 
+/**
+ * Every tool this conversation has already called.
+ *
+ * Read off the transcript rather than remembered in memory, because memory does
+ * not survive a reload and the transcript does — it is stored in the graph. A
+ * set rebuilt without these would drop a tool the replayed history shows being
+ * used, which reads to the model as a capability being taken away mid-thread.
+ */
+function namesCalledIn(history: readonly ChatMessage[]): string[] {
+  const out = new Set<string>()
+  for (const message of history) {
+    if (message.role !== 'assistant') continue
+    for (const call of message.tool_calls ?? []) out.add(call.function.name)
+  }
+  return [...out]
+}
+
 /** One line of a conversation as a screen draws it. */
 export type AgentEntry =
   | { kind: 'you'; id: string; text: string }
@@ -277,6 +294,21 @@ export function createAgentRuns(): AgentRuns {
         prompt: clean,
         ...(options.maxSteps === undefined ? {} : { maxSteps: options.maxSteps }),
         ...(options.tools === undefined ? {} : { tools: options.tools }),
+        /*
+         * The retriever, on for the Assistant and nothing else.
+         *
+         * `tools` wins outright when a caller named one — AskBox and the
+         * pipelines choose deliberately, and this must not second-guess them.
+         * The Assistant names nothing, which is exactly the surface that was
+         * sending all 82 tools on every request.
+         *
+         * `fromHistory` is a correctness condition rather than a nicety. Thread
+         * entries live in the graph, so after a reload the transcript replays
+         * tool calls from earlier turns — and a freshly chosen set that did not
+         * contain one of them would leave the conversation naming a tool that is
+         * no longer available.
+         */
+        retrieve: { carried: null, fromHistory: namesCalledIn(history) },
         ...(options.gate === undefined ? {} : { gate: options.gate }),
         approve,
         signal: cancel satisfies Cancellation,

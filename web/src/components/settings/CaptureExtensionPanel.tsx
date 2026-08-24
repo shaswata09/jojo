@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { publicUrl } from '@/lib/public-url'
 import { Check, Copy, Download, Loader2 } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
@@ -149,7 +150,7 @@ function Install({
             pack step this button would hand the user an HTML page named
             `.zip` — a download that fails at the unzip, three steps after the
             mistake. */}
-        <a href="/jojo-extension.zip" download="jojo-extension.zip">
+        <a href={publicUrl('jojo-extension.zip')} download="jojo-extension.zip">
           <Download className="size-3.5" strokeWidth={2} aria-hidden />
           Download the extension
         </a>

@@ -4,9 +4,10 @@ import {
   modelsRequest,
   readChatResponse,
   readModelsResponse,
-  readTurn,
+  readTurnFor,
   unconfigured,
 } from '@jojo/service/core/model-server'
+import { endpointOf } from '@jojo/service/core/provider'
 import { failed, send } from '@/lib/local-service'
 import type {
   ChatMessage,
@@ -70,7 +71,16 @@ import type {
 export type { ChatMessage, ChatResult, ModelsResult, Turn }
 
 /** Base URL, OpenAI-style: '…/v1'. The paths are appended by the protocol. */
-export type ModelSettings = { endpoint: string; model: string }
+/*
+ * Re-exported, not redeclared. This was a two-field local copy that quietly
+ * stopped matching the real one when providers gained a key and a context
+ * window — and nothing would have caught it, because a structural type that is
+ * a SUBSET still assigns cleanly. The app would simply have dropped the key on
+ * the floor.
+ */
+import type { ModelSettings } from '@jojo/service/core/provider'
+
+export type { ModelSettings }
 
 export { isConfigured }
 
@@ -97,7 +107,11 @@ export async function complete(
   signal?: AbortSignal,
 ): Promise<ChatResult> {
   if (!isConfigured(settings)) return unconfigured()
-  const response = await send(chatRequest(settings, messages), settings.endpoint, signal)
+  const response = await send(
+    chatRequest(settings, messages, undefined, true),
+    endpointOf(settings),
+    signal,
+  )
   return failed(response) ? response.failed : readChatResponse(response)
 }
 
@@ -121,6 +135,16 @@ export async function agentTurn(
   signal?: AbortSignal,
 ): Promise<Turn> {
   if (!isConfigured(settings)) return unconfigured()
-  const response = await send(chatRequest(settings, messages, tools), settings.endpoint, signal)
-  return failed(response) ? response.failed : readTurn(response)
+  /*
+   * `browser` is passed rather than detected, because core has no globals to
+   * detect with — and because the answer is a property of the app rather than
+   * of the call. Anthropic blocks browser origins unless the caller opts in by
+   * name; there is no origin to opt in for on a phone.
+   */
+  const response = await send(
+    chatRequest(settings, messages, tools, true),
+    endpointOf(settings),
+    signal,
+  )
+  return failed(response) ? response.failed : readTurnFor(settings, response)
 }

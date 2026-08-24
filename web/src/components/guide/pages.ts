@@ -35,6 +35,11 @@ const META: Record<GuidePage, Omit<GuidePageMeta, 'id'>> = {
     blurb:
       'Each page in turn — what it is for, the mechanics that are not obvious from looking, and what is not connected yet.',
   },
+  tools: {
+    label: 'The tools',
+    blurb:
+      'What the assistant can actually do, how it is stopped from doing anything else, and how it picks the right one out of eighty-two.',
+  },
   graph: {
     label: 'The graph',
     blurb:

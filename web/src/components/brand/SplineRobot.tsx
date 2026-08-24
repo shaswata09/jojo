@@ -6,6 +6,7 @@ import { SplineScene } from '@/components/ui/splite'
 import { useMascot } from '@/lib/mascot-context'
 import { createSplineRig, type SplineRig } from '@/lib/spline-rig'
 import { useMediaQuery } from '@/lib/use-media-query'
+import { publicUrl } from '@/lib/public-url'
 import { cn } from '@/lib/utils'
 
 /**
@@ -26,12 +27,18 @@ import { cn } from '@/lib/utils'
  * than imported; that also keeps it out of the JS graph, which is what stopped
  * the 1.35MB from being inlined into a chunk.
  *
- * Root-relative, the same way `components/transfer/textures.ts` names the two
- * textures it vendored into `public/transfer/` — one convention for the app's
- * copied assets, so a change of `base` breaks both together rather than one
- * quietly.
+ * Through `publicUrl`, the same way `components/transfer/textures.ts` names the
+ * two textures it vendored into `public/transfer/` — one convention for the
+ * app's copied assets.
+ *
+ * That convention used to be a bare root-relative string, and the comment here
+ * claimed a change of `base` would "break both together rather than one
+ * quietly". It broke both, and it did it quietly: GitHub Pages serves this at
+ * `/<repo>/`, so `/mascot.splinecode` asked github.io for a file at the domain
+ * root, got a 404, and the 2D fallback took over doing exactly what it is
+ * supposed to do. Nothing in the console, because nothing went wrong.
  */
-const SCENE = '/mascot.splinecode'
+const SCENE = publicUrl('mascot.splinecode')
 
 /**
  * The second half of the same promise, and the half that is easy to miss.
@@ -57,7 +64,7 @@ const SCENE = '/mascot.splinecode'
  * one does not use, which is why the check above is the thing to repeat rather
  * than this list.
  */
-const WASM = '/spline'
+const WASM = publicUrl('spline')
 
 /** How long the scene's own intro keeps animating after `onLoad` fires. */
 const INTRO_SETTLE_MS = 1700

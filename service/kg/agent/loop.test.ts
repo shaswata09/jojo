@@ -457,3 +457,171 @@ describe('which steps have to be approved', () => {
     expect(await askedAbout('application_delete', undefined)).toEqual(['application.delete'])
   })
 })
+
+describe('the offered tool list is an allowlist, not a suggestion', () => {
+  /**
+   * The hole this closes was live and reachable from a shipped screen.
+   *
+   * `AgentOptions.tools` narrowed the PROMPT and nothing else: `performCall`
+   * searched the whole `CATALOG` and `callTool` searched it again, so a tool
+   * that was never offered ran anyway if the model named it. The Graph page's
+   * "Ask the graph" card offers two READS — a model answering it with
+   * `application_create` wrote a record to the store, from a card whose whole
+   * premise is that it only looks.
+   *
+   * A model handed a short list can still emit anything; small models routinely
+   * do. Narrowing the prompt is a hint. This is the part that holds.
+   */
+  it('refuses a call the caller never offered, and writes nothing', async () => {
+    const h = host()
+    const before = h.memory().nodes().length
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('Could not.')]),
+      history: [],
+      prompt: 'add an application',
+      // What AskBox offers: two reads and no writes at all.
+      tools: ['graph.query', 'memory.search'],
+      onEvent: () => {},
+    })
+
+    const step = run.steps[0]
+    expect(step?.status).toBe('failed')
+    // THE assertion. Before the allowlist this was `before + 1`.
+    expect(h.memory().nodes().length).toBe(before)
+    expect(run.stopped).toBe('answered')
+  })
+
+  it('tells the model the name is unavailable, in the words it already knows', async () => {
+    // Deliberately the same sentence as an unknown name. From the model's side
+    // these are one fact — that name is not available here — and a different
+    // phrasing invites a retry of the identical call.
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([calls('application_create', NEW_APP), says('ok')]),
+      history: [],
+      prompt: 'x',
+      tools: ['memory.search'],
+      onEvent: () => {},
+    })
+    expect(run.steps[0]?.detail).toContain('No tool is called')
+    // It must NOT hint that the tool exists somewhere else: a model told that
+    // asks for it again and spends the step budget doing it.
+    expect(run.steps[0]?.detail).not.toContain('not offered')
+    expect(run.steps[0]?.detail).not.toContain('elsewhere')
+  })
+
+  it('still runs what WAS offered', async () => {
+    // The guard must not be a blanket refusal — the narrowed set has to work.
+    const h = host()
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('Filed it.')]),
+      history: [],
+      prompt: 'x',
+      tools: ['application.create'],
+      onEvent: () => {},
+    })
+    expect(run.steps[0]?.status).toBe('done')
+    expect(h.memory().nodes().length).toBeGreaterThan(0)
+  })
+
+  it('accepts either spelling of a name, because callers write the registry one', async () => {
+    const h = host()
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('ok')]),
+      history: [],
+      // The wire spelling, where the test above used the registry spelling.
+      tools: ['application_create'],
+      prompt: 'x',
+      onEvent: () => {},
+    })
+    expect(run.steps[0]?.status).toBe('done')
+  })
+
+  it('offers everything when the caller names nothing', async () => {
+    // The Assistant and MCP must be untouched: absent means all 82, and an
+    // empty list would mean none — the two must never be confused.
+    const h = host()
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('ok')]),
+      history: [],
+      prompt: 'x',
+      onEvent: () => {},
+    })
+    expect(run.steps[0]?.status).toBe('done')
+  })
+})
+
+describe('the retriever, when the caller has not chosen', () => {
+  /**
+   * The Assistant is the one surface that offers all 82 tools. `retrieve` lets
+   * it narrow from what the person actually asked, without any caller that
+   * ALREADY narrowed being second-guessed.
+   */
+  const toolNames = (llm: ReturnType<typeof scripted>) =>
+    (llm.seenTools ?? []).map((t) => (t as { function: { name: string } }).function.name)
+
+  it('narrows a clear request, and still runs what it offered', async () => {
+    const h = host()
+    const llm = scripted([
+      calls('timeline_item_create', {
+        title: 'Send the Baylor cover letter',
+        date: '2026-08-27',
+        kind: 'deadline',
+      }),
+      says('Done.'),
+    ])
+    const run = await runAgent({
+      host: h,
+      llm,
+      history: [],
+      prompt: 'remind me to send the Baylor cover letter on Thursday',
+      retrieve: {},
+      onEvent: () => {},
+    })
+    expect(run.steps[0]?.status).toBe('done')
+  })
+
+  it('offers everything when the message says nothing about capabilities', async () => {
+    // Abstention. "hello" must not narrow, because guessing from it is how a
+    // retriever loses somebody their next request.
+    const h = host()
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('ok')]),
+      history: [],
+      prompt: 'hello',
+      retrieve: {},
+      onEvent: () => {},
+    })
+    // A tool no sensible retriever would have picked from "hello" still runs,
+    // which is the proof that it abstained rather than guessed.
+    expect(run.steps[0]?.status).toBe('done')
+  })
+
+  it('never overrides a caller that already narrowed', async () => {
+    /*
+     * `tools` wins outright. AskBox and the pipelines choose deliberately, and
+     * a retriever that improved on them would be an opinion about a decision
+     * already made in code — and would reopen the write hole the allowlist
+     * above closes.
+     */
+    const h = host()
+    const before = h.memory().nodes().length
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('ok')]),
+      history: [],
+      // A message that WOULD have seeded the application tools.
+      prompt: 'add my Rice application',
+      tools: ['memory.search'],
+      retrieve: {},
+      onEvent: () => {},
+    })
+    expect(run.steps[0]?.status).toBe('failed')
+    expect(h.memory().nodes().length).toBe(before)
+  })
+})

@@ -28,7 +28,20 @@ import type { ModelSettings } from '@/lib/llm'
 const KEY_DOC = 'jojo/model-settings/v1'
 
 /** Empty rather than a guess: an unconfigured app must read as unconfigured. */
-export const DEFAULTS: ModelSettings = { endpoint: '', model: '' }
+export const DEFAULTS: ModelSettings = {
+  /*
+   * The open-ended provider, not a named one.
+   *
+   * An unconfigured app must read as unconfigured — the same reason `endpoint`
+   * and `model` are empty rather than guessed. Defaulting to a specific
+   * provider would put its name on screen before the person has chosen, and a
+   * guess printed where the answer goes is a guess they have to notice is
+   * wrong.
+   */
+  provider: 'openai-compatible',
+  endpoint: '',
+  model: '',
+}
 
 export const STORAGE_KEY = KEY_DOC
 

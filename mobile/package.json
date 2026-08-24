@@ -46,6 +46,7 @@
     "format:check": "prettier --check .",
     "ios": "react-native run-ios",
     "lint": "npm -w @jojo/service run lint && oxlint --config .oxlintrc.json src",
+    "make-app-icons": "node scripts/make-app-icons.mjs",
     "start": "react-native start",
     "test": "vitest run",
     "test:watch": "vitest",

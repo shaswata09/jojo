@@ -5,7 +5,7 @@ no Expo, no framework wrapper, no tool that has to run before the project can be
 opened.
 
 Everything runs on the device. There is no server and no account, and nothing is
-sent to us — there is no "us" to send it to. What the app *can* reach is only
+sent to us — there is no "us" to send it to. What the app _can_ reach is only
 what you point it at, and all of it is optional: a model server and a document
 reader, both at addresses you type into Settings; a job posting, fetched by that
 reader when you add an application from a link, or loaded in the in-app browser
@@ -60,6 +60,7 @@ They are `react-native run-android` / `run-ios`, thin wrappers around Gradle and
 | `npm run typecheck`               | `tsc --noEmit` — the check that actually matters                |
 | `npm run lint`                    | oxlint, same plugins and rules as `web/` plus no-unused-vars    |
 | `npm run format` / `format:check` | Prettier, configured to match `web/`                            |
+| `npm run make-app-icons`          | Redraws both launcher icons from the favicon — see below        |
 
 Before committing: `npm run typecheck && npm run lint && npm run format:check`.
 
@@ -117,15 +118,61 @@ What that buys is reviewability — every line in those directories is one someb
 chose. What it costs is that a few things are now nobody's job but yours, and
 none of them announces itself:
 
-| Now hand-maintained        | Was                                                                                                                                                                                          |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AndroidManifest.xml`      | Permissions, `<queries>`, the `jojo://` filter and `enableOnBackInvokedCallback` were prebuild-injected. Adding a native module that needs a permission is now something you have to notice. |
-| `Info.plist`               | Same, plus the URL types and `RCTRootViewBackgroundColor`.                                                                                                                                   |
-| Icons and splash resources | 38 Android drawables and an iOS asset catalog, generated from `assets/*.png`. Those PNGs are still the human source; regenerating from them is manual.                                       |
-| Font linking               | `expo-font` loaded five TTFs at runtime. They are build-time assets now — see `docs/mobile-fonts.md`, because the filenames are load-bearing on both platforms.                              |
-| `PrivacyInfo.xcprivacy`    | Synthesised at `pod install`. It is a committed file now; `use_react_native!` merges pod-required reasons into it rather than replacing it.                                                  |
-| The SDK floors             | `expo-build-properties`. See **Platform floor** below for where they live.                                                                                                                   |
-| React Native upgrades      | `expo upgrade`. Now: diff the RN template by hand, every version, across two native projects.                                                                                                |
+| Now hand-maintained     | Was                                                                                                                                                                                                      |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AndroidManifest.xml`   | Permissions, `<queries>`, the `jojo://` filter and `enableOnBackInvokedCallback` were prebuild-injected. Adding a native module that needs a permission is now something you have to notice.             |
+| `Info.plist`            | Same, plus the URL types and `RCTRootViewBackgroundColor`.                                                                                                                                               |
+| Splash resources        | Five `splashscreen_logo` drawables, generated from `assets/splash-icon.png`. That PNG is still the human source; regenerating from it is manual. The launcher icons no longer work this way — see below. |
+| Font linking            | `expo-font` loaded five TTFs at runtime. They are build-time assets now — see `docs/mobile-fonts.md`, because the filenames are load-bearing on both platforms.                                          |
+| `PrivacyInfo.xcprivacy` | Synthesised at `pod install`. It is a committed file now; `use_react_native!` merges pod-required reasons into it rather than replacing it.                                                              |
+| The SDK floors          | `expo-build-properties`. See **Platform floor** below for where they live.                                                                                                                               |
+| React Native upgrades   | `expo upgrade`. Now: diff the RN template by hand, every version, across two native projects.                                                                                                            |
+
+### The launcher icons are drawn by a script, from the favicon
+
+Both platforms shipped with the icon their template came with — React Native's
+default on Android, an Expo-generated 1024 on iOS — so the home screen showed a
+stranger's logo for an app whose browser tab, extension button and in-app mascot
+are all the same robot.
+
+`npm run make-app-icons` draws them from `scripts/jojo-mark.mjs` at the root of
+the repo, which is the same file the browser extension's toolbar icons come from
+and holds the favicon's own geometry. Run it by hand and commit the output; it is
+deliberately not a Gradle or Xcode step, because a native build would then need
+Node on the machine doing it to regenerate files that change roughly never. The
+old Expo sources under `assets/` are gone — a second place the icon could be
+edited is a second icon waiting to happen.
+
+Android gets **two layers**, not finished icons: `ic_launcher_foreground` and
+`ic_launcher_monochrome`, stacked by `mipmap-anydpi-v26/ic_launcher.xml` over
+`@color/iconBackground`. Three things about that are worth knowing before
+touching it:
+
+- **The background is a colour, not five PNGs.** It is one flat `#171717` — the
+  favicon's plate, not the app's near-black `#0a0a0a`, which reads as a hole
+  rather than a plate against a wallpaper.
+- **There are no legacy `ic_launcher.png` rasters,** and the first draft wrote
+  them. `minSdkVersion 31` puts every device above the `-v26` qualifier, so
+  nothing resolves `@mipmap/ic_launcher` to anything but the adaptive XML — which
+  made them a second copy of the mark that nothing renders, and one nobody would
+  notice going stale.
+- **The mark is smaller than it looks like it should be.** A launcher crops the
+  outer 18dp of the 108dp canvas, and on a round mask that leaves a 72dp circle,
+  so the size is set by the ear's outer corner rather than by the robot's width.
+  It sits on a 60dp circle. At the 68dp that "fits inside 72" works out to, the
+  ears cleared the crop by 1.1dp and rendered visibly grazing the edge.
+
+One rendering oddity, recorded so the next person does not go looking for a bug:
+in the Pixel launcher's **dock**, jojo is drawn at about 80% size on a tinted disc
+the launcher mixes from the icon's own colours. It is not the icon — the same
+bitmap renders at exactly the diameter of Maps and Messages in the app drawer,
+and correctly in Settings — and removing the legacy rasters, which was the first
+suspect, did not change it.
+
+iOS gets **one file**, `App-Icon-1024x1024@1x.png`, square and with no alpha
+channel. Both halves are requirements rather than choices: iOS rounds the corners
+itself, and App Store Connect rejects an icon that arrives carrying an alpha
+channel at all.
 
 ### Expo is gone, and what replaced each piece
 
@@ -472,7 +519,7 @@ Four journeys the web app had and this did not, now closed:
 
 One the web app has that this does not:
 
-- **Storage diagnostics.** They report on *browser* storage — quota, what was
+- **Storage diagnostics.** They report on _browser_ storage — quota, what was
   recovered from a failed open, what was pruned. This app persists too, into
   AsyncStorage by way of `kg/storage/rn-driver.ts`, but the questions are not
   the same ones: there is no quota API to ask and no eviction to report. The
