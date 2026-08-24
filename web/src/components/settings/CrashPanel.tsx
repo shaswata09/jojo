@@ -11,6 +11,7 @@ import {
   setCrashEnabled,
 } from '@/lib/crash-log'
 import { syncExtensionCrashReporting } from '@/lib/capture-bridge'
+import { ANALYTICS_CAPABILITY, analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics'
 
 /**
  * Crash reports, and the switch that decides whether there are any.
@@ -28,6 +29,7 @@ import { syncExtensionCrashReporting } from '@/lib/capture-bridge'
  */
 export function CrashPanel() {
   const [on, setOn] = useState(crashEnabled)
+  const [usage, setUsage] = useState(analyticsEnabled)
   const [reports, setReports] = useState(readCrashes)
 
   /*
@@ -86,6 +88,33 @@ export function CrashPanel() {
           />
         }
       />
+
+      {ANALYTICS_CAPABILITY === 'off' ? null : (
+        <div className="mt-1">
+          <SettingRow
+            label="Share which features I use"
+            description="Counts only, from a fixed list — never what is in your records."
+            control={
+              <Switch
+                checked={usage}
+                onCheckedChange={(next) => {
+                  setAnalyticsEnabled(next)
+                  setUsage(next)
+                }}
+                aria-label="Share which features I use"
+              />
+            }
+          />
+          {/* Said here as well as in setup, because this is where somebody comes
+              to check what they agreed to — and a claim that only appears at the
+              moment of consent is a claim nobody can re-read. */}
+          <p className="mt-1 text-xs text-text-3">
+            It can only say things from a fixed list — which screen was opened, that an application
+            was added, roughly how many there are. It cannot name an employer, a role, a file or
+            anything you typed. Goes to Google Analytics.
+          </p>
+        </div>
+      )}
 
       {reports.length > 0 ? (
         <div className="mt-4 overflow-hidden rounded-lg border border-hairline">

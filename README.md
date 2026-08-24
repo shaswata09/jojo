@@ -29,6 +29,16 @@ and what is sent are the same redacted text. Two switches govern it and both mus
 flag (`VITE_CRASH_REPORTING` on web, `CRASH_REPORTING` on the phone) decides whether a copy of jojo
 can report at all, and a setting decides whether it does. Both default to off.
 
+**Usage analytics is a second, separate switch, and also off.** Turned on, jojo reports which parts
+of it get used — so time goes to the screens people open rather than the ones we guess about. It can
+only ever say things from a closed list declared in `service/kg/core/analytics.ts`: which screen was
+opened, that an application was added, roughly how many there are. There is no free text anywhere in
+that vocabulary — no employer, no role, no filename, nothing typed — and counts are bucketed
+(`6-20`, not `14`) so a number cannot fingerprint anybody. That is enforced rather than promised:
+`analytics.test.ts` fails the build if any event parameter is widened to a bare `string`, and
+`isReportable` refuses an unknown value at the wire. It needs `VITE_ANALYTICS` and a
+`VITE_ANALYTICS_ID`, and sends to Google Analytics with ad signals and personalisation off.
+
 **The one thing that can leave your device is the assistant, and only if you send it there.** jojo
 speaks to a local model — Ollama, vLLM, LM Studio — and that is the default, with nothing leaving
 the machine. It also speaks to Anthropic, OpenAI, OpenRouter, Groq and **NVIDIA**, which need an API

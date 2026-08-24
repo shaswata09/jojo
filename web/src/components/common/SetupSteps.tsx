@@ -1,4 +1,5 @@
 import { BookOpenText, Bug, Puzzle, Sparkles } from 'lucide-react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +15,9 @@ import { DocumentReaderPanel, LocalModelPanel } from '@/components/settings/Conn
 import { isConfigured } from '@/lib/llm'
 import { syncExtensionCrashReporting, useCaptureInbox } from '@/lib/capture-bridge'
 import { CRASH_CAPABILITY, setCrashEnabled } from '@/lib/crash-log'
+import { ANALYTICS_CAPABILITY, setAnalyticsEnabled } from '@/lib/analytics'
+import { SettingRow } from '@/components/common/Field'
+import { Switch } from '@/components/ui/switch'
 import { useModelSettings } from '@/lib/model-settings-context'
 
 /**
@@ -175,19 +179,35 @@ export function DocumentReaderStep({ onSkip, onDone }: { onSkip: () => void; onD
  * disagree and no idea which is in force.
  */
 export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () => void }) {
-  const choose = (on: boolean) => {
-    setCrashEnabled(on)
+  /*
+   * TWO SWITCHES, NOT ONE, and they start off.
+   *
+   * Agreeing to "keep the error when it breaks" is not agreeing to "record what
+   * I do", and a single control covering both would collect the second by
+   * bundling it with the first. They are different in kind: a crash is rare and
+   * exceptional, and usage is a continuous account of what somebody does in an
+   * app about their job search.
+   *
+   * One dialog, because two consecutive consent dialogs is a wall somebody
+   * clicks through, and clicking through is not consent either.
+   */
+  const [crashes, setCrashes] = useState(false)
+  const [usage, setUsage] = useState(false)
+
+  const choose = (crashesOn: boolean, usageOn: boolean) => {
+    setCrashEnabled(crashesOn)
+    setAnalyticsEnabled(usageOn)
     // The extension keeps its own reports and cannot see this setting, so it is
     // told. On a browser with no extension this is a no-op.
-    void syncExtensionCrashReporting(on, !on)
+    void syncExtensionCrashReporting(crashesOn, !crashesOn)
     onDone()
   }
 
   /*
-   * A build without the capability has nothing to ask about, and asking anyway
-   * would collect an answer that could never take effect.
+   * Nothing to ask about when the build allows neither, and asking anyway would
+   * collect an answer that could never take effect.
    */
-  if (CRASH_CAPABILITY === 'off') return null
+  if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') return null
 
   return (
     <Dialog
@@ -197,6 +217,7 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         // from a dismissal is the one thing a consent question must never do.
         if (!next) {
           setCrashEnabled(false)
+          setAnalyticsEnabled(false)
           void syncExtensionCrashReporting(false, true)
           onSkip()
         }
@@ -206,11 +227,11 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bug className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-            Keep crash reports?
+            Crash reports and usage
           </DialogTitle>
           <DialogDescription>
-            When something breaks, jojo can keep the error so you can read it back instead of
-            describing it from memory. Only the error is kept — never your records.
+            Two separate things, both off unless you turn them on. Neither can carry your records:
+            not an application, a document, a note, a profile or a conversation.
           </DialogDescription>
         </DialogHeader>
 
@@ -251,29 +272,62 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
           account, nothing tied to you.
         </p>
 
-        <p className="text-sm text-text-2">
-          This is about crashes only. jojo has no analytics and does not record what you do in it.
-          You can change this at any time under Settings, and turning it off throws away what was
-          kept.
-        </p>
+        <div className="space-y-1">
+          {CRASH_CAPABILITY === 'off' ? null : (
+            <SettingRow
+              label="Keep crash reports"
+              description="The error and where it happened. Stays on this device in the browser."
+              control={
+                <Switch
+                  checked={crashes}
+                  onCheckedChange={setCrashes}
+                  aria-label="Keep crash reports"
+                />
+              }
+            />
+          )}
+          {ANALYTICS_CAPABILITY === 'off' ? null : (
+            <SettingRow
+              label="Share which features I use"
+              description="Counts only — which screens are opened, how often. Never what is in them."
+              control={
+                <Switch
+                  checked={usage}
+                  onCheckedChange={setUsage}
+                  aria-label="Share which features I use"
+                />
+              }
+            />
+          )}
+        </div>
+
+        {ANALYTICS_CAPABILITY === 'off' ? null : (
+          <p className="text-sm text-text-2">
+            The second one is the only thing jojo sends about what you DO, and it can only ever say
+            things from a fixed list — &ldquo;the vault was opened&rdquo;, &ldquo;an application was
+            added&rdquo;, &ldquo;there are 6&ndash;20 of them&rdquo;. It cannot name an employer, a
+            role, a file or anything you typed, because those words are not in the list. It goes to
+            Google Analytics so we can see which parts of jojo are worth more work.
+          </p>
+        )}
 
         <DialogFooter>
           <Button
             type="button"
             variant="ghost"
             onClick={() => {
-              choose(false)
+              choose(false, false)
             }}
           >
-            No thanks
+            No to both
           </Button>
           <Button
             type="button"
             onClick={() => {
-              choose(true)
+              choose(crashes, usage)
             }}
           >
-            Keep them
+            {crashes || usage ? 'Save choices' : 'Continue with both off'}
           </Button>
         </DialogFooter>
 
