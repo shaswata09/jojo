@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from '@/App'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { reportError } from '@/lib/report-error'
 import { startOffline } from '@/lib/offline'
 import { AgentRunsProvider } from '@jojo/service/react/agent-runs-provider'
 import { ApprovalHost } from '@/components/assistant/ApprovalHost'
@@ -73,7 +74,11 @@ createRoot(container).render(
                           reached after the user walked away has to be
                           answerable from wherever they are, or the run waits
                           forever and the exchange is never saved. */}
-                      <AgentRunsProvider>
+                      <AgentRunsProvider
+                        onError={(e) => {
+                          reportError('agent', e)
+                        }}
+                      >
                         {/* Above the router too, and for the same reason: a
                             pipeline that stopped when you left Job Scout was a
                             pipeline that did not do what its own caption said. */}
@@ -109,13 +114,13 @@ createRoot(container).render(
  * still logs its own richer trace underneath.
  */
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason)
+  reportError('unhandled_rejection', event.reason)
 })
 
 window.addEventListener('error', (event) => {
   // Resource load failures (a missing image) arrive here with no `error`.
   // Those are not bugs worth a line; a real uncaught exception is.
-  if (event.error) console.error('Uncaught error:', event.error)
+  if (event.error) reportError('uncaught', event.error, { fatal: true })
 })
 
 /*

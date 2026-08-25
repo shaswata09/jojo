@@ -97,7 +97,11 @@ describe('what is always there', () => {
      * put both in every prompt forever. That is a safety regression wearing an
      * optimisation's clothes.
      */
-    for (const message of ['remind me on Thursday', 'add my Rice application', 'what CVs do I have']) {
+    for (const message of [
+      'remind me on Thursday',
+      'add my Rice application',
+      'what CVs do I have',
+    ]) {
       const out = offered(message)
       expect(out!.has('memory.reset'), message).toBe(false)
       expect(out!.has('memory.clear'), message).toBe(false)
@@ -228,7 +232,11 @@ describe('the irreversible tools are derived from the catalog, not remembered', 
   })
 
   it('offers none of them for a message that did not ask', () => {
-    for (const message of ['remind me on Thursday', 'add my Rice application', 'what CVs do I have']) {
+    for (const message of [
+      'remind me on Thursday',
+      'add my Rice application',
+      'what CVs do I have',
+    ]) {
       const out = offeredFor(message, null)
       for (const name of irreversible) {
         expect(out?.has(name) ?? false, `${name} for "${message}"`).toBe(false)
@@ -270,5 +278,54 @@ describe('words that collide with Object.prototype', () => {
 
   it('still treats them as ordinary words', () => {
     expect([...terms('how did the constructor round go')]).toContain('constructor')
+  })
+})
+
+describe('the words people use for a person', () => {
+  /**
+   * `vault.person.create` had no alias, so the retriever's answer depended on
+   * whether the phrasing happened to contain the tool's own name. "add a person"
+   * worked; "add Dr Chen as a referee on the Rice application" offered
+   * twenty-four tools, none of them the one needed, and the run failed with "No
+   * tool is called vault.person.create" — about a tool that exists and is safe.
+   *
+   * A referee and a search chair are the two people an academic job search is
+   * mostly about, and neither word contains "person".
+   */
+  const offers = (message: string): boolean => {
+    const got = offeredFor(message, null, [])
+    return got === null || got.has('vault.person.create')
+  }
+
+  it('offers the person tools however the request is phrased', () => {
+    for (const message of [
+      'add a person',
+      'add a person named Dr Chen',
+      'add Dr Chen as a referee on the Rice application',
+      'save this contact',
+      'add my recruiter Priya',
+      'add the search chair',
+      'who are my references',
+      'update my supervisor’s email',
+    ]) {
+      expect(offers(message), message).toBe(true)
+    }
+  })
+})
+
+describe('a tool the conversation already used', () => {
+  it('survives into the next turn, whichever spelling the wire used', () => {
+    /*
+     * `fromHistory` carries what the WIRE called — `vault_person_create` — and
+     * `inCatalogOrder` matched only the registry spelling, so every tool a
+     * conversation had already used was silently dropped from the next turn's
+     * offer. It bit hardest with approvals off, because a run that never pauses
+     * makes more calls per turn.
+     */
+    const kept = offeredFor('and now add another one', new Set(['memory.search']), [
+      'vault_person_create',
+    ])
+    expect(kept).not.toBeNull()
+    expect(kept?.has('vault.person.create') || kept?.has('vault_person_create')).toBe(true)
   })
 })

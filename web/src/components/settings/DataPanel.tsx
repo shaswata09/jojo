@@ -1,3 +1,4 @@
+import { reportError } from '@/lib/report-error'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Download, Share2, Sparkles, Trash2, Upload } from 'lucide-react'
@@ -190,7 +191,10 @@ export function DataPanel() {
     // all, and the user pressed Export and watched nothing happen.
     void backup
       .download(name)
-      .catch(() => false)
+      .catch((error: unknown) => {
+        reportError('backup', error)
+        return false
+      })
       .then((started) => {
         if (!started) {
           toast({

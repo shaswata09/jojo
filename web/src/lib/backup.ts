@@ -23,6 +23,7 @@
  * unbacked-up work.
  */
 
+import { reportError } from '@/lib/report-error'
 import { useCallback, useMemo } from 'react'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { buildBackup } from '@jojo/service/core/backup'
@@ -175,7 +176,13 @@ export function useBackup(readable?: () => unknown): BackupState {
         anchor.href = href
         anchor.download = name
         anchor.click()
-      } catch {
+      } catch (error) {
+        // The user gets a toast saying it failed; this says WHY, to somebody who
+        // can fix it. A backup is the one thing between a person and losing
+        // everything, so a silent failure here is the most expensive silence in
+        // the app — and the two likeliest causes, a quota wall and a string too
+        // long for `JSON.stringify`, are both invisible from the outside.
+        reportError('backup', error)
         if (href !== null) URL.revokeObjectURL(href)
         return false
       }

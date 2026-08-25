@@ -60,6 +60,23 @@ export type Props = { readonly [key: string]: unknown }
  * synthesised as view-only nodes by `buildGraph` and never written down.
  */
 export const NODE_TYPES = [
+  /*
+   * A relation between two records, as a RECORD.
+   *
+   * Reified rather than stored as an edge, and the reason is structural: an
+   * `EdgeId` is `${from}|${rel}|${to}` and the index is keyed by `Rel`, so a
+   * relation's name is part of an edge's identity and the set of names is
+   * closed. That closed set describes the app's own shape — an application is
+   * at an organisation — and should stay closed.
+   *
+   * What a model reads out of a CV is not that shape. "Led the redesign",
+   * "supervised six dissertations", "peer reviewed for TOCS" are relations
+   * nobody enumerated, arriving under a different name each time. Putting the
+   * predicate in a node's props buys an open vocabulary, any number of
+   * relations between one pair, and somewhere to record what the model actually
+   * said. It costs one hop on traversal.
+   */
+  'claim',
   'application',
   'organisation',
   'timelineItem',
@@ -142,7 +159,23 @@ export type NodeType = (typeof NODE_TYPES)[number]
  * produced a second application with nothing joining it to the first, so the two
  * rows drifted apart with no record that they had ever been the same job.
  */
-export const RELS = ['AT', 'ABOUT', 'FILED_UNDER', 'TAGS', 'FROM', 'BECAME', 'COPY_OF'] as const
+/*
+ * `SUBJECT` and `OBJECT` are the two ends of a reified relation, and they are
+ * two names rather than one because an edge is identified by
+ * `${from}|${rel}|${to}` — a claim pointing at both its ends through one
+ * relation would be two edges the index cannot tell apart.
+ */
+export const RELS = [
+  'AT',
+  'ABOUT',
+  'FILED_UNDER',
+  'TAGS',
+  'FROM',
+  'BECAME',
+  'COPY_OF',
+  'SUBJECT',
+  'OBJECT',
+] as const
 
 export type Rel = (typeof RELS)[number]
 
@@ -255,6 +288,33 @@ export const EDGE_SCHEMA: { readonly [R in Rel]: EdgeSpec } = {
     to: ['application'],
     fromCardinality: 'one',
     label: 'is a copy of',
+  },
+
+  /*
+   * The two ends of a reified relation.
+   *
+   * `to` is EVERY node type, which no other relation here does, and it is the
+   * point rather than a shortcut: the taxonomy is open, so what a claim can
+   * join is not knowable in advance. Constraining it would put a second,
+   * narrower vocabulary underneath the open one and quietly refuse the
+   * relations the open lane exists to keep.
+   *
+   * `fromCardinality: 'one'` on both, and that IS a constraint worth having: a
+   * claim has exactly one subject and one object. Without it a second `link`
+   * would add an end rather than replace one, and the claim would silently mean
+   * something else.
+   */
+  SUBJECT: {
+    from: ['claim'],
+    to: [...NODE_TYPES],
+    fromCardinality: 'one',
+    label: 'is about',
+  },
+  OBJECT: {
+    from: ['claim'],
+    to: [...NODE_TYPES],
+    fromCardinality: 'one',
+    label: 'points at',
   },
 }
 
@@ -1138,6 +1198,36 @@ export type ThreadProps = {
  * query that asked "what has this person got". The discriminator is cheaper and
  * says the same thing.
  */
+/**
+ * The kinds of fact a CV states about a person.
+ *
+ * ## Why there are fourteen and not seven
+ *
+ * There were seven, and the seven were a silent filter. `readCv` drops any row
+ * whose kind is not in this list, so a model correctly reading "AWS Certified
+ * Solutions Architect", "German — C1", "openbench, 2k stars" or "US11234567B2"
+ * had every one of them discarded on the way into the graph. The extraction was
+ * right; the vocabulary could not hold it. Measured on a realistic reply, seven
+ * of eight rows were lost.
+ *
+ * The list is now the union of what JSON Resume models — work, education,
+ * skills, awards, certificates, publications, languages, volunteer, projects —
+ * and what an academic CV additionally carries: teaching, service, grants and
+ * patents. Those four have no equivalent in a developer-CV schema and are the
+ * bulk of the evidence for anybody applying to a university.
+ *
+ * ## The two pairs that look redundant and are not
+ *
+ * `service` is academic service — reviewing, programme committees, editorial
+ * work — and it is a professional credential. `volunteering` is unpaid work in
+ * the world, which is a different claim about a person and reads differently to
+ * a hiring committee. Collapsing them would file a stint at a food bank as a
+ * qualification.
+ *
+ * `award` is a prize; `grant` is money won to do work with. For a researcher
+ * the second is the one a search committee counts, and a schema that merged
+ * them would make a £2M fellowship indistinguishable from a best-poster ribbon.
+ */
 export const BACKGROUND_KINDS = [
   'education',
   'employment',
@@ -1146,8 +1236,67 @@ export const BACKGROUND_KINDS = [
   'teaching',
   'award',
   'service',
+  'certification',
+  'language',
+  'project',
+  'volunteering',
+  'membership',
+  'grant',
+  'patent',
 ] as const
 export type BackgroundKind = (typeof BACKGROUND_KINDS)[number]
+
+/**
+ * The order a background reads in, and what each kind is called.
+ *
+ * Here rather than in each app's panel, where it was written twice. It is data
+ * about the vocabulary — not layout — and two copies is two chances for a kind
+ * added above to be rendered by one platform and silently dropped by the other,
+ * leaving entries in the graph with nowhere to see or delete them.
+ *
+ * NOT the declaration order above, which is the order the list was extended in.
+ * This is the order a CV prints: what you studied, what you have held, what
+ * came out of it. It is what a reader expects because it is what every CV they
+ * have read used.
+ *
+ * `Record<BackgroundKind, …>` on the label map and a length assertion in the
+ * test on the order: between them a new kind cannot be added without both being
+ * updated.
+ */
+export const BACKGROUND_ORDER: readonly BackgroundKind[] = [
+  'education',
+  'employment',
+  'publication',
+  'patent',
+  'grant',
+  'award',
+  'teaching',
+  'service',
+  'project',
+  'certification',
+  'skill',
+  'language',
+  'volunteering',
+  'membership',
+]
+
+/** Plural, because every one of these heads a list. */
+export const BACKGROUND_LABEL: Readonly<Record<BackgroundKind, string>> = {
+  education: 'Education',
+  employment: 'Employment',
+  publication: 'Publications',
+  patent: 'Patents',
+  grant: 'Grants',
+  award: 'Awards',
+  teaching: 'Teaching',
+  service: 'Service',
+  project: 'Projects',
+  certification: 'Certifications',
+  skill: 'Skills',
+  language: 'Languages',
+  volunteering: 'Volunteering',
+  membership: 'Memberships',
+}
 
 /**
  * One fact about the user, extracted from something they wrote.
@@ -1198,12 +1347,64 @@ export type BackgroundProps = {
   /** Anything worth keeping that is not the title — a venue, a grade, a note. */
   detail?: string
   /**
+   * The bullet points under an entry: what was built, shipped, taught, found.
+   *
+   * ## Why this earns a field of its own rather than going in `detail`
+   *
+   * It is the part of a CV that answers a posting. A requirement reads "five
+   * years running distributed systems in production" and the thing that
+   * answers it is not the job title `Staff Engineer` or the employer
+   * `Cloudflare` — it is the line underneath saying the person ran a
+   * multi-region store. `assess.ts` scores by term overlap over what it is
+   * given, so squashing those lines into a single optional `detail`, or
+   * dropping them as the first extractor did, removed most of the evidence
+   * from the one place it was needed.
+   *
+   * An ARRAY, not a paragraph, and JSON Resume calls it the same thing for the
+   * same reason: the bullets are separately true, separately quotable in a
+   * cover letter, and a screen renders them as a list. Joining them into one
+   * string means every reader has to guess how to split it again.
+   */
+  highlights?: readonly string[]
+  /**
    * Where this came from, when it was extracted rather than typed.
    *
    * The id of the `file` node. Not an edge, because an edge would be a second
    * place to look and this is a property of the claim rather than a
    * relationship anybody navigates.
    */
+  source?: string
+}
+
+/**
+ * One relation the graph holds, in whatever words it was proposed.
+ *
+ * The ends are edges (`OF` to the subject, `ABOUT` to the object) rather than
+ * id properties, because they are the thing traversal walks — the whole point
+ * of reifying was to make "what evidence do I have for this" a graph question.
+ */
+export type ClaimProps = {
+  slug: string
+  /**
+   * The canonical predicate from `core/ontology.ts`, or the normalised surface
+   * form when the taxonomy had no name for it.
+   *
+   * Never the raw surface: two spellings of one relation have to compare equal
+   * or `core/claim.ts` cannot tell a duplicate from a new fact.
+   */
+  predicate: string
+  /**
+   * Exactly what was proposed, before canonicalising.
+   *
+   * Kept because it is evidence. A person looking at "BUILT" who does not
+   * recognise it needs to see that the document said "contributed to" and that
+   * jojo made that mapping — otherwise the claim reads as something the app
+   * decided rather than something the document says.
+   */
+  surface: string
+  /** False when the taxonomy had no name for this and it was kept open. */
+  known: boolean
+  /** The file this was read from. A breadcrumb, not a foreign key — see `BackgroundProps.source`. */
   source?: string
 }
 
@@ -1246,6 +1447,7 @@ export type Background = {
   period?: string
   year?: number
   detail?: string
+  highlights?: readonly string[]
   source?: string
 }
 
@@ -1277,6 +1479,7 @@ export type NodePropsByType = {
   profile: ProfileProps
   person: PersonProps
   background: BackgroundProps
+  claim: ClaimProps
   thread: ThreadProps
   proposal: ProposalProps
 }

@@ -1,3 +1,6 @@
+import { FAILURE_KINDS } from './model-server'
+import type { FailureKind } from './model-server'
+
 /**
  * L1 — the complete vocabulary of what jojo may report about how it is used.
  *
@@ -72,6 +75,21 @@ export const EVENTS = [
   'transfer_completed',
   /** The guided tour was started or finished. */
   'tour_used',
+  /**
+   * A model request that did not work. The first failure in this list.
+   *
+   * With no backend there are no server logs, so before this a provider that
+   * was broken for everybody looked exactly like one nobody had tried.
+   */
+  'model_failed',
+  /**
+   * Something threw and was caught. The site and the kind, nothing else.
+   *
+   * Deliberately one event rather than one per site: what a maintainer needs is
+   * a count per place, and twelve near-identical event names would spread that
+   * across twelve dashboards.
+   */
+  'error_caught',
 ] as const
 
 export type AnalyticsEvent = (typeof EVENTS)[number]
@@ -143,6 +161,40 @@ export type EventParams = {
   scout_proposal_decided: { decision: (typeof DECISIONS)[number] }
   vault_item_added: { kind: (typeof KINDS)[number] }
   model_connected: { provider: (typeof PROVIDERS_REPORTED)[number] }
+  /**
+   * A model request that did not work, and the shape of the not-working.
+   *
+   * THE FIRST FAILURE EVENT IN THIS TABLE, and the gap it closes is the one a
+   * local-first app has by construction: there is no backend, so there are no
+   * server logs, and until this existed a model that timed out for every user of
+   * a given provider was indistinguishable from one nobody had tried. Every
+   * other event here records something working.
+   *
+   * WHAT IT DELIBERATELY DOES NOT CARRY is the address or the message. The
+   * endpoint is frequently a hostname on the person's own network — the note
+   * above `PROVIDERS_REPORTED` says why that is a fact about them rather than
+   * about jojo — and an error string is free text, which is exactly what this
+   * table has no `string` in it to prevent. `kind` and `phase` are enough to
+   * tell "nobody can reach NVIDIA from a browser" from "one person's laptop was
+   * asleep", which is the question worth answering.
+   */
+  model_failed: {
+    provider: (typeof PROVIDERS_REPORTED)[number]
+    kind: FailureKind
+    phase: (typeof FAILURE_PHASES)[number]
+  }
+  /**
+   * A caught error, as a place and a class.
+   *
+   * `fatal` separates "a boundary caught this and the screen is gone" from "a
+   * background write failed and the app carried on", which decides whether a
+   * count is an emergency or a nuisance.
+   */
+  error_caught: {
+    where: (typeof ERROR_SITES)[number]
+    kind: (typeof ERROR_KINDS)[number]
+    fatal: boolean
+  }
   reader_connected: { via: 'path' | 'extension' | 'direct' }
   backup_used: { direction: (typeof DIRECTIONS)[number]; records: (typeof COUNTS)[number] }
   transfer_completed: { records: (typeof COUNTS)[number] }
@@ -191,9 +243,7 @@ export function screenForPath(pathname: string): (typeof SCREENS)[number] | null
   const first = pathname.split('?')[0]?.split('#')[0]?.split('/').filter(Boolean)[0]
   // The root is the dashboard, which has no segment of its own.
   if (first === undefined) return 'dashboard'
-  return (SCREENS as readonly string[]).includes(first)
-    ? (first as (typeof SCREENS)[number])
-    : null
+  return (SCREENS as readonly string[]).includes(first) ? (first as (typeof SCREENS)[number]) : null
 }
 
 /** One reportable thing, as the ports take it. */
@@ -255,6 +305,82 @@ export function isReportable(value: unknown): value is Reportable {
   return true
 }
 
+/**
+ * Where an error was caught. A place in the app, never a stack frame.
+ *
+ * A stack frame names the user's own render tree and can carry a component
+ * whose props are their records; these are twelve fixed strings chosen so that
+ * "the assistant keeps dying for people on Firefox" is answerable and nothing
+ * about any particular person is.
+ */
+export const ERROR_SITES = [
+  /** A React render threw and a boundary caught it. */
+  'render',
+  /** The same, but contained to one route rather than the whole app. */
+  'route',
+  /** A throw underneath an agent run, which has no other home. */
+  'agent',
+  /** A promise nobody awaited rejected. */
+  'unhandled_rejection',
+  /** A throw that reached the window or the RN global handler. */
+  'uncaught',
+  /** Reading or writing the record store. */
+  'storage',
+  /** Writing a backup file. */
+  'backup',
+  /** Reading one back. */
+  'restore',
+  /** The document reader. */
+  'reader',
+  /** The capture extension's relay. */
+  'extension',
+  /** Device-to-device transfer. */
+  'transfer',
+  /** Somewhere that has not earned its own name yet. */
+  'other',
+] as const
+
+/**
+ * What kind of error it was, from a fixed list.
+ *
+ * The CONSTRUCTOR NAME, matched against this list — never the message, which is
+ * free text and frequently contains a path, a URL or a record's title. A name
+ * this does not recognise reads as `other` rather than travelling, which is the
+ * property that makes this safe to send from a handler that catches anything.
+ */
+export const ERROR_KINDS = [
+  'TypeError',
+  'RangeError',
+  'SyntaxError',
+  'ReferenceError',
+  'QuotaExceededError',
+  'SecurityError',
+  'NotFoundError',
+  'InvalidStateError',
+  'AbortError',
+  'NetworkError',
+  'VersionError',
+  'other',
+] as const
+
+/**
+ * Classifies a caught value without reading a word of it.
+ *
+ * `DOMException` carries its useful classification in `name` rather than in the
+ * constructor — every one of them is a `DOMException` — so `name` is what is
+ * read, and it is checked against the list above before it is allowed out.
+ */
+export function errorKind(thrown: unknown): (typeof ERROR_KINDS)[number] {
+  const name =
+    thrown instanceof Error && typeof thrown.name === 'string' ? thrown.name : ''
+  return (ERROR_KINDS as readonly string[]).includes(name)
+    ? (name as (typeof ERROR_KINDS)[number])
+    : 'other'
+}
+
+/** Which call failed. This file's own vocabulary, so it is declared here. */
+export const FAILURE_PHASES = ['connect', 'chat', 'models'] as const
+
 /** Every string any event may carry, flattened. Built from the lists above. */
 const ALLOWED_STRINGS: ReadonlySet<string> = new Set<string>([
   ...SCREENS,
@@ -262,6 +388,10 @@ const ALLOWED_STRINGS: ReadonlySet<string> = new Set<string>([
   ...KINDS,
   ...DECISIONS,
   ...DIRECTIONS,
+  ...FAILURE_KINDS,
+  ...FAILURE_PHASES,
+  ...ERROR_SITES,
+  ...ERROR_KINDS,
   ...OUTCOMES,
   ...PROVIDERS_REPORTED,
   // The small unions declared inline in `EventParams`.

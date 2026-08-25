@@ -21,7 +21,10 @@ import type { AgentEvent, LlmTurnFn } from './loop'
 const START = Date.parse('2026-08-22T09:00:00.000Z')
 
 const nullDriver = () => ({
-  open: async () => ({ ok: true as const, value: { version: 1, from: 0, migrated: [], crossTab: false } }),
+  open: async () => ({
+    ok: true as const,
+    value: { version: 1, from: 0, migrated: [], crossTab: false },
+  }),
   readAll: async () => ({ ok: true as const, value: { nodes: [], edges: [], meta: [], ops: [] } }),
   commit: async () => ({ ok: true as const, value: undefined }),
   replace: async () => ({ ok: true as const, value: undefined }),
@@ -379,7 +382,16 @@ describe('what a step carries back', () => {
     // it would have to parse back.
     const run = await runAgent({
       host: host(),
-      llm: scripted([calls('graph_query', { kind: 'pattern', start: 'application', quantifier: 'missing', rel: 'AT', end: 'organisation' }), says('none')]),
+      llm: scripted([
+        calls('graph_query', {
+          kind: 'pattern',
+          start: 'application',
+          quantifier: 'missing',
+          rel: 'AT',
+          end: 'organisation',
+        }),
+        says('none'),
+      ]),
       history: [],
       prompt: 'x',
       onEvent: () => {},
@@ -491,6 +503,65 @@ describe('the offered tool list is an allowlist, not a suggestion', () => {
     // THE assertion. Before the allowlist this was `before + 1`.
     expect(h.memory().nodes().length).toBe(before)
     expect(run.stopped).toBe('answered')
+  })
+
+  it('allows a tool the RETRIEVER did not guess, because that list is a hint', async () => {
+    /*
+     * The distinction this pair of tests exists to draw.
+     *
+     * The test above passes `tools` explicitly — a pipeline's boundary — and a
+     * call outside it is refused and writes nothing. That must never change.
+     *
+     * This one narrows by RETRIEVER, which is a token optimisation: a guess at
+     * which of eighty-odd tools the question needs, made from the words the
+     * person happened to use. Refusing a miss made the same request succeed or
+     * fail on phrasing — "add a person" worked and "add Dr Chen as a referee"
+     * failed with "No tool is called vault.person.create", about a tool that
+     * exists and is not destructive.
+     *
+     * A miss now reaches the approval gate, which is the real control.
+     */
+    const h = host()
+    const before = h.memory().nodes().length
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('Added.')]),
+      history: [],
+      // Words that seed a narrow set nowhere near `application.create`.
+      prompt: 'what is on my calendar this week',
+      retrieve: { carried: null, fromHistory: [] },
+      onEvent: () => {},
+    })
+
+    expect(run.steps[0]?.status).toBe('done')
+    // Greater rather than exact: `application.create` is composite and mints the
+    // organisation too, which is not what this test is about.
+    expect(h.memory().nodes().length).toBeGreaterThan(before)
+  })
+
+  it('still asks before a retriever miss when approvals are on', async () => {
+    // The miss is allowed, not waved through: the gate is what decides, exactly
+    // as it would have for a tool the retriever did offer.
+    const asked: string[] = []
+    const h = host()
+    const before = h.memory().nodes().length
+    const run = await runAgent({
+      host: h,
+      llm: scripted([calls('application_create', NEW_APP), says('ok')]),
+      history: [],
+      prompt: 'what is on my calendar this week',
+      retrieve: { carried: null, fromHistory: [] },
+      gate: 'writes',
+      approve: (step) => {
+        asked.push(step.name)
+        return Promise.resolve(false)
+      },
+      onEvent: () => {},
+    })
+
+    expect(asked).toEqual(['application.create'])
+    expect(run.steps[0]?.status).toBe('declined')
+    expect(h.memory().nodes().length).toBe(before)
   })
 
   it('tells the model the name is unavailable, in the words it already knows', async () => {

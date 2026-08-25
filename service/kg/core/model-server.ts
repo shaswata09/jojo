@@ -363,7 +363,52 @@ export type ModelFailure = {
   ok: false
   kind: 'unconfigured' | 'unreachable' | 'refused' | 'malformed'
   reason: string
+  /**
+   * A finer classification, for reporting only. Never shown to anybody.
+   *
+   * `kind` decides what the app DOES — retry, refuse, send them to Settings —
+   * and three different causes want the same handling, so it stays coarse. This
+   * says which of the three it was, because "nobody can reach NVIDIA from a
+   * browser" and "one laptop went to sleep" are the same `kind` and completely
+   * different problems.
+   *
+   * Set where the failure is CONSTRUCTED, which is the only place that knows.
+   * The alternative — matching on `reason` later — reads a sentence written for
+   * a human and turns the wording into an API, so the next copy edit silently
+   * changes what the metrics mean.
+   */
+  why?: FailureKind
 }
+
+/**
+ * How a model request failed, finely enough to act on.
+ *
+ * `timeout` and `stalled` are separate because the fixes are: nothing answered
+ * at all points at an address or a firewall, while a stream that started and
+ * stopped points at the model being unloaded or the machine swapping.
+ *
+ * `blocked` is the BROWSER refusing to make the request — mixed content, or a
+ * missing CORS header. It is the failure a person cannot fix by restarting
+ * anything, and the one most likely to hit everybody on a hosted copy at once.
+ */
+export const FAILURE_KINDS = [
+  'unconfigured',
+  'unreachable',
+  'timeout',
+  'stalled',
+  'blocked',
+  'refused',
+  'malformed',
+] as const
+
+/*
+ * An array with a derived type, rather than a bare union, because `analytics.ts`
+ * needs these at RUNTIME: its `ALLOWED_STRINGS` set is what makes "no free text
+ * is ever reported" a fact rather than a convention, and a set cannot be built
+ * from a type. Derived rather than written twice, so the list and the type
+ * cannot disagree about what a failure can be.
+ */
+export type FailureKind = (typeof FAILURE_KINDS)[number]
 
 /** Long enough for a cold local model, short enough to not read as a hang. */
 export const MODEL_TIMEOUT_MS = 60_000
@@ -1007,6 +1052,7 @@ const safeParse = (text: string): unknown => {
 export const unreachable = (endpoint: string, detail: string, timedOut: boolean): ModelFailure => ({
   ok: false,
   kind: 'unreachable',
+  why: timedOut ? 'timeout' : 'unreachable',
   reason: timedOut
     ? `Nothing answered ${normaliseEndpoint(endpoint)} within ${String(MODEL_TIMEOUT_MS / 1000)} seconds.`
     : `Could not reach ${normaliseEndpoint(endpoint)} — ${detail}.`,
@@ -1029,6 +1075,7 @@ export const unreachable = (endpoint: string, detail: string, timedOut: boolean)
 export const stalled = (endpoint: string, sofar: number): ModelFailure => ({
   ok: false,
   kind: 'unreachable',
+  why: sofar > 0 ? 'stalled' : 'timeout',
   reason:
     sofar > 0
       ? `${normaliseEndpoint(endpoint)} stopped sending part-way through the answer, after ${String(MODEL_TIMEOUT_MS / 1000)} seconds with nothing further.`
@@ -1038,5 +1085,6 @@ export const stalled = (endpoint: string, sofar: number): ModelFailure => ({
 export const unconfigured = (): ModelFailure => ({
   ok: false,
   kind: 'unconfigured',
+  why: 'unconfigured',
   reason: 'No model is connected. Settings is where the endpoint goes.',
 })

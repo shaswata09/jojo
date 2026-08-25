@@ -263,6 +263,12 @@ const backgroundFields = {
   period: s.optional(s.string({ label: 'When', description: 'As written: “2021–2024”, “since 2024”.' })),
   year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
   detail: s.optional(s.string({ label: 'Detail', multiline: true })),
+  highlights: s.optional(
+    s.array(s.string({ min: 1 }), {
+      label: 'Highlights',
+      description: 'The bullet points under this entry — what was built, shipped, taught or found.',
+    }),
+  ),
   source: s.optional(s.string({ label: 'Read from', description: 'The id of the document this came from.' })),
 }
 
@@ -300,6 +306,14 @@ export const profileBackgroundAdd = defineTool({
           ...opt('period', cleared(draft.period)),
           ...(draft.year === undefined ? {} : { year: draft.year }),
           ...opt('detail', cleared(draft.detail)),
+          /*
+           * Dropped when empty rather than stored as `[]`. An entry with no
+           * bullets and an entry with an empty list of them are the same fact,
+           * and only one of the two shapes should ever reach a reader.
+           */
+          ...(draft.highlights && draft.highlights.length > 0
+            ? { highlights: draft.highlights }
+            : {}),
           ...opt('source', cleared(draft.source)),
         },
         createdAt: ctx.now,
@@ -339,6 +353,12 @@ export const profileBackgroundUpdate = defineTool({
     period: s.optional(s.string({ label: 'When' })),
     year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
     detail: s.optional(s.string({ label: 'Detail', multiline: true })),
+    highlights: s.optional(
+      s.array(s.string({ min: 1 }), {
+        label: 'Highlights',
+        description: 'Replaces the bullet points under this entry, all of them.',
+      }),
+    ),
   }),
 
   run(ctx, input) {
@@ -350,6 +370,9 @@ export const profileBackgroundUpdate = defineTool({
       ...opt('period', cleared(input.period)),
       ...(input.year === undefined ? {} : { year: input.year }),
       ...opt('detail', cleared(input.detail)),
+      // Replaces rather than appends, and an empty list is how a caller clears
+      // them — the same shape every other optional field here has.
+      ...(input.highlights === undefined ? {} : { highlights: input.highlights }),
     })
   },
 

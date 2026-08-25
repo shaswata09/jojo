@@ -1,3 +1,5 @@
+import { reportError } from '@/lib/report-error'
+
 /**
  * The two failures React cannot catch, reported instead of vanishing.
  *
@@ -29,8 +31,6 @@
  * definition, hence the guarded lookup rather than an import.
  */
 
-import { recordCrash } from '@/lib/crash'
-
 type GlobalHandler = (error: unknown, isFatal?: boolean) => void
 type ErrorUtilsShape = {
   getGlobalHandler?: () => GlobalHandler
@@ -50,8 +50,9 @@ export function installLastResortHandlers(): void {
     // would trade a visible crash for a silent one.
     const previous = errorUtils.getGlobalHandler()
     errorUtils.setGlobalHandler((error, isFatal) => {
-      console.error(`Uncaught error${isFatal === true ? ' (fatal)' : ''}:`, error)
-      void recordCrash(error, isFatal === true ? 'fatal' : 'uncaught')
+      // Console, Crashlytics and a counted event, in one call — see
+      // `lib/report-error.ts` for why all three and not one.
+      reportError('uncaught', error, { fatal: isFatal === true })
       // LAST, and this ordering matters: on a fatal, React Native's own handler
       // is what ends the process. Anything after it may never run.
       previous(error, isFatal)
@@ -70,8 +71,7 @@ export function installLastResortHandlers(): void {
   globals.HermesInternal?.enablePromiseRejectionTracker?.({
     allRejections: true,
     onUnhandled: (id: number, error: unknown) => {
-      console.error(`Unhandled promise rejection (#${String(id)}):`, error)
-      void recordCrash(error, 'unhandled-rejection')
+      reportError('unhandled_rejection', error)
     },
     onHandled: (id: number) => {
       console.warn(`Promise rejection #${String(id)} was handled late, after being reported.`)

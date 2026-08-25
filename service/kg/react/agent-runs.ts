@@ -169,7 +169,19 @@ export type AgentRuns = {
   stopAll: () => void
 }
 
-export function createAgentRuns(): AgentRuns {
+/**
+ * A place to send a throw that has no other home.
+ *
+ * A port rather than an import, because this layer may not reach into an app —
+ * and because the two apps send it to different places: the phone has
+ * Crashlytics and the browser does not.
+ *
+ * Optional, and absent means the console. Every existing test constructs this
+ * registry with no arguments and none of them is about reporting.
+ */
+export type ErrorPort = (thrown: unknown) => void
+
+export function createAgentRuns(onError?: ErrorPort): AgentRuns {
   /** The live state per conversation, replaced wholesale on every change. */
   const runs = new Map<NodeId, AgentRun>()
   /** The mutable bookkeeping a run needs and a reader must never see. */
@@ -418,6 +430,14 @@ export function createAgentRuns(): AgentRuns {
         // The run's OWN thread, not whichever one is on screen now.
         onSettled?.(threadId, finished?.entries ?? [], run.messages.slice(1))
       } catch (e) {
+        /*
+         * Reported as well as shown. The entry below tells the person their
+         * question failed; this tells whoever maintains jojo that it did — and
+         * a throw reaching here is by definition a bug rather than a model
+         * saying no, because every expected refusal returns a value.
+         */
+        if (onError) onError(e)
+        else console.error('Agent run threw:', e)
         record(threadId, {
           kind: 'error',
           id: nextId(),

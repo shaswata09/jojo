@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
-import { crashEnabled, recordCrash } from '@/lib/crash-log'
+import { reportError } from '@/lib/report-error'
 
 type Props = {
   children: ReactNode
@@ -39,7 +39,12 @@ export class ErrorBoundary extends Component<Props, State> {
      *
      * Web reports stay on this device: Google ships no browser Crashlytics.
      */
-    recordCrash(error, 'render', crashEnabled())
+    // `fatal` when this is the app-wide boundary: the whole screen is gone.
+    // A widget boundary has a fallback and the app carries on, which is a
+    // different severity and worth counting separately.
+    reportError(this.props.fallback === undefined ? 'render' : 'route', error, {
+      fatal: this.props.fallback === undefined,
+    })
 
     // Named for what this boundary DID, not "unhandled render error", which is
     // what it used to say. Every line it prints is by definition one it caught,

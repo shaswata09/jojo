@@ -6,9 +6,9 @@ import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin
 import type { TwinGap } from '@jojo/service/core/twin'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { useRun } from '@jojo/service/react/use-tool'
-import type { BackgroundDraft } from '@jojo/service/agent/read-cv'
+import type { BackgroundDraft, RelationDraft } from '@jojo/service/agent/read-cv'
+import { labelOf } from '@jojo/service/core/ontology'
 import { useReadCv } from '@/lib/cv-agent'
-import type { CvStep } from '@/lib/cv-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { markOffered, offered } from '@/lib/twin-offer'
@@ -32,11 +32,6 @@ import { space } from '@/theme/tokens'
  * nothing at all until the answer is known.
  */
 
-const STEP_LABEL: Record<CvStep, string> = {
-  reading: 'Opening the document',
-  asking: 'Reading what it says',
-}
-
 const KIND_LABEL: Record<string, string> = {
   education: 'Education',
   employment: 'Employment',
@@ -45,6 +40,13 @@ const KIND_LABEL: Record<string, string> = {
   teaching: 'Teaching',
   award: 'Award',
   service: 'Service',
+  certification: 'Certification',
+  language: 'Language',
+  project: 'Project',
+  volunteering: 'Volunteering',
+  membership: 'Membership',
+  grant: 'Grant',
+  patent: 'Patent',
 }
 
 export function ProfileUpdateOffer() {
@@ -58,8 +60,14 @@ export function ProfileUpdateOffer() {
   // `null` while the store is still being read. See the header — an empty array
   // here would flash the offer at somebody who already answered it.
   const [seen, setSeen] = useState<readonly string[] | null>(null)
-  const [step, setStep] = useState<CvStep | null>(null)
+  // A string rather than a step name: the reader makes one pass per section of
+  // the document and says which one it is on, so there is no fixed set to map.
+  const [step, setStep] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<readonly BackgroundDraft[] | null>(null)
+  // Beside the entries rather than inside them: a relation is about two of them
+  // and belongs to neither. Shown in the same review, because it is a claim
+  // about this person too and the copy promises everything is seen first.
+  const [links, setLinks] = useState<readonly RelationDraft[]>([])
   const [error, setError] = useState<string | null>(null)
   const abort = useRef<AbortController | null>(null)
 
@@ -98,6 +106,7 @@ export function ProfileUpdateOffer() {
     abort.current = null
     setStep(null)
     setDrafts(null)
+    setLinks([])
     setError(null)
     // Every id on offer, not just the one named: the title says "and 2 more",
     // so declining it declines all three.
@@ -129,6 +138,7 @@ export function ProfileUpdateOffer() {
     }
 
     setDrafts(outcome.background)
+    setLinks(outcome.relations)
     if (outcome.skipped.length > 0) {
       toast({
         title: `${String(outcome.skipped.length)} entr${outcome.skipped.length === 1 ? 'y was' : 'ies were'} skipped`,
@@ -146,15 +156,36 @@ export function ProfileUpdateOffer() {
       background: drafts.map((d) => ({ ...d, source: fileId })),
     })
 
+    /*
+     * The relations, once the entries have ids to point at. The ids come back
+     * in the order the entries were given, which is what makes a position
+     * resolvable — and why the reader returns positions rather than asking a
+     * model to copy uuids. `claim.add` refuses any the graph already holds
+     * under another name, which is the feature working rather than an error.
+     */
+    const ids = result.ok ? (result.output as string[]) : []
+    let related = 0
+    if (result.ok) {
+      for (const link of links) {
+        const subject = ids[link.subject]
+        const object = ids[link.object]
+        if (subject === undefined || object === undefined) continue
+        if (run('claim.add', { subject, predicate: link.predicate, object, source: fileId }).ok) {
+          related += 1
+        }
+      }
+    }
+
     remember([fileId])
     setDrafts(null)
+    setLinks([])
 
     toast({
       title: result.ok
         ? `${String(drafts.length)} added to your profile`
         : 'Nothing could be added',
       description: result.ok
-        ? `Read from ${target.subject}.`
+        ? `Read from ${target.subject}.${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} recorded.` : ''}`
         : (result.errors[0]?.message ?? 'The entries were refused.'),
       ...(result.ok ? {} : { tone: 'danger' as const }),
     })
@@ -189,7 +220,7 @@ export function ProfileUpdateOffer() {
         <View style={{ flexDirection: 'row', gap: space[2] }}>
           <Button
             size="sm"
-            label={busy ? STEP_LABEL[step] : 'Read it'}
+            label={busy ? step : 'Read it'}
             disabled={busy}
             onPress={() => {
               void accept().catch((thrown: unknown) => {
@@ -228,6 +259,26 @@ export function ProfileUpdateOffer() {
               ))}
             </View>
           </ScrollView>
+          {links.length > 0 && (
+            <View style={{ gap: space[1], borderTopWidth: 1, borderTopColor: c.hairline, paddingTop: space[2] }}>
+              <Txt size="sm" weight="medium">
+                {links.length === 1
+                  ? '1 connection between them'
+                  : `${String(links.length)} connections between them`}
+              </Txt>
+              {links.slice(0, 6).map((link) => (
+                <Txt
+                  key={`${String(link.subject)}-${link.predicate}-${String(link.object)}`}
+                  size="xs"
+                  tone="secondary"
+                >
+                  {drafts[link.subject]?.title ?? '?'} · {labelOf(link.predicate)} ·{' '}
+                  {drafts[link.object]?.title ?? '?'}
+                </Txt>
+              ))}
+            </View>
+          )}
+
           <View style={{ flexDirection: 'row', gap: space[2] }}>
             <Button
               size="sm"

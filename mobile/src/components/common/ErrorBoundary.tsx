@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import type { ErrorInfo, ReactNode } from 'react'
-import { recordCrash } from '@/lib/crash'
+import { reportError } from '@/lib/report-error'
 
 type Props = { children: ReactNode }
 type State = { error: Error | null }
@@ -45,9 +45,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
-    // `adb logcat` is how a bug report from a real device gets its stack, so
-    // this line stays even though the recorder below covers release builds.
-    console.error('Render error caught by the app boundary:', error, info.componentStack)
     /*
      * Not awaited, and it cannot throw — see `lib/crash.ts`. This is the ONE
      * import in this file that reaches outside React Native's own primitives,
@@ -59,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
      * stack is a name from the user's own render tree and the report is a thing
      * that may leave the device.
      */
-    void recordCrash(error, 'render')
+    reportError('render', error, { fatal: true })
   }
 
   override render() {

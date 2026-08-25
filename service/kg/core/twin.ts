@@ -70,8 +70,15 @@ export type TwinState = {
  * The name test stays for documents put somewhere else — a CV dropped into
  * "To read" is still a CV — and it is why this is an OR rather than a bucket
  * check alone.
+ *
+ * It covers letters and philosophies as well as CVs, because a research
+ * statement, a teaching philosophy and a master cover letter all state things
+ * about the person that a CV does not: what they work on, how they teach, what
+ * they say they have done. `core/document-kind.ts` decides which is which and
+ * the reader is told, so each gets guidance that fits its shape.
  */
-const ABOUT_THE_PERSON = /\b(cv|resume|résumé|vitae|statement|bio|portfolio|transcript)\b/i
+const ABOUT_THE_PERSON =
+  /\b(cv|resume|résumé|vitae|statement|philosophy|bio|portfolio|transcript|cover.?letter|covering.?letter)\b/i
 
 /**
  * Names that mean the document is somebody else's, whatever drawer it is in.

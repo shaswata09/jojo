@@ -41,6 +41,9 @@ const TYPE_LABEL: Record<NodeType, string> = {
   // Plural and plain: what somebody would call the list, not what the type is
   // called. 'Background' reads as logins.
   background: 'Background facts',
+  // What relates two of them. Named for what it holds rather than for the type,
+  // on the same principle as the line above: 'Claims' reads as insurance.
+  claim: 'Relations',
   thread: 'Conversations',
   proposal: 'Suggestions',
   organisation: 'Organisations',

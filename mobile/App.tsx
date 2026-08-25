@@ -2,6 +2,7 @@ import { StatusBar, StyleSheet, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { reportError } from '@/lib/report-error'
 import { LabelsProvider } from '@/lib/labels'
 import { RolesProvider } from '@/lib/roles'
 import { SheetsProvider } from '@/lib/sheets'
@@ -69,7 +70,11 @@ export default function App() {
                             conversation's run has to outlive the screen that
                             started it, and every exit from the Assistant screen
                             pops it — it is always the leaf of the stack. */}
-                        <AgentRunsProvider>
+                        <AgentRunsProvider
+                          onError={(e) => {
+                            reportError('agent', e)
+                          }}
+                        >
                           {/* Above the navigator too: a pipeline that stopped
                               when you left Job Scout was a pipeline that did not
                               do what its own footer said. */}

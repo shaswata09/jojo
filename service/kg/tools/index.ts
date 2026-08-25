@@ -65,6 +65,7 @@ import {
   profileSet,
   profileTextSet,
 } from './profile'
+import { claimAdd } from './claim'
 import {
   scoutMatchDismiss,
   scoutMatchPromote,
@@ -182,6 +183,7 @@ export const TOOLS = {
   'profile.preference.set': profilePreferenceSet,
   'profile.document.add': profileDocumentAdd,
   'profile.background.add': profileBackgroundAdd,
+  'claim.add': claimAdd,
   'profile.background.update': profileBackgroundUpdate,
   'profile.background.delete': profileBackgroundDelete,
 

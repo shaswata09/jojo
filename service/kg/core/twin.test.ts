@@ -480,3 +480,32 @@ describe('which documents count', () => {
     expect(twinState(graph([onPhone])).unread).toBe(1)
   })
 })
+
+describe('the documents worth reading', () => {
+  it('offers a research statement and a teaching philosophy', () => {
+    /*
+     * These state what a CV cannot. A CV lists papers; a research statement
+     * says what the person works ON, which is the thing an academic posting
+     * asks for and the thing the graph had no way to hold.
+     */
+    const state = twinState(
+      graph([file('f1', 'Research-statement-v4.doc'), file('f2', 'Teaching philosophy.pdf', 'To read')]),
+    )
+    expect(state.gaps.map((g) => g.id).sort()).toEqual(['f1', 'f2'])
+  })
+
+  it('offers a master cover letter that is not attached to a job', () => {
+    // The generic one people keep and adapt. A tailored copy filed under an
+    // application is excluded by the `FILED_UNDER` rule, which is what keeps
+    // this from reading somebody's pitch to one employer as their background.
+    const state = twinState(graph([file('f1', 'Cover letter — master.docx', 'To read')]))
+    expect(state.gaps.map((g) => g.id)).toEqual(['f1'])
+  })
+
+  it('still refuses an offer letter, which is the employer’s document', () => {
+    // `ABOUT_AN_EMPLOYER` vetoes before the bucket, and "letter" appearing in
+    // the person-document pattern must not undo that.
+    const state = twinState(graph([file('f1', 'Offer letter — Rice.pdf')]))
+    expect(state.gaps.filter((g) => g.kind === 'unread-document')).toEqual([])
+  })
+})

@@ -10,6 +10,7 @@ import { useFileDelete } from '@/lib/use-file-delete'
 import { Field, SettingRow } from '@/components/common/Field'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { BackgroundPanel } from '@/components/profile/BackgroundPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -512,6 +513,11 @@ export function Profile() {
           />
         </div>
       </Panel>
+
+      {/* Above Documents, because it is what the documents are FOR. Somebody
+          looking at this page after an import wants to see what was taken from
+          the file, not the file. */}
+      <BackgroundPanel />
 
       <Panel>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

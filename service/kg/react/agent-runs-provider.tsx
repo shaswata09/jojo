@@ -13,12 +13,22 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createAgentRuns } from './agent-runs'
+import type { ErrorPort } from './agent-runs'
 import { AgentRunsContext } from './agent-runs-context'
 
-export function AgentRunsProvider({ children }: { children: ReactNode }) {
+export function AgentRunsProvider({
+  children,
+  onError,
+}: {
+  children: ReactNode
+  /** Where a throw under a run goes. See `ErrorPort`; absent means the console. */
+  onError?: ErrorPort
+}) {
   // Created once per provider instance, not per render, and not at module
   // scope. See the header.
-  const [runs] = useState(createAgentRuns)
+  // `useState` with an initialiser, so the registry is built once per mount and
+  // a changing `onError` identity cannot replace a run in flight.
+  const [runs] = useState(() => createAgentRuns(onError))
 
   useEffect(
     () => () => {

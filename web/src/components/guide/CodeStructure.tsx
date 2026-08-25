@@ -108,17 +108,17 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'web/src/components',
-    files: 262,
+    files: 263,
     tests: 16,
-    lines: 43161,
+    lines: 43570,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4504, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4651, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
-    files: 92,
-    tests: 21,
-    lines: 11964,
+    files: 95,
+    tests: 22,
+    lines: 12636,
     what: 'web-only adapters and URL state',
   },
   {
@@ -144,7 +144,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 40
+export const WEB_TEST_FILES = 41
 
 type TestGroup = { title: string; files: string; body: string }
 

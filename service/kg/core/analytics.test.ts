@@ -15,16 +15,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import {
-  EVENTS,
-  bucket,
-  isReportable,
-  reportableProvider,
-  screenForPath,
-  PROVIDERS_REPORTED,
-  type AnalyticsEvent,
-  type EventParams,
-} from './analytics'
+import { EVENTS, PROVIDERS_REPORTED, bucket, errorKind, isReportable, reportableProvider, screenForPath, type AnalyticsEvent, type EventParams } from './analytics'
 import { PROVIDER_IDS } from './provider'
 
 describe('the vocabulary is closed', () => {
@@ -46,7 +37,10 @@ describe('the vocabulary is closed', () => {
       { event: 'screen_viewed', params: { screen: 'applications', role: 'Lecturer' } },
       { event: 'vault_item_added', params: { kind: 'file', name: 'Tailored-CV.pdf' } },
       { event: 'assistant_asked', params: { tools_available: 3, question: 'what about Rice' } },
-      { event: 'model_connected', params: { provider: 'nvidia', endpoint: 'http://10.0.0.4:8000' } },
+      {
+        event: 'model_connected',
+        params: { provider: 'nvidia', endpoint: 'http://10.0.0.4:8000' },
+      },
       { event: 'screen_viewed', params: { screen: '/applications/app:01a1-2b3c' } },
     ]) {
       expect(isReportable(leak), JSON.stringify(leak)).toBe(false)
@@ -68,6 +62,10 @@ describe('the vocabulary is closed', () => {
       { event: 'backup_used', params: { direction: 'export', records: '21-50' } },
       { event: 'transfer_completed', params: { records: '6-20' } },
       { event: 'tour_used', params: { outcome: 'finished' } },
+      { event: 'model_failed', params: { provider: 'nvidia', kind: 'timeout', phase: 'chat' } },
+      { event: 'model_failed', params: { provider: 'other', kind: 'blocked', phase: 'models' } },
+      { event: 'error_caught', params: { where: 'render', kind: 'TypeError', fatal: true } },
+      { event: 'error_caught', params: { where: 'storage', kind: 'QuotaExceededError', fatal: false } },
     ]
     for (const one of good) expect(isReportable(one), JSON.stringify(one)).toBe(true)
     // Every event in the table is exercised above, so a new one without a case
@@ -78,11 +76,14 @@ describe('the vocabulary is closed', () => {
   it('rejects a number that is not a number', () => {
     // NaN and Infinity serialise as `null` in JSON and read as a missing value
     // in a console, which is worse than being refused.
-    expect(isReportable({ event: 'assistant_asked', params: { tools_available: Number.NaN } })).toBe(
-      false,
-    )
     expect(
-      isReportable({ event: 'assistant_asked', params: { tools_available: Number.POSITIVE_INFINITY } }),
+      isReportable({ event: 'assistant_asked', params: { tools_available: Number.NaN } }),
+    ).toBe(false)
+    expect(
+      isReportable({
+        event: 'assistant_asked',
+        params: { tools_available: Number.POSITIVE_INFINITY },
+      }),
     ).toBe(false)
   })
 
@@ -95,7 +96,10 @@ describe('the vocabulary is closed', () => {
 
   it('rejects a nested object, which is where a record would hide', () => {
     expect(
-      isReportable({ event: 'application_created', params: { source: 'manual', app: { role: 'x' } } }),
+      isReportable({
+        event: 'application_created',
+        params: { source: 'manual', app: { role: 'x' } },
+      }),
     ).toBe(false)
     expect(isReportable({ event: 'vault_item_added', params: { kind: 'file', tags: ['a'] } })).toBe(
       false,
@@ -104,6 +108,70 @@ describe('the vocabulary is closed', () => {
 })
 
 describe('the parameter table itself carries no free text', () => {
+  it('has no parameter a model address or an error message could travel in', () => {
+    /*
+     * The reason `model_failed` is safe to send at all. An endpoint is
+     * frequently a hostname on the person's own network and an error message is
+     * free text; neither has a field here, so neither can leak by somebody
+     * adding one "just for debugging".
+     */
+    for (const leak of [
+      {
+        event: 'model_failed',
+        params: {
+          provider: 'nvidia',
+          kind: 'timeout',
+          phase: 'chat',
+          endpoint: 'http://10.0.0.5:8103/v1',
+        },
+      },
+      {
+        event: 'model_failed',
+        params: { provider: 'nvidia', kind: 'timeout', phase: 'chat', reason: 'Nothing answered' },
+      },
+      {
+        event: 'model_failed',
+        params: { provider: 'nvidia', kind: 'http://10.0.0.5', phase: 'chat' },
+      },
+    ]) {
+      expect(isReportable(leak), JSON.stringify(leak)).toBe(false)
+    }
+  })
+
+  it('classifies a caught error without reading its message', () => {
+    /*
+     * The property that makes `error_caught` safe to send from a handler that
+     * catches anything: the classification comes from the CONSTRUCTOR, and a
+     * name the list does not know reads as `other` rather than travelling.
+     * Messages routinely carry a path, a URL or a record's title.
+     */
+    expect(errorKind(new TypeError('cannot read x of undefined'))).toBe('TypeError')
+    expect(errorKind(new RangeError('out of range'))).toBe('RangeError')
+
+    const quota = new Error('The quota has been exceeded.')
+    quota.name = 'QuotaExceededError'
+    expect(errorKind(quota)).toBe('QuotaExceededError')
+
+    // A name nobody declared does not become a param value.
+    const exotic = new Error('failed to write /Users/someone/Documents/CV.pdf')
+    exotic.name = 'CvWriteError'
+    expect(errorKind(exotic)).toBe('other')
+
+    // Not an Error at all — a thrown string is a real thing code does.
+    expect(errorKind('jobs.rice.edu returned 500')).toBe('other')
+    expect(errorKind(null)).toBe('other')
+  })
+
+  it('has nowhere for a stack or a message to travel', () => {
+    for (const leak of [
+      { event: 'error_caught', params: { where: 'render', kind: 'TypeError', fatal: true, message: 'x is not a function' } },
+      { event: 'error_caught', params: { where: 'render', kind: 'TypeError', fatal: true, stack: 'at Foo (App.tsx:1)' } },
+      { event: 'error_caught', params: { where: '/Users/me/jojo', kind: 'TypeError', fatal: true } },
+    ]) {
+      expect(isReportable(leak), JSON.stringify(leak)).toBe(false)
+    }
+  })
+
   it('declares no bare `string` for any event', () => {
     /*
      * A type-level assertion, checked by the compiler rather than at runtime:
@@ -124,9 +192,9 @@ describe('narrowing a provider', () => {
   it('keeps the providers jojo ships', () => {
     for (const id of PROVIDER_IDS) {
       expect(reportableProvider(id), id).toBe(id)
-      expect(isReportable({ event: 'model_connected', params: { provider: reportableProvider(id) } })).toBe(
-        true,
-      )
+      expect(
+        isReportable({ event: 'model_connected', params: { provider: reportableProvider(id) } }),
+      ).toBe(true)
     }
   })
 
@@ -218,7 +286,9 @@ describe('bucketing a count', () => {
 
   it('only ever answers with a declared bucket', () => {
     for (let n = -5; n < 200; n += 1) {
-      expect(isReportable({ event: 'transfer_completed', params: { records: bucket(n) } })).toBe(true)
+      expect(isReportable({ event: 'transfer_completed', params: { records: bucket(n) } })).toBe(
+        true,
+      )
     }
   })
 })

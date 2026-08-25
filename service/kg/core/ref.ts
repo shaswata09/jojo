@@ -53,6 +53,7 @@ import { NODE_TYPES, RELS } from './model'
  * older export lines up with one read out of here.
  */
 export const TYPE_PREFIX: { readonly [T in NodeType]: string } = {
+  claim: 'claim',
   application: 'app',
   organisation: 'org',
   timelineItem: 'item',

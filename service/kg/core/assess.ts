@@ -61,6 +61,18 @@ export type Evidence = {
   readonly title: string
   readonly where?: string | undefined
   readonly detail?: string | undefined
+  /**
+   * The bullet points under the entry.
+   *
+   * The highest-value field for matching and the last one added, because it is
+   * where the answer to a requirement usually lives. "Five years running
+   * distributed systems in production" is not answered by the title
+   * `Staff Engineer` or the employer `Cloudflare`; it is answered by the line
+   * underneath saying the person ran a multi-region store. Scoring without
+   * these was scoring against the labels on somebody's career rather than
+   * against the career.
+   */
+  readonly highlights?: readonly string[] | undefined
   readonly year?: number | undefined
 }
 
@@ -102,6 +114,70 @@ export type Assessment = {
   readonly lead: readonly Evidence[]
 }
 
+/**
+ * Words that mean the same competence, so a match is not defeated by wording.
+ *
+ * ## The problem this solves
+ *
+ * Scoring is term overlap. A posting asking for "container orchestration" and a
+ * CV saying "Kubernetes" share no word at all, so the requirement reads as a
+ * gap and the person is told to put something on their CV that is already on
+ * it. Every published approach to this problem — ESCO, O*NET, and the matching
+ * systems built on them — solves it the same way: skills are nodes in a graph
+ * with relatedness edges, and a match is allowed to travel one hop.
+ *
+ * ## Why a table and not a taxonomy
+ *
+ * ESCO has around 13,000 skills and O*NET a comparable number of descriptors.
+ * Shipping either would be several megabytes in an app whose whole premise is
+ * that it works offline on a phone, and would still be a translation problem
+ * at the edges. What is here instead is the same idea at the size that earns
+ * its place: the handful of pairs where a posting and a CV reliably use
+ * different words for one thing.
+ *
+ * It is unapologetically hand-written, in the way `agent/retrieve.ts`'s alias
+ * table is and for the same reason — recall on real wording is not something a
+ * general rule delivers. Every entry is a pair a hiring manager would agree is
+ * the same competence, not a pair that happens to co-occur.
+ *
+ * ## The direction it must not go
+ *
+ * This EXPANDS the requirement, never the evidence. Expanding what somebody's
+ * record says is how "familiar with Docker" becomes a claim to expertise in
+ * container orchestration — a sentence about a real person that they never
+ * wrote. Expanding what the POSTING asked for is safe: it only ever makes the
+ * app better at recognising an answer the person already gave.
+ */
+const SAME_THING: readonly (readonly string[])[] = [
+  ['kubernetes', 'k8s', 'container', 'containers', 'orchestration'],
+  ['docker', 'containerisation', 'containerization'],
+  ['ci', 'cd', 'continuous', 'integration', 'deployment', 'devops'],
+  ['ml', 'machine', 'learning', 'deep'],
+  ['nlp', 'language', 'linguistics'],
+  ['distributed', 'systems', 'scalable', 'scale'],
+  ['database', 'databases', 'sql', 'postgres', 'postgresql', 'mysql'],
+  ['frontend', 'ui', 'interface', 'react', 'javascript', 'typescript'],
+  ['statistics', 'statistical', 'stats', 'quantitative'],
+  ['teaching', 'lecturing', 'instruction', 'pedagogy', 'supervision'],
+  ['publication', 'publications', 'published', 'peer', 'reviewed', 'papers'],
+  ['grant', 'grants', 'funding', 'fellowship', 'award'],
+  ['leadership', 'managing', 'management', 'mentoring', 'mentorship'],
+  ['cloud', 'aws', 'azure', 'gcp'],
+]
+
+/** Term -> every term in every family it belongs to. Built once. */
+const RELATED: ReadonlyMap<string, readonly string[]> = (() => {
+  const out = new Map<string, string[]>()
+  for (const family of SAME_THING) {
+    for (const term of family) {
+      const held = out.get(term)
+      if (held) held.push(...family)
+      else out.set(term, [...family])
+    }
+  }
+  return out
+})()
+
 /** Words too common to carry a match. Shorter than a stoplist for prose. */
 const NOISE = new Set([
   'and', 'the', 'for', 'with', 'you', 'our', 'are', 'have', 'has', 'will', 'work',
@@ -125,7 +201,7 @@ function terms(phrase: string): Set<string> {
 
 /** Everything about a background entry that could match, as one bag of terms. */
 const evidenceTerms = (e: Evidence): Set<string> =>
-  terms([e.title, e.where ?? '', e.detail ?? '', e.kind].join(' '))
+  terms([e.title, e.where ?? '', e.detail ?? '', ...(e.highlights ?? []), e.kind].join(' '))
 
 /**
  * How much of a requirement one entry covers, 0–1.
@@ -138,9 +214,27 @@ const evidenceTerms = (e: Evidence): Set<string> =>
 function overlap(requirement: Set<string>, evidence: Set<string>): number {
   if (requirement.size === 0) return 0
   let hit = 0
-  for (const term of requirement) if (evidence.has(term)) hit += 1
+  for (const term of requirement) {
+    if (evidence.has(term)) {
+      hit += 1
+      continue
+    }
+    /*
+     * One hop, and worth less than a direct hit. "Kubernetes" answering
+     * "container orchestration" is a real answer and a weaker one than the
+     * posting's own word appearing in the record — so it counts, and it cannot
+     * on its own carry a requirement past `MATCH_FLOOR` the way an exact match
+     * can. That keeps the relatedness table from turning coincidences into
+     * evidence.
+     */
+    const near = RELATED.get(term)
+    if (near?.some((t) => evidence.has(t))) hit += RELATED_WEIGHT
+  }
   return hit / requirement.size
 }
+
+/** A related word is most of a match, and deliberately not all of one. */
+const RELATED_WEIGHT = 0.6
 
 /** Below this, a shared word is a coincidence rather than a match. */
 const MATCH_FLOOR = 0.34

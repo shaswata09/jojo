@@ -243,6 +243,21 @@ export const NODE_PROP_SCHEMAS = {
    * because the PDF is gone. It is a provenance breadcrumb, not a foreign key,
    * and the readers treat it as one.
    */
+  /**
+   * A relation, with its predicate as a string rather than an enum.
+   *
+   * Deliberately not `s.enum(...)` over the taxonomy. The whole point of the
+   * open lane is that a predicate nobody enumerated is still stored, and a
+   * validator that rejected one would delete exactly the facts a curated list
+   * was never going to anticipate — on load, silently, from a backup.
+   */
+  claim: s.object({
+    slug,
+    predicate: s.string({ min: 1, label: 'Relation' }),
+    surface: s.string({ min: 1, label: 'As written' }),
+    known: s.boolean({ label: 'In the taxonomy' }),
+    source: s.optional(s.string({ label: 'Read from' })),
+  }),
   background: s.object({
     slug,
     kind: s.enum(BACKGROUND_KINDS, { label: 'Kind' }),
@@ -251,6 +266,7 @@ export const NODE_PROP_SCHEMAS = {
     period: s.optional(s.string({ label: 'When' })),
     year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
     detail: s.optional(s.string({ label: 'Detail', multiline: true })),
+    highlights: s.optional(s.array(s.string({ min: 1 }), { label: 'Highlights' })),
     source: s.optional(s.string({ label: 'Read from' })),
   }),
   person: s.object({

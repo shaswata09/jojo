@@ -108,6 +108,27 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = Object.assign(Objec
   note: ['snippet', 'application'],
   search: ['scout', 'pipeline'],
   board: ['scout', 'posting'],
+  /*
+   * The words people use for a person, none of which was here.
+   *
+   * `vault.person.create` had no alias at all, so "add Dr Chen as a referee on
+   * the Rice application" seeded a set of twenty-four tools that did not include
+   * the one it needed, while the barer "add a person" happened to match on the
+   * tool's own name and worked. Same request, different phrasing, different
+   * outcome — and nothing on screen to say why.
+   *
+   * `referee`, `recruiter` and `chair` are what this app's users actually write:
+   * a search chair and a referee are the two people an academic job search is
+   * mostly about, and neither word contains "person".
+   */
+  person: ['person', 'vault'],
+  people: ['person', 'vault'],
+  referee: ['person', 'vault'],
+  reference: ['person', 'vault'],
+  recruiter: ['person', 'vault'],
+  contact: ['person', 'vault'],
+  chair: ['person', 'vault'],
+  supervisor: ['person', 'vault'],
   profile: ['profile'],
   wipe: ['memory'],
   reset: ['memory'],
@@ -118,11 +139,64 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = Object.assign(Objec
 
 /** Words that carry no signal about a tool. */
 const STOP = new Set([
-  'the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'has', 'was', 'were', 'are',
-  'you', 'your', 'can', 'please', 'would', 'could', 'should', 'about', 'into', 'onto', 'when',
-  'what', 'which', 'who', 'why', 'how', 'all', 'any', 'some', 'get', 'got', 'put', 'set',
-  'make', 'made', 'need', 'want', 'like', 'just', 'now', 'then', 'there', 'here', 'out',
-  'add', 'new', 'one', 'two', 'also', 'but', 'not', 'its', 'it', 'my', 'me', 'i',
+  'the',
+  'and',
+  'for',
+  'that',
+  'this',
+  'with',
+  'from',
+  'have',
+  'has',
+  'was',
+  'were',
+  'are',
+  'you',
+  'your',
+  'can',
+  'please',
+  'would',
+  'could',
+  'should',
+  'about',
+  'into',
+  'onto',
+  'when',
+  'what',
+  'which',
+  'who',
+  'why',
+  'how',
+  'all',
+  'any',
+  'some',
+  'get',
+  'got',
+  'put',
+  'set',
+  'make',
+  'made',
+  'need',
+  'want',
+  'like',
+  'just',
+  'now',
+  'then',
+  'there',
+  'here',
+  'out',
+  'add',
+  'new',
+  'one',
+  'two',
+  'also',
+  'but',
+  'not',
+  'its',
+  'it',
+  'my',
+  'me',
+  'i',
 ])
 
 /**
@@ -144,7 +218,10 @@ const STOP = new Set([
  * "ha" and "it" would be noise scored against the catalog.
  */
 export function terms(message: string): Set<string> {
-  const words = message.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
+  const words = message
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
   const out = new Set<string>()
   for (const word of words) {
     const singular = word.length > 2 && word.endsWith('s') ? word.slice(0, -1) : word
@@ -170,7 +247,11 @@ const INDEX: ReadonlyMap<string, ReadonlyMap<string, number>> = (() => {
     row.set(tool, Math.max(row.get(tool) ?? 0, weight))
     out.set(term, row)
   }
-  const words = (text: string) => text.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length >= 3)
+  const words = (text: string) =>
+    text
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((w) => w.length >= 3)
   for (const entry of CATALOG) {
     for (const word of entry.name.split('.')) add(word.toLowerCase(), entry.name, 3)
     for (const word of words(entry.title)) add(word, entry.name, 2)
@@ -284,5 +365,17 @@ export function offeredFor(
  * same tools by different routes would otherwise produce different arrays — and
  * therefore a different prompt prefix, and therefore a cache miss for no reason.
  */
+/**
+ * The named subset, in catalog order, accepting either spelling.
+ *
+ * EITHER SPELLING IS THE FIX. This matched `e.name` only — the registry
+ * spelling, `vault.person.create` — while `fromHistory` supplies what the WIRE
+ * carried, `vault_person_create`. The two never matched, so the clause meant to
+ * keep a conversation's own tools available across turns silently dropped every
+ * one of them, and a tool used successfully in one turn was gone by the next.
+ *
+ * It showed up worst with approvals switched off, because a run that never
+ * pauses makes more calls per turn, so more names went through the broken door.
+ */
 export const inCatalogOrder = (names: ReadonlySet<string>): string[] =>
-  CATALOG.filter((e) => names.has(e.name)).map((e) => e.name)
+  CATALOG.filter((e) => names.has(e.name) || names.has(e.wireName)).map((e) => e.name)

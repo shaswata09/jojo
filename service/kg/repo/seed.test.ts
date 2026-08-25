@@ -219,6 +219,13 @@ describe('seedToGraph', () => {
        * state is what tells them that has not happened yet.
        */
       background: 0,
+      /*
+       * Zero for the same reason, one step further out. A claim relates two
+       * records the user's own documents put there, so seeding one would mean
+       * inventing not just a fact about them but a relationship between two
+       * invented facts.
+       */
+      claim: 0,
     })
   })
 })

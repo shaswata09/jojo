@@ -522,23 +522,28 @@ function AgentScreen() {
           </View>
         )}
 
-        {/* Above the composer rather than in a card underneath. They are what
-            a person reads when they do not know what to ask, so they belong
-            beside the box they would type into. */}
-        <View style={[styles.prompts, { marginBottom: space[2] }]}>
-          {AGENT_PROMPTS.map((p) => (
-            <Button
-              key={p}
-              label={p}
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onPress={() => {
-                send(p)
-              }}
-            />
-          ))}
-        </View>
+        {/* Openers, and ONLY while the thread is empty — the web app does the
+            same, in the same place, for the same reason. They are what a person
+            reads when they do not know what to ask, which stops being true the
+            moment they have asked. Left in permanently they sat between the
+            transcript and the box, so every turn pushed a row of unrelated
+            prompts against the last reply and squeezed the conversation. */}
+        {entries.length === 0 ? (
+          <View style={[styles.prompts, { marginBottom: space[2] }]}>
+            {AGENT_PROMPTS.map((p) => (
+              <Button
+                key={p}
+                label={p}
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onPress={() => {
+                  send(p)
+                }}
+              />
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.composer}>
           <TextInput
@@ -740,21 +745,24 @@ function ScriptedScreen() {
           </View>
         )}
 
-        {/* Above the composer, same move as the connected panel's, so the two
-            do not diverge for the person who has not set a model up yet. */}
-        <View style={[styles.prompts, { marginBottom: space[2] }]}>
-          {SCRIPTS.map((s) => (
-            <Button
-              key={s.id}
-              label={s.action}
-              variant="outline"
-              size="sm"
-              onPress={() => {
-                send(s.action)
-              }}
-            />
-          ))}
-        </View>
+        {/* Empty thread only, same as the connected panel — the two must not
+            diverge for the person who has not set a model up yet, and that
+            includes when the openers disappear. */}
+        {messages.length === 0 ? (
+          <View style={[styles.prompts, { marginBottom: space[2] }]}>
+            {SCRIPTS.map((s) => (
+              <Button
+                key={s.id}
+                label={s.action}
+                variant="outline"
+                size="sm"
+                onPress={() => {
+                  send(s.action)
+                }}
+              />
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.composer}>
           <TextInput

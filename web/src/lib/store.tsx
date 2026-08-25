@@ -1,3 +1,4 @@
+import { reportError } from '@/lib/report-error'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { FirstRunChoice } from '@/components/common/FirstRunChoice'
@@ -381,6 +382,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (!alreadyLoaded) {
           const written = await applyDataSet(session.repo, choice, now())
           if (!written.ok) {
+            // A store write that fails is the failure worth knowing about most:
+            // it is the app's one job, the user has no server copy, and the two
+            // usual causes — a quota wall and a browser blocking IndexedDB — are
+            // invisible from the outside. The `code` is categorical, so it
+            // travels; the message never does.
+            reportError('storage', written.error)
             toastRef.current({
               title:
                 choice === 'demo' ? 'The demo data was not loaded' : 'The records were not cleared',

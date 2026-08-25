@@ -22,6 +22,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { BackgroundPanel } from '@/components/profile/BackgroundPanel'
 
 /** The bucket a profile document belongs to, in the Vault's own vocabulary. */
 const DOCUMENTS_BUCKET = 'Applications' as const
@@ -276,6 +277,11 @@ export function ProfileScreen() {
             />
           </View>
         </Panel>
+
+        {/* Above Documents, because it is what the documents are FOR. Somebody
+            opening this screen after an import wants what was taken from the
+            file, not the file. */}
+        <BackgroundPanel />
 
         <Panel>
           <PanelTitle

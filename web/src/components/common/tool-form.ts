@@ -23,6 +23,7 @@
 import { displayName } from '@/data/seed'
 import type { NodeType, StoredNode } from '@jojo/service/core/model'
 import type { FieldMeta } from '@jojo/service/core/schema'
+import { labelOf } from '@jojo/service/core/ontology'
 import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import type { AnyTool } from '@jojo/service/tools/tool'
 
@@ -208,6 +209,20 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
     case 'application': {
       const org = memory.one(node.id, 'AT', 'organisation')?.props.name ?? ''
       return displayName({ org, role: node.props.role })
+    }
+    case 'claim': {
+      /*
+       * The sentence rather than the predicate. A picker offering "EVIDENCES"
+       * three times is a picker nobody can choose from — the predicate is the
+       * least distinguishing part of a relation, and both ends are what tell
+       * two of them apart.
+       */
+      const end = (rel: 'SUBJECT' | 'OBJECT') => {
+        const other = memory.out(node.id, rel)[0]?.to
+        const found = other === undefined ? undefined : memory.node(other)
+        return found === undefined ? 'a record' : recordLabel(memory, found)
+      }
+      return `${end('SUBJECT')} ${labelOf(node.props.predicate)} ${end('OBJECT')}`
     }
     case 'thread':
       return node.props.title

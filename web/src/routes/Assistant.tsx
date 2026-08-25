@@ -9,7 +9,8 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelScroll } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { fromReactKey, shouldSend } from '@/lib/composer-keys'
 import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
 import { useTitle, vaultPath } from '@/lib/links'
@@ -35,7 +36,7 @@ import {
 import { useVault } from '@jojo/service/react/use-vault'
 import type { LucideIcon } from 'lucide-react'
 import { ArrowUp, Quote, TriangleAlert } from 'lucide-react'
-import type { FormEvent } from 'react'
+import type { FormEvent, KeyboardEvent } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 
@@ -154,7 +155,7 @@ const FALLBACK: Script = {
     'With one connected, this page would read your profile, the documents in your Vault and the application ' +
     'you name, then draft against them on your own machine. Point jojo at a local OpenAI-compatible server ' +
     'in Settings — vLLM, Ollama or LM Studio.\n\n' +
-    'The five prompts above each have a worked example you can use in the meantime.',
+    'Clear the conversation to see the worked examples again.',
 }
 
 /** First script with a cue in the message. Order in SCRIPTS breaks ties. */
@@ -413,6 +414,17 @@ function AgentPanel() {
     void send(clean)
   }
 
+  /*
+   * Enter sends; Shift+Enter is left to the textarea, which puts in the newline
+   * itself. `shouldSend` also refuses an Enter that an input method is using to
+   * pick a candidate — see `lib/composer-keys.ts`, where the rule is tested.
+   */
+  const onComposerKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!shouldSend(fromReactKey(event))) return
+    event.preventDefault()
+    onSubmit(event)
+  }
+
   const copy = async (id: string, text: string) => {
     clearTimeout(copyTimer.current)
     try {
@@ -570,7 +582,12 @@ function AgentPanel() {
           {/* The transcript owns the leftover height and scrolls inside it, so the
             composer stays put instead of being pushed down the page by a long
             conversation. */}
-          <PanelScroll axis="y" ref={transcriptRef} className="-mb-0 pb-0">
+          {/* `bleed="sides"` because the composer sits below this. The default
+              bottom bleed is a negative margin, which pulled the composer up
+              into this scroller's padding — turns then painted underneath the
+              input. `PanelScroll` already carries `min-h-0 flex-1`, so the
+              transcript shrinks to fit whatever the composer leaves. */}
+          <PanelScroll axis="y" bleed="sides" ref={transcriptRef}>
             {entries.length === 0 ? (
               <EmptyState
                 icon={RobotIcon as unknown as LucideIcon}
@@ -583,7 +600,7 @@ function AgentPanel() {
                   if (entry.kind === 'you') {
                     return (
                       <li key={entry.id} className="flex justify-end">
-                        <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere text-text-1">
+                        <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere whitespace-pre-line text-text-1">
                           <Mark text={entry.text} query={search} />
                         </p>
                       </li>
@@ -662,39 +679,57 @@ function AgentPanel() {
             {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
           </p>
 
-          {/* The openers, moved up out of a card of their own below the fold.
-            They are what a person reads when they do not know what to ask, so
-            they belong beside the box they would type into — not underneath a
-            conversation they have not had yet. */}
-          <ul className="mt-3 flex flex-wrap gap-1.5">
-            {AGENT_PROMPTS.map((p) => (
-              <li key={p}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => {
-                    send(p)
-                  }}
-                >
-                  {p}
-                </Button>
-              </li>
-            ))}
-          </ul>
+          {/* Openers, and ONLY while the thread is empty.
+            They are what a person reads when they do not know what to ask —
+            which stops being true the moment they have asked something. Left in
+            permanently they sat between the transcript and the box, so every
+            turn pushed a row of unrelated prompts up against the last reply and
+            squeezed the conversation the person actually came to read. An
+            opener has no job in a conversation already under way. */}
+          {entries.length === 0 ? (
+            <ul className="mt-3 flex flex-wrap gap-1.5">
+              {AGENT_PROMPTS.map((p) => (
+                <li key={p}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => {
+                      send(p)
+                    }}
+                  >
+                    {p}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
           <form onSubmit={onSubmit} className="mt-2 flex gap-2">
             <div className="min-w-0 flex-1">
               <Label htmlFor="assistant-prompt" className="sr-only">
                 Ask the assistant
               </Label>
-              <Input
+              <Textarea
                 id="assistant-prompt"
                 value={prompt}
+                rows={2}
+                /*
+                 * A FIXED box: no drag handle, and no growing as you type.
+                 *
+                 * `resize-none` removes the corner grip. `field-sizing-fixed`
+                 * cancels the primitive's `field-sizing-content`, which sizes a
+                 * textarea to its own text — between them those were two
+                 * separate ways for the composer to grow into the transcript.
+                 * `h-16` pins it at the doubled height and `overflow-y-auto`
+                 * scrolls a long message inside the box rather than expanding it.
+                 */
+                className="h-16 resize-none overflow-y-auto field-sizing-fixed" 
                 autoComplete="off"
                 disabled={busy}
                 placeholder="Find my UT Austin application, or add one, or move it to interview…"
                 onChange={(event) => setPrompt(event.target.value)}
+                onKeyDown={onComposerKey}
               />
             </div>
             {busy ? (
@@ -788,6 +823,17 @@ function ScriptedPanel() {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
     send(prompt)
+  }
+
+  /*
+   * Enter sends; Shift+Enter is left to the textarea, which puts in the newline
+   * itself. `shouldSend` also refuses an Enter that an input method is using to
+   * pick a candidate — see `lib/composer-keys.ts`, where the rule is tested.
+   */
+  const onComposerKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!shouldSend(fromReactKey(event))) return
+    event.preventDefault()
+    onSubmit(event)
   }
 
   const copy = async (id: string, text: string) => {
@@ -887,7 +933,7 @@ function ScriptedPanel() {
             {messages.map((m) =>
               m.role === 'you' ? (
                 <li key={m.id} className="flex justify-end">
-                  <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere text-text-1">
+                  <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere whitespace-pre-line text-text-1">
                     {m.text}
                   </p>
                 </li>
@@ -926,36 +972,42 @@ function ScriptedPanel() {
           {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
         </p>
 
-        {/* Above the composer, not in a card below the fold — same move as the
-            connected panel's, so the two do not visibly diverge for the person
-            who has not set a model up yet. */}
-        <ul className="mt-3 flex flex-wrap gap-1.5">
-          {SCRIPTS.map((s) => (
-            <li key={s.id}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  send(s.action)
-                }}
-              >
-                {s.action}
-              </Button>
-            </li>
-          ))}
-        </ul>
+        {/* Empty thread only, exactly as the connected panel does it — the two
+            must not visibly diverge for the person who has not set a model up
+            yet, and that includes when the openers disappear. */}
+        {messages.length === 0 ? (
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {SCRIPTS.map((s) => (
+              <li key={s.id}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    send(s.action)
+                  }}
+                >
+                  {s.action}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
         <form onSubmit={onSubmit} className="mt-2 flex gap-2">
           <div className="min-w-0 flex-1">
             <Label htmlFor="assistant-prompt" className="sr-only">
               Ask the assistant
             </Label>
-            <Input
+            <Textarea
               id="assistant-prompt"
               value={prompt}
+              rows={2}
+              // Fixed, for the reasons set out on the connected composer above.
+              className="h-16 resize-none overflow-y-auto field-sizing-fixed" 
               autoComplete="off"
               placeholder="Ask about a cover letter, a follow-up email, an interview…"
               onChange={(event) => setPrompt(event.target.value)}
+              onKeyDown={onComposerKey}
             />
           </div>
           <Button

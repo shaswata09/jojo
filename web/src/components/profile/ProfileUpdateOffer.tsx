@@ -6,9 +6,9 @@ import type { TwinGap } from '@jojo/service/core/twin'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { useRun } from '@jojo/service/react/use-tool'
 import { useToast } from '@jojo/service/react/toast'
-import type { BackgroundDraft } from '@jojo/service/agent/read-cv'
+import type { BackgroundDraft, RelationDraft } from '@jojo/service/agent/read-cv'
+import { labelOf } from '@jojo/service/core/ontology'
 import { useReadCv } from '@/lib/cv-agent'
-import type { CvStep } from '@/lib/cv-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { markOffered, offered } from '@/lib/twin-offer'
 
@@ -43,11 +43,6 @@ import { markOffered, offered } from '@/lib/twin-offer'
  * here, next to the list they are looking at.
  */
 
-const STEP_LABEL: Record<CvStep, string> = {
-  reading: 'Opening the document',
-  asking: 'Reading what it says',
-}
-
 const KIND_LABEL: Record<string, string> = {
   education: 'Education',
   employment: 'Employment',
@@ -56,6 +51,13 @@ const KIND_LABEL: Record<string, string> = {
   teaching: 'Teaching',
   award: 'Award',
   service: 'Service',
+  certification: 'Certification',
+  language: 'Language',
+  project: 'Project',
+  volunteering: 'Volunteering',
+  membership: 'Membership',
+  grant: 'Grant',
+  patent: 'Patent',
 }
 
 export function ProfileUpdateOffer() {
@@ -72,8 +74,23 @@ export function ProfileUpdateOffer() {
    * re-run the selector.
    */
   const [seen, setSeen] = useState<readonly string[]>(() => offered())
-  const [step, setStep] = useState<CvStep | null>(null)
+  /*
+   * The label the reader is on, already worded for a person.
+   *
+   * A string rather than a step name, because there is no longer a fixed set of
+   * them: the reader makes one pass per section of the document and says which
+   * one it is on. A `Record<Step, string>` here would have had to be kept in
+   * step with a list the reader computes.
+   */
+  const [step, setStep] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<readonly BackgroundDraft[] | null>(null)
+  /*
+   * Held beside the entries rather than inside them, because a relation is
+   * about two of them and belongs to neither. Shown in the same review for the
+   * same reason the entries are: a relation is a claim about this person too,
+   * and the copy promises everything is seen first.
+   */
+  const [links, setLinks] = useState<readonly RelationDraft[]>([])
   const [error, setError] = useState<string | null>(null)
   const abort = useRef<AbortController | null>(null)
 
@@ -101,6 +118,7 @@ export function ProfileUpdateOffer() {
     abort.current = null
     setStep(null)
     setDrafts(null)
+    setLinks([])
     setError(null)
     // Every id currently on offer, not just the one named. The title says "and
     // 2 more", so saying no to it is saying no to all three — leaving the other
@@ -140,6 +158,7 @@ export function ProfileUpdateOffer() {
     }
 
     setDrafts(outcome.background)
+    setLinks(outcome.relations)
     if (outcome.skipped.length > 0) {
       toast({
         title: `${String(outcome.skipped.length)} entr${outcome.skipped.length === 1 ? 'y was' : 'ies were'} skipped`,
@@ -158,16 +177,45 @@ export function ProfileUpdateOffer() {
       background: drafts.map((d) => ({ ...d, source: fileId })),
     })
 
+    /*
+     * The relations, once the entries have ids to point at.
+     *
+     * `profile.background.add` returns the ids in the order it was given the
+     * entries, which is what makes a position resolvable at all — and why the
+     * reader returns positions rather than asking a model to copy uuids.
+     *
+     * Each is offered to `claim.add`, which refuses any the graph already holds
+     * under another name. A refusal here is the feature working, not an error,
+     * so nothing is reported for it.
+     */
+    const ids = result.ok ? (result.output as string[]) : []
+    let related = 0
+    if (result.ok) {
+      for (const link of links) {
+        const subject = ids[link.subject]
+        const object = ids[link.object]
+        if (subject === undefined || object === undefined) continue
+        const out = run('claim.add', {
+          subject,
+          predicate: link.predicate,
+          object,
+          source: fileId,
+        })
+        if (out.ok) related += 1
+      }
+    }
+
     markOffered([fileId])
     setSeen((current) => [...current, fileId])
     setDrafts(null)
+    setLinks([])
 
     toast({
       title: result.ok
         ? `${String(drafts.length)} added to your profile`
         : 'Nothing could be added',
       description: result.ok
-        ? `Read from ${target.subject}. jojo can now weigh a posting against what you have done.`
+        ? `Read from ${target.subject}.${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} between them recorded.` : ''} jojo can now weigh a posting against what you have done.`
         : (result.errors[0]?.message ?? 'The entries were refused.'),
       ...(result.ok ? {} : { tone: 'danger' as const }),
     })
@@ -202,7 +250,7 @@ export function ProfileUpdateOffer() {
               {busy ? (
                 <>
                   <Loader2 aria-hidden className="size-3.5 animate-spin" />
-                  {STEP_LABEL[step]}
+                  {step}
                 </>
               ) : (
                 'Read it'
@@ -243,6 +291,25 @@ export function ProfileUpdateOffer() {
               </li>
             ))}
           </ul>
+          {links.length > 0 && (
+            <div className="mt-3 border-t border-hairline pt-2.5">
+              <p className="mb-1.5 font-medium">
+                {links.length === 1
+                  ? '1 connection between them'
+                  : `${String(links.length)} connections between them`}
+              </p>
+              <ul className="max-h-32 space-y-1 overflow-y-auto text-muted-foreground">
+                {links.map((link) => (
+                  <li key={`${String(link.subject)}-${link.predicate}-${String(link.object)}`}>
+                    {drafts[link.subject]?.title ?? '?'}{' '}
+                    <span className="text-foreground">{labelOf(link.predicate)}</span>{' '}
+                    {drafts[link.object]?.title ?? '?'}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-3 flex gap-2">
             <Button size="sm" onClick={confirm}>
               Add {drafts.length === 1 ? 'it' : `all ${String(drafts.length)}`} to my profile

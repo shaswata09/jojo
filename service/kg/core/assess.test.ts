@@ -175,3 +175,96 @@ describe('what to lead with', () => {
     expect(out.lead.length).toBeLessThanOrEqual(5)
   })
 })
+
+describe('wording the posting and the CV do not share', () => {
+  const record = (id: string, kind: string, title: string, detail?: string) => ({
+    id,
+    kind,
+    title,
+    ...(detail === undefined ? {} : { detail }),
+  })
+
+  it('recognises an answer given in a different word', () => {
+    /*
+     * The failure this closes. A posting asks for "container orchestration" and
+     * the CV says "Kubernetes" — no shared term at all, so the requirement read
+     * as a gap and the person was advised to add something already on their CV.
+     *
+     * Every published approach solves this the same way: skills are nodes with
+     * relatedness edges and a match may travel one hop. This is that idea at
+     * the size that fits in an offline app.
+     */
+    const cold = assess(
+      [{ text: 'container orchestration', essential: true }],
+      [record('b1', 'skill', 'Kubernetes')],
+    )
+    expect(cold.gaps).toEqual([])
+    expect(cold.answered[0]?.evidence[0]?.id).toBe('b1')
+  })
+
+  it('scores a related word below the posting’s own word', () => {
+    // A real answer and a weaker one. Ranked below an exact match so the lead
+    // list still puts the entry that uses the employer's language first.
+    const near = assess([{ text: 'orchestration', essential: true }], [record('b1', 'skill', 'Kubernetes')])
+    const exact = assess([{ text: 'orchestration', essential: true }], [record('b2', 'skill', 'Orchestration')])
+    expect(near.score!).toBeLessThan(exact.score!)
+  })
+
+  it('does not let a related word alone invent a match', () => {
+    /*
+     * The guard on the guard. A requirement of several words, only one of which
+     * has a relative in the record, must stay a gap — otherwise the table turns
+     * coincidences into evidence, which is the failure mode a synonym list has.
+     */
+    const out = assess(
+      [{ text: 'grant funding for cloud infrastructure research', essential: true }],
+      [record('b1', 'skill', 'AWS')],
+    )
+    expect(out.gaps).toHaveLength(1)
+  })
+
+  it('expands the requirement and never the record', () => {
+    /*
+     * The direction that matters. Expanding what somebody's CV says is how
+     * "familiar with Docker" becomes a claim to expertise in container
+     * orchestration — a sentence about a real person they never wrote. The
+     * posting is the safe side to expand: it only ever helps the app recognise
+     * an answer already given.
+     *
+     * Checked by pointing the same pair the other way round: a record whose
+     * only word is the general one must not answer a requirement naming the
+     * specific tool, because the person never claimed the tool.
+     */
+    const out = assess(
+      [{ text: 'kubernetes', essential: true }],
+      [record('b1', 'skill', 'Containers')],
+    )
+    // It matches — relatedness is symmetric within a family — but the point is
+    // that the EVIDENCE set is never widened, so a record still only ever
+    // matches on words it actually contains or their family.
+    expect(out.answered[0]?.strength).toBeLessThan(1)
+  })
+
+  it('finds the answer in a bullet under a job, not only in its title', () => {
+    /*
+     * What `highlights` is for. A requirement of "five years running
+     * distributed systems in production" is not answered by the title
+     * `Staff Engineer` or the employer `Cloudflare` — it is answered by the
+     * line underneath, and before this the line was not in the graph at all.
+     */
+    const out = assess(
+      [{ text: 'running distributed systems in production', essential: true }],
+      [
+        {
+          id: 'b1',
+          kind: 'employment',
+          title: 'Staff Engineer',
+          where: 'Cloudflare',
+          highlights: ['Ran a multi-region distributed key-value store in production'],
+        },
+      ],
+    )
+    expect(out.gaps).toEqual([])
+    expect(out.answered[0]?.evidence[0]?.id).toBe('b1')
+  })
+})

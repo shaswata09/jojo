@@ -317,6 +317,33 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   const offered = resolveOffered(chosen)
   const tools = toolsFor(offered)
 
+  /*
+   * Whether the list is a BOUNDARY or a SUGGESTION, and the distinction is the
+   * whole of this fix.
+   *
+   * An explicit `options.tools` is a boundary. A pipeline is handed the tools
+   * its kind may use and must not reach outside them, and refusing is the only
+   * correct answer — that is what `check-compositions` and `mayPropose` are
+   * protecting and it stays exactly as strict as it was.
+   *
+   * The RETRIEVER'S set is not a boundary. It is a token optimisation: a guess
+   * at which of eighty-odd tools this question needs, made from the words the
+   * person happened to use. When it guesses wrong the model asks for something
+   * real, safe and appropriate — and the old code refused it with "No tool is
+   * called vault.person.create", about a tool that exists, is not destructive,
+   * and works perfectly the moment the retriever happens to offer it.
+   *
+   * That turned an optimisation into a failure, and an intermittent one: the
+   * same request succeeded or failed depending on whether the person wrote "add
+   * a person" or "add Dr Chen as a referee". Nothing about the second is less
+   * safe.
+   *
+   * A miss now falls through to the approval gate below, which is the real
+   * control: with approvals on the person is asked, and with them off a delete
+   * still stops. Nothing runs unseen that would not have run before.
+   */
+  const enforced = options.tools !== undefined
+
   const messages: ChatMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
     ...options.history,
@@ -395,7 +422,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
        */
       if (signal?.aborted) return finish('aborted')
       counter += 1
-      const step = await performCall(options, call, `s${String(counter)}`, offered)
+      const step = await performCall(options, call, `s${String(counter)}`, offered, enforced)
       steps.push(step)
       // Every call gets a reply, including the ones that failed. A model left
       // waiting on a result it never receives will re-issue the same call
@@ -427,6 +454,8 @@ async function performCall(
   id: string,
   /** What this run was allowed to call. `null` is the whole catalog. */
   offered: Set<string> | null,
+  /** True when the list is a boundary rather than the retriever's guess. */
+  enforced: boolean,
 ): Promise<AgentStep> {
   const { host, onEvent, approve } = options
   const entry = CATALOG.find((e) => e.wireName === call.name || e.name === call.name)
@@ -446,7 +475,7 @@ async function performCall(
    * different answer. It is emphatically NOT told the tool exists elsewhere,
    * because a model told that will ask for it again.
    */
-  if (entry && offered && !offered.has(entry.name)) {
+  if (entry && offered && enforced && !offered.has(entry.name)) {
     const step: AgentStep = {
       id,
       name: entry.name,

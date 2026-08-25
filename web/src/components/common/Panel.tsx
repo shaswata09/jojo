@@ -29,11 +29,29 @@ export function PanelScroll({
   className,
   axis = 'both',
   inset = 'panel',
+  bleed = 'all',
   ...props
 }: ComponentProps<'div'> & {
   axis?: 'x' | 'y' | 'both'
   /** Which padding to escape: a Panel's, or a tighter `p-2` surface. */
   inset?: 'panel' | 'tight'
+  /**
+   * Which edges the scroller is allowed to bleed past.
+   *
+   * `all` suits a scroller that is the LAST thing in its panel: the negative
+   * bottom margin lets the final row run to the panel's edge instead of
+   * stopping short at its padding, which is what makes a long list look
+   * continuous rather than boxed.
+   *
+   * `sides` is for a scroller with a SIBLING BELOW IT — a composer, a footer,
+   * a toolbar. The bottom bleed pulls that sibling UP by the margin, so it
+   * comes to rest inside the scroller's own padding: measured on the assistant
+   * page, the transcript's box ended at y=807 while the composer began at
+   * y=795, and turns painted into that 12px strip appeared underneath the input.
+   * Dropping only the bottom bleed keeps the side-to-side bleed that makes the
+   * panel look right.
+   */
+  bleed?: 'all' | 'sides'
 }) {
   return (
     <div
@@ -56,9 +74,16 @@ export function PanelScroll({
          * anybody writing one inside a scroll region already assumes.
          */
         'relative min-h-0 flex-1',
-        inset === 'tight'
-          ? '-mx-2 -mb-2 px-2 pb-2'
-          : '-mx-4 -mb-4 px-4 pb-4 sm:-mx-5 sm:-mb-5 sm:px-5 sm:pb-5',
+        inset === 'tight' ? '-mx-2 px-2' : '-mx-4 px-4 sm:-mx-5 sm:px-5',
+        // The bottom half, kept separate so it can be dropped on its own. The
+        // `sm:` variants have to be cancelled at the same breakpoint they are
+        // set at — a bare `mb-0` loses to `sm:-mb-5` above 640px, which is the
+        // trap that makes this look fixed on a phone and broken on a laptop.
+        bleed === 'all'
+          ? inset === 'tight'
+            ? '-mb-2 pb-2'
+            : '-mb-4 pb-4 sm:-mb-5 sm:pb-5'
+          : 'mb-0 pb-0 sm:mb-0 sm:pb-0',
         axis === 'x' ? 'overflow-x-auto' : axis === 'y' ? 'overflow-y-auto' : 'overflow-auto',
         className,
       )}

@@ -6,6 +6,7 @@ import {
   readChatResponse,
   readModelsResponse,
   readTurnFor,
+  type ModelFailure,
   type WireToolCall,
   unconfigured,
 } from '@jojo/service/core/model-server'
@@ -15,6 +16,8 @@ import {
   supportsStreaming,
 } from '@jojo/service/core/model-stream'
 import { endpointOf } from '@jojo/service/core/provider'
+import { report } from '@/lib/analytics'
+import { reportableProvider } from '@jojo/service/core/analytics'
 import { failed, send, sendStream } from '@/lib/local-service'
 import type { Sent } from '@/lib/local-service'
 import { callModel } from '@/lib/capture-bridge'
@@ -41,6 +44,44 @@ import { providerMeta } from '@jojo/service/core/provider'
  * routing everyone through an extension they may not have installed would break
  * a setup that works. So: relay if the extension is there, direct if it is not.
  */
+/**
+ * Records that a model request failed, and returns it unchanged.
+ *
+ * ## Why this is here rather than at each call site
+ *
+ * Every route into a model comes through this file, so one wrapper covers the
+ * assistant, the graph box, the pipelines and Settings' Test connection. Put at
+ * the call sites instead, it would be four copies that drift, and the one that
+ * got forgotten would be the one nobody could explain later.
+ *
+ * ## Why it matters more here than in most apps
+ *
+ * jojo has no backend, so it has no server logs. Until this existed, every
+ * event in the catalogue recorded something WORKING: a model that timed out for
+ * every user of a given provider was indistinguishable from one nobody had
+ * tried. The failure that started this — a local server generating slower than
+ * a sixty-second budget allowed — was invisible to everything except the person
+ * it happened to.
+ *
+ * ## What it does not send
+ *
+ * Not the address, not the message. `params` is typed against `EventParams`,
+ * which has no `string` in it by construction, so the endpoint — frequently a
+ * hostname on the person's own network — cannot travel even by accident.
+ */
+function reportFailure(
+  failure: ModelFailure,
+  provider: string,
+  phase: 'connect' | 'chat' | 'models',
+): ModelFailure {
+  report('model_failed', {
+    provider: reportableProvider(provider),
+    kind: failure.why ?? failure.kind,
+    phase,
+  })
+  return failure
+}
+
 async function sendToModel(
   request: Parameters<typeof send>[0],
   endpoint: string,
@@ -157,7 +198,9 @@ export async function listModels(
   const endpoint = endpointOf(settings)
   if (endpoint.trim().length === 0) return unconfigured()
   const response = await sendToModel(modelsRequest(settings), endpoint, settings.provider, signal)
-  return failed(response) ? response.failed : readModelsResponse(response, endpoint)
+  if (failed(response)) return reportFailure(response.failed, settings.provider, 'models')
+  const read = readModelsResponse(response, endpoint)
+  return read.ok ? read : reportFailure(read, settings.provider, 'models')
 }
 
 export async function complete(
@@ -288,7 +331,7 @@ export async function agentTurn(
   const response = streaming
     ? await readStream(request, endpointOf(settings), onDelta, signal)
     : await sendToModel(request, endpointOf(settings), settings.provider, signal)
-  if (failed(response)) return response.failed
+  if (failed(response)) return reportFailure(response.failed, settings.provider, 'chat')
 
   const turn = readTurnFor(settings, response)
 
