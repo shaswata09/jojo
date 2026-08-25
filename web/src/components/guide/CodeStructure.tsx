@@ -108,17 +108,17 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'web/src/components',
-    files: 257,
+    files: 259,
     tests: 16,
-    lines: 41901,
+    lines: 42565,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 15, tests: 0, lines: 4504, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
-    files: 88,
+    files: 92,
     tests: 21,
-    lines: 11544,
+    lines: 11936,
     what: 'web-only adapters and URL state',
   },
   {

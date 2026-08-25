@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useReadDocument } from '@/lib/read-document'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { agentTurn, isConfigured } from '@/lib/llm'
 import { useAgent } from '@jojo/service/react/use-agent'
@@ -11,7 +12,6 @@ import {
   useThreads,
 } from '@jojo/service/react/use-threads'
 import { useApplications } from '@/lib/store-context'
-import { convertDocument } from '@/lib/markitdown'
 import type { NodeId } from '@jojo/service/core/model'
 import { ThreadBar } from '@/components/assistant/ThreadBar'
 import { ThreadListSheet } from '@/components/assistant/ThreadListSheet'
@@ -196,7 +196,6 @@ function AgentScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { settings, reader } = useModelSettings()
   const { byId } = useApplications()
-  const { files } = useVault()
   const { threads, create, save, rename, file, remove, setAuto } = useThreads()
 
   /*
@@ -315,22 +314,13 @@ function AgentScreen() {
   /**
    * Reading a document, if a reader is configured.
    *
-   * `undefined` when it is not, which is what makes `vault.file.read` refuse
-   * with an explanation rather than fail.
+   * `undefined` below when it is not, which is what makes `vault.file.read`
+   * refuse with an explanation rather than fail.
+   *
+   * The body moved to `lib/read-document.ts` when the CV reader and the fit
+   * assessment needed the same lookup — the same move web made with its copy.
    */
-  const convert = useCallback(
-    async (fileId: string) => {
-      const record = files.find((f) => f.id === fileId)
-      if (!record?.uri) {
-        return {
-          ok: false as const,
-          reason: 'That record has no copy stored on this device, so there is nothing to read.',
-        }
-      }
-      return convertDocument(reader, record.uri, record.name)
-    },
-    [files, reader],
-  )
+  const convert = useReadDocument()
 
   const { entries, busy, send, stop, clear } = useAgent({
     llm,

@@ -6,6 +6,10 @@ import { shortDate } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { report } from '@/lib/analytics'
+import { postingSourceForUrl } from '@jojo/service/core/posting-source'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
+import { useReadFit } from '@/lib/fit-agent'
+import { useModelSettings } from '@/lib/model-settings-context'
 // Imported, not redeclared. This file used to carry its own `deadlineUrgency`
 // with the 7/21-day thresholds spelled a second time, twenty lines from a
 // comment explaining that the seed's colours mix proximity with readiness. The
@@ -38,6 +42,10 @@ export function useApplicationWrites({
 }) {
   const applications = useApplications()
   const timeline = useTimeline()
+  const graph = useGraph()
+  const { projections } = useKg()
+  const { settings } = useModelSettings()
+  const readFit = useReadFit()
   const { setRecord } = useLabels()
   const { toast } = useToast()
   const undoable = useUndoable()
@@ -109,6 +117,38 @@ export function useApplicationWrites({
   }
 
   /**
+   * Reads what the posting asks for, now, so the record opens with an answer.
+   *
+   * The fit assessment is meant to happen when an application is created, and
+   * creating one does not navigate to it — so without this the model call
+   * starts when somebody eventually opens the record and they watch it run.
+   * Started here, it overlaps whatever they do next and `fit-agent`'s cache,
+   * which is keyed on the DOCUMENT, has the answer waiting.
+   *
+   * Deliberately fired against the URL rather than the new record: the snapshot
+   * this closure holds was taken before the write, so the application is not in
+   * it yet. The saved posting is — it was written before the form opened.
+   *
+   * Three reasons not to fire, and each is a real cost avoided rather than a
+   * guard against a crash. No posting means there is nothing to read. No model
+   * means the call cannot happen. No background means the assessment would
+   * come out `not-measured` whatever the posting says, and spending somebody's
+   * GPU — or their metered API key — to be told that is the one case where
+   * waiting for them to ask is right.
+   *
+   * Nothing is awaited and nothing is shown. A failure here costs the
+   * prewarming and nothing else: the panel runs the same read itself, reports
+   * the same reason in place, and offers a retry.
+   */
+  function prewarmFit(): void {
+    const source = postingSourceForUrl(graph, form.url.trim() || undefined)
+    if (!source) return
+    if (settings.model.trim() === '') return
+    if (projections.background(graph).length === 0) return
+    void readFit({ fileId: source.fileId, name: source.name, settings })
+  }
+
+  /**
    * One user action, three writes — the record, its keywords, and the deadline
    * the form minted — so the Undo has to cover all three.
    *
@@ -136,6 +176,7 @@ export function useApplicationWrites({
       // three sources in the vocabulary belong to the scout, the link importer
       // and the browser capture, and each reports its own.
       report('application_created', { source: 'manual' })
+      prewarmFit()
       return record
     })
 

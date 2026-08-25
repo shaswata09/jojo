@@ -30,6 +30,7 @@
  */
 
 import type { GraphSnapshot } from './snapshot'
+import type { StoredNode } from './model'
 import { fold } from './text'
 
 /** One thing the twin could do next, and why it is worth doing. */
@@ -59,23 +60,68 @@ export type TwinState = {
  * background would file the employer's requirements as though they were the
  * person's qualifications, which is the worst inversion available here.
  *
- * The bucket is the signal the app already has: `profile.document.add` files
- * into `Applications`, and that is where a CV lands. Matching on the name as
- * well catches the ones added through the Vault directly.
+ * THE BUCKET IS THE PRIMARY SIGNAL and the name is the fallback, which is the
+ * opposite of how this started. `Applications` is defined in `core/model.ts` as
+ * "the drawer for the things a person WROTE — the CV, the statements, the cover
+ * letters", so filing something there is the user saying what kind of document
+ * it is, in the app's own vocabulary. A name pattern is a guess about the same
+ * question, and it fails on `Shaswata.pdf`.
+ *
+ * The name test stays for documents put somewhere else — a CV dropped into
+ * "To read" is still a CV — and it is why this is an OR rather than a bucket
+ * check alone.
  */
 const ABOUT_THE_PERSON = /\b(cv|resume|résumé|vitae|statement|bio|portfolio|transcript)\b/i
 
 /**
+ * Names that mean the document is somebody else's, whatever drawer it is in.
+ *
+ * A VETO, checked before the bucket, and it exists because making the bucket
+ * the primary signal reopened a hole the name test had been closing by
+ * accident: a posting a person filed into `Applications` by hand would have
+ * been read for their background, filing the employer's requirements as their
+ * qualifications. That is the worst inversion available here, and the resulting
+ * records look exactly like real ones.
+ *
+ * `Job postings` exists as its own drawer for this reason and the extension
+ * uses it — so this only fires for something put in the wrong place by hand,
+ * which is precisely the case a bucket signal cannot catch.
+ */
+const ABOUT_AN_EMPLOYER = /\b(posting|vacancy|advert|advertisement|job.?description|offer.?letter)\b/i
+
+/**
  * Whether a file is one the twin should read.
  *
- * Anything filed UNDER an application is about that application — a tailored
- * cover letter, a submitted packet — and its facts are already the person's
- * only incidentally. A CV sits loose, which is what makes the absence of a
- * `FILED_UNDER` edge a usable signal rather than a coincidence.
+ * Three conditions, and the third was found by looking at what the demo data
+ * set would do.
+ *
+ * ONE: it has to be about the person. A name that says otherwise vetoes first;
+ * then the bucket, and failing that the name.
+ *
+ * TWO: it must not be filed UNDER an application. Anything attached to a job is
+ * about that job — a tailored cover letter, a submitted packet — and its facts
+ * are the person's only incidentally. A CV sits loose, which is what makes the
+ * absence of a `FILED_UNDER` edge a usable signal rather than a coincidence.
+ *
+ * THREE: THERE HAVE TO BE BYTES. A record can exist with no document behind it,
+ * and it is not a rare case: the seeded data set ships `CV-2026-academic.pdf`
+ * and two statements, and every file in a backup restored onto a machine that
+ * never held the originals is one too. Without this, a fresh install of the
+ * demo set opens with an offer to read a CV that cannot be opened — a consent
+ * prompt whose only possible outcome is an error, which is the worst kind to
+ * put in front of somebody on their first run.
+ *
+ * `path` is the web's flag and `uri` the phone's; `core/model.ts` says of the
+ * first that "its PRESENCE is the 'has bytes' flag". Both are checked here
+ * rather than in each app because the question — can this be opened at all — is
+ * the same question on both.
  */
-function worthReading(memory: GraphSnapshot, id: string, name: string): boolean {
-  if (!ABOUT_THE_PERSON.test(name)) return false
-  return memory.many(id as never, 'FILED_UNDER', 'out', 'application').length === 0
+function worthReading(memory: GraphSnapshot, file: StoredNode<'file'>): boolean {
+  const { name, bucket, path, uri } = file.props
+  if (ABOUT_AN_EMPLOYER.test(name)) return false
+  if (bucket !== 'Applications' && !ABOUT_THE_PERSON.test(name)) return false
+  if (path === undefined && uri === undefined) return false
+  return memory.many(file.id, 'FILED_UNDER', 'out', 'application').length === 0
 }
 
 /**
@@ -100,9 +146,7 @@ export function twinState(memory: GraphSnapshot, limit = 6): TwinState {
     background.map((n) => n.props.source).filter((s): s is string => typeof s === 'string'),
   )
 
-  const unread = files.filter(
-    (f) => !readFrom.has(f.id) && worthReading(memory, f.id, f.props.name),
-  )
+  const unread = files.filter((f) => !readFrom.has(f.id) && worthReading(memory, f))
 
   const gaps: TwinGap[] = []
 
@@ -157,6 +201,113 @@ export function twinState(memory: GraphSnapshot, limit = 6): TwinState {
     // the only operation that adds facts the graph did not already hold.
     gaps: gaps.slice(0, limit),
   }
+}
+
+/**
+ * Documents that have become worth reading since the last look.
+ *
+ * The trigger for offering a profile update, and it is a DIFFERENCE rather than
+ * a count on purpose. "There are unread documents" is true for as long as the
+ * person declines, so an offer built on it reappears on every render and
+ * becomes the thing they click away without reading. "This document is new
+ * since you last saw this question" is true once.
+ *
+ * Ids rather than a boolean, because the offer has to name what it found. "Read
+ * your CV into your profile?" is a question somebody can answer; "update your
+ * profile?" is one they have to open something else to understand.
+ *
+ * Only unread documents, never the rearranging gaps. Connecting a skill to a
+ * keyword moves facts the person already approved; asking permission for that
+ * would train them to click through the prompt that matters.
+ *
+ * Pure, and the caller owns the remembering. Where the previous set is kept is
+ * a decision about storage — this only says what changed.
+ */
+export function newlyReadable(seen: Iterable<string>, state: TwinState): readonly TwinGap[] {
+  const already = new Set(seen)
+  return state.gaps.filter(
+    (g) => g.kind === 'unread-document' && g.id !== undefined && !already.has(g.id),
+  )
+}
+
+/**
+ * What to ask, for one or more newly readable documents.
+ *
+ * Written here rather than in a component because both apps ask it and the
+ * wording is the whole of the consent: a person agreeing to this is agreeing
+ * that a model may read a document about them and write what it finds into
+ * their records. Saying "update your profile?" would be asking for permission
+ * to do something quieter than what happens.
+ */
+export function twinOfferCopy(gaps: readonly TwinGap[]): { title: string; body: string } {
+  const first = gaps[0]?.subject ?? 'that document'
+  const more = gaps.length - 1
+  return {
+    // `<= 1`, not `=== 1`. An empty list is reachable — a document can be filed
+    // under an application between the render that raised the offer and the one
+    // that draws it — and `=== 1` sent that case to the plural branch, where it
+    // asked to read a document "and -1 more".
+    title:
+      gaps.length <= 1
+        ? `Read ${first} into your profile?`
+        : `Read ${first} and ${String(more)} more into your profile?`,
+    body:
+      'jojo will read what is inside and record the facts it states — your degrees, posts, publications and skills — so it can weigh a job posting against what you have actually done. Every entry it adds is shown to you first, and says which document it came from.',
+  }
+}
+
+/**
+ * How many document ids the offer remembers having asked about.
+ *
+ * A bound, because the set only ever grows and both apps keep it in a store
+ * measured in megabytes for the whole origin — the graph shares it. Oldest go
+ * first, so overflowing costs one repeated question about a document declined
+ * two hundred files ago, which is the right thing to lose.
+ */
+export const OFFER_MEMORY_LIMIT = 200
+
+/**
+ * The remembered ids, from whatever the platform's store handed back.
+ *
+ * Here rather than in each app because the FAILURE DIRECTION is the whole
+ * design and it must not be decided twice. Anything that does not parse as an
+ * array of strings reads as "nothing asked yet", which asks again. Asking twice
+ * is a nuisance; failing the other way would leave a document silently never
+ * read while the record claimed the person had been consulted.
+ *
+ * `null` in — no value stored — is the ordinary first-run case, not an error.
+ */
+export function parseOffered(raw: string | null): readonly string[] {
+  if (raw === null) return []
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * The set to store after asking about `ids`.
+ *
+ * Takes both answers, deliberately. Accepting and declining differ in what
+ * happens next and not at all in what has to be remembered — and a version that
+ * recorded only declines would re-offer a document the moment its extraction
+ * failed, which is exactly when the person least wants the question again.
+ *
+ * Re-asked ids move to the end rather than being left where they were, so the
+ * limit drops what has genuinely been quiet longest.
+ */
+export function mergeOffered(
+  current: readonly string[],
+  ids: readonly string[],
+): readonly string[] {
+  if (ids.length === 0) return current
+  const fresh = [...new Set(ids)]
+  const merged = [...current.filter((id) => !fresh.includes(id)), ...fresh]
+  return merged.length > OFFER_MEMORY_LIMIT
+    ? merged.slice(merged.length - OFFER_MEMORY_LIMIT)
+    : merged
 }
 
 /**

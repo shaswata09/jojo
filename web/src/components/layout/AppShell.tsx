@@ -6,6 +6,7 @@ import { RouteFailure } from '@/components/common/RouteFailure'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { StorageBanner } from '@/components/layout/StorageBanner'
+import { ProfileUpdateOffer } from '@/components/profile/ProfileUpdateOffer'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { report } from '@/lib/analytics'
 import { screenForPath } from '@jojo/service/core/analytics'
@@ -190,6 +191,13 @@ export function AppShell() {
               itself on every navigation. It renders nothing at all in the
               healthy case, which is almost always. */}
           <StorageBanner />
+          {/* Beside the storage banner and for the same reason: it has to be
+              askable from wherever the person happened to file the document,
+              and it must not be a modal — filing usually happens from inside
+              another form, and the dialog host replaces rather than stacks.
+              Renders nothing when there is nothing newly readable, which is
+              almost always. */}
+          <ProfileUpdateOffer />
           {/* flex-1 + min-h-0 so a page can hand a child the remaining
               viewport height (the kanban board does). Panels are unaffected:
               a column flex container stretches children across, not down. */}

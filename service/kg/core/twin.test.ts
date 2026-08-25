@@ -14,7 +14,15 @@ import { describe, expect, it } from 'vitest'
 import { MutableSnapshot } from './snapshot'
 import type { StoredNode } from './model'
 import type { GraphSnapshot } from './snapshot'
-import { twinBriefing, twinState } from './twin'
+import {
+  mergeOffered,
+  newlyReadable,
+  OFFER_MEMORY_LIMIT,
+  parseOffered,
+  twinBriefing,
+  twinOfferCopy,
+  twinState,
+} from './twin'
 
 const AT = '2026-09-14T09:00:00.000Z'
 
@@ -37,7 +45,34 @@ function graph(nodes: StoredNode[], edges: { from: string; rel: string; to: stri
   return m as unknown as GraphSnapshot
 }
 
-const file = (id: string, name: string) => node(id, 'file', { slug: id, name, kind: 'pdf', bucket: 'Applications', size: '1 KB', savedOn: '2026-09-01' })
+/**
+ * A file with bytes behind it.
+ *
+ * `path` is not decoration: `worthReading` refuses a record with no document
+ * under it, because a record can perfectly well exist without one — the seeded
+ * data set ships three, and so does every restored backup.
+ */
+const file = (id: string, name: string, bucket = 'Applications') =>
+  node(id, 'file', {
+    slug: id,
+    name,
+    kind: 'pdf',
+    bucket,
+    size: '1 KB',
+    savedOn: '2026-09-01',
+    path: `${id}.pdf`,
+  })
+
+/** The same record with nothing stored under it. */
+const empty = (id: string, name: string) =>
+  node(id, 'file', {
+    slug: id,
+    name,
+    kind: 'pdf',
+    bucket: 'Applications',
+    size: '1 KB',
+    savedOn: '2026-09-01',
+  })
 const fact = (id: string, kind: string, title: string, source?: string) =>
   node(id, 'background', { slug: id, kind, title, ...(source ? { source } : {}) })
 
@@ -240,5 +275,208 @@ describe('the loop closes', () => {
     // which is what stops a round tagging applications while a CV sits unread.
     const after = twinState(graph([file('f1', 'CV.pdf'), fact('b1', 'skill', 'Rust', 'f1')]))
     expect(after.gaps.map((g) => g.kind)).toEqual(['skill-not-keyword'])
+  })
+})
+
+describe('deciding when to ask permission', () => {
+  it('offers a document nobody has been asked about yet', () => {
+    const state = twinState(graph([file('f1', 'CV-2026.pdf')]))
+    expect(newlyReadable([], state).map((g) => g.id)).toEqual(['f1'])
+  })
+
+  it('stops offering the same document once it has been declined', () => {
+    /*
+     * The property this whole function exists for. "There are unread documents"
+     * stays true for as long as somebody keeps saying no, so an offer built on
+     * the COUNT reappears on every render and becomes the thing they dismiss
+     * without reading — which is how a consent prompt stops being consent.
+     *
+     * A difference against what they have already been shown is true once.
+     */
+    const state = twinState(graph([file('f1', 'CV-2026.pdf')]))
+    expect(newlyReadable(['f1'], state)).toEqual([])
+  })
+
+  it('offers a second document even though the first was declined', () => {
+    // The other half: declining once must not silence the question forever.
+    // A CV added in March and a statement added in June are two decisions.
+    const state = twinState(graph([file('f1', 'CV-2026.pdf'), file('f2', 'research statement.pdf')]))
+    expect(newlyReadable(['f1'], state).map((g) => g.id)).toEqual(['f2'])
+  })
+
+  it('never offers anything but a document to read', () => {
+    /*
+     * `twinState` also reports skills that are not keywords, and those are
+     * rearrangements of facts the person already approved. Asking permission
+     * for one would train them to click through the prompt that matters.
+     */
+    const state = twinState(graph([file('f1', 'CV.pdf'), fact('b1', 'skill', 'Rust', 'f1')]))
+    expect(state.gaps.map((g) => g.kind)).toEqual(['skill-not-keyword'])
+    expect(newlyReadable([], state)).toEqual([])
+  })
+
+  it('says nothing when the document is about an employer', () => {
+    // Inherited from twinState rather than re-decided here, and asserted so a
+    // change to `worthReading` cannot quietly start asking about job postings.
+    const state = twinState(graph([file('f1', 'Acme job posting.pdf')]))
+    expect(newlyReadable([], state)).toEqual([])
+  })
+})
+
+describe('what the offer actually says', () => {
+  it('names the document, because that is what makes it answerable', () => {
+    /*
+     * "Read your CV into your profile?" is a question somebody can answer where
+     * they are standing. "Update your profile?" is one they have to open
+     * something else to understand, and the two get the same click.
+     */
+    const state = twinState(graph([file('f1', 'CV-2026.pdf')]))
+    const copy = twinOfferCopy(newlyReadable([], state))
+    expect(copy.title).toContain('CV-2026.pdf')
+  })
+
+  it('counts the rest rather than listing them', () => {
+    const state = twinState(
+      graph([file('f1', 'CV.pdf'), file('f2', 'statement.pdf'), file('f3', 'bio.pdf')]),
+    )
+    const copy = twinOfferCopy(newlyReadable([], state))
+    expect(copy.title).toContain('CV.pdf')
+    expect(copy.title).toContain('2 more')
+  })
+
+  it('describes what is about to happen, not a euphemism for it', () => {
+    /*
+     * Somebody agreeing to this is agreeing that a model may read a document
+     * about them and write what it finds into their own records. The body has
+     * to say so, and has to say that they see each entry first — otherwise the
+     * prompt is asking for permission to do something quieter than what happens.
+     */
+    const copy = twinOfferCopy(twinState(graph([file('f1', 'CV.pdf')])).gaps)
+    expect(copy.body).toMatch(/shown to you first/i)
+    expect(copy.body).toMatch(/which document/i)
+  })
+
+  it('does not fall over when asked about nothing', () => {
+    // Reachable: a document can be filed under an application between the
+    // render that raised the offer and the one that draws it.
+    expect(twinOfferCopy([]).title).toBe('Read that document into your profile?')
+  })
+})
+
+describe('remembering what has been asked', () => {
+  it('reads back what was written', () => {
+    expect(parseOffered(JSON.stringify(['f1', 'f2']))).toEqual(['f1', 'f2'])
+  })
+
+  it('reads nothing stored as nothing asked yet', () => {
+    // The ordinary first run, not an error.
+    expect(parseOffered(null)).toEqual([])
+  })
+
+  it('reads a malformed record as nothing asked yet', () => {
+    /*
+     * The safe direction, and the reason one JSON key is acceptable where
+     * `lib/onboarding.ts` argues for one key per flag. Failing to "nothing
+     * asked" asks again. Failing the other way would leave a document silently
+     * never read while the record claimed the person had been consulted.
+     */
+    expect(parseOffered('{not json')).toEqual([])
+    expect(parseOffered(JSON.stringify({ f1: true }))).toEqual([])
+  })
+
+  it('drops entries that are not ids', () => {
+    expect(parseOffered(JSON.stringify(['f1', 42, null, { id: 'f2' }]))).toEqual(['f1'])
+  })
+
+  it('records a document whichever way it was answered', () => {
+    /*
+     * One function rather than two, and this is the case that decides it. A
+     * version that remembered only declines would re-offer a document the
+     * instant its extraction failed — precisely when the person least wants the
+     * same question again.
+     */
+    expect(mergeOffered(['f1'], ['f1'])).toEqual(['f1'])
+  })
+
+  it('leaves the set alone when nothing was asked', () => {
+    // Reached on every render where the offer resolves to nothing, so it must
+    // not churn a store the graph shares.
+    const current = ['f1']
+    expect(mergeOffered(current, [])).toBe(current)
+  })
+
+  it('keeps the newest when it overflows', () => {
+    const many = Array.from({ length: OFFER_MEMORY_LIMIT + 60 }, (_, i) => `f${String(i)}`)
+    const kept = mergeOffered([], many)
+    expect(kept).toHaveLength(OFFER_MEMORY_LIMIT)
+    expect(kept[kept.length - 1]).toBe(`f${String(OFFER_MEMORY_LIMIT + 59)}`)
+  })
+
+  it('moves a re-asked document to the end rather than leaving it where it was', () => {
+    // So the limit drops what has genuinely been quiet longest, not what
+    // happened to be stored first and has been asked about since.
+    expect(mergeOffered(['f1', 'f2'], ['f1'])).toEqual(['f2', 'f1'])
+  })
+
+  it('does not store the same id twice from one offer', () => {
+    // `newlyReadable` cannot produce a duplicate today; the store must not
+    // depend on that staying true.
+    expect(mergeOffered([], ['f1', 'f1'])).toEqual(['f1'])
+  })
+})
+
+describe('which documents count', () => {
+  it('takes the bucket as the signal, whatever the file is called', () => {
+    /*
+     * The bucket is the user saying what kind of document this is, in the
+     * app's own vocabulary — `core/model.ts` defines `Applications` as "the
+     * drawer for the things a person WROTE". A name pattern is a guess at the
+     * same question, and it fails on `Shaswata.pdf`.
+     */
+    const state = twinState(graph([file('f1', 'Shaswata.pdf')]))
+    expect(state.gaps.map((g) => g.id)).toEqual(['f1'])
+  })
+
+  it('still takes the name for something filed elsewhere', () => {
+    // A CV dropped into "To read" is still a CV, which is why this is an OR
+    // rather than a bucket check alone.
+    const state = twinState(graph([file('f1', 'my-cv.pdf', 'To read')]))
+    expect(state.gaps.map((g) => g.id)).toEqual(['f1'])
+  })
+
+  it('ignores an unrelated document filed somewhere else', () => {
+    const state = twinState(graph([file('f1', 'conference-programme.pdf', 'To read')]))
+    expect(state.gaps.filter((g) => g.kind === 'unread-document')).toEqual([])
+  })
+
+  it('refuses a record with no document behind it', () => {
+    /*
+     * Found by looking at what the demo data set would do. It ships
+     * `CV-2026-academic.pdf` and two statements as records with no bytes, so
+     * without this a fresh install opens with an offer to read a CV that cannot
+     * be opened — a consent prompt whose only possible outcome is an error, put
+     * in front of somebody on their first run.
+     *
+     * Every file in a backup restored onto a machine that never held the
+     * originals is the same case, and it is not rare.
+     */
+    const state = twinState(graph([empty('f1', 'CV-2026-academic.pdf')]))
+    expect(state.unread).toBe(0)
+    expect(state.gaps.map((g) => g.kind)).toEqual(['no-background'])
+  })
+
+  it('accepts the phone’s way of holding bytes as well as the browser’s', () => {
+    // `path` is web's flag and `uri` is the phone's. Both are checked in core
+    // because "can this be opened at all" is the same question on both.
+    const onPhone = node('f1', 'file', {
+      slug: 'f1',
+      name: 'CV.pdf',
+      kind: 'pdf',
+      bucket: 'Applications',
+      size: '1 KB',
+      savedOn: '2026-09-01',
+      uri: 'file:///documents/f1.pdf',
+    })
+    expect(twinState(graph([onPhone])).unread).toBe(1)
   })
 })

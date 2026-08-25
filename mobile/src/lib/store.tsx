@@ -14,6 +14,7 @@ import { createRnDriver } from '@/kg/storage/rn-driver'
 import { nativeHost } from '@/lib/host'
 import { now } from '@/lib/today'
 import { space } from '@/theme/tokens'
+import { ProfileUpdateOffer } from '@/components/profile/ProfileUpdateOffer'
 
 /**
  * The store, and the one place this platform's driver and host are named.
@@ -132,6 +133,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     <KgProvider repo={state.session.repo} now={now} host={nativeHost}>
       <StoreStatusProvider repo={state.session.repo} boot={phase}>
         {state.phase === 'degraded' ? <DegradedBanner why={state.why} /> : null}
+        {/* Beside the degraded banner and for the same reason: it has to be
+            askable from wherever the person happened to file the document, and
+            it must not be a sheet — filing usually happens from inside one, and
+            two sheets at once on a phone means the second is invisible. Inside
+            the provider, because answering it runs a tool. Renders nothing when
+            there is nothing newly readable, which is almost always. */}
+        <ProfileUpdateOffer />
         {children}
         {/* Inside the provider, because answering it runs a tool. */}
         {firstRun ? (

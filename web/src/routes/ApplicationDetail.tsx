@@ -5,6 +5,7 @@ import { DatesPanel } from '@/components/applications/detail/DatesPanel'
 import { FiledPanel } from '@/components/applications/detail/FiledPanel'
 import { DetailFacts } from '@/components/applications/detail/DetailFacts'
 import { DetailHeader } from '@/components/applications/detail/DetailHeader'
+import { FitPanel } from '@/components/applications/detail/FitPanel'
 import { NotePanel } from '@/components/applications/detail/NotePanel'
 import { plainStageMove, stageNeedsDetails } from '@jojo/service/core/stage-policy'
 import { OfferBlock } from '@/components/applications/OfferBlock'
@@ -306,6 +307,12 @@ function Detail({
       ) : null}
 
       <DetailFacts application={a} />
+
+      {/* Above the dates and below the facts: it is the question somebody
+          opens a draft to answer — should I spend an evening on this — and it
+          stops being the question the moment the application has been sent, so
+          it sits under the record rather than over it. */}
+      <FitPanel applicationId={a.id} />
 
       <DatesPanel applicationId={a.id} items={items} onAddItem={onAddItem} />
 

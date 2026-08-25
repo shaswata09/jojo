@@ -7,6 +7,7 @@ import type { RouteProp } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
 import { FiledPanel } from '@/components/common/FiledPanel'
+import { FitPanel } from '@/components/applications/FitPanel'
 import { StagePicker } from '@/components/common/StagePicker'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
@@ -453,6 +454,10 @@ function Detail({ application: a }: { application: Application }) {
           </Txt>
         ) : null}
       </Panel>
+
+      {/* The question somebody opens a draft to answer — is this worth an
+          evening — so it sits with the record rather than above it. */}
+      <FitPanel applicationId={a.id} />
 
       <FiledPanel applicationId={a.id} />
 

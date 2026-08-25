@@ -14,11 +14,9 @@ import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
 import { useTitle, vaultPath } from '@/lib/links'
 import { agentTurn, isConfigured } from '@/lib/llm'
-import { convertFile } from '@/lib/markitdown'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { useFillViewport } from '@/lib/use-fill-viewport'
-import { useVaultBlobs } from '@/lib/vault-blobs'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import type { NodeId } from '@jojo/service/core/model'
@@ -26,6 +24,7 @@ import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import { useAgent } from '@jojo/service/react/use-agent'
 import { report } from '@/lib/analytics'
+import { useReadDocument } from '@/lib/read-document'
 import { useApplications } from '@jojo/service/react/use-applications'
 import {
   toAgentEntries,
@@ -203,7 +202,6 @@ export function Assistant() {
  */
 function AgentPanel() {
   const { settings, reader } = useModelSettings()
-  const blobs = useVaultBlobs()
   const { addSnippet } = useVault()
   const { all: applications, byId } = useApplications()
   const { threads, create, save, rename, file, remove, setAuto } = useThreads()
@@ -326,23 +324,16 @@ function AgentPanel() {
   /**
    * Reading a document, if a reader is configured.
    *
-   * `undefined` when it is not, which is what makes `vault.file.read` refuse
-   * with an explanation rather than fail — the tool checks for exactly this.
+   * `undefined` below when it is not, which is what makes `vault.file.read`
+   * refuse with an explanation rather than fail — the tool checks for exactly
+   * this, and the hook's own no-reader arm never gets to speak here.
+   *
+   * The body moved to `lib/read-document.ts` when the CV reader and the fit
+   * assessment needed the same two lookups. It was written here first and the
+   * two failures it distinguishes — no bytes in this browser, no reader to open
+   * them with — are not worth re-deriving twice more.
    */
-  const convert = useCallback(
-    async (fileId: string) => {
-      const file = await blobs.get(fileId)
-      if (!file) {
-        return {
-          ok: false as const,
-          reason:
-            'No copy of that document is stored in this browser, so there is nothing to read.',
-        }
-      }
-      return convertFile(reader, file)
-    },
-    [blobs, reader],
-  )
+  const convert = useReadDocument()
 
   const { entries, busy, send, stop, clear } = useAgent({
     llm,

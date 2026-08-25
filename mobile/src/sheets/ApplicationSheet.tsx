@@ -28,6 +28,10 @@ import { useToast } from '@/lib/toast-context'
 import { useColors } from '@/theme/theme-context'
 import { isOpenableUrl } from '@/lib/urls'
 import { duplicateMessage, findDuplicate } from '@jojo/service/core/duplicates'
+import { postingSourceForUrl } from '@jojo/service/core/posting-source'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
+import { useReadFit } from '@/lib/fit-agent'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { RootStackParamList } from '@/navigation/types'
@@ -119,6 +123,10 @@ export function ApplicationSheet({
 }) {
   const applications = useApplications()
   const timeline = useTimeline()
+  const graph = useGraph()
+  const { projections } = useKg()
+  const { settings } = useModelSettings()
+  const readFit = useReadFit()
   const { labelIdsOf, setRecord, removeRecord } = useLabels()
   const { toast } = useToast()
   const vocabulary = useRoleVocabulary()
@@ -267,6 +275,28 @@ export function ApplicationSheet({
     return null
   }
 
+  /**
+   * Reads what the posting asks for, now, so the record opens with an answer.
+   *
+   * The phone's half of the same call in web's `use-application-writes.ts`, and
+   * the reasoning is there: saving does not navigate to the record, so without
+   * this the model call starts when somebody eventually opens it and they watch
+   * it run. Fired against the URL rather than the new record because the
+   * snapshot here predates the write; the saved posting is already in it.
+   *
+   * Skipped when there is no posting, no model, or no background — the last
+   * because the assessment would come out `not-measured` whatever the posting
+   * says, and on a phone that call is somebody's battery as well as their
+   * tokens.
+   */
+  const prewarmFit = () => {
+    const source = postingSourceForUrl(graph, form.url.trim() || undefined)
+    if (!source) return
+    if (settings.model.trim() === '') return
+    if (projections.background(graph).length === 0) return
+    void readFit({ fileId: source.fileId, name: source.name, settings })
+  }
+
   const onSave = () => {
     setAttempted(true)
     if (Object.keys(validate(form)).length > 0 || blocker) return
@@ -282,6 +312,7 @@ export function ApplicationSheet({
       })
       setRecord(refKey('app', created.id), keywords)
       if (form.deadline) mintDeadline(created, form.deadline)
+      prewarmFit()
 
       toast({
         title: `${displayName(created)} added`,
