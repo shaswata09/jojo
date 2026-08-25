@@ -51,6 +51,7 @@ function host(): ToolHost & { memoryNow: () => GraphSnapshot } {
   const runtime = createToolRuntime({ repo, now })
   return {
     memory: () => repo.getSnapshot() as GraphSnapshot,
+    today: () => '2026-10-12',
     memoryNow: () => repo.getSnapshot() as GraphSnapshot,
     check: (name, input) => runtime.check(name as ToolName, input) as never,
     run: (name, input) => runtime.run(name as ToolName, input as never) as never,

@@ -495,9 +495,11 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'How many applications do I have at each stage?',
-        mustCallOneOf: ['memory.overview', 'memory.list', 'graph.query'],
+        mustCallOneOf: ['stats.report', 'memory.overview', 'memory.list', 'graph.query'],
         readOnly: true,
-        why: 'An aggregate. `memory.overview` gives counts; anything else means counting by hand.',
+        why:
+          'An aggregate. `stats.report` answers it outright; `memory.overview` gives type counts; ' +
+          'anything else means counting by hand.',
       },
     ],
     finalState: [
@@ -528,6 +530,54 @@ export const CONVERSATIONS: readonly Conversation[] = [
     ],
     finalState: [
       { kind: 'count', type: 'timelineItem', is: 4, why: 'Two analytical turns write nothing.' },
+    ],
+  },
+  {
+    id: 'reply-rate',
+    group: 'analytics',
+    why:
+      'The question a tracker is bought for, and the one a list cannot answer without arithmetic ' +
+      'the model will get wrong. `stats.report` exists for exactly this.',
+    turns: [
+      {
+        say: 'What is my reply rate so far?',
+        mustCallOneOf: ['stats.report', 'memory.list', 'graph.query', 'memory.overview'],
+        readOnly: true,
+        why:
+          'A rate over the whole store. Counting it off a capped list is wrong in a way that ' +
+          'looks right, which is why the tool reports the denominator with it.',
+      },
+      {
+        say: 'Is that good?',
+        mustCallOneOf: ['stats.report', ...READS],
+        readOnly: true,
+        why:
+          'Refers to the previous answer and needs a comparison. `stats.report` carries the ' +
+          'typical figure beside each axis; the honest answer names both numbers.',
+      },
+    ],
+    finalState: [
+      { kind: 'count', type: 'application', is: 6, why: 'Two analytical turns write nothing.' },
+    ],
+  },
+  {
+    id: 'source-comparison',
+    group: 'analytics',
+    why:
+      'A comparison across a split, on a store far too small to support one. The correct answer ' +
+      'is that it cannot be told yet — and a model handed two bare rates will announce a finding.',
+    turns: [
+      {
+        say: 'Do referrals do better than the job boards for me?',
+        mustCallOneOf: ['stats.report', 'memory.list', 'graph.query'],
+        readOnly: true,
+        why:
+          'Six applications cannot separate two sources. `stats.report` returns the arms with ' +
+          '`differenceIsReal: false`, and the answer has to say so rather than pick a winner.',
+      },
+    ],
+    finalState: [
+      { kind: 'count', type: 'application', is: 6, why: 'Comparing changes nothing.' },
     ],
   },
   {

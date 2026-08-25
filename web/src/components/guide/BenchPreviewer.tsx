@@ -126,7 +126,7 @@ export function BenchPreviewer() {
                             <span>
                               <span className="text-text-1">&ldquo;{turn.say}&rdquo;</span>
                               {turn.shouldAsk ? (
-                                <span className="ml-1.5 text-xs text-warn">
+                                <span className="ml-1.5 text-xs text-warning">
                                   must ask, not act
                                 </span>
                               ) : null}

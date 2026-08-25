@@ -145,7 +145,18 @@ export function useApplicationWrites({
     if (!source) return
     if (settings.model.trim() === '') return
     if (projections.background(graph).length === 0) return
-    void readFit({ fileId: source.fileId, name: source.name, settings })
+    /*
+     * Swallowed, and this is the one place in the app where that is right. The
+     * prewarm has no UI: nobody is looking at it, and a failure costs only the
+     * head start. The panel runs the same read when the record is opened,
+     * reports the reason in place and offers a retry — so raising anything here
+     * would be a second telling of a story the user has not started reading.
+     *
+     * The catch is still needed. Without it a throw is an unhandled rejection,
+     * which is a console error on the web and a red box on the phone, for a
+     * background task that failed exactly as designed.
+     */
+    void readFit({ fileId: source.fileId, name: source.name, settings }).catch(() => {})
   }
 
   /**
@@ -176,9 +187,14 @@ export function useApplicationWrites({
       // three sources in the vocabulary belong to the scout, the link importer
       // and the browser capture, and each reports its own.
       report('application_created', { source: 'manual' })
-      prewarmFit()
       return record
     })
+
+    // After the transaction closes, not inside it. `undoableWith` measures the
+    // journal either side of the write to decide what an Undo covers, and a
+    // network call has no business inside that boundary even though it writes
+    // nothing — the closure is a statement about which records moved.
+    prewarmFit()
 
     toast({
       title: `${displayName(created)} added`,

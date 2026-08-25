@@ -26,7 +26,7 @@
  * hold on a board of sixty cards.
  */
 
-import { compareItems, daysBetween } from '../core/dates'
+import { compareItems } from '../core/dates'
 import { emptyProfile } from '../core/profile'
 import type {
   Application,
@@ -47,7 +47,7 @@ import type {
   VaultFile,
   VaultLink,
 } from '../core/model'
-import { createOneProjection, createProjection, dayOf } from '../core/project'
+import { applicationFrom, createOneProjection, createProjection } from '../core/project'
 import type { GraphSnapshot } from '../core/snapshot'
 
 /** A projected list, and the single-record read the detail routes need. */
@@ -102,24 +102,13 @@ const became = (g: GraphSnapshot, id: NodeId) => g.one(id, 'BECAME', 'applicatio
  * yesterday's answer and cannot be tested at all.
  */
 export function createProjections(today: ISODate): Projections {
-  const projectApplication = (n: StoredNode<'application'>, g: GraphSnapshot): Application => {
-    // `slug` is kept, unlike everywhere else below. It was dropped in Wave 1
-    // because nothing read it, and the consequence was that `appPath` had only
-    // the per-session id to build a link out of — so every URL in the address
-    // bar died on reload. It is a STORED prop, not a derived one, so passing it
-    // through is not the thing D25 forbids.
-    const { lastActionAt, ...rest } = n.props
-    return {
-      ...rest,
-      id: n.id,
-      org: g.one(n.id, 'AT', 'organisation')?.props.name ?? '',
-      // The LOCAL calendar day of the instant, not `slice(0, 10)`.
-      // `lastActionAt` is minted from a local-noon clock, so slicing the UTC
-      // string is the previous day for anyone more than twelve hours east — and
-      // every row on their screen would have read one day older than it was.
-      daysAgo: daysBetween(dayOf(lastActionAt), today),
-    }
-  }
+  /*
+   * Lifted into `core/project.ts` when `stats.report` needed the same row at
+   * L3, where these projections are out of reach. It stays a local binding here
+   * because `today` is closed over exactly once, at `createProjections`.
+   */
+  const projectApplication = (n: StoredNode<'application'>, g: GraphSnapshot): Application =>
+    applicationFrom(n, g, today)
 
   const projectTimelineItem = (n: StoredNode<'timelineItem'>, g: GraphSnapshot): TimelineItem => {
     const { slug: _slug, ...rest } = n.props

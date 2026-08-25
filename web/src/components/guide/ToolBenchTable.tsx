@@ -155,7 +155,7 @@ export function ToolBenchTable() {
                     <td className="tabular py-1.5 pr-3">
                       <span
                         className={
-                          r.conversationsClean === r.conversations ? 'text-text-1' : 'text-warn'
+                          r.conversationsClean === r.conversations ? 'text-text-1' : 'text-warning'
                         }
                       >
                         {r.conversationsClean}/{r.conversations}
@@ -206,7 +206,7 @@ export function ToolBenchTable() {
                 <tr key={row.group} className="border-t border-hairline">
                   <td className="py-1.5 pr-3 text-text-1">{row.group}</td>
                   <td className="tabular py-1.5 pr-3">
-                    <span className={rate === 1 ? 'text-text-1' : 'text-warn'}>
+                    <span className={rate === 1 ? 'text-text-1' : 'text-warning'}>
                       {row.clean}/{row.conversations}
                     </span>
                   </td>

@@ -32,6 +32,8 @@ import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { NextSteps } from '@/components/statistics/NextSteps'
+import { WhatIsWorking } from '@/components/statistics/WhatIsWorking'
 
 /**
  * Below three plotted axes a radar is a line or a triangle with nothing to
@@ -200,6 +202,15 @@ export function StatisticsScreen() {
             ))}
           </View>
         ) : null}
+
+        {/* Above the figures, because somebody opening this screen is asking
+            what to do and the funnel answers how it is going. Renders nothing
+            on an empty search. */}
+        <NextSteps />
+
+        {/* The only panel that COMPARES. Renders nothing until two groups have
+            enough records to be worth putting side by side. */}
+        <WhatIsWorking />
 
         <Panel>
           <PanelTitle hint="by the role each was for">Applications over time</PanelTitle>

@@ -146,13 +146,13 @@ line you stop at is required, and nothing above it is missing — a screen that
 needs something you have not set up says so by name. The agentic half starts at
 layer 3; the two below it are a tracker that never asks you for anything.
 
-| Layer                       | Requires                    | What you get                                                                                                                                                                                                                                                                        |
-| --------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 — Browser only**        | Nothing                     | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage.                                                                                                                                                               |
-| **2 — + A backup you keep** | Somewhere to put a file     | One file holding every record, every link and every document. Restoring it puts all three back.                                                                                                                                                                                     |
+| Layer                       | Requires                                                 | What you get                                                                                                                                                                                                                                                                        |
+| --------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 — Browser only**        | Nothing                                                  | Track applications, deadlines and follow-ups, and keep the documents you attach. Everything lives in browser storage.                                                                                                                                                               |
+| **2 — + A backup you keep** | Somewhere to put a file                                  | One file holding every record, every link and every document. Restoring it puts all three back.                                                                                                                                                                                     |
 | **3 — + A model**           | Ollama, vLLM or LM Studio locally — or a free NVIDIA key | The agentic half: a threaded assistant that reads and writes your records under your approval, Job Scout pipelines that complete your profile and watch for postings, "Ask the graph" in a sentence, and scoring against what you are looking for.                                  |
-| **4 — + Document reader**   | MarkItDown, running locally | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you.                                                                                                                                          |
-| **5 — + The extension**     | Chrome, Edge, Brave or Arc  | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board, and what lets a **hosted** copy reach the document reader on your own machine — nothing else here can open a web page, or call `127.0.0.1` from an https page. |
+| **4 — + Document reader**   | MarkItDown, running locally                              | The assistant reads your PDFs, Word files and decks — and a job posting, so **+ New → Application from a link** fills the form in for you.                                                                                                                                          |
+| **5 — + The extension**     | Chrome, Edge, Brave or Arc                               | Keep a posting exactly as it read, from the tab you are on. It is also what lets a scout pipeline sweep a job board, and what lets a **hosted** copy reach the document reader on your own machine — nothing else here can open a web page, or call `127.0.0.1` from an https page. |
 
 Layer 1 is the only one that must work. Everything above it degrades gracefully when disconnected.
 
@@ -483,3 +483,35 @@ The phone app talks to it directly. A browser cannot: `markitdown-mcp` sends no
 CORS headers and answers the preflight with 405, so the web app reaches it
 through a same-origin path — the dev server proxies `/reader` to it, and a hosted
 copy needs the same forwarding.
+
+---
+
+## Licence
+
+**jojo is MIT-licensed and free to use** — including commercially. Copy it,
+change it, ship it inside something you sell. The two conditions are MIT's own:
+keep the copyright and permission notice with any substantial copy, and accept
+that it comes with no warranty. Full text in [`LICENSE`](LICENSE).
+
+**The services you point it at are not covered by that.** jojo ships no API key
+and calls nothing on its own, so every connection is one you configure with your
+own credentials — which makes you, not this project, the party to that
+provider's agreement. Two are worth knowing before you rely on them:
+
+- **NVIDIA's free API catalogue is licensed for evaluation, not production.**
+  Its [API Trial Terms of Service][nv] permit use "for internal testing and
+  evaluation purposes, not in production" absent a subscription, and separately
+  tell you not to upload "personal information relating to an identifiable
+  individual". jojo's assistant sends your profile, your CV text and your
+  contacts' names and email addresses. Running a real job search on the free
+  tier is outside what that licence grants.
+- **`@splinetool/runtime` ships in the web bundle with no licence grant at
+  all** — no `license` field, no LICENSE file, no lockfile entry. That is an
+  open question for anyone forking or deploying this, and it is recorded in
+  `THIRD-PARTY-NOTICES.md` rather than smoothed over. The mascot is decoration
+  and a 2D fallback already exists.
+
+Guide → **Licence** says all of this inside the app, where somebody deciding
+what to connect will actually meet it. None of it is legal advice.
+
+[nv]: https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf

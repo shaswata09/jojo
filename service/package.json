@@ -2,6 +2,7 @@
   "name": "@jojo/service",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "The shared layer: the knowledge graph, its tools, the agent that drives them, and the React binding. Imported by web and mobile, owned by neither.",
   "//exports": [

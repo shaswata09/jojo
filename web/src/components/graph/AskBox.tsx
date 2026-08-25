@@ -75,8 +75,13 @@ export function AskBox({
       run.onAbort(() => {
         controller.abort()
       })
-      return (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
-        agentTurn(settings, messages, tools, controller.signal)
+      // The loop hands `onDelta` down; passing it straight through is what makes
+      // the answer appear as it is generated rather than in one piece at the end.
+      return (
+        messages: Parameters<typeof agentTurn>[1],
+        tools: Parameters<typeof agentTurn>[2],
+        onDelta?: (text: string) => void,
+      ) => agentTurn(settings, messages, tools, controller.signal, onDelta)
     },
     [settings],
   )

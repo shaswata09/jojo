@@ -33,8 +33,9 @@
  * the problem, and is why `daysAgo` could never be right while it was stored.
  */
 
-import type { ISODate, Instant, NodeId, NodeType, StoredNode } from './model'
+import type { Application, ISODate, Instant, NodeId, NodeType, StoredNode } from './model'
 import type { GraphSnapshot } from './snapshot'
+import { daysBetween } from './dates'
 
 /**
  * The calendar day the user is standing in, derived from an instant.
@@ -200,5 +201,46 @@ export function createOneProjection<T extends NodeType, R>(
     const value = project(node, g)
     cache.set(id, { epoch, value })
     return value
+  }
+}
+
+/**
+ * One application row, from the node and its edges.
+ *
+ * Down here rather than in `react/projections.ts`, where it was written,
+ * because a second reader needed it: `stats.report` computes the same funnel
+ * and the same rates the Statistics page shows, and it runs at L3 where the
+ * React projections are out of reach. The alternative was a copy — and a second
+ * definition of `daysAgo` is the exact thing this file's header spends thirty
+ * lines arguing against.
+ *
+ * `today` is a parameter for the reason `createProjection`'s header gives: a
+ * projector that closed over the day would be correct only for as long as that
+ * day was, and the cache is keyed on epoch and nothing else.
+ */
+export function applicationFrom(
+  n: StoredNode<'application'>,
+  g: GraphSnapshot,
+  today: ISODate,
+): Application {
+  /*
+   * `slug` is kept, unlike everywhere else. It was dropped in Wave 1 because
+   * nothing read it, and the consequence was that `appPath` had only the
+   * per-session id to build a link out of — so every URL in the address bar
+   * died on reload. It is a STORED prop, not a derived one, so passing it
+   * through is not the thing D25 forbids.
+   */
+  const { lastActionAt, ...rest } = n.props
+  return {
+    ...rest,
+    id: n.id,
+    org: g.one(n.id, 'AT', 'organisation')?.props.name ?? '',
+    /*
+     * The LOCAL calendar day of the instant, not `slice(0, 10)`. `lastActionAt`
+     * is minted from a local-noon clock, so slicing the UTC string is the
+     * previous day for anyone more than twelve hours east — and every row on
+     * their screen would read one day older than it is.
+     */
+    daysAgo: daysBetween(dayOf(lastActionAt), today),
   }
 }

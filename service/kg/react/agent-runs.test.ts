@@ -19,6 +19,7 @@ const answering = (text: string): Turn => ({ ok: true, text, toolCalls: [], fini
 
 const host: ToolHost = {
   memory: () => new MutableSnapshot(),
+  today: () => '2026-09-14',
   check: (_n, input) => ({ ok: true, value: input }),
   run: () => ({ ok: true, output: null, announcement: { title: 'Done' }, undo: null }),
 }

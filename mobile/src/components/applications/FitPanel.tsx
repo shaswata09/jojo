@@ -7,8 +7,9 @@ import { assess } from '@jojo/service/core/assess'
 import type { Requirement } from '@jojo/service/core/assess'
 import { HOW_LABEL, postingSourceFor } from '@jojo/service/core/posting-source'
 import { guidanceFrom, VERDICT_LABEL } from '@jojo/service/core/tailor'
+import { nextFitAction } from '@jojo/service/core/fit-request'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
-import { cachedRequirements, useReadFit } from '@/lib/fit-agent'
+import { cachedRequirements, haveRequirements, useReadFit } from '@/lib/fit-agent'
 import type { FitStep } from '@/lib/fit-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useColors } from '@/theme/theme-context'
@@ -48,7 +49,19 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
   )
   const [step, setStep] = useState<FitStep | null>(null)
   const [error, setError] = useState<string | null>(null)
+  /** Bumped by Try again. See `fitRequestKey` — it is half the request's identity. */
+  const [attempt, setAttempt] = useState(0)
   const abort = useRef<AbortController | null>(null)
+  /**
+   * The request already made, as a ref rather than state.
+   *
+   * Deliberately: recording that a request began must not cause a render, or
+   * the decision changes as a consequence of having been taken. That is exactly
+   * the loop this panel had — the read reported its first step synchronously,
+   * the step was in the effect's dependency array, and the re-run's cleanup
+   * aborted the request it had just started.
+   */
+  const started = useRef<string | null>(null)
 
   const fileId = source?.fileId
   const name = source?.name
@@ -56,43 +69,86 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
   const ready = fileId !== undefined && configured && background.length > 0
 
   /*
-   * Runs once per document per session, guarded on `error` as well as on the
-   * result: a posting that failed to read fails the same way on every render,
-   * and retrying it unasked would be a loop against somebody's GPU — which on a
-   * phone is somebody's battery too.
+   * `readFit` and `settings` are read through refs so that neither appears in
+   * the dependency array below. `readFit`'s identity changes when the blob
+   * store finishes opening, and a dependency that moves while a request is in
+   * flight makes the cleanup abort it. What the effect must react to is the
+   * DECISION changing, and that is what `action` is.
    */
-  useEffect(() => {
-    if (!ready || fileId === undefined || name === undefined) return
-    if (requirements !== null || error !== null || step !== null) return
+  const latest = useRef({ readFit, settings })
+  latest.current = { readFit, settings }
 
-    const held = cachedRequirements(fileId)
-    if (held) {
-      setRequirements(held)
+  const action = nextFitAction({
+    ready,
+    fileId,
+    attempt,
+    cached: fileId !== undefined && haveRequirements(fileId),
+    started: started.current,
+  })
+
+  /*
+   * Hoisted out of the dependency array, because a ternary in there cannot be
+   * checked statically and this is the value the effect actually turns on.
+   * `null` covers both non-start actions, and neither needs to be distinguished
+   * from the other by an identity — `action.do` carries that.
+   */
+  const startKey = action.do === 'start' ? action.key : null
+
+  useEffect(() => {
+    if (action.do === 'nothing') return
+    if (fileId === undefined || name === undefined) return
+
+    if (action.do === 'use-cache') {
+      setRequirements(cachedRequirements(fileId) ?? null)
       return
     }
+    if (startKey === null) return
 
+    started.current = startKey
     const stop = new AbortController()
     abort.current = stop
-    void readFit({ fileId, name, settings, onStep: setStep, signal: stop.signal }).then(
-      (outcome) => {
+    const { readFit: read, settings: model } = latest.current
+
+    void read({ fileId, name, settings: model, onStep: setStep, signal: stop.signal })
+      .then((outcome) => {
+        if (stop.signal.aborted) return
         abort.current = null
         setStep(null)
         if (outcome.ok) setRequirements(outcome.requirements)
         else setError(outcome.reason)
-      },
-    )
+      })
+      /*
+       * Every layer under this reports failure as a value, so reaching here
+       * means something threw that none of them expected. Without the catch
+       * that is an unhandled rejection and a panel that spins on "Opening the
+       * posting" for the rest of the session — the failure mode a person cannot
+       * tell from a slow model.
+       */
+      .catch((thrown: unknown) => {
+        if (stop.signal.aborted) return
+        abort.current = null
+        setStep(null)
+        setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
+      })
     return () => {
       stop.abort()
       abort.current = null
     }
-  }, [ready, fileId, name, requirements, error, step, readFit, settings])
+    // `action.do` and `startKey`, not `action` — the object is rebuilt on every
+    // render and would re-run this on every one of them.
+  }, [action.do, startKey, fileId, name])
 
-  // A different application means a different posting, so anything held about
-  // the last one is wrong rather than stale.
+  /*
+   * A different application means a different posting, so anything held about
+   * the last one is wrong rather than stale — and the attempt counter goes back
+   * to zero with it, or a retry on one record would look like a fresh request
+   * on the next.
+   */
   useEffect(() => {
-    setRequirements(cachedRequirements(fileId ?? '') ?? null)
+    setRequirements(fileId === undefined ? null : (cachedRequirements(fileId) ?? null))
     setError(null)
     setStep(null)
+    setAttempt(0)
   }, [fileId])
 
   const guidance = useMemo(
@@ -143,6 +199,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
             label="Try again"
             onPress={() => {
               setError(null)
+              setAttempt((n) => n + 1)
             }}
           />
         </View>

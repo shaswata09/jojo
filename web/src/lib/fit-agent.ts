@@ -33,6 +33,27 @@ import { useReadDocument } from '@/lib/read-document'
  */
 const requirementsFor = new Map<string, readonly Requirement[]>()
 
+/**
+ * How many postings are remembered.
+ *
+ * Small entries — a dozen short phrases each — so this is a bound on principle
+ * rather than a fix for a measured problem: a Map that only ever grows is one
+ * whose worst case nobody has thought about, and on a phone the JS context
+ * outlives every screen the person visits. Oldest first, which for an
+ * insertion-ordered Map is what `keys().next()` gives; losing the oldest costs
+ * one re-read of a posting nobody has opened in a hundred applications.
+ */
+const REMEMBERED = 128
+
+function remember(fileId: string, requirements: readonly Requirement[]): void {
+  requirementsFor.set(fileId, requirements)
+  while (requirementsFor.size > REMEMBERED) {
+    const oldest = requirementsFor.keys().next()
+    if (oldest.done) break
+    requirementsFor.delete(oldest.value)
+  }
+}
+
 export type FitStep = 'reading' | 'asking'
 
 export type FitOutcome =
@@ -102,7 +123,7 @@ export function useReadFit(): (options: ReadFitOptions) => Promise<FitOutcome> {
       const read = readRequirements(turn.text)
       if (!read.ok) return { ok: false, step: 'asking', reason: read.reason }
 
-      requirementsFor.set(fileId, read.requirements)
+      remember(fileId, read.requirements)
       return { ok: true, requirements: read.requirements, cached: false }
     },
     [readDocument],

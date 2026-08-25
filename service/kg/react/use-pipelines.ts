@@ -46,6 +46,7 @@ import type { AgentStep, Cancellation } from '../agent/loop'
 import type { LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
 import { PIPELINE_PROMPTS, proposingHost, toolsForKind } from '../agent/pipelines'
+import { dayOf } from '../core/project'
 import { AUTO_CAPABLE, WORKING_GAP_MS, isDue, shouldOfferShutdown } from '../core/proposal'
 import { parseSources } from '../core/board'
 import { twinBriefing, twinState } from '../core/twin'
@@ -165,12 +166,14 @@ export function usePipelines({
   const host = useMemo<ToolHost>(
     () => ({
       memory: () => repo.getSnapshot(),
+      // A getter, because a pipeline on a timer routinely outlives midnight.
+      today: () => dayOf(now()),
       check: (name, input) => runtime.check(name as ToolName, input) as never,
       run: (name, input) => runtime.run(name as ToolName, input as never) as never,
       ...(convert ? { convert } : {}),
       ...(scan ? { scan } : {}),
     }),
-    [convert, repo, runtime, scan],
+    [convert, now, repo, runtime, scan],
   )
 
   /* --------------------------------- a round ------------------------------ */

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
 import { GuideBuiltWith } from '@/components/guide/GuideBuiltWith'
 import { GuideGraph } from '@/components/guide/GuideGraph'
+import { GuideLicence } from '@/components/guide/GuideLicence'
 import { GuideOverview } from '@/components/guide/GuideOverview'
 import { GuideScreens } from '@/components/guide/GuideScreens'
 import { GuideTools } from '@/components/guide/GuideTools'
@@ -164,7 +165,7 @@ export default function App() {
           <Route path="assistant" element={<Assistant />} />
           <Route path="settings" element={<Settings />} />
           {/* The guide is a section, not a page: a layout route holding the
-              rail and the pager, with the four pages as children. The landing
+              rail and the pager, with the six pages as children. The landing
               page is the index rather than '/guide/overview', so the topbar's
               help icon, the palette and every bookmark taken before the split
               still land on something. The segments are `links.ts`'s
@@ -176,6 +177,7 @@ export default function App() {
             <Route path="graph" element={<GuideGraph />} />
             <Route path="tools" element={<GuideTools />} />
             <Route path="built-with" element={<GuideBuiltWith />} />
+            <Route path="licence" element={<GuideLicence />} />
           </Route>
           <Route
             path="*"

@@ -8,6 +8,8 @@ import { ApplicationFrequency } from '@/components/dashboard/ApplicationFrequenc
 import { HeadlineRatesBody } from '@/components/dashboard/HeadlineRates'
 import { ApplicationSources } from '@/components/dashboard/ApplicationSources'
 import { SearchHealth } from '@/components/dashboard/SearchHealth'
+import { NextSteps } from '@/components/statistics/NextSteps'
+import { WhatIsWorking } from '@/components/statistics/WhatIsWorking'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { statsFor } from '@/data/statistics'
@@ -105,6 +107,13 @@ export function Statistics() {
         }
       />
 
+      {/* Above the figures, because somebody opening this page on a Sunday
+          evening is asking what to do and the funnel answers how it is going.
+          Renders nothing on an empty search — a plan for a search nobody has
+          started is the fabricated-search failure this page was rebuilt to
+          remove. */}
+      <NextSteps />
+
       {/* The tiles moved to `dashboard/HeadlineRates` when the dashboard's
           StatsCard needed the same four. They were written inline here and could
           only ever appear here; a second copy would have been a second
@@ -119,6 +128,12 @@ export function Statistics() {
           <HeadlineRatesBody showTypical={showTypical} />
         </section>
       ) : null}
+
+      {/* Under the headline rates, because it is the only panel that COMPARES
+          and every rate it draws is one of those four cut a different way.
+          Renders nothing until two groups have enough records to be worth
+          putting side by side. */}
+      <WhatIsWorking />
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-[1.5fr_1fr]">
         <ApplicationFrequency />

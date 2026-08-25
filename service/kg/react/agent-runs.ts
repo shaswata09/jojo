@@ -173,10 +173,7 @@ export function createAgentRuns(): AgentRuns {
   /** The live state per conversation, replaced wholesale on every change. */
   const runs = new Map<NodeId, AgentRun>()
   /** The mutable bookkeeping a run needs and a reader must never see. */
-  const inner = new Map<
-    NodeId,
-    { cancel: { aborted: boolean; fire: () => void }; seq: number }
-  >()
+  const inner = new Map<NodeId, { cancel: { aborted: boolean; fire: () => void }; seq: number }>()
   const listeners = new Set<() => void>()
 
   /*
@@ -337,6 +334,15 @@ export function createAgentRuns(): AgentRuns {
      * conversation that silently stops answering reads as a broken app rather
      * than as a failed request.
      */
+    /*
+     * The prose currently streaming, or null between rounds.
+     *
+     * Per RUN rather than per registry, so two conversations streaming at once
+     * cannot append each other's fragments — which is the bug the run token
+     * further down exists to prevent in the settle path.
+     */
+    let draft: { id: string; text: string } | null = null
+
     void (async () => {
       try {
         const run = await runAgent({
@@ -366,16 +372,44 @@ export function createAgentRuns(): AgentRuns {
           signal: cancel satisfies Cancellation,
           onEvent: (event) => {
             if (event.type === 'step') {
+              // A step ends whatever prose was streaming before it: the model
+              // has stopped talking and started calling. Settling the draft here
+              // keeps the entries in the order they happened.
+              draft = null
               record(threadId, { kind: 'step', id: `s-${event.step.id}`, step: event.step })
               return
             }
+
+            /*
+             * The streaming half.
+             *
+             * `record` upserts by entry id, so a fragment can grow ONE entry
+             * rather than appending a hundred. The draft is written as an
+             * `answer` because that is what it usually becomes and it needs no
+             * new rendering — the text simply lengthens on screen.
+             *
+             * When the round settles, `note` or `answer` arrives carrying the
+             * whole of that round's prose, and it REUSES THE DRAFT'S ID so it
+             * replaces the growing entry instead of appearing beside it. That is
+             * the difference between an answer that resolves and one that shows
+             * up twice.
+             */
+            if (event.type === 'delta') {
+              if (draft === null) draft = { id: nextId(), text: '' }
+              draft.text += event.text
+              record(threadId, { kind: 'answer', id: draft.id, text: draft.text })
+              return
+            }
+
+            const id = draft?.id ?? nextId()
+            draft = null
             record(
               threadId,
               event.type === 'note'
-                ? { kind: 'note', id: nextId(), text: event.text }
+                ? { kind: 'note', id, text: event.text }
                 : event.type === 'answer'
-                  ? { kind: 'answer', id: nextId(), text: event.text }
-                  : { kind: 'error', id: nextId(), text: event.reason },
+                  ? { kind: 'answer', id, text: event.text }
+                  : { kind: 'error', id, text: event.reason },
             )
           },
         })

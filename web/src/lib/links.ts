@@ -160,7 +160,14 @@ export function assistantPath() {
  * landing somewhere real. Same rule as everywhere else in this file: the
  * default is omitted from the URL.
  */
-export const GUIDE_PAGES = ['overview', 'screens', 'graph', 'tools', 'built-with'] as const
+export const GUIDE_PAGES = [
+  'overview',
+  'screens',
+  'graph',
+  'tools',
+  'built-with',
+  'licence',
+] as const
 export type GuidePage = (typeof GUIDE_PAGES)[number]
 
 const GUIDE_DEFAULTS = { page: 'overview' } as const
@@ -170,7 +177,7 @@ export function guidePath(page: GuidePage = GUIDE_DEFAULTS.page) {
 }
 
 /**
- * Which of the four is open.
+ * Which of the six is open.
  *
  * A path reader rather than a param one, because the guide's pages are routes:
  * they each want their own title, their own h1 and their own history entry, and

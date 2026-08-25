@@ -134,6 +134,9 @@ function buildWorld() {
 
   const host: ToolHost = {
     memory: () => repo.getSnapshot() as GraphSnapshot,
+    // The same pinned day the prompt states, so `stats.report` and the model
+    // cannot disagree about what is overdue.
+    today: () => BENCH_TODAY,
     check: (name, input) => runtime.check(name as ToolName, input) as never,
     run: (name, input) => runtime.run(name as ToolName, input as never) as never,
     /*

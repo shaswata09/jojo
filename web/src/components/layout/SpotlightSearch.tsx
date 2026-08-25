@@ -80,8 +80,11 @@ const GUIDE_KEYWORDS: Record<GuidePage, string> = {
   overview: 'getting started first steps checklist onboarding storage backup shortcuts undo',
   screens: 'reference pages screens routes what does this do not connected disabled',
   graph: 'nodes edges query records model relationships architecture',
-  tools: 'assistant agent tools permissions safety what can it do api key claude openai ollama model provider',
-  'built-with': 'licence license credits acknowledgements open source dependencies versions',
+  tools:
+    'assistant agent tools permissions safety what can it do api key claude openai ollama model provider',
+  'built-with': 'credits acknowledgements dependencies versions attribution',
+  licence:
+    'licence license mit free open source copyright terms disclaimer warranty nvidia microsoft markitdown legal cost commercial',
 }
 
 const PAGES: Result[] = [

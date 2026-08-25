@@ -131,7 +131,7 @@ export type Kpi = {
 }
 
 /** Every reply whose gap can actually be measured — both dates present. */
-function replyGaps(all: readonly Application[]): number[] {
+export function replyGaps(all: readonly Application[]): number[] {
   return all
     .map((a) => {
       // Same fallback order as the frequency chart: seed rows carry
@@ -156,20 +156,31 @@ function replyGaps(all: readonly Application[]): number[] {
  */
 const countAt = (funnel: FunnelStep[], step: number) => funnel[step]?.count ?? 0
 
+/**
+ * The middle of a SORTED list of days, or null for an empty one.
+ *
+ * Both halves pulled out as locals so the middle two elements are read once and
+ * are provably present: the empty case is handled first, and past that guard
+ * `mid` and `mid - 1` are both in range. The ternary this replaced indexed the
+ * array three times inside its own branches, which no checker can follow.
+ *
+ * Exported because the recommendation "these four have been silent longer than
+ * your usual reply" needs the same number the KPI tile prints, and two
+ * definitions of a median are two numbers that eventually disagree on one
+ * screen.
+ */
+export function medianOf(sorted: readonly number[]): number | null {
+  if (sorted.length === 0) return null
+  const mid = Math.floor(sorted.length / 2)
+  const hi = sorted[mid] ?? 0
+  const lo = sorted[mid - 1] ?? hi
+  return sorted.length % 2 === 1 ? hi : Math.round((lo + hi) / 2)
+}
+
 function kpisFor(all: readonly Application[], funnel: FunnelStep[]): Kpi[] {
   const sent = countAt(funnel, 0)
   const gaps = replyGaps(all)
-  const mid = Math.floor(gaps.length / 2)
-  /*
-   * Both halves pulled out as locals so the middle two elements are read once
-   * and are provably present: `gaps.length === 0` is handled first, and past
-   * that guard `mid` and `mid - 1` are both in range. The ternary used to index
-   * `gaps` three times inside its own branches, which no checker can follow.
-   */
-  const hi = gaps[mid] ?? 0
-  const lo = gaps[mid - 1] ?? hi
-  const median =
-    gaps.length === 0 ? null : gaps.length % 2 === 1 ? hi : Math.round((lo + hi) / 2)
+  const median = medianOf(gaps)
 
   // The headline and the caption under it are now the same division, so a tile
   // can no longer read "11%" above "1 of 12".
@@ -398,8 +409,21 @@ export function searchHealthFor(input: {
       score: shareOrNull(replied, sent.length),
       target: TYPICAL.responseRate,
       basis: `${replied} of ${sent.length} replied`,
+      /*
+       * Three of these six suggestions used to be constants — the same sentence
+       * whether the reply rate was 4% or 40%, which makes them advice about job
+       * hunting rather than about this search. Each now leads with what the
+       * count actually is and keeps the general line only as the second half,
+       * where it belongs.
+       */
       suggestion:
-        'Tailoring the opening paragraph to each posting moves this more than anything else.',
+        sent.length === 0
+          ? 'Nothing has gone out yet, so there is nothing to measure a reply against.'
+          : replied === 0
+            ? `None of the ${plural(sent.length, 'application', 'applications')} sent has had a reply. That is the step to work on before sending more — tailoring the opening paragraph to each posting moves it more than anything else.`
+            : replied === sent.length
+              ? 'Every application sent has had a reply. Whatever the opening paragraph is doing, keep doing it.'
+              : `${replied} of ${sent.length} came back. Tailoring the opening paragraph to each posting moves this more than anything else.`,
     },
     {
       axis: 'Interviews',
@@ -407,7 +431,11 @@ export function searchHealthFor(input: {
       target: TYPICAL.interviewRate,
       basis: `${interviewed} of ${sent.length} reached an interview`,
       suggestion:
-        'Replies that stall before a call usually mean the fit is not obvious in the first paragraph.',
+        replied === 0
+          ? 'No reply has arrived yet, so nothing has had the chance to stall before a call.'
+          : interviewed === 0
+            ? `${plural(replied, 'reply has', 'replies have')} arrived and none has become a call. That gap is usually the fit not being obvious in the first paragraph.`
+            : `${interviewed} of the ${plural(replied, 'reply', 'replies')} became a call. Replies that stall before one usually mean the fit is not obvious early enough.`,
     },
     {
       axis: 'Referrals',
@@ -415,7 +443,9 @@ export function searchHealthFor(input: {
       target: TYPICAL.referralShare,
       basis: `${referred} of ${total} came through a referral`,
       suggestion:
-        'A referred application is several times likelier to get a reply, so one introduction is worth several cold sends.',
+        referred === 0
+          ? 'None of these came through an introduction. A referred application is several times likelier to get a reply, so one is worth several cold sends.'
+          : `${referred} of ${total} came through an introduction. It is the highest-yield thing on this list, and the one that scales worst — which is why it is worth asking before the next cold send rather than after.`,
     },
     {
       axis: 'Follow-ups',

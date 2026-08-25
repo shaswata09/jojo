@@ -190,7 +190,15 @@ export function ProfileUpdateOffer() {
 
         <div className="flex shrink-0 items-center gap-2">
           {drafts === null && (
-            <Button size="sm" disabled={busy} onClick={() => void accept()}>
+            <Button size="sm" disabled={busy} onClick={() => {
+              void accept().catch((thrown: unknown) => {
+                // Same reason as the fit panel: everything under this reports
+                // failure as a value, so a throw here would otherwise leave the
+                // button stuck mid-step with nothing said.
+                setStep(null)
+                setError(thrown instanceof Error ? thrown.message : 'Reading the document failed.')
+              })
+            }}>
               {busy ? (
                 <>
                   <Loader2 aria-hidden className="size-3.5 animate-spin" />

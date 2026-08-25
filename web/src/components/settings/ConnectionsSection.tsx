@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { KeyRound, Link2, Trash2 } from 'lucide-react'
@@ -14,7 +15,14 @@ import { reportableProvider } from '@jojo/service/core/analytics'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { publicUrl } from '@/lib/public-url'
-import { PROVIDERS, cleanKey, providerMeta, type ProviderId } from '@jojo/service/core/provider'
+import { guidePath } from '@/lib/links'
+import {
+  PROVIDERS,
+  cleanKey,
+  providerMeta,
+  type ProviderId,
+  type ProviderMeta,
+} from '@jojo/service/core/provider'
 
 /**
  * Where the user's documents are, and the one thing jojo can talk to outside
@@ -359,27 +367,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             </option>
           ))}
         </select>
-        {/*
-         * Two facts, said separately, because a provider can be one and not the
-         * other. This used to be one sentence ending "and is billed to your
-         * account", which is false on a free tier — and telling somebody they
-         * are being charged for something free, on the screen where they decide
-         * whether to use it, is not a small inaccuracy.
-         */}
-        {provider.cloud ? (
-          <p className="text-warn mt-1.5 text-xs">
-            {/* The label's own qualifier is trimmed here. The dropdown entry
-                reads "NVIDIA (build.nvidia.com) — free, rate limited", which is
-                right in a list of choices and reads as a stammer inside a
-                sentence that is about to say the same thing: "goes to NVIDIA —
-                free, rate limited — free, within its rate limits". */}
-            Everything you ask goes to {provider.label.split(' —')[0]}
-            {provider.billed
-              ? ' and is billed to your account.'
-              : ' — free, within its rate limits, and it will refuse rather than charge you when you reach them.'}{' '}
-            jojo is local-first; this is the one part that is not.
-          </p>
-        ) : null}
+        {provider.cloud ? <CloudTerms provider={provider} /> : null}
       </div>
 
       {listOpen ? (
@@ -713,6 +701,130 @@ const localHost = () => {
 }
 
 const defaultReaderAddress = () => (localHost() ? PROXY_PATH : MARKITDOWN.defaultEndpoint)
+
+/**
+ * What choosing this provider actually commits you to.
+ *
+ * Shown the instant the dropdown changes, in Settings AND in the first-run
+ * tutorial — they are the same component, and the tutorial is where most people
+ * make this choice for the first time. A disclosure that only appears in
+ * Settings is one most users meet after they have already sent their CV.
+ *
+ * THREE THINGS, in the order they matter to the person reading:
+ *
+ * 1. What leaves. Named as records rather than "data", because "your data" is
+ *    a phrase people skim. Applications, notes, CV text, and the names and email
+ *    addresses of referees and recruiters — those last are somebody ELSE's
+ *    personal details, which is the part nobody thinks about.
+ * 2. What it costs — money, or a licence that does not permit this use.
+ * 3. Who carries the consequence. jojo is not a party to the agreement: it ships
+ *    no key and makes no call of its own, so the account, the bill and any
+ *    breach are the user's. Saying so is not a disclaimer to hide behind, it is
+ *    the accurate description of who signed what.
+ *
+ * NVIDIA GETS ITS OWN TREATMENT because its terms differ in kind, not degree:
+ * the free tier is licensed for evaluation and NOT production, and it forbids
+ * uploading personal data — which is most of what the assistant sends. Every
+ * other provider here sells production use; that is what the bill is for.
+ */
+function CloudTerms({ provider }: { provider: ProviderMeta }) {
+  // The dropdown entry reads "NVIDIA (build.nvidia.com) — free, rate limited",
+  // which is right in a list and a stammer inside a sentence about to repeat it.
+  const name = provider.label.split(' —')[0]
+  /*
+   * Without the parenthetical, for the two places the full name reads badly: a
+   * possessive ("NVIDIA (build.nvidia.com)'s terms") and a link label, where the
+   * address is noise because the link goes there anyway. The full name stays in
+   * the headline and the first mention, where identifying WHICH NVIDIA endpoint
+   * is the useful part.
+   */
+  const short = name.replace(/\s*\([^)]*\)\s*$/, '')
+
+  return (
+    <div className="mt-2 rounded-md border border-warning-border bg-warning-soft p-2.5">
+      <p className="text-xs font-medium text-warning">
+        {provider.evaluationOnly
+          ? `${name}: free, and licensed for evaluation only`
+          : `Your records leave this device when you use ${name}`}
+      </p>
+
+      <div className="mt-1.5 space-y-1.5 text-xs text-text-2">
+        <p>
+          Everything the assistant reads to answer you is sent to {name}: your applications and
+          notes, your profile, your CV text once a document is read, and the names and email
+          addresses of any referees or recruiters it looks at.{' '}
+          <span className="text-text-1">
+            Some of that is other people’s personal information, not just yours.
+          </span>{' '}
+          jojo is local-first everywhere else; this is the one part that is not.
+        </p>
+
+        {provider.evaluationOnly ? (
+          <>
+            <p>
+              NVIDIA’s terms permit use{' '}
+              <span className="text-text-1">
+                “for internal testing and evaluation purposes, not in production”
+              </span>{' '}
+              without a subscription, and separately say you{' '}
+              <span className="text-text-1">
+                “will not upload any personal information relating to an identifiable individual”
+              </span>
+              . Tracking a real job search is production use, and the records above are personal
+              information. Submitting content also grants NVIDIA a licence to store and reproduce
+              it.
+            </p>
+            <p>
+              It is free rather than billed — rate limited, and it refuses rather than charging you.
+              Read the terms and decide for yourself whether your use fits them.
+            </p>
+          </>
+        ) : (
+          <p>
+            {name} is paid, billed to your account, and governed by its own terms — including what
+            it may retain and whether prompts may be used to improve its models. That is a different
+            bargain from the local option, not a worse one, but it is worth reading before your
+            records are part of it.
+          </p>
+        )}
+
+        <p className="text-text-3">
+          You are the account holder and the party to that agreement — jojo ships no key and makes
+          no request of its own.{' '}
+          <span className="text-text-1">
+            Compliance with {short}’s terms is yours, and jojo accepts no liability for any breach
+            of them.
+          </span>
+        </p>
+
+        <p className="flex flex-wrap gap-x-3 gap-y-1">
+          <a
+            href={provider.termsUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-accent underline decoration-1 underline-offset-4"
+          >
+            {short} terms
+          </a>
+          <a
+            href={provider.privacyUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-accent underline decoration-1 underline-offset-4"
+          >
+            Privacy policy
+          </a>
+          <Link
+            to={guidePath('licence')}
+            className="text-accent underline decoration-1 underline-offset-4"
+          >
+            jojo’s licence page
+          </Link>
+        </p>
+      </div>
+    </div>
+  )
+}
 
 /** Exported for the first run, on the same terms as `LocalModelPanel`. */
 export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {

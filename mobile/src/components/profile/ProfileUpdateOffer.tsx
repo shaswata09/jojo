@@ -191,7 +191,15 @@ export function ProfileUpdateOffer() {
             size="sm"
             label={busy ? STEP_LABEL[step] : 'Read it'}
             disabled={busy}
-            onPress={() => void accept()}
+            onPress={() => {
+              void accept().catch((thrown: unknown) => {
+                // Same reason as the fit panel: everything under this reports
+                // failure as a value, so a throw here would otherwise leave the
+                // button stuck mid-step with nothing said.
+                setStep(null)
+                setError(thrown instanceof Error ? thrown.message : 'Reading the document failed.')
+              })
+            }}
           />
           <Button size="sm" variant="ghost" label="Not now" onPress={dismiss} />
         </View>

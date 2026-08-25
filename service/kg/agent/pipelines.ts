@@ -287,6 +287,7 @@ function duplicateOf(memory: GraphSnapshot, tool: string, input: unknown): strin
 export function proposingHost(real: ToolHost, sink: ProposalSink): ToolHost {
   return {
     memory: real.memory,
+    today: real.today,
     /*
      * Every capability forwarded, not just the ones this file happens to know
      * about. Dropping one is silent: `board.search` politely reported "nothing

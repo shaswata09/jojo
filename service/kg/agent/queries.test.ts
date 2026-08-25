@@ -7,6 +7,8 @@
  * props it really sets. A fixture would test the fixture.
  */
 import { describe, expect, it } from 'vitest'
+import { applicationFrom } from '../core/project'
+import { statsFor } from '../core/statistics'
 import { FUNCTION_NAMES } from '../core/expression'
 import { MutableSnapshot } from '../core/snapshot'
 import { createRepository } from '../repo/repository'
@@ -66,11 +68,14 @@ function seeded() {
   return { ...h, id, keywordId }
 }
 
+/** Pinned, because two of the reads ask what day it is. */
+const TODAY = '2026-10-12'
+
 const read = <N extends keyof typeof READS>(
   name: N,
   memory: GraphSnapshot,
   input: unknown,
-  ctx: Parameters<(typeof READS)[N]['read']>[2] = {},
+  ctx: Parameters<(typeof READS)[N]['read']>[2] = { today: TODAY },
 ): unknown => READS[name].read(memory, input as never, ctx)
 
 describe('memory.overview', () => {
@@ -189,6 +194,175 @@ describe('memory.related', () => {
     const out = read('memory.related', memory(), { id, rel: 'AT' }) as { type: string }[]
     expect(out).toHaveLength(1)
     expect(out[0]?.type).toBe('organisation')
+  })
+})
+
+describe('stats.report', () => {
+  /**
+   * A search with enough in it to have rates: ten sent, four replied, one of
+   * those at interview, and one still in draft.
+   */
+  function measurable() {
+    const h = harness()
+    const make = (over: Record<string, unknown>) =>
+      h.runtime.runOrThrow('application.create', {
+        org: 'Example',
+        role: 'Engineer',
+        roleTag: 'Industry',
+        stage: 'submitted',
+        ...over,
+      }) as NodeId
+    for (let i = 0; i < 4; i += 1) make({ appliedOn: '2026-10-01', firstReplyOn: '2026-10-06' })
+    for (let i = 0; i < 6; i += 1) make({ appliedOn: '2026-10-01' })
+    make({ stage: 'draft' })
+    return h
+  }
+
+  const report = (h: ReturnType<typeof harness>) =>
+    read('stats.report', h.repo.getSnapshot() as GraphSnapshot, {}) as {
+      sent: number
+      tracked: number
+      kpis: { label: string; value: string; of: string }[] | null
+      funnel: { stage: string; count: number }[]
+      comparisons: { differenceIsReal: boolean; note: string; arms: unknown[] }[]
+      nextSteps: { do: string; because: string; strength: string }[]
+    }
+
+  it('answers with figures rather than a list to count', () => {
+    /*
+     * The whole reason the tool exists. Before it, "what is my reply rate" meant
+     * `memory.list` and arithmetic in the model's head — over a list that is
+     * capped, in the operation models are worst at, producing a second
+     * definition of reply rate beside the Statistics page's.
+     */
+    const out = report(measurable())
+    expect(out.sent).toBe(10)
+    expect(out.tracked).toBe(11)
+    expect(out.kpis?.find((k) => k.label === 'Response rate')?.value).toBe('40%')
+  })
+
+  it('never states a rate without what it is a share of', () => {
+    // A model handed "40%" with no denominator will report it, and a reader has
+    // no way to know it came off ten records or off two.
+    for (const k of report(measurable()).kpis ?? []) expect(k.of.length).toBeGreaterThan(0)
+  })
+
+  it('agrees with the page, because it is the same function', () => {
+    const h = measurable()
+    const applications = (h.repo.getSnapshot() as GraphSnapshot)
+      .ofType('application')
+      .map((n) => applicationFrom(n, h.repo.getSnapshot() as GraphSnapshot, TODAY))
+    const page = statsFor(applications)
+    const out = report(h)
+    expect(out.funnel).toEqual(page.funnel)
+    expect(out.sent).toBe(page.sent)
+  })
+
+  it('says whether a comparison is a difference or only two numbers', () => {
+    /*
+     * The line that stops the assistant doing what `segments.ts` refuses to do.
+     * A model handed two bare rates announces a finding from four records; this
+     * hands it the verdict alongside them, and the note says what to do with it.
+     */
+    const h = harness()
+    const make = (source: string, replied: boolean) =>
+      h.runtime.runOrThrow('application.create', {
+        org: 'Example',
+        role: 'Engineer',
+        roleTag: 'Industry',
+        stage: 'submitted',
+        source,
+        appliedOn: '2026-10-01',
+        ...(replied ? { firstReplyOn: '2026-10-06' } : {}),
+      })
+    for (let i = 0; i < 20; i += 1) make('Referral', i < 16)
+    for (let i = 0; i < 40; i += 1) make('Job board', i < 4)
+
+    const found = report(h).comparisons.find((c) => c.arms.length >= 2)
+    expect(found?.differenceIsReal).toBe(true)
+    expect(found?.note).toMatch(/worth acting on/)
+  })
+
+  it('says plainly when a comparison is NOT a difference', () => {
+    /*
+     * The survivor case, and the one that matters more than the confident one.
+     * A model handed two bare rates announces a finding from eight records —
+     * `segments.ts` refuses to call it, and if the tool reported only the rates
+     * the refusal would never reach the model at all.
+     */
+    const h = harness()
+    const make = (source: string, replied: boolean) =>
+      h.runtime.runOrThrow('application.create', {
+        org: 'Example',
+        role: 'Engineer',
+        roleTag: 'Industry',
+        stage: 'submitted',
+        source,
+        appliedOn: '2026-10-01',
+        ...(replied ? { firstReplyOn: '2026-10-06' } : {}),
+      })
+    for (let i = 0; i < 5; i += 1) make('Referral', i < 3)
+    for (let i = 0; i < 5; i += 1) make('Job board', i < 1)
+
+    const found = report(h).comparisons.find((c) => c.arms.length >= 2)
+    expect(found?.differenceIsReal).toBe(false)
+    expect(found?.note).toMatch(/do not call this a difference/)
+  })
+
+  it('labels a benchmark comparison as suggested rather than measured', () => {
+    /*
+     * The funnel diagnosis is the one item drawn from `TYPICAL` — a round
+     * number this app chose — rather than from the person. Relabelling it
+     * `measured` would let the assistant say "your interview rate is behind"
+     * as though somebody had measured other people's.
+     */
+    const steps = report(measurable()).nextSteps
+    expect(steps.some((r) => r.strength === 'suggested')).toBe(true)
+    expect(steps.find((r) => r.strength === 'suggested')?.because).toMatch(/typical search/)
+  })
+
+  it('carries the strength of every suggestion', () => {
+    // So a model relaying one can say whether it was counted from the person's
+    // records or compared against a benchmark jojo invented.
+    for (const step of report(measurable()).nextSteps) {
+      expect(['measured', 'suggested']).toContain(step.strength)
+    }
+  })
+
+  it('reports no rate at all until something has been sent, never 0%', () => {
+    /*
+     * The distinction the whole Statistics rebuild turns on, and the one a
+     * model is likeliest to flatten. `statsFor` floors a rate at 0 when the
+     * denominator is 0 — which is safe on the page, because it guards on
+     * `sent > 0` before mounting the tiles, and unsafe in a tool, which has no
+     * such wrapper. Unguarded, the assistant tells somebody on their first day
+     * that their reply rate is 0%.
+     *
+     * That is not a bad score. It is no measurement.
+     */
+    const h = harness()
+    h.runtime.runOrThrow('application.create', {
+      org: 'Example',
+      role: 'Engineer',
+      roleTag: 'Industry',
+      stage: 'draft',
+    })
+    const out = report(h)
+    expect(out.sent).toBe(0)
+    expect(out.kpis).toBeNull()
+  })
+
+  it('reports the rates once there is a denominator', () => {
+    // The other side of the same guard: null must mean "not yet", not "never".
+    expect(report(measurable()).kpis).not.toBeNull()
+  })
+
+  it('works on an empty store without throwing', () => {
+    // Reached the first time anybody opens the assistant.
+    const out = report(harness())
+    expect(out.sent).toBe(0)
+    expect(out.kpis).toBeNull()
+    expect(out.comparisons).toEqual([])
   })
 })
 

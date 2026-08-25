@@ -85,6 +85,15 @@ export type AgentStep = {
 }
 
 export type AgentEvent =
+  /**
+   * A fragment of the answer, as it is generated.
+   *
+   * Only when the transport streams — a relayed cloud call and a provider whose
+   * stream this app cannot read both answer in one piece, and then the first
+   * thing a listener sees is `answer`. So a listener has to treat deltas as an
+   * optimisation and `answer` as the truth, never assume it saw every fragment.
+   */
+  | { type: 'delta'; text: string }
   /** Narration the model produced alongside tool calls, before the final answer. */
   | { type: 'note'; text: string }
   | { type: 'step'; step: AgentStep }
@@ -131,6 +140,13 @@ export const SYSTEM_PROMPT = [
 export type LlmTurnFn = (
   messages: readonly ChatMessage[],
   tools: readonly unknown[],
+  /**
+   * Called with each fragment of prose as it is generated, when the transport
+   * streams. Optional on the implementing side: an app that does not stream
+   * ignores the parameter and answers in one piece, and the loop's behaviour is
+   * identical either way.
+   */
+  onDelta?: (text: string) => void,
 ) => Promise<Turn>
 
 /**
@@ -319,7 +335,14 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   for (let round = 0; round < maxSteps; round++) {
     if (signal?.aborted) return finish('aborted')
 
-    const turn = await llm(messages, tools)
+    /*
+     * The delta sink, rebuilt per round so a fragment can never be attributed to
+     * the round before it. `onDelta` is optional on the port: a caller that does
+     * not stream simply never calls it.
+     */
+    const turn = await llm(messages, tools, (text) => {
+      onEvent({ type: 'delta', text })
+    })
     /*
      * Abort is checked BEFORE `!turn.ok`, and the order is the whole point.
      *

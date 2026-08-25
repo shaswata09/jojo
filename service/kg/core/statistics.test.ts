@@ -468,3 +468,47 @@ describe('searchHealthFor', () => {
     ])
   })
 })
+
+describe('the health suggestions say what was counted', () => {
+  /*
+   * Three of the six used to be constants — the same sentence at a 4% reply
+   * rate and at 40% — which makes them advice about job hunting rather than
+   * about this search. The header of `searchHealthFor` already records that
+   * the version before THAT named records the user did not have; this is the
+   * same failure one step milder, and these tests are what stop it returning.
+   */
+  const TODAY = '2026-10-12'
+  const sent = () => staged('submitted', { appliedOn: '2026-10-01' })
+  const replied = () => staged('submitted', { appliedOn: '2026-10-01', firstReplyOn: '2026-10-05' })
+  const referred = () => staged('submitted', { appliedOn: '2026-10-01', source: 'Referral' })
+
+  const sayOn = (name: string, rows: readonly Application[]) =>
+    searchHealthFor({ applications: rows, timeline: [], today: TODAY }).find((a) => a.axis === name)
+      ?.suggestion ?? ''
+
+  it('distinguishes no replies at all from some', () => {
+    const none = sayOn('Replies', [sent(), sent(), sent()])
+    const some = sayOn('Replies', [replied(), sent(), sent()])
+    expect(none).not.toBe(some)
+    expect(none).toMatch(/None of the/)
+    expect(some).toMatch(/1 of 3/)
+  })
+
+  it('does not tell somebody with a perfect reply rate to fix their opening', () => {
+    expect(sayOn('Replies', [replied(), replied()])).toMatch(/keep doing it/i)
+  })
+
+  it('says nothing about stalling before a call when nothing has replied', () => {
+    // The old constant claimed replies were stalling on a search where no
+    // reply had ever arrived.
+    expect(sayOn('Interviews', [sent(), sent()])).toMatch(/No reply has arrived yet/)
+  })
+
+  it('distinguishes having no referrals from having some', () => {
+    const none = sayOn('Referrals', [sent(), sent()])
+    const some = sayOn('Referrals', [referred(), sent()])
+    expect(none).not.toBe(some)
+    expect(none).toMatch(/None of these/)
+    expect(some).toMatch(/1 of 2/)
+  })
+})

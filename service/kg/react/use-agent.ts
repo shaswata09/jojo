@@ -32,6 +32,7 @@
 import { useCallback, useMemo } from 'react'
 import type { AgentStep, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
+import { dayOf } from '../core/project'
 import type { ChatMessage } from '../core/model-server'
 import type { NodeId } from '../core/model'
 import { useAgentRun, useAgentRuns } from './agent-runs-context'
@@ -135,7 +136,7 @@ export function useAgent({
   startThread,
   onSettled,
 }: UseAgentOptions): AgentState {
-  const { repo, runtime } = useKg()
+  const { repo, runtime, now } = useKg()
   const runs = useAgentRuns()
   const run = useAgentRun(thread.id)
 
@@ -149,11 +150,14 @@ export function useAgent({
   const host = useMemo<ToolHost>(
     () => ({
       memory: () => repo.getSnapshot(),
+      // A getter for the same reason `memory` is one: a conversation left open
+      // overnight must not answer "is this overdue" against yesterday.
+      today: () => dayOf(now()),
       check: (name, input) => runtime.check(name as ToolName, input) as never,
       run: (name, input) => runtime.run(name as ToolName, input as never) as never,
       ...(convert ? { convert } : {}),
     }),
-    [convert, repo, runtime],
+    [convert, now, repo, runtime],
   )
 
   const send = useCallback(

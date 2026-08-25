@@ -21,6 +21,7 @@
  */
 
 import { formatIssues } from '../core/schema'
+import type { ISODate } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import type { ToolName } from '../tools/index'
 import type { Announcement, ToolError } from '../tools/tool'
@@ -39,6 +40,18 @@ import type { ReadName } from './queries'
  */
 export type ToolHost = {
   memory: () => GraphSnapshot
+  /**
+   * The calendar day the user is standing in, as an ISO date.
+   *
+   * A function, not a value, and for the same reason `memory` is: a run can
+   * outlive midnight — a pipeline on a timer routinely does — and a day
+   * captured when the host was built would have `stats.report` calling a
+   * follow-up overdue that is not, or missing one that is.
+   *
+   * D26: the clock is injected and this layer never reads one. Both hosts are
+   * built in `kg/react`, which already holds the app's `now`.
+   */
+  today: () => ISODate
   /**
    * A stored document as Markdown, when the app has a reader configured.
    *
@@ -138,6 +151,8 @@ export async function callTool(
       ...(host.convert ? { convert: host.convert } : {}),
       ...(host.scan ? { scan: host.scan } : {}),
       ...(host.boards ? { boards: host.boards } : {}),
+      // Read per call, not per run. A pipeline on a timer outlives midnight.
+      today: host.today(),
     }
     return {
       ok: true,

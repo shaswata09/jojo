@@ -5,13 +5,13 @@ import { testReader } from '@/lib/markitdown'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { normaliseEndpoint, serverAt, serversFor } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
-import { PROVIDERS, cleanKey, providerMeta } from '@jojo/service/core/provider'
+import { PROVIDERS, cleanKey, providerMeta, type ProviderMeta } from '@jojo/service/core/provider'
 import type { ProviderId } from '@jojo/service/core/provider'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
 import { CrashPanel } from '@/components/common/CrashPanel'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -389,12 +389,7 @@ export function SettingsScreen() {
             description={provider.label}
             onPress={() => setChoosing(true)}
           />
-          {provider.cloud ? (
-            <Txt size="xs" tone="warning" style={{ marginBottom: space[3] }}>
-              Everything you ask goes to {provider.label} and is billed to your account. jojo is
-              local-first; this is the one part that is not.
-            </Txt>
-          ) : null}
+          {provider.cloud ? <CloudTerms provider={provider} /> : null}
           <View style={{ gap: space[3] }}>
             {/* Not offered at all when the provider's address is fixed. An
                 editable field over a value the request builder is going to
@@ -751,7 +746,7 @@ function ProviderPicker({
       open={open}
       onClose={onClose}
       title="Provider"
-      description="Choosing one sets its address for you. The cloud ones need a key and bill you per question."
+      description="Choosing one sets its address for you. The cloud ones need a key, and your records go to them."
       actions={PROVIDERS.map((p) => ({
         id: p.id,
         label: p.label,
@@ -766,6 +761,92 @@ function ProviderPicker({
         },
       }))}
     />
+  )
+}
+
+/**
+ * What choosing this provider actually commits you to. The phone's copy of the
+ * web panel's `CloudTerms`, and deliberately the same words.
+ *
+ * The warning this replaces said "and is billed to your account" for every cloud
+ * provider, which is FALSE of NVIDIA's free tier — telling somebody they are
+ * being charged for something free, on the screen where they decide whether to
+ * use it, is not a small inaccuracy. The web app had already split that into two
+ * facts; the phone had not, so it kept saying it.
+ *
+ * NVIDIA gets different words rather than louder ones: its free tier is licensed
+ * for evaluation and NOT production, and forbids uploading personal data — which
+ * is most of what the assistant sends. Every other provider here sells
+ * production use, which is what the bill buys.
+ */
+function CloudTerms({ provider }: { provider: ProviderMeta }) {
+  const { colors: c } = useTheme()
+  const name = provider.label.split(' \u2014')[0]
+  // Without the parenthetical, for the possessive and the links.
+  const short = name.replace(/\s*\([^)]*\)\s*$/, '')
+
+  const open = (url: string) => {
+    void Linking.openURL(url).catch(() => {
+      /* No browser, or the user cancelled. Nothing here is recoverable and
+         nothing is lost — the text above says the same thing. */
+    })
+  }
+
+  return (
+    <View
+      style={{
+        marginBottom: space[3],
+        padding: space[3],
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: c.warningBorder,
+        backgroundColor: c.warningSoft,
+        gap: space[2],
+      }}
+    >
+      <Txt size="xs" weight="semibold" tone="warning">
+        {provider.evaluationOnly
+          ? `${name}: free, and licensed for evaluation only`
+          : `Your records leave this device when you use ${name}`}
+      </Txt>
+
+      <Txt size="xs" tone="secondary">
+        Everything the assistant reads to answer you is sent to {name}: your applications and notes,
+        your profile, your CV text once a document is read, and the names and email addresses of any
+        referees or recruiters it looks at. Some of that is other people’s personal information, not
+        just yours. jojo is local-first everywhere else; this is the one part that is not.
+      </Txt>
+
+      {provider.evaluationOnly ? (
+        <Txt size="xs" tone="secondary">
+          NVIDIA’s terms permit use “for internal testing and evaluation purposes, not in
+          production” without a subscription, and separately say you “will not upload any personal
+          information relating to an identifiable individual”. Tracking a real job search is
+          production use, and the records above are personal information. It is free rather than
+          billed — rate limited, and it refuses rather than charging you.
+        </Txt>
+      ) : (
+        <Txt size="xs" tone="secondary">
+          {short} is paid, billed to your account, and governed by its own terms — including what it
+          may retain and whether prompts may be used to improve its models.
+        </Txt>
+      )}
+
+      <Txt size="xs" tone="muted">
+        You are the account holder and the party to that agreement — jojo ships no key and makes no
+        request of its own. Compliance with {short}’s terms is yours, and jojo accepts no liability
+        for any breach of them.
+      </Txt>
+
+      <View style={[s.row, { gap: space[4] }]}>
+        <Txt size="xs" tone="info" onPress={() => open(provider.termsUrl)}>
+          {short} terms
+        </Txt>
+        <Txt size="xs" tone="info" onPress={() => open(provider.privacyUrl)}>
+          Privacy policy
+        </Txt>
+      </View>
+    </View>
   )
 }
 

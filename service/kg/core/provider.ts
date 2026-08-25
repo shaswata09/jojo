@@ -93,6 +93,28 @@ export type ProviderMeta = {
    */
   readonly cloud: boolean
   /**
+   * Where this provider's own terms and privacy policy live.
+   *
+   * Empty for a local server, which has neither: nothing leaves the machine, so
+   * there is no second party and no agreement. For everything else these are
+   * shown at the moment of choosing, because that is the moment the person is
+   * deciding to be bound by them — a link buried in a settings page they have
+   * already finished with is a link nobody follows.
+   */
+  readonly termsUrl: string
+  readonly privacyUrl: string
+  /**
+   * True when the provider's own licence forbids production use.
+   *
+   * Only NVIDIA today. Its API Trial Terms of Service permit use "for internal
+   * testing and evaluation purposes, not in production", and separately forbid
+   * uploading "personal information relating to an identifiable individual" —
+   * which is most of what jojo's assistant sends. Both facts are the user's to
+   * act on and neither is discoverable from the app without being told, so this
+   * flag exists to make the warning say something different rather than louder.
+   */
+  readonly evaluationOnly: boolean
+  /**
    * Whether using it costs money.
    *
    * Separate from `cloud` because "my records are leaving this device" and "this
@@ -156,6 +178,9 @@ export const PROVIDERS = [
     needsKey: false,
     billed: false,
     cloud: false,
+    termsUrl: '',
+    privacyUrl: '',
+    evaluationOnly: false,
     // The reason this provider has its own dialect at all.
     canSetContext: true,
     modelLooksLike: '',
@@ -172,6 +197,9 @@ export const PROVIDERS = [
     needsKey: false,
     billed: false,
     cloud: false,
+    termsUrl: '',
+    privacyUrl: '',
+    evaluationOnly: false,
     modelLooksLike: '',
     keyLooksLike: '',
     keyUrl: '',
@@ -187,6 +215,9 @@ export const PROVIDERS = [
     needsKey: true,
     billed: true,
     cloud: true,
+    termsUrl: 'https://www.anthropic.com/legal/commercial-terms',
+    privacyUrl: 'https://www.anthropic.com/legal/privacy',
+    evaluationOnly: false,
     canSetContext: false,
     modelLooksLike: 'claude-sonnet-4-5',
     keyLooksLike: 'sk-ant-…',
@@ -202,6 +233,9 @@ export const PROVIDERS = [
     needsKey: true,
     billed: true,
     cloud: true,
+    termsUrl: 'https://openai.com/policies/business-terms/',
+    privacyUrl: 'https://openai.com/policies/privacy-policy/',
+    evaluationOnly: false,
     canSetContext: false,
     modelLooksLike: 'gpt-4o',
     keyLooksLike: 'sk-…',
@@ -217,6 +251,9 @@ export const PROVIDERS = [
     needsKey: true,
     billed: true,
     cloud: true,
+    termsUrl: 'https://openrouter.ai/terms',
+    privacyUrl: 'https://openrouter.ai/privacy',
+    evaluationOnly: false,
     canSetContext: false,
     modelLooksLike: 'meta-llama/llama-3.3-70b-instruct',
     keyLooksLike: 'sk-or-…',
@@ -232,6 +269,9 @@ export const PROVIDERS = [
     needsKey: true,
     billed: true,
     cloud: true,
+    termsUrl: 'https://groq.com/terms-of-use/',
+    privacyUrl: 'https://groq.com/privacy-policy/',
+    evaluationOnly: false,
     canSetContext: false,
     modelLooksLike: 'llama-3.3-70b-versatile',
     keyLooksLike: 'gsk_…',
@@ -266,6 +306,10 @@ export const PROVIDERS = [
     needsKey: true,
     billed: false,
     cloud: true,
+    termsUrl:
+      'https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf',
+    privacyUrl: 'https://www.nvidia.com/en-us/about-nvidia/privacy-policy/',
+    evaluationOnly: true,
     canSetContext: false,
     modelLooksLike: 'nvidia/nemotron-3-ultra-550b-a55b',
     keyLooksLike: 'nvapi-…',

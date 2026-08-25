@@ -87,7 +87,7 @@ export function ToolEvalTable() {
                       </span>
                     </td>
                     <td className="tabular py-1.5 pr-3">
-                      <span className={s.passed === s.total ? 'text-text-1' : 'text-warn'}>
+                      <span className={s.passed === s.total ? 'text-text-1' : 'text-warning'}>
                         {s.passed}/{s.total}
                       </span>
                     </td>

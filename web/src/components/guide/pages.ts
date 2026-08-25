@@ -11,7 +11,7 @@ import { GUIDE_PAGES, type GuidePage } from '@/lib/links'
  * here rather than by widening the rail.
  *
  * Keyed by page id rather than written out as an array, so the id list in
- * `links.ts` is the only place the section's shape is declared: adding a fifth
+ * `links.ts` is the only place the section's shape is declared: adding a sixth
  * page there fails to compile until it has a label here, and the order below is
  * whatever order the URLs are in rather than a second copy of it that can
  * disagree.
@@ -49,6 +49,11 @@ const META: Record<GuidePage, Omit<GuidePageMeta, 'id'>> = {
     label: 'Built with',
     blurb:
       'The open-source work jojo is made of, the licences that cover it, and how the code is arranged.',
+  },
+  licence: {
+    label: 'Licence',
+    blurb:
+      'What jojo costs, what you may do with it, and the terms that come with the services you can point it at.',
   },
 }
 

@@ -114,7 +114,7 @@ export function ConnectPanel({ send, token }: { send: SendState; token: string |
           ) : null}
 
           {send.problem === null ? null : (
-            <p className="mt-3 text-sm text-warn">{send.problem}</p>
+            <p className="mt-3 text-sm text-warning">{send.problem}</p>
           )}
         </>
       )}

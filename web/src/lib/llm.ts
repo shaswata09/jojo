@@ -1,15 +1,21 @@
 import {
   chatRequest,
+  guardTruncation,
   isConfigured,
   modelsRequest,
   readChatResponse,
   readModelsResponse,
   readTurnFor,
-  guardTruncation,
+  type WireToolCall,
   unconfigured,
 } from '@jojo/service/core/model-server'
+import {
+  createStreamReader,
+  streamingChatRequest,
+  supportsStreaming,
+} from '@jojo/service/core/model-stream'
 import { endpointOf } from '@jojo/service/core/provider'
-import { failed, send } from '@/lib/local-service'
+import { failed, send, sendStream } from '@/lib/local-service'
 import type { Sent } from '@/lib/local-service'
 import { callModel } from '@/lib/capture-bridge'
 import { providerMeta } from '@jojo/service/core/provider'
@@ -54,15 +60,11 @@ async function sendToModel(
   // Only "no extension" falls through. A provider that answered badly is an
   // answer, and retrying it directly would just ask the same question twice.
   const noExtension = /extension did not answer|too old/i.test(relayed.failed.reason)
-  if (!noExtension) return { failed: { ok: false, kind: 'unreachable', reason: relayed.failed.reason } }
+  if (!noExtension)
+    return { failed: { ok: false, kind: 'unreachable', reason: relayed.failed.reason } }
   return send(request, endpoint, signal)
 }
-import type {
-  ChatMessage,
-  ChatResult,
-  ModelsResult,
-  Turn,
-} from '@jojo/service/core/model-server'
+import type { ChatMessage, ChatResult, ModelsResult, Turn } from '@jojo/service/core/model-server'
 
 /**
  * The model client.
@@ -132,9 +134,6 @@ export type { ModelSettings }
 
 export { isConfigured }
 
-
-
-
 /**
  * What a server says it serves.
  *
@@ -189,11 +188,83 @@ export async function complete(
  * `@jojo/service/agent/catalog`, which builds it from the registry, and there is
  * nothing for this file to add to it or check about it.
  */
+/**
+ * Streams a turn, and hands back the ordinary non-streaming shape.
+ *
+ * The whole point of the conversion: `readTurnFor` and `guardTruncation` below
+ * are the tested paths, and they read a completion object. Rebuilding one from
+ * the assembled stream means streaming adds a transport, not a second parser —
+ * so a bug in the streaming path cannot produce a DIFFERENT answer from the
+ * batched one, only a missing one.
+ */
+async function readStream(
+  request: ReturnType<typeof chatRequest>,
+  endpoint: string,
+  onDelta: (delta: string) => void,
+  signal?: AbortSignal,
+): Promise<Sent> {
+  const reader = createStreamReader()
+  let assembled: { text: string; calls: readonly WireToolCall[]; finish: string | null } | null =
+    null
+
+  const drain = (events: ReturnType<typeof reader.push>) => {
+    for (const event of events) {
+      if (event.type === 'text') onDelta(event.delta)
+      else assembled = { text: event.text, calls: event.calls, finish: event.finish }
+    }
+  }
+
+  const out = await sendStream(
+    request,
+    endpoint,
+    (chunk) => {
+      drain(reader.push(chunk))
+    },
+    signal,
+  )
+  if (failed(out)) return out
+  // A body that never produced a `[DONE]`; `end` returns what did arrive.
+  if (assembled === null) drain(reader.end())
+
+  const done = assembled ?? { text: '', calls: [], finish: null }
+  /*
+   * Shaped as one `choices[0]` completion, which is what the non-streaming
+   * readers expect. `tool_calls` is omitted rather than sent empty: an empty
+   * array is a claim that the model chose to call nothing, and some readers
+   * treat the two differently.
+   */
+  return {
+    ok: true,
+    status: out.status,
+    text: JSON.stringify({
+      choices: [
+        {
+          message: {
+            role: 'assistant',
+            content: done.text,
+            ...(done.calls.length > 0 ? { tool_calls: done.calls } : {}),
+          },
+          finish_reason: done.finish,
+        },
+      ],
+    }),
+  }
+}
+
 export async function agentTurn(
   settings: ModelSettings,
   messages: readonly ChatMessage[],
   tools: readonly unknown[],
   signal?: AbortSignal,
+  /**
+   * Called with each fragment of prose as it arrives, when the provider streams.
+   *
+   * Absent, or a provider whose stream this app cannot read, and the request is
+   * the ordinary one — same answer, arriving all at once. Nothing downstream has
+   * to know which route was taken, which is the property that lets streaming be
+   * added without a second code path through the agent loop.
+   */
+  onDelta?: (delta: string) => void,
 ): Promise<Turn> {
   if (!isConfigured(settings)) return unconfigured()
   /*
@@ -202,8 +273,21 @@ export async function agentTurn(
    * of the call. Anthropic blocks browser origins unless the caller opts in by
    * name; there is no origin to opt in for on a phone.
    */
-  const request = chatRequest(settings, messages, tools, true)
-  const response = await sendToModel(request, endpointOf(settings), settings.provider, signal)
+  /*
+   * Streamed only when the request goes DIRECT. A cloud provider is relayed
+   * through the extension, which answers with a whole body and cannot stream —
+   * so the condition is "not cloud" rather than "supports streaming", and the
+   * local servers this matters most for are exactly the ones that qualify.
+   */
+  const streaming =
+    onDelta !== undefined && supportsStreaming(settings) && !providerMeta(settings.provider).cloud
+  const request = streaming
+    ? streamingChatRequest(settings, messages, tools, true)
+    : chatRequest(settings, messages, tools, true)
+
+  const response = streaming
+    ? await readStream(request, endpointOf(settings), onDelta, signal)
+    : await sendToModel(request, endpointOf(settings), settings.provider, signal)
   if (failed(response)) return response.failed
 
   const turn = readTurnFor(settings, response)

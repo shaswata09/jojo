@@ -1012,6 +1012,29 @@ export const unreachable = (endpoint: string, detail: string, timedOut: boolean)
     : `Could not reach ${normaliseEndpoint(endpoint)} — ${detail}.`,
 })
 
+/**
+ * A stream that started and then stopped.
+ *
+ * Distinct wording from `unreachable`, because the facts are different and the
+ * user's next move is different. "Nothing answered within sixty seconds" is
+ * about a server that never spoke; this is about one that spoke, produced part
+ * of an answer, and went quiet — which happens when a model is unloaded
+ * mid-generation, when a proxy closes an idle connection, or when the machine
+ * is swapping. Telling somebody nothing answered when they watched half a reply
+ * appear is the kind of error message that makes people distrust the rest.
+ *
+ * `sofar` is included when there is any, because a partial answer is evidence
+ * about what went wrong and the user has already seen it on screen.
+ */
+export const stalled = (endpoint: string, sofar: number): ModelFailure => ({
+  ok: false,
+  kind: 'unreachable',
+  reason:
+    sofar > 0
+      ? `${normaliseEndpoint(endpoint)} stopped sending part-way through the answer, after ${String(MODEL_TIMEOUT_MS / 1000)} seconds with nothing further.`
+      : `Nothing answered ${normaliseEndpoint(endpoint)} within ${String(MODEL_TIMEOUT_MS / 1000)} seconds.`,
+})
+
 export const unconfigured = (): ModelFailure => ({
   ok: false,
   kind: 'unconfigured',
