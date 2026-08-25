@@ -208,11 +208,26 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
+          # `assembleReleaseAndroidTest` alongside the app, and
+          # `-PjojoTestBuildType=release` is what makes that task exist.
+          #
+          # The instrumentation suite has to run against the RELEASE build:
+          # a debug APK expects Metro to be serving the JS, Test Lab has no
+          # Metro, and every test would fail on a bundle that never loaded.
+          # Gradle signs the test APK with the tested variant's signingConfig,
+          # so both halves carry whichever key was resolved below — which is
+          # what Test Lab requires of an instrumentation pair.
+          GRADLE_ARGS=(
+            --no-daemon
+            assembleRelease
+            assembleReleaseAndroidTest
+            -PjojoTestBuildType=release
+            -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+          )
           if [ -n "${KEYSTORE_B64:-}" ]; then
             printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
             echo "Signing with the upload key."
-            ./gradlew --no-daemon assembleRelease \
-              -PreactNativeArchitectures=arm64-v8a,armeabi-v7a \
+            ./gradlew "${GRADLE_ARGS[@]}" \
               -PJOJO_STORE_FILE="$RUNNER_TEMP/upload.jks" \
               -PJOJO_STORE_PASSWORD="$STORE_PASSWORD" \
               -PJOJO_KEY_ALIAS="$KEY_ALIAS" \
@@ -220,8 +235,7 @@ jobs:
           else
             echo "No ANDROID_KEYSTORE_BASE64 secret set — signing with the debug key."
             echo "The APK will install, but cannot update a store-published app."
-            ./gradlew --no-daemon assembleRelease \
-              -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+            ./gradlew "${GRADLE_ARGS[@]}"
           fi
 
       # Named with the run number so a downloaded file is traceable to the build
@@ -247,11 +261,34 @@ jobs:
       # project — see `docs/RELEASE.md` for exactly which roles it needs and
       # where the App ID comes from.
       # ---------------------------------------------------------------- #
+      #
+      # THE SECRETS ARRIVE THROUGH `env:`, NOT THROUGH `${{ }}` IN THE SCRIPT.
+      #
+      # This is not a style preference, it is a bug fix. `FIREBASE_SERVICE_ACCOUNT`
+      # is a whole JSON key file — multi-line, full of double quotes. Interpolated
+      # straight into the script text, GitHub produced:
+      #
+      #   if [ -n "{
+      #     "type": "service_account",
+      #     ...
+      #
+      # which bash answers with `[: too many arguments`, and then takes the else
+      # branch AND EXITS 0. The step went green, `ready` was written as false, and
+      # App Distribution and Test Lab skipped silently on a repository that had
+      # every secret correctly set. Measured, not theorised.
+      #
+      # Through `env:` the value is one shell variable however many lines and
+      # quotes it contains, and `[ -n "$FIREBASE_SERVICE_ACCOUNT" ]` means what it
+      # reads as.
       - name: Is Firebase configured?
         id: firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_ANDROID_APP_ID: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
         run: |
-          if [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ] && [ -n "${{ secrets.FIREBASE_ANDROID_APP_ID }}" ]; then
+          if [ -n "${FIREBASE_SERVICE_ACCOUNT:-}" ] && [ -n "${FIREBASE_ANDROID_APP_ID:-}" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Firebase secrets are set; App Distribution and Test Lab will run."
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "Firebase secrets are not set; skipping App Distribution and Test Lab."
@@ -282,30 +319,89 @@ jobs:
             --groups "${{ vars.FIREBASE_TESTER_GROUP || 'testers' }}" \
           || echo "::warning::App Distribution upload failed; the APK is still attached to this run."
 
-      # A Robo test drives the app on a real Android VM with no test code at
-      # all: it opens the app, walks the UI and reports a crash or an ANR. That
-      # is exactly the gap the audit could not cover — nothing here has ever run
-      # the phone app on a device.
+      # ---------------------------------------------------------------- #
+      # Test Lab: the instrumentation suite, then a Robo crawl.
       #
-      # The free tier is 10 virtual-device runs a day, so this is deliberately
-      # NOT on every push: only on a tag, and only on one device.
-      - name: Smoke the APK on a real device (Test Lab)
-        if: steps.firebase.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
+      # THE INSTRUMENTATION RUN IS THE ONE THAT GATES. It runs
+      # `src/androidTest` — the real assertions about launching, tab navigation,
+      # deep links, Settings and resume — on Google's devices, and a failure
+      # fails this job. That is the only thing in this pipeline that has ever
+      # proved the phone app STARTS: every Vitest suite passes on an app whose
+      # JS bundle was never embedded.
+      #
+      # THE ROBO CRAWL DOES NOT GATE. It walks the app with no test code and
+      # reports crashes and ANRs on paths the suite never visits, which is real
+      # value and a poor gate — a crawler's route changes run to run, so a red
+      # build from one is not reproducible. It reports as a warning.
+      #
+      # ON MAIN AND ON TAGS, not on every pull request. Test Lab is billable
+      # beyond a small daily free tier, and a PR from a fork has no secrets to
+      # run it with anyway.
+      #
+      # Two API levels because the manifest differs across them and that is
+      # where this app's real defects have been: 31 is the floor jojo declares
+      # (Android 12), 34 is where scoped storage and the notification permission
+      # are strictest. Testing below 31 would fail for a documented reason
+      # rather than a bug.
+      # ---------------------------------------------------------------- #
+      - name: Run the instrumentation suite on Test Lab
+        if: >-
+          steps.firebase.outputs.ready == 'true' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
+        run: |
+          set -euo pipefail
+          APK=$(ls mobile/android/app/build/outputs/apk/release/*.apk | head -1)
+          TEST_APK=$(ls mobile/android/app/build/outputs/apk/androidTest/release/*.apk | head -1)
+          echo "app:  $APK"
+          echo "test: $TEST_APK"
+
+          gcloud auth activate-service-account --key-file "$GOOGLE_APPLICATION_CREDENTIALS"
+          gcloud config set project "${{ secrets.FIREBASE_PROJECT_ID }}"
+
+          # `--use-orchestrator` is off deliberately: the orchestrator restarts
+          # the process between test cases, which for React Native means paying
+          # the whole startup each time. This suite is ordered and shares one
+          # process on purpose — see the class comment in JojoUiTest.kt.
+          gcloud firebase test android run \
+            --type instrumentation \
+            --app "$APK" \
+            --test "$TEST_APK" \
+            --device model=MediumPhone.arm,version=31,locale=en,orientation=portrait \
+            --device model=MediumPhone.arm,version=34,locale=en,orientation=portrait \
+            --timeout 12m \
+            --results-history-name "jojo android" \
+            --environment-variables clearPackageData=true
+
+      - name: Crawl the app on Test Lab (Robo, advisory)
+        if: >-
+          steps.firebase.outputs.ready == 'true' &&
+          startsWith(github.ref, 'refs/tags/v')
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
         run: |
           APK=$(ls mobile/android/app/build/outputs/apk/release/*.apk | head -1)
           gcloud auth activate-service-account --key-file "$GOOGLE_APPLICATION_CREDENTIALS"
           gcloud config set project "${{ secrets.FIREBASE_PROJECT_ID }}"
-          # `--device` pins an API level at or above the floor jojo declares
-          # (Android 12 = API 31). Testing below it would fail for a reason that
-          # is documented rather than a bug.
           gcloud firebase test android run \
             --type robo \
             --app "$APK" \
             --device model=MediumPhone.arm,version=33,locale=en,orientation=portrait \
-            --timeout 4m \
-            --no-record-video
+            --timeout 5m \
+            --no-record-video \
+          || echo "::warning::Robo crawl reported a problem. It does not gate the build — open the Test Lab console for the trace."
+
+      # The APKs Test Lab was handed, so a failure there can be reproduced
+      # locally against the same bytes rather than a rebuild that may differ.
+      - name: Publish the instrumentation APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jojo-android-test-${{ github.run_number }}
+          path: mobile/android/app/build/outputs/apk/androidTest/release/*.apk
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Forget the key
         if: always() && steps.firebase.outputs.ready == 'true'
@@ -374,14 +470,23 @@ jobs:
       # the job goes green having built nothing.
       - name: Which secrets are set?
         id: apple
+        # Through `env:` for the reason spelled out on the android job's own
+        # gate: `FIREBASE_SERVICE_ACCOUNT` is multi-line JSON, and interpolating
+        # it into the script text made bash answer `[: too many arguments` and
+        # then exit 0 on the else branch — a green step that skipped everything.
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          FIREBASE_IOS_APP_ID: ${{ secrets.FIREBASE_IOS_APP_ID }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -n "${{ secrets.IOS_CERTIFICATE_BASE64 }}" ] && [ -n "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" ]; then
+          if [ -n "${IOS_CERTIFICATE_BASE64:-}" ] && [ -n "${IOS_PROVISIONING_PROFILE_BASE64:-}" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "Apple signing secrets are not set; skipping the iOS build."
           fi
-          if [ -n "${{ secrets.FIREBASE_IOS_APP_ID }}" ] && [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ]; then
+          if [ -n "${FIREBASE_IOS_APP_ID:-}" ] && [ -n "${FIREBASE_SERVICE_ACCOUNT:-}" ]; then
             echo "distribute=true" >> "$GITHUB_OUTPUT"
           else
             echo "distribute=false" >> "$GITHUB_OUTPUT"

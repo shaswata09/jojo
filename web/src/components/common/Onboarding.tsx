@@ -11,6 +11,7 @@ import {
 import { isConfigured } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { CRASH_CAPABILITY } from '@/lib/crash-log'
+import { ANALYTICS_CAPABILITY } from '@/lib/analytics'
 import { WelcomeDetails } from '@/components/common/WelcomeDetails'
 import { Button } from '@/components/ui/button'
 import {
@@ -165,9 +166,15 @@ export function Onboarding() {
    *
    * `CrashStep` renders nothing when the build has reporting compiled out, so
    * this advances rather than showing an empty dialog.
+   *
+   * BOTH capabilities are tested, not just the crash one. Testing only
+   * CRASH_CAPABILITY skipped the whole consent step in a build that had
+   * VITE_ANALYTICS set and VITE_CRASH_REPORTING unset — and analytics defaults
+   * to on, so that build reported usage to Google having asked nobody. The
+   * phone's `REPORTING_ASKABLE` is the same test, spelled the same way.
    */
   if (!crashOffered) {
-    if (CRASH_CAPABILITY === 'off') {
+    if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {
       finish('crash')
       return null
     }

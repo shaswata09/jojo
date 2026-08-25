@@ -124,5 +124,53 @@ target 'jojo' do
         Pod::UI.puts '[jojo] patched fmt/base.h to disable consteval'
       end
     end
+
+    # ------------------------------------------------------------------ #
+    # Let a checkout WITHOUT GoogleService-Info.plist still build.
+    #
+    # react-native-firebase adds a "[CP-User] [RNFB] Crashlytics Configuration"
+    # phase to the app target that runs Firebase's `run` script to upload the
+    # dSYM. That script reads GOOGLE_APP_ID out of the plist, and with no plist
+    # it fails the whole build:
+    #
+    #   error: Could not get GOOGLE_APP_ID in Google Services file from build
+    #   environment
+    #
+    # The plist is gitignored — deliberately, so a fork does not report into
+    # this project's console — so "absent" is the normal state for anybody who
+    # has cloned jojo and pressed Run, and for CI without the secret. Android
+    # guards its two Gradle plugins the same way, AppDelegate.swift guards
+    # `configure()`, and `crash.ts`/`analytics.ts` resolve the native module
+    # lazily. This is the iOS build's half of that same promise.
+    #
+    # PATCHED HERE RATHER THAN IN THE PBXPROJ because RNFB re-adds the phase on
+    # every `pod install`, so an edit to the project file lasts until the next
+    # one and then silently reverts.
+    guard = <<~GUARD
+      if [ ! -f "${SRCROOT}/jojo/GoogleService-Info.plist" ]; then
+        echo "jojo: no GoogleService-Info.plist — skipping the Crashlytics dSYM upload."
+        exit 0
+      fi
+    GUARD
+
+    installer.aggregate_targets.each do |aggregate|
+      project = aggregate.user_project
+      next if project.nil?
+      changed = false
+      project.targets.each do |target|
+        target.build_phases.each do |phase|
+          next unless phase.respond_to?(:shell_script)
+          next unless phase.respond_to?(:name) && phase.name.to_s.include?('[RNFB] Crashlytics')
+          # Idempotent: `pod install` runs often and the guard must not stack up.
+          next if phase.shell_script.include?('no GoogleService-Info.plist')
+          phase.shell_script = guard + phase.shell_script
+          changed = true
+        end
+      end
+      if changed
+        project.save
+        Pod::UI.puts '[jojo] made the RNFB Crashlytics phase tolerate a missing plist'
+      end
+    end
   end
 end

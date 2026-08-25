@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		1D0F5A2A2E3C4B7A9F1E0002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1D0F5A2A2E3C4B7A9F1E0001 /* PrivacyInfo.xcprivacy */; };
-		1D0F5A2A2E3C4B7A9F1E0004 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1D0F5A2A2E3C4B7A9F1E0003 /* GoogleService-Info.plist */; };
 		2F0E7A1B3C4D5E6F70A20001 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10001 /* Inter-Regular.ttf */; };
 		2F0E7A1B3C4D5E6F70A20002 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10002 /* Inter-Medium.ttf */; };
 		2F0E7A1B3C4D5E6F70A20003 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F0E7A1B3C4D5E6F70A10003 /* Inter-SemiBold.ttf */; };
@@ -143,6 +142,7 @@
 				042174F8391FD740E361D789 /* [CP] Embed Pods Frameworks */,
 				FB9D1FC3AD22CB67C96ED1A8 /* [CP-User] [RNFB] Core Configuration */,
 				359A0B4620709448EFD8BA95 /* [CP-User] [RNFB] Crashlytics Configuration */,
+				1D0F5A2A2E3C4B7A9F1E0005 /* Copy GoogleService-Info.plist if present */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,6 @@
 				2F0E7A1B3C4D5E6F70A20005 /* JetBrainsMono-Regular.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				1D0F5A2A2E3C4B7A9F1E0002 /* PrivacyInfo.xcprivacy in Resources */,
-				1D0F5A2A2E3C4B7A9F1E0004 /* GoogleService-Info.plist in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -260,6 +259,21 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		1D0F5A2A2E3C4B7A9F1E0005 /* Copy GoogleService-Info.plist if present */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy GoogleService-Info.plist if present";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Firebase's config, copied ONLY when it is there.\n#\n# It used to sit in the Copy Bundle Resources phase, which is what Xcode does\n# when you drag a file in. That made it a REQUIRED build input, and the file is\n# gitignored -- so a fresh clone, and CI without the secret, failed with\n#\n#   error: Build input file cannot be found: .../GoogleService-Info.plist\n#\n# before compiling a line. Measured, not theorised. Every other Firebase entry\n# point in this project treats a missing config as normal -- android/app/build\n# .gradle guards the plugins, AppDelegate.swift guards configure(), crash.ts and\n# analytics.ts resolve the native module lazily -- and this phase is what makes\n# iOS keep that promise instead of only claiming it.\n#\n# inputPaths/outputPaths are deliberately EMPTY: declaring the source as an\n# input would reintroduce the same hard dependency by another route, and\n# alwaysOutOfDate silences the every-build warning that leaving them empty earns.\nSRC=\"${SRCROOT}/jojo/GoogleService-Info.plist\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nif [ -f \"$SRC\" ]; then\n  cp \"$SRC\" \"$DEST/GoogleService-Info.plist\"\n  echo \"jojo: GoogleService-Info.plist copied — Firebase is configured.\"\nelse\n  echo \"jojo: no GoogleService-Info.plist — building without Firebase.\"\nfi\n";
 		};
 		359A0B4620709448EFD8BA95 /* [CP-User] [RNFB] Crashlytics Configuration */ = {
 			isa = PBXShellScriptBuildPhase;

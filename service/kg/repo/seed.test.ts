@@ -207,6 +207,18 @@ describe('seedToGraph', () => {
       // waiting for an answer, so a seeded one would be the demo asking the
       // user to approve a change to records they have not looked at yet.
       proposal: 0,
+      /*
+       * Zero, and this one is a product decision rather than a technicality.
+       *
+       * A background is a fact about the person using the app — a degree they
+       * hold, a paper they wrote. The demo cannot ship any, because inventing a
+       * CV for whoever opens the app is a different kind of lie from inventing
+       * an application: one is example data, the other is a claim about them.
+       *
+       * They arrive by reading a document the user uploaded, and the empty
+       * state is what tells them that has not happened yet.
+       */
+      background: 0,
     })
   })
 })

@@ -54,12 +54,37 @@ const COMMON = [
   'Look before you propose. Read the records first, and do not propose something the records already contain.',
 ].join(' ')
 
+/**
+ * The twin's instructions, rewritten around what it is actually for.
+ *
+ * It used to say "make the records match what the person already knows but has
+ * not written down", and every example under it was about an APPLICATION — a
+ * note, a reminder, a keyword. That is useful work and it is not a twin: the
+ * pipeline responsible for building a picture of the PERSON had no way to
+ * record a fact about one, so it tidied job records and the profile stayed ten
+ * fields somebody typed.
+ *
+ * The first job is now building that picture, and the ordering is deliberate.
+ * Reading a CV is the only operation available here that adds a fact the graph
+ * did not hold; everything else rearranges what is already there. A round that
+ * tags three applications while an unread CV sits in the Vault has done the
+ * cheap half.
+ *
+ * The specific gaps are appended per run by `promptFor`, which computes them
+ * rather than asking — see `core/twin.ts` for why absence is the one thing a
+ * model should not be asked to notice.
+ */
 const TWIN_PROMPT = [
   COMMON,
-  'Your job is to make the records match what the person already knows but has not written down.',
-  'Good suggestions: a note recording something the other records imply, a reminder for a deadline that has no reminder, a keyword that groups records already alike, filing a document under the application it plainly belongs to, a snippet drafting a follow-up email for a stage that has been waiting.',
+  'Your job is to build and maintain a picture of the PERSON, so that later the app can weigh a job posting against what they have actually done.',
+  'That picture lives in their background: degrees, posts held, publications, skills, teaching, awards, service.',
+  'Your first duty is to read documents they have uploaded — a CV, a research or teaching statement — with vault.file.read, and record what those documents SAY with profile.background.add.',
+  'Copy what is written. Do not infer a degree from a job title, do not promote “familiar with” into a skill, and omit anything the document does not state. A fabricated line in someone’s own record is worse than a missing one, because they will read it as something they wrote.',
+  'Always pass the document’s id as the source on every entry, so a fact can be traced back to the sentence that produced it and a wrong one can be found.',
+  'Once the background exists, connect it: a skill they have should be one of their keywords, and a document should be filed under the application it plainly belongs to.',
+  'After that, the ordinary tidying — a note recording something the other records imply, a reminder for a deadline that has none.',
   'Prefer few and specific over many and generic. Five suggestions someone accepts beat twenty they scroll past.',
-  'When the records are already in good order, say so and stop. That is a complete answer, not a failure.',
+  'When there is nothing missing, say so and stop. That is a complete answer, not a failure.',
 ].join(' ')
 
 const SCOUT_PROMPT = [

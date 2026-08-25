@@ -1,4 +1,4 @@
-import { DEFAULT_ROLES } from '../core/model'
+import { BACKGROUND_KINDS, DEFAULT_ROLES } from '../core/model'
 /**
  * L3 — the profile tools.
  *
@@ -15,7 +15,10 @@ import { DEFAULT_ROLES } from '../core/model'
  */
 
 import type { FileBucket, NodeId, ProfileText } from '../core/model'
+import type { GraphSnapshot } from '../core/snapshot'
 import { s } from '../core/schema'
+import { cleared } from './application-fields'
+import { opt } from './support'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 
@@ -238,5 +241,149 @@ export const profileDocumentAdd = defineTool({
   describe: (_input, ids) => ({
     title: ids.length === 1 ? 'Document added' : `${ids.length} documents added`,
     description: `Filed in the Vault under ${DOCUMENTS_BUCKET}. The name, size and type are kept — the file itself is not read.`,
+  }),
+})
+
+/* -------------------------------------------------------------------------- */
+/* What the user has actually done                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The shape of one extracted fact, shared by add and update.
+ *
+ * `source` is a plain string rather than `s.id('file')` deliberately. The
+ * extractor knows which document it read, but a person typing a background by
+ * hand has no document — and a required id would force the commonest manual
+ * case to invent one. The readers treat it as a breadcrumb, not a foreign key.
+ */
+const backgroundFields = {
+  kind: s.enum(BACKGROUND_KINDS, { label: 'Kind' }),
+  title: s.string({ min: 1, label: 'Title' }),
+  where: s.optional(s.string({ label: 'Where' })),
+  period: s.optional(s.string({ label: 'When', description: 'As written: “2021–2024”, “since 2024”.' })),
+  year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
+  detail: s.optional(s.string({ label: 'Detail', multiline: true })),
+  source: s.optional(s.string({ label: 'Read from', description: 'The id of the document this came from.' })),
+}
+
+export const profileBackgroundAdd = defineTool({
+  name: 'profile.background.add',
+  title: 'Record background',
+  summary:
+    'Files facts about the person — a degree, a post held, a paper, a skill, teaching. Use after reading a CV or when they tell you something about their background.',
+  effect: 'create',
+  touches: ['background'],
+  /**
+   * Bulk, like `vault.file.add`, and for the same reason turned up an order of
+   * magnitude here.
+   *
+   * A CV yields thirty facts. One tool call each is thirty round trips, thirty
+   * approval prompts and thirty journal rows for what a person did once — and
+   * with `maxSteps` at eight the agent runs out of rounds before it reaches the
+   * publications. The array is what makes importing a CV a single action.
+   */
+  input: s.object({
+    background: s.array(s.object(backgroundFields), { min: 1, label: 'Background' }),
+  }),
+
+  run(ctx, input): NodeId[] {
+    return input.background.map((draft) => {
+      const id = ctx.newId('background')
+      ctx.tx.put({
+        id,
+        type: 'background',
+        props: {
+          slug: ctx.mintSlug('background', draft.title),
+          kind: draft.kind,
+          title: draft.title.trim(),
+          ...opt('where', cleared(draft.where)),
+          ...opt('period', cleared(draft.period)),
+          ...(draft.year === undefined ? {} : { year: draft.year }),
+          ...opt('detail', cleared(draft.detail)),
+          ...opt('source', cleared(draft.source)),
+        },
+        createdAt: ctx.now,
+        updatedAt: ctx.now,
+      })
+      return id
+    })
+  },
+
+  describe: (input, ids) => ({
+    title: ids.length === 1 ? 'Background recorded' : `${ids.length} facts recorded`,
+    description: input.background
+      .map((c) => c.title)
+      .slice(0, 3)
+      .join(', '),
+  }),
+})
+
+export const profileBackgroundUpdate = defineTool({
+  name: 'profile.background.update',
+  title: 'Edit background',
+  summary: 'Corrects one recorded fact about the person.',
+  effect: 'update',
+  touches: ['background'],
+  /*
+   * Written out rather than derived from `backgroundFields` with a mapped type.
+   * The derivation was two lines shorter and would not typecheck — `year` is a
+   * number and the others are strings, so `Object.entries` widens the union and
+   * `s.optional` can no longer be applied to it. Explicit is what the schema
+   * builder is for.
+   */
+  input: s.object({
+    id: s.id('background', { label: 'Entry' }),
+    kind: s.optional(s.enum(BACKGROUND_KINDS, { label: 'Kind' })),
+    title: s.optional(s.string({ min: 1, label: 'Title' })),
+    where: s.optional(s.string({ label: 'Where' })),
+    period: s.optional(s.string({ label: 'When' })),
+    year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
+    detail: s.optional(s.string({ label: 'Detail', multiline: true })),
+  }),
+
+  run(ctx, input) {
+    ctx.require('background', input.id)
+    ctx.tx.patch<'background'>(input.id, {
+      ...(input.kind === undefined ? {} : { kind: input.kind }),
+      ...opt('title', input.title?.trim()),
+      ...opt('where', cleared(input.where)),
+      ...opt('period', cleared(input.period)),
+      ...(input.year === undefined ? {} : { year: input.year }),
+      ...opt('detail', cleared(input.detail)),
+    })
+  },
+
+  describe: (input, _out, m) => ({
+    title: 'Background updated',
+    description: titleOfBackground(m, input.id),
+  }),
+})
+
+/**
+ * A background's own title, for a confirmation line.
+ *
+ * `displayOf` in `support.ts` is for applications and names an employer and a
+ * role; a background has neither. Falling back to the id would put `cred_01H…`
+ * in front of somebody about to approve a change to their own CV.
+ */
+const titleOfBackground = (m: GraphSnapshot, id: NodeId): string =>
+  m.node(id, 'background')?.props.title ?? 'this entry'
+
+export const profileBackgroundDelete = defineTool({
+  name: 'profile.background.delete',
+  title: 'Remove background',
+  summary: 'Removes one recorded fact about the person. Use when it was read wrongly.',
+  effect: 'delete',
+  touches: ['background'],
+  input: s.object({ id: s.id('background', { label: 'Entry' }) }),
+
+  run(ctx, input) {
+    ctx.require('background', input.id)
+    ctx.tx.del(input.id)
+  },
+
+  describe: (input, _out, m) => ({
+    title: 'Removed',
+    description: titleOfBackground(m, input.id),
   }),
 })

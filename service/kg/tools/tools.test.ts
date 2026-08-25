@@ -887,6 +887,108 @@ describe('the composites', () => {
     )
     expect(h.repo.getSnapshot().ofType('file')[0]?.props.bucket).toBe('Applications')
   })
+
+  /**
+   * What the person has actually done, as opposed to what they say they want.
+   *
+   * The profile has always held the second — ten text fields, typed. These hold
+   * the first, and they exist because a CV could be uploaded, converted to text
+   * and read, and nothing ever looked at what came back: somebody with forty
+   * pages of evidence in the Vault scored exactly like somebody with none.
+   */
+  it('records several background facts in one call', () => {
+    /*
+     * Bulk, and the array is the point rather than a convenience. A CV yields
+     * thirty facts; one call each is thirty round trips, thirty approval
+     * prompts and thirty journal rows for something the person did once — and
+     * with the agent's step cap at eight it runs out of rounds before it
+     * reaches the publications.
+     */
+    const h = harness()
+    const ids = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [
+          { kind: 'education', title: 'PhD, Computer Science', where: 'Illinois', year: 2021 },
+          { kind: 'publication', title: 'Consistent snapshots', where: 'OSDI', year: 2023 },
+          { kind: 'skill', title: 'Rust' },
+        ],
+      }),
+    ) as string[]
+
+    expect(ids).toHaveLength(3)
+    const m = h.repo.getSnapshot()
+    expect(m.ofType('background')).toHaveLength(3)
+    expect(m.ofType('background').map((n) => n.props.kind).sort()).toEqual([
+      'education',
+      'publication',
+      'skill',
+    ])
+  })
+
+  it('keeps the period as written rather than inventing a date', () => {
+    // A CV says "2021–2024", "Summer 2019" and "since 2024". Forcing those into
+    // ISO means refusing most of them or inventing precision nobody wrote down.
+    const h = harness()
+    okOr(
+      h.runtime.run('profile.background.add', {
+        background: [{ kind: 'employment', title: 'Postdoc', period: 'Summer 2019 – present' }],
+      }),
+    )
+    expect(h.repo.getSnapshot().ofType('background')[0]?.props.period).toBe(
+      'Summer 2019 – present',
+    )
+  })
+
+  it('corrects one fact without touching the rest', () => {
+    const h = harness()
+    const ids = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [
+          { kind: 'skill', title: 'Rust' },
+          { kind: 'skill', title: 'Go' },
+        ],
+      }),
+    ) as string[]
+
+    okOr(h.runtime.run('profile.background.update', { id: ids[0]!, title: 'Rust (async)' }))
+    const m = h.repo.getSnapshot()
+    expect(m.node(ids[0]!, 'background')?.props.title).toBe('Rust (async)')
+    expect(m.node(ids[1]!, 'background')?.props.title).toBe('Go')
+  })
+
+  it('removes one that was read wrongly, and the removal can be taken back', () => {
+    /*
+     * Undo matters more here than for most deletes. These records are written
+     * by a model reading somebody's own CV, so a wrong one is jojo's mistake
+     * rather than theirs — and the fix has to be as cheap as the error.
+     */
+    const h = harness()
+    const ids = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [{ kind: 'award', title: 'A prize that was misread' }],
+      }),
+    ) as string[]
+
+    okOr(h.runtime.run('profile.background.delete', { id: ids[0]! }))
+    expect(h.repo.getSnapshot().ofType('background')).toHaveLength(0)
+
+    h.runtime.undo()
+    expect(h.repo.getSnapshot().ofType('background')).toHaveLength(1)
+  })
+
+  it('refuses a kind jojo does not have, rather than filing it as text', () => {
+    /*
+     * Cast, because TypeScript rejects 'hobby' outright — which is the stronger
+     * guarantee and covers every caller in this repo. It does not cover the one
+     * caller that matters here: a model, whose arguments arrive as JSON off a
+     * socket and are typechecked by nothing. This exercises that path.
+     */
+    const h = harness()
+    const out = h.runtime.run('profile.background.add', {
+      background: [{ kind: 'hobby' as 'skill', title: 'Cycling' }],
+    })
+    expect(out.ok).toBe(false)
+  })
 })
 
 describe('the admin tools', () => {

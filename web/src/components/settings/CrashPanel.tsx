@@ -38,13 +38,15 @@ export function CrashPanel() {
    * only ever take away — and a disabled control with no explanation is the
    * thing people file bugs about.
    */
-  if (CRASH_CAPABILITY === 'off') {
+  if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {
     return (
       <Panel className="min-w-0">
         <PanelTitle hint="this browser only">Crash reports</PanelTitle>
         <p className="text-sm text-text-2">
-          This copy of jojo was built without crash reporting, so nothing is recorded and there is
-          nothing to turn on. A build sets that with <span className="font-mono">VITE_CRASH_REPORTING</span>.
+          This copy of jojo was built without crash reporting or usage analytics, so nothing is
+          recorded and there is nothing to turn on. A build sets those with{' '}
+          <span className="font-mono">VITE_CRASH_REPORTING</span> and{' '}
+          <span className="font-mono">VITE_ANALYTICS</span>.
         </p>
       </Panel>
     )
@@ -53,6 +55,14 @@ export function CrashPanel() {
   return (
     <Panel className="min-w-0">
       <PanelTitle hint="this browser only">Crash reports</PanelTitle>
+      {/* Each half is gated on its OWN capability, and the two are separate
+          builds' worth of decision. Gating the whole panel on CRASH_CAPABILITY
+          — which is what this did — meant a build with VITE_ANALYTICS set and
+          VITE_CRASH_REPORTING unset rendered the "nothing to turn on" message
+          while analytics reported to Google by default, with no switch anywhere
+          to stop it. That is the one arrangement this feature must not produce. */}
+      {CRASH_CAPABILITY === 'off' ? null : (
+        <>
       {/* The same words as the setup step, because a person who reads both and
           finds them different has learned that one of them is marketing. */}
       <p className="mb-2 text-sm text-text-2">
@@ -88,6 +98,8 @@ export function CrashPanel() {
           />
         }
       />
+        </>
+      )}
 
       {ANALYTICS_CAPABILITY === 'off' ? null : (
         <div className="mt-1">

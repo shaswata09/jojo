@@ -26,15 +26,20 @@ because Google ships no browser Crashlytics and there is nowhere honest to send 
 iOS, and only when you turn it on, the same report also goes to Firebase Crashlytics. Keys, query
 strings, home directories and email addresses are stripped before a report exists, so what is kept
 and what is sent are the same redacted text. Two switches govern it and both must say yes: a build
-flag (`VITE_CRASH_REPORTING` on web, `CRASH_REPORTING` on the phone) decides whether a copy of jojo
-can report at all, and a setting decides whether it does. Both default to off.
+flag decides whether a copy of jojo can report at all, and a setting decides whether it does. On
+web that flag is `VITE_CRASH_REPORTING`; on the phone it is `crashes` in
+`mobile/src/lib/reporting-config.ts`, a source file rather than an environment variable because
+React Native inlines none — Metro replaces `process.env.NODE_ENV` and nothing else. Where the build
+allows it, the setting defaults to **on**, and the last page of setup asks; Settings has both
+switches whenever you want to change them.
 
-**Usage analytics is a second, separate switch, and also off.** Turned on, jojo reports which parts
+**Usage analytics is a second, separate switch.** Turned on, jojo reports which parts
 of it get used — so time goes to the screens people open rather than the ones we guess about. It can
 only ever say things from a closed list declared in `service/kg/core/analytics.ts`: which screen was
 opened, that an application was added, roughly how many there are. There is no free text anywhere in
 that vocabulary — no employer, no role, no filename, nothing typed — and counts are bucketed
-(`6-20`, not `14`) so a number cannot fingerprint anybody. That is enforced rather than promised:
+(`6-20`, not `14`) so a number cannot fingerprint anybody. On the phone its build flag is
+`analytics` in the same config file. That is enforced rather than promised:
 `analytics.test.ts` fails the build if any event parameter is widened to a bare `string`, and
 `isReportable` refuses an unknown value at the wire. It needs `VITE_ANALYTICS` and a
 `VITE_ANALYTICS_ID`, and sends to Google Analytics with ad signals and personalisation off.

@@ -36,6 +36,7 @@ import type {
   NodeId,
   Organisation,
   Person,
+  Background,
   Pipeline,
   Profile,
   Proposal,
@@ -61,6 +62,7 @@ export type Projections = {
   files: List<VaultFile>
   snippets: List<Snippet>
   people: List<Person>
+  background: List<Background>
   organisations: List<Organisation>
   postings: List<SavedPosting>
   matches: List<Match>
@@ -239,6 +241,27 @@ export function createProjections(today: ISODate): Projections {
         return { ...rest, id: n.id, ...filedUnder(g, n.id) }
       }),
       compareNewestById,
+    ),
+
+    /**
+     * What the person has actually done, newest first within each kind.
+     *
+     * Ordered by `year` descending and NOT by when the record was made, which
+     * is the one place in this file that rule is broken and it is broken for a
+     * reason: a CV read in one pass mints thirty records inside a second, so
+     * creation order is the order the model happened to emit them. A degree
+     * from 2021 belongs above one from 2016 whichever was parsed first.
+     *
+     * Entries with no year sink to the bottom rather than to the top. Skills
+     * rarely carry one, and a list that opened with every undated item would
+     * bury the employment history the reader came for.
+     */
+    background: sortedBy(
+      createProjection('background', (n): Background => {
+        const { slug: _slug, ...rest } = n.props
+        return { ...rest, id: n.id }
+      }),
+      (a, b) => (b.year ?? 0) - (a.year ?? 0) || a.title.localeCompare(b.title),
     ),
 
     postings: createProjection('posting', (n, g): SavedPosting => {

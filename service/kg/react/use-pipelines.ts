@@ -48,6 +48,8 @@ import type { ToolHost } from '../agent/execute'
 import { PIPELINE_PROMPTS, proposingHost, toolsForKind } from '../agent/pipelines'
 import { AUTO_CAPABLE, WORKING_GAP_MS, isDue, shouldOfferShutdown } from '../core/proposal'
 import { parseSources } from '../core/board'
+import { twinBriefing, twinState } from '../core/twin'
+import type { GraphSnapshot } from '../core/snapshot'
 import type { Instant, Pipeline, PipelineKind, Proposal } from '../core/model'
 import type { ToolName } from '../tools/index'
 import { useGraph, useKg } from './kg-context'
@@ -213,7 +215,9 @@ export function usePipelines({
         host: agentHost,
         llm,
         history: [],
-        prompt: promptFor(pipeline, kind),
+        // Through `host`, not `repo`: it is the seam the agent itself reads
+        // the store through, and it is already a dependency of this callback.
+        prompt: promptFor(pipeline, kind, host.memory()),
         tools: toolsForKind(kind),
         ...(maxSteps === undefined ? {} : { maxSteps }),
         signal: stop satisfies Cancellation,
@@ -432,11 +436,27 @@ export function usePipelines({
  * `source` are free text the user typed, which is why they arrive quoted and
  * described rather than interpolated as if they were commands.
  */
-function promptFor(pipeline: Pipeline, kind: PipelineKind): string {
+function promptFor(pipeline: Pipeline, kind: PipelineKind, memory: GraphSnapshot): string {
   const parts = [PIPELINE_PROMPTS[kind], `The saved search is called “${pipeline.name}”.`]
   if (pipeline.filter && pipeline.filter !== '—') {
     parts.push(`The person described what matters to them as: “${pipeline.filter}”.`)
   }
+  if (kind === 'twin') {
+    /*
+     * Computed, not asked for. Absence is the one thing a language model is
+     * reliably bad at noticing — it sees what is there — so the round arrives
+     * already knowing which documents have never been read and which skills are
+     * not yet keywords, and spends its judgement on what the documents mean.
+     *
+     * Empty when there is nothing to say, and appended unconditionally: a
+     * prompt ending in "here is what is missing:" with nothing after it reads
+     * as a truncated instruction and models treat it as one. `twinBriefing`
+     * returns '' rather than a heading for exactly that reason.
+     */
+    const briefing = twinBriefing(twinState(memory))
+    if (briefing) parts.push(briefing)
+  }
+
   if (kind === 'scout') {
     /*
      * Parsed, not quoted. The model is being asked to call `board.search` with

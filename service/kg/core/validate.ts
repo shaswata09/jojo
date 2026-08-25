@@ -34,6 +34,7 @@
 
 import type { NodePropsByType, NodeType, Rel, StoredEdge, StoredNode, ThreadEntry } from './model'
 import {
+  BACKGROUND_KINDS,
   EDGE_SCHEMA,
   FILE_BUCKET_VALUES,
   FILE_KIND_VALUES,
@@ -227,6 +228,31 @@ export const NODE_PROP_SCHEMAS = {
    * is pasted out of a signature block, and rejecting `a.chen (at) rice.edu`
    * would lose the only contact detail the user has.
    */
+  /**
+   * One fact about the user, read out of something they wrote.
+   *
+   * `period` is a STRING and deliberately not a date. A CV says "2021–2024",
+   * "Summer 2019", "since 2024" and "n.d."; forcing those into ISO means either
+   * refusing most of them or inventing precision nobody wrote down. `year` is
+   * the sortable half, and it is optional because plenty of entries have none
+   * that can be recovered.
+   *
+   * `source` is not checked as a node id here. Validation runs on load, when a
+   * restored backup may hold a background whose source file was deleted before
+   * the export — and a fact somebody's CV states does not stop being true
+   * because the PDF is gone. It is a provenance breadcrumb, not a foreign key,
+   * and the readers treat it as one.
+   */
+  background: s.object({
+    slug,
+    kind: s.enum(BACKGROUND_KINDS, { label: 'Kind' }),
+    title: s.string({ min: 1, label: 'Title' }),
+    where: s.optional(s.string({ label: 'Where' })),
+    period: s.optional(s.string({ label: 'When' })),
+    year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
+    detail: s.optional(s.string({ label: 'Detail', multiline: true })),
+    source: s.optional(s.string({ label: 'Read from' })),
+  }),
   person: s.object({
     slug,
     name: s.string({ min: 1, label: 'Name' }),

@@ -62,6 +62,22 @@ export const AUTO_CAPABLE: { readonly [K in PipelineKind]: boolean } = {
  * the blast radius.
  */
 export const TWIN_TOOLS = [
+  /*
+   * The two that make it a twin rather than a tidier.
+   *
+   * Everything below this pair rearranges facts the graph already holds. These
+   * are the only entries that ADD one — they are how a CV in the Vault becomes
+   * something the app can score a posting against, and without them the
+   * pipeline named "twin" could read a document and had nowhere to put what it
+   * found.
+   *
+   * `profile.background.delete` is deliberately absent, under the same rule as
+   * every other delete here. A wrongly-read fact is jojo's mistake rather than
+   * the person's, and the fix belongs in front of them — the Assistant can
+   * remove one when asked, and undo takes back a bad import wholesale.
+   */
+  'profile.background.add',
+  'profile.background.update',
   'application.note.set',
   'vault.file.note.set',
   'vault.file.update',
@@ -138,11 +154,56 @@ export function proposalDetail(inputJson: string): string | null {
       if (clean.length > 0 && !isId(clean)) parts.push(clean)
     } else if (typeof value === 'number') {
       parts.push(String(value))
+    } else if (Array.isArray(value)) {
+      /*
+       * A bulk write, which this used to render as nothing at all.
+       *
+       * Every scalar tool had a preview and every array tool silently did not —
+       * `proposalDetail` read only strings and numbers, so an input shaped
+       * `{ background: [ … thirty facts … ] }` produced `null` and the card
+       * showed a title with no values under it. That is precisely the gap the
+       * note above records having closed once already, reopened by a tool whose
+       * payload happened to be a list.
+       *
+       * It matters most for exactly this tool. The things in that array are
+       * claims about the person, read by a model out of their own CV, and being
+       * asked to approve them unseen is worse than being asked to approve an
+       * unseen note about a job.
+       */
+      const rows = value.filter((v) => typeof v === 'object' && v !== null)
+      if (rows.length === 0) continue
+      // Three, then a count. A card is a few lines and the fourth entry never
+      // changes anybody's decision — but the TOTAL does, because approving
+      // seven things and approving thirty are different acts.
+      const named = rows
+        .map((row) => summarise(row as Record<string, unknown>))
+        .filter((line): line is string => line !== null)
+      if (named.length === 0) continue
+      parts.push(named.slice(0, 3).join(', '))
+      if (named.length > 3) parts.push(`and ${String(named.length - 3)} more`)
     }
   }
   if (parts.length === 0) return null
   const line = parts.join(' · ')
   return line.length > DETAIL_MAX ? `${line.slice(0, DETAIL_MAX - 1)}…` : line
+}
+
+/**
+ * One row of a bulk payload, in as few words as identify it.
+ *
+ * Prefers the field a person would recognise. `title` and `name` are what every
+ * record in this app is called on screen; anything else is a fallback for a
+ * shape this has not met, and an id is never it.
+ */
+function summarise(row: Record<string, unknown>): string | null {
+  for (const key of ['title', 'name', 'text', 'role']) {
+    const value = row[key]
+    if (typeof value === 'string' && value.trim().length > 0) return value.trim()
+  }
+  const first = Object.values(row).find(
+    (v) => typeof v === 'string' && v.trim().length > 0 && !isId(v.trim()),
+  )
+  return typeof first === 'string' ? first.trim() : null
 }
 
 const DETAIL_MAX = 220

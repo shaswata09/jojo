@@ -3,7 +3,7 @@ import { useModelSettings } from '@/lib/model-settings-context'
 import { listModels } from '@/lib/llm'
 import { testReader } from '@/lib/markitdown'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
-import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
+import { normaliseEndpoint, serverAt, serversFor } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
 import { PROVIDERS, cleanKey, providerMeta } from '@jojo/service/core/provider'
 import type { ProviderId } from '@jojo/service/core/provider'
@@ -88,6 +88,16 @@ export function SettingsScreen() {
   const provider = providerMeta(settings.provider)
 
   /*
+   * The saved rows for THIS provider only — same rule as the web panel.
+   *
+   * The stored list spans every provider this device has reached, and offering
+   * all of it here would put a local vLLM box in the NVIDIA picker, where
+   * choosing it swaps the endpoint, the dialect and the key underneath a form
+   * that still says NVIDIA.
+   */
+  const shown = serversFor(servers, provider.id)
+
+  /*
    * The document reader, beside the model but separate from it.
    *
    * Two programs, and a person may well run one without the other: the model
@@ -110,7 +120,10 @@ export function SettingsScreen() {
   }
 
   const connected = model.trim().length > 0
-  const saved = serverAt(servers, endpoint)
+  // The model too: a saved row is one MODEL at one address now, so a hosted
+  // provider has several rows sharing an endpoint and the name belongs to the
+  // one being edited rather than to whichever of them was stored first.
+  const saved = serverAt(servers, endpoint, model)
   const name = nameEdit ?? saved?.name ?? model
 
   /**
@@ -351,7 +364,7 @@ export function SettingsScreen() {
                 icon="link"
                 label="Saved servers"
                 onPress={() => setPicking(true)}
-                disabled={servers.length === 0}
+                disabled={shown.length === 0}
               />
             }
           >
@@ -664,10 +677,9 @@ export function SettingsScreen() {
             ]}
           >
             <Txt size="sm" tone="warning">
-              Your records are saved on this device and survive closing the app. There is no
-              account and no sync, and no record ever leaves the phone — not through the model, not
-              through a crash report. Export writes a copy to the clipboard if you want one
-              somewhere else.
+              Your records are saved on this device and survive closing the app. There is no account
+              and no sync, and no record ever leaves the phone — not through the model, not through
+              a crash report. Export writes a copy to the clipboard if you want one somewhere else.
             </Txt>
           </View>
         </Panel>
@@ -701,8 +713,8 @@ export function SettingsScreen() {
 
       <SavedServers
         open={picking}
-        servers={servers}
-        current={normaliseEndpoint(endpoint)}
+        servers={shown}
+        current={{ endpoint: normaliseEndpoint(endpoint), model }}
         onClose={() => setPicking(false)}
         onLoad={onLoad}
         onForget={forget}
@@ -785,7 +797,12 @@ function SavedServers({
 }: {
   open: boolean
   servers: readonly ModelServer[]
-  current: string
+  /*
+   * The address AND the model: a hosted provider has several saved rows sharing
+   * one endpoint, so comparing addresses alone marked every NVIDIA model "In
+   * use" at once. Same fix as the web panel.
+   */
+  current: { endpoint: string; model: string }
   onClose: () => void
   onLoad: (server: ModelServer) => void
   onForget: (id: string) => void
@@ -824,7 +841,9 @@ function SavedServers({
                         on the same machine differ by a port, and a list of
                         near-identical URLs with nothing marked is a list you
                         have to read character by character. */}
-                    {server.endpoint === current ? <Chip tone="green">In use</Chip> : null}
+                    {server.endpoint === current.endpoint && server.model === current.model ? (
+                      <Chip tone="green">In use</Chip>
+                    ) : null}
                   </View>
                   <Txt size="xs" tone="muted" mono numberOfLines={1}>
                     {server.endpoint}

@@ -38,6 +38,9 @@ import { cn } from '@/lib/utils'
  */
 const TYPE_LABEL: Record<NodeType, string> = {
   application: 'Applications',
+  // Plural and plain: what somebody would call the list, not what the type is
+  // called. 'Background' reads as logins.
+  background: 'Background facts',
   thread: 'Conversations',
   proposal: 'Suggestions',
   organisation: 'Organisations',

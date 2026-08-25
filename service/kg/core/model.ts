@@ -110,6 +110,22 @@ export const NODE_TYPES = [
    * life is measured in minutes.
    */
   'proposal',
+  /*
+   * One fact about the person whose job search this is — a degree, a post, a
+   * paper, a skill.
+   *
+   * A node rather than more fields on the profile, and the reason is the same
+   * one that earns every other type here: these are things the user can rename,
+   * annotate, delete and file. There are also an unbounded number of them,
+   * which a fixed set of profile fields cannot hold, and they need to point at
+   * the document they were read out of — which is an edge's job, or in this
+   * case a `source` id, and either way not a text field's.
+   *
+   * The profile stays what it was: what the user SAYS they want. These are what
+   * they have actually done. Scoring a posting needs both and they are not the
+   * same claim.
+   */
+  'background',
 ] as const
 
 export type NodeType = (typeof NODE_TYPES)[number]
@@ -1108,6 +1124,89 @@ export type ThreadProps = {
  * applications and there is no KTH organisation in the store, nor should there
  * be. It is a fact about them, in their own words, and it points at nothing.
  */
+/**
+ * The kinds of fact a CV yields about the person whose CV it is.
+ *
+ * ONE node type with a kind, rather than seven types, and the precedent is
+ * `timelineItem` — which is a deadline, an interview and a reminder under one
+ * roof because they share a shape and differ in a word. These share a shape
+ * too: a thing you did, somewhere, between two dates, that a hiring committee
+ * might care about.
+ *
+ * Seven separate types would each need a schema, a projection, an id prefix, an
+ * analytics bucket and a screen, and would still be joined by an OR in every
+ * query that asked "what has this person got". The discriminator is cheaper and
+ * says the same thing.
+ */
+export const BACKGROUND_KINDS = [
+  'education',
+  'employment',
+  'publication',
+  'skill',
+  'teaching',
+  'award',
+  'service',
+] as const
+export type BackgroundKind = (typeof BACKGROUND_KINDS)[number]
+
+/**
+ * One fact about the user, extracted from something they wrote.
+ *
+ * ## Why this exists
+ *
+ * The profile was ten text fields the user typed, and `fitOf` scored postings
+ * against those — so somebody who had uploaded a forty-page CV got exactly as
+ * good an answer as somebody who had uploaded nothing. Every fact that would
+ * actually decide a fit — what they studied, where they worked, what they have
+ * published, what they can teach — sat in a PDF the app could read and never
+ * did.
+ *
+ * ## Why `source` is not optional in spirit
+ *
+ * It is optional in the type, because a user may type a background by hand and
+ * there is no document behind that. But everything EXTRACTED carries the file
+ * it came from, and that is what makes the feature trustworthy rather than
+ * magical: a claim the app makes about somebody's background can be traced back
+ * to the sentence in the document that produced it, and a wrong one can be
+ * found and removed rather than argued with.
+ *
+ * ## Dates are strings, and loosely so
+ *
+ * A CV says "2021–2024", "Summer 2019", "since 2024" and "n.d.". Forcing those
+ * into ISO dates means either refusing most of them or inventing precision
+ * nobody wrote down. They are kept as the person wrote them and compared as
+ * text; `frame` carries a sortable year when one can be recovered, which is
+ * what the ordering actually needs.
+ */
+export type BackgroundProps = {
+  slug: string
+  kind: BackgroundKind
+  /** The degree, the job title, the paper's title, the skill's name. */
+  title: string
+  /** University, employer, journal, conference. Free text — not an org node. */
+  where?: string
+  /** As written on the document: '2021–2024', 'Summer 2019', 'since 2024'. */
+  period?: string
+  /**
+   * A four-digit year for ordering, when one can be recovered from `period`.
+   *
+   * Separate from `period` because the display string and the sort key are
+   * different jobs, and deriving the second from the first on every render is
+   * how a list ends up in a different order than the one it printed.
+   */
+  year?: number
+  /** Anything worth keeping that is not the title — a venue, a grade, a note. */
+  detail?: string
+  /**
+   * Where this came from, when it was extracted rather than typed.
+   *
+   * The id of the `file` node. Not an edge, because an edge would be a second
+   * place to look and this is a property of the claim rather than a
+   * relationship anybody navigates.
+   */
+  source?: string
+}
+
 export type PersonProps = {
   slug: string
   name: string
@@ -1138,6 +1237,18 @@ export type Organisation = {
   applicationIds: string[]
 }
 
+/** One fact about the user, as a screen reads it. See `BackgroundProps`. */
+export type Background = {
+  id: string
+  kind: BackgroundKind
+  title: string
+  where?: string
+  period?: string
+  year?: number
+  detail?: string
+  source?: string
+}
+
 /** A person, with the jobs they are named on. See `PersonProps`. */
 export type Person = {
   id: string
@@ -1165,6 +1276,7 @@ export type NodePropsByType = {
   pipeline: PipelineProps
   profile: ProfileProps
   person: PersonProps
+  background: BackgroundProps
   thread: ThreadProps
   proposal: ProposalProps
 }

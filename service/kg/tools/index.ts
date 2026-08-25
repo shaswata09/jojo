@@ -56,6 +56,9 @@ import {
 import { memoryClear, memoryReset } from './memory'
 import {
   profileDocumentAdd,
+  profileBackgroundAdd,
+  profileBackgroundUpdate,
+  profileBackgroundDelete,
   profileMatchTermAdd,
   profileMatchTermRemove,
   profilePreferenceSet,
@@ -178,6 +181,9 @@ export const TOOLS = {
   'profile.matchTerm.remove': profileMatchTermRemove,
   'profile.preference.set': profilePreferenceSet,
   'profile.document.add': profileDocumentAdd,
+  'profile.background.add': profileBackgroundAdd,
+  'profile.background.update': profileBackgroundUpdate,
+  'profile.background.delete': profileBackgroundDelete,
 
   'assistant.thread.create': threadCreate,
   'assistant.thread.set': threadSet,

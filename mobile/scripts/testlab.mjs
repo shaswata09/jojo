@@ -1,10 +1,17 @@
 /**
- * Drives the app on a real Android device in Google's lab, with no test code.
+ * Drives the app on a real Android device in Google's lab.
  *
- * A Robo test installs the APK, walks the UI on its own, and reports a crash or
- * an ANR. That is worth having here specifically because of what this project
- * cannot otherwise check: nothing in the gate runs the phone app at all, and the
- * end-to-end audit had to mark every mobile finding as read-not-observed.
+ * Two modes, and the default is the one with assertions in it.
+ *
+ * INSTRUMENTATION (default) runs `android/app/src/androidTest` — the suite that
+ * checks the app launches, the tabs navigate, a `jojo://` link opens it,
+ * Settings renders, and it survives being backgrounded. Those are the questions
+ * nothing else in this project can answer: every Vitest suite passes on a build
+ * whose JS bundle was never embedded.
+ *
+ * ROBO (`--robo`) walks the app with no test code and reports crashes and ANRs
+ * on paths the suite never visits. Useful, and a poor gate — a crawler takes a
+ * different route each run, so a failure from one is not reproducible.
  *
  * THE FREE TIER IS SMALL — 10 virtual-device runs a day and 5 physical — so this
  * is a command somebody runs, and CI only runs it on a tag. Wiring it to every
@@ -28,10 +35,36 @@ if (!project) {
   process.exit(1)
 }
 
+const robo = process.argv.includes('--robo')
+
 const dir = 'android/app/build/outputs/apk/release'
-const apks = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.apk')) : []
-if (apks.length === 0) {
-  console.error(`No release APK in ${dir}.\n\n  cd android && ./gradlew assembleRelease\n`)
+const testDir = 'android/app/build/outputs/apk/androidTest/release'
+
+const oneApk = (where) => {
+  const found = existsSync(where) ? readdirSync(where).filter((f) => f.endsWith('.apk')) : []
+  return found.length > 0 ? join(where, found[0]) : null
+}
+
+/*
+ * `-PjojoTestBuildType=release` is what makes `assembleReleaseAndroidTest`
+ * exist, and release is what has to be tested: a debug APK expects Metro to be
+ * serving the JS, and there is no Metro in Google's lab.
+ */
+const BUILD =
+  '  cd android && ./gradlew -PjojoTestBuildType=release assembleRelease assembleReleaseAndroidTest'
+
+const app = oneApk(dir)
+if (!app) {
+  console.error(`No release APK in ${dir}.\n\n${BUILD}\n`)
+  process.exit(1)
+}
+
+const test = robo ? null : oneApk(testDir)
+if (!robo && !test) {
+  console.error(
+    `No instrumentation APK in ${testDir}.\n\n${BUILD}\n\n` +
+      'Or run the crawl instead, which needs no test APK:\n\n  npm run testlab -- --robo\n',
+  )
   process.exit(1)
 }
 
@@ -43,28 +76,32 @@ if (apks.length === 0) {
 const device =
   process.env.TESTLAB_DEVICE ?? 'model=MediumPhone.arm,version=33,locale=en,orientation=portrait'
 
-console.log(`Running a Robo test on ${device}`)
+const args = [
+  'firebase',
+  'test',
+  'android',
+  'run',
+  '--type',
+  robo ? 'robo' : 'instrumentation',
+  '--app',
+  app,
+  ...(robo ? [] : ['--test', test]),
+  '--device',
+  device,
+  '--timeout',
+  process.env.TESTLAB_TIMEOUT ?? (robo ? '5m' : '12m'),
+  '--project',
+  project,
+  // A fresh store per device, so a run cannot pass because a previous one had
+  // already dismissed the first-run flow.
+  ...(robo ? [] : ['--environment-variables', 'clearPackageData=true']),
+]
+
+console.log(`${robo ? 'Crawling' : 'Running the instrumentation suite'} on ${device}`)
+console.log(`  app:  ${app}`)
+if (test) console.log(`  test: ${test}`)
 try {
-  execFileSync(
-    'gcloud',
-    [
-      'firebase',
-      'test',
-      'android',
-      'run',
-      '--type',
-      'robo',
-      '--app',
-      join(dir, apks[0]),
-      '--device',
-      device,
-      '--timeout',
-      process.env.TESTLAB_TIMEOUT ?? '5m',
-      '--project',
-      project,
-    ],
-    { stdio: 'inherit' },
-  )
+  execFileSync('gcloud', args, { stdio: 'inherit' })
 } catch {
   process.exit(1)
 }

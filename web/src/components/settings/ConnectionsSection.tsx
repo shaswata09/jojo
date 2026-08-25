@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { KeyRound, Link2, Trash2 } from 'lucide-react'
-import { normaliseEndpoint, serverAt } from '@jojo/service/core/model-server'
+import { normaliseEndpoint, serverAt, serversFor } from '@jojo/service/core/model-server'
 import type { ModelFailure, ModelServer } from '@jojo/service/core/model-server'
 import { Chip } from '@/components/common/Chip'
 import { Field } from '@/components/common/Field'
@@ -14,12 +14,7 @@ import { reportableProvider } from '@jojo/service/core/analytics'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { publicUrl } from '@/lib/public-url'
-import {
-  PROVIDERS,
-  cleanKey,
-  providerMeta,
-  type ProviderId,
-} from '@jojo/service/core/provider'
+import { PROVIDERS, cleanKey, providerMeta, type ProviderId } from '@jojo/service/core/provider'
 
 /**
  * Where the user's documents are, and the one thing jojo can talk to outside
@@ -99,6 +94,17 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
    */
   /** Everything that differs between providers, looked up once per render. */
   const provider = providerMeta(settings.provider)
+
+  /*
+   * The saved rows for THIS provider only.
+   *
+   * The stored list spans every provider this browser has reached, and offering
+   * all of it here would put a vLLM box on someone's desk in the NVIDIA panel —
+   * where picking it swaps the endpoint, the dialect and the key underneath a
+   * form that still says NVIDIA. `serversFor` also folds in rows saved before
+   * this record carried a provider; see its note.
+   */
+  const shown = serversFor(servers, provider.id)
   const [endpoint, setEndpoint] = useState(settings.endpoint)
   const [model, setModel] = useState(settings.model)
   /*
@@ -132,7 +138,10 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
    */
   const [tested, setTested] = useState<boolean | null>(null)
   const connected = tested === true
-  const saved = serverAt(servers, endpoint)
+  // The model too: a saved row is one MODEL at one address now, so a hosted
+  // provider has several rows sharing an endpoint and the name belongs to the
+  // one being edited rather than to whichever of them was stored first.
+  const saved = serverAt(servers, endpoint, model)
   const name = nameEdit ?? saved?.name ?? model
 
   /**
@@ -242,8 +251,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
      * first when the box is empty or names something the server does not have.
      */
     const current = model.trim()
-    const found =
-      current && result.models.includes(current) ? current : (result.models[0] ?? '')
+    const found = current && result.models.includes(current) ? current : (result.models[0] ?? '')
     const label = saved?.name ?? found
     setModel(found)
     setNameEdit(null)
@@ -282,10 +290,10 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             onClick={() => {
               setListOpen((v) => !v)
             }}
-            disabled={servers.length === 0}
+            disabled={shown.length === 0}
             aria-expanded={listOpen}
             title={
-              servers.length === 0
+              shown.length === 0
                 ? 'Nothing saved yet — test a connection and the address is kept'
                 : 'Saved servers'
             }
@@ -359,7 +367,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
          * whether to use it, is not a small inaccuracy.
          */}
         {provider.cloud ? (
-          <p className="mt-1.5 text-xs text-warn">
+          <p className="text-warn mt-1.5 text-xs">
             {/* The label's own qualifier is trimmed here. The dropdown entry
                 reads "NVIDIA (build.nvidia.com) — free, rate limited", which is
                 right in a list of choices and reads as a stammer inside a
@@ -376,8 +384,8 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
 
       {listOpen ? (
         <SavedServers
-          servers={servers}
-          current={normaliseEndpoint(endpoint)}
+          servers={shown}
+          current={{ endpoint: normaliseEndpoint(endpoint), model }}
           onLoad={onLoad}
           onForget={forget}
         />
@@ -467,7 +475,9 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
           mono
           spellCheck={false}
           value={model}
-          placeholder={connected ? '' : provider.modelLooksLike || 'The model id, from your provider'}
+          placeholder={
+            connected ? '' : provider.modelLooksLike || 'The model id, from your provider'
+          }
           hint={
             connected
               ? 'What the server reported. Change it if you serve more than one.'
@@ -566,7 +576,12 @@ function SavedServers({
   onForget,
 }: {
   servers: readonly ModelServer[]
-  current: string
+  /*
+   * The address AND the model, because a hosted provider has several saved rows
+   * sharing one endpoint. Comparing addresses alone marked every NVIDIA model
+   * "In use" at once — a badge that is true of everything says nothing.
+   */
+  current: { endpoint: string; model: string }
   onLoad: (server: ModelServer) => void
   onForget: (id: string) => void
 }) {
@@ -592,7 +607,9 @@ function SavedServers({
                     one machine differ by a port, and a list of near-identical
                     URLs with nothing marked is a list you read character by
                     character. */}
-                {server.endpoint === current ? <Chip tone="green">In use</Chip> : null}
+                {server.endpoint === current.endpoint && server.model === current.model ? (
+                  <Chip tone="green">In use</Chip>
+                ) : null}
               </span>
               <span className="block truncate font-mono text-xs text-text-3">
                 {server.endpoint}
@@ -603,7 +620,9 @@ function SavedServers({
                   that has to cover Claude and NVIDIA has to answer "which
                   setup", and the key is the part that used to be missing. */}
               <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-text-3">
-                <span>{providerMeta(server.provider ?? 'openai-compatible').label.split(' —')[0]}</span>
+                <span>
+                  {providerMeta(server.provider ?? 'openai-compatible').label.split(' —')[0]}
+                </span>
                 {server.apiKey ? (
                   <span className="flex items-center gap-1 text-text-3">
                     <KeyRound className="size-3" strokeWidth={1.8} aria-hidden />

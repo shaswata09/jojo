@@ -244,3 +244,66 @@ describe('what a proposal would write', () => {
     expect(long!.endsWith('…')).toBe(true)
   })
 })
+
+describe('a bulk proposal shows what it would write', () => {
+  /**
+   * This showed nothing at all until a tool arrived whose payload was a list.
+   *
+   * `proposalDetail` read strings and numbers, so `{ background: [ … thirty
+   * facts … ] }` produced `null` and the card rendered a title with no values
+   * under it — the exact gap the note on that function records having closed
+   * once already, reopened by a shape it had not met.
+   *
+   * It matters most for that tool in particular. Those entries are claims about
+   * the PERSON, read by a model out of their own CV, and approving them unseen
+   * is worse than approving an unseen note about a job.
+   */
+  const detail = (input: unknown) => proposalDetail(JSON.stringify(input))
+
+  it('names the entries rather than rendering nothing', () => {
+    const line = detail({
+      background: [
+        { kind: 'education', title: 'PhD, Computer Science', where: 'Illinois' },
+        { kind: 'skill', title: 'Rust' },
+      ],
+    })
+    expect(line).toContain('PhD, Computer Science')
+    expect(line).toContain('Rust')
+  })
+
+  it('says how many more there are, because thirty is a different act from three', () => {
+    const line = detail({
+      background: Array.from({ length: 9 }, (_, i) => ({ kind: 'skill', title: `S${String(i)}` })),
+    })
+    expect(line).toContain('and 6 more')
+  })
+
+  it('does not list all nine, because the fourth never changes a decision', () => {
+    const line = detail({
+      background: Array.from({ length: 9 }, (_, i) => ({ kind: 'skill', title: `S${String(i)}` })),
+    })
+    expect(line).not.toContain('S7')
+  })
+
+  it('prefers the field a person recognises over whatever comes first', () => {
+    const line = detail({ files: [{ kind: 'pdf', name: 'CV-2026.pdf', size: '1 KB' }] })
+    expect(line).toContain('CV-2026.pdf')
+  })
+
+  it('still drops ids, which mean nothing to the reader', () => {
+    const line = detail({ items: [{ id: 'app_01H8XYZ', title: 'A real title' }] })
+    expect(line).toContain('A real title')
+    expect(line).not.toContain('app_01H8XYZ')
+  })
+
+  it('leaves scalar payloads exactly as they were', () => {
+    // The regression risk: every existing card renders through this function.
+    expect(detail({ note: 'Chased them on Tuesday' })).toBe('Chased them on Tuesday')
+  })
+
+  it('returns null for an array with nothing nameable in it', () => {
+    // Rather than an empty string, which renders as a blank line under a title
+    // and reads as a value that failed to load.
+    expect(detail({ keywords: ['kw_01H8', 'kw_01H9'] })).toBeNull()
+  })
+})

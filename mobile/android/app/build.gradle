@@ -124,7 +124,29 @@ android {
         versionName "0.1.0"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+
+        // The runner for `src/androidTest`. Without it `assembleAndroidTest`
+        // produces an APK that installs and runs nothing.
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    /*
+     * Which variant the instrumentation tests are built against.
+     *
+     * `debug` locally, because that is the build a developer already has on the
+     * emulator and `connectedDebugAndroidTest` is the command they will type.
+     *
+     * `release` in CI, passed as `-PjojoTestBuildType=release`, and the reason
+     * is React Native rather than preference: a debug build expects Metro to be
+     * serving the JS at runtime. Firebase Test Lab has no Metro and no route
+     * back to one, so a debug APK there launches to a red screen and every test
+     * fails on a bundle that was never going to load. The release build embeds
+     * the bundle, which also means Test Lab exercises the thing that ships.
+     *
+     * Gradle signs the androidTest APK with the tested variant's signingConfig,
+     * so both halves match whichever key `release` resolved to.
+     */
+    testBuildType findProperty('jojoTestBuildType') ?: 'debug'
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -230,4 +252,25 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    /*
+     * The instrumentation suite in `src/androidTest`.
+     *
+     * UI Automator rather than Espresso, and that is not a style choice. Espresso
+     * walks a view hierarchy of named widgets; React Native renders the entire
+     * app into one host view, so there are no widget ids to match on and Espresso
+     * has almost nothing to say. UI Automator works from what is on the screen —
+     * text and content descriptions — which is also what a person and a screen
+     * reader work from, so a test written against it fails when the app becomes
+     * unusable rather than when its internals move.
+     *
+     * `androidTestUtil` orchestrator is deliberately NOT here: it isolates each
+     * test in its own process, which for this app means paying React Native's
+     * whole startup per test case. The suite is small and ordered, so one process
+     * is faster and the isolation buys nothing.
+     */
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:rules:1.6.1")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 }

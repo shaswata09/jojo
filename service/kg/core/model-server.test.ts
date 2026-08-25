@@ -2,26 +2,27 @@ import { describe, expect, it } from 'vitest'
 import {
   chatRequest,
   chatUrl,
-  guardTruncation,
-  readTurn,
-  readTurnFor,
-  readOllamaTurn,
-  truncationOf,
-  truncationWarning,
   estimateTokens,
-  modelsUrl,
-  normaliseEndpoint,
+  guardTruncation,
   isConfigured,
   modelsRequest,
+  modelsUrl,
+  normaliseEndpoint,
   readChatResponse,
   readModelIds,
   readModelsResponse,
+  readOllamaTurn,
   readReply,
+  readTurn,
+  readTurnFor,
   removeServer,
   renameServer,
   saveServer,
   serverAt,
   serverId,
+  serversFor,
+  truncationOf,
+  truncationWarning,
   unconfigured,
   unreachable,
 } from './model-server'
@@ -82,7 +83,7 @@ describe('reading a server', () => {
 })
 
 describe('the saved list', () => {
-  it('keys on the endpoint, so connecting twice is one entry', () => {
+  it('keys on the address and the model, so connecting twice is one entry', () => {
     const once = saveServer([], server())
     const twice = saveServer(once, server({ endpoint: 'http://localhost:8000/v1/' }))
     expect(twice).toHaveLength(1)
@@ -90,8 +91,10 @@ describe('the saved list', () => {
 
   it('derives the id from the address, so no random source is needed here', () => {
     const [saved] = saveServer([], server())
-    expect(saved?.id).toBe(serverId('http://localhost:8000/v1/'))
-    expect(saved?.id).toBe('server:http://localhost:8000/v1')
+    expect(saved?.id).toBe(
+      serverId('http://localhost:8000/v1/', 'meta-llama/Llama-3.1-8B-Instruct'),
+    )
+    expect(saved?.id).toBe('server:http://localhost:8000/v1#meta-llama/Llama-3.1-8B-Instruct')
   })
 
   it('names a new entry after the model when the user has not named it', () => {
@@ -105,10 +108,28 @@ describe('the saved list', () => {
     expect(after[0]?.name).toBe('Workstation')
   })
 
-  it('refreshes the model, because that is the server’s fact and not a preference', () => {
+  it('saves a second model at the same address rather than replacing the first', () => {
+    /*
+     * This used to assert the opposite — that a new model REPLACED the old one,
+     * "because that is the server's fact and not a preference". That reasoning
+     * fits a vLLM process, which serves one model and whose URL is the identity
+     * of both. It does not fit a hosted catalogue, where one fixed address
+     * answers for dozens of models, and under the old rule NVIDIA could never
+     * hold more than one saved model to switch between.
+     *
+     * One rule for both, and the cost is named rather than hidden: re-pointing a
+     * local vLLM at a different model now leaves the previous row behind, naming
+     * a model that address no longer serves. Selecting it fails and it can be
+     * deleted — which is a visible, recoverable state, unlike a saved model that
+     * silently disappeared.
+     */
     const list = saveServer([], server())
     const after = saveServer(list, server({ model: 'Qwen/Qwen2.5-7B' }))
-    expect(after[0]?.model).toBe('Qwen/Qwen2.5-7B')
+    expect(after).toHaveLength(2)
+    expect(after.map((s) => s.model)).toEqual([
+      'meta-llama/Llama-3.1-8B-Instruct',
+      'Qwen/Qwen2.5-7B',
+    ])
   })
 
   it('renames, and falls back to the model id rather than to nothing', () => {
@@ -185,7 +206,10 @@ describe('the protocol, as data', () => {
   it('says what to check when a 200 comes back that is not a model list', () => {
     // The overwhelmingly likely cause is an endpoint missing its /v1, which
     // answers 200 with the server's own index page.
-    const result = readModelsResponse({ ok: true, status: 200, text: '<html>vLLM</html>' }, 'http://x')
+    const result = readModelsResponse(
+      { ok: true, status: 200, text: '<html>vLLM</html>' },
+      'http://x',
+    )
     if (result.ok) throw new Error('should not have parsed')
     expect(result.kind).toBe('malformed')
     expect(result.reason).toContain('/v1')
@@ -195,7 +219,10 @@ describe('the protocol, as data', () => {
     // Found against a live server, not reasoned about: typing the host without
     // its /v1 gets `{"error": "Not Found"}` and a 404, and neither of those
     // points at the three characters that are missing.
-    const result = readModelsResponse({ ok: false, status: 404, text: 'Not Found' }, 'http://x:8000')
+    const result = readModelsResponse(
+      { ok: false, status: 404, text: 'Not Found' },
+      'http://x:8000',
+    )
     if (result.ok) throw new Error('x')
     expect(result.reason).toContain('404')
     expect(result.reason).toContain('ends in /v1')
@@ -422,7 +449,12 @@ describe('the dialects', () => {
       // A bearer header on localhost is harmless but it is a key leaving the
       // machine for no reason, and this app should not do that by accident.
       const req = chatRequest(
-        { provider: 'openai-compatible', endpoint: 'http://localhost:8000/v1', model: 'q', apiKey: 'sk-1' },
+        {
+          provider: 'openai-compatible',
+          endpoint: 'http://localhost:8000/v1',
+          model: 'q',
+          apiKey: 'sk-1',
+        },
         msgs,
       )
       expect(req.headers['Authorization']).toBeUndefined()
@@ -543,7 +575,12 @@ describe('a rate limit, which the free tier makes routine', () => {
    * that says "rate limited, ask again" reads as throttled, which is what it is.
    */
   const askWith = (status: number, text: string, retryAfter?: string | null) =>
-    readChatResponse({ ok: false, status, text, ...(retryAfter === undefined ? {} : { retryAfter }) })
+    readChatResponse({
+      ok: false,
+      status,
+      text,
+      ...(retryAfter === undefined ? {} : { retryAfter }),
+    })
 
   it('names a 429 instead of quoting it', () => {
     const out = askWith(429, '{"detail":"Too Many Requests"}')
@@ -570,7 +607,8 @@ describe('a rate limit, which the free tier makes routine', () => {
       expect(out.ok).toBe(false)
       // An HTTP-date is legal in `Retry-After` and is not a number of seconds;
       // printing it raw would read as gibberish, so it takes the fallback.
-      if (!out.ok) expect(out.reason, String(header)).toMatch(/a minute is usually enough|\d+ seconds/)
+      if (!out.ok)
+        expect(out.reason, String(header)).toMatch(/a minute is usually enough|\d+ seconds/)
     }
   })
 
@@ -623,14 +661,64 @@ describe('a saved connection, whole', () => {
     expect(saved?.endpoint).toBe('http://localhost:8000/v1')
   })
 
-  it('refreshes the model and the key on reconnect, and keeps the user’s name', () => {
+  it('keeps the user’s name when the same model is reached again', () => {
     const first = saveServer([], { ...nvidia, name: 'My NVIDIA' })
-    const again = saveServer(first, { ...nvidia, name: 'ignored', model: 'other/model', apiKey: 'nvapi-rotated' })
+    const again = saveServer(first, { ...nvidia, name: 'ignored', apiKey: 'nvapi-rotated' })
     expect(again).toHaveLength(1)
     expect(again[0]?.name).toBe('My NVIDIA')
-    expect(again[0]?.model).toBe('other/model')
     // A rotated key must replace the old one, or the row keeps failing.
     expect(again[0]?.apiKey).toBe('nvapi-rotated')
+  })
+
+  it('saves every model reached at one address, so they can be switched between', () => {
+    /*
+     * The whole point of the (endpoint, model) key. NVIDIA serves a catalogue
+     * from ONE address, so keying on the endpoint alone meant the second model
+     * overwrote the first and the saved list could never offer a choice.
+     */
+    const models = [
+      'nvidia/nemotron-3.5-lightning-30b-a3b',
+      'meta/llama-3.3-70b-instruct',
+      'qwen/qwen3-coder-480b',
+    ]
+    const list = models.reduce(
+      (acc, model) => saveServer(acc, { ...nvidia, name: model, model }),
+      [] as ReturnType<typeof saveServer>,
+    )
+    expect(list).toHaveLength(3)
+    expect(list.map((s) => s.model)).toEqual(models)
+    // Distinct ids, or React draws one row and Delete takes all three.
+    expect(new Set(list.map((s) => s.id)).size).toBe(3)
+    // All at the one address, all carrying the provider's key.
+    expect(list.every((s) => s.endpoint === nvidia.endpoint)).toBe(true)
+    expect(list.every((s) => s.apiKey === 'nvapi-secret')).toBe(true)
+  })
+
+  it('rotates the key on every row at that address, not just the one saved', () => {
+    /*
+     * A credential belongs to the provider, not the model. Writing it to only
+     * the row being saved would leave the other four failing with a key the
+     * person had already replaced, and nothing on screen to explain it.
+     */
+    const first = saveServer([], nvidia)
+    const second = saveServer(first, { ...nvidia, model: 'meta/llama-3.3-70b-instruct' })
+    const rotated = saveServer(second, {
+      ...nvidia,
+      model: 'qwen/qwen3-coder-480b',
+      apiKey: 'nvapi-new',
+    })
+    expect(rotated).toHaveLength(3)
+    expect(rotated.every((s) => s.apiKey === 'nvapi-new')).toBe(true)
+  })
+
+  it('does not touch rows at a different address when a key rotates', () => {
+    const mixed = saveServer(saveServer([], nvidia), {
+      name: 'Workstation',
+      endpoint: 'http://localhost:8000/v1',
+      model: 'meta-llama/Llama-3.1-8B',
+    })
+    const after = saveServer(mixed, { ...nvidia, model: 'other/model', apiKey: 'nvapi-new' })
+    expect(after.find((s) => s.endpoint === 'http://localhost:8000/v1')?.apiKey).toBeUndefined()
   })
 
   it('does not wipe a stored key when a caller saves without one', () => {
@@ -641,12 +729,84 @@ describe('a saved connection, whole', () => {
     expect(again[0]?.apiKey).toBe('nvapi-secret')
   })
 
-  it('is one row per provider, because their endpoints are fixed', () => {
-    // Keyed on endpoint, so connecting to Claude twice is one saved setup.
-    const list = saveServer(
-      saveServer([], { name: 'Claude', endpoint: 'https://api.anthropic.com/v1', model: 'claude-sonnet-4-5', provider: 'anthropic', apiKey: 'sk-ant-1' }),
-      { name: 'Claude', endpoint: 'https://api.anthropic.com/v1/', model: 'claude-sonnet-4-5', provider: 'anthropic', apiKey: 'sk-ant-1' },
-    )
-    expect(list).toHaveLength(1)
+  it('is one row per model, even when a trailing slash differs', () => {
+    /*
+     * This used to read "one row per provider, because their endpoints are
+     * fixed" — which is exactly why a hosted catalogue could only ever hold one
+     * model. What must still hold is the narrower claim: the SAME model reached
+     * twice at the same address is one row, whatever the trailing slash.
+     */
+    const claude = {
+      name: 'Claude',
+      endpoint: 'https://api.anthropic.com/v1',
+      model: 'claude-sonnet-4-5',
+      provider: 'anthropic',
+      apiKey: 'sk-ant-1',
+    }
+    const same = saveServer(saveServer([], claude), {
+      ...claude,
+      endpoint: 'https://api.anthropic.com/v1/',
+    })
+    expect(same).toHaveLength(1)
+
+    const alsoOpus = saveServer(same, { ...claude, model: 'claude-opus-4-1' })
+    expect(alsoOpus).toHaveLength(2)
+  })
+})
+
+describe('the saved list, per provider', () => {
+  const row = (over: Partial<ModelServer>): ModelServer => ({
+    id: 'x',
+    name: 'n',
+    endpoint: 'http://localhost:8000/v1',
+    model: 'm',
+    ...over,
+  })
+
+  const list = [
+    row({
+      id: 'a',
+      endpoint: 'http://localhost:8000/v1',
+      model: 'llama',
+      provider: 'openai-compatible',
+    }),
+    row({ id: 'b', endpoint: 'http://localhost:11434/v1', model: 'qwen', provider: 'ollama' }),
+    row({
+      id: 'c',
+      endpoint: 'https://integrate.api.nvidia.com/v1',
+      model: 'nvidia/a',
+      provider: 'nvidia',
+    }),
+    row({
+      id: 'd',
+      endpoint: 'https://integrate.api.nvidia.com/v1',
+      model: 'nvidia/b',
+      provider: 'nvidia',
+    }),
+    // Saved before `provider` was carried on this record.
+    row({ id: 'legacy', endpoint: 'http://localhost:1234/v1', model: 'old' }),
+  ]
+
+  it('shows only the selected provider’s rows', () => {
+    expect(serversFor(list, 'nvidia').map((s) => s.id)).toEqual(['c', 'd'])
+    expect(serversFor(list, 'ollama').map((s) => s.id)).toEqual(['b'])
+  })
+
+  it('does not offer a local server on a cloud provider’s panel', () => {
+    // Picking one would swap the endpoint, the dialect and the key underneath a
+    // form that still said NVIDIA.
+    expect(serversFor(list, 'nvidia').some((s) => s.endpoint.includes('localhost'))).toBe(false)
+  })
+
+  it('keeps every NVIDIA model, which is the point of the list', () => {
+    expect(serversFor(list, 'nvidia')).toHaveLength(2)
+  })
+
+  it('treats a row saved before `provider` existed as the local one', () => {
+    expect(serversFor(list, 'openai-compatible').map((s) => s.id)).toEqual(['a', 'legacy'])
+  })
+
+  it('is empty for a provider nothing has been saved under', () => {
+    expect(serversFor(list, 'anthropic')).toEqual([])
   })
 })

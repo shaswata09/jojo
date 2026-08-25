@@ -225,6 +225,10 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
       return node.props.title
     case 'person':
       return node.props.name
+    case 'background':
+      // The title alone. 'PhD, Computer Science — University of Illinois' is a
+      // record; in a picker it is a line that wraps and stops being scannable.
+      return node.props.title
     case 'posting':
       return node.props.title
     case 'match':
