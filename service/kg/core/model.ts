@@ -346,6 +346,61 @@ export function edgeIsWellTyped(rel: Rel, from: NodeType, to: NodeType): boolean
 export const URGENCY_VALUES = ['red', 'amber', 'gray'] as const
 export type Urgency = (typeof URGENCY_VALUES)[number]
 
+/**
+ * What a conversation asks about before it acts.
+ *
+ * Ordered from most cautious to least, which is the order they are offered in.
+ */
+export const APPROVAL_MODES = ['manual', 'semi', 'auto'] as const
+
+export type ApprovalMode = (typeof APPROVAL_MODES)[number]
+
+/**
+ * What each mode is called, and what it actually does — written once.
+ *
+ * Three surfaces show this: the control on the web, the control on the phone,
+ * and the announcement when the agent itself changes the setting. Copy about
+ * what will happen WITHOUT being asked is exactly the copy that must not drift
+ * between them.
+ *
+ * `SAID` names deletion explicitly rather than saying "dangerous", because the
+ * line the app actually draws is `effect === 'delete' || effect === 'admin'` —
+ * fifteen tools of ninety-two. Closing an application is a `move` and passes
+ * without a prompt under `semi`, which is worth a person knowing before they
+ * choose it.
+ */
+export const APPROVAL_LABEL: { readonly [M in ApprovalMode]: string } = {
+  manual: 'Manual',
+  semi: 'Semi-auto',
+  auto: 'Auto',
+}
+
+/** The announcement, when the change itself is a step the agent took. */
+export const APPROVAL_TITLE: { readonly [M in ApprovalMode]: string } = {
+  manual: 'Asking before each change',
+  semi: 'Asking only before deletions',
+  auto: 'Acting without asking',
+}
+
+export const APPROVAL_SAID: { readonly [M in ApprovalMode]: string } = {
+  manual: 'You are asked before anything in this conversation is written.',
+  semi: 'Edits happen straight away. You are asked before anything is deleted or cleared.',
+  auto: 'Everything happens straight away, deletions included. Nothing is confirmed.',
+}
+
+/**
+ * The mode a stored conversation is in, including ones written before modes.
+ *
+ * A thread saved by an older build has `autoApprove` and no `approval`, and the
+ * two settings it could hold map exactly onto the first two modes: asking about
+ * every write, or asking only about the destructive ones. Nobody is silently
+ * upgraded to `auto` — that is a mode a person has to choose.
+ */
+export const approvalOf = (props: {
+  approval?: ApprovalMode
+  autoApprove?: boolean
+}): ApprovalMode => props.approval ?? (props.autoApprove === true ? 'semi' : 'manual')
+
 export const STAGE_VALUES = [
   'draft',
   'submitted',
@@ -1174,6 +1229,21 @@ export type ThreadProps = {
    * line that separates the two.
    */
   autoApprove?: boolean
+  /**
+   * How much this conversation is allowed to do without being asked.
+   *
+   * Three modes rather than a switch, because the switch had two settings and
+   * three meanings. `autoApprove: true` mapped to the `destructive` gate — stop
+   * for the fifteen tools that delete — which is neither "ask me about
+   * everything" nor "act freely", and its label said only "act without asking".
+   * Measured, that gap matters: both reasoning models in the benchmark close a
+   * LIVE application when asked to close an ambiguous one, and a stage change
+   * is a `move`, not a delete, so the old auto setting waved it through.
+   *
+   * `autoApprove` above is kept for conversations written before this existed
+   * and is read only as a fallback — see `approvalOf`. Nothing writes it now.
+   */
+  approval?: ApprovalMode
   /**
    * What this conversation established, for the part of it no longer sent.
    *

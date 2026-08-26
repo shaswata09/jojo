@@ -39,6 +39,21 @@ const ALLOWED = new Map([
   // sentence had stopped being true.
   ['mobile/android/ios', 'the path a broken `cd android && cd ios` looked for — named as the bug'],
   ['mobile/package.json/android/settings.gradle', 'the same: the document says "That cannot exist" in the next sentence'],
+  /*
+   * Deliberately gitignored, and named in order to say WHERE THEY GO.
+   *
+   * These are the one case the rule cannot decide for itself: the sentence is
+   * correct, the reader is meant to create the file, and the file must not be
+   * committed. `RELEASE.md` gives each one a column that reads "no — gitignored",
+   * so a reader who follows the path and finds nothing has already been told why.
+   *
+   * They are also the reason this guard is worth having: all three resolve on the
+   * machine of anybody who has set Firebase up, so the failure only ever appears
+   * on a clean checkout — which is CI, and which is every new contributor.
+   */
+  ['mobile/android/app/google-services.json', "Firebase's Android config: gitignored so a fork does not report into this project's console, and RELEASE.md names it to say where to put it"],
+  ['mobile/ios/jojo/GoogleService-Info.plist', 'the same file on the other platform, on the same terms'],
+  ['mobile/android/local.properties', 'written by the Android SDK tools and gitignored because it holds one machine\'s SDK path; the README names it to say what to put in it'],
 ])
 
 const docs = [

@@ -19,6 +19,7 @@
 
 import { s } from '../core/schema'
 import type { NodeId, ThreadEntry } from '../core/model'
+import { APPROVAL_MODES, APPROVAL_SAID, APPROVAL_TITLE } from '../core/model'
 import { defineTool } from './tool'
 
 /**
@@ -186,17 +187,24 @@ export const threadAutoSet = defineTool({
   touches: ['thread'],
   input: s.object({
     id: threadId,
-    auto: s.boolean({ label: 'Act without asking' }),
+    mode: s.enum(APPROVAL_MODES, { label: 'Approval' }),
   }),
   run(ctx, input): void {
     ctx.require('thread', input.id)
-    ctx.tx.patch<'thread'>(input.id, { autoApprove: input.auto })
+    /*
+     * `approval` is written and `autoApprove` is cleared in the same patch.
+     *
+     * Leaving the old field behind would leave two sources of truth on one
+     * record, and `approvalOf` prefers `approval` — so a stale `autoApprove`
+     * would be invisible until something read it directly, which is the kind of
+     * disagreement that surfaces months later as "it asked me even though I
+     * turned that off".
+     */
+    ctx.tx.patch<'thread'>(input.id, { approval: input.mode, autoApprove: undefined })
   },
   describe: (input) => ({
-    title: input.auto ? 'Acting without asking' : 'Asking before each change',
-    description: input.auto
-      ? 'Changes in this conversation happen straight away.'
-      : 'You will be asked before each change.',
+    title: APPROVAL_TITLE[input.mode],
+    description: APPROVAL_SAID[input.mode],
   }),
 })
 

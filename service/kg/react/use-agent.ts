@@ -34,7 +34,7 @@ import type { AgentOptions, AgentStep, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
 import { dayOf } from '../core/project'
 import type { ChatMessage } from '../core/model-server'
-import type { NodeId } from '../core/model'
+import type { ApprovalMode, NodeId } from '../core/model'
 import { useAgentRun, useAgentRuns } from './agent-runs-context'
 import type { AgentEntry, RunSignal } from './agent-runs'
 import { useKg } from './kg-context'
@@ -120,13 +120,13 @@ export type UseAgentOptions = {
      */
     context?: string
     /**
-     * Whether this conversation may be written to without asking.
+     * How much this conversation may do without being asked.
      *
-     * Off means every write stops and asks — not just deletes. That is the
-     * point: "asks before it deletes" left editing a file, retagging a record
-     * and rewriting a note as things that simply happened.
+     * `manual` stops every write, not just deletes — that is the point, and it
+     * is what a conversation gets without choosing. `semi` stops the fifteen
+     * tools that remove a record. `auto` stops nothing.
      */
-    autoApprove?: boolean
+    approval?: ApprovalMode
   }
   /**
    * Mints a conversation for a first question, and returns its id.
@@ -163,6 +163,19 @@ export type UseAgentOptions = {
    * another summarisation.
    */
   onCompacted?: (threadId: NodeId, context: string, throughMessages: number) => void
+}
+
+/**
+ * What each mode means to the loop.
+ *
+ * A table rather than a chain of ternaries, so adding a mode is a line here and
+ * a compile error everywhere it has not been handled — which is what an
+ * exhaustive `Record` buys over an `if`.
+ */
+const GATE_FOR: { readonly [M in ApprovalMode]: NonNullable<AgentOptions['gate']> } = {
+  manual: 'writes',
+  semi: 'destructive',
+  auto: 'none',
 }
 
 export function useAgent({
@@ -231,7 +244,12 @@ export function useAgent({
         ...(window === undefined ? {} : { window }),
         ...(chooser === undefined ? {} : { chooser }),
         ...(summariser === undefined ? {} : { summariser }),
-        gate: thread.autoApprove === true ? 'destructive' : 'writes',
+        /*
+         * The conversation's own setting, mapped to what the loop understands.
+         * `manual` is the default a thread gets without choosing, so a person
+         * who never touches this is asked about every write.
+         */
+        gate: GATE_FOR[thread.approval ?? 'manual'],
         ...(thread.context === undefined ? {} : { context: thread.context }),
         ...(onCompacted === undefined ? {} : { onCompacted }),
         ...(onSettled ? { onSettled } : {}),
@@ -244,7 +262,7 @@ export function useAgent({
       onSettled,
       runs,
       startThread,
-      thread.autoApprove,
+      thread.approval,
       thread.entries,
       thread.history,
       thread.id,

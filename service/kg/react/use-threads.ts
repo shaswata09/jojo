@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import type { ChatMessage } from '../core/model-server'
-import type { NodeId, StoredNode, ThreadEntry } from '../core/model'
+import type { ApprovalMode, NodeId, StoredNode, ThreadEntry } from '../core/model'
+import { approvalOf } from '../core/model'
 import { toWireName } from '../agent/catalog'
 import type { AgentEntry } from './use-agent'
 import { useGraph, useKg } from './kg-context'
@@ -27,8 +28,8 @@ export type Thread = {
   entries: ThreadEntry[]
   /** The application it is filed under, if any. */
   applicationId: NodeId | null
-  /** The agent may write in this conversation without asking first. */
-  autoApprove: boolean
+  /** How much this conversation may do without being asked. */
+  approval: ApprovalMode
   /**
    * What a compaction established, and how many entries it covers.
    *
@@ -70,7 +71,7 @@ export function useThreads() {
           title: node.props.title,
           entries: entriesOf(node),
           applicationId: graph.one(node.id, 'FILED_UNDER', 'application')?.id ?? null,
-          autoApprove: node.props.autoApprove === true,
+          approval: approvalOf(node.props),
           ...(node.props.context === undefined ? {} : { context: node.props.context }),
           // Zero, not undefined: every caller slices with it, and a default of
           // zero means "nothing summarised yet" without a check at each site.
@@ -95,9 +96,9 @@ export function useThreads() {
     [runtime],
   )
 
-  /** Turns asking on or off for one conversation. See `ThreadProps.autoApprove`. */
-  const setAuto = useCallback(
-    (id: NodeId, auto: boolean) => runtime.run('assistant.thread.auto.set', { id, auto }),
+  /** Sets how much one conversation may do unasked. See `ThreadProps.approval`. */
+  const setApproval = useCallback(
+    (id: NodeId, mode: ApprovalMode) => runtime.run('assistant.thread.auto.set', { id, mode }),
     [runtime],
   )
 
@@ -141,7 +142,7 @@ export function useThreads() {
     [runtime],
   )
 
-  return { threads, create, save, rename, file, remove, setAuto, setContext }
+  return { threads, create, save, rename, file, remove, setApproval, setContext }
 }
 
 /* ------------------------------ the two readings --------------------------- */

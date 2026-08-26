@@ -147,7 +147,7 @@ export type StartOptions = {
   llm: (signal: RunSignal) => LlmTurnFn
   host: ToolHost
   /** Which steps to stop and ask about. See `AgentOptions.gate`. */
-  gate?: 'destructive' | 'writes'
+  gate?: 'destructive' | 'writes' | 'none'
   /**
    * The conversation as it is stored, for a run the registry has never seen.
    *

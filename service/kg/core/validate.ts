@@ -34,6 +34,7 @@
 
 import type { NodePropsByType, NodeType, Rel, StoredEdge, StoredNode, ThreadEntry } from './model'
 import {
+  APPROVAL_MODES,
   BACKGROUND_KINDS,
   EDGE_SCHEMA,
   FILE_BUCKET_VALUES,
@@ -303,7 +304,10 @@ export const NODE_PROP_SCHEMAS = {
     slug,
     title: s.string({ min: 1, label: 'Title' }),
     entries: threadEntries,
+    // Kept so a conversation written before modes still validates. Nothing
+    // writes it any more; `approvalOf` reads it as a fallback.
     autoApprove: s.optional(s.boolean({ label: 'Act without asking' })),
+    approval: s.optional(s.enum(APPROVAL_MODES, { label: 'Approval' })),
     // The compaction summary and how far it reaches — see `ThreadProps`. Both
     // optional, because almost no conversation ever grows enough to need one.
     context: s.optional(s.string({ label: 'Earlier in this conversation' })),

@@ -243,7 +243,7 @@ export type AgentOptions = {
    * description the model reads — and marking every create destructive would
    * lie to both.
    */
-  gate?: 'destructive' | 'writes'
+  gate?: 'destructive' | 'writes' | 'none'
   /**
    * The model's context window, in tokens.
    *
@@ -1038,10 +1038,24 @@ async function performCall(
    * does not exist, and `callTool` refuses it a line later regardless. Asking a
    * person to approve a call that cannot happen is asking them to rubber-stamp.
    */
+  /*
+   * Three settings, and the middle one is where the interesting failure lives.
+   *
+   *   writes       — every non-read step (82 of 92 tools)
+   *   destructive  — only `delete` and `admin` effects (15 of 92)
+   *   none         — nothing, and the person chose that explicitly
+   *
+   * `destructive` is not "the dangerous ones", it is "the ones that remove a
+   * record". Closing an application is a `move`, so it passes here — which is
+   * the measured gap this exists to be honest about, not a bug in this line.
+   */
+  const mode = options.gate ?? 'destructive'
   const gated =
-    (options.gate ?? 'destructive') === 'writes'
-      ? base.effect !== 'read' && base.effect !== 'unknown'
-      : base.destructive
+    mode === 'none'
+      ? false
+      : mode === 'writes'
+        ? base.effect !== 'read' && base.effect !== 'unknown'
+        : base.destructive
 
   if (gated && approve) {
     const allowed = await approve(base)
