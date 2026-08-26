@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { StatusBar, StyleSheet, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { sweepTrashedDocuments } from '@/lib/documents'
 import { reportError } from '@/lib/report-error'
 import { LabelsProvider } from '@/lib/labels'
 import { RolesProvider } from '@/lib/roles'
@@ -104,6 +106,22 @@ export default function App() {
  */
 function Themed() {
   const { theme, colors } = useTheme()
+
+  /*
+   * Delete the documents an earlier session set aside.
+   *
+   * `trashDocument` moves a deleted file's bytes rather than unlinking them, so
+   * the Undo on "Document removed" can put them back. The undo ring is in memory
+   * and `rehydrate` clears it — so anything still in the trash when the app
+   * starts is a file nothing can restore, and this is the point at which
+   * deleting it is unambiguous.
+   *
+   * Once, on mount, and it never rejects: a leaked copy is a few kilobytes, and
+   * a thrown promise here would take the app down before its first frame.
+   */
+  useEffect(() => {
+    void sweepTrashedDocuments()
+  }, [])
 
   return (
     <View style={[styles.root, { backgroundColor: colors.page }]}>

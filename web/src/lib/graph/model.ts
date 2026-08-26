@@ -22,6 +22,15 @@ export const GRAPH_NODE_TYPES = [
   'posting',
   'match',
   'source',
+  /*
+   * The person's own record, and what relates two of them.
+   *
+   * Both were absent, so the page called "the knowledge graph" drew every
+   * record about a JOB and none about the user — a CV read into thirty
+   * background entries produced no change on the canvas at all.
+   */
+  'background',
+  'claim',
 ] as const
 
 export type GraphNodeType = (typeof GRAPH_NODE_TYPES)[number]
@@ -35,7 +44,7 @@ export type GraphNodeType = (typeof GRAPH_NODE_TYPES)[number]
  * in their heads, and a query that only walked one way would answer half the
  * question while looking like it answered all of it.
  */
-export const GRAPH_RELS = ['AT', 'IS', 'ABOUT', 'FILED_UNDER', 'TAGS', 'FROM', 'BECAME'] as const
+export const GRAPH_RELS = ['AT', 'IS', 'ABOUT', 'FILED_UNDER', 'TAGS', 'FROM', 'BECAME', 'SUBJECT', 'OBJECT'] as const
 
 export type GraphRel = (typeof GRAPH_RELS)[number]
 
@@ -90,6 +99,8 @@ export const NODE_TYPE_LABEL: Record<GraphNodeType, string> = {
   posting: 'Saved posting',
   match: 'Scout match',
   source: 'Source',
+  background: 'About you',
+  claim: 'Relation',
 }
 
 /**
@@ -113,6 +124,8 @@ export const REL_LABEL: Record<GraphRel, string> = {
   ABOUT: EDGE_SCHEMA.ABOUT.label,
   FILED_UNDER: EDGE_SCHEMA.FILED_UNDER.label,
   TAGS: EDGE_SCHEMA.TAGS.label,
+  SUBJECT: EDGE_SCHEMA.SUBJECT.label,
+  OBJECT: EDGE_SCHEMA.OBJECT.label,
   FROM: EDGE_SCHEMA.FROM.label,
   BECAME: EDGE_SCHEMA.BECAME.label,
 }

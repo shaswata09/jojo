@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { TOOLS } from '../tools/index'
 import { CATALOG, describeEntry, entryForWire, functionSpecs, mcpSpecs, toWireName } from './catalog'
 import { READS } from './queries'
+import { NODE_TYPES } from '../core/model'
 
 describe('coverage', () => {
   it('exposes every tool in the registry, plus every read', () => {
@@ -123,5 +124,54 @@ describe('the two envelopes', () => {
       expect(spec.function.description.length).toBeGreaterThan(10)
       expect(spec.function.parameters.type).toBe('object')
     }
+  })
+})
+
+describe('what a model reads about a tool', () => {
+  it('separates the title from the summary', () => {
+    /*
+     * There was no separator, so all 91 descriptions were run-ons: "Ask the
+     * graph Find records by how they are connected". Not one title in the
+     * catalog ends in punctuation, so this was universal — and it is the
+     * cheapest accuracy available on the small-model path.
+     */
+    for (const entry of CATALOG.slice(0, 12)) {
+      const said = describeEntry(entry)
+      expect(said, entry.name).toMatch(/[.!?:—-]\s/u)
+      expect(said.startsWith(entry.title)).toBe(true)
+    }
+  })
+})
+
+/**
+ * The counts that prose in this package states out loud.
+ *
+ * Three comments argued about tool-list size using "sixty-four tools" and
+ * "eleven node types" long after the catalog reached ninety-two and the model
+ * sixteen. The ARGUMENT survived — fewer names is still easier for a small
+ * model to choose between — but a comment whose numbers are visibly wrong is
+ * one a reader stops trusting, and then stops reading.
+ *
+ * So the numbers are pinned. The point is not that these are the right sizes;
+ * it is that adding a tool should make somebody update the sentences that count
+ * them, in the same change, rather than three audits later.
+ */
+describe('the counts the comments quote', () => {
+  it('matches what queries.ts, mcp.ts and execute.ts say out loud', () => {
+    // If this fails, the number changed. Update it here AND in:
+    //   kg/agent/queries.ts   — "ninety-two entries", "a hundred and three names"
+    //   kg/agent/mcp.ts       — "ninety-two tools is one page" (twice)
+    //   kg/agent/execute.ts   — "listing ninety-two tools"
+    expect(CATALOG.length).toBe(92)
+  })
+
+  it('matches the write/read split queries.ts quotes', () => {
+    // "eighty-one write tools already" — the number the generic-readers
+    // argument is measured against.
+    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(82)
+  })
+
+  it('matches the sixteen node types that paragraph counts', () => {
+    expect(NODE_TYPES).toHaveLength(16)
   })
 })

@@ -28,6 +28,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 const KEYS = {
   details: 'jojo/onboarding/details',
   /*
+   * Connect a model — the stage the phone did not have.
+   *
+   * Web asks this between saying who you are and being shown around, and the
+   * reason is the same on a phone: the tour describes an app that answers
+   * questions and drafts letters, and someone walked through the assistant with
+   * no model connected is being shown the scripted stand-in. Without this stage
+   * the phone never mentioned a model during setup at all, so the only way to
+   * find out the app had an assistant was to open it and read a canned reply
+   * explaining why it could not help.
+   *
+   * It does NOT try to configure a model in the sheet the way web's step does.
+   * That panel is a form with a URL, a key and a model list, and putting it
+   * inside an onboarding sheet on a phone means typing a host address into a
+   * keyboard-covered field before you have seen the app. It sends you to
+   * Settings, which already does this properly, and remembers that it asked.
+   */
+  model: 'jojo/onboarding/model',
+  /*
    * Crash reports and usage analytics, asked immediately before the tour.
    *
    * Before it rather than after, because the tour navigates away as soon as it
@@ -53,15 +71,22 @@ export type OnboardingStage = keyof typeof KEYS
  */
 export async function readOffered(): Promise<Record<OnboardingStage, boolean>> {
   try {
-    const rows = await AsyncStorage.multiGet([KEYS.details, KEYS.reporting, KEYS.tour])
+    // Both lists derived from KEYS rather than spelled out. They were spelled
+    // out, and adding a stage left the `multiGet` reading three keys of four
+    // and the fallback missing one — `Record<OnboardingStage, boolean>` caught
+    // the second and could never have caught the first, since a key simply not
+    // asked for reads as "not offered" and re-asks a question already answered.
+    const names = Object.keys(KEYS) as OnboardingStage[]
+    const rows = await AsyncStorage.multiGet(names.map((name) => KEYS[name]))
     const map = new Map(rows)
-    return {
-      details: (map.get(KEYS.details) ?? null) !== null,
-      reporting: (map.get(KEYS.reporting) ?? null) !== null,
-      tour: (map.get(KEYS.tour) ?? null) !== null,
-    }
+    return Object.fromEntries(
+      names.map((name) => [name, (map.get(KEYS[name]) ?? null) !== null]),
+    ) as Record<OnboardingStage, boolean>
   } catch {
-    return { details: false, reporting: false, tour: false }
+    return Object.fromEntries((Object.keys(KEYS) as OnboardingStage[]).map((n) => [n, false])) as Record<
+      OnboardingStage,
+      boolean
+    >
   }
 }
 

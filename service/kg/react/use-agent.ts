@@ -30,7 +30,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import type { AgentStep, LlmTurnFn } from '../agent/loop'
+import type { AgentOptions, AgentStep, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
 import { dayOf } from '../core/project'
 import type { ChatMessage } from '../core/model-server'
@@ -68,6 +68,27 @@ export type UseAgentOptions = {
    */
   llm: ((signal: RunSignal) => LlmTurnFn) | null
   maxSteps?: number
+  /**
+   * The model's context window, in tokens — `contextOf(settings)`.
+   *
+   * Passed through so the loop can trim the conversation before the server
+   * truncates it. Optional here because a caller without a configured model has
+   * no honest number to give; the loop treats absence as "do not trim", which
+   * is the behaviour everything had before this existed.
+   */
+  window?: number
+  /**
+   * A second, smaller agent that chooses this turn's tools, and one that
+   * summarises what a trim would otherwise drop.
+   *
+   * Both take a model call of their own, both are optional, and both are
+   * allowed to fail — see `retrieve-llm.ts` and `compact.ts`. An app that has a
+   * model configured should pass them: choosing costs about a sixth of what it
+   * saves, and summarising is the difference between a long chat losing detail
+   * and losing memory.
+   */
+  chooser?: AgentOptions['chooser']
+  summariser?: AgentOptions['summariser']
   /** Offer the model only these tools, by registry name. See `loop.ts`. */
   tools?: readonly string[]
   /**
@@ -90,6 +111,14 @@ export type UseAgentOptions = {
     id: NodeId | null
     entries: readonly AgentEntry[]
     history: readonly ChatMessage[]
+    /**
+     * What a previous compaction established — `ThreadProps.context`.
+     *
+     * The caller passes this AND a `history` that excludes the entries it
+     * covers, so the summary stands in for those exchanges rather than sitting
+     * beside them.
+     */
+    context?: string
     /**
      * Whether this conversation may be written to without asking.
      *
@@ -125,11 +154,24 @@ export type UseAgentOptions = {
     entries: readonly AgentEntry[],
     history: readonly ChatMessage[],
   ) => void
+  /**
+   * Persist a summary the loop wrote this turn.
+   *
+   * Called only when a compaction happened, which is rare. The caller stores it
+   * on the thread with `assistant.thread.context.set`, so the next turn sends
+   * the summary and only the part it does not cover rather than paying for
+   * another summarisation.
+   */
+  onCompacted?: (threadId: NodeId, context: string, throughMessages: number) => void
 }
 
 export function useAgent({
   llm,
   maxSteps,
+  window,
+  chooser,
+  summariser,
+  onCompacted,
   tools,
   convert,
   thread,
@@ -186,7 +228,12 @@ export function useAgent({
         host,
         ...(tools === undefined ? {} : { tools }),
         ...(maxSteps === undefined ? {} : { maxSteps }),
+        ...(window === undefined ? {} : { window }),
+        ...(chooser === undefined ? {} : { chooser }),
+        ...(summariser === undefined ? {} : { summariser }),
         gate: thread.autoApprove === true ? 'destructive' : 'writes',
+        ...(thread.context === undefined ? {} : { context: thread.context }),
+        ...(onCompacted === undefined ? {} : { onCompacted }),
         ...(onSettled ? { onSettled } : {}),
       })
     },
@@ -202,6 +249,11 @@ export function useAgent({
       thread.history,
       thread.id,
       tools,
+      window,
+      chooser,
+      summariser,
+      onCompacted,
+      thread.context,
     ],
   )
 

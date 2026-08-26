@@ -134,7 +134,29 @@ export const applicationOfferDecide = defineTool({
     const id = input?.id
     if (id === undefined) return { ok: true }
     const app = m.node(id, 'application')
-    if (!app?.props.offer) return { ok: false, reason: 'There is no offer to decide on.' }
+    if (!app?.props.offer) {
+      /*
+       * Names the move that ACHIEVES what was asked, not the prerequisite of
+       * this tool.
+       *
+       * Two versions of this message have now been measured, and the more
+       * helpful-sounding one was worse. It read "Record the offer first with
+       * application.update, then decide it" — true about this tool, and it sent
+       * Gemma looking for offer details it did not have. It answered "I couldn't
+       * record the acceptance because there are no offer details saved" and did
+       * nothing, where the terse original had left it to find its own way and it
+       * had found the right one.
+       *
+       * Recording that an offer was ACCEPTED does not need the package or the
+       * response date. `outcome` on the application is the whole answer, so
+       * that is what this says.
+       */
+      return {
+        ok: false,
+        reason:
+          'This application has no offer recorded, so there is nothing here to accept or decline. To note how it ended, set `outcome` with application.update — that needs nothing else. Use this tool only once an offer with its terms is on the record.',
+      }
+    }
     return { ok: true }
   },
 

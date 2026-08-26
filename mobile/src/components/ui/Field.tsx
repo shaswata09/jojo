@@ -46,7 +46,22 @@ export function FormField({
       </View>
       {children}
       {error ? (
-        <Txt size="xs" tone="danger" style={styles.hint}>
+        /*
+         * Announced, not just painted.
+         *
+         * Saving an invalid form turned the text red, moved no focus and said
+         * nothing — so to a screen-reader user the sheet simply looked broken.
+         * `assertive` rather than `polite` because a validation error is the
+         * reason the save did not happen, and hearing it after whatever comes
+         * next is hearing it too late.
+         */
+        <Txt
+          size="xs"
+          tone="danger"
+          style={styles.hint}
+          accessibilityLiveRegion="assertive"
+          accessibilityRole="alert"
+        >
           {error}
         </Txt>
       ) : hint ? (
@@ -102,6 +117,22 @@ export function TextField({
       <View>
         <TextInput
           {...rest}
+          /*
+           * The label, as the field's accessible name.
+           *
+           * React Native has no `htmlFor`: the label is a sibling `Txt` inside
+           * `FormField`, so nothing connects the two and every one of the 58
+           * `TextField` call sites announced itself as an unnamed "text field".
+           * Somebody filling in the application sheet with VoiceOver heard
+           * eight identical ones.
+           *
+           * `rest` first, so a caller that passes its own label wins — a few do,
+           * where the visible label is shorter than the spoken one needs to be.
+           */
+          accessibilityLabel={rest.accessibilityLabel ?? label}
+          {...(error === undefined && hint === undefined
+            ? {}
+            : { accessibilityHint: error ?? hint })}
           multiline={multiline}
           placeholderTextColor={c.text3}
           onFocus={(e) => {

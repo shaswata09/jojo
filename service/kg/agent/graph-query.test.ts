@@ -41,6 +41,7 @@ function world() {
       lastOpenedAt: new Date(START).toISOString(),
       dataSet: 'empty',
       seededAt: null,
+      handoverAt: null,
     },
     now,
   })
@@ -304,7 +305,7 @@ describe('a path query missing an endpoint', () => {
    * suggests exactly the kind of question that produces it.
    */
   it('is answered, not thrown', () => {
-    const memory = new MutableSnapshot([], []) as unknown as GraphSnapshot
+    const memory = MutableSnapshot.from([], []) as unknown as GraphSnapshot
     for (const q of [
       { kind: 'path' },
       { kind: 'path', from: 'Rice' },

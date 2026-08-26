@@ -273,4 +273,47 @@ describe('createMemoryDriver', () => {
 
     expect(seen).toEqual(['remote:e1', 'blocking'])
   })
+
+  /*
+   * `readAllUncloned` exists so `rn-driver` can skip a deep clone it throws
+   * away. That is only sound while it returns exactly what `readAll` does, in
+   * exactly the same order — the persisted document IS this, and a divergence
+   * would be written to the phone and read back as the store's whole truth.
+   */
+  describe('readAllUncloned', () => {
+    const seeded = async () => {
+      const driver = createMemoryDriver()
+      await driver.open()
+      await driver.commit([
+        { store: 'nodes', kind: 'put', key: 'n2', value: { id: 'n2', type: 'application', props: { role: 'B' } } },
+        { store: 'nodes', kind: 'put', key: 'n1', value: { id: 'n1', type: 'application', props: { role: 'A' } } },
+        { store: 'edges', kind: 'put', key: 'e1', value: { id: 'e1', from: 'n1', rel: 'TAGS', to: 'n2', props: {} } },
+        { store: 'meta', kind: 'put', key: 'store', value: { key: 'store', value: { schemaVersion: 1 } } },
+      ] as unknown as DurableOp[])
+      return driver
+    }
+
+    it('returns what readAll returns, in the same order', async () => {
+      const driver = await seeded()
+      const cloned = await driver.readAll()
+      expect(cloned.ok).toBe(true)
+      if (!cloned.ok) return
+      expect(driver.readAllUncloned()).toEqual(cloned.value)
+    })
+
+    it('does not clone — which is the point, and the hazard', async () => {
+      const driver = await seeded()
+      // Two reads of a cloning method can never hand back the same object; two
+      // reads of this one always do. That identity IS the saving, and it is
+      // also why the method's contract says read it and drop it.
+      const first = driver.readAllUncloned()
+      const second = driver.readAllUncloned()
+      expect(first.nodes[0]).toBe(second.nodes[0])
+
+      const viaReadAll = await driver.readAll()
+      expect(viaReadAll.ok).toBe(true)
+      if (!viaReadAll.ok) return
+      expect(viaReadAll.value.nodes[0]).not.toBe(first.nodes[0])
+    })
+  })
 })

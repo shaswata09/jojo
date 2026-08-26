@@ -37,7 +37,9 @@
  * value stable between notifications so `useSyncExternalStore` can compare it.
  */
 
+import { kgError } from '../log'
 import { runAgent } from '../agent/loop'
+import type { AgentOptions } from '../agent/loop'
 import type { AgentStep, Cancellation, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
 import type { ChatMessage } from '../core/model-server'
@@ -89,6 +91,20 @@ export type AgentRun = {
   entries: readonly AgentEntry[]
   busy: boolean
   pending: PendingApproval | null
+  /**
+   * What the last turn was offered, for the next turn to start from.
+   *
+   * The retriever's carry is grow-only and was never used: this was hard-wired
+   * to `null`, so turn one sent a narrowed set and turn two — "yes, do that",
+   * which matches no seed and makes the retriever abstain — sent everything.
+   * A conversation whose prompt prefix changes size between turns cannot be
+   * prefix-cached, and on a small model the second message is where the window
+   * runs out.
+   *
+   * Kept per THREAD rather than globally: two conversations about different
+   * things should not inherit each other's tools.
+   */
+  offered: readonly string[] | null
 }
 
 /**
@@ -142,6 +158,14 @@ export type StartOptions = {
   entries?: readonly AgentEntry[]
   tools?: readonly string[]
   maxSteps?: number
+  /** The model's context window, so the loop can trim before the server does. */
+  window?: number
+  /** The tool chooser and the conversation summariser — both optional. */
+  chooser?: AgentOptions['chooser']
+  summariser?: AgentOptions['summariser']
+  /** A previous compaction's summary, and where to report a new one. */
+  context?: string
+  onCompacted?: (threadId: NodeId, context: string, throughMessages: number) => void
   /**
    * Called once, with the thread this run was FOR.
    *
@@ -300,6 +324,10 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
       entries: [...before, { kind: 'you', id: `e${String(seq)}`, text: clean }],
       busy: true,
       pending: null,
+      // Carried from the previous turn of THIS thread, not reset. Resetting it
+      // here would put the second message back to offering everything, which is
+      // the whole defect.
+      offered: runs.get(threadId)?.offered ?? null,
     })
     notify()
 
@@ -363,6 +391,9 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
           history,
           prompt: clean,
           ...(options.maxSteps === undefined ? {} : { maxSteps: options.maxSteps }),
+          ...(options.window === undefined ? {} : { window: options.window }),
+          ...(options.chooser === undefined ? {} : { chooser: options.chooser }),
+          ...(options.summariser === undefined ? {} : { summariser: options.summariser }),
           ...(options.tools === undefined ? {} : { tools: options.tools }),
           /*
            * The retriever, on for the Assistant and nothing else.
@@ -378,7 +409,13 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
            * contain one of them would leave the conversation naming a tool that is
            * no longer available.
            */
-          retrieve: { carried: null, fromHistory: namesCalledIn(history) },
+          retrieve: {
+            // What the previous turn used, so a follow-up the retriever cannot
+            // read keeps the tools the conversation was already working with
+            // instead of falling back to all of them.
+            carried: runs.get(threadId)?.offered ?? null,
+            fromHistory: namesCalledIn(history),
+          },
           ...(options.gate === undefined ? {} : { gate: options.gate }),
           approve,
           signal: cancel satisfies Cancellation,
@@ -418,13 +455,37 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
             record(
               threadId,
               event.type === 'note'
-                ? { kind: 'note', id, text: event.text }
+                ? {
+                    kind: 'note',
+                    id,
+                    text: event.text,
+                    // Carried, because `toTranscript` reads it to decide whether
+                    // this is replayed to the model as its own speech.
+                    ...(event.app === true ? { app: true as const } : {}),
+                  }
                 : event.type === 'answer'
                   ? { kind: 'answer', id, text: event.text }
                   : { kind: 'error', id, text: event.reason },
             )
           },
         })
+
+        // Carried into the next turn. `null` means everything was offered, and
+        // storing that faithfully matters: it is the difference between "we
+        // narrowed to these" and "we could not narrow".
+        patch(threadId, { offered: run.offered })
+
+        /*
+         * A compaction is reported before the answer is, and on purpose.
+         *
+         * It is a fact about the thread rather than about this turn: the
+         * summary was written, and if it is not persisted the next turn
+         * summarises the same exchanges again. Reported here so it survives
+         * even a turn that then fails.
+         */
+        if (run.compacted !== undefined) {
+          options.onCompacted?.(threadId, run.compacted.context, run.compacted.messages)
+        }
 
         const finished = runs.get(threadId)
         // The run's OWN thread, not whichever one is on screen now.
@@ -436,8 +497,13 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
          * a throw reaching here is by definition a bug rather than a model
          * saying no, because every expected refusal returns a value.
          */
+        // `kgError`, not a bare `console.error`. `log.ts` claims every one of
+        // these carries the `[kg]` prefix so a person asked to read their
+        // console knows which lines matter, and can silence the group — this
+        // was the one line in the package for which that was not true, and it
+        // is the loudest of them.
         if (onError) onError(e)
-        else console.error('Agent run threw:', e)
+        else kgError('Agent run threw', e, { thread: threadId })
         record(threadId, {
           kind: 'error',
           id: nextId(),

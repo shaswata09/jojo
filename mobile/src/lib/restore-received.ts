@@ -26,7 +26,7 @@
  * would only ever show up after somebody's records had already been replaced.
  */
 
-import { readBackup } from '@jojo/service/core/backup'
+import { readBackup, type RestorePlan } from '@jojo/service/core/backup'
 import { decodeUtf8 } from '@jojo/service/core/utf8'
 import { restoreBackup, type RestoreOutcome } from '@jojo/service/repo/restore'
 import { handedOver } from '@jojo/service/repo/meta'
@@ -42,11 +42,23 @@ import { createDocumentStore, plannedUris, withDocumentUris } from '@/lib/restor
  * the progress bar. Asking again at the end would be asking about a decision
  * they have already made twice.
  */
-export async function applyReceived(
-  repo: Repository,
+/**
+ * The received bytes as a plan, WITHOUT writing anything.
+ *
+ * Split from `applyReceived` so a confirmation can happen between reading and
+ * destroying. Applying used to begin the instant the last chunk authenticated:
+ * the poll saw `complete`, called `applyReceived`, and `replaceAll` took every
+ * record, every document and the journal off the phone with nothing on screen
+ * asking first.
+ *
+ * The argument against a confirmation was that the person "watched it pair".
+ * Pairing is consent to receive; it is not consent to destroy what is already
+ * here, and the two are only the same when the phone is empty — which is the
+ * one case where the confirmation costs nothing anyway.
+ */
+export function planReceived(
   payload: Uint8Array,
-  at: string,
-): Promise<RestoreOutcome> {
+): { ok: true; plan: RestorePlan } | { ok: false; message: string } {
   const read = readBackup(decodeUtf8(payload))
   if (!read.ok) {
     // Authenticated bytes that are not a backup. Not an attack — GCM already
@@ -54,8 +66,15 @@ export async function applyReceived(
     // message `readBackup` wrote is more specific than anything this could add.
     return { ok: false, message: read.error.message }
   }
-  const plan = read.value
+  return { ok: true, plan: read.value }
+}
 
+/** Writes a plan the user has agreed to. Destroys what is already here. */
+export async function applyPlan(
+  repo: Repository,
+  plan: RestorePlan,
+  at: string,
+): Promise<RestoreOutcome> {
   const uris = plannedUris(plan.documents)
   const outcome = await restoreBackup(
     repo,

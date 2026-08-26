@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { KeyRound, Link2, Trash2 } from 'lucide-react'
+import { cloudTerms } from '@jojo/service/core/cloud-terms'
 import { normaliseEndpoint, serverAt, serversFor } from '@jojo/service/core/model-server'
 import type { ModelFailure, ModelServer } from '@jojo/service/core/model-server'
 import { Chip } from '@/components/common/Chip'
@@ -728,9 +729,11 @@ const defaultReaderAddress = () => (localHost() ? PROXY_PATH : MARKITDOWN.defaul
  * other provider here sells production use; that is what the bill is for.
  */
 function CloudTerms({ provider }: { provider: ProviderMeta }) {
+  const terms = cloudTerms(provider)
+
   // The dropdown entry reads "NVIDIA (build.nvidia.com) — free, rate limited",
   // which is right in a list and a stammer inside a sentence about to repeat it.
-  const name = provider.label.split(' —')[0]
+  const name = provider.label.split(' —')[0] ?? provider.label
   /*
    * Without the parenthetical, for the two places the full name reads badly: a
    * possessive ("NVIDIA (build.nvidia.com)'s terms") and a link label, where the
@@ -742,59 +745,39 @@ function CloudTerms({ provider }: { provider: ProviderMeta }) {
 
   return (
     <div className="mt-2 rounded-md border border-warning-border bg-warning-soft p-2.5">
-      <p className="text-xs font-medium text-warning">
-        {provider.evaluationOnly
-          ? `${name}: free, and licensed for evaluation only`
-          : `Your records leave this device when you use ${name}`}
-      </p>
+      <p className="text-xs font-medium text-warning">{terms.headline}</p>
 
+      {/* Rendered from `core/cloud-terms.ts`, not written here. Both apps used
+          to hold this prose and both said in a comment that they were saying
+          the same thing; by the time anyone checked, the phone was three
+          sentences short — including the NVIDIA storage licence. A consent
+          notice is the one piece of copy where two versions means one of them
+          is not what the reader was told. */}
       <div className="mt-1.5 space-y-1.5 text-xs text-text-2">
-        <p>
-          Everything the assistant reads to answer you is sent to {name}: your applications and
-          notes, your profile, your CV text once a document is read, and the names and email
-          addresses of any referees or recruiters it looks at.{' '}
-          <span className="text-text-1">
-            Some of that is other people’s personal information, not just yours.
-          </span>{' '}
-          jojo is local-first everywhere else; this is the one part that is not.
-        </p>
-
-        {provider.evaluationOnly ? (
-          <>
-            <p>
-              NVIDIA’s terms permit use{' '}
-              <span className="text-text-1">
-                “for internal testing and evaluation purposes, not in production”
-              </span>{' '}
-              without a subscription, and separately say you{' '}
-              <span className="text-text-1">
-                “will not upload any personal information relating to an identifiable individual”
-              </span>
-              . Tracking a real job search is production use, and the records above are personal
-              information. Submitting content also grants NVIDIA a licence to store and reproduce
-              it.
-            </p>
-            <p>
-              It is free rather than billed — rate limited, and it refuses rather than charging you.
-              Read the terms and decide for yourself whether your use fits them.
-            </p>
-          </>
-        ) : (
-          <p>
-            {name} is paid, billed to your account, and governed by its own terms — including what
-            it may retain and whether prompts may be used to improve its models. That is a different
-            bargain from the local option, not a worse one, but it is worth reading before your
-            records are part of it.
+        {terms.paragraphs.map((paragraph, i) => (
+          <p key={i}>
+            {paragraph.map((segment, j) =>
+              segment.emphasis === true ? (
+                <span key={j} className="text-text-1">
+                  {segment.text}
+                </span>
+              ) : (
+                <span key={j}>{segment.text}</span>
+              ),
+            )}
           </p>
-        )}
+        ))}
 
         <p className="text-text-3">
-          You are the account holder and the party to that agreement — jojo ships no key and makes
-          no request of its own.{' '}
-          <span className="text-text-1">
-            Compliance with {short}’s terms is yours, and jojo accepts no liability for any breach
-            of them.
-          </span>
+          {terms.liability.map((segment, j) =>
+            segment.emphasis === true ? (
+              <span key={j} className="text-text-1">
+                {segment.text}
+              </span>
+            ) : (
+              <span key={j}>{segment.text}</span>
+            ),
+          )}
         </p>
 
         <p className="flex flex-wrap gap-x-3 gap-y-1">

@@ -8,6 +8,7 @@ import type { Background, BackgroundKind } from '@jojo/service/core/model'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useRun } from '@jojo/service/react/use-tool'
 import { useToast } from '@/lib/toast-context'
+import { useModelSettings } from '@/lib/model-settings-context'
 
 /**
  * What jojo knows about the person, grouped and listed.
@@ -110,6 +111,8 @@ export function BackgroundPanel() {
   const { toast } = useToast()
 
   const all = projections.background(graph)
+  const { settings } = useModelSettings()
+  const configured = settings.model.trim() !== ''
 
   const groups = useMemo(() => {
     const by = new Map<BackgroundKind, Background[]>()
@@ -123,6 +126,53 @@ export function BackgroundPanel() {
       return rows === undefined ? [] : [{ kind, rows }]
     })
   }, [all])
+
+  /*
+   * Adding a fact by hand, which had no route at all.
+   *
+   * The only writer was the CV reader, so somebody with no CV to hand — or with
+   * a fact no document of theirs mentions, which is most volunteering, most
+   * outreach and every award announced in an email — could not record it. The
+   * panel offered a delete and no add, which reads as "this is a view of a
+   * document" rather than "this is your profile".
+   *
+   * The form asks for the two fields the tool requires and the three it does
+   * most with. Highlights and `source` are deliberately not here: highlights
+   * are what a CV's bullet points become and typing them one at a time is a
+   * worse way to spend a minute than pasting the CV, and `source` names a
+   * document this entry did NOT come from.
+   */
+  const [adding, setAdding] = useState(false)
+  const [draft, setDraft] = useState({ kind: 'employment' as BackgroundKind, title: '', where: '', period: '', detail: '' })
+  const reset = () => {
+    setDraft({ kind: 'employment', title: '', where: '', period: '', detail: '' })
+    setAdding(false)
+  }
+
+  const add = () => {
+    const title = draft.title.trim()
+    if (title === '') return
+    const result = run('profile.background.add', {
+      background: [
+        {
+          kind: draft.kind,
+          title,
+          // `exactOptionalPropertyTypes`: an empty box is an ABSENT field, not
+          // an empty string. Sending '' would put a blank "Where" on the row.
+          ...(draft.where.trim() === '' ? {} : { where: draft.where.trim() }),
+          ...(draft.period.trim() === '' ? {} : { period: draft.period.trim() }),
+          ...(draft.detail.trim() === '' ? {} : { detail: draft.detail.trim() }),
+        },
+      ],
+    })
+    toast({
+      title: result.ok ? `${title} added` : 'That did not save',
+      ...(result.ok
+        ? { action: result.undo ? { label: 'Undo', onClick: result.undo } : undefined }
+        : { description: result.errors[0]?.message, tone: 'danger' as const }),
+    })
+    if (result.ok) reset()
+  }
 
   const remove = (entry: Background) => {
     const result = run('profile.background.delete', { id: entry.id })
@@ -146,11 +196,98 @@ export function BackgroundPanel() {
         Your background
       </PanelTitle>
 
+      {adding ? (
+        <form
+          className="mb-4 space-y-2 rounded-lg border border-hairline p-3"
+          onSubmit={(event) => {
+            event.preventDefault()
+            add()
+          }}
+        >
+          <div className="flex gap-2">
+            <select
+              aria-label="Kind"
+              className="rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              value={draft.kind}
+              onChange={(e) => setDraft({ ...draft, kind: e.target.value as BackgroundKind })}
+            >
+              {BACKGROUND_ORDER.map((kind) => (
+                <option key={kind} value={kind}>
+                  {BACKGROUND_LABEL[kind]}
+                </option>
+              ))}
+            </select>
+            <input
+              aria-label="Title"
+              required
+              autoFocus
+              placeholder="What it was"
+              className="flex-1 rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              value={draft.title}
+              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            />
+          </div>
+          <div className="flex gap-2">
+            <input
+              aria-label="Where"
+              placeholder="Where (optional)"
+              className="flex-1 rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              value={draft.where}
+              onChange={(e) => setDraft({ ...draft, where: e.target.value })}
+            />
+            <input
+              aria-label="When"
+              placeholder="When — “2021–2024” (optional)"
+              className="flex-1 rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              value={draft.period}
+              onChange={(e) => setDraft({ ...draft, period: e.target.value })}
+            />
+          </div>
+          <textarea
+            aria-label="Detail"
+            rows={2}
+            placeholder="Anything worth weighing a posting against (optional)"
+            className="w-full rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+            value={draft.detail}
+            onChange={(e) => setDraft({ ...draft, detail: e.target.value })}
+          />
+          <div className="flex justify-end gap-2">
+            <Button type="button" size="sm" variant="ghost" onClick={reset}>
+              Cancel
+            </Button>
+            <Button type="submit" size="sm" disabled={draft.title.trim() === ''}>
+              Add
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <div className="mb-3 flex justify-end">
+          <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
+            Add an entry
+          </Button>
+        </div>
+      )}
+
       {all.length === 0 ? (
         <EmptyState
           icon={FileText}
           title="Nothing recorded yet"
-          description="Put your CV, a research or teaching statement in the Vault and jojo will offer to read it. What it finds is shown to you before anything is saved."
+          /*
+           * Branched on whether a model is configured, because the unbranched
+           * sentence was a promise the app could not keep: `ProfileUpdateOffer`
+           * renders nothing without a model, so somebody could upload a CV six
+           * inches below a line saying jojo would offer to read it, and wait
+           * forever. An empty state that names the missing piece is the whole
+           * job of an empty state.
+           */
+          description={
+            // Both halves now end with the manual route, because the empty
+            // state used to describe the ONLY route and it needed a document
+            // and, for one of the two, a model as well.
+            configured
+              ? 'Put your CV, a research or teaching statement in the Vault and jojo will offer to read it — what it finds is shown to you before anything is saved. Or add an entry by hand.'
+              : 'Reading a document needs a model. Connect one in Settings, then put your CV or a statement in the Vault and jojo will offer to read it. You can add entries by hand without one.'
+          }
         />
       ) : (
         <div className="space-y-5">

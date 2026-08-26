@@ -1,4 +1,4 @@
-All paths below are relative to `/Users/shaswatamitra/Desktop/Files/Work/Projects/github/jojo/web`.
+All paths below are relative to `web/`.
 
 # jojo — build plan to a complete interactive prototype
 

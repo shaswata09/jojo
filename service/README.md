@@ -109,7 +109,7 @@ Two rules that are easy to break and are guarded:
 
 ## The guards
 
-`npm -w @jojo/service run lint` runs oxlint and four scripts. **Both apps run them
+`npm -w @jojo/service run lint` runs oxlint and four scripts (`check-layers`, `check-platform`, `check-no-copies`, `check-compositions`). **Both apps run them
 too**, so a violation in mobile's tree fails web's lint.
 
 - `scripts/check-layers.mjs` — the import direction above, plus what an app's adapter

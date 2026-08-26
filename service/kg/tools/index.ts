@@ -44,6 +44,7 @@ import {
   threadRename,
   threadSet,
   threadAutoSet,
+  threadContextSet,
 } from './assistant'
 import {
   pipelineRunRecord,
@@ -192,6 +193,7 @@ export const TOOLS = {
   'assistant.thread.rename': threadRename,
   'assistant.thread.file': threadFile,
   'assistant.thread.auto.set': threadAutoSet,
+  'assistant.thread.context.set': threadContextSet,
   'assistant.thread.delete': threadDelete,
 
   'pipeline.proposal.raise': proposalRaise,

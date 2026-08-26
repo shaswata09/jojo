@@ -52,6 +52,9 @@ const EFFECT: Record<
   admin: { tone: 'red', label: 'store' },
 }
 
+/** Whether a step changed anything — the same rule web's trace uses. */
+const wrote = (effect: AgentStep['effect']): boolean => effect !== 'read' && effect !== 'unknown'
+
 export function StepRow({
   step,
   onUndo,
@@ -165,6 +168,23 @@ export function StepRow({
               onUndo(step)
             }}
           />
+        </View>
+      ) : step.status === 'done' && wrote(step.effect) ? (
+        /* See web's `AgentTrace.tsx`: `step.undo` is a closure and does not
+           survive a reload, so a reopened conversation used to render the same
+           trace with the undo quietly missing and nothing to say why. */
+        <View
+          style={{
+            borderTopWidth: 1,
+            borderTopColor: c.hairline,
+            paddingHorizontal: space[2],
+            paddingVertical: space[1.5],
+          }}
+        >
+          <Txt size="xs" tone="muted">
+            This step cannot be undone from here. More → Settings → Records keeps a log of what
+            changed and can reverse the most recent one.
+          </Txt>
         </View>
       ) : null}
     </View>

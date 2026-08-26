@@ -82,6 +82,18 @@ export function GuideTools() {
           store. Those are never offered to the assistant unless your own words ask for them, and
           they stop for a confirmation even then.
         </p>
+        <p className="mt-3 text-sm text-text-2">
+          &ldquo;Your own words ask for them&rdquo; is a specific test, not a judgement call: the
+          sentence has to contain something that means erase, something that means the whole store,
+          and no mention of a particular kind of record. &ldquo;Clear everything&rdquo; qualifies.
+          &ldquo;Clear the tags off the Baylor application&rdquo; does not, and neither does
+          &ldquo;delete everything I wrote in that note&rdquo; — both name a thing, so both are
+          about that thing.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          It errs towards not offering. If you mean it and phrase it unusually, the assistant says
+          it cannot rather than guessing, and Settings still has the button.
+        </p>
       </Panel>
 
       {/* ---------------------------- the gates ---------------------------- */}
@@ -109,6 +121,62 @@ export function GuideTools() {
         <p className="mt-3 text-sm text-text-2">
           This is why the &ldquo;Ask the graph&rdquo; card can safely offer two read-only tools. It
           is not trusting the model to stay within them.
+        </p>
+      </Panel>
+
+      {/* -------------------------- the workflow --------------------------- */}
+
+      <Panel>
+        <PanelTitle hint="steps, not one long try">Work that takes several steps</PanelTitle>
+        <p className="text-sm text-text-2">
+          Reading a CV is not one question. jojo splits the document on its own headings, asks for
+          each section separately, asks once more what was missed, and finally asks how the facts
+          relate &mdash; five or six model calls for one upload. Written as a single block of code
+          that would be one <code className="font-mono text-xs">try</code> around the lot, and one
+          bad reply anywhere in it would lose the whole thing.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          So a job like that is declared as <strong>steps with edges between them</strong>. Each
+          step says how many times it is worth retrying and whether the job can carry on without
+          it; the route from one step to the next is decided by what happened, never by asking the
+          model where to go. A step that fails is named in the result rather than disappearing into
+          &ldquo;reading your CV failed&rdquo;.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          This matters most on a small model. A 7B does not usually fail by reasoning badly over
+          many steps &mdash; it fails by returning something malformed on one step out of six. The
+          useful answer is to try that step again and leave the other five alone.
+        </p>
+        <p className="mt-3 text-sm text-text-3">
+          A step that only improves the result, like working out how your facts connect, is marked
+          optional: if it fails you still get everything the earlier steps found. Loops are allowed
+          &mdash; a step may route backwards &mdash; and there is a hard cap on total steps so a
+          routing mistake stops with a readable trace instead of spinning against your GPU.
+        </p>
+      </Panel>
+
+      {/* ------------------ when the model answers badly ------------------- */}
+      <Panel>
+        <PanelTitle hint="a bad reply costs a pass, not the document">
+          When a small model answers badly
+        </PanelTitle>
+        <p className="text-sm text-text-2">
+          A smaller model runs out of room mid-sentence. Reading a CV asks for a list of facts, and
+          a reply cut off in the middle of that list has no closing bracket &mdash; so it is not
+          JSON, and the obvious thing to do with it is throw it away. jojo keeps everything up to
+          the last <strong>finished</strong> entry instead, and says how much was lost. Twenty facts
+          arrive instead of none.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          It stops at a finished entry on purpose. Half of a job title is worse than no job title:
+          it goes in front of you looking complete, and you approve it.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          The same care applies to searching. Asked to &ldquo;move my Rice application to
+          interview&rdquo; when there are two, a model that searched for one match and got one
+          would have no way to know there was a second &mdash; so it would move the wrong record
+          confidently. Every search reports how many matched as well as what it is showing, which
+          is what lets the assistant come back and ask you which you meant.
         </p>
       </Panel>
 
@@ -140,9 +208,44 @@ export function GuideTools() {
           anything — so it offers everything, exactly as it would have before any of this existed.
           Being unsure costs a little speed. Guessing would cost you your answer.
         </p>
+        <h3 className="mt-5 text-sm font-medium">A second assistant does the choosing</h3>
+        <p className="mt-1.5 text-sm text-text-2">
+          Matching your words against a list is fast and free and cannot read intent. &ldquo;I heard
+          back from Rice&rdquo; names no tool and no verb, but it plainly means a stage changed. So
+          when a model is connected, a second and much smaller job runs first: it reads your request
+          — not the conversation, not the results, just what you asked — and answers with the tools
+          it thinks are needed.
+        </p>
         <p className="mt-3 text-sm text-text-2">
-          A conversation only ever gains tools. Nothing you have already used is taken away by a
-          later question.
+          It is cheap because it does not need the full instructions for each tool, only a name and
+          a line: about a sixth of what handing over the whole catalog would cost, and it saves that
+          on every step rather than once. Measured over ten questions in a row, it took the first
+          message from roughly 8,000 words of context down to 2,900.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          It can only narrow. Whatever it picks goes through the same checks as before — the tools
+          that make a thing come along with the tools that change it, and the two that empty your
+          store are never included unless you asked for them in your own words. If it is slow or
+          unavailable, the word-matching runs instead and nothing is lost but a moment.
+        </p>
+
+        <h3 className="mt-5 text-sm font-medium">Long conversations</h3>
+        <p className="mt-1.5 text-sm text-text-2">
+          A model can only hold so much at once, and a conversation that outgrows it gets cut — by
+          the server, from the beginning, which is where the rules live. jojo does the cutting
+          itself instead, from the oldest end, and never touches its own instructions or your
+          current question.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          What it removes it first replaces with a short summary of what happened there, so the
+          assistant still knows you already told it which Rice application you meant. You are told
+          when this happens. Your records are never involved — this is only about what fits in one
+          message.
+        </p>
+
+        <p className="mt-3 text-sm text-text-2">
+          A conversation keeps the tools it has actually used. Ones it was merely offered and never
+          touched fall away, so a long chat does not slowly fill up with everything.
         </p>
       </Panel>
 

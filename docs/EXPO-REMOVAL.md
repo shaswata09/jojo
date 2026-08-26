@@ -1,5 +1,11 @@
 # Removing Expo from `mobile/`
 
+> **COMPLETE — kept as a record.** This describes the move from Expo SDK 54 to bare React Native, which has
+> happened. It is written in the future and imperative tense because it was
+> written before the work; read it as a log of decisions taken, not as
+> outstanding work. `docs/AUDIT.md`, `docs/PROTOTYPE-PLAN.md` and
+> `docs/UX-PLAN.md` carry the same kind of banner for the same reason.
+
 Decisions taken before any code moved, and the two facts that were wrong when
 this was first proposed. Written 2026-08-17.
 
@@ -40,7 +46,7 @@ it back by hand. Reuse comes from the workspace migration, with or without Expo.
 
 **`expo-file-system` is not the React Native half of the `FileStore` port.**
 That framing was wrong and acting on it would have meant building an adapter for
-an interface with no caller. The port lives at `web/src/kg/storage/file-store.ts`
+an interface with no caller. The port lives at `service/kg/storage/file-store.ts`
 and its only implementation anywhere is `memory-file-store.ts`.
 `mobile/src/kg/storage/` has no `file-store.ts` at all — mobile's persistence is
 the graph `Driver` over AsyncStorage, which is not an Expo package and is

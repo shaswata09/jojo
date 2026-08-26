@@ -136,3 +136,40 @@ describe('meta', () => {
     expect(s.string().meta).toEqual({ kind: 'string' })
   })
 })
+
+/**
+ * A refusal that names what was actually sent.
+ *
+ * The largest single source of refused tool calls in the multi-turn benchmark:
+ * GPT-OSS 120B sent `{"kind":"application"}` to `memory.list` eleven times out
+ * of thirteen. The field is `type`; its LABEL is "Kind". Unknown keys pass
+ * through by design, so nothing rejected `kind` — it was never read, and the
+ * refusal said "type: Needs to be one of…" as though nothing had been supplied.
+ */
+describe('unread keys in a failed parse', () => {
+  const shape = s.object({ type: s.string({ label: 'Kind' }), limit: s.optional(s.number()) })
+
+  it('names them, and names the fields there actually are', () => {
+    const out = shape.parse({ kind: 'application' }, '')
+    expect(out.ok).toBe(false)
+    if (out.ok) return
+    const text = out.issues.map((i) => i.message).join(' ')
+    expect(text).toContain('kind')
+    expect(text).toContain('type')
+  })
+
+  it('says nothing when the call worked', () => {
+    // Passthrough stays passthrough: a call that succeeded with an extra key is
+    // not made to explain itself, which is what lets a newer client talk to an
+    // older build.
+    const out = shape.parse({ type: 'application', somethingNew: 1 }, '')
+    expect(out.ok).toBe(true)
+  })
+
+  it('says nothing about unread keys when there are none', () => {
+    const out = shape.parse({ type: 42 }, '')
+    expect(out.ok).toBe(false)
+    if (out.ok) return
+    expect(out.issues.map((i) => i.message).join(' ')).not.toContain('not fields of this tool')
+  })
+})

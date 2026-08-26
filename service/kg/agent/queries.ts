@@ -8,12 +8,19 @@
  * `Tx`, they open no transaction and they write no journal row. They are a
  * separate surface that happens to be offered to the same caller.
  *
- * WHY FIVE GENERIC TOOLS AND NOT ELEVEN TYPED ONES. There are eleven node types
- * and fifty-nine write tools already. A model choosing from seventy names picks
- * worse than one choosing from sixty-four, and this app points at whatever the
- * user is running at home — frequently a 7B, where the tool list is a real part
- * of the context budget. Generic also means a twelfth node type is readable the
- * day it is added rather than the day someone remembers to write its reader.
+ * WHY A FEW GENERIC TOOLS AND NOT ONE PER NODE TYPE. There are sixteen node
+ * types and eighty-two write tools already; the catalog is ninety-two entries.
+ * A model choosing from a hundred and three names picks worse than one choosing
+ * from ninety-two, and this app points at whatever the user is running at home
+ * — frequently a 7B, where the tool list is a real part of the context budget.
+ * Generic also means a seventeenth node type is readable the day it is added
+ * rather than the day someone remembers to write its reader.
+ *
+ * (Those numbers said eleven types and sixty-four tools until the counts were
+ * checked. `catalog.test.ts` pins them now, so the next person to add a tool is
+ * told to update this paragraph rather than leaving it to rot again — the
+ * argument survives a wrong number, but a comment nobody trusts is one nobody
+ * reads.)
  *
  * The cost is that `type` becomes an argument the model can get wrong, which is
  * why it is an enum over `NODE_TYPES` rather than a string, and why
@@ -212,13 +219,56 @@ const LIMIT_MAX = 200
 const limit = s.optional(
   s.number({
     label: 'Limit',
-    description: `How many records at most. Defaults to 50, never more than ${String(LIMIT_MAX)}.`,
+    // Says what the answer carries, because the number a model picks here decides
+    // what it can SEE. One is the dangerous choice — it turns "which of these
+    // two?" into "here is the one" — so the reply reports `total` either way and
+    // this says so.
+    description: `How many records at most. Defaults to 50, never more than ${String(LIMIT_MAX)}. The reply always reports the total number of matches, so a limit hides records from you but never hides that they exist.`,
     min: 1,
     max: LIMIT_MAX,
   }),
 )
 
 const capped = (n: number | undefined) => Math.min(n ?? 50, LIMIT_MAX)
+
+/**
+ * A list of matches, with what was cut off it.
+ *
+ * ## The failure this exists to stop
+ *
+ * `memory.search` returned a bare array sliced to `limit`, and said nothing
+ * about a slice having happened. Measured, and reproducible twice: told "move my
+ * Rice application to interview" with TWO Rice applications in the store, Qwen3
+ * 14B searched with `limit: 1`, got back one record, and moved it — confidently,
+ * and with no way to know it had been handed one of two.
+ *
+ * The system prompt tells the model to name both and ask when several records
+ * match. It cannot follow that instruction about a second record it was never
+ * shown. So this is not a model failure to be prompted around: the tool answered
+ * an ambiguous question as though it were a clear one.
+ *
+ * `total` is the count BEFORE the limit. A model that reads `shown: 1, total: 2`
+ * has what it needs; one that reads an array of length 1 has nothing.
+ */
+type Matches<T> = { readonly matches: readonly T[]; readonly shown: number; readonly total: number }
+
+const matched = <T>(all: readonly T[], limit: number | undefined): Matches<T> => {
+  const matches = all.slice(0, capped(limit))
+  /*
+   * Counts first, records second, and the order is load-bearing.
+   *
+   * `renderOutcome` serialises this and cuts it at a character budget, so
+   * anything after a long `matches` array is what gets lost — and `total` is
+   * the field this whole shape exists to deliver. Putting the two numbers in
+   * front costs nothing and survives the cut.
+   *
+   * The dangerous case survives either way: a model asking for `limit: 1` gets
+   * an answer far under the budget, and that is exactly the call that hides an
+   * ambiguity. This is for the other end, where fifty records are cut short and
+   * the model should still learn that there were eighty.
+   */
+  return { total: all.length, shown: matches.length, matches }
+}
 
 export const memoryOverview = defineRead({
   name: 'memory.overview',
@@ -250,12 +300,14 @@ export const memoryList = defineRead({
     limit,
   }),
   read: (memory, input: { type: NodeType; limit?: number }) =>
-    [...memory.ofType(input.type)]
-      // Newest first: a person asking "what did I add" means the recent end, and
-      // a truncated list should keep the half they meant.
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-      .slice(0, capped(input.limit))
-      .map((n) => render(n, memory)),
+    matched(
+      [...memory.ofType(input.type)]
+        // Newest first: a person asking "what did I add" means the recent end,
+        // and a truncated list should keep the half they meant.
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        .map((n) => render(n, memory)),
+      input.limit,
+    ),
 })
 
 export const memoryGet = defineRead({
@@ -286,17 +338,26 @@ export const memorySearch = defineRead({
     'Find records whose text contains a phrase, across every kind at once. Use it when you know a name but not an id.',
   effect: 'read',
   input: s.object({
-    query: s.string({ label: 'Text', description: 'Matched anywhere in the record, ignoring case.', min: 1 }),
+    query: s.string({
+      label: 'Text',
+      // Says where to go instead of an empty query, because an empty query is
+      // what models send when they want "everything". Measured: GPT-OSS 120B
+      // called this with a blank `query` five times in one benchmark run, each
+      // one refused with "Cannot be blank" and each one a wasted round trip.
+      description:
+        'Matched anywhere in the record, ignoring case. Must not be blank — to see everything of a kind, use memory.list instead.',
+      min: 1,
+    }),
     type: s.optional(nodeType('Kind', 'Narrow to one kind of record.')),
     limit,
   }),
   read: (memory, input: { query: string; type?: NodeType; limit?: number }) => {
     const needle = input.query.trim().toLowerCase()
     const pool = input.type ? memory.ofType(input.type) : memory.nodes()
-    return pool
-      .filter((n) => haystack(n, memory).includes(needle))
-      .slice(0, capped(input.limit))
-      .map((n) => render(n, memory))
+    return matched(
+      pool.filter((n) => haystack(n, memory).includes(needle)).map((n) => render(n, memory)),
+      input.limit,
+    )
   },
 })
 
@@ -487,8 +548,8 @@ export const boardSearch = defineRead({
  *
  * WHY ONE TOOL AND NOT SEVERAL. `sum`, `mean` and `median` as three names would
  * be three more entries in a list this file's header argues hard for keeping
- * short — "a model choosing from seventy names picks worse than one choosing
- * from sixty-four", on hardware that is frequently a 7B at home. One name and
+ * short — a model choosing from more names picks worse than one choosing from
+ * fewer, on hardware that is frequently a 7B at home. One name and
  * one grammar covers arithmetic and descriptive statistics together, and the
  * grammar composes in a way a fixed set of tools cannot: `mean(58000/9*12,
  * 72000)` is one call.

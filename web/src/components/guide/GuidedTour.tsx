@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { Compass } from 'lucide-react'
 import { TourFooter } from '@/components/guide/tour/TourFooter'
 import { clearProgress, readProgress, writeProgress } from '@/components/guide/tour/progress'
@@ -66,10 +66,41 @@ import { cn } from '@/lib/utils'
  * a page could mount one without the other. It must be rendered inside the
  * router — every hand-off is a real link — which any guide page is.
  */
+/**
+ * Router state that means "the reader already asked for the tour, open it".
+ *
+ * Onboarding's button says START THE TOUR and, until this, navigated to the
+ * page the launcher lives on and stopped — leaving a second button, differently
+ * worded, between the reader and the thing they had just asked for. Sending an
+ * intent along with the navigation is what closes that gap; a query parameter
+ * would have done it too, but it would also have survived being bookmarked,
+ * shared and reloaded, and a tour that reopens every time you return to the
+ * page you saved is worse than one you have to click twice.
+ */
+export type TourIntent = { startTour?: boolean }
+
 export function TourLauncher({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(() => readProgress(STEPS.length))
   const { open: openDialog } = useDialogs()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  /*
+   * Opened once per arrival, and the state is consumed as it is read.
+   *
+   * `replace` rather than push, so the history entry the reader came from stays
+   * where it was — and so that going BACK to this page later, or reloading it,
+   * does not find the intent still sitting there and reopen a tour nobody asked
+   * for the second time.
+   */
+  const asked = (location.state as TourIntent | null)?.startTour === true
+  useEffect(() => {
+    if (!asked) return
+    setOpen(true)
+    report('tour_used', { outcome: 'started' })
+    void navigate(location.pathname, { replace: true, state: null })
+  }, [asked, location.pathname, navigate])
 
   /**
    * What to do once this dialog has finished closing.

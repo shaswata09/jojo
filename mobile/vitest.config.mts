@@ -17,7 +17,14 @@ import { fileURLToPath } from 'node:url'
  * a runner that had to boot a React Native environment to exercise them would be
  * evidence that property had been lost.
  *
- * Still scoped to `src/kg` and `src/lib`, and the screens are still out. They
+ * `src/theme` joined them, for one file. `tokens.ts` is numbers — no DOM, no
+ * React Native API, nothing to render — and `slopFor` is the rule that decides
+ * how big a control is under a thumb. There is no way to MEASURE a rendered
+ * target here, which is exactly why the arithmetic behind them should not also
+ * go unchecked: a `slopFor` that quietly stopped reaching 44 would leave every
+ * call site reading correctly and every target too small.
+ *
+ * Still scoped to those three, and the screens are still out. They
  * are React Native components, and testing them needs a renderer, a native
  * module mock table and a decision about which of the two this project wants.
  * The cost of leaving them out is higher than it was: with the graph layer gone
@@ -31,6 +38,6 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/kg/**/*.test.ts', 'src/lib/**/*.test.ts'],
+    include: ['src/kg/**/*.test.ts', 'src/lib/**/*.test.ts', 'src/theme/**/*.test.ts'],
   },
 })

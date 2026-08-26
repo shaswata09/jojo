@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Plus, Tag, X } from 'lucide-react'
 import { DeleteKeywordDialog } from '@/components/common/DeleteKeywordDialog'
 import { KeywordChip } from '@/components/common/KeywordChip'
@@ -31,11 +31,23 @@ export function LabelFilter({
    */
   scopeIds?: readonly string[]
 }) {
-  const { labels, selected, toggleSelected, clearSelected, addLabel, countFor, countWithin } =
+  const { labels, selected, toggleSelected, clearSelected, addLabel, countFor, countsWithin } =
     useLabels()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState('')
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
+
+  /*
+   * Counted once for every chip, not once per chip.
+   *
+   * The map is memoised on `scopeIds`, which means the call sites have to hand
+   * over a STABLE array — building it inline in JSX makes a new one every
+   * render and defeats this entirely. Both of them memoise it now.
+   */
+  const counts = useMemo(
+    () => (scopeIds === undefined ? null : countsWithin(scopeIds)),
+    [scopeIds, countsWithin],
+  )
 
   const create = () => {
     const name = draft.trim()
@@ -68,7 +80,7 @@ export function LabelFilter({
             key={l.id}
             label={l}
             on={selected.has(l.id)}
-            count={scopeIds ? countWithin(l.id, scopeIds) : countFor(l.id)}
+            count={counts ? (counts.get(l.id) ?? 0) : countFor(l.id)}
             onToggle={() => toggleSelected(l.id)}
             onRequestDelete={setPendingDelete}
           />

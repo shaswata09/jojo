@@ -35,7 +35,7 @@ import { writeFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { SCENARIOS, grade, type Outcome } from '../kg/agent/eval-scenarios'
 import { CATALOG, functionSpecs, toWireName } from '../kg/agent/catalog'
-import { inCatalogOrder, offeredFor } from '../kg/agent/retrieve'
+import { EVERYTHING_SAFE, inCatalogOrder, offeredFor } from '../kg/agent/retrieve'
 
 const MODELS = [
   { id: 'gemma_4_31b', endpoint: 'http://10.116.34.124:8103/v1', label: 'Gemma 3 31B' },
@@ -67,11 +67,24 @@ type Row = Outcome & {
 const ALL_SPECS = functionSpecs() as { function: { name: string } }[]
 const byWire = new Map(ALL_SPECS.map((s) => [s.function.name, s]))
 
-/** The retriever's set for a prompt, in the shape the wire wants. */
+/**
+ * The retriever's set for a prompt, in the shape the wire wants.
+ *
+ * The abstain fallback is `EVERYTHING_SAFE`, not `ALL_SPECS`, so this measures
+ * what the app actually sends. It measured the whole catalog, which is two
+ * tools more than the loop has offered since the store-wipe pair was taken out
+ * of the fallback — a harness that sends something the product does not is a
+ * harness reporting a number nobody experiences.
+ */
 function narrowedSpecs(prompt: string) {
   const chosen = offeredFor(prompt, null)
-  if (chosen === null) return ALL_SPECS
-  return inCatalogOrder(chosen)
+  if (chosen === null) return specsFor(EVERYTHING_SAFE)
+  return specsFor(inCatalogOrder(chosen))
+}
+
+/** Registry names, as wire specs, dropping any this build does not carry. */
+function specsFor(names: readonly string[]) {
+  return names
     .map((name) => byWire.get(toWireName(name)))
     .filter((s): s is { function: { name: string } } => s !== undefined)
 }

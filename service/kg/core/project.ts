@@ -67,6 +67,58 @@ export type Projector<T extends NodeType, R> = (n: StoredNode<T>, g: GraphSnapsh
 type Cached<R> = { epoch: number; value: R }
 
 /**
+ * Structural equality over what a projector actually returns.
+ *
+ * ## Why a projection needs this at all
+ *
+ * The epoch is deliberately coarse. It moves for a node, for its incident
+ * edges, AND for every neighbour one hop out, because an application's row
+ * carries its organisation's NAME and nothing finer can see that. The cost of
+ * that safety is that the epoch moves for edits the projector never reads.
+ *
+ * Measured on the benchmark world — six applications, five organisations —
+ * changing one application's `note`, which neither list projects:
+ *
+ *     organisation   array republished: yes   1 of 5 rows newly identified
+ *     application    array republished: yes   1 of 6 rows newly identified
+ *     ...and the CONTENT of zero rows in either list had changed.
+ *
+ * A new row object is a `React.memo` miss and a republished array is a list
+ * re-render, so an edit to a field nobody displays cost both. Comparing the
+ * re-projected value against the one already cached costs one walk of a small
+ * flat record and turns that into nothing at all.
+ *
+ * Deliberately NOT `JSON.stringify` on both sides: it is quadratic-ish on the
+ * hot path, it calls two objects with keys in different orders different, and
+ * it throws on a cycle rather than returning an answer.
+ */
+export function sameValue(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false
+
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
+    return a.every((x, i) => sameValue(x, b[i]))
+  }
+
+  // Anything with a prototype of its own — a Date, a Map, a class instance — is
+  // not something this can compare by walking keys, and guessing would be worse
+  // than a cache miss. `Object.is` above already caught the same instance.
+  const pa = Object.getPrototypeOf(a) as unknown
+  const pb = Object.getPrototypeOf(b) as unknown
+  if (pa !== Object.prototype || pb !== Object.prototype) return false
+
+  const ka = Object.keys(a)
+  const kb = Object.keys(b)
+  if (ka.length !== kb.length) return false
+  return ka.every(
+    (k) =>
+      Object.hasOwn(b, k) &&
+      sameValue((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
+  )
+}
+
+/**
  * One projection per collection, created once and called on every render.
  *
  * Keyed on `epoch(id)` rather than on the snapshot version, because a
@@ -128,9 +180,16 @@ export function createProjection<T extends NodeType, R>(
       if (hit && hit.epoch === epoch) {
         value = hit.value
       } else {
-        value = project(node, g)
+        const projected = project(node, g)
+        // A moved epoch is not a changed row. The epoch is coarse on purpose —
+        // see `sameValue` — so the commonest miss here is a neighbour bump for
+        // a field this projector does not read. Keeping the OLD object when the
+        // new one is structurally identical is what lets `React.memo` hold and
+        // what keeps `changed` false, so the ARRAY identity survives too.
+        const unchanged = hit !== undefined && sameValue(hit.value, projected)
+        value = unchanged ? hit.value : projected
         cache.set(node.id, { epoch, value })
-        changed = true
+        if (!unchanged) changed = true
       }
 
       // A row that kept its identity can still have MOVED, and a reordered

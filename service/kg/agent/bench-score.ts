@@ -35,9 +35,43 @@ export type CallRecord = {
   readonly effect: string
   /** False when the call was refused — a bad id, a schema violation, a block. */
   readonly ok: boolean
+  /**
+   * The arguments, serialised, so a repeat can be told from ordinary work.
+   *
+   * Optional because older reports do not carry it and a scorer that threw on
+   * one would make every stored run unreadable.
+   */
+  readonly args?: string
 }
 
 /** A record as the scorer sees it. Flattened by the runner from the real store. */
+/**
+ * One record, flattened into the shape the rubric asks questions about.
+ *
+ * ## The derived props, and why they are part of the contract
+ *
+ * Some of what a check wants to assert is not a prop at all. An application's
+ * employer is a separate `organisation` node joined by an `AT` edge, because
+ * `application.create` mints the org itself; a document filed under an
+ * application is a `FILED_UNDER` edge. A rubric written against the literal
+ * store would have to talk about edges and ids, which is unreadable and would
+ * make every check depend on how the tools happen to model things today.
+ *
+ * So the harness resolves a fixed, small set of edges into props before
+ * scoring, and checks may rely on exactly these:
+ *
+ *   - `org`        — the name of the node on the other end of an `AT` edge.
+ *   - `filedUnder` — a label for the node an outgoing `FILED_UNDER` points at,
+ *                    which for an application is its employer and role
+ *                    together, so a check can match on either half.
+ *   - `keywords`   — names on incoming `TAGS` edges (its own field, since
+ *                    `tagged` is a first-class check kind).
+ *
+ * This list was folklore until a check that needed `filedUnder` was simply left
+ * out, and `file-under-application` ended up scored so that a model which did
+ * nothing at all passed its entire state axis. Anything added here should be
+ * added to this comment in the same commit.
+ */
 export type BenchNode = {
   readonly type: string
   readonly props: Readonly<Record<string, unknown>>
@@ -172,9 +206,25 @@ export function scoreTrajectory(calls: readonly CallRecord[]): TrajectoryScore {
   let repeats = 0
   const writes = calls.filter((c) => isWrite(c.effect))
 
+  /*
+   * Calls already made, by name AND arguments.
+   *
+   * This counted adjacent same-NAME calls, which is not what "repeat" means to
+   * anybody reading the report: searching twice in a row for two different
+   * things scored as going in circles, and Gemma's first run reported 19
+   * repeats out of 84 calls almost entirely from legitimate consecutive reads.
+   *
+   * The definition that matters — and the one `loop.ts`'s own repeat guard
+   * uses — is the same call with the same arguments, anywhere in the run. That
+   * is a model stuck; two searches are a model working.
+   */
+  const madeBefore = new Set<string>()
+
   for (const [index, call] of calls.entries()) {
     const previous = calls.slice(0, index)
-    if (index > 0 && calls[index - 1]?.name === call.name) repeats += 1
+    const fingerprint = `${call.name}\u0000${call.args ?? ''}`
+    if (madeBefore.has(fingerprint)) repeats += 1
+    madeBefore.add(fingerprint)
     if (!isWrite(call.effect)) continue
 
     const sawRead = previous.some((c) => !isWrite(c.effect))

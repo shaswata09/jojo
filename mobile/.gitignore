@@ -43,9 +43,10 @@ yarn-error.*
 # running an Expo command first, and so a change to native config is reviewable
 # in a diff rather than hidden inside a generator.
 #
-# The cost of that choice: `expo prebuild` regenerates these from `app.json` and
-# will overwrite hand edits. Edit the native files directly and treat prebuild
-# as a one-time bootstrap, or make the change in `app.json` and re-run it.
+# There is no `app.json` and nothing regenerates these. This block used to say
+# to treat `expo prebuild` as a bootstrap and re-run it — running it today would
+# destroy both native projects, which is what `mobile/README.md` and the root
+# README both say in as many words. Edit the native files directly.
 #
 # Only build output is ignored.
 /android/build/

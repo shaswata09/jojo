@@ -33,6 +33,7 @@
 
 import { ROLES, SOURCES } from '../core/model'
 import type { Application, RoleTag, Source } from '../core/model'
+import { firstJsonObject } from '../core/json-reply'
 import type { ChatMessage } from '../core/model-server'
 
 /**
@@ -130,7 +131,9 @@ const SYSTEM = [
   '  location city and region, or "Remote".',
   '  comp     the salary or band, as written. Omit if the posting gives none.',
   '  deadline the application deadline as YYYY-MM-DD. Omit unless the posting',
-  '           states one. A posting date is NOT a deadline.',
+  '           states one. A posting date is NOT a deadline. When it gives a day',
+  '           and month but no year, work the year out from today — a deadline',
+  '           is ahead, so "20 September" in December means next year.',
   `  source   one of: ${SOURCES.join(', ')}.`,
   '',
   'If the text is not a job posting — an error page, a login wall, or a page',
@@ -138,10 +141,23 @@ const SYSTEM = [
 ].join('\n')
 
 /** The two messages, ready for `agentTurn`. The caller owns the transport. */
-export function postingMessages(url: string, markdown: string): ChatMessage[] {
+/**
+ * `today` is required, not optional, and that is deliberate.
+ *
+ * This asks for `deadline` as `YYYY-MM-DD`, and postings say "applications
+ * close 20 September" far more often than they give a year. Without today's
+ * date the model produces one from its weights — the same defect the agent loop
+ * had, where a reminder for "the 20th" was filed sixteen months in the past.
+ * Here it would be a real deadline on somebody's real application.
+ *
+ * A required parameter rather than a default, so that adding a second caller
+ * cannot quietly reintroduce it. Taken from the host's clock, never read here:
+ * this layer has none (D26).
+ */
+export function postingMessages(url: string, markdown: string, today: string): ChatMessage[] {
   const text = markdown.length > POSTING_BUDGET ? markdown.slice(0, POSTING_BUDGET) : markdown
   return [
-    { role: 'system', content: SYSTEM },
+    { role: 'system', content: `${SYSTEM} Today is ${today}.` },
     {
       role: 'user',
       content: [`Posting URL: ${url}`, '', 'Page text:', text].join('\n'),
@@ -149,46 +165,6 @@ export function postingMessages(url: string, markdown: string): ChatMessage[] {
   ]
 }
 
-/**
- * The first JSON object in a reply, however the model wrapped it.
- *
- * Models fence JSON, prefix it with "Here is the JSON:", or both, whatever the
- * prompt says — so the brace scan is the parser and the instruction is only a
- * hint. Scanning for the outermost balanced braces rather than the first `{`
- * because a fenced block often contains prose above it that itself has a brace.
- */
-function firstObject(text: string): unknown {
-  const start = text.indexOf('{')
-  if (start === -1) return null
-  let depth = 0
-  let inString = false
-  let escaped = false
-  for (let i = start; i < text.length; i += 1) {
-    const ch = text[i]
-    if (escaped) {
-      escaped = false
-      continue
-    }
-    if (ch === '\\') {
-      escaped = true
-      continue
-    }
-    if (ch === '"') inString = !inString
-    if (inString) continue
-    if (ch === '{') depth += 1
-    else if (ch === '}') {
-      depth -= 1
-      if (depth === 0) {
-        try {
-          return JSON.parse(text.slice(start, i + 1)) as unknown
-        } catch {
-          return null
-        }
-      }
-    }
-  }
-  return null
-}
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -212,13 +188,13 @@ function textOf(value: unknown): string | undefined {
  * written as "rolling" is dropped rather than carried into a record.
  */
 export function readPosting(reply: string): PostingRead {
-  const parsed = firstObject(reply)
+  const parsed = firstJsonObject(reply)
   if (parsed === null || typeof parsed !== 'object') {
     return { ok: false, reason: 'The model did not answer with JSON.' }
   }
 
   const raw = parsed as Record<string, unknown>
-  if (raw.notAPosting === true) {
+  if (raw['notAPosting'] === true) {
     return {
       ok: false,
       reason:
@@ -228,32 +204,32 @@ export function readPosting(reply: string): PostingRead {
 
   const draft: PostingDraft = {}
 
-  const org = textOf(raw.org)
+  const org = textOf(raw['org'])
   if (org !== undefined) draft.org = org
 
-  const role = textOf(raw.role)
+  const role = textOf(raw['role'])
   if (role !== undefined) draft.role = role
 
   // Exact match only. A model that answers 'Assistant professor' or 'Professor'
   // is offering something the segmented control cannot show, and a silent
   // near-miss is worse than an empty field the user picks from.
-  const roleTag = textOf(raw.roleTag)
+  const roleTag = textOf(raw['roleTag'])
   if (roleTag !== undefined && (ROLES as readonly string[]).includes(roleTag)) {
     draft.roleTag = roleTag as RoleTag
   }
 
-  const location = textOf(raw.location)
+  const location = textOf(raw['location'])
   if (location !== undefined) draft.location = location
 
-  const comp = textOf(raw.comp)
+  const comp = textOf(raw['comp'])
   if (comp !== undefined) draft.comp = comp
 
   // The form's date input takes ISO and nothing else, so 'rolling', 'open until
   // filled' and '15 November' are all dropped here rather than rejected later.
-  const deadline = textOf(raw.deadline)
+  const deadline = textOf(raw['deadline'])
   if (deadline !== undefined && ISO_DATE.test(deadline)) draft.deadline = deadline
 
-  const source = textOf(raw.source)
+  const source = textOf(raw['source'])
   if (source !== undefined && (SOURCES as readonly string[]).includes(source)) {
     draft.source = source as Source
   }
@@ -267,4 +243,58 @@ export function readPosting(reply: string): PostingRead {
 
   const missing = FIELDS.filter((field) => draft[field] === undefined)
   return { ok: true, draft, missing }
+}
+
+/**
+ * One more draw when the model's answer did not parse.
+ *
+ * ## Why the ask is worth repeating and the fetch is not
+ *
+ * These are three different failures wearing one word. A refused request, an
+ * empty answer and an answer that is prose instead of JSON all end the run
+ * here today — and only the last one is worth trying again. Sampling is why: a
+ * small local model asked the same question twice does not give the same
+ * answer, so a malformed draw is a coin that can be flipped again, where a
+ * server that said no will say no just as fast the second time.
+ *
+ * It matters because of WHERE this sits. By the time the parse fails the page
+ * has already been fetched through a reader, converted to markdown and held in
+ * memory — the slow, fallible part is done. Losing all of that to one bad draw
+ * means the person starts the whole thing over, and on a 7B model that is not a
+ * rare event: this is the failure `flow.ts` was written about, one step in a
+ * run returning something malformed while everything around it worked.
+ *
+ * ## Why one retry and not a policy
+ *
+ * A second draw is a coin flip; a third is waiting. Two attempts turn the
+ * common case — a model that wrapped its JSON in an apology — into a success,
+ * and anything that fails twice is a model that cannot do this task on this
+ * page, which more attempts will not change. The person is better served by
+ * the message than by the wait.
+ *
+ * `attempts` is reported so a caller can say so rather than pretending the
+ * first draw worked.
+ */
+export async function askForPosting(
+  ask: () => Promise<string | null>,
+  attempts = 2,
+): Promise<PostingRead & { readonly attempts: number }> {
+  let last: PostingRead = { ok: false, reason: 'The model answered with nothing at all.' }
+  for (let attempt = 1; attempt <= Math.max(1, attempts); attempt += 1) {
+    const reply = await ask()
+    // Not a parse failure, so not something a second draw fixes: an empty
+    // answer twice over is a model that is not answering at all.
+    if (reply === null || reply.trim() === '') {
+      return { ...last, attempts: attempt }
+    }
+    last = readPosting(reply)
+    if (last.ok) return { ...last, attempts: attempt }
+    // The page is not a posting. That is a fact about the PAGE, and asking a
+    // second time cannot change it — retrying here would just make the person
+    // wait to be told the same thing.
+    if (last.reason.startsWith('That page does not read as a job posting')) {
+      return { ...last, attempts: attempt }
+    }
+  }
+  return { ...last, attempts: Math.max(1, attempts) }
 }

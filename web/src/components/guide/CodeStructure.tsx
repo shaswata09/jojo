@@ -110,15 +110,15 @@ export const SHAPE: DirRow[] = [
     dir: 'web/src/components',
     files: 263,
     tests: 16,
-    lines: 43570,
+    lines: 43625,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 15, tests: 0, lines: 4651, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
-    files: 95,
-    tests: 22,
-    lines: 12636,
+    files: 96,
+    tests: 23,
+    lines: 12940,
     what: 'web-only adapters and URL state',
   },
   {
@@ -132,8 +132,12 @@ export const SHAPE: DirRow[] = [
     dir: 'web/src/data',
     files: 8,
     tests: 0,
-    lines: 120,
-    what: 'façades over the row above, marked for deletion',
+    lines: 163,
+    // Not purely façades any more, and the row above shrank by the same
+    // change: `STAGE_DOT` and the `dot` field on `STAGES` moved here out of
+    // `@jojo/service/data`, because their values are Tailwind class names and
+    // that package is compiled into React Native unchanged.
+    what: 'façades over the row above, plus the web-only stage colours',
   },
 ]
 
@@ -144,7 +148,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 41
+export const WEB_TEST_FILES = 42
 
 type TestGroup = { title: string; files: string; body: string }
 

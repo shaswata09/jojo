@@ -87,15 +87,26 @@ async function sendToModel(
   endpoint: string,
   provider: string,
   signal?: AbortSignal,
+  /**
+   * Set when the caller wants the relayed body IN PIECES.
+   *
+   * Only reaches the extension, because only a cloud provider is relayed. A
+   * bridge older than protocol 5 ignores it and answers whole — which is fine
+   * and is why nothing downstream may assume a chunk ever arrives.
+   */
+  onChunk?: (text: string) => void,
 ): Promise<Sent> {
   if (!providerMeta(provider).cloud) return send(request, endpoint, signal)
 
-  const relayed = await callModel({
-    url: request.url,
-    method: request.method,
-    headers: request.headers,
-    ...(request.body === undefined ? {} : { body: request.body }),
-  })
+  const relayed = await callModel(
+    {
+      url: request.url,
+      method: request.method,
+      headers: request.headers,
+      ...(request.body === undefined ? {} : { body: request.body }),
+    },
+    ...(onChunk ? ([onChunk] as const) : ([] as const)),
+  )
   if (!('failed' in relayed)) return relayed
 
   // Only "no extension" falls through. A provider that answered badly is an
@@ -269,7 +280,7 @@ async function readStream(
   // A body that never produced a `[DONE]`; `end` returns what did arrive.
   if (assembled === null) drain(reader.end())
 
-  const done = assembled ?? { text: '', calls: [], finish: null }
+  const done = assembled ?? { text: '', calls: [], finish: null, usage: null }
   /*
    * Shaped as one `choices[0]` completion, which is what the non-streaming
    * readers expect. `tool_calls` is omitted rather than sent empty: an empty
@@ -290,6 +301,88 @@ async function readStream(
           finish_reason: done.finish,
         },
       ],
+      /*
+       * Carried through, because `guardTruncation` reads it off the parsed body
+       * and a reconstructed completion without it silently disables the check.
+       * Omitted rather than zeroed when the server sent none: "reported 400
+       * prompt tokens for a 20,000-token request" and "reported nothing" are
+       * different facts and the guard distinguishes them.
+       */
+      ...(done.usage === null ? {} : { usage: done.usage }),
+    }),
+  }
+}
+
+/**
+ * The same stream, arriving through the extension instead of over `fetch`.
+ *
+ * ## Why the body can be fed to the same reader
+ *
+ * The request already carries `stream: true`, so what the provider sends back
+ * is SSE either way — the extension is a pipe, not a parser. That means one
+ * `createStreamReader` handles both roads, and the completion this returns is
+ * built by the same code as the direct one. A bug in streaming can therefore
+ * cost a missing answer, never a DIFFERENT answer from the batched path.
+ *
+ * ## An extension that cannot stream is not an error
+ *
+ * A bridge older than protocol 5 ignores the request to stream and hands back
+ * the whole body at the end. That body is still SSE, so it goes through the
+ * same reader in one push and the caller gets a correct answer that simply
+ * never grew on screen. Users on an old extension are exactly the people who
+ * cannot be asked to reload it before their next question, so this path has to
+ * work rather than complain.
+ */
+async function readRelayedStream(
+  request: ReturnType<typeof chatRequest>,
+  endpoint: string,
+  provider: string,
+  onDelta: (delta: string) => void,
+  signal?: AbortSignal,
+): Promise<Sent> {
+  const reader = createStreamReader()
+  let assembled: { text: string; calls: readonly WireToolCall[]; finish: string | null } | null =
+    null
+  let streamed = false
+
+  const drain = (events: ReturnType<typeof reader.push>) => {
+    for (const event of events) {
+      if (event.type === 'text') onDelta(event.delta)
+      else assembled = { text: event.text, calls: event.calls, finish: event.finish }
+    }
+  }
+
+  const out = await sendToModel(request, endpoint, provider, signal, (chunk) => {
+    streamed = true
+    drain(reader.push(chunk))
+  })
+  if (failed(out)) return out
+
+  /*
+   * The whole body, pushed through the SAME reader, when nothing arrived in
+   * pieces. `onDelta` still fires for every fragment the reader finds — all at
+   * once rather than over time, which is the honest representation of what
+   * happened and keeps the transcript's assembled text identical either way.
+   */
+  if (!streamed) drain(reader.push(out.text))
+  if (assembled === null) drain(reader.end())
+
+  const done = assembled ?? { text: '', calls: [], finish: null, usage: null }
+  return {
+    ok: true,
+    status: out.status,
+    text: JSON.stringify({
+      choices: [
+        {
+          message: {
+            role: 'assistant',
+            content: done.text,
+            ...(done.calls.length > 0 ? { tool_calls: done.calls } : {}),
+          },
+          finish_reason: done.finish,
+        },
+      ],
+      ...(done.usage === null ? {} : { usage: done.usage }),
     }),
   }
 }
@@ -317,20 +410,32 @@ export async function agentTurn(
    * name; there is no origin to opt in for on a phone.
    */
   /*
-   * Streamed only when the request goes DIRECT. A cloud provider is relayed
-   * through the extension, which answers with a whole body and cannot stream —
-   * so the condition is "not cloud" rather than "supports streaming", and the
-   * local servers this matters most for are exactly the ones that qualify.
+   * Streamed on BOTH roads now, which it was not before.
+   *
+   * A direct request reads the response body here in the page. A cloud one
+   * cannot be made from the page at all — NVIDIA, OpenAI and Anthropic send no
+   * `access-control-allow-origin` to a browser origin — so it goes through the
+   * extension, which used to hand back one finished string. The result was that
+   * exactly the slowest models showed nothing at all until they were done,
+   * while a local one wrote itself out word by word.
+   *
+   * The extension now forwards the body as it arrives, so the same reader parses
+   * the same frames on either road; only the transport differs. An extension
+   * older than protocol 5 ignores the request and answers whole, and that path
+   * still works — `readRelayedStream` treats "no chunks, then a full body" as an
+   * ordinary outcome, because for those users it is the only one.
    */
-  const streaming =
-    onDelta !== undefined && supportsStreaming(settings) && !providerMeta(settings.provider).cloud
+  const cloud = providerMeta(settings.provider).cloud
+  const streaming = onDelta !== undefined && supportsStreaming(settings)
   const request = streaming
     ? streamingChatRequest(settings, messages, tools, true)
     : chatRequest(settings, messages, tools, true)
 
-  const response = streaming
-    ? await readStream(request, endpointOf(settings), onDelta, signal)
-    : await sendToModel(request, endpointOf(settings), settings.provider, signal)
+  const response = !streaming
+    ? await sendToModel(request, endpointOf(settings), settings.provider, signal)
+    : cloud
+      ? await readRelayedStream(request, endpointOf(settings), settings.provider, onDelta, signal)
+      : await readStream(request, endpointOf(settings), onDelta, signal)
   if (failed(response)) return reportFailure(response.failed, settings.provider, 'chat')
 
   const turn = readTurnFor(settings, response)

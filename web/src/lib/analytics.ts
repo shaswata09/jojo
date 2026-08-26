@@ -1,5 +1,6 @@
 import { isReportable, type AnalyticsEvent, type EventParams } from '@jojo/service/core/analytics'
 import { CRASH_DEFAULTS, crashCapability, crashReportingOn } from '@jojo/service/core/crash-config'
+import { wasOffered } from '@/lib/onboarding'
 import { readStored, writeStored } from '@/lib/storage'
 
 /**
@@ -99,9 +100,25 @@ const ENABLED_KEY = 'jojo/analytics/v1'
 /** Whether usage reporting is on. Its own key: agreeing to crashes is not this. */
 export function analyticsEnabled(): boolean {
   const stored = readStored(ENABLED_KEY)
-  return stored === null || stored === undefined || stored === ''
-    ? CRASH_DEFAULTS.enabled
-    : stored !== 'off'
+  if (stored !== null && stored !== undefined && stored !== '') return stored !== 'off'
+
+  /*
+   * Nothing stored means one of two things, and they are not the same: the
+   * person declined and we wrote 'off' (handled above), or they have NOT BEEN
+   * ASKED YET.
+   *
+   * This used to return `CRASH_DEFAULTS.enabled` — true — for the unasked case,
+   * and `main.tsx` reports `app_opened` at module scope before React even
+   * mounts. So a first-run user in the EU was reported to Google before the
+   * reporting question had been drawn on screen, under a comment two lines
+   * above the call claiming it fires "only when the person using it has said
+   * yes". They had not said anything.
+   *
+   * A default of on is a policy choice and it stays; reporting before the
+   * question exists is not a policy, it is a bug. `wasOffered('crash')` is the
+   * one fact that separates them.
+   */
+  return wasOffered('crash') && CRASH_DEFAULTS.enabled
 }
 
 export function setAnalyticsEnabled(on: boolean): void {

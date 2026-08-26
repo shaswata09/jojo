@@ -1625,6 +1625,56 @@ describe('acting without asking', () => {
     expect(graphOf(h.repo)).toEqual(before)
   })
 
+  /**
+   * The summary a long conversation carries once it outgrows the model.
+   *
+   * Kept on the thread rather than recomputed each turn, which is the whole
+   * difference between a chat that runs long and one that pays a summarisation
+   * call per turn once it gets big. `contextThrough` is what stops the next
+   * compaction summarising the same exchanges again — a summary of a summary,
+   * blurring what the last pass already blurred.
+   */
+  it('remembers what a compacted conversation established', () => {
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Long one' }))
+    expect(h.repo.getSnapshot().node(id, 'thread')?.props.context).toBeUndefined()
+    expect(h.repo.getSnapshot().node(id, 'thread')?.props.contextThrough).toBeUndefined()
+
+    okOr(
+      h.runtime.run('assistant.thread.context.set', {
+        id,
+        context: 'They chose the Rice assistant professor role and filed the CV under it.',
+        through: 12,
+      }),
+    )
+    const props = h.repo.getSnapshot().node(id, 'thread')?.props
+    expect(props?.context).toContain('assistant professor')
+    // Where the summary reaches, so the next compaction starts after it.
+    expect(props?.contextThrough).toBe(12)
+  })
+
+  it('replaces the summary rather than appending to it', () => {
+    // A compaction summarises everything up to a new point, so the second one
+    // supersedes the first. Appending would grow the thing that exists to stop
+    // the conversation growing.
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Long one' }))
+    okOr(h.runtime.run('assistant.thread.context.set', { id, context: 'first', through: 4 }))
+    okOr(h.runtime.run('assistant.thread.context.set', { id, context: 'second', through: 20 }))
+    const props = h.repo.getSnapshot().node(id, 'thread')?.props
+    expect(props?.context).toBe('second')
+    expect(props?.contextThrough).toBe(20)
+  })
+
+  it('takes the summary back with an undo, like every other write', () => {
+    const h = harness()
+    const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Long one' }))
+    const before = graphOf(h.repo)
+    okOr(h.runtime.run('assistant.thread.context.set', { id, context: 'x', through: 2 }))
+    h.runtime.undo()
+    expect(graphOf(h.repo)).toEqual(before)
+  })
+
   it('leaves every other conversation asking', () => {
     const h = harness()
     const one = okOr(h.runtime.run('assistant.thread.create', { title: 'One' }))

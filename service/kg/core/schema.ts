@@ -334,7 +334,34 @@ function object<S extends ObjectShape>(shape: S, o: TextOptions = {}): Schema<In
       out[key] = parsed.value
     }
 
-    if (issues.length > 0) return { ok: false, issues }
+    /*
+     * A missing field, next to a key nobody read that looks like it.
+     *
+     * Measured, and it was the single largest source of refused tool calls in
+     * the whole multi-turn benchmark: GPT-OSS 120B sent `{"kind":"application"}`
+     * to `memory.list` eleven times out of thirteen. The field is `type` and its
+     * LABEL is "Kind" — the model took the human word for the machine one, which
+     * is a reasonable mistake and one the refusal did nothing to correct.
+     *
+     * Unknown keys are deliberately passed through (see above), so nothing
+     * rejected `kind`; it was simply never read, and the reply said "type:
+     * Needs to be one of…" as though nothing had been supplied. Naming what WAS
+     * supplied turns several round trips into one.
+     *
+     * Only when something already failed, and only for keys this shape does not
+     * know: a call that worked is not made to explain itself, and passthrough
+     * stays passthrough.
+     */
+    if (issues.length > 0) {
+      const unread = Object.keys(input).filter((key) => !known.has(key))
+      if (unread.length > 0) {
+        issues.push({
+          path,
+          message: `These were sent and are not fields of this tool: ${unread.join(', ')}. Its fields are: ${[...known].join(', ')}.`,
+        })
+      }
+      return { ok: false, issues }
+    }
     // The one cast in this file, over an object this function built key by key
     // from values it has just checked. It is not a cast over stored bytes —
     // that lives in validate.ts and is the only one of those in the codebase.

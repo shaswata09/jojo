@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import type { Application, Stage } from '@jojo/service/data/seed'
@@ -19,9 +19,12 @@ export function useRowActions() {
   const { toast } = useToast()
   const [pendingDelete, setPendingDelete] = useState<Application | null>(null)
 
-  const onEdit = (a: Application) => open('application', { mode: 'edit', id: a.id })
+  const onEdit = useCallback(
+    (a: Application) => open('application', { mode: 'edit', id: a.id }),
+    [open],
+  )
 
-  const onDuplicate = (a: Application) => {
+  const onDuplicate = useCallback((a: Application) => {
     const copy = duplicate(a.id)
     if (!copy) return
     toast({
@@ -29,18 +32,21 @@ export function useRowActions() {
       description: 'The copy starts as a draft — the original stage, dates and offer stay behind.',
       action: { label: 'Undo', onPress: () => remove(copy.id) },
     })
-  }
+  }, [duplicate, remove, toast])
 
   // No toast: the filled icon says it on the row itself, and the same tap undoes
   // it. A toast per flag would fire twice a minute.
-  const onFlag = (a: Application) =>
-    update(a.id, {
-      flagged: !a.flagged,
-      lastAction: a.flagged ? 'Flag cleared' : 'Flagged for follow-up',
-    })
+  const onFlag = useCallback(
+    (a: Application) =>
+      update(a.id, {
+        flagged: !a.flagged,
+        lastAction: a.flagged ? 'Flag cleared' : 'Flagged for follow-up',
+      }),
+    [update],
+  )
 
   /** The single path a stage change takes — board pill and list chip alike. */
-  const onMoveStage = (a: Application, stage: Stage) => {
+  const onMoveStage = useCallback((a: Application, stage: Stage) => {
     if (a.stage === stage) return
     // Snapshot all three fields the move rewrites. `update` stamps daysAgo 0 on
     // every edit unless the patch overrides it, so an undo that put back only
@@ -52,7 +58,7 @@ export function useRowActions() {
       description: `It was in ${STAGE_LABEL[before.stage]}. The pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,
       action: { label: 'Undo', onPress: () => update(a.id, before) },
     })
-  }
+  }, [setStage, toast, update])
 
   const onDelete = () => {
     const a = pendingDelete
@@ -82,7 +88,26 @@ export function useRowActions() {
     />
   )
 
-  return { onEdit, onDuplicate, onFlag, onMoveStage, requestDelete: setPendingDelete, confirmSheet }
+  /*
+   * The handlers, in an object whose identity survives a re-render.
+   *
+   * This is passed to every row, and it used to be a fresh literal built on
+   * each pass — so `memo` on `ApplicationRow` bought nothing and every row
+   * re-rendered whenever anything on the screen changed, opening a filter sheet
+   * included. With a few hundred applications that is a few hundred row renders
+   * per tap.
+   *
+   * `confirmSheet` is deliberately NOT in here. It is a React element, so it is
+   * a new value on every render by construction, and one JSX child would have
+   * made the whole object unstable again for the rows that never look at it.
+   * The screen renders it directly instead.
+   */
+  const actions = useMemo(
+    () => ({ onEdit, onDuplicate, onFlag, onMoveStage, requestDelete: setPendingDelete }),
+    [onEdit, onDuplicate, onFlag, onMoveStage],
+  )
+
+  return { actions, confirmSheet }
 }
 
-export type RowActions = ReturnType<typeof useRowActions>
+export type RowActions = ReturnType<typeof useRowActions>['actions']

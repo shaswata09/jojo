@@ -19,10 +19,12 @@
 
 import { displayName } from '@/data/seed'
 import { agoLabel, partsOf, shortDate } from '@/data/timeline'
+import { BACKGROUND_LABEL } from '@jojo/service/core/model'
 import type { NodeType, StoredNode } from '@jojo/service/core/model'
+import { labelOf } from '@jojo/service/core/ontology'
 import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import type { Graph, GraphEdge, GraphNode, GraphNodeType, GraphRel } from '@/lib/graph/model'
-import { applicationsPath, appPath, calendarPath, scoutPath, vaultPath } from '@/lib/links'
+import { applicationsPath, appPath, calendarPath, profilePath, scoutPath, vaultPath } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 
 /**
@@ -59,10 +61,22 @@ const DRAWN: Partial<Record<NodeType, GraphNodeType>> = {
   snippet: 'snippet',
   posting: 'posting',
   match: 'match',
+  background: 'background',
+  claim: 'claim',
 }
 
 /** The stored relations that have a drawn node at both ends. */
-const DRAWN_RELS: ReadonlySet<string> = new Set(['AT', 'ABOUT', 'FILED_UNDER', 'TAGS', 'BECAME'])
+const DRAWN_RELS: ReadonlySet<string> = new Set([
+  'AT',
+  'ABOUT',
+  'FILED_UNDER',
+  'TAGS',
+  'BECAME',
+  // The two ends of a reified relation. Without them a claim is drawn as an
+  // island — the one node on the canvas whose entire meaning is its edges.
+  'SUBJECT',
+  'OBJECT',
+])
 
 export function buildGraph(memory: GraphSnapshot): Graph {
   const nodes: GraphNode[] = []
@@ -224,6 +238,31 @@ function describe(
         label: node.props.role,
         detail: `${node.props.fit}% fit`,
         href: scoutPath({ focus: { kind: 'match', id: node.id } }),
+      }
+    case 'background':
+      return {
+        ...base,
+        label: node.props.title,
+        /*
+         * The kind, and the employer or venue when there is one. "Publication"
+         * alone is useless on a canvas holding forty of them; "OSDI 2021" is
+         * how somebody finds the paper they were looking for.
+         */
+        detail: [BACKGROUND_LABEL[node.props.kind], node.props.where].filter(Boolean).join(' · '),
+        href: profilePath(),
+      }
+    case 'claim':
+      return {
+        ...base,
+        /*
+         * A claim's label is its predicate and nothing else, because both its
+         * ends are already drawn beside it — repeating them here would print
+         * the same three names three times on one small canvas. The sentence is
+         * in the detail panel, where there is room for it.
+         */
+        label: labelOf(node.props.predicate),
+        detail: node.props.known ? 'relation' : `relation · as written: “${node.props.surface}”`,
+        href: profilePath(),
       }
     default:
       // Unreachable while DRAWN and this switch agree. It is written as a

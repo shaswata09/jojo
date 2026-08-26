@@ -20,17 +20,61 @@ import type { Graph } from '@/lib/graph/model'
 import type { SimLink, SimSpec } from './force'
 import { nodeRadius } from './visuals'
 
+/**
+ * The most nodes worth simulating, and why there is a number here at all.
+ *
+ * `force.ts` carries the measurement: the layout is cleanly quadratic and costs
+ * 8ms a tick at 2,000 nodes and 31ms at 4,000, before anything is painted. So
+ * there is a size at which opening this tab stops being slow and starts being a
+ * frozen browser, and until now nothing stood between a large store and it.
+ *
+ * 1,500 rather than 2,000: the measured figure is the physics alone, and a
+ * frame still has to lay out and paint that many SVG nodes afterwards. Leaving
+ * headroom under the number where the physics alone eats the frame is the
+ * difference between a canvas that is heavy and one that has stopped.
+ *
+ * A cap is not the real answer and is not pretending to be. `force.ts` names
+ * the real one — a quadtree approximation — and this is what makes it safe to
+ * not have written that yet.
+ */
+export const MAX_DRAWN = 1500
+
 export type Structure = {
   spec: SimSpec[]
   /** Node id → its index in `spec`, which is what an edge is resolved through. */
   index: Map<string, number>
+  /**
+   * How many nodes the cap left out — 0 almost always.
+   *
+   * Reported rather than silent. A picture that quietly shows two thirds of the
+   * graph is a picture somebody will draw conclusions from, and "nothing here
+   * connects to that" is exactly the sort of conclusion it invites.
+   */
+  dropped: number
   links: SimLink[]
   /** Equal keys mean an identical simulation input. */
   key: string
 }
 
 export function structureOf(graph: Graph): Structure {
-  const spec: SimSpec[] = graph.nodes.map((n) => ({
+  /*
+   * The most connected nodes first, and only the first `MAX_DRAWN` of them.
+   *
+   * By degree because this is a picture of how records connect, so the ones
+   * that connect to the most are the ones the picture is about — dropping a
+   * leaf costs a dot, dropping a hub costs the shape. Ties broken on id, which
+   * is arbitrary but STABLE: a comparator that left ties in input order would
+   * reshuffle the drawn set whenever the store's iteration order moved, and the
+   * canvas would relayout for no reason a person could see.
+   */
+  const ordered =
+    graph.nodes.length <= MAX_DRAWN
+      ? graph.nodes
+      : [...graph.nodes]
+          .sort((a, b) => b.degree - a.degree || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+          .slice(0, MAX_DRAWN)
+
+  const spec: SimSpec[] = ordered.map((n) => ({
     id: n.id,
     radius: nodeRadius(n.degree),
     degree: n.degree,
@@ -46,7 +90,13 @@ export function structureOf(graph: Graph): Structure {
     if (a !== undefined && b !== undefined) links.push({ a, b })
   }
 
-  return { spec, index, links, key: keyOf(spec, links) }
+  return {
+    spec,
+    index,
+    links,
+    key: keyOf(spec, links),
+    dropped: graph.nodes.length - spec.length,
+  }
 }
 
 /**

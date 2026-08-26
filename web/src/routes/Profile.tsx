@@ -289,7 +289,7 @@ export function Profile() {
               label="Full name"
               value={draft.fullName}
               autoComplete="name"
-              placeholder="e.g. Shaswata Mitra"
+              placeholder="e.g. Alex Rivera"
               onChange={set('fullName')}
             />
             <Field

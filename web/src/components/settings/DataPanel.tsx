@@ -300,6 +300,22 @@ export function DataPanel() {
     } else {
       clearAll()
     }
+
+    /*
+     * The DOCUMENTS as well as the records, and this was missing.
+     *
+     * File bytes live in their own IndexedDB (`jojo-files`), not in the graph,
+     * so clearing the graph left every uploaded CV and captured posting on disk
+     * — orphaned, unreachable from any screen, and still counting against the
+     * browser's quota — while the confirmation the user had just read said "the
+     * vault … all go". Telling somebody their documents are gone when they are
+     * not is the worst version of this to get wrong, because they stop looking.
+     *
+     * The phone already did this (`forgetDocuments` in its settings screen) and
+     * `restoreBackup` already does it on the other path; only this one did not.
+     */
+    await blobs.replaceAll([])
+
     toast({
       title: 'Everything cleared',
       description: untouchedDemo

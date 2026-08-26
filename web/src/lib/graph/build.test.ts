@@ -93,8 +93,8 @@ describe('the relations this page can draw', () => {
     // the query dropdown, all three of which index these maps by a union member.
     for (const rel of GRAPH_RELS) expect(REL_LABEL[rel]).toBeTruthy()
     for (const type of GRAPH_NODE_TYPES) expect(NODE_TYPE_LABEL[type]).toBeTruthy()
-    expect(GRAPH_RELS.length).toBe(7)
-    expect(GRAPH_NODE_TYPES.length).toBe(11)
+    expect(GRAPH_RELS.length).toBe(9)
+    expect(GRAPH_NODE_TYPES.length).toBe(13)
   })
 })
 
@@ -183,6 +183,20 @@ describe('the demo store, drawn', () => {
     // not records at all.
     const UNROUTED: readonly GraphNodeType[] = ['keyword', 'role', 'source']
 
+    /*
+     * Routed, but not present in these fixtures — so they cannot be asserted
+     * with `drawn.length > 0` above.
+     *
+     * `background` and `claim` are facts about the USER, and the seed ships
+     * none on purpose: `repo/seed.test.ts` asserts zero of each, because
+     * inventing a CV for whoever opens the demo is a different kind of lie from
+     * inventing an application. Their route is checked directly instead.
+     */
+    const ROUTED_BUT_UNSEEDED: Partial<Record<GraphNodeType, RegExp>> = {
+      background: /^\/profile/,
+      claim: /^\/profile/,
+    }
+
     for (const [type, pattern] of Object.entries(ROUTED) as [GraphNodeType, RegExp][]) {
       const drawn = graph.nodes.filter((n) => n.type === type)
       expect(drawn.length, `nothing of type ${type} was drawn`).toBeGreaterThan(0)
@@ -191,9 +205,12 @@ describe('the demo store, drawn', () => {
     for (const type of UNROUTED) {
       for (const node of graph.nodes) if (node.type === type) expect(node.href).toBeUndefined()
     }
-    // Every type is accounted for by one list or the other, so a type added to
-    // GRAPH_NODE_TYPES has to be given a route or declared to have none.
-    expect([...Object.keys(ROUTED), ...UNROUTED].sort()).toEqual([...GRAPH_NODE_TYPES].sort())
+    // Every type is accounted for by one of the three lists, so a type added to
+    // GRAPH_NODE_TYPES has to be given a route or declared to have none — and
+    // cannot be quietly forgotten by being absent from the fixtures.
+    expect(
+      [...Object.keys(ROUTED), ...Object.keys(ROUTED_BUT_UNSEEDED), ...UNROUTED].sort(),
+    ).toEqual([...GRAPH_NODE_TYPES].sort())
   })
 
   it('draws the relations the fixtures contain and refuses the ones it excludes', () => {
@@ -319,5 +336,75 @@ describe('what a node says about itself', () => {
     // Stored nodes answer to their own NodeId; the two synthesised types answer
     // to the value they were made from, which is what the detail panel prints.
     expect(oneOf('role').recordId).toBe(oneOf('role').label)
+  })
+})
+
+describe('the person’s own records on the canvas', () => {
+  /** A store holding one background fact, one skill, and a claim joining them. */
+  function withBackground() {
+    const m = new MutableSnapshot()
+    const at = '2026-08-25T09:00:00.000Z'
+    const node = (id: string, type: string, props: Record<string, unknown>) =>
+      ({ id, type, props, createdAt: at, updatedAt: at }) as never
+    m.reset(
+      [
+        node('background:1', 'background', {
+          slug: 'b1',
+          kind: 'publication',
+          title: 'Consistency without coordination',
+          where: 'OSDI',
+        }),
+        node('background:2', 'background', { slug: 'b2', kind: 'skill', title: 'Rust' }),
+        node('claim:1', 'claim', {
+          slug: 'c1',
+          predicate: 'EVIDENCES',
+          surface: 'demonstrates',
+          known: true,
+        }),
+      ],
+      [
+        { id: 'claim:1|SUBJECT|background:1', rel: 'SUBJECT', from: 'claim:1', to: 'background:1', props: {}, createdAt: at },
+        { id: 'claim:1|OBJECT|background:2', rel: 'OBJECT', from: 'claim:1', to: 'background:2', props: {}, createdAt: at },
+      ] as never,
+    )
+    return buildGraph(m as never)
+  }
+
+  it('draws background entries at all', () => {
+    /*
+     * The reported gap, and it was total: `background` was simply absent from
+     * `DRAWN`, so reading a CV into thirty facts changed nothing on the page
+     * called "the knowledge graph". It drew every record about a JOB and none
+     * about the person.
+     */
+    const drawn = withBackground().nodes.filter((n) => n.type === 'background')
+    expect(drawn).toHaveLength(2)
+  })
+
+  it('names the entry, and says what kind it is', () => {
+    // "Publication" alone is useless on a canvas holding forty of them.
+    const paper = withBackground().nodes.find((n) => n.label.includes('Consistency'))
+    expect(paper?.detail).toContain('Publications')
+    expect(paper?.detail).toContain('OSDI')
+  })
+
+  it('joins the two ends of a relation, so a claim is not an island', () => {
+    /*
+     * A claim's entire meaning is its edges — it is the one node type on this
+     * canvas that says nothing on its own. Drawn without `SUBJECT`/`OBJECT` in
+     * `DRAWN_RELS` it would float unconnected, which is worse than not drawing
+     * it at all.
+     */
+    const graph = withBackground()
+    const rels = graph.edges.map((e) => e.rel)
+    expect(rels).toContain('SUBJECT')
+    expect(rels).toContain('OBJECT')
+  })
+
+  it('reads a relation by its predicate, not by repeating both ends', () => {
+    // Both ends are already drawn beside it; repeating them would print the
+    // same three names three times on one small canvas.
+    const claim = withBackground().nodes.find((n) => n.type === 'claim')
+    expect(claim?.label).toBe('is evidence of')
   })
 })

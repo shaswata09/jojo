@@ -8,7 +8,13 @@
  */
 import { describe, expect, it } from 'vitest'
 import type { ThreadEntry } from '../core/model'
-import { toAgentEntries, toThreadEntries, toTranscript } from './use-threads'
+import {
+  entriesForMessages,
+  nextContextThrough,
+  toAgentEntries,
+  toThreadEntries,
+  toTranscript,
+} from './use-threads'
 import type { AgentEntry } from './use-agent'
 
 const step = (over: Partial<Extract<ThreadEntry, { kind: 'step' }>> = {}) =>
@@ -125,5 +131,98 @@ describe('the round trip a screen makes', () => {
   it('drops the undo closure, which cannot survive a reload', () => {
     const back = toAgentEntries([step()])
     expect((back[0] as { step: { undo?: unknown } }).step.undo).toBeUndefined()
+  })
+})
+
+/**
+ * The translation between what a thread stores and what a loop compacts.
+ *
+ * The loop counts MESSAGES and a thread stores ENTRIES, and a run of steps
+ * collapses into one assistant turn plus a result each — so the two counts
+ * diverge exactly where a conversation did work. Getting this wrong marks
+ * entries as summarised that the summary never saw, and those exchanges then
+ * vanish from the next turn with nothing standing in for them.
+ */
+describe('entriesForMessages', () => {
+  const you = (text: string): ThreadEntry => ({ kind: 'you', text })
+  const answer = (text: string): ThreadEntry => ({ kind: 'answer', text })
+  const step = (_n: number): ThreadEntry => ({
+    kind: 'step',
+    tool: 'memory.list',
+    title: 'List records',
+    effect: 'read',
+    args: {},
+    status: 'done',
+  })
+
+  it('is one-to-one where the entries are plain turns', () => {
+    const entries = [you('a'), answer('b'), you('c')]
+    expect(entriesForMessages(entries, 3)).toBe(3)
+    expect(entriesForMessages(entries, 2)).toBe(2)
+  })
+
+  it('never overshoots the messages the summary actually saw', () => {
+    // THE property. Rounding up would mark an exchange summarised that the
+    // summariser never read, and it would then be dropped with nothing in its
+    // place.
+    const entries = [you('a'), step(1), step(2), answer('b'), you('c')]
+    for (let m = 0; m <= 8; m += 1) {
+      const at = entriesForMessages(entries, m)
+      expect(toTranscript(entries.slice(0, at)).length).toBeLessThanOrEqual(m)
+    }
+  })
+
+  it('handles a run of steps, which is where the two counts diverge', () => {
+    // Two steps become one assistant turn plus two results — three messages
+    // from two entries, so a naive one-to-one would be wrong by one.
+    const entries = [you('a'), step(1), step(2)]
+    expect(toTranscript(entries).length).toBeGreaterThan(entries.length)
+    expect(entriesForMessages(entries, toTranscript(entries).length)).toBe(entries.length)
+  })
+
+  it('answers zero and the whole list at the ends', () => {
+    const entries = [you('a'), answer('b')]
+    expect(entriesForMessages(entries, 0)).toBe(0)
+    expect(entriesForMessages(entries, -5)).toBe(0)
+    expect(entriesForMessages(entries, 1000)).toBe(entries.length)
+    expect(entriesForMessages([], 5)).toBe(0)
+  })
+})
+
+/**
+ * Where a second compaction's summary reaches.
+ *
+ * The loop counts messages, and the messages it counted came from
+ * `entries.slice(contextThrough)` — not from the whole thread. Measuring
+ * against the full list moved the boundary BACKWARDS on every compaction after
+ * the first, un-covering entries the summary had already replaced so they were
+ * sent again beside a summary that contained them.
+ */
+describe('nextContextThrough', () => {
+  const you = (text: string): ThreadEntry => ({ kind: 'you', text })
+  const answer = (text: string): ThreadEntry => ({ kind: 'answer', text })
+  const entries = Array.from({ length: 20 }, (_, i) => (i % 2 === 0 ? you(`q${String(i)}`) : answer(`a${String(i)}`)))
+
+  it('moves forward from where the last summary reached', () => {
+    // Six already covered, four more messages summarised -> ten, not four.
+    expect(nextContextThrough(entries, 6, 4)).toBe(10)
+  })
+
+  it('never moves backwards', () => {
+    for (const from of [0, 3, 6, 12, 19]) {
+      for (const messages of [0, 1, 5, 100]) {
+        expect(nextContextThrough(entries, from, messages)).toBeGreaterThanOrEqual(from)
+      }
+    }
+  })
+
+  it('is the plain count when nothing was covered before', () => {
+    expect(nextContextThrough(entries, 0, 4)).toBe(entriesForMessages(entries, 4))
+  })
+
+  it('stays inside the list whatever it is handed', () => {
+    expect(nextContextThrough(entries, 99, 5)).toBe(entries.length)
+    expect(nextContextThrough(entries, -3, 0)).toBe(0)
+    expect(nextContextThrough([], 0, 5)).toBe(0)
   })
 })

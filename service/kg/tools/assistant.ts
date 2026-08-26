@@ -213,3 +213,40 @@ export const threadDelete = defineTool({
   },
   describe: () => ({ title: 'Conversation deleted', tone: 'danger' }),
 })
+
+/**
+ * Remember what a conversation established, for the part no longer sent.
+ *
+ * Written when the loop compacts — see `agent/budget.ts` for when that is, and
+ * `agent/compact.ts` for what the summary contains. It lives on the thread so
+ * it survives a reload and is not recomputed every turn, which is the whole
+ * difference between a chat that can run long and one that pays a
+ * summarisation call per turn once it gets big.
+ *
+ * `through` is how many entries the summary accounts for. Without it the next
+ * compaction would summarise the same early exchanges again — a summary of a
+ * summary, blurring what the last pass had already blurred.
+ *
+ * Not `destructive`: it adds a note about what already happened and touches no
+ * record the person can see. It is also not something a model should reach for
+ * on its own, which is why it is not in the resident set and why nothing in the
+ * catalog's prose invites it.
+ */
+export const threadContextSet = defineTool({
+  name: 'assistant.thread.context.set',
+  title: 'Remember earlier in this conversation',
+  summary:
+    'Stores a short summary of the part of a conversation that no longer fits in the model’s context, so the assistant still knows what was established.',
+  effect: 'update',
+  touches: ['thread'],
+  input: s.object({
+    id: threadId,
+    context: s.string({ min: 1, label: 'Earlier in this conversation', multiline: true }),
+    through: s.number({ min: 0, int: true, label: 'Summarised through' }),
+  }),
+  run(ctx, input): void {
+    ctx.require('thread', input.id)
+    ctx.tx.patch<'thread'>(input.id, { context: input.context, contextThrough: input.through })
+  },
+  describe: () => ({ title: 'Earlier messages summarised' }),
+})

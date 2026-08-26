@@ -163,15 +163,28 @@ describe('tool calls', () => {
     }
   })
 
-  it('invents a positional id when the server omits one', () => {
-    // Some servers omit `id` on a single call. A missing id is worse than a
-    // poor one: the result message needs something to point at.
-    const turn = readTurn(
+  it('invents an id when the server omits one, and never the same one twice', () => {
+    /*
+     * Some servers omit `id` on a single call — Ollama native sends none at all
+     * — and a missing id is worse than a poor one: the result message needs
+     * something to point at.
+     *
+     * The fallback used to be the index WITHIN THE TURN, so a model calling one
+     * tool per round produced `call_0` in every round and the transcript held
+     * several distinct tool results keyed identically. That is exactly the
+     * ambiguity a `tool_call_id` exists to remove, so the ids are asserted to
+     * differ across reads rather than to equal particular strings.
+     */
+    const first = readTurn(
       message({ content: null, tool_calls: [call({ id: undefined }), call({ id: '' })] }),
     )
-    expect(turn.ok).toBe(true)
-    if (!turn.ok) return
-    expect(turn.toolCalls.map((c) => c.id)).toEqual(['call_0', 'call_1'])
+    const second = readTurn(message({ content: null, tool_calls: [call({ id: undefined })] }))
+    expect(first.ok && second.ok).toBe(true)
+    if (!first.ok || !second.ok) return
+
+    const ids = [...first.toolCalls.map((c) => c.id), ...second.toolCalls.map((c) => c.id)]
+    expect(new Set(ids).size).toBe(3)
+    for (const id of ids) expect(id).toMatch(/^call_\d+$/)
   })
 
   it('drops an entry that could never be executed, and keeps the ones beside it', () => {

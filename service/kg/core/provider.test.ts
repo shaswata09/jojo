@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { chatUrl, modelsUrl } from './model-server'
-import { PROVIDERS, PROVIDER_IDS, providerMeta } from './provider'
+import { PROVIDERS, PROVIDER_IDS, isLoopbackEndpoint, providerMeta } from './provider'
 
 
 describe('NVIDIA, the one that is free', () => {
@@ -65,5 +65,48 @@ describe('NVIDIA, the one that is free', () => {
     // The specific lie this replaced: everyone showed OpenAI's prefix.
     expect(providerMeta('anthropic').keyLooksLike).toBe('sk-ant-…')
     expect(providerMeta('groq').keyLooksLike).toBe('gsk_…')
+  })
+})
+
+/**
+ * The rule that decides whether the phone tells somebody their endpoint can
+ * only work on the computer they typed it from.
+ *
+ * Both directions are costly and they are costly differently. A false negative
+ * is the original bug — a silent connection failure that looks like a server
+ * being off. A false positive warns somebody whose address is fine, and the
+ * address most likely to be flagged wrongly is the mDNS name (`studio.local`)
+ * that the warning itself recommends.
+ */
+describe('isLoopbackEndpoint', () => {
+  it('catches the two shipped defaults', () => {
+    // Ollama's, and the placeholder mobile's Settings screen shows.
+    expect(isLoopbackEndpoint('http://localhost:11434')).toBe(true)
+    expect(isLoopbackEndpoint('http://localhost:8000/v1')).toBe(true)
+    // RFC 6761 reserves the whole `.localhost` name, and container and
+    // reverse-proxy setups do hand out `something.localhost`. It resolves to
+    // loopback wherever it resolves at all, so it is the same trap.
+    expect(isLoopbackEndpoint('http://ollama.localhost:11434')).toBe(true)
+  })
+
+  it('catches the whole 127 block and IPv6 loopback, bracketed or not', () => {
+    expect(isLoopbackEndpoint('http://127.0.0.1:1234/v1')).toBe(true)
+    expect(isLoopbackEndpoint('http://127.0.0.2:1234/v1')).toBe(true)
+    expect(isLoopbackEndpoint('http://[::1]:11434')).toBe(true)
+    expect(isLoopbackEndpoint('http://::1')).toBe(true)
+    expect(isLoopbackEndpoint('https://0:0:0:0:0:0:0:1/v1')).toBe(true)
+  })
+
+  it('leaves alone every address a phone can actually reach', () => {
+    // The LAN address the warning tells people to use.
+    expect(isLoopbackEndpoint('http://192.168.1.20:11434')).toBe(false)
+    expect(isLoopbackEndpoint('http://10.116.34.124:8103/v1')).toBe(false)
+    // mDNS — resolves to a real host on the network, and is the friendliest
+    // answer to the warning. Flagging it would send people in a circle.
+    expect(isLoopbackEndpoint('http://studio.local:1234/v1')).toBe(false)
+    expect(isLoopbackEndpoint('https://api.openai.com/v1')).toBe(false)
+    expect(isLoopbackEndpoint('')).toBe(false)
+    // Not a loopback host merely for containing the word.
+    expect(isLoopbackEndpoint('https://localhost.example.com/v1')).toBe(false)
   })
 })

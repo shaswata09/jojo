@@ -29,6 +29,14 @@ export type Thread = {
   applicationId: NodeId | null
   /** The agent may write in this conversation without asking first. */
   autoApprove: boolean
+  /**
+   * What a compaction established, and how many entries it covers.
+   *
+   * Absent on almost every conversation — only one that outgrew the model's
+   * window has ever been compacted. See `ThreadProps.context`.
+   */
+  context?: string
+  contextThrough: number
   updatedAt: string
 }
 
@@ -63,6 +71,10 @@ export function useThreads() {
           entries: entriesOf(node),
           applicationId: graph.one(node.id, 'FILED_UNDER', 'application')?.id ?? null,
           autoApprove: node.props.autoApprove === true,
+          ...(node.props.context === undefined ? {} : { context: node.props.context }),
+          // Zero, not undefined: every caller slices with it, and a default of
+          // zero means "nothing summarised yet" without a check at each site.
+          contextThrough: node.props.contextThrough ?? 0,
           updatedAt: node.updatedAt,
         }))
         // Most recently touched first: a list of conversations is read like an
@@ -89,6 +101,24 @@ export function useThreads() {
     [runtime],
   )
 
+  /**
+   * Remember what a compacted conversation established.
+   *
+   * `throughMessages` is what the loop counted; `entriesForMessages` turns it
+   * into a count of entries, because that is what a thread stores and the two
+   * are not one-to-one. It rounds down, so the boundary never claims more than
+   * the summary actually saw.
+   */
+  const setContext = useCallback(
+    (id: NodeId, context: string, throughMessages: number) => {
+      const thread = threads.find((t) => t.id === id)
+      if (!thread) return
+      const through = nextContextThrough(thread.entries, thread.contextThrough, throughMessages)
+      return runtime.run('assistant.thread.context.set', { id, context, through })
+    },
+    [runtime, threads],
+  )
+
   const save = useCallback(
     (id: NodeId, entries: readonly ThreadEntry[]) =>
       runtime.run('assistant.thread.set', { id, entries: [...entries] }),
@@ -111,7 +141,7 @@ export function useThreads() {
     [runtime],
   )
 
-  return { threads, create, save, rename, file, remove, setAuto }
+  return { threads, create, save, rename, file, remove, setAuto, setContext }
 }
 
 /* ------------------------------ the two readings --------------------------- */
@@ -185,6 +215,19 @@ export function toTranscript(entries: readonly ThreadEntry[]): ChatMessage[] {
       continue
     }
     if (entry.kind === 'answer' || entry.kind === 'note') {
+      /*
+       * An APP note is not replayed. It is this app talking to the person —
+       * "this conversation was trimmed", "the model hit its output limit" — and
+       * the model never said it. Replaying it as assistant speech puts words in
+       * its mouth that it will then reason from, and spends context doing it.
+       *
+       * The person still sees it: it stays in the transcript, it just does not
+       * go back to the model.
+       */
+      if (entry.kind === 'note' && entry.app === true) {
+        i += 1
+        continue
+      }
       out.push({ role: 'assistant', content: entry.text })
       i += 1
       continue
@@ -218,4 +261,59 @@ export function toTranscript(entries: readonly ThreadEntry[]): ChatMessage[] {
     }
   }
   return out
+}
+
+/**
+ * How many ENTRIES produce at most `messages` transcript messages.
+ *
+ * The loop compacts in messages and a thread stores entries, and the two are
+ * not one-to-one: a run of consecutive `step` entries collapses into a single
+ * assistant turn plus one `tool` message each. So the translation belongs
+ * here, beside the walk that creates the mismatch, rather than being
+ * approximated by whoever needs it.
+ *
+ * Rounds DOWN — it returns a boundary at or before `messages`, never past it.
+ * Overshooting would mark entries as summarised that the summary never saw,
+ * and those exchanges would then be dropped from the next turn's history with
+ * nothing standing in for them.
+ */
+export function entriesForMessages(
+  entries: readonly ThreadEntry[],
+  messages: number,
+): number {
+  if (messages <= 0) return 0
+  let count = 0
+  for (let i = 1; i <= entries.length; i += 1) {
+    const produced = toTranscript(entries.slice(0, i)).length
+    if (produced > messages) return count
+    count = i
+  }
+  return entries.length
+}
+
+/**
+ * Where a summary now reaches, given where the last one did.
+ *
+ * The loop counts MESSAGES, and the messages it counted were made from
+ * `entries.slice(contextThrough)` — not from the whole thread. So the new
+ * boundary is the old one PLUS however many of the remaining entries those
+ * messages cover.
+ *
+ * Measuring against the full list instead moved the boundary BACKWARDS on every
+ * compaction after the first: a thread summarised through entry 6 that then
+ * dropped 4 more messages stored `contextThrough: 4`, un-covering two entries
+ * the summary had already replaced — so they were sent again, beside a summary
+ * that already contained them.
+ *
+ * Extracted from the hook because that is the only way it can be tested: a hook
+ * cannot be mounted here (D20), and arithmetic nobody can run is arithmetic
+ * nobody has checked.
+ */
+export function nextContextThrough(
+  entries: readonly ThreadEntry[],
+  from: number,
+  throughMessages: number,
+): number {
+  const start = Math.max(0, Math.min(from, entries.length))
+  return start + entriesForMessages(entries.slice(start), throughMessages)
 }

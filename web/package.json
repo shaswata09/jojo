@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "npm run pack-extension && npm run make-pwa-icons && tsc -b && vite build && node scripts/spa-fallback.mjs && npm run make-sw",
-    "dev": "npm run pack-extension && vite",
+    "dev": "npm run pack-extension -- --optional && vite",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "npm -w @jojo/service run lint && oxlint --config .oxlintrc.json src",

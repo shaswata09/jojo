@@ -44,6 +44,16 @@ export type JournalEntry = {
   calls: readonly ToolName[]
   nodes: readonly RecordDelta<StoredNode>[]
   edges: readonly RecordDelta<StoredEdge>[]
+  /**
+   * The record images were dropped to keep the persisted journal small.
+   *
+   * See `trimJournal`. The deltas and their ids remain, so the log still says
+   * how much an entry touched; what is gone is the before/after, so this entry
+   * can be READ and not reverted. Absent on every entry inside the undo window
+   * and on every entry written before this existed, which is why it is optional
+   * rather than a boolean that an old stored row would be missing.
+   */
+  trimmed?: true
 }
 
 /** An entry as a tool hands it over: the repository stamps the id and the time. */
@@ -268,6 +278,85 @@ export const UNDO_DEPTH = 50
  * journal of whole-record images grows faster than the records themselves.
  */
 export const AUDIT_CAP = 200
+
+/**
+ * The persisted journal, with the record images dropped from the old entries.
+ *
+ * ## What this costs when it is not done
+ *
+ * Measured on the benchmark world with the ring full — 30 nodes and 13 edges of
+ * actual graph:
+ *
+ *     nodes + edges     12.3 KB
+ *     journal          228.5 KB   (200 entries)
+ *     journal share        95% of every persisted blob
+ *
+ * On the phone that is not a storage number, it is a WRITE number: `rn-driver`
+ * holds the whole store in one AsyncStorage key so that a commit is atomic
+ * across its four stores, and rewrites the key on every commit. So every edit
+ * serialised a quarter of a megabyte of history to save a note.
+ *
+ * ## Why the images can go
+ *
+ * A `RecordDelta` carries the whole record before and after, and two things
+ * read them: the undo ring, which is in memory and does not survive a reload,
+ * and `revert`, which the audit log offers on the NEWEST entry only. Everything
+ * else the log renders is the label, the time, and how many records and links
+ * an entry touched — and the counts are the LENGTHS of these arrays, not their
+ * contents.
+ *
+ * So the deltas stay, with their ids, and the images are dropped beyond
+ * `REVERTABLE_DEPTH` — which is about what a RELOAD can still undo, not what
+ * the in-memory ring can. The lengths are unchanged, so the log reads exactly as
+ * it did. `trimmed` marks it, because an entry whose `before` and `after` are
+ * both null is otherwise indistinguishable from one that genuinely touched
+ * nothing, and `revert` must be able to tell those apart rather than silently
+ * "undoing" a change by writing nulls over a live record.
+ */
+/**
+ * How many entries keep their record images when the journal is persisted.
+ *
+ * NOT `UNDO_DEPTH`, and the difference is the whole reason this number exists.
+ * `UNDO_DEPTH` is the in-memory ring, and `rehydrate` clears it — undo does not
+ * survive a reload, and never has. What DOES survive is the audit log, and the
+ * only thing it can revert is its newest entry. So the images that outlive a
+ * session buy exactly one undo.
+ *
+ * Ten rather than one, because "one" is the number that is exactly right today
+ * and breaks silently the day the log offers undo on more than its top row —
+ * and the failure would be a button that throws. Ten is headroom at a cost of
+ * about eleven kilobytes.
+ */
+export const REVERTABLE_DEPTH = 10
+
+export function trimJournal(
+  entries: readonly JournalEntry[],
+  keepImages = REVERTABLE_DEPTH,
+): JournalEntry[] {
+  // The newest are last, matching `slice(-AUDIT_CAP)` above and the store's
+  // ascending keys. Getting this backwards would trim exactly the entries undo
+  // needs and keep the ones nothing reads.
+  const firstKept = Math.max(0, entries.length - keepImages)
+  return entries.map((entry, i) => {
+    if (i >= firstKept || entry.trimmed === true) return entry
+    return {
+      ...entry,
+      trimmed: true as const,
+      // `input` and `calls` go with the images, and for the same reason: the
+      // only thing that reads either is `invert`, and a trimmed entry cannot be
+      // inverted. `input` is the larger of the two by far — it is the tool's
+      // whole argument object, so an edit that saved a long note stored that
+      // note twice, once in the record and once here.
+      //
+      // `tool` STAYS. The log reads it (`NO_UNDO` is a list of tool names) and
+      // it is six characters.
+      input: null,
+      calls: [],
+      nodes: entry.nodes.map((d) => ({ id: d.id, before: null, after: null })),
+      edges: entry.edges.map((d) => ({ id: d.id, before: null, after: null })),
+    }
+  })
+}
 
 /**
  * A bounded FIFO that drops from the front.

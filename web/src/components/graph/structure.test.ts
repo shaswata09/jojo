@@ -15,7 +15,7 @@
 import { describe, expect, it } from 'vitest'
 import { filterGraph } from '@/lib/graph/traversal'
 import type { Graph, GraphEdge, GraphNode } from '@/lib/graph/model'
-import { structureOf } from './structure'
+import { MAX_DRAWN, structureOf } from './structure'
 import { nodeRadius } from './visuals'
 
 function makeGraph(
@@ -201,5 +201,93 @@ describe('the links the simulation is handed', () => {
   it('reads a radius for every node, so nothing is laid out at size zero', () => {
     for (const node of structureOf(base()).spec) expect(node.radius).toBeGreaterThan(0)
     expect(structureOf(base()).spec).toHaveLength(3)
+  })
+})
+
+/**
+ * The cap, which decides what a person is shown when the store is bigger than
+ * the layout can animate.
+ *
+ * Both halves matter and they fail differently. Too small a drawn set is a
+ * canvas missing records; no cap at all is a frozen tab — `force.ts` measures
+ * the layout at 31ms a tick at 4,000 nodes, before any painting. And WHICH
+ * nodes survive is not a detail: dropping a leaf costs a dot, dropping a hub
+ * costs the shape of the picture.
+ */
+describe('the drawn-set cap', () => {
+  /** `n` nodes in a star, so degree is a hub of n-1 and leaves of 1. */
+  const star = (n: number) =>
+    makeGraph(
+      Array.from({ length: n }, (_, i) => ({ id: `n${String(i).padStart(5, '0')}` })),
+      Array.from({ length: n - 1 }, (_, i) => ['n00000', `n${String(i + 1).padStart(5, '0')}`] as [string, string]),
+    )
+
+  it('draws everything, and reports nothing dropped, below the cap', () => {
+    const structure = structureOf(star(50))
+    expect(structure.spec).toHaveLength(50)
+    expect(structure.dropped).toBe(0)
+  })
+
+  it('caps the drawn set and says how many it left out', () => {
+    const structure = structureOf(star(MAX_DRAWN + 250))
+    expect(structure.spec).toHaveLength(MAX_DRAWN)
+    expect(structure.dropped).toBe(250)
+  })
+
+  it('keeps the hub, which is the node the picture is about', () => {
+    const structure = structureOf(star(MAX_DRAWN + 250))
+    // The most connected node must survive a cap. Dropping it would leave a
+    // canvas of unconnected dots that reads as "none of these relate".
+    expect(structure.spec[0]?.id).toBe('n00000')
+    expect(structure.index.has('n00000')).toBe(true)
+  })
+
+  it('is stable, so the same store draws the same picture twice', () => {
+    // Ties are broken on id, not left in input order: a store whose iteration
+    // order moved would otherwise reshuffle the drawn set and relayout for no
+    // reason anyone could see.
+    const graph = star(MAX_DRAWN + 250)
+    const first = structureOf(graph).spec.map((n) => n.id)
+    const shuffled = { ...graph, nodes: [...graph.nodes].reverse() }
+    expect(structureOf(shuffled).spec.map((n) => n.id)).toEqual(first)
+  })
+
+  it('does not reorder the graph it was handed', () => {
+    // `structureOf` is called from a `useMemo` and reads like a pure function.
+    // Sorting `graph.nodes` in place instead of a copy would quietly reorder a
+    // structure the rest of the app renders from — the legend, the detail
+    // panel and `graph.byId` all walk the same object — and the symptom would
+    // appear somewhere else entirely, only in stores over the cap.
+    // The hub is the LAST id, so sorted order differs from input order — a
+    // fixture already in sorted order makes the sort a no-op and proves
+    // nothing.
+    const n = MAX_DRAWN + 250
+    const hub = `n${String(n).padStart(5, '0')}`
+    const graph = makeGraph(
+      [
+        ...Array.from({ length: n - 1 }, (_, i) => ({ id: `n${String(i).padStart(5, '0')}` })),
+        { id: hub },
+      ],
+      Array.from(
+        { length: n - 1 },
+        (_, i) => [hub, `n${String(i).padStart(5, '0')}`] as [string, string],
+      ),
+    )
+    const before = graph.nodes.map((n2) => n2.id)
+    const structure = structureOf(graph)
+
+    expect(structure.spec[0]?.id).toBe(hub)
+    expect(graph.nodes.map((n2) => n2.id)).toEqual(before)
+    expect(graph.nodes[0]?.id).not.toBe(hub)
+  })
+
+  it('drops edges whose ends did not survive, rather than mis-resolving them', () => {
+    const structure = structureOf(star(MAX_DRAWN + 250))
+    for (const link of structure.links) {
+      expect(link.a).toBeGreaterThanOrEqual(0)
+      expect(link.b).toBeGreaterThanOrEqual(0)
+      expect(link.a).toBeLessThan(structure.spec.length)
+      expect(link.b).toBeLessThan(structure.spec.length)
+    }
   })
 })

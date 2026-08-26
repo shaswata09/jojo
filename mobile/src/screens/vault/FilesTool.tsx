@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
+import { trashDocument } from '@/lib/documents'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
@@ -88,27 +89,38 @@ export function FilesTool({ focus }: { focus?: string }) {
   const rows = bucket === 'all' ? pool : pool.filter((f) => f.bucket === bucket)
 
   const onDelete = (f: VaultFile) => {
+    /*
+     * The bytes go with the record, and come back with the Undo.
+     *
+     * This used to delete the record and leave the copy on the device for the
+     * life of the install — deliberately, because deleting it here would have
+     * made the Undo restore a record pointing at nothing, and a row that looks
+     * intact with its document silently gone is the worse of the two. The web
+     * app had already solved that at its own layer (`blobs.remove`, then
+     * `blobs.restore` on Undo); `trashDocument` is the phone's version.
+     *
+     * `shared` is the part only this screen can answer: `onDuplicate` below
+     * copies `uri` verbatim, so two records can name one file, and trashing it
+     * under one of them would take the other's document too.
+     */
+    const shared = files.some((other) => other.id !== f.id && other.uri === f.uri)
     const { restore } = removeFile(f.id)
-    // The copy stays. Deleting the bytes here would make the Undo below restore
-    // a record pointing at nothing, which is the worse of the two outcomes — so
-    // removing ONE document still leaks its copy for the life of the install.
-    //
-    // What changed is the other end: `forgetDocument` in `lib/documents.ts` is
-    // no longer callerless. Settings' three wipes call `forgetDocuments`, which
-    // is the case with no Undo on it and therefore the case where deleting the
-    // bytes is unambiguous. This comment used to claim a sweep on next launch
-    // collected them and there has never been one; a wipe is not that sweep and
-    // does not make this row's leak smaller.
-    //
-    // Two things any sweep still has to handle, both already true: a record
-    // restored by Undo must still find its bytes, and `onDuplicate` below
-    // copies `uri` verbatim, so two records can point at one file and deleting
-    // either would take the other's.
+    let restoreBytes: (() => Promise<void>) | null = null
+    void trashDocument(f.uri, shared).then((undo) => {
+      restoreBytes = undo
+    })
+
     toast({
       title: 'Document removed',
       description: f.name,
       tone: 'danger',
-      action: { label: 'Undo', onPress: restore },
+      action: {
+        label: 'Undo',
+        onPress: () => {
+          restore()
+          void restoreBytes?.()
+        },
+      },
     })
   }
 

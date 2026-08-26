@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ScrollView, View } from 'react-native'
+import { Pressable, ScrollView, View } from 'react-native'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
 import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin'
@@ -68,6 +69,13 @@ export function ProfileUpdateOffer() {
   // and belongs to neither. Shown in the same review, because it is a claim
   // about this person too and the copy promises everything is seen first.
   const [links, setLinks] = useState<readonly RelationDraft[]>([])
+  /*
+   * Which entries the person dropped, by position — the dropped ones rather
+   * than the kept ones, so the default is everything and the common case (the
+   * reading was fine) stays one tap. The review was all-or-nothing, which is
+   * the worst shape for the models most people run.
+   */
+  const [dropped, setDropped] = useState<ReadonlySet<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const abort = useRef<AbortController | null>(null)
 
@@ -107,6 +115,7 @@ export function ProfileUpdateOffer() {
     setStep(null)
     setDrafts(null)
     setLinks([])
+    setDropped(new Set())
     setError(null)
     // Every id on offer, not just the one named: the title says "and 2 more",
     // so declining it declines all three.
@@ -139,6 +148,7 @@ export function ProfileUpdateOffer() {
 
     setDrafts(outcome.background)
     setLinks(outcome.relations)
+    setDropped(new Set())
     if (outcome.skipped.length > 0) {
       toast({
         title: `${String(outcome.skipped.length)} entr${outcome.skipped.length === 1 ? 'y was' : 'ies were'} skipped`,
@@ -149,11 +159,20 @@ export function ProfileUpdateOffer() {
 
   const confirm = () => {
     if (!drafts || drafts.length === 0) return
+
+    // Original positions carried alongside, because `claim.add` refers to
+    // entries by their position in the list the model saw and filtering
+    // renumbers everything.
+    const keeping = drafts
+      .map((draft, at) => ({ draft, at }))
+      .filter(({ at }) => !dropped.has(at))
+    if (keeping.length === 0) return
+
     const result = run('profile.background.add', {
       // `source` on every entry: `twinState` counts a document as read when a
       // fact points back at it, so omitting it would leave the document
       // eternally unread and this strip would offer it again tomorrow.
-      background: drafts.map((d) => ({ ...d, source: fileId })),
+      background: keeping.map(({ draft }) => ({ ...draft, source: fileId })),
     })
 
     /*
@@ -164,11 +183,14 @@ export function ProfileUpdateOffer() {
      * under another name, which is the feature working rather than an error.
      */
     const ids = result.ok ? (result.output as string[]) : []
+    // Original position -> the id it was written under, so a relation naming a
+    // dropped entry is skipped rather than pointing at whichever one shifted up.
+    const idAt = new Map(keeping.map(({ at }, i) => [at, ids[i]]))
     let related = 0
     if (result.ok) {
       for (const link of links) {
-        const subject = ids[link.subject]
-        const object = ids[link.object]
+        const subject = idAt.get(link.subject)
+        const object = idAt.get(link.object)
         if (subject === undefined || object === undefined) continue
         if (run('claim.add', { subject, predicate: link.predicate, object, source: fileId }).ok) {
           related += 1
@@ -182,7 +204,7 @@ export function ProfileUpdateOffer() {
 
     toast({
       title: result.ok
-        ? `${String(drafts.length)} added to your profile`
+        ? `${String(keeping.length)} added to your profile`
         : 'Nothing could be added',
       description: result.ok
         ? `Read from ${target.subject}.${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} recorded.` : ''}`
@@ -246,16 +268,44 @@ export function ProfileUpdateOffer() {
           <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled>
             <View style={{ gap: space[1.5] }}>
               {drafts.map((d, i) => (
-                <View key={`${d.kind}-${d.title}-${String(i)}`}>
-                  <Txt size="xs" tone="secondary" uppercase>
-                    {KIND_LABEL[d.kind] ?? d.kind}
-                  </Txt>
-                  <Txt size="sm">
-                    {d.title}
-                    {d.where === undefined ? '' : ` · ${d.where}`}
-                    {d.period === undefined ? '' : ` · ${d.period}`}
-                  </Txt>
-                </View>
+                /* Tap to drop, tap again to keep. A checkbox is a 14pt target
+                   under a thumb; the whole row is not. */
+                <Pressable
+                  key={`${d.kind}-${d.title}-${String(i)}`}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: !dropped.has(i) }}
+                  accessibilityLabel={`Add ${d.title}`}
+                  onPress={() =>
+                    setDropped((held) => {
+                      const next = new Set(held)
+                      if (next.has(i)) next.delete(i)
+                      else next.add(i)
+                      return next
+                    })
+                  }
+                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space[2], minHeight: 44 }}
+                >
+                  <Feather
+                    name={dropped.has(i) ? 'square' : 'check-square'}
+                    size={16}
+                    color={dropped.has(i) ? c.text3 : c.accent}
+                    style={{ marginTop: 2 }}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Txt size="xs" tone="secondary" uppercase>
+                      {KIND_LABEL[d.kind] ?? d.kind}
+                    </Txt>
+                    <Txt
+                      size="sm"
+                      tone={dropped.has(i) ? 'muted' : 'primary'}
+                      style={dropped.has(i) ? { textDecorationLine: 'line-through' } : undefined}
+                    >
+                      {d.title}
+                      {d.where === undefined ? '' : ` · ${d.where}`}
+                      {d.period === undefined ? '' : ` · ${d.period}`}
+                    </Txt>
+                  </View>
+                </Pressable>
               ))}
             </View>
           </ScrollView>
@@ -282,7 +332,12 @@ export function ProfileUpdateOffer() {
           <View style={{ flexDirection: 'row', gap: space[2] }}>
             <Button
               size="sm"
-              label={drafts.length === 1 ? 'Add it' : `Add all ${String(drafts.length)}`}
+              label={
+                drafts.length - dropped.size === 1
+                  ? 'Add it'
+                  : `Add ${String(drafts.length - dropped.size)}`
+              }
+              disabled={dropped.size === drafts.length}
               onPress={confirm}
             />
             <Button size="sm" variant="ghost" label="Discard" onPress={dismiss} />

@@ -38,8 +38,8 @@ describe('the requests', () => {
     // Accepting only JSON gets a 406 from the reference server before it looks
     // at the body.
     const req = initializeRequest('http://127.0.0.1:3001/mcp')
-    expect(req.headers.Accept).toContain('application/json')
-    expect(req.headers.Accept).toContain('text/event-stream')
+    expect(req.headers['Accept']).toContain('application/json')
+    expect(req.headers['Accept']).toContain('text/event-stream')
   })
 
   it('sends the protocol version and no capabilities it does not have', () => {

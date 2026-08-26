@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useReadDocument } from '@/lib/read-document'
+import { contextOf } from '@jojo/service/core/provider'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { agentTurn, isConfigured } from '@/lib/llm'
+import type { ChatMessage } from '@jojo/service/core/model-server'
 import { useAgent } from '@jojo/service/react/use-agent'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
@@ -18,7 +20,7 @@ import { ThreadListSheet } from '@/components/assistant/ThreadListSheet'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
-import { StyleSheet, TextInput, View } from 'react-native'
+import { Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -33,6 +35,7 @@ import { useCopy } from '@/lib/use-copy'
 import { useToast } from '@/lib/toast-context'
 import type { RootStackParamList } from '@/navigation/types'
 import { useColors } from '@/theme/theme-context'
+import { Feather } from '@react-native-vector-icons/feather/static'
 import { fonts, radius, space, type } from '@/theme/tokens'
 
 /**
@@ -196,7 +199,7 @@ function AgentScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { settings, reader } = useModelSettings()
   const { byId } = useApplications()
-  const { threads, create, save, rename, file, remove, setAuto } = useThreads()
+  const { threads, create, save, rename, file, remove, setAuto, setContext } = useThreads()
 
   /*
    * Which conversation is open, in state AND in a ref.
@@ -322,15 +325,63 @@ function AgentScreen() {
    */
   const convert = useReadDocument()
 
+  /*
+   * Two more agents, each with its own model call and each allowed to fail.
+   *
+   * `chooser` reads the request and says which tools it needs — a name and a
+   * line each is ~2,600 tokens against ~16,000 for the schemas, so choosing
+   * costs about a sixth of what it saves and saves it on every round. It never
+   * sees the conversation, which is what keeps it cheap as the chat grows.
+   *
+   * `summariser` runs only when the conversation no longer fits, and replaces
+   * what a trim would have thrown away with a short note — so a long chat loses
+   * detail rather than memory.
+   *
+   * Both take the same transport as the main loop here. They do not have to:
+   * choosing from a list and summarising are far easier than doing the work,
+   * and an app that wanted to point them at a smaller model would change only
+   * these two lines.
+   */
+  const chooser = useMemo(
+    () => ({ ask: (messages: readonly ChatMessage[]) => agentTurn(settings, messages, []) }),
+    [settings],
+  )
+
   const { entries, busy, send, stop, clear } = useAgent({
     llm,
+    chooser,
+    summariser: chooser,
     onSettled,
     startThread,
+    /*
+     * The person's own context window, or the provider's default.
+     *
+     * This is the surface where it matters most: the Assistant is the only one
+     * that keeps a conversation, and measured over ten ordinary follow-ups the
+     * request grew 8,227 → 21,062 tokens with nothing bounding it. Without this
+     * the loop cannot trim, and the SERVER truncates instead — from the front,
+     * where the system prompt is.
+     */
+    window: contextOf(settings),
     ...(reader ? { convert } : {}),
+    /*
+     * Persist a summary the loop writes, so the next turn sends it instead of
+     * summarising the same exchanges again. Rare: only a conversation that has
+     * outgrown the model's window ever reaches this.
+     */
+    onCompacted: setContext,
     thread: {
       id: activeId,
       entries: active ? toAgentEntries(active.entries) : [],
-      history: active ? toTranscript(active.entries) : [],
+      /*
+       * Only the part the stored summary does NOT cover.
+       *
+       * `contextThrough` is where a previous compaction reached; sending those
+       * entries again alongside the summary would defeat the compaction and
+       * make the conversation grow faster than before it happened.
+       */
+      history: active ? toTranscript(active.entries.slice(active.contextThrough)) : [],
+      ...(active?.context === undefined ? {} : { context: active.context }),
       autoApprove: active?.autoApprove ?? false,
     },
   })
@@ -458,7 +509,14 @@ function AgentScreen() {
             description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
           />
         ) : (
-          <View style={{ gap: space[3] }}>
+          /*
+           * Announced as it changes. A reply after a ten-second run, and the
+           * error card below it, both landed in silence — so a screen-reader
+           * user had no way to know the assistant had finished, or failed.
+           * `polite` because the answer is worth hearing after whatever the
+           * person is doing, not on top of it.
+           */
+          <View style={{ gap: space[3] }} accessibilityLiveRegion="polite">
             {entries.map((entry, index) => {
               if (entry.kind === 'you') {
                 return (
@@ -687,6 +745,42 @@ function ScriptedScreen() {
         ) : undefined
       }
     >
+      {/*
+        * A banner, and somewhere to press.
+        *
+        * The subtitle said "connect a local model" and offered no way to do it
+        * — so the one screen where a person discovers the assistant needs a
+        * model was also the one screen with no route to the setting. Web has
+        * had a warning strip with a link to Settings since it was written.
+        */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Connect a model in Settings"
+        onPress={() => navigation.navigate('Settings' as never)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: space[2.5],
+          backgroundColor: c.warningSoft,
+          borderColor: c.warningBorder,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderRadius: radius.md,
+          padding: space[3],
+          marginBottom: space[3],
+          minHeight: 44,
+        }}
+      >
+        <Feather name="alert-triangle" size={16} color={c.warning} style={{ marginTop: 1 }} />
+        <View style={{ flex: 1, gap: space[1] }}>
+          <Txt size="sm" color={c.warning}>
+            No model is connected, so every reply here is a worked example rather than an answer.
+          </Txt>
+          <Txt size="sm" color={c.warning} weight="medium">
+            Connect one in Settings →
+          </Txt>
+        </View>
+      </Pressable>
+
       {/* Stated once, at the top, in the same words the Job scout uses for the
           same fact. The per-reply badge below repeats it because a reply that
           scrolled away from this banner would otherwise read as a real answer. */}

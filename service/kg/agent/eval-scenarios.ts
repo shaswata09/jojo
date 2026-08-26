@@ -86,7 +86,22 @@ export const SCENARIOS: readonly Scenario[] = [
   {
     id: 'count-question',
     prompt: 'How many job applications have I sent?',
-    expect: { kind: 'calls', oneOf: ['memory.overview', 'memory.list', 'graph.query'] },
+    /*
+     * `stats.report` first, because it is the best answer and it was missing.
+     *
+     * The tool returns `sent` — precisely the number this question asks for —
+     * and Gemma reached for it correctly while this list scored that as
+     * `wrong-tool`. An evaluation written before a tool existed will penalise
+     * the right call and read as a model regression, which is the same defect
+     * the conversational benchmark had and for the same reason.
+     *
+     * The others stay: counting a list by hand is a worse answer, not a wrong
+     * one, and a model without `stats.report` in its offered set has to.
+     */
+    expect: {
+      kind: 'calls',
+      oneOf: ['stats.report', 'memory.overview', 'memory.list', 'graph.query'],
+    },
     forbid: ['application.create'],
     why: 'A question about records, phrased close to a request to make one. The forbid is the point.',
     group: 'reading',

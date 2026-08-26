@@ -66,7 +66,11 @@ export function AuditLog() {
   const entries = repo.audit
   const shown = all ? entries : entries.slice(0, FIRST_PAGE)
   const top = entries[0]
-  const canUndo = top !== undefined && !NO_UNDO.includes(top.tool)
+  // `trimmed` as well as the tool: an entry whose record images were dropped to
+  // keep the persisted journal small cannot be put back, and `revert` throws on
+  // one. It should not be reachable — the trim keeps the newest entries whole —
+  // but a disabled button says "no" better than a caught exception does.
+  const canUndo = top !== undefined && !NO_UNDO.includes(top.tool) && top.trimmed !== true
 
   const onUndo = () => {
     if (!top) return

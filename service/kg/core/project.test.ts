@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest'
 import type { NodePropsByType, NodeType, StoredEdge, StoredNode } from './model'
-import { createOneProjection, createProjection } from './project'
+import { createOneProjection, createProjection, sameValue } from './project'
 import { edgeId, newNodeId } from './ref'
 import { MutableSnapshot } from './snapshot'
 
@@ -88,13 +88,55 @@ describe('createProjection', () => {
     const g = MutableSnapshot.from([changing, stable])
 
     const before = projectRow(g)
-    g.putNode({ ...changing, props: { ...changing.props, note: 'edited' } })
+    // `slug`, because this projector reads it. This test used to edit `note`,
+    // which it does not read, and assert a new row came back anyway — see the
+    // test below for why that stopped being true and why it is an improvement.
+    g.putNode({ ...changing, props: { ...changing.props, slug: 'rice-renamed' } })
     g.commit()
     const after = projectRow(g)
 
     expect(after).not.toBe(before)
-    expect(after.find((r) => r.slug === 'rice')).not.toBe(before.find((r) => r.slug === 'rice'))
+    expect(after.find((r) => r.slug === 'rice-renamed')).not.toBe(
+      before.find((r) => r.slug === 'rice'),
+    )
     expect(after.find((r) => r.slug === 'baylor')).toBe(before.find((r) => r.slug === 'baylor'))
+  })
+
+  /**
+   * An edit to a field the projector never reads must cost nothing at all.
+   *
+   * The epoch is coarse on purpose — it moves for the node, its edges, and every
+   * neighbour one hop out, because that is the only way a renamed organisation
+   * can reach the application rows that display its name. The price is that it
+   * also moves for edits no projection cares about, and `note` is the everyday
+   * one: a person types in the notes field and, before this, every list keyed on
+   * that node republished its array and minted a new row object.
+   *
+   * Measured on the benchmark world before the fix — editing one application's
+   * note republished BOTH the application and the organisation arrays, one new
+   * row object in each, and the content of zero rows in either had changed.
+   * Every `React.memo` below them missed for nothing.
+   *
+   * So the cache compares the re-projected value against the one it holds and
+   * keeps the OLD object when they match. Identity is the contract the rest of
+   * the app renders against; this is where it is decided.
+   */
+  it('keeps every identity when the edit touches nothing it projects', () => {
+    const projectRow = rowProjection()
+    const edited = application('rice')
+    const untouched = application('baylor')
+    const g = MutableSnapshot.from([edited, untouched])
+
+    const before = projectRow(g)
+    g.putNode({ ...edited, props: { ...edited.props, note: 'typed into the notes field' } })
+    g.commit()
+    const after = projectRow(g)
+
+    // The array itself, so the list does not re-render...
+    expect(after).toBe(before)
+    // ...and the row, so nothing memoised below it re-renders either.
+    expect(after[0]).toBe(before[0])
+    expect(after[1]).toBe(before[1])
   })
 
   /**
@@ -265,5 +307,65 @@ describe('createOneProjection', () => {
     expect(projectOne(g, app.id)).toBeDefined()
     g.removeNode(app.id)
     expect(projectOne(g, app.id)).toBeUndefined()
+  })
+})
+
+/**
+ * `sameValue` decides whether a projected row is REUSED, so its dangerous
+ * direction is the false positive: calling two different rows equal serves a
+ * stale one, and nothing downstream can tell. Every branch below survived
+ * mutation until it was pinned here.
+ */
+describe('sameValue', () => {
+  it('is true for structurally identical plain data', () => {
+    expect(sameValue({ a: 1, b: 'x' }, { a: 1, b: 'x' })).toBe(true)
+    expect(sameValue({ a: 1, b: ['x', 'y'] }, { a: 1, b: ['x', 'y'] })).toBe(true)
+    // Key order is not content. `JSON.stringify` on both sides would say false.
+    expect(sameValue({ a: 1, b: 2 }, { b: 2, a: 1 })).toBe(true)
+  })
+
+  it('counts keys on BOTH sides', () => {
+    // A row that GAINED a field, and one that lost it. Comparing only the keys
+    // of `a` misses the first; comparing only lengths of one side misses both.
+    expect(sameValue({ a: 1 }, { a: 1, b: 2 })).toBe(false)
+    expect(sameValue({ a: 1, b: 2 }, { a: 1 })).toBe(false)
+    // Same COUNT, different names — the case a length check alone lets through.
+    expect(sameValue({ a: 1 }, { b: 1 })).toBe(false)
+    // Same count, different names, and BOTH undefined — the case a length check
+    // AND a value comparison both let through, because reading a missing key
+    // gives `undefined` and so does reading the present one. Only asking
+    // whether the key exists separates them. Reachable in real rows: this
+    // package builds optional props by spreading `{ key: value }` in or out,
+    // so which optional a row carries is exactly the thing that varies.
+    expect(sameValue({ a: undefined }, { b: undefined })).toBe(false)
+  })
+
+  it('compares arrays element by element, not by length', () => {
+    // The realistic row: a list of ids that changed without changing size.
+    expect(sameValue(['a', 'b'], ['a', 'c'])).toBe(false)
+    expect(sameValue([1, 2, 3], [1, 2, 3])).toBe(true)
+    expect(sameValue([1, 2], [1, 2, 3])).toBe(false)
+    expect(sameValue([{ id: 'a' }], [{ id: 'b' }])).toBe(false)
+    // An array is not a record that happens to have the same keys.
+    expect(sameValue(['x'], { 0: 'x' })).toBe(false)
+  })
+
+  it('refuses to guess about anything that is not plain data', () => {
+    // Two Dates with the same time have identical (empty) own keys, so walking
+    // keys would call them equal — and would call two DIFFERENT dates equal too.
+    expect(sameValue(new Date(0), new Date(0))).toBe(false)
+    expect(sameValue(new Date(0), new Date(1))).toBe(false)
+    expect(sameValue(new Map([['a', 1]]), new Map([['a', 1]]))).toBe(false)
+    // The same instance is still the same instance.
+    const shared = new Date(0)
+    expect(sameValue(shared, shared)).toBe(true)
+  })
+
+  it('separates null from an object, and NaN from itself the way Object.is does', () => {
+    expect(sameValue(null, {})).toBe(false)
+    expect(sameValue({}, null)).toBe(false)
+    expect(sameValue(null, null)).toBe(true)
+    expect(sameValue(Number.NaN, Number.NaN)).toBe(true)
+    expect(sameValue(0, -0)).toBe(false)
   })
 })

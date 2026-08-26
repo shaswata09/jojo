@@ -17,7 +17,14 @@
    * platform belongs in this project, and needing one should stay rare enough to
    * argue about.
    *
-   * A consequence worth knowing: this project reaches `kg/core`, `kg/repo` and
+   * `bench/` is here for the same reason and joined later, at a cost. It drives
+ * the agent loop against a real model over HTTP, so it needs `fetch`, `process`
+ * and `node:fs`, and it lived outside every project for a while because of it.
+ * While it did, it read `event.kind` on a union that discriminates on `type` —
+ * a one-word error `tsc` would have rejected on sight. Untyped, it silently
+ * recorded zero tool calls for an entire benchmark run and blamed the model.
+ *
+ * A consequence worth knowing: this project reaches `kg/core`, `kg/repo` and
    * `kg/tools` through the imports below, so those sources are also compiled
    * here, with `node` in the types. That is a WEAKER program over them than
    * tsconfig.core.json's, and it is harmless only because the stricter one still
@@ -33,5 +40,5 @@
     "types": ["node"],
     "disableSourceOfProjectReferenceRedirect": true
   },
-  "include": ["test", "types/portable-globals.d.ts"]
+  "include": ["test", "bench", "types/portable-globals.d.ts"]
 }

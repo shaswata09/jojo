@@ -31,7 +31,10 @@
 import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
-import { inCatalogOrder, offeredFor } from './retrieve'
+import { EVERYTHING_SAFE, inCatalogOrder, offeredFor } from './retrieve'
+import { fitHistory, fitsWindow, summarisedNote, trimNote } from './budget'
+import { pickTools, type ChooserDeps } from './retrieve-llm'
+import { asMessage, compact, type CompactDeps } from './compact'
 import type { Effect } from './catalog'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
@@ -95,7 +98,15 @@ export type AgentEvent =
    */
   | { type: 'delta'; text: string }
   /** Narration the model produced alongside tool calls, before the final answer. */
-  | { type: 'note'; text: string }
+  /**
+   * Something said mid-run. `app: true` means THIS APP said it, not the model.
+   *
+   * The distinction decides whether it is replayed to the model next turn. The
+   * model's narration was its own speech and should be; "this conversation was
+   * trimmed" was never said by it, and a model that reads that back as its own
+   * prior words will reason from it.
+   */
+  | { type: 'note'; text: string; app?: true }
   | { type: 'step'; step: AgentStep }
   | { type: 'answer'; text: string }
   | { type: 'error'; reason: string }
@@ -131,6 +142,39 @@ export const SYSTEM_PROMPT = [
   // — and the model is told it exists so it stops inventing its own.
   'Call the tool you mean directly. Depending on their settings the person may be shown exactly what it would change and asked to approve it before anything happens, so you never need to ask them first in prose.',
   'If you cannot find a record, say so. Never create one so that there is something to act on.',
+  /*
+   * The other half of that sentence, and it was missing.
+   *
+   * The prompt said what to do when nothing matches and nothing about what to
+   * do when SEVERAL do. Measured on the multi-turn benchmark: given two
+   * applications to the same university and told to "close the UT one",
+   * GPT-OSS 120B picked one and advanced its stage — closing a live
+   * application on a guess.
+   *
+   * Nothing else stops that. A stage change is `effect: 'move'`, not
+   * destructive, so no approval gate stands in front of it; the only defence
+   * afterwards is an undo that does not survive a reload. The cheapest place
+   * to intervene is here, before the call.
+   *
+   * Phrased as "name them" rather than "ask" because a model told merely to ask
+   * writes "which one did you mean?" with no list, and the person then has to
+   * go and look the records up themselves.
+   */
+  'If you have to pick one record to do what they asked and more than one matches, do not pick. Name the ones you found and ask which they meant — guessing is worse than asking, because they cannot see that you guessed.',
+  /*
+   * The second half, and it cost a conversation to learn.
+   *
+   * With only the first sentence, "remind me to email the Rice search committee
+   * on the 20th" made Gemma find two Rice applications and stop to ask which —
+   * for a reminder that does not need one. `applicationIds` is optional on
+   * `timeline.item.create`; the ambiguity was real and blocked nothing. Three
+   * models failed `reschedule` this way, on the turn BEFORE the one it tests.
+   *
+   * So the rule is about the record you must CHOOSE, not any record that
+   * happens to be ambiguous. Asking about an optional link is the same refusal
+   * to act, wearing caution.
+   */
+  'When the ambiguity is only about something optional — which application to file a reminder under, say — do the thing they asked for and leave the optional part off. They can say later.',
   'When you are finished, answer in plain prose: what changed, in one or two sentences. No markdown headings, no bullet lists of tool names.',
 ].join(' ')
 
@@ -200,6 +244,44 @@ export type AgentOptions = {
    * lie to both.
    */
   gate?: 'destructive' | 'writes'
+  /**
+   * The model's context window, in tokens.
+   *
+   * Absent means "do not trim", which is what every caller did implicitly
+   * before this existed and what a test that does not care still wants. A
+   * caller that HAS a number should pass it: see the trim in the body for what
+   * happens without one.
+   */
+  window?: number
+  /**
+   * A second, smaller agent that chooses which tools this turn may use.
+   *
+   * Runs before the first model call, against its own short transcript — the
+   * request and a few recent lines, never the conversation. Its picks go
+   * through exactly the same closure and strip as a lexical pick, so it can
+   * narrow and cannot widen past what is safe. See `retrieve-llm.ts`.
+   *
+   * Optional, and allowed to fail: `retrieve.ts` is offline and cannot, so a
+   * chooser that is down costs latency and never capability.
+   */
+  chooser?: ChooserDeps
+  /**
+   * Summarises the exchanges a trim would otherwise drop.
+   *
+   * Only consulted when the conversation does not fit, so a short chat never
+   * pays for it. Allowed to fail the same way: without it the trim is a plain
+   * one, which is what happened before this existed. See `compact.ts`.
+   */
+  summariser?: CompactDeps
+  /**
+   * What this conversation established earlier, from a previous compaction.
+   *
+   * Stored on the thread (`ThreadProps.context`) rather than recomputed, which
+   * is the difference between a chat that runs long and one that pays a
+   * summarisation call every turn once it is big. The caller passes the summary
+   * AND the history it does not cover; this puts the summary in front.
+   */
+  context?: string
   signal?: Cancellation
   /**
    * The tools to offer this run, by registry name. All of them when absent.
@@ -251,9 +333,79 @@ export type AgentRun = {
   answer: string | null
   steps: AgentStep[]
   stopped: 'answered' | 'cap' | 'error' | 'aborted'
+  /**
+   * The tools this run was actually offered, for the next turn to carry.
+   *
+   * Reported because the retriever's `carried` set has to come from somewhere,
+   * and the only honest source is what the previous turn used. Without it every
+   * caller passed `null` and the grow-only carry the retriever was built for
+   * was never exercised: turn one sent a narrowed set and turn two — "yes, do
+   * that", which matches no seed — sent the entire catalog. The prompt prefix
+   * changed size between turns, which destroys any prefix cache and blows a
+   * small model's window at exactly the moment it is being asked to follow up.
+   *
+   * `null` means everything was offered, matching `resolveOffered`.
+   */
+  offered: readonly string[] | null
+  /**
+   * A summary written this turn, for the caller to persist on the thread.
+   *
+   * Absent unless a compaction happened, which is rare. `messages` is how many
+   * of the history messages it accounts for — the caller translates that back
+   * into its own entries (see `entriesForMessages`) and stores both, so the
+   * next turn sends the summary and only the part it does not cover.
+   */
+  compacted?: { readonly context: string; readonly messages: number }
+}
+
+/**
+ * The name of a tool this text is trying to call, or null.
+ *
+ * Two shapes, because two families of small model produce them. Hermes and
+ * Qwen-style models wrap the call in `<tool_call>…</tool_call>`; others emit a
+ * bare JSON object with a `name` and `arguments`. Both arrive in `content`
+ * when the server has no tool template for the model.
+ *
+ * Matched against what was actually OFFERED rather than against any
+ * tool-shaped JSON, so a person asking "what would `application.create` do?"
+ * and getting a prose answer that quotes the shape is not mistaken for a
+ * failed call. A model naming a tool it was not offered is a different problem
+ * and `performCall` already refuses it.
+ */
+function toolCallInText(text: string, offered: Set<string> | null): string | null {
+  if (text.trim() === '') return null
+
+  const envelope = /<tool_call>\s*([\s\S]*?)<\/tool_call>/i.exec(text)
+  const body = envelope?.[1] ?? text
+  const named = /"name"\s*:\s*"([\w.]+)"/.exec(body)
+  const name = named?.[1]
+  if (name === undefined) return null
+
+  // A call needs arguments, or a bare `{"name": …}` in prose about anything
+  // would trip this.
+  if (envelope === null && !/"(arguments|parameters)"\s*:/.test(body)) return null
+
+  /*
+   * Compared against the set already resolved for this run rather than
+   * re-resolving. `offered` is null when everything was offered, and a null
+   * here means "any known tool counts" — which is right: the question is
+   * whether the model was trying to call something it could have called.
+   */
+  const dotted = name.replace(/_/g, '.')
+  return offered === null || offered.has(name) || offered.has(dotted) ? dotted : null
 }
 
 const DEFAULT_MAX_STEPS = 8
+
+/**
+ * How many identical calls before the run is stopped.
+ *
+ * Three: the first is work, the second is a mistake, the third is a loop. The
+ * second gets a warning appended to its result — which is the intervention
+ * most likely to break the cycle, because the model's own transcript already
+ * holds the answer and what it has not been told is that it is repeating.
+ */
+const REPEAT_LIMIT = 3
 
 /**
  * The registry names a caller offered, resolved and de-aliased.
@@ -299,6 +451,94 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    * lands back on "offer everything" — the behaviour this app had before the
    * retriever existed, so being unsure costs tokens and never an answer.
    */
+  /*
+   * The chooser runs first, and its answer is an INPUT to the same pipeline.
+   *
+   * A second, smaller agent reads the request and a couple of recent lines and
+   * says which tools it needs — see `retrieve-llm.ts` for why that is affordable
+   * (a name and a line each is ~2,600 tokens against ~16,000 for the schemas)
+   * and why it is separate (it never sees the conversation, so it stays cheap
+   * and stable as the chat grows, and cannot be talked out of its answer).
+   *
+   * `null` covers every way it can not work — unreachable, refused, prose
+   * instead of JSON, an empty pick — and lands on `undefined` below, which is
+   * `offeredFor`'s "use the lexicon". That fallback is offline and cannot fail,
+   * so a chooser that is down costs a round trip and never an answer.
+   */
+  /*
+   * The chooser runs only when the lexicon's own list does not fit.
+   *
+   * Measured, and this is the whole argument. The lexicon alone scores 30/30 on
+   * the multi-turn suite, twice. The chooser in front of it scores 28–29 — it
+   * under-picks writes, and an assistant given only read tools does not say it
+   * cannot act, it says it DID: "I have updated the application to the closed
+   * stage", having called nothing. It also halves the context, 8.2k → 2.9k on
+   * the first message.
+   *
+   * Halving the context is worth nothing in an app where a wrong write costs a
+   * record — until the alternative is not working at all. On an 8k model the
+   * lexicon's thirty-odd schemas genuinely do not fit, and then a slightly
+   * riskier narrowing is the only thing that makes the turn possible.
+   *
+   * So: the safe path when it fits, and the chooser exactly when it does not.
+   * It also costs nothing when it is not needed — no round trip, no latency.
+   */
+  /*
+   * The retriever's own answer, BEFORE abstention is turned into a fallback.
+   *
+   * `null` here means it recognised nothing, and that is a different fact from
+   * "it chose everything" — the gate below turns on the difference, so the two
+   * must not be flattened into one list first.
+   */
+  const lexicalSet =
+    options.tools === undefined && options.retrieve
+      ? offeredFor(
+          options.prompt,
+          options.retrieve.carried ? new Set(options.retrieve.carried) : null,
+          options.retrieve.fromHistory ?? [],
+        )
+      : undefined
+
+  const lexical =
+    options.tools ??
+    (options.retrieve ? inCatalogOrder(lexicalSet ?? new Set(EVERYTHING_SAFE)) : undefined)
+
+  /*
+   * Measured on the SCHEMAS, not the names.
+   *
+   * The names are a few hundred characters and the schemas are sixteen
+   * thousand tokens — measuring the wrong one would mean the chooser never runs
+   * on the model that most needs it.
+   */
+  const needsNarrowing =
+    options.chooser !== undefined &&
+    options.retrieve !== undefined &&
+    options.tools === undefined &&
+    options.window !== undefined &&
+    /*
+     * NOT when the retriever abstained, and this is the whole of the second fix.
+     *
+     * Abstention makes `lexical` the entire safe catalog, which fits no window
+     * anyone runs — so a gate that only asks "does it fit" fires the chooser
+     * EXACTLY on abstention and nowhere else. That is backwards. Abstention is
+     * the case where the chooser is the sole source rather than a supplement:
+     * `offeredFor` unions its picks with the lexicon's when there is one and
+     * REPLACES with them when there is not, so a chooser that returns only read
+     * tools leaves a model with no way to act — and a model with no way to act
+     * does not say it cannot, it says it did. Measured: "I am withdrawing from
+     * Baylor" abstains, and the reply claimed the application had been closed
+     * having called nothing.
+     *
+     * So abstention keeps the answer that scores 30/30 — everything safe. On a
+     * window too small to hold it the request is refused by `guardTruncation`
+     * or by Ollama's `shift:false`, which is a failure somebody can see. A
+     * hallucinated write is not.
+     */
+    lexicalSet !== null &&
+    !fitsWindow(toolsFor(resolveOffered(lexical)), options.window)
+
+  const picked = needsNarrowing ? await pickTools(options.chooser!, options.prompt) : null
+
   const chosen =
     options.tools ??
     (options.retrieve
@@ -307,7 +547,15 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
             options.prompt,
             options.retrieve.carried ? new Set(options.retrieve.carried) : null,
             options.retrieve.fromHistory ?? [],
-          ) ?? new Set(CATALOG.map((e) => e.name)),
+            picked === null ? undefined : new Set(picked),
+            /*
+             * NOT the whole catalog. Abstention means the retriever recognised
+             * nothing — the first message of a new conversation, most often —
+             * and the old fallback handed a small model every tool there is,
+             * including the two that empty the store. `offeredFor` strips those
+             * only on the branch it did not take.
+             */
+          ) ?? new Set(EVERYTHING_SAFE),
         )
       : undefined)
 
@@ -344,19 +592,150 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    */
   const enforced = options.tools !== undefined
 
+  /*
+   * The date, which the model did not have.
+   *
+   * `host.today()` reached the TOOLS and never the model, so every relative
+   * date a person speaks — "the 20th", "next Tuesday", "in two weeks" — was
+   * resolved against whatever the weights believe today is. Measured on the
+   * benchmark: asked to be reminded "on the 20th" in a world dated 2026-09-14,
+   * Gemma filed it under **2025-05-20**. The reminder was created correctly,
+   * rescheduled correctly, and landed sixteen months in the past.
+   *
+   * Appended rather than baked into `SYSTEM_PROMPT`, because that constant is
+   * a constant and this is not — and because `core` has no clock (D26), so the
+   * only honest source is the host that was injected one.
+   */
+  const system: ChatMessage = {
+    role: 'system',
+    content: `${SYSTEM_PROMPT} Today is ${options.host.today()}.`,
+  }
+  const question: ChatMessage = { role: 'user', content: options.prompt }
+
+  /*
+   * Trimmed before sending, rather than truncated by the server after.
+   *
+   * Nothing bounded a conversation. Measured over ten ordinary follow-ups
+   * against a real model, the request went 8,227 → 21,062 tokens: the history
+   * is never cut, the carried tool set grows monotonically (33 → 62 schemas),
+   * and no one compared the total to the window. On an 8k model that stopped
+   * being answerable at turn 2.
+   *
+   * What happened then is the worst way to fail: the SERVER truncates, and
+   * servers truncate from the front — which is this system message, with the
+   * rules about not inventing ids, about asking when several records match, and
+   * about what today is. Nothing reports it and the reply reads normally.
+   *
+   * `window` is the person's own number when they gave one, and the provider's
+   * default otherwise. Both local defaults claim 32,768, which is optimistic
+   * for Ollama specifically (its `num_ctx` is 4,096 unless changed) — so this
+   * is a floor on the damage rather than a guarantee, and `guardTruncation`
+   * still runs afterwards for the case where the guess was too generous.
+   */
+  const fitted = options.window === undefined
+    ? { history: options.history, dropped: 0, summarisable: true, overflows: false }
+    : fitHistory(options.history, [system, question, tools], options.window)
+
+  /*
+   * What was dropped, summarised back in — so a long chat loses DETAIL rather
+   * than memory.
+   *
+   * A plain trim is the floor and it is not enough on its own: at turn twelve
+   * the assistant would have no idea that at turn three you said which Rice
+   * application you meant, or that it already filed the CV, or that you told it
+   * to leave Baylor alone. It asks again, or acts as though none of it
+   * happened.
+   *
+   * One system note takes their place — system, not assistant, because a model
+   * defends its own prior speech and this is context rather than something it
+   * said. It is asked for only when a trim actually drops something, so an
+   * ordinary conversation never pays for it, and it is allowed to fail: without
+   * it the trim is a plain one, which is what happened before this existed.
+   *
+   * `RESERVED_FOR_REPLY` already left room, and the summary is capped, so
+   * putting it back cannot re-overflow what the trim just fixed.
+   */
+  let recovered: ChatMessage | null = null
+  let written: { context: string; messages: number } | undefined
+  if (fitted.dropped > 0 && fitted.summarisable && options.summariser) {
+    /*
+     * The exchanges being dropped, PLUS whatever a previous compaction already
+     * summarised — so the new summary supersedes the old rather than sitting
+     * beside it. Without this the thread would accumulate summaries, which is
+     * the growth this whole mechanism exists to stop.
+     */
+    const earlier: ChatMessage[] =
+      options.context === undefined
+        ? []
+        : [{ role: 'user', content: `Earlier still: ${options.context}` }]
+    const summary = await compact(options.summariser, [
+      ...earlier,
+      ...options.history.slice(0, fitted.dropped),
+    ])
+    if (summary !== null) {
+      // `asMessage` owns the prefix; the thread stores the summary itself. See
+      // `compact` for the doubling this avoids.
+      recovered = asMessage(summary)
+      written = { context: summary, messages: fitted.dropped }
+    }
+  }
+
+  /*
+   * A summary from a PREVIOUS turn, when this turn did not write a new one.
+   *
+   * The common case once a conversation has been compacted once: it fits now,
+   * nothing is dropped, and what the model still needs is the note about the
+   * part that is no longer here.
+   */
+  const carriedContext: ChatMessage | null =
+    recovered === null && options.context !== undefined
+      ? asMessage(options.context)
+      : null
+
+  if (fitted.dropped > 0) {
+    onEvent({
+      type: 'note',
+      app: true,
+      text: recovered === null ? trimNote(fitted.dropped) : summarisedNote(fitted.dropped),
+    })
+  }
+  if (fitted.overflows) {
+    onEvent({
+      type: 'note',
+      app: true,
+      text: 'The tool list alone is larger than this model can hold. Narrow what the assistant may reach for, or raise the context window in Settings if your server allows it.',
+    })
+  }
+
   const messages: ChatMessage[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
-    ...options.history,
-    { role: 'user', content: options.prompt },
+    system,
+    ...(recovered === null ? [] : [recovered]),
+    ...(carriedContext === null ? [] : [carriedContext]),
+    ...fitted.history,
+    question,
   ]
   const steps: AgentStep[] = []
   let counter = 0
+
+  /**
+   * Identical calls made in this run, and how often.
+   *
+   * Per run rather than per round: the loop a small model gets into spans
+   * rounds — call, misread the refusal, call again — and a per-round counter
+   * would never see it.
+   */
+  const repeats = new Map<string, number>()
 
   const finish = (stopped: AgentRun['stopped'], answer: string | null = null): AgentRun => ({
     messages,
     answer,
     steps,
     stopped,
+    offered: offered === null ? null : [...offered],
+    // Reported on every outcome, including a failure: a compaction that
+    // happened is a fact about the thread whether or not the turn then worked,
+    // and losing it would mean summarising the same exchanges again next time.
+    ...(written === undefined ? {} : { compacted: written }),
   })
 
   for (let round = 0; round < maxSteps; round++) {
@@ -384,9 +763,94 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
       return finish('error')
     }
 
+    /*
+     * Cut off at the completion cap, and said out loud.
+     *
+     * `finish_reason` was parsed by every reader and consumed by nothing, so a
+     * reply that stopped mid-sentence was indistinguishable from one that
+     * finished. That is worst on the two paths that matter most here: a
+     * truncated `arguments` string reaches `safeParse` as invalid JSON and the
+     * model is told "the arguments were not valid JSON", which is the wrong
+     * diagnosis and invites the same call again; and a truncated answer is
+     * simply shown as the answer.
+     *
+     * A note rather than an error, because the partial work is still worth
+     * having and the round may well continue — but the user is told, because
+     * "the reply was cut off" is something they can act on and a half-sentence
+     * is not.
+     */
+    if (turn.finishReason === 'length') {
+      onEvent({
+        type: 'note',
+        app: true,
+        text: 'The model stopped mid-reply because it hit its own output limit. Anything below this may be incomplete — a shorter question, or a larger reply limit on the server, usually fixes it.',
+      })
+    }
+
     // No calls: the model is done talking and this is the answer.
     if (turn.toolCalls.length === 0) {
       const answer = turn.text ?? ''
+
+      /*
+       * Unless it IS a tool call, written as prose.
+       *
+       * A model whose server has no matching tool template emits
+       * `<tool_call>{"name":…}</tool_call>` — or a bare JSON object naming a
+       * tool — in `content` instead of in `tool_calls`. That is a server
+       * configuration problem (llama.cpp without `--jinja`, LM Studio with the
+       * wrong template) and it is extremely common on small local models.
+       *
+       * Reported as an ERROR naming the cause rather than printed as the
+       * answer. Printing it is what the code did: the chat bubble showed raw
+       * JSON, the run status said `answered`, no step was recorded, and it was
+       * indistinguishable from the model politely declining to act. Nobody can
+       * debug that from the outside.
+       *
+       * Deliberately NOT executed. Recovering a call the transport did not
+       * frame means trusting text the model produced to be a call the user
+       * approved, and the whole approval gate rests on the transport telling
+       * the two apart.
+       */
+      const looksLikeCall = toolCallInText(answer, offered)
+      if (looksLikeCall !== null) {
+        onEvent({
+          type: 'error',
+          reason: `The model tried to call “${looksLikeCall}” by writing it out as text rather than as a tool call. That usually means the server is running without a tool template for this model — in llama.cpp it is the --jinja flag, and in LM Studio it is the prompt template on the model's page. Nothing was run.`,
+        })
+        return finish('error')
+      }
+
+      /*
+       * Nothing said, and nothing done. That is not an answer.
+       *
+       * Measured against Qwen3 14B: `file-a-new-document` failed on every
+       * condition with zero calls, an empty reply, and a run status of
+       * `answered`. The model spends its whole output budget reasoning before
+       * it speaks, hits the server's reply limit mid-thought, and returns
+       * nothing at all — and jojo showed an empty chat bubble and called the
+       * turn finished.
+       *
+       * This is the same argument the branch above makes about a call written
+       * as prose, and it lands harder: there the bubble at least held text
+       * somebody could puzzle over. Reported as an ERROR that names the cause,
+       * because the fix is a server setting and nobody can guess that from a
+       * blank reply.
+       *
+       * Only when NOTHING happened. A run whose steps landed has done the work
+       * — the announcements are on screen and the records are written — and
+       * calling that an error would be a lie about a store that did change.
+       */
+      if (answer.trim() === '' && steps.length === 0) {
+        onEvent({
+          type: 'error',
+          reason:
+            turn.finishReason === 'length'
+              ? 'The model used its whole reply budget without answering or calling anything. Models that reason before they speak — Qwen3, GPT-OSS, DeepSeek-R1 — do this when the server’s reply limit is small: raise it, or run the model with thinking turned off. Nothing was changed.'
+              : 'The model returned an empty reply and did not call anything, so nothing was changed. Asking again, more specifically, usually works.',
+        })
+        return finish('error')
+      }
+
       onEvent({ type: 'answer', text: answer })
       messages.push({ role: 'assistant', content: answer })
       return finish('answered', answer)
@@ -424,14 +888,66 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
       counter += 1
       const step = await performCall(options, call, `s${String(counter)}`, offered, enforced)
       steps.push(step)
+
+      /*
+       * How many times this exact call has been made in this run.
+       *
+       * Nothing watched for repetition, and a small model that has misread a
+       * refusal will re-issue the identical call every round until the cap —
+       * eight rounds at an 18k-token prompt is minutes of somebody's GPU spent
+       * discovering nothing. Keyed on name AND arguments, because calling the
+       * same tool with different arguments is ordinary work.
+       */
+      const fingerprint = `${call.name}\u0000${call.raw}`
+      const seen = (repeats.get(fingerprint) ?? 0) + 1
+      repeats.set(fingerprint, seen)
+
       // Every call gets a reply, including the ones that failed. A model left
       // waiting on a result it never receives will re-issue the same call
       // forever.
+      /*
+       * How many rounds are left, once there are few.
+       *
+       * The cap was a wall: the loop ran to `maxSteps` and stopped with
+       * "Stopped after N rounds without finishing" and no answer, having never
+       * told the model it was running out. A model that knows it has one round
+       * left says what it found; a model that does not calls another tool and
+       * gets cut off mid-thought.
+       *
+       * Only in the last two rounds, and only appended to a result the model is
+       * already reading — a budget announced on every round is noise, and a
+       * separate system message mid-conversation is a shape some providers
+       * handle badly.
+       */
+      const left = maxSteps - round - 1
+      const budget =
+        left <= 1
+          ? `\n\n${left === 0 ? 'This was your last step.' : 'You have one step left.'} Answer now with what you have, and say plainly what you could not finish.`
+          : ''
+
       messages.push({
         role: 'tool',
         tool_call_id: call.id,
-        content: step.detail ?? 'Done.',
+        content:
+          seen >= 2
+            ? /*
+               * Told, rather than silently answered the same way again. The
+               * model's own transcript already contains the first answer; what
+               * it has not been told is that it is going in circles, and a
+               * repeated identical result reads to it as confirmation.
+               */
+              `${step.detail ?? 'Done.'}\n\nNote: this is the ${seen === 2 ? 'second' : 'third'} time you have called ${step.name} with exactly these arguments in this conversation, and the answer has not changed. Do something different, or tell the user what is blocking you.${budget}`
+            : `${step.detail ?? 'Done.'}${budget}`,
       })
+
+      if (seen >= REPEAT_LIMIT) {
+        // `step.name` rather than `call.name`: the step carries the registry
+        // name the rest of the app shows, and the wire spelling with underscores
+        // appears nowhere a person reads.
+        const reason = `The model called ${step.name} with the same arguments ${String(seen)} times without getting anywhere. Stopped, so it does not keep going. What did run is listed above.`
+        onEvent({ type: 'error', reason })
+        return finish('error')
+      }
     }
   }
 

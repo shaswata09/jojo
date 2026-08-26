@@ -45,7 +45,13 @@ export function Segment<T extends string>({
           <Pressable
             key={o.value}
             accessibilityRole="radio"
-            accessibilityState={{ selected: on }}
+            /*
+             * `checked`, not `selected`. Android reads a radio's state from
+             * `accessibilityState.checked`, so with only `selected` TalkBack
+             * announced EVERY option — including the active one — as "not
+             * checked". Both are sent: iOS uses `selected`.
+             */
+            accessibilityState={{ selected: on, checked: on }}
             onPress={() => onChange(o.value)}
             style={[
               styles.option,

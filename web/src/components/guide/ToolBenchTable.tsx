@@ -123,6 +123,29 @@ const PLAIN: Record<string, string> = {
 
 export function ToolBenchTable() {
   const ran = new Date(report.ranAt)
+  /*
+   * The configuration, said out loud beside the numbers.
+   *
+   * A score and the setup it was measured under are one fact. These figures
+   * were published for a while from a configuration the app does not ship — no
+   * declared window, no tool chooser, no summariser — and nothing on this page
+   * would have told a reader that, because the page only had the date. The
+   * runner records it and `publish.mjs` refuses to build a table whose rows
+   * disagree about it, so by the time it reaches here it is a single fact.
+   */
+  /*
+   * Read through a cast because the type comes from the generated JSON itself,
+   * so it describes whatever was published last rather than what publish.mjs
+   * writes. Absence is handled rather than assumed away: a payload from before
+   * the field existed must still render, saying it does not know.
+   */
+  const setup = (report as { setup?: { harness: boolean; window?: number } }).setup
+  const setupSaid =
+    setup === undefined
+      ? 'in a configuration this payload does not record'
+      : setup.harness
+        ? `with the harness the app ships — a ${(setup.window ?? 0).toLocaleString()}-token window, tool narrowing and summarising`
+        : 'with the harness off, which is not what the app ships'
 
   return (
     <div>
@@ -251,8 +274,8 @@ export function ToolBenchTable() {
       ) : null}
 
       <p className="mt-4 text-xs text-text-3">
-        Run on {ran.toLocaleDateString()} against three vLLM servers, one pass each. Re-running the
-        benchmark is what updates this — the numbers are generated, not typed.
+        Run on {ran.toLocaleDateString()} against three vLLM servers, one pass each, {setupSaid}.
+        Re-running the benchmark is what updates this — the numbers are generated, not typed.
       </p>
     </div>
   )

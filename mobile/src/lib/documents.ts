@@ -8,6 +8,7 @@ import {
   type FileToCopy,
   type NonEmptyArray,
 } from '@react-native-documents/picker'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { kindOfFile, mimeOfFile, sizeLabel } from '@/lib/files'
 import type { FileBucket, FileKind } from '@jojo/service/data/vault'
@@ -239,9 +240,10 @@ export async function documentExists(uri: string | undefined): Promise<boolean> 
  * attached document's bytes in the sandbox, reclaimable only by uninstalling.
  *
  * It is still NOT called when a single document row is deleted, and that is a
- * different question with a different answer — see `onDelete` in
- * `screens/vault/FilesTool.tsx`. That delete offers an Undo, and bytes deleted
- * under a restorable record are a record restored to point at nothing.
+ * different question with a different answer — see `trashDocument` below. That
+ * delete offers an Undo, and bytes deleted under a restorable record are a
+ * record restored to point at nothing, so the single-row path sets the copy
+ * aside instead and sweeps it on the next launch.
  */
 export async function forgetDocument(uri: string | undefined): Promise<void> {
   if (!uri) return
@@ -275,6 +277,110 @@ export async function forgetDocument(uri: string | undefined): Promise<void> {
  * a press handler that has already emptied the store, and a leaked copy is a
  * few kilobytes that leave with the app.
  */
+/**
+ * A copy set aside so an Undo can bring it back, and swept on the next launch.
+ *
+ * ## Why the single-row delete could not just unlink
+ *
+ * Deleting one document offers an Undo, and bytes deleted under a restorable
+ * record leave a record restored to point at nothing — a row that looks intact
+ * with the loss invisible until somebody opens it. So `forgetDocument` was kept
+ * off that path entirely, and the cost was the other way round: "Document
+ * removed" left every byte in the sandbox, reclaimable only by uninstalling.
+ * The web app solved this at its own layer — `blobs.remove` then
+ * `blobs.restore` on Undo — and the phone had no equivalent.
+ *
+ * ## Why a sweep at launch is safe
+ *
+ * The undo ring is in memory and `rehydrate` clears it, so a document still in
+ * the trash when the app starts is one nothing can restore. That makes the
+ * sweep unambiguous in the same way `forgetDocuments` is: there is no Undo left
+ * to disappoint.
+ *
+ * ## Why a list rather than a directory
+ *
+ * `keepLocalCopy` mints its own UUID directory per file, so the app does not
+ * know the shape of its own storage — the comment at the top of this file says
+ * so. Walking that tree to find trash would make it start depending on a layout
+ * it does not own. A list of paths depends on nothing.
+ */
+const TRASH_KEY = 'jojo/documents/trashed'
+const TRASH_SUFFIX = '.jojo-trashed'
+
+const trashList = async (): Promise<string[]> => {
+  try {
+    const raw = await AsyncStorage.getItem(TRASH_KEY)
+    const parsed: unknown = raw === null ? [] : JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter((p): p is string => typeof p === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+const writeTrashList = async (paths: readonly string[]): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(TRASH_KEY, JSON.stringify(paths))
+  } catch {
+    // A trash list that cannot be written means the sweep misses this file —
+    // the old behaviour, and a few kilobytes. Not worth failing the delete.
+  }
+}
+
+/**
+ * Set a document's bytes aside, and hand back the way to put them back.
+ *
+ * `shared` is the caller's answer to "does another record point at this same
+ * uri", which it can see and this cannot. `onDuplicate` copies `uri` verbatim,
+ * so two rows can and do name one file — and trashing it under one of them
+ * would take the other's document with it. Shared files are left alone and the
+ * restore is a no-op, which is the same outcome as before for that case.
+ */
+export async function trashDocument(
+  uri: string | undefined,
+  shared: boolean,
+): Promise<() => Promise<void>> {
+  if (!uri || shared) return async () => {}
+  const from = pathOf(uri)
+  const to = `${from}${TRASH_SUFFIX}`
+  try {
+    await ReactNativeBlobUtil.fs.mv(from, to)
+  } catch {
+    // Already gone, or unmovable. Either way there is nothing to restore and
+    // nothing to sweep, and the record's own deletion is what was asked for.
+    return async () => {}
+  }
+  await writeTrashList([...(await trashList()), to])
+  return async () => {
+    try {
+      await ReactNativeBlobUtil.fs.mv(to, from)
+    } catch {
+      // The Undo restores the record either way; `documentExists` is what the
+      // row uses to tell the person the document did not come back with it.
+    }
+    await writeTrashList((await trashList()).filter((p) => p !== to))
+  }
+}
+
+/**
+ * Delete everything set aside in an earlier session.
+ *
+ * Called once at launch. See above for why anything still here is unreachable.
+ */
+export async function sweepTrashedDocuments(): Promise<void> {
+  const paths = await trashList()
+  if (paths.length === 0) return
+  await Promise.all(
+    paths.map(async (path) => {
+      try {
+        await ReactNativeBlobUtil.fs.unlink(path)
+      } catch {
+        // Gone already, which is the outcome wanted.
+      }
+    }),
+  )
+  await writeTrashList([])
+}
+
 export async function forgetDocuments(uris: readonly (string | undefined)[]): Promise<void> {
   const paths = new Set(uris.filter((uri): uri is string => Boolean(uri)))
   await Promise.all([...paths].map(forgetDocument))

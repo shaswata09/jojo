@@ -52,6 +52,7 @@
     "kg/crypto",
     "kg/repo",
     "kg/tools",
+    "kg/agent",
     "kg/log.ts",
     "data",
     "types/portable-globals.d.ts"

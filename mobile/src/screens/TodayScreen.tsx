@@ -21,6 +21,7 @@ import { TODAY } from '@/lib/today'
 import { markColor, markOfDate, markTone } from '@/lib/marks'
 import { usePriorityActions } from '@/lib/priority'
 import type { PriorityAction, PriorityUrgency } from '@/lib/priority'
+import { markDismissed, readDismissed, showFirstSteps } from '@/lib/first-steps'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useTimeline } from '@/lib/store-context'
 import { KIND_ICON } from '@/lib/timeline-visuals'
@@ -206,18 +207,33 @@ function PriorityActions() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   /**
-   * The checklist is latched open, not re-derived from the condition that
-   * opened it. It used to render only while the store held no applications — so
-   * pressing its own "New application" button, which is step 1, created the
-   * record that closed the gate and took steps 2 and 3 with it.
+   * Shown until it is FINISHED or DISMISSED — `lib/first-steps.ts` holds that
+   * rule, so it has a test and this screen has none.
+   *
+   * It latched on `bare` (nothing added at all) in component state, and that
+   * failed at both ends: somebody who added an application and reopened the app
+   * came back with the checklist gone and two steps never done, and somebody
+   * who pressed "hide these steps" got it back on the next launch. The original
+   * reason for the latch stands and is now the rule's job — the panel's own
+   * "New application" button completes step 1, and re-deriving from an empty
+   * store would have closed the panel out from under steps 2 and 3.
    */
-  const bare = !progress.application && !progress.dated && !progress.reminder
-  const [checklistOpen, setChecklistOpen] = useState(bare)
+  const [dismissed, setDismissed] = useState<boolean | null>(null)
   useEffect(() => {
-    // Reopens if the store is emptied later — Settings → Records → Clear
-    // everything lands the user back on exactly this screen.
-    if (bare) setChecklistOpen(true)
-  }, [bare])
+    let live = true
+    void readDismissed().then((value) => {
+      if (live) setDismissed(value)
+    })
+    return () => {
+      live = false
+    }
+  }, [])
+
+  const checklistOpen = showFirstSteps(progress, dismissed)
+  const hideChecklist = () => {
+    markDismissed()
+    setDismissed(true)
+  }
 
   if (checklistOpen) {
     const steps = [
@@ -302,7 +318,7 @@ function PriorityActions() {
         <Button
           label={complete ? 'Close first steps' : 'Hide these steps'}
           variant={complete ? 'outline' : 'ghost'}
-          onPress={() => setChecklistOpen(false)}
+          onPress={hideChecklist}
           style={{ marginTop: space[4], alignSelf: 'flex-end' }}
         />
       </Panel>

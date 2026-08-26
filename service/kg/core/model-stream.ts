@@ -43,7 +43,25 @@ export type StreamEvent =
   /** More of the assistant's prose. Append it. */
   | { type: 'text'; delta: string }
   /** The model has finished. `calls` is whatever it assembled, possibly empty. */
-  | { type: 'done'; text: string; calls: readonly WireToolCall[]; finish: string | null }
+  | {
+      type: 'done'
+      text: string
+      calls: readonly WireToolCall[]
+      finish: string | null
+      /**
+       * The server's own token counts, when it sent them.
+       *
+       * `null` when it did not, and the two are different facts: a server that
+       * reports 400 prompt tokens for a 20,000-token request has told us it
+       * threw the prompt away, and one that reports nothing has told us
+       * nothing. `guardTruncation` must be able to tell those apart, so this
+       * is passed through rather than defaulted to zero.
+       */
+      usage: StreamUsage | null
+    }
+
+/** What an OpenAI-compatible server reports at the end of a stream. */
+export type StreamUsage = { prompt_tokens?: number; completion_tokens?: number }
 
 /**
  * The same request, asking for a stream.
@@ -67,6 +85,25 @@ export function streamingChatRequest(
   const base = chatRequest(settings, messages, tools, browser)
   const body = JSON.parse(base.body ?? '{}') as Record<string, unknown>
   body['stream'] = true
+  /*
+   * The prize, and the reason this line is not optional.
+   *
+   * A streamed reply carries no `usage` unless it is asked for: the server
+   * sends deltas and stops. `guardTruncation` — the app's only defence against
+   * a server that silently dropped most of the prompt — works by comparing
+   * `usage.prompt_tokens` against what was sent, so without this it has nothing
+   * to compare and returns the turn unexamined.
+   *
+   * That mattered most on exactly the servers this path is for. Streaming is
+   * chosen for the OpenAI dialect on a local address — vLLM, LM Studio,
+   * llama.cpp — which are the servers that truncate silently, and the check
+   * was switched off for all of them.
+   *
+   * Harmless where it is not understood: an OpenAI-compatible server that does
+   * not know `stream_options` ignores it, and the guard then behaves as it did
+   * before — no worse.
+   */
+  body['stream_options'] = { include_usage: true }
   return { ...base, body: JSON.stringify(body) }
 }
 
@@ -106,6 +143,12 @@ export function createStreamReader() {
   let text = ''
   const building = new Map<number, Building>()
   let finish: string | null = null
+  /*
+   * The usage frame arrives LAST and on its own — after `finish_reason`, in a
+   * frame whose `choices` array is empty. Held here rather than read at the end
+   * because by then the stream is closed and the frame is gone.
+   */
+  let usage: StreamUsage | null = null
   let ended = false
 
   /** The assembled calls, in wire order. */
@@ -142,7 +185,7 @@ export function createStreamReader() {
         const payload = line.slice(5).trim()
         if (payload === '[DONE]') {
           ended = true
-          out.push({ type: 'done', text, calls: calls(), finish })
+          out.push({ type: 'done', text, calls: calls(), finish, usage })
           return out
         }
 
@@ -154,6 +197,16 @@ export function createStreamReader() {
           // chunk should cost a few tokens, not the whole answer.
           continue
         }
+
+        /*
+         * Read BEFORE the `choices` guard below, and that ordering is the whole
+         * fix. A server sends usage in a final frame whose `choices` array is
+         * EMPTY — so `choices[0]` is undefined and the `continue` on the next
+         * line skipped it, discarding the one number `guardTruncation` needs
+         * even once the request asked for it.
+         */
+        const reported = (frame as { usage?: StreamUsage | null }).usage
+        if (reported !== undefined && reported !== null) usage = reported
 
         const choice = (frame as { choices?: unknown[] }).choices?.[0] as
           { delta?: Record<string, unknown>; finish_reason?: string | null } | undefined
@@ -195,7 +248,7 @@ export function createStreamReader() {
     end(): StreamEvent[] {
       if (ended) return []
       ended = true
-      return [{ type: 'done', text, calls: calls(), finish }]
+      return [{ type: 'done', text, calls: calls(), finish, usage }]
     },
 
     /** What has arrived so far, for a caller that wants to show it. */

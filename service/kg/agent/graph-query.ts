@@ -123,7 +123,14 @@ export const GRAPH_QUERY_SCHEMA = s.object({
   start: s.optional(
     s.enum([...NODE_TYPES, 'any'] as const, {
       label: 'Records to look at',
-      description: 'pattern only. The kind of record the answer is a list of.',
+      // Says TYPE NAME and says "not an id" because models put ids here.
+      // Measured: Gemma and Qwen both answered "which applications share a
+      // keyword" with `start: "application", end: "app:01a09f2…"` — the type in
+      // one field and a specific record in the other, which is a coherent
+      // reading of "the kind of record on the other end" if you are skimming.
+      // It costs a refused call and a round trip on a local model.
+      description:
+        'pattern only. A TYPE NAME such as "application" or "keyword" — never the id of a particular record. The answer is a list of records of this type.',
     }),
   ),
   startFacet: facet('Facet of the starting records'),
@@ -147,7 +154,8 @@ export const GRAPH_QUERY_SCHEMA = s.object({
   end: s.optional(
     s.enum([...NODE_TYPES, 'any'] as const, {
       label: 'Joined to',
-      description: 'pattern only. The kind of record on the other end.',
+      description:
+        'pattern only. A TYPE NAME, like "start" — never the id of a particular record. To ask about one named record, use kind "path" and its id, or memory.related.',
     }),
   ),
   endFacet: facet('Facet of the joined records'),

@@ -5,7 +5,14 @@ import { testReader } from '@/lib/markitdown'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { normaliseEndpoint, serverAt, serversFor } from '@jojo/service/core/model-server'
 import type { ModelServer } from '@jojo/service/core/model-server'
-import { PROVIDERS, cleanKey, providerMeta, type ProviderMeta } from '@jojo/service/core/provider'
+import { cloudTerms } from '@jojo/service/core/cloud-terms'
+import {
+  PROVIDERS,
+  cleanKey,
+  isLoopbackEndpoint,
+  providerMeta,
+  type ProviderMeta,
+} from '@jojo/service/core/provider'
 import type { ProviderId } from '@jojo/service/core/provider'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
@@ -18,7 +25,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
-import { SettingRow, TextField, Toggle } from '@/components/ui/Field'
+import { SettingRow, TextField } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
@@ -220,9 +227,6 @@ export function SettingsScreen() {
   // nothing is connected — and in an app whose promise is that your data stays
   // on your device, a switch that claims to be writing files somewhere is the
   // single most consequential thing a person could be wrong about.
-  const [autoSync, setAutoSync] = useState(false)
-  const [snapshots, setSnapshots] = useState(false)
-  const [watchFolder, setWatchFolder] = useState(false)
   const [pending, setPending] = useState<PendingData | null>(null)
 
   const dataSet = isEmpty ? 'empty' : 'demo'
@@ -313,45 +317,29 @@ export function SettingsScreen() {
       {/* Setting groups. The confirm sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>
         <Panel>
-          <PanelTitle hint="optional">Save to a file on this device</PanelTitle>
+          {/*
+            * WHERE THE BYTES ARE, rather than three switches that did nothing.
+            *
+            * This panel held `autoSync`, `snapshots` and `watchFolder` — bare
+            * `useState` with no reader anywhere. They flipped, looked live,
+            * were never persisted and were wired to nothing, under a heading
+            * promising records that "survive closing the app". Web deleted the
+            * same three and names them in `DocumentsPanel` as the defect it was
+            * written to remove; the phone kept them.
+            *
+            * A switch that does nothing is worse than an absent feature: it is
+            * a promise the app has already broken by the time anybody notices.
+            */}
+          <PanelTitle hint="where your records actually live">On this device</PanelTitle>
           <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            jojo works fully without this. Set up later and it also keeps a copy of your records in
-            a file you own, so they survive closing the app. Nothing here is connected yet.
+            Everything you add is written straight to this phone&rsquo;s own storage as you work —
+            there is nothing to switch on, and nothing leaves the device. Documents you attach are
+            copied into jojo&rsquo;s own folder, so they survive the original being moved or deleted.
           </Txt>
-          <View style={{ marginTop: space[2] }}>
-            {/* Named for what happens to the user's records, not for the
-                mechanism. "Auto sync" describes an implementation; "save as I
-                work" describes the thing being promised. */}
-            <SettingRow
-              label="Save as I work"
-              description="Write every change straight to that file"
-              control={
-                <Toggle value={autoSync} onValueChange={setAutoSync} label="Save as I work" />
-              }
-            />
-            <SettingRow
-              label="Keep a copy of what I sent"
-              description="A timestamped snapshot of each submitted application"
-              control={
-                <Toggle
-                  value={snapshots}
-                  onValueChange={setSnapshots}
-                  label="Keep a copy of what I sent"
-                />
-              }
-            />
-            <SettingRow
-              label="Notice when my documents change"
-              description="Pick up edits to your CV and statements automatically"
-              control={
-                <Toggle
-                  value={watchFolder}
-                  onValueChange={setWatchFolder}
-                  label="Notice when my documents change"
-                />
-              }
-            />
-          </View>
+          <Txt size="sm" tone="secondary">
+            To get a copy out, use Export below — or Transfer, which hands the whole store to
+            another device over your own network.
+          </Txt>
         </Panel>
 
         <Panel>
@@ -402,11 +390,28 @@ export function SettingsScreen() {
                 autoCorrect={false}
                 keyboardType="url"
                 value={endpoint}
-                placeholder={provider.endpoint || 'http://localhost:8000/v1'}
+                // A LAN address, not `localhost`. A placeholder is a
+                // suggestion, and this one is on a phone: `localhost` here is
+                // the phone, which is not running the model.
+                placeholder="http://192.168.1.20:8000/v1"
                 hint={
-                  provider.dialect === 'ollama'
-                    ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
-                    : 'The base URL, ending in /v1.'
+                  /*
+                   * The loopback warning outranks the dialect note, because one
+                   * is a detail about a URL that will work and the other is the
+                   * reason a URL cannot.
+                   *
+                   * Ollama's default endpoint is `http://localhost:11434`, and
+                   * it is right on a desktop browser and wrong here — the
+                   * request goes to the phone, fails to connect, and reads
+                   * exactly like a server that is switched off. Somebody who
+                   * followed the setup copy has then done everything correctly
+                   * and been told it does not work.
+                   */
+                  isLoopbackEndpoint(endpoint || provider.endpoint)
+                    ? 'That address means “this device”, so on a phone it points at the phone. Use the computer’s address on your network instead — something like 192.168.1.20, or its .local name.'
+                    : provider.dialect === 'ollama'
+                      ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
+                      : 'The base URL, ending in /v1.'
                 }
                 onChangeText={onEndpointChange}
               />
@@ -781,6 +786,7 @@ function ProviderPicker({
  */
 function CloudTerms({ provider }: { provider: ProviderMeta }) {
   const { colors: c } = useTheme()
+  const terms = cloudTerms(provider)
   const name = provider.label.split(' \u2014')[0]
   // Without the parenthetical, for the possessive and the links.
   const short = name.replace(/\s*\([^)]*\)\s*$/, '')
@@ -805,37 +811,29 @@ function CloudTerms({ provider }: { provider: ProviderMeta }) {
       }}
     >
       <Txt size="xs" weight="semibold" tone="warning">
-        {provider.evaluationOnly
-          ? `${name}: free, and licensed for evaluation only`
-          : `Your records leave this device when you use ${name}`}
+        {terms.headline}
       </Txt>
 
-      <Txt size="xs" tone="secondary">
-        Everything the assistant reads to answer you is sent to {name}: your applications and notes,
-        your profile, your CV text once a document is read, and the names and email addresses of any
-        referees or recruiters it looks at. Some of that is other people’s personal information, not
-        just yours. jojo is local-first everywhere else; this is the one part that is not.
-      </Txt>
-
-      {provider.evaluationOnly ? (
-        <Txt size="xs" tone="secondary">
-          NVIDIA’s terms permit use “for internal testing and evaluation purposes, not in
-          production” without a subscription, and separately say you “will not upload any personal
-          information relating to an identifiable individual”. Tracking a real job search is
-          production use, and the records above are personal information. It is free rather than
-          billed — rate limited, and it refuses rather than charging you.
+      {/* Rendered from `@jojo/service/core/cloud-terms`, not written here. This
+          file used to hold the prose and a comment saying it was deliberately
+          the same words as web's; it was three sentences short, including the
+          one about NVIDIA's licence to store and reproduce what is sent. */}
+      {terms.paragraphs.map((paragraph, i) => (
+        <Txt key={i} size="xs" tone="secondary">
+          {paragraph.map((segment, j) => (
+            <Txt key={j} size="xs" tone={segment.emphasis === true ? 'primary' : 'secondary'}>
+              {segment.text}
+            </Txt>
+          ))}
         </Txt>
-      ) : (
-        <Txt size="xs" tone="secondary">
-          {short} is paid, billed to your account, and governed by its own terms — including what it
-          may retain and whether prompts may be used to improve its models.
-        </Txt>
-      )}
+      ))}
 
       <Txt size="xs" tone="muted">
-        You are the account holder and the party to that agreement — jojo ships no key and makes no
-        request of its own. Compliance with {short}’s terms is yours, and jojo accepts no liability
-        for any breach of them.
+        {terms.liability.map((segment, j) => (
+          <Txt key={j} size="xs" tone={segment.emphasis === true ? 'secondary' : 'muted'}>
+            {segment.text}
+          </Txt>
+        ))}
       </Txt>
 
       <View style={[s.row, { gap: space[4] }]}>
@@ -977,12 +975,29 @@ function KeywordManager() {
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
 
+  /*
+   * Asked BEFORE, with the count, rather than reported after with an undo.
+   *
+   * Deleting a keyword takes it off every record it was on, and the count was
+   * only shown afterwards in a toast that scrolls away. Web has asked first,
+   * with the number, since it was written — and this is a heavier action than
+   * the ones on this screen that already confirm.
+   */
+  const [deleting, setDeleting] = useState<{ id: string; name: string; used: number } | null>(null)
+
   const onDelete = (id: string, name: string) => {
-    const used = countFor(id)
-    const { restore } = removeLabel(id)
+    setDeleting({ id, name, used: countFor(id) })
+  }
+
+  const confirmDelete = () => {
+    const target = deleting
+    if (target === null) return
+    setDeleting(null)
+    const { restore } = removeLabel(target.id)
     toast({
-      title: `${name} deleted`,
-      description: used > 0 ? `Taken off ${used} record${used === 1 ? '' : 's'}.` : undefined,
+      title: `${target.name} deleted`,
+      description:
+        target.used > 0 ? `Taken off ${target.used} record${target.used === 1 ? '' : 's'}.` : undefined,
       tone: 'danger',
       action: { label: 'Undo', onPress: restore },
     })
@@ -1082,7 +1097,17 @@ function KeywordManager() {
                 <Pressable
                   key={tone}
                   accessibilityRole="radio"
-                  accessibilityState={{ selected: editing?.tone === tone }}
+                  /*
+                   * `checked` as well as `selected` — the same fix `ui/Segment`
+                   * carries, and for the same reason. Android reads a radio's
+                   * state from `accessibilityState.checked`, so with only
+                   * `selected` TalkBack announces every tone, the chosen one
+                   * included, as "not checked". iOS uses `selected`, so both go.
+                   */
+                  accessibilityState={{
+                    selected: editing?.tone === tone,
+                    checked: editing?.tone === tone,
+                  }}
                   accessibilityLabel={TONE_LABEL[tone]}
                   onPress={() => editing && setTone(editing.id, tone)}
                   style={[
@@ -1135,6 +1160,25 @@ function KeywordManager() {
           />
         </View>
       </Sheet>
+
+      {/* Named, and counted. "Delete Rust?" is a different question from
+          "Delete Rust — it is on 14 records?", and only the second one can be
+          answered. */}
+      <ConfirmSheet
+        open={deleting !== null}
+        onClose={() => setDeleting(null)}
+        title={deleting === null ? '' : `Delete ${deleting.name}?`}
+        description={
+          deleting === null
+            ? ''
+            : deleting.used > 0
+              ? `It comes off ${String(deleting.used)} record${deleting.used === 1 ? '' : 's'}. Those records stay; only the keyword goes.`
+              : 'Nothing is tagged with it, so nothing else changes.'
+        }
+        confirmLabel="Delete"
+        tone="danger"
+        onConfirm={confirmDelete}
+      />
     </Panel>
   )
 }

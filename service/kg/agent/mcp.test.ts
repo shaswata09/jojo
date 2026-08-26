@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest'
 import { MutableSnapshot } from '../core/snapshot'
 import { createRepository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
-import type { GraphSnapshot } from '../core/model'
+import type { GraphSnapshot } from '../core/snapshot'
 import type { ToolName } from '../tools/index'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
@@ -45,6 +45,7 @@ function host(): ToolHost & { memoryNow: () => GraphSnapshot } {
       lastOpenedAt: new Date(START).toISOString(),
       dataSet: 'empty',
       seededAt: null,
+      handoverAt: null,
     },
     now,
   })

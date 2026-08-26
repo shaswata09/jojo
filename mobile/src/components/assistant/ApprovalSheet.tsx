@@ -2,6 +2,7 @@ import { View } from 'react-native'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
+import { proposalDetail } from '@jojo/service/core/proposal'
 import { useAgentRuns, useWaitingRuns } from '@jojo/service/react/agent-runs-context'
 import { useThreads } from '@jojo/service/react/use-threads'
 import { space } from '@/theme/tokens'
@@ -34,6 +35,13 @@ export function ApprovalSheet() {
   const step = run?.pending?.step
   const named = threads.find((t) => t.id === run?.threadId)
 
+  /*
+   * `null` when the tool takes no arguments worth showing — `memory.overview`
+   * has none, and an empty line above the id reads as a missing value rather
+   * than as nothing to say.
+   */
+  const detail = step === undefined ? null : proposalDetail(JSON.stringify(step.args ?? {}))
+
   return (
     <Sheet
       open={run !== undefined && step !== undefined}
@@ -62,9 +70,18 @@ export function ApprovalSheet() {
         </>
       }
     >
-      <View style={{ paddingBottom: space[2] }}>
-        {/* What it would actually run. The person is being asked to approve a
-            delete whose target they cannot otherwise see from here. */}
+      <View style={{ paddingBottom: space[2], gap: space[1.5] }}>
+        {/*
+          * WHAT it would run, before what it is called.
+          *
+          * This comment used to claim the sheet showed "a delete whose target
+          * they cannot otherwise see from here" while rendering only the tool's
+          * id — so "Delete application" was approved without knowing which one.
+          * The web card has rendered `proposalDetail` for exactly this reason:
+          * a person being asked to approve a note without being shown the note
+          * is not being asked anything.
+          */}
+        {detail !== null && <Txt size="sm">{detail}</Txt>}
         <Txt size="xs" tone="muted" mono>
           {step?.name ?? ''}
         </Txt>

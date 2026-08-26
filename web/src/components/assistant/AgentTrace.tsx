@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   AlertTriangle,
   Check,
@@ -60,6 +60,14 @@ const EFFECT: Record<AgentStep['effect'], { tone: 'gray' | 'teal' | 'amber' | 'r
   admin: { tone: 'red', label: 'store' },
 }
 
+/**
+ * Whether a step changed anything, so a "cannot be undone" note is worth saying.
+ *
+ * The same rule the benchmark's trajectory scorer uses. `unknown` is a tool the
+ * catalog did not recognise, which did not run and therefore changed nothing.
+ */
+const wrote = (effect: AgentStep['effect']): boolean => effect !== 'read' && effect !== 'unknown'
+
 export function StepRow({
   step,
   onUndo,
@@ -71,6 +79,17 @@ export function StepRow({
   pending?: { allow: () => void; decline: () => void }
 }) {
   const [open, setOpen] = useState(false)
+
+  /*
+   * Focus follows the approval when one appears — see the card below for why.
+   * Keyed on `pending` becoming truthy rather than on mount, because a step
+   * renders long before it asks for anything.
+   */
+  const approvalRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (pending) approvalRef.current?.focus()
+  }, [pending])
+
   const status = STATUS[step.status]
   const effect = EFFECT[step.effect]
   const Icon = status.icon
@@ -118,15 +137,44 @@ export function StepRow({
           ask "delete this?" with the list of what else the agent has done
           hidden behind it, which is the context needed to answer. */}
       {pending ? (
-        <div className="flex flex-wrap items-center gap-2 border-t border-hairline bg-warning-soft px-3 py-2">
+        /*
+         * Announced and focused, because a run is BLOCKED until it is answered.
+         *
+         * It renders inline, several levels into a list of steps, and appears
+         * while the reader is somewhere else entirely — so without a live region
+         * nothing said it had arrived, and without a focus move there was no way
+         * to reach it except by walking the whole trace looking for a card whose
+         * existence had not been announced. The run waits the entire time.
+         *
+         * The GROUP takes focus, not the Allow button. Landing somebody one
+         * keystroke from approving a delete they have not heard described is the
+         * kind of help that costs a record.
+         *
+         * `assertive`, not `polite`: polite waits for the reader to finish what
+         * they are doing, and what they are doing is waiting for this.
+         */
+        <div
+          ref={approvalRef}
+          role="group"
+          tabIndex={-1}
+          aria-live="assertive"
+          aria-label={`Approval needed: ${step.title}`}
+          className="flex flex-wrap items-center gap-2 border-t border-hairline bg-warning-soft px-3 py-2 outline-none ring-accent focus-visible:ring-2"
+        >
           <AlertTriangle className="size-4 shrink-0 text-warning" aria-hidden />
           <p className="min-w-0 flex-1 text-xs text-warning">
             The agent asked to do this. Nothing has changed yet.
           </p>
-          <Button size="sm" variant="outline" onClick={pending.decline}>
+          {/* Named, because "Allow" read on its own says nothing about what. */}
+          <Button
+            size="sm"
+            variant="outline"
+            aria-label={`Don't ${step.title.toLowerCase()}`}
+            onClick={pending.decline}
+          >
             Don&apos;t
           </Button>
-          <Button size="sm" onClick={pending.allow}>
+          <Button size="sm" aria-label={`Allow: ${step.title}`} onClick={pending.allow}>
             Allow
           </Button>
         </div>
@@ -154,6 +202,22 @@ export function StepRow({
             Undo this step
           </Button>
         </div>
+      ) : step.status === 'done' && wrote(step.effect) ? (
+        /*
+         * The button is gated on `step.undo`, which is a CLOSURE — it does not
+         * survive being written to the store and read back. So a conversation
+         * reopened after a reload rendered the same trace with the undo quietly
+         * missing from every step that changed something, and nothing said why.
+         *
+         * This is the honest version, and it is true of the other case too: a
+         * tool that returns no `undo` at all is one this app cannot reverse
+         * either. Both mean the same thing to the person reading it, which is
+         * why one sentence covers both.
+         */
+        <p className="border-t border-hairline px-3 py-1.5 text-xs text-text-3">
+          This step cannot be undone from here. Settings → Records keeps a log of
+          what changed and can reverse the most recent one.
+        </p>
       ) : null}
     </li>
   )

@@ -714,6 +714,84 @@ for (const src of appRoots()) {
   })
 }
 
+/*
+ * Tailwind class names inside the portable package.
+ *
+ * A different kind of wrong platform from the ones above, and invisible to
+ * them: `bg-stage-draft` is a perfectly ordinary string, so no identifier ban
+ * and no `tsc` lib can see it. It is still web-only — React Native has no
+ * stylesheet to resolve it against — and this package is compiled into both
+ * apps unchanged.
+ *
+ * It had happened. `STAGE_DOT` lived in `data/seed.ts` and `STAGES` carried a
+ * `dot` field built from it, so four mobile screens imported a list describing
+ * a stage in a language the phone does not speak. Three files in this package
+ * said in comments that Tailwind does not belong here; none of them could stop
+ * it, and the comment on `STAGE_DOT` itself explained why it was staying.
+ *
+ * Matched on the utility PREFIXES this app actually uses rather than on
+ * anything that looks like a class, because the false positive to avoid is an
+ * ordinary hyphenated string — a slug, a keyword, an id. A prefix list is
+ * narrow, and the day someone adds a genuinely new one is the day they should
+ * be asked whether it belongs here.
+ */
+const TAILWIND = /(^|[\s'"`])(bg|text|border|ring|fill|stroke|from|to|via)-(stage|accent|text|surface|border|info|warn|danger|ok|muted)-[a-z0-9-]+/
+
+for (const file of walk(path.join(SERVICE, 'kg')).concat(walk(path.join(SERVICE, 'data')))) {
+  if (/\.test\.tsx?$/.test(file)) continue
+  const lines = readFileSync(file, 'utf8').split('\n')
+  for (const [i, line] of lines.entries()) {
+    // Prose about the rule is not a breach of it — this file's own comments,
+    // and the ones in `data/seed.ts` explaining where `STAGE_DOT` went.
+    if (/^\s*(\*|\/\/|\/\*)/.test(line)) continue
+    if (!TAILWIND.test(line)) continue
+    failures.push({
+      rel: path.relative(SERVICE, file),
+      line: i + 1,
+      text:
+        'holds a Tailwind class name, which is web-only and this package is compiled into React ' +
+        'Native unchanged. Put the class in the web app — `web/src/data/seed.ts` re-exports this ' +
+        'package and is where `STAGE_DOT` went for exactly this reason — and keep the portable ' +
+        'value a token the phone can also read.',
+    })
+  }
+}
+
+/*
+ * Bare `console` calls inside the portable package.
+ *
+ * `kg/log.ts` says every validation rejection and every persistence retry goes
+ * through `kgLog`/`kgWarn`/`kgError` rather than a bare console call, "so they
+ * are greppable and can be silenced as a group", and explains that a person
+ * reporting a lost record will be asked to read out the `[kg]` lines.
+ *
+ * It was not true. `kgError` had zero call sites in the whole repository while
+ * the one place in the package that logged an error — an agent run throwing,
+ * which by that code's own comment is a bug rather than a refusal — used
+ * `console.error` directly and printed no prefix at all. The loudest line was
+ * the one a person could not find.
+ */
+const BARE_CONSOLE = /(^|[^.\w])console\.(log|warn|error|info|debug)\s*\(/
+
+for (const file of walk(path.join(SERVICE, 'kg')).concat(walk(path.join(SERVICE, 'data')))) {
+  if (/\.test\.tsx?$/.test(file)) continue
+  // `log.ts` IS the wrapper. It is the one file that may call the console.
+  if (path.relative(SERVICE, file) === 'kg/log.ts') continue
+  const lines = readFileSync(file, 'utf8').split('\n')
+  for (const [i, line] of lines.entries()) {
+    if (/^\s*(\*|\/\/|\/\*)/.test(line)) continue
+    if (!BARE_CONSOLE.test(line)) continue
+    failures.push({
+      rel: path.relative(SERVICE, file),
+      line: i + 1,
+      text:
+        'calls the console directly. Use kgLog / kgWarn / kgError from kg/log.ts, which is what ' +
+        'puts the [kg] prefix on the line — a person reporting a lost record is asked to read ' +
+        'those out, and an unprefixed line is one they cannot find or silence.',
+    })
+  }
+}
+
 for (const target of TARGETS) {
   for (const file of walk(target.root)) {
     // Package-relative inside `service/`, repo-relative for the adapters, so

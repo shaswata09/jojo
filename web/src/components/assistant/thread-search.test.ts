@@ -168,6 +168,8 @@ const thread = (title: string, texts: string[], applicationId: NodeId | null = n
     })),
     applicationId,
     autoApprove: false,
+    // Nothing summarised: this fixture is a short conversation.
+    contextThrough: 0,
     updatedAt: '2026-08-24T10:00:00.000Z',
   } as Thread
 }

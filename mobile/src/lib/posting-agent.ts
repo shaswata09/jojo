@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 import {
   POSTING_BUDGET,
   postingDocument,
+  askForPosting,
   postingMessages,
-  readPosting,
 } from '@jojo/service/agent/read-posting'
-import type { PostingDraft, PostingRead } from '@jojo/service/agent/read-posting'
+import type { PostingDraft } from '@jojo/service/agent/read-posting'
 import { canonicalPostingUrl } from '@jojo/service/core/capture'
 import { sizeLabel } from '@jojo/service/core/files'
 import { useVault } from '@/lib/store-context'
@@ -114,13 +114,31 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
 
       /* ------------------------------ 2. ask ------------------------------- */
       onStep?.('asking')
-      const turn = await agentTurn(settings, postingMessages(target, page.markdown), [], signal)
-      if (!turn.ok) return { ok: false, step: 'asking', reason: turn.reason }
-      if (turn.text === null || turn.text.trim() === '') {
-        return { ok: false, step: 'asking', reason: 'The model answered with nothing at all.' }
+      /*
+       * Twice, if the first answer did not parse — see `askForPosting`. By this
+       * line the page is already fetched and converted, so one malformed draw
+       * from a small model used to cost the person the whole run.
+       *
+       * A REFUSED request is different and must not be repeated: it is carried
+       * out here in a holder rather than returned, because the retry only knows
+       * about answers and a server saying no is not one.
+       */
+      const refused: { reason?: string } = {}
+      const read = await askForPosting(async () => {
+        const turn = await agentTurn(settings, postingMessages(target, page.markdown, TODAY), [], signal)
+        if (!turn.ok) {
+          refused.reason = turn.reason
+          return null
+        }
+        return turn.text
+      })
+      if (refused.reason !== undefined) return { ok: false, step: 'asking', reason: refused.reason }
+      if (!read.ok) {
+        // Said, because otherwise the obvious response to a slow failure is to
+        // press the button again — which is the thing that just happened twice.
+        const tried = read.attempts > 1 ? ' Asked twice, with the same result.' : ''
+        return { ok: false, step: 'asking', reason: `${read.reason}${tried}` }
       }
-      const read: PostingRead = readPosting(turn.text)
-      if (!read.ok) return { ok: false, step: 'asking', reason: read.reason }
 
       /* ------------------------------ 3. save ------------------------------ */
       onStep?.('saving')

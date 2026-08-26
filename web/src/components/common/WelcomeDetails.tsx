@@ -71,7 +71,7 @@ export function WelcomeDetails({
   // Blank on a first run, whatever the store holds.
   //
   // Choosing the demo records seeds a whole profile, so prefilling would put
-  // 'Shaswata Mitra' in a field labelled "Full name" and a stranger's address in
+  // A seeded name in a field labelled "Full name" and a stranger's address in
   // "Email" — a form answering its own questions with somebody else's answers.
   // `routes/Profile.tsx` makes the same point about placeholders: grey examples
   // ask a question, black text answers one.
@@ -105,6 +105,24 @@ export function WelcomeDetails({
     onDone()
   }
 
+  /**
+   * Leaving without saving, on a fresh install, still clears the fixture.
+   *
+   * Skipping used to leave the demo profile exactly where it was — a real
+   * person's name, city and live Scholar, GitHub and LinkedIn — and `isBlank`
+   * was then false, so this dialog never came back and nothing on the Profile
+   * screen marked those values as anybody else's. `draft/template.ts`
+   * substitutes `fullName` into every cover letter, so the drafts signed off as
+   * a stranger.
+   *
+   * Off a first run there is nothing to clear: those six fields are the user's
+   * own and a dismissed dialog must not touch them.
+   */
+  const dismiss = () => {
+    if (fresh) update({ text: { ...BLANK_TEXT } })
+    onDone()
+  }
+
   const anything = Object.values(draft).some((v) => v.trim().length > 0)
 
   return (
@@ -113,7 +131,7 @@ export function WelcomeDetails({
       onOpenChange={(next) => {
         // Closing by Escape or the backdrop is "not now", not a save. It is the
         // same outcome as the Skip button and is recorded the same way.
-        if (!next) onDone()
+        if (!next) dismiss()
       }}
     >
       <DialogContent className="sm:max-w-xl">
@@ -141,7 +159,7 @@ export function WelcomeDetails({
             value={draft.fullName}
             autoComplete="name"
             autoFocus
-            placeholder="e.g. Shaswata Mitra"
+            placeholder="e.g. Alex Rivera"
             onChange={set('fullName')}
           />
           <Field
@@ -167,7 +185,7 @@ export function WelcomeDetails({
           />
 
           <DialogFooter className="mt-1 sm:col-span-2">
-            <Button type="button" variant="ghost" onClick={onDone}>
+            <Button type="button" variant="ghost" onClick={dismiss}>
               Skip for now
             </Button>
             {/* Disabled only when there is genuinely nothing to write, so the

@@ -813,7 +813,7 @@ export function readOllamaTurn(response: ModelResponse): Turn {
   const raw = (message as { tool_calls?: unknown }).tool_calls
   const toolCalls: ToolCall[] = []
   if (Array.isArray(raw)) {
-    for (const [index, entry] of raw.entries()) {
+    for (const entry of raw) {
       if (typeof entry !== 'object' || entry === null) continue
       const fn = (entry as { function?: unknown }).function
       if (typeof fn !== 'object' || fn === null) continue
@@ -824,7 +824,7 @@ export function readOllamaTurn(response: ModelResponse): Turn {
       const args = (fn as { arguments?: unknown }).arguments ?? {}
       const id = (entry as { id?: unknown }).id
       toolCalls.push({
-        id: typeof id === 'string' && id.length > 0 ? id : `call_${String(index)}`,
+        id: typeof id === 'string' && id.length > 0 ? id : nextCallId(),
         name,
         args,
         raw: JSON.stringify(args),
@@ -1006,31 +1006,93 @@ const readContent = (message: unknown): string | null => {
  * telling the model what it wrote — not an exception, and not a silently
  * dropped call, which would leave the model waiting for a result forever.
  */
+/**
+ * A tool name with the model's own control tokens taken off the end.
+ *
+ * GPT-OSS speaks the harmony format, and when it puts a tool call on a channel
+ * the channel marker can arrive INSIDE the function name — a real reply, from
+ * the multi-turn benchmark, named the tool `memory_get<|channel|>commentary`.
+ * The name is right up to the marker; everything after it is the model
+ * describing where it is speaking from, and no server has stripped it.
+ *
+ * Without this the call is refused with "No tool is called
+ * memory_get<|channel|>commentary", which is true, useless, and costs a round
+ * trip on a local model to recover from.
+ *
+ * Cutting at the FIRST `<|`, not stripping every `<|…|>` pair: a name is one
+ * token and anything after a control marker is not part of it, including a
+ * marker that arrives unterminated. A name that never had one is untouched.
+ */
+export function cleanToolName(raw: string): string {
+  const marker = raw.indexOf('<|')
+  return (marker === -1 ? raw : raw.slice(0, marker)).trim()
+}
+
 function readToolCalls(message: unknown): ToolCall[] {
   if (typeof message !== 'object' || message === null) return []
   const calls = (message as { tool_calls?: unknown }).tool_calls
   if (!Array.isArray(calls)) return []
   return calls
-    .map((entry, index): ToolCall | null => {
+    .map((entry): ToolCall | null => {
       if (typeof entry !== 'object' || entry === null) return null
       const fn = (entry as { function?: unknown }).function
       if (typeof fn !== 'object' || fn === null) return null
-      const name = (fn as { name?: unknown }).name
-      if (typeof name !== 'string' || name.length === 0) return null
+      const raw_name = (fn as { name?: unknown }).name
+      if (typeof raw_name !== 'string' || raw_name.length === 0) return null
+      const name = cleanToolName(raw_name)
+      if (name === '') return null
       const raw = (fn as { arguments?: unknown }).arguments
-      const text = typeof raw === 'string' ? raw : ''
+      /*
+       * An OBJECT here, not a string, and several OpenAI-compatible servers
+       * send one. `readOllamaTurn` has handled this since it was written — with
+       * a test saying "read as a string it would be `''`, and every native tool
+       * call would run with no arguments" — and this path, which every vLLM,
+       * LM Studio and llama.cpp call takes, did not.
+       *
+       * The failure was silent and split two ways: the four write tools with no
+       * required fields RAN with defaults, and the rest failed validation
+       * complaining about a field the model had in fact supplied.
+       */
+      const text =
+        typeof raw === 'string' ? raw : raw === undefined || raw === null ? '' : JSON.stringify(raw)
       const id = (entry as { id?: unknown }).id
       return {
-        // Some servers omit the id on a single call. Positional is a poor id but
-        // a missing one is worse: the result message needs something to point at
-        // or the model cannot match the answer to the question.
-        id: typeof id === 'string' && id.length > 0 ? id : `call_${String(index)}`,
+        /*
+         * Some servers omit the id on a single call. Positional is a poor id
+         * but a missing one is worse: the result message needs something to
+         * point at or the model cannot match the answer to the question.
+         *
+         * The fallback is seeded from a MODULE counter rather than the index
+         * within this turn. Ollama native sends no ids at all and several small
+         * models' tool parsers omit them, so a model calling one tool per round
+         * produced `call_0` in every round — and the transcript then held
+         * several assistant turns and several `tool` messages all keyed the
+         * same, which is exactly the ambiguity an id exists to remove.
+         */
+        id: typeof id === 'string' && id.length > 0 ? id : nextCallId(),
         name,
         args: text.trim() === '' ? {} : safeParse(text),
         raw: text,
       }
     })
     .filter((c): c is ToolCall => c !== null)
+}
+
+/**
+ * A unique id for a tool call whose server did not give it one.
+ *
+ * Module scope on purpose. A per-turn index restarts at zero every round, so a
+ * model calling one tool per round produces `call_0` forever — and the
+ * transcript ends up with several distinct tool results keyed identically,
+ * which is the one thing a `tool_call_id` exists to prevent.
+ *
+ * Not random: a counter is reproducible, which matters because these ids end up
+ * in stored transcripts that tests read back.
+ */
+let callSeq = 0
+const nextCallId = (): string => {
+  callSeq += 1
+  return `call_${String(callSeq)}`
 }
 
 const safeParse = (text: string): unknown => {

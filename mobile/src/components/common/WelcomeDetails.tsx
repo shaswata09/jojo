@@ -52,7 +52,7 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
   // Blank on a first run, whatever the store holds.
   //
   // Choosing the demo records seeds a whole profile, so prefilling here would
-  // put 'Shaswata Mitra' in a field labelled "Full name" and a stranger's address
+  // put a seeded name in a field labelled "Full name" and a stranger's address
   // in "Email" — a form that answers its own questions with somebody else's
   // answers. `ProfileScreen` makes the same point about placeholders: grey
   // examples ask a question, black text answers one.
@@ -88,18 +88,36 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
     onDone()
   }
 
+  /**
+   * Leaving without saving, on a fresh install, still clears the fixture.
+   *
+   * Skipping used to leave the demo profile exactly where it was — a real
+   * person's name, city and live Scholar, GitHub and LinkedIn — and `isBlank`
+   * was then false, so this dialog never came back and nothing on the Profile
+   * screen marked those values as anybody else's. `draft/template.ts`
+   * substitutes `fullName` into every cover letter, so the drafts signed off as
+   * a stranger.
+   *
+   * Off a first run there is nothing to clear: those six fields are the user's
+   * own and a dismissed dialog must not touch them.
+   */
+  const dismiss = () => {
+    if (fresh) update({ text: { ...BLANK_TEXT } })
+    onDone()
+  }
+
   const anything = Object.values(draft).some((v) => v.trim().length > 0)
 
   return (
     <Sheet
       open
-      onClose={onDone}
+      onClose={dismiss}
       size="tall"
       title="A little about you"
       description="Drafts sign off with your name, and the scout scores against what you are looking for. All of it stays on this device, and all of it is optional — Profile has the rest."
       footer={
         <>
-          <Button label="Skip for now" variant="ghost" size="md" onPress={onDone} />
+          <Button label="Skip for now" variant="ghost" size="md" onPress={dismiss} />
           {/* Disabled only when there is nothing to write, so it never claims to
               have saved an empty form. Skip does the same thing honestly. */}
           <Button label="Save and continue" size="md" disabled={!anything} onPress={save} />
@@ -111,7 +129,7 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
           label="Full name"
           value={draft.fullName}
           autoComplete="name"
-          placeholder="e.g. Shaswata Mitra"
+          placeholder="e.g. Alex Rivera"
           onChangeText={set('fullName')}
         />
         <TextField

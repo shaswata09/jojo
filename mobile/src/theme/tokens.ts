@@ -238,3 +238,20 @@ export const fonts = {
   bold: 'Inter-Bold',
   mono: 'JetBrainsMono-Regular',
 } as const
+
+/**
+ * The smallest a control may be under a finger, and the slop that gets it there.
+ *
+ * 44 is Apple's Human Interface Guidelines minimum and Android's 48dp rounds to
+ * the same intent; WCAG 2.5.8 asks only 24, which is the floor for a pointer
+ * rather than a thumb. This app is a phone app, so it takes the larger.
+ *
+ * `slopFor` exists so a call site says WHAT IT DREW rather than a magic number.
+ * `hitSlop={10}` is a number somebody has to re-derive to change; `slopFor(24)`
+ * says the control is 24 tall and the padding follows from that — and stays
+ * right when the control's size changes.
+ */
+export const TOUCH_MIN = 44
+
+/** Even padding that brings a control of `drawn` points up to `TOUCH_MIN`. */
+export const slopFor = (drawn: number): number => Math.max(0, Math.ceil((TOUCH_MIN - drawn) / 2))

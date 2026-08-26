@@ -415,7 +415,7 @@ been repointed in a previous wave; the only remaining fixture-clock readers were
 
 Folded into this commit rather than left for Step 5, because the plan says so in
 those words and because it is the only deletion among the 79 that removed
-coverage instead of duplicating it: `mobile/src/kg/storage/driver-conformance.test.ts`
+coverage instead of duplicating it: `mobile/src/kg/storage/rn-conformance.test.ts`
 was `rn-driver.ts`'s only test, and `rn-driver.ts` is the one genuinely
 platform-specific file in the repo.
 

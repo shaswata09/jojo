@@ -21,6 +21,7 @@ function fakeHost(overrides: Partial<ToolHost> = {}) {
   const calls: Call[] = []
   const host: ToolHost = {
     memory: () => new MutableSnapshot(),
+    today: () => '2026-08-25',
     check: (_name, input) => ({ ok: true, value: input }),
     run: (name, input) => {
       calls.push({ name, input })
@@ -74,11 +75,11 @@ describe('the proposing host', () => {
     expect(calls).toHaveLength(1)
     expect(calls[0]?.name).toBe('pipeline.proposal.raise')
     const input = calls[0]?.input as Record<string, unknown>
-    expect(input.tool).toBe('application.note.set')
-    expect(input.kind).toBe('twin')
-    expect(input.pipelineId).toBe('pipeline-1')
-    expect(input.rationale).toBe('because')
-    expect(JSON.parse(String(input.input))).toEqual({
+    expect(input['tool']).toBe('application.note.set')
+    expect(input['kind']).toBe('twin')
+    expect(input['pipelineId']).toBe('pipeline-1')
+    expect(input['rationale']).toBe('because')
+    expect(JSON.parse(String(input['input']))).toEqual({
       id: 'application-1',
       note: 'Deadline is a Friday.',
     })
@@ -166,7 +167,7 @@ describe('the proposing host', () => {
 
     wrapped.run('application.note.set' as never, { id: 'a' })
     expect(rationale).toHaveBeenCalledTimes(1)
-    expect((calls[0]?.input as Record<string, unknown> | undefined)?.rationale).toBe(
+    expect((calls[0]?.input as Record<string, unknown> | undefined)?.['rationale']).toBe(
       'the latest note',
     )
   })
@@ -199,6 +200,7 @@ describe('refusing a job the person has already seen', () => {
     const calls: Call[] = []
     const host: ToolHost = {
       memory: () => memory,
+      today: () => '2026-08-25',
       check: (_n, input) => ({ ok: true, value: input }),
       run: (name, input) => {
         calls.push({ name, input })
@@ -320,6 +322,7 @@ describe('naming a proposal', () => {
       rel: 'AT',
       from: 'app:1' as never,
       to: 'org:1' as never,
+      props: {},
       createdAt: '2026-01-01T00:00:00.000Z',
     })
     expect(proposalTitle(withOrg, 'application.note.set', { id: 'app:1' })).toBe(

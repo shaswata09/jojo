@@ -20,6 +20,35 @@ import { cn } from '@/lib/utils'
  * interview at 14:00 stayed transparent — the grid drew the more urgent of the
  * two as the fainter one.
  */
+/**
+ * dnd-kit's draggable attributes, minus the two that promise a keyboard drag.
+ *
+ * `useDraggable` returns `aria-roledescription: 'draggable'` and an
+ * `aria-describedby` pointing at dnd-kit's own instructions — "press space bar
+ * to start a drag". On the board that is true. Here it is not: `Calendar.tsx`
+ * registers the pointer sensor ONLY, and deliberately, because the
+ * `KeyboardSensor`'s activator is Space/Enter and it calls `preventDefault` —
+ * on a chip that is also the way in to editing an event, registering it would
+ * eat the very keypress this control exists to deliver.
+ *
+ * So the sensor stays out and the CLAIM goes with it. A screen reader was being
+ * told to press a key that did nothing, on the only part of this grid that
+ * announced itself at all — which is worse than saying nothing, because a
+ * person who cannot see the chip has no way to discover that it did not work.
+ * The keyboard route to a new date is the date field inside the event, and the
+ * hint under the grid says so out loud.
+ *
+ * `role` and the drag state are kept: `aria-disabled` and `aria-pressed` are
+ * about the button, not about a gesture it cannot offer.
+ */
+function draggableAria(
+  attributes: DraggableAttributes | undefined,
+): Partial<DraggableAttributes> | undefined {
+  if (!attributes) return undefined
+  const { 'aria-roledescription': _role, 'aria-describedby': _describedBy, ...rest } = attributes
+  return rest
+}
+
 export function EventChip({
   item,
   handle,
@@ -46,7 +75,7 @@ export function EventChip({
       aria-hidden={handle ? undefined : true}
       onClick={handle?.onOpen}
       title={handle ? `${start ?? 'All day'} — ${item.title}` : undefined}
-      {...handle?.attributes}
+      {...draggableAria(handle?.attributes)}
       {...handle?.listeners}
       className={cn(
         // z-[1] lifts the chip over the date button's stretched ::after, which

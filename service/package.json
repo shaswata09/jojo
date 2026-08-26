@@ -49,12 +49,15 @@
   },
   "//source": "No build step, and no `main`. Both apps compile the TypeScript themselves \u2014 Vite for web, Metro plus babel-preset-expo for mobile \u2014 and web's kg compiled clean under mobile's older tsc at full strictness before any of this moved, which is what made shipping source rather than output safe to choose. `npm -w @jojo/service exec tsc -b` is the authority on whether it type-checks; the apps' own programs also pull this source in through their imports, but they do it under their own lib and types settings and without types/portable-globals.d.ts, so that pass is incidental and must not be treated as the check.",
   "scripts": {
-    "lint": "oxlint --config .oxlintrc.json kg data && node scripts/check-layers.mjs && node scripts/check-platform.mjs && node scripts/check-no-copies.mjs && node scripts/check-compositions.mjs",
+    "lint": "oxlint --config .oxlintrc.json kg data && node scripts/check-layers.mjs && node scripts/check-platform.mjs && node scripts/check-no-copies.mjs && node scripts/check-compositions.mjs && node scripts/check-projects.mjs && node scripts/check-docs.mjs",
     "test": "vitest run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc -b",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "bench": "tsx bench/run.mts",
+    "bench:discriminates": "tsx bench/discriminates.mts",
+    "bench:publish": "node bench/publish.mjs"
   },
   "peerDependencies": {
     "react": ">=19.1.0"

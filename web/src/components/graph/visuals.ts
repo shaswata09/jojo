@@ -51,6 +51,11 @@ export const NODE_COLOR: Record<GraphNodeType, string> = {
   role: 'var(--series-4)',
   keyword: 'var(--series-2)',
   source: 'var(--text-3)',
+  // The person's own facts share a hue so they read as one family on a canvas
+  // otherwise full of jobs, and the relation between two of them is quieter
+  // than either end — it is the line's meaning, not a thing in its own right.
+  background: 'var(--series-6)',
+  claim: 'var(--text-3)',
 }
 
 export const NODE_SHAPE: Record<GraphNodeType, NodeShape> = {
@@ -65,6 +70,9 @@ export const NODE_SHAPE: Record<GraphNodeType, NodeShape> = {
   role: 'diamond',
   keyword: 'diamond',
   source: 'diamond',
+  // Diamonds, with the other things that describe rather than happen.
+  background: 'diamond',
+  claim: 'diamond',
 }
 
 /**

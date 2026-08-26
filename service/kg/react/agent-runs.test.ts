@@ -13,6 +13,9 @@ import type { ToolHost } from '../agent/execute'
 import type { ChatMessage, Turn } from '../core/model-server'
 import type { NodeId } from '../core/model'
 import { createAgentRuns } from './agent-runs'
+import { RESERVED_FOR_REPLY } from '../agent/budget'
+import { RESIDENT } from '../agent/retrieve'
+import { CATALOG } from '../agent/catalog'
 import type { RunSignal } from './agent-runs'
 
 const answering = (text: string): Turn => ({ ok: true, text, toolCalls: [], finishReason: 'stop' })
@@ -293,5 +296,122 @@ describe('stopping a run', () => {
     runs.stop(A)
     handed[0]?.onAbort(late)
     expect(late).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('carrying the tool set between turns', () => {
+  it('starts the next turn from what the last one was offered', async () => {
+    /*
+     * The retriever's carry is grow-only and was never exercised: `carried` was
+     * hard-wired to `null`, so turn one sent a narrowed set and turn two — "yes,
+     * do that", which matches no seed and makes the retriever abstain — sent the
+     * entire catalog. A conversation whose prompt prefix changes size between
+     * turns cannot be prefix-cached, and on a small model the second message is
+     * where the window runs out.
+     */
+    const runs = createAgentRuns()
+    const seen: number[] = []
+    const llm = () => async (_m: readonly ChatMessage[], tools: readonly unknown[]) => {
+      seen.push(tools.length)
+      return answering('done')
+    }
+
+    runs.start({ threadId: A, prompt: 'add a reminder for Thursday', history: [], llm, host })
+    await vi.waitFor(() => expect(runs.get(A)?.busy).toBe(false))
+    const narrowed = runs.get(A)?.offered
+    expect(narrowed, 'the opener should have narrowed').not.toBeNull()
+
+    runs.start({ threadId: A, prompt: 'yes, do that', history: [], llm, host })
+    await vi.waitFor(() => expect(seen.length).toBe(2))
+
+    /*
+     * The follow-up must not be offered MORE than the opener. The carry is
+     * grow-only, so equal or a little larger is correct; jumping to the whole
+     * catalog is the defect.
+     */
+    expect(seen[1]).toBeLessThanOrEqual((seen[0] ?? 0) + RESIDENT.length)
+    expect(seen[1]).toBeLessThan(CATALOG.length)
+  })
+
+  it('keeps two conversations’ tool sets apart', async () => {
+    // Carried per thread. Two conversations about different things must not
+    // inherit each other's tools.
+    const runs = createAgentRuns()
+    const llm = () => async () => answering('done')
+
+    runs.start({ threadId: A, prompt: 'delete the Rice application', history: [], llm, host })
+    await vi.waitFor(() => expect(runs.get(A)?.busy).toBe(false))
+    runs.start({ threadId: B, prompt: 'what is on this week', history: [], llm, host })
+    await vi.waitFor(() => expect(runs.get(B)?.busy).toBe(false))
+
+    expect(runs.get(A)?.offered).not.toEqual(runs.get(B)?.offered)
+  })
+})
+
+/**
+ * The seam between a compaction and the conversation that has to remember it.
+ *
+ * The loop can summarise perfectly and the thread can store perfectly, and a
+ * long chat still forgets everything if nothing carries one to the other. That
+ * "nothing" is four lines in `start`, it has no visible symptom when it is
+ * missing — the turn answers normally — and every other test in this file
+ * passed without it. So it is tested here rather than trusted.
+ */
+describe('what a compaction has to tell the thread', () => {
+  /** Long enough that the fixed part plus history cannot fit the window. */
+  const longHistory = (turns: number): ChatMessage[] =>
+    Array.from({ length: turns }, (_, i) => [
+      { role: 'user' as const, content: `question ${String(i)} ${'x'.repeat(400)}` },
+      { role: 'assistant' as const, content: `answer ${String(i)} ${'y'.repeat(400)}` },
+    ]).flat()
+
+  it('reports the summary, the thread it belongs to, and how far it reaches', async () => {
+    const runs = createAgentRuns()
+    const onCompacted = vi.fn()
+
+    runs.start({
+      threadId: A,
+      prompt: 'and what about the last one',
+      history: longHistory(20),
+      llm: () => echo,
+      host,
+      tools: ['memory.overview'],
+      // Relative to the reserve, not a bare number: `4_000` silently became an
+      // OVERFLOW (nothing compacts, because no amount of history would help)
+      // the moment the reply reserve was raised to what a reasoning model needs.
+      window: RESERVED_FOR_REPLY + 4_000,
+      summariser: { ask: async () => answering('You asked about twenty applications at Rice.') },
+      onCompacted,
+    })
+
+    await vi.waitFor(() => expect(onCompacted).toHaveBeenCalled())
+    const [threadId, context, through] = onCompacted.mock.calls[0]!
+    expect(threadId).toBe(A)
+    expect(context).toContain('twenty applications at Rice')
+    // The count is what stops the NEXT turn summarising the same exchanges
+    // again, so a zero here would be a compaction that repeats forever.
+    expect(through).toBeGreaterThan(0)
+  })
+
+  it('says nothing when the conversation fit', async () => {
+    const runs = createAgentRuns()
+    const onCompacted = vi.fn()
+    const onSettled = vi.fn()
+
+    runs.start({
+      threadId: A,
+      prompt: 'hello',
+      history: [],
+      llm: () => echo,
+      host,
+      tools: ['memory.overview'],
+      window: 128_000,
+      summariser: { ask: async () => answering('should never be asked') },
+      onCompacted,
+      onSettled,
+    })
+
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalled())
+    expect(onCompacted).not.toHaveBeenCalled()
   })
 })

@@ -295,42 +295,31 @@ export const applications: Application[] = [
  * did not move. It left because `kg/tools/support.ts` had to re-export it in
  * turn — the model's own prose for its own enum was filed under demo data, and
  * two layers of the service layer reached through the `@/data` alias to read six
- * words. `STAGE_DOT` stayed: its values are Tailwind class names.
+ * words. `STAGE_DOT` has now left too, in the other direction: its values are
+ * Tailwind class names, so a package compiled into React Native was shipping
+ * six strings that mean nothing there. It lives in `web/src/data/seed.ts`,
+ * which re-exports this file, so every web caller's import is unchanged and the
+ * phone no longer carries it. `scripts/check-platform.mjs` keeps it out.
  */
 
-/**
- * One colour per phase.
- *
- * Draft and Closed both used --text-3, and Submitted and Screening call both
- * --info, so six stages rendered as four colours and the funnel read as though
- * it doubled back. The stage tokens are validated in index.css for contrast
- * against the bar track and for separation under colour-blind simulation.
- *
- * Whole class names, never interpolated: Tailwind scans source text, so
- * `bg-stage-${id}` would compile to no CSS at all.
- */
-export const STAGE_DOT: Record<Stage, string> = {
-  draft: 'bg-stage-draft',
-  submitted: 'bg-stage-submitted',
-  screen: 'bg-stage-screen',
-  interview: 'bg-stage-interview',
-  offer: 'bg-stage-offer',
-  closed: 'bg-stage-closed',
-}
 
 /**
  * The six stages in funnel order, which is the order the board columns, the
  * pipeline bar and the stage menu all read in.
  *
  * Derived from `STAGE_VALUES` rather than listed again, so the order is the
- * model's and the two lookups above are the only place a stage's prose lives.
- * `STAGE_VALUES` is where a stage is added; the compiler then asks for its label
- * and its dot before this file will build.
+ * model's and the lookup above is the only place a stage's prose lives.
+ * `STAGE_VALUES` is where a stage is added; the compiler then asks for its
+ * label before this file will build.
+ *
+ * NO `dot`. It carried one, whose value was a Tailwind class — so every mobile
+ * screen importing this list compiled a field it cannot use, and the portable
+ * package described a stage in a language only one of its two apps speaks.
+ * `web/src/data/seed.ts` adds it back for web, where it means something.
  */
-export const STAGES: { id: Stage; label: string; dot: string }[] = STAGE_VALUES.map((id) => ({
+export const STAGES: { id: Stage; label: string }[] = STAGE_VALUES.map((id) => ({
   id,
   label: STAGE_LABEL[id],
-  dot: STAGE_DOT[id],
 }))
 
 /**

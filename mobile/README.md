@@ -39,15 +39,24 @@ a dev server.
 cd mobile
 npm install
 
+# Android needs to know where the SDK is. `android/local.properties` is not
+# committed, so set this once on a fresh clone or Gradle stops with
+# "SDK location not found".
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+
 # Android — a signed, installable APK with the JS bundled in
-cd android && ./gradlew assembleRelease
-# → app/build/outputs/apk/release/app-release.apk
-adb install -r app/build/outputs/apk/release/app-release.apk
+(cd android && ./gradlew assembleRelease)
+# → android/app/build/outputs/apk/release/app-release.apk
+adb install -r android/app/build/outputs/apk/release/app-release.apk
 
 # iOS — resolve pods once, then build from Xcode or the command line
-cd ios && pod install
-xcodebuild -workspace jojo.xcworkspace -scheme jojo -configuration Release
+(cd ios && pod install)
+(cd ios && xcodebuild -workspace jojo.xcworkspace -scheme jojo -configuration Release)
 ```
+
+Each build line is in its own subshell so the block can be pasted whole — the
+previous version left the shell inside `android/` and then looked for
+`android/ios`.
 
 `npm run android` and `npm run ios` do the same build and then install and
 launch it with Metro attached, which is usually what you want while developing.

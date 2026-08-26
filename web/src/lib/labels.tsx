@@ -43,7 +43,7 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
     setRecord,
     removeRecord,
     countFor,
-    countWithin,
+    countsWithin,
     carries,
   } = keywords
 
@@ -104,7 +104,7 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
       clearSelected,
       matches,
       countFor,
-      countWithin,
+      countsWithin,
     }),
     [
       labels,
@@ -122,7 +122,7 @@ export function LabelsProvider({ children }: { children: ReactNode }) {
       clearSelected,
       matches,
       countFor,
-      countWithin,
+      countsWithin,
     ],
   )
 

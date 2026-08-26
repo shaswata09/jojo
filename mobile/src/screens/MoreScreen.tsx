@@ -1,6 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native'
 import type { PersistenceHealth } from '@jojo/service/repo/repository'
 import { useStoreStatus } from '@jojo/service/react/status-context'
+import { useKg } from '@jojo/service/react/kg-context'
+import { useModelSettings } from '@/lib/model-settings-context'
+import { shortDate } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation } from '@react-navigation/native'
@@ -58,6 +61,10 @@ export function MoreScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { reminders } = useTimeline()
   const { matches } = useScout()
+  const { settings } = useModelSettings()
+  const { repo } = useKg()
+  const modelReady = settings.model.trim() !== ''
+  const handedOverAt = repo.meta.handoverAt
 
   // A match nobody has turned into an application yet — the only ones there is
   // anything left to do about. Every badge in this app counts something visible
@@ -193,10 +200,29 @@ export function MoreScreen() {
               status: storageStatus(health),
               icon: 'database' as const,
             },
-            { label: 'Local model', meta: 'offline', status: 'off' as const, icon: 'cpu' as const },
+            /*
+             * Read from the settings, not asserted.
+             *
+             * Both of these were hardcoded — every user was told their model was
+             * offline whatever they had configured, and that no device was
+             * paired whether or not one was. This panel's own header says "a
+             * status strip whose figures are invented is worse than none", and
+             * these two were the invented ones.
+             *
+             * Deliberately reports "configured" rather than "connected": this
+             * screen does not probe, and claiming a live connection it has not
+             * checked would be the same defect wearing a better word. Settings
+             * probes and can say which.
+             */
+            {
+              label: 'Model',
+              meta: modelReady ? `${settings.model} — configured` : 'not set up',
+              status: modelReady ? ('on' as const) : ('off' as const),
+              icon: 'cpu' as const,
+            },
             {
               label: 'Transfer',
-              meta: 'no device paired',
+              meta: handedOverAt === null ? 'never used' : `last used ${shortDate(handedOverAt)}`,
               status: 'off' as const,
               icon: 'share-2' as const,
             },

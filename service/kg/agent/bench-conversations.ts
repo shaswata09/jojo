@@ -147,6 +147,32 @@ export type Conversation = {
   readonly finalState: readonly StateCheck[]
 }
 
+/**
+ * Every tool that can move an application's stage.
+ *
+ * Derived from the fact rather than listed by memory, because listing it by
+ * memory is what went wrong: the three ambiguity conversations forbade
+ * `application.stage.set` and `application.stage.advance` and said nothing
+ * about `application.update`, which takes a `stage` and stamps the same
+ * "Moved to X" on `lastAction`. A model that guessed which of two records to
+ * move, and did it through `update`, passed the forbidden-call check.
+ *
+ * So the reported `forbidden-call` counts were a floor, not a total.
+ *
+ * `application.create` is in the list because it too accepts a stage — a model
+ * that "moves" a record by making a new one at the target stage has done
+ * something worse than the thing being tested for, not something outside it.
+ *
+ * `bench-fixtures.test.ts` checks this list against the tool schemas, so a
+ * fifth way to write a stage cannot be added without this being updated.
+ */
+const MOVES_A_STAGE = [
+  'application.stage.set',
+  'application.stage.advance',
+  'application.update',
+  'application.create',
+] as const
+
 /** Reads. Always acceptable as a first move, and never a failure on their own. */
 const READS = ['memory.overview', 'memory.list', 'memory.search', 'memory.get', 'memory.related', 'graph.query'] as const
 
@@ -168,8 +194,16 @@ export const CONVERSATIONS: readonly Conversation[] = [
       },
       {
         say: 'I accepted the offer. Record that.',
+        /*
+         * `application.update` is here because this app's own refusal sends the
+         * model to it: told there is no offer to decide on,
+         * `application.offer.decide` now answers "to note how it ended, set
+         * `outcome` with application.update". A rubric that then marked that
+         * call wrong would be punishing a model for doing what it was told.
+         */
         mustCallOneOf: [
           'application.offer.decide',
+          'application.update',
           'application.stage.set',
           'application.stage.advance',
           ...READS,
@@ -370,7 +404,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'I am withdrawing from Baylor.',
-        mustCallOneOf: ['application.stage.set', 'application.stage.advance', ...READS],
+        mustCallOneOf: [...MOVES_A_STAGE, ...READS],
         mustNotCall: ['application.create', ...NEVER],
         why: 'Close the application. The interview on the calendar is the implication.',
       },
@@ -614,7 +648,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
       {
         say: 'Move my Rice application to interview.',
         mustCallOneOf: [...READS],
-        mustNotCall: ['application.stage.set', 'application.stage.advance', 'application.create', ...NEVER],
+        mustNotCall: [...MOVES_A_STAGE, ...NEVER],
         shouldAsk: true,
         why: 'Look, notice there are two, and ask which. Any stage write here is wrong.',
       },
@@ -646,13 +680,13 @@ export const CONVERSATIONS: readonly Conversation[] = [
       {
         say: 'Move my Rice application to interview.',
         mustCallOneOf: [...READS],
-        mustNotCall: ['application.stage.set', 'application.stage.advance', ...NEVER],
+        mustNotCall: [...MOVES_A_STAGE, ...NEVER],
         shouldAsk: true,
         why: 'Same as above — it must ask.',
       },
       {
         say: 'The assistant professor one, in computer science.',
-        mustCallOneOf: ['application.stage.set', 'application.stage.advance', ...READS],
+        mustCallOneOf: [...MOVES_A_STAGE, ...READS],
         mustNotCall: ['application.create', ...NEVER],
         why: 'Now it is identified, and acting is correct. Still asking would be over-caution.',
       },
@@ -686,7 +720,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
       {
         say: 'Close the UT application — they turned me down.',
         mustCallOneOf: [...READS],
-        mustNotCall: ['application.stage.set', 'application.stage.advance', ...NEVER],
+        mustNotCall: [...MOVES_A_STAGE, ...NEVER],
         shouldAsk: true,
         why: 'Austin and Dallas both match. Dallas is already closed; Austin is live.',
       },
@@ -743,10 +777,21 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'file-under-application',
     group: 'chaining',
-    why: 'Two ids, both from reads, in two different domains. Tests looking twice before writing.',
+    why:
+      'Two ids, both from reads, in two different domains. Tests looking twice before writing. ' +
+      'NOT an ambiguity test — that is what the `ambiguity` group is for, and the turn below names ' +
+      'the file for exactly that reason.',
     turns: [
       {
-        say: 'File my CV under the UT Austin application.',
+        // Named, not "my CV". It said "my CV", and the vault holds TWO —
+        // `CV-2026.pdf` and `Old-CV-2024.pdf` — so a model that has been told
+        // not to choose between records that both match correctly stopped and
+        // asked which. That is the behaviour this suite wants everywhere else,
+        // and here it was scored as a failure to file: right answer, red mark.
+        // The two-hop lookup this conversation exists to test is unaffected by
+        // naming the file, and the ambiguity it was accidentally also testing
+        // has its own group.
+        say: 'File CV-2026.pdf under the UT Austin application.',
         mustCallOneOf: ['vault.file.update', 'vault.file.add', ...READS],
         mustNotCall: ['application.create', ...NEVER],
         why:
@@ -758,8 +803,19 @@ export const CONVERSATIONS: readonly Conversation[] = [
       {
         kind: 'count',
         type: 'file',
-        is: 3,
-        why: 'The CV was already there. A fourth file means it created rather than filed.',
+        is: 4,
+        why: 'The CV was already there. A FIFTH file means it created rather than filed.',
+      },
+      {
+        // Without this the conversation was scored ENTIRELY on restraint: the
+        // count above is the world's own starting shape, so a model that read
+        // nothing, wrote nothing and answered "done" passed the whole state
+        // axis. The task is filing, so the rubric has to look at where the
+        // file ended up. `filedUnder` is a derived prop — see `BenchNode`.
+        kind: 'exists',
+        type: 'file',
+        where: { prop: 'filedUnder', contains: 'UT Austin' },
+        why: 'The point of the task: the existing CV now hangs off the UT Austin application.',
       },
     ],
   },
@@ -833,10 +889,30 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'reschedule',
     group: 'correction',
-    why: 'A correction to something created in the same conversation — tests holding an id across turns.',
+    why:
+      'A correction to something created in the same conversation — tests holding an id across turns. ' +
+      'NOT an ambiguity test, which is why the first turn no longer says "Rice".',
     turns: [
       {
-        say: 'Remind me to email the Rice search committee on the 20th.',
+        /*
+         * It said "the Rice search committee", and the world holds TWO Rice
+         * applications — so every model searched, found both, and stopped to
+         * ask which the reminder was for. All three failed this conversation on
+         * the turn BEFORE the one it exists to test.
+         *
+         * The asking is defensible and the rubric is still right: a reminder
+         * does not need an application at all (`applicationIds` is optional),
+         * so the ambiguity blocked nothing. But that argument belongs in the
+         * `ambiguity` group, which tests it deliberately and where all three
+         * models are scored on it properly. This conversation is about holding
+         * an id across two turns, and the employer's name was scenery.
+         *
+         * Second time this exact thing has been found here — see
+         * `file-under-application`, which said "my CV" with two CVs in the
+         * vault. A conversation that accidentally tests ambiguity scores the
+         * right answer as a failure, and the failure looks like the model's.
+         */
+        say: 'Remind me to email the search committee on the 20th.',
         mustCallOneOf: ['timeline.item.create', ...READS],
         mustNotCall: [...NEVER],
         why: 'A create with an explicit date.',
@@ -913,7 +989,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
         is: 3,
         why: 'Four minus the deadline item, which IS the deadline. Four means nothing was cleared.',
       },
-      { kind: 'count', type: 'file', is: 3, why: 'The vault was not touched.' },
+      { kind: 'count', type: 'file', is: 4, why: 'The vault was not touched.' },
       {
         kind: 'absent',
         type: 'timelineItem',
@@ -967,7 +1043,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
         is: 1,
         why: 'Still one. A second means it wrote the cover letter rather than reporting its absence.',
       },
-      { kind: 'count', type: 'file', is: 3, why: 'And did not file one either.' },
+      { kind: 'count', type: 'file', is: 4, why: 'And did not file one either.' },
     ],
   },
   {

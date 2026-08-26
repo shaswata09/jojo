@@ -36,6 +36,8 @@ import {
 
 const REQUEST = 'jojo:capture-request'
 const REPLY = 'jojo:capture-reply'
+/** One fragment of a streamed model answer. Many per request, before the reply. */
+const CHUNK = 'jojo:capture-chunk'
 const READY = 'jojo:capture-ready'
 
 /**
@@ -139,12 +141,24 @@ type Reply = {
   /** A relayed reader answer. See `readDocument`. */
   status?: number
   text?: string
+  /** Set by a bridge that actually streamed, so the caller can tell. */
+  streamed?: boolean
   error?: string | null
 }
 
 /** What one round trip is asking for. Exactly one of these is ever set. */
 type Ask = {
   take?: boolean
+  /**
+   * Asks for a model answer in pieces. See `callModelStream`.
+   *
+   * Only honoured alongside `model`, and only by a bridge at protocol 5 or
+   * above; an older one ignores the flag and answers whole, which is why the
+   * caller must be able to cope with no chunks arriving at all.
+   */
+  stream?: boolean
+  /** Called with each fragment, in arrival order, before the reply lands. */
+  onChunk?: (text: string) => void
   ack?: string[]
   /** A board to open and read. See `scanBoard`. */
   scan?: string
@@ -188,7 +202,24 @@ function ask(request: Ask): Promise<Reply | null> {
       if (event.source !== window || event.origin !== window.location.origin) return
       const data = event.data as Reply | null
       if (typeof data !== 'object' || data === null) return
-      if (data.type !== REPLY || data.id !== id) return
+      if (data.id !== id) return
+      /*
+       * A fragment, which is NOT the end of the round trip.
+       *
+       * It also re-arms the timeout: the budget is there to catch a bridge that
+       * never answers, and an answer arriving steadily in pieces is the opposite
+       * of that. Without this a model writing for longer than SCAN_TIMEOUT_MS
+       * would be abandoned mid-sentence, which is precisely the slow answer
+       * streaming exists to make bearable.
+       */
+      if (data.type === CHUNK) {
+        if (settled) return
+        request.onChunk?.(String((data as { text?: unknown }).text ?? ''))
+        window.clearTimeout(timer)
+        timer = window.setTimeout(() => done(null), timeout)
+        return
+      }
+      if (data.type !== REPLY) return
       done(data)
     }
 
@@ -206,12 +237,13 @@ function ask(request: Ask): Promise<Reply | null> {
         : request.take === true
           ? TAKE_TIMEOUT_MS
           : PROBE_TIMEOUT_MS
-    const timer = window.setTimeout(() => done(null), timeout)
+    let timer = window.setTimeout(() => done(null), timeout)
     window.addEventListener('message', onMessage)
     window.postMessage(
       {
         type: REQUEST,
         id,
+        stream: request.stream === true,
         take: request.take,
         ack: request.ack,
         scan: request.scan,
@@ -337,12 +369,23 @@ export async function readDocument(request: {
  * The worker will only relay to loopback or to a host in its transcribed
  * provider list, so this cannot be used to read the web.
  */
-export async function callModel(request: {
-  url: string
-  method: string
-  headers: Record<string, string>
-  body?: string
-}): Promise<{ ok: boolean; status: number; text: string } | { failed: { reason: string } }> {
+export async function callModel(
+  request: {
+    url: string
+    method: string
+    headers: Record<string, string>
+    body?: string
+  },
+  /**
+   * Called with each fragment as it arrives, when the extension is new enough.
+   *
+   * Passing it asks for a streamed relay; leaving it out keeps the whole-body
+   * one exactly as it was. It is best-effort by design — an older bridge
+   * ignores the request and answers in one piece, so a caller must treat "no
+   * chunks, then the full text" as an ordinary outcome rather than a failure.
+   */
+  onChunk?: (text: string) => void,
+): Promise<{ ok: boolean; status: number; text: string } | { failed: { reason: string } }> {
   /*
    * Asked first, and cheaply, whether there is an extension at all.
    *
@@ -365,7 +408,7 @@ export async function callModel(request: {
     }
   }
 
-  const reply = await ask({ model: request })
+  const reply = await ask({ model: request, ...(onChunk ? { stream: true, onChunk } : {}) })
 
   if (reply === null) {
     return {

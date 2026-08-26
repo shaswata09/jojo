@@ -4,6 +4,7 @@ import { Chip } from '@/components/ui/Chip'
 import { MenuSheet } from '@/components/ui/Menu'
 import { STAGES, STAGE_LABEL } from '@jojo/service/data/seed'
 import type { Stage } from '@jojo/service/data/seed'
+import { slopFor } from '@/theme/tokens'
 import { useColors } from '@/theme/theme-context'
 
 /**
@@ -35,7 +36,13 @@ export function StagePicker({
         accessibilityRole="button"
         accessibilityLabel={`Stage of ${name}: ${STAGE_LABEL[value]}. Change stage`}
         onPress={() => setOpen(true)}
-        hitSlop={6}
+        /*
+         * The chip is about 24 points tall — `paddingVertical: 3` around a
+         * 16-point line, plus its border — so 6 points of slop made a 36-point
+         * target for the ONLY control that moves a record between stages.
+         * `slopFor` takes it to 44, which is what a thumb needs.
+         */
+        hitSlop={slopFor(24)}
       >
         <Chip stage={value}>{STAGE_LABEL[value]}</Chip>
       </Pressable>

@@ -181,15 +181,33 @@ export function useKeywords() {
 
   const countFor = useCallback((labelId: string) => graph.out(labelId, 'TAGS').length, [graph])
 
-  const countWithin = useCallback(
-    (labelId: string, ids: readonly string[]) => {
-      const tagged = new Set(graph.out(labelId, 'TAGS').map((e) => e.to))
-      let n = 0
+  /**
+   * How many of these records carry each keyword — every keyword, one pass.
+   *
+   * Replaces a per-keyword `countWithin(labelId, ids)`, which the filter called
+   * once per chip: for each keyword it built a `Set` of everything that keyword
+   * tags, then walked the whole pool calling `recordKey` (an `indexOf`, a
+   * `slice` and a parse) on every element. That is O(keywords × records) with a
+   * heavy constant, and the filter re-ran it on every keystroke in the search
+   * box — 10 ms per keystroke at 500 applications and 20 keywords, 97 ms at
+   * 2,000 and 120.
+   *
+   * This walks the pool ONCE and reads each record's own `TAGS` edges, so the
+   * cost is O(records × how many keywords each carries) and does not grow with
+   * the number of keywords that exist. Returning a map also gives the caller a
+   * single stable value to memoise on, which the per-keyword call could not.
+   */
+  const countsWithin = useCallback(
+    (ids: readonly string[]): ReadonlyMap<string, number> => {
+      const out = new Map<string, number>()
       for (const id of ids) {
         const record = recordKey(id)
-        if (record !== undefined && tagged.has(record)) n += 1
+        if (record === undefined) continue
+        for (const edge of graph.in(record, 'TAGS')) {
+          out.set(edge.from, (out.get(edge.from) ?? 0) + 1)
+        }
       }
-      return n
+      return out
     },
     [graph],
   )
@@ -232,7 +250,7 @@ export function useKeywords() {
       setRecord,
       removeRecord,
       countFor,
-      countWithin,
+      countsWithin,
       carries,
     }),
     [
@@ -247,7 +265,7 @@ export function useKeywords() {
       setRecord,
       removeRecord,
       countFor,
-      countWithin,
+      countsWithin,
       carries,
     ],
   )

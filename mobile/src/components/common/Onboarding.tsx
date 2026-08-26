@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
@@ -9,7 +11,10 @@ import { WelcomeDetails } from '@/components/common/WelcomeDetails'
 import { GuidedTour } from '@/screens/guide/GuidedTour'
 import { markOffered, readOffered } from '@/lib/onboarding'
 import type { OnboardingStage } from '@/lib/onboarding'
+import { useModelSettings } from '@/lib/model-settings-context'
+import { isConfigured } from '@/lib/llm'
 import { useProfile } from '@/lib/store-context'
+import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -50,6 +55,8 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
   const { isBlank } = useProfile()
   const [offered, setOffered] = useState<Record<OnboardingStage, boolean> | null>(null)
   const [tourOpen, setTourOpen] = useState(false)
+  const { settings } = useModelSettings()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   useEffect(() => {
     let live = true
@@ -70,9 +77,60 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
 
   if (!offered.details && (fresh || isBlank)) {
     // `fresh` is what makes the demo path work. Choosing the demo records seeds
-    // a whole profile — 'Shaswata Mitra' and a stranger's links — so `isBlank` is
+    // a whole profile — an invented applicant and their links — so `isBlank` is
     // false and this step would skip itself for the newest user there is.
     return <WelcomeDetails fresh={fresh} onDone={() => finish('details')} />
+  }
+
+  /*
+   * Between saying who you are and being shown around — web's placement, for
+   * web's reason: the tour describes an app that answers questions and drafts
+   * letters, and someone walked through the assistant with no model connected
+   * is shown the scripted stand-in instead.
+   *
+   * Skipped silently, and NOT marked as offered, when a model is already
+   * configured. Marking it would be recording that we asked, and we did not —
+   * the same distinction `reader` makes on the web side.
+   */
+  if (!offered.model && !isConfigured(settings)) {
+    return (
+      <Sheet
+        open
+        onClose={() => finish('model')}
+        title="Connect a model?"
+        description="This is what makes jojo agentic rather than a filing cabinet. With one connected it answers questions about your search, drafts follow-ups against your own records, and reads documents you add."
+        footer={
+          <>
+            <Button label="Not now" variant="ghost" size="md" onPress={() => finish('model')} />
+            <Button
+              label="Set one up"
+              size="md"
+              onPress={() => {
+                // Marked before navigating, not after: the sheet unmounts on
+                // the way out, so an `onDone` fired from the other side would
+                // never arrive and the question would be asked again next
+                // launch — of somebody who had just gone and answered it.
+                finish('model')
+                navigation.navigate('Settings')
+              }}
+            />
+          </>
+        }
+      >
+        <View style={{ gap: space[2], paddingBottom: space[2] }}>
+          <View style={s.row}>
+            <Feather name="cpu" size={15} color={c.accent} />
+            <Txt size="sm" tone="secondary">
+              Point it at a server on your own machine — vLLM, Ollama or LM Studio — and nothing
+              leaves the device.
+            </Txt>
+          </View>
+          <Txt size="xs" tone="muted">
+            Everything else works without one. It is under More → Settings whenever you want it.
+          </Txt>
+        </View>
+      </Sheet>
+    )
   }
 
   /*

@@ -25,6 +25,7 @@ import {
 import { useBoot } from '@/lib/boot-context'
 import { markOffered, wasOffered } from '@/lib/onboarding'
 import type { OnboardingStage } from '@/lib/onboarding'
+import type { TourIntent } from '@/components/guide/GuidedTour'
 import { guidePath } from '@/lib/links'
 
 /**
@@ -50,7 +51,7 @@ import { guidePath } from '@/lib/links'
  *
  * WHO SEES THE DETAILS STEP: anyone who has just come through the fork, and
  * anyone whose profile is genuinely blank. The first half is `fresh` and it is
- * load-bearing — the demo records seed a full profile, 'Shaswata Mitra' and all,
+ * load-bearing — the demo records seed a full profile, an invented name and all,
  * so a gate on `isBlank` alone skipped the step for every user who chose them,
  * which is most new users. The second half catches a long-standing user who
  * never filled theirs in. The flags in `lib/onboarding.ts` record only that we
@@ -221,7 +222,16 @@ export function Onboarding() {
                 and a reload is the one thing that genuinely kills them. Anyone
                 who pressed this mid-conversation lost it. */}
             <Button asChild>
-              <Link to={guidePath('overview')} onClick={() => finish('tour')}>
+              {/* `state`, because the button says START and used to only
+                  NAVIGATE — it landed the reader on the guide's overview beside
+                  a second button reading "Take the tour", which is a step this
+                  dialog had already asked them to take. `TourLauncher` reads
+                  this on arrival and consumes it. */}
+              <Link
+                to={guidePath('overview')}
+                state={{ startTour: true } satisfies TourIntent}
+                onClick={() => finish('tour')}
+              >
                 Start the tour
               </Link>
             </Button>

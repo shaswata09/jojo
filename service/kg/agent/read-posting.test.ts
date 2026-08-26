@@ -9,27 +9,27 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { POSTING_BUDGET, postingDocument, postingMessages, readPosting } from './read-posting'
+import { POSTING_BUDGET, askForPosting, postingDocument, postingMessages, readPosting } from './read-posting'
 
 const reply = (o: unknown) => JSON.stringify(o)
 
 describe('the prompt', () => {
   it('names every allowed role tag and source, so the model can match exactly', () => {
-    const [system] = postingMessages('https://example.test/job', 'text')
+    const [system] = postingMessages('https://example.test/job', 'text', '2026-09-14')
     expect(system?.content).toContain('Assistant Professor')
     expect(system?.content).toContain('ML Engineer')
     expect(system?.content).toContain('Careers page')
   })
 
   it('carries the URL as well as the text', () => {
-    const [, user] = postingMessages('https://boards.test/acme/4', 'Come work here')
+    const [, user] = postingMessages('https://boards.test/acme/4', 'Come work here', '2026-09-14')
     expect(user?.content).toContain('https://boards.test/acme/4')
     expect(user?.content).toContain('Come work here')
   })
 
   it('trims a long page to the budget rather than sending all of it', () => {
     const huge = 'x'.repeat(POSTING_BUDGET * 3)
-    const [, user] = postingMessages('https://example.test', huge)
+    const [, user] = postingMessages('https://example.test', huge, '2026-09-14')
     // The URL and the labels ride along, so this is a bound rather than equality.
     expect((user?.content ?? '').length).toBeLessThan(POSTING_BUDGET + 200)
   })
@@ -163,5 +163,97 @@ describe('the saved document', () => {
   it('carries no script of its own', () => {
     const html = postingDocument('https://x.test', '# Role\n\nDetails')
     expect(html.toLowerCase()).not.toContain('<script')
+  })
+})
+
+/**
+ * The posting reader is told what today is, for the same reason the agent loop
+ * is — and here the cost is higher.
+ *
+ * It asks for `deadline` as `YYYY-MM-DD`, and postings say "applications close
+ * 20 September" far more often than they give a year. Without the date the
+ * model supplies one from its weights, and the result is a real deadline on a
+ * real application, in the wrong year, looking exactly like a right one.
+ */
+describe('the date in the posting prompt', () => {
+  it('reaches the model, and does not replace the instructions', () => {
+    const messages = postingMessages('https://example.com/job', 'Closes 20 September.', '2026-09-14')
+    const system = messages[0]
+    expect(system?.role).toBe('system')
+    expect(system?.content).toContain('2026-09-14')
+    // Appended, not substituted — the field list is the rest of this prompt.
+    expect(system?.content).toContain('deadline')
+  })
+
+  it('tells the model which way a bare day and month resolves', () => {
+    // "20 September" in December is next September, not one that has passed.
+    // A deadline is ahead by definition, and that is the half a date alone does
+    // not give you.
+    const system = postingMessages('https://example.com/job', 'x', '2026-12-01')[0]
+    expect(system?.content).toContain('a deadline')
+    expect(system?.content?.toLowerCase()).toContain('next year')
+  })
+})
+
+/**
+ * The retry, which exists because the parse sits AFTER the expensive part.
+ *
+ * Every test here is about telling three failures apart that the app used to
+ * treat as one: a draw that can be flipped again, an answer that is not coming,
+ * and a page that is not a posting. Only the first is worth a second call.
+ */
+describe('askForPosting', () => {
+  const good = JSON.stringify({ org: 'Rice University', role: 'Research Scientist' })
+
+  it('takes a second draw when the first did not parse', async () => {
+    const replies = ['Sure! Here is what I found on that page.', good]
+    let calls = 0
+    const read = await askForPosting(async () => replies[calls++] ?? null)
+    expect(calls).toBe(2)
+    expect(read.ok).toBe(true)
+    expect(read.attempts).toBe(2)
+  })
+
+  it('does not ask twice when the first draw parsed', async () => {
+    let calls = 0
+    const read = await askForPosting(async () => {
+      calls += 1
+      return good
+    })
+    expect(calls).toBe(1)
+    expect(read.attempts).toBe(1)
+  })
+
+  it('stops at a page that is not a posting, which a second draw cannot change', async () => {
+    // A fact about the PAGE, not about the draw. Retrying makes the person wait
+    // to be told the same thing.
+    let calls = 0
+    const read = await askForPosting(async () => {
+      calls += 1
+      return JSON.stringify({ notAPosting: true })
+    })
+    expect(calls).toBe(1)
+    expect(read.ok).toBe(false)
+  })
+
+  it('stops when the model answers with nothing, twice being no more likely', async () => {
+    let calls = 0
+    const read = await askForPosting(async () => {
+      calls += 1
+      return ''
+    })
+    expect(calls).toBe(1)
+    expect(read.ok).toBe(false)
+  })
+
+  it('gives up after the second bad draw rather than waiting for a third', async () => {
+    let calls = 0
+    const read = await askForPosting(async () => {
+      calls += 1
+      return 'still not JSON'
+    })
+    expect(calls).toBe(2)
+    expect(read.ok).toBe(false)
+    if (!read.ok) expect(read.reason).toContain('did not answer with JSON')
   })
 })

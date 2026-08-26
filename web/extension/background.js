@@ -161,6 +161,15 @@ function isLoopback(raw) {
 }
 
 /** How long the reader gets. Converting a large PDF is genuinely slow. */
+/**
+ * The port name the streaming model relay answers on.
+ *
+ * Shared with `bridge.js`; a mismatch is a silent no-op rather than an
+ * error, because `onConnect` simply never fires for a name nobody listens
+ * for — which is why it is a named constant on both sides.
+ */
+const MODEL_STREAM_PORT = 'jojo:model-stream'
+
 const READ_TIMEOUT_MS = 120000
 
 /**
@@ -622,6 +631,160 @@ async function badge(tabId, text, title) {
  * gets a fresh id on every load, and a delivery path keyed on the id would work
  * for a published build and for nobody developing against it.
  */
+
+/**
+ * Whether this model address is refused, and why — or null to go ahead.
+ *
+ * ONE copy of the rule, called by both the whole-body relay and the streaming
+ * one. Two copies would be two things to keep in step, and the thing they
+ * decide is which addresses this extension will fetch on a page's behalf —
+ * exactly the rule that must not drift.
+ */
+async function modelRefusal(url) {
+  const routes = await routing()
+  const host = hostOf(url)
+  // A provider the person switched off is refused BY NAME, so the message says
+  // which one and where to change it. Loopback is not a provider and is not
+  // gated here — a local model never left the machine.
+  if (host && !isLoopback(url) && routes.models[host] === false) {
+    return `Routing to ${host} is switched off in the jojo extension.`
+  }
+  if (!isLoopback(url) && !isKnownModelHost(url)) {
+    return (
+      'That address is not a model provider jojo knows about, and not on this machine. ' +
+      'The extension only relays to loopback and to the providers in its own list.'
+    )
+  }
+  return null
+}
+
+/**
+ * The same relay, but handing back the body AS IT ARRIVES.
+ *
+ * ## Why this exists
+ *
+ * A cloud provider cannot be called from the page: NVIDIA, OpenAI and Anthropic
+ * do not send `access-control-allow-origin` to a browser origin, so the request
+ * is made here instead. Until now that meant `await response.text()` — the
+ * whole answer, handed back in one piece — and a person watching a slow model
+ * write three paragraphs saw a spinner for the entire time, then all of it at
+ * once. Local models have streamed since streaming was added; this is what
+ * makes a hosted one behave the same.
+ *
+ * ## Why a Port and not `sendResponse`
+ *
+ * `sendResponse` fires exactly once. Streaming is many messages over one
+ * request, which is what `chrome.runtime.connect` is for. The port also gives a
+ * disconnect signal, so a tab that navigates away aborts the fetch instead of
+ * leaving it running in a worker nobody is listening to.
+ *
+ * The final message carries the assembled text as well, so a caller that missed
+ * a chunk — or a page that would rather not reassemble — has the whole body on
+ * the same terms as the non-streaming relay.
+ */
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== MODEL_STREAM_PORT) return
+
+  const controller = new AbortController()
+  let closed = false
+  port.onDisconnect.addListener(() => {
+    closed = true
+    controller.abort()
+  })
+
+  port.onMessage.addListener((message) => {
+    void (async () => {
+      const request = message?.request
+      const url = typeof request?.url === 'string' ? request.url : ''
+      const send = (payload) => {
+        if (closed) return
+        try {
+          port.postMessage(payload)
+        } catch {
+          // The page went away mid-answer. Nothing to do and nothing to log:
+          // the disconnect listener has already aborted the fetch.
+          closed = true
+        }
+      }
+
+      const refusal = await modelRefusal(url)
+      if (refusal) {
+        send({ type: 'done', ok: false, status: 0, text: '', reason: refusal })
+        return
+      }
+
+      // Same ceiling as the whole-body relay, but reset by ARRIVING BYTES
+      // rather than by the request finishing: a long answer is not a stall, and
+      // a fixed deadline would cut off exactly the slow responses this exists
+      // to make watchable.
+      let timer = null
+      const arm = () => {
+        if (timer !== null) clearTimeout(timer)
+        timer = setTimeout(() => {
+          controller.abort()
+        }, READ_TIMEOUT_MS)
+      }
+      arm()
+
+      try {
+        const method = typeof request.method === 'string' ? request.method : 'POST'
+        const sendsBody = method !== 'GET' && method !== 'HEAD'
+        const response = await fetch(url, {
+          method,
+          headers: request.headers && typeof request.headers === 'object' ? request.headers : {},
+          ...(sendsBody && typeof request.body === 'string' && request.body !== ''
+            ? { body: request.body }
+            : {}),
+          signal: controller.signal,
+          credentials: 'omit',
+        })
+
+        // A refusal has a body worth reading whole — it is an error message, not
+        // a stream, and forwarding it as chunks would make the page parse an
+        // SSE frame that was never sent.
+        if (!response.ok || !response.body) {
+          const text = await response.text().catch(() => '')
+          if (timer !== null) clearTimeout(timer)
+          send({ type: 'done', ok: response.ok, status: response.status, text })
+          return
+        }
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let whole = ''
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          arm()
+          // `stream: true` on the DECODER as well: a multi-byte character can be
+          // split across two network chunks, and decoding each in isolation
+          // turns one é into two replacement characters.
+          const text = decoder.decode(value, { stream: true })
+          if (text === '') continue
+          whole += text
+          send({ type: 'chunk', text })
+          if (closed) return
+        }
+        whole += decoder.decode()
+        if (timer !== null) clearTimeout(timer)
+        send({ type: 'done', ok: true, status: response.status, text: whole })
+      } catch (error) {
+        if (timer !== null) clearTimeout(timer)
+        const aborted = error && error.name === 'AbortError'
+        send({
+          type: 'done',
+          ok: false,
+          status: 0,
+          text: '',
+          reason: aborted
+            ? 'The model provider stopped sending before the answer was finished.'
+            : `The extension could not reach the model provider: ${String(error && error.message ? error.message : error)}`,
+        })
+      }
+    })()
+  })
+})
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   /* ------------------------- the popup's own verbs ------------------------ */
 
@@ -909,29 +1072,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     void (async () => {
       const request = message.request
       const url = typeof request?.url === 'string' ? request.url : ''
-      const routes = await routing()
-      const host = hostOf(url)
-      // A provider the person switched off is refused BY NAME, so the message
-      // says which one and where to change it. Loopback is not a provider and
-      // is not gated here — a local model never left the machine.
-      if (host && !isLoopback(url) && routes.models[host] === false) {
-        sendResponse({
-          ok: false,
-          status: 0,
-          text: '',
-          reason: `Routing to ${host} is switched off in the jojo extension.`,
-        })
-        return
-      }
-      if (!isLoopback(url) && !isKnownModelHost(url)) {
-        sendResponse({
-          ok: false,
-          status: 0,
-          text: '',
-          reason:
-            'That address is not a model provider jojo knows about, and not on this machine. ' +
-            'The extension only relays to loopback and to the providers in its own list.',
-        })
+      const refusal = await modelRefusal(url)
+      if (refusal) {
+        sendResponse({ ok: false, status: 0, text: '', reason: refusal })
         return
       }
       sendResponse(await relay(request, 'model provider'))

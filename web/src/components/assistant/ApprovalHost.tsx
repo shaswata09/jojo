@@ -57,7 +57,19 @@ export function ApprovalHost() {
         return (
           <div
             key={run.threadId}
-            role="alertdialog"
+            /*
+             * `alert`, not `alertdialog`.
+             *
+             * `alertdialog` implies a modal that has taken focus, and this card
+             * is deliberately neither — it sits in a corner while the page stays
+             * usable. Announced as one it was never read out and never focused,
+             * so a screen-reader user was left with a run parked on `await
+             * approve(...)` and nothing on screen they could hear.
+             *
+             * `role="alert"` carries an implicit assertive live region, which is
+             * right here: the run is blocked until this is answered.
+             */
+            role="alert"
             aria-label={`${step.title} — waiting for you`}
             className="pointer-events-auto w-full max-w-md rounded-lg border border-warning-border bg-panel p-3.5 shadow-lg"
           >

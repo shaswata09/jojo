@@ -60,7 +60,15 @@ const DIVIDE = new Set(['/', '÷'])
  */
 type EvalFailure = { ok: false; error: string; at?: number }
 
-type Parsed = { ok: true; value: number } | EvalFailure
+/*
+ * Named `Parsed` until it collided, in a reader's head rather than in the
+ * compiler: `core/schema.ts` exports a `Parsed<T>` that is the result of
+ * VALIDATING a tool's input, and this one is the result of EVALUATING an
+ * arithmetic expression. Two unrelated things, one word, and this one is not
+ * exported — so the collision cost nothing but a double-take, and a rename is
+ * the whole fix.
+ */
+type Evaluated = { ok: true; value: number } | EvalFailure
 
 type Token =
   | { kind: 'number'; value: number; at: number }
@@ -312,7 +320,7 @@ class Parser {
     return this.peek()?.at
   }
 
-  parse(): Parsed {
+  parse(): Evaluated {
     const value = this.expression()
     if (!value.ok) return value
     const rest = this.peek()
@@ -327,7 +335,7 @@ class Parser {
     return value
   }
 
-  private expression(): Parsed {
+  private expression(): Evaluated {
     let left = this.term()
     if (!left.ok) return left
     for (;;) {
@@ -345,7 +353,7 @@ class Parser {
     }
   }
 
-  private term(): Parsed {
+  private term(): Evaluated {
     let left = this.factor()
     if (!left.ok) return left
     for (;;) {
@@ -374,7 +382,7 @@ class Parser {
   }
 
   /** Unary sign, binding looser than `^` so that `-2^2` is −4. */
-  private factor(): Parsed {
+  private factor(): Evaluated {
     if (this.eat('-')) {
       const inner = this.factor()
       return inner.ok ? { ok: true, value: -inner.value } : inner
@@ -383,7 +391,7 @@ class Parser {
     return this.power()
   }
 
-  private power(): Parsed {
+  private power(): Evaluated {
     const base = this.primary()
     if (!base.ok) return base
     if (this.eat('^')) {
@@ -395,7 +403,7 @@ class Parser {
     return base
   }
 
-  private primary(): Parsed {
+  private primary(): Evaluated {
     if (this.depth >= MAX_DEPTH) {
       return fail('That expression nests too deeply for me to read.', this.here())
     }

@@ -48,7 +48,26 @@ const fields = {
    * A list, since `ABOUT` became `fromCardinality: 'many'`. Absent leaves the
    * filing alone; an empty list makes it about nothing.
    */
-  applicationIds: s.optional(s.nullable(s.array(s.id('application'), { label: 'Applications' }))),
+  applicationIds: s.optional(
+    s.nullable(
+      s.array(s.id('application'), {
+        label: 'Applications',
+        /*
+         * Says that leaving it off is NORMAL, because models treat an optional
+         * field as a required one they have not found the value for yet.
+         *
+         * Measured: "remind me to email the search committee on the 20th" made
+         * Gemma list every application and stop to ask which the reminder was
+         * for — twice, in two different phrasings, once about six records and
+         * once about two. It never created the reminder. Two sentences added to
+         * the system prompt did not shift it; this did, because this is what it
+         * is reading when it builds the call.
+         */
+        description:
+          'Which applications this is about. Leave it out entirely when the entry does not belong to one — a reminder or a deadline with no application attached is normal and complete.',
+      }),
+    ),
+  ),
 }
 
 const cleared = (value: string | undefined) =>
@@ -87,7 +106,22 @@ export const timelineItemCreate = defineTool({
     ...fields,
     title: s.string({ min: 1, label: 'Title' }),
     date: s.isoDate({ label: 'Date' }),
-    kind: s.enum(TIMELINE_KIND_VALUES, { label: 'Kind' }),
+    kind: s.enum(TIMELINE_KIND_VALUES, {
+      label: 'Kind',
+      /*
+       * The list is short and none of the words is "reminder", which is the
+       * one a model reaches for.
+       *
+       * Measured: asked to add a reminder to chase an offer, Gemma sent
+       * `kind: "reminder"` with `remind: true` — a perfectly sensible reading
+       * of the request and not a value this app has. Whether a row APPEARS in
+       * Reminders is `remind`; `kind` is what the thing IS. Saying so here is
+       * cheaper than the refusal and the retry, which on a local model is
+       * several seconds of somebody's evening.
+       */
+      description:
+        'What the entry is. A reminder or a chase is "follow-up" — whether it shows in Reminders is the separate "remind" flag. Paperwork and references are "admin".',
+    }),
     /** Something logged after it was done — a call you are recording, not planning. */
     completedOn: s.optional(s.isoDate({ label: 'Completed on' })),
   }),

@@ -62,8 +62,15 @@ const REPLY = 'jojo:capture-reply'
  *   2 — + scan (job boards)
  *   3 — + read and model (relayed requests; a body only when there is one)
  *   4 — + crash (one crash-reporting choice, governing both halves)
+ *   5 — + streamed model answers (chunk messages, then the usual reply)
  */
-const BRIDGE_PROTOCOL = 4
+const BRIDGE_PROTOCOL = 5
+
+/** Must match `background.js`. A mismatch is a silent no-op, not an error. */
+const MODEL_STREAM_PORT = 'jojo:model-stream'
+
+/** The per-chunk message. The final reply still arrives as a normal REPLY. */
+const CHUNK = 'jojo:capture-chunk'
 
 window.addEventListener('message', (event) => {
   if (event.source !== window) return
@@ -135,6 +142,76 @@ window.addEventListener('message', (event) => {
           clear: data.crash.clear === true,
         }
       : undefined
+
+  /*
+   * A streamed model call takes the other road: a Port, many messages.
+   *
+   * Only when the page ASKED for it (`data.stream`) and only for a model
+   * request, so every other verb keeps the single-response path it has always
+   * had. The final message is posted as an ordinary REPLY carrying the whole
+   * body, which means a caller that ignores the chunks still gets exactly what
+   * the non-streaming relay would have given it — the chunks are additive, and
+   * that is what lets an older page work against a newer extension.
+   */
+  if (data.stream === true && read) {
+    const port = chrome.runtime.connect({ name: MODEL_STREAM_PORT })
+    let done = false
+    port.onMessage.addListener((msg) => {
+      if (msg?.type === 'chunk') {
+        window.postMessage(
+          { type: CHUNK, id: data.id, protocol: BRIDGE_PROTOCOL, text: String(msg.text ?? '') },
+          window.location.origin,
+        )
+        return
+      }
+      if (msg?.type !== 'done') return
+      done = true
+      window.postMessage(
+        {
+          type: REPLY,
+          id: data.id,
+          protocol: BRIDGE_PROTOCOL,
+          streamed: true,
+          ok: msg.ok === true,
+          status: msg.status ?? 0,
+          text: msg.text ?? '',
+          error: msg.reason ?? null,
+          captures: [],
+          count: 0,
+          rows: null,
+          crashOn: false,
+          crashes: [],
+        },
+        window.location.origin,
+      )
+      port.disconnect()
+    })
+    // MV3 stops an idle worker, and a port to a stopped worker just closes. The
+    // page is waiting on a reply that would otherwise never come.
+    port.onDisconnect.addListener(() => {
+      if (done) return
+      window.postMessage(
+        {
+          type: REPLY,
+          id: data.id,
+          protocol: BRIDGE_PROTOCOL,
+          streamed: true,
+          ok: false,
+          status: 0,
+          text: '',
+          error: 'The extension stopped before the answer was finished.',
+          captures: [],
+          count: 0,
+          rows: null,
+          crashOn: false,
+          crashes: [],
+        },
+        window.location.origin,
+      )
+    })
+    port.postMessage({ request: read })
+    return
+  }
 
   chrome.runtime.sendMessage(
     {

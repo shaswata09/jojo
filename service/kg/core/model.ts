@@ -1124,7 +1124,20 @@ export type ProfileProps = Profile
  */
 export type ThreadEntry =
   | { kind: 'you'; text: string }
-  | { kind: 'note'; text: string }
+  /**
+   * Something said mid-run, and `app` says by whom.
+   *
+   * Absent (the default) means the MODEL said it — narration while it works,
+   * "let me look that up" — and `toTranscript` replays it as assistant speech,
+   * which is what it was.
+   *
+   * `app: true` means this app said it: the conversation was trimmed, the reply
+   * hit the server's output limit. The person should see those in the
+   * transcript and the model must NOT read them back as its own words. It never
+   * said them, and a model that finds "I trimmed this conversation" in its own
+   * prior speech will reason from it.
+   */
+  | { kind: 'note'; text: string; app?: true }
   | { kind: 'answer'; text: string }
   | { kind: 'error'; text: string }
   | {
@@ -1161,6 +1174,32 @@ export type ThreadProps = {
    * line that separates the two.
    */
   autoApprove?: boolean
+  /**
+   * What this conversation established, for the part of it no longer sent.
+   *
+   * A long chat outgrows the model's window, and the alternative to dropping
+   * the beginning is remembering it in one line instead of forty. This is that
+   * line: written when a compaction happens, carried on the THREAD so it
+   * survives a reload and is not recomputed on every turn, and put in front of
+   * the messages the model sees.
+   *
+   * Absent on every conversation that has never needed one, which is almost all
+   * of them — one that fits is left exactly as it is, byte-identical, which is
+   * also what keeps the provider's prefix cache warm.
+   *
+   * NOT shown in the transcript. A person can scroll up and read what actually
+   * happened; this exists for the model, which cannot.
+   */
+  context?: string
+  /**
+   * How many entries `context` already accounts for.
+   *
+   * Without it a second compaction would summarise the same early exchanges
+   * again — a summary of a summary — and each pass would blur what the last had
+   * already blurred. This says where the summarised part ends, so the next
+   * compaction starts at the first entry the summary does not cover.
+   */
+  contextThrough?: number
 }
 
 /**
@@ -1243,6 +1282,29 @@ export const BACKGROUND_KINDS = [
   'membership',
   'grant',
   'patent',
+  'leadership',
+  'outreach',
+  'training',
+  /*
+   * The catch-all, and it is the most important entry in the list.
+   *
+   * The seven-kind version of this vocabulary was a SILENT FILTER: `readCv`
+   * drops any row whose kind is not here, so a certification, a language, a
+   * patent and a society membership were each extracted correctly and then
+   * discarded on the way in. Measured on a realistic reply, one row of eight
+   * survived.
+   *
+   * Widening the list fixed those eight. It cannot fix the ninth. Somebody's CV
+   * has a section nobody here thought of — a portfolio of exhibitions, a list
+   * of translations, military service — and a closed vocabulary loses it in
+   * exactly the same silent way.
+   *
+   * So this is the open lane, the same shape `core/ontology.ts` gives relations
+   * for the same reason: a fact filed under an unfamiliar name is honest and
+   * still findable, and a fact dropped is gone with nothing on screen to say so.
+   * The prompt asks the model to name what it is in `detail`.
+   */
+  'other',
 ] as const
 export type BackgroundKind = (typeof BACKGROUND_KINDS)[number]
 
@@ -1273,11 +1335,17 @@ export const BACKGROUND_ORDER: readonly BackgroundKind[] = [
   'teaching',
   'service',
   'project',
+  'leadership',
+  'outreach',
   'certification',
+  'training',
   'skill',
   'language',
   'volunteering',
   'membership',
+  // Last, always. It is what did not fit the headings above it, so it reads
+  // as a footnote rather than as a category somebody chose.
+  'other',
 ]
 
 /** Plural, because every one of these heads a list. */
@@ -1287,6 +1355,10 @@ export const BACKGROUND_LABEL: Readonly<Record<BackgroundKind, string>> = {
   publication: 'Publications',
   patent: 'Patents',
   grant: 'Grants',
+  leadership: 'Leadership',
+  outreach: 'Outreach',
+  training: 'Professional development',
+  other: 'Other',
   award: 'Awards',
   teaching: 'Teaching',
   service: 'Service',

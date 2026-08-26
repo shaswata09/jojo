@@ -15,6 +15,7 @@ import { FormField, TextField } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Segment } from '@/components/ui/Segment'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { Sheet } from '@/components/ui/Sheet'
 import { Panel } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
@@ -307,6 +308,33 @@ function SnippetEditor({
     initial?.applicationIds ?? [],
   )
   const [attempted, setAttempted] = useState(false)
+  const [discarding, setDiscarding] = useState(false)
+
+  /*
+   * Whether anything has been typed that leaving would throw away.
+   *
+   * Compared against what the form opened with rather than tracked with a flag,
+   * so tapping into a field and back out is not "dirty" — the same rule
+   * `FileEditor` uses, for the same reason: a prompt that fires when nothing
+   * changed is one people learn to dismiss without reading.
+   */
+  const dirty =
+    title !== (initial?.title ?? '') ||
+    body !== (initial?.body ?? '') ||
+    tag !== (initial?.tag ?? 'Cover letter') ||
+    applicationIds.join(',') !== (initial?.applicationIds ?? []).join(',')
+
+  /*
+   * The backdrop, the X and Android back all reach `onClose`, so a half-written
+   * cover letter went with a stray tap. It was never committed, so the journal
+   * has nothing to restore — this is the one thing on this screen that no Undo
+   * can bring back, which is why `FileEditor` and web's editor both guard it.
+   * This one had been missed.
+   */
+  const askOrClose = () => {
+    if (dirty) setDiscarding(true)
+    else onClose()
+  }
 
   const submit = () => {
     setAttempted(true)
@@ -317,7 +345,7 @@ function SnippetEditor({
   return (
     <Sheet
       open
-      onClose={onClose}
+      onClose={askOrClose}
       size="tall"
       title={initial ? 'Edit snippet' : 'New snippet'}
       description="Anything in [BRACKETS] stays a blank when the draft sheet loads this, so a person's name is never filled in for you."
@@ -364,6 +392,22 @@ function SnippetEditor({
           style={{ flex: 1, minHeight: 0 }}
         />
       </View>
+
+      {/* Word for word the one `FileEditor` uses. Two editors on the same phone
+          disagreeing about what leaving costs would be worse than either
+          wording alone. */}
+      <ConfirmSheet
+        open={discarding}
+        onClose={() => setDiscarding(false)}
+        title="Discard unsaved changes?"
+        description="What you have typed here has not been saved anywhere, so leaving throws it away — and that cannot be undone."
+        confirmLabel="Discard"
+        tone="danger"
+        onConfirm={() => {
+          setDiscarding(false)
+          onClose()
+        }}
+      />
     </Sheet>
   )
 }

@@ -386,7 +386,23 @@ export function GraphCanvas({
   }, [graph])
 
   return (
-    <div ref={frameRef} className={cn('h-full w-full', className)}>
+    <div ref={frameRef} className={cn('relative h-full w-full', className)}>
+      {/* Said on the picture, not in a console. A canvas that quietly draws two
+          thirds of the graph is one somebody reads conclusions off — and
+          "nothing connects to that" is precisely the conclusion a missing hub
+          invites. `structure.dropped` is 0 for any ordinary store; see
+          `MAX_DRAWN` for the size where it stops being. */}
+      {structure.dropped > 0 ? (
+        <p
+          role="status"
+          className="pointer-events-none absolute left-2 top-2 z-10 rounded-md border border-warning-border bg-warning-soft px-2 py-1 text-xs text-warning"
+        >
+          Showing the {structure.spec.length.toLocaleString()} most connected records.{' '}
+          {structure.dropped.toLocaleString()} more are in the store but not on this canvas — narrow
+          it with the filters to see them.
+        </p>
+      ) : null}
+
       <svg
         ref={svgRef}
         viewBox={`0 0 ${width} ${HEIGHT}`}

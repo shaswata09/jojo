@@ -7,6 +7,7 @@ import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { NodeId } from '@jojo/service/core/model'
 import type { GraphQueryResult } from '@jojo/service/agent/graph-query'
 import { agentTurn, isConfigured } from '@/lib/llm'
+import { contextOf } from '@jojo/service/core/provider'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -98,6 +99,9 @@ export function AskBox({
     llm,
     tools: TOOLS,
     maxSteps: 4,
+    // The person's own window, or the provider's default. Without it the loop
+    // does not trim, and the server truncates from the front instead.
+    window: contextOf(settings),
     thread: { id: GRAPH_ASK, entries: [], history: [] },
   })
 

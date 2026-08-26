@@ -409,3 +409,58 @@ export const endpointOf = (settings: ModelSettings): string => {
  * with a message about the HEADER rather than about the key.
  */
 export const cleanKey = (raw: string): string => raw.trim()
+
+/**
+ * Whether an endpoint points at the machine doing the asking.
+ *
+ * ## Why this is a phone problem and not a bug in the defaults
+ *
+ * Ollama's default endpoint is `http://localhost:11434` and LM Studio's is
+ * loopback too, and on a desktop browser both are exactly right — the server is
+ * on the same machine as the page. On a phone the same string is a different
+ * address: it is the phone, the phone is not running Ollama, and the request
+ * fails with a connection error that reads identically to a server that is
+ * switched off. Somebody following the setup copy has then done everything
+ * correctly and been told it does not work.
+ *
+ * So the defaults stay as they are — they are correct where they are correct —
+ * and the app that cannot use them says so. This is the rule for "would that
+ * only work on this machine", kept here beside the endpoints it judges, and
+ * kept pure so it can be tested without a network.
+ *
+ * `.local` is deliberately NOT loopback: an mDNS name resolves to a real
+ * address on the network and is a perfectly good way for a phone to find a
+ * desktop. It is the one people are most likely to type after being warned.
+ */
+export function isLoopbackEndpoint(raw: string): boolean {
+  const authority = raw
+    .trim()
+    .replace(/^[a-z][a-z0-9+.-]*:\/\//i, '')
+    .split(/[/?#]/)[0]
+  if (authority === undefined || authority === '') return false
+
+  /*
+   * Stripping the port without eating an IPv6 address.
+   *
+   * A bracketed literal is unambiguous. An UNBRACKETED one is not a legal URL
+   * but people type it, and `http://::1` run through a plain `:\d+$` strip
+   * becomes `:` — the address disappears and the check quietly returns false,
+   * which is the failure mode this whole function exists to prevent. Two or
+   * more colons and no brackets means the colons are the address.
+   */
+  const bracketed = /^\[([^\]]*)\]/.exec(authority)
+  const host = (
+    bracketed
+      ? bracketed[1]
+      : (authority.match(/:/g)?.length ?? 0) > 1
+        ? authority
+        : authority.replace(/:\d+$/, '')
+  )?.toLowerCase()
+
+  if (host === undefined || host === '') return false
+  if (host === 'localhost' || host.endsWith('.localhost')) return true
+  if (host === '::1' || host === '0:0:0:0:0:0:0:1') return true
+  // The whole 127/8 block, not just 127.0.0.1 — `127.0.0.2` is equally the
+  // machine asking, and someone who has read a tutorial may well have it.
+  return /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host)
+}

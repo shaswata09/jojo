@@ -139,18 +139,23 @@ export function createRnDriver(): Driver {
   /**
    * Writes the current rows back.
    *
-   * Read-then-write rather than tracking a dirty set: `readAll` is a clone of
-   * four Maps, the queue has already batched whatever burst produced this, and
-   * a dirty set that got the bookkeeping wrong would drop a write silently
-   * rather than loudly.
+   * Read-then-write rather than tracking a dirty set: reading the four Maps is
+   * cheap, the queue has already batched whatever burst produced this, and a
+   * dirty set that got the bookkeeping wrong would drop a write silently rather
+   * than loudly.
+   *
+   * `readAllUncloned` and not `readAll`, which is the whole reason that method
+   * exists. The rows are handed straight to `JSON.stringify` and dropped —
+   * nothing here keeps a reference and nothing here mutates — so the deep clone
+   * `readAll` makes was work thrown away one line after it was done. On a
+   * 3,000-application store it was 24.6 ms of a 31.8 ms commit. Anything added
+   * to this function that RETAINS a row has to go back to `readAll`.
    */
   const persist = async (): Promise<DriverResult<void>> => {
     const s = store()
     if (isFailure(s)) return s
-    const rows = await s.readAll()
-    if (!rows.ok) return rows
     try {
-      const payload: Persisted = { version: VERSION, rows: rows.value }
+      const payload: Persisted = { version: VERSION, rows: s.readAllUncloned() }
       await AsyncStorage.setItem(KEY, JSON.stringify(payload))
       return { ok: true, value: undefined }
     } catch (e) {

@@ -9,7 +9,10 @@ import { sizeLabel } from '@jojo/service/core/files'
 import { canPair } from '@jojo/service/crypto/noble-secrets'
 import { useKg } from '@jojo/service/react/kg-context'
 import { RECEIVE_ADVICE, beginReceiving, type ReceiveSession } from '@/lib/handoff-receive'
-import { applyReceived } from '@/lib/restore-received'
+import { applyPlan, planReceived } from '@/lib/restore-received'
+import { describeBackup } from '@jojo/service/core/backup'
+import type { RestorePlan } from '@jojo/service/core/backup'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 
@@ -52,6 +55,14 @@ export function ReceivePanel() {
   const [failed, setFailed] = useState<string | null>(null)
   const [bytes, setBytes] = useState(0)
   const [landed, setLanded] = useState<string | null>(null)
+  /**
+   * An authenticated backup waiting for the person to agree to it.
+   *
+   * Held rather than applied. The bytes are already verified — GCM ruled out
+   * tampering before this — so the only question left is the one nobody was
+   * asking: do you want what is on this phone replaced?
+   */
+  const [pending, setPending] = useState<RestorePlan | null>(null)
   const { repo } = useKg()
 
   /**
@@ -113,21 +124,18 @@ export function ReceivePanel() {
       // is a port open on somebody's phone with nothing on screen about it.
       session.stop()
 
-      void applyReceived(repo, payload, new Date().toISOString()).then((done) => {
-        if (!done.ok) {
-          setFailed(done.message)
-          return
-        }
-        const files =
-          done.documents === 0
-            ? ''
-            : `, ${String(done.documents)} document${done.documents === 1 ? '' : 's'}`
-        // The skipped count is said out loud rather than rounded away. A person
-        // checking their records against the other device needs to know the
-        // number is short before they go looking for what is missing.
-        const lost = done.skipped === 0 ? '' : ` ${String(done.skipped)} could not be read.`
-        setLanded(`${String(done.nodes)} records are on this phone${files}.${lost}`)
-      })
+      /*
+       * Read, then ASK. Applying used to start here, and `replaceAll` took
+       * every record, every document and the journal off the phone with nothing
+       * on screen having asked. Pairing is consent to receive; it is not
+       * consent to destroy what is already here.
+       */
+      const read = planReceived(payload)
+      if (!read.ok) {
+        setFailed(read.message)
+        return
+      }
+      setPending(read.plan)
     }, 250)
     return () => clearInterval(id)
   }, [session, repo])
@@ -152,6 +160,28 @@ export function ReceivePanel() {
         </Txt>
       </Panel>
     )
+  }
+
+  /** Writes the plan the person just agreed to. Destroys what is here now. */
+  const applyPending = () => {
+    const plan = pending
+    if (plan === null) return
+    setPending(null)
+    void applyPlan(repo, plan, new Date().toISOString()).then((done) => {
+      if (!done.ok) {
+        setFailed(done.message)
+        return
+      }
+      const files =
+        done.documents === 0
+          ? ''
+          : `, ${String(done.documents)} document${done.documents === 1 ? '' : 's'}`
+      // The skipped count is said out loud rather than rounded away. A person
+      // checking their records against the other device needs to know the
+      // number is short before they go looking for what is missing.
+      const lost = done.skipped === 0 ? '' : ` ${String(done.skipped)} could not be read.`
+      setLanded(`${String(done.nodes)} records are on this phone${files}.${lost}`)
+    })
   }
 
   return (
@@ -210,6 +240,34 @@ export function ReceivePanel() {
           )}
         </View>
       )}
+
+      {/* The gate. Names what is arriving AND what it replaces, because
+          "5,301 records" alone does not tell somebody they are about to lose
+          the twelve they added on this phone this morning. */}
+      <ConfirmSheet
+        open={pending !== null}
+        onClose={() => {
+          setPending(null)
+          /*
+           * The latch has to come off too. `applying.current` is set when the
+           * stream completes so the 250 ms poll cannot fire twice — but with
+           * the apply now behind a question, leaving it set means a person who
+           * says no can never be offered the transfer again without leaving the
+           * screen. Declining is not a reason to break the next attempt.
+           */
+          applying.current = false
+          setFailed('Nothing was changed. The other device can send again.')
+        }}
+        title="Replace everything on this phone?"
+        description={
+          pending === null
+            ? ''
+            : `${describeBackup(pending)} All of it replaces what is here now — every application, document and reminder on this phone goes, and that cannot be undone.`
+        }
+        confirmLabel="Replace"
+        tone="danger"
+        onConfirm={applyPending}
+      />
     </Panel>
   )
 }

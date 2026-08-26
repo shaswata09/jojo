@@ -49,7 +49,7 @@ describe('objects', () => {
     })
     const json = of(schema)
     expect(json.required).toEqual(['org'])
-    expect(json.properties?.note?.description).toContain('May be omitted')
+    expect(json.properties?.['note']?.description).toContain('May be omitted')
   })
 
   it('forbids extra keys, unlike the parser it describes', () => {
@@ -64,7 +64,7 @@ describe('objects', () => {
     const json = of(
       s.object({ offer: s.object({ salary: s.number(), respondBy: s.isoDate() }) }),
     )
-    expect(json.properties?.offer?.properties?.respondBy).toMatchObject({ format: 'date' })
+    expect(json.properties?.['offer']?.properties?.['respondBy']).toMatchObject({ format: 'date' })
   })
 })
 

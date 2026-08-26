@@ -1,5 +1,11 @@
 # jojo — mock finalisation plan
 
+> **COMPLETE — kept as a record.** This describes the UX finalisation waves, which has
+> happened. It is written in the future and imperative tense because it was
+> written before the work; read it as a log of decisions taken, not as
+> outstanding work. `docs/AUDIT.md`, `docs/PROTOTYPE-PLAN.md` and
+> `docs/UX-PLAN.md` carry the same kind of banner for the same reason.
+
 ## Ranking principle
 Ordered by *what a job-seeker feels in the first 60 seconds*: land on `/`, read it, add one thing, move one thing. Craft findings that survive only under a pixel-ruler are pushed to Wave 3 or cut.
 

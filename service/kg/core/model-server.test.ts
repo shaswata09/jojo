@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   chatRequest,
   chatUrl,
+  cleanToolName,
   estimateTokens,
   guardTruncation,
   isConfigured,
@@ -416,9 +417,13 @@ describe('the dialects', () => {
       if (!turn.ok) return
       expect(turn.toolCalls[0]?.args).toEqual({ id: 'n1' })
       expect(turn.toolCalls[0]?.raw).toBe('{"id":"n1"}')
-      // No id on the wire — the positional fallback is what keeps the result
-      // matchable to the call.
-      expect(turn.toolCalls[0]?.id).toBe('call_0')
+      /*
+       * No id on the wire — Ollama native sends none — so the fallback is what
+       * keeps the result matchable to the call. Asserted as a SHAPE rather than
+       * a literal: the counter is module-scoped so that two rounds cannot both
+       * mint `call_0`, which means its exact value depends on what ran before.
+       */
+      expect(turn.toolCalls[0]?.id).toMatch(/^call_\d+$/)
       expect(turn.usage?.promptTokens).toBe(4096)
     })
 
@@ -808,5 +813,140 @@ describe('the saved list, per provider', () => {
 
   it('is empty for a provider nothing has been saved under', () => {
     expect(serversFor(list, 'anthropic')).toEqual([])
+  })
+})
+
+describe('arguments an OpenAI-compatible server sends as an object', () => {
+  it('reads them, instead of running the tool with nothing', () => {
+    /*
+     * `readOllamaTurn` has handled this since it was written; `readTurn` — the
+     * path every vLLM, LM Studio and llama.cpp call takes — did not, and failed
+     * two ways, both silent. The four write tools with no required fields RAN
+     * with defaults; the rest failed validation complaining about a field the
+     * model had actually supplied.
+     */
+    const turn = readTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              tool_calls: [
+                {
+                  id: 'c1',
+                  type: 'function',
+                  function: { name: 'application_create', arguments: { org: 'Rice', role: 'PI' } },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    })
+    expect(turn.ok && turn.toolCalls[0]?.raw).toBe('{"org":"Rice","role":"PI"}')
+    // Parsed too, because `raw` alone would still reach the tool as nothing.
+    expect(turn.ok && turn.toolCalls[0]?.args).toEqual({ org: 'Rice', role: 'PI' })
+  })
+
+  it('still reads a plain string unchanged', () => {
+    // The ordinary case, and it must not be re-encoded: `JSON.stringify` of an
+    // already-serialised string would double-escape every quote in it.
+    const turn = readTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              tool_calls: [
+                { id: 'c1', type: 'function', function: { name: 'x', arguments: '{"a":1}' } },
+              ],
+            },
+          },
+        ],
+      }),
+    })
+    expect(turn.ok && turn.toolCalls[0]?.raw).toBe('{"a":1}')
+  })
+})
+
+/**
+ * A model's own control tokens arriving inside the name of the tool it wants.
+ *
+ * Not hypothetical: GPT-OSS 120B named a tool `memory_get<|channel|>commentary`
+ * during a multi-turn benchmark run, and the call was refused with "No tool is
+ * called memory_get<|channel|>commentary" — true, useless, and a wasted round
+ * trip on a local model.
+ */
+describe('tool names with harmony control tokens', () => {
+  it('reads the tool GPT-OSS meant', () => {
+    const turn = readTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({
+        choices: [
+          {
+            message: {
+              content: null,
+              tool_calls: [
+                {
+                  id: 'c1',
+                  function: { name: 'memory_get<|channel|>commentary', arguments: '{"id":"app:1"}' },
+                },
+              ],
+            },
+            finish_reason: 'tool_calls',
+          },
+        ],
+      }),
+    })
+    expect(turn.ok).toBe(true)
+    if (!turn.ok) return
+    expect(turn.toolCalls[0]?.name).toBe('memory_get')
+    // The arguments are untouched — only the name carried the marker.
+    expect(turn.toolCalls[0]?.args).toEqual({ id: 'app:1' })
+  })
+
+  it('leaves an ordinary name exactly as it is', () => {
+    expect(cleanToolName('memory_get')).toBe('memory_get')
+    expect(cleanToolName('memory.get')).toBe('memory.get')
+  })
+
+  it('cuts at the first marker, terminated or not', () => {
+    expect(cleanToolName('memory_get<|channel|>commentary<|end|>')).toBe('memory_get')
+    // Unterminated: the name is still over at the marker, and guessing that the
+    // rest might be name would put the failure back.
+    expect(cleanToolName('memory_get<|chan')).toBe('memory_get')
+    expect(cleanToolName('memory_get <|channel|>x')).toBe('memory_get')
+  })
+
+  it('drops a call whose name was ONLY a marker rather than inventing one', () => {
+    expect(cleanToolName('<|channel|>commentary')).toBe('')
+
+    // And the call goes with it. An empty name reaching the executor is refused
+    // as "No tool is called " — a sentence with a hole in it, and one the model
+    // cannot act on. Nothing was named, so there is nothing to call.
+    const turn = readTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({
+        choices: [
+          {
+            message: {
+              content: 'thinking out loud',
+              tool_calls: [{ id: 'c1', function: { name: '<|channel|>commentary', arguments: '{}' } }],
+            },
+          },
+        ],
+      }),
+    })
+    expect(turn.ok).toBe(true)
+    if (!turn.ok) return
+    expect(turn.toolCalls).toEqual([])
+    // The prose survives, so the turn is an answer rather than an empty reply.
+    expect(turn.text).toBe('thinking out loud')
   })
 })

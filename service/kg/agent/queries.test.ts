@@ -14,7 +14,8 @@ import { MutableSnapshot } from '../core/snapshot'
 import { createRepository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
 import { READS, labelOf, render } from './queries'
-import type { GraphSnapshot, NodeId, StoredNode } from '../core/model'
+import type { NodeId, Source, StoredNode } from '../core/model'
+import type { GraphSnapshot } from '../core/snapshot'
 
 const START = Date.parse('2026-08-22T09:00:00.000Z')
 
@@ -42,6 +43,7 @@ function harness() {
       lastOpenedAt: new Date(START).toISOString(),
       dataSet: 'empty',
       seededAt: null,
+      handoverAt: null,
     },
     now,
   })
@@ -101,7 +103,7 @@ describe('rendering a record for a model', () => {
     const { memory, id } = seeded()
     const node = memory().node(id) as StoredNode
     const out = render(node, memory())
-    expect(out.stage).toBe('submitted')
+    expect(out['stage']).toBe('submitted')
     expect(out).not.toHaveProperty('props')
     expect(out.id).toBe(id)
   })
@@ -148,22 +150,59 @@ describe('memory.list', () => {
       roleTag: 'ML Engineer',
       stage: 'submitted',
     })
-    const out = read('memory.list', h.memory(), { type: 'application' }) as { label: string }[]
-    expect(out[0]?.label).toContain('Stripe')
+    const out = read('memory.list', h.memory(), { type: 'application' }) as {
+      matches: { label: string }[]
+    }
+    expect(out.matches[0]?.label).toContain('Stripe')
   })
 
   it('caps the limit so one call cannot spend the whole context window', () => {
     const h = seeded()
-    const out = read('memory.list', h.memory(), { type: 'application', limit: 1 }) as unknown[]
-    expect(out).toHaveLength(1)
+    const out = read('memory.list', h.memory(), { type: 'application', limit: 1 }) as {
+      matches: unknown[]
+      shown: number
+      total: number
+    }
+    expect(out.matches).toHaveLength(1)
+    expect(out.shown).toBe(1)
+  })
+
+  /**
+   * A limit hides records; it must never hide that they exist.
+   *
+   * Measured, and reproducible: told "move my Rice application to interview"
+   * with two Rice applications in the store, Qwen3 14B searched with `limit: 1`,
+   * was handed one record, and moved it. The system prompt tells it to name both
+   * and ask — an instruction it cannot follow about a record it was never shown.
+   */
+  it('reports the total, so a limit cannot hide an ambiguity', () => {
+    const h = seeded()
+    // A second application, so that asking for one is genuinely a choice
+    // between two — which is the whole situation the report exists for.
+    h.runtime.runOrThrow('application.create', {
+      org: 'Rice University',
+      role: 'Lecturer, Computer Science',
+      roleTag: 'Lecturer',
+      stage: 'submitted',
+    })
+    const out = read('memory.list', h.memory(), { type: 'application', limit: 1 }) as {
+      matches: unknown[]
+      shown: number
+      total: number
+    }
+    expect(out.matches).toHaveLength(1)
+    expect(out.shown).toBe(1)
+    expect(out.total).toBe(2)
   })
 })
 
 describe('memory.search', () => {
   it('finds a record by text in any of its string props, ignoring case', () => {
     const { memory } = seeded()
-    const out = read('memory.search', memory(), { query: 'ut austin' }) as { type: string }[]
-    expect(out.map((r) => r.type)).toContain('organisation')
+    const out = read('memory.search', memory(), { query: 'ut austin' }) as {
+      matches: { type: string }[]
+    }
+    expect(out.matches.map((r) => r.type)).toContain('organisation')
   })
 
   it('finds an application by its employer, which is a separate record', () => {
@@ -174,8 +213,9 @@ describe('memory.search', () => {
     const out = read('memory.search', memory(), {
       query: 'UT Austin',
       type: 'application',
-    }) as { id: string }[]
-    expect(out).toHaveLength(1)
+    }) as { matches: { id: string }[]; total: number }
+    expect(out.matches).toHaveLength(1)
+    expect(out.total).toBe(1)
   })
 
   it('narrows to one kind when asked', () => {
@@ -183,8 +223,8 @@ describe('memory.search', () => {
     const out = read('memory.search', memory(), {
       query: 'assistant',
       type: 'application',
-    }) as { type: string }[]
-    expect(out.every((r) => r.type === 'application')).toBe(true)
+    }) as { matches: { type: string }[] }
+    expect(out.matches.every((r) => r.type === 'application')).toBe(true)
   })
 })
 
@@ -265,7 +305,7 @@ describe('stats.report', () => {
      * hands it the verdict alongside them, and the note says what to do with it.
      */
     const h = harness()
-    const make = (source: string, replied: boolean) =>
+    const make = (source: Source, replied: boolean) =>
       h.runtime.runOrThrow('application.create', {
         org: 'Example',
         role: 'Engineer',
@@ -291,7 +331,7 @@ describe('stats.report', () => {
      * the refusal would never reach the model at all.
      */
     const h = harness()
-    const make = (source: string, replied: boolean) =>
+    const make = (source: Source, replied: boolean) =>
       h.runtime.runOrThrow('application.create', {
         org: 'Example',
         role: 'Engineer',
@@ -409,6 +449,7 @@ describe('reading a document', () => {
     const h = seeded()
     const [id] = aFile(h)
     const out = (await read('vault.file.read', h.memory(), { id }, {
+      today: TODAY,
       convert: () => Promise.resolve({ ok: true as const, markdown: '# Rice\n\nStatistics.' }),
     })) as { ok: boolean; name: string; markdown: string }
     // The name matters: an answer about "the document" is unverifiable, and an
@@ -421,6 +462,7 @@ describe('reading a document', () => {
     const h = seeded()
     const [id] = aFile(h)
     const out = (await read('vault.file.read', h.memory(), { id }, {
+      today: TODAY,
       convert: () => Promise.resolve({ ok: false as const, reason: 'File is encrypted' }),
     })) as { ok: boolean; hint: string }
     expect(out).toMatchObject({ ok: false, hint: 'File is encrypted' })
@@ -448,6 +490,9 @@ describe('reading a job board', () => {
   const scanning = (rows: unknown, boards: readonly string[] = ['https://a.test/jobs']) => ({
     scan: async () => ({ ok: true as const, rows }),
     boards,
+    // `today` is required on `ReadContext` and was not here. Nothing said so:
+    // `kg/agent` was in no tsconfig's `include`, so these tests never compiled.
+    today: TODAY,
   })
 
   /*
@@ -456,7 +501,7 @@ describe('reading a job board', () => {
    * told "nothing here can browse" stops and works from the records instead.
    */
   it('refuses with a sentence when nothing can reach a board', async () => {
-    const out = (await board.read(memory, { url: 'https://a.test/jobs' }, {})) as {
+    const out = (await board.read(memory, { url: 'https://a.test/jobs' }, { today: TODAY })) as {
       ok: boolean
       hint: string
     }
@@ -505,6 +550,7 @@ describe('reading a job board', () => {
 
   it('refuses every address when the pipeline named none', async () => {
     const out = (await board.read(memory, { url: 'https://a.test/jobs' }, {
+      today: TODAY,
       scan: async () => ({ ok: true as const, rows: [] }),
     })) as { ok: boolean; hint: string }
     expect(out.ok).toBe(false)
@@ -524,6 +570,7 @@ describe('reading a job board', () => {
 
   it('passes the scanner’s own reason through when a board refuses', async () => {
     const out = (await board.read(memory, { url: 'https://a.test/jobs' }, {
+      today: TODAY,
       scan: async () => ({ ok: false as const, reason: 'That board wants a sign-in.' }),
       boards: ['https://a.test/jobs'],
     })) as { ok: boolean; hint: string }
@@ -600,7 +647,7 @@ describe('working out a number', () => {
     error?: string
   }
   const run = (...expressions: string[]) =>
-    calc.read(memory, { expressions } as never, {}) as {
+    calc.read(memory, { expressions } as never, { today: TODAY }) as {
       results: Row[]
       hint?: string
     }

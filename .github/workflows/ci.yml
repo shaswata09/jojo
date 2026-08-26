@@ -627,7 +627,15 @@ jobs:
       # same zip, but this job has no reason to wait for a bundler.
       #
       # `zip` is on ubuntu-latest already; the script fails loudly if it is not.
+      # The FORK's own Pages origin, not the upstream one.
+      #
+      # `manifest.json` pins the maintainer's URL, so a fork's extension and the
+      # fork's own deployed site could never talk to each other — the capture
+      # button appeared to work and reached nothing. `pack-extension.mjs` has
+      # supported this variable all along; no job was setting it.
       - name: Pack the extension
+        env:
+          JOJO_APP_ORIGIN: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
         run: npm -w web run pack-extension
 
       - name: Publish the extension as a build artifact
@@ -729,6 +737,9 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
           VITE_ANALYTICS_ID: ${{ vars.ANALYTICS_ID }}
+          # The site build packs the extension too, so it needs the same origin
+          # or the deployed site ships an extension pointing somewhere else.
+          JOJO_APP_ORIGIN: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
         run: npm -w web run build
 
       # `enablement: true` asks the action to turn Pages on if it is off. It is

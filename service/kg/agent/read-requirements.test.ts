@@ -54,26 +54,50 @@ describe('what comes back', () => {
 })
 
 describe('the essential flag', () => {
-  it('only takes true for true', () => {
+  it('reads the shapes a small model actually emits', () => {
     /*
-     * `assess` weighs essentials double and `tailor` caps the verdict when one
-     * is missing, so a loose coercion here moves both the number and the
-     * advice. A model that writes `"essential": "true"` is a model that will
-     * eventually write `"false"`, and coercing the string would then promote a
-     * preference into a requirement — which makes a good application look like
-     * a stretch.
+     * This used to accept only the literal `true`, on the argument that
+     * understating is the safe direction. That is right PER ROW and wrong for
+     * the real failure: a model that writes `"essential": "true"` writes it for
+     * all twelve entries, so EVERY requirement became preferred, `assess`
+     * weighed none double, `tailor` never capped the verdict, and the person
+     * saw a fit score systematically too high with a gap list that looked fine.
      */
     const out = readRequirements(
       reply({
         requirements: [
           { text: 'a', essential: 'true' },
           { text: 'b', essential: 1 },
-          { text: 'c' },
+          { text: 'c', essential: 'Yes' },
           { text: 'd', essential: true },
         ],
       }),
     )
-    expect(out.ok && out.requirements.map((r) => r.essential)).toEqual([false, false, false, true])
+    expect(out.ok && out.requirements.map((r) => r.essential)).toEqual([true, true, true, true])
+  })
+
+  it('still refuses anything outside a closed list', () => {
+    // Not a truthiness test. A `"false"` string, or an object, reads as
+    // preferred — the direction that only costs a cap rather than inventing one.
+    const out = readRequirements(
+      reply({
+        requirements: [
+          { text: 'a', essential: 'false' },
+          { text: 'b', essential: 0 },
+          { text: 'c' },
+          { text: 'd', essential: { value: true } },
+        ],
+      }),
+    )
+    expect(out.ok && out.requirements.map((r) => r.essential)).toEqual([false, false, false, false])
+  })
+
+  it('reports a coercion rather than making it silently', () => {
+    // A coercion that mattered has to be visible: "four of twelve were read as
+    // required" is something a person can weigh against a score.
+    const out = readRequirements(reply({ requirements: [{ text: 'a', essential: 'true' }] }))
+    expect(out.ok && out.skipped.join(' ')).toMatch(/rather than true or false/)
+    expect(out.ok && out.skipped.join(' ')).toMatch(/read as required/)
   })
 })
 

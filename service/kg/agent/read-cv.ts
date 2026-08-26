@@ -60,6 +60,7 @@
  * crash the screen they uploaded it from.
  */
 
+import { firstJsonObject, salvageJsonObject } from '../core/json-reply'
 import { BACKGROUND_KINDS } from '../core/model'
 import type { BackgroundKind } from '../core/model'
 import type { ChatMessage } from '../core/model-server'
@@ -303,6 +304,14 @@ const SYSTEM = [
   '  service       reviewing, programme committees, editorial or admin roles.',
   '  volunteering  unpaid work in the community. Not academic service.',
   '  membership    belonging to a professional body or society.',
+  '  leadership    heading a group, team, lab, committee or society.',
+  '  outreach      public engagement, schools work, science communication.',
+  '  training      a course or programme the person TOOK to develop themselves.',
+  '                Not a degree, and not something they taught.',
+  '  other         anything the document states about the person that none of',
+  '                the kinds above fits. Say what it is in `detail`. Use this',
+  '                rather than forcing an entry into a kind that is nearly',
+  '                right, and rather than leaving it out.',
   '',
   'A long skills line — "Python, Rust, Go, Kubernetes" — is FOUR skill entries,',
   'one per name. Do not file it as one entry containing a list.',
@@ -622,7 +631,7 @@ export function relationMessages(
  * one.
  */
 export function readRelations(reply: string, entryCount: number): RelationDraft[] {
-  const payload = parseObject(reply)
+  const payload = firstJsonObject(reply)
   const raw = (payload as { relations?: unknown } | null)?.relations
   if (!Array.isArray(raw)) return []
 
@@ -721,7 +730,11 @@ export function mergeBackground(
  * would be paying for the whole thing twice.
  */
 export function readCv(reply: string): CvRead {
-  const payload = parseObject(reply)
+  // Salvaged, not merely parsed. A section pass that ran out of tokens used to
+  // be reported as "the model did not return JSON" and every entry in it
+  // discarded — see `json-reply.ts`. The entries that arrived whole are kept
+  // and the loss is reported in `skipped`, which the caller already shows.
+  const { value: payload, truncated } = salvageJsonObject(reply)
   if (payload === null) {
     return { ok: false, reason: 'The model did not return JSON.' }
   }
@@ -736,6 +749,14 @@ export function readCv(reply: string): CvRead {
 
   const background: BackgroundDraft[] = []
   const skipped: string[] = []
+
+  // Said once, at the top, because it explains every later gap in this pass and
+  // is not the parser's fault or the model's. The caller shows `skipped`.
+  if (truncated) {
+    skipped.push(
+      'the reply was cut off before it finished — the entries it had completed were kept, and anything after them was lost',
+    )
+  }
 
   for (const [index, entry] of raw.entries()) {
     if (typeof entry !== 'object' || entry === null) {
@@ -841,14 +862,3 @@ const maybe = <K extends string, V>(key: K, value: V | undefined): { [P in K]?: 
  * Small models wrap their answer in ```json, or explain what they are about to
  * return before returning it. Neither is worth a failed extraction.
  */
-function parseObject(reply: string): unknown {
-  const withoutFence = reply.replace(/```(?:json)?/gi, '')
-  const start = withoutFence.indexOf('{')
-  const end = withoutFence.lastIndexOf('}')
-  if (start === -1 || end <= start) return null
-  try {
-    return JSON.parse(withoutFence.slice(start, end + 1)) as unknown
-  } catch {
-    return null
-  }
-}

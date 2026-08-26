@@ -13,7 +13,16 @@
 
 import { describe, expect, it } from 'vitest'
 import { CATALOG } from './catalog'
-import { RESIDENT, inCatalogOrder, offeredFor, select, terms } from './retrieve'
+import {
+  CARRY_LIMIT,
+  EVERYTHING_SAFE,
+  NEVER_IMPLICIT,
+  RESIDENT,
+  inCatalogOrder,
+  offeredFor,
+  select,
+  terms,
+} from './retrieve'
 import { NEEDS, PRODUCERS } from './tool-graph'
 
 const offered = (message: string) => offeredFor(message, null)
@@ -327,5 +336,323 @@ describe('a tool the conversation already used', () => {
     ])
     expect(kept).not.toBeNull()
     expect(kept?.has('vault.person.create') || kept?.has('vault_person_create')).toBe(true)
+  })
+})
+
+describe('what a caller falls back to when the retriever abstains', () => {
+  it('never includes the two tools that empty the store', () => {
+    /*
+     * The most serious defect this file has had. `offeredFor` strips
+     * `NEVER_IMPLICIT` only on the branch where it recognised something —
+     * abstention returns `null`, and the caller's fallback was the WHOLE
+     * catalog. That fired on the first message of every new conversation,
+     * because nothing is carried forward yet and "hi" matches no seed.
+     *
+     * So a small model was handed `memory.clear` at exactly the moment it had
+     * least context to judge it by, against a written promise in the guide that
+     * those two are never offered unless the user's own words ask for them.
+     */
+    for (const name of NEVER_IMPLICIT) expect(EVERYTHING_SAFE).not.toContain(name)
+  })
+
+  it('still includes everything else', () => {
+    // A fallback that dropped more than the two would silently narrow what the
+    // assistant can do on an opener it did not recognise — which is the case
+    // where the widest safe offer is exactly what is wanted.
+    expect(EVERYTHING_SAFE.length).toBe(CATALOG.length - NEVER_IMPLICIT.length)
+    expect(EVERYTHING_SAFE).toContain('application.create')
+    for (const read of RESIDENT) expect(EVERYTHING_SAFE).toContain(read)
+  })
+})
+
+/**
+ * A model chooser may narrow. It may not open the door the lexicon keeps shut.
+ *
+ * `NEVER_IMPLICIT` is exempt "unless the person's own words seeded them", and
+ * that was checked against the PICKED set — the same thing while `select` was
+ * the only picker, because the lexicon returns `memory.clear` only when the
+ * message says so. With a model picking, the picked set became "what a model
+ * thought might be useful", and a model asked to be generous reaches widely.
+ */
+describe('a substituted picker cannot widen past what is safe', () => {
+  it('strips the never-implicit tools even when the picker asked for them', () => {
+    const out = offeredFor('do something useful', null, [], new Set(NEVER_IMPLICIT))
+    expect(out).not.toBeNull()
+    for (const name of NEVER_IMPLICIT) expect(out?.has(name)).toBe(false)
+  })
+
+  it('still honours the person when THEY asked AND the picker picked it', () => {
+    // The exemption exists for the person who types "clear everything", and it
+    // has to survive a chooser standing in front of the lexicon. Both halves
+    // are required: the person's words seed it, and the picker must still have
+    // picked it — a chooser that leaves it out is a narrower offer, which is
+    // always allowed.
+    const message = 'clear everything and start again'
+    const lexical = offeredFor(message, null, [])
+    const asked = [...NEVER_IMPLICIT].filter((n) => lexical?.has(n))
+    expect(asked.length).toBeGreaterThan(0)
+
+    const chosen = offeredFor(message, null, [], new Set(asked))
+    for (const name of asked) expect(chosen?.has(name)).toBe(true)
+  })
+
+  it('does not let a chooser resurrect one the person did not ask for', () => {
+    // The other direction of the same rule, and the dangerous one.
+    const chosen = offeredFor('tidy things up', null, [], new Set(NEVER_IMPLICIT))
+    for (const name of NEVER_IMPLICIT) expect(chosen?.has(name)).toBe(false)
+  })
+
+  it('never offers LESS than the lexicon would have', () => {
+    /*
+     * THE property, and it cost five conversations to learn.
+     *
+     * Asked to "File CV-2026.pdf under the UT Austin application" the chooser
+     * picked `vault.file.add` and not `vault.file.update`. Offered `add` and
+     * not `update`, the model created a second CV — omitting the right tool
+     * does not make a model ask, it makes it reach for the nearest wrong one.
+     *
+     * So a chooser is a superset, always. It can add intent the lexicon missed
+     * and it cannot subtract coverage the lexicon had.
+     */
+    const asks = [
+      'File CV-2026.pdf under the UT Austin application.',
+      'move my Rice application to interview',
+      'remind me to email them on the 20th',
+      'add a keyword to this',
+      'what have I got at the offer stage',
+    ]
+    for (const ask of asks) {
+      const lexicalOnly = offeredFor(ask, null, [])
+      if (lexicalOnly === null) continue
+      // A deliberately unhelpful chooser: one unrelated pick.
+      const withChooser = offeredFor(ask, null, [], new Set(['memory.overview']))
+      for (const name of lexicalOnly) {
+        expect(withChooser?.has(name)).toBe(true)
+      }
+    }
+  })
+
+  it('uses the chooser alone exactly where the lexicon gave up', () => {
+    // The case the chooser exists for, and the largest win: an unrecognised
+    // message used to mean "offer all ninety-two".
+    const opaque = 'I heard back from them yesterday'
+    expect(select(opaque)).toBeNull()
+
+    const out = offeredFor(opaque, null, [], new Set(['application.stage.set']))
+    expect(out).not.toBeNull()
+    expect(out?.has('application.stage.set')).toBe(true)
+    expect(out!.size).toBeLessThan(EVERYTHING_SAFE.length)
+  })
+
+  it('keeps a chooser pick that is an ordinary tool', () => {
+    const out = offeredFor('do something', null, [], new Set(['application.create']))
+    expect(out?.has('application.create')).toBe(true)
+  })
+})
+
+describe('the carry is bounded', () => {
+  it('does not grow without limit across turns', () => {
+    /*
+     * It did: ten turns went 33 → 62 schemas, and `budget.ts` then had to drop
+     * the CONVERSATION to make room for tools nothing had touched in eight
+     * turns.
+     *
+     * Simulated the way it actually happens — each turn's offer becomes the
+     * next turn's carry — rather than by handing it the whole catalog at once,
+     * because the bound is on what accumulates, not on what a caller passes.
+     */
+    const asks = [
+      'add an application to Rice',
+      'what is on the calendar',
+      'tag it with systems',
+      'move it to interview',
+      'which ones have no keywords',
+      'file my CV under it',
+      'what is my reply rate',
+      'remind me on the 20th',
+    ]
+    let carried: Set<string> | null = null
+    const sizes: number[] = []
+    for (const ask of asks) {
+      carried = offeredFor(ask, carried, []) ?? carried
+      sizes.push(carried?.size ?? 0)
+    }
+    // Bounded, and well short of the catalog it used to walk towards.
+    expect(Math.max(...sizes)).toBeLessThan(EVERYTHING_SAFE.length)
+    // And not still climbing at the end: the last turn is no bigger than the
+    // biggest, which a monotonic union could never satisfy.
+    expect(sizes.at(-1)).toBeLessThanOrEqual(Math.max(...sizes))
+  })
+
+  it('takes at most CARRY_LIMIT tools it was merely offered', () => {
+    /*
+     * The bound itself, asserted directly rather than inferred from a few
+     * turns' growth — eight turns of realistic asks never reach the catalog, so
+     * a version with no bound at all passed that test.
+     *
+     * Everything the request does NOT need is carried, and only twelve of it
+     * may survive.
+     */
+    const request = 'add an application to Rice'
+    const withoutCarry = offeredFor(request, null, [])
+    expect(withoutCarry).not.toBeNull()
+
+    const spare = EVERYTHING_SAFE.filter((n) => !withoutCarry!.has(n))
+    expect(spare.length).toBeGreaterThan(CARRY_LIMIT)
+
+    const withCarry = offeredFor(request, new Set(spare), [])
+    const added = [...(withCarry ?? [])].filter((n) => !withoutCarry!.has(n))
+    expect(added).toHaveLength(CARRY_LIMIT)
+  })
+
+  it('spends the budget on tools, not on spellings', () => {
+    /*
+     * `resolveOffered` puts BOTH `memory.list` and `memory_list` into the
+     * offered set so the enforcement check matches whichever the model sends,
+     * and that set becomes the next turn's carry. Counting spellings spent two
+     * slots per tool, so a turn carried about six instead of twelve.
+     */
+    const request = 'add an application to Rice'
+    const withoutCarry = offeredFor(request, null, [])
+    expect(withoutCarry).not.toBeNull()
+
+    const spare = EVERYTHING_SAFE.filter((n) => !withoutCarry!.has(n))
+    // Both spellings of each, exactly as a previous turn's `offered` carries.
+    const bothSpellings = spare.flatMap((name) => {
+      const entry = CATALOG.find((e) => e.name === name)
+      return entry ? [entry.name, entry.wireName] : [name]
+    })
+
+    const out = offeredFor(request, new Set(bothSpellings), [])
+    const added = [...(out ?? [])].filter((n) => !withoutCarry!.has(n))
+    // Registry names only, and a full twelve of them.
+    expect(added.filter((n) => n.includes('.'))).toHaveLength(CARRY_LIMIT)
+  })
+
+  it('keeps what the conversation actually CALLED ahead of what it was offered', () => {
+    // A follow-up needs the tools that ran, not the forty that were on offer.
+    const used = ['application.create', 'application.update', 'keyword.attach']
+    const out = offeredFor('and the other one?', new Set(EVERYTHING_SAFE), used)
+    for (const name of used) expect(out?.has(name)).toBe(true)
+  })
+})
+
+/**
+ * The one gate on the two tools that empty the store.
+ *
+ * Three versions of this guard have been wrong, each in a way that looked right
+ * in the source. It tested the picked set (broken the moment a model could
+ * pick). It then tested `select(message)` — the lexicon on the person's own
+ * words — which reads as exactly the promise and is not, because `select` does
+ * not test what the person NAMED: name words weigh 3, `SEED_FLOOR` is 3, and
+ * `clear` / `reset` / `wipe` alias to the memory domain unconditionally.
+ *
+ * Measured before the fix: **"clear the tags off the Baylor application"** put
+ * `memory.clear` and `memory.reset` in front of the model. So did "reset the
+ * stage on this one back to applied", and "what is in my memory".
+ *
+ * Every case below is one that was measured, in both directions.
+ */
+describe('offering the tools that empty the store', () => {
+  const offers = (message: string, fromHistory: string[] = []) => {
+    const out = offeredFor(message, null, fromHistory)
+    const names = out === null ? [] : inCatalogOrder(out)
+    return NEVER_IMPLICIT.filter((n) => names.includes(n))
+  }
+
+  it('does not offer them for ordinary requests that happen to say "clear"', () => {
+    // The verb is the same; the OBJECT is a keyword, a stage, a calendar.
+    for (const message of [
+      'clear the tags off the Baylor application',
+      'reset the stage on this one back to applied',
+      'delete this application',
+      'remove the keyword from Rice',
+      'clear my calendar for Friday',
+      'what is in my memory',
+      'search my memory for the Rice notes',
+    ]) {
+      expect(offers(message), message).toEqual([])
+    }
+  })
+
+  it('offers them when the words plainly ask to wipe the store', () => {
+    // A verb that means erase AND an object that means the whole store.
+    for (const message of [
+      'clear everything and start again',
+      'delete all my records',
+      'wipe the whole store',
+      'reset everything, I want to start from scratch',
+      'erase all of my data',
+    ]) {
+      expect(offers(message), message).toEqual([...NEVER_IMPLICIT])
+    }
+  })
+
+  it('offers them however the lexicon feels about the sentence', () => {
+    // "erase all of my data" is not a sentence the lexicon recognises, so
+    // `select` abstained and `offeredFor` returned null — and the caller then
+    // fell back to EVERYTHING_SAFE, which excludes exactly the two tools the
+    // person had just asked for. The plainest request got the answer meant for
+    // someone who asked for nothing.
+    expect(select('erase all of my data')).toBeNull()
+    expect(offers('erase all of my data')).toEqual([...NEVER_IMPLICIT])
+  })
+
+  it('strips the WIRE spelling too, so a declined call cannot come back', () => {
+    /*
+     * `fromHistory` carries what the wire called — underscores — and
+     * `inCatalogOrder` matches `wireName` as well as `name`. Deleting only the
+     * dotted spelling left the wire one in the set and the offered ARRAY got
+     * `memory.clear` back.
+     *
+     * Reachable with no misbehaviour at all: ask to clear everything, DECLINE
+     * at the approval gate, and the declined call is still in the transcript —
+     * so the next, unrelated turn re-offers the tool just refused.
+     */
+    expect(offers('file my cv under the rice application', ['memory_clear'])).toEqual([])
+    expect(offers('file my cv under the rice application', ['memory.clear'])).toEqual([])
+  })
+
+  it('needs an OBJECT that means the whole store, not just an erase verb', () => {
+    /*
+     * These name no record type, so `NAMES_A_RECORD` does not catch them — the
+     * whole-store half of the test is the only thing standing between them and
+     * a wipe. Without it, "reset it" offers to empty the store.
+     */
+    for (const message of ['clear this one', 'reset it', 'delete that', 'wipe it out']) {
+      expect(offers(message), message).toEqual([])
+    }
+  })
+
+  it('strips them on the ABSTAIN path too, which returned early', () => {
+    /*
+     * When the lexicon recognises nothing, `offeredFor` keeps the previous
+     * turn's set verbatim — byte-identical, so the provider's prefix cache
+     * still hits. That branch returned before the strip ran, so a wipe carried
+     * in from an earlier turn survived every subsequent unrelated message.
+     */
+    const opaque = 'thanks, that is helpful'
+    expect(select(opaque)).toBeNull()
+
+    const carried = new Set(['memory.search', 'memory.clear', 'memory_reset'])
+    const out = offeredFor(opaque, carried, [])
+    expect(out).not.toBeNull()
+    // The ordinary carried tool survives; the two wipes do not, in either
+    // spelling.
+    expect(out?.has('memory.search')).toBe(true)
+    const names = inCatalogOrder(out!)
+    expect(NEVER_IMPLICIT.filter((n) => names.includes(n))).toEqual([])
+  })
+
+  it('is not fooled by a wipe word in a sentence about one record', () => {
+    // The failure that matters most is the false positive, because it ends with
+    // an emptied store rather than with a model saying it cannot.
+    for (const message of [
+      'delete everything I wrote in the note on Rice',
+      'clear all the keywords off this one',
+      'remove all of the files from the Baylor application',
+    ]) {
+      expect(offers(message), message).toEqual([])
+    }
   })
 })

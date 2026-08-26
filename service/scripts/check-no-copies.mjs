@@ -172,6 +172,23 @@ const KNOWN_TWINS = [
   { file: 'lib/labels-context.ts', why: 'the context object for the above' },
   { file: 'lib/roles.tsx', why: 'role filter selection — same argument' },
   { file: 'lib/roles-context.ts', why: 'the context object for the above' },
+  {
+    file: 'lib/cv-agent.ts',
+    // The 122 lines of extraction that used to be here are in
+    // `kg/react/use-read-cv.ts` and shared. What is left is the seam: this file
+    // names `@/lib/llm` and `@/lib/read-document`, which are the same two
+    // spellings in both apps and different modules behind them. That is why the
+    // text is identical and why it cannot be shared — and `maxLines` is what
+    // keeps the exemption honest, because the labels entry above is the record
+    // of what happens when one silently grows a rule back.
+    why: 'the platform seam: two `@/`-aliased imports and a call; the reading is shared in kg/react/use-read-cv',
+    maxLines: 25,
+  },
+  {
+    file: 'lib/fit-agent.ts',
+    why: 'the same seam for kg/react/use-read-fit',
+    maxLines: 25,
+  },
 ]
 
 /* -------------------------------------------------------------------------- */
@@ -408,7 +425,23 @@ for (const { dir, why } of FORBIDDEN_DIRS) {
 
 /* --- (d) twins ------------------------------------------------------------ */
 
-const known = new Set(KNOWN_TWINS.map((t) => t.file))
+const known = new Map(KNOWN_TWINS.map((t) => [t.file, t]))
+
+/*
+ * An exemption is for wiring, and wiring is short.
+ *
+ * `lib/labels.tsx` is on this list because two copies drifted 58 lines and the
+ * exemption was what let them: the entry said "UI state, not graph state", that
+ * reason stopped being true, and nothing checked. A line bound does not decide
+ * whether an entry's reason is right, but it does mean a file cannot quietly
+ * outgrow one — a wrapper that has become a rule fails here and gets argued
+ * about again, which is the whole point of the list.
+ */
+const overgrown = (file, entry) => {
+  if (entry.maxLines === undefined) return null
+  const lines = readFileSync(file, 'utf8').split('\n').length
+  return lines > entry.maxLines ? lines : null
+}
 
 /*
  * Every pair of apps, not web against mobile.
@@ -439,7 +472,17 @@ for (let i = 0; i < byApp.length; i += 1) {
       if (twin === undefined) continue
       const inside = path.relative(byApp[j].src, file).split(path.sep).join('/')
       const twinInside = path.relative(byApp[i].src, twin).split(path.sep).join('/')
-      if (known.has(inside) && twinInside === inside) continue
+      const exemption = twinInside === inside ? known.get(inside) : undefined
+      if (exemption) {
+        const lines = overgrown(file, exemption)
+        if (lines === null) continue
+        fail(
+          `${rel(file)} is exempt as "${exemption.why}" but is now ${lines} lines, over its ` +
+            `${String(exemption.maxLines)}-line bound.\n      An exemption is for wiring. Either move ` +
+            `what grew into @jojo/service, or argue the bound up on purpose.`,
+        )
+        continue
+      }
       const key = `${rel(twin)}|${rel(file)}`
       if (printed.has(key)) continue
       printed.add(key)

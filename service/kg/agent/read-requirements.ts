@@ -34,6 +34,7 @@
  * lesser harm — the gap still appears in the list, just without the cap.
  */
 
+import { salvageJsonObject } from '../core/json-reply'
 import type { Requirement } from '../core/assess'
 import type { ChatMessage } from '../core/model-server'
 
@@ -144,7 +145,7 @@ export function requirementMessages(title: string, markdown: string): ChatMessag
  * requirements to one bad one would pay for the whole thing twice.
  */
 export function readRequirements(reply: string): RequirementsRead {
-  const payload = parseObject(reply)
+  const payload = salvageJsonObject(reply).value
   if (payload === null) {
     return { ok: false, reason: 'The model did not return JSON.' }
   }
@@ -189,13 +190,34 @@ export function readRequirements(reply: string): RequirementsRead {
     seen.add(key)
 
     /*
-     * Anything that is not exactly `true` is preferred, including the string
-     * "true" that small models return — deliberately NOT coerced. The
-     * understating direction is the safe one: the requirement still appears in
-     * the gap list, it simply does not cap the verdict. Coercing loosely would
-     * eventually promote a `"false"` string, which fails the other way.
+     * `true`, `"true"`, `"yes"` and `1` all mean required.
+     *
+     * This used to accept only the literal `true`, on the argument that
+     * understating is the safe direction — which is right PER ROW and wrong for
+     * the actual failure. A small model that writes `"essential": "true"`
+     * writes it for all twelve entries, not one: every requirement then becomes
+     * preferred, `assess` weighs none of them double, `tailor` never caps the
+     * verdict, and the person is shown a fit score that is systematically too
+     * high with a gap list that looks fine.
+     *
+     * The list is closed and does not include a bare truthiness test, so a
+     * `"false"` string still reads as preferred — the direction that only costs
+     * a cap. And when the field was present but not a boolean it is REPORTED,
+     * so a coercion that mattered is visible rather than silent.
      */
-    requirements.push({ text, essential: row['essential'] === true })
+    const flag = row['essential']
+    const essential =
+      flag === true ||
+      flag === 1 ||
+      (typeof flag === 'string' && ['true', 'yes', 'required'].includes(flag.trim().toLowerCase()))
+
+    if (flag !== undefined && typeof flag !== 'boolean') {
+      skipped.push(
+        `entry ${String(index + 1)}: “essential” came back as ${JSON.stringify(flag)} rather than true or false, read as ${essential ? 'required' : 'preferred'}`,
+      )
+    }
+
+    requirements.push({ text, essential })
 
     if (requirements.length === MAX_REQUIREMENTS) {
       // Said rather than silently dropped: a posting that hit the cap probably
@@ -229,14 +251,3 @@ export function readRequirements(reply: string): RequirementsRead {
  * that must never change behaviour because a sibling needed something, and a
  * shared parser is the first place a fix for one reader breaks the other.
  */
-function parseObject(reply: string): unknown {
-  const withoutFence = reply.replace(/```(?:json)?/gi, '')
-  const start = withoutFence.indexOf('{')
-  const end = withoutFence.lastIndexOf('}')
-  if (start === -1 || end <= start) return null
-  try {
-    return JSON.parse(withoutFence.slice(start, end + 1)) as unknown
-  } catch {
-    return null
-  }
-}

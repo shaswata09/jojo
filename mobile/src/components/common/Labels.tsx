@@ -220,10 +220,17 @@ function KeywordSheet({
  * reminders and vault files do as well.
  */
 export function LabelFilter({ scopeIds }: { scopeIds: string[] }) {
-  const { labels, selected, toggleSelected, clearSelected, countWithin } = useLabels()
+  const { labels, selected, toggleSelected, clearSelected, countsWithin } = useLabels()
   const c = useColors()
 
-  const shown = labels.filter((l) => countWithin(l.id, scopeIds) > 0 || selected.has(l.id))
+  /*
+   * One pass for every chip, and it was worse here than on web: `countWithin`
+   * ran once in the `filter` and AGAIN inside the map for each surviving chip,
+   * so the pool was walked twice per keyword. Phones have no JIT.
+   */
+  const counts = useMemo(() => countsWithin(scopeIds), [countsWithin, scopeIds])
+
+  const shown = labels.filter((l) => (counts.get(l.id) ?? 0) > 0 || selected.has(l.id))
   if (shown.length === 0) return null
 
   return (
@@ -231,7 +238,7 @@ export function LabelFilter({ scopeIds }: { scopeIds: string[] }) {
       <View style={styles.filterRow}>
         {shown.map((l) => {
           const on = selected.has(l.id)
-          const count = countWithin(l.id, scopeIds)
+          const count = counts.get(l.id) ?? 0
           return (
             <Pressable
               key={l.id}

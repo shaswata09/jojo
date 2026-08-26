@@ -109,7 +109,7 @@ export function ProfileScreen() {
             <TextField
               label="Full name"
               value={draft.fullName}
-              placeholder="e.g. Shaswata Mitra"
+              placeholder="e.g. Alex Rivera"
               onChangeText={set('fullName')}
             />
             <TextField

@@ -49,19 +49,39 @@ if (!existsSync(SOURCE)) {
   process.exit(1)
 }
 
+/*
+ * `--optional` — asked for by `npm run dev`, and not by `npm run build`.
+ *
+ * A missing `zip` used to stop both, and the reasoning for stopping the BUILD
+ * still holds: shipping a Settings page whose Download button hands somebody
+ * Vite's index.html renamed to .zip fails three steps later at the unzip and
+ * reads as a corrupt download.
+ *
+ * Stopping `dev` was a different thing wearing the same argument. `zip` is on
+ * macOS and on most Linux images and is not on a plain Windows box, so the
+ * first thing a Windows contributor met was a dev server that would not start,
+ * over a download button they were not working on. Skipping it there costs one
+ * 404 on a page nobody is testing; failing there costs the contributor.
+ */
+const optional = process.argv.includes('--optional')
+
 try {
   execFileSync('zip', ['--version'], { stdio: 'ignore' })
 } catch {
+  const where = optional
+    ? '  Skipping it: `npm run dev` runs anyway, and the extension download in\n' +
+      '  Settings will 404 until `zip` is available. `npm run build` still fails\n' +
+      '  on this, because a published build with a broken download is worse than\n' +
+      '  no build.\n'
+    : '  `npm run build` stops here: the alternative is a Settings page whose\n' +
+      "  Download button hands the user Vite's index.html renamed to .zip, which\n" +
+      '  fails three steps later at the unzip and reads as a corrupt download.\n'
   console.error(
-    'pack-extension: no `zip` on PATH.\n' +
-      '  This runs first in both `npm run dev` and `npm run build`, so the app\n' +
-      '  will not start or build until it is available. That is deliberate: the\n' +
-      '  alternative is a Settings page whose Download button hands the user\n' +
-      "  Vite's index.html renamed to .zip, which fails three steps later at the\n" +
-      '  unzip and reads as a corrupt download. macOS and most Linux images ship\n' +
-      '  `zip`; on Debian it is `apt install zip`.',
+    `pack-extension: no \`zip\` on PATH.\n${where}` +
+      '  macOS and most Linux images ship `zip`; on Debian it is `apt install zip`,\n' +
+      '  and on Windows it comes with Git Bash or `winget install 7zip.7zip`.',
   )
-  process.exit(1)
+  process.exit(optional ? 0 : 1)
 }
 
 /**

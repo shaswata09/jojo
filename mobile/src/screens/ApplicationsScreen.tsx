@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -137,7 +137,20 @@ export function ApplicationsScreen() {
   // the one `Screen` owns, two levels up from where the gesture happens.
   const [boardDragging, setBoardDragging] = useState(false)
 
-  const actions = useRowActions()
+  const { actions, confirmSheet } = useRowActions()
+
+  /*
+   * One callback for every row, rather than one closure per row per render.
+   *
+   * `onOpen={() => navigation.navigate(...)}` reads well and defeats `memo` on
+   * the row completely: the arrow is a new function on every pass, so every row
+   * saw a changed prop even when nothing about it had changed. The row takes the
+   * id and calls this.
+   */
+  const openApplication = useCallback(
+    (id: string) => navigation.navigate('ApplicationDetail', { id }),
+    [navigation],
+  )
 
   /**
    * The next dated thing per application, built once rather than filtered per
@@ -231,6 +244,13 @@ export function ApplicationsScreen() {
     clearRoles()
   }
 
+  /*
+   * Memoised. Built inline in the JSX it was a new array every render, so the
+   * count map in `LabelFilter` never held and the pool was re-counted on every
+   * keystroke — twice per keyword, on a device with no JIT.
+   */
+  const scopeIds = useMemo(() => pool.map((a) => refKey('app', a.id)), [pool])
+
   return (
     <Screen
       // Frozen while a board card is in the air. Without this the page can
@@ -299,7 +319,7 @@ export function ApplicationsScreen() {
 
           {/* Scoped to the pool on screen. Without it a chip here would count
               every reminder and vault file carrying that keyword too. */}
-          <LabelFilter scopeIds={pool.map((a) => refKey('app', a.id))} />
+          <LabelFilter scopeIds={scopeIds} />
 
           {/* Stage chips are list-only: the board is already grouped by stage,
               so filtering there blanks five columns rather than shortening a
@@ -357,7 +377,7 @@ export function ApplicationsScreen() {
                     nextDate={nextDates.get(a.id)}
                     showNote={showNotes}
                     actions={actions}
-                    onOpen={() => navigation.navigate('ApplicationDetail', { id: a.id })}
+                    onOpen={openApplication}
                   />
                 </View>
               ))}
@@ -366,7 +386,7 @@ export function ApplicationsScreen() {
             <Board
               pool={pool}
               actions={actions}
-              onOpen={(id) => navigation.navigate('ApplicationDetail', { id })}
+              onOpen={openApplication}
               onDragChange={setBoardDragging}
             />
           )}
@@ -399,7 +419,7 @@ export function ApplicationsScreen() {
 
       <RoleFilterSheet open={rolesOpen} onClose={() => setRolesOpen(false)} />
 
-      {actions.confirmSheet}
+      {confirmSheet}
     </Screen>
   )
 }
@@ -425,7 +445,14 @@ function NextDate({ item }: { item?: TimelineItem }) {
   )
 }
 
-function ApplicationRow({
+/*
+ * Memoised, and it only pays off because everything above hands it stable
+ * props: `actions` is a `useMemo` in `use-row-actions`, `onOpen` is one
+ * callback for the whole list, and `application` comes straight off a
+ * projection. Break any of those three and this `memo` silently stops working —
+ * it will still compare, always find something new, and re-render anyway.
+ */
+const ApplicationRow = memo(function ApplicationRow({
   application: a,
   nextDate,
   showNote,
@@ -436,7 +463,7 @@ function ApplicationRow({
   nextDate?: TimelineItem
   showNote: boolean
   actions: RowActions
-  onOpen: () => void
+  onOpen: (id: string) => void
 }) {
   const c = useColors()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -446,7 +473,7 @@ function ApplicationRow({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={displayName(a)}
-        onPress={onOpen}
+        onPress={() => onOpen(a.id)}
         style={({ pressed }) => [styles.rowMain, pressed && { backgroundColor: c.rowHover }]}
       >
         <View style={s.row}>
@@ -492,7 +519,7 @@ function ApplicationRow({
         title={displayName(a)}
         description={`${STAGE_LABEL[a.stage]} · ${a.roleTag}`}
         actions={[
-          { id: 'open', label: 'Open record', icon: 'arrow-right', onPress: onOpen },
+          { id: 'open', label: 'Open record', icon: 'arrow-right', onPress: () => onOpen(a.id) },
           { id: 'edit', label: 'Edit', icon: 'edit-2', onPress: () => actions.onEdit(a) },
           {
             id: 'flag',
@@ -517,7 +544,7 @@ function ApplicationRow({
       />
     </View>
   )
-}
+})
 
 /* ------------------------------ role filter ------------------------------ */
 

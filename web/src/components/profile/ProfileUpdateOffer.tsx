@@ -91,6 +91,20 @@ export function ProfileUpdateOffer() {
    * and the copy promises everything is seen first.
    */
   const [links, setLinks] = useState<readonly RelationDraft[]>([])
+  /*
+   * Which entries the person still wants, by position.
+   *
+   * A set of the DROPPED ones rather than the kept ones, so the default is
+   * everything: a review that started with nothing selected would make the
+   * common case — the reading was fine — the one that takes the most clicks.
+   *
+   * This exists because the review was all-or-nothing, which is the worst
+   * possible shape for the models most people run. A 1–3B reading a CV will get
+   * two entries wrong out of thirty, and the only remedy was to discard the
+   * whole read and pay for it again, or accept the errors and delete them one
+   * at a time afterwards.
+   */
+  const [dropped, setDropped] = useState<ReadonlySet<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const abort = useRef<AbortController | null>(null)
 
@@ -119,6 +133,7 @@ export function ProfileUpdateOffer() {
     setStep(null)
     setDrafts(null)
     setLinks([])
+    setDropped(new Set())
     setError(null)
     // Every id currently on offer, not just the one named. The title says "and
     // 2 more", so saying no to it is saying no to all three — leaving the other
@@ -159,6 +174,7 @@ export function ProfileUpdateOffer() {
 
     setDrafts(outcome.background)
     setLinks(outcome.relations)
+    setDropped(new Set())
     if (outcome.skipped.length > 0) {
       toast({
         title: `${String(outcome.skipped.length)} entr${outcome.skipped.length === 1 ? 'y was' : 'ies were'} skipped`,
@@ -169,12 +185,24 @@ export function ProfileUpdateOffer() {
 
   const confirm = () => {
     if (!drafts || drafts.length === 0) return
+
+    /*
+     * Only what survived the review, and the ORIGINAL positions are kept
+     * alongside so the relations can still be resolved: `claim.add` refers to
+     * entries by their position in the list the model was shown, and filtering
+     * renumbers everything.
+     */
+    const keeping = drafts
+      .map((draft, at) => ({ draft, at }))
+      .filter(({ at }) => !dropped.has(at))
+    if (keeping.length === 0) return
+
     const result = run('profile.background.add', {
       // `source` on every entry, and this is the line that closes the loop:
       // `twinState` counts a document as read when a fact points back at it, so
       // an import that omitted it would leave the document eternally unread and
       // this banner would offer it again tomorrow.
-      background: drafts.map((d) => ({ ...d, source: fileId })),
+      background: keeping.map(({ draft }) => ({ ...draft, source: fileId })),
     })
 
     /*
@@ -189,11 +217,18 @@ export function ProfileUpdateOffer() {
      * so nothing is reported for it.
      */
     const ids = result.ok ? (result.output as string[]) : []
+    /*
+     * Original position -> the id it was actually written under. Built from
+     * `keeping`, so a relation naming an entry the person dropped resolves to
+     * nothing and is skipped rather than silently pointing at whichever entry
+     * shifted into that slot.
+     */
+    const idAt = new Map(keeping.map(({ at }, i) => [at, ids[i]]))
     let related = 0
     if (result.ok) {
       for (const link of links) {
-        const subject = ids[link.subject]
-        const object = ids[link.object]
+        const subject = idAt.get(link.subject)
+        const object = idAt.get(link.object)
         if (subject === undefined || object === undefined) continue
         const out = run('claim.add', {
           subject,
@@ -212,7 +247,7 @@ export function ProfileUpdateOffer() {
 
     toast({
       title: result.ok
-        ? `${String(drafts.length)} added to your profile`
+        ? `${String(keeping.length)} added to your profile`
         : 'Nothing could be added',
       description: result.ok
         ? `Read from ${target.subject}.${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} between them recorded.` : ''} jojo can now weigh a posting against what you have done.`
@@ -275,15 +310,38 @@ export function ProfileUpdateOffer() {
           <p className="mb-2 font-medium">
             {drafts.length === 1
               ? '1 entry read from this document'
-              : `${String(drafts.length)} entries read from this document`}
+              : `${String(drafts.length - dropped.size)} of ${String(drafts.length)} entries will be added`}
+            <span className="ml-2 font-normal text-text-3">Untick anything it got wrong.</span>
           </p>
           <ul className="max-h-64 space-y-1.5 overflow-y-auto text-muted-foreground">
             {drafts.map((d, i) => (
-              <li key={`${d.kind}-${d.title}-${String(i)}`} className="flex gap-2">
+              <li key={`${d.kind}-${d.title}-${String(i)}`} className="flex items-start gap-2">
+                {/* A checkbox per entry, ticked by default. The review was
+                    all-or-nothing, which is the worst shape for the models most
+                    people run: a small model gets two of thirty wrong, and the
+                    only remedy was to discard the whole read and pay for it
+                    again. Default-ticked so the common case — the reading was
+                    fine — stays one click. */}
+                <input
+                  type="checkbox"
+                  className="mt-0.5 size-3.5 shrink-0 accent-accent"
+                  checked={!dropped.has(i)}
+                  aria-label={`Add ${d.title}`}
+                  onChange={() =>
+                    setDropped((held) => {
+                      const next = new Set(held)
+                      if (next.has(i)) next.delete(i)
+                      else next.add(i)
+                      return next
+                    })
+                  }
+                />
                 <span className="w-24 shrink-0 text-xs uppercase tracking-wide">
                   {KIND_LABEL[d.kind] ?? d.kind}
                 </span>
-                <span className="min-w-0 flex-1 text-foreground">
+                <span
+                  className={`min-w-0 flex-1 ${dropped.has(i) ? 'text-text-3 line-through' : 'text-foreground'}`}
+                >
                   {d.title}
                   {d.where !== undefined && <span className="text-muted-foreground"> · {d.where}</span>}
                   {d.period !== undefined && <span className="text-muted-foreground"> · {d.period}</span>}
@@ -311,8 +369,10 @@ export function ProfileUpdateOffer() {
           )}
 
           <div className="mt-3 flex gap-2">
-            <Button size="sm" onClick={confirm}>
-              Add {drafts.length === 1 ? 'it' : `all ${String(drafts.length)}`} to my profile
+            <Button size="sm" onClick={confirm} disabled={dropped.size === drafts.length}>
+              {drafts.length - dropped.size === 1
+                ? 'Add it to my profile'
+                : `Add ${String(drafts.length - dropped.size)} to my profile`}
             </Button>
             <Button size="sm" variant="ghost" onClick={dismiss}>
               Discard

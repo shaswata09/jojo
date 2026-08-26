@@ -351,6 +351,9 @@ describe.skipIf(!enabled)('multi-turn agentic benchmark', () => {
                     name: step.name,
                     effect: step.effect,
                     ok: step.status === 'done',
+                    // For the repeat metric: the same tool with different
+                    // arguments is work, and with the same arguments is a loop.
+                    args: JSON.stringify(step.args ?? {}),
                   })
                   calledSoFar.push(step.name)
                 },

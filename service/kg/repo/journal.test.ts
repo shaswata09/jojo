@@ -16,6 +16,7 @@ import {
   changesNothing,
   invert,
   readJournalRows,
+  trimJournal,
 } from './journal'
 import type { GraphWriter, JournalEntry } from './journal'
 
@@ -412,5 +413,94 @@ describe('Ring', () => {
   it('keeps the two capacities apart', () => {
     expect(UNDO_DEPTH).toBe(50)
     expect(AUDIT_CAP).toBe(200)
+  })
+})
+
+/**
+ * The trim, which is what stops the persisted journal being 95% of every write.
+ *
+ * Measured with the ring full on the benchmark world: 228.5 KB of journal
+ * against 12.3 KB of actual graph — and on the phone the whole store is one
+ * AsyncStorage key rewritten on every commit, so that was a quarter of a
+ * megabyte to save a note.
+ *
+ * Two properties have to hold together, and they pull against each other: the
+ * log must read exactly as it did (it counts the DELTAS, not their contents),
+ * and a trimmed entry must be impossible to revert (inverting two nulls would
+ * land a change that deletes every record the entry names).
+ */
+describe('trimJournal', () => {
+  const entry = (id: string, records: number): JournalEntry => ({
+    id,
+    at: '2026-08-25T09:00:00.000Z',
+    tool: 'application.update',
+    input: {},
+    label: `edit ${id}`,
+    calls: [],
+    nodes: Array.from({ length: records }, (_, i) => {
+      const nodeId = `app:${id}-${String(i)}`
+      const props = { slug: nodeId, createdAt: '2026-08-25', updatedAt: '2026-08-25' }
+      return {
+        id: nodeId,
+        before: { id: nodeId, type: 'application', props: { ...props, note: 'before' } },
+        after: { id: nodeId, type: 'application', props: { ...props, note: 'after' } },
+      }
+    }) as unknown as JournalEntry['nodes'],
+    edges: [],
+  })
+
+  const many = (n: number) => Array.from({ length: n }, (_, i) => entry(String(i), 2))
+
+  it('leaves the newest entries whole, because undo reaches them', () => {
+    const trimmed = trimJournal(many(10), 4)
+    for (const kept of trimmed.slice(-4)) {
+      expect(kept.trimmed).toBeUndefined()
+      expect(kept.nodes[0]?.before).not.toBeNull()
+    }
+  })
+
+  it('drops the images from the older ones, newest LAST', () => {
+    // Getting the direction wrong trims exactly what undo needs and keeps what
+    // nothing reads, and every test above would still pass.
+    const trimmed = trimJournal(many(10), 4)
+    for (const old of trimmed.slice(0, 6)) {
+      expect(old.trimmed).toBe(true)
+      expect(old.nodes[0]?.before).toBeNull()
+      expect(old.nodes[0]?.after).toBeNull()
+    }
+  })
+
+  it('drops the tool input, which is the biggest field and unread', () => {
+    const trimmed = trimJournal(many(10), 4)
+    expect(trimmed[0]?.input).toBeNull()
+    expect(trimmed[0]?.calls).toEqual([])
+    // The tool name stays: the log reads it to decide whether undo is offered.
+    expect(trimmed[0]?.tool).toBe('application.update')
+  })
+
+  it('keeps the counts the audit log renders', () => {
+    // `touchedBy` reads `entry.nodes.length`. Dropping the deltas rather than
+    // their images would make every old row read "no change".
+    const trimmed = trimJournal(many(10), 4)
+    for (const [i, row] of trimmed.entries()) {
+      expect(row.nodes).toHaveLength(2)
+      expect(row.label).toBe(`edit ${String(i)}`)
+      expect(row.id).toBe(String(i))
+    }
+  })
+
+  it('is stable — trimming twice changes nothing', () => {
+    // `boot-ready` rewrites the ops store when the trim changed anything, and
+    // compares by identity. A trim that minted new objects every open would
+    // rewrite the whole journal on every launch, forever.
+    const once = trimJournal(many(10), 4)
+    const twice = trimJournal(once, 4)
+    for (const [i, row] of twice.entries()) expect(row).toBe(once[i])
+  })
+
+  it('trims nothing when everything fits in the window', () => {
+    const rows = many(3)
+    const trimmed = trimJournal(rows, 4)
+    for (const [i, row] of trimmed.entries()) expect(row).toBe(rows[i])
   })
 })

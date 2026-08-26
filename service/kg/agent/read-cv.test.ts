@@ -601,3 +601,33 @@ describe('how the facts relate', () => {
     expect(readRelations(JSON.stringify({ relations: 'none' }), 3)).toEqual([])
   })
 })
+
+describe('the catch-all', () => {
+  it('keeps a section nobody in the vocabulary anticipated', () => {
+    /*
+     * Widening the list from seven kinds to fourteen fixed eight known
+     * categories. It cannot fix the ninth: somebody's CV has a section nobody
+     * here thought of — exhibitions, translations, military service — and a
+     * closed vocabulary loses it the same silent way the original seven lost
+     * certifications.
+     */
+    const out = readCv(
+      JSON.stringify({
+        background: [
+          { kind: 'other', title: 'Solo exhibition, Whitechapel', detail: 'Exhibitions' },
+        ],
+      }),
+    )
+    expect(out.ok && out.background[0]?.kind).toBe('other')
+  })
+
+  it('tells the model to reach for it rather than force a near-miss', () => {
+    // The instruction that decides whether the lane is ever used. Without it a
+    // model files an exhibition as an `award`, which is wrong and looks right.
+    const system = String(
+      cvMessages('CV.pdf', { label: 'x', text: 'x', partial: false }, 'cv')[0]?.content,
+    )
+    expect(system).toMatch(/rather than forcing an entry into a kind that is nearly/)
+    expect(system).toMatch(/rather than leaving it out/)
+  })
+})

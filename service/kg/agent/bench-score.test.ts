@@ -339,3 +339,57 @@ describe('the conversations name only tools that exist', () => {
     for (const type of seen) expect(NODE_TYPES).toContain(type)
   })
 })
+
+describe('what counts as going in circles', () => {
+  const call = (name: string, args: string, effect = 'read') => ({
+    turn: 0,
+    name,
+    effect,
+    ok: true,
+    args,
+  })
+
+  it('does not count two different searches as a repeat', () => {
+    /*
+     * This counted ADJACENT SAME-NAME calls, which is not what "repeat" means
+     * to anybody reading the report. Gemma's first run showed 19 repeats out of
+     * 84 calls, almost entirely from legitimate consecutive reads — a number
+     * that reads as "the model went in circles nineteen times" and meant
+     * nothing of the sort.
+     */
+    const out = scoreTrajectory([
+      call('memory.search', '{"query":"rice"}'),
+      call('memory.search', '{"query":"stripe"}'),
+    ])
+    expect(out.repeats).toBe(0)
+  })
+
+  it('counts the same call with the same arguments', () => {
+    const out = scoreTrajectory([
+      call('memory.search', '{"query":"rice"}'),
+      call('memory.search', '{"query":"rice"}'),
+    ])
+    expect(out.repeats).toBe(1)
+  })
+
+  it('counts it wherever it happens, not only back to back', () => {
+    // A model stuck in a loop interleaves: search, read, search again. Adjacency
+    // was the wrong test for that too.
+    const out = scoreTrajectory([
+      call('memory.search', '{"query":"rice"}'),
+      call('memory.overview', '{}'),
+      call('memory.search', '{"query":"rice"}'),
+    ])
+    expect(out.repeats).toBe(1)
+  })
+
+  it('reads an older report that carries no arguments without throwing', () => {
+    // Stored runs predate the field. A scorer that threw on one would make
+    // every report already on disk unreadable.
+    const out = scoreTrajectory([
+      { turn: 0, name: 'memory.search', effect: 'read', ok: true },
+      { turn: 0, name: 'memory.search', effect: 'read', ok: true },
+    ])
+    expect(out.repeats).toBe(1)
+  })
+})

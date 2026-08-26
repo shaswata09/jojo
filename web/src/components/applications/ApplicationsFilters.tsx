@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Search } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { LabelFilter } from '@/components/common/LabelFilter'
@@ -32,6 +33,15 @@ export function ApplicationsFilters({
   pool: Application[]
   stageCounts: Record<string, number>
 }) {
+  /*
+   * Memoised, and that is what makes the count map below it worth having.
+   *
+   * Built inline in the JSX this was a new array on every render, so
+   * `LabelFilter`'s `useMemo` never held and the whole pool was re-counted on
+   * every keystroke in the search box.
+   */
+  const scopeIds = useMemo(() => pool.map((a) => refKey('app', a.id)), [pool])
+
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex flex-wrap items-center gap-2.5">
@@ -64,7 +74,7 @@ export function ApplicationsFilters({
         {/* Scoped to the pool on screen. Without `scopeIds` a chip here
             would count every reminder and vault file carrying that keyword
             too, and report 32 for a word only six applications have. */}
-        <LabelFilter scopeIds={pool.map((a) => refKey('app', a.id))} />
+        <LabelFilter scopeIds={scopeIds} />
 
         {/* Stage chips are table-only: the board is already grouped by
             stage, so filtering there blanks five columns rather than

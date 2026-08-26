@@ -4,6 +4,7 @@ import { pickDocuments } from '@/lib/documents'
 import { Txt } from '@/components/ui/Text'
 import { View } from 'react-native'
 import { Button } from '@/components/ui/Button'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { FormField, TextField } from '@/components/ui/Field'
 import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
@@ -44,7 +45,33 @@ export function FileEditor({
   // copy went. An edit of an existing record keeps whatever it already had.
   const [uri, setUri] = useState(initial?.uri)
   const [picking, setPicking] = useState(false)
+  const [discarding, setDiscarding] = useState(false)
   const [pickError, setPickError] = useState<string | null>(null)
+
+  /**
+   * Whether anything has been typed that leaving would throw away.
+   *
+   * Compared against what the form opened with rather than tracked with a
+   * flag, so tapping into a field and back out is not "dirty". A new record is
+   * dirty as soon as any field has something in it.
+   */
+  const dirty =
+    name !== (initial?.name ?? '') ||
+    size !== (initial?.size === '—' ? '' : (initial?.size ?? '')) ||
+    note !== (initial?.note ?? '') ||
+    bucket !== (initial?.bucket ?? defaultBucket) ||
+    uri !== initial?.uri
+
+  /*
+   * The backdrop, the X and Android back all reach `onClose` — so a half-typed
+   * record went with a stray tap, with no prompt and no undo. It was never
+   * committed, so the journal has nothing to restore: this is the one thing
+   * here that no undo can bring back, which is the same reason web guards it.
+   */
+  const askOrClose = () => {
+    if (dirty) setDiscarding(true)
+    else onClose()
+  }
 
   /**
    * Pick a file, and fill the form in from it.
@@ -96,7 +123,7 @@ export function FileEditor({
   return (
     <Sheet
       open
-      onClose={onClose}
+      onClose={askOrClose}
       title={initial ? 'Edit document' : 'Record a document'}
       description={
         uri
@@ -105,7 +132,7 @@ export function FileEditor({
       }
       footer={
         <>
-          <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
+          <Button label="Cancel" variant="ghost" size="md" onPress={askOrClose} />
           <Button label={initial ? 'Save' : 'Record it'} size="md" onPress={submit} />
         </>
       }
@@ -172,6 +199,19 @@ export function FileEditor({
 
         <TextField label="Note" value={note} multiline onChangeText={setNote} />
       </View>
+
+      <ConfirmSheet
+        open={discarding}
+        onClose={() => setDiscarding(false)}
+        title="Discard unsaved changes?"
+        description="What you have typed here has not been saved anywhere, so leaving throws it away — and that cannot be undone."
+        confirmLabel="Discard"
+        tone="danger"
+        onConfirm={() => {
+          setDiscarding(false)
+          onClose()
+        }}
+      />
     </Sheet>
   )
 }

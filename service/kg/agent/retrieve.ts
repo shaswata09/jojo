@@ -42,7 +42,7 @@
  * chosen once, from the first message, and only ever GROWS after that.
  */
 
-import { CATALOG } from './catalog'
+import { CATALOG, toWireName } from './catalog'
 import { READS } from './queries'
 import { closeOver } from './tool-graph'
 
@@ -318,7 +318,74 @@ export function select(message: string): Set<string> | null {
  * forever, which is a safety regression wearing an optimisation's clothes. They
  * are offered only when the person's own words asked for them.
  */
-const NEVER_IMPLICIT: readonly string[] = ['memory.reset', 'memory.clear']
+/**
+ * Whether the person asked to wipe the whole store, in their own words.
+ *
+ * The one gate on `NEVER_IMPLICIT`, and it is deliberately explicit rather than
+ * derived from the lexicon. `select` cannot tell "clear the tags off Baylor"
+ * from "clear everything": `clear` aliases to the memory domain, name words
+ * weigh 3, `SEED_FLOOR` is 3, so `memory.clear` scores the same either way.
+ * Measured — before this, that sentence about KEYWORDS put both whole-store
+ * wipes in front of the model.
+ *
+ * So it asks for two things in one sentence: a verb that means erase, and an
+ * object that means the whole store. Either alone is ordinary. "Clear the
+ * tags", "reset the stage", "delete this application" and "what is in my
+ * memory" all have one and not the other, and none of them offers a wipe.
+ *
+ * Deliberately narrow, and it fails CLOSED. Somebody who means it and phrases
+ * it unusually gets a model that does not offer the tool, says so, and can be
+ * told again — while Settings has the button with its own confirmation. The
+ * other direction ends with an emptied store.
+ */
+const WIPE_VERB = /\b(clear|wipe|erase|delete|remove|reset|empty|nuke|purge)\b/i
+const WHOLE_STORE =
+  /\b(everything|all (of )?(my |the )?(records|data|applications|stuff)|the (whole|entire) (store|thing|lot|database)|my (whole|entire) (store|database|history)|start over|start again|from scratch|factory reset)\b/i
+
+/**
+ * A kind of record, which a whole-store wipe never names.
+ *
+ * "Delete everything I wrote in the note on Rice" has the verb and it has
+ * "everything", and it is a request about ONE note. Naming a record type is
+ * what separates a scoped erase from a total one, and getting this wrong in
+ * that direction ends with an emptied store rather than with a model saying it
+ * cannot help.
+ *
+ * `records`, `data` and `stuff` are deliberately absent: "delete all my
+ * records" IS the whole store, and they are the words people reach for when
+ * they mean it.
+ */
+const NAMES_A_RECORD =
+  /\b(note|notes|application|applications|keyword|keywords|tag|tags|file|files|document|documents|reminder|reminders|snippet|snippets|posting|postings|deadline|deadlines|interview|interviews|calendar|stage|offer|thread|conversation|person|referee)\b/i
+
+export function asksToWipe(message: string): boolean {
+  if (NAMES_A_RECORD.test(message)) return false
+  return WIPE_VERB.test(message) && WHOLE_STORE.test(message)
+}
+
+export const NEVER_IMPLICIT: readonly string[] = ['memory.reset', 'memory.clear']
+
+/**
+ * Every tool except the two that empty the store.
+ *
+ * The set a caller must fall back to when the retriever abstains. `offeredFor`
+ * strips `NEVER_IMPLICIT` on the branch where it recognised something — but
+ * abstention returns `null`, and the caller's own fallback was
+ * `CATALOG.map(e => e.name)`: the WHOLE catalog, both whole-store wipes
+ * included.
+ *
+ * That fired on the first message of every new conversation, because nothing is
+ * carried forward yet and an opener like "hi" or "help me tidy this up" matches
+ * no seed. So a small model was handed `memory.clear` at exactly the moment it
+ * had least context — against a written promise in the guide that those two are
+ * "never offered to the assistant unless your own words ask for them".
+ *
+ * Exported so the fallback is a named thing rather than a expression a caller
+ * has to get right, and so a test can assert what is in it.
+ */
+export const EVERYTHING_SAFE: readonly string[] = CATALOG.map((e) => e.name).filter(
+  (name) => !NEVER_IMPLICIT.includes(name),
+)
 
 /**
  * The full offered set for a run: what was asked for, closed over the graph.
@@ -331,30 +398,185 @@ const NEVER_IMPLICIT: readonly string[] = ['memory.reset', 'memory.clear']
  *
  * Returns null for "offer everything", which propagates from `select`.
  */
+/**
+ * How many previously-offered tools a turn carries forward.
+ *
+ * The carry existed for prefix caching: keeping the list byte-identical between
+ * turns lets the provider reuse the prompt prefix, and on a small model that is
+ * most of the latency. What it did NOT have was a bound — every turn unioned
+ * the whole previous set, so a ten-turn session went from 33 schemas to 62,
+ * about 11,000 tokens of a 16,000-token window, and the trim in `budget.ts`
+ * then had to throw away the CONVERSATION to make room for tools nothing had
+ * touched in eight turns.
+ *
+ * Twelve is chosen against what a turn actually uses: across the whole
+ * multi-turn benchmark no conversation called more than four distinct tools in
+ * one turn, so twelve is three turns' worth of real reach. Tools the model
+ * actually CALLED are carried ahead of ones merely offered.
+ */
+export const CARRY_LIMIT = 12
+
 export function offeredFor(
   message: string,
   carried: ReadonlySet<string> | null,
   /** Names the conversation has already called. Always kept — see above. */
   fromHistory: Iterable<string> = [],
+  /**
+   * A better picker's answer, when the caller has one.
+   *
+   * `retrieve-llm.ts` asks a model which tools a request needs; its picks come
+   * in here so they go through exactly the same closure, resident set and
+   * `NEVER_IMPLICIT` strip as a lexical pick. Absent means "use the lexicon" —
+   * every caller with no model to spend on choosing, and the fallback for every
+   * caller that has one and did not get an answer.
+   */
+  chosen?: ReadonlySet<string> | null,
 ): Set<string> | null {
-  const picked = select(message)
+  /*
+   * A chooser SUPPLEMENTS the lexicon. It never replaces it.
+   *
+   * Measured, and it cost five conversations: asked to "File CV-2026.pdf under
+   * the UT Austin application", the chooser picked `memory.search`,
+   * `vault.file.add` and `keyword.attach` — and not `vault.file.update`, which
+   * is the tool the task needs. Offered `add` and not `update`, the model did
+   * the only thing it could and created a SECOND CV. Gemma scored 30/30 with
+   * the lexicon alone and 25/30 with the chooser in its place.
+   *
+   * That is the failure mode of narrowing by intent: omitting the right tool
+   * does not make a model ask, it makes it reach for the nearest wrong one. The
+   * lexicon has the opposite weakness — it reads words, so it misses intent —
+   * and the two are complementary rather than competing.
+   *
+   * So: the union when the lexicon recognised something, and the chooser's own
+   * picks only when it did not. That keeps the floor at the lexicon's coverage
+   * (a superset cannot omit what the lexicon would have offered) and keeps the
+   * win where it was largest — an unrecognised first message used to mean
+   * "offer all ninety-two".
+   */
+  const lexical = select(message)
+  const picked =
+    chosen === undefined
+      ? lexical
+      : chosen === null
+        ? lexical
+        : lexical === null
+          ? chosen
+          : new Set([...lexical, ...chosen])
+  /*
+   * The wipe decision is made BEFORE the abstention path, because that path
+   * returns early and used to skip it entirely.
+   *
+   * "erase all of my data" is not a sentence the lexicon recognises — no term
+   * it indexes — so `select` abstained, `offeredFor` returned null, and the
+   * caller fell back to `EVERYTHING_SAFE`, which excludes exactly the two tools
+   * the person had just asked for. The person asking most plainly got the
+   * answer meant for someone who asked for nothing.
+   */
+  const wipes = asksToWipe(message)
+
   if (picked === null) {
     // Abstaining. If the conversation already had a narrowed set, keep exactly
     // it — byte-identical, so the prefix cache still hits — rather than widening
     // to everything and throwing the cache away on "thanks".
-    if (carried === null) return null
-    const kept = new Set(carried)
+    const kept = new Set(carried ?? [])
     for (const name of fromHistory) kept.add(name)
+    if (wipes) for (const name of NEVER_IMPLICIT) kept.add(name)
+    else
+      for (const name of NEVER_IMPLICIT) {
+        kept.delete(name)
+        kept.delete(toWireName(name))
+      }
+    // Nothing carried and nothing asked for: genuinely no opinion.
+    if (carried === null && !wipes) return null
     return kept
   }
 
   const asked = new Set(picked)
   const out = closeOver(asked)
   for (const name of RESIDENT) out.add(name)
-  for (const name of carried ?? []) out.add(name)
+  /*
+   * What was USED comes before what was merely offered, and only `CARRY_LIMIT`
+   * of the latter survives. `fromHistory` is what this conversation actually
+   * called — what a follow-up is most likely to need again — so it is added
+   * without a bound. `carried` is everything ever put in front of the model,
+   * which grew without limit and is mostly tools nothing touched.
+   */
   for (const name of fromHistory) out.add(name)
-  // Stripped unless the person's own words seeded them.
-  for (const name of NEVER_IMPLICIT) if (!asked.has(name)) out.delete(name)
+
+  /*
+   * Counted in TOOLS, not in spellings.
+   *
+   * `resolveOffered` in `loop.ts` deliberately puts both `name` and `wireName`
+   * into the offered set, so that the enforcement check matches whichever the
+   * model sends. That set becomes the next turn's `carried` — so a naive count
+   * spent two of twelve slots on one tool, and a turn carried about six.
+   *
+   * Registry names are the unit here, and both spellings are added together
+   * once a tool is chosen.
+   */
+  let room = CARRY_LIMIT
+  for (const name of carried ?? []) {
+    const entry = CATALOG.find((e) => e.name === name || e.wireName === name)
+    if (entry === undefined) continue
+    if (out.has(entry.name)) continue
+    if (room <= 0) break
+    out.add(entry.name)
+    room -= 1
+  }
+  /*
+   * Stripped unless the PERSON'S OWN WORDS asked to wipe the store.
+   *
+   * This is the third version of this guard and the first one that holds. It
+   * tested `asked` (what was picked), which was wrong the moment a model could
+   * pick. It then tested `select(message)` — the lexicon on the person's own
+   * words — which sounded right and was ALSO wrong, because `select` is not a
+   * test of what the person named:
+   *
+   *   - name words weigh 3 and `SEED_FLOOR` is 3, so the bare term "memory"
+   *     matches every `memory.*` tool outright;
+   *   - `ALIASES` maps `clear`, `reset` and `wipe` to the memory domain
+   *     unconditionally;
+   *   - `DOMAIN_LIFT` then pulls in every sibling of any strongly-matched tool.
+   *
+   * Measured, before this: **"clear the tags off the Baylor application"** — an
+   * ordinary request about keywords — offered `memory.clear` AND `memory.reset`
+   * to the model. So did "reset the stage on this one back to applied", and so
+   * did "what is in my memory". The guide's written promise that these two are
+   * offered only when asked for was not true, and the comment here said it was.
+   *
+   * A general-purpose lexicon cannot make this distinction: "clear" scores the
+   * same whether the object is the store or a keyword. So the exemption gets
+   * its own explicit test — see `asksToWipe`, which requires a wipe verb AND a
+   * whole-store object in the person's own sentence.
+   */
+  for (const name of NEVER_IMPLICIT) {
+    if (wipes) {
+      /*
+       * ADDED, not merely spared.
+       *
+       * Sparing them only kept what the lexicon happened to seed, and the
+       * lexicon seeds on the word "clear" rather than on the meaning: "clear
+       * everything" offered the wipes and "delete all my records" — the same
+       * request, different verb — offered nothing, so the person was told no by
+       * an accident of phrasing. If their words asked for it, offer it.
+       */
+      out.add(name)
+      continue
+    }
+    /*
+     * BOTH spellings, and that is not belt-and-braces.
+     *
+     * `fromHistory` carries what the WIRE called — `memory_clear`, underscores
+     * — and `inCatalogOrder` matches `wireName` as well as `name`. So deleting
+     * only the dotted spelling left the wire one in the set and the offered
+     * ARRAY got `memory.clear` back. Reachable without any misbehaviour: ask to
+     * clear everything, decline at the approval gate, and the declined call is
+     * still in the transcript — so the next unrelated turn re-offers the tool
+     * the person just refused.
+     */
+    out.delete(name)
+    out.delete(toWireName(name))
+  }
   return out
 }
 

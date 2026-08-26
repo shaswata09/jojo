@@ -183,9 +183,9 @@ numbers rather than merely resembling each other. What differs is the
 presentation layer and the four interactions a phone cannot take from a pointer.
 
 The knowledge graph that store runs on now lives in `service/`, imported by both
-apps as `@jojo/service`. `mobile/` still carries its own copy of an earlier
-generation of it, which is what the current migration is deleting; until that
-lands, `mobile/README.md` has the detail on what has drifted.
+apps as `@jojo/service`. `mobile/src/kg/` now holds two files — the React Native
+storage driver and the shared driver-contract test that runs against it — and
+`service/scripts/check-no-copies.mjs` fails the build if a third appears.
 
 ---
 
@@ -195,12 +195,22 @@ Requires **Node 22.22+**. React Router 8 declares `node >=22.22.0`; older versio
 run (the router itself is browser-side) but npm warns `EBADENGINE` on every install, and a CI with
 `engine-strict` would fail outright. `web/.nvmrc` pins Node 24 LTS.
 
+This is one npm **workspace** with three packages (`service/`, `web/`,
+`mobile/`), so install once at the root.
+
 ```bash
-cd web
-nvm use              # reads .nvmrc
-npm install
-npm run dev          # http://localhost:5173
+nvm use -C web       # reads web/.nvmrc
+npm install          # at the repo ROOT, not inside web/
+cp .env.example .env # optional — everything in it is optional
+
+npm run dev -w web   # http://localhost:5173
 ```
+
+`npm run dev` and `npm run build` pack the browser extension first, which needs a
+**`zip`** binary. macOS and Linux have one; on Windows use WSL or install one, or
+the dev server will not start.
+
+Root scripts: `npm run gate` (the full check), `npm run lint`, `npm run test`.
 
 | Script                 | Does                                                  |
 | ---------------------- | ----------------------------------------------------- |
@@ -210,8 +220,10 @@ npm run dev          # http://localhost:5173
 | `npm run lint`         | Runs [oxlint](https://oxc.rs)                         |
 | `npm run format`       | Formats everything with Prettier                      |
 | `npm run format:check` | Verifies formatting without writing — use in CI       |
+| `npm run test`         | Vitest, once                                          |
 
-Before committing: `npm run build && npm run lint && npm run format:check`. The build fails on any
+Before committing, run **`./gate.sh` from the repo root** — type-check, lint and
+tests across all three workspaces, which is exactly what CI runs. The build fails on any
 type error, so it is the one that matters most.
 
 ---
@@ -225,13 +237,31 @@ produce an installable build.
 Requires **Node 22+**, plus **JDK 17 and Android SDK 36** for Android, or
 **Xcode 15+ and CocoaPods** for iOS.
 
-```bash
-cd mobile
-npm install
+Android also needs to know where your SDK is. `android/local.properties` is not
+committed, so on a fresh clone set one of these:
 
-cd android && ./gradlew assembleRelease     # → app/build/outputs/apk/release/
-cd ios && pod install && open jojo.xcworkspace
+```bash
+export ANDROID_HOME="$HOME/Library/Android/sdk"          # macOS default
+# or write it down once, per clone:
+echo "sdk.dir=$ANDROID_HOME" > mobile/android/local.properties
 ```
+
+Without it Gradle stops with *"SDK location not found"*. CI does not hit this
+because its runners preset `ANDROID_HOME`.
+
+```bash
+npm install                 # at the repo ROOT — it is one workspace
+
+# Android — a signed, installable APK with the JS bundled in
+(cd mobile/android && ./gradlew assembleRelease)   # → app/build/outputs/apk/release/
+
+# iOS — resolve pods once, then open the workspace
+(cd mobile/ios && pod install && open jojo.xcworkspace)
+```
+
+Each line is in its own subshell so it can be pasted as a block: the previous
+version ran `cd android` and then `cd ios`, which looks for `mobile/android/ios`
+and fails.
 
 | Script                            | Does                                              |
 | --------------------------------- | ------------------------------------------------- |
@@ -257,7 +287,7 @@ APK is signed with the **debug** keystore out of the box, and `android/` and
 Earlier this file said to run prebuild; doing so today would destroy both
 native projects.
 
-Before committing: `npm run typecheck && npm run lint && npm run format:check`.
+Before committing, run **`./gate.sh` from the repo root** — it covers all three workspaces.
 
 ### Formatting
 
@@ -364,12 +394,12 @@ Light or System repaints.
 | Tailwind CSS v4                  | via `@tailwindcss/vite`, no PostCSS config    |
 | shadcn/ui                        | Radix primitives, Nova preset                 |
 | React Router 8                   |                                               |
-| dnd-kit                          | installed for the kanban board, not yet wired |
+| dnd-kit                          | wired into the kanban board and the calendar |
 | lucide-react                     | icons                                         |
 | oxlint                           | linting                                       |
 | Prettier                         | formatting, with Tailwind class sorting       |
 
-Fonts (Inter, Space Grotesk, JetBrains Mono) are self-hosted via `@fontsource` — a local-first app
+Fonts (Inter, JetBrains Mono) are self-hosted via `@fontsource` — a local-first app
 should not call out to a font CDN on every page load.
 
 ### Mobile
@@ -380,10 +410,10 @@ should not call out to a font CDN on every page load.
 | Reanimated 4 + Gesture Handler 2                | the board's long-press drag                                    |
 | React Navigation 7                              | bottom tabs + native stack                                     |
 | react-native-svg                                | the donut, the radar and the graph                             |
-| @expo/vector-icons                              | Feather, the set closest in weight to the web's lucide         |
+| @react-native-vector-icons/feather              | Feather, the set closest in weight to the web's lucide         |
 | Prettier                                        | same config as `web/`, minus the Tailwind plugin               |
 
-Inter and JetBrains Mono are bundled through `@expo-google-fonts` for the same
+Inter and JetBrains Mono are committed TTFs under `mobile/android/app/src/main/assets/fonts/` (see `docs/mobile-fonts.md`) for the same
 reason they are self-hosted on the web: an app that promises your data never
 leaves the device should not fetch a font on launch.
 
@@ -453,13 +483,11 @@ Persistence shipped: a knowledge graph in IndexedDB on web and AsyncStorage on m
 
 ## Known decisions still open
 
-- **Component tests.** There are more than 1,900 Vitest tests across the three workspaces, but D20 rules out
+- **Component tests.** There are around 2,300 Vitest tests across the three workspaces, but D20 rules out
   jsdom and Testing Library, so nothing mounts a component. UI logic is verified by driving the
   real apps. That trade is deliberate; what it cost at the time is written up in `docs/AUDIT.md`, which is a record of a past audit rather than a live defect list.
 - **`BrowserRouter` vs `HashRouter`.** Deep links like `/settings` need SPA rewrites on a static host
   and break entirely over `file://`. For an app people may open from disk, `HashRouter` is safer.
-- **The academia/industry track is not persisted** across reloads, though the theme is.
-- **Sidebar badges and the runtime status strip are hardcoded** — they need wiring to real state.
 
 ## Software jojo talks to but does not ship
 

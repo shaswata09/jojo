@@ -83,7 +83,14 @@ export type LabelsContextValue = {
   /** How many records carry each label, for the filter's counts. */
   countFor: (labelId: string) => number
   /** The same, restricted to one collection — the tab you are looking at. */
-  countWithin: (labelId: string, ids: readonly string[]) => number
+  /**
+   * Every keyword's count over one pool, in one pass.
+   *
+   * Replaces a per-keyword `countWithin(labelId, ids)` that the filter called
+   * once per chip — O(keywords × records) on every keystroke. See
+   * `use-keywords.ts` for the measurement.
+   */
+  countsWithin: (ids: readonly string[]) => ReadonlyMap<string, number>
 }
 
 export const LabelsContext = createContext<LabelsContextValue | null>(null)

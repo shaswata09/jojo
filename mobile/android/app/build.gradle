@@ -120,8 +120,32 @@ android {
         applicationId 'dev.jojo.tracker'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.1.0"
+        /*
+         * Both derived from `mobile/package.json`, which is the one place a
+         * version is written.
+         *
+         * They were `1` and `"0.1.0"`, hardcoded, and the pair is worse than
+         * either alone. `versionName` is the string a person sees, so a release
+         * built from a `v0.2.0` tag would have shown 0.1.0 and been impossible
+         * to tell apart from the one before it. `versionCode` is the integer
+         * Android compares to decide whether an APK is an UPDATE — it refuses
+         * to install one that is not greater — so every tagged build after the
+         * first could not be installed over the build before it at all.
+         *
+         * The code is derived rather than counted: major * 10000 + minor * 100
+         * + patch, so 0.1.0 is 100 and 1.2.3 is 10203. Monotonic as long as
+         * each part stays under a hundred, which is the same promise semver
+         * already makes about ordering, and it means a release is a version
+         * bump and a tag rather than a version bump and a tag and remembering
+         * to increment a second number that nothing checks.
+         */
+        def pkg = new groovy.json.JsonSlurper().parse(file("$rootDir/../package.json"))
+        def semver = (pkg.version =~ /^(\d+)\.(\d+)\.(\d+)/)
+        if (!semver.find()) {
+            throw new GradleException("mobile/package.json version '${pkg.version}' is not semver, so versionCode cannot be derived from it")
+        }
+        versionCode semver.group(1).toInteger() * 10000 + semver.group(2).toInteger() * 100 + semver.group(3).toInteger()
+        versionName pkg.version
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
 

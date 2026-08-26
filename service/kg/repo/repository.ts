@@ -390,6 +390,22 @@ export function createRepository(options: RepositoryOptions): Repository {
       if (!fromAudit) {
         throw new Error(`journal entry '${entryId}' is not in the undo, redo or audit ring`)
       }
+      /*
+       * A trimmed entry can be read and not reverted.
+       *
+       * `trimJournal` drops the before/after images from entries older than the
+       * undo window, because keeping them made the persisted journal 95% of
+       * every write. What is left is `{id, before: null, after: null}` — and
+       * `invert` on that would swap two nulls and land a change that DELETES
+       * every record the entry names. Refusing is the only safe reading, and it
+       * has to be checked here rather than in the UI, which offers undo on the
+       * newest entry and would never have reached one.
+       */
+      if (fromAudit.trimmed === true) {
+        throw new Error(
+          `'${fromAudit.label}' is too far back to undo — the journal keeps what changed, but not enough to put it back`,
+        )
+      }
       // Reverting a row out of the audit log is an ordinary new change. It does
       // NOT become redoable: offering redo for something undone from three hours
       // ago would promise to reapply a before-image captured against records

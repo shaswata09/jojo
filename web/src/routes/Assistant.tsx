@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
 import { useTitle, vaultPath } from '@/lib/links'
 import { agentTurn, isConfigured } from '@/lib/llm'
+import type { ChatMessage } from '@jojo/service/core/model-server'
+import { contextOf } from '@jojo/service/core/provider'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { useFillViewport } from '@/lib/use-fill-viewport'
@@ -37,7 +39,7 @@ import { useVault } from '@jojo/service/react/use-vault'
 import type { LucideIcon } from 'lucide-react'
 import { ArrowUp, Quote, TriangleAlert } from 'lucide-react'
 import type { FormEvent, KeyboardEvent } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 
 /**
@@ -205,7 +207,7 @@ function AgentPanel() {
   const { settings, reader } = useModelSettings()
   const { addSnippet } = useVault()
   const { all: applications, byId } = useApplications()
-  const { threads, create, save, rename, file, remove, setAuto } = useThreads()
+  const { threads, create, save, rename, file, remove, setAuto, setContext } = useThreads()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -341,15 +343,63 @@ function AgentPanel() {
    */
   const convert = useReadDocument()
 
+  /*
+   * Two more agents, each with its own model call and each allowed to fail.
+   *
+   * `chooser` reads the request and says which tools it needs — a name and a
+   * line each is ~2,600 tokens against ~16,000 for the schemas, so choosing
+   * costs about a sixth of what it saves and saves it on every round. It never
+   * sees the conversation, which is what keeps it cheap as the chat grows.
+   *
+   * `summariser` runs only when the conversation no longer fits, and replaces
+   * what a trim would have thrown away with a short note — so a long chat loses
+   * detail rather than memory.
+   *
+   * Both take the same transport as the main loop here. They do not have to:
+   * choosing from a list and summarising are far easier than doing the work,
+   * and an app that wanted to point them at a smaller model would change only
+   * these two lines.
+   */
+  const chooser = useMemo(
+    () => ({ ask: (messages: readonly ChatMessage[]) => agentTurn(settings, messages, []) }),
+    [settings],
+  )
+
   const { entries, busy, send, stop, clear } = useAgent({
     llm,
+    chooser,
+    summariser: chooser,
     onSettled,
     startThread,
+    /*
+     * The person's own context window, or the provider's default.
+     *
+     * This is the surface where it matters most: the Assistant is the only one
+     * that keeps a conversation, and measured over ten ordinary follow-ups the
+     * request grew 8,227 → 21,062 tokens with nothing bounding it. Without this
+     * the loop cannot trim, and the SERVER truncates instead — from the front,
+     * where the system prompt is.
+     */
+    window: contextOf(settings),
     ...(reader ? { convert } : {}),
+    /*
+     * Persist a summary the loop writes, so the next turn sends it instead of
+     * summarising the same exchanges again. Rare: only a conversation that has
+     * outgrown the model's window ever reaches this.
+     */
+    onCompacted: setContext,
     thread: {
       id: activeId,
       entries: active ? toAgentEntries(active.entries) : [],
-      history: active ? toTranscript(active.entries) : [],
+      /*
+       * Only the part the stored summary does NOT cover.
+       *
+       * `contextThrough` is where a previous compaction reached; sending those
+       * entries again alongside the summary would defeat the compaction and
+       * make the conversation grow faster than before it happened.
+       */
+      history: active ? toTranscript(active.entries.slice(active.contextThrough)) : [],
+      ...(active?.context === undefined ? {} : { context: active.context }),
       autoApprove: active?.autoApprove ?? false,
     },
   })

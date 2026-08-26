@@ -19,7 +19,7 @@ import type { Driver, DurableOp, Rows } from '../storage/driver'
 import type { StoredRow } from '../storage/schema'
 import type { BootResult, DurableBootOptions } from './boot'
 import { live } from './boot-live'
-import { AUDIT_CAP, readJournalRows } from './journal'
+import { AUDIT_CAP, readJournalRows, trimJournal } from './journal'
 import { metaRow, opened } from './meta'
 import type { StoreMeta } from './meta'
 import { createRepository } from './repository'
@@ -107,7 +107,10 @@ export async function ready(
   }
 
   const history = readJournalRows(rows.ops)
-  const kept = history.slice(-AUDIT_CAP)
+  // Capped first, then trimmed. `trimJournal` drops the record images from
+  // everything older than the undo window — measured at 95% of the persisted
+  // blob with the ring full, which on the phone is rewritten on every commit.
+  const kept = trimJournal(history.slice(-AUDIT_CAP))
   const meta = opened(stored, at)
 
   // One transaction for the two things every open owes the store: the audit
@@ -126,7 +129,12 @@ export async function ready(
   // does not rewind it.
   const chores: DurableOp[] = []
   for (const id of orphans) chores.push({ kind: 'delete', store: 'edges', key: id })
-  if (kept.length < history.length) {
+  // Rewritten when the cap dropped entries OR when the trim changed any of
+  // them. Comparing identities rather than lengths: `trimJournal` returns the
+  // same COUNT and different objects, so a length check would persist the full
+  // images forever and the trim would only ever exist in memory.
+  const trimmedSomething = kept.some((entry, i) => entry !== history[history.length - kept.length + i])
+  if (kept.length < history.length || trimmedSomething) {
     chores.push({ kind: 'clear', store: 'ops' })
     kept.forEach((entry, index) => {
       chores.push({

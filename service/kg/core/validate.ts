@@ -304,6 +304,10 @@ export const NODE_PROP_SCHEMAS = {
     title: s.string({ min: 1, label: 'Title' }),
     entries: threadEntries,
     autoApprove: s.optional(s.boolean({ label: 'Act without asking' })),
+    // The compaction summary and how far it reaches — see `ThreadProps`. Both
+    // optional, because almost no conversation ever grows enough to need one.
+    context: s.optional(s.string({ label: 'Earlier in this conversation' })),
+    contextThrough: s.optional(s.number({ min: 0, int: true, label: 'Summarised through' })),
   }),
   posting: s.object({
     slug,

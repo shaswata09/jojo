@@ -8,7 +8,7 @@
  * point: a tool added to `TOOLS` is callable by a model, and listed over MCP, on
  * the same day, without anybody remembering to update a manifest.
  *
- * WHAT IS IN IT. All 77 write tools plus the 9 reads. Internal tools
+ * WHAT IS IN IT. Every write tool plus every read. Internal tools
  * are included, and that is a change of position worth stating: `Tool.internal`
  * means "hidden from the palette and the inspector", which is a claim about
  * screen space, not about safety — `org.ensure` is exactly the kind of thing a
@@ -135,7 +135,18 @@ export type FunctionSpec = {
  * sees the flag still needs to know that delete means delete.
  */
 export function describeEntry(entry: CatalogEntry): string {
-  const parts = [entry.title, entry.summary]
+  /*
+   * A separator, because there was none and every one of the descriptions a
+   * model reads was a run-on: "Ask the graph Find records by how they are
+   * connected", "Edit application Saves the form". Not one title in the catalog
+   * ends in punctuation, so this was universal — and it is the cheapest
+   * accuracy the small-model path has available, at one character per tool.
+   *
+   * Guarded anyway, so a title that ever does end in punctuation is not given
+   * a second full stop.
+   */
+  const title = /[.!?:—-]$/u.test(entry.title.trim()) ? entry.title.trim() : `${entry.title.trim()}.`
+  const parts = [title, entry.summary]
   if (entry.destructive) {
     parts.push(
       entry.undoable
