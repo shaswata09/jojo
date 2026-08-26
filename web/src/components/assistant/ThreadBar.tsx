@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { Briefcase, Check, Pencil, Trash2, X } from 'lucide-react'
 import type { Thread } from '@jojo/service/react/use-threads'
-import type { NodeId } from '@jojo/service/core/model'
+import type { ApprovalMode, NodeId } from '@jojo/service/core/model'
+import { APPROVAL_LABEL, APPROVAL_MODES, APPROVAL_SAID } from '@jojo/service/core/model'
 import { displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
 import { Chip } from '@/components/common/Chip'
+import { Segment } from '@/components/common/Segment'
 import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 
 /**
@@ -32,7 +33,7 @@ export function ThreadBar({
   onRename,
   onFile,
   onDelete,
-  onSetAuto,
+  onSetApproval,
   busy,
 }: {
   threads: readonly Thread[]
@@ -41,8 +42,8 @@ export function ThreadBar({
   onRename: (id: NodeId, title: string) => void
   onFile: (id: NodeId, applicationId: NodeId | null) => void
   onDelete: (id: NodeId) => void
-  /** Turns "ask me before every change" off for this conversation. */
-  onSetAuto: (id: NodeId, auto: boolean) => void
+  /** Sets how much this conversation may do without being asked. */
+  onSetApproval: (id: NodeId, mode: ApprovalMode) => void
   busy: boolean
 }) {
   const active = threads.find((t) => t.id === activeId) ?? null
@@ -128,20 +129,27 @@ export function ThreadBar({
             {filedUnder ? 'Change job' : 'File under a job'}
           </Button>
 
-          {/* Per conversation, not per app.
-              The granularity people want is "this one is a cleanup session,
-              stop asking me" — and the safe default has to be the one you get
-              without choosing, so absent means ask. */}
-          <label className="ml-auto flex items-center gap-1.5 text-xs text-text-3">
-            <span>Act without asking</span>
-            <Switch
-              checked={active.autoApprove}
-              onCheckedChange={(auto) => {
-                onSetAuto(active.id, auto)
+          {/* Per conversation, not per app. The granularity people want is
+              "this one is a cleanup session, stop asking me" — and the safe
+              default has to be the one you get without choosing, so a
+              conversation nobody has set is Manual.
+
+              Three settings rather than a switch, because the switch had two
+              positions and three meanings: its "on" stopped for deletions but
+              not for edits, and its label said only "act without asking". The
+              hint under it names what each one lets through, since that is the
+              part a person is actually deciding. */}
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-text-3">Approval</span>
+            <Segment
+              options={APPROVAL_MODES.map((m) => ({ value: m, label: APPROVAL_LABEL[m] }))}
+              value={active.approval}
+              onChange={(mode) => {
+                onSetApproval(active.id, mode)
               }}
-              aria-label="Let the assistant change things in this conversation without asking"
+              label="How much this conversation may do without asking"
             />
-          </label>
+          </div>
 
           <Button
             variant="ghost"
@@ -155,6 +163,14 @@ export function ThreadBar({
             Delete
           </Button>
         </div>
+      ) : null}
+
+      {/* What the chosen mode actually lets through, in a sentence.
+          The control's three words cannot carry it: "Semi-auto" does not say
+          that closing an application goes through unasked, and that is exactly
+          the thing a person is deciding. */}
+      {active ? (
+        <p className="px-3 pb-2 text-xs text-text-3">{APPROVAL_SAID[active.approval]}</p>
       ) : null}
 
       {/* A conversation is about one job, so the multi-select is handed a list

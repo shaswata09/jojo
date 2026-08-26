@@ -13,7 +13,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { seedLabels, seedLabelsByRecord } from '../../data/labels'
-import { applications as seedApplications } from '../../data/seed'
+import { applications as seedApplications } from '../../data/demo-applications'
 import { timeline as seedTimeline } from '../../data/timeline'
 import { vaultLinks as seedLinks } from '../../data/vault'
 import type { Instant } from '../core/model'

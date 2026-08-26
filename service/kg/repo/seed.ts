@@ -52,7 +52,7 @@ import {
   pipelines as seedPipelines,
   savedPostings as seedPostings,
 } from '../../data/scout'
-import { applications as seedApplications } from '../../data/seed'
+import { applications as seedApplications } from '../../data/demo-applications'
 import { addDays, seedOffset, timeline as seedTimeline } from '../../data/timeline'
 import {
   people as seedPeople,

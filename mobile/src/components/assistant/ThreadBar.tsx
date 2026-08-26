@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import type { Thread } from '@jojo/service/react/use-threads'
-import type { NodeId } from '@jojo/service/core/model'
+import type { ApprovalMode, NodeId } from '@jojo/service/core/model'
+import { APPROVAL_LABEL, APPROVAL_MODES, APPROVAL_SAID } from '@jojo/service/core/model'
 import { displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
 import { ApplicationPickerSheet } from '@/components/common/ApplicationPickerSheet'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
+import { Segment } from '@/components/ui/Segment'
 import { TextField } from '@/components/ui/Field'
 import { Txt } from '@/components/ui/Text'
 import { s } from '@/theme/styles'
@@ -32,7 +34,7 @@ export function ThreadBar({
   onRename,
   onFile,
   onDelete,
-  onSetAuto,
+  onSetApproval,
   busy,
 }: {
   threads: readonly Thread[]
@@ -44,7 +46,7 @@ export function ThreadBar({
   onFile: (id: NodeId, applicationId: NodeId | null) => void
   onDelete: (id: NodeId) => void
   /** Turns "ask me before every change" off for this conversation. */
-  onSetAuto: (id: NodeId, auto: boolean) => void
+  onSetApproval: (id: NodeId, mode: ApprovalMode) => void
   busy: boolean
 }) {
   const active = threads.find((t) => t.id === activeId) ?? null
@@ -98,6 +100,32 @@ export function ThreadBar({
                 }}
               />
             </View>
+
+          {/* Per conversation, not per app: the granularity people want is
+              "this one is a cleanup session, stop asking me", and the safe
+              default has to be the one you get without choosing.
+
+              Its own row rather than a fourth icon in the one above, because
+              this stopped being a toggle. The icon said `zap` or `shield` and
+              had two positions for three meanings — its "on" stopped for
+              deletions but not for edits. Three named settings and a sentence
+              saying what each lets through is more space and less guessing.
+
+              Mirrors `components/assistant/ThreadBar.tsx` on the web, down to
+              the wording, because the two are one feature. */}
+          <View style={styles.approval}>
+            <Segment
+              label="How much this conversation may do without asking"
+              options={APPROVAL_MODES.map((m) => ({ value: m, label: APPROVAL_LABEL[m] }))}
+              value={active.approval}
+              onChange={(mode) => {
+                onSetApproval(active.id, mode)
+              }}
+            />
+            <Txt size="xs" tone="muted">
+              {APPROVAL_SAID[active.approval]}
+            </Txt>
+          </View>
           </View>
         ) : (
           <View style={[s.row, { gap: space[2] }]}>
@@ -117,21 +145,6 @@ export function ThreadBar({
               label={filedUnder ? 'Change the job this is about' : 'File under a job'}
               active={Boolean(filedUnder)}
               onPress={() => setFiling(true)}
-            />
-            {/* Per conversation, not per app: the granularity people want is
-                "this one is a cleanup session, stop asking me". Absent means
-                ask, because the safe default has to be the one you get without
-                choosing. */}
-            <IconButton
-              icon={active.autoApprove ? 'zap' : 'shield'}
-              label={
-                active.autoApprove
-                  ? 'Acting without asking — tap to ask before each change'
-                  : 'Asking before each change — tap to act without asking'
-              }
-              onPress={() => {
-                onSetAuto(active.id, !active.autoApprove)
-              }}
             />
             <IconButton
               icon="trash-2"
@@ -164,3 +177,11 @@ export function ThreadBar({
     </View>
   )
 }
+
+/*
+ * Local, because `theme/styles` is for genuinely cross-cutting shapes and this
+ * is one control on one screen — see the note at the top of that file.
+ */
+const styles = StyleSheet.create({
+  approval: { gap: space[1.5], paddingTop: space[2] },
+})

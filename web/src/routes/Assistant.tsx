@@ -207,7 +207,7 @@ function AgentPanel() {
   const { settings, reader } = useModelSettings()
   const { addSnippet } = useVault()
   const { all: applications, byId } = useApplications()
-  const { threads, create, save, rename, file, remove, setAuto, setContext } = useThreads()
+  const { threads, create, save, rename, file, remove, setApproval, setContext } = useThreads()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -400,7 +400,7 @@ function AgentPanel() {
        */
       history: active ? toTranscript(active.entries.slice(active.contextThrough)) : [],
       ...(active?.context === undefined ? {} : { context: active.context }),
-      autoApprove: active?.autoApprove ?? false,
+      approval: active?.approval ?? 'manual',
     },
   })
 
@@ -594,8 +594,8 @@ function AgentPanel() {
             activeId={activeId}
             applications={applications}
             busy={busy}
-            onSetAuto={(id, auto) => {
-              setAuto(id, auto)
+            onSetApproval={(id, mode) => {
+              setApproval(id, mode)
             }}
             onRename={(id, title) => {
               rename(id, title)

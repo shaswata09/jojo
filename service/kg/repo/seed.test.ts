@@ -30,7 +30,7 @@ import {
   pipelines as seedPipelines,
   savedPostings as seedPostings,
 } from '../../data/scout'
-import { applications as seedApplications } from '../../data/seed'
+import { applications as seedApplications } from '../../data/demo-applications'
 import {
   SEED_TODAY,
   addDays,

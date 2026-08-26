@@ -36,7 +36,8 @@ import { createRepository } from '../kg/repo/repository'
 import { seedToGraph } from '../kg/repo/seed'
 import { TOOLS } from '../kg/tools/index'
 import { createToolRuntime } from '../kg/tools/runtime'
-import { applications, applicationsLabel, filedUnderLabel } from './seed'
+import { applicationsLabel, filedUnderLabel } from './seed'
+import { applications } from './demo-applications'
 
 type Options = Parameters<typeof createRepository>[0]
 

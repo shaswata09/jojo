@@ -1268,6 +1268,63 @@ describe('the long-conversation harness', () => {
     expect(asked).toBe(0)
   })
 
+  describe('what each approval mode lets through', () => {
+    /*
+     * The three modes are a promise about what happens WITHOUT being asked, so
+     * each is tested against the same destructive and non-destructive step
+     * rather than against itself.
+     *
+     * `semi` is the one worth pinning hardest: it stops for `delete` and
+     * `admin` effects and lets a `move` through, which is why closing an
+     * application does not prompt. That is the setting's meaning, not a bug —
+     * and a test is the only thing that keeps it from drifting into "stops for
+     * anything scary", which is not something the code can know.
+     */
+    const asked: string[] = []
+    const runWith = async (gate: 'writes' | 'destructive' | 'none' | undefined, tool: string) => {
+      asked.length = 0
+      await runAgent({
+        host: host(),
+        llm: scripted([calls(tool, tool === 'memory_clear' ? { confirm: true } : {}), says('done')]),
+        history: [],
+        prompt: 'do it',
+        tools: [tool.replace(/_/g, '.')],
+        ...(gate === undefined ? {} : { gate }),
+        approve: async (step) => {
+          asked.push(step.name)
+          return true
+        },
+        onEvent: () => {},
+      })
+      return asked.length
+    }
+
+    it('manual asks before an ordinary edit', async () => {
+      expect(await runWith('writes', 'application_update')).toBe(1)
+    })
+
+    it('semi does NOT ask before an ordinary edit', async () => {
+      expect(await runWith('destructive', 'application_update')).toBe(0)
+    })
+
+    it('semi DOES ask before a deletion', async () => {
+      expect(await runWith('destructive', 'timeline_item_delete')).toBe(1)
+    })
+
+    it('auto asks before nothing, deletions included', async () => {
+      // The mode the person chose explicitly. Nothing is confirmed — which is
+      // what its copy says, and the copy is the only warning there is.
+      expect(await runWith('none', 'timeline_item_delete')).toBe(0)
+      expect(await runWith('none', 'application_update')).toBe(0)
+    })
+
+    it('defaults to stopping for deletions when no mode is given', async () => {
+      // Pipelines and the graph ask-box pass no gate. The default must not be
+      // `none`, or a caller that forgets becomes the unsafe one.
+      expect(await runWith(undefined, 'timeline_item_delete')).toBe(1)
+    })
+  })
+
   it('falls back to the lexicon when the chooser is down', async () => {
     const { llm } = seeing()
     const run = await runAgent({

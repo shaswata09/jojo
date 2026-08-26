@@ -199,7 +199,7 @@ function AgentScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { settings, reader } = useModelSettings()
   const { byId } = useApplications()
-  const { threads, create, save, rename, file, remove, setAuto, setContext } = useThreads()
+  const { threads, create, save, rename, file, remove, setApproval, setContext } = useThreads()
 
   /*
    * Which conversation is open, in state AND in a ref.
@@ -382,7 +382,7 @@ function AgentScreen() {
        */
       history: active ? toTranscript(active.entries.slice(active.contextThrough)) : [],
       ...(active?.context === undefined ? {} : { context: active.context }),
-      autoApprove: active?.autoApprove ?? false,
+      approval: active?.approval ?? 'manual',
     },
   })
 
@@ -483,8 +483,8 @@ function AgentScreen() {
               })
             }
           }}
-          onSetAuto={(id, auto) => {
-            setAuto(id, auto)
+          onSetApproval={(id, mode) => {
+            setApproval(id, mode)
           }}
           onDelete={(id) => {
             const result = remove(id)
