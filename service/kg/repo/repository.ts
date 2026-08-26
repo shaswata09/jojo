@@ -580,6 +580,27 @@ export async function onRemoteCommit(
   rehydrate: () => Promise<void>,
 ): Promise<void> {
   await repo.flush()
+
+  /*
+   * Not when our own writes never reached the disk.
+   *
+   * `flush()` settles on a FAILED attempt by design, so `pagehide` can never
+   * hang — awaiting it says nothing about whether anything drained. That is the
+   * same trap `replaceAll` sixty lines above documents at length, and the same
+   * fix: read the state, and refuse rather than proceed.
+   *
+   * Proceeding is the worst thing available here. `rehydrate()` calls
+   * `snapshot.reset` with what is on DISK, so every edit still only in memory
+   * is gone; `clearHistory()` then destroys the undo ring and the audit log
+   * that were the last record of it. And `off` never clears within a session,
+   * so this is not a delay — it is permanent, silent, and triggered by another
+   * tab the person is not looking at.
+   *
+   * Staying stale is the lesser harm: the work remains on screen, and the stall
+   * banner is already telling them to export it.
+   */
+  if (repo.health.state === 'degraded' || repo.health.state === 'off') return
+
   await rehydrate()
   repo.clearHistory()
 }

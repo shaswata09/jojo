@@ -36,6 +36,7 @@
 import type { ModelRequest, ModelResponse } from '../core/model-server'
 import { normaliseEndpoint } from '../core/model-server'
 import { MCP_PROTOCOL_VERSION } from './mcp'
+import { CONTEXT_BUDGET } from './paging'
 
 /** What the app shows next to the setting, so the credit is where the choice is. */
 export const MARKITDOWN = {
@@ -304,14 +305,15 @@ export const dataUri = (mime: string, base64: string) =>
   `data:${mime || 'application/octet-stream'};base64,${base64}`
 
 /**
- * How much of a document is handed to the model.
+ * The whole of a short document, or the first window of a long one with the cut
+ * announced in the text.
  *
- * A hundred-page posting converts to more tokens than a small model has context
- * for, and a truncated answer that never says it was truncated is worse than a
- * refusal. The cut is announced in the text itself, so the model can say so too.
+ * Used for a JOB POSTING, which is read in one bite: a posting that overruns the
+ * budget has almost always overrun it with boilerplate, and a second call to
+ * fetch the benefits section is not worth the round trip. A document from the
+ * vault is read through `pageOf` instead, because a CV's third page is not
+ * boilerplate.
  */
-export const CONTEXT_BUDGET = 12_000
-
 export function trimForModel(markdown: string, budget = CONTEXT_BUDGET): string {
   if (markdown.length <= budget) return markdown
   return `${markdown.slice(0, budget)}\n\n[Cut off here: the document is ${String(markdown.length)} characters and only the first ${String(budget)} were read.]`

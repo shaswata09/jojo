@@ -458,6 +458,57 @@ describe('reading a document', () => {
     expect(out.markdown).toContain('Statistics')
   })
 
+  it('reads a long document to the end, one call at a time', async () => {
+    /*
+     * The bug, end to end. A three-page CV converted to one stream, and this
+     * tool took an id and nothing else — so the model got the first window, read
+     * a note saying the document was longer, and correctly concluded it had no
+     * way to reach the rest. It asked the person to paste the remaining pages.
+     *
+     * The publications were on page three.
+     */
+    const h = seeded()
+    const [id] = aFile(h)
+    const cv = [...Array(28_000)].map((_, i) => String.fromCharCode(97 + (i % 26))).join('')
+    const ctx = { today: TODAY, convert: () => Promise.resolve({ ok: true as const, markdown: cv }) }
+
+    let from: number | undefined = undefined
+    let seen = ''
+    let calls = 0
+    for (;;) {
+      const out = (await read('vault.file.read', h.memory(), { id, ...(from === undefined ? {} : { from }) }, ctx)) as {
+        ok: boolean
+        markdown: string
+        next: number | null
+      }
+      expect(out.ok).toBe(true)
+      // The note is appended for the model; the document text is what precedes it.
+      seen += out.markdown.split('\n\n[')[0]
+      calls += 1
+      if (out.next === null) break
+      from = out.next
+      expect(calls).toBeLessThan(10)
+    }
+
+    expect(calls).toBeGreaterThan(1)
+    expect(seen).toBe(cv)
+  })
+
+  it('tells the model how to continue, rather than leaving it to guess', async () => {
+    const h = seeded()
+    const [id] = aFile(h)
+    const out = (await read('vault.file.read', h.memory(), { id }, {
+      today: TODAY,
+      convert: () => Promise.resolve({ ok: true as const, markdown: 'z'.repeat(30_000) }),
+    })) as { ok: boolean; markdown: string; next: number | null }
+
+    expect(out.next).toBe(12_000)
+    expect(out.markdown).toContain('vault.file.read')
+    expect(out.markdown).toContain('from 12000')
+    // The sentence that stops it asking for a re-upload.
+    expect(out.markdown).toContain('Do not ask the person to paste')
+  })
+
   it('passes a converter’s refusal through as a reason', async () => {
     const h = seeded()
     const [id] = aFile(h)

@@ -149,7 +149,16 @@ export async function convertFile(endpoint: string, file: File): Promise<Convert
     return { ok: false, reason: answer.failed.reason }
   }
   const out = readConvertResponse(answer, endpoint)
-  return out.ok ? { ok: true, markdown: trimForModel(out.markdown) } : out
+    /*
+   * The WHOLE document, untrimmed. The cut belongs to `vault.file.read`, which
+   * is the only caller that can offer a way to read past it — trimming here made
+   * the rest unreachable by anything, which is how a three-page CV became one
+   * page and the model started asking people to paste the remainder.
+   *
+   * `convertUrl` below still trims: a job posting is read in one bite by
+   * `read-posting`, which has no offset to pass and no conversation to continue.
+   */
+  return out.ok ? { ok: true, markdown: out.markdown } : out
 }
 
 /**

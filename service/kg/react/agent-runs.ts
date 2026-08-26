@@ -331,6 +331,19 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
     })
     notify()
 
+    /*
+     * The loop's step id -> this thread's entry id, for THIS run only.
+     * See the note at the `step` event below for why both halves are needed.
+     */
+    const stepEntries = new Map<string, string>()
+    const entryForStep = (stepId: string): string => {
+      const seen = stepEntries.get(stepId)
+      if (seen !== undefined) return seen
+      const minted = nextId()
+      stepEntries.set(stepId, minted)
+      return minted
+    }
+
     /**
      * The approval gate, parked on the RUN.
      *
@@ -425,7 +438,31 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
               // has stopped talking and started calling. Settling the draft here
               // keeps the entries in the order they happened.
               draft = null
-              record(threadId, { kind: 'step', id: `s-${event.step.id}`, step: event.step })
+              /*
+               * `nextId()`, NOT the loop's own step id.
+               *
+               * `runAgent`'s counter restarts at 0 every run, so turn two's
+               * first step arrives as `s1` again — and `record` upserts by
+               * entry id. Turn one's tool row was OVERWRITTEN IN PLACE and turn
+               * two's step filed under turn one's question, then persisted
+               * through `assistant.thread.set`, which is `undoable: false`.
+               *
+               * Reproduced: two turns each calling one tool left five entries
+               * where there should be six, with the surviving step row holding
+               * the wrong turn's call. `toTranscript` then replays to the model
+               * a tool call it never made.
+               *
+               * But the shared id was doing real work: a step is recorded
+               * twice — `running`, then `done` — and the upsert is what makes
+               * those ONE row instead of two. Minting a fresh id per event
+               * fixes the collision and splits every tool call into a running
+               * row that never resolves and a done row beside it. (Observed:
+               * the first attempt at this fix did exactly that.)
+               *
+               * So: mint on first sighting, remember, reuse — per run, so the
+               * next turn cannot reach it.
+               */
+              record(threadId, { kind: 'step', id: entryForStep(event.step.id), step: event.step })
               return
             }
 

@@ -415,3 +415,59 @@ describe('what a compaction has to tell the thread', () => {
     expect(onCompacted).not.toHaveBeenCalled()
   })
 })
+
+/**
+ * Two turns of one conversation, each calling a tool.
+ *
+ * `runAgent`'s step counter restarts at 0 every run, and `record` upserts by
+ * entry id — so turn two's first step arrived as the same id as turn one's and
+ * overwrote it IN PLACE. Turn one's tool row was destroyed, turn two's was
+ * filed under turn one's question, and the result was persisted through
+ * `assistant.thread.set`, which is `undoable: false`.
+ *
+ * The counter-example matters as much: a step is recorded twice, `running` then
+ * `done`, and the shared id is what makes those one row. A fix that mints a
+ * fresh id per event splits every tool call in two. Both are asserted here.
+ */
+describe('step rows across turns', () => {
+  const callThenSay = (answer: string) => {
+    let n = 0
+    return async (): Promise<Turn> =>
+      n++ === 0
+        ? {
+            ok: true,
+            text: null,
+            toolCalls: [{ id: 'c1', name: 'memory_overview', args: {}, raw: '{}' }],
+            finishReason: 'tool_calls',
+          }
+        : answering(answer)
+  }
+
+  it('gives each turn its own step row, and each step exactly one', async () => {
+    const runs = createAgentRuns()
+    const settled = vi.fn()
+    const turn = (prompt: string, history: readonly ChatMessage[], answer: string) => {
+      runs.start({
+        threadId: A,
+        prompt,
+        history,
+        llm: () => callThenSay(answer),
+        host,
+        tools: ['memory.overview'],
+        entries: runs.get(A)?.entries ?? [],
+        onSettled: settled,
+      })
+    }
+
+    turn('first', [], 'one')
+    await vi.waitFor(() => expect(settled).toHaveBeenCalledTimes(1))
+    turn('second', settled.mock.calls[0]![2] as ChatMessage[], 'two')
+    await vi.waitFor(() => expect(settled).toHaveBeenCalledTimes(2))
+
+    const kinds = (runs.get(A)?.entries ?? []).map((e) => e.kind)
+    expect(kinds).toEqual(['you', 'step', 'answer', 'you', 'step', 'answer'])
+    // Distinct ids, or one of them overwrote the other.
+    const ids = (runs.get(A)?.entries ?? []).map((e) => e.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+})

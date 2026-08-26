@@ -15,6 +15,7 @@ import { createMemoryDriver } from '../storage/memory-driver'
 import type { JournalDraft } from './journal'
 import { freshMeta } from './meta'
 import { createRepository, onRemoteCommit } from './repository'
+import type { PersistenceHealth } from './queue'
 import type { Repository } from './repository'
 
 const AT: Instant = '2026-10-12T09:00:00.000Z'
@@ -724,33 +725,65 @@ describe('history', () => {
   describe('onRemoteCommit', () => {
     const event: StoreEvent = { kind: 'commit', at: AT, entryId: 'theirs' }
 
-    it('puts our queued write on disk before adopting what is there', async () => {
-      const disk = ['theirs']
-      let queued = ['mine']
-      let onScreen = ['mine']
-      let clearedAfter: string[] | null = null
-
+    /** A repo whose flush drains iff the disk is working. */
+    const fake = (health: PersistenceHealth) => {
+      const state = { disk: ['theirs'], queued: ['mine'], onScreen: ['mine'], cleared: false }
       const repo = {
+        health,
         flush: async () => {
           await Promise.resolve()
-          disk.push(...queued)
-          queued = []
+          // `flush()` settles either way — that is the point of the guard.
+          if (health.state === 'idle' || health.state === 'writing') {
+            state.disk.push(...state.queued)
+            state.queued = []
+          }
         },
         clearHistory: () => {
-          clearedAfter = [...onScreen]
+          state.cleared = true
         },
       } as unknown as Repository
-
-      await onRemoteCommit(repo, event, async () => {
+      const rehydrate = async () => {
         await Promise.resolve()
-        onScreen = [...disk]
-      })
+        state.onScreen = [...state.disk]
+      }
+      return { repo, rehydrate, state }
+    }
 
-      expect(onScreen).toEqual(['theirs', 'mine'])
+    it('puts our queued write on disk before adopting what is there', async () => {
+      const { repo, rehydrate, state } = fake({ state: 'idle' })
+      await onRemoteCommit(repo, event, rehydrate)
+
+      expect(state.onScreen).toEqual(['theirs', 'mine'])
       // And the stack goes last: every before-image in it was captured against
       // records the adopt has just replaced.
-      expect(clearedAfter).toEqual(['theirs', 'mine'])
+      expect(state.cleared).toBe(true)
     })
+
+    /*
+     * The guard `replaceAll` already has, sixty lines above, for the same
+     * reason: `flush()` settles on a FAILED attempt so `pagehide` cannot hang,
+     * so awaiting it says nothing about whether anything drained.
+     *
+     * Adopting anyway is the worst outcome available. `rehydrate` resets the
+     * graph to what is on DISK, so every edit still only in memory is gone, and
+     * `clearHistory` then destroys the undo ring and audit log that were the
+     * last record of it — permanently, because `off` never clears in-session,
+     * and triggered by another tab the person is not even looking at.
+     */
+    for (const health of [
+      { state: 'off', reason: 'quota', pending: 1, unsaved: 1 },
+      { state: 'degraded', pending: 1, unsaved: 1, attempts: 3, lastError: 'boom' },
+    ] as const) {
+      it(`keeps unsaved work on screen when the disk is ${health.state}`, async () => {
+        const { repo, rehydrate, state } = fake(health)
+        await onRemoteCommit(repo, event, rehydrate)
+
+        // Stale, and that is the lesser harm: the work is still there to export.
+        expect(state.onScreen).toEqual(['mine'])
+        // And the undo that could recover it is still standing.
+        expect(state.cleared).toBe(false)
+      })
+    }
   })
 
   it('replays a persisted audit so it survives a rehydrate', () => {

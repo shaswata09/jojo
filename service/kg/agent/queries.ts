@@ -36,6 +36,7 @@ import { statsFor } from '../core/statistics'
 import { comparisonsFor, rangeLabel } from '../core/segments'
 import { recommendationsFor } from '../core/recommend'
 import type { GraphSnapshot } from '../core/snapshot'
+import { pageNote, pageOf } from './paging'
 import { s } from '../core/schema'
 import { onOneOf, parseSources, readListings } from '../core/board'
 import { CONSTANT_NAMES, FUNCTION_NAMES, evaluate } from '../core/expression'
@@ -420,12 +421,35 @@ export const vaultFileRead = defineRead({
   name: 'vault.file.read',
   title: 'Read a document',
   summary:
-    'Read what is inside a stored document — a PDF, a Word file, a deck, a spreadsheet — as text. Use it before answering questions about a posting, a CV or anything else filed in the Vault.',
+    'Read what is inside a stored document — a PDF, a Word file, a deck, a spreadsheet — as text. Use it before answering questions about a posting, a CV or anything else filed in the Vault. A long document arrives in parts: read it again with `from` set to the offset the previous part ended at until you reach the end. Read to the end before filing anything from it: on a CV, the later parts are where the publications are.',
   effect: 'read',
   input: s.object({
     id: s.id('file', { label: 'Document', description: 'The id of the file to read.' }),
+    /*
+     * The offset, which is what makes a long document readable at all.
+     *
+     * Without it this tool took an id and returned the first twelve thousand
+     * characters with a note saying the document was longer — and the model,
+     * correctly concluding it had no way to see the rest, asked the PERSON to
+     * paste it. It was right: there was no way. A three-page CV was a one-page
+     * CV, and the pages that went missing were the publications.
+     *
+     * Characters rather than pages, because MarkItDown returns one stream of
+     * Markdown and a PDF's pagination does not survive the conversion. An offset
+     * is what actually exists; the note appended to each part turns it into an
+     * instruction without the model needing to know that.
+     */
+    from: s.optional(
+      s.number({
+        min: 0,
+        int: true,
+        label: 'From',
+        description:
+          'Where to start reading, in characters. Omit for the beginning. To continue a long document, pass the offset the previous part said it ended at.',
+      }),
+    ),
   }),
-  read: async (memory, input: { id: NodeId }, ctx) => {
+  read: async (memory, input: { id: NodeId; from?: number }, ctx) => {
     const node = memory.node(input.id, 'file')
     if (!node) return { ok: false, hint: 'No document has that id.' }
     if (!ctx.convert) {
@@ -436,9 +460,22 @@ export const vaultFileRead = defineRead({
       }
     }
     const out = await ctx.convert(input.id)
-    return out.ok
-      ? { ok: true, name: node.props.name, markdown: out.markdown }
-      : { ok: false, name: node.props.name, hint: out.reason }
+    if (!out.ok) return { ok: false, name: node.props.name, hint: out.reason }
+
+    /*
+     * The cut happens HERE rather than in the app's converter, and that move is
+     * the fix. While the app trimmed before returning, this tool never saw the
+     * rest of the document and no offset could have reached it.
+     */
+    const page = pageOf(out.markdown, input.from ?? 0)
+    return {
+      ok: true,
+      name: node.props.name,
+      markdown: page.text + pageNote(page, input.id),
+      from: page.from,
+      next: page.next,
+      total: page.total,
+    }
   },
 })
 

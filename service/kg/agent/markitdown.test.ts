@@ -8,7 +8,8 @@
  * the live check against `markitdown-mcp` is for.
  */
 import { describe, expect, it } from 'vitest'
-import { CONTEXT_BUDGET, MARKITDOWN, MAX_BYTES, convertRequest, dataUri, initializeRequest, initializedNotification, readConvertResponse, readHandshake, readerPathNotForwarded, trimForModel } from './markitdown'
+import { MARKITDOWN, MAX_BYTES, convertRequest, dataUri, initializeRequest, initializedNotification, readConvertResponse, readHandshake, readerPathNotForwarded, trimForModel } from './markitdown'
+import { CONTEXT_BUDGET } from './paging'
 
 const json = (body: unknown) => ({ ok: true, status: 200, text: JSON.stringify(body) })
 

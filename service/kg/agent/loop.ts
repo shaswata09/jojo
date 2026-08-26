@@ -31,7 +31,7 @@
 import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
-import { EVERYTHING_SAFE, inCatalogOrder, offeredFor } from './retrieve'
+import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor } from './retrieve'
 import { fitHistory, fitsWindow, summarisedNote, trimNote } from './budget'
 import { pickTools, type ChooserDeps } from './retrieve-llm'
 import { asMessage, compact, type CompactDeps } from './compact'
@@ -991,7 +991,28 @@ async function performCall(
    * different answer. It is emphatically NOT told the tool exists elsewhere,
    * because a model told that will ask for it again.
    */
-  if (entry && offered && enforced && !offered.has(entry.name)) {
+  /*
+   * `enforced`, OR one of the two tools that cannot be undone.
+   *
+   * The retriever's set is a suggestion — a miss falls through to the approval
+   * gate, and the comment above `enforced` says why that was safe: "with
+   * approvals on the person is asked, and with them off a delete still stops".
+   *
+   * THAT SENTENCE STOPPED BEING TRUE when `auto` was added. `gate: 'none'`
+   * stops nothing, so the last control under it was gone, and a run narrowed by
+   * the retriever would execute a `memory.clear` the model produced from
+   * nowhere — proven with a probe: prompt "what applications do I have at
+   * Rice", no mention of wiping, whole store emptied, `undoable: false`.
+   *
+   * `NEVER_IMPLICIT` is stripped by `offeredFor` precisely because these two are
+   * the only un-undoable operations in the app. Making that strip REAL rather
+   * than advisory is the fix, and it is not an approval prompt in disguise: the
+   * model asked for a name that was never offered, and `auto` still runs
+   * everything that WAS. A person who says "wipe everything" gets `asksToWipe`,
+   * the tool in `offered`, and no refusal here.
+   */
+  const neverImplicit = entry !== undefined && NEVER_IMPLICIT.includes(entry.name)
+  if (entry && offered && (enforced || neverImplicit) && !offered.has(entry.name)) {
     const step: AgentStep = {
       id,
       name: entry.name,

@@ -1325,6 +1325,61 @@ describe('the long-conversation harness', () => {
     })
   })
 
+  describe('the two tools that cannot be undone', () => {
+    /*
+     * `memory.reset` and `memory.clear` empty the store with `undoable: false`.
+     * `offeredFor` strips them unless the person lexically asked, and that strip
+     * used to be ADVISORY: the executor enforced the offered set only when a
+     * caller passed an explicit `tools` list, which the Assistant does not.
+     *
+     * That was defensible while the approval gate was the backstop — "with
+     * approvals on the person is asked, and with them off a delete still stops".
+     * Adding `auto` (`gate: 'none'`) removed the backstop and made the hole
+     * reachable. Proven with a probe before this test existed: prompt "what
+     * applications do I have at Rice", no mention of wiping, whole store gone.
+     */
+    const wiper = () => {
+      let n = 0
+      return async (): Promise<Turn> =>
+        n++ === 0
+          ? calls('memory_clear', { confirm: true })
+          : { ok: true, text: 'done', toolCalls: [], finishReason: 'stop' }
+    }
+
+    it('will not run one the retriever never offered, even with approvals off', async () => {
+      const ran: string[] = []
+      const h = host()
+      await runAgent({
+        host: { ...h, run: (name) => { ran.push(name); return h.run(name, {}) } },
+        llm: wiper(),
+        history: [],
+        prompt: 'what applications do I have at Rice',
+        retrieve: { carried: null },
+        gate: 'none',
+        onEvent: () => {},
+      })
+      expect(ran).toEqual([])
+    })
+
+    it('still runs one the person actually asked for', async () => {
+      // The strip is about IMPLICIT reach, not a ban. "Wipe everything" is a
+      // request, `asksToWipe` recognises it, and the tool is offered — so a
+      // refusal here would break the feature rather than protect anyone.
+      const ran: string[] = []
+      const h = host()
+      await runAgent({
+        host: { ...h, run: (name) => { ran.push(name); return h.run(name, {}) } },
+        llm: wiper(),
+        history: [],
+        prompt: 'wipe everything and start over from scratch',
+        retrieve: { carried: null },
+        gate: 'none',
+        onEvent: () => {},
+      })
+      expect(ran).toEqual(['memory.clear'])
+    })
+  })
+
   it('falls back to the lexicon when the chooser is down', async () => {
     const { llm } = seeing()
     const run = await runAgent({
