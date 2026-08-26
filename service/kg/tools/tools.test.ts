@@ -29,8 +29,10 @@ import {
   STAGE_VALUES,
   TIMELINE_KIND_VALUES,
   URGENCY_VALUES,
+  APPROVAL_MODES,
+  approvalOf,
 } from '../core/model'
-import type { StoredEdge, StoredNode } from '../core/model'
+import type { NodeId, StoredEdge, StoredNode } from '../core/model'
 import { createRepository } from '../repo/repository'
 import type { Repository } from '../repo/repository'
 import { SCOUT_TOOLS, TWIN_TOOLS } from '../core/proposal'
@@ -66,7 +68,7 @@ const nullDriver = (): Options['driver'] => ({
 
 const START = Date.parse('2026-10-12T15:00:00.000Z')
 
-function harness() {
+function harness(snapshot: MutableSnapshot = new MutableSnapshot()) {
   // Advanced by a second per read so ids stay ordered and `lastActionAt` moves,
   // which is what `ofType`'s "id-ascending is creation order" depends on.
   let tick = 0
@@ -83,7 +85,7 @@ function harness() {
 
   const repo = createRepository({
     driver: nullDriver(),
-    snapshot: new MutableSnapshot(),
+    snapshot,
     meta,
     now,
   })
@@ -1604,23 +1606,63 @@ describe('acting without asking', () => {
    * enforce a policy would still be one commit away from a graph that
    * disagreed with it.
    */
-  it('remembers that one conversation may be written to without asking', () => {
+  it('remembers how much one conversation may do without being asked', () => {
     const h = harness()
     const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Tidy up' }))
-    expect(h.repo.getSnapshot().node(id, 'thread')?.props.autoApprove).toBeUndefined()
+    // Absent, not `manual`: a new conversation stores nothing and `approvalOf`
+    // reads the safe default, so the record says what a person CHOSE.
+    expect(h.repo.getSnapshot().node(id, 'thread')?.props.approval).toBeUndefined()
 
-    okOr(h.runtime.run('assistant.thread.auto.set', { id, auto: true }))
-    expect(h.repo.getSnapshot().node(id, 'thread')?.props.autoApprove).toBe(true)
+    for (const mode of APPROVAL_MODES) {
+      okOr(h.runtime.run('assistant.thread.auto.set', { id, mode }))
+      expect(h.repo.getSnapshot().node(id, 'thread')?.props.approval).toBe(mode)
+    }
+  })
 
-    okOr(h.runtime.run('assistant.thread.auto.set', { id, auto: false }))
-    expect(h.repo.getSnapshot().node(id, 'thread')?.props.autoApprove).toBe(false)
+  it('clears the old boolean, so two fields cannot disagree', () => {
+    /*
+     * A conversation written by an older build carries `autoApprove` and no
+     * `approval`. Setting a mode must not leave both behind: `approvalOf`
+     * prefers `approval`, so a stale boolean is invisible until something reads
+     * it directly — which is how "it asked me even though I turned that off"
+     * gets reported months later.
+     */
+    // Seeded into the snapshot directly, because no tool writes `autoApprove`
+    // any more — this is a record an OLDER BUILD left behind.
+    const legacy = 'thread:0198e2a0-0000-7000-8000-00000000beef' as NodeId
+    const snapshot = new MutableSnapshot()
+    snapshot.putNode({
+      id: legacy,
+      type: 'thread',
+      props: { slug: 'tidy-up', title: 'Tidy up', entries: [], autoApprove: true },
+      createdAt: new Date(START).toISOString(),
+      updatedAt: new Date(START).toISOString(),
+    })
+    const h = harness(snapshot)
+
+    expect(approvalOf(h.repo.getSnapshot().node(legacy, 'thread')!.props)).toBe('semi')
+
+    okOr(h.runtime.run('assistant.thread.auto.set', { id: legacy, mode: 'manual' }))
+    const props = h.repo.getSnapshot().node(legacy, 'thread')?.props
+    expect(props?.approval).toBe('manual')
+    expect(props?.autoApprove).toBeUndefined()
+  })
+
+  it('reads a conversation written before modes existed', () => {
+    // The two old settings map onto the first two modes, and nobody is
+    // silently upgraded to `auto` — that is a mode a person has to choose.
+    expect(approvalOf({ autoApprove: true })).toBe('semi')
+    expect(approvalOf({ autoApprove: false })).toBe('manual')
+    expect(approvalOf({})).toBe('manual')
+    // An explicit mode always wins over the legacy field.
+    expect(approvalOf({ approval: 'auto', autoApprove: false })).toBe('auto')
   })
 
   it('is undoable, because granting it is a decision worth taking back', () => {
     const h = harness()
     const id = okOr(h.runtime.run('assistant.thread.create', { title: 'Tidy up' }))
     const before = graphOf(h.repo)
-    okOr(h.runtime.run('assistant.thread.auto.set', { id, auto: true }))
+    okOr(h.runtime.run('assistant.thread.auto.set', { id, mode: 'auto' }))
     h.runtime.undo()
     expect(graphOf(h.repo)).toEqual(before)
   })
@@ -1679,7 +1721,7 @@ describe('acting without asking', () => {
     const h = harness()
     const one = okOr(h.runtime.run('assistant.thread.create', { title: 'One' }))
     const two = okOr(h.runtime.run('assistant.thread.create', { title: 'Two' }))
-    okOr(h.runtime.run('assistant.thread.auto.set', { id: one, auto: true }))
-    expect(h.repo.getSnapshot().node(two, 'thread')?.props.autoApprove).toBeUndefined()
+    okOr(h.runtime.run('assistant.thread.auto.set', { id: one, mode: 'auto' }))
+    expect(h.repo.getSnapshot().node(two, 'thread')?.props.approval).toBeUndefined()
   })
 })
