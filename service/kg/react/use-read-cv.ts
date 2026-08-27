@@ -5,10 +5,10 @@ import {
   mergeBackground,
   missedMessages,
   readCv,
-  readRelations,
-  relationMessages,
 } from '../agent/read-cv'
 import type { BackgroundDraft, RelationDraft } from '../agent/read-cv'
+import { linkProfile } from '../agent/link-profile'
+import type { LinkResult } from '../agent/link-profile'
 import { documentKindOf, DOCUMENT_LABEL } from '../core/document-kind'
 import type { ModelSettings } from '../core/provider'
 import type { ConvertResult } from '../agent/markitdown'
@@ -256,22 +256,44 @@ export function useReadCv<S extends Cancellation>({
        * of them evidences another.
        */
       let relations: readonly RelationDraft[] = []
+      let linking: LinkResult | null = null
       if (!signal?.aborted && background.length > 1) {
-        onStep?.('Working out how these connect')
-        try {
-          const reply = await turn(
-            settings,
-            relationMessages(name, markdown, background),
-            [],
-            signal,
-          )
-          if (reply.ok && reply.text !== null) relations = readRelations(reply.text, background.length)
-        } catch {
-          // Deliberately silent. See above.
-        }
+        /*
+         * A SEPARATE AGENT PASS, over every pair, in batches.
+         *
+         * This was one request carrying all thirty entries, inside a `catch {}`
+         * described as deliberately silent. Thirty entries is the shape that
+         * hits a model's output limit; a truncated reply parses to nothing; and
+         * nothing said so — which is how the graph came to be a collection of
+         * nodes with no edges at all.
+         *
+         * `linkProfile` asks about the records in front of it and no more, and
+         * `pairBatches` guarantees every pair is in front of it once. It never
+         * throws: a batch that fails is counted, and the count comes back here
+         * so the caller can say the graph is thin rather than implying it is
+         * complete.
+         */
+        linking = await linkProfile(
+          { ask: (messages) => turn(settings, messages, [], signal) },
+          name,
+          markdown,
+          background,
+          {
+            ...(signal === undefined ? {} : { signal }),
+            onBatch: (done, total) =>
+              onStep?.(`Working out how these connect — ${String(done)} of ${String(total)}`),
+          },
+        )
+        relations = linking.relations
       }
 
-      return { ok: true, background, relations, skipped }
+      return {
+        ok: true,
+        background,
+        relations,
+        skipped,
+        ...(linking === null ? {} : { linking }),
+      }
     },
     [readDocument, turn],
   )

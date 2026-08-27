@@ -390,4 +390,19 @@ export const WORLD_SHAPE = {
   file: 4,
   link: 1,
   snippet: 1,
+  /*
+   * ZERO, and declared rather than omitted.
+   *
+   * The world seeds nothing about the person themselves — that is what the
+   * `profile` conversations build. Leaving these out is not the same as saying
+   * none: `bench-fixtures` refuses a `count` check on a type the world never
+   * names, so an omitted type is indistinguishable from a typo, and the
+   * conversations that most needed counting were the ones it turned away.
+   *
+   * Counting from zero is exactly what those checks want. `profile-relate-two-facts`
+   * asserts two backgrounds and one claim, and both numbers are only meaningful
+   * because the starting point is stated here.
+   */
+  background: 0,
+  claim: 0,
 } as const

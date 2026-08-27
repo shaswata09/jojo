@@ -978,7 +978,14 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
        */
       if (signal?.aborted) return finish('aborted')
       counter += 1
-      const step = await performCall(options, call, `s${String(counter)}`, offered, enforced)
+      const step = await performCall(
+        options,
+        call,
+        `s${String(counter)}`,
+        offered,
+        enforced,
+        turn.finishReason === 'length',
+      )
       steps.push(step)
 
       /*
@@ -1064,6 +1071,14 @@ async function performCall(
   offered: Set<string> | null,
   /** True when the list is a boundary rather than the retriever's guess. */
   enforced: boolean,
+  /**
+   * The reply carrying this call stopped at the model's output limit.
+   *
+   * Changes the DIAGNOSIS, not the outcome: a truncated `arguments` string is
+   * invalid JSON, and telling the model its JSON was malformed invites it to
+   * send the same oversized call again.
+   */
+  truncated = false,
 ): Promise<AgentStep> {
   const { host, onEvent, approve } = options
   const entry = CATALOG.find((e) => e.wireName === call.name || e.name === call.name)
@@ -1135,14 +1150,29 @@ async function performCall(
     return step
   }
 
-  // Arguments that were not JSON. Quoted back rather than guessed at: the model
-  // is the only thing that knows what it meant, and a repair here would be a
-  // silent edit to what the user is about to be told happened.
+  /*
+   * Arguments that were not JSON. Quoted back rather than guessed at: the model
+   * is the only thing that knows what it meant, and a repair here would be a
+   * silent edit to what the user is about to be told happened.
+   *
+   * TRUNCATION IS A DIFFERENT FAILURE and gets a different sentence. A reply cut
+   * off at the model's output limit leaves `arguments` ending mid-string, which
+   * reaches `safeParse` as invalid JSON — so the model was told its JSON was
+   * malformed, which is not what happened and invites it to send the SAME
+   * oversized call again. Reported from a CV import: `profile.background.add`
+   * with thirty facts in one array, cut off partway through the second title.
+   *
+   * The remedy has to be in the sentence, because the model cannot see its own
+   * output limit. "Send fewer" is the only thing that works, and the bulk tools
+   * are precisely the ones that can be split.
+   */
   if (call.args === null) {
     return settle({
       ...base,
       status: 'failed',
-      detail: `Error: the arguments were not valid JSON. You sent: ${call.raw.slice(0, 200)}`,
+      detail: truncated
+        ? `Error: your reply hit the model's output limit partway through the arguments, so they could not be read. Send the same call again with FEWER items — a third of them — and then call it again for the rest. You sent: ${call.raw.slice(0, 200)}`
+        : `Error: the arguments were not valid JSON. You sent: ${call.raw.slice(0, 200)}`,
     })
   }
 

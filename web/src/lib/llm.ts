@@ -83,6 +83,27 @@ function reportFailure(
   return failure
 }
 
+/**
+ * Whether the browser will refuse this address before a socket is opened.
+ *
+ * Mixed content: an https page may not call plain http. Loopback is the
+ * exception — `localhost`, `127.0.0.0/8` and `[::1]` are *potentially
+ * trustworthy*, so they are allowed and must keep their direct path.
+ *
+ * Kept in step with `mixedContent` in `local-service.ts`, which writes the
+ * sentence a person reads when this happens. The two disagreeing is how the app
+ * came to advise installing an extension it then declined to use.
+ */
+const LOOPBACK_TARGET = /^https?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?(?:$|\/)/i
+
+export function browserWillRefuse(url: string): boolean {
+  return (
+    globalThis.location?.protocol === 'https:' &&
+    /^http:\/\//i.test(url) &&
+    !LOOPBACK_TARGET.test(url)
+  )
+}
+
 async function sendToModel(
   request: Parameters<typeof send>[0],
   endpoint: string,
@@ -97,7 +118,24 @@ async function sendToModel(
    */
   onChunk?: (text: string) => void,
 ): Promise<Sent> {
-  if (!providerMeta(provider).cloud) return send(request, endpoint, signal)
+  /*
+   * Cloud providers, AND anything the browser will refuse to reach at all.
+   *
+   * This was `cloud` alone, and the gap was one the app's own error message
+   * promised it had closed: an https page pointed at a plain-http endpoint gets
+   * "install the jojo extension, which relays that one hop for you" — while
+   * this line sent the request straight to `fetch`, where mixed content blocks
+   * it, every time, extension or not. Reported from a lab vLLM at
+   * `http://10.116.34.124:8103/v1` on an https-served copy: the relay was never
+   * asked, so installing the extension changed nothing.
+   *
+   * A relay is not an optimisation here, it is the only route. Loopback is
+   * excluded because the browser allows it — see `mixedContent` in
+   * `local-service.ts` — so a local Ollama keeps its direct, faster path.
+   */
+  if (!providerMeta(provider).cloud && !browserWillRefuse(request.url)) {
+    return send(request, endpoint, signal)
+  }
 
   const relayed = await callModel(
     {

@@ -265,3 +265,49 @@ describe('forbidding a change means forbidding every way to make it', () => {
     }
   })
 })
+
+/**
+ * How much of the write surface this suite actually asks for.
+ *
+ * The number that explains why an impressive score and a broken import lived
+ * together: the rubric required **16 of 82 write tools**, and both of the tools
+ * that failed in real use — `profile.background.add` and `claim.add` — were in
+ * the other sixty-six. A score is a claim about what was tested, and nobody had
+ * ever measured what that was.
+ *
+ * Pinned as a FLOOR that must rise, not as an exact figure. An exact one turns
+ * every new conversation into a failing test and gets deleted; a floor makes
+ * shrinking coverage the thing that fails.
+ */
+describe('how much of the catalog this suite reaches', () => {
+  const required = new Set(CONVERSATIONS.flatMap((c) => c.turns.flatMap((t) => [...(t.mustCallOneOf ?? [])])))
+  const writes = CATALOG.filter((e) => e.effect !== 'read').map((e) => e.name)
+  const covered = writes.filter((w) => required.has(w))
+
+  it('requires the write tools the real failures came from', () => {
+    /*
+     * Named individually, because these are not a sample — they are the two
+     * that broke a deployment while this suite reported everything was fine.
+     */
+    for (const tool of ['profile.background.add', 'claim.add', 'profile.background.update']) {
+      expect(required.has(tool), `${tool} is never required by any conversation`).toBe(true)
+    }
+  })
+
+  it('does not shrink below what it reaches today', () => {
+    // A floor. Raise it when coverage rises; a drop is a conversation deleted
+    // or a rubric loosened, and that should have to be argued for.
+    expect(covered.length).toBeGreaterThanOrEqual(19)
+  })
+
+  it('reaches every GROUP it declares', () => {
+    // A group with no conversations is a heading in the report over an empty
+    // column, which reads as "nothing failed here".
+    for (const group of GROUPS) {
+      expect(
+        CONVERSATIONS.some((c) => c.group === group),
+        `the "${group}" group has no conversations`,
+      ).toBe(true)
+    }
+  })
+})

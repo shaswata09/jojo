@@ -19,7 +19,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { agentTurn } from '@/lib/llm'
+import { agentTurn, browserWillRefuse } from '@/lib/llm'
 import type { ModelSettings } from '@jojo/service/core/provider'
 
 /** ~20,000 tokens by `estimateTokens`, which is what makes the ratio meaningful. */
@@ -204,5 +204,49 @@ describe('a streamed turn, and the token counts it has to carry', () => {
     expect(turn.ok).toBe(false)
     if (turn.ok) return
     expect(turn.reason).toContain('4,096')
+  })
+})
+
+/**
+ * The relay was gated on `cloud`, and the error message promised otherwise.
+ *
+ * An https page pointed at a plain-http endpoint is blocked by the browser
+ * before a socket opens. `local-service.ts` says so in as many words — "install
+ * the jojo extension, which relays that one hop for you" — while the transport
+ * sent a non-cloud provider straight to `fetch`, where mixed content refuses it
+ * every time, extension or not.
+ *
+ * Reported from a lab vLLM at `http://10.116.34.124:8103/v1` on an https-served
+ * copy: the relay was never asked, so installing the extension changed nothing.
+ */
+describe('which requests are worth relaying', () => {
+  it('relays a plain-http endpoint from an https page, even for a local provider', () => {
+    vi.stubGlobal('location', { protocol: 'https:' })
+    expect(browserWillRefuse('http://10.116.34.124:8103/v1/chat/completions')).toBe(true)
+  })
+
+  it('leaves everything alone when the page itself is http', () => {
+    // A dev server on http can reach an http endpoint directly. This is why the
+    // same setup "worked fine" from one origin and not another.
+    vi.stubGlobal('location', { protocol: 'http:' })
+    expect(browserWillRefuse('http://10.116.34.124:8103/v1/chat/completions')).toBe(false)
+  })
+
+  it('leaves loopback alone, because the browser allows it', () => {
+    // `localhost` and `127.0.0.0/8` are potentially trustworthy, so a local
+    // Ollama keeps its direct — and faster — path.
+    vi.stubGlobal('location', { protocol: 'https:' })
+    for (const url of [
+      'http://localhost:11434/api/chat',
+      'http://127.0.0.1:8000/v1/chat/completions',
+      'http://[::1]:8000/v1/chat/completions',
+    ]) {
+      expect(browserWillRefuse(url)).toBe(false)
+    }
+  })
+
+  it('leaves an https endpoint alone', () => {
+    vi.stubGlobal('location', { protocol: 'https:' })
+    expect(browserWillRefuse('https://10.116.34.124:8103/v1')).toBe(false)
   })
 })

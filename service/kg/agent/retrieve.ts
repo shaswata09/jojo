@@ -82,6 +82,35 @@ export const RESIDENT: readonly string[] = Object.keys(READS)
  * of lower-casing; `constructor` is already lower case.
  */
 const ALIASES: Readonly<Record<string, readonly string[]>> = Object.assign(Object.create(null), {
+  /*
+   * The person's own words for their own background.
+   *
+   * These map onto the enum values `profile.background.add` already declares —
+   * `education`, `publication`, `teaching` — rather than onto a tool name, so a
+   * renamed or split tool cannot strand them.
+   *
+   * Measured before they existed: "Record my background: PhD from Rice"
+   * selected the tool, on the literal word "background", and "Record that I
+   * have an MSc from UT Austin" did not. Both Gemma 3 31B and GPT-OSS 120B then
+   * answered that they had no way to create such a record — correct, useless,
+   * and the same shape as the failure reported from a real CV import.
+   *
+   * A degree abbreviation is not derivable from anything in the code. This is
+   * the one part of the vocabulary that has to be written down.
+   */
+  phd: ['education', 'background'],
+  msc: ['education', 'background'],
+  msee: ['education', 'background'],
+  bsc: ['education', 'background'],
+  mba: ['education', 'background'],
+  doctorate: ['education', 'background'],
+  degree: ['education', 'background'],
+  graduated: ['education', 'background'],
+  paper: ['publication', 'background'],
+  preprint: ['publication', 'background'],
+  taught: ['teaching', 'background'],
+  lectured: ['teaching', 'background'],
+
   reject: ['stage', 'application'],
   rejected: ['stage', 'application'],
   offer: ['stage', 'application'],
@@ -252,10 +281,49 @@ const INDEX: ReadonlyMap<string, ReadonlyMap<string, number>> = (() => {
       .toLowerCase()
       .split(/[^a-z0-9]+/)
       .filter((w) => w.length >= 3)
+  /*
+   * Every enum VALUE the tool's own schema declares, at title weight.
+   *
+   * Derived, not authored — the vocabulary is already in the code, as the
+   * closed list the tool accepts. `profile.background.add` takes a `kind` of
+   * education, publication, skill, teaching, award, grant, patent and ten more:
+   * exactly the words somebody uses to describe the thing they want recorded,
+   * and none of them appear in the tool's name, title or summary.
+   *
+   * The gap was measured, not guessed. "Record my background: PhD from Rice"
+   * selected the tool (on the word "background"); "Record my publications"
+   * did not, and neither did anything else phrased the way a person phrases it.
+   * Both Gemma 3 31B and GPT-OSS 120B then answered, correctly and uselessly,
+   * that they had no way to create such a record — the same shape as the
+   * failure reported from a real CV import.
+   *
+   * Weight 2 rather than 1, because an enum value is structured vocabulary the
+   * tool guarantees it accepts, not prose that happens to mention a word.
+   */
+  const enumWords = (schema: unknown, into: Set<string>): void => {
+    if (typeof schema !== 'object' || schema === null) return
+    if (Array.isArray(schema)) {
+      for (const item of schema) enumWords(item, into)
+      return
+    }
+    for (const [key, value] of Object.entries(schema as Record<string, unknown>)) {
+      if (key === 'enum' && Array.isArray(value)) {
+        for (const option of value) {
+          if (typeof option === 'string') for (const word of words(option)) into.add(word)
+        }
+        continue
+      }
+      enumWords(value, into)
+    }
+  }
+
   for (const entry of CATALOG) {
     for (const word of entry.name.split('.')) add(word.toLowerCase(), entry.name, 3)
     for (const word of words(entry.title)) add(word, entry.name, 2)
     for (const word of words(entry.summary)) add(word, entry.name, 1)
+    const fromEnums = new Set<string>()
+    enumWords(entry.parameters, fromEnums)
+    for (const word of fromEnums) add(word, entry.name, 2)
   }
   return out
 })()

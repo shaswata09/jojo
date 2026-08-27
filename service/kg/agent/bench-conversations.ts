@@ -120,6 +120,8 @@ export const GROUPS = [
   'ambiguity',
   'correction',
   'restraint',
+  'endurance',
+  'profile',
 ] as const
 export type Group = (typeof GROUPS)[number]
 
@@ -137,6 +139,10 @@ export const GROUP_BLURB: Readonly<Record<Group, string>> = {
   ambiguity: 'Requests that match more than one record, where the only correct move is to ask.',
   correction: 'Being told, a turn later, that the last thing was wrong.',
   restraint: 'Knowing when to do nothing, and never reaching for something irreversible.',
+  endurance:
+    'Conversations long enough to outgrow the model\u2019s window, where the assistant has to still know what was said before the summary replaced it.',
+  profile:
+    'Building the person\u2019s own record from what they say \u2014 many facts in one go, and the relations between them. The path a CV import takes.',
 }
 
 export type Conversation = {
@@ -1067,6 +1073,278 @@ export const CONVERSATIONS: readonly Conversation[] = [
     finalState: [
       { kind: 'count', type: 'application', is: 6, why: 'Reading changes nothing.' },
       { kind: 'count', type: 'timelineItem', is: 4, why: 'Reading changes nothing.' },
+    ],
+  },
+
+  /* ============================== endurance ============================= */
+
+  /*
+   * WHY THIS GROUP EXISTS, AND WHAT IT SAID ABOUT THE REST OF THE SUITE.
+   *
+   * Measured: before these, the whole benchmark was 30 conversations and 42
+   * turns — eighteen of one turn, twelve of two, and NOT ONE of three. So every
+   * piece of machinery built for long conversations was untested by the thing
+   * that exists to test the agent: `fitHistory` never trimmed, `COMPACT_TARGET`
+   * never applied, the summariser was never called, `contextThrough` never
+   * moved, and the carry never had more than one turn to accumulate over.
+   *
+   * A benchmark whose longest conversation is two turns cannot say anything
+   * about a conversation that outgrows the window, which is the case the
+   * assistant is most likely to be WRONG in and the least likely to be noticed
+   * in — the summary is silent, and a fact lost from it looks exactly like a
+   * model that never knew.
+   *
+   * These are deliberately long and deliberately back-referential: each one
+   * plants something in an early turn and asks for it after enough turns that a
+   * compaction has been through. Run them at `BENCH_WINDOW=16000` as well as
+   * the default to force the trim earlier.
+   */
+  {
+    id: 'long-recall-early-fact',
+    group: 'endurance',
+    why:
+      'The whole point of compacting rather than dropping: a fact stated in turn one has to survive ' +
+      'into turn eight, by which time the exchange that carried it has been replaced by a summary.',
+    turns: [
+      {
+        say: 'I am focusing on systems roles this season — treat that as the theme for everything I ask next.',
+        readOnly: true,
+        why: 'The fact to be remembered. Stated once, never repeated.',
+      },
+      { say: 'What applications do I have?', mustCallOneOf: [...READS], readOnly: true, why: 'Ordinary read.' },
+      { say: 'Which of them are still open?', mustCallOneOf: [...READS], readOnly: true, why: 'Filter.' },
+      { say: 'What is on the calendar for the Baylor one?', mustCallOneOf: [...READS], readOnly: true, why: 'A second domain.' },
+      { say: 'And what documents do I have filed?', mustCallOneOf: [...READS], readOnly: true, why: 'A third.' },
+      { say: 'How many have I heard back from?', mustCallOneOf: [...READS], readOnly: true, why: 'An aggregate.' },
+      { say: 'Which employer appears more than once?', mustCallOneOf: [...READS], readOnly: true, why: 'Another aggregate.' },
+      {
+        say: 'Given the theme I mentioned at the start, which one application should I put first?',
+        mustCallOneOf: [...READS],
+        readOnly: true,
+        why:
+          'The recall. "The theme I mentioned at the start" is only answerable if turn one survived ' +
+          'the compaction — and the correct answer names UT Austin or Rice systems work, not Baylor.',
+      },
+    ],
+    finalState: [
+      { kind: 'count', type: 'application', is: 6, why: 'Eight turns of reading changes nothing.' },
+      { kind: 'count', type: 'timelineItem', is: 4, why: 'Nothing invented over a long conversation.' },
+    ],
+  },
+  {
+    id: 'long-correction-after-drift',
+    group: 'endurance',
+    why:
+      'A correction that arrives long after the thing it corrects. The `correction` group tests this ' +
+      'one turn later, which any model handles; the failure is when the mistake is behind a summary.',
+    turns: [
+      {
+        say: 'Add a note to the Stripe application that I am waiting on the team match.',
+        mustCallOneOf: ['application.note.set', 'application.update', ...READS],
+        mustNotCall: [...NEVER],
+        why: 'The write that will later be corrected.',
+      },
+      { say: 'What stage is it at?', mustCallOneOf: [...READS], readOnly: true, why: 'Ordinary read.' },
+      { say: 'What else is at offer stage?', mustCallOneOf: [...READS], readOnly: true, why: 'A filter.' },
+      { say: 'Show me everything at Rice.', mustCallOneOf: [...READS], readOnly: true, why: 'Another employer.' },
+      { say: 'What is my response rate?', mustCallOneOf: [...READS], readOnly: true, why: 'An aggregate.' },
+      { say: 'Which applications have no calendar entry?', mustCallOneOf: [...READS], readOnly: true, why: 'A gap read.' },
+      {
+        say: 'That note I added earlier was wrong — it is the compensation I am waiting on, not the team match.',
+        mustCallOneOf: ['application.note.set', 'application.update', ...READS],
+        mustNotCall: ['application.create', ...NEVER],
+        why:
+          'It has to know WHICH note, from six turns back. Creating a second application, or attaching ' +
+          'the correction to the wrong record, is the failure — and both are what a lost summary causes.',
+      },
+    ],
+    finalState: [
+      {
+        kind: 'count',
+        type: 'application',
+        is: 6,
+        why: 'Corrected, not duplicated. A seventh means it lost track of what was being corrected.',
+      },
+      {
+        /*
+         * `exists` and not `prop`: `prop` compares with `===`, and a note is
+         * prose. Written as `prop … is: 'compensation'` this failed a model that
+         * had done exactly the right thing and written "Waiting on the
+         * compensation." — the rubric asserting a sentence it had invented.
+         */
+        kind: 'exists',
+        type: 'application',
+        where: { prop: 'note', contains: 'compensation' },
+        why:
+          'The correction landed on the record it was about. A count alone passes for a model that ' +
+          'wrote nothing at all, which is exactly what a lost summary produces.',
+      },
+    ],
+  },
+  {
+    id: 'long-chain-across-a-summary',
+    group: 'endurance',
+    why:
+      'A dependency that spans the compaction: something created early is referred to late by a name ' +
+      'the model was only told once.',
+    turns: [
+      {
+        say: 'Make a keyword called “consensus” — I will use it to group things.',
+        mustCallOneOf: ['keyword.create', ...READS],
+        mustNotCall: [...NEVER],
+        why: 'The thing created, and named, once.',
+      },
+      { say: 'What keywords do I have now?', mustCallOneOf: [...READS], readOnly: true, why: 'A read.' },
+      { say: 'How many applications am I tracking?', mustCallOneOf: [...READS], readOnly: true, why: 'An aggregate.' },
+      { say: 'Which of them are at interview?', mustCallOneOf: [...READS], readOnly: true, why: 'A filter.' },
+      { say: 'What documents are filed under Baylor?', mustCallOneOf: [...READS], readOnly: true, why: 'Another domain.' },
+      { say: 'What is the busiest month on my calendar?', mustCallOneOf: [...READS], readOnly: true, why: 'An aggregate.' },
+      {
+        say: 'Tag the UT Austin application with the keyword I made at the start.',
+        mustCallOneOf: ['keyword.attach', 'keyword.record.set', ...READS],
+        mustNotCall: [...NEVER],
+        why:
+          'The chain. It must resolve "the keyword I made at the start" to the one from turn one rather ' +
+          'than making a second one — the same duplicate-creation failure a lost summary produced when ' +
+          'the retriever offered `add` and not `update`.',
+      },
+    ],
+    finalState: [
+      {
+        kind: 'count',
+        type: 'keyword',
+        is: 4,
+        why:
+          'Three from the world plus the one made in turn one. A NEW name deliberately \u2014 asking ' +
+          'for \u201csystems\u201d, which the world already has, made this rubric reward duplicating ' +
+          'an existing keyword and fail the model that correctly refused to.',
+      },
+      {
+        kind: 'tagged',
+        type: 'application',
+        where: { prop: 'org', contains: 'UT Austin' },
+        keyword: 'consensus',
+        why:
+          'The chain closed: the tag reached the record, using the keyword from turn one. The count ' +
+          'above only says a second one was not made.',
+      },
+    ],
+  },
+
+  /* =============================== profile ============================== */
+
+  /*
+   * WHY THIS GROUP EXISTS.
+   *
+   * Measured: the rubric required 16 of the catalog's 82 write tools. Twenty
+   * per cent. `profile.background.add` and `claim.add` were both in the other
+   * eighty — and both are where the app failed in real use while this benchmark
+   * reported 30/30.
+   *
+   * That is the whole lesson. A score is a claim about what was tested, and a
+   * suite that never asks for a bulk write cannot discover that a bulk write is
+   * where a model runs out of output budget. These conversations are shaped
+   * like the thing that broke: many facts in one call, then a relation between
+   * two of them.
+   */
+  {
+    id: 'profile-facts-in-bulk',
+    group: 'profile',
+    why:
+      'The shape a CV import takes: many facts in ONE call. Reported from real use — the model ran ' +
+      'out of output budget partway through the array, the arguments arrived as invalid JSON, and ' +
+      'the person was told nothing useful. One fact at a time would never have found it.',
+    turns: [
+      {
+        say:
+          'Record my background: PhD in Computer Science from Rice, 2019. MSc from UT Austin, 2015. ' +
+          'Paper “Scalable Consensus” at OSDI 2023. Paper “Fault Lines” at NSDI 2022. Taught ' +
+          'Distributed Systems 2021 and 2022. Skills: Go, Rust, Kubernetes, distributed storage.',
+        mustCallOneOf: ['profile.background.add', ...READS],
+        mustNotCall: [...NEVER],
+        why:
+          'One call carrying every fact. A model that emits them one per round runs out of steps; a ' +
+          'model that emits them all at once may run out of output. Both are real, and both are the ' +
+          'point of asking this way.',
+      },
+    ],
+    finalState: [
+      {
+        kind: 'exists',
+        type: 'background',
+        where: { prop: 'title', contains: 'Scalable Consensus' },
+        why: 'A fact from the MIDDLE of the list. The first one landing proves nothing about truncation.',
+      },
+      {
+        kind: 'exists',
+        type: 'background',
+        where: { prop: 'title', contains: 'Kubernetes' },
+        why:
+          'And one from the END. This is the check a truncated argument list fails — the reported ' +
+          'failure cut off partway through the second title.',
+      },
+    ],
+  },
+  {
+    id: 'profile-relate-two-facts',
+    group: 'profile',
+    why:
+      'The edges. Reported from real use: the graph came out a collection of nodes with no relations ' +
+      'at all, and nothing in this suite would have noticed — `claim.add` was never required by any ' +
+      'conversation.',
+    turns: [
+      {
+        say: 'Record two things about me: a paper called “Scalable Consensus”, and a skill in distributed storage.',
+        mustCallOneOf: ['profile.background.add', ...READS],
+        mustNotCall: [...NEVER],
+        why: 'The two ends of the relation, made first.',
+      },
+      {
+        say: 'That paper is evidence of the distributed storage skill — record that.',
+        mustCallOneOf: ['claim.add', ...READS],
+        mustNotCall: ['profile.background.add', ...NEVER],
+        why:
+          'A relation between two records that already exist. Making a THIRD background entry instead ' +
+          'is the failure — it is what a model does when it cannot find the two it just made.',
+      },
+    ],
+    finalState: [
+      {
+        kind: 'count',
+        type: 'background',
+        is: 2,
+        why: 'Two facts, not three. A third means the relation turn created rather than related.',
+      },
+      { kind: 'count', type: 'claim', is: 1, why: 'The edge exists. This is the check the real failure would fail.' },
+    ],
+  },
+  {
+    id: 'profile-correct-a-fact',
+    group: 'profile',
+    why: 'Editing the person\u2019s own record rather than adding beside it — the duplicate-CV failure, one domain over.',
+    turns: [
+      {
+        say: 'Record that I have an MSc from UT Austin, 2015.',
+        mustCallOneOf: ['profile.background.add', ...READS],
+        mustNotCall: [...NEVER],
+        why: 'The record to be corrected.',
+      },
+      {
+        say: 'That was wrong — the MSc was 2016, not 2015. Fix it.',
+        mustCallOneOf: ['profile.background.update', ...READS],
+        mustNotCall: ['profile.background.add', ...NEVER],
+        why:
+          'Update, not add. Adding a second entry leaves the person with two degrees they do not have, ' +
+          'and is exactly what an agent offered `add` and not `update` reaches for.',
+      },
+    ],
+    finalState: [
+      {
+        kind: 'count',
+        type: 'background',
+        is: 1,
+        why: 'Corrected in place. Two means it added beside the mistake rather than fixing it.',
+      },
     ],
   },
 ]

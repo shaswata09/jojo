@@ -656,3 +656,42 @@ describe('offering the tools that empty the store', () => {
     }
   })
 })
+
+/**
+ * The person's own vocabulary for their own background.
+ *
+ * Found by the benchmark, not by reading: `profile-correct-a-fact` failed in the
+ * `narrowed` condition on BOTH Gemma 3 31B and GPT-OSS 120B — same conversation,
+ * same condition, two models — which is the signature of a retrieval gap rather
+ * than a model one. The trace showed the model answering that it had no way to
+ * create such a record, because the tool was never offered.
+ *
+ * The lexicon keyed on the literal word "background". Nobody says that.
+ */
+describe('asking to record something about yourself', () => {
+  const offersBackground = (ask: string) => {
+    const sel = offeredFor(ask, null, [])
+    return sel !== null && sel.has('profile.background.add')
+  }
+
+  for (const ask of [
+    'Record that I have an MSc from UT Austin, 2015.',
+    'I have a PhD from Rice',
+    'Record my publications',
+    'Add my teaching to my profile',
+    'Record an award I received',
+    'Add the paper I wrote',
+    'I taught Distributed Systems in 2021',
+    'Add a certification to my profile',
+  ]) {
+    it(`offers the tool for: ${ask}`, () => {
+      expect(offersBackground(ask)).toBe(true)
+    })
+  }
+
+  it('still does not offer it for something unrelated', () => {
+    // Widening the vocabulary must not make this the answer to everything —
+    // the retriever's value is in what it leaves out.
+    expect(offersBackground('what applications am I waiting on')).toBe(false)
+  })
+})
