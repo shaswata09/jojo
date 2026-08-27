@@ -161,6 +161,71 @@ function isLoopback(raw) {
 }
 
 /**
+ * A machine on the person's OWN network, reached over plain http.
+ *
+ * ## Why this exists
+ *
+ * The relay allowed loopback and five hosted providers. That is right for a
+ * model running on the same machine and right for a paid API, and it leaves out
+ * the case this app is most often actually used in: a model server on another
+ * box on the same network — a workstation with the GPU, a homelab, a lab
+ * subnet — reached from a copy of jojo served over https, where the browser
+ * forbids the page from making that call itself.
+ *
+ * Reported from exactly that setup: GitHub Pages over https, vLLM at
+ * `http://10.116.34.124:8103/v1`. The page cannot reach it (mixed content) and
+ * the relay refused it (not loopback, not a known provider), so the address was
+ * unusable by any route while the error text suggested installing the extension
+ * that was already refusing it.
+ *
+ * ## Why this is not an open proxy
+ *
+ * Only ranges that are unroutable on the public internet, and only over http:
+ *
+ *   - RFC 1918 private space: 10/8, 172.16/12, 192.168/16
+ *   - RFC 3927 link-local: 169.254/16
+ *   - RFC 4193 IPv6 unique-local (fc00::/7) and IPv6 link-local (fe80::/10)
+ *   - `.local`, which is mDNS
+ *
+ * A public address over http is still refused — relaying one would make this
+ * extension a way for any page to launder a request through the user's browser
+ * to somewhere on the internet, which is the thing the list was protecting
+ * against. A private address can only reach hardware the person already has
+ * access to from where they are sitting.
+ *
+ * The user-facing consequence is worth stating plainly: with the extension
+ * installed, a page can ask it to fetch from the user's own LAN. That is the
+ * capability being granted, deliberately, because it is the one the product
+ * needs; the routing switch in the popup turns it off by host like any other.
+ */
+function isPrivateNetwork(raw) {
+  let url
+  try {
+    url = new URL(raw)
+  } catch {
+    return false
+  }
+  if (url.protocol !== 'http:') return false
+  const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase()
+
+  if (host.endsWith('.local')) return true
+
+  // IPv6 unique-local and link-local.
+  if (host.includes(':')) return /^f[cd][0-9a-f]{2}:/.test(host) || /^fe[89ab][0-9a-f]:/.test(host)
+
+  const parts = host.split('.')
+  if (parts.length !== 4) return false
+  const octets = parts.map((p) => (/^\d{1,3}$/.test(p) ? Number(p) : -1))
+  if (octets.some((n) => n < 0 || n > 255)) return false
+  const [a, b] = octets
+  if (a === 10) return true
+  if (a === 172 && b !== undefined && b >= 16 && b <= 31) return true
+  if (a === 192 && b === 168) return true
+  if (a === 169 && b === 254) return true
+  return false
+}
+
+/**
  * The port name the streaming model relay answers on.
  *
  * Shared with `bridge.js`; a mismatch is a silent no-op rather than an
@@ -751,10 +816,12 @@ async function modelRefusal(url) {
   if (host && !isLoopback(url) && routes.models[host] === false) {
     return `Routing to ${host} is switched off in the jojo extension.`
   }
-  if (!isLoopback(url) && !isKnownModelHost(url)) {
+  if (!isLoopback(url) && !isPrivateNetwork(url) && !isKnownModelHost(url)) {
     return (
-      'That address is not a model provider jojo knows about, and not on this machine. ' +
-      'The extension only relays to loopback and to the providers in its own list.'
+      'That address is not a model provider jojo knows about, is not on this machine, ' +
+      'and is not on your own network. The extension relays to this machine, to private ' +
+      'network addresses, and to the hosted providers in its own list — a plain http ' +
+      'address on the public internet is refused.'
     )
   }
   return null

@@ -83,25 +83,24 @@ function reportFailure(
   return failure
 }
 
-/**
- * Whether the browser will refuse this address before a socket is opened.
- *
- * Mixed content: an https page may not call plain http. Loopback is the
- * exception — `localhost`, `127.0.0.0/8` and `[::1]` are *potentially
- * trustworthy*, so they are allowed and must keep their direct path.
- *
- * Kept in step with `mixedContent` in `local-service.ts`, which writes the
- * sentence a person reads when this happens. The two disagreeing is how the app
- * came to advise installing an extension it then declined to use.
- */
-const LOOPBACK_TARGET = /^https?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?(?:$|\/)/i
 
-export function browserWillRefuse(url: string): boolean {
-  return (
-    globalThis.location?.protocol === 'https:' &&
-    /^http:\/\//i.test(url) &&
-    !LOOPBACK_TARGET.test(url)
-  )
+/**
+ * Whether this address needs the extension to fetch it on the page's behalf.
+ *
+ * True only when the page is https AND the target is plain http AND it is not
+ * loopback — the exact set the browser refuses and the extension will relay.
+ * Loopback is excluded because browsers treat it as potentially trustworthy, so
+ * it works directly and a relay would only add a hop.
+ *
+ * Kept in step with `isPrivateNetwork` in `web/extension/background.js`: this
+ * decides what to ASK for and that decides what is ALLOWED, and the two
+ * disagreeing is what produced a refusal message telling somebody to install
+ * the extension that was refusing them.
+ */
+export function needsRelay(url: string): boolean {
+  if (globalThis.location?.protocol !== 'https:') return false
+  if (!/^http:\/\//i.test(url)) return false
+  return !/^http:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?(?:$|\/)/i.test(url)
 }
 
 async function sendToModel(
@@ -119,21 +118,29 @@ async function sendToModel(
   onChunk?: (text: string) => void,
 ): Promise<Sent> {
   /*
-   * Cloud providers, AND anything the browser will refuse to reach at all.
+   * Cloud providers, AND a private-network address an https page cannot reach.
    *
-   * This was `cloud` alone, and the gap was one the app's own error message
-   * promised it had closed: an https page pointed at a plain-http endpoint gets
-   * "install the jojo extension, which relays that one hop for you" — while
-   * this line sent the request straight to `fetch`, where mixed content blocks
-   * it, every time, extension or not. Reported from a lab vLLM at
-   * `http://10.116.34.124:8103/v1` on an https-served copy: the relay was never
-   * asked, so installing the extension changed nothing.
+   * ## The two ways this was wrong before
    *
-   * A relay is not an optimisation here, it is the only route. Loopback is
-   * excluded because the browser allows it — see `mixedContent` in
-   * `local-service.ts` — so a local Ollama keeps its direct, faster path.
+   * First it was `cloud` alone, so a vLLM at `http://10.116.34.124:8103/v1`
+   * went straight to `fetch` and was blocked by mixed content — while the error
+   * text said "install the jojo extension, which relays that one hop for you".
+   *
+   * Then it was widened to relay ANYTHING the browser would refuse, which was
+   * worse: the extension's own policy allowed loopback and five hosted
+   * providers, so a LAN address traded a mixed-content error for "that address
+   * is not a model provider jojo knows about" — a policy refusal wearing the
+   * clothes of a typo.
+   *
+   * Both halves are fixed now, and they had to move together: `background.js`
+   * relays private-network addresses over http (RFC 1918, link-local, `.local`
+   * — never a public address), and this asks it to.
+   *
+   * LOOPBACK IS DELIBERATELY NOT HERE. The browser permits an https page to
+   * call `http://localhost`, so a local Ollama keeps its direct path and does
+   * not pay a message hop for nothing.
    */
-  if (!providerMeta(provider).cloud && !browserWillRefuse(request.url)) {
+  if (!providerMeta(provider).cloud && !needsRelay(request.url)) {
     return send(request, endpoint, signal)
   }
 

@@ -25,6 +25,9 @@ import { RESERVED_FOR_REPLY } from '../kg/agent/budget'
 
 const ONLY = process.env['BENCH_ONLY']?.split(',').filter(Boolean) ?? null
 
+/** The completion cap. 0 (the default) omits it, which is what production does. */
+const MAX_TOKENS = Number(process.env['BENCH_MAX_TOKENS'] ?? 0) || 0
+
 /*
  * The configuration, read once and WRITTEN OUT with the scores.
  *
@@ -157,6 +160,16 @@ async function seed(host: ToolHost) {
   }
 }
 
+/**
+ * The `finish_reason` of the most recent completion, for the turn to record.
+ *
+ * A module-level box rather than a threaded return, because `runAgent` owns the
+ * loop and there is no seam to carry it out through — and the question it
+ * answers is per TURN, not per round: did the last thing the model said get cut
+ * off. Reset at the top of each turn so a turn cannot inherit the one before.
+ */
+let lastFinishReason: string | null = null
+
 async function llm(messages: readonly ChatMessage[], tools: readonly unknown[]): Promise<Turn> {
   if (process.env['BENCH_SIZE']) {
     // Rough, and rough is enough: what matters is the SHAPE of the growth.
@@ -175,7 +188,20 @@ async function llm(messages: readonly ChatMessage[], tools: readonly unknown[]):
           messages,
           ...(tools.length ? { tools, tool_choice: 'auto' } : {}),
           temperature: 0,
-          max_tokens: 1400,
+          /*
+           * The completion cap, and it was a silent thumb on the scale.
+           *
+           * Hard-coded at 1400 while PRODUCTION SENDS NONE — `budget.ts` argues
+           * at length why, and the servers then allow everything left after the
+           * prompt. 1,400 also sits below Qwen3 14B's measured 2,358-token
+           * pre-answer floor, so a reasoning model could exhaust the cap before
+           * emitting its first token and score `no-required-call` for a reason
+           * the benchmark had created.
+           *
+           * `BENCH_MAX_TOKENS=0` (the default) omits it, matching production.
+           * A number pins it, for measuring exactly this.
+           */
+          ...(MAX_TOKENS > 0 ? { max_tokens: MAX_TOKENS } : {}),
         }),
         signal: AbortSignal.timeout(180_000),
       })
@@ -185,6 +211,7 @@ async function llm(messages: readonly ChatMessage[], tools: readonly unknown[]):
       }
       const body = (await res.json()) as never
       const choice = (body as { choices?: { message?: Record<string, unknown>; finish_reason?: string }[] }).choices?.[0]
+      lastFinishReason = choice?.finish_reason ?? null
       const msg = choice?.message ?? {}
       const raw = (msg['tool_calls'] as { id?: string; function?: { name?: string; arguments?: unknown } }[]) ?? []
       return {
@@ -193,8 +220,20 @@ async function llm(messages: readonly ChatMessage[], tools: readonly unknown[]):
         toolCalls: raw.map((c, i) => {
           const a = c.function?.arguments
           const text = typeof a === 'string' ? a : a === undefined || a === null ? '{}' : JSON.stringify(a)
-          let parsed: unknown = {}
-          try { parsed = JSON.parse(text) } catch { parsed = {} }
+          /*
+           * `null`, not `{}` — production's `safeParse` answers null, and the
+           * loop has a whole branch for it ("the arguments were not valid
+           * JSON", and since the truncation fix, a different sentence when the
+           * reply hit the output limit).
+           *
+           * Laundering a malformed argument string into an empty object sent it
+           * down the VALIDATION path instead, where it failed as "field X is
+           * required". The invalid-JSON bucket has therefore never held a single
+           * entry across any published run, and two harnesses over the same 36
+           * conversations disagreed about which branch a malformed call takes.
+           */
+          let parsed: unknown = null
+          try { parsed = JSON.parse(text) } catch { parsed = null }
           return { id: c.id ?? `call_${i}`, name: c.function?.name ?? '', args: parsed, raw: text }
         }),
         finishReason: choice?.finish_reason ?? null,
@@ -214,7 +253,17 @@ async function runOne(c: (typeof CONVERSATIONS)[number], condition: Condition) {
   await seed(host)
   let history: ChatMessage[] = []
   let carried: readonly string[] | null = null
-  const perTurn: { calls: CallRecord[]; answered: boolean }[] = []
+  /*
+   * `finishReason` and the answer text, kept per turn.
+   *
+   * The reason was parsed and thrown away, so no published report has ever
+   * contained a single `"length"` — the one signal that says whether a turn
+   * that called nothing was a model declining to act or a model that ran out of
+   * room before it could. Those have opposite fixes and the reports could not
+   * tell them apart.
+   */
+  const perTurn: { calls: CallRecord[]; answered: boolean; finishReason: string | null; answer: string | null }[] =
+    []
   /*
    * Every tool call that came back an error, with the message.
    *
@@ -227,6 +276,7 @@ async function runOne(c: (typeof CONVERSATIONS)[number], condition: Condition) {
 
   for (const turn of c.turns) {
     const calls: CallRecord[] = []
+    lastFinishReason = null
     let run: AgentRun
     try {
       run = await runAgent({
@@ -301,7 +351,7 @@ async function runOne(c: (typeof CONVERSATIONS)[number], condition: Condition) {
           : {}),
       })
     } catch (e) {
-      perTurn.push({ calls, answered: false })
+      perTurn.push({ calls, answered: false, finishReason: lastFinishReason, answer: null })
       continue
     }
     if (process.env['BENCH_TRACE']) {
@@ -309,9 +359,31 @@ async function runOne(c: (typeof CONVERSATIONS)[number], condition: Condition) {
     }
     history = run.messages
     carried = run.offered
-    perTurn.push({ calls, answered: run.answer !== null && run.answer.trim() !== '' })
+    perTurn.push({
+      calls,
+      answered: run.answer !== null && run.answer.trim() !== '',
+      finishReason: lastFinishReason,
+      answer: run.answer,
+    })
   }
-  return { ...scoreConversation(c, perTurn, nodes()), errors }
+  /*
+   * `finishReason` and the answers ride alongside the score rather than into it.
+   *
+   * The rubric does not read them — scoring on them would be a different
+   * change — but a report that cannot say WHY a turn called nothing cannot tell
+   * a model declining to act from one that ran out of room before it could.
+   */
+  return {
+    ...scoreConversation(c, perTurn, nodes()),
+    errors,
+    reasons: perTurn.map((t, i) => ({
+      turn: i,
+      finishReason: t.finishReason,
+      calls: t.calls.length,
+      answered: t.answered,
+      answer: t.answer === null ? null : t.answer.slice(0, 240),
+    })),
+  }
 }
 
 const report: unknown[] = []

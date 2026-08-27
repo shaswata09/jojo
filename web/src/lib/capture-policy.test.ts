@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import policySource from '../../extension/policy.js?raw'
+import backgroundSource from '../../extension/background.js?raw'
 import { PROVIDERS } from '@jojo/service/core/provider'
 import {
   CAPTURE_HREF_ATTR,
@@ -115,5 +116,39 @@ describe("the extension's model-host list matches the provider table", () => {
     const transcribed = arrayLiteral('MODEL_HOSTS')
     expect(transcribed).not.toContain('localhost')
     expect(transcribed).not.toContain('127.0.0.1')
+  })
+})
+
+/**
+ * The relay's address rule, read out of the extension source.
+ *
+ * The page and the extension have to agree about which addresses are relayable.
+ * They did not: the page's error text said "install the jojo extension, which
+ * relays that one hop for you" while `background.js` allowed loopback and five
+ * hosted providers, so somebody with a model server on their own network
+ * installed an extension that then refused the address it was installed for.
+ *
+ * Read from source because the extension is plain JS in no tsconfig — the same
+ * technique `reader-relay.test.ts` uses.
+ */
+describe('which model addresses the extension will relay', () => {
+  const source = backgroundSource.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+
+  it('relays private-network addresses as well as loopback and known providers', () => {
+    const guard = source.slice(source.indexOf('async function modelRefusal'))
+    expect(guard).toContain('isPrivateNetwork(url)')
+    expect(guard).toContain('isLoopback(url)')
+    expect(guard).toContain('isKnownModelHost(url)')
+  })
+
+  it('accepts only ranges that are unroutable on the public internet', () => {
+    const fn = source.slice(source.indexOf('function isPrivateNetwork'))
+    // RFC 1918, RFC 3927 link-local, and mDNS. A public http address relayed
+    // would make this a way for any page to launder a request through the
+    // user's browser.
+    for (const marker of ['=== 10', '=== 172', '=== 192', '=== 169', ".local'"]) {
+      expect(fn).toContain(marker)
+    }
+    expect(fn).toContain("protocol !== 'http:'")
   })
 })

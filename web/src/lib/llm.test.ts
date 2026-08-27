@@ -19,7 +19,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { agentTurn, browserWillRefuse } from '@/lib/llm'
+import { agentTurn, needsRelay } from '@/lib/llm'
 import type { ModelSettings } from '@jojo/service/core/provider'
 
 /** ~20,000 tokens by `estimateTokens`, which is what makes the ratio meaningful. */
@@ -208,45 +208,77 @@ describe('a streamed turn, and the token counts it has to carry', () => {
 })
 
 /**
- * The relay was gated on `cloud`, and the error message promised otherwise.
+ * Which addresses the page fetches itself, and which it asks the extension for.
  *
- * An https page pointed at a plain-http endpoint is blocked by the browser
- * before a socket opens. `local-service.ts` says so in as many words — "install
- * the jojo extension, which relays that one hop for you" — while the transport
- * sent a non-cloud provider straight to `fetch`, where mixed content refuses it
- * every time, extension or not.
+ * This took two wrong turns worth recording, because they failed in opposite
+ * directions and the second was worse than the first.
  *
- * Reported from a lab vLLM at `http://10.116.34.124:8103/v1` on an https-served
- * copy: the relay was never asked, so installing the extension changed nothing.
+ * 1. Relay for `cloud` only. A vLLM at `http://10.116.34.124:8103/v1` went
+ *    straight to `fetch` and was blocked by mixed content — while the error
+ *    said "install the jojo extension, which relays that one hop for you".
+ * 2. Relay anything the browser refuses. Now the request reached an extension
+ *    whose policy allowed loopback and five hosted providers, so the same
+ *    address traded a mixed-content error for "that address is not a model
+ *    provider jojo knows about": a policy refusal wearing the clothes of a typo.
+ *
+ * The fix had to move both halves together — `background.js` relays private
+ * network addresses now, and this asks it to.
  */
-describe('which requests are worth relaying', () => {
-  it('relays a plain-http endpoint from an https page, even for a local provider', () => {
+describe('what the page fetches itself', () => {
+  const settings = (endpoint: string) =>
+    ({ provider: 'openai-compatible', endpoint, model: 'gemma_4_31b' }) as ModelSettings
+
+  const fetched: string[] = []
+  const stubFetch = () => {
+    fetched.length = 0
+    vi.stubGlobal('fetch', async (url: string) => {
+      fetched.push(String(url))
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'hi' } }] }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    })
+  }
+
+  it('fetches loopback directly, even from https — the browser allows it', async () => {
+    // A relay here would be a message hop for nothing.
     vi.stubGlobal('location', { protocol: 'https:' })
-    expect(browserWillRefuse('http://10.116.34.124:8103/v1/chat/completions')).toBe(true)
+    stubFetch()
+    await agentTurn(settings('http://localhost:11434/v1'), [{ role: 'user', content: 'hi' }], [])
+    expect(fetched.some((u) => u.includes('localhost'))).toBe(true)
   })
 
-  it('leaves everything alone when the page itself is http', () => {
-    // A dev server on http can reach an http endpoint directly. This is why the
-    // same setup "worked fine" from one origin and not another.
+  it('fetches a LAN address directly when the PAGE is http', async () => {
+    // http -> http is not mixed content. This is why the same setup works from
+    // a dev server and not from GitHub Pages.
     vi.stubGlobal('location', { protocol: 'http:' })
-    expect(browserWillRefuse('http://10.116.34.124:8103/v1/chat/completions')).toBe(false)
+    stubFetch()
+    await agentTurn(settings('http://10.116.34.124:8103/v1'), [{ role: 'user', content: 'hi' }], [])
+    expect(fetched.some((u) => u.includes('10.116.34.124'))).toBe(true)
   })
 
-  it('leaves loopback alone, because the browser allows it', () => {
-    // `localhost` and `127.0.0.0/8` are potentially trustworthy, so a local
-    // Ollama keeps its direct — and faster — path.
+  it('asks the extension for a LAN address from an https page', () => {
+    /*
+     * The reported case: GitHub Pages over https, vLLM on the network. The
+     * browser refuses this before a socket opens, so the page must not try it
+     * itself — it goes to the extension, which relays private addresses.
+     *
+     * The DECISION is what is asserted. `sendOrRelay` falls back to a direct
+     * fetch when no extension answers, which is right — it produces the honest
+     * mixed-content error rather than silence — and makes the fetch itself a
+     * poor witness for which route was chosen.
+     */
     vi.stubGlobal('location', { protocol: 'https:' })
-    for (const url of [
-      'http://localhost:11434/api/chat',
-      'http://127.0.0.1:8000/v1/chat/completions',
-      'http://[::1]:8000/v1/chat/completions',
-    ]) {
-      expect(browserWillRefuse(url)).toBe(false)
-    }
+    expect(needsRelay('http://10.116.34.124:8103/v1/chat/completions')).toBe(true)
+    expect(needsRelay('http://192.168.1.50:8000/v1/chat/completions')).toBe(true)
   })
 
-  it('leaves an https endpoint alone', () => {
+  it('does not ask for loopback, or for https, or from an http page', () => {
     vi.stubGlobal('location', { protocol: 'https:' })
-    expect(browserWillRefuse('https://10.116.34.124:8103/v1')).toBe(false)
+    expect(needsRelay('http://localhost:11434/api/chat')).toBe(false)
+    expect(needsRelay('http://127.0.0.1:8000/v1')).toBe(false)
+    expect(needsRelay('https://10.116.34.124:8103/v1')).toBe(false)
+    vi.stubGlobal('location', { protocol: 'http:' })
+    expect(needsRelay('http://10.116.34.124:8103/v1')).toBe(false)
   })
 })

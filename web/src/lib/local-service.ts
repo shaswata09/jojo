@@ -48,6 +48,23 @@ export const failed = (r: Sent): r is { failed: ReturnType<typeof unreachable> }
  */
 const LOOPBACK = /^https?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?(?:$|\/)/i
 
+/**
+ * A machine on the person's own network — which the extension will relay to.
+ *
+ * Kept in step with `isPrivateNetwork` in `web/extension/background.js`. It
+ * decides what may be relayed; this decides which remedy to offer, and the two
+ * disagreeing is how the old sentence came to recommend an extension that would
+ * refuse the very address it was recommended for.
+ */
+const isPrivate = (target?: string): boolean => {
+  if (target === undefined) return false
+  const host = target.replace(/^https?:\/\//i, '').split('/')[0]?.split(':')[0]?.toLowerCase() ?? ''
+  if (host.endsWith('.local')) return true
+  const o = host.split('.').map((p) => (/^\d{1,3}$/.test(p) ? Number(p) : -1))
+  if (o.length !== 4 || o.some((n) => n < 0 || n > 255)) return false
+  return o[0] === 10 || (o[0] === 172 && o[1]! >= 16 && o[1]! <= 31) || (o[0] === 192 && o[1] === 168) || (o[0] === 169 && o[1] === 254)
+}
+
 const mixedContent = (target?: string) =>
   globalThis.location?.protocol === 'https:' &&
   target !== undefined &&
@@ -64,7 +81,22 @@ const mixedContent = (target?: string) =>
 const browserBlocked = (target?: string) => {
   const pageIsHttps = globalThis.location?.protocol === 'https:'
   if (mixedContent(target)) {
-    return ' This page is on https, which browsers forbid from calling a plain http address — serve jojo over http, or install the jojo extension, which relays that one hop for you.'
+    /*
+     * The remedy names the extension again, and this time it is true.
+     *
+     * It said "install the jojo extension, which relays that one hop for you"
+     * while `background.js` relayed only loopback and five hosted providers —
+     * so somebody with a LAN model server installed an extension that then told
+     * them their address was not a provider it knew about. The extension now
+     * relays private-network addresses (RFC 1918, link-local, `.local`) over
+     * http, which is what makes this sentence honest.
+     *
+     * A PUBLIC http address is still refused by both, and the sentence says so
+     * rather than sending somebody to install something that will not help.
+     */
+    return isPrivate(target)
+      ? ' This page is on https, which browsers forbid from calling a plain http address — install the jojo extension, which relays that one hop to your own network for you. Or serve jojo over http.'
+      : ' This page is on https, which browsers forbid from calling a plain http address. Serve jojo over http, or put the model on this machine, on your own network, or behind https — the extension relays those, but not a plain http address on the public internet.'
   }
   if (pageIsHttps) {
     return ' Both this page and that address are https, so this is not a mixed-content block. The likely cause is CORS: the server answered without the headers a browser needs to read a reply. Cloud providers generally do not send them, which is what the jojo extension is for — check it is installed and enabled.'

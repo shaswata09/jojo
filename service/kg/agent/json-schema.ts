@@ -83,13 +83,13 @@ const FORMATTED: Partial<Record<FieldKind, JsonSchema>> = {
  * the small models will not parse. `describeMeta` says "may be omitted" in prose
  * instead, which is the form that survives.
  */
-export function toJsonSchema(meta: FieldMeta): JsonSchema {
-  const base = fieldBody(meta)
+export function toJsonSchema(meta: FieldMeta, key?: string): JsonSchema {
+  const base = fieldBody(meta, key)
   const description = describeMeta(meta, base.description)
   return description ? { ...base, description } : base
 }
 
-function fieldBody(meta: FieldMeta): JsonSchema {
+function fieldBody(meta: FieldMeta, key?: string): JsonSchema {
   if (meta.kind === 'enum') {
     return meta.options ? { type: enumType(meta.options), enum: meta.options } : { type: 'string' }
   }
@@ -98,7 +98,9 @@ function fieldBody(meta: FieldMeta): JsonSchema {
     return only === undefined ? {} : { type: enumType([only]), const: only }
   }
   if (meta.kind === 'array') {
-    const body: JsonSchema = { type: 'array', items: meta.of ? toJsonSchema(meta.of) : {} }
+    // The key travels into the items too: an item labelled "Expression" under a
+    // key `expressions` is a singular/plural pair, not a different field name.
+    const body: JsonSchema = { type: 'array', items: meta.of ? toJsonSchema(meta.of, key) : {} }
     // `minItems`, not `minLength` — an array's bound has a different keyword
     // from a string's, and the wrong one is silently ignored rather than
     // rejected, which is how "at least one keyword" becomes no constraint.
@@ -133,7 +135,9 @@ function objectBody(meta: FieldMeta): JsonSchema {
   const properties: Record<string, JsonSchema> = {}
   const required: string[] = []
   for (const [key, field] of Object.entries(fields)) {
-    properties[key] = toJsonSchema(field)
+    // The key travels with the field, so a label that would masquerade as a
+    // different name can be recognised and dropped. See `describeMeta`.
+    properties[key] = toJsonSchema(field, key)
     if (!field.optional) required.push(key)
   }
   const body: JsonSchema = { type: 'object', properties, additionalProperties: false }
@@ -186,9 +190,45 @@ function enumType(options: readonly (string | number | boolean)[]): JsonType {
  */
 function describeMeta(meta: FieldMeta, inherited?: string): string | undefined {
   const parts: string[] = []
-  if (meta.label) parts.push(meta.label)
-  if (meta.description) parts.push(meta.description)
-  else if (inherited) parts.push(inherited)
+  /*
+   * The LABEL is form copy, and leading a description with it teaches the model
+   * the wrong field name.
+   *
+   * `memory.list` keys a field `type` and labels it `Kind`, so the model read
+   * `"description": "Kind. Which kind of record to list."` — the word "kind"
+   * twice and the word "type" never — and sent `{"kind": "application"}`.
+   * `application.offer.decide` keys a field `id` and labels it `Application`,
+   * and the model sent `{"Application": "app:…"}`. A short capitalised phrase at
+   * the head of a description is indistinguishable from a name.
+   *
+   * Measured over three models on the 36-conversation suite: 28 of 48 tool-call
+   * refusals — 58% of every argument the tools rejected — were this, and 170 of
+   * 339 schema fields carry a label that differs from its key.
+   *
+   * So the label is used only when it is the ONLY thing there is to say (83
+   * fields), and dropped whenever a real description exists. The key names the
+   * field; the description explains it. `nodeType` below already carries "must
+   * be the id of a X record", which is what the label was standing in for.
+   */
+  const describes = meta.description ?? inherited
+  if (meta.label && describes === undefined) {
+    /*
+     * The label is all there is, so it has to carry the meaning — but as PROSE.
+     * A bare "Employer." on a field keyed `org` is the same trap one step down:
+     * a capitalised noun alone reads as a name. An article turns it into a
+     * sentence, which no model mistakes for a key.
+     *
+     * Only for the short ones. "Only for timelineItem and match records" is
+     * already a sentence and "The only for timelineItem…" would be nonsense.
+     */
+    const short = meta.label.trim().split(/\s+/).length <= 2
+    parts.push(short ? `The ${meta.label.trim().toLowerCase()}` : meta.label)
+  }
+  // When there IS a description, the label never appears. The key names the
+  // field and the description explains it; the label is form copy, and
+  // prepending it either misleads ("Kind." on `type`) or restates the key
+  // ("Expression." on `expressions`) — noise in both cases, across 339 fields.
+  if (describes !== undefined) parts.push(describes)
   if (meta.nodeType) parts.push(`Must be the id of a ${meta.nodeType} record.`)
   if (meta.optional) parts.push('May be omitted.')
   if (meta.nullable) parts.push('May be null to clear it.')

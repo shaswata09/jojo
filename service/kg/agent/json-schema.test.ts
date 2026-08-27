@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { CATALOG } from './catalog'
 import { s } from '../core/schema'
 import { toJsonSchema } from './json-schema'
 
@@ -6,14 +7,36 @@ import { toJsonSchema } from './json-schema'
 const of = (schema: { meta: Parameters<typeof toJsonSchema>[0] }) => toJsonSchema(schema.meta)
 
 describe('primitives', () => {
-  it('carries the label and the description, because they say different things', () => {
-    // core/schema.ts: the label names the field, the description "says why, not
-    // what". A model given only the key `respondBy` is guessing.
+  it('carries the DESCRIPTION only, because the key already names the field', () => {
+    /*
+     * This used to assert the opposite — "Respond by. The date the offer
+     * lapses." — on the reasoning that a model given only the key `respondBy`
+     * is guessing. Measured, the label did more harm than that guess:
+     *
+     * `memory.list` keys a field `type` and labels it `Kind`, so the model read
+     * "Kind. Which kind of record to list." and sent `{"kind": "application"}`.
+     * `application.offer.decide` keys `id` and labels it `Application`, and the
+     * model sent `{"Application": "app:…"}`. Across three models on the
+     * 36-conversation suite, **28 of 48 tool-call refusals were this** — 58% of
+     * every argument the tools rejected, taught by the schema itself.
+     *
+     * A short capitalised phrase at the head of a description is
+     * indistinguishable from a field name. The key names the field; the
+     * description explains it; the label is form copy and stays on the form.
+     */
     expect(
       of(s.string({ label: 'Respond by', description: 'The date the offer lapses' })),
     ).toEqual({
       type: 'string',
-      description: 'Respond by. The date the offer lapses.',
+      description: 'The date the offer lapses.',
+    })
+  })
+
+  it('falls back to the label as PROSE when there is no description', () => {
+    // An article, so the one remaining case cannot be read as a name either.
+    expect(of(s.string({ label: 'Employer' }))).toEqual({
+      type: 'string',
+      description: 'The employer.',
     })
   })
 
@@ -97,5 +120,58 @@ describe('collections', () => {
       type: 'object',
       additionalProperties: { type: 'string' },
     })
+  })
+})
+
+/**
+ * A field's description must not open with a name that is not its key.
+ *
+ * `describeMeta` used to lead every description with the field's LABEL, which is
+ * form copy. `memory.list` keys a field `type` and labels it `Kind`, so the
+ * model read "Kind. Which kind of record to list." — the word "kind" twice, the
+ * word "type" never — and sent `{"kind": "application"}`.
+ * `application.offer.decide` keys a field `id` and labels it `Application`, and
+ * the model sent `{"Application": "app:…"}`.
+ *
+ * Measured over Gemma 3 31B, Qwen3 14B and GPT-OSS 120B on the 36-conversation
+ * suite: **28 of 48 tool-call refusals — 58% of every argument the tools
+ * rejected — were this one mistake**, taught by the schema itself.
+ *
+ * A short capitalised phrase at the head of a description is indistinguishable
+ * from a field name, so this refuses one whenever it disagrees with the key.
+ */
+describe('a description must not name a different field', () => {
+  /** The opening phrase, when it reads like a name rather than a sentence. */
+  const leadingName = (description: string): string | null => {
+    const first = description.split('.')[0]?.trim() ?? ''
+    // One or two words. Three or more is a sentence fragment, not a plausible
+    // field name — "Only for timelineItem and match records" misleads nobody.
+    if (first.length === 0 || first.split(/\s+/).length > 2) return null
+    if (!/^[A-Z]/.test(first)) return null
+    // "The employer", "A note" — an article makes it a sentence, which is the
+    // whole point of the fix. Only a bare noun phrase can be read as a key.
+    if (/^(The|A|An)\s/.test(first)) return null
+    // A sentence that merely starts with a capital is not a name.
+    return /^[A-Z][a-z]*(\s[A-Za-z]+)?$/.test(first) ? first : null
+  }
+
+  const offenders: string[] = []
+  const walk = (schema: unknown, tool: string, key: string): void => {
+    if (typeof schema !== 'object' || schema === null) return
+    const node = schema as { properties?: Record<string, unknown>; items?: unknown; description?: string }
+    if (typeof node.description === 'string' && key !== '') {
+      const name = leadingName(node.description)
+      if (name !== null && name.toLowerCase().replace(/\s+/g, '') !== key.toLowerCase()) {
+        offenders.push(`${tool}.${key} opens with "${name}"`)
+      }
+    }
+    if (node.items) walk(node.items, tool, key)
+    for (const [k, v] of Object.entries(node.properties ?? {})) walk(v, tool, k)
+  }
+
+  for (const entry of CATALOG) walk(entry.parameters, entry.name, '')
+
+  it('never opens a field description with a name other than its key', () => {
+    expect(offenders, offenders.slice(0, 12).join('\n')).toEqual([])
   })
 })
