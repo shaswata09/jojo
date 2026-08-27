@@ -215,6 +215,24 @@ const haystack = (node: StoredNode, memory: GraphSnapshot): string =>
 const nodeType = (label: string, description: string) =>
   s.enum(NODE_TYPES, { label, description })
 
+/**
+ * The same list plus `any`, for the places where "all kinds" is a real answer.
+ *
+ * `graph.query`'s facets already accept `'any'` (see `ITEM_FACETS`), and
+ * `memory.search` did not — it used "omit the field" for the same idea. A model
+ * that learned the convention from one tool tried it on the other and was
+ * refused: measured, GPT-OSS 120B sent `{"query":"Rice","type":"any"}` and got
+ * "Needs to be one of: claim, application, …", which is a list that does not
+ * mention the word it just used.
+ *
+ * Two spellings of "everything" in one registry is the tool surface teaching a
+ * rule and then breaking it. This makes them agree; `read` treats `any` as
+ * absent, which is what the model meant.
+ */
+const ANY = 'any' as const
+const nodeTypeOrAny = (label: string, description: string) =>
+  s.enum([ANY, ...NODE_TYPES], { label, description })
+
 /** A ceiling on every list, so one call cannot spend the whole context window. */
 const LIMIT_MAX = 200
 const limit = s.optional(
@@ -349,12 +367,16 @@ export const memorySearch = defineRead({
         'Matched anywhere in the record, ignoring case. Must not be blank — to see everything of a kind, use memory.list instead.',
       min: 1,
     }),
-    type: s.optional(nodeType('Kind', 'Narrow to one kind of record.')),
+    type: s.optional(
+      nodeTypeOrAny('Kind', 'Narrow to one kind of record. `any`, or omit it, searches every kind.'),
+    ),
     limit,
   }),
-  read: (memory, input: { query: string; type?: NodeType; limit?: number }) => {
+  read: (memory, input: { query: string; type?: NodeType | 'any'; limit?: number }) => {
     const needle = input.query.trim().toLowerCase()
-    const pool = input.type ? memory.ofType(input.type) : memory.nodes()
+    // `'any'` is the same request as omitting it — see `nodeTypeOrAny`.
+    const pool =
+      input.type !== undefined && input.type !== ANY ? memory.ofType(input.type) : memory.nodes()
     return matched(
       pool.filter((n) => haystack(n, memory).includes(needle)).map((n) => render(n, memory)),
       input.limit,

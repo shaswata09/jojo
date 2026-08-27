@@ -20,6 +20,7 @@
 import type { LabelTone, NodeId, Taggable } from '../core/model'
 import { LABEL_TONE_VALUES, TAGGABLE } from '../core/model'
 import { s } from '../core/schema'
+import { nameOf } from './support'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 
@@ -151,7 +152,12 @@ export const keywordToneSet = defineTool({
     ctx.tx.patch<'keyword'>(input.id, { tone: input.tone })
   },
 
-  describe: (_input, _output) => ({ title: 'Colour changed' }),
+  describe: (input, _output, m) => ({
+    title: 'Colour changed',
+    // Which keyword. The audit log is the answer to "a record changed by
+    // itself", and a row that names no record cannot answer it.
+    description: nameOf(m, input.id),
+  }),
 })
 
 /* --------------------------------- tagging -------------------------------- */

@@ -471,7 +471,31 @@ const resolveOffered = (only: readonly string[] | undefined): Set<string> | null
 const toolsFor = (offered: Set<string> | null) => {
   const all = functionSpecs()
   if (!offered) return all
-  return all.filter((t) => offered.has(t.function.name))
+  /*
+   * In the order the caller ASKED for, not catalog order.
+   *
+   * This filtered `functionSpecs()`, so whatever order it was handed came back
+   * as catalog order. Harmless today — `inCatalogOrder` sorts before calling —
+   * but it meant the block's order was not something a caller could decide, and
+   * the order is what a KV prefix cache is keyed on: a tool inserted in the
+   * middle of the block invalidates every token after it, where one appended at
+   * the end costs nothing.
+   *
+   * `resolveOffered` inserts each name and its wire spelling in the order it was
+   * given, and a Set iterates in insertion order, so this preserves whatever the
+   * caller chose while still emitting each spec exactly once.
+   */
+  const byName = new Map(all.map((t) => [t.function.name, t]))
+  const out: typeof all = []
+  const seen = new Set<string>()
+  for (const name of offered) {
+    const spec = byName.get(name)
+    if (spec && !seen.has(spec.function.name)) {
+      seen.add(spec.function.name)
+      out.push(spec)
+    }
+  }
+  return out
 }
 
 export async function runAgent(options: AgentOptions): Promise<AgentRun> {

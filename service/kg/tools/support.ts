@@ -111,6 +111,33 @@ export function orgNameOf(m: GraphSnapshot, appId: NodeId): string {
  * separator on the end of the name — punctuation promising a second half that is
  * not there.
  */
+/**
+ * What to call ANY record, for an announcement that has to name one.
+ *
+ * `displayOf` below is application-only — it returns `''` for every other type,
+ * which is a silent empty description when used on a thread or a keyword. This
+ * is the general one: the same `name`/`title`/`role`/`slug` rule
+ * `agent/queries.ts` uses for search results, kept here because tools may not
+ * import from the agent layer.
+ *
+ * A list rather than a switch over a dozen types, so a new record type is
+ * legible for free. `slug` is the last resort and is never nothing.
+ */
+const NAME_KEYS = ['name', 'title', 'role', 'slug'] as const
+
+export function nameOf(m: GraphSnapshot, id: NodeId): string {
+  const node = m.node(id)
+  if (!node) return ''
+  const props = node.props as Record<string, unknown>
+  const own = NAME_KEYS.map((k) => props[k]).find((v) => typeof v === 'string' && v.length > 0)
+  if (typeof own !== 'string') return ''
+  // An application's role means little without the employer — "Assistant
+  // professor" is several of the seeded records. `displayOf` says the same.
+  if (node.type !== 'application') return own
+  const org = m.one(id, 'AT', 'organisation')
+  return org ? `${own} — ${String(org.props.name)}` : own
+}
+
 export function displayOf(m: GraphSnapshot, appId: NodeId): string {
   const app = m.node(appId, 'application')
   if (!app) return ''

@@ -99,6 +99,26 @@ export type Turn = {
   readonly shouldAsk?: boolean
   /** No write should happen — the turn is a question about records. */
   readonly readOnly?: boolean
+  /**
+   * Facts the ANSWER has to contain, as substrings, case-insensitively.
+   *
+   * The turn rubric had an escape: a `readOnly` turn that answered counted as
+   * correct even when it called nothing, and 42 of 69 turns are `readOnly`.
+   * Measured, an agent that calls NOTHING and always answers scores 16/36 clean
+   * and 45/69 turns — 44% of the suite passes for doing no work, and a model
+   * that writes nothing and says "I've moved your Rice application to
+   * interview" is scored correct while `checkState` passes because nothing
+   * changed.
+   *
+   * An answer assertion cannot be bought with one extra tool call, which is why
+   * it is the fix rather than "require a read first" — a model that reads once
+   * on turn one and then talks keeps every one of those conversations.
+   *
+   * Use HIGH-ENTROPY tokens. `bench-fixtures` refuses a bare one- or two-digit
+   * string: `'6'` passes vacuously on any answer containing "2026", and fails a
+   * correct per-stage breakdown that never says "6".
+   */
+  readonly answerMust?: readonly string[]
   readonly why: string
 }
 
@@ -194,6 +214,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'What stage is my Stripe application at?',
+        answerMust: ['offer'],
         mustCallOneOf: [...READS],
         readOnly: true,
         why: 'A question. Answering it needs a lookup and nothing else.',
@@ -390,6 +411,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'Which of my applications share a keyword with the Stripe one?',
+        answerMust: ['systems'],
         mustCallOneOf: ['graph.query', 'memory.related', ...READS],
         readOnly: true,
         why:
@@ -445,6 +467,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'Are there any job postings I saved and then never did anything with?',
+        answerMust: ['UT Southwestern'],
         mustCallOneOf: ['memory.list', 'graph.query', 'memory.search', 'memory.overview', 'memory.related'],
         readOnly: true,
         why:
@@ -466,6 +489,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'Which of my open applications have nothing on the calendar?',
+        answerMust: ['Rice'],
         mustCallOneOf: ['graph.query', 'memory.list', 'memory.related', 'memory.overview', 'memory.search'],
         readOnly: true,
         why:
@@ -498,6 +522,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'Are any of my saved searches switched off?',
+        answerMust: ['Industry research roles'],
         mustCallOneOf: ['memory.list', 'graph.query', 'memory.search', 'memory.overview'],
         readOnly: true,
         why: 'One of two pipelines is disabled. A model that lists them without reading the flag misses it.',
@@ -514,6 +539,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
     turns: [
       {
         say: 'Is there anything the scout found that I should look at?',
+        answerMust: ['Georgia Tech'],
         mustCallOneOf: ['memory.list', 'graph.query', 'memory.search', 'memory.overview'],
         readOnly: true,
         why:
@@ -1116,7 +1142,15 @@ export const CONVERSATIONS: readonly Conversation[] = [
       { say: 'What is on the calendar for the Baylor one?', mustCallOneOf: [...READS], readOnly: true, why: 'A second domain.' },
       { say: 'And what documents do I have filed?', mustCallOneOf: [...READS], readOnly: true, why: 'A third.' },
       { say: 'How many have I heard back from?', mustCallOneOf: [...READS], readOnly: true, why: 'An aggregate.' },
-      { say: 'Which employer appears more than once?', mustCallOneOf: [...READS], readOnly: true, why: 'Another aggregate.' },
+      {
+        say: 'Which employer appears more than once?',
+        mustCallOneOf: [...READS],
+        readOnly: true,
+        // Only a real read produces the name. "You have one employer appearing
+        // twice" is a plausible sentence a do-nothing agent can also write.
+        answerMust: ['Rice'],
+        why: 'Another aggregate.',
+      },
       {
         say: 'Given the theme I mentioned at the start, which one application should I put first?',
         mustCallOneOf: [...READS],

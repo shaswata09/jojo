@@ -60,13 +60,13 @@
  * by itself.
  */
 
-import { NODE_TYPES } from '../core/model'
+import { DEFAULT_ROLES, NODE_TYPES } from '../core/model'
 import type { NodeType, ProfileProps } from '../core/model'
 import { s } from '../core/schema'
 import { seedToGraph } from '../repo/seed'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
-import { profileNode } from './profile'
+import { BLANK_TEXT, profileNode } from './profile'
 
 /* ---------------------------------- clear --------------------------------- */
 
@@ -111,20 +111,29 @@ export const memoryClear = defineTool({
     // something to render. Blanked at all because an app with no records must
     // not still be greeting a new reader with a stranger's name and email.
     const profile = profileNode(ctx)
+    /*
+     * EVERY field, not just the text.
+     *
+     * This patched `text` and `matchTerms` and left `roles`,
+     * `includeAcademia` and `includeIndustry` standing — so a store the person
+     * had just emptied still knew which role tags they were targeting and which
+     * halves of the job market they had switched off. The summary says "blanks
+     * the profile" and the tool is `undoable: false`, which is to say it is the
+     * one place in the app somebody goes when they want their data gone.
+     * Leaving preferences behind is the shape of privacy bug that gets found by
+     * the person it happened to.
+     *
+     * Reset to what a FRESH profile carries rather than to empty: `roles` is
+     * `DEFAULT_ROLES` and both switches start on, because a profile with no
+     * roles and both filters off is not blank, it is broken — the scout would
+     * silently match nothing.
+     */
     ctx.tx.patch<'profile'>(profile.id, {
-      text: {
-        fullName: '',
-        position: '',
-        location: '',
-        email: '',
-        website: '',
-        scholar: '',
-        github: '',
-        linkedin: '',
-        targetRoles: '',
-        regions: '',
-      },
+      text: { ...BLANK_TEXT },
       matchTerms: [],
+      roles: [...DEFAULT_ROLES],
+      includeAcademia: true,
+      includeIndustry: true,
     })
     // Keywords survive. They are the user's own system and outlive any one set
     // of records — and the alternative is what the removed `store-context.ts`

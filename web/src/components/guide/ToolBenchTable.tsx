@@ -118,6 +118,7 @@ const PLAIN: Record<string, string> = {
   'wrote-on-a-question': 'wrote when it was only asked a question',
   'acted-when-it-should-have-asked': 'guessed instead of asking',
   'said-nothing': 'went silent',
+  'answer-missing-fact': 'answered without the fact it was asked for',
   'wrong-final-state': 'left the records wrong',
 }
 

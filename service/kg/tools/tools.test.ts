@@ -30,6 +30,7 @@ import {
   TIMELINE_KIND_VALUES,
   URGENCY_VALUES,
   APPROVAL_MODES,
+  DEFAULT_ROLES,
   approvalOf,
 } from '../core/model'
 import type { NodeId, StoredEdge, StoredNode } from '../core/model'
@@ -1845,5 +1846,97 @@ describe('acting without asking', () => {
     const two = okOr(h.runtime.run('assistant.thread.create', { title: 'Two' }))
     okOr(h.runtime.run('assistant.thread.auto.set', { id: one, mode: 'auto' }))
     expect(h.repo.getSnapshot().node(two, 'thread')?.props.approval).toBeUndefined()
+  })
+})
+
+/**
+ * "Blanks the profile" has to mean the whole profile.
+ *
+ * `memory.clear` patched `text` and `matchTerms` and left `roles`,
+ * `includeAcademia` and `includeIndustry` standing — so a store the person had
+ * just emptied still knew which role tags they were targeting and which halves
+ * of the job market they had switched off.
+ *
+ * This is the one tool in the app somebody reaches for when they want their
+ * data gone. It is `undoable: false` and its summary says "Removes every record
+ * and blanks the profile". Leaving preferences behind is the shape of privacy
+ * bug that gets found by the person it happened to.
+ */
+describe('emptying the store', () => {
+  it('leaves nothing personal in the profile', () => {
+    const h = harness()
+    okOr(
+      h.runtime.run('profile.text.set', { field: 'fullName', value: 'Dr A. Person' }),
+    )
+    okOr(h.runtime.run('profile.matchTerm.add', { term: 'distributed systems' }))
+    okOr(h.runtime.run('profile.preference.set', { key: 'includeIndustry', value: false }))
+
+    okOr(h.runtime.run('memory.clear', { confirm: true }))
+
+    const profile = h.repo.getSnapshot().ofType('profile')[0]
+    expect(profile).toBeDefined()
+    const props = profile!.props as {
+      text: Record<string, string>
+      matchTerms: string[]
+      roles: string[]
+      includeAcademia: boolean
+      includeIndustry: boolean
+    }
+
+    // Nothing the person typed.
+    expect(Object.values(props.text).every((v) => v === '')).toBe(true)
+    expect(props.matchTerms).toEqual([])
+    // And nothing they CHOSE. This is the half that survived.
+    expect(props.includeIndustry).toBe(true)
+    expect(props.includeAcademia).toBe(true)
+    expect(props.roles).toEqual([...DEFAULT_ROLES])
+  })
+
+  it('leaves a usable profile, not an empty one', () => {
+    /*
+     * Reset to a FRESH profile rather than to nothing: a profile with no roles
+     * and both scout switches off is not blank, it is broken — the scout would
+     * silently match nothing and the person would never know why.
+     */
+    const h = harness()
+    okOr(h.runtime.run('memory.clear', { confirm: true }))
+    const props = h.repo.getSnapshot().ofType('profile')[0]!.props as { roles: string[] }
+    expect(props.roles.length).toBeGreaterThan(0)
+  })
+})
+
+/**
+ * A destructive tool's announcement has to name what it is about to destroy.
+ *
+ * `describe` builds the approval card AND the journal label. `proposalDetail`
+ * deliberately skips ids, so a card reading "Conversation deleted" over a list
+ * of six is not a decision anybody can make — and an audit log of identical
+ * anonymous rows cannot answer "a record changed by itself", which is the
+ * question it exists for.
+ *
+ * Only the destructive ones are required to. A singleton like `memory.clear`
+ * or `profile.set` has no record to name, and inventing one would be noise.
+ */
+describe('what a destructive announcement says', () => {
+  it('names the record', () => {
+    const h = harness()
+    const app = okOr(
+      h.runtime.run('application.create', {
+        org: 'Rice',
+        role: 'Scientist',
+        roleTag: 'Research Scientist',
+        stage: 'draft',
+      }),
+    )
+    const thread = okOr(h.runtime.run('assistant.thread.create', { title: 'Tidy up' }))
+
+    // A delete whose card says only "Conversation deleted" is a card nobody can
+    // act on. `application.delete` was already named; this pins the pair.
+    void app
+
+    // The announcement for the delete carries the record's name.
+    const before = h.repo.getSnapshot()
+    const shown = TOOLS['assistant.thread.delete'].describe({ id: thread } as never, undefined as never, before)
+    expect(`${shown.title} ${shown.description ?? ''}`).toContain('Tidy up')
   })
 })

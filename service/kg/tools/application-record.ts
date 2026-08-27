@@ -109,7 +109,13 @@ export const applicationNoteSet = defineTool({
     touch(ctx, input.id, 'Note edited')
   },
 
-  describe: () => ({ title: 'Note saved' }),
+  describe: (input, _output, m) => ({
+    title: 'Note saved',
+    // Which application. `announcement.title` is the journal label, so a row
+    // that names no record makes the audit log — the answer to "a record
+    // changed by itself" — a list of identical anonymous entries.
+    description: displayOf(m, input.id),
+  }),
 })
 
 /**

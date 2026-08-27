@@ -20,6 +20,7 @@
 import { s } from '../core/schema'
 import type { NodeId, ThreadEntry } from '../core/model'
 import { APPROVAL_MODES, APPROVAL_SAID, APPROVAL_TITLE } from '../core/model'
+import { nameOf } from './support'
 import { defineTool } from './tool'
 
 /**
@@ -219,7 +220,20 @@ export const threadDelete = defineTool({
     ctx.require('thread', input.id)
     ctx.tx.del(input.id)
   },
-  describe: () => ({ title: 'Conversation deleted', tone: 'danger' }),
+  describe: (input, _output, m) => ({
+    title: 'Conversation deleted',
+    /*
+     * NAMED, because this is destructive and the approval card is the last
+     * thing between the person and losing the wrong one.
+     *
+     * The card is built from `describe`, and "Conversation deleted" over a list
+     * of six conversations is not a decision anybody can make. `proposalDetail`
+     * deliberately skips ids, so without this the card carries no way to tell
+     * which record is about to go.
+     */
+    description: nameOf(m, input.id),
+    tone: 'danger',
+  }),
 })
 
 /**

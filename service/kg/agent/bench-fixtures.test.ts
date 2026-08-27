@@ -23,7 +23,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { CONVERSATIONS, GROUPS } from './bench-conversations'
-import { WORLD_SHAPE } from './bench-world'
+import { DOCUMENTS, WORLD, WORLD_SHAPE } from './bench-world'
 import { CATALOG } from './catalog'
 import { TOOLS } from '../tools/index'
 import { COMPOSES } from './tool-graph'
@@ -309,5 +309,100 @@ describe('how much of the catalog this suite reaches', () => {
         `the "${group}" group has no conversations`,
       ).toBe(true)
     }
+  })
+})
+
+/**
+ * An answer assertion has to be a fact, not a coincidence.
+ *
+ * `answerMust` is a substring match, so a bare one- or two-digit string passes
+ * vacuously on any answer containing a year — `'6'` matches "2026" — and fails
+ * a correct per-stage breakdown that never happens to say "6". A check that can
+ * pass by accident and fail when right is worse than no check.
+ */
+describe('the answer assertions', () => {
+  const facts = CONVERSATIONS.flatMap((c) =>
+    c.turns.flatMap((t) => (t.answerMust ?? []).map((f) => ({ id: c.id, fact: f }))),
+  )
+
+  it('exists at all — the read-only escape needs closing somewhere', () => {
+    // A do-nothing agent that always answers scored 16/36 before these. If they
+    // all get deleted, that is the number the suite goes back to.
+    expect(facts.length).toBeGreaterThanOrEqual(6)
+  })
+
+  it('never asserts a bare one- or two-digit number', () => {
+    const weak = facts.filter((f) => /^\d{1,2}$/.test(f.fact.trim()))
+    expect(weak.map((f) => `${f.id}: "${f.fact}"`), 'use a name or a distinctive word').toEqual([])
+  })
+
+  it('never asserts something too short to be distinctive', () => {
+    const weak = facts.filter((f) => f.fact.trim().length < 3)
+    expect(weak.map((f) => `${f.id}: "${f.fact}"`)).toEqual([])
+  })
+})
+
+/**
+ * An asserted fact has to exist in the world the conversation runs against.
+ *
+ * Written three times this session and wrong three times: `is: 'compensation'`
+ * against a `prop` check that compares with `===`; a keyword the world already
+ * seeded; and `answerMust: ['Teaching-track']` for a pipeline the world calls
+ * "Industry research roles". Every one of them failed a model that had done
+ * exactly the right thing, and every one read as a model failure until someone
+ * checked the world.
+ *
+ * The fixture is text, so this is a substring search over it — crude, and it
+ * catches the whole class in fifteen lines.
+ */
+describe('facts the rubric asserts', () => {
+  /*
+   * The seeded DATA, not the source text — `node:fs` is banned in `kg/`, and
+   * the values are the right thing to search anyway: a fact the rubric asserts
+   * has to be in the world the conversation runs against, not merely somewhere
+   * in a file.
+   */
+  const world = `${JSON.stringify(WORLD)} ${JSON.stringify(DOCUMENTS)}`
+
+  const asserted = CONVERSATIONS.flatMap((c) =>
+    (c.turns ?? []).flatMap((t) => (t.answerMust ?? []).map((f) => ({ id: c.id, fact: f }))),
+  )
+
+  it('names something the seeded world actually contains', () => {
+    /*
+     * Numbers are exempt: a count or a percentage is computed FROM the world
+     * and will not appear in its source. Names are not — a name the world does
+     * not contain is a name somebody invented.
+     */
+    const invented = asserted
+      .filter((a) => !/^[\d.,%]+$/.test(a.fact.trim()))
+      .filter((a) => !world.toLowerCase().includes(a.fact.toLowerCase()))
+    expect(
+      invented.map((a) => `${a.id} asserts "${a.fact}", which bench-world.ts never mentions`),
+      'the rubric is asserting a fact it invented',
+    ).toEqual([])
+  })
+})
+
+/**
+ * An asserted fact must not be a word the question already contains.
+ *
+ * `source-comparison` asked "Do referrals do better than the job boards?" and
+ * asserted the answer contained "referral" — which any restatement of the
+ * question satisfies, including one from a model that did no work at all. That
+ * is the exact hole `answerMust` was added to close, reopened by the check
+ * meant to close it.
+ */
+describe('answer assertions that could pass by echo', () => {
+  const echoes = CONVERSATIONS.flatMap((c) =>
+    c.turns.flatMap((t) =>
+      (t.answerMust ?? [])
+        .filter((f) => t.say.toLowerCase().includes(f.toLowerCase().replace(/s$/, '')))
+        .map((f) => `${c.id}: "${f}" is already in the question`),
+    ),
+  )
+
+  it('asserts something the question does not already say', () => {
+    expect(echoes, echoes.join('\n')).toEqual([])
   })
 })

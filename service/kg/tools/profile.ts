@@ -40,7 +40,14 @@ const PREFERENCES = ['includeAcademia', 'includeIndustry'] as const
 /** What the profile page means by "documents". */
 const DOCUMENTS_BUCKET: FileBucket = 'Applications'
 
-const BLANK_TEXT: ProfileText = {
+/**
+ * A profile with nothing personal in it.
+ *
+ * Exported because `memory.clear` blanks the same fields, and two lists of what
+ * counts as personal is one list that goes stale — the version that patched only
+ * `text` and `matchTerms` left role tags and both scout switches behind.
+ */
+export const BLANK_TEXT: ProfileText = {
   fullName: '',
   position: '',
   location: '',

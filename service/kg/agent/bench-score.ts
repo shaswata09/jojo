@@ -94,6 +94,15 @@ export type TurnScore = {
     | 'wrote-on-a-question'
     | 'acted-when-it-should-have-asked'
     | 'said-nothing'
+  /**
+   * The answer did not contain a fact the turn asked for.
+   *
+   * The failure the suite could not see: a `readOnly` turn that answered was
+   * correct whatever it called, and an agent that called nothing and always
+   * answered scored 16/36. `checkState` cannot catch it either — an agent that
+   * does nothing changes nothing.
+   */
+  | 'answer-missing-fact'
   readonly detail?: string
 }
 
@@ -105,7 +114,12 @@ export type TurnScore = {
  * forbidden write. A report that named the lesser fault would send somebody to
  * the wrong problem.
  */
-export function scoreTurn(turn: Turn, calls: readonly CallRecord[], answered: boolean): TurnScore {
+export function scoreTurn(
+  turn: Turn,
+  calls: readonly CallRecord[],
+  answered: boolean,
+  answer?: string | null,
+): TurnScore {
   const names = calls.map((c) => c.name)
 
   for (const name of names) {
@@ -147,9 +161,28 @@ export function scoreTurn(turn: Turn, calls: readonly CallRecord[], answered: bo
     }
   }
 
+  /*
+   * The answer has to contain the facts the turn asked for.
+   *
+   * Checked BEFORE the read-only escape below, because the escape is what it
+   * exists to close: a `readOnly` turn that answered counted as correct with no
+   * calls at all, and 42 of 69 turns are `readOnly`. An agent that calls nothing
+   * and always answers scored 16/36 clean and 45/69 turns — 44% of the suite,
+   * for no work — and nothing in `checkState` could see it, because an agent
+   * that does nothing changes nothing.
+   */
+  if (turn.answerMust && turn.answerMust.length > 0) {
+    const said = (answer ?? '').toLowerCase()
+    const missing = turn.answerMust.filter((fact) => !said.includes(fact.toLowerCase()))
+    if (missing.length > 0) {
+      return { correct: false, failure: 'answer-missing-fact', detail: missing.join(', ') }
+    }
+  }
+
   if (turn.mustCallOneOf && !names.some((n) => turn.mustCallOneOf?.includes(n))) {
     // A read-only turn that answered from context without calling anything is
-    // acceptable; a turn that was supposed to DO something is not.
+    // acceptable — a follow-up genuinely can be answerable from what was already
+    // read. `answerMust` above is what stops that being a free pass.
     if (turn.readOnly && answered) return { correct: true }
     return { correct: false, failure: 'no-required-call', detail: names[0] ?? '(nothing)' }
   }
@@ -324,11 +357,11 @@ export type ConversationScore = {
 
 export function scoreConversation(
   conversation: Conversation,
-  perTurn: readonly { calls: readonly CallRecord[]; answered: boolean }[],
+  perTurn: readonly { calls: readonly CallRecord[]; answered: boolean; answer?: string | null }[],
   nodes: readonly BenchNode[],
 ): ConversationScore {
   const turns = conversation.turns.map((turn, i) =>
-    scoreTurn(turn, perTurn[i]?.calls ?? [], perTurn[i]?.answered ?? false),
+    scoreTurn(turn, perTurn[i]?.calls ?? [], perTurn[i]?.answered ?? false, perTurn[i]?.answer),
   )
   const trajectory = scoreTrajectory(perTurn.flatMap((t) => t.calls))
   const state = conversation.finalState.map((check) => checkState(check, nodes))

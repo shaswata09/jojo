@@ -782,3 +782,37 @@ describe('working out a number', () => {
     expect(calc.input.parse({ expressions: ['1+1'] }, '').ok).toBe(true)
   })
 })
+
+/**
+ * `any` means the same thing in every tool that offers it.
+ *
+ * `graph.query`'s facets accept `'any'`; `memory.search` used "omit the field"
+ * for the same idea and refused the word. Measured, GPT-OSS 120B sent
+ * `{"query":"Rice","type":"any"}` and was told "Needs to be one of: claim,
+ * application, …" — a list that does not mention the word it had just used, on
+ * a convention the registry itself had taught it one tool over.
+ */
+describe('searching every kind', () => {
+  it('accepts `any` and treats it as no filter', () => {
+    const m = seeded().repo.getSnapshot()
+    const all = read('memory.search', m, { query: 'e' }) as { total: number }
+    const viaAny = read('memory.search', m, { query: 'e', type: 'any' }) as { total: number }
+    expect(viaAny).toEqual(all)
+  })
+
+  it('still narrows when given a real kind', () => {
+    // Widening the enum must not turn the filter off.
+    const m = seeded().repo.getSnapshot()
+    const apps = read('memory.search', m, { query: 'e', type: 'application' }) as { total: number }
+    const all = read('memory.search', m, { query: 'e' }) as { total: number }
+    expect(apps.total).toBeLessThanOrEqual(all.total)
+  })
+
+  it('offers `any` in the schema, so the model can discover it', () => {
+    const meta = READS['memory.search'].input.meta as {
+      fields?: Record<string, { optional?: boolean; of?: { options?: readonly string[] }; options?: readonly string[] }>
+    }
+    const field = meta.fields?.['type']
+    expect(field?.options ?? field?.of?.options).toContain('any')
+  })
+})
