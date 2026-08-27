@@ -14,6 +14,7 @@ import {
   createStreamReader,
   streamingChatRequest,
   supportsStreaming,
+  type StreamUsage,
 } from '@jojo/service/core/model-stream'
 import { endpointOf } from '@jojo/service/core/provider'
 import { report } from '@/lib/analytics'
@@ -230,6 +231,35 @@ export async function complete(
 }
 
 /**
+ * The `done` event, held until the stream is over and can be reshaped.
+ *
+ * ## Why `usage` is in here, having once been left out
+ *
+ * It is the whole reason `streamingChatRequest` sends `stream_options:
+ * {include_usage: true}`, and this type is the only place it can be dropped
+ * between the reader and `guardTruncation`. It WAS dropped: the field was
+ * missing from the object literal in both drains below, so `done.usage` read
+ * `undefined`, `done.usage === null` was false, `{usage: undefined}` was spread
+ * into the completion and `JSON.stringify` removed the key on its way out. The
+ * guard then saw a body with no counts, which it correctly treats as "the
+ * server said nothing" — so it returned every turn unexamined and the app's
+ * only defence against a silently truncated prompt was off for every streamed
+ * turn on both roads. Nothing failed, which is what made it survive: a local
+ * server that threw the tool list and the question away still answered, and the
+ * answer arrived looking like any other.
+ *
+ * Declared once and shared by both readers rather than written inline twice,
+ * because a field missing from one copy is exactly the bug this comment is
+ * about.
+ */
+type Assembled = {
+  text: string
+  calls: readonly WireToolCall[]
+  finish: string | null
+  usage: StreamUsage | null
+}
+
+/**
  * One agent turn: the conversation plus the tools, in, and what the model wants
  * to do next, out.
  *
@@ -242,6 +272,7 @@ export async function complete(
  * `@jojo/service/agent/catalog`, which builds it from the registry, and there is
  * nothing for this file to add to it or check about it.
  */
+
 /**
  * Streams a turn, and hands back the ordinary non-streaming shape.
  *
@@ -258,13 +289,18 @@ async function readStream(
   signal?: AbortSignal,
 ): Promise<Sent> {
   const reader = createStreamReader()
-  let assembled: { text: string; calls: readonly WireToolCall[]; finish: string | null } | null =
-    null
+  let assembled: Assembled | null = null
 
   const drain = (events: ReturnType<typeof reader.push>) => {
     for (const event of events) {
       if (event.type === 'text') onDelta(event.delta)
-      else assembled = { text: event.text, calls: event.calls, finish: event.finish }
+      else
+        assembled = {
+          text: event.text,
+          calls: event.calls,
+          finish: event.finish,
+          usage: event.usage,
+        }
     }
   }
 
@@ -341,14 +377,21 @@ async function readRelayedStream(
   signal?: AbortSignal,
 ): Promise<Sent> {
   const reader = createStreamReader()
-  let assembled: { text: string; calls: readonly WireToolCall[]; finish: string | null } | null =
-    null
+  let assembled: Assembled | null = null
   let streamed = false
 
   const drain = (events: ReturnType<typeof reader.push>) => {
     for (const event of events) {
       if (event.type === 'text') onDelta(event.delta)
-      else assembled = { text: event.text, calls: event.calls, finish: event.finish }
+      // `usage` included, for the reason set out on `Assembled`: without it the
+      // truncation guard is silently switched off for this road too.
+      else
+        assembled = {
+          text: event.text,
+          calls: event.calls,
+          finish: event.finish,
+          usage: event.usage,
+        }
     }
   }
 

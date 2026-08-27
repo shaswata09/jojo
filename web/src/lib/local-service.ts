@@ -20,6 +20,41 @@ export type Sent = ModelResponse | { failed: ReturnType<typeof unreachable> }
 export const failed = (r: Sent): r is { failed: ReturnType<typeof unreachable> } => 'failed' in r
 
 /**
+ * The one browser block this transport can be CERTAIN of.
+ *
+ * An https page calling a plain http address is refused by rule, before a socket
+ * is opened — so unlike everything else that arrives as `TypeError: Failed to
+ * fetch`, there is nothing else it could have been. That certainty is what makes
+ * it the only case allowed to report `why: 'blocked'`; see `send` below.
+ *
+ * MIXED CONTENT NEEDS BOTH HALVES, and this used to check only one.
+ *
+ * The old version blamed mixed content whenever the PAGE was https, without
+ * looking at where the request was going. So a hosted copy calling
+ * `https://integrate.api.nvidia.com/v1` — https to https, not mixed content at
+ * all — was told "browsers forbid calling a plain http address … put the model
+ * behind https", about a model that was already behind https. That sends
+ * somebody to fix a configuration that is already correct, which is worse than
+ * saying nothing.
+ */
+/**
+ * Loopback, which the Mixed Content algorithm does NOT block.
+ *
+ * `localhost`, `127.0.0.0/8` and `[::1]` are *potentially trustworthy* origins,
+ * so an https page reaching them over plain http is allowed — and that is the
+ * single most common address this app talks to. Calling it `blocked` sends
+ * somebody to fix a browser policy that is not stopping them, while the actual
+ * cause is almost always that nothing is listening on the port.
+ */
+const LOOPBACK = /^https?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?(?:$|\/)/i
+
+const mixedContent = (target?: string) =>
+  globalThis.location?.protocol === 'https:' &&
+  target !== undefined &&
+  /^http:\/\//i.test(target) &&
+  !LOOPBACK.test(target)
+
+/**
  * What a bare `Failed to fetch` could mean, in the order worth checking.
  *
  * Mixed content is checked first and answered alone because it is the one case
@@ -28,19 +63,7 @@ export const failed = (r: Sent): r is { failed: ReturnType<typeof unreachable> }
  */
 const browserBlocked = (target?: string) => {
   const pageIsHttps = globalThis.location?.protocol === 'https:'
-  /*
-   * MIXED CONTENT NEEDS BOTH HALVES, and this used to check only one.
-   *
-   * The old version blamed mixed content whenever the PAGE was https, without
-   * looking at where the request was going. So a hosted copy calling
-   * `https://integrate.api.nvidia.com/v1` — https to https, not mixed content at
-   * all — was told "browsers forbid calling a plain http address … put the model
-   * behind https", about a model that was already behind https. That sends
-   * somebody to fix a configuration that is already correct, which is worse than
-   * saying nothing.
-   */
-  const targetIsHttp = target !== undefined && /^http:\/\//i.test(target)
-  if (pageIsHttps && targetIsHttp) {
+  if (mixedContent(target)) {
     return ' This page is on https, which browsers forbid from calling a plain http address — serve jojo over http, or install the jojo extension, which relays that one hop for you.'
   }
   if (pageIsHttps) {
@@ -101,7 +124,29 @@ export async function send(
     return {
       failed: aborted
         ? failure
-        : { ...failure, reason: failure.reason + browserBlocked(request.url) },
+        : {
+            ...failure,
+            /*
+             * Reported as `blocked` ONLY where it is certain, which is mixed
+             * content and nothing else.
+             *
+             * `unreachable()` labels every non-timeout as `why: 'unreachable'`,
+             * which was wrong for a page the browser refused to let out — and
+             * the temptation is to flip the whole branch to `blocked` instead.
+             * That trades one confident lie for another: a `Failed to fetch`
+             * here is a dead local server, a CORS-less error response and a
+             * mixed-content refusal all wearing the same exception, which is
+             * the point `llm.ts` spends three paragraphs on. Most of what
+             * reaches this transport IS a local server, so calling it all
+             * `blocked` would bury the ordinary case under the rare one.
+             *
+             * Mixed content is the exception because the browser decides it by
+             * rule before the request leaves, so there is no other explanation
+             * for it to be hiding.
+             */
+            ...(mixedContent(request.url) ? { why: 'blocked' as const } : {}),
+            reason: failure.reason + browserBlocked(request.url),
+          },
     }
   } finally {
     clearTimeout(timer)
@@ -218,12 +263,17 @@ export async function sendStream(
     // as the same `AbortError`, so the two are told apart by whose signal fired.
     const mine = aborted && signal?.aborted !== true
     if (mine) return { failed: stalled(endpoint, sofar) }
+    const failure = unreachable(
+      endpoint,
+      aborted ? 'aborted' : `network${browserBlocked(request.url)}`,
+      false,
+    )
+    // The same certainty rule as `send` — a stream is refused by the same rule
+    // a whole request is, and reporting the two differently would make the
+    // numbers depend on which transport a caller happened to pick.
     return {
-      failed: unreachable(
-        endpoint,
-        aborted ? 'aborted' : `network${browserBlocked(request.url)}`,
-        false,
-      ),
+      failed:
+        !aborted && mixedContent(request.url) ? { ...failure, why: 'blocked' as const } : failure,
     }
   }
 }

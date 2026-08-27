@@ -548,6 +548,8 @@ export const chatRequest = (
  * it turns a degraded answer into a failed load. `contextOf` is the number jojo
  * PLANS against; `settings.contextWindow` is the number it INSTRUCTS with, and
  * they are deliberately different reads.
+ *
+ * The messages need translating on the way out too — see `toOllamaMessages`.
  */
 function ollamaChatRequest(
   settings: ModelSettings,
@@ -564,7 +566,8 @@ function ollamaChatRequest(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: settings.model.trim(),
-      messages,
+      // Not the messages as the rest of the app holds them. See below.
+      messages: toOllamaMessages(messages),
       ...(tools && tools.length > 0 ? { tools } : {}),
       // Native defaults `stream` to TRUE, where the shim defaults it to false.
       stream: false,
@@ -575,6 +578,53 @@ function ollamaChatRequest(
       ...(typeof explicit === 'number' && explicit > 0 ? { options: { num_ctx: explicit } } : {}),
     }),
   }
+}
+
+/**
+ * The conversation in the shape Ollama's own endpoint accepts, which is not
+ * quite the shape everything else does.
+ *
+ * The difference that only shows up on the SECOND round, which is why nothing
+ * caught it — a fresh conversation works, and so does the first tool call in it.
+ * `readOllamaTurn` already documents that native spells
+ * `tool_calls[].function.arguments` as an OBJECT where OpenAI spells it as a
+ * JSON string — that is the same `message` structure Ollama takes back on the
+ * next request, and it is a `map[string]any` on the far side. A string in that
+ * position is not a degraded argument list, it is a type error: Ollama rejects
+ * the whole request, so the very first tool call in a conversation answered
+ * fine and the round that followed it 400'd.
+ *
+ * The transcript itself is not rewritten. `loop.ts` builds one history in
+ * OpenAI's spelling and every provider translates at its own edge — Anthropic
+ * does exactly this in `toAnthropicMessages` — because a history that changed
+ * shape per provider could not be stored, compacted or replayed by anything
+ * else.
+ *
+ * A call whose `raw` is not a JSON OBJECT — empty, or the invalid JSON a small
+ * model sometimes emits — travels as `{}`. There is no honest alternative:
+ * native has nowhere to put a string, and refusing to send the turn at all
+ * would strand a conversation over one bad call the model can still be told
+ * about.
+ */
+function toOllamaMessages(messages: readonly ChatMessage[]): readonly unknown[] {
+  return messages.map((message) => {
+    if (message.role !== 'assistant' || message.tool_calls === undefined) return message
+    return {
+      ...message,
+      tool_calls: message.tool_calls.map((call) => ({
+        ...call,
+        function: { name: call.function.name, arguments: objectArguments(call.function.arguments) },
+      })),
+    }
+  })
+}
+
+/** The arguments as an object, whatever the wire string turned out to hold. */
+function objectArguments(raw: string): Record<string, unknown> {
+  const parsed = safeParse(raw)
+  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+    ? (parsed as Record<string, unknown>)
+    : {}
 }
 
 /**
@@ -625,6 +675,17 @@ const rateLimited = (retryAfter: string | null): ModelFailure => ({
 const blockedByBrowser = (): ModelFailure => ({
   ok: false,
   kind: 'unreachable',
+  /*
+   * The one place in the app that KNOWS it was the browser, and it said nothing.
+   *
+   * `kind` stays `unreachable` because the app's next move is the same — there
+   * is no answer to read — but `why` is the whole reason this field exists: a
+   * status of zero is not a server that went to sleep, it is a provider nobody
+   * on this origin can reach at all, and reported as plain `unreachable` it was
+   * indistinguishable from one laptop being off. Left unset, `blocked` was a
+   * FailureKind no code path could ever produce.
+   */
+  why: 'blocked',
   reason:
     'The browser blocked the reply, so nothing here ever saw it — that is not the server failing. ' +
     'It happens when a provider answers without the CORS headers a page needs, which several do. ' +
@@ -817,8 +878,22 @@ export function readOllamaTurn(response: ModelResponse): Turn {
       if (typeof entry !== 'object' || entry === null) continue
       const fn = (entry as { function?: unknown }).function
       if (typeof fn !== 'object' || fn === null) continue
-      const name = (fn as { name?: unknown }).name
-      if (typeof name !== 'string' || name.length === 0) continue
+      const wireName = (fn as { name?: unknown }).name
+      if (typeof wireName !== 'string' || wireName.length === 0) continue
+      /*
+       * Cleaned here too, and it was not. `readTurn` has stripped harmony
+       * control tokens off a tool name since a real reply named the tool
+       * `memory_get<|channel|>commentary`; this reader — the one gpt-oss under
+       * Ollama actually goes through — did not, so on native the call was
+       * refused with "No tool is called memory_get<|channel|>commentary" and
+       * the model spent a whole round trip recovering from it.
+       *
+       * With the same empty-name drop the OpenAI path has: a name that was
+       * nothing but a marker cleans to `''`, and a call to a tool with no name
+       * is not a call.
+       */
+      const name = cleanToolName(wireName)
+      if (name === '') continue
       // An object here, not a string. Read as a string it would be `''`, and
       // every native tool call would run with no arguments.
       const args = (fn as { arguments?: unknown }).arguments ?? {}

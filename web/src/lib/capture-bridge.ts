@@ -168,6 +168,17 @@ type Ask = {
   model?: { url: string; method: string; headers: Record<string, string>; body?: string }
   /** The crash-reporting choice, and a request for what the worker has kept. */
   crash?: { on?: boolean; clear?: boolean }
+  /**
+   * The caller's cancel, which ends the WAIT rather than the work.
+   *
+   * The worker's fetch runs to completion whatever happens here — there is no
+   * verb for calling it off, and inventing one would be a second protocol to
+   * keep in step. What an abort buys is that the caller stops holding a promise
+   * it no longer wants an answer to, which is the whole of the harm: a read
+   * cancelled at second two used to resolve at second forty and carry on into
+   * saving a posting and opening a form over whatever the user had moved on to.
+   */
+  signal?: AbortSignal
 }
 
 /**
@@ -182,6 +193,40 @@ type Ask = {
  */
 const SCAN_TIMEOUT_MS = 40000
 
+/**
+ * How long a relayed READ or MODEL call gets, once the extension has proved it
+ * is there.
+ *
+ * A TRANSCRIPTION of `READ_TIMEOUT_MS` in `web/extension/background.js`, plus a
+ * margin, and `reader-relay.test.ts` fails if the two drift apart. They are two
+ * budgets for ONE request and they were 40s here against 120s there: a 55-second
+ * PDF conversion the worker was still working on was abandoned at this end and
+ * reported as "the extension did not answer", after which the worker answered
+ * into a void. Reads do not stream, so nothing re-armed the timer either — the
+ * CHUNK path below only exists for a streamed model answer.
+ *
+ * The margin is which way the race must go. Whoever gives up first writes the
+ * sentence the user reads, and the worker's names what it was calling and for
+ * how long; this end can only say that nothing came back.
+ */
+const RELAY_TIMEOUT_MS = 125000
+
+/**
+ * Whether anything has answered on this bridge since the page loaded.
+ *
+ * "Present and still converting" and "no extension at all" are the same silence
+ * from here, and they want opposite budgets: a conversion needs minutes, and
+ * somebody who never installed the extension must not watch a two-minute
+ * spinner to be told so — which is exactly what Settings' "Test connection"
+ * would have become, since the handshake goes down this same road.
+ *
+ * So the long budget is EARNED. Any answered round trip proves there is
+ * something listening — the mount probe, a peek, or a read's own handshake,
+ * which always precedes the convert that needs the minutes — and until one has,
+ * a relayed call waits no longer than it did before.
+ */
+let answered = false
+
 let nextId = 1
 
 /** One round trip, or null when nothing answers in time. */
@@ -193,9 +238,20 @@ function ask(request: Ask): Promise<Reply | null> {
     const done = (value: Reply | null) => {
       if (settled) return
       settled = true
+      // Any answer at all, from any verb. See `answered`.
+      if (value !== null) answered = true
       window.removeEventListener('message', onMessage)
+      request.signal?.removeEventListener('abort', onAbort)
       window.clearTimeout(timer)
       resolve(value)
+    }
+
+    // A cancel settles the round trip the same way a timeout does, and through
+    // the same door: `done` is idempotent and takes the listener and the timer
+    // off with it, so an answer that arrives afterwards is ignored rather than
+    // resolving a promise nobody is holding.
+    const onAbort = () => {
+      done(null)
     }
 
     const onMessage = (event: MessageEvent) => {
@@ -224,21 +280,35 @@ function ask(request: Ask): Promise<Reply | null> {
     }
 
     /*
-     * A relayed request waits on somebody else's server, so it gets the scan's
-     * budget rather than the probe's. This defaulted to PROBE_TIMEOUT_MS — 400ms
-     * — which is right for "is the extension there" and absurd for converting a
-     * PDF or waiting on a 70B model: every relayed call would have been
-     * abandoned before it started and reported as "the extension did not
-     * answer".
+     * A relayed request waits on somebody else's server, so it gets neither the
+     * probe's budget nor the scan's. It defaulted to PROBE_TIMEOUT_MS — 400ms —
+     * which is right for "is the extension there" and absurd for converting a
+     * PDF or waiting on a 70B model: every relayed call was abandoned before it
+     * started and reported as "the extension did not answer". Moving it to the
+     * scan's 40s fixed the absurd case and left the merely slow one, because the
+     * worker was meanwhile giving the same request 120.
      */
     const timeout =
-      request.scan !== undefined || request.read !== undefined || request.model !== undefined
-        ? SCAN_TIMEOUT_MS
-        : request.take === true
-          ? TAKE_TIMEOUT_MS
-          : PROBE_TIMEOUT_MS
+      request.read !== undefined || request.model !== undefined
+        ? // The worker's own budget, once there is a worker known to be running.
+          // Borrowing the scan's was what threw away conversions and model
+          // answers that had not finished yet — see `RELAY_TIMEOUT_MS`.
+          (answered ? RELAY_TIMEOUT_MS : SCAN_TIMEOUT_MS)
+        : request.scan !== undefined
+          ? SCAN_TIMEOUT_MS
+          : request.take === true
+            ? TAKE_TIMEOUT_MS
+            : PROBE_TIMEOUT_MS
     let timer = window.setTimeout(() => done(null), timeout)
     window.addEventListener('message', onMessage)
+    // Checked as well as listened for: `abort` never fires on a signal that was
+    // already aborted, so a caller that cancelled before this call was made
+    // would otherwise wait out the full budget for an answer it has no use for.
+    if (request.signal?.aborted === true) {
+      done(null)
+      return
+    }
+    request.signal?.addEventListener('abort', onAbort, { once: true })
     window.postMessage(
       {
         type: REQUEST,
@@ -325,17 +395,30 @@ export async function scanBoard(
  * Returns the SAME shape as `local-service`'s `send`, so `markitdown.ts` can
  * choose a route without the protocol code above it knowing there was a choice.
  */
-export async function readDocument(request: {
-  url: string
-  method: string
-  headers: Record<string, string>
-  body?: string
-}): Promise<
-  { ok: boolean; status: number; text: string } | { failed: { reason: string } }
-> {
-  const reply = await ask({ read: request })
+export async function readDocument(
+  request: {
+    url: string
+    method: string
+    headers: Record<string, string>
+    body?: string
+  },
+  /**
+   * The caller's cancel, honoured on this transport as well as the direct one.
+   *
+   * It was accepted by `markitdown.ts` and dropped here, which is not a smaller
+   * version of working: closing "New application from a link" mid-read left the
+   * read running, and up to the full budget later the posting was saved and the
+   * create form opened over whatever the user had gone on to do.
+   */
+  signal?: AbortSignal,
+): Promise<{ ok: boolean; status: number; text: string } | { failed: { reason: string } }> {
+  const reply = await ask({ read: request, ...(signal === undefined ? {} : { signal }) })
 
   if (reply === null) {
+    // A cancel and a silent extension both arrive as `null`, and they must not
+    // be reported the same way: one of them is the caller's own doing, and
+    // accusing the extension of it sends somebody to reinstall a working one.
+    if (signal?.aborted === true) return { failed: { reason: 'The read was cancelled.' } }
     return {
       failed: {
         reason:

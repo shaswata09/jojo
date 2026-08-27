@@ -806,3 +806,132 @@ describe('history', () => {
     expect(repo.undoable).toEqual([])
   })
 })
+
+/**
+ * A background write that lands inside a wholesale replace.
+ *
+ * `commit` is synchronous and `replaceAll` is not, so a pipeline attaching a
+ * proposal can land between the flush and the driver transaction settling. Its
+ * ops then drain once the driver is free — AFTER the new row set is on disk.
+ *
+ * Reproduced against the real repository before the fix: the store the user had
+ * just emptied returned `ok`, held nothing in memory, and had a resurrected
+ * record waiting on disk for the next reload. The screen and the disk
+ * disagreed, and only the disk survived a refresh.
+ */
+describe('replaceAll, raced', () => {
+  const KW = (id: string) => ({
+    id,
+    type: 'keyword' as const,
+    props: { slug: id, name: id, tone: 'gray' as const },
+    createdAt: AT,
+    updatedAt: AT,
+  })
+
+  /**
+   * The other half, and the first fix got it wrong.
+   *
+   * Holding the ops was justified by "`snapshot.reset` discards this entry's
+   * memory effect too, so keeping the disk half would not preserve the write" —
+   * which is true only when the replace SUCCEEDS. Both failure returns (a queue
+   * that will not drain, a driver that refuses) leave the store exactly as it
+   * was, so the entry's memory effect survives.
+   *
+   * Reproduced against the real repository: with the ops dropped outright, a
+   * failed replace left the record ON SCREEN, absent from disk, and health
+   * reading `idle`. Visible, unsaved, and nothing said so — the inverse of the
+   * bug the guard was added for.
+   */
+  it('keeps a commit that landed during a replace the driver REFUSED', async () => {
+    const inner = createMemoryDriver()
+    let release: (() => void) | null = null
+    const held = new Promise<void>((r) => {
+      release = r
+    })
+    const driver: Driver = {
+      ...inner,
+      // Refuses, so `snapshot.reset` is never reached and the store still exists.
+      replace: async () => {
+        await held
+        return { ok: false as const, error: { code: 'storage/quota' as const, message: 'no room' } }
+      },
+    }
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from([KW('kw:one')]),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+
+    const replacing = repo.replaceAll(
+      { nodes: [], edges: [] },
+      { ...freshMeta(AT, 'demo'), dataSet: 'empty', seededAt: null },
+    )
+    const sneaked = KW('kw:sneaked')
+    repo.commit({
+      label: 'background',
+      tool: 't',
+      input: {},
+      calls: [],
+      nodes: [{ id: sneaked.id, before: null, after: sneaked }],
+      edges: [],
+    })
+    await repo.flush()
+    release!()
+    expect((await replacing).ok).toBe(false)
+    await repo.flush()
+
+    // On screen, because the replace did not happen...
+    expect(repo.getSnapshot().node(sneaked.id)).toBeDefined()
+    // ...and on disk, because it is a real write against a store that still exists.
+    const rows = await inner.readAll()
+    expect((rows.ok ? rows.value.nodes : []).map((r) => (r as { id: string }).id)).toContain('kw:sneaked')
+  })
+
+  it('does not let a commit during the replace reach the disk', async () => {
+    const inner = createMemoryDriver()
+    let release: (() => void) | null = null
+    const held = new Promise<void>((r) => {
+      release = r
+    })
+    const driver: Driver = {
+      ...inner,
+      replace: async (rows) => {
+        // The transaction commits and THEN the promise settles, which is the
+        // real ordering: a queued write drains once the driver is free again.
+        const written = await inner.replace(rows)
+        await held
+        return written
+      },
+    }
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from([KW('kw:one')]),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+
+    const replacing = repo.replaceAll(
+      { nodes: [], edges: [] },
+      { ...freshMeta(AT, 'demo'), dataSet: 'empty', seededAt: null },
+    )
+    const sneaked = KW('kw:sneaked')
+    repo.commit({
+      label: 'background',
+      tool: 't',
+      input: {},
+      calls: [],
+      nodes: [{ id: sneaked.id, before: null, after: sneaked }],
+      edges: [],
+    })
+    await repo.flush()
+    release!()
+    expect((await replacing).ok).toBe(true)
+    await repo.flush()
+
+    const rows = await inner.readAll()
+    expect(repo.getSnapshot().nodes()).toEqual([])
+    // The half that was wrong: the disk kept what the screen had dropped.
+    expect(rows.ok ? rows.value.nodes : ['<read failed>']).toEqual([])
+  })
+})

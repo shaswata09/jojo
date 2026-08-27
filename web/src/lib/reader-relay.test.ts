@@ -62,6 +62,33 @@ function lift(name: string): (url: string) => boolean {
 
 const isLoopback = lift('isLoopback')
 
+/**
+ * Where the timeout decision ends, located by what the file actually says.
+ *
+ * This was `indexOf('const timer =')`, and the source says `let timer =`. The
+ * miss returns -1, `slice(start, -1)` then takes everything up to the last
+ * character, and every assertion below passed on text from anywhere in the
+ * file — including assertions about lines that had been deleted.
+ *
+ * Asserted non-negative here so the same slip fails loudly instead of widening
+ * the window again.
+ */
+/** A source slice with its comments removed, so an assertion cannot match prose. */
+function withoutComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+}
+
+function endOfTimeoutBlock(source: string): number {
+  const from = source.indexOf('const timeout =')
+  expect(from).toBeGreaterThan(0)
+  // The declaration that CONSUMES the timeout, which is the line after the
+  // decision. Searched from `const timeout =` because `setTimeout` also appears
+  // earlier, in the re-arm inside the CHUNK branch.
+  const at = source.indexOf('timer = window.setTimeout', from)
+  expect(at).toBeGreaterThan(from)
+  return at
+}
+
 describe('what the extension will relay to', () => {
   it('allows the addresses a reader on this machine actually listens on', () => {
     expect(isLoopback('http://127.0.0.1:3001/mcp/')).toBe(true)
@@ -188,7 +215,7 @@ describe('the page actually sends the relayed shapes across the wire', () => {
     // would have abandoned every one and blamed the extension.
     const chooser = bridgeCallerSource.slice(
       bridgeCallerSource.indexOf('const timeout ='),
-      bridgeCallerSource.indexOf('const timer ='),
+      endOfTimeoutBlock(bridgeCallerSource),
     )
     expect(chooser).toContain('request.read !== undefined')
     expect(chooser).toContain('request.model !== undefined')
@@ -244,5 +271,137 @@ describe('installing the extension reaches tabs that are already open', () => {
     expect(backgroundSource).toContain('injectIntoOpenTabs')
     // Read from the manifest rather than repeated, so the port list has one owner.
     expect(backgroundSource).toContain('chrome.runtime.getManifest().content_scripts')
+  })
+})
+
+/**
+ * The region of the worker that owns the hop: the budget, the model allowlist
+ * and `relay` itself. Lifted whole rather than function by function, because
+ * `relay` reads `READ_TIMEOUT_MS` and a test that supplied its own would be
+ * asserting against a number the browser never uses.
+ */
+const relayRegion = backgroundSource.slice(
+  backgroundSource.indexOf('const READ_TIMEOUT_MS'),
+  backgroundSource.indexOf('/* --------------------------------- scanning'),
+)
+
+type Relayed = { ok: boolean; status: number; text: string; reason?: string }
+type Relay = (
+  request: { url: string; method?: string; headers?: Record<string, string>; body?: string },
+  what: string,
+) => Promise<Relayed>
+
+/** The real `relay`, with only `fetch` replaced. */
+function liftRelay(fetchImpl: () => Promise<unknown>): Relay {
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+  return new Function('MODEL_HOSTS', 'fetch', `${relayRegion}; return relay`)(
+    MODEL_HOSTS,
+    fetchImpl,
+  ) as Relay
+}
+
+/** The number the worker actually ships, read out of the file the browser loads. */
+const numberIn = (source: string, name: string): number => {
+  const match = new RegExp(`const ${name} = (\\d+)`).exec(source)
+  if (match === null) throw new Error(`${name} is not a plain number any more`)
+  return Number(match[1])
+}
+
+const READ_TIMEOUT_MS = numberIn(backgroundSource, 'READ_TIMEOUT_MS')
+
+describe('a relay whose far end is not there', () => {
+  const request = { url: 'http://127.0.0.1:3001/mcp', method: 'POST', headers: {}, body: '{}' }
+
+  /*
+   * THE BUG THIS PINS, and it made every diagnostic in `relay` dead code.
+   *
+   * The catch block called `recordExtensionCrash`, which is defined nowhere in
+   * the repo. So the commonest failure the relay has — a reader that was never
+   * started — threw `ReferenceError` before the `return`, `sendResponse` was
+   * never called, and the page got Chrome's "message port closed before a
+   * response was received" instead of a sentence naming the address.
+   *
+   * Executed rather than read: the call sat in the file for a release without
+   * anything noticing, precisely because nothing ever ran this path.
+   */
+  it('answers with a reason rather than throwing out of its own catch', async () => {
+    const relay = liftRelay(() => Promise.reject(new TypeError('Failed to fetch')))
+
+    const answer = await relay(request, 'reader')
+
+    expect(answer.ok).toBe(false)
+    expect(answer.status).toBe(0)
+    expect(answer.reason).toContain('Could not reach the reader at http://127.0.0.1:3001/mcp')
+  })
+
+  it('names the model provider when that is what was being called', async () => {
+    const relay = liftRelay(() => Promise.reject(new TypeError('Failed to fetch')))
+
+    const answer = await relay({ ...request, url: 'https://api.openai.com/v1' }, 'model provider')
+
+    expect(answer.reason).toContain('Could not reach the model provider')
+    expect(answer.reason).not.toContain('reader')
+  })
+
+  it('says how long it waited when the wait is what ran out', async () => {
+    const relay = liftRelay(() =>
+      Promise.reject(Object.assign(new Error('aborted'), { name: 'AbortError' })),
+    )
+
+    const answer = await relay(request, 'reader')
+
+    // The seconds come from the constant, so this stays true if the budget moves.
+    expect(answer.reason).toBe(
+      `The reader did not answer within ${String(READ_TIMEOUT_MS / 1000)} seconds.`,
+    )
+  })
+})
+
+describe('the two ends of one relayed request agree on how long it gets', () => {
+  /*
+   * They did not, and the disagreement was invisible from either side: the
+   * worker gave a read 120 seconds while the page gave the same read the scan's
+   * 40 and nothing re-armed it, because reads do not stream. A 55-second PDF
+   * conversion therefore succeeded in the worker and was reported to the user as
+   * "the extension did not answer", with the answer posted into a channel the
+   * page had already closed.
+   *
+   * Two files, two constants, no import between them — the extension is loaded
+   * from disk and cannot see the app's modules — which is the same situation
+   * `policy.js` is in, and gets the same answer: transcribe, and let a test own
+   * the claim that the transcription still holds.
+   */
+  const PAGE = numberIn(bridgeCallerSource, 'RELAY_TIMEOUT_MS')
+
+  it('has the page willing to wait longer than the worker will work', () => {
+    expect(PAGE).toBeGreaterThan(READ_TIMEOUT_MS)
+  })
+
+  it('does not leave the page waiting on a worker that has already given up', () => {
+    // The margin is for one postMessage hop, not for a second thought. Wide and
+    // the user waits out a minute of nothing after the worker stopped; narrow
+    // and the page wins the race and writes the vaguer sentence.
+    expect(PAGE - READ_TIMEOUT_MS).toBeLessThanOrEqual(10000)
+  })
+
+  it('spends that budget on the two verbs the worker actually relays', () => {
+    /*
+     * COMMENTS STRIPPED, because this reads the decision and the decision is
+     * code. Matching the raw slice let `RELAY_TIMEOUT_MS` pass on the words
+     * "see `RELAY_TIMEOUT_MS`" in a comment two lines above it: mutating the
+     * actual `answered ? RELAY_TIMEOUT_MS : SCAN_TIMEOUT_MS` away left this
+     * test green.
+     */
+    const chooser = withoutComments(
+      bridgeCallerSource.slice(
+        bridgeCallerSource.indexOf('const timeout ='),
+        endOfTimeoutBlock(bridgeCallerSource),
+      ),
+    )
+    expect(chooser).toContain('RELAY_TIMEOUT_MS')
+    expect(chooser).toContain('request.read !== undefined')
+    expect(chooser).toContain('request.model !== undefined')
+    // A scan is a different job with a different far end, and keeps its own.
+    expect(chooser).toContain('SCAN_TIMEOUT_MS')
   })
 })

@@ -109,7 +109,23 @@ export function applyJournal(s: GraphWriter, entry: JournalEntry, dir: Direction
   }
   for (const delta of entry.edges) {
     const image = imageFor(delta, dir)
-    if (image !== null) s.putEdge(image)
+    if (image === null) continue
+    // Removed, then put back, because `putEdge` is insert-if-absent: the real
+    // writer (`MutableSnapshot.putEdge`) returns early on an id it already
+    // holds. So an edge delta with BOTH images set never reached memory, while
+    // `opsFor` wrote the `after` image to disk in the same commit — the two
+    // copies then disagreed until the next reload. `fileUnder` (`tools/vault.ts`)
+    // makes that delta on every save: it unlinks every FILED_UNDER edge and
+    // writes them all back, so re-saving an untouched form restamps
+    // `createdAt`. Measured against the code before this line: memory held
+    // 15:00:02 and the ops store held 15:00:04 for the same edge.
+    //
+    // Remove-then-insert rather than letting `putEdge` overwrite, because
+    // `#degrees` is a counter the writer increments on insert — a put over a
+    // live id would add a second degree to both ends of an edge that was
+    // already there, and degree is what the graph reports as a record's links.
+    s.removeEdge(delta.id)
+    s.putEdge(image)
   }
 }
 
@@ -167,15 +183,28 @@ function sameImage(a: unknown, b: unknown): boolean {
 }
 
 /**
- * The image without the field the writer stamps whether or not anything moved.
+ * The image without the fields the writer stamps whether or not anything moved.
  *
- * `updatedAt` is excluded because it is not something the user did — `tx.patch`
- * writes it on every call, including the call that wrote the same values back.
+ * `updatedAt` is not something the user did — `tx.patch` writes it on every
+ * call, including the call that wrote the same values back.
+ *
+ * `createdAt` is here for the SAME reason, one record type over, and leaving it
+ * out was a real bug. Nodes carry `updatedAt`; edges carry only `createdAt`, and
+ * an edge that is unlinked and relinked to the same target comes back with a
+ * fresh stamp and nothing else different. `fileUnder` did exactly that on every
+ * save, so re-saving a document with its filing untouched read as a change:
+ * the entry went onto the undo ring and cleared the redo stack, and the next
+ * Ctrl+Z restored a timestamp while the edit before it stayed put.
+ *
+ * Stripping it cannot hide user content. Both are stamps — nothing a person
+ * typed lives in either — so a pair of images identical apart from them
+ * describes a write that changed nothing, which is precisely what this asks.
  */
 const withoutStamp = (image: unknown): unknown => {
   if (typeof image !== 'object' || image === null) return image
   const rest: Record<string, unknown> = { ...(image as Record<string, unknown>) }
   delete rest['updatedAt']
+  delete rest['createdAt']
   return rest
 }
 
@@ -247,6 +276,30 @@ export function readJournalRows(rows: readonly unknown[]): JournalEntry[] {
       calls: Array.isArray(calls) ? (calls as ToolName[]) : [],
       nodes: nodes as RecordDelta<StoredNode>[],
       edges: edges as RecordDelta<StoredEdge>[],
+      // Carried, and it is the one field here that is not just envelope.
+      //
+      // `trimmed` is what tells an entry whose images were DROPPED from one that
+      // genuinely touched nothing, and it is written to disk by the prune in
+      // `boot-ready.ts`. Reading it back as absent meant `trimJournal`'s
+      // "already trimmed" short-circuit never fired on a row it had trimmed on
+      // an earlier launch: it rebuilt those entries every time, so the identity
+      // check in `boot-ready.ts` was true on every open, and every open cleared
+      // the `ops` store and wrote all 200 rows back unchanged — logging 'pruned
+      // the audit log from 200 to 200 entries' each launch. Measured on a
+      // fifteen-row store: launch two cleared `ops` and re-put all fifteen. On
+      // the phone that is the entire store rewritten for no change, because
+      // `rn-driver` holds all four stores in one AsyncStorage key.
+      //
+      // It also re-arms `revert`'s refusal. `boot-live.ts` seeds the audit ring
+      // straight from here on a cross-tab rehydrate, and an entry that arrived
+      // with `trimmed` missing and both images null passes the guard in
+      // `repository.ts` — landing an `invert` of two nulls, which is a "revert"
+      // that deletes every record the entry named.
+      //
+      // Spread rather than assigned: `exactOptionalPropertyTypes` is on, and the
+      // key must be ABSENT — not `undefined` — on every entry inside the undo
+      // window and every row written before this field existed.
+      ...(row['trimmed'] === true ? { trimmed: true as const } : {}),
     })
   }
 

@@ -41,13 +41,26 @@ const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
  * `shortDate`. Naming the weekday is the point of this header: it is the one
  * screen whose subject is the day itself.
  */
-const TODAY_LABEL = (() => {
+/*
+ * FUNCTIONS, not module-scope constants, because `TODAY` is a live binding.
+ *
+ * It used to be frozen at import, which was wrong for a React Native process
+ * that keeps one JS context for days — the week strip and the "done today" tile
+ * measured against a stale day while the agent path read the real one. `today.ts`
+ * moves it now.
+ *
+ * Deriving from it ONCE at import is the same bug wearing the opposite face:
+ * the live reads below advance at midnight and these would not, so the header
+ * would name yesterday over a week strip that had moved on. Half a screen
+ * advancing is worse than none of it, because nothing on it looks wrong.
+ */
+const todayLabel = (): string => {
   const { y, m, d } = partsOf(TODAY)
   return `${WEEKDAY_NAMES[new Date(y, m - 1, d).getDay()]} ${d} ${MONTH_LABELS[m - 1]}`
-})()
+}
 
-const TOMORROW = addDays(TODAY, 1)
-const WEEK_END = addDays(TODAY, 6)
+const tomorrow = (): string => addDays(TODAY, 1)
+const weekEnd = (): string => addDays(TODAY, 6)
 const LATER_SHOWN = 4
 
 export function TodayScreen() {
@@ -55,8 +68,8 @@ export function TodayScreen() {
 
   const subtitle =
     all.length === 0
-      ? `${TODAY_LABEL} · nothing tracked yet — everything you add stays on this device.`
-      : `${TODAY_LABEL} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this device.`
+      ? `${todayLabel()} · nothing tracked yet — everything you add stays on this device.`
+      : `${todayLabel()} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this device.`
 
   return (
     <Screen title="Today" subtitle={subtitle}>
@@ -472,17 +485,19 @@ function OwedThisWeek() {
     const openItems = all.filter((i) => !i.completedOn)
     const overdue = openItems.filter((i) => i.date < TODAY)
     const today = openItems.filter((i) => i.date === TODAY)
-    const tomorrow = openItems.filter((i) => i.date === TOMORROW)
-    const rest = openItems.filter((i) => i.date > TOMORROW && i.date <= WEEK_END)
+    const nextDay = tomorrow()
+    const endOfWeek = weekEnd()
+    const tomorrowItems = openItems.filter((i) => i.date === nextDay)
+    const rest = openItems.filter((i) => i.date > nextDay && i.date <= endOfWeek)
 
     return {
       groups: [
         { id: 'overdue', label: 'Overdue', items: overdue },
         { id: 'today', label: 'Today', items: today },
-        { id: 'tomorrow', label: 'Tomorrow', items: tomorrow },
+        { id: 'tomorrow', label: 'Tomorrow', items: tomorrowItems },
         { id: 'rest', label: 'Rest of the week', items: rest },
       ],
-      later: openItems.filter((i) => i.date > WEEK_END),
+      later: openItems.filter((i) => i.date > endOfWeek),
       doneToday: all.filter((i) => i.completedOn === TODAY).length,
       overdueCount: overdue.length,
       dueCount: today.length + tomorrow.length + rest.length,

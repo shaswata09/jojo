@@ -185,6 +185,18 @@ export const keywordDetach = defineTool({
   input: s.object({ record: recordId, keyword: keywordId }),
 
   run(ctx, input) {
+    // Both ends checked, exactly as `attach` checks them. This ran with neither
+    // check, and `tx.unlink` stages nothing when the edge is not there — so a
+    // detach naming a record or a keyword that is gone came back `ok: true`
+    // with "Keyword removed" on the toast and a journal row for a write that
+    // never happened. The agent loop reads that `ok` as done and moves on
+    // believing the tag was taken off; `describe`'s `?? 'Keyword'` fallback is
+    // what let the toast read plausibly with the node missing.
+    //
+    // Only the ENDS. Both ends real with no edge between them stays a success:
+    // that is the idempotence `attach` has, and the keyword picker leans on it.
+    requireTaggable(ctx, input.record)
+    ctx.require('keyword', input.keyword)
     ctx.tx.unlink(input.keyword, 'TAGS', input.record)
   },
 

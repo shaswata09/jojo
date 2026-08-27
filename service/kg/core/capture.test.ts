@@ -411,3 +411,40 @@ describe('canonicalising the four boards the scout reads', () => {
     )
   })
 })
+
+/**
+ * Unquoted attribute values, which the scan could not see.
+ *
+ * HTML does not require quotes and every browser honours
+ * `<img src=https://evil.example/beacon.png>`. `REMOTE_REF` demanded a quote it
+ * could backreference, so that shape counted as ZERO remote references — and
+ * this scan is what `capture.ts` calls the last line of defence. A capture
+ * carrying it passed every check and beaconed on every viewing.
+ *
+ * Measured before the fix: quoted 1, single-quoted 1, unquoted 0,
+ * protocol-relative unquoted 0.
+ */
+describe('remoteRefCount, unquoted', () => {
+  const cases: readonly (readonly [string, string])[] = [
+    ['double-quoted', '<img src="https://evil.example/b.png">'],
+    ['single-quoted', "<img src='https://evil.example/b.png'>"],
+    ['unquoted', '<img src=https://evil.example/b.png>'],
+    ['unquoted, protocol-relative', '<img src=//evil.example/b.png>'],
+    ['unquoted, broken out of a style block', '<style>a{}</style><img src=https://evil.example/b.png>'],
+    ['unquoted href', '<a href=https://evil.example/x>x</a>'],
+  ]
+
+  for (const [what, html] of cases) {
+    it(`counts a remote reference that is ${what}`, () => {
+      expect(remoteRefCount(html)).toBeGreaterThan(0)
+    })
+  }
+
+  it('still leaves a data URI and prose alone', () => {
+    // Widening the pattern must not start refusing captures that are clean —
+    // a scan stricter than the sweep is a rejection with no remedy.
+    expect(remoteRefCount('<img src="data:image/png;base64,AAAA">')).toBe(0)
+    expect(remoteRefCount('<p>Send it to https://example.com/apply</p>')).toBe(0)
+    expect(remoteRefCount('<img src="">')).toBe(0)
+  })
+})

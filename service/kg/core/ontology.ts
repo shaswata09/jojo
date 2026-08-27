@@ -263,9 +263,29 @@ const LEADING = /^(?:is|was|were|are|has|have|had|been|being|be|did|does|do|a|an
  * Underscores and hyphens become spaces because a model asked for a predicate
  * returns `worked_at`, `worked-at` and `worked at` interchangeably. Everything
  * else is `fold`, which the whole app already agrees on.
+ *
+ * ## Why `\p{L}\p{N}` and not `a-z0-9`
+ *
+ * It was `[^a-z0-9 ]+`, which deletes every script that is not Latin. Measured:
+ * `曾任职于`, `работал в`, `εργάστηκε στο`, `עבד ב`, `حاصل على` and `勤務先` all
+ * normalised to the empty string — and `canonicalise` returns `id: ''` for
+ * that, which `checkClaim` rejects with "A relation needs a name."
+ *
+ * So a Chinese or Russian CV populated the entities and lost EVERY relation
+ * between them, against this module's own promise that nothing is dropped. The
+ * caller counts only successes, so the screen said it had worked.
+ *
+ * Unicode property escapes keep letters and digits in any script while still
+ * dropping the punctuation this is here to remove, so two spellings of one
+ * unfamiliar predicate still meet — which is the whole job. An empty result now
+ * means what it always claimed to: a predicate with no name in it at all.
  */
 export function normalise(surface: string): string {
-  let out = fold(surface).replace(/[_-]+/gu, ' ').replace(/[^a-z0-9 ]+/gu, ' ').replace(/\s+/gu, ' ').trim()
+  let out = fold(surface)
+    .replace(/[_-]+/gu, ' ')
+    .replace(/[^\p{L}\p{N} ]+/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim()
   // Repeated, because "has been funded by" carries two of them.
   let previous = ''
   while (out !== previous) {

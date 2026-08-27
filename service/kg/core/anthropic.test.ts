@@ -286,6 +286,31 @@ describe('reading Claude’s answer', () => {
     expect(turn.kind).toBe('malformed')
   })
 
+  it('maps max_tokens to “length”, which is the word the loop tests for', () => {
+    /*
+     * The only provider whose output cap jojo picks itself — the API refuses a
+     * request without `max_tokens`, so ANTHROPIC_MAX_TOKENS is 8192 — and the
+     * only one whose word for meeting it was not the word `loop.ts` reads. Left
+     * raw, a Claude answer cut off at the ceiling reached the screen with no
+     * note saying so, and a `tool_use` block cut off mid-input reached the model
+     * as arguments it had supposedly got wrong.
+     */
+    const turn = ok({ content: [{ type: 'text', text: 'half a sen' }], stop_reason: 'max_tokens' })
+    expect(turn.ok && turn.finishReason).toBe('length')
+  })
+
+  it('leaves every other stop reason exactly as Anthropic spelled it', () => {
+    // Only the one word with a consumer is translated. Inventing an OpenAI
+    // equivalent for the rest would replace a fact with a guess.
+    for (const stop of ['end_turn', 'tool_use', 'stop_sequence', 'refusal', 'pause_turn']) {
+      const turn = ok({ content: [{ type: 'text', text: 'x' }], stop_reason: stop })
+      expect(turn.ok && turn.finishReason).toBe(stop)
+    }
+    // A server that sends no stop reason is not given one.
+    const silent = ok({ content: [{ type: 'text', text: 'x' }] })
+    expect(silent.ok && silent.finishReason).toBeNull()
+  })
+
   it('reads usage under Anthropic’s spelling', () => {
     // input_tokens/output_tokens, where OpenAI says prompt_tokens/completion_tokens.
     // The loop compares this against what it sent to catch a truncating server.

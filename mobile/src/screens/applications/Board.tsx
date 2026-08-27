@@ -20,6 +20,7 @@ import { Chip } from '@/components/ui/Chip'
 import { Txt } from '@/components/ui/Text'
 import { STAGES, displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
+import { dropStage } from '@/lib/board-drop'
 import { refKey } from '@/lib/ids'
 import { useSheets } from '@/lib/sheets-context'
 import type { RowActions } from '@/screens/applications/use-row-actions'
@@ -115,7 +116,7 @@ type DragControl = {
   setFrameActive: (on: boolean) => void
   measure: () => void
   begin: (a: Application) => void
-  finish: (columnIndex: number) => void
+  finish: (columnIndex: number, released: boolean) => void
   setHover: (i: number) => void
 }
 
@@ -170,8 +171,13 @@ function DraggableCard({
             runOnJS(ctl.setHover)(idx)
           }
         })
-        .onEnd(() => {
-          runOnJS(ctl.finish)(ctl.hoverSV.value)
+        // Despite the name this is not the release callback: gesture handler
+        // calls `onEnd` for CANCELLED and FAILED too, with `success` false, for
+        // any drag that reached ACTIVE. Dropping that flag on the floor moved
+        // the card to whatever column it was over when a call arrived. Only
+        // `dropStage` gets to read it.
+        .onEnd((_e, released) => {
+          runOnJS(ctl.finish)(ctl.hoverSV.value, released)
         })
         // Fires on cancel as well as completion — a drag interrupted by a call
         // or a rotation has to put the board back the same way a drop does.
@@ -279,16 +285,19 @@ export function Board({
     latest.current.onDragChange(true)
   }, [])
 
-  const finish = useCallback((columnIndex: number) => {
+  const finish = useCallback((columnIndex: number, released: boolean) => {
     const card = held.current
     held.current = null
     setDragging(null)
     setHover(-1)
     latest.current.onDragChange(false)
-    const target = STAGES[columnIndex]
+    // Everything above runs whatever ended the drag — an interrupted one has to
+    // put the board back exactly as a drop does, or the floating card and the
+    // frozen page scroller outlive the finger. Only the move is conditional.
     // `onMoveStage` no-ops when the stage is unchanged, so a drag that goes
     // nowhere — or is released over the column it started in — costs nothing.
-    if (card && target) latest.current.actions.onMoveStage(card, target.id)
+    const target = dropStage(columnIndex, released)
+    if (card && target) latest.current.actions.onMoveStage(card, target)
   }, [])
 
   const onScroll = useAnimatedScrollHandler((e) => {

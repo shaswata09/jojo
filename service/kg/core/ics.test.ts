@@ -166,6 +166,23 @@ describe('buildCalendar', () => {
     expect(description).toContain('Rice — Statistics')
   })
 
+  it('names a linked job without a dangling dash when it has no role', () => {
+    // A posting promoted from a bare URL ('jobs.rice.edu/postings/29411') arrives
+    // with role blank, and this file interpolated 'org — role' by hand rather
+    // than calling `displayName` — so the exported description read 'Rice — ',
+    // punctuation promising a second half that is not there.
+    const lines = unfold(
+      buildCalendar({
+        items: [item({ detail: 'Application deadline', applicationIds: ['app:1'] })],
+        applications: [application({ id: 'app:1', org: 'Rice', role: '' })],
+        at: AT,
+      }),
+    )
+    const description = lines.find((l) => l.startsWith('DESCRIPTION:')) ?? ''
+    expect(description).toContain('Rice')
+    expect(description).not.toContain('Rice —')
+  })
+
   it('exports the offer deadline, which the app’s own calendar never shows', () => {
     // `offer.respondBy` is a field on the application rather than a timeline
     // item, so it reaches no calendar page — and it is the date with a clock on
@@ -182,6 +199,22 @@ describe('buildCalendar', () => {
     expect(lines).toContain('SUMMARY:Deadline · Reply to Baylor')
     expect(lines).toContain('DTSTART;VALUE=DATE:20260926')
     expect(lines.find((l) => l.startsWith('DESCRIPTION:'))).toContain('$112k')
+  })
+
+  it('writes the offer description without a dangling dash when the role is blank', () => {
+    // Same bug as the linked-job name, second site: 'Offer from Rice — .' — a
+    // dash and a full stop with nothing between them.
+    const lines = unfold(
+      buildCalendar({
+        items: [],
+        applications: [
+          application({ org: 'Rice', role: '', offer: { respondBy: '2026-09-26', note: '' } }),
+        ],
+        at: AT,
+      }),
+    )
+    const description = lines.find((l) => l.startsWith('DESCRIPTION:')) ?? ''
+    expect(description).toContain('Offer from Rice.')
   })
 
   it('ignores an application with no offer on it', () => {

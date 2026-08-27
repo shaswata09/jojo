@@ -392,6 +392,21 @@ const readString = (row: Record<string, unknown>, key: string): string | null =>
 }
 
 /**
+ * The envelope's timestamps, held to the standard every timestamp inside
+ * `props` is already held to.
+ *
+ * They used to get a non-empty-string check and nothing else, while
+ * `lastActionAt` sitting one field away went through `s.instant`. So a
+ * hand-edited or truncated backup carrying `updatedAt: 'undefined'` crossed the
+ * trust boundary untouched and surfaced as the literal 'undefined NaN' in the
+ * thread list — a corrupt record that produced a screenshot instead of a
+ * counted diagnostic, which is the one outcome this file exists to prevent.
+ */
+const INSTANT = s.instant()
+
+const isInstant = (value: string): boolean => INSTANT.parse(value).ok
+
+/**
  * A node row off disk.
  *
  * The id and the `type` field are checked against each other rather than
@@ -428,6 +443,9 @@ export function validateNode(row: unknown): Validated<StoredNode> {
   const updatedAt = readString(row, 'updatedAt')
   if (!createdAt || !updatedAt) {
     return { ok: false, diagnostics: [diagnostic('nodes', id, 'Is missing its timestamps.')] }
+  }
+  if (!isInstant(createdAt) || !isInstant(updatedAt)) {
+    return { ok: false, diagnostics: [diagnostic('nodes', id, 'Its timestamps are not times.')] }
   }
 
   const props = propSchemaFor(parsed.type).parse(row['props'], '')
@@ -487,6 +505,9 @@ export function validateEdge(row: unknown): Validated<StoredEdge> {
   const createdAt = readString(row, 'createdAt')
   if (!createdAt) {
     return { ok: false, diagnostics: [diagnostic('edges', id, 'Is missing its timestamp.')] }
+  }
+  if (!isInstant(createdAt)) {
+    return { ok: false, diagnostics: [diagnostic('edges', id, 'Its timestamp is not a time.')] }
   }
 
   const rawProps = row['props']

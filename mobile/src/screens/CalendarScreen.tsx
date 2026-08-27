@@ -28,8 +28,18 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 
-const TODAY_ISO = isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
-const TODAY_MONTH = `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
+/*
+ * FUNCTIONS, not constants, because `TODAY_PARTS` is a live binding.
+ *
+ * `today.ts` replaces it when the day turns, which is what fixes a React Native
+ * process that keeps one JS context for days. Everything below already reads it
+ * live — `buildMonth`, `isCurrentMonth`, the jump target — so freezing these two
+ * at import meant the button LABEL named one month while pressing it went to
+ * another. A screen half-advanced is worse than one that has not moved, because
+ * nothing on it looks wrong.
+ */
+const todayIso = (): string => isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
+const todayMonth = (): string => `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
 
 export function CalendarScreen() {
   const c = useColors()
@@ -226,7 +236,7 @@ export function CalendarScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={
-              isCurrentMonth ? `Back to ${shortDate(TODAY_ISO)}` : `Go to ${TODAY_MONTH}`
+              isCurrentMonth ? `Back to ${shortDate(todayIso())}` : `Go to ${todayMonth()}`
             }
             onPress={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
             style={[
@@ -377,7 +387,7 @@ export function CalendarScreen() {
                     get lost: nothing on screen names where "now" is. */}
                 {isCurrentMonth ? null : (
                   <Button
-                    label={`Back to ${TODAY_MONTH}`}
+                    label={`Back to ${todayMonth()}`}
                     variant="outline"
                     onPress={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
                   />

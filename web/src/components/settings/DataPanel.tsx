@@ -7,6 +7,7 @@ import { SettingRow } from '@/components/common/Field'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { pendingCopy } from '@/components/settings/data-confirm-copy'
 import { restoreSummary } from '@/components/settings/restore-report'
+import { readPickedBackup } from '@/components/settings/pick-backup'
 import type { RestoreReport } from '@/components/settings/restore-report'
 import { BACKUP_ACCEPT, exportFilename } from '@/components/settings/export-name'
 import type { PendingData } from '@/components/settings/data-confirm-copy'
@@ -28,7 +29,7 @@ import { clearSiteData } from '@/lib/storage'
 import { useBackup } from '@/lib/backup'
 import { restoreBackup } from '@jojo/service/repo/restore'
 import { useVaultBlobs } from '@/lib/vault-blobs'
-import { readBackup, describeBackup } from '@jojo/service/core/backup'
+import { describeBackup } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useToast } from '@/lib/toast-context'
@@ -60,20 +61,29 @@ export function DataPanel() {
    * Reads a chosen file and stages it. Nothing is replaced until the dialog is
    * confirmed — a restore is not undoable, because `replaceAll` clears the
    * journal along with everything else.
+   *
+   * The read itself lives in `pick-backup.ts` because it used to be a bare
+   * `await file.text()` here, and that promise rejects whenever the chosen
+   * file's bytes have moved. This handler is called with `void`, so the
+   * rejection went past the panel to `main.tsx` and the user saw NOTHING —
+   * no dialog, no toast. That module never rejects; every outcome below is a
+   * sentence, and it is tested there.
    */
   const onPickBackup = async (list: FileList | null) => {
-    const file = list?.[0]
-    if (!file) return
-    const read = readBackup(await file.text())
-    if (!read.ok) {
-      toast({
-        title: 'That file cannot be restored',
-        description: `${read.error.message}. Nothing has been changed.`,
-        tone: 'danger',
-      })
+    const picked = await readPickedBackup(list)
+    if (picked.kind === 'none') return
+    if (picked.kind === 'plan') {
+      setStaged(picked.plan)
       return
     }
-    setStaged(read.value)
+    // Only the disk failure goes to the log: a file jojo refused is the reader
+    // working, and a crash log full of them hides the ones that are bugs.
+    // `'restore'`, not `'backup'`: `ERROR_SITES` calls the first "Reading one
+    // back" and the second "Writing a backup file", and this is the read. Filed
+    // under `backup` it merged with export failures — and left `restore`, which
+    // exists for exactly this, with no user anywhere in the app.
+    if (picked.kind === 'unreadable') reportError('restore', picked.thrown)
+    toast({ title: picked.title, description: picked.description, tone: 'danger' })
   }
 
   const onRestore = async () => {

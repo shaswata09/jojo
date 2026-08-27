@@ -133,6 +133,12 @@ export async function ready(
   // them. Comparing identities rather than lengths: `trimJournal` returns the
   // same COUNT and different objects, so a length check would persist the full
   // images forever and the trim would only ever exist in memory.
+  //
+  // It rests on `readJournalRows` carrying `trimmed` back off disk, which is the
+  // only way `trimJournal` can hand an already-trimmed entry back unchanged.
+  // While that field was dropped on read, this was true on EVERY open: each
+  // launch cleared `ops` and wrote all 200 rows back byte-identical, and said
+  // 'pruned the audit log from 200 to 200 entries' while doing it.
   const trimmedSomething = kept.some((entry, i) => entry !== history[history.length - kept.length + i])
   if (kept.length < history.length || trimmedSomething) {
     chores.push({ kind: 'clear', store: 'ops' })

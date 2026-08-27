@@ -31,7 +31,7 @@
 import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
-import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor } from './retrieve'
+import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor, select } from './retrieve'
 import { fitHistory, fitsWindow, summarisedNote, trimNote } from './budget'
 import { pickTools, type ChooserDeps } from './retrieve-llm'
 import { asMessage, compact, type CompactDeps } from './compact'
@@ -359,6 +359,19 @@ export type AgentRun = {
 }
 
 /**
+ * A code fence stripped, but only when it wraps the WHOLE text.
+ *
+ * A model with no tool template often puts the bare object in a ```json block
+ * — the fence is the one thing that can surround an unframed call without
+ * being prose, so it is removed before the whole-answer test below rather than
+ * failing it.
+ */
+const unfenced = (text: string): string => {
+  const fenced = /^```[a-z]*\s*([\s\S]*?)\s*```$/i.exec(text)
+  return fenced?.[1]?.trim() ?? text
+}
+
+/**
  * The name of a tool this text is trying to call, or null.
  *
  * Two shapes, because two families of small model produce them. Hermes and
@@ -367,16 +380,38 @@ export type AgentRun = {
  * when the server has no tool template for the model.
  *
  * Matched against what was actually OFFERED rather than against any
- * tool-shaped JSON, so a person asking "what would `application.create` do?"
- * and getting a prose answer that quotes the shape is not mistaken for a
- * failed call. A model naming a tool it was not offered is a different problem
- * and `performCall` already refuses it.
+ * tool-shaped JSON. A model naming a tool it was not offered is a different
+ * problem and `performCall` already refuses it.
+ *
+ * That check was ALSO the whole defence against mistaking prose for a call,
+ * and it never was one — see the whole-answer rule in the body for why asking
+ * about a tool is the case it cannot catch.
  */
 function toolCallInText(text: string, offered: Set<string> | null): string | null {
-  if (text.trim() === '') return null
+  const trimmed = text.trim()
+  if (trimmed === '') return null
 
   const envelope = /<tool_call>\s*([\s\S]*?)<\/tool_call>/i.exec(text)
-  const body = envelope?.[1] ?? text
+  /*
+   * Without an envelope the object has to be the WHOLE answer, and that is a
+   * fix rather than a tightening.
+   *
+   * Matching a fragment made asking about a tool unanswerable, because ASKING
+   * about a tool is what makes the retriever offer it: the name check below
+   * passes for exactly the tool the question named. Reproduced end to end —
+   * "what would application.create do?", answered with a sentence that quotes
+   * a complete `name`/`arguments` object and then explains what it does — and
+   * the correct answer was thrown away and replaced with an error sending the
+   * person to fix a `--jinja` flag on a server that is working.
+   *
+   * Nothing surrounds a call the transport failed to frame; that is what the
+   * failure IS. So requiring the object to be the entire reply keeps every
+   * shape this was written for and gives prose about a tool back to the person
+   * who asked for it.
+   */
+  const body = envelope?.[1] ?? unfenced(trimmed)
+  if (envelope === null && !(body.startsWith('{') && body.endsWith('}'))) return null
+
   const named = /"name"\s*:\s*"([\w.]+)"/.exec(body)
   const name = named?.[1]
   if (name === undefined) return null
@@ -486,9 +521,11 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   /*
    * The retriever's own answer, BEFORE abstention is turned into a fallback.
    *
-   * `null` here means it recognised nothing, and that is a different fact from
-   * "it chose everything" — the gate below turns on the difference, so the two
-   * must not be flattened into one list first.
+   * `null` here means "no opinion at all" — nothing recognised AND nothing
+   * carried — which is a different fact from "it chose everything", so the two
+   * must not be flattened into one list first. It is NOT a test of whether the
+   * lexicon recognised the message; see the gate below, which asks `select`
+   * that question itself because this value cannot answer it.
    */
   const lexicalSet =
     options.tools === undefined && options.retrieve
@@ -533,11 +570,63 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
      * window too small to hold it the request is refused by `guardTruncation`
      * or by Ollama's `shift:false`, which is a failure somebody can see. A
      * hallucinated write is not.
+     *
+     * AND ABSTENTION IS `select`'S ANSWER, NOT `offeredFor`'S.
+     *
+     * This clause read `lexicalSet !== null`, which is a different question:
+     * `offeredFor` returns null only when the lexicon abstained AND nothing
+     * was carried AND no wipe was asked for. A conversation carries something
+     * from turn two onwards, so the merged set is never null after the first
+     * message and the guard above held for exactly one turn of each chat — the
+     * one turn where abstention is least likely, because an opener is where a
+     * person says what they want.
+     *
+     * Measured on the follow-up that matters most. "yes, do that" recognises
+     * no tool word, so on a small window the chooser ran, and with the lexicon
+     * abstaining `offeredFor` REPLACES with its picks rather than unioning
+     * them: a turn offered 33 tools for "add a reminder for the Rice
+     * interview" came back with 22, `timeline.item.reschedule` among the
+     * eleven that went — the tool the conversation was about, on the turn that
+     * said yes to it.
      */
-    lexicalSet !== null &&
+    select(options.prompt) !== null &&
     !fitsWindow(toolsFor(resolveOffered(lexical)), options.window)
 
-  const picked = needsNarrowing ? await pickTools(options.chooser!, options.prompt) : null
+  /*
+   * Stop is read HERE, and again before the summariser, rather than only once
+   * the round loop starts.
+   *
+   * The first `signal?.aborted` check was inside that loop, which is two model
+   * round trips too late: the chooser and the summariser each ask a model, so
+   * pressing Stop bought a disabled composer and up to two full, untimed round
+   * trips on somebody's own GPU after the UI had said it was stopping.
+   *
+   * Skipped rather than returned from, because `finish` and the `messages` it
+   * reports do not exist yet. The loop's existing check then ends the run as
+   * `aborted` having called no model at all.
+   *
+   * ## What this check does NOT do, which is worth being exact about
+   *
+   * This particular read cannot fire for any caller in the app today: nothing
+   * above it awaits, so `aborted` is whatever it was when `runAgent` was
+   * entered, and `agent-runs.ts` mints the signal on the line before. It earns
+   * its place as a floor for a caller that hands in a signal already aborted,
+   * and it would start mattering the moment anything above it awaits. The
+   * summariser's copy is the reachable one — the chooser's round trip runs
+   * before it.
+   *
+   * And neither cuts off a request ALREADY in flight. `ask` is built as
+   * `(messages) => agentTurn(settings, messages, [])` and `agentTurn` takes an
+   * `AbortSignal` it is never given, so a Stop pressed mid-call still waits for
+   * that answer and then discards it. That costs one wasted request on two
+   * paths that are themselves rare — the chooser only runs when the tool list
+   * will not fit the window, the summariser only on a compaction — so it is
+   * left as a known limit rather than threaded through both dep types and both
+   * apps. Fix it by giving `ChooserDeps`/`CompactDeps` the run's cancellation
+   * if either path ever becomes common.
+   */
+  const picked =
+    needsNarrowing && !signal?.aborted ? await pickTools(options.chooser!, options.prompt) : null
 
   const chosen =
     options.tools ??
@@ -657,7 +746,10 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    */
   let recovered: ChatMessage | null = null
   let written: { context: string; messages: number } | undefined
-  if (fitted.dropped > 0 && fitted.summarisable && options.summariser) {
+  // The abort check also covers a Stop pressed DURING the chooser call above,
+  // which is the only window in which that call is running and cancellable by
+  // nothing. See there for why this is skipped rather than returned from.
+  if (fitted.dropped > 0 && fitted.summarisable && options.summariser && !signal?.aborted) {
     /*
      * The exchanges being dropped, PLUS whatever a previous compaction already
      * summarised — so the new summary supersedes the old rather than sitting

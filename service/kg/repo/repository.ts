@@ -304,6 +304,14 @@ export function createRepository(options: RepositoryOptions): Repository {
     return { ...draft, id: uuidv7(Date.parse(at)), at }
   }
 
+  /**
+   * Ops staged while a `replaceAll` is in flight, or `null` when none is.
+   *
+   * A list rather than a boolean, because whether they should be kept is not
+   * known until the replace finishes. See `land` and `replaceAll`.
+   */
+  let deferred: DurableOp[] | null = null
+
   function land(stamped: JournalEntry): JournalEntry {
     const entry = withDisplacedEdges(snapshot, stamped)
     applyJournal(snapshot, entry, 'redo')
@@ -323,7 +331,30 @@ export function createRepository(options: RepositoryOptions): Repository {
       ops.push({ kind: 'put', store: 'meta', key: row.key, value: row })
     }
 
-    queue.enqueue(ops)
+    /*
+     * HELD, not enqueued, while a wholesale replace is in flight.
+     *
+     * `commit` is synchronous and `replaceAll` is not, so a background write —
+     * a pipeline attaching a proposal, most often — can land between the queue
+     * being flushed and the driver transaction settling. Enqueued, its ops
+     * drain once the driver is free again, which is AFTER the replace has
+     * written the new row set: reproduced against the real repository, the
+     * store the user had just emptied reported `ok`, held nothing in memory,
+     * and had a resurrected record waiting on disk for the next reload.
+     *
+     * DROPPING them outright was the first fix and it was wrong in the other
+     * direction. It reasoned that `snapshot.reset` discards this entry's memory
+     * effect anyway, so the disk half preserves nothing — true only when the
+     * replace SUCCEEDS. Both failure returns (a queue that will not drain, a
+     * driver that refuses) leave the store exactly as it was, so this entry's
+     * memory effect survives: reproduced, the record stayed on screen, never
+     * reached the disk, and health read `idle`. Visible, unsaved, unreported.
+     *
+     * So the decision waits for the outcome. `replaceAll` discards these on
+     * success and enqueues them on failure.
+     */
+    if (deferred === null) queue.enqueue(ops)
+    else deferred.push(...ops)
     notify()
     return entry
   }
@@ -446,6 +477,34 @@ export function createRepository(options: RepositoryOptions): Repository {
     flush: () => queue.flush(),
 
     async replaceAll(graph, nextMeta) {
+      /*
+       * The window opens HERE, not at the driver call.
+       *
+       * `commit` is synchronous and this is not, so a background write can land
+       * during the very first `await` below — the flush — and be enqueued
+       * against a store that is about to stop existing. Setting the flag after
+       * the flush was the first attempt at this fix and did not work: measured,
+       * the record still reached the disk.
+       */
+      const held: DurableOp[] = []
+      deferred = held
+      try {
+        const outcome = await replaceNow()
+        /*
+         * On failure the replace did not happen, so anything committed inside
+         * the window is still a real write against a store that still exists —
+         * it goes to the queue as it always would have. On success the rows it
+         * describes have just stopped existing, and `snapshot.reset` has
+         * already discarded its memory effect, so enqueuing would only put a
+         * deleted record back on disk under an empty graph.
+         */
+        if (!outcome.ok) queue.enqueue(held)
+        return outcome
+      } finally {
+        deferred = null
+      }
+
+      async function replaceNow(): Promise<Result<void>> {
       // Flushed FIRST, and the ANSWER is read. The queued ops describe rows that
       // are about to stop existing, and draining them after the replace would
       // write a deleted record back into a store that had just been emptied.
@@ -502,6 +561,7 @@ export function createRepository(options: RepositoryOptions): Repository {
       audit.clear()
       notify()
       return ok(undefined)
+      }
     },
 
     rehydrate(graph, nextMeta, nextAudit) {

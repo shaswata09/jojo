@@ -90,7 +90,20 @@ async function call(
   }
 
   if (!response.ok) return { ok: false, error: 'handoff/refused' }
-  return { ok: true, value: new Uint8Array(await response.arrayBuffer()) }
+  try {
+    return { ok: true, value: new Uint8Array(await response.arrayBuffer()) }
+  } catch {
+    /*
+     * The body is a SECOND read off the network, after the headers have already
+     * resolved the `fetch` above — so a phone that goes to sleep, a wifi drop,
+     * or a socket the other end closes mid-response rejects HERE and not there.
+     * Unguarded, that rejection walked straight out of `call` past the result
+     * type this module exists to produce: `start` rejected into the `void` at
+     * its call site and the panel sat spinning with nothing on screen to say
+     * why. Same cause as the throw above, so the same words.
+     */
+    return { ok: false, error: 'handoff/unreachable' }
+  }
 }
 
 /** Asks the phone for its pairing response — step three of the handshake. */

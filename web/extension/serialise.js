@@ -203,7 +203,17 @@ export function serialise(policy) {
   }
 
   // ---- 2. attributes, walked against the live tree --------------------------
-  for (const node of [...doc.querySelectorAll('*')]) {
+  /*
+   * `[doc, ...]`, because `doc` is the cloned `<html>` ELEMENT, not a Document.
+   *
+   * `Element.querySelectorAll('*')` returns DESCENDANTS — it never matches the
+   * element it is called on. So the root element's own attributes skipped every
+   * strip and every rewrite in this pass: an `on*` handler, a
+   * `CAPTURE_STRIP_ATTRS` entry, or a CSSOM-set
+   * `documentElement.style.backgroundImage` on `<html>` went into the archive
+   * untouched, as a live remote address.
+   */
+  for (const node of [doc, ...doc.querySelectorAll('*')]) {
     for (const attr of CAPTURE_STRIP_ATTRS) node.removeAttribute(attr)
 
     // Every on* handler. Markup can carry code without a <script> in sight, and

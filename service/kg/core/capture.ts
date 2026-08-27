@@ -345,9 +345,19 @@ export function isCaptureSource(url: string): boolean {
  * **Prose is left alone**, which is the same rule the sweep in each inliner
  * follows. The two have to agree: a scan stricter than the sweep refuses
  * captures the sweep considered clean, which is a rejection with no remedy.
+ *
+ * **Unquoted values count too**, and leaving them out was a hole in the one
+ * check this file calls the last line of defence. HTML does not require quotes
+ * and every browser honours `<img src=https://evil.example/beacon.png>` — but
+ * the pattern demanded a quote it could backreference, so that shape scanned as
+ * ZERO remote references and a stored capture beaconed on every viewing.
+ * Measured: quoted 1, single-quoted 1, unquoted 0, protocol-relative unquoted 0.
+ *
+ * The unquoted arm ends at whitespace or `>`, which is exactly where the HTML
+ * tokeniser ends an unquoted attribute value.
  */
 const REMOTE_REF =
-  /<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*(["'])\s*(?:https?:|\/\/)[^"']*\1/gi
+  /<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*(?:(["'])\s*(?:https?:|\/\/)[^"']*\1|(?:https?:|\/\/)[^\s>]*)/gi
 
 /**
  * The other half, and it was missing.

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Delete, History, Trash2 } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
@@ -9,6 +9,7 @@ import type { Op } from '@jojo/service/core/calculator'
 // at the same width the shared `format` caps output at, and the two drifting
 // apart would let someone type a number the display could not print back.
 import { MAX_DIGITS } from '@jojo/service/core/calculator'
+import { planCalculatorKey } from './calculator-keys'
 
 /** History is a short memory, not an audit log. */
 const MAX_HISTORY = 30
@@ -133,21 +134,44 @@ export function Calculator() {
   }, [replace])
 
   // A calculator you cannot type into is a calculator you will not use.
+  //
+  /** The pad's root, so `planCalculatorKey` can ask what a keystroke belongs to. */
+  const root = useRef<HTMLDivElement>(null)
+
+  // WHICH KEY MEANS WHAT lives in `calculator-keys`, not here. This listener is
+  // on `window`, so its rules decide what happens to keystrokes aimed at the
+  // rest of the page too — and the one that was wrong, an Enter cancelled out
+  // from under whatever button or link had focus, was invisible from this file
+  // and unreachable from a test while it was written inline.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null
-      // Never swallow keys meant for a field elsewhere on the page.
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      // The pad's own element goes with the keystroke: Enter and Escape belong
+      // to whatever has focus, and the only way to tell the pad's buttons from
+      // a sidebar link or an open dialog is to ask what contains the target.
+      const plan = planCalculatorKey({
+        key: e.key,
+        target: e.target,
+        within: root.current,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        defaultPrevented: e.defaultPrevented,
+      })
+      if (plan === null) return
+      if (plan.preventDefault) e.preventDefault()
 
-      if (/^[0-9]$/.test(e.key) || e.key === '.') return digit(e.key)
-      if (e.key === '+') return operator('+')
-      if (e.key === '-') return operator('−')
-      if (e.key === '*') return operator('×')
-      if (e.key === '^') return operator('^')
-      if (e.key === '/') return (e.preventDefault(), operator('÷'))
-      if (e.key === 'Enter' || e.key === '=') return (e.preventDefault(), equals())
-      if (e.key === 'Backspace') return (e.preventDefault(), backspace())
-      if (e.key === 'Escape') return clear()
+      switch (plan.action.kind) {
+        case 'digit':
+          return digit(plan.action.value)
+        case 'operator':
+          return operator(plan.action.op)
+        case 'equals':
+          return equals()
+        case 'backspace':
+          return backspace()
+        case 'clear':
+          return clear()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -184,7 +208,7 @@ export function Calculator() {
     // Side by side once history is open, wrapping to a stack when the row runs
     // out of width. `items-start` so the history panel is only as tall as its
     // own contents rather than stretching to match the keypad.
-    <div className="flex flex-wrap items-start gap-4 sm:gap-5">
+    <div ref={root} className="flex flex-wrap items-start gap-4 sm:gap-5">
       <Panel className="min-w-0 flex-1 basis-[320px] sm:max-w-sm">
         <div className="mb-3 flex items-center justify-between gap-2">
           <PanelTitle className="mb-0">Calculator</PanelTitle>

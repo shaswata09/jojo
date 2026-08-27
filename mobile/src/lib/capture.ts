@@ -167,11 +167,20 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
   // over text nodes too, and `outerHTML` does not escape `"` in text — so a
   // posting whose body quoted `<img src="https://…">` had its own prose
   // rewritten to `src=""` and counted as a dropped asset.
+  //
+  // The value may be UNQUOTED. HTML does not require quotes and browsers honour
+  // `src=https://…`, so a sweep that demanded them left the one shape
+  // `remoteRefCount` was also blind to — a capture that beaconed on every
+  // viewing while both checks reported it clean. The two must widen together:
+  // a scan stricter than the sweep refuses captures with no remedy.
   html = html.replace(
-    /(<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(["'])\s*(?:https?:|\/\/)[^"']*\2/gi,
-    (_whole, head: string, quote: string) => {
+    /(<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(?:(["'])\s*(?:https?:|\/\/)[^"']*\2|(?:https?:|\/\/)[^\s>]*)/gi,
+    (_whole, head: string, quote: string | undefined) => {
       dropped += 1
-      return `${head}${quote}${quote}`
+      // An unquoted value is emptied by writing a quoted empty one, which is
+      // valid HTML and cannot be re-read as a URL.
+      const q = quote ?? '"'
+      return `${head}${q}${q}`
     },
   )
 

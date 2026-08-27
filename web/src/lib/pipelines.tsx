@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { PipelinesContext } from '@jojo/service/react/pipelines-context'
+import { reportError } from '@/lib/report-error'
 import { usePipelines } from '@jojo/service/react/use-pipelines'
 import { agentTurn, isConfigured } from '@/lib/llm'
 import { scanBoard } from '@/lib/capture-bridge'
@@ -28,6 +29,18 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
   const state = usePipelines({
     llm: isConfigured(settings) ? llm : null,
     scan: scanBoard,
+    /*
+     * A round that throws is caught inside the hook so the schedule is not left
+     * wedged — and catching it took away the only durable record. It used to
+     * escape into an unhandled rejection, which reaches the crash ring the
+     * Diagnostics panel reads; the hook's own log is capped and gone on reload.
+     *
+     * `'agent'` because that is what a pipeline round is: "a throw underneath
+     * an agent run, which has no other home".
+     */
+    onError: (e) => {
+      reportError('agent', e)
+    },
   })
 
   return <PipelinesContext value={state}>{children}</PipelinesContext>

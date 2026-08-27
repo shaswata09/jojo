@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 import type { Instant, NodeId, StoredEdge, StoredNode } from '../core/model'
+import { MutableSnapshot } from '../core/snapshot'
 import {
   AUDIT_CAP,
   Ring,
@@ -133,7 +134,13 @@ describe('applyJournal', () => {
 
     store.log.length = 0
     applyJournal(store.writer, entry, 'undo')
-    expect(store.log).toEqual([`+node ${app.id}`, `+edge ${edge.id}`])
+    // The `-edge` in the middle is the remove-then-insert every edge write goes
+    // through, because the real writer's `putEdge` is insert-if-absent (see
+    // 'writes an edge already in memory' below). It lands AFTER the node is
+    // back, so it does not reopen the dangling window this test guards: on an
+    // id the writer does not hold — which is every restore of a deleted edge —
+    // `MutableSnapshot.removeEdge` returns early and touches no index.
+    expect(store.log).toEqual([`+node ${app.id}`, `-edge ${edge.id}`, `+edge ${edge.id}`])
   })
 
   /**
@@ -185,6 +192,41 @@ describe('applyJournal', () => {
     applyJournal(store.writer, entry, 'undo')
     expect(store.nodes.get(before.id)).toEqual(before)
   })
+
+  /**
+   * The one test in this file whose writer is the REAL snapshot, and it has to be.
+   *
+   * `fakeStore`'s `putEdge` is a `Map.set` — an upsert — so it cannot see this
+   * at all. `MutableSnapshot.putEdge` is insert-if-absent and returns early on
+   * an id it already holds, so an edge delta with BOTH images set never reached
+   * memory while `opsFor` wrote the `after` image to disk in the same commit.
+   * `fileUnder` (`tools/vault.ts`) stages exactly that delta on every save: it
+   * unlinks every FILED_UNDER edge and writes them all back, so an untouched
+   * filing is restamped. Measured against the code before the fix, re-saving a
+   * document left the snapshot holding createdAt 15:00:02 and the ops store
+   * holding 15:00:04 for the same edge, and they agreed again only on reload.
+   */
+  it('writes an edge already in memory without double-counting its degree', () => {
+    const app = application('rice')
+    const reminder = item('rice-draft')
+    const before = about(reminder.id, app.id)
+    const after = { ...before, createdAt: '2026-10-12T11:30:00.000Z' }
+    const snapshot = MutableSnapshot.from([app, reminder], [before])
+    const entry = entryOf({ edges: [{ id: before.id, before, after }] })
+
+    applyJournal(snapshot, entry, 'redo')
+    expect(snapshot.edge(before.id)).toEqual(after)
+    // Remove-then-insert rather than an overwrite: `#degrees` is a counter the
+    // writer increments on insert, so putting over a live id would report the
+    // reminder and the application as having two links where there is one.
+    expect(snapshot.degree(reminder.id)).toBe(1)
+    expect(snapshot.degree(app.id)).toBe(1)
+    expect(snapshot.out(reminder.id, 'ABOUT')).toHaveLength(1)
+
+    applyJournal(snapshot, entry, 'undo')
+    expect(snapshot.edge(before.id)).toEqual(before)
+    expect(snapshot.degree(reminder.id)).toBe(1)
+  })
 })
 
 describe('invert', () => {
@@ -228,6 +270,31 @@ describe('changesNothing', () => {
     const after = { ...before, updatedAt: '2026-10-12T11:30:00.000Z' }
 
     expect(changesNothing({ nodes: [{ id: before.id, before, after }], edges: [] })).toBe(true)
+  })
+
+  /**
+   * The same blind spot, one record type over — and the reason `withoutStamp`
+   * strips two fields rather than one.
+   *
+   * Nodes carry `updatedAt`; edges carry only `createdAt`. `fileUnder` used to
+   * unlink and relink every FILED_UNDER edge on every save, so an untouched
+   * filing came back with a fresh stamp and read as a change: the entry took
+   * the undo ring and cleared the redo stack, so one Ctrl+Z after re-saving an
+   * unchanged document undid a timestamp and left the real edit in place.
+   */
+  it('sees through the createdAt stamp an edge gets when it is relinked', () => {
+    const before = about('a', 'b')
+    const after = { ...before, createdAt: '2026-10-12T11:30:00.000Z' }
+
+    expect(changesNothing({ nodes: [], edges: [{ id: before.id, before, after }] })).toBe(true)
+  })
+
+  it('is still false when an edge genuinely moved', () => {
+    // The stamp is discounted; the target is not.
+    const before = about('a', 'b')
+    const after = { ...about('a', 'c'), createdAt: '2026-10-12T11:30:00.000Z' }
+
+    expect(changesNothing({ nodes: [], edges: [{ id: before.id, before, after }] })).toBe(false)
   })
 
   it('is false when a field moved as well as the stamp', () => {
@@ -376,6 +443,50 @@ describe('readJournalRows', () => {
     const rows = [good, { id: 'no-timestamp' }, { ...good, id: 'b', nodes: 'not an array' }, 42]
 
     expect(readJournalRows(rows).map((e) => e.id)).toEqual(['a'])
+  })
+
+  /**
+   * The one field that is not envelope, and the one that cost something.
+   *
+   * `trimmed` is written to disk by the prune in `boot-ready.ts`. Reading it
+   * back as absent made `trimJournal` re-trim a row it had already trimmed —
+   * a NEW object with the same content — so the identity check in `boot-ready`
+   * fired on every launch: the `ops` store was cleared and every row written
+   * back unchanged, logging 'pruned the audit log from 200 to 200 entries' each
+   * time. On the phone that is the whole store rewritten for nothing.
+   *
+   * It is also `revert`'s only way to refuse. `boot-live.ts` seeds the audit
+   * ring straight from here on a cross-tab rehydrate, and an entry that came
+   * back with both images null and no mark passes the guard in `repository.ts`
+   * — an `invert` of two nulls, which deletes every record the entry named.
+   */
+  it('carries the trimmed mark back off disk', () => {
+    const trimmedRow = { ...row('a', '2026-10-12T09:00:00.000Z'), trimmed: true }
+    const [entry] = readJournalRows([trimmedRow])
+    expect(entry?.trimmed).toBe(true)
+
+    // Absent, not `undefined`, on everything else: `exactOptionalPropertyTypes`
+    // is on and `trimJournal` tests the key with `=== true`.
+    const plain = readJournalRows([row('b', '2026-10-12T09:00:00.000Z')])[0]
+    expect(plain !== undefined && 'trimmed' in plain).toBe(false)
+  })
+
+  /**
+   * Both halves of the round trip in one assertion.
+   *
+   * `trimJournal` returns an already-trimmed entry BY IDENTITY, which is what
+   * `boot-ready.ts` compares against to decide whether the store needs
+   * rewriting. That short-circuit is unreachable unless the mark survives the
+   * disk, so the two belong in one test rather than two that pass separately.
+   */
+  it('lets trimJournal recognise its own work after a reload', () => {
+    const rows = Array.from({ length: 6 }, (_, i) => row(`e${i}`, `2026-10-12T0${i}:00:00.000Z`))
+    const first = trimJournal(readJournalRows(rows), 2)
+    // Straight back through the store, which is JSON and nothing more.
+    const reread = readJournalRows(JSON.parse(JSON.stringify(first)) as unknown[])
+    const second = trimJournal(reread, 2)
+
+    for (const [i, entry] of second.entries()) expect(entry).toBe(reread[i])
   })
 })
 

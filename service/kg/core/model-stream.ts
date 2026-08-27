@@ -199,6 +199,18 @@ export function createStreamReader() {
         }
 
         /*
+         * `null` is a valid JSON document, so `JSON.parse` returns it happily
+         * and the `catch` above — which only covers parsing — never sees it.
+         * Every property read below then throws a TypeError that leaves `push`
+         * altogether, unwinds through the caller's read loop, and is caught by
+         * `sendStream` as a failed fetch: the person watching half an answer
+         * appear is told nothing is listening, and the half they had is thrown
+         * away. One `data: null` frame is meant to cost a few tokens, like any
+         * other frame this cannot read.
+         */
+        if (typeof frame !== 'object' || frame === null) continue
+
+        /*
          * Read BEFORE the `choices` guard below, and that ordering is the whole
          * fix. A server sends usage in a final frame whose `choices` array is
          * EMPTY — so `choices[0]` is undefined and the `continue` on the next
@@ -223,7 +235,15 @@ export function createStreamReader() {
 
         const fragments = delta['tool_calls']
         if (Array.isArray(fragments)) {
-          for (const f of fragments as Record<string, unknown>[]) {
+          for (const fragment of fragments as unknown[]) {
+            /*
+             * Same failure as the frame guard above: a `null` sitting in this
+             * array reads as a fragment right up to the first property access,
+             * which throws out of `push` and costs the whole reply. Skipping
+             * one fragment costs a slice of one call's arguments instead.
+             */
+            if (typeof fragment !== 'object' || fragment === null) continue
+            const f = fragment as Record<string, unknown>
             const index = typeof f['index'] === 'number' ? f['index'] : 0
             const fn = (f['function'] ?? {}) as Record<string, unknown>
             const at = building.get(index) ?? { id: '', name: '', args: '' }

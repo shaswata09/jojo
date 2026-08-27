@@ -55,6 +55,22 @@ const cleared = (value: string | undefined) =>
  */
 function fileUnder(ctx: ToolContext, id: NodeId, appIds: readonly NodeId[] | null | undefined) {
   if (appIds === undefined) return
+
+  /*
+   * Wholesale, and deliberately so after measuring the alternative.
+   *
+   * The obvious improvement is to unlink only what is no longer wanted, the way
+   * `keyword.record.set` reads. Measured, it changes nothing: the link half
+   * still runs for every wanted id — `keyword.record.set` does the same — so a
+   * no-op save produces one edge delta either way, and no test at this boundary
+   * can tell the two apart.
+   *
+   * What DID matter was the journal's reading of that delta. An edge carries
+   * only `createdAt`, and `withoutStamp` stripped only `updatedAt`, so a
+   * relinked edge looked like a change: a save over an untouched form took the
+   * top of the undo ring and cleared the redo stack. That is fixed in
+   * `repo/journal.ts`, where the cause was.
+   */
   ctx.tx.unlinkAll(id, { rel: 'FILED_UNDER' })
   if (appIds === null) return
   for (const appId of appIds) ctx.tx.link(id, 'FILED_UNDER', appId)

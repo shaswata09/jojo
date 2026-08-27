@@ -30,6 +30,7 @@ import { createSecrets } from '@jojo/service/crypto/noble-secrets'
 import { decodeAddress, formatAddress, type DialFailure } from '@jojo/service/core/dial'
 import type { SessionKeys } from '@jojo/service/core/pairing'
 import { report } from '@/lib/analytics'
+import { reportError } from '@/lib/report-error'
 import { bucket } from '@jojo/service/core/analytics'
 import {
   HANDOFF_ADVICE,
@@ -74,6 +75,45 @@ const DIAL_ADVICE: Record<DialFailure, string> = {
     'That code does not check out — a character is wrong somewhere. Try typing it again.',
 }
 
+/**
+ * What to say when a step THROWS instead of returning a failure.
+ *
+ * Every failure the run below knows about arrives as `{ ok: false }` and has a
+ * sentence waiting for it. A REJECTION had none. `build()` reads every document
+ * out of IndexedDB and stringifies the lot — `backup.ts` names the three ways
+ * that throws — and `complete()` runs the handshake crypto, so either can
+ * reject; the only caller does `void send.start(...)` with no `.catch`. So the
+ * stage stayed on 'packing', the panel kept spinning with its field disabled,
+ * and the only way out of it was reloading the page.
+ *
+ * The second sentence is a promise this can keep: `core/convoy.ts` completes
+ * only on a chunk flagged final, and the phone acts on nothing before that —
+ * see `receive-landing.ts`. A transfer that stops halfway leaves it untouched.
+ */
+export const UNEXPECTED_ADVICE =
+  'Something went wrong on this computer and the transfer stopped. Nothing was left behind on the other device — try again, or move your records with a backup file from Settings.'
+
+/**
+ * Runs the transfer and answers with the sentence to show, or null if it got
+ * all the way through.
+ *
+ * A plain function outside the hook, and exported, because D20 rules out
+ * mounting: this is the half a test can reach, and a guard nothing exercises is
+ * a guard nobody notices the loss of.
+ */
+export async function guardedTransfer(run: () => Promise<void>): Promise<string | null> {
+  try {
+    await run()
+    return null
+  } catch (thrown) {
+    // To the console and the local crash log as well as to the screen. The
+    // sentence above cannot name a quota wall or a document that would not
+    // read, and somebody debugging their own machine needs the one it was.
+    reportError('transfer', thrown)
+    return UNEXPECTED_ADVICE
+  }
+}
+
 export function useHandoffSend({
   complete,
   build,
@@ -112,70 +152,78 @@ export function useHandoffSend({
       setProblem(null)
       setProgress(0)
 
-      const read = decodeAddress(code)
-      if (!read.ok) {
-        setProblem(DIAL_ADVICE[read.error])
-        setStage('failed')
-        return
-      }
-      const address = read.value
-      setTarget(formatAddress(address))
+      // Every await below is inside the guard, not just the two that are known
+      // to throw: a step that stops the run without a word on screen is the
+      // failure being fixed here, and which step it was is not the point.
+      const advice = await guardedTransfer(async () => {
+        const read = decodeAddress(code)
+        if (!read.ok) {
+          setProblem(DIAL_ADVICE[read.error])
+          setStage('failed')
+          return
+        }
+        const address = read.value
+        setTarget(formatAddress(address))
 
-      setStage('connecting')
-      const response = await fetchPairingResponse(address, token)
-      if (!response.ok) return stop(response.error)
+        setStage('connecting')
+        const response = await fetchPairingResponse(address, token)
+        if (!response.ok) return stop(response.error)
 
-      const keys = await complete(response.value)
-      if (keys === null) {
-        // The device answered and could not prove it read this screen. That is
-        // either a stale code or something in the middle of the network, and
-        // jojo cannot tell which — so it says the part it is sure of.
-        setProblem(
-          'That device could not prove it read the code on this screen. Show a new code and scan it again.',
-        )
-        setStage('failed')
-        return
-      }
-      if (cancelled.current) return
-
-      setStage('packing')
-      const payload = await build()
-      if (cancelled.current) return
-
-      setStage('sending')
-      // The key is chosen by DIRECTION: this device is the offerer, so it seals
-      // with the offerer-to-answerer key. Using one key both ways would put two
-      // counters in one nonce space, which is how GCM nonce reuse happens.
-      const plan = planConvoy(secrets, keys.offererToAnswerer, payload)
-
-      for (let seq = 0; seq < plan.chunks; seq += 1) {
+        const keys = await complete(response.value)
+        if (keys === null) {
+          // The device answered and could not prove it read this screen. That is
+          // either a stale code or something in the middle of the network, and
+          // jojo cannot tell which — so it says the part it is sure of.
+          setProblem(
+            'That device could not prove it read the code on this screen. Show a new code and scan it again.',
+          )
+          setStage('failed')
+          return
+        }
         if (cancelled.current) return
-        const sent = await sendChunk(address, token, await plan.seal(seq))
-        if (!sent.ok) return stop(sent.error)
-        // Reported after the phone acknowledged, not after the write. A bar that
-        // runs ahead of what actually arrived is a bar that finishes and then
-        // waits, which reads as a freeze at 100%.
-        setProgress((seq + 1) / plan.chunks)
-      }
 
-      /*
-       * Recorded on this device, not sent with the bytes.
-       *
-       * `handoverAt` is a fact about THIS store — when it last agreed with
-       * another one — so it belongs to the sender as much as to the receiver,
-       * and each keeps its own. It is what lets the Transfer page say how far
-       * this device has drifted since, which is the one thing a one-directional
-       * transfer never told anybody.
-       */
-      repo.setMeta(handedOver(repo.meta, new Date().toISOString() as Instant))
-      setStage('done')
-      /*
-       * Only from the SENDER, and only once the bytes have landed. The receiving
-       * device reports nothing — one transfer is one event, and counting both
-       * ends would double every figure while making it look like transfers are
-       * twice as common as they are.
-       */
-      report('transfer_completed', { records: bucket(repo.getSnapshot().nodes().length) })
+        setStage('packing')
+        const payload = await build()
+        if (cancelled.current) return
+
+        setStage('sending')
+        // The key is chosen by DIRECTION: this device is the offerer, so it seals
+        // with the offerer-to-answerer key. Using one key both ways would put two
+        // counters in one nonce space, which is how GCM nonce reuse happens.
+        const plan = planConvoy(secrets, keys.offererToAnswerer, payload)
+
+        for (let seq = 0; seq < plan.chunks; seq += 1) {
+          if (cancelled.current) return
+          const sent = await sendChunk(address, token, await plan.seal(seq))
+          if (!sent.ok) return stop(sent.error)
+          // Reported after the phone acknowledged, not after the write. A bar that
+          // runs ahead of what actually arrived is a bar that finishes and then
+          // waits, which reads as a freeze at 100%.
+          setProgress((seq + 1) / plan.chunks)
+        }
+
+        /*
+         * Recorded on this device, not sent with the bytes.
+         *
+         * `handoverAt` is a fact about THIS store — when it last agreed with
+         * another one — so it belongs to the sender as much as to the receiver,
+         * and each keeps its own. It is what lets the Transfer page say how far
+         * this device has drifted since, which is the one thing a one-directional
+         * transfer never told anybody.
+         */
+        repo.setMeta(handedOver(repo.meta, new Date().toISOString() as Instant))
+        setStage('done')
+        /*
+         * Only from the SENDER, and only once the bytes have landed. The receiving
+         * device reports nothing — one transfer is one event, and counting both
+         * ends would double every figure while making it look like transfers are
+         * twice as common as they are.
+         */
+        report('transfer_completed', { records: bucket(repo.getSnapshot().nodes().length) })
+      })
+      if (advice === null) return
+      setProblem(advice)
+      setStage('failed')
     },
     [build, complete, secrets, stop, repo],
   )

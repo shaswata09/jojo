@@ -18,11 +18,12 @@
 import { describe, expect, it } from 'vitest'
 import { createMemoryDriver } from '../storage/memory-driver'
 import type { MemoryDriver } from '../storage/memory-driver'
-import type { Rows } from '../storage/driver'
+import type { DurableOp, Rows } from '../storage/driver'
 import type { MetaRow, StoredRow } from '../storage/schema'
 import { boot, resetBoot } from './boot'
 import type { BootResult, Session } from './boot'
 import { orphanEdgeKeys } from './boot-ready'
+import { REVERTABLE_DEPTH } from './journal'
 
 const NOW = '2026-10-12T12:00:00.000Z'
 const LATER = '2026-10-13T09:30:00.000Z'
@@ -204,5 +205,77 @@ describe('booting a store that has a dangling link row', () => {
     expect(session.skipped.length).toBeGreaterThan(0)
     expect(driver.counts().edges).toBe(1)
     session.dispose()
+  })
+})
+
+/* ------------------------- the prune, on the SECOND open ------------------- */
+
+describe('re-opening a store whose audit was pruned on an earlier launch', () => {
+  const journalRow = (index: number): StoredRow => ({
+    id: `entry-${String(index).padStart(4, '0')}`,
+    at: `2026-10-12T09:${String(index).padStart(2, '0')}:00.000Z`,
+    tool: 'application.note.set',
+    input: { note: 'the whole argument object, which is the big half' },
+    label: `Change ${index}`,
+    calls: [],
+    nodes: [],
+    edges: [],
+  })
+
+  /** The driver, with every op it is asked to commit recorded on the way past. */
+  const watching = (driver: MemoryDriver, seen: DurableOp[]): MemoryDriver => ({
+    ...driver,
+    commit: async (ops) => {
+      seen.push(...ops)
+      return driver.commit(ops)
+    },
+  })
+
+  /**
+   * The prune has to be able to see that it already ran.
+   *
+   * `trimJournal` returns an entry it has already trimmed BY IDENTITY, and that
+   * identity is the whole of the decision at `boot-ready.ts` — comparing
+   * lengths would not work, because a trim changes no counts. The mark that
+   * makes the short-circuit possible is `trimmed`, and it has to survive the
+   * disk: while `readJournalRows` dropped it, every launch rebuilt every old
+   * entry, cleared the `ops` store and wrote all of it back byte-identical,
+   * logging 'pruned the audit log from 200 to 200 entries' every time. On the
+   * phone that is not a log line, it is the entire store rewritten — `rn-driver`
+   * holds all four stores in one AsyncStorage key.
+   */
+  it('does not clear and rewrite the ops store when the trim has nothing to do', async () => {
+    const driver = createMemoryDriver({
+      rows: {
+        nodes: [],
+        edges: [],
+        meta: [STORED_META],
+        // Five past the revertable window, so the first launch owes a real trim
+        // and the second owes none.
+        ops: Array.from({ length: REVERTABLE_DEPTH + 5 }, (_, i) => journalRow(i)),
+      },
+    })
+
+    const first = sessionOf(await bootWith(driver))
+    await first.repo.flush()
+
+    // What the first launch left: the five oldest stripped and MARKED, the
+    // revertable ten untouched.
+    const pruned = (await readRows(driver)).ops
+    expect(pruned[0]?.['trimmed']).toBe(true)
+    expect(pruned[0]?.['input']).toBeNull()
+    expect(pruned.at(-1)?.['trimmed']).toBeUndefined()
+
+    const seen: DurableOp[] = []
+    const second = sessionOf(await bootWith(watching(driver, seen)))
+
+    // `lastOpenedAt` and nothing else. Before the fix this was a `clear` on
+    // `ops` followed by fifteen puts, on this launch and on every one after it.
+    expect(seen.map((op) => `${op.kind} ${op.store}`)).toEqual(['put meta'])
+    // And the mark is still there to be read on the launch after this one.
+    expect(second.repo.audit.at(-1)?.trimmed).toBe(true)
+
+    second.dispose()
+    first.dispose()
   })
 })

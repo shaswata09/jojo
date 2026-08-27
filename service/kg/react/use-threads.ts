@@ -169,6 +169,11 @@ export const toAgentEntries = (entries: readonly ThreadEntry[]): AgentEntry[] =>
         },
       }
     }
+    // `app` carried, not rebuilt away. It is what stops `toTranscript` replaying
+    // this app's own words to the model as the model's; see `ThreadEntry`.
+    if (e.kind === 'note') {
+      return { kind: 'note', id, text: e.text, ...(e.app === true ? { app: true as const } : {}) }
+    }
     return { kind: e.kind, id, text: e.text }
   })
 
@@ -187,7 +192,13 @@ export const toThreadEntries = (entries: readonly AgentEntry[]): ThreadEntry[] =
           status: e.step.status === 'running' ? 'failed' : e.step.status,
           ...(e.step.detail === undefined ? {} : { detail: e.step.detail }),
         }
-      : { kind: e.kind, text: e.text },
+      : e.kind === 'note'
+        ? // The other half of the same carry. This is the one that was losing
+          // it: a live run holds `app` on the entry, and rebuilding the note
+          // from `kind` and `text` alone is what made the flag survive exactly
+          // until the conversation was saved — which is to say, never.
+          { kind: 'note', text: e.text, ...(e.app === true ? { app: true as const } : {}) }
+        : { kind: e.kind, text: e.text },
   )
 
 /**

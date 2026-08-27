@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Download, HardDrive, TriangleAlert } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
+import { readStorageUsage } from '@/components/settings/storage-usage'
 import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 
@@ -37,10 +38,14 @@ export function DocumentsPanel() {
     void blobs.all().then((list) => {
       if (alive) setCount(list.length)
     })
-    void navigator.storage?.estimate?.().then((e) => {
-      if (alive && e.usage !== undefined && e.quota !== undefined) {
-        setUsage({ used: e.usage, quota: e.quota })
-      }
+    /*
+     * Through `readStorageUsage`, not `navigator.storage.estimate()` raw: that
+     * promise rejects in an opaque origin, and this call is `void`ed, so the
+     * rejection reached `main.tsx` and logged a crash for a browser that had
+     * only declined to answer. Same missing line on screen either way.
+     */
+    void readStorageUsage().then((figures) => {
+      if (alive && figures !== null) setUsage(figures)
     })
     void blobs.persisted().then((p) => {
       if (alive) setSafe(p)

@@ -398,6 +398,78 @@ describe('the dialects', () => {
       expect(JSON.parse(chatRequest(asked, msgs).body!).options).toEqual({ num_ctx: 32768 })
     })
 
+    /*
+     * The same OBJECT rule going the other way, and it was only enforced coming
+     * back. Ollama takes the assistant turn it produced straight back in
+     * `messages` on the next round, and `arguments` there is a map — so the
+     * OpenAI-spelled JSON STRING `loop.ts` stores is a type error the whole
+     * request is rejected for. A first tool call worked; the round after it did
+     * not, which is why a single-shot test would never have seen this.
+     */
+    const withCall = [
+      { role: 'user' as const, content: 'how many applications?' },
+      {
+        role: 'assistant' as const,
+        content: null,
+        tool_calls: [
+          {
+            id: 'call_1',
+            type: 'function' as const,
+            function: { name: 'memory_count', arguments: '{"type":"application"}' },
+          },
+        ],
+      },
+      { role: 'tool' as const, tool_call_id: 'call_1', content: '6' },
+    ]
+
+    const sentMessages = (msgs: typeof withCall) =>
+      JSON.parse(chatRequest(ollama, msgs).body!).messages as {
+        tool_calls?: { function: { name: string; arguments: unknown } }[]
+      }[]
+
+    it('sends tool-call arguments back as an OBJECT, which is the only shape native takes', () => {
+      const call = sentMessages(withCall)[1]?.tool_calls?.[0]
+      expect(call?.function.arguments).toEqual({ type: 'application' })
+      // Not the string the transcript holds — that is a `map[string]any` on the
+      // far side, and a string there fails to unmarshal and 400s the request.
+      expect(typeof call?.function.arguments).toBe('object')
+      expect(call?.function.name).toBe('memory_count')
+    })
+
+    it('degrades arguments it cannot read to {} rather than stranding the turn', () => {
+      /*
+       * A small model that emitted invalid JSON, or a call with no arguments at
+       * all. Native has nowhere to put the raw string, and dropping the whole
+       * request would end the conversation over one call the model can still be
+       * told about.
+       */
+      for (const raw of ['', 'not json at all', '[1,2]', 'null']) {
+        const broken = withCall.map((m, i) =>
+          i === 1
+            ? {
+                ...m,
+                tool_calls: [
+                  {
+                    id: 'call_1',
+                    type: 'function' as const,
+                    function: { name: 'x', arguments: raw },
+                  },
+                ],
+              }
+            : m,
+        ) as typeof withCall
+        expect(sentMessages(broken)[1]?.tool_calls?.[0]?.function.arguments, raw).toEqual({})
+      }
+    })
+
+    it('leaves every message that has no tool calls exactly as it was', () => {
+      // Only the one field needed translating. Rewriting the rest would make the
+      // stored transcript and the wire disagree for no reason.
+      const sent = sentMessages(withCall)
+      expect(sent[0]).toEqual({ role: 'user', content: 'how many applications?' })
+      expect(sent[2]).toEqual({ role: 'tool', tool_call_id: 'call_1', content: '6' })
+    })
+
     it('reads a native answer, whose tool arguments are an OBJECT', () => {
       // The difference that would have gone unnoticed: read as a string it
       // would be '', and every native tool call would run with no arguments.
@@ -624,6 +696,42 @@ describe('a rate limit, which the free tier makes routine', () => {
       expect(out.reason).toContain('404')
       expect(out.reason).toContain('model not found')
     }
+  })
+})
+
+describe('a status of zero, which is the browser and not the server', () => {
+  /*
+   * A server cannot reply 0 — it is what a browser puts on a response it refused
+   * to let the page read. The wording has said so for a while; the REPORTING did
+   * not, and that is the half that mattered. `why` exists so that "nobody on
+   * this origin can reach NVIDIA" and "one laptop went to sleep" stop arriving
+   * as the same number, and without it here `blocked` was a FailureKind nothing
+   * could ever produce.
+   */
+  it('reports a zero as blocked, not as one more unreachable server', () => {
+    const out = readChatResponse({ ok: false, status: 0, text: '' })
+    expect(out.ok).toBe(false)
+    if (out.ok) return
+    expect(out.why).toBe('blocked')
+    // `kind` stays coarse on purpose: there is no answer to read either way, so
+    // the app does the same thing. Only the reporting needed to tell them apart.
+    expect(out.kind).toBe('unreachable')
+  })
+
+  it('keeps the classification when a models call decorates the sentence', () => {
+    // `readModelsResponse` appends its /v1 hint by spreading the failure, which
+    // is exactly the kind of rebuild that drops a field nobody asserted on.
+    const out = readModelsResponse({ ok: false, status: 0, text: '' }, 'http://localhost:8000')
+    expect(out.ok).toBe(false)
+    if (out.ok) return
+    expect(out.why).toBe('blocked')
+  })
+
+  it('does not call an ordinary refusal blocked', () => {
+    const out = readChatResponse({ ok: false, status: 404, text: 'nope' })
+    expect(out.ok).toBe(false)
+    if (out.ok) return
+    expect(out.why).toBeUndefined()
   })
 })
 
@@ -947,6 +1055,52 @@ describe('tool names with harmony control tokens', () => {
     if (!turn.ok) return
     expect(turn.toolCalls).toEqual([])
     // The prose survives, so the turn is an answer rather than an empty reply.
+    expect(turn.text).toBe('thinking out loud')
+  })
+
+  /*
+   * The reader gpt-oss under Ollama actually goes through, and the one this did
+   * not cover. `readTurn` above is the OpenAI shim's path; a user who picked the
+   * `ollama` provider posts to `/api/chat` and comes back through
+   * `readOllamaTurn`, which stripped nothing — so the exact failure the cleaner
+   * exists for was still live on the provider most likely to be running gpt-oss.
+   */
+  it('reads the tool GPT-OSS meant on Ollama native too', () => {
+    const turn = readOllamaTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({
+        message: {
+          content: '',
+          tool_calls: [
+            { function: { name: 'memory_get<|channel|>commentary', arguments: { id: 'app:1' } } },
+          ],
+        },
+        done_reason: 'stop',
+      }),
+    })
+    expect(turn.ok).toBe(true)
+    if (!turn.ok) return
+    expect(turn.toolCalls[0]?.name).toBe('memory_get')
+    // Native arguments are an OBJECT, and the cleaning does not disturb them.
+    expect(turn.toolCalls[0]?.args).toEqual({ id: 'app:1' })
+  })
+
+  it('drops an Ollama call whose name was ONLY a marker', () => {
+    const turn = readOllamaTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({
+        message: {
+          content: 'thinking out loud',
+          tool_calls: [{ function: { name: '<|channel|>commentary', arguments: {} } }],
+        },
+        done_reason: 'stop',
+      }),
+    })
+    expect(turn.ok).toBe(true)
+    if (!turn.ok) return
+    expect(turn.toolCalls).toEqual([])
     expect(turn.text).toBe('thinking out loud')
   })
 })

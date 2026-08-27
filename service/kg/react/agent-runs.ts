@@ -65,8 +65,21 @@ function namesCalledIn(history: readonly ChatMessage[]): string[] {
 /** One line of a conversation as a screen draws it. */
 export type AgentEntry =
   | { kind: 'you'; id: string; text: string }
-  /** Narration the model produced while still working. */
-  | { kind: 'note'; id: string; text: string }
+  /**
+   * Narration mid-run, and `app` says by whom — the same field, with the same
+   * meaning, as `ThreadEntry`'s note arm.
+   *
+   * DECLARED, not merely spread in. It was missing here while the `note` event
+   * already carried `app: true` and the conditional spread below wrote it, so
+   * the flag existed at runtime and nowhere in the types — and the first
+   * function to rebuild an entry field by field, `toThreadEntries`, dropped it
+   * with nothing to complain. `toTranscript`'s guard was then dead for every
+   * conversation that had been saved and reloaded: "The model stopped mid-reply
+   * because it hit its own output limit" and the trim note went back to the
+   * model as its own prior speech, in exactly the long conversations where the
+   * extra message also costs the context it was trimmed to save.
+   */
+  | { kind: 'note'; id: string; text: string; app?: true }
   | { kind: 'step'; id: string; step: AgentStep }
   | { kind: 'answer'; id: string; text: string }
   | { kind: 'error'; id: string; text: string }
@@ -396,6 +409,31 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
      */
     let draft: { id: string; text: string } | null = null
 
+    /*
+     * Is the run under this thread id still THIS run?
+     *
+     * A run that has been FORGOTTEN is not a run that is over. `forget` — Clear
+     * on the Assistant, "Ask something else" on both AskBoxes — sets the abort
+     * flag and drops the run's state, but the promise below is still unwinding:
+     * an aborted request has to come back before `runAgent` returns. `busy` is
+     * gone with the state, so a second `start` walks straight past the one-run
+     * guard and takes the thread id over. Two clicks, no timing to speak of.
+     *
+     * Everything after the await is keyed by thread id, so without this the
+     * abandoned run's settle path wrote to whatever had replaced it: `busy`
+     * went false under a live run (composer enabled, spinner stopped, Stop
+     * shown as Send), `inner.delete` took the REPLACEMENT's cancellation with
+     * it — so `stop()` became a no-op and `nextId()` fell to its `'e0'`
+     * fallback, giving every later entry the same id and overwriting the one
+     * before — and `onSettled` handed the live run's half-written transcript to
+     * `assistant.thread.set`, which replaces the stored entries and is
+     * `undoable: false`.
+     *
+     * `cancel` is minted per run and never shared, so it is already the token.
+     * A second field would be a second thing to keep in step.
+     */
+    const mine = () => inner.get(threadId)?.cancel === cancel
+
     void (async () => {
       try {
         const run = await runAgent({
@@ -510,7 +548,7 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
         // Carried into the next turn. `null` means everything was offered, and
         // storing that faithfully matters: it is the difference between "we
         // narrowed to these" and "we could not narrow".
-        patch(threadId, { offered: run.offered })
+        if (mine()) patch(threadId, { offered: run.offered })
 
         /*
          * A compaction is reported before the answer is, and on purpose.
@@ -524,9 +562,12 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
           options.onCompacted?.(threadId, run.compacted.context, run.compacted.messages)
         }
 
-        const finished = runs.get(threadId)
-        // The run's OWN thread, not whichever one is on screen now.
-        onSettled?.(threadId, finished?.entries ?? [], run.messages.slice(1))
+        // The run's OWN thread, and only while this is still the run on it:
+        // saving here is a wholesale replace of the stored conversation.
+        if (mine()) {
+          const finished = runs.get(threadId)
+          onSettled?.(threadId, finished?.entries ?? [], run.messages.slice(1))
+        }
       } catch (e) {
         /*
          * Reported as well as shown. The entry below tells the person their
@@ -541,17 +582,26 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
         // is the loudest of them.
         if (onError) onError(e)
         else kgError('Agent run threw', e, { thread: threadId })
-        record(threadId, {
-          kind: 'error',
-          id: nextId(),
-          text:
-            e instanceof Error && e.message
-              ? `Something went wrong answering that: ${e.message}`
-              : 'Something went wrong answering that.',
-        })
+        // Reported above either way, because a throw is a bug wherever it
+        // lands. Shown only on the conversation that asked the question — an
+        // abandoned run's failure is not the new run's failure.
+        if (mine()) {
+          record(threadId, {
+            kind: 'error',
+            id: nextId(),
+            text:
+              e instanceof Error && e.message
+                ? `Something went wrong answering that: ${e.message}`
+                : 'Something went wrong answering that.',
+          })
+        }
       } finally {
-        patch(threadId, { busy: false, pending: null })
-        inner.delete(threadId)
+        // The unlock, and the one that did the damage. Releasing a lock this
+        // run does not hold is how a live run was left busy-less and unstoppable.
+        if (mine()) {
+          patch(threadId, { busy: false, pending: null })
+          inner.delete(threadId)
+        }
       }
     })()
   }

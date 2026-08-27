@@ -210,6 +210,54 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
   }
 
   /**
+   * The transaction as `describe` has to read it: everything applied, except
+   * that the nodes it DELETED are still readable.
+   *
+   * `describe` runs after `execute`, so on the plain overlay `m.node(id)`
+   * answers `undefined` for anything `tx.del` staged and all thirteen delete
+   * tools fell through to the fallback inside their own `describe` —
+   * *"Keyword deleted"*, *"Item deleted"*, *"Application deleted"*. That string
+   * is also the journal LABEL, so clearing three keywords wrote three
+   * indistinguishable audit rows and an Undo menu with nothing in it to say
+   * which record is about to come back.
+   *
+   * Only deletions are rewound, and among edges only the ones `dropIncident`
+   * took along with a node that is going. Putting back EVERY staged edge would
+   * be simpler and wrong: `scout.posting.update` with `applicationId: null` cuts
+   * BECAME and keeps the posting, so a describe reading through that edge would
+   * announce the link the user just severed as though it were still there. And
+   * a node created AND deleted inside one transaction has no earlier image at
+   * all — there was never anything to name.
+   */
+  function forDescribe(buf: Buffer): Buffer {
+    const nodes = new Map(buf.nodes)
+    const edges = new Map(buf.edges)
+    const gone = new Set<NodeId>()
+
+    for (const [id, cell] of nodes) {
+      if (cell.after === null && cell.before !== null) {
+        nodes.set(id, { before: cell.before, after: cell.before })
+        gone.add(id)
+      }
+    }
+
+    // The edges matter as much as the node: `displayOf` names an application by
+    // walking AT to its employer, and with the node back but the edge still
+    // staged as a delete `application.delete` announced *" — Statistics"*, a
+    // dangling separator where the employer should be.
+    for (const [id, cell] of edges) {
+      const e = cell.before
+      if (cell.after === null && e !== null && (gone.has(e.from) || gone.has(e.to))) {
+        edges.set(id, { before: e, after: e })
+      }
+    }
+
+    // `minted` and `calls` are shared rather than copied: this view is read
+    // once, by `describe`, and neither is a read path.
+    return { ...buf, nodes, edges }
+  }
+
+  /**
    * Undo and redo are the same call against a different ring.
    *
    * `repo.revert` is itself a commit, so the entry it writes is the one redo
@@ -268,7 +316,12 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
       // name the record that was just made, and the commit has not happened yet.
       // Reordering so the commit ran first is not open either — the commit needs
       // the label that `describe` returns.
-      const announcement = tool.describe(input, output, overlay(repo.getSnapshot(), buf))
+      //
+      // `forDescribe` and not the raw buffer, because the same argument runs the
+      // other way for a delete: the record it has to name is one this
+      // transaction has already staged as gone.
+      const seen = overlay(repo.getSnapshot(), forDescribe(buf))
+      const announcement = tool.describe(input, output, seen)
 
       // `undoable: false` is enforced on the STACK, not on the journal.
       // `repo.commit` is the only path from a transaction buffer to the durable

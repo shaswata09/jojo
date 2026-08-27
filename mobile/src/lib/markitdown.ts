@@ -30,8 +30,18 @@ import { failed, send } from '@/lib/local-service'
 /** Kept for the session: MCP wants a handshake before the first call. */
 let shookHands: string | null = null
 
-/** `file:///a/b.pdf` → `/a/b.pdf`, which is what the filesystem module takes. */
-const pathOf = (uri: string) => (uri.startsWith('file://') ? uri.slice('file://'.length) : uri)
+/**
+ * `file:///a/b.pdf` → `/a/b.pdf`, which is what the filesystem module takes.
+ *
+ * DECODED, and the twin in `documents.ts` predicts why: `keepLocalCopy`
+ * percent-encodes what it hands back, `storedName` deliberately permits spaces,
+ * and a record keeps the URI. Without the decode `My CV.pdf` reaches `fs.stat`
+ * as `My%20CV.pdf`, ENOENT comes back, and the catch below tells the assistant,
+ * the Fit panel and CV import that the copy is "no longer on this device" — a
+ * claim of data loss about a file `FileViewer` opens on the same screen.
+ */
+const pathOf = (uri: string) =>
+  uri.startsWith('file://') ? decodeURIComponent(uri.slice('file://'.length)) : uri
 
 async function handshake(endpoint: string): Promise<ConvertResult> {
   if (shookHands === endpoint) return { ok: true, markdown: '' }

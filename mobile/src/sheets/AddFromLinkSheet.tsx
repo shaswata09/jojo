@@ -94,6 +94,20 @@ export function AddFromLinkSheet({ open }: { open: boolean }) {
             : `${outcome.file.name} is in the Vault. ${String(gaps)} field${gaps === 1 ? '' : 's'} were not on the page.`,
       })
     })()
+      /*
+       * Every layer under this reports failure as a value, so reaching here
+       * means something threw that none of them expected. `writeCapture` is the
+       * live one: its three `fs` calls are bare, and a full disk rejects the
+       * write AFTER the Vault record has been added. Without the catch that is
+       * an unhandled rejection and a sheet left on "Reading…" with the button
+       * disabled and nothing said — while the Vault holds a row with no bytes
+       * behind it.
+       */
+      .catch((thrown: unknown) => {
+        abort.current = null
+        setStep(null)
+        setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
+      })
   }
 
   return (

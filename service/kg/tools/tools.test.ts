@@ -453,6 +453,67 @@ describe('the transaction', () => {
     if (!result.ok) expect(result.errors[0]?.field).toBe('keyword')
   })
 
+  /**
+   * Re-saving a document without changing its filing must not touch the edges.
+   *
+   * `fileUnder` used to unlink every FILED_UNDER edge and put them all back,
+   * which reads as a set operation and behaves like one — but the relinked edge
+   * carries a fresh `createdAt`, so a save that changed nothing produced a
+   * journal entry that was not a no-op. It took the top of the undo ring and
+   * cleared the redo stack, so one Ctrl+Z after an untouched save undid a
+   * timestamp and left the real edit before it in place.
+   *
+   * `withoutStamp` discounting `createdAt` fixes what Undo SEES. This asserts
+   * the cause: the edge is not rewritten in the first place. The two need
+   * separate tests because with the stamp discounted, the wholesale version
+   * looks identical from `changesNothing` — it was still writing every edge.
+   */
+  it('does not spend an undo slot on a save that changed nothing', () => {
+    const h = harness()
+    const app = okOr(
+      h.runtime.run('application.create', {
+        org: 'Rice',
+        role: 'Scientist',
+        roleTag: 'Research Scientist',
+        stage: 'draft',
+      }),
+    )
+    const [file] = okOr(
+      h.runtime.run('vault.file.add', {
+        files: [{ name: 'CV.pdf', kind: 'pdf', bucket: 'To read', size: '1 KB', applicationIds: [app] }],
+      }),
+    )
+    const undoBefore = h.repo.undoable.length
+
+    // The same filing, written again — what pressing Save on an untouched form does.
+    okOr(h.runtime.run('vault.file.update', { id: file!, applicationIds: [app] }))
+
+    // Measured against the code before the fix, this was 3: the no-op save took
+    // the top of the undo ring, so the next Ctrl+Z undid a timestamp and left
+    // the real edit before it in place.
+    expect(h.repo.undoable.length).toBe(undoBefore)
+    expect(h.repo.getSnapshot().out(file!, 'FILED_UNDER')).toHaveLength(1)
+  })
+
+  it('still unfiles what the save removed', () => {
+    // Differential must not mean inert: an application dropped from the list
+    // has to lose its edge.
+    const h = harness()
+    const mk = (org: string, role: string) =>
+      okOr(h.runtime.run('application.create', { org, role, roleTag: 'Research Scientist', stage: 'draft' }))
+    const one = mk('Rice', 'A')
+    const two = mk('Baylor', 'B')
+    const [file] = okOr(
+      h.runtime.run('vault.file.add', {
+        files: [{ name: 'CV.pdf', kind: 'pdf', bucket: 'To read', size: '1 KB', applicationIds: [one, two] }],
+      }),
+    )
+    okOr(h.runtime.run('vault.file.update', { id: file!, applicationIds: [two] }))
+
+    const after = h.repo.getSnapshot().out(file!, 'FILED_UNDER')
+    expect(after.map((e) => e.to)).toEqual([two])
+  })
+
   it('mints distinct slugs for records created in the SAME transaction', () => {
     const h = harness()
     const ids = okOr(
@@ -833,8 +894,15 @@ describe('the composites', () => {
   it('promotes a match, splitting the packed employer and role', () => {
     const h = harness()
     okOr(h.runtime.run('memory.reset', {}))
-    const match = h.repo.getSnapshot().ofType('match')[0]
-    if (!match) throw new Error('the seed has no matches')
+    // The FIRST seeded match is the UNT one, and the fixtures already link it to
+    // the UNT application. This used to take it anyway — `BECAME` is
+    // `fromCardinality: 'one'`, so the promote quietly minted a second UNT draft
+    // and moved the edge onto it, and the assertions below passed on the
+    // duplicate. `scout.match.promote` refuses that now, so the test has to name
+    // a match nobody has promoted yet — which is what it always meant.
+    const snapshot = h.repo.getSnapshot()
+    const match = snapshot.ofType('match').find((n) => !snapshot.one(n.id, 'BECAME', 'application'))
+    if (!match) throw new Error('the seed has no unpromoted matches')
 
     const app = okOr(h.runtime.run('scout.match.promote', { id: match.id }))
     const m = h.repo.getSnapshot()
@@ -1211,6 +1279,60 @@ describe('what the user is told', () => {
       expect(undone.announcement.title).toBe('Undone')
       expect(undone.announcement.description).toBe('Referral added')
     }
+  })
+
+  /**
+   * A delete names the record it removed, and every delete names a DIFFERENT one.
+   *
+   * `describe` runs after `execute`, and on the plain overlay `m.node(id)`
+   * answers `undefined` for anything `tx.del` staged — so all thirteen delete
+   * tools took the fallback inside their own `describe` and announced
+   * themselves by TYPE. Two keywords cleared in a row wrote two audit rows both
+   * reading *"Keyword deleted"*, and an Undo menu offering to put one of them
+   * back without saying which.
+   *
+   * Asserted on the journal label as well as the toast, because those are the
+   * two places the string lands and only one of them is on screen long enough
+   * to notice it is wrong. The application is in here on purpose: `displayOf`
+   * walks AT to the employer, so naming it needs the EDGE `tx.del` dropped and
+   * not only the node — with the node alone put back this reads
+   * *" — Statistics deleted"*, a dangling separator where Rice should be.
+   */
+  it('names the record a delete removed, from before the delete', () => {
+    const h = harness()
+    const app = okOr(
+      h.runtime.run('application.create', {
+        org: 'Rice',
+        role: 'Statistics',
+        roleTag: 'Assistant Professor',
+        stage: 'draft',
+      }),
+    )
+    const referral = okOr(h.runtime.run('keyword.create', { name: 'Referral' }))
+    const cohort = okOr(h.runtime.run('keyword.create', { name: 'Cohort' }))
+
+    const said = (
+      result:
+        | { ok: true; announcement: { title: string } }
+        | { ok: false; errors: readonly { message: string }[] },
+    ) => {
+      if (!result.ok) throw new Error(result.errors.map((e) => e.message).join('; '))
+      return result.announcement
+    }
+
+    expect(said(h.runtime.run('keyword.delete', { id: referral })).title).toBe('Referral deleted')
+    expect(said(h.runtime.run('keyword.delete', { id: cohort })).title).toBe('Cohort deleted')
+    expect(said(h.runtime.run('application.delete', { id: app })).title).toBe(
+      'Rice — Statistics deleted',
+    )
+
+    // The journal label is that same string, and the three newest rows are
+    // three different sentences rather than one repeated.
+    expect(h.repo.undoable.slice(0, 3).map((e) => e.label)).toEqual([
+      'Rice — Statistics deleted',
+      'Cohort deleted',
+      'Referral deleted',
+    ])
   })
 })
 

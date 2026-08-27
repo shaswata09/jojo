@@ -8,7 +8,7 @@
  * response as data, so `check-platform` keeps the network out and every one of
  * the differences below is covered by a test rather than by a live call.
  *
- * ## The five differences, in the order they bite
+ * ## The six differences, in the order they bite
  *
  * 1. **The system prompt is not a message.** OpenAI puts it in the array with
  *    `role: 'system'`; Anthropic takes a top-level `system` field and REJECTS a
@@ -40,6 +40,10 @@
  *    three consecutive ones. Sent as three separate user messages, Claude
  *    rejects the conversation outright. `toAnthropicMessages` merges runs of
  *    them into one.
+ *
+ * 6. **The stop reason is spelled differently.** `max_tokens` where every other
+ *    provider says `length`, and `loop.ts` tests for `length`. See
+ *    `readStopReason`.
  *
  * ## What is NOT translated
  *
@@ -305,10 +309,33 @@ export function readAnthropicTurn(response: ModelResponse): Turn {
     ok: true,
     text: text.length > 0 ? text.join('\n') : null,
     toolCalls,
-    finishReason: typeof stop === 'string' ? stop : null,
+    finishReason: readStopReason(stop),
     usage: readAnthropicUsage(payload),
   }
 }
+
+/**
+ * `stop_reason`, in the spelling the one consumer of it actually tests for.
+ *
+ * The sixth difference, and it was passed through raw. `loop.ts` asks
+ * `turn.finishReason === 'length'` — OpenAI's word for "I hit the output cap" —
+ * and warns the user that the reply is cut off. Anthropic's word for the same
+ * fact is `max_tokens`, so that branch never fired on Claude and a truncated
+ * answer was shown as a finished one.
+ *
+ * It bites hardest HERE of all the providers, because Anthropic is the only one
+ * whose cap jojo sets itself: `ANTHROPIC_MAX_TOKENS` is 8192 because the API
+ * refuses a request without a limit, so every long Claude answer meets a ceiling
+ * this app chose and nobody else's default. A truncated `tool_use` input is the
+ * worse half — it reaches the loop as a call with missing arguments and the
+ * model is told it got the arguments wrong.
+ *
+ * Only that one word is translated. The rest — `end_turn`, `tool_use`,
+ * `stop_sequence`, `refusal`, `pause_turn` — have no OpenAI equivalent anybody
+ * reads, and inventing one would replace a fact with a guess.
+ */
+const readStopReason = (stop: unknown): string | null =>
+  typeof stop !== 'string' ? null : stop === 'max_tokens' ? 'length' : stop
 
 /** `usage.input_tokens`, under Anthropic's spelling of the same idea. */
 function readAnthropicUsage(payload: unknown): Usage | null {

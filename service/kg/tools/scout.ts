@@ -126,6 +126,34 @@ export const scoutPostingPromote = defineTool({
   touches: ['posting', 'application'],
   input: s.object({ id: postingId, roleTag }),
 
+  /*
+   * Once only, because `BECAME` is `fromCardinality: 'one'` and `tx.link`
+   * REPLACES rather than adds.
+   *
+   * A second promote therefore minted a whole second draft and moved the
+   * provenance edge onto it, leaving the first application in the board with
+   * nothing pointing at where it came from — and no announcement anywhere
+   * saying a duplicate had appeared. Both UIs hide the button on a row that
+   * already went (`p.linked ? null : …` in PostingsPanel), so the only caller
+   * that could reach it is an agent, which is exactly the caller with no eyes
+   * on the row. The guard reads the EDGE and not a stored flag, which is why
+   * unlinking through `scout.posting.update` offers the promotion back.
+   */
+  available(m, input) {
+    const id = input?.id
+    // The palette and `forNode` ask with no input at all; a guard that read
+    // `input.id` regardless would take the tool out of both.
+    if (id === undefined) return { ok: true }
+    const already = m.one(id, 'BECAME', 'application')
+    if (already) {
+      return {
+        ok: false,
+        reason: `This posting has already been added to applications — it became ${displayOf(m, already.id)}, which is where any further changes belong (application.update). To send it somewhere else instead, unlink it first with scout.posting.update and its \`applicationId\` set to null.`,
+      }
+    }
+    return { ok: true }
+  },
+
   run(ctx, input): NodeId {
     const posting = ctx.require('posting', input.id)
     const guess = draftFromUrl(posting.props.url)
@@ -310,6 +338,24 @@ export const scoutMatchPromote = defineTool({
   effect: 'create',
   touches: ['match', 'application'],
   input: s.object({ id: matchId, roleTag }),
+
+  // Once only, for the reason `scout.posting.promote` states above: `BECAME` is
+  // `fromCardinality: 'one'`, so a second promote made a duplicate draft AND
+  // moved the edge off the first one. MatchesPanel already hides the button
+  // behind `application ? <Chip>added</Chip> : …`; this is the same rule where
+  // an agent can meet it.
+  available(m, input) {
+    const id = input?.id
+    if (id === undefined) return { ok: true }
+    const already = m.one(id, 'BECAME', 'application')
+    if (already) {
+      return {
+        ok: false,
+        reason: `This match has already been added to applications — it became ${displayOf(m, already.id)}, which is where any further changes belong (application.update). To send it somewhere else instead, unlink it first with scout.match.update and its \`applicationId\` set to null.`,
+      }
+    }
+    return { ok: true }
+  },
 
   run(ctx, input): NodeId {
     const match = ctx.require('match', input.id)

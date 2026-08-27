@@ -94,21 +94,31 @@ async function currentTab() {
   return { id: tab.id, title: tab.title ?? url, url, scriptable }
 }
 
+/**
+ * The tab this popup was opened over, once `drawTab` has found it.
+ *
+ * Module scope rather than a local the capture handler closes over, because
+ * that handler is now attached before anything is drawn — see `start` — so at
+ * the moment of wiring there is no tab to capture yet. It is read at click time
+ * instead, and a null reaches the worker as a missing `tabId`, which already
+ * answers 'No page to capture.' rather than acting on the wrong tab.
+ */
+let openTab = null
+
 async function drawTab() {
-  const tab = await currentTab()
+  openTab = await currentTab()
   const button = $('capture')
-  if (!tab) {
+  if (!openTab) {
     $('tab-title').textContent = 'No page here'
     $('capture-note').textContent = ''
-    return null
+    return
   }
-  $('tab-title').textContent = tab.title || shortUrl(tab.url)
-  $('tab-url').textContent = shortUrl(tab.url)
-  button.disabled = !tab.scriptable
-  $('capture-note').textContent = tab.scriptable
+  $('tab-title').textContent = openTab.title || shortUrl(openTab.url)
+  $('tab-url').textContent = shortUrl(openTab.url)
+  button.disabled = !openTab.scriptable
+  $('capture-note').textContent = openTab.scriptable
     ? ''
     : 'This kind of page cannot be kept — browsers do not let an extension read it.'
-  return tab
 }
 
 /* -------------------------------------------------------------- kept pages */
@@ -245,25 +255,66 @@ async function probeReader() {
   }
 }
 
+/**
+ * Draw one region of the popup, and put the reason in that region when it
+ * cannot be drawn.
+ *
+ * One `try` around all three would mean a reply lost for the kept list also
+ * blanked the routing switches, which are a separate question answered by a
+ * separate message. A popup that got two answers out of three should show the
+ * two it has and say what happened to the third.
+ */
+async function draw(paint, say) {
+  try {
+    await paint()
+  } catch (error) {
+    say(error instanceof Error ? error.message : String(error))
+  }
+}
+
 async function start() {
   $('version').textContent = `extension ${chrome.runtime.getManifest().version}`
 
-  const tab = await drawTab()
-  await drawKept()
-  await drawRouting()
-
+  /*
+   * Everything is wired BEFORE anything is drawn, and that order is the point.
+   *
+   * Waking an MV3 service worker is racy — `bridge.js` documents the same state
+   * on its own send and treats it as normal — so any message from here can come
+   * back as a `lastError` instead of an answer. With the listeners attached
+   * after the opening draws, one lost reply rejected `start()`, the rejection
+   * went nowhere (`void start()`), and the popup opened looking finished and
+   * entirely dead: 'Keep this page' enabled by `drawTab` and attached to
+   * nothing, 'Delete all' hidden, both switches inert, 'Nothing kept yet' over
+   * a queue nobody had read. Nothing below needs drawn state in order to
+   * attach, so nothing below waits for it.
+   */
   $('capture').addEventListener('click', async () => {
     const button = $('capture')
     button.disabled = true
     $('capture-note').textContent = 'Keeping…'
+    /*
+     * `finally`, because the re-enable used to sit after an unguarded
+     * `await drawKept()`.
+     *
+     * `drawKept` asks the worker too, and the whole reason this listener is
+     * attached before the first draw is that the worker may be asleep and not
+     * answer. So in exactly the failure mode being defended against, the draw
+     * rejected, the async listener rejected with it, and `button.disabled =
+     * false` was never reached — leaving the popup's primary control dead until
+     * it was closed and reopened.
+     *
+     * The draw is inside the guard as well: a queue it could not read is worth
+     * saying so about, and it is not worth losing the button over.
+     */
     try {
-      const answer = await ask({ type: 'jojo:capture-tab', tabId: tab?.id })
+      const answer = await ask({ type: 'jojo:capture-tab', tabId: openTab?.id })
       $('capture-note').textContent = answer.ok ? 'Kept.' : (answer.reason ?? 'Could not keep it.')
+      await drawKept()
     } catch (error) {
       $('capture-note').textContent = error instanceof Error ? error.message : String(error)
+    } finally {
+      button.disabled = false
     }
-    await drawKept()
-    button.disabled = false
   })
 
   $('clear').addEventListener('click', async () => {
@@ -290,9 +341,34 @@ async function start() {
 
   $('reader-test').addEventListener('click', probeReader)
 
+  await draw(drawTab, (why) => {
+    $('tab-title').textContent = 'Could not read this tab'
+    $('capture-note').textContent = why
+  })
+
+  await draw(drawKept, (why) => {
+    // Deliberately not the 'Nothing kept yet' the markup starts with: the queue
+    // lives in the worker, and a worker that did not answer has said nothing
+    // about whether it is empty. 'Empty' is the one answer that is actively
+    // wrong here, because it reads as "your capture did not save".
+    $('kept-empty').hidden = false
+    $('kept-empty').textContent = `Could not read the kept pages — ${why}`
+  })
+
+  // The dot is the only place routing has to say anything, and an unread
+  // setting must not look like a setting that is switched off.
+  await draw(drawRouting, (why) => readerDot('bad', `Could not read the settings — ${why}`))
+
   // Probed on open, so the dot means something before anything is pressed. The
   // popup is short-lived, so this is the only automatic check there is.
   if ($('reader-on').checked) void probeReader()
 }
 
-void start()
+/*
+ * `start` reports each region's own failure in that region, so a rejection that
+ * gets this far came from outside all three — and the alternative to catching
+ * it is a popup that draws nothing and explains nothing.
+ */
+void start().catch((error) => {
+  $('capture-note').textContent = error instanceof Error ? error.message : String(error)
+})

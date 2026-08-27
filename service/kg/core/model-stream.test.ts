@@ -55,6 +55,34 @@ describe('reading a text stream', () => {
     expect(r.push(frame({ content: ' more' }))).toEqual([{ type: 'text', delta: ' more' }])
     expect(r.end()).toEqual([{ type: 'done', text: 'good more', calls: [], finish: null , usage: null}])
   })
+
+  it('skips a null frame rather than throwing the answer away', () => {
+    /*
+     * `null` parses — it is valid JSON — so the catch above it never fires, and
+     * every property read on the frame then threw a TypeError out of `push`.
+     * That lands in `sendStream`'s catch, which reports a working server as
+     * unreachable and discards the half-answer already on screen. A frame this
+     * cannot use must cost the same as any other: nothing.
+     */
+    const r = createStreamReader()
+    r.push(frame({ content: 'good' }))
+    expect(r.push('data: null\n\n')).toEqual([])
+    expect(r.push(frame({ content: ' more' }))).toEqual([{ type: 'text', delta: ' more' }])
+    expect(r.end()).toEqual([{ type: 'done', text: 'good more', calls: [], finish: null , usage: null}])
+  })
+
+  it('skips a null tool-call fragment and keeps the ones around it', () => {
+    // Same throw, one level down: reading `index` off a null in the fragment
+    // array unwound out of `push` and lost the call it was in the middle of
+    // assembling, along with the rest of the reply.
+    const r = createStreamReader()
+    r.push(frame({ tool_calls: [null, { index: 0, id: 'c1', function: { name: 'one' } }] }))
+    r.push(frame({ tool_calls: [{ index: 0, function: { arguments: '{}' } }, null] }))
+    const [done] = r.end()
+    expect(done).toMatchObject({
+      calls: [{ id: 'c1', type: 'function', function: { name: 'one', arguments: '{}' } }],
+    })
+  })
 })
 
 describe('assembling a tool call from fragments', () => {

@@ -785,6 +785,48 @@ describe('a model whose server has no tool template', () => {
     const { run } = await errorsFrom('The tool is called {"name": "application_create"} internally.')
     expect(run.stopped).toBe('answered')
   })
+
+  it('answers a question ABOUT a tool, payload and all', async () => {
+    /*
+     * The false positive this guard is one wrong line away from, and it was
+     * reproduced end to end.
+     *
+     * Asking about a tool is what makes the retriever OFFER that tool, so the
+     * name check cannot separate the two cases — a complete `name`/`arguments`
+     * object quoted inside a sentence looked exactly like a mis-templated
+     * call. The person lost their answer and was told to go and fix a `--jinja`
+     * flag on a server that was working perfectly.
+     */
+    const said: string[] = []
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([
+        says(
+          'Sure. A call to it looks like {"name": "application_create", "arguments": {"org": "Rice"}} and it files a new application.',
+        ),
+      ]),
+      history: [],
+      // The prompt matters: `application.create` is offered BECAUSE it was
+      // named, which is what makes the answer indistinguishable from a call.
+      prompt: 'what would application.create do?',
+      retrieve: { carried: null },
+      onEvent: (e) => {
+        if (e.type === 'error') said.push(e.reason)
+      },
+    })
+    expect(said).toEqual([])
+    expect(run.stopped).toBe('answered')
+    expect(run.answer).toContain('files a new application')
+  })
+
+  it('still catches a bare object in a code fence, which carries no prose', async () => {
+    // The fence is how a model with no tool template writes the same object.
+    // Stripping it before the whole-answer test is what keeps this a call.
+    const { run } = await errorsFrom(
+      '```json\n{"name": "application_create", "arguments": {"org": "Rice"}}\n```',
+    )
+    expect(run.stopped).toBe('error')
+  })
 })
 
 describe('a reply the model cut off', () => {
@@ -1265,6 +1307,112 @@ describe('the long-conversation harness', () => {
         },
       },
     })
+    expect(asked).toBe(0)
+  })
+
+  it('does not consult it when the retriever abstained on a FOLLOW-UP either', async () => {
+    /*
+     * The same bug as the test above, surviving the fix for it.
+     *
+     * The gate asked `offeredFor(...) !== null`, which is not "did the lexicon
+     * recognise this": that returns null only when nothing was recognised AND
+     * nothing was carried. A conversation carries a set from turn two onwards,
+     * so the abstention guard was live for the first message of a chat and
+     * dead for every message after it — and "yes, do that" is the shape of
+     * follow-up the lexicon can never read.
+     *
+     * What that costs is the same thing, on the turn where it is most
+     * expensive: `offeredFor` REPLACES with the chooser's picks when the
+     * lexicon abstained, so the tool the person had just said yes to was gone
+     * from the list at the moment they said it.
+     */
+    const { llm } = seeing()
+    const first = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'add a reminder for the Rice interview',
+      onEvent: () => {},
+      window: 128_000,
+      retrieve: { carried: null },
+    })
+    expect(first.offered).toContain('timeline.item.reschedule')
+
+    let asked = 0
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      // Recognises nothing: no tool word, and the referent is in the last turn.
+      prompt: 'yes, do that',
+      onEvent: () => {},
+      // Small enough that the carried set does not fit, which is the only
+      // condition the old gate then had left to check.
+      window: 8_000,
+      retrieve: { carried: first.offered },
+      chooser: {
+        ask: async () => {
+          asked += 1
+          return { ok: true, text: '{"tools":["memory.search"]}', toolCalls: [], finishReason: 'stop' }
+        },
+      },
+    })
+    expect(asked).toBe(0)
+    expect(run.offered).toContain('timeline.item.reschedule')
+  })
+
+  it('spends no chooser round trip once Stop has been pressed', async () => {
+    /*
+     * The chooser and the summariser run BEFORE the round loop, and the first
+     * abort check used to be inside it. Neither is handed the signal, so
+     * neither can be cancelled in flight either: pressing Stop bought two full
+     * untimed round trips on somebody's own GPU, with the composer already
+     * disabled and the UI already saying it had stopped.
+     */
+    let asked = 0
+    const { llm } = seeing()
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'add an application to Rice',
+      onEvent: () => {},
+      window: 8_000,
+      signal: { aborted: true },
+      retrieve: { carried: null },
+      chooser: {
+        ask: async () => {
+          asked += 1
+          return { ok: true, text: '{"tools":["application.create"]}', toolCalls: [], finishReason: 'stop' }
+        },
+      },
+    })
+    expect(run.stopped).toBe('aborted')
+    expect(asked).toBe(0)
+  })
+
+  it('spends no summariser round trip once Stop has been pressed', async () => {
+    // The second of the two, and the more wasteful: it summarises a
+    // conversation for a request that is never going to be sent.
+    let asked = 0
+    const { llm } = seeing()
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: long(),
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: RESERVED_FOR_REPLY + 2_000,
+      tools: ['memory.overview'],
+      signal: { aborted: true },
+      summariser: {
+        ask: async () => {
+          asked += 1
+          return { ok: true, text: 'a summary', toolCalls: [], finishReason: 'stop' }
+        },
+      },
+    })
+    expect(run.stopped).toBe('aborted')
     expect(asked).toBe(0)
   })
 

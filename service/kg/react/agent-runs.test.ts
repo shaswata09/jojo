@@ -16,7 +16,7 @@ import { createAgentRuns } from './agent-runs'
 import { RESERVED_FOR_REPLY } from '../agent/budget'
 import { RESIDENT } from '../agent/retrieve'
 import { CATALOG } from '../agent/catalog'
-import type { RunSignal } from './agent-runs'
+import type { RunSignal, StartOptions } from './agent-runs'
 
 const answering = (text: string): Turn => ({ ok: true, text, toolCalls: [], finishReason: 'stop' })
 
@@ -469,5 +469,123 @@ describe('step rows across turns', () => {
     // Distinct ids, or one of them overwrote the other.
     const ids = (runs.get(A)?.entries ?? []).map((e) => e.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+})
+
+/*
+ * A run that has been FORGOTTEN is not a run that is over.
+ *
+ * `forget` sets the abort flag and drops the run's state, but the promise is
+ * still unwinding — an aborted request has to come back before `runAgent`
+ * returns. Everything that happens after the await is keyed by thread id, so
+ * whatever occupies that key when the abandoned run finally settles is what it
+ * writes to. Both AskBoxes reach this in two clicks: "Ask something else" is
+ * live mid-run, and so is the composer behind it.
+ */
+describe('a run abandoned while a new one takes its place', () => {
+  it('does not clear the busy flag of the run that replaced it', async () => {
+    const runs = createAgentRuns()
+    const abandoned = heldModel()
+    const replacement = heldModel()
+
+    runs.start({ threadId: A, prompt: 'first', history: [], llm: () => abandoned.llm, host })
+    runs.forget(A)
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => replacement.llm, host })
+
+    abandoned.answer('the answer nobody is waiting for')
+    await settle()
+
+    expect(runs.get(A)?.busy).toBe(true)
+    expect(runs.busyThreads()).toEqual([A])
+  })
+
+  it('leaves the replacement stoppable', async () => {
+    const runs = createAgentRuns()
+    const abandoned = heldModel()
+    const cancelled = vi.fn()
+
+    runs.start({ threadId: A, prompt: 'first', history: [], llm: () => abandoned.llm, host })
+    runs.forget(A)
+    runs.start({
+      threadId: A,
+      prompt: 'second',
+      history: [],
+      host,
+      llm: (signal) => {
+        signal.onAbort(cancelled)
+        return heldModel().llm
+      },
+    })
+
+    abandoned.answer('the answer nobody is waiting for')
+    await settle()
+
+    // `inner` is where the replacement's cancellation lives. The abandoned
+    // run's `finally` deleted it by thread id, so Stop did nothing at all.
+    runs.stop(A)
+    expect(cancelled).toHaveBeenCalledTimes(1)
+  })
+
+  it('never saves the replacement’s transcript under the abandoned run’s turn', async () => {
+    const runs = createAgentRuns()
+    const abandoned = heldModel()
+    const onSettled = vi.fn()
+
+    const start = (prompt: string, llm: StartOptions['llm']) => {
+      runs.start({ threadId: A, prompt, history: [], llm, host, onSettled })
+    }
+
+    start('first', () => abandoned.llm)
+    runs.forget(A)
+    start('second', () => heldModel().llm)
+
+    abandoned.answer('the answer nobody is waiting for')
+    await settle()
+
+    // `assistant.thread.set` REPLACES the stored entries and is `undoable:
+    // false`, so a save carrying the live run's half-finished list is a
+    // conversation destroyed on disk.
+    expect(onSettled).not.toHaveBeenCalled()
+    expect(runs.get(A)?.entries).toEqual([{ kind: 'you', id: 'e1', text: 'second' }])
+  })
+
+  it('does not put the abandoned run’s failure on the new conversation', async () => {
+    const runs = createAgentRuns()
+    let fail: (reason: Error) => void = () => {}
+    const throwing = new Promise<Turn>((_resolve, reject) => {
+      fail = reject
+    })
+
+    runs.start({ threadId: A, prompt: 'first', history: [], llm: () => () => throwing, host })
+    runs.forget(A)
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => heldModel().llm, host })
+
+    fail(new Error('the reader was never started'))
+    await settle()
+
+    expect(runs.get(A)?.entries.some((e) => e.kind === 'error')).toBe(false)
+  })
+
+  it('does not hand the abandoned run’s tool set to the new one', async () => {
+    const runs = createAgentRuns()
+    const abandoned = heldModel()
+
+    runs.start({
+      threadId: A,
+      prompt: 'first',
+      history: [],
+      llm: () => abandoned.llm,
+      host,
+      tools: ['memory.overview'],
+    })
+    runs.forget(A)
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => heldModel().llm, host })
+
+    abandoned.answer('the answer nobody is waiting for')
+    await settle()
+
+    // `offered` is what the NEXT turn carries. Inheriting a dead run's is a
+    // conversation narrowed to tools it never used.
+    expect(runs.get(A)?.offered).toBeNull()
   })
 })

@@ -645,7 +645,17 @@ function AgentPanel() {
                 description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
               />
             ) : (
-              <ul aria-live="polite" className="space-y-3">
+              /* `aria-busy` while the run is going, and it is not a nicety.
+                 The whole transcript is one polite live region, and the answer
+                 is streamed: `agent-runs.ts` rewrites the draft entry once per
+                 delta, so a reader announced a fresh overlapping half-sentence
+                 for every few tokens, for the length of every answer — and the
+                 tool rows interleaved between them were never reachable through
+                 the noise. Busy means "hold, this is mid-update"; clearing it
+                 when the run settles is what makes the finished answer, and the
+                 rows around it, announce once. The live region itself stays:
+                 removing it is what the mobile fix put it there to prevent. */
+              <ul aria-busy={busy} aria-live="polite" className="space-y-3">
                 {entries.map((entry, index) => {
                   if (entry.kind === 'you') {
                     return (

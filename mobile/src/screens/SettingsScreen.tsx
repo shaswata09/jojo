@@ -14,11 +14,12 @@ import {
   type ProviderMeta,
 } from '@jojo/service/core/provider'
 import type { ProviderId } from '@jojo/service/core/provider'
+import { copyExport } from '@/lib/clipboard-export'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
 import { CrashPanel } from '@/components/common/CrashPanel'
-import { Linking, Pressable, StyleSheet, View } from 'react-native'
+import { Linking, Platform, Pressable, StyleSheet, View } from 'react-native'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -239,11 +240,13 @@ export function SettingsScreen() {
     // wired up. The clipboard is the honest export here: it is the one channel
     // that reaches another app without this build claiming a filesystem it has
     // not asked for.
-    Clipboard.setString(exportJSON())
-    toast({
-      title: 'Copied to the clipboard',
-      description: 'The whole store as JSON — paste it into a note or a file to keep it.',
-    })
+    //
+    // Through `copyExport` rather than straight at `setString`, because the
+    // clipboard drops an oversized payload WITHOUT telling anybody — Android's
+    // module swallows the `TransactionTooLargeException` — and this used to
+    // raise "Copied to the clipboard" either way. See `lib/clipboard-export.ts`
+    // for the buffer, the measure and why refusing is the safe direction.
+    toast(copyExport(exportJSON(), (text) => Clipboard.setString(text), Platform.OS === 'android'))
   }
 
   /**

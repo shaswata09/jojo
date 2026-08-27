@@ -53,6 +53,7 @@ import { twinBriefing, twinState } from '../core/twin'
 import type { GraphSnapshot } from '../core/snapshot'
 import type { Instant, Pipeline, PipelineKind, Proposal } from '../core/model'
 import type { ToolName } from '../tools/index'
+import type { ToolRuntime } from '../tools/runtime'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
 
@@ -113,11 +114,19 @@ export function usePipelines({
   maxSteps,
   convert,
   scan,
+  onError,
 }: {
   /** `null` when no model is configured — the whole feature is then paused. */
   llm: LlmTurnFn | null
   maxSteps?: number
   convert?: ToolHost['convert']
+  /**
+   * Where a round that threw goes, beyond the pipeline's own log.
+   *
+   * Optional, and absent means the console only — every existing caller
+   * constructed this hook without one.
+   */
+  onError?: (thrown: unknown) => void
   /**
    * Reads a job board, when this platform can. Absent is a supported state:
    * `board.search` then refuses with a sentence and the scout works from the
@@ -178,83 +187,34 @@ export function usePipelines({
 
   /* --------------------------------- a round ------------------------------ */
 
+  /*
+   * The round itself is `runPipelineRound`, at module level.
+   *
+   * Not a tidying. Nothing in this package can render a hook, so for as long as
+   * the round was a closure inside one, the `try`/`finally` that keeps the
+   * engine-wide lock from being held forever had no test — and an untested
+   * `finally` is the kind that gets deleted by the next person who reads the
+   * function. The refs are plain `{current}` cells and the setters are plain
+   * functions, so handing them over costs nothing.
+   */
   const runRound = useCallback(
     async (pipeline: Pipeline) => {
-      if (busy.current || !llm) return
-      busy.current = true
-      setRunning(pipeline.id)
-      setActivity(null)
-
-      const kind = kindOf(pipeline)
-      const auto = isAuto(pipeline)
-      const stop = { aborted: false }
-      cancel.current = stop
-
-      // The model's own prose, kept so the proposing host can use the latest of
-      // it as a rationale. See `ProposalSink.rationale`.
-      let latest = ''
-
-      /*
-       * The boards THIS pipeline may open, from the field the person typed.
-       *
-       * Same `parseSources` call the prompt uses a few lines down, deliberately:
-       * the model is told exactly the set it is allowed, so the allowlist and
-       * the instructions cannot drift apart. Passed even when empty, because an
-       * empty list is a real answer — a pipeline whose `source` is prose has no
-       * board to read, and `board.search` says so rather than opening whatever
-       * the model came up with instead. See `ToolHost.boards`.
-       */
-      const withBoards: ToolHost = { ...host, boards: parseSources(pipeline.source) }
-
-      const agentHost = auto
-        ? withBoards
-        : proposingHost(withBoards, {
-            pipelineId: pipeline.id as never,
-            kind,
-            rationale: () => latest,
-          })
-
-      const result = await runAgent({
-        host: agentHost,
+      if (!llm) return
+      await runPipelineRound(pipeline, {
         llm,
-        history: [],
-        // Through `host`, not `repo`: it is the seam the agent itself reads
-        // the store through, and it is already a dependency of this callback.
-        prompt: promptFor(pipeline, kind, host.memory()),
-        tools: toolsForKind(kind),
+        host,
+        runtime,
+        note,
+        busy,
+        cancel,
+        setRunning,
+        setActivity,
         ...(maxSteps === undefined ? {} : { maxSteps }),
-        signal: stop satisfies Cancellation,
-        onEvent: (event) => {
-          if (event.type === 'note') {
-            latest = event.text
-            setActivity(event.text)
-            return
-          }
-          if (event.type === 'error') {
-            note(pipeline.id, event.reason, 'error')
-            return
-          }
-          if (event.type === 'step') recordStep(pipeline.id, event.step, auto, note)
-        },
+        ...(onError === undefined ? {} : { onError }),
+        agent: runAgent,
       })
-
-      // Reads do not count as work. A round that looked at everything and
-      // proposed nothing is an idle round, which is the whole point of the
-      // counter — a pipeline that keeps reading and never suggesting is exactly
-      // the one that should offer to switch itself off.
-      const raised = result.steps.filter((s) => s.status === 'done' && s.effect !== 'read').length
-      if (result.answer && raised === 0) note(pipeline.id, result.answer, 'note')
-
-      const recorded = runtime.run('pipeline.run.record', { id: pipeline.id, raised })
-
-      busy.current = false
-      cancel.current = null
-      setRunning(null)
-      setActivity(null)
-
-      void recorded
     },
-    [host, llm, maxSteps, note, runtime],
+    [host, llm, maxSteps, note, onError, runtime],
   )
 
   /* ------------------------------ the scheduler --------------------------- */
@@ -289,7 +249,7 @@ export function usePipelines({
     const id = setInterval(tick, TICK_MS)
     return () => {
       clearInterval(id)
-      if (cancel.current) cancel.current.aborted = true
+      abortInFlight(cancel)
     }
   }, [llm, now])
 
@@ -340,7 +300,7 @@ export function usePipelines({
       run('scout.pipeline.enable.set', { id: pipeline.id, enabled })
       // Switching one off mid-round stops the round too; the derived offer
       // falls away on its own, because a disabled pipeline is not a candidate.
-      if (!enabled && cancel.current && running === pipeline.id) cancel.current.aborted = true
+      if (!enabled && running === pipeline.id) abortInFlight(cancel)
     },
     [run, running],
   )
@@ -427,6 +387,197 @@ export function usePipelines({
     runNow,
     acceptShutdown,
     dismissShutdown,
+  }
+}
+
+/* ------------------------------- one round --------------------------------- */
+
+/**
+ * Stops the round in flight, if there is one.
+ *
+ * A function rather than two lines at each of its two call sites, because one
+ * of those sites is an effect cleanup: `exhaustive-deps` cannot tell a ref
+ * holding a cancellation flag from a ref holding a DOM node, and reading
+ * `.current` in a cleanup is a real bug for the second kind. Reading it here
+ * says which kind this is.
+ */
+const abortInFlight = (cancel: RoundDeps['cancel']): void => {
+  if (cancel.current) cancel.current.aborted = true
+}
+
+/** Everything a round needs that only the hook can own. See `runPipelineRound`. */
+export type RoundDeps = {
+  llm: LlmTurnFn
+  host: ToolHost
+  runtime: Pick<ToolRuntime, 'run'>
+  note: (pipelineId: string, text: string, tone: PipelineLogEntry['tone']) => void
+  /** The engine-wide lock. A `useRef` cell, which is a plain `{current}` box. */
+  busy: { current: boolean }
+  /** The round in flight, so the scheduler's cleanup and the toggle can stop it. */
+  cancel: { current: { aborted: boolean } | null }
+  setRunning: (id: string | null) => void
+  setActivity: (text: string | null) => void
+  maxSteps?: number
+  /**
+   * `runAgent`, handed in rather than reached for.
+   *
+   * The hook is where the decision to start a model round lives (see the
+   * header); this is the function that carries it out, and the two things a
+   * test has to be able to say about a round — it was stopped, it threw — are
+   * things only the agent can say.
+   */
+  agent: typeof runAgent
+  /**
+   * Where a round that threw goes, beyond the pipeline's own log.
+   *
+   * A port rather than an import: this layer may not reach into an app, and the
+   * two send it to different places — the phone has Crashlytics and the browser
+   * does not. Same shape as `createAgentRuns`.
+   */
+  onError?: (thrown: unknown) => void
+}
+
+/**
+ * One round, for one pipeline. Takes the lock, releases it whatever happens.
+ */
+export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Promise<void> {
+  const { llm, host, runtime, note, busy, cancel, setRunning, setActivity, maxSteps, agent, onError } =
+    deps
+  if (busy.current) return
+  busy.current = true
+  setRunning(pipeline.id)
+  setActivity(null)
+
+  const kind = kindOf(pipeline)
+  const auto = isAuto(pipeline)
+  const stop = { aborted: false }
+  cancel.current = stop
+
+  // The model's own prose, kept so the proposing host can use the latest of
+  // it as a rationale. See `ProposalSink.rationale`.
+  let latest = ''
+
+  /*
+   * The boards THIS pipeline may open, from the field the person typed.
+   *
+   * Same `parseSources` call the prompt uses a few lines down, deliberately:
+   * the model is told exactly the set it is allowed, so the allowlist and
+   * the instructions cannot drift apart. Passed even when empty, because an
+   * empty list is a real answer — a pipeline whose `source` is prose has no
+   * board to read, and `board.search` says so rather than opening whatever
+   * the model came up with instead. See `ToolHost.boards`.
+   */
+  const withBoards: ToolHost = { ...host, boards: parseSources(pipeline.source) }
+
+  const agentHost = auto
+    ? withBoards
+    : proposingHost(withBoards, {
+        pipelineId: pipeline.id as never,
+        kind,
+        rationale: () => latest,
+      })
+
+  /*
+   * `try`/`finally` around the whole round, and the `finally` is the point.
+   *
+   * `busy` is ONE lock for the WHOLE engine — see "ONE AT A TIME" in the header
+   * — and until this wrapper existed a single throw held it forever: the tick
+   * loop returned at its first line on every tick, so every pipeline stopped,
+   * `runNow` did nothing, and the panel went on showing the pipeline that
+   * failed as working. Nothing short of a reload recovered it, and the person
+   * saw a feature that had quietly stopped rather than an error.
+   *
+   * Both awaited things throw. `runAgent` does — `agent-runs.ts` documents the
+   * two reachable ones it found, and says the same thing this does: fixing
+   * either at its source would not have prevented the next. And
+   * `pipeline.run.record` does, because `repo.commit` sits OUTSIDE the `try`
+   * inside `runtime.run` and only a `ToolFailure` is turned into a result.
+   */
+  try {
+    const result = await agent({
+      host: agentHost,
+      llm,
+      history: [],
+      // Through `host`, not `repo`: it is the seam the agent itself reads
+      // the store through, and it is what the hook already hands down.
+      prompt: promptFor(pipeline, kind, host.memory()),
+      tools: toolsForKind(kind),
+      ...(maxSteps === undefined ? {} : { maxSteps }),
+      signal: stop satisfies Cancellation,
+      onEvent: (event) => {
+        if (event.type === 'note') {
+          latest = event.text
+          setActivity(event.text)
+          return
+        }
+        if (event.type === 'error') {
+          note(pipeline.id, event.reason, 'error')
+          return
+        }
+        if (event.type === 'step') recordStep(pipeline.id, event.step, auto, note)
+      },
+    })
+
+    // Reads do not count as work. A round that looked at everything and
+    // proposed nothing is an idle round, which is the whole point of the
+    // counter — a pipeline that keeps reading and never suggesting is exactly
+    // the one that should offer to switch itself off.
+    const raised = result.steps.filter((s) => s.status === 'done' && s.effect !== 'read').length
+    if (result.answer && raised === 0) note(pipeline.id, result.answer, 'note')
+
+    /*
+     * A round that was STOPPED is not a round that found nothing.
+     *
+     * `pipeline.run.record` writes two things — `lastRunAt` and the idle
+     * counter — and an abort corrupts both. Aborting is not rare: the tick
+     * effect's cleanup fires on every change of `llm` identity, and that
+     * identity is rebuilt from the model settings, which Settings saves as the
+     * person types. So typing a server name while a pipeline is mid-round used
+     * to bump its idle count and push `lastRunAt` forward: the pipeline lost a
+     * whole schedule gap it had already waited for, and reached the "switch me
+     * off?" offer a round earlier than it had earned. `stopped: 'aborted'` is
+     * the loop saying it never got to the end, and it is the one outcome that
+     * must leave the pipeline exactly as it found it.
+     *
+     * The throw path below is the same case for the same reason, and gets it
+     * for free by never reaching this line.
+     */
+    if (result.stopped !== 'aborted') {
+      runtime.run('pipeline.run.record', { id: pipeline.id, raised })
+    }
+  } catch (e) {
+    // Written to the log, not only rethrown into nothing. The tick loop drops
+    // this promise (`void runRoundRef.current(due)`), so without a line here a
+    // round that threw is a pipeline that silently stopped producing anything
+    // — and the log is the whole of what an unattended pipeline leaves behind.
+    note(
+      pipeline.id,
+      e instanceof Error && e.message
+        ? `That round did not finish: ${e.message}`
+        : 'That round did not finish.',
+      'error',
+    )
+    /*
+     * AND reported, because catching it here took the only durable record away.
+     *
+     * The throw used to escape into the dropped promise at
+     * `void runRoundRef.current(due)` and reach the app's `unhandledrejection`
+     * listener, which writes to the console, to the crash ring the Diagnostics
+     * panel reads, and to the one analytics event this app sends. Catching it
+     * fixed a real problem — a rejected round left the schedule wedged — and
+     * silently traded all three for a `note()` that is capped at two hundred
+     * entries and gone on reload.
+     *
+     * A port rather than an import: this layer may not reach into an app, and
+     * the two send it to different places — the phone has Crashlytics and the
+     * browser does not. Same shape as `createAgentRuns`.
+     */
+    onError?.(e)
+  } finally {
+    busy.current = false
+    cancel.current = null
+    setRunning(null)
+    setActivity(null)
   }
 }
 

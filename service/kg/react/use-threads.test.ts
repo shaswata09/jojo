@@ -99,11 +99,50 @@ describe('the round trip a screen makes', () => {
     const stored: ThreadEntry[] = [
       { kind: 'you', text: 'hello' },
       { kind: 'note', text: 'looking' },
+      // The app's own voice, which the round trip used to silently demote to
+      // the model's. See the two tests below.
+      { kind: 'note', text: 'This conversation was trimmed.', app: true },
       step(),
       { kind: 'answer', text: 'done' },
       { kind: 'error', text: 'oops' },
     ]
     expect(toThreadEntries(toAgentEntries(stored))).toEqual(stored)
+  })
+
+  /*
+   * `app` is the only field on a note that changes what the MODEL is told, and
+   * both readings rebuilt notes field by field without it. So the flag lived
+   * exactly as long as the run did: the trim note and "the model stopped
+   * mid-reply because it hit its own output limit" were saved as ordinary
+   * narration, and the next turn replayed them to the model as its own prior
+   * speech — in the long conversations where the extra message also costs the
+   * context the trim was there to save.
+   */
+  it('keeps an app note an app note on the way to storage', () => {
+    const live: AgentEntry[] = [
+      { kind: 'note', id: 'e1', text: 'This conversation was trimmed.', app: true },
+      { kind: 'note', id: 'e2', text: 'Let me look that up.' },
+    ]
+    const stored = toThreadEntries(live)
+    expect(stored[0]).toEqual({ kind: 'note', text: 'This conversation was trimmed.', app: true })
+    // And absence still means the model said it — `app: false` is not a thing.
+    expect(stored[1]).toEqual({ kind: 'note', text: 'Let me look that up.' })
+  })
+
+  it('leaves toTranscript able to refuse a saved app note', () => {
+    const live: AgentEntry[] = [
+      { kind: 'note', id: 'e1', text: 'This conversation was trimmed.', app: true },
+      { kind: 'answer', id: 'e2', text: 'Here it is.' },
+    ]
+    const out = toTranscript(toThreadEntries(live))
+    expect(out.map((m) => m.content)).toEqual(['Here it is.'])
+  })
+
+  it('keeps it on the way back out of storage too', () => {
+    // Otherwise the flag survives one save and is lost on the reload after it,
+    // when the screen re-saves what it just read.
+    const back = toAgentEntries([{ kind: 'note', text: 'trimmed', app: true }])
+    expect(back[0]).toEqual({ kind: 'note', id: 't0', text: 'trimmed', app: true })
   })
 
   it('never stores a step still running', () => {

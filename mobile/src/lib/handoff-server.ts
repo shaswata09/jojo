@@ -105,7 +105,17 @@ export function startHandoffServer(
         const read = readRequest(held, token)
         if (read === 'incomplete') return
         if (read === 'refused') {
-          socket.write(Buffer.from(writeResponse(404)))
+          // Bytes, handed over as bytes. All three of the responses this file
+          // writes used to go through `Buffer.from(...)` first, which typechecks —
+          // @types/node is hoisted into this workspace — and is a
+          // `ReferenceError` on the phone: Hermes has no `Buffer`, React Native
+          // installs none, and nothing in `polyfills.ts` supplies one. It threw
+          // on the FIRST byte this server ever tried to write, so the browser
+          // saw the connection drop rather than a response and the transfer
+          // could not have worked on a device at all.
+          // `react-native-tcp-socket` takes a `Uint8Array` and does the
+          // conversion itself, behind its own import of the shim.
+          socket.write(writeResponse(404))
           shut()
           return
         }
@@ -118,13 +128,13 @@ export function startHandoffServer(
 
         void answer(read)
           .then((out) => {
-            socket.write(Buffer.from(writeResponse(out.status, out.body)))
+            socket.write(writeResponse(out.status, out.body))
           })
           .catch(() => {
             // A handler that threw is this app's bug, not the client's. Say so
             // with a status rather than leaving the socket hanging until the
             // other device times out and reports "the transfer froze".
-            socket.write(Buffer.from(writeResponse(400)))
+            socket.write(writeResponse(400))
           })
           .finally(shut)
       })

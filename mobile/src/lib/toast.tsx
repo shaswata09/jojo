@@ -94,14 +94,21 @@ function ToastViewport({
       pointerEvents="box-none"
       style={[styles.viewport, { bottom: insets.bottom + space[12] + space[4] }]}
     >
+      {/*
+       * `onDismiss` goes down whole, and the card binds the id itself.
+       *
+       * Writing `onDismiss={() => onDismiss(t.id)}` here reads tidier and is
+       * the defect: it is a new function on every render of the stack, and it
+       * lands in the card's timer dep list.
+       */}
       {toasts.map((t) => (
-        <ToastCard key={t.id} toast={t} onDismiss={() => onDismiss(t.id)} />
+        <ToastCard key={t.id} toast={t} onDismiss={onDismiss} />
       ))}
     </View>
   )
 }
 
-function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {
   const c = useColors()
   const enter = useRef(new Animated.Value(0)).current
   const danger = toast.tone === 'danger'
@@ -115,10 +122,25 @@ function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       mass: 0.7,
     }).start()
 
-    const timer = setTimeout(onDismiss, toast.action ? TOAST_ACTION_DURATION_MS : TOAST_DURATION_MS)
+    const timer = setTimeout(
+      () => onDismiss(toast.id),
+      toast.action ? TOAST_ACTION_DURATION_MS : TOAST_DURATION_MS,
+    )
     return () => clearTimeout(timer)
-    // The timer is set once per toast; `onDismiss` is stable per id.
-  }, [enter, onDismiss, toast.action])
+    /*
+     * Every dep here is stable for the whole life of one card: `enter` is a
+     * ref's `current`, `onDismiss` is the provider's `useCallback`, and the
+     * other two come off a toast object that state never rebuilds. So this runs
+     * once per toast, which is what a countdown has to do.
+     *
+     * It did not. The viewport passed `onDismiss={() => onDismiss(t.id)}` — a
+     * fresh closure per render — under a comment asserting it was stable per
+     * id, so every arrival and every expiry anywhere in the stack tore this
+     * timer down and started a whole new one. Toasts landing faster than eight
+     * seconds kept the oldest card's Undo alive indefinitely, and an Undo the
+     * user has stopped thinking about is worse than no Undo at all.
+     */
+  }, [enter, onDismiss, toast.id, toast.action])
 
   return (
     <Animated.View
@@ -151,7 +173,7 @@ function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
           accessibilityRole="button"
           onPress={() => {
             toast.action?.onPress()
-            onDismiss()
+            onDismiss(toast.id)
           }}
           style={({ pressed }) => [
             styles.action,
@@ -167,7 +189,7 @@ function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Dismiss"
-          onPress={onDismiss}
+          onPress={() => onDismiss(toast.id)}
           style={styles.action}
         >
           <Text style={[styles.actionLabel, { color: c.text3 }]}>Close</Text>

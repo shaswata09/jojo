@@ -212,7 +212,15 @@ export function captureScript(): string {
     // 2. attributes, walked against the live tree. The clone is faithful and
     //    made in this same tick, so the two lists are element-for-element
     //    aligned — which is what makes computed-style questions answerable.
-    var cloneAll = Array.prototype.slice.call(doc.querySelectorAll('*'));
+    // The root element is prepended, because doc is the cloned <html> ELEMENT
+    // and not a Document: querySelectorAll returns DESCENDANTS and never the
+    // element it is called on. The root's own attributes skipped every strip
+    // and rewrite below, so an on* handler or a CSSOM-set
+    // documentElement.style backgroundImage went into the archive untouched, as
+    // a live address. Mirrors web/extension/serialise.js.
+    //
+    // NB: no backticks anywhere in this file. It is one template literal.
+    var cloneAll = [doc].concat(Array.prototype.slice.call(doc.querySelectorAll('*')));
 
     for (var i = 0; i < cloneAll.length; i += 1) {
       var el = cloneAll[i];

@@ -59,12 +59,20 @@ async function sendToReader(
   signal?: AbortSignal,
 ): Promise<Sent> {
   if (!needsExtension(endpoint)) return send(request, endpoint, signal)
-  const relayed = await readDocument({
-    url: request.url,
-    method: request.method,
-    headers: request.headers,
-    ...(request.body === undefined ? {} : { body: request.body }),
-  })
+  // The signal goes down BOTH transports, which it did not: it was honoured on
+  // the direct path and dropped here, so cancelling a read only worked on the
+  // half of the users who are not relaying. The worker's fetch cannot be called
+  // off — see `readDocument` — but the page stops waiting for it, which is what
+  // kept a cancelled read from saving a posting and opening a form later.
+  const relayed = await readDocument(
+    {
+      url: request.url,
+      method: request.method,
+      headers: request.headers,
+      ...(request.body === undefined ? {} : { body: request.body }),
+    },
+    signal,
+  )
   // `unreachable` is the same kind the direct transport reports for a hop that
   // never landed — the relay not answering is that, one layer out.
   return 'failed' in relayed
@@ -72,9 +80,15 @@ async function sendToReader(
     : relayed
 }
 
-async function handshake(endpoint: string): Promise<ConvertResult> {
+/**
+ * `signal` reaches this too, and it is not a formality: the handshake is a whole
+ * round trip to the same address, and a cancel that only covered the convert
+ * left the first call of a session — the one on a reader that is not running —
+ * waiting out its own budget after the user had gone.
+ */
+async function handshake(endpoint: string, signal?: AbortSignal): Promise<ConvertResult> {
   if (shookHands === endpoint) return { ok: true, markdown: '' }
-  const opened = await sendToReader(initializeRequest(endpoint), endpoint)
+  const opened = await sendToReader(initializeRequest(endpoint), endpoint, signal)
   if (failed(opened)) return { ok: false, reason: opened.failed.reason }
   const read = readHandshake(opened, endpoint)
   if (!read.ok) return read
@@ -187,7 +201,7 @@ export async function convertUrl(
   url: string,
   signal?: AbortSignal,
 ): Promise<ConvertResult> {
-  const ready = await handshake(endpoint)
+  const ready = await handshake(endpoint, signal)
   if (!ready.ok) return ready
 
   const answer = await sendToReader(convertRequest(endpoint, url), endpoint, signal)

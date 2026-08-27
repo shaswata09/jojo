@@ -45,6 +45,45 @@ describe('primitives', () => {
     expect(s.isoDate().parse('12 Oct 2026').ok).toBe(false)
   })
 
+  /**
+   * `Date.parse` is a guess, not a format check. Left as the only gate, it read
+   * '5' as the 1st of May 2001 and rolled '2026-02-31' forward to the 3rd of
+   * March, and a `lastActionAt` of '5' out of a damaged backup rendered
+   * '9,246 days ago' on a dashboard card.
+   */
+  it('rejects a time that only Date.parse would call a time', () => {
+    expect(s.instant().parse('2026-08-22T14:30:00.000Z').ok).toBe(true)
+    expect(s.instant().parse('5').ok).toBe(false)
+    expect(s.instant().parse('Mar 5 2026').ok).toBe(false)
+    expect(s.instant().parse('2026').ok).toBe(false)
+    expect(s.instant().parse('2026-08-22').ok).toBe(false)
+    expect(s.instant().parse('undefined').ok).toBe(false)
+  })
+
+  // The same round trip `isoDate` does, on the date half of an instant: the
+  // shape is right and the day is not real, and Date.parse answers with the 3rd
+  // of March rather than with an error.
+  it('rejects a well-shaped instant that is not an instant', () => {
+    expect(s.instant().parse('2026-02-31T00:00:00.000Z').ok).toBe(false)
+    expect(s.instant().parse('2026-13-01T00:00:00.000Z').ok).toBe(false)
+    // Hour 24 parses as midnight the next day — a timestamp that moves its own
+    // date the moment anything reads it back.
+    expect(s.instant().parse('2026-08-22T24:00:00.000Z').ok).toBe(false)
+    expect(s.instant().parse('2026-08-22T10:60:00.000Z').ok).toBe(false)
+  })
+
+  /**
+   * Not everything jojo stores was minted by `toISOString()`: a page capture or
+   * a tool call can carry a local offset or leave the milliseconds off, and
+   * rejecting a real instant is the worse of the two failures.
+   */
+  it('accepts the RFC3339 forms that are not toISOString output', () => {
+    expect(s.instant().parse('2026-08-22T14:30:00Z').ok).toBe(true)
+    expect(s.instant().parse('2026-08-22T14:30:00+05:30').ok).toBe(true)
+    expect(s.instant().parse('2026-08-22T14:30:00.123456-08:00').ok).toBe(true)
+    expect(s.instant().parse('2026-08-22T14:30:00+25:00').ok).toBe(false)
+  })
+
   it('accepts only a type-prefixed id, and only of the type asked for', () => {
     const id = newNodeId('application', AT)
     expect(s.id('application').parse(id).ok).toBe(true)

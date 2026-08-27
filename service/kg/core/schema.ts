@@ -208,13 +208,47 @@ function isoDate(o: TextOptions = {}): Schema<string> {
   })
 }
 
-/** RFC3339 UTC, as `new Date().toISOString()` writes it. */
+const RFC3339 = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/
+
+/**
+ * RFC3339, as `new Date().toISOString()` writes it, and an instant that exists.
+ *
+ * `Date.parse` on its own is not a format check, it is a guess: it reads '5' as
+ * the 1st of May 2001, 'Mar 5 2026' as a real time and '2026' as new year's
+ * day, and it rolls '2026-02-31T00:00:00.000Z' silently forward to the 3rd of
+ * March — the same hole `isoDate` above already had to close for date-only
+ * strings, and the reason this now gets the same shape-then-round-trip
+ * treatment.
+ *
+ * The damage is not theoretical. A `lastActionAt` of '5' out of a hand-edited
+ * or truncated backup is dated 2001 by `dayOf`, and the dashboard card renders
+ * '9,246 days ago'; an `updatedAt` Date.parse merely tolerates comes out of
+ * `agoLabel(u.slice(0, 10), today)` in the thread list as the literal string
+ * 'undefined NaN', because `partsOf` splits it on '-' and gets NaN.
+ *
+ * A non-'Z' offset is allowed. Everything jojo mints is `toISOString()`, but a
+ * page capture or a tool call can legitimately carry '+05:30', and rejecting a
+ * real instant would be the worse of the two bugs.
+ */
 function instant(o: TextOptions = {}): Schema<string> {
   return define(metaOf('instant', o), (input, path) => {
-    if (typeof input !== 'string' || Number.isNaN(Date.parse(input))) {
-      return bad(path, 'Needs to be a time.')
-    }
-    return good(input)
+    if (typeof input !== 'string') return bad(path, 'Needs to be a time.')
+    const parts = RFC3339.exec(input)
+    // `Date.parse` still earns its place next to the regex: given a string this
+    // strictly shaped it is the strict-ISO parser, and it is what rejects
+    // minute 60, second 60 and an offset of '+25:00' without a rule each.
+    if (!parts || Number.isNaN(Date.parse(input))) return bad(path, 'Needs to be a time.')
+
+    // Hour 24 parses — it means midnight the following day — so it is a
+    // timestamp that changes its own date the moment anything reads it back.
+    if (Number(parts[4]) > 23) return bad(path, 'That time does not exist.')
+
+    const y = Number(parts[1])
+    const m = Number(parts[2])
+    const d = Number(parts[3])
+    const at = new Date(Date.UTC(y, m - 1, d))
+    const same = at.getUTCFullYear() === y && at.getUTCMonth() === m - 1 && at.getUTCDate() === d
+    return same ? good(input) : bad(path, 'That day does not exist.')
   })
 }
 

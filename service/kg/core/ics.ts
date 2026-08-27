@@ -38,6 +38,7 @@
  */
 
 import { addDays } from './dates'
+import { displayName } from './model'
 import type { Application, Instant, TimelineItem, TimelineKind } from './model'
 
 /** What the calendar file is called when it lands in someone's downloads. */
@@ -241,7 +242,11 @@ export function calendarSize(input: Omit<CalendarInput, 'at'>): number {
  */
 export function buildCalendar(input: CalendarInput): string {
   const stamp = asStamp(input.at)
-  const nameOf = new Map(input.applications.map((a) => [a.id, `${a.org} — ${a.role}`]))
+  // `displayName` rather than interpolating the two halves here, which is what
+  // this did and what its own doc comment warns against: a posting promoted from
+  // a bare URL ('jobs.rice.edu/postings/29411') has no role, and the export named
+  // it 'Rice — ' — a separator promising a second half that is not there.
+  const nameOf = new Map(input.applications.map((a) => [a.id, displayName(a)]))
 
   // Spread rather than assigned, because `exactOptionalPropertyTypes` is on:
   // an absent `startMins` and one set to `undefined` are different types here,
@@ -274,7 +279,8 @@ export function buildCalendar(input: CalendarInput): string {
       date: a.offer.respondBy,
       allDay: true,
       description: [
-        `Offer from ${a.org} — ${a.role}.`,
+        // Same reason as `nameOf` above; unfixed this read 'Offer from Rice — .'
+        `Offer from ${displayName(a)}.`,
         a.offer.comp ? `Package: ${a.offer.comp}` : '',
         'Accept or decline by this date.',
       ],

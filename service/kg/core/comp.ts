@@ -57,16 +57,20 @@ const PERIODS: { pattern: RegExp; period: CompPeriod }[] = [
 ]
 
 /**
- * `112k`, `112,000`, `112 000`, `112.5k`.
+ * `112k`, `112,000`, `112 000`, `112.500`, `112.5k`.
  *
- * The thousands separator is allowed to be a comma, a space or nothing, and a
- * decimal point only survives when a `k` follows it — `112.5k` is a number and
- * `112.500` is a European hundred and twelve thousand five hundred, which this
- * deliberately does not try to tell apart. It reads the first as written and
- * treats the second as 112500 either way, which is the same answer.
+ * The thousands separator is allowed to be a comma, a space, a point or
+ * nothing. The point is the only one that has to be decided rather than
+ * declared, because it is also a decimal point: it separates thousands when
+ * exactly three digits follow it and no `k`/`m` multiplier does, so `€112.500`
+ * is a European hundred and twelve thousand five hundred while `112.5k` is
+ * still a fraction of a thousand and `$60.50/hr` still has its cents. Before
+ * that rule the point always won and a `€65.000` offer read as sixty-five euros
+ * a year — a thousandth of the figure, ranked below every other offer on the
+ * comparison screen and shown beside the text it contradicted.
  */
 const AMOUNT =
-  /(?<currency>[$£€¥])?\s*(?<digits>\d{1,3}(?:[,\s]\d{3})+|\d+(?:\.\d+)?)\s*(?<k>k\b|m\b)?\s*(?<code>[a-z]{3}\b)?/i
+  /(?<currency>[$£€¥])?\s*(?<before>[a-z]{3})?\s*(?<digits>\d{1,3}(?:[,\s.]\d{3})+|\d+(?:\.\d+)?)\s*(?<k>k\b|m\b)?\s*(?<code>[a-z]{3}\b)?/i
 
 /**
  * The first amount in the text, or `undefined` when there is none to find.
@@ -88,19 +92,47 @@ export function parseComp(text: string): ParsedComp | undefined {
   // which they are, since all but `digits` are optional in the pattern.
   const raw = groups['digits']
   if (raw === undefined) return undefined
-  const base = Number(raw.replace(/[,\s]/g, ''))
-  if (!Number.isFinite(base) || base <= 0) return undefined
 
   const suffix = groups['k']?.toLowerCase()
+  /*
+   * A point is a thousands separator only in the grouped form and only when no
+   * multiplier follows it. Both halves of that are load-bearing: stripping
+   * every point turned `$60.50/hr` into $6050 an hour, and stripping none read
+   * `€65.000` as sixty-five euros. `112.500k` keeps its point for the same
+   * reason `112.5k` does — the writer already said which thousands they meant.
+   */
+  const grouped = suffix === undefined && /^\d{1,3}(?:[,\s.]\d{3})+$/.test(raw)
+  const base = Number(raw.replace(grouped ? /[,\s.]/g : /[,\s]/g, ''))
+  if (!Number.isFinite(base) || base <= 0) return undefined
+
   const amount = base * (suffix === 'm' ? 1_000_000 : suffix === 'k' ? 1_000 : 1)
 
   const symbol = groups['currency']
-  const code = groups['code']?.toLowerCase()
-  const currency = symbol
-    ? SYMBOLS[symbol]
-    : code && CODES.has(code)
-      ? code.toUpperCase()
-      : undefined
+  /*
+   * The ISO code, which may come BEFORE the digits — `EUR 112,500` is at least
+   * as common in European postings as `112,500 EUR`, and the pattern only
+   * looked after them. A prefixed code was dropped, and `comparable()` reads a
+   * missing currency as "same as anything", so a euro offer sat straight
+   * against a dollar one on the comparison screen with nothing to say they were
+   * different units.
+   *
+   * The leading group is guarded by `CODES` in exactly the same way the
+   * trailing one is, which is what stops it swallowing an ordinary word: `for`
+   * in "for 112,500" matches `[a-z]{3}` and is not a currency, so it resolves
+   * to `undefined` and the amount is unaffected.
+   */
+  /*
+   * Whichever side holds a REAL code, not whichever side matched.
+   *
+   * Both groups are `[a-z]{3}`, so both catch ordinary words: `per` in
+   * "95,000 per year" fills the trailing group and `for` in "for 112,500" fills
+   * the leading one. Preferring one position over the other let `per` shadow a
+   * perfectly good `GBP` written first. `CODES` is the arbiter, and a word that
+   * is not a currency simply leaves the field empty, as it did before.
+   */
+  const candidates = [groups['code'], groups['before']].map((g) => g?.toLowerCase())
+  const code = candidates.find((c) => c !== undefined && CODES.has(c))
+  const currency = symbol ? SYMBOLS[symbol] : code ? code.toUpperCase() : undefined
 
   const stated = PERIODS.find((p) => p.pattern.test(source))
 

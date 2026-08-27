@@ -160,7 +160,6 @@ function isLoopback(raw) {
   return host === '127.0.0.1' || host === 'localhost' || host === '[::1]' || host === '::1'
 }
 
-/** How long the reader gets. Converting a large PDF is genuinely slow. */
 /**
  * The port name the streaming model relay answers on.
  *
@@ -170,6 +169,22 @@ function isLoopback(raw) {
  */
 const MODEL_STREAM_PORT = 'jojo:model-stream'
 
+/**
+ * How long the far end gets, reader or model provider. Converting a large PDF is
+ * genuinely slow, and so is a 70B model composing a first token.
+ *
+ * The PAGE has to be willing to wait at least this long, and for most of this
+ * constant's life it was not: `capture-bridge.ts` gave the same request the
+ * scan's 40 seconds, so a conversion this worker finished at 55 had already been
+ * abandoned at the other end and reported as "the extension did not answer" —
+ * and the answer, when it came, was posted into a closed channel. Reads do not
+ * stream, so nothing re-armed that timer.
+ *
+ * `RELAY_TIMEOUT_MS` over there is now a transcription of this number with a
+ * margin, and `reader-relay.test.ts` fails if the two drift. Whichever end gives
+ * up first writes the sentence the user reads, and it should be this one: it
+ * knows what was being called and for how long.
+ */
 const READ_TIMEOUT_MS = 120000
 
 /**
@@ -241,13 +256,23 @@ async function relay(request, what) {
     }
   } catch (error) {
     const aborted = error && error.name === 'AbortError'
-    // The worker's own failures are the ones the app cannot see: a page has no
-    // access to a service worker's console, so without this a relay error is
-    // invisible unless somebody opens chrome://extensions and inspects it.
-    void recordExtensionCrash(
-      `${what}: ${String(error && error.message ? error.message : error)} (${request.url})`,
-      'relay',
-    )
+    /*
+     * NOTHING IS RECORDED HERE, and the absence is the fix.
+     *
+     * This called `recordExtensionCrash`, which is defined nowhere — not in this
+     * file, not in the repo. So the commonest failure this function has, a
+     * reader that was never started, threw `ReferenceError` out of the catch
+     * before reaching the return below: `sendResponse` was never called, the
+     * message channel closed, and the page showed Chrome's "message port closed
+     * before a response was received" instead. Every sentence written in this
+     * function was dead code, including the one naming which thing was called.
+     *
+     * The failure does reach the person, by the only route a service worker has
+     * to them: the `reason` below crosses the bridge and is shown. A worker's
+     * own crash log — what the recorder was meant to be — needs the
+     * `jojo:crash-reporting` handler that `bridge.js` already forwards to and
+     * this worker does not implement; when that lands, it goes here.
+     */
     return {
       ok: false,
       status: 0,
@@ -442,6 +467,34 @@ async function capture(tabId) {
 }
 
 /**
+ * Fetched stylesheet text, made unable to close the element it is spliced into.
+ *
+ * See the call site. `<` is the only character that can end a `<style>` block,
+ * and `\3c ` is its CSS escape — the trailing space is part of the escape and
+ * is consumed by the CSS parser, so a rule that genuinely contained `<` renders
+ * identically.
+ */
+const cssSafe = (css) => css.replace(/</g, '\\3c ')
+
+/**
+ * The most addresses one capture will ever fetch.
+ *
+ * The loop below walks a list ITS OWN BODY APPENDS TO: a fetched stylesheet's
+ * `@import`s and `url()`s are queued as they are discovered, and each of those
+ * is a stylesheet that can queue more. `byHref` only collapses repeats of the
+ * same address, so a page whose sheets import two FRESH ones apiece has no end
+ * — and unbounded here means a service worker fetching forever with the badge
+ * stuck on '…', no error, and nothing the user can do but disable the
+ * extension. The loop is sequential, so nothing else in the worker runs either.
+ *
+ * Set far above what a real posting needs — the widest board measured while the
+ * de-duplication above was written queued 47 addresses — and far below forever.
+ * Everything past it is counted as dropped, which is the same outcome an asset
+ * that failed to fetch already has.
+ */
+const CAPTURE_MAX_ASSETS = 500
+
+/**
  * Turns every queued address into a `data:` URI, and empties what it cannot.
  *
  * The order matters: stylesheets are resolved first because their text names
@@ -456,6 +509,8 @@ async function capture(tabId) {
  */
 async function inline(page) {
   const resolved = new Map()
+  /** Which resolved values are stylesheet TEXT. See the splice below. */
+  const cssKeys = new Set()
   let dropped = page.dropped ?? 0
   const assets = [...page.assets]
 
@@ -474,6 +529,14 @@ async function inline(page) {
   const byHref = new Map()
 
   for (let i = 0; i < assets.length; i += 1) {
+    if (i >= CAPTURE_MAX_ASSETS) {
+      // Counted, not silently truncated: `dropped` is what the panel shows and
+      // what tells somebody their capture is missing pieces. Their tokens are
+      // emptied by the sweep at the end of this function, exactly as a failed
+      // fetch's would be, so the "inlined or gone" invariant still holds.
+      dropped += assets.length - i
+      break
+    }
     const { href, kind } = assets[i]
     const key = `__JOJO_ASSET_${String(i)}__`
 
@@ -496,6 +559,12 @@ async function inline(page) {
 
       if (kind === 'css') {
         const text = await response.text()
+        // The same cap the blob branch below applies, which this branch reached
+        // its `continue` without ever meeting: a stylesheet is the one asset
+        // whose bytes are kept as TEXT, so an enormous one was inlined whole
+        // into a document that is itself capped, and the whole capture was then
+        // refused for being too large with no clue which asset did it.
+        if (byteLength(text) > CAPTURE_MAX_ASSET_BYTES) throw new Error('stylesheet too large')
         /*
          * Its own `@import`s FIRST, then its own `url()`s. Both become tokens
          * appended to the list this loop is walking, so they are fetched by a
@@ -546,6 +615,11 @@ async function inline(page) {
           },
         )
         resolved.set(key, inlinedCss)
+        // Recorded rather than inferred. Only stylesheet TEXT is spliced as
+        // markup-adjacent content and needs escaping; a data URI is base64 and
+        // cannot contain `<` — but deciding that by sniffing the value would be
+        // one refactor away from being wrong.
+        cssKeys.add(key)
         byHref.set(href, inlinedCss)
         continue
       }
@@ -565,7 +639,26 @@ async function inline(page) {
   }
 
   let html = page.html
-  for (const [key, value] of resolved) html = html.split(key).join(value)
+  for (const [key, value] of resolved) {
+    /*
+     * Stylesheet text is spliced into the document, so it must not be able to
+     * LEAVE the element it is spliced into.
+     *
+     * The token for a `<link rel=stylesheet>` sits inside a `<style>` block, and
+     * the value is whatever the remote server returned. A sheet ending
+     * `}</style><img src=https://evil.example/beacon.png>` closes the block and
+     * writes a live tag into the archive — and it was written unquoted
+     * precisely because neither the sweep below nor `remoteRefCount` could see
+     * that shape. Both know it now; this stops the splice creating the tag at
+     * all, which is the half that does not depend on a pattern being complete.
+     *
+     * Only `<` needs escaping to keep CSS inside `<style>`: a stylesheet has no
+     * legitimate `<`, and the HTML tokeniser leaves a `<style>` block only on a
+     * literal `</`. Escaping it as `\3c ` — the CSS hex escape, trailing space
+     * included — keeps any (pathological) legitimate use rendering the same.
+     */
+    html = html.split(key).join(cssKeys.has(key) ? cssSafe(value) : value)
+  }
 
   // Anything the walk missed. A token left standing would render as literal
   // text, and a surviving http(s) address would be the one thing this must not
@@ -579,11 +672,20 @@ async function inline(page) {
   // `src=""` and counted as a dropped asset. `serialise.js` explains at length
   // that assets are tokenised precisely so a global string replace can never
   // corrupt a posting that quotes a URL; this is the line that was doing it.
+  //
+  // The value may be UNQUOTED. HTML does not require quotes and browsers honour
+  // `src=https://…`, so a sweep that demanded them left the one shape
+  // `remoteRefCount` was also blind to — a capture that beaconed on every
+  // viewing while both checks reported it clean. The two widen together: a scan
+  // stricter than the sweep refuses captures with no remedy.
   html = html.replace(
-    /(<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(["'])\s*(?:https?:|\/\/)[^"']*\2/gi,
+    /(<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(?:(["'])\s*(?:https?:|\/\/)[^"']*\2|(?:https?:|\/\/)[^\s>]*)/gi,
     (_whole, head, quote) => {
       dropped += 1
-      return `${head}${quote}${quote}`
+      // An unquoted value is emptied by writing a quoted empty one, which is
+      // valid HTML and cannot be re-read as a URL.
+      const q = quote ?? '"'
+      return `${head}${q}${q}`
     },
   )
 

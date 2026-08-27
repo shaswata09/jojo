@@ -210,3 +210,52 @@ describe('the open lane', () => {
     expect(canonicalise('peer reviewed for').surface).toBe('peer reviewed for')
   })
 })
+
+/**
+ * Every script, not just the one the regex was written in.
+ *
+ * `normalise` filtered with `[^a-z0-9 ]+`, which deletes anything that is not
+ * Latin. Measured before the fix: `曾任职于`, `работал в`, `εργάστηκε στο`,
+ * `עבד ב`, `حاصل على` and `勤務先` all reduced to the empty string —
+ * `canonicalise` answers `id: ''` for that and `checkClaim` rejects it with "A
+ * relation needs a name."
+ *
+ * So a Chinese or Russian CV kept its people and organisations and lost EVERY
+ * relation between them, silently, against this module's own contract — and
+ * `ProfileUpdateOffer` counts only the successes, so the screen reported it had
+ * worked.
+ */
+describe('normalise, across scripts', () => {
+  const cases: readonly (readonly [string, string])[] = [
+    ['worked at', 'worked at'],
+    ['travaillé à', 'travaille a'],
+    ['worked_at', 'worked at'],
+    ['曾任职于', '曾任职于'],
+    ['работал в', 'работал в'],
+    ['עבד ב', 'עבד ב'],
+    ['حاصل على', 'حاصل على'],
+    ['勤務先', '勤務先'],
+  ]
+
+  for (const [surface, expected] of cases) {
+    it(`keeps ${surface}`, () => {
+      expect(normalise(surface)).toBe(expected)
+    })
+  }
+
+  it('still strips the punctuation it is there to strip', () => {
+    // The filter has a job — widening it must not turn it off.
+    expect(normalise('worked @ (Rice)!')).toBe('worked rice')
+  })
+
+  it('is still empty for a predicate with no name in it', () => {
+    // `canonicalise` treats '' as "no relation", and that must stay reachable
+    // or the rejection it drives becomes dead code.
+    expect(normalise('!!! ---')).toBe('')
+  })
+
+  it('lets two spellings of one non-Latin predicate meet', () => {
+    // The whole point of normalising: comparability, in any script.
+    expect(normalise('работал_в')).toBe(normalise('работал в'))
+  })
+})

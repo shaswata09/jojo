@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
@@ -9,7 +9,8 @@ import { sizeLabel } from '@jojo/service/core/files'
 import { canPair } from '@jojo/service/crypto/noble-secrets'
 import { useKg } from '@jojo/service/react/kg-context'
 import { RECEIVE_ADVICE, beginReceiving, type ReceiveSession } from '@/lib/handoff-receive'
-import { applyPlan, planReceived } from '@/lib/restore-received'
+import { applyPlan } from '@/lib/restore-received'
+import { createLanding } from '@/lib/receive-landing'
 import { describeBackup } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
@@ -65,16 +66,6 @@ export function ReceivePanel() {
   const [pending, setPending] = useState<RestorePlan | null>(null)
   const { repo } = useKg()
 
-  /**
-   * Latched the instant the last chunk authenticates.
-   *
-   * A ref rather than state, because the poll below closes over it and must see
-   * the CURRENT value: restoring is not idempotent — it replaces the whole
-   * store — and a second run started by the next tick would replace what the
-   * first one had just written.
-   */
-  const applying = useRef(false)
-
   /*
    * Whether this device can hold a key at all, asked before the camera is.
    *
@@ -104,41 +95,28 @@ export function ReceivePanel() {
   /**
    * Watches the stream, and lands it once it is whole.
    *
-   * `complete` means the final chunk authenticated, which is the only point at
-   * which any of this is safe to act on: `core/convoy.ts` puts the final flag
-   * in the AAD precisely so that a truncated transfer cannot masquerade as a
-   * finished one. Restoring at any earlier moment would mean replacing the
-   * person's records with part of a backup.
+   * The tick itself is `lib/receive-landing.ts`, and the "only once" flag went
+   * with it. It used to be a ref up here that the confirmation sheet's
+   * `onClose` cleared — so declining re-opened the sheet 250 ms later, and
+   * because `ConfirmSheet` runs `onClose()` before `onConfirm()`, agreeing
+   * re-offered the same backup while the first `applyPlan` was still writing.
+   * A latch anything on screen can clear is not a latch.
+   *
+   * Keyed on `session` alone. A new landing means a new latch, and a new
+   * session is the only thing that should produce one; `repo` was in these deps
+   * and is not read here, so leaving it in would have handed out a fresh latch
+   * on a context change.
    */
   useEffect(() => {
     if (session === null) return
-    const id = setInterval(() => {
-      const at = session.progress()
-      setBytes(at.bytes)
-      if (!at.complete || applying.current) return
-      applying.current = true
-
-      const payload = session.payload()
-      if (payload === null) return
-      // Nothing more is coming, and a socket left listening after the transfer
-      // is a port open on somebody's phone with nothing on screen about it.
-      session.stop()
-
-      /*
-       * Read, then ASK. Applying used to start here, and `replaceAll` took
-       * every record, every document and the journal off the phone with nothing
-       * on screen having asked. Pairing is consent to receive; it is not
-       * consent to destroy what is already here.
-       */
-      const read = planReceived(payload)
-      if (!read.ok) {
-        setFailed(read.message)
-        return
-      }
-      setPending(read.plan)
-    }, 250)
+    const tick = createLanding(session, {
+      onBytes: setBytes,
+      onPlan: setPending,
+      onFailure: setFailed,
+    })
+    const id = setInterval(tick, 250)
     return () => clearInterval(id)
-  }, [session, repo])
+  }, [session])
 
   useEffect(() => {
     // The camera stops and the socket closes when the panel goes away. A scanner
@@ -247,16 +225,30 @@ export function ReceivePanel() {
       <ConfirmSheet
         open={pending !== null}
         onClose={() => {
-          setPending(null)
           /*
-           * The latch has to come off too. `applying.current` is set when the
-           * stream completes so the 250 ms poll cannot fire twice — but with
-           * the apply now behind a question, leaving it set means a person who
-           * says no can never be offered the transfer again without leaving the
-           * screen. Declining is not a reason to break the next attempt.
+           * Back to the start, which means clearing the SESSION and not the
+           * poll's latch.
+           *
+           * Clearing the latch was the original bug: the poll re-reads a
+           * `complete` that `core/convoy.ts` never un-sets, so the sheet came
+           * straight back and Cancel could not cancel.
+           *
+           * But leaving the session standing was the other half of the same
+           * trap. `createLanding` has already called `session.stop()` by the
+           * time a plan is offered, and nothing else ever sets `session` back to
+           * null — so declining left the middle branch rendering the pairing
+           * code and "Receiving — … Everything on this phone will be replaced"
+           * over a listener that had stopped, with the "Try again" button and
+           * the sentence below in a branch that could not be reached. Saying no
+           * wedged the screen exactly as before, one state further along.
+           *
+           * Dropping the session renders the third branch: the sentence, and a
+           * button that starts a fresh pairing with a fresh latch.
            */
-          applying.current = false
-          setFailed('Nothing was changed. The other device can send again.')
+          setPending(null)
+          setSession(null)
+          setBytes(0)
+          setFailed('Nothing was changed. Scan the code again to receive.')
         }}
         title="Replace everything on this phone?"
         description={

@@ -125,6 +125,24 @@ describe('validateNode', () => {
     const value = { ...application('rice'), id: 'rice' }
     expect(validateNode(value).ok).toBe(false)
   })
+
+  /**
+   * The envelope's timestamps used to get a non-empty-string check while
+   * `lastActionAt` one field away went through `s.instant`, so a hand-edited or
+   * truncated backup carrying `updatedAt: 'undefined'` crossed the trust
+   * boundary untouched and rendered as the literal 'undefined NaN' in the
+   * thread list — a corrupt record found by screenshot rather than by a counted
+   * diagnostic.
+   */
+  it('rejects a timestamp that is a string but not a time', () => {
+    for (const at of ['undefined', '5', 'Mar 5 2026', '2026-02-31T00:00:00.000Z']) {
+      const parsed = validateNode({ ...application('rice'), updatedAt: at })
+      expect(parsed.ok === false && parsed.diagnostics[0]?.message).toBe(
+        'Its timestamps are not times.',
+      )
+    }
+    expect(validateNode({ ...application('rice'), createdAt: 'x' }).ok).toBe(false)
+  })
 })
 
 describe('validateEdge', () => {
@@ -155,6 +173,16 @@ describe('validateEdge', () => {
     const parsed = validateEdge(edge(keyword('read'), 'AT', organisation('rice')))
     expect(parsed.ok === false && parsed.diagnostics[0]?.message).toBe(
       'A keyword cannot is at a organisation.',
+    )
+  })
+
+  // Same envelope, same hole: an edge's one timestamp was a non-empty-string
+  // check too, and it is the field the journal dates every change by.
+  it('rejects a timestamp that is a string but not a time', () => {
+    const value = { ...edge(application('rice'), 'AT', organisation('rice')), createdAt: '5' }
+    const parsed = validateEdge(value)
+    expect(parsed.ok === false && parsed.diagnostics[0]?.message).toBe(
+      'Its timestamp is not a time.',
     )
   })
 })
