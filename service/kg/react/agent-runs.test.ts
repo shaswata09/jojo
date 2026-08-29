@@ -589,3 +589,172 @@ describe('a run abandoned while a new one takes its place', () => {
     expect(runs.get(A)?.offered).toBeNull()
   })
 })
+
+/*
+ * The other half of the same identity problem, one line up the stack.
+ *
+ * The settle path was guarded and the EVENT path was not, so an abandoned run
+ * went on reporting into whatever had taken its thread id over. Reachable in
+ * the two clicks above: `forget` aborts the request, but a chunk the socket had
+ * already read is still delivered to `onDelta`, and a tool already executing
+ * still settles.
+ */
+describe('what an abandoned run is still allowed to say', () => {
+  it('does not write a late delta into the conversation that replaced it', async () => {
+    const runs = createAgentRuns()
+    /** The delta sink of the run that is about to be abandoned. */
+    let leak: ((text: string) => void) | undefined
+    const never = new Promise<Turn>(() => {})
+    const streaming = (_m: unknown, _t: unknown, onDelta?: (text: string) => void) => {
+      leak = onDelta
+      return never
+    }
+
+    runs.start({
+      threadId: A,
+      prompt: 'first',
+      history: [],
+      llm: () => streaming as never,
+      host,
+    })
+    await settle()
+    runs.forget(A)
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => heldModel().llm, host })
+
+    // The buffered chunk, arriving after the abort was requested.
+    leak?.('half a sentence from the run nobody is waiting for')
+    await settle()
+
+    // It landed as `e2` on the NEW conversation, and `onSettled` would then
+    // have handed it to `assistant.thread.set`, which is `undoable: false`.
+    expect(runs.get(A)?.entries).toEqual([{ kind: 'you', id: 'e1', text: 'second' }])
+  })
+
+  it('does not spend the replacement’s entry ids', async () => {
+    const runs = createAgentRuns()
+    let leak: ((text: string) => void) | undefined
+    const never = new Promise<Turn>(() => {})
+    const streaming = (_m: unknown, _t: unknown, onDelta?: (text: string) => void) => {
+      leak = onDelta
+      return never
+    }
+    const live = heldModel()
+
+    runs.start({ threadId: A, prompt: 'first', history: [], llm: () => streaming as never, host })
+    await settle()
+    runs.forget(A)
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => live.llm, host })
+
+    leak?.('nobody is waiting for this')
+    await settle()
+    live.answer('the real answer')
+    await vi.waitFor(() => expect(runs.get(A)?.busy).toBe(false))
+
+    // `nextId` reads `inner.get(threadId)`, which is the REPLACEMENT's counter:
+    // an abandoned run minting from it pushes the live run's own entries along.
+    expect(runs.get(A)?.entries.map((e) => e.id)).toEqual(['e1', 'e2'])
+  })
+})
+
+/*
+ * A streamed answer notifies once per delta, and most of those notifications
+ * change nothing about who is busy or what is waiting.
+ */
+describe('what a subscriber is woken for', () => {
+  it('keeps the busy list identical across a notification that did not change it', async () => {
+    const runs = createAgentRuns()
+    let emit: ((text: string) => void) | undefined
+    const never = new Promise<Turn>(() => {})
+    const streaming = (_m: unknown, _t: unknown, onDelta?: (text: string) => void) => {
+      emit = onDelta
+      return never
+    }
+
+    let changed = 0
+    let last = runs.busyThreads()
+    runs.subscribe(() => {
+      const next = runs.busyThreads()
+      if (next !== last) changed += 1
+      last = next
+    })
+
+    runs.start({ threadId: A, prompt: 'hello', history: [], llm: () => streaming as never, host })
+    await settle()
+    const beforeStreaming = changed
+    for (let i = 0; i < 50; i++) emit?.('tok ')
+
+    // Measured at 50 before this: every consumer of `useBusyThreads` — the
+    // thread list on both platforms — re-rendered once per token, for the
+    // length of every answer.
+    expect(changed - beforeStreaming).toBe(0)
+    // Still live, though: the flag itself has to survive being reused.
+    expect(runs.busyThreads()).toEqual([A])
+  })
+
+  /*
+   * The other half of the same fix, and it had no test: `waiting()` was rebuilt
+   * on every notification too, and the notification that fires most often is a
+   * delta belonging to a DIFFERENT conversation. The approval host is mounted
+   * above the router on both platforms, so the run parked on a person was
+   * re-rendered once per token of whatever else happened to be streaming.
+   *
+   * Mutation-checked: guarding only `busySnapshot` and leaving
+   * `waitingSnapshot = waiting` unconditional passed every other test in this
+   * file.
+   */
+  it('keeps the waiting list identical while an unrelated conversation streams', async () => {
+    const runs = createAgentRuns()
+    let emit: ((text: string) => void) | undefined
+    const never = new Promise<Turn>(() => {})
+    const streaming = (_m: unknown, _t: unknown, onDelta?: (text: string) => void) => {
+      emit = onDelta
+      return never
+    }
+    /** Asks to delete something and parks there, waiting on a person. */
+    const deleting = async (): Promise<Turn> => ({
+      ok: true,
+      text: null,
+      toolCalls: [{ id: 'c1', name: 'application_delete', args: { id: 'app:1' }, raw: '{}' }],
+      finishReason: 'tool_calls',
+    })
+
+    runs.start({ threadId: A, prompt: 'delete it', history: [], llm: () => deleting, host })
+    await vi.waitFor(() => expect(runs.get(A)?.pending).not.toBeNull())
+    runs.start({ threadId: B, prompt: 'meanwhile', history: [], llm: () => streaming as never, host })
+    await settle()
+
+    let changed = 0
+    let last = runs.waiting()
+    runs.subscribe(() => {
+      const next = runs.waiting()
+      if (next !== last) changed += 1
+      last = next
+    })
+    for (let i = 0; i < 50; i++) emit?.('tok ')
+
+    expect(changed).toBe(0)
+    // Still the live question, not a frozen copy of one: keeping the array is
+    // only safe because a run object is replaced whenever anything in it moves.
+    expect(runs.waiting().map((r) => r.threadId)).toEqual([A])
+    expect(runs.waiting()[0]?.pending?.step.name).toBe('application.delete')
+
+    // And it must still move when the answer to it arrives.
+    const parked = runs.waiting()
+    runs.decide(A, false)
+    await vi.waitFor(() => expect(runs.waiting()).toHaveLength(0))
+    expect(runs.waiting()).not.toBe(parked)
+  })
+
+  it('still hands out a new list when the answer actually changes', async () => {
+    const runs = createAgentRuns()
+    const { llm, answer } = heldModel()
+    runs.start({ threadId: A, prompt: 'hello', history: [], llm: () => llm, host })
+    const working = runs.busyThreads()
+    expect(working).toEqual([A])
+
+    answer('done')
+    await vi.waitFor(() => expect(runs.get(A)?.busy).toBe(false))
+    expect(runs.busyThreads()).not.toBe(working)
+    expect(runs.busyThreads()).toEqual([])
+  })
+})

@@ -62,6 +62,21 @@
         cannot reach it directly — this relays that one hop.
       </p>
       <div class="field">
+        <!--
+          The label is visually hidden, not absent.
+
+          An audit read this input for an accessible name and found none from
+          any source — no label, no `aria-label`, and `popup.js` names the
+          remove buttons and the provider switches at runtime but not this one.
+          A screen reader therefore announced it as an unlabelled edit field
+          next to a button called "Test", which says nothing about what to type.
+
+          Hidden rather than shown because the heading and the note above
+          already carry the explanation for a sighted reader, and `.sr` is what
+          the switch in this same section already uses. It is out of flow, so
+          the flex row is unchanged.
+        -->
+        <label class="sr" for="reader-endpoint">Address MarkItDown is listening on</label>
         <input id="reader-endpoint" class="mono" type="text" spellcheck="false" />
         <button id="reader-test" class="secondary" type="button">Test</button>
       </div>

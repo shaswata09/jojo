@@ -11,6 +11,8 @@ import { useKg } from '@jojo/service/react/kg-context'
 import { RECEIVE_ADVICE, beginReceiving, type ReceiveSession } from '@/lib/handoff-receive'
 import { applyPlan } from '@/lib/restore-received'
 import { createLanding } from '@/lib/receive-landing'
+import { actionFor, recordAnswer } from '@/lib/receive-decision'
+import type { SheetAnswer } from '@/lib/receive-decision'
 import { describeBackup } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
@@ -64,6 +66,16 @@ export function ReceivePanel() {
    * asking: do you want what is on this phone replaced?
    */
   const [pending, setPending] = useState<RestorePlan | null>(null)
+  /**
+   * How the person answered, rather than what to do about it.
+   *
+   * Both of `ConfirmSheet`'s handlers only write here, because it calls
+   * `onClose()` and THEN `onConfirm()` on the confirm button — see
+   * `lib/receive-decision.ts` for what that did to a panel that acted inside
+   * `onClose`. Recorded with a functional update so neither call can be built on
+   * a stale reading of the other.
+   */
+  const [answer, setAnswer] = useState<SheetAnswer>('unanswered')
   const { repo } = useKg()
 
   /*
@@ -128,6 +140,68 @@ export function ReceivePanel() {
     }
   }, [session])
 
+  /**
+   * Writes the plan the person agreed to. Destroys what is on this phone now.
+   *
+   * Hoisted above the `able` gate and memoised because the effect below is what
+   * calls it; it used to be an `onConfirm` handler, which is precisely how it
+   * came to run in the wreckage `onClose` had already made.
+   */
+  const applyPending = useCallback(
+    (plan: RestorePlan) => {
+      void applyPlan(repo, plan, new Date().toISOString()).then((done) => {
+        if (!done.ok) {
+          setFailed(done.message)
+          return
+        }
+        const files =
+          done.documents === 0
+            ? ''
+            : `, ${String(done.documents)} document${done.documents === 1 ? '' : 's'}`
+        // The skipped count is said out loud rather than rounded away. A person
+        // checking their records against the other device needs to know the
+        // number is short before they go looking for what is missing.
+        const lost = done.skipped === 0 ? '' : ` ${String(done.skipped)} could not be read.`
+        setLanded(`${String(done.nodes)} records are on this phone${files}.${lost}`)
+      })
+    },
+    [repo],
+  )
+
+  /**
+   * Acts on the answer, once, after BOTH of `ConfirmSheet`'s handlers have had
+   * their say.
+   *
+   * The handlers only record; this is the only thing in the panel that writes,
+   * declines or resets. Doing it here rather than in `onConfirm` is what makes
+   * the two paths exclusive: a confirm used to arrive with the decline already
+   * run — session dropped, byte count zeroed, "Nothing was changed." on screen —
+   * and then start replacing every record on the phone underneath that sentence.
+   *
+   * Declining still means dropping the SESSION, not the poll's latch. The latch
+   * belongs to `createLanding` and `core/convoy.ts` never un-sets `complete`, so
+   * clearing it re-offers the same backup 250 ms later and Cancel cannot cancel.
+   * But leaving the session standing wedges the screen the other way: the
+   * listener has already been stopped by the landing, so the middle branch would
+   * go on showing the pairing code and "Everything on this phone will be
+   * replaced" over nothing at all. Dropping it renders the third branch, which
+   * has the sentence and a button that starts a fresh pairing with a fresh latch.
+   */
+  useEffect(() => {
+    if (answer === 'unanswered') return
+    const action = actionFor(answer, pending)
+    setAnswer('unanswered')
+    if (action.kind === 'wait') return
+    setPending(null)
+    if (action.kind === 'decline') {
+      setSession(null)
+      setBytes(0)
+      setFailed(action.message)
+      return
+    }
+    applyPending(action.plan)
+  }, [answer, pending, applyPending])
+
   if (!able) {
     return (
       <Panel>
@@ -138,28 +212,6 @@ export function ReceivePanel() {
         </Txt>
       </Panel>
     )
-  }
-
-  /** Writes the plan the person just agreed to. Destroys what is here now. */
-  const applyPending = () => {
-    const plan = pending
-    if (plan === null) return
-    setPending(null)
-    void applyPlan(repo, plan, new Date().toISOString()).then((done) => {
-      if (!done.ok) {
-        setFailed(done.message)
-        return
-      }
-      const files =
-        done.documents === 0
-          ? ''
-          : `, ${String(done.documents)} document${done.documents === 1 ? '' : 's'}`
-      // The skipped count is said out loud rather than rounded away. A person
-      // checking their records against the other device needs to know the
-      // number is short before they go looking for what is missing.
-      const lost = done.skipped === 0 ? '' : ` ${String(done.skipped)} could not be read.`
-      setLanded(`${String(done.nodes)} records are on this phone${files}.${lost}`)
-    })
   }
 
   return (
@@ -224,32 +276,18 @@ export function ReceivePanel() {
           the twelve they added on this phone this morning. */}
       <ConfirmSheet
         open={pending !== null}
-        onClose={() => {
-          /*
-           * Back to the start, which means clearing the SESSION and not the
-           * poll's latch.
-           *
-           * Clearing the latch was the original bug: the poll re-reads a
-           * `complete` that `core/convoy.ts` never un-sets, so the sheet came
-           * straight back and Cancel could not cancel.
-           *
-           * But leaving the session standing was the other half of the same
-           * trap. `createLanding` has already called `session.stop()` by the
-           * time a plan is offered, and nothing else ever sets `session` back to
-           * null — so declining left the middle branch rendering the pairing
-           * code and "Receiving — … Everything on this phone will be replaced"
-           * over a listener that had stopped, with the "Try again" button and
-           * the sentence below in a branch that could not be reached. Saying no
-           * wedged the screen exactly as before, one state further along.
-           *
-           * Dropping the session renders the third branch: the sentence, and a
-           * button that starts a fresh pairing with a fresh latch.
-           */
-          setPending(null)
-          setSession(null)
-          setBytes(0)
-          setFailed('Nothing was changed. Scan the code again to receive.')
-        }}
+        /*
+         * Both handlers RECORD and neither acts — the effect above acts, once,
+         * with both answers in.
+         *
+         * `ConfirmSheet` runs `onClose()` and then `onConfirm()` on the confirm
+         * button, so this handler used to be the decline path executing on the
+         * way into a restore: it dropped the session, zeroed the byte count and
+         * put "Nothing was changed." on screen, and then every record on the
+         * phone was replaced under that sentence. `recordAnswer` makes confirm
+         * sticky, so the order the two arrive in stops mattering.
+         */
+        onClose={() => setAnswer((a) => recordAnswer(a, 'closed'))}
         title="Replace everything on this phone?"
         description={
           pending === null
@@ -258,7 +296,7 @@ export function ReceivePanel() {
         }
         confirmLabel="Replace"
         tone="danger"
-        onConfirm={applyPending}
+        onConfirm={() => setAnswer((a) => recordAnswer(a, 'confirmed'))}
       />
     </Panel>
   )

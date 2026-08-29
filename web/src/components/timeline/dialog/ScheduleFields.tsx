@@ -6,26 +6,6 @@ import { addDays } from '@/data/timeline'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
-/**
- * Quick dates, measured from `TODAY` rather than from a `new Date()` here.
- *
- * `TODAY` is the wall clock, read once per page load in `@/lib/today`, and every
- * bucket, countdown and relative label in the app is measured against that same
- * read. A second read in this module would be a day out from all of them for the
- * few seconds either side of midnight, and "Today" is the one label that must
- * never file a reminder under Overdue the moment it is saved. Same reason the
- * date field defaults to `TODAY`.
- *
- * "In 7 days" rather than "In a week": the app has exactly one relative
- * vocabulary — Today / Tomorrow / in N days — and a second spelling for the same
- * gap is how "24d left" and "3 weeks ago" got into the old screens.
- */
-const QUICK_DATES = [
-  { label: 'Today', iso: TODAY },
-  { label: 'Tomorrow', iso: addDays(TODAY, 1) },
-  { label: 'In 7 days', iso: addDays(TODAY, 7) },
-]
-
 const DURATIONS = [
   { mins: 15, label: '15 min' },
   { mins: 30, label: '30 min' },
@@ -61,6 +41,41 @@ export function ScheduleFields({
   const allDayId = useId()
   const durationId = useId()
 
+  /*
+   * Quick dates, measured from `TODAY` rather than from a `new Date()` here.
+   *
+   * `TODAY` is the app's one wall-clock read (`@/lib/today`), and every bucket,
+   * countdown and relative label is measured against it. A second read in this
+   * module would be a day out from all of them for the few seconds either side
+   * of midnight, and "Today" is the one label that must never file a reminder
+   * under Overdue the moment it is saved. Same reason the date field defaults
+   * to `TODAY`.
+   *
+   * IN THE RENDER, not at module scope. This was a module-level const, and the
+   * comment above it said `TODAY` is "read once per page load" — true when the
+   * pin was frozen at import, and false since it started moving at the local
+   * midnight. Measured with fake timers on a dialog opened at 23:50 on 12 Oct
+   * and used at 00:10: the pin read 2026-10-13 and these three chips still
+   * offered 12/13/19 Oct, so the button labelled "Today" wrote YESTERDAY and
+   * the reminder it created was overdue before it was saved. That is the exact
+   * failure the paragraph above promises cannot happen, so it is now sampled
+   * where the render is.
+   *
+   * Three `addDays` calls per render, on a dialog that renders when a person
+   * types in it. Not memoised: the array is rebuilt only when this component
+   * re-renders anyway, and a `useMemo` keyed on `TODAY` would have to name it
+   * as a dependency that React cannot observe changing.
+   *
+   * "In 7 days" rather than "In a week": the app has exactly one relative
+   * vocabulary — Today / Tomorrow / in N days — and a second spelling for the
+   * same gap is how "24d left" and "3 weeks ago" got into the old screens.
+   */
+  const quickDates = [
+    { label: 'Today', iso: TODAY },
+    { label: 'Tomorrow', iso: addDays(TODAY, 1) },
+    { label: 'In 7 days', iso: addDays(TODAY, 7) },
+  ]
+
   return (
     <>
       <div className="space-y-1.5">
@@ -73,7 +88,7 @@ export function ScheduleFields({
           onChange={(event) => onDateChange(event.target.value)}
         />
         <div className="flex flex-wrap gap-1.5">
-          {QUICK_DATES.map((quick) => {
+          {quickDates.map((quick) => {
             const on = date === quick.iso
             return (
               <Button

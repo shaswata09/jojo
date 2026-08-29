@@ -12,10 +12,24 @@
  * facts about code is exactly the shape of thing this repo has been bitten by
  * before.
  *
- * This is what stops it being one. Every `ctx.call('…')` literal in the tool
- * sources must appear in `COMPOSES`. Add a composing call and forget the table,
- * and lint goes red on the first run rather than the retriever quietly offering
- * a model a tool whose helper it never mentioned.
+ * This is what stops it being one. Every `ctx.call` on a string literal in the
+ * tool sources must appear in `COMPOSES`. Add a composing call and forget the
+ * table, and lint goes red on the first run rather than the retriever quietly
+ * offering a model a tool whose helper it never mentioned.
+ *
+ * ## All three spellings of a string, because the guard is only as wide as it reads
+ *
+ * This scanned `'…'` alone. An audit copied the tool tree, added
+ * `ctx.call("organisation.not.declared")` to it and ran this script: it printed
+ * success. The same call in single quotes failed it. So one keystroke was the
+ * difference between a guarded composition and an unguarded one, and the only
+ * thing holding the line was Prettier's `singleQuote` — which `npm run lint`
+ * does not run, and `gate.sh` does not run either. A guard whose soundness
+ * rests on a formatter nobody executes is not a guard.
+ *
+ * Backticks are read for the same reason. A template literal with a `${}` in it
+ * is deliberately NOT matched: there is no name to read, so half-reading one
+ * would invent a target rather than report a real call.
  *
  * ## Why here rather than in a vitest test
  *
@@ -45,18 +59,68 @@ const sources = readdirSync(toolsDir)
   .filter((f) => f.endsWith('.ts') && !f.includes('.test.'))
   .map((f) => ({ file: f, text: readFileSync(join(toolsDir, f), 'utf8') }))
 
-/** Every `ctx.call('name'` literal, with the file it sits in. */
+/**
+ * `ctx.call` on a plain string literal, in any of the three ways JS spells one.
+ *
+ * `[^`$]` on the template arm is what keeps `ctx.call(`${x}.create`)` from
+ * matching: an interpolated name is not a literal, and the one dynamic dispatch
+ * in the registry — `pipeline.proposal.approve` — is recorded in `COMPOSES` as
+ * a deliberately empty entry precisely because its callees are data.
+ */
+const CALL_SITE = /ctx\.call\(\s*(?:'([^']+)'|"([^"]+)"|`([^`$]+)`)/g
+
+/**
+ * The target name out of a match, from whichever arm of `CALL_SITE` caught it.
+ *
+ * Shared with the self-test below rather than written out twice. It was written
+ * twice, and a mutation test found the copies could disagree without anything
+ * noticing: dropping `?? match[3]` from the scan alone left the self-test green
+ * while a backtick call read as the literal name `undefined`. That direction
+ * fails loudly rather than silently — an undeclared `undefined` is still a
+ * failure — but it fails with the wrong reason attached, and a scanner nothing
+ * exercises is the thing this file exists to not be.
+ */
+const nameOf = (match) => match[1] ?? match[2] ?? match[3]
+
+/*
+ * Guards the guard, first half: the pattern above is the whole soundness of
+ * this check, so it is run against a call written each of the three ways before
+ * it is trusted on real files. The double-quoted case is here because it was
+ * missing for real — see the header — and a fix to a scanner that nothing
+ * exercises is a fix that the next regex edit silently removes.
+ */
+for (const spelling of [
+  "ctx.call('probe.name', {})",
+  'ctx.call("probe.name", {})',
+  'ctx.call(`probe.name`, {})',
+]) {
+  const found = [...spelling.matchAll(CALL_SITE)].map(nameOf)
+  if (found.length !== 1 || found[0] !== 'probe.name') {
+    console.error(
+      `check-compositions: the call-site pattern no longer reads ${spelling} — it found ${JSON.stringify(found)}. Every quote style has to be read, or a composition hides behind the one that is not.`,
+    )
+    process.exit(1)
+  }
+}
+// …and an interpolated target must stay unread rather than half-read.
+if ([...'ctx.call(`${x}.create`, {})'.matchAll(CALL_SITE)].length !== 0) {
+  console.error('check-compositions: the pattern is inventing a name out of a template literal.')
+  process.exit(1)
+}
+
+/** Every `ctx.call` on a literal, with the file it sits in. */
 const called = []
 for (const { file, text } of sources) {
-  for (const match of text.matchAll(/ctx\.call\(\s*'([^']+)'/g)) {
-    called.push({ file, name: match[1] })
+  for (const match of text.matchAll(CALL_SITE)) {
+    called.push({ file, name: nameOf(match) })
   }
 }
 
 /*
- * Guards the guard. A regex that stopped matching — because `ctx.call` was
- * renamed, or the calls moved behind a helper — would make every check below
- * vacuously pass, which is the failure mode a lint rule can least afford.
+ * Guards the guard, second half. The pattern is known to read a call by now;
+ * this catches the calls having MOVED — `ctx.call` renamed, or the composing
+ * hops pulled behind a helper — which would make every check below vacuously
+ * pass, the failure mode a lint rule can least afford.
  */
 if (called.length < 5) {
   console.error(

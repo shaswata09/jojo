@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native'
 import type { Thread } from '@jojo/service/react/use-threads'
 import type { NodeId } from '@jojo/service/core/model'
 import { agoLabel } from '@jojo/service/core/dates'
+import { dayOf } from '@jojo/service/core/project'
 import { useBusyThreads } from '@jojo/service/react/agent-runs-context'
 import { displayName } from '@jojo/service/data/seed'
 import type { Application } from '@jojo/service/data/seed'
@@ -163,7 +164,18 @@ export function ThreadListSheet({
                           {asked} {asked === 1 ? 'question' : 'questions'}
                         </Txt>
                         <Txt size="xs" tone="muted">
-                          · {agoLabel(t.updatedAt.slice(0, 10), TODAY)}
+                          {/* `dayOf`, not `.slice(0, 10)` — the same repair as
+                              `web`'s ThreadList, which this row is the twin of.
+                              `updatedAt` is an instant and slicing takes the UTC
+                              day out of it, while `TODAY` is the LOCAL day, so
+                              the two compared days came from different
+                              calendars. Measured in America/Chicago at 23:30
+                              local: a thread touched seconds earlier sliced to
+                              the 13th against a TODAY of the 12th, and
+                              `agoLabel` printed "Oct 13" — a future date — on a
+                              row that should have said "today". East of UTC the
+                              same pair reads "yesterday". */}
+                          · {agoLabel(dayOf(t.updatedAt), TODAY)}
                         </Txt>
                       </>
                     )}

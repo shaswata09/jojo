@@ -81,21 +81,56 @@ export function copyExport(
 ): ToastOptions {
   const bytes = clipboardBytes(json)
   if (capped && bytes > CLIPBOARD_MAX_BYTES) {
-    // The number is the point. "Too big" leaves somebody pressing the same
-    // button again; the size is what tells them this route is closed for their
-    // store and the other one is not.
+    /*
+     * The number is the point. "Too big" leaves somebody pressing the same
+     * button again; the size is what tells them this route is closed.
+     *
+     * It used to end "Use Transfer instead — it hands the whole store to
+     * another device over your own network", and that sent the reader in a
+     * CIRCLE. `screens/TransferScreen.tsx` says it in its own header: "The
+     * phone cannot send, and this is not a gap waiting to be filled… So
+     * sending points at the export under Settings" — this export. A browser
+     * cannot accept an inbound connection, so the phone is always the side
+     * that listens; Transfer receives and never sends.
+     *
+     * So the clipboard is the ONLY route off this device, and pointing at the
+     * one screen that points back here is worse than saying nothing: it costs
+     * the reader a trip to find that out for themselves, at the moment they
+     * are deciding whether it is safe to press Clear.
+     *
+     * What is left is the truth, which is a real product limit and not a copy
+     * problem: this store does not fit, and the honest move is to make it
+     * smaller or to keep the computer's copy as the backup. Anything better
+     * than that needs a file-and-share route this app does not have — worth
+     * building, and not something a sentence can stand in for.
+     */
     return {
       title: 'Too big for the clipboard',
       description: `Your records come to ${sizeLabel(byteLengthOf(json))} and Android's clipboard takes about ${sizeLabel(
         CLIPBOARD_MAX_BYTES / 2,
-      )} of text. Nothing was copied. Use Transfer instead — it hands the whole store to another device over your own network.`,
+      )} of text. Nothing was copied, and the clipboard is the only way out of this phone — Transfer only receives. Detach some documents or clear what you no longer need, or keep the copy on your computer as the backup.`,
       tone: 'danger',
     }
   }
 
   copy(json)
+  /*
+   * "The whole store" was true of `exportJSON()` and stopped being true when
+   * this route was repaired to emit a restorable envelope: `buildPhoneBackup`
+   * sets `documents: []` on purpose, because a backup carries file contents as
+   * base64 and one PDF exceeds the 512 KiB ceiling above on its own. Measured
+   * on the demo store, the envelope without bytes is already 219 KiB.
+   *
+   * So the parcel holds the file ROWS and not the files, and a restore from it
+   * renders documents that are not on the device. The panel copy beside the
+   * button says exactly that — "the documents you attached stay on this phone,
+   * so their rows come back without their contents" — and the toast contradicted
+   * it, on the one screen where somebody is deciding whether it is safe to press
+   * Clear. Keep the two sentences saying the same thing.
+   */
   return {
     title: 'Copied to the clipboard',
-    description: 'The whole store as JSON — paste it into a note or a file to keep it.',
+    description:
+      'A backup you can paste into a note or a file. The documents you attached stay on this phone — their rows come back without their contents.',
   }
 }

@@ -13,6 +13,7 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
 import { RichTextEditor } from '@/components/common/RichTextEditor'
 import { Button } from '@/components/ui/button'
 import { agoLabel } from '@/data/timeline'
+import { dayOf } from '@jojo/service/core/project'
 import type { VaultFile } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
 import { hostOf, isCaptureSource } from '@jojo/service/core/capture'
@@ -332,7 +333,13 @@ export function FileViewer({
           {file.kind === 'page' && file.sourceUrl && isCaptureSource(file.sourceUrl) ? (
             <p className="mt-0.5 truncate text-xs text-text-3" title={file.sourceUrl}>
               Captured from {hostOf(file.sourceUrl)}
-              {file.capturedAt ? ` · ${agoLabel(file.capturedAt.slice(0, 10), TODAY)}` : ''}
+              {/* `dayOf`, not `.slice(0, 10)`. `capturedAt` is an instant and
+                  slicing takes its UTC day, while `TODAY` is the LOCAL day.
+                  Measured in America/Chicago at 23:30 local, a capture made
+                  seconds earlier sliced to the next day and `agoLabel` printed
+                  a FUTURE date on it; east of UTC the same pair reads
+                  "yesterday". Same repair as `assistant/ThreadList.tsx`. */}
+              {file.capturedAt ? ` · ${agoLabel(dayOf(file.capturedAt), TODAY)}` : ''}
             </p>
           ) : null}
         </div>

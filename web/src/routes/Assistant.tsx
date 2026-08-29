@@ -20,6 +20,7 @@ import { contextOf } from '@jojo/service/core/provider'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { useFillViewport } from '@/lib/use-fill-viewport'
+import { atBottom } from '@/lib/scroll-stick'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import type { NodeId } from '@jojo/service/core/model'
@@ -211,18 +212,42 @@ function AgentPanel() {
   const { toast } = useToast()
   const navigate = useNavigate()
 
-  /*
-   * Which conversation is open, in state AND in a ref.
+  /**
+   * Whether the newest turn should be brought into view, or the reader left
+   * where they put themselves.
    *
-   * The ref is what `onSettled` reads. It runs at the end of a run, from a
-   * closure created when the run started, and by then the state it captured may
-   * be a conversation ago — the first exchange of a NEW thread settles into a
-   * thread that did not exist when `send` was called.
+   * It used to be unconditional, and `agent-runs.ts` rewrites the streaming
+   * answer once per delta — so the box was slammed back to its end once per
+   * token for the length of every reply, and scrolling up to re-read the tool
+   * row that produced the sentence being written was impossible: the next
+   * fragment took the view back within a frame. A trace nobody can look back
+   * through is not the thing this page says it is.
+   *
+   * A ref rather than state: it changes on every scroll event and nothing
+   * renders differently for it. `atBottom` and its slack are in
+   * `lib/scroll-stick.ts`, where they can be run.
+   */
+  const stick = useRef(true)
+
+  /*
+   * Which conversation is open. State, and only state.
+   *
+   * There was a ref beside it, written on every open and read by nothing, under
+   * a comment saying `onSettled` read it — "by the time a run settles the state
+   * it captured may be a conversation ago". That was true of the version that
+   * looked up "which is open now" at settle time, and it is the bug the
+   * registry was built to remove: `onSettled` is handed the thread the run was
+   * FOR (see `agent-runs.ts` `StartOptions.onSettled`). Leaving the ref in
+   * place left an invitation to go back to reading it, which is exactly how one
+   * conversation's answer lands in another.
    */
   const [activeId, setActiveId] = useState<NodeId | null>(null)
-  const activeRef = useRef<NodeId | null>(null)
   const openThread = (id: NodeId | null) => {
-    activeRef.current = id
+    // Opening a conversation pins the transcript to its end. The scroller is
+    // the same DOM node across a switch, so it keeps the offset it had in the
+    // conversation being left — which in a new one is a position in the middle
+    // of somebody else's answer. See `stick` above.
+    stick.current = true
     setActiveId(id)
   }
   const active = threads.find((t) => t.id === activeId) ?? null
@@ -438,10 +463,30 @@ function AgentPanel() {
 
   const fill = useFillViewport(20, 420)
   const transcriptRef = useRef<HTMLDivElement>(null)
+
+  // Where the reader is, recorded as they move rather than measured when the
+  // answer arrives — by then the effect has already had to decide.
+  const onTranscriptScroll = () => {
+    const box = transcriptRef.current
+    if (box) stick.current = atBottom(box.scrollTop, box.scrollHeight, box.clientHeight)
+  }
+
   useEffect(() => {
     const box = transcriptRef.current
-    if (box) box.scrollTop = box.scrollHeight
+    if (box && stick.current) box.scrollTop = box.scrollHeight
   }, [entries, busy])
+
+  /**
+   * Asking something re-pins the transcript, wherever the reader had scrolled to.
+   *
+   * The one moment the answer is definitely what they want to see. Without this
+   * a person who had scrolled up to find something to quote would ask their
+   * question and watch nothing happen, a screen above the reply.
+   */
+  const ask = (text: string) => {
+    stick.current = true
+    void send(text)
+  }
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -461,7 +506,7 @@ function AgentPanel() {
       tools_available: CATALOG.length,
       has_model: settings.model.trim().length > 0,
     })
-    void send(clean)
+    ask(clean)
   }
 
   /*
@@ -637,7 +682,7 @@ function AgentPanel() {
               into this scroller's padding — turns then painted underneath the
               input. `PanelScroll` already carries `min-h-0 flex-1`, so the
               transcript shrinks to fit whatever the composer leaves. */}
-          <PanelScroll axis="y" bleed="sides" ref={transcriptRef}>
+          <PanelScroll axis="y" bleed="sides" ref={transcriptRef} onScroll={onTranscriptScroll}>
             {entries.length === 0 ? (
               <EmptyState
                 icon={RobotIcon as unknown as LucideIcon}
@@ -755,7 +800,7 @@ function AgentPanel() {
                     size="sm"
                     disabled={busy}
                     onClick={() => {
-                      send(p)
+                      ask(p)
                     }}
                   >
                     {p}
@@ -959,9 +1004,6 @@ function ScriptedPanel() {
           and at what address, because "where did that answer come from" is the
           question a local-first app has to be able to answer on the page rather
           than in Settings. */}
-      {/* Stated once, at the top, in the same words the Job scout uses for the
-          same fact. The per-reply badge below repeats it because a reply that
-          scrolled away from this banner would otherwise read as a real answer. */}
       <div
         role="status"
         className="flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning"

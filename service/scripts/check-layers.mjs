@@ -29,6 +29,19 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+/*
+ * The patterns live next door, and the split is not tidiness.
+ *
+ * They ARE the guard — everything below is bookkeeping over the strings they
+ * return, so a pattern that fails to match is a rule that silently does not
+ * exist. That is not hypothetical: `[^\n;]*?` in the import clause meant a
+ * multi-line import was invisible to every rule in this file, and the guard
+ * printed its success line over a `core` -> `repo` edge. This file runs a walk
+ * and calls `process.exit(1)` at import time, so it cannot be imported by a
+ * test; `import-specifiers.mjs` has nothing to run, and
+ * `test/import-specifiers.test.ts` holds the wrapped-import cases.
+ */
+import { specsIn, todayImportsIn } from './import-specifiers.mjs'
 
 /*
  * The package root, not the app root. This guard used to live in `web/scripts/`
@@ -279,12 +292,6 @@ const REACT_PACKAGES = /^(react|react-dom|react-router|@react-|radix-ui|cmdk|luc
 const TEST_PACKAGES = /^(vitest|fake-indexeddb)(\/|$)/
 const isTest = (file) => /\.test\.tsx?$/.test(file)
 
-const IMPORT = /(?:^|\n)\s*(?:import|export)\b[^\n;]*?from\s*['"]([^'"]+)['"]/g
-const BARE_IMPORT = /(?:^|\n)\s*import\s*['"]([^'"]+)['"]/g
-const DYNAMIC = /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g
-/** D26: no module under kg may import TODAY. Time enters through ctx.now. */
-const TODAY_IMPORT = /(?:^|\n)\s*import\b[^\n;]*?\bTODAY\b[^\n;]*?from\s*['"]([^'"]+)['"]/g
-
 function walk(dir) {
   const out = []
   for (const entry of readdirSync(dir)) {
@@ -306,9 +313,6 @@ const lineOf = (source, spec) => {
     source.indexOf(`'${spec}'`) >= 0 ? source.indexOf(`'${spec}'`) : source.indexOf(`"${spec}"`)
   return at < 0 ? 1 : source.slice(0, at).split('\n').length
 }
-
-const specsIn = (source) =>
-  [IMPORT, BARE_IMPORT, DYNAMIC].flatMap((re) => [...source.matchAll(re)].map((m) => m[1]))
 
 const failures = []
 /**
@@ -341,7 +345,7 @@ for (const file of walk(KG)) {
     fail(file, 1, `is .tsx in ${rule.label}. Only kg/react may contain components.`)
   }
 
-  for (const [, spec] of source.matchAll(TODAY_IMPORT)) {
+  for (const spec of todayImportsIn(source)) {
     fail(
       file,
       lineOf(source, spec),
@@ -452,10 +456,7 @@ for (const file of walk(KG)) {
        * going wrong before: "a grant written for two files had quietly become a
        * grant for twelve".
        */
-      const grants = [
-        ...(rule.allow ?? []),
-        ...(isTest(file) ? (rule.allowInTests ?? []) : []),
-      ]
+      const grants = [...(rule.allow ?? []), ...(isTest(file) ? (rule.allowInTests ?? []) : [])]
       const allowed =
         rule.internal.includes(targetLayer) ||
         grants.some((a) => target === a || target.startsWith(`${a}.`))
@@ -541,7 +542,7 @@ for (const file of walk(DATA)) {
     fail(file, 1, `is .tsx in data/. Fixtures and domain data are not components.`)
   }
 
-  for (const [, spec] of source.matchAll(TODAY_IMPORT)) {
+  for (const spec of todayImportsIn(source)) {
     fail(
       file,
       lineOf(source, spec),
@@ -733,7 +734,7 @@ for (const adapter of ADAPTERS) {
       )
     }
 
-    for (const [, spec] of source.matchAll(TODAY_IMPORT)) {
+    for (const spec of todayImportsIn(source)) {
       fail(
         file,
         lineOf(source, spec),

@@ -43,14 +43,27 @@ let shookHands: string | null = null
 const pathOf = (uri: string) =>
   uri.startsWith('file://') ? decodeURIComponent(uri.slice('file://'.length)) : uri
 
-async function handshake(endpoint: string): Promise<ConvertResult> {
+/**
+ * The MCP `initialize` round trip, once per endpoint per session.
+ *
+ * Takes the CALLER'S signal. Measured: a cancelled `convertUrl` went on waiting
+ * here, because the handshake opened its own request with nothing but
+ * `local-service`'s own timeout on it — so cancelling a posting read on a cold
+ * or wrong endpoint bought nothing until `MODEL_TIMEOUT_MS` expired, which is
+ * the whole span the Cancel button exists to cut short. The handshake is the
+ * FIRST of the two calls a conversion makes, so it is also the one a cancel is
+ * most likely to land during.
+ */
+async function handshake(endpoint: string, signal?: AbortSignal): Promise<ConvertResult> {
   if (shookHands === endpoint) return { ok: true, markdown: '' }
-  const opened = await send(initializeRequest(endpoint), endpoint)
+  const opened = await send(initializeRequest(endpoint), endpoint, signal)
   if (failed(opened)) return { ok: false, reason: opened.failed.reason }
   const read = readHandshake(opened, endpoint)
   if (!read.ok) return read
-  // Fire-and-forget: JSON-RPC forbids a reply to a notification.
-  void send(initializedNotification(endpoint), endpoint)
+  // Fire-and-forget: JSON-RPC forbids a reply to a notification. It carries the
+  // signal too — an abandoned conversion has no business holding a socket open
+  // to say hello on.
+  void send(initializedNotification(endpoint), endpoint, signal)
   shookHands = endpoint
   return { ok: true, markdown: '' }
 }
@@ -104,7 +117,7 @@ export async function convertDocument(
     return { ok: false, reason: answer.failed.reason }
   }
   const out = readConvertResponse(answer)
-    /*
+  /*
    * The WHOLE document, untrimmed. The cut belongs to `vault.file.read`, which
    * is the only caller that can offer a way to read past it — trimming here made
    * the rest unreachable by anything, which is how a three-page CV became one
@@ -140,7 +153,7 @@ export async function convertUrl(
   url: string,
   signal?: AbortSignal,
 ): Promise<ConvertResult> {
-  const ready = await handshake(endpoint)
+  const ready = await handshake(endpoint, signal)
   if (!ready.ok) return ready
 
   const answer = await send(convertRequest(endpoint, url), endpoint, signal)

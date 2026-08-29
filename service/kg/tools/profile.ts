@@ -117,6 +117,31 @@ export const profileSet = defineTool({
   input: s.object({
     text: s.optional(textShape),
     matchTerms: s.optional(s.array(s.string({ min: 1 }), { label: 'Match terms' })),
+    /**
+     * The role-tag list, replaced whole — the same shape `matchTerms` has, and
+     * present for the same reason it is.
+     *
+     * The audit found the target-roles panel writing nothing at all. Both pages
+     * call `update({ roles })`, `roles` is a real prop on the profile node
+     * (`core/model.ts`) seeded from `DEFAULT_ROLES`, and `useRoleVocabulary`
+     * reads it — but neither `react/use-profile.ts`'s mapping nor `run` below
+     * named the field, so the write ended nowhere and still reported success.
+     * Measured against a real repository and tool runtime: adding "Research
+     * Scientist" returned `ok: true` and left the stored list at the five
+     * defaults. The silence is what made it survive — a rejected call would
+     * have been noticed the first time somebody typed a role.
+     *
+     * This declaration is NOT what carries the value, and the next reader has
+     * to know that before deciding this line is the fix. `core/schema.ts`
+     * passes unknown keys through deliberately (a field written by a newer
+     * build has to survive a round trip through an older one), so the key
+     * always reached `run` and it is the line there that persists it. Measured
+     * by deleting THIS line alone: a role still saves, and the only test that
+     * fails is the blank one. What this buys is validation — without it
+     * `{ roles: ['Postdoc', ''] }` is accepted and a chip nobody can name is
+     * stored — plus the field meta the palette draws a form from.
+     */
+    roles: s.optional(s.array(s.string({ min: 1 }), { label: 'Role tags' })),
     includeAcademia: s.optional(s.boolean({ label: 'Include academia' })),
     includeIndustry: s.optional(s.boolean({ label: 'Include industry' })),
   }),
@@ -126,6 +151,7 @@ export const profileSet = defineTool({
     ctx.tx.patch<'profile'>(profile.id, {
       ...(input.text === undefined ? {} : { text: input.text }),
       ...(input.matchTerms === undefined ? {} : { matchTerms: input.matchTerms }),
+      ...(input.roles === undefined ? {} : { roles: input.roles }),
       ...(input.includeAcademia === undefined ? {} : { includeAcademia: input.includeAcademia }),
       ...(input.includeIndustry === undefined ? {} : { includeIndustry: input.includeIndustry }),
     })

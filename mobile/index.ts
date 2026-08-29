@@ -38,18 +38,32 @@ installLastResortHandlers()
  * than only the events jojo writes by hand. Running it after the first screen
  * mounted would leave a window where automatic events were sent regardless.
  *
- * Not awaited: nothing here should hold the first frame. The SDK's own default
- * is settled inside `analytics.ts` before any event of jojo's can be reported.
+ * EVEN THIS IS TOO LATE ON ITS OWN, which is why `mobile/firebase.json` exists:
+ * the native SDK is up before Metro has evaluated a line of this file, so the
+ * build-time dials there are what cover the gap. This line covers everything
+ * after it. See `lib/analytics.ts` for the key-by-key reasoning.
+ *
+ * `app_opened` is inside the `.then` rather than beside it because `setUp` is
+ * what settles the SDK's collection state; reporting first would send an event
+ * through a collector that had not been told the answer yet. On a fresh install
+ * it sends nothing at all — `analyticsEnabled()` is false until `ReportingStep`
+ * has been shown, and `report` checks it. That is the intended shape: the first
+ * launch of a never-asked phone is silent, and the second one is not.
+ *
+ * Not awaited: nothing here should hold the first frame.
  */
 void setUpAnalytics().then(() => report('app_opened', {}))
 
 /*
  * The same handshake for Crashlytics, and it is required rather than tidy.
  *
- * `AndroidManifest.xml` starts the SDK with collection OFF on every launch, so
- * that a crash during startup is never sent by somebody who was never asked.
- * Without this line that default would never be lifted and the switch in
- * Settings would be decoration.
+ * The SDK comes up with collection off on every launch — from
+ * `firebase.json`'s `crashlytics_auto_collection_enabled`, NOT from jojo's
+ * `AndroidManifest.xml`, which this comment used to name and which sets nothing
+ * of the sort; `lib/crash.ts`'s `applyCollection` has the full chain. So a crash
+ * during startup is never sent by somebody who was never asked. Without this
+ * line that default would never be lifted and the switch in Settings would be
+ * decoration.
  */
 void setUpCrashReporting()
 

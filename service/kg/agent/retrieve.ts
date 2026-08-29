@@ -548,14 +548,42 @@ export function offeredFor(
     // to everything and throwing the cache away on "thanks".
     const kept = new Set(carried ?? [])
     for (const name of fromHistory) kept.add(name)
-    if (wipes) for (const name of NEVER_IMPLICIT) kept.add(name)
-    else
-      for (const name of NEVER_IMPLICIT) {
-        kept.delete(name)
-        kept.delete(toWireName(name))
-      }
+    if (wipes) {
+      /*
+       * A WIPE OFFER IS NOT A MENU OF TWO, and this branch used to make it one.
+       *
+       * Measured on "erase everything" and "purge everything that is out of
+       * date" — two sentences the lexicon indexes no term of, so `select`
+       * abstains. With nothing carried, `kept` was `NEVER_IMPLICIT` and nothing
+       * else: the model was handed EXACTLY `memory.reset` and `memory.clear`,
+       * no reads, no alternative action, on the one pair of calls in this app
+       * that cannot be undone. The same request in words the lexicon DOES know
+       * — "clear everything", "delete all my records" — came back with 18 and
+       * 42 tools with every read among them, so the harm was specific to
+       * abstention, which is the case where the request is least understood and
+       * therefore the worst possible place to narrow to two destructive roots.
+       *
+       * Note the shape of the trap, because it is easy to reintroduce: the
+       * `carried === null` early return below is skipped exactly when `wipes`
+       * is true, so the wipe path was the one path out of this function that
+       * never reached `closeOver`, `RESIDENT` or `EVERYTHING_SAFE`.
+       *
+       * So abstention means here what it means everywhere else — no opinion,
+       * offer everything — with the two wipes ADDED because the person's own
+       * words asked for them. On the carried path `RESIDENT` is a floor rather
+       * than a widening: the system prompt tells the model to look before it
+       * writes, and a set with no reads in it makes that unfollowable.
+       */
+      for (const name of carried === null ? EVERYTHING_SAFE : RESIDENT) kept.add(name)
+      for (const name of NEVER_IMPLICIT) kept.add(name)
+      return closeOver(kept)
+    }
+    for (const name of NEVER_IMPLICIT) {
+      kept.delete(name)
+      kept.delete(toWireName(name))
+    }
     // Nothing carried and nothing asked for: genuinely no opinion.
-    if (carried === null && !wipes) return null
+    if (carried === null) return null
     return kept
   }
 

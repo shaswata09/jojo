@@ -18,7 +18,7 @@ import { resolveAddress } from '@jojo/service/core/address'
 import type { Instant } from '@jojo/service/core/model'
 import { createProjections } from '@jojo/service/react/projections'
 import { bootInMemory } from '@jojo/service/repo/boot'
-import { appPath, BASE_TITLE } from '@/lib/links'
+import { appPath, BASE_TITLE, calendarDate } from '@/lib/links'
 // `?raw` rather than `node:fs`: the app project's `types` is `["vite/client"]`,
 // so `node:fs` does not typecheck here, and vite/client is what declares this.
 import indexHtml from '../../index.html?raw'
@@ -170,5 +170,52 @@ describe('BASE_TITLE', () => {
     const title = /<title>([^<]*)<\/title>/.exec(indexHtml)?.[1]
 
     expect(title).toBe(BASE_TITLE)
+  })
+})
+
+/**
+ * The calendar's three numbers, and the day in particular.
+ *
+ * `readInt` used to return its fallback BEFORE the clamp, and the day's
+ * fallback is today's date — a number the wall clock picks, not the month on
+ * screen. '/calendar?y=2026&m=2' loaded on the 31st therefore handed the
+ * Calendar d=31 in a 28-day February: no cell lit, and the day panel's
+ * `isoOf(2026, 2, 31)` normalises to 2026-03-03, so an event added from a page
+ * headed February was stamped in March.
+ *
+ * Pinned with an injected fallback rather than the live `TODAY_PARTS`, because
+ * the bug only showed on the 29th, 30th and 31st of a month — a test reading
+ * the clock would have passed on the other twenty-eight days and been no test
+ * at all.
+ */
+describe('calendarDate', () => {
+  const onThe31st = { y: 2026, m: 10, d: 31 }
+
+  it('clamps the fallback day to the month that is on screen', () => {
+    expect(calendarDate(new URLSearchParams('y=2026&m=2'), onThe31st).d).toBe(28)
+  })
+
+  it('clamps it just the same when the day is present but unreadable', () => {
+    expect(calendarDate(new URLSearchParams('y=2026&m=2&d=nonsense'), onThe31st).d).toBe(28)
+    expect(calendarDate(new URLSearchParams('y=2026&m=2&d=2.5'), onThe31st).d).toBe(28)
+  })
+
+  it('still clamps a day that was actually typed', () => {
+    expect(calendarDate(new URLSearchParams('y=2026&m=2&d=31'), { y: 2026, m: 10, d: 1 }).d).toBe(
+      28,
+    )
+  })
+
+  it('leaves a fallback the month can honour alone', () => {
+    expect(calendarDate(new URLSearchParams('y=2026&m=3'), onThe31st).d).toBe(31)
+  })
+
+  it('clamps the month and the year the same way', () => {
+    const params = new URLSearchParams('y=99999&m=99&d=1')
+    expect(calendarDate(params, onThe31st)).toEqual({ y: 9999, m: 12, d: 1 })
+  })
+
+  it('reads a leap February as 29 rather than 28', () => {
+    expect(calendarDate(new URLSearchParams('y=2028&m=2'), onThe31st).d).toBe(29)
   })
 })

@@ -354,6 +354,69 @@ describe('splitting the document on its own headings', () => {
     const out = cvSections(['## Education', '', '## Employment', 'A job.'].join('\n'))
     expect(out.map((x) => x.heading)).toEqual(['Employment'])
   })
+
+  it('keeps the text of a heading whose section was empty', () => {
+    /*
+     * The other half of the rule above, and the reason it is safe. "Education"
+     * names no section here, so it does not get to label one — but it is still
+     * a line somebody wrote, so it goes into the next section's body instead of
+     * being deleted. Dropping the label used to mean dropping the line.
+     */
+    const out = cvSections(['## Education', '', '## Employment', 'A job.'].join('\n'))
+    expect(out[0]?.text).toContain('Education')
+  })
+
+  it('keeps both lines of a two-line heading block', () => {
+    /*
+     * A CV converted from Word puts the section name and the first entry's
+     * title on consecutive styled lines. Both are heading-SHAPED, so each used
+     * to flush an empty body and delete the label before it: this document
+     * returned one section — the preamble — and every other line was gone
+     * before the model saw it (measured 2026-08).
+     *
+     * Every line of it is heading-shaped, "MIT, 2016-2021" included; the
+     * capitals rule cannot tell an entry from a section name. So the first line
+     * of the block takes the label and the rest become its text, which is the
+     * safe way round — the first is the one least likely to be an entry.
+     */
+    const out = cvSections(
+      [
+        'AWARDS',
+        'BEST PAPER AWARD, OSDI 2019',
+        'BEST DEMO AWARD, SOSP 2020',
+        '',
+        '## Education',
+        '**PhD, Computer Science**',
+        'MIT, 2016-2021',
+      ].join('\n'),
+    )
+    const everything = out.map((x) => `${x.heading}\n${x.text}`).join('\n')
+    for (const line of [
+      'AWARDS',
+      'BEST PAPER AWARD, OSDI 2019',
+      'BEST DEMO AWARD, SOSP 2020',
+      'Education',
+      'PhD, Computer Science',
+      'MIT, 2016-2021',
+    ]) {
+      expect(everything).toContain(line)
+    }
+    // And the entries are under the section that names them, not scattered.
+    expect(out.find((x) => x.heading === 'AWARDS')?.text).toContain('BEST DEMO AWARD, SOSP 2020')
+    expect(out.find((x) => x.heading === 'Education')?.text).toContain('MIT, 2016-2021')
+  })
+
+  it('does not lose a section when a converter puts a blank line between every line', () => {
+    // The shape markitdown actually emits. Closing the heading block on a blank
+    // line would leave this document — the common one — exactly as broken as it
+    // was, so blanks do not close it.
+    const out = cvSections(
+      ['## Education', '', '**PhD, Computer Science**', '', 'MIT, 2016-2021'].join('\n'),
+    )
+    expect(out.map((x) => x.heading)).toEqual(['Education'])
+    expect(out[0]?.text).toContain('PhD, Computer Science')
+    expect(out[0]?.text).toContain('MIT, 2016-2021')
+  })
 })
 
 describe('packing the sections into passes', () => {
@@ -401,6 +464,30 @@ describe('packing the sections into passes', () => {
     // Not reachable from the reader, which rejects anything this short — but
     // an empty list is the honest answer and a section of empty text is not.
     expect(cvPasses('   \n  \n ', 100)).toEqual([])
+  })
+
+  it('counts the heading and the seam it emits, not only the section text', () => {
+    /*
+     * Packing counted `section.text.length` while `flush` emitted
+     * `## ${heading}\n${text}` joined by a blank line. Measured (2026-08): two
+     * sections with 50-character headings, packed to a budget of 200, emitted a
+     * pass of 290. `cvMessages` slices anything over `CV_BUDGET` off the END —
+     * where a CV keeps its publications — so the uncounted characters were paid
+     * for out of the part of the document this file exists to stop losing.
+     */
+    const cv = [`## ${'H'.repeat(50)}`, 'x'.repeat(120), `## ${'G'.repeat(50)}`, 'y'.repeat(60)].join(
+      '\n',
+    )
+    for (const pass of cvPasses(cv, 200)) expect(pass.text.length).toBeLessThanOrEqual(200)
+  })
+
+  it('keeps a split section inside the budget too, heading and all', () => {
+    // The other branch, which repeats the heading on every piece: `chunk` has to
+    // be given the room that is left after the frame, not the whole budget.
+    const long = Array.from({ length: 40 }, (_, i) => `Paper number ${String(i)}.`).join('\n\n')
+    const out = cvPasses(`## ${'P'.repeat(50)}\n${long}`, 200)
+    expect(out.length).toBeGreaterThan(1)
+    for (const pass of out) expect(pass.text.length).toBeLessThanOrEqual(200)
   })
 
   it('covers the whole document across the passes', () => {

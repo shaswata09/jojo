@@ -131,3 +131,78 @@ describe('a currency code written first', () => {
     expect(parseComp('€112,500')?.currency).toBe('€')
   })
 })
+
+/**
+ * The first AMOUNT, not the first number.
+ *
+ * Every money signal in the pattern is optional, so the pattern by itself
+ * matched any run of digits and `parseComp` returned whichever integer came
+ * first. Measured against posting-shaped text, that is a holiday allowance, a
+ * headcount, a start year and a room number, each of them then ranked as pay on
+ * the offer comparison — the one screen this module exists to feed.
+ */
+describe('a number that is not money', () => {
+  for (const [text, amount] of [
+    ['25 days holiday, salary £45,000', 45_000],
+    ['Team of 12 engineers. $112k base.', 112_000],
+    ['2026 start date, $180,000 per annum', 180_000],
+    ['Office 402, EUR 65.000 per year', 65_000],
+    ['Sponsors 5 conferences a year. 95,000 EUR.', 95_000],
+  ] as const) {
+    it(`reads ${text} as ${amount}`, () => {
+      expect(parseComp(text)?.amount).toBe(amount)
+    })
+  }
+
+  it('still hands back characters a reader can find in the text', () => {
+    // The traceability contract survives the skip: `matched` is the amount that
+    // was chosen, not the one that was passed over.
+    expect(parseComp('Team of 12 engineers. $112k base.')?.matched).toContain('112k')
+  })
+
+  it('counts a period only when it touches the digits', () => {
+    // `PERIODS` is scanned across the whole text to LABEL an amount, which is
+    // fair once we know which number is the pay. As evidence that a bare number
+    // IS pay it would be worthless: `per annum` at the end of the sentence would
+    // otherwise vouch for the 12 at the start of it.
+    expect(parseComp('60/hr')).toMatchObject({ amount: 60, period: 'hour' })
+    expect(parseComp('60000 per year')?.amount).toBe(60_000)
+    expect(parseComp('Team of 12, paid $95,000 per annum')?.amount).toBe(95_000)
+  })
+
+  it('reads a lone unmarked number, which is what the comp field holds', () => {
+    // Nothing said money, but there is nothing here for the choice to get
+    // wrong, and `matched` shows the reader exactly what was taken.
+    expect(parseComp('60000')?.amount).toBe(60_000)
+    expect(parseComp('salary 60000')?.amount).toBe(60_000)
+  })
+
+  it('refuses several unmarked numbers rather than picking one', () => {
+    // Choosing among bare integers is a guess no reader can audit. The module
+    // refuses `competitive`; this is the same refusal.
+    expect(parseComp('Team of 12 engineers, 4 offices')).toBeUndefined()
+  })
+})
+
+/**
+ * One signal each, with a decoy integer in front of it.
+ *
+ * Each text below carries exactly ONE of the five things that mark digits as
+ * money, and a bare number earlier in the string that would win without it.
+ * Written this way deliberately: a text with two signals cannot tell you which
+ * one is doing the work, and dropping any one of the five silently narrows what
+ * the comparison screen can read.
+ */
+describe('what marks digits as money', () => {
+  for (const [signal, text, amount] of [
+    ['a currency symbol', 'Team of 12 engineers, $95000 base', 95_000],
+    ['an ISO code', 'Team of 12 engineers, 95000 EUR', 95_000],
+    ['a k/m multiplier', 'Team of 12 engineers, 95k base', 95_000],
+    ['a thousands separator', 'Team of 12 engineers, 95,000 base', 95_000],
+    ['a period touching the digits', 'Team of 12 engineers, 60/hr', 60],
+  ] as const) {
+    it(`reads ${signal}`, () => {
+      expect(parseComp(text)?.amount).toBe(amount)
+    })
+  }
+})

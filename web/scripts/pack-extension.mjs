@@ -92,13 +92,24 @@ try {
 /*
  * Every script in the extension has to PARSE before it is packed.
  *
- * Nothing else checks these files. They are plain `.js` outside the TypeScript
- * projects, oxlint's config ignores the directory, and no test loads them — so a
- * syntax error here is invisible until a browser silently declines to run the
- * script. Chrome still creates the content script's isolated world, the
- * extension still reports itself installed and healthy, and the only symptom is
- * that the page's messages are never answered: "the jojo browser extension did
- * not answer", from an extension that is right there.
+ * Little else checks these files. They are plain `.js` outside the TypeScript
+ * projects and no test loads them — so a syntax error here is invisible until a
+ * browser silently declines to run the script.
+ *
+ * They ARE linted now, which they were not when this was written. `web`'s
+ * oxlint config listed `extension` in `ignorePatterns` AND the lint script
+ * passed only `src`, so two independent things had to change; measured with a
+ * deliberate unused variable in `policy.js`, the whole gate went green with it
+ * in place. Linting costs nothing — the directory was already clean under the
+ * project's own rules — and the argument for adding it is that the 2026-08-26
+ * audit found three exploitable bugs in exactly these 2,547 lines, and a parse
+ * check cannot see any of that class. Typechecking and tests are still absent,
+ * so the paragraph below still holds for everything a parser cannot reach.
+ *
+ * Chrome still creates the content script's isolated world, the extension still
+ * reports itself installed and healthy, and the only symptom is that the page's
+ * messages are never answered: "the jojo browser extension did not answer",
+ * from an extension that is right there.
  *
  * This is not hypothetical. A `*` followed by a `/` inside a block comment ends
  * the comment early, and a URL pattern written into one turned the rest of

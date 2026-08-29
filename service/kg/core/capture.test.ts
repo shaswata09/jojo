@@ -448,3 +448,96 @@ describe('remoteRefCount, unquoted', () => {
     expect(remoteRefCount('<img src="">')).toBe(0)
   })
 })
+
+/**
+ * The tag anchor, and the character that used to end it early.
+ *
+ * `>` is legal and UNESCAPED inside an attribute value — the HTML serialiser
+ * escapes `&`, nbsp and `"` in a value and leaves `>` alone — so an anchor
+ * spelled `<[^>]*?` stopped at the first `>` it met and never reached the
+ * attributes after it. One `alt` was enough to hide a beacon.
+ *
+ * Measured before the fix: `<img src="https://evil.example/b.png">` counted 1,
+ * `<img alt="a > b" src="https://evil.example/b.png">` counted 0, and
+ * `<td alt="x > y" background="https://cdn.example/p.png">` counted 0. The same
+ * spelling is the sweep's in both inliners, so the scan and the sweep were blind
+ * together and a capture carrying this was STORED with the scan calling it clean.
+ */
+describe('remoteRefCount, past a `>` inside an earlier attribute', () => {
+  const cases: readonly (readonly [string, string])[] = [
+    ['double-quoted', '<img alt="a > b" src="https://evil.example/b.png">'],
+    ['single-quoted', "<img alt='a > b' src='https://evil.example/b.png'>"],
+    ['unquoted value behind it', '<img alt="a > b" src=https://evil.example/b.png>'],
+    ['a legacy background attribute', '<td alt="x > y" background="https://cdn.example/p.png">'],
+    ['two of them', '<img alt="a > b" title="c > d" src="https://evil.example/b.png">'],
+    [
+      'spliced out of a stylesheet',
+      '<style>a{}</style><img alt="a > b" src=https://evil.example/beacon.png>',
+    ],
+  ]
+
+  for (const [what, html] of cases) {
+    it(`counts a remote reference hidden behind a \`>\` in ${what}`, () => {
+      expect(remoteRefCount(html)).toBeGreaterThan(0)
+    })
+  }
+
+  it('still leaves the prose and the rewrites alone', () => {
+    // Widening the anchor must not start refusing clean captures: the scan and
+    // the sweep have to agree, and a scan stricter than the sweep is a rejection
+    // with no remedy.
+    expect(remoteRefCount('<p>To embed it write &lt;img src="https://x.test/a.png"&gt;</p>')).toBe(0)
+    expect(remoteRefCount(`<a ${CAPTURE_HREF_ATTR}="https://acme.test/apply">Apply</a>`)).toBe(0)
+    expect(remoteRefCount('<img alt="a > b" src="data:image/png;base64,AAAA">')).toBe(0)
+    // A `<` that is not a tag start. The tokeniser only opens a tag on a letter,
+    // and a stray one inside a <style> block must not open a scan that runs to
+    // the end of the document looking for an attribute.
+    expect(remoteRefCount('<style>.a{content:"< "}</style><p>a src="x"</p>')).toBe(0)
+  })
+})
+
+/**
+ * `image-set()`, whose URL can be a bare string and was therefore invisible.
+ *
+ * The CSS patterns look for `url(` and `@import`; a bare string inside
+ * `image-set()` is neither, and it carries no attribute name for the first
+ * pattern either. Measured before this existed: `remoteRefCount` returned 0 and
+ * `readCapture` ACCEPTED a document with a live CDN address in it.
+ */
+describe('remoteRefCount, image-set', () => {
+  it('counts a bare string URL, in each spelling', () => {
+    expect(
+      remoteRefCount('<style>.a{background-image:image-set("https://cdn.test/x.png" 1x)}</style>'),
+    ).toBe(1)
+    expect(
+      remoteRefCount("<style>.a{background:-webkit-image-set('https://cdn.test/x.png' 1x)}</style>"),
+    ).toBe(1)
+    expect(
+      remoteRefCount('<div style=\'background:image-set("//cdn.test/x.png" 1x)\'></div>'),
+    ).toBe(1)
+  })
+
+  it('does not count what the serialisers produce instead', () => {
+    // Both walks rewrite a bare string to `url("<token>")`, and the inliner
+    // fills that with a data URI. Either of those counted as a leak would refuse
+    // every capture of a page that uses image-set at all.
+    expect(
+      remoteRefCount('<style>.a{background:image-set(url("__JOJO_ASSET_0__") 1x)}</style>'),
+    ).toBe(0)
+    expect(
+      remoteRefCount('<style>.a{background:image-set("data:image/png;base64,AAAA" 1x)}</style>'),
+    ).toBe(0)
+    // An image-set option whose string is a MIME type rather than an address.
+    expect(
+      remoteRefCount('<style>.a{background:image-set(url("data:,") type("image/avif"))}</style>'),
+    ).toBe(0)
+  })
+
+  it('does not run past the image-set it started in', () => {
+    // The body pattern cannot cross an unmatched `)`, so an image-set that is
+    // clean cannot borrow a quoted URL from somewhere else in the document and
+    // report a leak that is not there.
+    const html = '<style>.a{background:image-set("x.png" 1x)}</style><p>see "https://x.test/a"</p>'
+    expect(remoteRefCount(html)).toBe(0)
+  })
+})

@@ -85,10 +85,20 @@ state as one another, which is worth saying plainly.
   advice that followed from them was worse than the error — a reader acting on it
   would have redesigned a port that two platforms already satisfy.
 
-  What IS still unused is the other half: `core/folder.ts` (291 lines) is imported by
-  nothing but its own test. `pairFolder`, `planRebuild`, `classifyFile` and
-  `documentPath` have no production caller. That is the piece to treat as a proposal
-  — or to delete.
+  The other half of that paragraph named `core/folder.ts` — 291 lines of naming,
+  drift classification, orphan pairing and rebuild planning, with 264 lines of
+  assertions, imported by nothing but its own test — and said to treat it as a
+  proposal or delete it. It is deleted now, and the reason is that the
+  proposal it was cannot come back in that shape: it reconciles a record's byte
+  facts against a listing of a folder the OS owns, and there is no such folder.
+  `showDirectoryPicker` is called nowhere; documents live in the `jojo-files`
+  IndexedDB store, where the app is the only writer, so `missing` and `changed`
+  describe states that cannot arise. What survived the replacement is the naming
+  half, and it survived by being rewritten for the store that actually shipped:
+  `core/blob-path.ts` is the live path format, `encodeName` is the live
+  sanitiser, and both are read by web's backup writer and the phone's restore.
+  Recover the deleted file from git if a real folder mirror is ever built; do not
+  read its absence as the feature having been considered and rejected.
 
 ## Writes go through tools
 

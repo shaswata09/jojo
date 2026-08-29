@@ -1,6 +1,7 @@
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import {
   CAPTURE_MAX_ASSET_BYTES,
+  CAPTURE_MAX_ASSETS,
   CAPTURE_SCHEMES,
   readCapture,
   type CaptureEnvelope,
@@ -24,6 +25,28 @@ import {
  * trade: the TEXT of the posting — which is the thing worth keeping — is already
  * in the DOM the WebView handed over. What is at risk is a logo.
  */
+
+/**
+ * Fetched stylesheet text, made unable to close the element it is spliced into.
+ *
+ * The web inliner has had this since a sheet ending
+ * `}</style><img src=https://evil.example/beacon.png>` was shown to close its
+ * `<style>` block and write a live tag into the archive; the phone, which runs
+ * the same splice on the same untrusted bytes, never got it. Reproduced here
+ * before the fix: `inlineCapture` returned ok with
+ * `<img alt="a > b" src=https://evil.example/beacon.png>` in the stored capture
+ * and `remoteRefCount` calling the file clean.
+ *
+ * `<` is the only character that can end a `<style>` block, and `\3c ` is its
+ * CSS escape — the trailing space is part of the escape and is consumed by the
+ * CSS parser, so a rule that genuinely contained `<` renders identically.
+ *
+ * `<` ALONE is enough only while a `css` token always sits inside a `<style>`,
+ * and that is a rule with a keeper rather than an assumption: `capture-script.ts`
+ * drops an `@import` found in a style ATTRIBUTE instead of tokenising it, which
+ * was the one path that put stylesheet text inside a quoted attribute value.
+ */
+const cssSafe = (css: string) => css.replace(/</g, '\\3c ')
 
 /** What the injected script posts back, before anything trusts it. */
 export type RawCapture = {
@@ -59,6 +82,8 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
 
   const assets = [...(raw.assets ?? [])]
   const resolved = new Map<string, string>()
+  /** Which resolved values are stylesheet TEXT. See the splice below. */
+  const cssKeys = new Set<string>()
   /**
    * One entry per ADDRESS, beside the one-entry-per-token map above.
    *
@@ -76,13 +101,47 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
   // been fetched, and they are queued onto the end to be picked up by a later
   // turn of this same loop. One pass covers both levels.
   for (let i = 0; i < assets.length; i += 1) {
+    if (i >= CAPTURE_MAX_ASSETS) {
+      /*
+       * The loop walks a list ITS OWN BODY APPENDS TO, and `byHref` only
+       * collapses repeats of the same address — so a page whose sheets import
+       * two FRESH ones apiece never ends. Measured on this file before the cap:
+       * one asset produced 6001 requests, and the loop stopped only because the
+       * harness had begun failing them. On a phone that is the Save button on
+       * 'Keeping…' forever, over the user's mobile data, with nothing to do but
+       * kill the app.
+       *
+       * Counted rather than silently truncated: `dropped` is what the note on
+       * the file says. Their tokens are emptied by the sweep below exactly as a
+       * failed fetch's are, so "inlined or gone" still holds.
+       */
+      dropped += assets.length - i
+      break
+    }
     const asset = assets[i]
     if (asset === undefined) continue
     const key = `__JOJO_ASSET_${String(i)}__`
 
-    const seen = byHref.get(asset.href)
+    /*
+     * Keyed by KIND as well as address, and this branch records `cssKeys` the
+     * way the fetch path does.
+     *
+     * `capture-script.ts` mints a token per OCCURRENCE with no de-duplication of
+     * its own, so two identical `<link rel=stylesheet>` tags — or a `<link>` and
+     * an `@import` of the same sheet — produce two tokens for one address.
+     * Without the `cssKeys.add` here the splice below would escape whichever
+     * occurrence happened to be fetched and splice every later one raw, which is
+     * escaping decided by iteration order. The kind is in the key because it
+     * decides the escape and because the same address wanted as `css` (text) and
+     * as `css-asset` (a data URI inside `url()`) must not hand one form of the
+     * value to the other. The duplication this map exists to kill — the same
+     * webfont in two `<style>` blocks — is same-kind and still collapses.
+     */
+    const cacheKey = `${asset.kind}\u0000${asset.href}`
+    const seen = byHref.get(cacheKey)
     if (seen !== undefined) {
       resolved.set(key, seen)
+      if (asset.kind === 'css') cssKeys.add(key)
       continue
     }
 
@@ -135,8 +194,58 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
             return `url("__JOJO_ASSET_${String(at)}__")`
           },
         )
-        resolved.set(key, inlinedCss)
-        byHref.set(asset.href, inlinedCss)
+        /*
+         * `image-set()`, whose URL can be a BARE STRING.
+         *
+         * `image-set("https://cdn/x.png" 1x)` is a fetch with no `url(`, no
+         * `@import` and no attribute name, so the two rewrites above walk past
+         * it and every pattern in `remoteRefCount` was blind to it. Measured
+         * before this ran: the address reached the stored capture untouched and
+         * `readCapture` accepted the file. `capture-script.ts` tokenises the
+         * same shape in the page's own CSS; this is the half that covers a
+         * stylesheet fetched from the network.
+         *
+         * After the `url()` pass, so a `url()` inside an image-set is already a
+         * token. The inner replace consumes a parenthesised group whole, which
+         * keeps it off that token and off `type("image/avif")` — an image-set
+         * option whose string is a MIME type rather than an address.
+         *
+         * Anchored on the literal `image-set(` rather than on a pattern that
+         * absorbs the vendor prefix: a leading `[a-z-]*` rescans to the end of
+         * every run of letters at every offset, and a 2 MB stylesheet made this
+         * quadratic — measured as a test run that never finished. The prefix
+         * stays outside the match, so `-webkit-image-set` is still rewritten.
+         */
+        const withImageSets = inlinedCss.replace(
+          /(image-set\()((?:[^()"']|"[^"]*"|'[^']*'|\([^()]*\))*)\)/gi,
+          (_whole, head: string, body: string) =>
+            `${head}${body.replace(
+              /\([^()]*\)|(['"])([^'"]*)\1/gi,
+              (piece: string, _quote: string | undefined, url: string | undefined) => {
+                if (url === undefined) return piece
+                const value = url.trim()
+                if (value === '' || value.startsWith('__JOJO_ASSET_')) return piece
+                if (value.startsWith('data:')) return piece
+                const nested = absolute(url, asset.href)
+                if (nested === null) {
+                  dropped += 1
+                  // `url("")` rather than `none`: an image-set option has to be
+                  // a URL, and `none` there invalidates the declaration.
+                  return 'url("")'
+                }
+                const at = assets.length
+                assets.push({ href: nested, kind: 'css-asset' })
+                return `url("__JOJO_ASSET_${String(at)}__")`
+              },
+            )})`,
+        )
+        resolved.set(key, withImageSets)
+        // Recorded rather than inferred. Only stylesheet TEXT is spliced as
+        // markup-adjacent content and needs escaping; a data URI is base64 and
+        // cannot contain `<` — but deciding that by sniffing the value would be
+        // one refactor away from being wrong.
+        cssKeys.add(key)
+        byHref.set(cacheKey, withImageSets)
         continue
       }
 
@@ -144,18 +253,32 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
       if (blob.size > CAPTURE_MAX_ASSET_BYTES) throw new Error('asset too large')
       const uri = await dataUri(blob)
       resolved.set(key, uri)
-      byHref.set(asset.href, uri)
+      byHref.set(cacheKey, uri)
     } catch {
       dropped += 1
       resolved.set(key, '')
       // Remembered as a failure too, so a page naming a dead asset ten times
       // makes one request rather than ten.
-      byHref.set(asset.href, '')
+      byHref.set(cacheKey, '')
     }
   }
 
   let html = raw.html
-  for (const [key, value] of resolved) html = html.split(key).join(value)
+  for (const [key, value] of resolved) {
+    /*
+     * Stylesheet text is spliced into the document, so it must not be able to
+     * LEAVE the element it is spliced into.
+     *
+     * The token for a `<link rel=stylesheet>` sits inside a `<style>` block and
+     * the value is whatever the remote server returned. A sheet ending
+     * `}</style><img alt="a > b" src=https://evil.example/beacon.png>` closes
+     * the block and writes a live tag into the archive — and it was written that
+     * way precisely because the sweep below and `remoteRefCount` were both blind
+     * to it. Both know it now; this stops the splice creating the tag at all,
+     * which is the half that does not depend on a pattern being complete.
+     */
+    html = html.split(key).join(cssKeys.has(key) ? cssSafe(value) : value)
+  }
 
   // Anything the walk missed. A leftover token would render as literal text, and
   // a surviving http(s) address is the one thing that must not ship — so both
@@ -173,8 +296,20 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
   // `remoteRefCount` was also blind to — a capture that beaconed on every
   // viewing while both checks reported it clean. The two must widen together:
   // a scan stricter than the sweep refuses captures with no remedy.
+  //
+  // And the anchor consumes QUOTED RUNS rather than stopping at the first `>`.
+  // A `>` inside an attribute value is legal and unescaped — the HTML serialiser
+  // escapes `&`, nbsp and `"` in a value and leaves `>` alone — so `<[^>]*?`
+  // made one earlier attribute enough to hide every attribute after it.
+  // Measured: `<img src=https://evil.example/b.png>` was emptied,
+  // `<img alt="a > b" src=https://evil.example/b.png>` was not, and
+  // `remoteRefCount` was blind in the same way from the same spelling. `<` must
+  // be followed by an ASCII letter because that is exactly when the tokeniser
+  // starts a tag. Identical to `REMOTE_REF` in `service/kg/core/capture.ts` —
+  // a third copy lives in `web/extension/background.js`, and the three change
+  // together.
   html = html.replace(
-    /(<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(?:(["'])\s*(?:https?:|\/\/)[^"']*\2|(?:https?:|\/\/)[^\s>]*)/gi,
+    /(<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(?:(["'])\s*(?:https?:|\/\/)[^"']*\2|(?:https?:|\/\/)[^\s>]*)/gi,
     (_whole, head: string, quote: string | undefined) => {
       dropped += 1
       // An unquoted value is emptied by writing a quoted empty one, which is

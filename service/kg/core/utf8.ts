@@ -4,8 +4,8 @@
  * ## Why this exists rather than a global
  *
  * `TextDecoder` is a browser global. `check-platform.mjs` is right to be
- * suspicious of those in core — `core/folder.ts` and `core/capture.ts` already
- * measure UTF-8 lengths by hand for exactly this reason — and the suspicion
+ * suspicious of those in core — `core/capture.ts` already measures UTF-8
+ * lengths by hand for exactly this reason — and the suspicion
  * turned out to be load-bearing rather than pedantic: React Native's Hermes
  * does not ship one, and `mobile/src/lib/polyfills.ts` does not install one
  * either. Expo used to, silently, and that went away with the ejection.

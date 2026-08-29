@@ -10,11 +10,14 @@ import {
   PROVIDERS,
   cleanKey,
   isLoopbackEndpoint,
+  parseContextWindow,
   providerMeta,
   type ProviderMeta,
 } from '@jojo/service/core/provider'
 import type { ProviderId } from '@jojo/service/core/provider'
 import { copyExport } from '@/lib/clipboard-export'
+import { buildPhoneBackup } from '@/lib/phone-backup'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
 import { AuditLog } from '@/components/common/AuditLog'
@@ -77,6 +80,14 @@ export function SettingsScreen() {
    */
   const { settings, servers, save, remember, rename, forget } = useModelSettings()
   const [endpoint, setEndpoint] = useState(settings.endpoint)
+  /*
+   * An edit buffer: the stored value is a number and the field is text, so a
+   * half-typed "3" would otherwise have the app plan against 3 tokens for as
+   * long as it takes to type the rest. Committed on blur.
+   */
+  const [windowEdit, setWindowEdit] = useState(
+    settings.contextWindow === undefined ? '' : String(settings.contextWindow),
+  )
   const [model, setModel] = useState(settings.model)
   /*
    * `null` means "not edited in this session", which is different from "" —
@@ -219,6 +230,11 @@ export function SettingsScreen() {
     setNameEdit(null)
   }
   const { exportJSON, reset, clearAll, isEmpty } = useStoreAdmin()
+  // The rows an export has to carry, and the clock it stamps. `now()` rather
+  // than `new Date()` for the reason `kg-context` gives: one clock, injected,
+  // so nothing in this tree disagrees about when something happened.
+  const graph = useGraph()
+  const { now } = useKg()
   // Only for the paths below: the copies behind the file rows have to be named
   // before the rows go, and the rows are the only record of where they are.
   const { files } = useVault()
@@ -246,7 +262,36 @@ export function SettingsScreen() {
     // module swallows the `TransactionTooLargeException` — and this used to
     // raise "Copied to the clipboard" either way. See `lib/clipboard-export.ts`
     // for the buffer, the measure and why refusing is the safe direction.
-    toast(copyExport(exportJSON(), (text) => Clipboard.setString(text), Platform.OS === 'android'))
+    //
+    // WHAT IS COPIED IS A BACKUP, not the projections on their own. It used to
+    // be `exportJSON()`, and that string is a file this app REFUSES: run it
+    // through `core/backup.ts`'s `readBackup` — the same reader the Transfer
+    // screen puts every arriving file through — and it comes back
+    // `backup/not-a-backup`, "this is an older export that holds only the
+    // readable summary, not the data needed to restore". So the phone's one
+    // outbound route wrote something only the phone's own eyes could use, on
+    // the screen whose Clear-every-record confirmation tells people to export
+    // first. Driven end to end after the change: `readBackup` accepts this
+    // envelope and `repo/restore.ts` puts the records back.
+    //
+    // Built in `lib/phone-backup.ts` rather than here, and the move is the
+    // regression test: this is a component, D20 bans mounting one, so while the
+    // envelope was assembled inside this `onPress` nothing in the repo could
+    // ask `readBackup` whether it accepted the result — which for two releases
+    // it did not. `phone-backup.test.ts` asserts that round trip now, and keeps
+    // the old projections-only payload beside it as the case that must stay
+    // refused.
+    const backup = buildPhoneBackup({
+      exportedAt: now(),
+      nodes: graph.nodes(),
+      edges: graph.edges(),
+      // Parsed back out of `exportJSON()` rather than rebuilt: that function is
+      // the one spelling of what the readable half contains, and a second
+      // projection list in this file is exactly the drift that put a wrong
+      // sentence about keywords under this button.
+      readable: JSON.parse(exportJSON()) as unknown,
+    })
+    toast(copyExport(backup, (text) => Clipboard.setString(text), Platform.OS === 'android'))
   }
 
   /**
@@ -339,9 +384,16 @@ export function SettingsScreen() {
             there is nothing to switch on, and nothing leaves the device. Documents you attach are
             copied into jojo&rsquo;s own folder, so they survive the original being moved or deleted.
           </Txt>
+          {/* Export, and only Export. This said "or Transfer, which hands the
+              whole store to another device", which is true on the COMPUTER and
+              false here: a browser cannot accept an inbound connection, so the
+              phone is always the side that listens. `TransferScreen`'s own
+              header says it — "The phone cannot send… So sending points at the
+              export under Settings" — which is this screen, so the sentence
+              sent the reader in a circle. */}
           <Txt size="sm" tone="secondary">
-            To get a copy out, use Export below — or Transfer, which hands the whole store to
-            another device over your own network.
+            To get a copy out, use Export below. Transfer brings a copy IN from your computer; it
+            cannot send one from here.
           </Txt>
         </Panel>
 
@@ -478,6 +530,43 @@ export function SettingsScreen() {
                 onBlur={onRename}
               />
             ) : null}
+            {/*
+             * The window, which had no control at all until now.
+             *
+             * `contextOf` has always read `settings.contextWindow` and fallen
+             * back to the provider's default, and nothing in either app could
+             * write it — so every Ollama user planned against 4,096 tokens
+             * whatever their `num_ctx` actually was, and the agent compacted
+             * history it had room for. The default is a floor Ollama ships,
+             * not a measurement of anybody's deployment.
+             *
+             * Empty means "use the default", which is a real choice: for Ollama
+             * it also stops jojo sending `num_ctx` at all, letting the server
+             * size itself against its own VRAM rather than failing to load at a
+             * number the user guessed.
+             */}
+            <TextField
+              label="Context window"
+              mono
+              keyboardType="number-pad"
+              autoCorrect={false}
+              value={windowEdit}
+              placeholder={String(provider.defaultContext)}
+              hint={
+                provider.dialect === 'ollama'
+                  ? `Tokens. Empty uses ${provider.defaultContext.toLocaleString()} and lets Ollama size itself; a number here is also sent as num_ctx.`
+                  : `Tokens your deployment can hold. Empty uses ${provider.defaultContext.toLocaleString()}.`
+              }
+              onChangeText={(next) => {
+                setWindowEdit(next.replace(/[^0-9]/g, ''))
+              }}
+              onBlur={() => {
+                const keep = parseContextWindow(windowEdit)
+                setWindowEdit(keep === undefined ? '' : String(keep))
+                const { contextWindow: _dropped, ...rest } = settings
+                save({ ...rest, ...(keep === undefined ? {} : { contextWindow: keep }) })
+              }}
+            />
             {/*
               The three address chips that used to sit here are gone. They
               existed to save somebody remembering whether Ollama is 11434 or
@@ -627,9 +716,19 @@ export function SettingsScreen() {
               backup was lossier than it is, on the screen whose whole job is
               saying what is in the file, and it is the same claim the service
               layer's own comment records as having stopped being true. */}
+          {/* And the second sentence now says what the file is FOR. It used to
+              end "It is the whole store", which was true of what a person could
+              read in it and false of what the app could do with it: the reader
+              on the Transfer screen refused this export as "not a backup". The
+              copy is worth as much as the format here — somebody clearing every
+              record is told to export first, and they are entitled to know that
+              the attached documents themselves stay on the phone. */}
           <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
             The export covers applications, the timeline, the vault, saved postings, your keywords
-            and what they tag, and your profile. It is the whole store.
+            and what they tag, and your profile. It is a backup this app can read back — but the
+            documents you attached stay on this phone, so their rows come back without their
+            contents, and the clipboard is the only way out of this phone — Transfer only
+            receives.
           </Txt>
 
           <View style={{ marginTop: space[3] }}>

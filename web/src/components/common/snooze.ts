@@ -25,6 +25,16 @@ import { TODAY } from '@/lib/today'
  * anything dated ahead it counts from that date. Change the store's rule and
  * change this, or every label in every one of the three menus promises a day
  * the write will not produce.
+ *
+ * `TODAY` IS READ HERE, PER CALL, and that is the whole reason this is a
+ * function rather than a table of dates computed once. The store's half —
+ * `timeline.item.snooze` in `tools/timeline.ts` — anchors on `dayOf(ctx.now)`,
+ * the live clock. While `lib/today` pinned its day once at module load the two
+ * came apart across midnight: measured on a tab opened at 23:50 and used at
+ * 00:10, an overdue reminder anchored on the 12th here and on the 13th in the
+ * store, so "Tomorrow" printed the 13th and the write landed on the 14th. The
+ * pin moves at the day turn now, and reading it at call time is what lets this
+ * follow it.
  */
 export const snoozeAnchor = (date: string) => (date < TODAY ? TODAY : date)
 

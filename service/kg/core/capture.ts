@@ -252,6 +252,31 @@ export const CAPTURE_MAX_BYTES = 8 * 1024 * 1024
 export const CAPTURE_MAX_ASSET_BYTES = 2 * 1024 * 1024
 
 /**
+ * The most addresses one capture will ever fetch.
+ *
+ * Both inliners walk a list THEIR OWN BODY APPENDS TO: a fetched stylesheet's
+ * `@import`s and `url()`s are queued as they are discovered, and each of those
+ * is a stylesheet that can queue more. The per-address de-duplication in each
+ * one only collapses repeats of the SAME address, so a page whose sheets import
+ * two FRESH ones apiece has no end — an unbounded fetch loop driven by the page
+ * being captured. Measured on the phone before this cap reached it: 6001
+ * requests from one asset, and the loop stopped only because the harness had
+ * started failing them.
+ *
+ * Set far above what a real posting needs — the widest board measured while the
+ * de-duplication was written queued 47 addresses — and far below forever.
+ * Everything past it is counted as dropped, which is the outcome an asset that
+ * failed to fetch already has.
+ *
+ * `web/extension/background.js` restates the number rather than reading it:
+ * the extension is loaded from disk and imports `policy.js`, which transcribes
+ * this file under `web/src/lib/capture-policy.test.ts` — and that test does not
+ * carry this constant. Two copies, one owner, and the extension's copy is the
+ * one to change with it.
+ */
+export const CAPTURE_MAX_ASSETS = 500
+
+/**
  * Extensions that name a saved page.
  *
  * NOT read by `kindOfFile` — that has its own `KIND_BY_EXT` map, which carries
@@ -335,12 +360,27 @@ export function isCaptureSource(url: string): boolean {
  * is on the list and does not catch `data-jojo-href`, because the name is
  * followed by `-` rather than `=`. Load-bearing, not luck.)
  *
- * **Anchored inside a tag** with `<[^>]*?`, because postings quote markup. One
- * measured against a fixture read `To embed it write &lt;img
+ * **Anchored inside a tag**, because postings quote markup. One measured
+ * against a fixture read `To embed it write &lt;img
  * src="https://example.com/x.png"&gt;` — the entity-escaped prose serialises
  * with real quotes, an unanchored pattern counted it as a leak, and
  * `readCapture` threw the whole capture away over the posting's own body text.
  * A reference outside a tag is not a fetch, so nothing is lost by requiring one.
+ *
+ * The anchor used to be `<[^>]*?`, and that spelling could not cross a `>` —
+ * which is legal, unescaped, and common inside an attribute VALUE, because the
+ * HTML serialiser escapes `&`, nbsp and `"` in a value and leaves `>` alone. So
+ * one earlier attribute carrying a `>` blinded the scan to every attribute after
+ * it. Measured: `<img src="https://evil.example/b.png">` counted 1, and
+ * `<img alt="a > b" src="https://evil.example/b.png">` counted 0 — the same
+ * address, one attribute earlier, invisible. The `>` did not even have to be on
+ * a tag of the attacker's choosing beyond the one it was leaking from.
+ *
+ * It now walks a tag the way the tokeniser does: quoted runs are consumed whole
+ * (`"[^"]*"` / `'[^']*'`) and only an UNQUOTED `>` ends the tag. `<` must be
+ * followed by an ASCII letter for the same reason — that is exactly when the
+ * tokeniser starts a tag, and it keeps a stray `<` inside a `<style>` block from
+ * opening a scan that runs to the end of the document.
  *
  * **Prose is left alone**, which is the same rule the sweep in each inliner
  * follows. The two have to agree: a scan stricter than the sweep refuses
@@ -357,7 +397,7 @@ export function isCaptureSource(url: string): boolean {
  * tokeniser ends an unquoted attribute value.
  */
 const REMOTE_REF =
-  /<[^>]*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*(?:(["'])\s*(?:https?:|\/\/)[^"']*\1|(?:https?:|\/\/)[^\s>]*)/gi
+  /<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*(?:(["'])\s*(?:https?:|\/\/)[^"']*\1|(?:https?:|\/\/)[^\s>]*)/gi
 
 /**
  * The other half, and it was missing.
@@ -395,6 +435,32 @@ const REMOTE_CSS_REF = /url\(\s*(['"]?)\s*(?:https?:|\/\/)[^)'"]*\1\s*\)/gi
  */
 const REMOTE_IMPORT_REF = /@import\s+(?:url\(\s*)?(['"]?)\s*(?:https?:|\/\/)[^)'";]*\1/gi
 
+/**
+ * The fourth spelling, and the only one with no `url(` and no attribute at all.
+ *
+ * `image-set()` takes a BARE STRING as well as a `url()`:
+ * `background-image: image-set("https://cdn/x.png" 1x, "https://cdn/x@2x.png" 2x)`
+ * is a live fetch that the pattern above cannot see (no attribute name),
+ * `REMOTE_CSS_REF` cannot see (no `url(`) and `REMOTE_IMPORT_REF` cannot see
+ * (no `@import`). Measured before this existed: `remoteRefCount` returned 0 and
+ * `readCapture` ACCEPTED a document with a live CDN address in it, in all three
+ * spellings — `image-set`, `-webkit-image-set`, and single-quoted.
+ *
+ * Both serialisers tokenise those strings now (`queueCssUrls` in
+ * `web/extension/serialise.js` and in `mobile/src/lib/capture-script.ts`, and
+ * the fetched-stylesheet rewrite in each inliner), so this is the check that
+ * the tokenising happened rather than a stricter rule than the sweep.
+ *
+ * The body pattern cannot leave the `image-set(` it started in: a `)` is
+ * consumed only as part of a balanced `\([^()]*\)`, so a bare closing paren
+ * ends the match rather than letting it run on to a quoted URL elsewhere in the
+ * document. A `url("https://…")` INSIDE an image-set is therefore not counted
+ * here — `REMOTE_CSS_REF` already counts it, and the merged-range tally below
+ * would collapse the two anyway.
+ */
+const REMOTE_IMAGE_SET_REF =
+  /image-set\((?:[^()"']|\([^()]*\)|"[^"]*"|'[^']*')*?(['"])\s*(?:https?:|\/\/)[^'"]*\1/gi
+
 /** How many remote references survived. Zero is the only acceptable answer. */
 export function remoteRefCount(html: string): number {
   /*
@@ -410,7 +476,7 @@ export function remoteRefCount(html: string): number {
    * count that says two about one thing is a count nobody can act on.
    */
   const spans: [number, number][] = []
-  for (const pattern of [REMOTE_REF, REMOTE_CSS_REF, REMOTE_IMPORT_REF]) {
+  for (const pattern of [REMOTE_REF, REMOTE_CSS_REF, REMOTE_IMPORT_REF, REMOTE_IMAGE_SET_REF]) {
     for (const match of html.matchAll(pattern)) {
       spans.push([match.index, match.index + match[0].length])
     }

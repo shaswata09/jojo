@@ -212,3 +212,128 @@ describe('unread keys in a failed parse', () => {
     expect(out.issues.map((i) => i.message).join(' ')).not.toContain('not fields of this tool')
   })
 })
+
+/**
+ * Six id failures, six sentences — the commonest of which used to be a lie.
+ *
+ * `s.id` answered "Points at no record." for everything, including an ABSENT
+ * required key: `parseObject` only skips a missing key when the field is
+ * optional, so a model that forgot a field was told to go looking for a record
+ * when the fault was a field it never sent.
+ *
+ * The empty and absent wordings stay plain because `core/validate.ts` reuses
+ * `formatIssues` for store-health diagnostics a PERSON reads. The rest are
+ * model-only — `tool-form.ts` renders every id field a human sees as a picker.
+ */
+describe('what a bad id is told', () => {
+  const parse = (schema: ReturnType<typeof s.id>, value: unknown) => schema.parse(value, 'id')
+
+  it('says the field is missing when it is missing', () => {
+    const out = parse(s.id('application'), undefined)
+    expect(out.ok).toBe(false)
+    if (!out.ok) expect(out.issues[0]?.message).toMatch(/required/i)
+  })
+
+  it('says what an id looks like when the shape is wrong', () => {
+    const out = parse(s.id('application'), 'application_123')
+    expect(out.ok).toBe(false)
+    // Names the type AND shows the shape, because "points at no record" sent
+    // the model hunting for a record that was never the problem.
+    if (!out.ok) {
+      expect(out.issues[0]?.message).toContain('application')
+      expect(out.issues[0]?.message).toContain('app:')
+      expect(out.issues[0]?.message).toMatch(/placeholder/)
+    }
+  })
+
+  it('keeps the plain wording for an empty one, which a person can see', () => {
+    const out = parse(s.id('application'), '')
+    expect(out.ok).toBe(false)
+    if (!out.ok) expect(out.issues[0]?.message).toBe('Points at no record.')
+  })
+
+  it('rejects a non-string without pretending it was a lookup', () => {
+    const out = parse(s.id('application'), 42)
+    expect(out.ok).toBe(false)
+    if (!out.ok) expect(out.issues[0]?.message).toMatch(/text/i)
+  })
+
+  it('still accepts a real id', () => {
+    // `app:`, not `application:` — the prefix table, which is what the error
+    // message now quotes so a model copying it produces something that parses.
+    const out = parse(s.id('application'), 'app:0198e2a0-0000-7000-8000-00000000beef')
+    expect(out.ok).toBe(true)
+  })
+})
+
+/**
+ * A restored backup whose JSON carries a key named `__proto__`.
+ *
+ * `__proto__` is an accessor on `Object.prototype`, so the passthrough's
+ * `out[key] = input[key]` set the returned object's PROTOTYPE rather than a
+ * property, and every declared-optional field the record left out then read
+ * back through it, unvalidated, past the file that calls itself the single
+ * trust boundary.
+ *
+ * The input is built with `JSON.parse` in every case here: an object LITERAL
+ * with `__proto__:` in it sets the prototype as it is constructed, so a test
+ * written that way would be testing the literal rather than the parser. The
+ * backup restore path is a `JSON.parse` too.
+ */
+describe('a key named __proto__', () => {
+  const shape = s.object({
+    title: s.string(),
+    archived: s.optional(s.boolean()),
+    notes: s.optional(s.string()),
+  })
+
+  const restored = (json: string) => shape.parse(JSON.parse(json))
+
+  it('does not become the prototype of the parsed object', () => {
+    const out = restored('{"title":"Acme","__proto__":{"archived":true,"notes":"pwned"}}')
+    expect(out.ok).toBe(true)
+    if (!out.ok) return
+    expect(Object.getPrototypeOf(out.value)).toBe(Object.prototype)
+    expect(Object.keys(out.value)).toEqual(['title'])
+  })
+
+  it('cannot answer for a declared field the record never set', () => {
+    const out = restored('{"title":"Acme","__proto__":{"archived":true,"notes":"pwned"}}')
+    expect(out.ok).toBe(true)
+    if (!out.ok) return
+    // Both halves matter: the value is absent, and the `in` checks that guard
+    // an optional field agree that it is absent.
+    expect(out.value.archived).toBeUndefined()
+    expect('archived' in out.value).toBe(false)
+    expect(out.value.notes).toBeUndefined()
+  })
+
+  it('cannot smuggle a value of the wrong type through a typed field', () => {
+    // The prototype is not validated by anything, so this used to reach the app
+    // as `archived === 'not-a-boolean'` out of an `s.boolean()` field.
+    const out = restored('{"title":"Acme","__proto__":{"archived":"not-a-boolean"}}')
+    expect(out.ok === true && out.value.archived).toBeUndefined()
+  })
+
+  it('leaves every other unknown key passing through, which is the point', () => {
+    const out = restored('{"title":"Acme","fieldFromANewerBuild":7,"__proto__":{"archived":true}}')
+    expect(out.ok).toBe(true)
+    if (!out.ok) return
+    expect((out.value as Record<string, unknown>)['fieldFromANewerBuild']).toBe(7)
+  })
+
+  it('does not fail the parse, because a restore has to finish', () => {
+    // Refusing the record would turn one hostile or corrupt key into a backup
+    // that cannot be restored at all, which is the worse of the two failures.
+    expect(restored('{"title":"Acme","__proto__":{"archived":true}}').ok).toBe(true)
+  })
+
+  it('guards s.record the same way, which reads arbitrary keys by design', () => {
+    const out = s.record(s.unknown()).parse(JSON.parse('{"a":1,"__proto__":{"leak":true}}'))
+    expect(out.ok).toBe(true)
+    if (!out.ok) return
+    expect(Object.getPrototypeOf(out.value)).toBe(Object.prototype)
+    expect((out.value as Record<string, unknown>)['leak']).toBeUndefined()
+    expect(out.value['a']).toBe(1)
+  })
+})

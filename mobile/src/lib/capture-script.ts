@@ -83,9 +83,13 @@ export function captureScript(): string {
       return '__JOJO_ASSET_' + index + '__';
     }
 
-    // Two spellings, because CSS has two. A bare @import "https://..." matches
-    // no url( pattern at all and shipped live until this handled it.
-    function queueCssUrls(css) {
+    // Three spellings, because CSS has three. A bare @import "https://..."
+    // matches no url( pattern at all and shipped live until this handled it,
+    // and image-set() takes a bare STRING, which is neither.
+    // inAttribute says whether the result goes back into a style ATTRIBUTE
+    // rather than a <style> element — see the @import arm, where it decides
+    // whether a token may be minted at all.
+    function queueCssUrls(css, inAttribute) {
       return css
         /*
          * An @import is replaced by the STYLESHEET, not by a link to it — that
@@ -97,6 +101,24 @@ export function captureScript(): string {
         .replace(
           /@import\\s+(?:url\\(\\s*(['"]?)([^'")]+)\\1\\s*\\)|(['"])([^'"]+)\\3)[^;]*;?/gi,
           function (whole, q1, viaUrl, q2, viaString) {
+            // An @import in a style ATTRIBUTE is not a stylesheet: the CSS
+            // parser honours @import only at the top of a style SHEET, so no
+            // browser ever fetched this one and dropping it loses nothing —
+            // hence no dropped += 1 either.
+            //
+            // It is dropped rather than tokenised because of where the token
+            // would land. lib/capture.ts splices a 'css' token's value —
+            // whatever the remote server returned — into the document as text
+            // and escapes it with cssSafe, which escapes '<' ALONE, on the
+            // assumption that a css token always sits inside a <style>. This
+            // was the one path that broke that assumption, and the escape is
+            // useless inside a quoted attribute value: measured on the web
+            // side, a sheet answering a{content:"x"}" onload="alert(1)"
+            // background="https://... closed the attribute and wrote both a
+            // handler and a live address into the archive. Widening the escape
+            // instead would mangle [type="text"] in every real stylesheet, so
+            // the invariant is held here.
+            if (inAttribute === true) return '';
             var raw = viaUrl || viaString || '';
             if (raw.trim().indexOf('data:') === 0) return whole;
             var href = absolute(raw);
@@ -117,6 +139,38 @@ export function captureScript(): string {
           var href = absolute(raw);
           if (href === null) { dropped += 1; return 'none'; }
           return 'url("' + token(href, 'css-asset') + '")';
+        })
+        // image-set(), whose URL can be a BARE STRING and is then invisible to
+        // every other pattern here and to all three in remoteRefCount:
+        // image-set("https://cdn/x.png" 1x) has no url(, no @import and no
+        // attribute name. Measured before this existed: the address reached the
+        // stored capture untouched, remoteRefCount returned 0, and readCapture
+        // accepted the file — a beacon on every viewing with every check calling
+        // it clean.
+        //
+        // Runs AFTER the url() pass, so a url() inside an image-set is already a
+        // token. The inner replace consumes a parenthesised group whole, which is
+        // what keeps it off that token and off type("image/avif") — an image-set
+        // option whose string is a MIME type rather than an address.
+        //
+        // Anchored on the literal image-set( rather than on a pattern that
+        // absorbs the vendor prefix: a leading [a-z-]* rescans to the end of
+        // every run of letters at every offset, and a 2 MB stylesheet made that
+        // quadratic — measured as a test run that never finished. The prefix
+        // stays outside the match, so -webkit-image-set is still rewritten.
+        .replace(/(image-set\\()((?:[^()"']|"[^"]*"|'[^']*'|\\([^()]*\\))*)\\)/gi, function (whole, head, body) {
+          var rewritten = body.replace(/\\([^()]*\\)|(['"])([^'"]*)\\1/gi, function (piece, quote, raw) {
+            if (raw === undefined) return piece;
+            var value = raw.trim();
+            if (value === '' || value.indexOf('__JOJO_ASSET_') === 0) return piece;
+            if (value.indexOf('data:') === 0) return piece;
+            var href = absolute(raw);
+            // url("") rather than none: an image-set option has to be a URL,
+            // and none there invalidates the whole declaration.
+            if (href === null) { dropped += 1; return 'url("")'; }
+            return 'url("' + token(href, 'css-asset') + '")';
+          });
+          return head + rewritten + ')';
         });
     }
 
@@ -269,8 +323,10 @@ export function captureScript(): string {
       }
 
       var inline = el.getAttribute('style');
-      if (inline !== null && /url\\(|@import/i.test(inline)) {
-        el.setAttribute('style', queueCssUrls(inline));
+      if (inline !== null && /url\\(|@import|image-set\\(/i.test(inline)) {
+        // true: this string goes back into an ATTRIBUTE, which changes what may
+        // be tokenised into it. See the @import arm of queueCssUrls.
+        el.setAttribute('style', queueCssUrls(inline, true));
       }
 
       // Read in pickImageSrc, and gone before the document is written out — a
@@ -291,7 +347,7 @@ export function captureScript(): string {
     for (var s = 0; s < cloneStyles.length; s += 1) {
       var text = cloneStyles[s].textContent || '';
       if (text.indexOf('__JOJO_ASSET_') === 0) continue;
-      if (/url\\(|@import/i.test(text)) cloneStyles[s].textContent = queueCssUrls(text);
+      if (/url\\(|@import|image-set\\(/i.test(text)) cloneStyles[s].textContent = queueCssUrls(text, false);
     }
 
     // Constructed stylesheets have no DOM node at all.
@@ -303,7 +359,7 @@ export function captureScript(): string {
     }
     if (adopted.length > 0) {
       var adoptedStyle = document.createElement('style');
-      adoptedStyle.textContent = queueCssUrls(adopted.join('\\n'));
+      adoptedStyle.textContent = queueCssUrls(adopted.join('\\n'), false);
       (doc.querySelector('head') || doc).appendChild(adoptedStyle);
     }
 

@@ -66,6 +66,14 @@ export function OfferComparison() {
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[34rem] border-collapse text-sm">
+          {/* The panel's heading is outside the table, so a screen reader
+              reaching the table by its own list of tables arrives at four
+              column names and no subject. Same treatment as the guide's
+              directory table, which is the pattern here. */}
+          <caption className="sr-only">
+            Your open offers, with the package as you typed it, a yearly reading of it, and the date
+            each one has to be answered by
+          </caption>
           <thead>
             <tr className="text-xs text-text-3">
               <th scope="col" className="py-2 pr-3 text-left font-normal">
@@ -87,7 +95,13 @@ export function OfferComparison() {
               const yearly = p ? annualised(p) : undefined
               return (
                 <tr key={application.id} className="border-t border-hairline align-top">
-                  <td className="py-2.5 pr-3">
+                  {/* A row HEADER, not a cell — every other data table in the
+                      app does this and this one was the exception. Without it a
+                      screen reader reading down the money column announces
+                      "A year, 180,000" with no idea whose offer that is, which
+                      on the one screen where two packages are being weighed
+                      against each other is the whole content of the row. */}
+                  <th scope="row" className="py-2.5 pr-3 text-left font-normal">
                     <Link
                       to={appPath(application)}
                       className="text-text-1 underline-offset-2 hover:text-accent hover:underline"
@@ -97,7 +111,7 @@ export function OfferComparison() {
                     {application.location ? (
                       <div className="mt-0.5 text-xs text-text-3">{application.location}</div>
                     ) : null}
-                  </td>
+                  </th>
 
                   {/* The user's own words, always. The figure beside them is a
                       reading of this, never a replacement for it. */}
@@ -111,7 +125,12 @@ export function OfferComparison() {
                         className="text-text-3"
                         title="No amount could be read from the package"
                       >
-                        —
+                        {/* The dash is a typographic stand-in and announces as
+                            one; `title` is the sighted hover and reaches
+                            neither a screen reader nor a keyboard. The reason
+                            the cell is empty is the information. */}
+                        <span aria-hidden>—</span>
+                        <span className="sr-only">No amount could be read from the package</span>
                       </span>
                     ) : (
                       <span
@@ -121,7 +140,22 @@ export function OfferComparison() {
                         title={`Read from “${p?.matched ?? ''}”`}
                       >
                         {yearly.toLocaleString()}
-                        {p && p.period !== 'year' ? <span className="text-text-3">*</span> : null}
+                        {/* The green was the ONLY thing saying which offer is
+                            the bigger one — colour alone, on the row that
+                            carries the decision. Said out loud here as well,
+                            for a screen reader and for the ~8% of men who
+                            cannot take a green as a signal. */}
+                        {best !== undefined && yearly === best ? (
+                          <span className="sr-only"> — the highest here</span>
+                        ) : null}
+                        {p && p.period !== 'year' ? (
+                          <>
+                            <span className="text-text-3" aria-hidden>
+                              *
+                            </span>
+                            <span className="sr-only"> (annualised)</span>
+                          </>
+                        ) : null}
                       </span>
                     )}
                   </td>

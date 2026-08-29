@@ -83,10 +83,28 @@ describeDriverConformance({
    * `DriverSubject.crossTab`.
    */
   crossTab: false,
+  /*
+   * The `refuseWrite` seam below is exactly what `refusable` asks for, and
+   * declaring it is what lets the shared contract reach the one failure mode
+   * this driver has that the memory driver does not: a write the driver
+   * accepted and AsyncStorage then refused. See `DriverSubject.refusable`.
+   */
+  refusable: true,
   make: () => ({
     driver: createRnDriver(),
     remoteCommit: () => {
       throw new Error('rn-driver has no second writer; crossTab is false.')
+    },
+    // One key, one document, one process — so "the same store" is just another
+    // driver over the same mocked disk.
+    reopen: () => createRnDriver(),
+    refuseWrites: () => {
+      refuseWrite = Object.assign(new Error('database or disk is full'), {
+        name: 'QuotaExceededError',
+      })
+      return () => {
+        refuseWrite = null
+      }
     },
   }),
 })
@@ -228,7 +246,30 @@ describe('what it does with a disk that will not cooperate', () => {
     if (!written.ok) expect(written.error.code).toBe('storage/quota')
   })
 
-  it('treats an unreadable document as nothing yet rather than throwing', async () => {
+  /**
+   * An unreadable document is corruption, NOT a first run — and this case used
+   * to assert the opposite.
+   *
+   * It read `treats an unreadable document as nothing yet rather than throwing`
+   * and pinned `from: 0` with an empty store, which is precisely the state that
+   * sends `boot` down `firstRun`. Measured end to end on the real `boot` with
+   * the real driver: truncate this document the way a killed write does, boot
+   * again, and `seedIfPristine` writes the 92-node demo graph over the top —
+   * because the memory store handed to it was empty from the parse failing, not
+   * from the phone being new. The truncated bytes still held most of the user's
+   * records as text and were recoverable by hand until that write landed. There
+   * is no server; that was the only copy.
+   *
+   * `storage/corrupt` is the code `boot` already routes to the outcome whose
+   * rule is "do not touch what is there until the user has been offered a copy
+   * of it", and `mobile/src/lib/store.tsx` already renders it as a degraded
+   * session over an in-memory store. This driver was the one caller that could
+   * never reach either.
+   *
+   * The half of the old name that was load-bearing is kept: it must not throw,
+   * because the caller is a queue with no `catch`. It reports.
+   */
+  it('reports an unreadable document as corruption rather than as a first run', async () => {
     // The key is the driver's own, taken from a real write rather than spelled
     // again here: a copy of it would go stale silently and leave this case
     // asserting that an empty store is empty.
@@ -239,13 +280,48 @@ describe('what it does with a disk that will not cooperate', () => {
     seedRun.close()
     const key = [...disk.keys()][0]
     expect(key).toBeDefined()
-    disk.set(key ?? '', '{ this is not JSON')
+    const truncated = '{ this is not JSON'
+    disk.set(key ?? '', truncated)
 
-    const { driver, info } = await opened()
+    const driver = createRnDriver()
+    const info = await driver.open()
+    expect(info.ok).toBe(false)
+    if (!info.ok) expect(info.error.code).toBe('storage/corrupt')
+
+    // No store was opened, so nothing downstream can persist over the bytes.
     const rows = await driver.readAll()
+    expect(rows.ok).toBe(false)
     driver.close()
 
-    expect(info.ok && info.value.from).toBe(0)
-    expect(rows.ok && rows.value.nodes).toEqual([])
+    // The document is still there, unedited, for a rescue to read.
+    expect(disk.get(key ?? '')).toBe(truncated)
+  })
+
+  /**
+   * The other half of "present but unreadable", which parses cleanly.
+   *
+   * A document that is valid JSON and is not a store — an envelope from a build
+   * that moved the rows, or a key something else wrote over — reaches the same
+   * decision by a different branch, and a mutation run showed that branch had no
+   * case of its own: collapsing it back to "absent" left the whole suite green
+   * while `seedIfPristine` was again free to write over it.
+   */
+  it('reports a document that parses but holds no rows as corruption too', async () => {
+    const { driver: seedRun } = await opened()
+    await seedRun.commit([
+      { kind: 'put', store: 'nodes', key: 'app:1', value: node('app:1', 'rice') },
+    ])
+    seedRun.close()
+    const key = [...disk.keys()][0]
+    expect(key).toBeDefined()
+    disk.set(key ?? '', '{"version":1}')
+
+    const driver = createRnDriver()
+    const info = await driver.open()
+    driver.close()
+
+    expect(info.ok).toBe(false)
+    if (!info.ok) expect(info.error.code).toBe('storage/corrupt')
+    expect(disk.get(key ?? '')).toBe('{"version":1}')
   })
 })

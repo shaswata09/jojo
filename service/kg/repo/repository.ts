@@ -364,7 +364,24 @@ export function createRepository(options: RepositoryOptions): Repository {
     setMeta(next) {
       meta = next
       const row = metaRow(meta)
-      queue.enqueue([{ kind: 'put', store: 'meta', key: row.key, value: row }])
+      /*
+       * Through the `deferred` hold, exactly as `land` above goes through it.
+       *
+       * This called `queue.enqueue` unconditionally, and it is the one writer
+       * that did — so a meta write landing inside the `replaceAll` window went
+       * straight to the disk queue while every ordinary write was being held
+       * for the outcome. Reproduced: with the driver's `replace` held open, a
+       * `setMeta` during the window produced a `commit(1)` against a store that
+       * was mid-wipe.
+       *
+       * That is the same shape as the bug the hold was built for, one field
+       * narrower: `dataSet` and `seededAt` are D24's first-run signal, so a
+       * flip persisted beside a replace that then FAILED leaves the app calling
+       * a store 'user' that still holds the demo fixtures.
+       */
+      const ops: DurableOp[] = [{ kind: 'put', store: 'meta', key: row.key, value: row }]
+      if (deferred === null) queue.enqueue(ops)
+      else deferred.push(...ops)
       notify()
     },
 
@@ -500,6 +517,29 @@ export function createRepository(options: RepositoryOptions): Repository {
          */
         if (!outcome.ok) queue.enqueue(held)
         return outcome
+      } catch (cause) {
+        /*
+         * A driver that THROWS rather than returning a `DriverResult`.
+         *
+         * `finally` alone was not enough and the gap was silent. It cleared
+         * `deferred` and let the exception through, so the ops held in the
+         * window were dropped on the floor: present in memory, never on disk,
+         * and no failure Result for the caller to report. Reproduced with a
+         * `replace` that throws — `replaceAll` propagated the error and the
+         * held commit vanished.
+         *
+         * The failure path is the SAME as `!outcome.ok` above, and for the same
+         * reason: the replace did not happen, so those writes are still real
+         * against a store that still exists. Returning a Result rather than
+         * rethrowing also keeps the contract every caller reads — `restoreBackup`
+         * and the Transfer panels branch on `ok`, and an exception escaping here
+         * would reach them as an unhandled rejection instead.
+         */
+        queue.enqueue(held)
+        return fail('storage/unavailable', undefined, {
+          context: { at: 'replaceAll', threw: true },
+          cause,
+        })
       } finally {
         deferred = null
       }

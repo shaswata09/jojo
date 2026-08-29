@@ -3,7 +3,22 @@ import { handoverSentence, handoverStatus } from './handover'
 import type { Instant } from './model'
 
 const at = (iso: string) => iso as Instant
-const NOW = at('2026-08-24T12:00:00.000Z')
+
+/**
+ * A LOCAL wall-clock moment on the given August day, as the instant a store
+ * would have written.
+ *
+ * These were UTC literals — `at('2026-08-18T09:00:00.000Z')` — and that was
+ * fine while `days` was elapsed milliseconds, which no zone can change. `days`
+ * counts local midnights now, so a UTC literal names a different calendar day
+ * depending on where the machine is: '2026-08-18T00:00:00.000Z' is the 17th in
+ * Chicago and the 18th in Tokyo, and a suite that passes here and fails in
+ * Honolulu is worse than no suite. Building from local parts pins the calendar
+ * day the test means, in every zone.
+ */
+const on = (day: number, hour: number) => new Date(2026, 7, day, hour).toISOString() as Instant
+
+const NOW = on(24, 12)
 
 describe('handoverStatus', () => {
   it('says nothing has ever been handed over, when nothing has', () => {
@@ -12,11 +27,11 @@ describe('handoverStatus', () => {
 
   it('counts only what was written after the handover', () => {
     const status = handoverStatus(
-      at('2026-08-18T09:00:00.000Z'),
+      on(18, 9),
       [
-        { at: at('2026-08-17T10:00:00.000Z') }, // before — already went across
-        { at: at('2026-08-19T10:00:00.000Z') },
-        { at: at('2026-08-20T10:00:00.000Z') },
+        { at: on(17, 10) }, // before — already went across
+        { at: on(19, 10) },
+        { at: on(20, 10) },
       ],
       NOW,
     )
@@ -24,25 +39,46 @@ describe('handoverStatus', () => {
   })
 
   it('is clean when nothing has been written since', () => {
-    expect(
-      handoverStatus(at('2026-08-22T09:00:00.000Z'), [{ at: at('2026-08-21T09:00:00.000Z') }], NOW),
-    ).toMatchObject({ state: 'clean', writes: 0 })
+    expect(handoverStatus(on(22, 9), [{ at: on(21, 9) }], NOW)).toMatchObject({
+      state: 'clean',
+      writes: 0,
+    })
   })
 
   it('treats one change as drift, because there is no safe threshold', () => {
-    expect(
-      handoverStatus(at('2026-08-24T09:00:00.000Z'), [{ at: at('2026-08-24T10:00:00.000Z') }], NOW),
-    ).toMatchObject({ state: 'drifted', writes: 1, days: 0 })
+    expect(handoverStatus(on(24, 9), [{ at: on(24, 10) }], NOW)).toMatchObject({
+      state: 'drifted',
+      writes: 1,
+      days: 0,
+    })
   })
 
-  it('floors the days, so six and a half never reads as seven', () => {
-    // A staleness figure that rounds up reads as older than it is and invites a
-    // transfer nobody needed.
-    expect(handoverStatus(at('2026-08-18T00:00:00.000Z'), [], NOW)).toMatchObject({ days: 6 })
+  /*
+   * `days` used to be elapsed milliseconds floored to 24-hour blocks, and the
+   * test here pinned that: "floors the days, so six and a half never reads as
+   * seven", on the measured argument that a staleness figure which rounds up
+   * reads as older than it is and invites a transfer nobody needed.
+   *
+   * The number is spent on calendar words — `handoverSentence` renders 0 as
+   * "today" and 1 as "yesterday" — and across a midnight the two measures say
+   * different things. Two hours after a transfer made at 23:00, the elapsed
+   * count was 0 and the panel said "Last transfer today" about something done
+   * the night before. Being vague about a duration is a smaller failure than
+   * being wrong about a day, so the count moved to midnights and these two
+   * tests hold it there.
+   */
+  it('counts the midnights, so a transfer made last night reads as yesterday', () => {
+    expect(handoverStatus(on(23, 23), [], on(24, 1))).toMatchObject({ days: 1 })
+  })
+
+  it('counts no day at all until a midnight has actually passed', () => {
+    // Twenty-two hours, no midnight: still today, and this is the half of the
+    // old flooring rule that survives intact.
+    expect(handoverStatus(on(24, 1), [], on(24, 23))).toMatchObject({ days: 0 })
   })
 
   it('never reports negative days from a clock that moved backwards', () => {
-    expect(handoverStatus(at('2026-08-25T00:00:00.000Z'), [], NOW)).toMatchObject({ days: 0 })
+    expect(handoverStatus(on(25, 0), [], NOW)).toMatchObject({ days: 0 })
   })
 })
 

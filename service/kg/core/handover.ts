@@ -23,13 +23,15 @@
  */
 
 import type { Instant } from './model'
+import { daysBetween } from './dates'
+import { dayOf } from './project'
 
 export type HandoverStatus =
   | { state: 'never' }
   | {
       state: 'clean' | 'drifted'
       at: Instant
-      /** Whole days between the handover and now. */
+      /** Local midnights between the handover and now — see `handoverStatus`. */
       days: number
       /** Writes recorded on this device since the handover. */
       writes: number
@@ -38,10 +40,12 @@ export type HandoverStatus =
 /** Enough of a journal entry to be counted. */
 type Written = { at: Instant }
 
-const DAY_MS = 86_400_000
-
 /**
  * The status, from the handover stamp and the journal.
+ *
+ * `days` counts LOCAL MIDNIGHTS, not elapsed time — the reason is at the line
+ * itself, and it is the difference between "today" being a description and
+ * "today" being wrong.
  *
  * `writes` counts JOURNAL ENTRIES, which are user actions rather than records:
  * one entry can create an application, its employer and its deadline in a single
@@ -66,10 +70,24 @@ export function handoverStatus(
   return {
     state: writes > 0 ? 'drifted' : 'clean',
     at: handoverAt,
-    // Floored, so "6 days" never means "six and a half" — a staleness figure
-    // that rounds up reads as older than it is and invites a transfer nobody
-    // needed.
-    days: Math.max(0, Math.floor((Date.parse(now) - since) / DAY_MS)),
+    // MIDNIGHTS CROSSED, not elapsed 24-hour blocks.
+    //
+    // This was `floor((now - since) / 86_400_000)` — elapsed milliseconds cut
+    // into whole days — and `handoverSentence` below spends that number on
+    // "today", "yesterday" and "N days ago", which are calendar words. The two
+    // measures part company at every midnight: measured on a transfer made at
+    // 23:00 and read at 01:00, two hours later, the elapsed count was 0 and the
+    // panel said "Last transfer today" about something done the previous night.
+    // The panel exists to be believed about divergence; a sentence that is
+    // flatly false about WHEN is worse than one that is vague about HOW LONG.
+    //
+    // The cost is the case the old comment defended: six and a half elapsed days
+    // spanning seven midnights now reads "7 days ago" rather than "6". That is
+    // not a rounding error, it is the same shift from duration to calendar —
+    // the transfer WAS seven days back on the calendar, which is how a person
+    // reading "when did I last send this" checks it against their own memory.
+    // The clamp survives for a clock that has moved backwards.
+    days: Math.max(0, daysBetween(dayOf(handoverAt), dayOf(now))),
     writes,
   }
 }

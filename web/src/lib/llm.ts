@@ -111,8 +111,9 @@ async function sendToModel(
   /**
    * Set when the caller wants the relayed body IN PIECES.
    *
-   * Only reaches the extension, because only a cloud provider is relayed. A
-   * bridge older than protocol 5 ignores it and answers whole — which is fine
+   * Only reaches the extension, because only a relayed request has one — a
+   * cloud provider, or the private-network http address the branch below adds.
+   * A bridge older than protocol 5 ignores it and answers whole, which is fine
    * and is why nothing downstream may assume a chunk ever arrives.
    */
   onChunk?: (text: string) => void,
@@ -397,6 +398,12 @@ async function readStream(
 /**
  * The same stream, arriving through the extension instead of over `fetch`.
  *
+ * Used for a cloud provider AND for a private-network http address an https page
+ * is not allowed to fetch — the two cases `sendToModel` relays. It does not
+ * decide that itself: it hands the request to `sendToModel`, which asks
+ * `needsRelay`, so the streamed road and the batched one cannot disagree about
+ * where a request goes.
+ *
  * ## Why the body can be fed to the same reader
  *
  * The request already carries `stream: true`, so what the provider sends back
@@ -519,9 +526,35 @@ export async function agentTurn(
     ? streamingChatRequest(settings, messages, tools, true)
     : chatRequest(settings, messages, tools, true)
 
+  /*
+   * THE STREAMED ROAD ASKS THE SAME QUESTION THE BATCHED ONE DOES, and it used
+   * to ask a narrower one.
+   *
+   * The condition here was `cloud` alone. That is the transport decision, and
+   * the transport decision belongs to `sendToModel` — which relays a cloud
+   * provider AND a private-network http address an https page may not fetch.
+   * `readStream` goes to `sendStream`, which goes straight to `fetch`, so on the
+   * streamed branch the second half of that rule did not exist: measured from a
+   * stubbed https page, a turn to `http://10.116.34.124:8103/v1` with an
+   * `onDelta` fetched the address directly and never asked the extension. In a
+   * browser that fetch never leaves — it is blocked as mixed content — so the
+   * one setup the relay was built for (GitHub Pages over https, vLLM on the LAN)
+   * failed with an error telling the user to install the extension that was
+   * sitting there unasked. Turning streaming ON silently disabled the relay.
+   *
+   * This is exactly the shape `llm.test.ts` warned about and did not cover: the
+   * old test asserted `needsRelay` in isolation, which is the guard, not the
+   * join — and the guard was right the whole time.
+   *
+   * `needsRelay` rather than a second copy of the rule, so the two roads cannot
+   * drift; `readRelayedStream` then re-asks `sendToModel`, which is the one
+   * place the decision is actually made.
+   */
+  const relay = cloud || needsRelay(request.url)
+
   const response = !streaming
     ? await sendToModel(request, endpointOf(settings), settings.provider, signal)
-    : cloud
+    : relay
       ? await readRelayedStream(request, endpointOf(settings), settings.provider, onDelta, signal)
       : await readStream(request, endpointOf(settings), onDelta, signal)
   if (failed(response)) return reportFailure(response.failed, settings.provider, 'chat')

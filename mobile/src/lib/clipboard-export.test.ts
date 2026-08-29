@@ -50,6 +50,53 @@ describe('copyExport — copies, or explains, never both', () => {
     expect(report.tone).toBeUndefined()
   })
 
+  /**
+   * The success toast is a claim about the parcel, and the parcel changed.
+   *
+   * `buildPhoneBackup` sets `documents: []` — deliberately, because file bytes
+   * are base64 in a backup and one PDF passes the 512 KiB ceiling on its own —
+   * so "The whole store as JSON" survived the repair as a sentence that was no
+   * longer true, next to panel copy that already said the opposite. This is a
+   * copy assertion because there is nothing else to assert: the drift is
+   * between two strings on one screen, and only a test can hold them together.
+   */
+  it('does not call the parcel the whole store, which it stopped being', () => {
+    const { copy } = spy()
+    const report = copyExport(json(1000), copy)
+
+    expect(report.description).not.toMatch(/whole store/i)
+    // The half a person clearing their records needs: the rows travel and the
+    // files do not.
+    expect(report.description).toMatch(/documents .*stay on this phone/)
+  })
+
+  /**
+   * And it does not offer Transfer as the route that carries them.
+   *
+   * This assertion used to be `toMatch(/transfer/i)` — it PINNED the claim.
+   * `screens/TransferScreen.tsx` says in its own header that the phone cannot
+   * send: a browser cannot accept an inbound connection, so the phone is always
+   * the side that listens, and sending "points at the export under Settings",
+   * which is this very button. The oversize branch said "Use Transfer instead"
+   * and Transfer said "use the export", so a user whose store was too big was
+   * sent round a circle — and this test held one end of it in place.
+   *
+   * Two more copies of the same claim were found by a source-text guard in
+   * `instant-day.test.ts` once the phrasing was banned there: SettingsScreen's
+   * "or Transfer, which hands the whole store to another device", and the
+   * phone guide's "Transfer sends a copy straight to your other device".
+   */
+  it('does not offer Transfer as a way to send, on either branch', () => {
+    const { copy } = spy()
+    expect(copyExport(json(1000), copy).description).not.toMatch(/transfer[^.]*\b(sends?|carries|hands)\b/i)
+
+    const oversize = copyExport(json(CLIPBOARD_MAX_BYTES), copy, true)
+    expect(oversize.tone).toBe('danger')
+    expect(oversize.description).not.toMatch(/use transfer instead/i)
+    // It says what is actually true, so the reader is not sent looking.
+    expect(oversize.description).toMatch(/only way out of this phone/i)
+  })
+
   it('copies a store sized exactly to the limit', () => {
     const { copied, copy } = spy()
     const report = copyExport(json(CLIPBOARD_MAX_BYTES / 2), copy)

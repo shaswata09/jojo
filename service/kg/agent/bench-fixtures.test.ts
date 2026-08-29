@@ -27,6 +27,7 @@ import { DOCUMENTS, WORLD, WORLD_SHAPE } from './bench-world'
 import { CATALOG } from './catalog'
 import { TOOLS } from '../tools/index'
 import { COMPOSES } from './tool-graph'
+import { scoreWorkflow, shapeOf } from './bench-workflow'
 
 const SHAPE = WORLD_SHAPE as Readonly<Record<string, number>>
 
@@ -295,9 +296,31 @@ describe('how much of the catalog this suite reaches', () => {
   })
 
   it('does not shrink below what it reaches today', () => {
-    // A floor. Raise it when coverage rises; a drop is a conversation deleted
-    // or a rubric loosened, and that should have to be argued for.
-    expect(covered.length).toBeGreaterThanOrEqual(19)
+    /*
+     * A floor. Raise it when coverage rises; a drop is a conversation deleted
+     * or a rubric loosened, and that should have to be argued for.
+     *
+     * 19 for a long time, and the number behind "the benchmark says 30/30 and
+     * the feature is broken": 63 of the 82 write tools had never been asked
+     * for by any case, so `scout.*`, `vault.person.*`, `vault.link.*` and most
+     * of `timeline.item.*` could break without a single test going red. The
+     * twelve conversations that took it to 39 were written against those
+     * families specifically.
+     */
+    expect(covered.length).toBeGreaterThanOrEqual(39)
+  })
+
+  it('keeps every tool family the suite reaches represented', () => {
+    /*
+     * Per FAMILY, because the count above can be held up by one domain while
+     * another disappears. Named individually for the same reason the two
+     * regression tools above are: each of these was absent from the suite
+     * while the feature it names was shipping.
+     */
+    for (const prefix of ['scout.', 'vault.person.', 'vault.link.', 'timeline.item.']) {
+      const reached = writes.filter((w) => w.startsWith(prefix) && required.has(w))
+      expect(reached.length, `no conversation requires any ${prefix}* tool`).toBeGreaterThan(0)
+    }
   })
 
   it('reaches every GROUP it declares', () => {
@@ -404,5 +427,191 @@ describe('answer assertions that could pass by echo', () => {
 
   it('asserts something the question does not already say', () => {
     expect(echoes, echoes.join('\n')).toEqual([])
+  })
+})
+
+/*
+ * -----------------------------------------------------------------------------
+ * The gold workflows
+ * -----------------------------------------------------------------------------
+ *
+ * The graph axis is a second rubric, written by hand, and every failure mode
+ * the state rubric has already had applies to it: a tool that does not exist, a
+ * fact taken from memory rather than from the world, an expectation that
+ * contradicts another expectation in the same case. It is worse than the state
+ * rubric in one way — a wrong gold graph does not fail loudly, it just scores
+ * every model down on a dependency nobody actually has, and the number still
+ * looks like a number.
+ */
+describe('the gold workflows', () => {
+  const withGraph = CONVERSATIONS.filter((c) => c.workflow !== undefined)
+
+  it('names only tools that exist', () => {
+    const known = new Set(CATALOG.map((e) => e.name))
+    const missing = withGraph.flatMap((c) =>
+      c.workflow!.nodes.filter((n) => !known.has(n.tool)).map((n) => `${c.id}: ${n.tool}`),
+    )
+    expect(missing, missing.join('\n')).toEqual([])
+  })
+
+  it('gives every node a distinct id', () => {
+    const clashes = withGraph
+      .filter((c) => new Set(c.workflow!.nodes.map((n) => n.id)).size !== c.workflow!.nodes.length)
+      .map((c) => c.id)
+    expect(clashes).toEqual([])
+  })
+
+  it('links only nodes that are there', () => {
+    const dangling = withGraph.flatMap((c) => {
+      const ids = new Set(c.workflow!.nodes.map((n) => n.id))
+      return c.workflow!.links
+        .filter((l) => !ids.has(l.source) || !ids.has(l.target))
+        .map((l) => `${c.id}: ${l.source} -> ${l.target}`)
+    })
+    expect(dangling, dangling.join('\n')).toEqual([])
+  })
+
+  it('is acyclic, so the dependencies can actually be satisfied', () => {
+    /*
+     * A cycle is not a hard case to draw, it is an impossible expectation: no
+     * ordering of calls can put both ends first. Kahn's algorithm, and what it
+     * cannot drain is the cycle.
+     */
+    const cyclic = withGraph
+      .filter((c) => {
+        const w = c.workflow!
+        const left = new Map(w.nodes.map((n) => [n.id, 0]))
+        for (const l of w.links) left.set(l.target, (left.get(l.target) ?? 0) + 1)
+        const queue = [...left.entries()].filter(([, n]) => n === 0).map(([id]) => id)
+        let drained = 0
+        while (queue.length > 0) {
+          const id = queue.shift()!
+          drained += 1
+          for (const l of w.links.filter((x) => x.source === id)) {
+            const n = left.get(l.target)! - 1
+            left.set(l.target, n)
+            if (n === 0) queue.push(l.target)
+          }
+        }
+        return drained !== w.nodes.length
+      })
+      .map((c) => c.id)
+    expect(cyclic).toEqual([])
+  })
+
+  it('never requires a call no turn of the conversation allows', () => {
+    /*
+     * The contradiction that makes a case unpassable: a gold graph asking for a
+     * tool there is no turn on which it could be called without failing.
+     *
+     * EVERY turn, not any. The first version unioned `mustNotCall` across the
+     * conversation and reported `profile-relate-two-facts` and
+     * `profile-correct-a-fact`, both of which are correct: turn one adds a
+     * background fact, and turn two forbids adding another because the right
+     * answer there is to UPDATE the one that exists. `mustNotCall` is a
+     * per-turn rule, and a guard that reads it as a per-conversation one turns
+     * the suite's most careful cases into false positives — which is how a
+     * guard gets loosened until it catches nothing.
+     */
+    const contradictions = withGraph.flatMap((c) =>
+      c
+        .workflow!.nodes.filter((n) => c.turns.every((t) => (t.mustNotCall ?? []).includes(n.tool)))
+        .map((n) => `${c.id}: ${n.tool} is forbidden on every turn`),
+    )
+    expect(contradictions, contradictions.join('\n')).toEqual([])
+  })
+
+  it('never asks a read-only conversation to write', () => {
+    const wrote = withGraph.flatMap((c) => {
+      if (!c.turns.every((t) => t.readOnly === true || t.shouldAsk === true)) return []
+      const effects = new Map(CATALOG.map((e) => [e.name, e.effect]))
+      return c.workflow!.nodes.filter((n) => effects.get(n.tool) !== 'read').map((n) => `${c.id}: ${n.tool}`)
+    })
+    expect(wrote, wrote.join('\n')).toEqual([])
+  })
+
+  it('points every runtime argument at a node it actually depends on', () => {
+    /*
+     * `$s1` means "whatever step s1 returned". If s1 is not an ancestor of the
+     * node using it, the value is not available when the call happens — the
+     * graph is claiming a data dependency it did not draw an edge for, and the
+     * scorer will happily skip the argument and report a graph that cannot run.
+     */
+    const problems: string[] = []
+    for (const c of withGraph) {
+      const w = c.workflow!
+      const parents = new Map(w.nodes.map((n) => [n.id, new Set<string>()]))
+      // Ancestors by repeated relaxation; the graphs are tiny and acyclic.
+      for (let pass = 0; pass < w.nodes.length; pass += 1) {
+        for (const l of w.links) {
+          const into = parents.get(l.target)
+          if (!into) continue
+          into.add(l.source)
+          for (const up of parents.get(l.source) ?? []) into.add(up)
+        }
+      }
+      for (const node of w.nodes) {
+        for (const [name, value] of Object.entries(node.args ?? {})) {
+          if (!value.startsWith('$')) continue
+          const from = value.slice(1)
+          if (!parents.get(node.id)?.has(from)) {
+            problems.push(`${c.id}: ${node.id}.${name} takes ${value}, which is not upstream of it`)
+          }
+        }
+      }
+    }
+    expect(problems, problems.join('\n')).toEqual([])
+  })
+
+  it('declares the shape its links actually draw', () => {
+    /*
+     * Through the SHIPPED `shapeOf` rather than a copy of it. The copy that
+     * stood here read `tag-new-keyword` — two independent calls feeding one
+     * write — as a chain, because it checked that every link had a distinct
+     * source and forgot that a chain also needs distinct targets. A rubric
+     * guard with its own private idea of the rule is a guard that certifies the
+     * bug it is supposed to catch.
+     */
+    const wrong = withGraph
+      .filter((c) => c.workflow!.nodes.length > 0)
+      .map((c) => {
+        const drawn = shapeOf(c.workflow!)
+        return drawn === c.workflow!.shape ? null : `${c.id}: says ${c.workflow!.shape}, draws ${drawn}`
+      })
+      .filter((x): x is string => x !== null)
+    expect(wrong, wrong.join('\n')).toEqual([])
+  })
+
+  it('keeps most of the edge axis judgeable', () => {
+    /*
+     * An edge between two tools the gold graph names more than once cannot be
+     * adjudicated from a call list — three `memory.list` calls do not say which
+     * occurrence was which — so it is excluded from link precision and only
+     * recall sees it. Measured on 2026-08-27: 33 of 55 gold edges, 60%.
+     *
+     * A floor rather than a target, because the alternative failure is silent.
+     * A suite that drifted to mostly-repeated reads would still publish a link
+     * precision, and that number would be made almost entirely of absent
+     * evidence rather than of measurement. `long-correction-after-drift` is
+     * already at zero of three and is blind to a full reversal of its own
+     * graph; it is one case, and this is what stops it becoming the norm.
+     */
+    const totals = withGraph
+      .filter((c) => c.workflow!.nodes.length > 0)
+      .map((c) => scoreWorkflow(c.workflow!, []))
+    const of = totals.reduce((n, s) => n + s.edges.of, 0)
+    const adjudicable = totals.reduce((n, s) => n + s.edges.adjudicable, 0)
+    expect(of).toBeGreaterThan(0)
+    expect(adjudicable / of, `only ${String(adjudicable)}/${String(of)} gold edges are judgeable`).toBeGreaterThanOrEqual(0.55)
+  })
+
+  it('covers the suite, and says how much of it when it does not', () => {
+    /*
+     * A floor rather than an equality. The suite grows, and a case added today
+     * without a graph should not fail the build — but the axis has to keep
+     * covering most of the suite or its macro-average is a statement about a
+     * handful of conversations dressed up as one about the benchmark.
+     */
+    expect(withGraph.length / CONVERSATIONS.length).toBeGreaterThanOrEqual(0.9)
   })
 })

@@ -27,7 +27,8 @@ import { reportError } from '@/lib/report-error'
 import { useCallback, useMemo } from 'react'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { buildBackup } from '@jojo/service/core/backup'
-import { useVaultBlobs } from '@/lib/vault-blobs'
+import { useVaultBlobs, type VaultBlobs } from '@/lib/vault-blobs'
+import { blobPath } from '@jojo/service/core/blob-path'
 import { report } from '@/lib/analytics'
 import { bucket } from '@jojo/service/core/analytics'
 
@@ -63,6 +64,97 @@ function writeLastBackup(at: string): void {
   }
 }
 
+/**
+ * The half of `useVaultBlobs` a backup reads, and nothing more.
+ *
+ * A plain parameter rather than a hook call, and exported, because D20 rules out
+ * mounting: the guards below are the whole of the fix and a guard nothing
+ * exercises is a guard nobody notices the loss of. `Pick` rather than a hand-
+ * written shape so it cannot drift from the hook it is fed.
+ */
+export type BackupBlobs = Pick<VaultBlobs, 'ready' | 'all' | 'get'>
+
+/**
+ * What `reportError('backup', …)` and the console are given when a backup is
+ * refused for want of the documents it is supposed to contain.
+ *
+ * Exported so the test asserts the sentence somebody debugging their own machine
+ * will actually read, rather than a string it wrote itself.
+ */
+export const DOCUMENTS_NOT_READY =
+  'The document index had not finished loading, so a backup taken now would say you have none. Nothing was written.'
+
+export const DOCUMENTS_UNREADABLE =
+  'None of the stored documents could be read, so the backup would have held records only. Nothing was written.'
+
+/**
+ * Reads every stored document, or REFUSES rather than quietly writing none.
+ *
+ * ## What was measured
+ *
+ * With an index listing two documents and every `get` answering null — an
+ * IndexedDB that opened and would not read, which is what an evicted store looks
+ * like — `download()` wrote `documents: []`, returned true, and stamped
+ * `jojo.lastBackupAt`. The user was told "it holds your records and every
+ * document you have attached", the file held none of them, and the app then
+ * counted them as backed up. A backup is the one thing between a person and
+ * losing everything, so a false claim here is the most expensive sentence in the
+ * app: somebody told their backup exists stops looking for one.
+ *
+ * ## The two refusals, which are different failures
+ *
+ * NOT READY is the ordinary one and has nothing wrong with it. The index loads
+ * asynchronously on mount — `purgeOnce()` opens the store and sweeps the trash
+ * before the first `list` — so for a moment after the page appears `all()`
+ * answers `[]` for a store that is full. Both entry points are reachable in that
+ * window: Export sits on the Settings panel that mounts the hook, and the
+ * Transfer page mounts its own. An empty index is not "no documents", it is "not
+ * known yet", and the two must not produce the same file. Refusing costs a retry
+ * a second later; the alternative costs the documents.
+ *
+ * UNREADABLE is the store answering wrongly. Anything listed but nothing read.
+ *
+ * ## Why a PARTIAL loss is still a backup
+ *
+ * Deliberately, and this is the trade the loop below already made: a backup
+ * missing one file is worth far more than no backup. What changes is that the
+ * shortfall is REPORTED instead of being invisible — the count is the only
+ * evidence that anything was lost, and until now it existed nowhere.
+ */
+export async function collectDocuments(
+  blobs: BackupBlobs,
+): Promise<{ path: string; data: Uint8Array }[]> {
+  if (!blobs.ready) throw new Error(DOCUMENTS_NOT_READY)
+
+  const listed = await blobs.all()
+  const documents: { path: string; data: Uint8Array }[] = []
+  for (const item of listed) {
+    const file = await blobs.get(item.id)
+    // A document that will not read is skipped rather than aborting the whole
+    // backup — see the header. The count is reconciled below.
+    if (file === null) continue
+    documents.push({
+      // `blobPath`, not a second `Documents/${id}__${name}` written out here.
+      // The format crosses to a phone restoring this file, and `blob-path.ts`
+      // exists because a format with two implementations is a format with two
+      // spellings — the copy that stood here skipped `encodeName`.
+      path: blobPath(item.id, item.name),
+      data: new Uint8Array(await file.arrayBuffer()),
+    })
+  }
+
+  if (listed.length > 0 && documents.length === 0) throw new Error(DOCUMENTS_UNREADABLE)
+  if (documents.length < listed.length) {
+    reportError(
+      'backup',
+      new Error(
+        `${listed.length - documents.length} of ${listed.length} documents would not read and are not in this backup.`,
+      ),
+    )
+  }
+  return documents
+}
+
 export type BuildOptions = {
   /**
    * Whether document bytes go in. Default true.
@@ -93,6 +185,12 @@ export type BackupState = {
    * backup as having been taken — nothing durable has happened on THIS device,
    * and `changed` resetting because a transfer started would tell someone they
    * were safe when the only copy here is still in a tab.
+   *
+   * REJECTS rather than answering with a document-free backup when the stored
+   * documents cannot be vouched for — see `collectDocuments` for the two cases
+   * and what was measured. Both callers already turn a rejection into a sentence
+   * on screen (`download` below, `guardedTransfer` in `handoff-send.ts`), which
+   * is what makes refusing expressible here at all.
    */
   build: (options?: BuildOptions) => Promise<Uint8Array<ArrayBuffer>>
   /**
@@ -128,21 +226,11 @@ export function useBackup(readable?: () => unknown): BackupState {
     async ({ documents: withDocuments = true }: BuildOptions = {}): Promise<
       Uint8Array<ArrayBuffer>
     > => {
-      const documents: { path: string; data: Uint8Array }[] = []
-      if (withDocuments) {
-        for (const item of await blobs.all()) {
-          const file = await blobs.get(item.id)
-          // A document that will not read is skipped rather than aborting the
-          // whole backup: a backup missing one file is worth far more than no
-          // backup, and the count in the toast is what the user is told, not
-          // what was intended.
-          if (file === null) continue
-          documents.push({
-            path: `Documents/${item.id}__${item.name}`,
-            data: new Uint8Array(await file.arrayBuffer()),
-          })
-        }
-      }
+      // Throws rather than returning an empty list when the documents cannot be
+      // vouched for; `download` and `guardedTransfer` both already treat a
+      // throw out of `build()` as a failure with a sentence on screen, and that
+      // is the outcome this needs. See `collectDocuments`.
+      const documents = withDocuments ? await collectDocuments(blobs) : []
 
       const backup = buildBackup({
         exportedAt: new Date().toISOString(),
@@ -162,7 +250,8 @@ export function useBackup(readable?: () => unknown): BackupState {
       const at = new Date()
 
       // `build()` INSIDE the try. It reads every document's bytes and stringifies
-      // the lot, so it throws on a quota read, on a missing blob, and on a store
+      // the lot, so it throws on a quota read, on a document index that has not
+      // loaded yet or that lists documents it will not read, and on a store
       // large enough for `JSON.stringify` to exceed V8's string limit. It used to
       // sit above the try, where a throw rejected this promise — and the only
       // caller does `void download(...).then(...)` with no `.catch`, so the user

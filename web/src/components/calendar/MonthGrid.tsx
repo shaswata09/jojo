@@ -11,17 +11,6 @@ import type { Mark } from '@/lib/timeline-visuals'
 import { TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
-/**
- * Today, as the Today button's tooltip spells it.
- *
- * Read from `TODAY_PARTS`, which is the wall clock sampled once at module load
- * — this used to say "the mock's fixed today" and meant it, back when `TODAY`
- * was the literal 2026-10-12 the fixtures were authored around. Recomposing the
- * ISO string from the parts rather than importing `TODAY` keeps the marker on
- * the same day as the grid, which pages by `{year, month}`.
- */
-const TODAY_ISO = isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
-
 export function MonthGrid({
   month,
   monthItems,
@@ -49,6 +38,22 @@ export function MonthGrid({
   onAdd: (iso: string) => void
   onOpen: (item: TimelineItem) => void
 }) {
+  /**
+   * Today, as the Today button's tooltip spells it.
+   *
+   * Recomposed from `TODAY_PARTS` rather than imported from `TODAY` so the
+   * marker sits on the same day as the grid, which pages by `{year, month}`.
+   *
+   * IN THE RENDER, not at module scope, and that is the fix rather than the
+   * style. `TODAY_PARTS` is reassigned at the local midnight (`@/lib/today`),
+   * and a module-level const derived from it was sampled once when this file
+   * was first imported — measured with fake timers from 23:50, twenty minutes
+   * later the pin had moved to the 13th and this tooltip still read "12 Oct"
+   * beside a grid whose today marker had moved. One `isoOf` per render is not a
+   * cost worth freezing a date for.
+   */
+  const todayISO = isoOf(TODAY_PARTS.year, TODAY_PARTS.month, TODAY_PARTS.day)
+
   // Leading blanks so the 1st lands on its weekday, the days, then enough
   // trailing blanks to finish the week. Both ends render as real (empty) cells:
   // October 2026 starts on a Thursday and ends on a Saturday, and with nothing
@@ -125,7 +130,7 @@ export function MonthGrid({
             aria-current={isCurrentMonth ? 'date' : undefined}
             title={
               isCurrentMonth
-                ? `Back to ${shortDate(TODAY_ISO)}`
+                ? `Back to ${shortDate(todayISO)}`
                 : `Go to ${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
             }
             className={cn(

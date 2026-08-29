@@ -316,3 +316,77 @@ describe('the popup, when the worker is awake', () => {
     expect(popup.at('version').textContent).toBe('extension 9.9.9')
   })
 })
+
+/*
+ * The popup's markup, read for the one property no wiring test can see.
+ *
+ * An audit read `reader-endpoint` for an accessible name and found none from
+ * any of the six sources: no `<label>`, no `aria-label`, no `aria-labelledby`,
+ * no `title`, no placeholder, and — unlike the remove buttons and the provider
+ * switches, which `popup.js` names at runtime — nothing set on it by script
+ * either. A screen reader therefore announced an unlabelled edit field beside a
+ * button called 'Test', which is a plain WCAG 4.1.2 failure rather than a
+ * matter of taste.
+ *
+ * The fix was one `<label class="sr">`, which is exactly the kind of line a
+ * later edit to this row removes without noticing, so it is asserted for EVERY
+ * control rather than for the one that was broken — a seventh field added
+ * without a name fails here on the first run.
+ *
+ * Read out of `popup.html` itself, for the reason the head of this file gives:
+ * a transcription of the markup is not the markup. Regex rather than a DOM,
+ * because D20 bans jsdom and the question — does a name exist anywhere — is
+ * answerable from the text.
+ */
+describe('every control the popup ships', () => {
+  /** The opening tag of each form control. */
+  const controls = [...popupHtml.matchAll(/<(input|select|textarea)\b[^>]*>/gi)]
+  /** `<label>` blocks with their contents, for the wrapping case. */
+  const labels = [...popupHtml.matchAll(/<label\b([^>]*)>([\s\S]*?)<\/label>/gi)]
+
+  const attribute = (tag: string, name: string) =>
+    tag.match(new RegExp(`\\b${name}="([^"]*)"`, 'i'))?.[1] ?? ''
+  const text = (html: string) =>
+    html
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+  it('has a name from somewhere', () => {
+    // Guards the guard. A pattern that stopped matching would make the loop
+    // below pass over nothing at all, which is the failure mode an assertion
+    // about absence can least afford.
+    expect(controls.length).toBeGreaterThanOrEqual(2)
+    expect(labels.length).toBeGreaterThanOrEqual(2)
+
+    for (const [tag] of controls) {
+      const id = attribute(tag, 'id')
+      if (attribute(tag, 'type').toLowerCase() === 'hidden') continue
+
+      const named =
+        attribute(tag, 'aria-label').trim() !== '' ||
+        attribute(tag, 'aria-labelledby').trim() !== '' ||
+        attribute(tag, 'title').trim() !== '' ||
+        // A `<label for="…">` anywhere in the file, with something in it.
+        labels.some(([, attrs, body]) => attribute(attrs, 'for') === id && text(body) !== '') ||
+        // …or a `<label>` this control sits inside, which is how the switch is
+        // named: the visually hidden span next to it is its label.
+        labels.some(([, , body]) => body.includes(tag) && text(body) !== '')
+
+      expect(named, `<${tag.slice(1).split(/[\s>]/)[0]} id="${id}"> has no accessible name`).toBe(
+        true,
+      )
+    }
+  })
+
+  it('names the reader endpoint in words that say what to type', () => {
+    // The specific regression. 'Address MarkItDown is listening on' rather than
+    // 'Endpoint', because the field takes a host and port and the note above it
+    // is not read out when focus lands here.
+    const label = labels.find(([, attrs]) => attribute(attrs, 'for') === 'reader-endpoint')
+    expect(label).toBeDefined()
+    expect(text(label?.[2] ?? '')).toBe('Address MarkItDown is listening on')
+    // Hidden, not removed: the sighted reader already has the heading and note.
+    expect(attribute(label?.[1] ?? '', 'class')).toContain('sr')
+  })
+})

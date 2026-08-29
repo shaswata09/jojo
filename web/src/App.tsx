@@ -1,5 +1,5 @@
-import { Suspense, lazy } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { Suspense, lazy, useCallback } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { Loader } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
@@ -11,7 +11,7 @@ import { GuideScreens } from '@/components/guide/GuideScreens'
 import { GuideTools } from '@/components/guide/GuideTools'
 import { AppShell } from '@/components/layout/AppShell'
 import { useDialogs } from '@/lib/dialogs-context'
-import { useTitle } from '@/lib/links'
+import { applicationsPath, useTitle } from '@/lib/links'
 import { ApplicationDetail } from '@/routes/ApplicationDetail'
 import { Applications } from '@/routes/Applications'
 import { Assistant } from '@/routes/Assistant'
@@ -83,6 +83,31 @@ function RouteFallback({ title }: { title: string }) {
  */
 function ApplicationDetailRoute() {
   const { open } = useDialogs()
+  const navigate = useNavigate()
+  const { search } = useLocation()
+
+  /**
+   * Closing the record keeps the query string, and that is the whole point of
+   * supplying this at all.
+   *
+   * `ApplicationDetail` falls back to `navigate(applicationsPath())` when no
+   * `onClose` arrives — a bare '/applications', with no params. So the two ways
+   * out of an open record disagreed: Escape and the backdrop are the sheet's,
+   * and `Applications.tsx`'s `closeDetail` carries `location.search` across, but
+   * the X in the record's own header went through the fallback and dropped it.
+   * Measured from '/applications/rice?view=table&stage=interview&q=rice': the
+   * sheet returned to that URL, the X returned to '/applications' — the table,
+   * the stage chip and the search box all reset by the button that says nothing
+   * about filters.
+   *
+   * Wired here rather than in `Applications.tsx` because this route is the only
+   * render site of the component, and it is the one that is missing the prop
+   * three files' worth of comments say the container owns.
+   */
+  const onClose = useCallback(
+    () => navigate({ pathname: applicationsPath(), search }),
+    [navigate, search],
+  )
 
   return (
     <ApplicationDetail
@@ -91,6 +116,7 @@ function ApplicationDetailRoute() {
       // Upcoming list, so the date is the point. The dialog's own switch still
       // decides whether it also shows up as a reminder.
       onAddItem={(id) => open('timelineItem', { mode: 'event', initial: { applicationIds: [id] } })}
+      onClose={onClose}
     />
   )
 }

@@ -43,14 +43,16 @@ vi.mock('react-native-blob-util', () => ({
   },
 }))
 
-/** The bodies the transport was handed, in order. */
+/** The bodies the transport was handed, in order, with the signal each carried. */
 const sent: string[] = []
+const signals: (AbortSignal | undefined)[] = []
 
 vi.mock('@/lib/local-service', () => ({
   failed: (r: Sent) => 'failed' in r,
-  send: (request: { body?: string }) => {
+  send: (request: { body?: string }, _endpoint: string, signal?: AbortSignal) => {
     const body = request.body ?? ''
     sent.push(body)
+    signals.push(signal)
     if (body.includes('"initialize"')) {
       return Promise.resolve({
         ok: true,
@@ -66,11 +68,12 @@ vi.mock('@/lib/local-service', () => ({
   },
 }))
 
-const { convertDocument } = await import('./markitdown')
+const { convertDocument, convertUrl } = await import('./markitdown')
 
 beforeEach(() => {
   fsCalls.length = 0
   sent.length = 0
+  signals.length = 0
   onDisk.clear()
 })
 
@@ -146,5 +149,40 @@ describe('the path a document is read from', () => {
     const convert = sent.at(-1) ?? ''
     expect(convert).toContain('data:application/pdf;base64,')
     expect(convert).toContain(Buffer.from('the bytes', 'utf8').toString('base64'))
+  })
+})
+
+/**
+ * Cancelling a conversion has to reach every request the conversion makes.
+ *
+ * `convertUrl` takes an `AbortSignal` because `read-posting` cancels: the user
+ * closes the sheet, or types a second URL over the first. It makes TWO calls,
+ * and the handshake is the first — so an endpoint that is cold, wrong or simply
+ * not there strands the cancel for the whole of `MODEL_TIMEOUT_MS` if the signal
+ * only reaches the second one. Measured on the endpoint below, which is fresh so
+ * that `shookHands` cannot skip the handshake and make this pass vacuously.
+ */
+describe('cancelling a URL conversion', () => {
+  const rpcOf = (body: string) => /"method":"([^"]+)"/.exec(body)?.[1] ?? '?'
+
+  it('carries the caller signal into the handshake, not only the convert call', async () => {
+    const controller = new AbortController()
+
+    await convertUrl('http://10.0.0.4:3001/mcp', 'https://jobs.example/1', controller.signal)
+
+    // Named per call rather than counted, so a future third request that forgets
+    // the signal fails here with its own JSON-RPC method printed.
+    const carried = sent.map((body, i) => [rpcOf(body), signals[i] === controller.signal] as const)
+    expect(carried).toEqual([
+      ['initialize', true],
+      ['notifications/initialized', true],
+      ['tools/call', true],
+    ])
+  })
+
+  it('leaves the signal undefined when the caller passed none', async () => {
+    await convertUrl('http://10.0.0.5:3001/mcp', 'https://jobs.example/2')
+
+    expect(signals.every((s) => s === undefined)).toBe(true)
   })
 })

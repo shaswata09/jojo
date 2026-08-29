@@ -330,6 +330,36 @@ const APP_MAY_NOT_IMPORT = {
   'repo/boot-ready': 'a continuation of boot(), not an entry point',
 }
 
+/**
+ * The `import.meta.glob(...)` calls in a file that read their matches as TEXT.
+ *
+ * Returns the source of each call whose options carry `query: '?raw'`, so the
+ * relative-path rule can tell a glob that instantiates modules — which it must
+ * still refuse — from one that only reads them.
+ *
+ * A balanced-paren scan rather than a regex: the call spans several lines and
+ * contains both quotes and braces, and a regex for that is a regex that is
+ * wrong on the first call somebody formats differently.
+ */
+function rawGlobs(text) {
+  const out = []
+  const OPEN = 'import.meta.glob('
+  for (let at = text.indexOf(OPEN); at !== -1; at = text.indexOf(OPEN, at + 1)) {
+    let depth = 0
+    let end = at + OPEN.length - 1
+    for (; end < text.length; end += 1) {
+      if (text[end] === '(') depth += 1
+      else if (text[end] === ')') {
+        depth -= 1
+        if (depth === 0) break
+      }
+    }
+    const call = text.slice(at, end + 1)
+    if (/query:\s*(['"])\?raw\1/.test(call)) out.push(call)
+  }
+  return out
+}
+
 const SERVICE_IMPORT = /(['"])(@jojo\/service[^'"]*)\1/g
 const RELATIVE_REACH = /(['"])((?:\.\.\/)+service\/[^'"]*)\1/g
 
@@ -338,6 +368,29 @@ for (const app of APPS) {
     const text = readFileSync(file, 'utf8')
 
     for (const [, , spec] of text.matchAll(RELATIVE_REACH)) {
+      /*
+       * A `?raw` glob is the one exemption, and it is narrow on purpose.
+       *
+       * The harm this rule names is a second MODULE INSTANCE: Metro does not
+       * consult the exports map for a relative path, so the module resolves
+       * twice and the graph's singleton quietly becomes two. A `?raw`
+       * specifier cannot cause that — the bundler hands back the file's text
+       * and instantiates nothing, so there is no instance to duplicate.
+       *
+       * What reaches for it is `code-structure.test.ts`, which measures the
+       * service directories the guide page prints. Those seven rows went
+       * unguarded because the glob is app-rooted, and every one of them had
+       * drifted by 2026-08-27 — `service/kg/core` printing 77 files for a
+       * directory holding 120. Reading the sources as text is the only way to
+       * hold that honest from inside the app.
+       *
+       * Recognised by reading the `import.meta.glob` call the specifier sits
+       * in, rather than by a suffix on the string. The suffix would have been
+       * simpler to check here — and Vite returns nothing for it, so the
+       * placement this guard could read most easily is the one that does not
+       * work, and the option is what has to be read.
+       */
+      if (rawGlobs(text).some((call) => call.includes(spec))) continue
       fail(
         `${rel(file)} reaches into the package with a relative path ('${spec}').\n` +
           `      Write '@jojo/service/<layer>/<name>'. A relative path bypasses the exports map ` +

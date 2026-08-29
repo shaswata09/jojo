@@ -127,7 +127,7 @@ export function ApplicationSheet({
   const { projections } = useKg()
   const { settings } = useModelSettings()
   const readFit = useReadFit()
-  const { labelIdsOf, setRecord, removeRecord } = useLabels()
+  const { labelIdsOf, setRecord } = useLabels()
   const { toast } = useToast()
   const vocabulary = useRoleVocabulary()
   const { open: openSheet } = useSheets()
@@ -337,11 +337,17 @@ export function ApplicationSheet({
       const lastAction = moved ? `Moved to ${STAGE_LABEL[fields.stage]}` : 'Details edited'
 
       applications.update(record.id, { ...fields, lastAction })
+      // One write, not two. There used to be a `removeRecord(record.id)` under
+      // this line, sweeping the bare-id spelling the seeded applications were
+      // keyed by so the record was not counted twice in the filter's totals.
+      // That premise died with D14: a keyword is a node and tagging is a `TAGS`
+      // edge, and `recordKey` unwraps 'app:app:0192…' — so both spellings name
+      // the SAME node and the sweep cleared the keywords the line above had
+      // just set. Driven through the real tool runtime: after `setRecord` the
+      // application carried its keyword, after `removeRecord` it carried none,
+      // so every edit of an application silently dropped all of them. Web fixed
+      // its copy in `use-application-writes.ts`; this side kept the dead line.
       setRecord(refKey('app', record.id), keywords)
-      // The seeded applications are still keyed by bare id in the label store,
-      // and `keywordsOf` read that copy in. Leaving it behind would count the
-      // record twice in the filter's totals.
-      removeRecord(record.id)
 
       const next: Application = { ...record, ...fields, lastAction, daysAgo: 0 }
       const removed = syncDeadline(next, record)
@@ -532,10 +538,15 @@ export function ApplicationSheet({
 /**
  * The keywords already on this record.
  *
- * Read under both spellings. The label store keys the seeded applications by
- * bare id while `refKey` spells the same edge 'app:rice', and both are live at
- * once — reading only the canonical one would show Rice as having no keywords
- * and quietly drop the two it has the moment anything else is saved.
+ * Read under both spellings — belt and braces now rather than a necessity. The
+ * comment here used to say the label store keyed the seeded applications by
+ * bare id while `refKey` spelled the same edge 'app:rice', so both were live at
+ * once. Since D14 they are not: `recordKey` in `react/use-keywords` unwraps the
+ * wrapper, both spellings land on the same node, and the `Set` below therefore
+ * dedupes one answer against itself. Left in place because it costs one graph
+ * read and is what makes this safe while `refKey` still has call sites; the
+ * wrong half of the old note is what mattered, because the same false premise
+ * is what put a keyword-clearing `removeRecord` in `onSave` above.
  */
 function keywordsOf(
   initial: ApplicationInitial | undefined,

@@ -7,9 +7,9 @@ import { Txt } from '@/components/ui/Text'
 import { kgWarn } from '@jojo/service/log'
 import { KgProvider } from '@jojo/service/react/kg'
 import { StoreStatusProvider } from '@jojo/service/react/status'
-import type { StorePhase } from '@jojo/service/react/status-context'
-import { boot, bootInMemory } from '@jojo/service/repo/boot'
-import type { Session } from '@jojo/service/repo/boot'
+import { boot } from '@jojo/service/repo/boot'
+import { stateFor, stateForThrow } from '@/lib/boot-state'
+import type { StoreState } from '@/lib/boot-state'
 import { createRnDriver } from '@/kg/storage/rn-driver'
 import { nativeHost } from '@/lib/host'
 import { now } from '@/lib/today'
@@ -34,20 +34,30 @@ import { ProfileUpdateOffer } from '@/components/profile/ProfileUpdateOffer'
  *   milliseconds, and a spinner that flashes for one frame is worse than a
  *   held frame.
  * - **ready** — the session from disk, seeded on first run.
- * - **degraded** — storage refused. The app still runs, on the in-memory
- *   session, and says so. `boot()` returns a working session even when the
- *   durable path failed precisely so this decision belongs here rather than
- *   being forced by a throw.
+ * - **degraded** — storage refused, or the rows on it could not be read. The app
+ *   still runs, on an EMPTY in-memory session, and says so. `boot()` returns a
+ *   working session even when the durable path failed precisely so this decision
+ *   belongs here rather than being forced by a throw.
+ *
+ * Which of the two the last one is, and what the stand-in contains, is
+ * `lib/boot-state.ts`. It went there because it was wrong here and unrunnable
+ * here: the stand-in was `bootInMemory({ now })`, whose `dataSet` defaults to
+ * 'demo', so a phone whose store could not be read opened on twelve fabricated
+ * applications with nothing but a red line saying they would not be saved.
  *
  * `now` is the wall clock, injected because no module under `@jojo/service` may read
  * one. `src/lib` is the layer allowed a platform API — which is why the driver,
  * the host and the clock are all named in this file and nowhere else.
  */
 
-type State =
-  | { phase: 'loading' }
-  | { phase: 'ready'; session: Session }
-  | { phase: 'degraded'; session: Session; why: string }
+/**
+ * `why` carries the degraded arm; it is null exactly when the store opened.
+ *
+ * It used to be a third variant, and the two failing arms of it both handed back
+ * `bootInMemory({ now })` — which SEEDS THE DEMO FIXTURES. See `lib/boot-state`
+ * for what that put on screen and why the reading now lives there.
+ */
+type State = { phase: 'loading' } | ({ phase: 'open' } & StoreState)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>({ phase: 'loading' })
@@ -74,44 +84,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       try {
         const result = await boot({ now, driver: createRnDriver() })
         if (!live) return
-        // 'corrupt' is the only outcome without a session: the rows on disk
-        // failed validation and `boot` will not hand back a graph built from
-        // them. The other three all carry one, working, and differ only in what
-        // has to be said about it.
-        if (result.outcome === 'corrupt') {
-          setState({
-            phase: 'degraded',
-            session: bootInMemory({ now }),
-            why: `the saved records could not be read (${result.detail}).`,
-          })
-          return
-        }
-        if (result.outcome === 'unavailable') {
-          setState({
-            phase: 'degraded',
-            session: result.session,
-            why:
-              result.reason === 'blocked'
-                ? 'storage is locked by something else on this device.'
-                : 'this device has no storage this app can use.',
-          })
-          return
-        }
-        // Asked once, on the launch where the store was empty and the answer
-        // is free. `boot` writes the meta row that stops it being asked again.
-        if (result.outcome === 'first-run') setFirstRun(true)
-        setState({ phase: 'ready', session: result.session })
+        const next = stateFor(result, now)
+        if (next.firstRun) setFirstRun(true)
+        setState({ phase: 'open', ...next })
       } catch (e) {
         // `boot` is supposed to return rather than throw. If it ever does throw,
         // running in memory beats showing nothing — the records are gone either
-        // way, and one of the two outcomes still lets someone use the app.
+        // way, and one of the two outcomes still lets someone use the app. The
+        // error goes to the log and not to the banner: a stack trace is not a
+        // sentence anybody can act on.
         kgWarn('boot threw; falling back to an in-memory session', { error: String(e) })
         if (!live) return
-        setState({
-          phase: 'degraded',
-          session: bootInMemory({ now }),
-          why: 'the store could not be opened at all.',
-        })
+        setState({ phase: 'open', ...stateForThrow(now) })
       }
     })()
 
@@ -122,17 +106,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   if (state.phase === 'loading') return <Gate />
 
-  // The boot phase in the shape the status context wants. `degraded` here is
-  // this file's word for two of its arms, so it maps rather than passes through.
-  const phase: StorePhase =
-    state.phase === 'degraded'
-      ? { phase: 'unavailable', reason: 'unsupported' }
-      : { phase: 'ready', dataSet: state.session.repo.meta.dataSet, hydratedAt: Date.now() }
-
   return (
     <KgProvider repo={state.session.repo} now={now} host={nativeHost}>
-      <StoreStatusProvider repo={state.session.repo} boot={phase}>
-        {state.phase === 'degraded' ? <DegradedBanner why={state.why} /> : null}
+      {/* `state.status` is the boot phase in the shape the status context wants,
+          and it now has one arm per outcome. It used to be computed here and
+          flattened: every failure was reported as `unavailable/unsupported`,
+          including a corrupt store and a database another app had locked. */}
+      <StoreStatusProvider repo={state.session.repo} boot={state.status}>
+        {state.why === null ? null : <DegradedBanner why={state.why} />}
         {/* Beside the degraded banner and for the same reason: it has to be
             askable from wherever the person happened to file the document, and
             it must not be a sheet — filing usually happens from inside one, and

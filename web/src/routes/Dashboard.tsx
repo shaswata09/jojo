@@ -19,15 +19,18 @@ const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', '
  * out in full — every other surface uses `shortDate`. Naming the weekday is the
  * point of the header: this is the only screen whose subject is the day itself.
  *
- * Computed once at module load because `TODAY_PARTS` is: the clock is sampled
- * once so that nothing on screen can disagree with anything else about what day
- * it is. This comment used to say "the mock's pinned today" and give the worked
- * example as a literal — both were true of the fixture constant and neither has
- * been true since the wall clock replaced it.
+ * A FUNCTION of the parts rather than a module-level const, and it was a const
+ * until this was measured. `TODAY_PARTS` is a live binding — `@/lib/today`
+ * re-pins it at the local midnight — so a const derived from it was fixed at
+ * the moment this module was first imported. On fake timers from 23:50 on
+ * 12 Oct, twenty minutes advanced, the pin read 2026-10-13 and this label still
+ * read "Monday 12 October". That is the worst place in the app for it: the page
+ * is titled Today and the subtitle is the only sentence on it that names a day.
  */
-const TODAY_LABEL = `${
-  WEEKDAY_NAMES[new Date(TODAY_PARTS.year, TODAY_PARTS.month - 1, TODAY_PARTS.day).getDay()]
-} ${TODAY_PARTS.day} ${MONTH_LABELS[TODAY_PARTS.month - 1]}`
+const spellOut = (parts: { year: number; month: number; day: number }) =>
+  `${WEEKDAY_NAMES[new Date(parts.year, parts.month - 1, parts.day).getDay()]} ${parts.day} ${
+    MONTH_LABELS[parts.month - 1]
+  }`
 
 /**
  * The landing screen, and until now the only route with no `PageHeader` — no
@@ -44,10 +47,14 @@ export function Dashboard() {
   useTitle('Today')
   const { all } = useApplications()
 
+  // Spelled at render, so the header follows the pin the rest of the app moved
+  // to at midnight.
+  const todayLabel = spellOut(TODAY_PARTS)
+
   const subtitle =
     all.length === 0
-      ? `${TODAY_LABEL} · nothing tracked yet — everything you add stays on this machine.`
-      : `${TODAY_LABEL} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this machine.`
+      ? `${todayLabel} · nothing tracked yet — everything you add stays on this machine.`
+      : `${todayLabel} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this machine.`
 
   return (
     <>

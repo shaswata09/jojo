@@ -190,9 +190,10 @@ export const isSwapFile = (name: string): boolean => name.endsWith(SWAP_SUFFIX)
  * ahead of the code that needs them and had zero consumers. They arrive with
  * the wave that reads them.
  *
- * Note when they do: `core/folder.ts` already declares its own `'Documents'`,
- * and it has to. The guards forbid `core` from importing `storage` and
- * `storage` from importing `core`, so the one string genuinely cannot be shared
- * between the module that builds paths and the module that writes them. Keep
- * them spelled identically and keep this note next to both.
+ * Note when they do: `core/blob-path.ts` already declares the same
+ * `'Documents'` as `BLOB_DIR`, and it has to. The guards forbid `core` from
+ * importing `storage` and `storage` from importing `core`, so the one string
+ * genuinely cannot be shared between the module that builds paths and the
+ * module that writes them. Keep them spelled identically and keep this note
+ * next to both.
  */

@@ -154,6 +154,14 @@ export const RUNTIME: readonly Credit[] = [
     where: 'src/components/applications/board',
   },
   {
+    name: '@xyflow/react',
+    version: '12.11.5',
+    licence: 'MIT',
+    holder: 'webkid GmbH',
+    what: 'The arrows on the benchmark\u2019s workflow graphs \u2014 nodes, edges, panning and the fit-to-view. Only the drawing: every coordinate is computed in `bench-flow.ts`, because a layout that lives in a component is a layout nothing can test. Loaded on demand, so the page that never opens it never downloads it.',
+    where: 'src/components/guide/WorkflowFlow.tsx',
+  },
+  {
     name: 'clsx',
     version: '2.1.1',
     licence: 'MIT',

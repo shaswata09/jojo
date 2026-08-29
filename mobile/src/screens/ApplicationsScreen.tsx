@@ -35,6 +35,8 @@ import { TODAY } from '@/lib/today'
 // module with no screen in the call stack, so a second copy up here could only
 // ever disagree with the store about what a pasted link means.
 import { draftFromShare, draftFromUrl } from '@jojo/service/core/parse-posting'
+import { sortApplications } from '@/lib/application-sort'
+import type { SortDir, SortKey } from '@/lib/application-sort'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { useRoles } from '@/lib/roles-context'
@@ -50,8 +52,6 @@ import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 
 type View_ = 'list' | 'board'
-type SortKey = 'role' | 'stage' | 'daysAgo'
-type SortDir = 'asc' | 'desc'
 
 const VIEWS = [
   { value: 'list', label: 'List' },
@@ -198,16 +198,20 @@ export function ApplicationsScreen() {
     return map
   }, [pool])
 
+  /*
+   * `dir` is in the body AND in the deps, and it was in neither.
+   *
+   * The comparator ignored it, so the toolbar arrow and the menu's "Oldest
+   * first" were decoration over an order that never moved; and even once the
+   * comparator read it, a memo keyed on `[pool, stageFilter, sort]` alone would
+   * have served the old array back and kept the control inert. Two edits, one
+   * bug — which is why the ordering itself now lives in `lib/application-sort`
+   * where it can be run without a screen.
+   */
   const rows = useMemo(() => {
     const filtered = stageFilter === 'all' ? pool : pool.filter((a) => a.stage === stageFilter)
-    return [...filtered].sort((a, b) => {
-      if (sort === 'daysAgo') return a.daysAgo - b.daysAgo
-      if (sort === 'stage') {
-        return STAGES.findIndex((s) => s.id === a.stage) - STAGES.findIndex((s) => s.id === b.stage)
-      }
-      return displayName(a).localeCompare(displayName(b))
-    })
-  }, [pool, stageFilter, sort])
+    return sortApplications(filtered, sort, dir)
+  }, [pool, stageFilter, sort, dir])
 
   const shown = view === 'list' ? rows.length : pool.length
   const empty = all.length === 0

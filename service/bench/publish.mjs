@@ -66,6 +66,34 @@ const applyPatches = (model, row) => {
   return scores
 }
 
+/**
+ * The graph axis, recomputed from `scores`.
+ *
+ * Duplicated from `summarise` rather than imported because this script is plain
+ * JS run by node with no build step. The duplication is deliberate and narrow —
+ * a mean and a ratio — and `web/src/components/guide/bench-payload.test.ts`
+ * puts every published row back through the real `summarise` and asserts they
+ * agree, so a drift between the two fails a test instead of quietly publishing
+ * a different metric than the runner measured.
+ */
+const regraph = (scores) => {
+  const scored = scores.map((s) => s.workflow).filter((w) => w != null)
+  const mean = (pick) => (scored.length === 0 ? null : scored.reduce((n, w) => n + pick(w), 0) / scored.length)
+  const checked = scored.reduce((n, w) => n + w.args.checked, 0)
+  const matched = scored.reduce((n, w) => n + w.args.matched, 0)
+  return {
+    conversations: scored.length,
+    nodeF1: mean((w) => w.nodes.f1),
+    nodePrecision: mean((w) => w.nodes.precision),
+    nodeRecall: mean((w) => w.nodes.recall),
+    linkF1: mean((w) => w.links.f1),
+    argAccuracy: checked === 0 ? null : matched / checked,
+    argsChecked: checked,
+    edgesAdjudicable: scored.reduce((n, w) => n + (w.edges?.adjudicable ?? 0), 0),
+    edges: scored.reduce((n, w) => n + (w.edges?.of ?? 0), 0),
+  }
+}
+
 /** The headline counts, recomputed from whatever `scores` ended up being. */
 const recount = (row, scores) => ({
   ...row,
@@ -75,6 +103,7 @@ const recount = (row, scores) => ({
   turns: scores.flatMap((s) => s.turns).length,
   stateChecksPassed: scores.flatMap((s) => s.state).filter((c) => c.pass).length,
   stateChecks: scores.flatMap((s) => s.state).length,
+  graph: regraph(scores),
 })
 
 /*

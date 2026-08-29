@@ -18,11 +18,12 @@
  * newer build has to survive a round trip through an older one; a parser that
  * quietly rebuilt each object from the keys it recognised would turn "open the
  * app in a stale tab" into silent, permanent data loss, which is exactly the
- * failure R-1 ranks first.
+ * failure R-1 ranks first. `put` below holds the single exception, and says
+ * what was measured to earn it.
  */
 
 import type { NodeType } from './model'
-import { isNodeId } from './ref'
+import { isNodeId, TYPE_PREFIX } from './ref'
 
 /* ---------------------------------- meta ---------------------------------- */
 
@@ -258,7 +259,38 @@ function id(nodeType?: NodeType, o: TextOptions = {}): Schema<string> {
   return define(meta, (input, path) =>
     // A bare id is never a valid key — see ref.ts. Accepting one here would
     // reintroduce the guess between the six records that answer to 'stripe'.
-    isNodeId(input, nodeType) ? good(input) : bad(path, 'Points at no record.'),
+    /*
+     * Six distinct failures wore one sentence, and the commonest was a lie.
+     *
+     * An ABSENT required key reaches here as `undefined` — `parseObject` only
+     * skips a missing key when the field is optional — so a model that forgot a
+     * field was told "Points at no record", which sends it looking for a record
+     * when the fault is a key it never sent. Measured across three models, the
+     * id class was the second-largest refusal bucket after the label bug, and
+     * `application_123` / `keyword/67890` placeholders sit in it too.
+     *
+     * The empty and absent branches keep the plainest wording because
+     * `core/validate.ts` reuses `formatIssues` for store-health diagnostics a
+     * PERSON reads. Nothing here names a tool: `tool-form.ts` renders every id
+     * field a human sees as a picker, so the other branches are model-only.
+     */
+    input === undefined
+      ? bad(path, 'Required. Send this field.')
+      : typeof input !== 'string'
+        ? bad(path, 'Needs to be an id written as text.')
+        : input.trim() === ''
+          ? bad(path, 'Points at no record.')
+          : isNodeId(input, nodeType)
+            ? good(input)
+            : bad(
+                path,
+                nodeType === undefined
+                  ? 'Not an id. Send one exactly as a read tool returned it — not a name, a slug, or a placeholder.'
+                  : // `TYPE_PREFIX`, not the type NAME: an application id begins
+                    // `app:`, not `application:`. An example the model copies has
+                    // to be one that parses.
+                    `Not the id of a ${nodeType} record. Send one exactly as a read tool returned it, beginning "${TYPE_PREFIX[nodeType]}:" — not a name, a slug, or a placeholder.`,
+              ),
   )
 }
 
@@ -303,7 +335,7 @@ function record<T>(of: Schema<T>, o: TextOptions = {}): Schema<Record<string, T>
     const issues: Issue[] = []
     for (const key of Object.keys(input)) {
       const parsed = of.parse(input[key], path ? `${path}.${key}` : key)
-      if (parsed.ok) value[key] = parsed.value
+      if (parsed.ok) put(value, key, parsed.value)
       else issues.push(...parsed.issues)
     }
     return issues.length > 0 ? { ok: false, issues } : good(value)
@@ -329,6 +361,36 @@ function isPlainObject(input: unknown): input is Record<string, unknown> {
   return typeof input === 'object' && input !== null && !Array.isArray(input)
 }
 
+/**
+ * `target[key] = value`, for a key that came out of the input.
+ *
+ * `__proto__` is an accessor on `Object.prototype`, so a plain assignment does
+ * not write a property, it sets the object's PROTOTYPE. Measured on a restored
+ * backup whose JSON carried `{"title":"Acme","__proto__":{"archived":true,
+ * "notes":"pwned"}}`: `parse` returned ok, `Object.keys` showed only `title`,
+ * and every DECLARED-OPTIONAL field the record left out then read back off the
+ * prototype instead — `archived` came out as the string `"not-a-boolean"`
+ * through a `s.boolean()` field, past the file that calls itself the single
+ * trust boundary. `'archived' in value` answered true, so the guards that
+ * decide whether a field was set answer the attacker's way too.
+ *
+ * Dropped, and it is the one exception to the passthrough this file argues for
+ * at the top. `__proto__` cannot be a field written by a newer build: measured
+ * on the same object, `JSON.stringify` of the parsed record already omits it,
+ * so no build could have round-tripped it through a backup anyway — and
+ * keeping it as an own property would only hand the same assignment to the
+ * next `Object.assign` or naive merge that touched the record.
+ *
+ * Every write into a parsed object goes through here, including the ones keyed
+ * off a declared shape. A shape COULD declare `__proto__` and would lose it
+ * silently; that is the right answer for a field no storage layer in this app
+ * can carry, and one write path is easier to keep honest than three.
+ */
+function put(target: Record<string, unknown>, key: string, value: unknown): void {
+  if (key === '__proto__') return
+  target[key] = value
+}
+
 function object<S extends ObjectShape>(shape: S, o: TextOptions = {}): Schema<InferObject<S>> {
   const fields: Record<string, FieldMeta> = {}
   for (const key of Object.keys(shape)) {
@@ -345,7 +407,7 @@ function object<S extends ObjectShape>(shape: S, o: TextOptions = {}): Schema<In
     // validated value with an unvalidated one.
     const out: Record<string, unknown> = {}
     const known = new Set(Object.keys(shape))
-    for (const key of Object.keys(input)) if (!known.has(key)) out[key] = input[key]
+    for (const key of Object.keys(input)) if (!known.has(key)) put(out, key, input[key])
 
     const issues: Issue[] = []
     for (const key of Object.keys(shape)) {
@@ -365,7 +427,7 @@ function object<S extends ObjectShape>(shape: S, o: TextOptions = {}): Schema<In
         continue
       }
       if (parsed.value === undefined && field.meta.optional) continue
-      out[key] = parsed.value
+      put(out, key, parsed.value)
     }
 
     /*

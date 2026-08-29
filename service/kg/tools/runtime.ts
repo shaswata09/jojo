@@ -137,7 +137,7 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
           pending = new Set<string>()
           buf.minted.set(type, pending)
         }
-        const slug = uniqueSlug(slugify(base) || type, [...taken, ...pending])
+        const slug = uniqueSlug(slugify(base) || type, [...taken, ...pending, ...reserved(type)])
         pending.add(slug)
         return slug
       },
@@ -147,6 +147,48 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
       // whose id and timestamp disagree, and ids are what `ofType` sorts by.
       newId: (type: NodeType) => newNodeId(type, Date.parse(instant)),
     }
+  }
+
+  /**
+   * Slugs no node holds RIGHT NOW, but that an undo would put back.
+   *
+   * `mintSlug` read only the live graph, and a slug is freed the instant its
+   * record is deleted — while the delete stays revertable for the whole undo
+   * window, and the toast that announces it is holding a live `revert` handle
+   * on that exact entry. Measured: create Rice ('rice'), delete it, create a
+   * second Rice — which minted 'rice' again — then press Undo on the delete
+   * toast. Two applications, both `slug: 'rice'`, and `bySlug('application',
+   * 'rice')` answers with the restored one, so `/applications/rice` opens the
+   * old record and the one just created cannot be reached by URL at all. Slug
+   * uniqueness per [type, slug] is what routing rests on, and undo is the only
+   * safety net in an app with no server copy — the two must not be able to
+   * cancel each other out.
+   *
+   * Every non-null `before` image, not only the deletes: an undo replays
+   * `before`, so that IS the set of records an undo can resurrect. Images whose
+   * node is still live cost nothing — their slug is already in `taken`.
+   *
+   * THE REDO RING IS DELIBERATELY NOT HERE. Reserving from it would be wrong in
+   * the other direction: `repo.commit` clears redo for any entry that changes
+   * something, and a transaction that mints a slug always changes something, so
+   * this very commit destroys the future those images described. Reserving them
+   * would hold slugs against a redo that can no longer happen.
+   *
+   * Bounded by `UNDO_DEPTH` (50 entries), walked once per minted slug. The
+   * audit ring reaches 200, but its UI offers Undo on the top row only — which
+   * is the undo ring's top row.
+   */
+  function reserved(type: NodeType): string[] {
+    const slugs: string[] = []
+    for (const entry of repo.undoable) {
+      for (const delta of entry.nodes) {
+        const image = delta.before
+        if (image === null || image.type !== type) continue
+        const slug = slugOf(image)
+        if (slug !== undefined) slugs.push(slug)
+      }
+    }
+    return slugs
   }
 
   /**

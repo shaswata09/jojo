@@ -76,11 +76,16 @@ export function serialise(policy) {
   /**
    * Replaces every remote reference in a CSS string with a token.
    *
-   * Two spellings, because CSS has two. `url(...)` is the common one; a bare
+   * Three spellings, because CSS has three. `url(...)` is the common one; a bare
    * `@import "https://…";` is legal and matches no `url(` pattern at all — it
-   * shipped live until this handled it, and the viewer fetched it.
+   * shipped live until this handled it, and the viewer fetched it; and
+   * `image-set()` takes a bare STRING, which is neither.
+   *
+   * `inAttribute` says whether the result is going into a `style` ATTRIBUTE
+   * rather than a `<style>` element, and it is not a nicety — see the `@import`
+   * arm.
    */
-  function queueCssUrls(css) {
+  function queueCssUrls(css, inAttribute) {
     return css
       /*
        * An `@import` is replaced by the STYLESHEET, not by a link to it.
@@ -99,6 +104,26 @@ export function serialise(policy) {
       .replace(
         /@import\s+(?:url\(\s*(['"]?)([^'")]+)\1\s*\)|(['"])([^'"]+)\3)[^;]*;?/gi,
         (whole, _q1, viaUrl, _q2, viaString) => {
+          /*
+           * An `@import` in a style ATTRIBUTE is not a stylesheet: the CSS
+           * parser honours `@import` only at the top of a style SHEET, so no
+           * browser ever fetched this one and dropping it loses nothing — hence
+           * no `dropped += 1` either, since nothing was there to keep.
+           *
+           * It is dropped rather than tokenised because of where the token would
+           * land. `background.js` splices a `css` token's value — whatever the
+           * remote server returned — into the document as text, and escapes it
+           * with `cssSafe`, which escapes `<` ALONE on the stated assumption
+           * that a `css` token always sits inside a `<style>` element. This was
+           * the one path that broke that assumption, and the escape is useless
+           * inside a quoted attribute value: measured end to end, a sheet
+           * answering `a{content:"x"}" onload="alert(1)" background="https://…`
+           * closed the `style` attribute and wrote both an event handler and a
+           * live address into the stored capture. Keeping the assumption TRUE is
+           * cheaper and more honest than widening the escape, which would have
+           * had to mangle `"` and `'` in every legitimate stylesheet.
+           */
+          if (inAttribute === true) return ''
           const raw = viaUrl ?? viaString ?? ''
           if (raw.trim().startsWith('data:')) return whole
           const href = absolute(raw)
@@ -130,6 +155,49 @@ export function serialise(policy) {
           return 'none'
         }
         return `url("${token(href, 'css-asset')}")`
+      })
+      /*
+       * `image-set()`, whose URL can be a BARE STRING and is then invisible to
+       * every other pattern in this file and in `remoteRefCount`.
+       *
+       * `image-set("https://cdn/x.png" 1x, "https://cdn/x@2x.png" 2x)` is a
+       * fetch with no `url(`, no `@import` and no attribute name. Measured
+       * before this ran: the capture stored the address untouched, the scan
+       * returned 0, and `readCapture` accepted it — a beacon on every viewing,
+       * with every check reporting the file clean.
+       *
+       * Runs AFTER the `url()` pass so that a `url()` inside an image-set is
+       * already a token by the time this sees it. The inner replace consumes a
+       * parenthesised group whole, which is what keeps it off both that token and
+       * `type("image/avif")` — an image-set option whose string is a MIME type
+       * rather than an address, and which this would otherwise have fetched.
+       *
+       * Anchored on the literal `image-set(` rather than on a pattern that
+       * absorbs the vendor prefix: a leading `[a-z-]*` rescans to the end of
+       * every run of letters at every offset, and a 2 MB stylesheet made this
+       * quadratic — measured as a test run that never finished. The prefix
+       * simply stays outside the match, which leaves `-webkit-image-set`
+       * rewritten correctly and untouched.
+       */
+      .replace(/(image-set\()((?:[^()"']|"[^"]*"|'[^']*'|\([^()]*\))*)\)/gi, (_whole, head, body) => {
+        const rewritten = body.replace(
+          /\([^()]*\)|(['"])([^'"]*)\1/gi,
+          (piece, _quote, raw) => {
+            if (raw === undefined) return piece
+            const value = raw.trim()
+            if (value === '' || value.startsWith('__JOJO_ASSET_')) return piece
+            if (value.startsWith('data:')) return piece
+            const href = absolute(raw)
+            if (href === null) {
+              dropped += 1
+              // `url("")` rather than `none`: an image-set option has to be a
+              // URL, and `none` there invalidates the whole declaration.
+              return 'url("")'
+            }
+            return `url("${token(href, 'css-asset')}")`
+          },
+        )
+        return `${head}${rewritten})`
       })
   }
 
@@ -283,8 +351,10 @@ export function serialise(policy) {
     // A style attribute can name a background image, which is a fetch dressed
     // as a colour.
     const inline = node.getAttribute('style')
-    if (inline !== null && /url\(|@import/i.test(inline)) {
-      node.setAttribute('style', queueCssUrls(inline))
+    if (inline !== null && /url\(|@import|image-set\(/i.test(inline)) {
+      // `true`: this string is going back into an ATTRIBUTE, which changes what
+      // may be tokenised into it. See the `@import` arm of `queueCssUrls`.
+      node.setAttribute('style', queueCssUrls(inline, true))
     }
 
     // Read in `pickImageSrc`, and gone before the document is written out — a
@@ -369,7 +439,7 @@ export function serialise(policy) {
     // was still reachable; nothing here has to index two lists against each
     // other, which is what made this fragile once step 1 inserted new <style>
     // elements the live tree does not have.
-    if (/url\(|@import/i.test(text)) style.textContent = queueCssUrls(text)
+    if (/url\(|@import|image-set\(/i.test(text)) style.textContent = queueCssUrls(text, false)
   }
 
   // Constructed stylesheets have no DOM node at all, so nothing above can find
@@ -377,7 +447,7 @@ export function serialise(policy) {
   const adopted = (document.adoptedStyleSheets ?? []).map(rulesOf).filter((t) => t.trim() !== '')
   if (adopted.length > 0) {
     const style = document.createElement('style')
-    style.textContent = queueCssUrls(adopted.join('\n'))
+    style.textContent = queueCssUrls(adopted.join('\n'), false)
     const head = doc.querySelector('head') ?? doc
     head.append(style)
   }

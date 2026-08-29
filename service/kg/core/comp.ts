@@ -27,6 +27,17 @@
  * salary, and a parser that added everything it saw would rank a generous
  * signing bonus above a better job. Summing is a judgement about what somebody
  * values, and the app does not get to make it.
+ *
+ * ## A number is not an amount
+ *
+ * Every money signal in the pattern is optional, so the pattern alone returns
+ * the first bare integer in the text and a posting that mentions a headcount, a
+ * holiday allowance or a start year before the salary read the wrong number as
+ * pay. An amount now has to carry a signal — a currency symbol, an ISO code, a
+ * `k`/`m` multiplier, a thousands separator, or a period touching the digits —
+ * and the first SIGNALLED amount wins. Text with no signal anywhere is read
+ * only when it holds exactly one number, because that is `60000` typed into the
+ * comp field and there is nothing there to choose wrongly between.
  */
 
 /** How often the amount is paid, when the text says. */
@@ -72,20 +83,42 @@ const PERIODS: { pattern: RegExp; period: CompPeriod }[] = [
 const AMOUNT =
   /(?<currency>[$£€¥])?\s*(?<before>[a-z]{3})?\s*(?<digits>\d{1,3}(?:[,\s.]\d{3})+|\d+(?:\.\d+)?)\s*(?<k>k\b|m\b)?\s*(?<code>[a-z]{3}\b)?/i
 
-/**
- * The first amount in the text, or `undefined` when there is none to find.
- *
- * `undefined` rather than zero, and every caller has to handle it: an offer
- * whose package was described in words has not been read, and a comparison that
- * showed it as nothing would rank a real job last.
- */
-export function parseComp(text: string): ParsedComp | undefined {
-  const source = text.trim()
-  if (!source) return undefined
+/** `112,500`, `112 000`, `112.500` — the grouped form, where the separator is
+ *  standing between thousands rather than in front of cents. */
+const GROUPED = /^\d{1,3}(?:[,\s.]\d{3})+$/
 
-  const hit = AMOUNT.exec(source)
-  const groups = hit?.groups
-  if (!hit || !groups) return undefined
+/** The same pattern across the whole text rather than stopping at the first
+ *  hit. See `parseComp`: the first hit is not the first AMOUNT. */
+const AMOUNT_SCAN = new RegExp(AMOUNT.source, 'gi')
+
+/**
+ * A period stated immediately after the digits.
+ *
+ * Anchored, and the anchor is the point. `PERIODS` is tested against the whole
+ * text to LABEL an amount, which is fair once we know which number is the pay;
+ * as evidence that a bare number IS pay, only the touching words count. `/hr`
+ * against the 60 in `60/hr` says that 60 is a rate. `per annum` at the end of a
+ * paragraph says nothing at all about the 12 in "team of 12" at the start of it.
+ */
+const PERIOD_AFTER = PERIODS.map((p) => new RegExp(`^\\s*(?:${p.pattern.source})`, 'i'))
+
+/**
+ * One candidate, and whether anything about it says the digits are MONEY.
+ *
+ * Every money signal in `AMOUNT` is optional — currency, code, multiplier and
+ * separator are all `?` — so the pattern by itself matches any run of digits and
+ * `parseComp` returned the first integer in the text. Measured against
+ * posting-shaped text: `25 days holiday, salary £45,000` read as 25, `Team of 12
+ * engineers. $112k base.` as 12, `2026 start date, $180,000 per annum` as 2026
+ * and `Office 402, EUR 65.000 per year` as 402. A holiday count, a headcount, a
+ * start year and a room number, each of them ranked as pay on the comparison
+ * screen this module exists to feed.
+ */
+type Reading = { comp: ParsedComp; signalled: boolean }
+
+function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
+  const groups = hit.groups
+  if (!groups) return undefined
 
   // Bracket access throughout: named groups arrive through an index signature,
   // so `noUncheckedIndexedAccess` types every one of them as possibly absent —
@@ -94,6 +127,7 @@ export function parseComp(text: string): ParsedComp | undefined {
   if (raw === undefined) return undefined
 
   const suffix = groups['k']?.toLowerCase()
+  const separated = GROUPED.test(raw)
   /*
    * A point is a thousands separator only in the grouped form and only when no
    * multiplier follows it. Both halves of that are load-bearing: stripping
@@ -101,7 +135,7 @@ export function parseComp(text: string): ParsedComp | undefined {
    * `€65.000` as sixty-five euros. `112.500k` keeps its point for the same
    * reason `112.5k` does — the writer already said which thousands they meant.
    */
-  const grouped = suffix === undefined && /^\d{1,3}(?:[,\s.]\d{3})+$/.test(raw)
+  const grouped = suffix === undefined && separated
   const base = Number(raw.replace(grouped ? /[,\s.]/g : /[,\s]/g, ''))
   if (!Number.isFinite(base) || base <= 0) return undefined
 
@@ -116,40 +150,86 @@ export function parseComp(text: string): ParsedComp | undefined {
    * against a dollar one on the comparison screen with nothing to say they were
    * different units.
    *
-   * The leading group is guarded by `CODES` in exactly the same way the
-   * trailing one is, which is what stops it swallowing an ordinary word: `for`
-   * in "for 112,500" matches `[a-z]{3}` and is not a currency, so it resolves
-   * to `undefined` and the amount is unaffected.
-   */
-  /*
-   * Whichever side holds a REAL code, not whichever side matched.
-   *
-   * Both groups are `[a-z]{3}`, so both catch ordinary words: `per` in
-   * "95,000 per year" fills the trailing group and `for` in "for 112,500" fills
-   * the leading one. Preferring one position over the other let `per` shadow a
-   * perfectly good `GBP` written first. `CODES` is the arbiter, and a word that
-   * is not a currency simply leaves the field empty, as it did before.
+   * Whichever side holds a REAL code, not whichever side matched. Both groups
+   * are `[a-z]{3}`, so both catch ordinary words: `per` in "95,000 per year"
+   * fills the trailing group and `for` in "for 112,500" fills the leading one.
+   * Preferring one position over the other let `per` shadow a perfectly good
+   * `GBP` written first. `CODES` is the arbiter, and a word that is not a
+   * currency simply leaves the field empty, as it did before.
    */
   const candidates = [groups['code'], groups['before']].map((g) => g?.toLowerCase())
   const code = candidates.find((c) => c !== undefined && CODES.has(c))
   const currency = symbol ? SYMBOLS[symbol] : code ? code.toUpperCase() : undefined
 
+  const after = source.slice(hit.index + hit[0].length)
+  const signalled =
+    symbol !== undefined ||
+    code !== undefined ||
+    suffix !== undefined ||
+    separated ||
+    PERIOD_AFTER.some((p) => p.test(after))
+
   const stated = PERIODS.find((p) => p.pattern.test(source))
 
   return {
-    amount,
-    ...(currency === undefined ? {} : { currency }),
-    /*
-     * A year when nothing says otherwise, and `periodStated` is how the caller
-     * knows the difference. Salaries are quoted annually far more often than
-     * not, so assuming a year is right almost always — but a $60 that meant an
-     * hourly rate would be ranked below a $45,000, and the flag is what lets a
-     * comparison mark the guess rather than bury it.
-     */
-    period: stated?.period ?? 'year',
-    periodStated: stated !== undefined,
-    matched: hit[0].trim(),
+    signalled,
+    comp: {
+      amount,
+      ...(currency === undefined ? {} : { currency }),
+      /*
+       * A year when nothing says otherwise, and `periodStated` is how the caller
+       * knows the difference. Salaries are quoted annually far more often than
+       * not, so assuming a year is right almost always — but a $60 that meant an
+       * hourly rate would be ranked below a $45,000, and the flag is what lets a
+       * comparison mark the guess rather than bury it.
+       */
+      period: stated?.period ?? 'year',
+      periodStated: stated !== undefined,
+      matched: hit[0].trim(),
+    },
   }
+}
+
+/**
+ * The first amount in the text, or `undefined` when there is none to find.
+ *
+ * First AMOUNT, not first number: a candidate that carries no money signal at
+ * all is passed over while a later signalled one is read, which is what keeps
+ * `Team of 12 engineers. $112k base.` at 112,000 rather than 12. See `Reading`
+ * for the four texts that measured it.
+ *
+ * `undefined` rather than zero, and every caller has to handle it: an offer
+ * whose package was described in words has not been read, and a comparison that
+ * showed it as nothing would rank a real job last.
+ */
+export function parseComp(text: string): ParsedComp | undefined {
+  const source = text.trim()
+  if (!source) return undefined
+
+  // `AMOUNT_SCAN` carries `g`, so it carries `lastIndex`, and the loop below
+  // returns out of the middle of a scan. Without this reset the next call to a
+  // module-level regex starts halfway through a different string.
+  AMOUNT_SCAN.lastIndex = 0
+
+  let bare: ParsedComp | undefined
+  let bareCount = 0
+  for (let hit = AMOUNT_SCAN.exec(source); hit !== null; hit = AMOUNT_SCAN.exec(source)) {
+    const reading = readAmount(hit, source)
+    if (reading === undefined) continue
+    if (reading.signalled) return reading.comp
+    bareCount += 1
+    if (bareCount === 1) bare = reading.comp
+  }
+
+  /*
+   * Nothing in the text said money. One bare number is still read: `60000` is
+   * what somebody types straight into the comp field, there is nothing for the
+   * choice to get wrong, and `matched` shows the reader exactly which
+   * characters were taken. Several bare numbers is a different thing — picking
+   * one of them is a guess no reader can audit, and this module refuses rather
+   * than guesses, the same way it refuses `competitive`.
+   */
+  return bareCount === 1 ? bare : undefined
 }
 
 /** Hours, days and so on in a working year. Stated here so a caller can say so. */

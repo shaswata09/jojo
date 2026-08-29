@@ -143,6 +143,45 @@ export function analyticsOn(): boolean {
 
 type FirebaseAnalytics = import('firebase/analytics').Analytics
 
+/**
+ * What `getAnalytics` must be told, and why the closed vocabulary is not enough
+ * on its own.
+ *
+ * `core/analytics.ts` declares every event jojo may report, every parameter is a
+ * number or a value from a closed set, and `analytics.test.ts` asserts that over
+ * the whole table so an `employer` cannot be added without a test going red.
+ * All of that governs the events jojo WRITES. It says nothing about the ones the
+ * SDK sends by itself.
+ *
+ * And it sends one. `@firebase/analytics` issues a gtag `config` on
+ * initialisation, and its own source carries the note: "This will trigger a
+ * page_view event unless 'send_page_view' is set to false in configProperties"
+ * (dist/index.cjs.js:889, where `configProperties = options?.config ?? {}`).
+ * `getAnalytics(firebaseApp)` passed no options, so the default applied — and a
+ * GA4 `page_view` carries `page_location`, the full URL.
+ *
+ * jojo's URLs are not opaque. `linksOf`/`addressOf` build
+ * `/applications/<slug>` where the slug is minted from the employer name the
+ * user typed. So opening an application sent that employer to a vendor's
+ * console, which is the exact sentence `core/analytics.ts` opens with as the
+ * thing it exists to prevent. The suite was green throughout, because no test
+ * can see an event jojo does not write.
+ *
+ * `page_location` and `page_referrer` are pinned as well as the event being
+ * turned off. Disabling `page_view` stops the automatic EVENT; gtag still
+ * attaches the current location to subsequent events unless the config
+ * overrides it, and jojo reports events from every screen. The origin alone is
+ * what a vendor gets — no path, no query, no record.
+ */
+export const ANALYTICS_INIT = {
+  config: {
+    send_page_view: false,
+    page_location: typeof location === 'undefined' ? '' : location.origin,
+    page_referrer: '',
+    page_title: 'jojo',
+  },
+} as const
+
 let loading: Promise<FirebaseAnalytics | null> | null = null
 let loaded: FirebaseAnalytics | null = null
 
@@ -167,7 +206,12 @@ async function ensureLoaded(): Promise<FirebaseAnalytics | null> {
       // `getApps()` first: React's StrictMode double-invokes effects in
       // development, and initialising a second app with the same name warns.
       const firebaseApp = app.getApps()[0] ?? app.initializeApp(FIREBASE_CONFIG)
-      const analytics = analyticsSdk.getAnalytics(firebaseApp)
+      /*
+       * `initializeAnalytics`, not `getAnalytics`. They differ in exactly one
+       * way that matters: only the first takes settings, and `getAnalytics`
+       * therefore cannot turn the automatic `page_view` off. See ANALYTICS_INIT.
+       */
+      const analytics = analyticsSdk.initializeAnalytics(firebaseApp, ANALYTICS_INIT)
       // Applied here as well as in the setter, because the SDK starts
       // collecting the moment `getAnalytics` returns — and this can be reached
       // by a report that raced the switch being turned off.

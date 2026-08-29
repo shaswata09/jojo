@@ -251,12 +251,80 @@ describe('the suite itself', () => {
       turns: c.turns.map(() => ({ correct: true })),
       trajectory: { grounded: 1, writes: 1, lookedFirst: 1, refused: 0, calls: 2, repeats: 0 },
       state: c.finalState.map((check) => ({ check, pass: true, saw: '' })),
+      workflow: null,
       clean: true,
     }))
     const out = summarise(scores)
     expect(out.turnsCorrect).toBe(out.turns)
     expect(out.grounded).toBeLessThanOrEqual(1)
     expect(out.refusalRate).toBe(0)
+  })
+
+  it('reports the graph axis as absent, not as zero, when nothing is annotated', () => {
+    /*
+     * The distinction the metric turns on. A suite where no conversation has a
+     * gold workflow has NOT scored zero on the graph axis — it has not measured
+     * it, and averaging the absence in as a failure would make the headline a
+     * function of how much of the rubric has been annotated rather than of how
+     * the model did.
+     */
+    const none = summarise(
+      CONVERSATIONS.map((c) => ({
+        conversation: c.id,
+        group: c.group,
+        turns: c.turns.map(() => ({ correct: true })),
+        trajectory: { grounded: 1, writes: 1, lookedFirst: 1, refused: 0, calls: 2, repeats: 0 },
+        state: c.finalState.map((check) => ({ check, pass: true, saw: '' })),
+        workflow: null,
+        clean: true,
+      })),
+    )
+    expect(none.graph.conversations).toBe(0)
+    expect(none.graph.nodeF1).toBeNull()
+    expect(none.graph.argAccuracy).toBeNull()
+  })
+
+  it('macro-averages the graph axis, so a big workflow does not outvote small ones', () => {
+    const perfect = { precision: 1, recall: 1, f1: 1 }
+    const zero = { precision: 0, recall: 0, f1: 0 }
+    const out = summarise([
+      {
+        conversation: 'a',
+        group: 'fetch' as const,
+        turns: [],
+        trajectory: { grounded: 0, writes: 0, lookedFirst: 0, refused: 0, calls: 0, repeats: 0 },
+        state: [],
+        workflow: {
+          nodes: perfect,
+          links: perfect,
+          edges: { of: 1, adjudicable: 1 },
+          args: { checked: 2, matched: 2 },
+          shape: 'chain' as const,
+        },
+        clean: true,
+      },
+      {
+        conversation: 'b',
+        group: 'fetch' as const,
+        turns: [],
+        trajectory: { grounded: 0, writes: 0, lookedFirst: 0, refused: 0, calls: 0, repeats: 0 },
+        state: [],
+        workflow: {
+          nodes: zero,
+          links: zero,
+          edges: { of: 3, adjudicable: 1 },
+          args: { checked: 6, matched: 0 },
+          shape: 'dag' as const,
+        },
+        clean: false,
+      },
+    ])
+    expect(out.graph.conversations).toBe(2)
+    expect(out.graph.nodeF1).toBe(0.5)
+    // Arguments are micro-averaged on purpose: every one is the same size, so
+    // there is nothing for a per-conversation mean to correct for.
+    expect(out.graph.argAccuracy).toBe(0.25)
+    expect(out.graph.argsChecked).toBe(8)
   })
 })
 

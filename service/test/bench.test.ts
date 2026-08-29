@@ -42,7 +42,7 @@ import type { ChatMessage, Turn } from '../kg/core/model-server'
 import { CATALOG, functionSpecs, toWireName } from '../kg/agent/catalog'
 import { runAgent, type AgentStep } from '../kg/agent/loop'
 import { inCatalogOrder, offeredFor } from '../kg/agent/retrieve'
-import { BENCH_NOW, BENCH_TODAY, DOCUMENTS, WORLD, WORLD_SHAPE } from '../kg/agent/bench-world'
+import { BENCH_NOW, BENCH_TODAY, WORLD, WORLD_SHAPE, readDocument } from '../kg/agent/bench-world'
 import { CONVERSATIONS, TURN_COUNT } from '../kg/agent/bench-conversations'
 import {
   scoreConversation,
@@ -150,15 +150,14 @@ function buildWorld() {
      *
      * The contents are deliberately the only place their facts appear, so a
      * correct answer proves the file was opened rather than guessed at.
+     *
+     * Shared with `bench/run.mts` through `readDocument` rather than written
+     * out here. It was written out here, correctly, while the live runner had
+     * its own version that looked the node id up in a name-keyed map and missed
+     * every time — so this suite passed and the three-model runs were scored
+     * against a reader that could not open anything.
      */
-    convert: async (fileId: string) => {
-      const node = (repo.getSnapshot() as GraphSnapshot).node(fileId as NodeId, 'file')
-      const name = node ? String((node.props as { name?: unknown }).name ?? '') : ''
-      const markdown = DOCUMENTS[name]
-      return markdown === undefined
-        ? { ok: false as const, reason: `no stored text for ${name || fileId}` }
-        : { ok: true as const, markdown }
-    },
+    convert: async (fileId: string) => readDocument(repo.getSnapshot() as GraphSnapshot, fileId),
   }
   return { repo, host }
 }
@@ -419,6 +418,41 @@ describe('the benchmark world builds and is the shape it says', () => {
    */
   it('builds without a single step failing', () => {
     expect(() => buildWorld()).not.toThrow()
+  })
+
+  it('hands the agent a document reader that can actually open every document', () => {
+    /*
+     * The bug this exists for, and the reason it is asserted through the HOST
+     * rather than by reading `DOCUMENTS`.
+     *
+     * `vault.file.read` calls `ctx.convert(input.id)` with the node id;
+     * `DOCUMENTS` is keyed by file name. `bench/run.mts` looked the id up in
+     * `DOCUMENTS` directly, so it missed on every file, and every document
+     * conversation in every three-model run was scored against a reader that
+     * could not open anything. Nothing failed: the tool answers `{ok: false,
+     * hint: 'no text'}` rather than throwing, the model apologises, and a
+     * `readOnly` turn that answered is scored correct.
+     *
+     * This suite did not catch it because this suite had its own, correct copy
+     * of the resolution. So the two are one function now, and this asserts the
+     * thing that was actually false — that a real id, taken from the built
+     * world, yields real text.
+     */
+    const { repo } = buildWorld()
+    const snapshot = repo.getSnapshot() as GraphSnapshot
+    const files = [...snapshot.ofType('file')]
+    expect(files.length).toBe(WORLD_SHAPE.file)
+
+    const unreadable = files
+      .filter((f) => !readDocument(snapshot, f.id).ok)
+      .map((f) => String((f.props as { name?: unknown }).name ?? f.id))
+    expect(unreadable, `these files have no readable text: ${unreadable.join(', ')}`).toEqual([])
+
+    // And it is the DOCUMENT's text, not an empty string that happens to be
+    // `ok` — the facts in these files are the only place they appear.
+    const cv = files.find((f) => (f.props as { name?: unknown }).name === 'CV-2026.pdf')!
+    const out = readDocument(snapshot, cv.id)
+    expect(out.ok && out.markdown).toContain('Oyelaran')
   })
 
   it('contains exactly what the conversations assume', () => {

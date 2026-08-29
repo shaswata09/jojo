@@ -13,8 +13,6 @@ import type { Mark } from '@/lib/timeline-visuals'
 import { TODAY as TODAY_ISO, TODAY_PARTS } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
-const MONTH_TODAY = `${buildMonth(TODAY_PARTS.year, TODAY_PARTS.month).label} ${TODAY_PARTS.day}`
-
 /**
  * What a day is marked with — the Calendar route's marks, off the shared rule,
  * so the two grids cannot disagree about the same date.
@@ -62,12 +60,38 @@ export function GlancePanel() {
   const { all, stageCounts } = useApplications()
   const { all: items, forMonth, overdue } = useTimeline()
   const { open } = useDialogs()
+
+  /*
+   * The pin, sampled once per render.
+   *
+   * `TODAY` and `TODAY_PARTS` are live bindings — `@/lib/today` reassigns both
+   * at the local midnight — so anything derived from them at MODULE scope froze
+   * on the day this file was first imported. This panel had two such
+   * derivations, and both were measured a day out on a session opened at 23:50
+   * and read at 00:10 (fake timers, 20 minutes advanced): the month button's
+   * tooltip named yesterday, and the "Done today" counter went on counting
+   * yesterday's ticks while the store filed new ones under the new day.
+   *
+   * Locals rather than the imports directly, because an outer-scope binding is
+   * not a valid `useMemo` dependency — naming them here is what lets the memos
+   * below say, truthfully, which day they were computed for.
+   */
+  const today = TODAY_ISO
+  const todayParts = TODAY_PARTS
+
+  /*
+   * The month on screen and the day selected in it start on today and are the
+   * user's after that. Deliberately NOT re-derived at the turn: these are
+   * cursor positions, and moving somebody's selection out from under them at
+   * midnight is worse than a stale one. `goTo` reads the live parts at click
+   * time, so the Today button always lands on the real today.
+   */
   const [view, setView] = useState<{ year: number; month: number }>({
-    year: TODAY_PARTS.year,
-    month: TODAY_PARTS.month,
+    year: todayParts.year,
+    month: todayParts.month,
   })
-  const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
-  const [selected, setSelected] = useState<number>(TODAY_PARTS.day)
+  const month = useMemo(() => buildMonth(view.year, view.month, todayParts), [view, todayParts])
+  const [selected, setSelected] = useState<number>(todayParts.day)
 
   /**
    * Paging keeps the day you were looking at, so stepping through months
@@ -85,7 +109,10 @@ export function GlancePanel() {
     )
   }, [])
 
-  const isCurrentMonth = view.year === TODAY_PARTS.year && view.month === TODAY_PARTS.month
+  const isCurrentMonth = view.year === todayParts.year && view.month === todayParts.month
+
+  /** The current month and day, as the month button's tooltip spells it. */
+  const monthToday = `${buildMonth(todayParts.year, todayParts.month).label} ${todayParts.day}`
 
   /**
    * The counters, derived rather than written down — and every one of them a
@@ -131,11 +158,11 @@ export function GlancePanel() {
       },
       {
         label: 'Done today',
-        value: String(items.filter((i) => i.completedOn === TODAY_ISO).length),
+        value: String(items.filter((i) => i.completedOn === today).length),
         to: vaultPath({ tool: 'reminders' }),
       },
     ]
-  }, [all, items, stageCounts, overdue])
+  }, [all, items, stageCounts, overdue, today])
 
   const monthEvents = useMemo(() => forMonth(view.year, view.month), [forMonth, view])
 
@@ -236,7 +263,7 @@ export function GlancePanel() {
               onClick={() => goTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
               aria-label="Go to current month"
               aria-current={isCurrentMonth ? 'date' : undefined}
-              title={`${MONTH_TODAY} — current month`}
+              title={`${monthToday} — current month`}
               className="grid size-6 cursor-pointer place-items-center rounded-sm hover:bg-well"
             >
               <span

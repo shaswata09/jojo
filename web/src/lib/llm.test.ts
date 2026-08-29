@@ -273,6 +273,106 @@ describe('what the page fetches itself', () => {
     expect(needsRelay('http://192.168.1.50:8000/v1/chat/completions')).toBe(true)
   })
 
+  /**
+   * The third wrong turn, and the one the two tests above could not see.
+   *
+   * `needsRelay` was right the whole time; the STREAMED road never asked it.
+   * `agentTurn` chose `readRelayedStream` on `cloud` alone, and `readStream`
+   * goes to `sendStream` and straight to `fetch` — so turning streaming on
+   * silently switched the relay off for a LAN address, which is the one setup
+   * the relay was built for. Measured before the fix: an https page with an
+   * `onDelta` fetched `http://10.116.34.124:8103/v1/chat/completions` itself,
+   * and asked the extension nothing. In a browser that request never leaves.
+   *
+   * ASSERTED THROUGH THE ANSWER, not through `needsRelay`. Testing the decision
+   * function is what left this uncovered for as long as it was: the guard was
+   * correct and unused. `fetch` is forbidden here, so the turn can only come
+   * back at all if the extension was the one that served it.
+   */
+  it('asks the extension for a STREAMED LAN turn too, from an https page', async () => {
+    vi.stubGlobal('location', { protocol: 'https:' })
+    vi.stubGlobal('fetch', forbiddenFetch)
+    const body = sse(null)
+    vi.stubGlobal('window', fakeBridge({ chunks: [body.slice(0, 40), body.slice(40)] }))
+
+    const turn = await agentTurn(
+      settings('http://10.116.34.124:8103/v1'),
+      [{ role: 'user', content: 'hi' }],
+      [],
+      undefined,
+      () => {},
+    )
+
+    expect(turn.ok).toBe(true)
+    if (!turn.ok) return
+    expect(turn.text).toBe('Hello there')
+  })
+
+  it('still reads a LOOPBACK stream as it arrives, rather than paying a hop', async () => {
+    /*
+     * The companion assertion, and it deliberately does NOT assert on the URL.
+     *
+     * Widening the condition to relay everything — wrong turn 2 above, in its
+     * streamed form — still FETCHES loopback directly, because `sendToModel`
+     * asks `needsRelay` again and sends it itself. What it loses is the stream:
+     * that road is `send`, which waits for `response.text()` and hands the whole
+     * body to the reader in one push, so a local Ollama would write nothing on
+     * screen until it had finished. A URL assertion cannot see that — it was
+     * tried here and passed on the widened condition.
+     *
+     * So the claim is about HOW the body was read. `sendStream` takes
+     * `body.getReader()`; `send` takes `text()`. Which one the response was
+     * asked for is the difference, and it is the only witness there is.
+     */
+    vi.stubGlobal('location', { protocol: 'https:' })
+    vi.stubGlobal('window', fakeBridge({ chunks: [] }))
+
+    const body = sse(null)
+    let readIncrementally = false
+    let readWhole = false
+    // Hand-rolled rather than a `Response`, for the reason the file header
+    // gives: the smallest thing the transport will accept. A real `Response`
+    // built around a `ReadableStream` buffers ahead of the reader, which hides
+    // exactly the difference being measured.
+    vi.stubGlobal('fetch', async () => ({
+      ok: true,
+      status: 200,
+      headers: { get: () => null },
+      get body() {
+        readIncrementally = true
+        const encoder = new TextEncoder()
+        let sent = false
+        return {
+          getReader: () => ({
+            read: async () => {
+              if (sent) return { done: true, value: undefined }
+              sent = true
+              return { done: false, value: encoder.encode(body) }
+            },
+          }),
+        }
+      },
+      text: async () => {
+        readWhole = true
+        return body
+      },
+    }))
+
+    const deltas: string[] = []
+    const turn = await agentTurn(
+      settings('http://localhost:11434/v1'),
+      [{ role: 'user', content: 'hi' }],
+      [],
+      undefined,
+      (delta) => deltas.push(delta),
+    )
+
+    expect(turn.ok).toBe(true)
+    expect(deltas.join('')).toBe('Hello there')
+    expect(readIncrementally).toBe(true)
+    expect(readWhole).toBe(false)
+  })
+
   it('does not ask for loopback, or for https, or from an http page', () => {
     vi.stubGlobal('location', { protocol: 'https:' })
     expect(needsRelay('http://localhost:11434/api/chat')).toBe(false)

@@ -14,6 +14,7 @@ import type { Stage } from '@jojo/service/data/seed'
 import { shortDate, whenLabel } from '@jojo/service/data/timeline'
 import type { TimelineItem, TimelineKind } from '@jojo/service/data/timeline'
 import { useLabels } from '@/lib/labels-context'
+import { canSaveTimelineItem, clockValue, minutesOf, timelineFormErrors } from '@/lib/timeline-form'
 import { useApplications, useTimeline } from '@/lib/store-context'
 import { KIND_ICON, KIND_LABEL, TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
@@ -79,17 +80,6 @@ const EVENT_KIND_FOR_STAGE: Record<Stage, TimelineKind> = {
 const DEFAULT_START_MINS = 9 * 60
 const DEFAULT_DURATION_MINS = 30
 
-const pad = (n: number) => String(n).padStart(2, '0')
-const clockValue = (mins: number) => `${pad(Math.floor(mins / 60) % 24)}:${pad(mins % 60)}`
-
-/** Back to minutes from midnight. Undefined for anything unparseable, never NaN. */
-function minutesOf(value: string): number | undefined {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim())
-  if (!match) return undefined
-  const mins = Number(match[1]) * 60 + Number(match[2])
-  return Number.isFinite(mins) && mins >= 0 && mins < 24 * 60 ? mins : undefined
-}
-
 export function TimelineItemSheet({ open, onOpenChange, mode, initial }: TimelineItemSheetProps) {
   const c = useColors()
   const { byId } = useApplications()
@@ -130,9 +120,27 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
   const [durationOpen, setDurationOpen] = useState(false)
   const [attempted, setAttempted] = useState(false)
 
-  const titleError = attempted && !title.trim() ? 'Give it a title you will recognise.' : undefined
-  const dateError =
-    attempted && !date ? 'Pick a date — an undated item has nowhere to appear.' : undefined
+  /*
+   * One reading of what is wrong with the form, shared by the fields and by
+   * Save.
+   *
+   * They used to disagree. The Start-time field rejected `9`, `25:00` and an
+   * empty box on its own — the sentence was right there under it — and `onSave`
+   * guarded `if (!cleanTitle || !date) return`, which never asked. The write
+   * went through, `minutesOf` handed back undefined, `timed` went false, and the
+   * record was filed ALL DAY with the All-day switch still off. The interview
+   * the person typed `9` for landed on the calendar with no time on it and a
+   * toast that said so.
+   *
+   * The title and date sentences wait for a first attempt — a form is not wrong
+   * for being unfinished — while the time's shows as soon as the box stops
+   * parsing, which is what it did before and the behaviour worth keeping: it is
+   * the only field here whose value can be typed WRONG rather than merely left
+   * empty.
+   */
+  const errors = timelineFormErrors({ title, date, allDay, time })
+  const titleError = attempted ? errors.title : undefined
+  const dateError = attempted ? errors.date : undefined
   /**
    * Linking an application is the strongest hint the form ever gets about what
    * the record is: "chase" for something submitted, "prep" for an interview.
@@ -163,12 +171,14 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
 
   const onSave = () => {
     setAttempted(true)
+    if (!canSaveTimelineItem(errors)) return
     const cleanTitle = title.trim()
-    if (!cleanTitle || !date) return
 
-    // An empty time with the switch off is still an all-day item: the model says
-    // `startMins` is undefined whenever `allDay`, and half a timed item would
-    // render as a blank slot on the hour grid.
+    // `timed` is now exactly `!allDay` — the guard above will not let an
+    // unparseable time past — but it is still derived from the parse rather than
+    // from the switch, because the model's rule is about `startMins`: half a
+    // timed item renders as a blank slot on the hour grid, so nothing may write
+    // `allDay: false` without a number to go with it.
     const startMins = allDay ? undefined : minutesOf(time)
     const timed = startMins !== undefined
 
@@ -283,7 +293,7 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
             placeholder="09:00"
             keyboardType="numbers-and-punctuation"
             mono
-            error={minutesOf(time) === undefined ? 'Use a time like 14:30.' : undefined}
+            error={errors.time}
             style={s.fill}
           />
           <FormField label="Length" style={s.fill}>

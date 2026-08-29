@@ -76,29 +76,33 @@ type DirRow = { dir: string; files: number; tests: number; lines: number; what: 
 export const SHAPE: DirRow[] = [
   {
     dir: 'service/kg/core',
-    files: 77,
-    tests: 36,
-    lines: 20173,
+    // 118/57 rather than 120/58 since `core/folder.ts` and its test were
+    // deleted: 555 lines of File System Access folder rules — naming, drift
+    // classification, orphan pairing, rebuild planning — that nothing outside
+    // the test imported, for a folder the OS no longer owns. See service/README.
+    files: 118,
+    tests: 57,
+    lines: 32159,
     what: 'model, ids, schema, algebra, dates',
   },
-  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 6311, what: 'transactions, journal, boot' },
-  { dir: 'service/kg/tools', files: 21, tests: 2, lines: 6538, what: '77 named write operations' },
+  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/tools', files: 27, tests: 7, lines: 8571, what: '82 named write operations' },
   {
     dir: 'service/kg/agent',
-    files: 30,
-    tests: 14,
-    lines: 8835,
+    files: 52,
+    tests: 25,
+    lines: 21983,
     what: 'the loop, the catalog, 9 reads, the pipelines',
   },
   {
     dir: 'service/kg/storage',
-    files: 12,
-    tests: 3,
-    lines: 2510,
+    files: 13,
+    tests: 4,
+    lines: 2963,
     what: 'the port, and no platform',
   },
-  { dir: 'service/kg/react', files: 32, tests: 6, lines: 5947, what: 'providers and hooks' },
-  { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 47, what: 'the console is the telemetry' },
+  { dir: 'service/kg/react', files: 41, tests: 11, lines: 8646, what: 'providers and hooks' },
+  { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
   {
     dir: 'web/src/kg/storage',
     files: 11,
@@ -108,24 +112,24 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'web/src/components',
-    files: 269,
-    tests: 19,
-    lines: 44978,
+    files: 283,
+    tests: 29,
+    lines: 47350,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4651, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4795, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
-    files: 104,
-    tests: 31,
-    lines: 14209,
+    files: 112,
+    tests: 37,
+    lines: 16327,
     what: 'web-only adapters and URL state',
   },
   {
     dir: 'service/data',
-    files: 7,
+    files: 8,
     tests: 1,
-    lines: 1482,
+    lines: 1584,
     what: 'demo fixtures, below the model',
   },
   {
@@ -148,7 +152,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 53
+export const WEB_TEST_FILES = 70
 
 type TestGroup = { title: string; files: string; body: string }
 

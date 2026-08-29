@@ -81,6 +81,50 @@ export function startHandoffServer(
         socket.destroy()
       }
 
+      /**
+       * One response, and a close that waits for it to have gone out.
+       *
+       * This used to be `socket.write(bytes)` followed by `shut()` on the next
+       * line, and those two calls do NOT reach the socket on the same thread.
+       * Read down the library:
+       *
+       *   - JS `write()` calls `NativeModules.TcpSockets.write(...)`, and
+       *     Android's `TcpSocketClient.write` posts the bytes to that socket's
+       *     own single-threaded `writeExecutor` (`TcpSocketClient.java`).
+       *   - JS `destroy()` calls `NativeModules.TcpSockets.destroy(...)`, which
+       *     is `end()`, which posts to the MODULE's shared two-thread
+       *     `executorService` and calls `socket.close()` from there
+       *     (`TcpSocketModule.java`). Different pool, no ordering against the
+       *     write that was queued a microsecond earlier.
+       *   - iOS is blunter still: `destroy` is `[_tcpSocket disconnect]`, which
+       *     CocoaAsyncSocket documents as disconnecting immediately and
+       *     DROPPING any pending writes, where `end` is
+       *     `disconnectAfterWriting`.
+       *
+       * So the answer could be cut off — worst of all on the payload route,
+       * where the other device would authenticate a truncated backup or, more
+       * likely, sit on a stalled transfer. `end(bytes)` is the library's own
+       * fix for exactly this: it writes, waits for the native 'written' event
+       * for THAT message, and only then closes (`Socket.js`).
+       *
+       * The socket stays in `sockets` until its 'close' event rather than being
+       * deleted here, which is what keeps `stop()` able to tear down a
+       * connection whose write never completes because the peer walked away.
+       */
+      const reply = (bytes: Uint8Array) => {
+        try {
+          socket.end(bytes)
+        } catch {
+          // `write`/`end` throw 'Socket is closed.' when the connection has
+          // already gone (`Socket.js` checks `_pending || _destroyed`). That is
+          // not an error worth reporting — the client is not there to be told —
+          // but it MUST not escape: this is called from a promise chain, and an
+          // unhandled rejection on the phone is a red box over a transfer that
+          // has otherwise finished.
+          shut()
+        }
+      }
+
       socket.on('data', (chunk) => {
         // The library types this as string | Buffer; on RN it is a Buffer-like
         // Uint8Array. Anything else is not something to guess at.
@@ -115,8 +159,7 @@ export function startHandoffServer(
           // could not have worked on a device at all.
           // `react-native-tcp-socket` takes a `Uint8Array` and does the
           // conversion itself, behind its own import of the shim.
-          socket.write(writeResponse(404))
-          shut()
+          reply(writeResponse(404))
           return
         }
 
@@ -128,15 +171,14 @@ export function startHandoffServer(
 
         void answer(read)
           .then((out) => {
-            socket.write(writeResponse(out.status, out.body))
+            reply(writeResponse(out.status, out.body))
           })
           .catch(() => {
             // A handler that threw is this app's bug, not the client's. Say so
             // with a status rather than leaving the socket hanging until the
             // other device times out and reports "the transfer froze".
-            socket.write(writeResponse(400))
+            reply(writeResponse(400))
           })
-          .finally(shut)
       })
 
       socket.on('error', shut)

@@ -87,6 +87,82 @@ describe('redaction', () => {
     expect(redact('at C:\\Users\\Someone\\app\\index.js')).not.toContain('Someone')
   })
 
+  it('removes the FILE NAME too, not just the account name', () => {
+    /*
+     * The leak an audit reproduced. The account-name rule above passed while
+     * `/Users/…/Documents/Offer - Fujitsu - signed.pdf` went to a vendor intact,
+     * and the name of a document is the whole job search: who is hiring, at what
+     * stage, under what title.
+     *
+     * The spaces are the point. The old rule stopped at whitespace, so every
+     * normally-named document walked through it.
+     */
+    const out = redact('ENOENT: open /Users/shaswatamitra/Documents/Offer - Fujitsu - signed.pdf')
+    expect(out).not.toContain('Offer')
+    expect(out).not.toContain('Fujitsu')
+    expect(out).not.toContain('Documents')
+    expect(out).not.toContain('shaswatamitra')
+    // The shape survives, so the reader still knows a document read failed.
+    expect(out).toContain('/Users/«user»/«path».pdf')
+
+    expect(redact('reading /home/someone/cv/Shaswata Mitra CV.docx')).not.toContain('Mitra')
+    expect(redact('C:\\Users\\Someone\\Desktop\\Rejection from Acme.pdf')).not.toContain('Acme')
+    // A Windows path keeps its own separator rather than growing a POSIX one.
+    expect(redact('C:\\Users\\Someone\\Desktop\\Rejection from Acme.pdf')).toContain(
+      'C:\\Users\\«user»\\«path».pdf',
+    )
+  })
+
+  it('keeps a stack frame readable while it does it', () => {
+    // Over-redaction is the safe direction but not a free one: a tail replaced
+    // wholesale would leave `at /Users/«user»/«path»` on every frame, which
+    // reads as a broken redactor and gets the feature turned off. The extension
+    // and the position carry no name, so they stay.
+    expect(redact('at /Users/shaswatamitra/Desktop/jojo/web/src/main.tsx:12:3')).toBe(
+      'at /Users/«user»/«path».tsx:12:3',
+    )
+  })
+
+  it('redacts an iOS container path, UUID and all', () => {
+    /*
+     * There was no rule for this shape at all. It is where every document the
+     * app holds on a phone lives — `restore-documents.ts` writes
+     * `<DocumentDir>/restored/<id>__<the user's own file name>` — and the
+     * container UUID is stable for the life of an install, so a run of reports
+     * carrying it is a run a vendor can join into one device's history.
+     */
+    const ios =
+      'ENOENT: file:///var/mobile/Containers/Data/Application/9C4E1B2A-11EE-4F3D-9A7B-1122334455AA/Documents/restored/n1__Offer Fujitsu.pdf'
+    const out = redact(ios)
+    expect(out).not.toContain('9C4E1B2A')
+    expect(out).not.toContain('Fujitsu')
+    expect(out).toContain('/Application/«install»/«path».pdf')
+
+    // `/private/var/…` is the same path under its other spelling, and the app
+    // sees both depending on which API answered.
+    expect(
+      redact(
+        '/private/var/mobile/Containers/Data/Application/9C4E1B2A-11EE-4F3D-9A7B-1122334455AA/Library/Caches/My CV.pdf',
+      ),
+    ).not.toContain('9C4E1B2A')
+  })
+
+  it('redacts the Android document directory', () => {
+    /*
+     * `ReactNativeBlobUtil.fs.dirs.DocumentDir` is `/data/user/0/dev.jojo/files`
+     * on that platform — the value `restore-documents.test.ts` fakes, because it
+     * is the one the app really gets. The package name is public and stays as
+     * the anchor; everything under it is the user's.
+     */
+    const out = redact(
+      'ENOENT: open /data/user/0/dev.jojo/files/restored/n1__Shaswata Mitra CV.pdf',
+    )
+    expect(out).not.toContain('Shaswata')
+    expect(out).not.toContain('restored')
+    expect(out).toContain('/data/user/0/dev.jojo/«path».pdf')
+    expect(redact('/data/data/dev.jojo/files/vault.db')).toContain('/data/data/dev.jojo/«path».db')
+  })
+
   it('removes an email address', () => {
     // The profile holds one, and a validation error quotes the value it rejected.
     expect(redact('invalid contact: a.person@example.co.uk')).not.toContain('a.person@example')
@@ -224,7 +300,19 @@ describe('the two dials', () => {
      * The failure that matters is reporting when nobody asked, so anything
      * unrecognised fails closed.
      */
-    for (const no of ['false', '0', 'off', 'no', '', '  ', 'maybe', 'TRUEISH', undefined, null, false]) {
+    for (const no of [
+      'false',
+      '0',
+      'off',
+      'no',
+      '',
+      '  ',
+      'maybe',
+      'TRUEISH',
+      undefined,
+      null,
+      false,
+    ]) {
       expect(crashCapability(no), String(no)).toBe('off')
     }
   })

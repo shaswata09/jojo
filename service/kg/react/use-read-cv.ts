@@ -104,6 +104,23 @@ export type CvOutcome =
        */
       relations: readonly RelationDraft[]
       skipped: readonly string[]
+      /**
+       * What the linking pass cost, when one ran at all.
+       *
+       * ABSENT rather than null when it did not: fewer than two entries came
+       * back, or the read was cancelled before step 5. `asked` and `failed` are
+       * the only way a caller can tell a graph that is genuinely sparse from one
+       * whose edges were lost to failed batches — which is the sentence
+       * `linkProfile`'s header promises the caller will be able to say, "the
+       * graph is thin rather than complete".
+       *
+       * It was already being spread into this arm and was not declared on it, so
+       * `outcome.linking` was a compile error at every call site: the field the
+       * pass exists to report was invisible to the one consumer that could act
+       * on it, reachable only through an assertion. Declared here, not removed,
+       * because removing it would delete the report rather than the defect.
+       */
+      linking?: LinkResult
     }
   | { ok: false; reason: string }
 

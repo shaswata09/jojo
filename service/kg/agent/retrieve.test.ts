@@ -121,6 +121,32 @@ describe('what is always there', () => {
     const out = offered('wipe everything and reset the store')
     expect(out!.has('memory.reset') || out!.has('memory.clear')).toBe(true)
   })
+
+  /*
+   * A wipe the LEXICON does not recognise, which is the case that went wrong.
+   *
+   * `asksToWipe` is a pair of regexes over the person's sentence; `select` is a
+   * term index over the catalog. They disagree, and "erase everything" is where:
+   * it asks to wipe, and it indexes no term at all, so `select` abstains. That
+   * abstention branch returns early and used to skip the closure, the resident
+   * reads and `EVERYTHING_SAFE` entirely — so the offered set was exactly
+   * `NEVER_IMPLICIT`, a two-item menu of the only two calls in this app that
+   * cannot be undone, with no read to check with and nothing else to do
+   * instead. Measured: recognised phrasings of the same request came back with
+   * 18 and 42 tools including every read.
+   *
+   * Both halves are asserted. The reads make "look before you write"
+   * followable; the size is what stops a future edit from satisfying this by
+   * adding the reads and calling it done.
+   */
+  it('does not narrow a wipe it failed to recognise down to the wipes themselves', () => {
+    for (const message of ['erase everything', 'purge everything that is out of date']) {
+      expect(select(message), message).toBeNull()
+      const out = offered(message)!
+      for (const read of RESIDENT) expect(out.has(read), `${message}: ${read}`).toBe(true)
+      expect(out.size, message).toBeGreaterThan(EVERYTHING_SAFE.length)
+    }
+  })
 })
 
 describe('the closure keeps every chain finishable', () => {

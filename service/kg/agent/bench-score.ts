@@ -25,6 +25,7 @@
 
 import type { NodeType } from '../core/model'
 import { GROUPS } from './bench-conversations'
+import { scoreWorkflow, type WorkflowScore } from './bench-workflow'
 import type { Conversation, StateCheck, Turn } from './bench-conversations'
 import { NEEDS, NEEDS_ANY, PRODUCERS } from './tool-graph'
 
@@ -351,6 +352,19 @@ export type ConversationScore = {
   readonly turns: readonly TurnScore[]
   readonly trajectory: TrajectoryScore
   readonly state: readonly CheckResult[]
+  /**
+   * The graph axis: how close the calls came to the gold workflow.
+   *
+   * `null` when the conversation has no authored workflow, which is different
+   * from scoring zero and has to stay different — averaging an absent rubric in
+   * as a failure would make the metric a function of how much of the suite has
+   * been annotated.
+   *
+   * NOT part of `clean`. A model can reach the right final state by a route the
+   * rubric did not anticipate, and that is a pass; the graph score says how far
+   * it strayed, which is a diagnostic rather than a verdict.
+   */
+  readonly workflow: WorkflowScore | null
   /** Every axis clean. The number a person would call "did it work". */
   readonly clean: boolean
 }
@@ -363,7 +377,8 @@ export function scoreConversation(
   const turns = conversation.turns.map((turn, i) =>
     scoreTurn(turn, perTurn[i]?.calls ?? [], perTurn[i]?.answered ?? false, perTurn[i]?.answer),
   )
-  const trajectory = scoreTrajectory(perTurn.flatMap((t) => t.calls))
+  const all = perTurn.flatMap((t) => t.calls)
+  const trajectory = scoreTrajectory(all)
   const state = conversation.finalState.map((check) => checkState(check, nodes))
 
   return {
@@ -372,6 +387,7 @@ export function scoreConversation(
     turns,
     trajectory,
     state,
+    workflow: conversation.workflow === undefined ? null : scoreWorkflow(conversation.workflow, all),
     // Every turn defensible AND every state claim true. Deliberately strict:
     // this is the headline number, and a headline that forgave a wrong final
     // state would be the kind of benchmark score nobody should trust.
@@ -405,6 +421,55 @@ export function summarise(scores: readonly ConversationScore[]) {
     repeats: sum((t) => t.repeats),
     calls,
     writes,
+    /**
+     * The graph axis, averaged over the conversations that HAVE a gold workflow.
+     *
+     * Macro-averaged per conversation rather than micro-averaged over all
+     * nodes, so a nine-call workflow does not outvote eight one-call ones. The
+     * denominator is reported next to it: a graph F1 over four conversations is
+     * not the same claim as one over forty, and a reader has to be able to see
+     * which they are looking at.
+     */
+    graph: (() => {
+      /*
+       * `!== null` is not enough. Scores read back from a published run are
+       * JSON, and one written before this field existed has no `workflow` key
+       * at all — `undefined`, not `null`, which the declared type says cannot
+       * happen and the disk says routinely does. The first version filtered on
+       * `null` alone and threw on every stored report, which is the failure
+       * `CallRecord.args` already carries a warning about: a scorer that cannot
+       * read its own history makes the history unreadable.
+       */
+      const scored = scores
+        .map((s): WorkflowScore | null | undefined => s.workflow)
+        .filter((w): w is WorkflowScore => w !== null && w !== undefined)
+      const mean = (pick: (w: WorkflowScore) => number) =>
+        scored.length === 0 ? null : scored.reduce((n, w) => n + pick(w), 0) / scored.length
+      const args = scored.reduce(
+        (acc, w) => ({ checked: acc.checked + w.args.checked, matched: acc.matched + w.args.matched }),
+        { checked: 0, matched: 0 },
+      )
+      return {
+        conversations: scored.length,
+        nodeF1: mean((w) => w.nodes.f1),
+        nodePrecision: mean((w) => w.nodes.precision),
+        nodeRecall: mean((w) => w.nodes.recall),
+        linkF1: mean((w) => w.links.f1),
+        /** Of the arguments a grader could check, how many the model got right. */
+        argAccuracy: args.checked === 0 ? null : args.matched / args.checked,
+        argsChecked: args.checked,
+        /*
+         * How much of the edge axis was judgeable at all.
+         *
+         * An edge between two tools the gold graph names more than once cannot
+         * be adjudicated from a call list, so it is excluded from link
+         * precision. Publishing `linkF1` without this would present a number
+         * partly made of absent evidence as if it were all measurement.
+         */
+        edgesAdjudicable: scored.reduce((n, w) => n + (w.edges?.adjudicable ?? 0), 0),
+        edges: scored.reduce((n, w) => n + (w.edges?.of ?? 0), 0),
+      }
+    })(),
     /** The failure modes, counted, so a report can name them. */
     failures: turns.reduce<Record<string, number>>((acc, t) => {
       if (t.failure) acc[t.failure] = (acc[t.failure] ?? 0) + 1

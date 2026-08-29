@@ -842,6 +842,120 @@ describe('replaceAll, raced', () => {
    * reading `idle`. Visible, unsaved, and nothing said so — the inverse of the
    * bug the guard was added for.
    */
+  /**
+   * The third way out of `replaceNow`, and the one neither guard covered.
+   *
+   * A driver that THROWS rather than returning a `DriverResult`. `finally`
+   * cleared `deferred` and let the exception through, so the ops the window was
+   * holding were dropped on the floor — present in memory, never on disk, and
+   * no failure Result for the caller to branch on. Reproduced against the real
+   * repository: `replaceAll` propagated the error and the held commit vanished.
+   *
+   * The remedy is the `!outcome.ok` path, because the situation is the same
+   * one: the replace did not happen, so the held write is still real against a
+   * store that still exists.
+   */
+  it('keeps a commit that landed during a replace whose driver THREW', async () => {
+    const inner = createMemoryDriver()
+    let release: (() => void) | null = null
+    const held = new Promise<void>((r) => {
+      release = r
+    })
+    const driver: Driver = {
+      ...inner,
+      replace: async () => {
+        await held
+        throw new Error('the driver blew up instead of answering')
+      },
+    }
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from([KW('kw:one')]),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+
+    const replacing = repo.replaceAll(
+      { nodes: [], edges: [] },
+      { ...freshMeta(AT, 'demo'), dataSet: 'empty', seededAt: null },
+    )
+    const sneaked = KW('kw:sneaked')
+    repo.commit({
+      label: 'background',
+      tool: 't',
+      input: {},
+      calls: [],
+      nodes: [{ id: sneaked.id, before: null, after: sneaked }],
+      edges: [],
+    })
+    release!()
+
+    // A Result, not an exception. `restoreBackup` and both Transfer panels
+    // branch on `ok`; a throw would reach them as an unhandled rejection.
+    const outcome = await replacing
+    expect(outcome.ok).toBe(false)
+
+    await repo.flush()
+
+    // On screen, because the replace did not happen...
+    expect(repo.getSnapshot().node(sneaked.id)).toBeDefined()
+    // ...and on disk, because it is a real write against a store that still exists.
+    const rows = await inner.readAll()
+    expect(
+      (rows.ok ? rows.value.nodes : []).map((r) => (r as { id: string }).id),
+      'the write held during the window was dropped',
+    ).toContain('kw:sneaked')
+  })
+
+  /**
+   * `setMeta` was the one writer that bypassed the hold.
+   *
+   * Every ordinary write goes through `land`, which pushes into `deferred`
+   * while a `replaceAll` is in flight; `setMeta` called `queue.enqueue`
+   * unconditionally. Reproduced: with `replace` held open, a `setMeta` during
+   * the window produced a disk commit against a store that was mid-wipe.
+   *
+   * `dataSet` and `seededAt` are D24's first-run signal, which is what makes it
+   * more than untidiness — persisted beside a replace that then FAILS, the app
+   * calls a store 'user' while it still holds the demo fixtures.
+   */
+  it('holds a setMeta that lands during a replace, rather than writing it through', async () => {
+    const inner = createMemoryDriver()
+    let release: (() => void) | null = null
+    const held = new Promise<void>((r) => {
+      release = r
+    })
+    const commits: number[] = []
+    const driver: Driver = {
+      ...inner,
+      commit: async (ops) => {
+        commits.push(ops.length)
+        return inner.commit(ops)
+      },
+      replace: async () => {
+        await held
+        return { ok: false as const, error: { code: 'storage/quota' as const, message: 'no room' } }
+      },
+    }
+    const repo = createRepository({
+      driver,
+      snapshot: MutableSnapshot.from([KW('kw:one')]),
+      meta: freshMeta(AT, 'demo'),
+      now: () => AT,
+    })
+
+    const replacing = repo.replaceAll(
+      { nodes: [], edges: [] },
+      { ...freshMeta(AT, 'demo'), dataSet: 'empty', seededAt: null },
+    )
+    repo.setMeta({ ...freshMeta(AT, 'demo'), dataSet: 'user', seededAt: null })
+    await repo.flush()
+    expect(commits, 'setMeta reached the disk while the replace was still open').toEqual([])
+
+    release!()
+    await replacing
+  })
+
   it('keeps a commit that landed during a replace the driver REFUSED', async () => {
     const inner = createMemoryDriver()
     let release: (() => void) | null = null

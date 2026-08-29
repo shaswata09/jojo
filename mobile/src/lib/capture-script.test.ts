@@ -131,3 +131,110 @@ describe('the injected capture script', () => {
     expect(script).toContain('rulesOf(')
   })
 })
+
+/**
+ * The tokeniser, RUN rather than read.
+ *
+ * Everything above asks whether the script SAYS something. This lifts one
+ * function out of the generated source and executes it, because the two things
+ * it has to get right are decided by behaviour and not by shape: which CSS
+ * spellings hide a fetch, and — the one that made it a leak — where the token it
+ * mints is allowed to end up.
+ *
+ * `queueCssUrls` closes over `absolute`, `token` and `dropped`, so it is given
+ * exactly those three and nothing else. No DOM is involved, which is why it can
+ * run here at all.
+ */
+describe('the injected script’s CSS tokeniser, executed', () => {
+  function liftQueueCssUrls() {
+    const script = captureScript()
+    const region = script.slice(
+      script.indexOf('    function queueCssUrls('),
+      script.indexOf('    function rulesOf('),
+    )
+    if (region === '' || !region.includes('function queueCssUrls(')) {
+      throw new Error('queueCssUrls() is not where this test expects it in the injected script')
+    }
+    const assets: { href: string; kind: string }[] = []
+    const absolute = (value: unknown) => {
+      try {
+        const url = new URL(String(value).trim(), 'https://board.test/jobs/1')
+        return CAPTURE_SCHEMES.includes(url.protocol as (typeof CAPTURE_SCHEMES)[number])
+          ? url.href
+          : null
+      } catch {
+        return null
+      }
+    }
+    const token = (href: string, kind: string) => {
+      assets.push({ href, kind })
+      return `__JOJO_ASSET_${String(assets.length - 1)}__`
+    }
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const run = new Function(
+      'absolute',
+      'token',
+      `var dropped = 0; ${region}; return queueCssUrls`,
+    )(absolute, token) as (css: string, inAttribute: boolean) => string
+    return { run, assets }
+  }
+
+  it('drops an @import found in a style attribute rather than tokenising it', () => {
+    /*
+     * `lib/capture.ts` escapes a `css` token's value with `cssSafe`, which
+     * escapes `<` ALONE — right while such a token sits inside a `<style>`
+     * element and useless inside a quoted attribute value. This walk runs the
+     * same rewrite over inline `style` attributes, and an `@import` there used
+     * to become a `css` token like any other, so the fetched sheet was spliced
+     * into the attribute. Measured on the web side with a sheet answering
+     * `a{content:"x"}" onload="alert(1)" background="https://…`: the attribute
+     * closed and an event handler went into the archive.
+     *
+     * Nothing is lost by dropping it — the CSS parser honours `@import` only at
+     * the top of a style SHEET, so no browser ever fetched this one.
+     */
+    const { run, assets } = liftQueueCssUrls()
+    expect(run('@import "https://evil.test/s.css";', true)).toBe('')
+    expect(assets).toEqual([])
+  })
+
+  it('still tokenises the same @import inside a <style> element', () => {
+    const { run, assets } = liftQueueCssUrls()
+    expect(run('@import "https://cdn.test/s.css";', false)).toBe('__JOJO_ASSET_0__')
+    expect(assets).toEqual([{ href: 'https://cdn.test/s.css', kind: 'css' }])
+  })
+
+  it('tokenises an image-set bare string, which matches no url() pattern', () => {
+    // `image-set("https://cdn/x.png" 1x)` is a fetch with no `url(`, no
+    // `@import` and no attribute name — invisible to every pattern in
+    // `remoteRefCount`, so it reached a stored capture and the scan passed it.
+    const { run, assets } = liftQueueCssUrls()
+    expect(run('.a{background-image:image-set("https://cdn.test/x.png" 1x)}', false)).toBe(
+      '.a{background-image:image-set(url("__JOJO_ASSET_0__") 1x)}',
+    )
+    expect(assets).toEqual([{ href: 'https://cdn.test/x.png', kind: 'css-asset' }])
+  })
+
+  it('tokenises the vendor-prefixed and single-quoted spelling too', () => {
+    const { run, assets } = liftQueueCssUrls()
+    expect(run(".a{background:-webkit-image-set('https://cdn.test/x.png' 1x)}", false)).toBe(
+      '.a{background:-webkit-image-set(url("__JOJO_ASSET_0__") 1x)}',
+    )
+    expect(assets).toHaveLength(1)
+  })
+
+  it('leaves an image-set option that is a MIME type rather than an address', () => {
+    const { run, assets } = liftQueueCssUrls()
+    expect(
+      run('.a{background:image-set("https://cdn.test/x.avif" type("image/avif"))}', false),
+    ).toBe('.a{background:image-set(url("__JOJO_ASSET_0__") type("image/avif"))}')
+    expect(assets).toEqual([{ href: 'https://cdn.test/x.avif', kind: 'css-asset' }])
+  })
+
+  it('leaves an already-inlined image-set alone', () => {
+    const { run, assets } = liftQueueCssUrls()
+    const css = '.a{background:image-set("data:image/png;base64,AAAA" 1x)}'
+    expect(run(css, false)).toBe(css)
+    expect(assets).toEqual([])
+  })
+})

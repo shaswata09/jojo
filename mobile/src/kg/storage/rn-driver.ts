@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { driverFail, emptyRows } from '@jojo/service/storage/driver'
 import type {
   Driver,
+  DriverFailure,
   DriverResult,
   DurableOp,
   OpenInfo,
@@ -83,20 +84,44 @@ const VERSION = 1
 type Persisted = { version: number; rows: Rows }
 
 /**
- * Reads what is on disk, and treats anything unreadable as "nothing yet".
+ * What was on disk: nothing, rows, or a document that would not read.
  *
- * A parse failure here is indistinguishable from a first run *to this
- * function*, and it deliberately stays that way: `boot` runs `validateRows` and
- * `checkInvariants` over whatever comes back and owns the decision about
- * corrupt data. A driver that tried to be clever about it would be making that
- * call twice, in two places, with less information.
+ * THE THIRD ARM IS THE POINT, and it used to be folded into the first.
+ *
+ * `load` returned `Rows | null` and answered `null` for both "the key is
+ * absent" and "the key holds bytes that are not a store". Measured end to end
+ * on the real `boot`: write a store through this driver, truncate the document
+ * on disk the way a killed write does, boot again — `open()` reported
+ * `from: 0`, `readMeta` saw no meta row, `firstRun` ran, and `seedIfPristine`
+ * found a memory store that was empty because the parse had failed rather than
+ * because the phone was new. The demo fixtures went over the top: 92 nodes
+ * written where the user's records had been, and the truncated document — which
+ * still held most of their rows as text and could have been rescued by hand —
+ * gone with it. There is no server; that was the only copy.
+ *
+ * So the two cases are told apart HERE, because this is the only place that can
+ * tell them apart: by the time `boot` is looking at rows, an unparseable
+ * document and a fresh install are both an empty array. `open` turns this arm
+ * into `storage/corrupt`, which `boot` already routes to the recovery outcome
+ * whose whole rule is "do not touch what is there" — that path existed and this
+ * driver was the one caller that could never reach it.
  */
-async function load(): Promise<Rows | null> {
+type Loaded =
+  | { kind: 'absent' }
+  | { kind: 'rows'; rows: Rows }
+  | { kind: 'unreadable'; detail: string }
+
+async function load(): Promise<Loaded> {
   const raw = await AsyncStorage.getItem(KEY)
-  if (raw === null) return null
+  if (raw === null) return { kind: 'absent' }
   try {
     const parsed = JSON.parse(raw) as Persisted
-    if (!parsed || typeof parsed !== 'object' || !parsed.rows) return null
+    if (!parsed || typeof parsed !== 'object' || !parsed.rows) {
+      // Parsed, but it is not a store document. A build that changed the
+      // envelope, or a key some other code wrote over. Still "present and
+      // unreadable" rather than "absent": overwriting it loses whatever it is.
+      return { kind: 'unreadable', detail: 'the stored document has no rows' }
+    }
     // The spread makes the declared `Rows` true at runtime, and does nothing
     // else — measured, because an audit read it as a guard and went looking for
     // the case it protects. There is none reachable from here: `parsed` is a
@@ -107,12 +132,10 @@ async function load(): Promise<Rows | null> {
     // maps regardless. Deleting the spread changes no observable behaviour, so
     // it cannot be pinned by a test, and it is kept because the alternative is a
     // function whose return type is a lie.
-    return { ...emptyRows(), ...parsed.rows }
+    return { kind: 'rows', rows: { ...emptyRows(), ...parsed.rows } }
   } catch (e) {
-    kgWarn('rn-driver: stored rows could not be parsed, starting empty', {
-      error: String(e),
-    })
-    return null
+    kgWarn('rn-driver: the stored document could not be parsed', { error: String(e) })
+    return { kind: 'unreadable', detail: String(e) }
   }
 }
 
@@ -165,11 +188,80 @@ export function createRnDriver(): Driver {
     }
   }
 
+  /**
+   * Puts the wrapped store back to `before` after the disk refused the write.
+   *
+   * WHY THIS EXISTS, AND WHY ONLY ON THE TWO WHOLESALE METHODS.
+   *
+   * The memory driver is not a cache of the disk here, it is what every read is
+   * answered from — `readAll` delegates to it and nothing re-reads AsyncStorage
+   * after `open`. So the order `apply, then persist` publishes the new state to
+   * every reader BEFORE the disk has agreed to it, and there was no undo.
+   *
+   * For `commit` that divergence is the design and stays: the queue is
+   * write-behind, the UI moved on turns ago, and a retried commit re-serialises
+   * the whole store, so the op that failed lands on the retry. A `commit` only
+   * ever ADDS to what is already there, so the worst a stale disk costs is the
+   * last few edits.
+   *
+   * `replace` and `seedIfPristine` are the opposite shape: they DISCARD the
+   * store and put a different one in its place. Measured on the real
+   * restoreBackup path with the disk refusing the write — the transfer payload
+   * was live in RAM, the user's records were still the only thing on disk,
+   * `restoreBackup` correctly reported "Nothing has been changed", `repo.health`
+   * stayed `idle` and the screen still showed the old records. Then the next
+   * ordinary edit called `persist()`, which serialises whatever the memory store
+   * holds, and wrote the transfer payload over the user's records. The refusal
+   * message was true for about one keystroke.
+   *
+   * The snapshot costs one `readAll` clone per call, which is why it is not on
+   * `commit`: these two run on restore, import, wipe and first-run — user-driven,
+   * off the interaction path, and each already about to serialise the whole
+   * document anyway. A pristine store is nearly empty by definition, so the
+   * `seedIfPristine` copy is of almost nothing.
+   */
+  const rollBack = async (
+    s: MemoryDriver,
+    before: Rows,
+    failure: DriverFailure,
+    call: string,
+  ): Promise<DriverResult<never>> => {
+    const restored = await s.replace(before)
+    if (!restored.ok) {
+      // `before` came out of `readAll`, so it has already survived one
+      // structured clone and cannot be refused for its contents. Reaching here
+      // means the store went away underneath us, and the honest report is that
+      // RAM and disk now disagree — not the original disk error.
+      kgWarn('rn-driver: could not roll the store back after a refused write', {
+        call,
+        error: restored.error.message,
+      })
+      return driverFail<never>(
+        'storage/corrupt',
+        `${call} was refused by the disk and the in-memory store could not be put back`,
+      )
+    }
+    return { ok: false, error: failure }
+  }
+
   return {
     async open(): Promise<DriverResult<OpenInfo>> {
       if (closed) return driverFail<OpenInfo>('storage/unavailable', 'Store is closed')
       try {
-        const rows = await load()
+        const loaded = await load()
+        if (loaded.kind === 'unreadable') {
+          // No memory driver is built, deliberately. `boot` closes a driver
+          // whose `open` failed, but nothing stops a caller trying a write
+          // anyway — and a driver holding an empty store over an unreadable
+          // document is one `persist()` away from writing that emptiness onto
+          // the only copy. With `memory` still null every method answers
+          // `storage/unavailable` and the bytes stay where they are.
+          return driverFail<OpenInfo>(
+            'storage/corrupt',
+            `the stored document could not be read: ${loaded.detail}`,
+          )
+        }
+        const rows = loaded.kind === 'rows' ? loaded.rows : null
         memory = createMemoryDriver(rows ? { rows } : {})
         const opened = await memory.open()
         if (!opened.ok) return opened
@@ -204,21 +296,28 @@ export function createRnDriver(): Driver {
     async replace(rows: Rows) {
       const s = store()
       if (isFailure(s)) return s
+      const before = await s.readAll()
+      if (!before.ok) return before
       const replaced = await s.replace(rows)
       if (!replaced.ok) return replaced
-      return persist()
+      const written = await persist()
+      if (!written.ok) return rollBack(s, before.value, written.error, 'replace')
+      return written
     },
 
     async seedIfPristine(rows: Rows) {
       const s = store()
       if (isFailure(s)) return s
+      const before = await s.readAll()
+      if (!before.ok) return before
       const seeded = await s.seedIfPristine(rows)
       // Only write when the seed actually went in. A `false` here means the
       // store already had records, and rewriting the file for a no-op is how a
       // launch that changed nothing still burns a disk write.
       if (!seeded.ok || !seeded.value) return seeded
       const written = await persist()
-      return written.ok ? seeded : written
+      if (!written.ok) return rollBack(s, before.value, written.error, 'seedIfPristine')
+      return seeded
     },
 
     async destroy() {

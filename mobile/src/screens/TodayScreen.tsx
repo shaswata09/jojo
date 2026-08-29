@@ -15,10 +15,11 @@ import { Txt } from '@/components/ui/Text'
 import { MONTH_LABELS } from '@jojo/service/core/calendar'
 import { STAGE_LABEL, displayName } from '@jojo/service/data/seed'
 import type { Stage } from '@jojo/service/data/seed'
-import { addDays, partsOf, shortDate, timeLabel, whenLabel } from '@jojo/service/data/timeline'
+import { partsOf, shortDate, timeLabel, whenLabel } from '@jojo/service/data/timeline'
 import type { TimelineItem } from '@jojo/service/data/timeline'
 import { TODAY } from '@/lib/today'
 import { markColor, markOfDate, markTone } from '@/lib/marks'
+import { owedWeek, weekStrip } from '@/lib/owed-week'
 import { usePriorityActions } from '@/lib/priority'
 import type { PriorityAction, PriorityUrgency } from '@/lib/priority'
 import { markDismissed, readDismissed, showFirstSteps } from '@/lib/first-steps'
@@ -32,7 +33,6 @@ import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 
 const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 /**
  * "Monday 12 October", computed once from the seed's pinned today.
@@ -59,8 +59,21 @@ const todayLabel = (): string => {
   return `${WEEKDAY_NAMES[new Date(y, m - 1, d).getDay()]} ${d} ${MONTH_LABELS[m - 1]}`
 }
 
-const tomorrow = (): string => addDays(TODAY, 1)
-const weekEnd = (): string => addDays(TODAY, 6)
+/*
+ * `tomorrow()` and `weekEnd()` used to live here and are gone deliberately, as
+ * is `WEEKDAY_SHORT`, which went with the strip.
+ *
+ * Being module-scope FUNCTIONS is what made those two dangerous:
+ * `tomorrow.length` is a function's arity, 0, and that is exactly what got
+ * written in place of `tomorrowItems.length` in `dueCount`, dropping every item
+ * due tomorrow out of the panel's count with nothing for `tsc` to catch — both
+ * sides are numbers. A name one keystroke from a list of items should not be a
+ * function sitting in the same scope as the list.
+ *
+ * The week arithmetic they served lives in `lib/owed-week.ts` now, where it can
+ * be asserted: this file is a component, D20 bans mounting one, so anything
+ * that stays here is unreachable by any test in this repo.
+ */
 const LATER_SHOWN = 4
 
 export function TodayScreen() {
@@ -471,40 +484,54 @@ function OwedThisWeek() {
   const [menuFor, setMenuFor] = useState<TimelineItem | null>(null)
   const [snoozing, setSnoozing] = useState<TimelineItem | null>(null)
 
-  const days = useMemo(
-    () =>
-      Array.from({ length: 7 }, (_, i) => {
-        const iso = addDays(TODAY, i)
-        const { y, m, d } = partsOf(iso)
-        return { iso, day: d, label: WEEKDAY_SHORT[new Date(y, m - 1, d).getDay()] }
-      }),
-    [],
+  /*
+   * The day, read into a local ONCE per render — and the reason is not tidiness.
+   *
+   * `TODAY` is a live binding that advances inside `now()` (see `lib/today.ts`),
+   * and a React Native process keeps one JS context for days, so this panel is
+   * the kind that is on screen when the day turns. Two things went wrong with
+   * reading the global straight:
+   *
+   *  - the week strip was `useMemo(..., [])`, and an empty dep array is a
+   *    promise that the value cannot go stale. It froze on whichever day the
+   *    screen first rendered. Driven in a probe: past midnight the first cell —
+   *    the one drawn as today, `isToday = i === 0` — still named yesterday,
+   *    while the rows beside it had moved. Half a screen advancing is worse
+   *    than none of it, which is what the note at the top of this file says.
+   *  - the groups below were memoised on `[all]` alone, so they kept
+   *    yesterday's split until something in the store happened to change: an
+   *    item dated yesterday stayed filed under Today rather than Overdue.
+   *
+   * A local is what makes the dep array honest — `TODAY` itself is an outer
+   * scope value, so naming it there is a dependency React cannot see change,
+   * and oxlint says so. It also means every date on this panel is measured
+   * against the SAME day even if the clock turns between two lines of a render.
+   */
+  const day = TODAY
+
+  // Seven strings, rebuilt per render. There is nothing here worth caching —
+  // seven `addDays` calls beside a panel that filters every timeline item — and
+  // a cache keyed on a value that moves on its own is how the freeze above got
+  // written in the first place.
+  const days = weekStrip(day)
+
+  /*
+   * The split itself lives in `lib/owed-week.ts`, and the move is the
+   * regression test for both bugs above.
+   *
+   * D20 means nothing here may be mounted, so while this body sat inside the
+   * component neither defect could be written down as an assertion — the arity
+   * typo in `dueCount` and the frozen day were found by reading and could only
+   * be checked by reading. `owed-week.test.ts` now fails on either of them,
+   * including the one that needs no store change at all: same items, later day,
+   * different groups.
+   */
+  const { groups, later, doneToday, overdueCount, dueCount } = useMemo(
+    () => owedWeek(all, day),
+    [all, day],
   )
 
-  const { groups, later, doneToday, overdueCount, dueCount } = useMemo(() => {
-    const openItems = all.filter((i) => !i.completedOn)
-    const overdue = openItems.filter((i) => i.date < TODAY)
-    const today = openItems.filter((i) => i.date === TODAY)
-    const nextDay = tomorrow()
-    const endOfWeek = weekEnd()
-    const tomorrowItems = openItems.filter((i) => i.date === nextDay)
-    const rest = openItems.filter((i) => i.date > nextDay && i.date <= endOfWeek)
-
-    return {
-      groups: [
-        { id: 'overdue', label: 'Overdue', items: overdue },
-        { id: 'today', label: 'Today', items: today },
-        { id: 'tomorrow', label: 'Tomorrow', items: tomorrowItems },
-        { id: 'rest', label: 'Rest of the week', items: rest },
-      ],
-      later: openItems.filter((i) => i.date > endOfWeek),
-      doneToday: all.filter((i) => i.completedOn === TODAY).length,
-      overdueCount: overdue.length,
-      dueCount: today.length + tomorrow.length + rest.length,
-    }
-  }, [all])
-
-  const newEvent = () => open('timelineItem', { mode: 'event', initial: { date: TODAY } })
+  const newEvent = () => open('timelineItem', { mode: 'event', initial: { date: day } })
 
   const hint = overdueCount > 0 ? `${overdueCount} overdue · ${dueCount} due` : `${dueCount} due`
 
@@ -636,7 +663,7 @@ function OwedThisWeek() {
                           tone={markTone[markOfDate(e.date)]}
                           style={styles.owedWhen}
                         >
-                          {whenLabel(e, TODAY)}
+                          {whenLabel(e, day)}
                         </Txt>
                         {/* One overflow rather than a row of icons. Edit,
                             duplicate, draft, reschedule and delete all live

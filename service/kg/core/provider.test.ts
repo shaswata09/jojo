@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { chatUrl, modelsUrl } from './model-server'
-import { PROVIDERS, PROVIDER_IDS, isLoopbackEndpoint, providerMeta } from './provider'
+import { PROVIDERS, PROVIDER_IDS, contextOf, isLoopbackEndpoint, parseContextWindow, providerMeta } from './provider'
 
 
 describe('NVIDIA, the one that is free', () => {
@@ -108,5 +108,52 @@ describe('isLoopbackEndpoint', () => {
     expect(isLoopbackEndpoint('')).toBe(false)
     // Not a loopback host merely for containing the word.
     expect(isLoopbackEndpoint('https://localhost.example.com/v1')).toBe(false)
+  })
+})
+
+describe('parseContextWindow', () => {
+  it('takes a plain number', () => {
+    expect(parseContextWindow('32768')).toBe(32768)
+    expect(parseContextWindow(' 8192 ')).toBe(8192)
+  })
+
+  it('treats empty as "use the default", not as an error', () => {
+    /*
+     * The distinction the whole field turns on. Empty is a choice: it plans
+     * against the provider's default AND, for Ollama, sends no `num_ctx` at
+     * all, which is what lets the server size itself rather than fail to load a
+     * model at a number the user guessed.
+     */
+    expect(parseContextWindow('')).toBeUndefined()
+    expect(parseContextWindow('   ')).toBeUndefined()
+  })
+
+  it('refuses a number that cannot be a window', () => {
+    // Zero and negatives would be ignored by `contextOf` anyway, so storing
+    // one leaves a field reading `0` beside an app planning against 4,096.
+    expect(parseContextWindow('0')).toBeUndefined()
+    expect(parseContextWindow('-4096')).toBeUndefined()
+  })
+
+  it('refuses anything that is not digits, rather than parsing a prefix', () => {
+    /*
+     * `Number.parseInt` is the trap: it reads `'8k'` as 8 and `'32,768'` as 32.
+     * Both are things a person types, and both would silently plan a
+     * conversation against a window four orders of magnitude too small.
+     */
+    expect(parseContextWindow('8k')).toBeUndefined()
+    expect(parseContextWindow('32,768')).toBeUndefined()
+    expect(parseContextWindow('1e5')).toBeUndefined()
+    expect(parseContextWindow('four thousand')).toBeUndefined()
+  })
+
+  it('agrees with contextOf about what it produces', () => {
+    const base = { provider: 'ollama' as const, endpoint: 'http://localhost:11434', model: 'x' }
+    const typed = parseContextWindow('16384')
+    expect(contextOf({ ...base, ...(typed === undefined ? {} : { contextWindow: typed }) })).toBe(16384)
+    const empty = parseContextWindow('')
+    expect(contextOf({ ...base, ...(empty === undefined ? {} : { contextWindow: empty }) })).toBe(
+      providerMeta('ollama').defaultContext,
+    )
   })
 })

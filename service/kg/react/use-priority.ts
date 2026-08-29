@@ -31,6 +31,7 @@ import { useMemo } from 'react'
 import { offerDaysLeft } from '../core/dates'
 import { daysBetween, shortDate } from '../core/dates'
 import type { Addressable } from '../core/address'
+import type { Application, TimelineItem } from '../core/model'
 import { useApplications } from './use-applications'
 import { useTimeline } from './use-timeline'
 import { useKg } from './kg-context'
@@ -124,6 +125,65 @@ export type PriorityOptions = {
 }
 
 /**
+ * The interview-stage application whose interview is SOONEST, and that event.
+ *
+ * It used to be `all.find((a) => a.stage === 'interview')`, which is creation
+ * order — that is what `projections.applications` hands back — and then the
+ * FIRST interview event filed under whatever record that found. Measured on two
+ * interview-stage applications, one interviewed tomorrow and an older record
+ * interviewed on 30 November, the deck named the older record, printed
+ * "in 94 days" on it, and put the interview tomorrow on no card at all. The
+ * deck's other two cards are already picked by date — the deadline comes off
+ * `thisWeek`, which is date-ordered — and this was the one that was not.
+ *
+ * Scanned for a minimum rather than trusting `items` to arrive sorted. It does:
+ * the timeline projection sorts by `compareItems`. But that is a rule enforced
+ * two layers away, a caller passing a filtered or re-ordered list is one
+ * refactor from here, and the scan costs a single pass either way. Ties keep the
+ * order they arrived in, which is the projection's — all-day before timed on the
+ * same day.
+ *
+ * Only an interview that is neither ticked off nor past can WIN the card,
+ * because the card's sentence is "Prepare for X". An application whose only
+ * interview event is behind it therefore falls to the tail, together with the
+ * ones that have no event at all — and the tail is exactly the old behaviour,
+ * kept on purpose: the first such record and whatever interview event it has, so
+ * a stage set with nothing dated against it still gets its "Date the X
+ * interview" card, and a past interview still reads as overdue rather than
+ * vanishing.
+ *
+ * Exported and pure because nothing in this package renders (D20): a rule that
+ * only a mounted card could observe is a rule with nothing holding it.
+ */
+export function nextInterviewOn(
+  today: string,
+  applications: readonly Application[],
+  items: readonly TimelineItem[],
+): { application: Application; event: TimelineItem | undefined } | undefined {
+  const atStage = applications.filter((a) => a.stage === 'interview')
+  const [firstAtStage] = atStage
+  if (firstAtStage === undefined) return undefined
+
+  let best: { application: Application; event: TimelineItem } | undefined
+  for (const item of items) {
+    if (item.kind !== 'interview' || item.completedOn || item.date < today) continue
+    // `>=` and not `>`: the first item at a given date wins, so a tie is broken
+    // by the order the projection chose rather than by this loop's direction.
+    if (best !== undefined && item.date >= best.event.date) continue
+    const application = atStage.find((a) => item.applicationIds.includes(a.id))
+    if (application !== undefined) best = { application, event: item }
+  }
+  if (best !== undefined) return best
+
+  return {
+    application: firstAtStage,
+    event: items.find(
+      (i) => i.kind === 'interview' && i.applicationIds.includes(firstAtStage.id),
+    ),
+  }
+}
+
+/**
  * A hook rather than the module-scope array it once was: every date here is read
  * off the store, so ticking a follow-up off in the Vault or moving a card on the
  * board has to be able to empty a card — computed once at import it would go
@@ -144,12 +204,11 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
     // Soonest first, and selected by date rather than by the stored `urgency`
     // flag — a deadline written down as amber is still the next hard date.
     const nextDeadline = thisWeek.find((i) => i.kind === 'deadline')
-    const nextInterview = all.find((a) => a.stage === 'interview')
-    // The interview itself lives on the timeline, so the date and the format
-    // come from the event rather than from a second copy on the application.
-    const interviewEvent = nextInterview
-      ? items.find((i) => i.applicationIds.includes(nextInterview.id) && i.kind === 'interview')
-      : undefined
+    // Both halves of the interview card come from one selector, by date. See
+    // `nextInterviewOn` for what that fixed and what it deliberately kept.
+    const interview = nextInterviewOn(today, all, items)
+    const nextInterview = interview?.application
+    const interviewEvent = interview?.event
     // A deadline holds application ids, not the records, so both the headline
     // and the link have to look them up. The FIRST is used, and that is a
     // presentation choice rather than a claim: a deadline about three

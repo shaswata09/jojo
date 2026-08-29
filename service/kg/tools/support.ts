@@ -153,15 +153,57 @@ export const DEADLINE_DETAIL = 'Application deadline'
 /**
  * The one dated item the application form owns.
  *
- * Told apart from every other `kind: 'deadline'` on the same application by the
- * detail line. Baylor's only deadline is its offer-response date — matching on
- * kind alone would let the form's date field move, or clear, a decision deadline
- * nobody touched.
+ * Three conditions, and the last two are each a measured bug rather than
+ * defensiveness.
+ *
+ * KIND AND DETAIL. Told apart from every other `kind: 'deadline'` on the same
+ * application by the detail line. Baylor's only deadline is its offer-response
+ * date — matching on kind alone would let the form's date field move, or clear,
+ * a decision deadline nobody touched. The match is a PREFIX because the seed's
+ * deadlines carry an authored suffix (`'Application deadline · 3 reference
+ * letters required'`) and go into the graph verbatim through `repo/seed.ts`;
+ * requiring equality would make the form mint a second deadline on the first
+ * edit of any demo application.
+ *
+ * ABOUT EXACTLY ONE APPLICATION. `ABOUT` was `fromCardinality: 'one'` when the
+ * two lines above were written, so "every other deadline on the same
+ * application" was the whole space. It is `'many'` now — a reference deadline
+ * covering three jobs is the case it was widened FOR — and a shared item is
+ * about this application without being the form's. Measured: two applications
+ * created with no date, then one reference deadline about both with a detail
+ * beginning 'Application deadline', then a date typed into each form.
+ * `syncDeadline` found the shared item twice, moved it twice, and ended with
+ * BOTH applications reporting the second date, no deadline of their own, and
+ * the user's reference item destroyed. The form always writes
+ * `applicationIds: [id]`, so an item about anything else is never the one it
+ * owns.
+ *
+ * EXACT SENTINEL FIRST. `application-fields.ts` writes the detail as exactly
+ * `DEADLINE_DETAIL`; only the seed and the user produce the prefixed form. Among
+ * candidates, `find` returned whichever `many` yielded first, which is
+ * edge-insertion order and NOT stable: measured, deleting the form's own
+ * deadline and pressing undo re-inserts its ABOUT edge at the end, after a
+ * user's own 'Application deadline · chase the letter' item — and from then on
+ * the application reported the user's date as its deadline. Ranking the exact
+ * match ahead makes the answer independent of the order edges happen to be
+ * indexed in.
+ *
+ * What this still cannot settle: a single-application item the USER wrote whose
+ * detail begins with the sentinel, when the form has no item of its own. It is
+ * indistinguishable from a seeded deadline in the graph, and the sentinel's
+ * contract says such an item IS the application's deadline — so the form adopts
+ * it rather than minting a second. That is the design, not an oversight.
  */
 export function applicationDeadlineOf(m: GraphSnapshot, appId: NodeId) {
-  return m
+  const owned = m
     .many(appId, 'ABOUT', 'in', 'timelineItem')
-    .find((i) => i.props.kind === 'deadline' && (i.props.detail ?? '').startsWith(DEADLINE_DETAIL))
+    .filter(
+      (i) =>
+        i.props.kind === 'deadline' &&
+        (i.props.detail ?? '').startsWith(DEADLINE_DETAIL) &&
+        m.out(i.id, 'ABOUT').length === 1,
+    )
+  return owned.find((i) => i.props.detail === DEADLINE_DETAIL) ?? owned[0]
 }
 
 export function deadlineUrgency(from: ISODate, date: ISODate): Urgency {

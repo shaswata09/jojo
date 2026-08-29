@@ -24,9 +24,6 @@ const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 /** How many of the items beyond the week the "Later" strip names. */
 const LATER_SHOWN = 4
 
-const TOMORROW = addDays(TODAY, 1)
-const WEEK_END = addDays(TODAY, 6)
-
 /** Splits an ISO date into the params the calendar route reads. */
 const dayParams = (iso: string) => {
   const { y, m, d } = partsOf(iso)
@@ -88,43 +85,65 @@ export function OwedThisWeek() {
   const { open } = useDialogs()
   const { toast } = useToast()
 
-  // Built from TODAY rather than a written-out week, so the strip cannot
+  /*
+   * The pin, sampled once per render and then used everywhere below.
+   *
+   * `TODAY` is a live ESM binding — `@/lib/today` reassigns it at the local
+   * midnight — so the two things this panel used to do with it were both a day
+   * out on an overnight session. Measured with fake timers from 23:50, twenty
+   * minutes advanced: the pin said the 13th, the module-level `TOMORROW` and
+   * `WEEK_END` consts still said the 13th and the 18th off the 12th, and the
+   * day strip's `useMemo([])` still opened on the 12th with yesterday's cell
+   * lit as today. Every "today" on this panel then disagreed with the day the
+   * store was about to write.
+   *
+   * Naming it as a local is also what lets it be a dependency: an outer-scope
+   * binding is not a valid one (mutating it does not re-render), and the honest
+   * statement is that this render read this day.
+   */
+  const today = TODAY
+
+  // Built from the pin rather than a written-out week, so the strip cannot
   // disagree with the dates beside it.
   const days = useMemo(
     () =>
       Array.from({ length: 7 }, (_, i) => {
-        const iso = addDays(TODAY, i)
+        const iso = addDays(today, i)
         const { y, m, d } = partsOf(iso)
         return { iso, day: d, label: WEEKDAY_LABELS[new Date(y, m - 1, d).getDay()] }
       }),
-    [],
+    [today],
   )
 
   const { groups, later, doneToday, overdueCount, dueCount } = useMemo(() => {
+    // Derived here rather than at module scope, for the reason above.
+    const tomorrowISO = addDays(today, 1)
+    const weekEnd = addDays(today, 6)
+
     const openItems = all.filter((i) => !i.completedOn)
-    const overdue = openItems.filter((i) => i.date < TODAY)
-    const today = openItems.filter((i) => i.date === TODAY)
-    const tomorrow = openItems.filter((i) => i.date === TOMORROW)
-    const rest = openItems.filter((i) => i.date > TOMORROW && i.date <= WEEK_END)
+    const overdue = openItems.filter((i) => i.date < today)
+    const dueToday = openItems.filter((i) => i.date === today)
+    const tomorrow = openItems.filter((i) => i.date === tomorrowISO)
+    const rest = openItems.filter((i) => i.date > tomorrowISO && i.date <= weekEnd)
 
     return {
       groups: [
         { id: 'overdue', label: 'Overdue', items: overdue },
-        { id: 'today', label: 'Today', items: today },
+        { id: 'today', label: 'Today', items: dueToday },
         { id: 'tomorrow', label: 'Tomorrow', items: tomorrow },
         { id: 'rest', label: 'Rest of the week', items: rest },
       ],
-      later: openItems.filter((i) => i.date > WEEK_END),
-      doneToday: all.filter((i) => i.completedOn === TODAY).length,
+      later: openItems.filter((i) => i.date > weekEnd),
+      doneToday: all.filter((i) => i.completedOn === today).length,
       overdueCount: overdue.length,
-      dueCount: today.length + tomorrow.length + rest.length,
+      dueCount: dueToday.length + tomorrow.length + rest.length,
     }
-  }, [all])
+  }, [all, today])
 
   const edit = (item: TimelineItem) =>
     open('timelineItem', { mode: item.remind ? 'reminder' : 'event', initial: item })
 
-  const newEvent = () => open('timelineItem', { mode: 'event', initial: { date: TODAY } })
+  const newEvent = () => open('timelineItem', { mode: 'event', initial: { date: today } })
 
   /**
    * Ticking always removes the row — every group here filters out completed
@@ -322,7 +341,7 @@ export function OwedThisWeek() {
                                   MARK_TEXT[mark],
                                 )}
                               >
-                                {whenLabel(e, TODAY)}
+                                {whenLabel(e, today)}
                               </span>
 
                               {/* Drafting stays on follow-up rows only — it is

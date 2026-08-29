@@ -9,7 +9,9 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import { entryFor } from './catalog'
 import { readStepDetail, renderOutcome } from './execute'
+import { CONTEXT_BUDGET, pageNote, pageOf } from './paging'
 
 describe('reading a step’s result back', () => {
   /*
@@ -57,5 +59,60 @@ describe('reading a step’s result back', () => {
   it('has nothing to say about a step with no detail', () => {
     expect(readStepDetail({ effect: 'read', status: 'done' })).toBeNull()
     expect(readStepDetail({ effect: 'read', status: 'done', detail: '' })).toBeNull()
+  })
+})
+
+/*
+ * The cut, applied to a read that had already cut itself.
+ *
+ * `vault.file.read` hands back one `pageOf` window — CONTEXT_BUDGET characters
+ * of Markdown with a note naming the offset to call back with. `renderOutcome`
+ * then cut the whole thing at 6,000, which is half a window, so a 12,136
+ * character page reached the model as 6,087 and the note at the END of it went
+ * with the half that was thrown away. The note is the only thing telling the
+ * model more exists; without it a model concludes it cannot read further and
+ * asks the person to paste the rest, which is the exact failure `paging.ts`
+ * was written to end.
+ */
+describe('a read that already paged itself', () => {
+  // Built with the real pager rather than a string of the right length: the
+  // property under test is that these two cuts do not compose, so both have to
+  // be the ones that ship.
+  const document = 'A line of a document, long enough to be prose.\n'.repeat(2_000)
+  const page = pageOf(document, 0)
+  const result = {
+    ok: true,
+    name: 'CV-2026.pdf',
+    markdown: page.text + pageNote(page, 'file:01H'),
+    from: page.from,
+    next: page.next,
+    total: page.total,
+  }
+  const outcome = { ok: true, entry: entryFor('vault.file.read')!, result } as const
+
+  it('reaches the model whole, note and all', () => {
+    expect(page.next).not.toBeNull()
+    expect(page.text.length).toBeGreaterThan(6_000)
+
+    const text = renderOutcome(outcome)
+    expect(text).toBe(JSON.stringify(result))
+    expect(text).not.toContain('[Truncated at')
+    // The sentence that makes the next call possible.
+    expect(text).toContain('THE DOCUMENT CONTINUES')
+    expect(text).toContain(`from ${String(page.next)}`)
+  })
+
+  it('is still bounded — the exemption is a bigger ceiling, not none', () => {
+    // JSON escaping can at worst double a run of text, so the ceiling is twice
+    // the pager's window. Real Markdown inflates about 4%.
+    expect(renderOutcome(outcome).length).toBeLessThanOrEqual(CONTEXT_BUDGET * 2)
+  })
+
+  it('does not lift the cut for a read whose size nothing else bounds', () => {
+    // Guards the guard: an exemption that leaked to every read would give a
+    // `memory.list` over a full store the run of the window.
+    const rows = Array.from({ length: 400 }, (_, i) => ({ id: `app:${String(i)}`, org: 'Org' }))
+    const text = renderOutcome({ ok: true, entry: entryFor('memory.list')!, result: rows })
+    expect(text).toContain('[Truncated at 6000 characters')
   })
 })

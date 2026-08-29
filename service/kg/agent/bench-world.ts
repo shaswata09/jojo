@@ -405,4 +405,50 @@ export const WORLD_SHAPE = {
    */
   background: 0,
   claim: 0,
+  /*
+   * ZERO, for the same reason and found the same way.
+   *
+   * The vault seeds one link and no people. `vault.person.*` had no
+   * conversation at all until the contacts cases were written, and the first
+   * one to assert `count person is 1` was turned away by the guard above —
+   * which is the guard working: an omitted type and a typo look identical, so
+   * the suite refuses both rather than counting against a number nobody
+   * declared.
+   */
+  person: 0,
 } as const
+
+/**
+ * The document reader both harnesses use.
+ *
+ * ## Why this is a function and not two lookups
+ *
+ * `vault.file.read` calls `ctx.convert(input.id)` with the NODE id —
+ * `file:0198…` — and `DOCUMENTS` above is keyed by the file's NAME. Something
+ * has to cross that gap, and for months two different things did: the offline
+ * suite in `test/bench.test.ts` resolved the id through the store, and the live
+ * runner in `bench/run.mts` looked the id up in `DOCUMENTS` directly and missed
+ * every time.
+ *
+ * The consequence was invisible in exactly the way that matters. The tool
+ * answers `{ok: false, hint: 'no text'}` rather than throwing; the model reads
+ * "no text", writes a reasonable apology, and a `readOnly` turn that answered
+ * is scored correct — so every document conversation was scored against models
+ * that had been handed a reader which could not open anything, while the test
+ * suite covering the same conversations passed, because its host was the
+ * correct one. A benchmark whose offline half and live half disagree about what
+ * the agent can do is a benchmark reporting on two different systems.
+ *
+ * One function, imported by both, so they cannot disagree again.
+ */
+export function readDocument(
+  memory: { node: (id: never, type: 'file') => { props: unknown } | null | undefined },
+  fileId: string,
+): { ok: true; markdown: string } | { ok: false; reason: string } {
+  const node = memory.node(fileId as never, 'file')
+  const name = node ? String((node.props as { name?: unknown }).name ?? '') : ''
+  const markdown = name === '' ? undefined : DOCUMENTS[name]
+  return markdown === undefined
+    ? { ok: false, reason: `no stored text for ${name || fileId}` }
+    : { ok: true, markdown }
+}

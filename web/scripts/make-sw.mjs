@@ -39,6 +39,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, posix, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { auditPrecache, localPath } from './precache-guard.mjs'
 
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
 const DIST = join(WEB, 'dist')
@@ -104,16 +105,40 @@ const boot = new Set(ALWAYS.filter((u) => known.has(u)))
 
 const html = readFileSync(index.full, 'utf8')
 for (const [, raw] of html.matchAll(REFERENCED)) {
-  // Only this build's own output. An absolute URL to somewhere else is not
-  // ours to cache, and the app has none — which this quietly keeps true.
-  if (!raw.startsWith(BASE)) continue
-  const url = raw.slice(BASE.length).split('?')[0].split('#')[0]
-  if (known.has(url)) boot.add(url)
+  const url = localPath(raw, BASE)
+  if (url !== null && known.has(url)) boot.add(url)
 }
 
 // Every icon the manifest can ask for. Small, and the one thing an installed
 // app is guaranteed to want before it has been opened twice.
 for (const f of files) if (f.url.startsWith('icons/')) boot.add(f.url)
+
+/*
+ * Fail closed: the assets the DOCUMENT names must actually be in that list.
+ *
+ * `REFERENCED` above stays deliberately permissive — any src or href, so a shell
+ * that later gains an <img> keeps being cached without anyone remembering to
+ * come here. It is permissive in the wrong direction too: a URL it cannot find
+ * on disk is skipped in silence, which is how a build can ship a worker that
+ * precaches the shell and none of the code the shell loads. `precache-guard.mjs`
+ * carries the measurement; this is where it stops the build.
+ */
+const broken = auditPrecache({
+  html,
+  base: BASE,
+  boot,
+  emittedCss: files.some((f) => f.url.endsWith('.css')),
+})
+if (broken.length > 0) {
+  console.error(
+    'make-sw: the precache would not boot the app.\n' +
+      broken.map((line) => `  - ${line}`).join('\n') +
+      '\n  No service worker was written. One built from this dist would cache the\n' +
+      '  shell without the code it loads, which offline is a blank page rather\n' +
+      '  than a failed build.',
+  )
+  process.exit(1)
+}
 
 // Content, not mtime: a rebuild that changes nothing has to produce the same
 // worker, or every deploy invalidates a cache it had no reason to.

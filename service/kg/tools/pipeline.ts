@@ -28,12 +28,31 @@
  * WHAT THIS DOES NOT DEFEND AGAINST. `catalog.ts` offers every registry tool to
  * the model, `internal` included, so a general Assistant conversation can call
  * `pipeline.proposal.approve` itself and skip the card. That is bounded rather
- * than closed: what it can apply is exactly what a pipeline was allowed to
- * propose, and `TWIN_TOOLS` contains no delete and no `application.update`, so
- * the worst reachable outcome is a note or a tag the user had not yet said yes
- * to — which is what auto mode already grants. Closing it properly needs a
- * `catalogued: false` flag on `Tool`, which does not exist yet and is not worth
- * inventing for this margin.
+ * than closed, and the bound is worth stating accurately, because this paragraph
+ * used to state a smaller one than the code provides: it said the worst
+ * reachable outcome was "a note or a tag the user had not yet said yes to".
+ *
+ * What holds is the allowlist, read off `TWIN_TOOLS` itself: fifteen tools, of
+ * which five create, nine update and one files a conversation. No `*.delete` and
+ * no `application.update` are among them — that half of the sentence was right,
+ * and `core/proposal.test.ts` pins both — so nothing is destroyed and no
+ * application is restaged, repriced or renamed. But an update OVERWRITES, and
+ * nine of the fifteen are updates: `vault.snippet.update` replaces the body of a
+ * snippet the person wrote, `timeline.item.update` moves an interview's date,
+ * `profile.background.update` rewrites a fact about them, and
+ * `keyword.record.set` replaces a record's whole keyword set rather than adding
+ * to it. Anyone sizing this margin should be sizing that, not a tag.
+ *
+ * What keeps it a margin rather than a hole is the commit shape above: each of
+ * those writes lands as one transaction and one journal row, so every one of
+ * them has a route back — which is what auto mode already grants a twin
+ * pipeline anyway (`AUTO_CAPABLE`, in `core/proposal.ts`). Route back, not one
+ * keystroke, and the difference is worth measuring before leaning on it: the
+ * undo ring holds `UNDO_DEPTH` = 50 entries and each approval takes one of
+ * them, so a run of unasked-for edits costs one ⌘Z apiece and anything past the
+ * fiftieth has to be reverted from the audit log in Settings, which keeps
+ * `AUDIT_CAP` = 200. Closing it properly needs a `catalogued: false` flag on
+ * `Tool`, which does not exist yet and is not worth inventing for this margin.
  */
 
 import { mayPropose } from '../core/proposal'

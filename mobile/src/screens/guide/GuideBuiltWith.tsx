@@ -48,7 +48,7 @@ const UNFINISHED: { title: string; detail: string }[] = [
   {
     title: 'Nothing leaves this device except where you point it',
     detail:
-      'There is no account, no sync and no upload. Two addresses can be reached, both yours and both set in Settings: the model, and the document reader \u2014 which also fetches a job posting when you add an application from a link, so that URL goes to your reader rather than to us. Transfer sends a copy straight to your other device over the local network. Nothing else goes anywhere.',
+      'There is no account, no sync and no upload. Two addresses can be reached, both yours and both set in Settings: the model, and the document reader \u2014 which also fetches a job posting when you add an application from a link, so that URL goes to your reader rather than to us. Transfer moves a copy between your devices over the local network \u2014 on this phone it receives, and the computer is the side that sends. Nothing else goes anywhere.',
   },
 ]
 

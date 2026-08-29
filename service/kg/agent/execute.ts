@@ -27,6 +27,7 @@ import type { ToolName } from '../tools/index'
 import type { Announcement, ToolError } from '../tools/tool'
 import { entryFor, entryForWire } from './catalog'
 import type { CatalogEntry } from './catalog'
+import { CONTEXT_BUDGET } from './paging'
 import { READS } from './queries'
 import type { ReadName } from './queries'
 
@@ -205,9 +206,52 @@ export function renderOutcome(outcome: CallOutcome, budget = 6000): string {
     return typeof outcome.result === 'string' ? `${said} (id: ${outcome.result})` : said
   }
   const json = JSON.stringify(outcome.result)
-  if (json.length <= budget) return json
-  return `${json.slice(0, budget)}${TRUNCATION_MARK}${String(budget)} characters. Narrow the search or lower the limit to see the rest.]`
+  const cap = SELF_PAGED.has(outcome.entry.name) ? Math.max(budget, PAGED_CEILING) : budget
+  if (json.length <= cap) return json
+  return `${json.slice(0, cap)}${TRUNCATION_MARK}${String(cap)} characters. Narrow the search or lower the limit to see the rest.]`
 }
+
+/**
+ * Reads that have already windowed their own output, and must not be cut twice.
+ *
+ * `vault.file.read` hands the model one `pageOf` window — `CONTEXT_BUDGET`
+ * characters of Markdown, cut on a line break, with a note naming the exact
+ * offset to call back with. The default `budget` here is HALF that window, and
+ * it was being applied on top: measured on a CV-shaped document, a 12,136
+ * character page serialised to 12,669 characters of JSON and reached the model
+ * as 6,087. Two things were lost, and the second is worse than the first.
+ *
+ *   1. Roughly half of every page. The model read the first half of a CV and
+ *      reasoned as if that were the document.
+ *   2. The continuation note, which lives at the END of the Markdown. That note
+ *      is the ONLY thing telling the model that more exists and how to ask for
+ *      it — `pageNote` exists because a model that is not told concludes it
+ *      cannot read further and asks the person to paste the rest, which is the
+ *      exact failure `paging.ts` was written to end. Cutting the note put that
+ *      failure back, silently, for every document over 6,000 characters.
+ *
+ * And the sentence replacing it — "narrow the search or lower the limit" —
+ * names arguments `vault.file.read` does not have. Its only knob is `from`.
+ *
+ * So the pager owns the size of a document read, and this cut applies only to
+ * reads whose size nothing else bounds (`memory.list` over a full store, a
+ * board scan). Keyed on the registry name rather than sniffed off the result's
+ * shape, so adding a paging read is a deliberate act with one place to do it.
+ */
+const SELF_PAGED: ReadonlySet<string> = new Set(['vault.file.read'])
+
+/**
+ * The ceiling a self-paged read is still held to.
+ *
+ * Not "no limit": `pageOf` bounds MARKDOWN characters, and this bounds what
+ * `JSON.stringify` makes of them. For text, stringify's worst case is exactly
+ * doubling — `"`, `\`, `\n`, `\t` and `\r` each become two characters and
+ * everything else stays one — so twice the window cannot fire on any page the
+ * pager produces from ordinary prose. Measured inflation on CV-shaped Markdown
+ * is 4.4%, so this leaves the page and its note whole with room to spare while
+ * still capping a document made of nothing but escapes.
+ */
+const PAGED_CEILING = CONTEXT_BUDGET * 2
 
 /**
  * The sentence a truncated read carries, split out so it has one author.

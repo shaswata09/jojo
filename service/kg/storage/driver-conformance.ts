@@ -34,13 +34,21 @@
  * file in every run. `driver-conformance.test.ts` beside it supplies the one
  * subject that needs no platform.
  *
- * WHAT EACH SUBJECT OWES. `crossTab` and `durable` are declared per subject, and
- * each selects a case. `durable` is the newer of the two and the package's own
- * subject cannot set it — `memory-driver` has no store to reopen — so the case
- * it selects runs only where a real one is built: `web/src/kg/storage/
- * idb-conformance.test.ts` and `mobile/src/kg/storage/rn-conformance.test.ts`.
- * A durable driver whose subject omits it is running a contract that cannot tell
- * whether it writes to disk at all.
+ * WHAT EACH SUBJECT OWES. `crossTab`, `durable` and `refusable` are declared per
+ * subject, and each selects a case. `durable` is the older two's newer sibling
+ * and the package's own subject cannot set it — `memory-driver` has no store to
+ * reopen — so the case it selects runs only where a real one is built:
+ * `web/src/kg/storage/idb-conformance.test.ts` and `mobile/src/kg/storage/
+ * rn-conformance.test.ts`. A durable driver whose subject omits it is running a
+ * contract that cannot tell whether it writes to disk at all.
+ *
+ * `refusable` is the newest, and it exists because the same sentence turned out
+ * to be true of failure: a driver whose subject omits it runs a contract that
+ * cannot tell an ACCEPTED write from a PERSISTED one. Everything else here
+ * provokes failure with a row `structuredClone` refuses, which the driver
+ * catches before the store is touched — so a driver that applied the rows to a
+ * mirror first and wrote the mirror to disk second passed the whole file while
+ * a refused `replace` was destroying the user's records on the next edit.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -71,6 +79,19 @@ export type DriverSubject = {
     remoteCommit: (event: StoreEvent) => void
     /** Required when `durable` is true: a new Driver over the same store. */
     reopen?: () => Driver
+    /**
+     * Required when `refusable` is true: make the BACKING STORE refuse writes,
+     * and hand back the call that lets them through again.
+     *
+     * Declared by the subject for the same reason `remoteCommit` is — a driver
+     * cannot make its own disk fail, and this file may not name a driver to
+     * reach for its mock. What it buys is the only failure mode that separates
+     * "the driver refused the rows" from "the driver accepted them and the
+     * store did not": every other case here fails INSIDE the driver, on a row
+     * it could not clone, so the write never reached the backing store at all.
+     * The bug this seam was added for lived entirely in that gap.
+     */
+    refuseWrites?: () => () => void
   }
   /**
    * Whether anything else can write this driver's store — `OpenInfo.crossTab`,
@@ -105,6 +126,16 @@ export type DriverSubject = {
    * one case in this file that can tell whether it writes anything at all.
    */
   readonly durable?: boolean
+  /**
+   * Whether this subject can make its backing store refuse a write.
+   *
+   * Declared ahead of the run like `crossTab` and `durable`, and for the same
+   * reason: the case it selects sits inside an `if` at describe time. Absent for
+   * `memory-driver`, honestly — a Map does not run out of room, and its `fault`
+   * seam refuses BEFORE the store is touched, which is the case already covered
+   * above rather than the one below.
+   */
+  readonly refusable?: boolean
 }
 
 const node = (id: string): StoredRow => ({ id, type: 'application', props: {} })
@@ -212,6 +243,46 @@ export function describeDriverConformance(subject: DriverSubject): void {
 
       const rows = await driver.readAll()
       expect(rows.ok && idsOf(rows.value.nodes)).toEqual([])
+
+      driver.close()
+    })
+
+    /**
+     * A REFUSED WRITE CHANGES NOTHING — and this is the assertion the file was
+     * missing, not the one above it.
+     *
+     * Every case before this one checked the SHAPE of what came back: a
+     * `DriverResult` rather than a throw, `ok: false` rather than `ok: true`.
+     * None of them asked what the store looked like afterwards, and "leaves
+     * nothing behind when a batch fails part-way through" only asks it of an
+     * EMPTY store, where "unchanged" and "empty" are the same array. Measured:
+     * `rn-driver` reported `ok: false` from a failed `replace` and had already
+     * swapped the whole store for the payload, and the entire contract passed.
+     *
+     * So this one starts from a store with rows in it and asserts the rows are
+     * still there, by value, after all three write methods have been refused.
+     * `replace` and `seedIfPristine` are the two that matter and neither had a
+     * state assertion anywhere: they DISCARD what is there rather than adding to
+     * it, so a driver that half-applies one destroys the store rather than
+     * lagging behind it.
+     */
+    it('leaves the store exactly as it was when a write is refused', async () => {
+      const { driver } = subject.make()
+      await driver.open()
+
+      await driver.commit([put('kept'), journal('entry')])
+      const before = await driver.readAll()
+      expect(before.ok).toBe(true)
+      if (!before.ok) return
+
+      expect((await driver.commit([put('added'), unstorable])).ok).toBe(false)
+      expect((await driver.replace(rowsWith(node('imported'), unstorableRow))).ok).toBe(false)
+      // The meta store is still empty, so this is not declined for being
+      // already-seeded — it gets as far as the row it cannot store.
+      expect((await driver.seedIfPristine(rowsWith(unstorableRow))).ok).toBe(false)
+
+      const after = await driver.readAll()
+      expect(after.ok && after.value).toEqual(before.value)
 
       driver.close()
     })
@@ -458,6 +529,77 @@ export function describeDriverConformance(subject: DriverSubject): void {
         expect(after.ok && idsOf(after.value.nodes)).toEqual(['added', 'kept'])
 
         second.close()
+      })
+    }
+
+    /**
+     * The same question again, asked of a store that refuses the write ITSELF.
+     *
+     * The case above cannot reach the defect it was written for, and that is
+     * worth stating rather than discovering: every failure it provokes happens
+     * inside the driver, on a row `structuredClone` refuses, so the driver
+     * returns before the backing store is touched at all. A driver that applies
+     * the rows first and persists second passes it every time.
+     *
+     * That ordering is exactly what broke. `rn-driver` answers every read out of
+     * an in-RAM mirror and writes the whole mirror to disk afterwards, so a
+     * refused disk write left RAM holding the transfer payload while the disk
+     * still held the user's records — `replace` correctly reported failure, the
+     * screen correctly still showed the old rows, and the next ordinary edit
+     * serialised the mirror over the top of them. The refusal was true for one
+     * keystroke.
+     *
+     * Hence the last two assertions, which are not decoration: the write AFTER
+     * the disk comes back has to carry the store that survived, not the one that
+     * was refused — and where a subject can reopen its store, the disk has to
+     * agree, because a mirror that rolled back and a disk that did not is the
+     * same bug one launch later.
+     */
+    if (subject.refusable === true) {
+      it('leaves the store exactly as it was when the backing store refuses the write', async () => {
+        const made = subject.make()
+        const refuseWrites = made.refuseWrites
+        if (!refuseWrites) {
+          throw new Error(
+            `${subject.label} declares refusable: true and supplies no refuseWrites(). ` +
+              'The contract cannot tell an accepted write from a persisted one without it.',
+          )
+        }
+        const { driver } = made
+
+        await driver.open()
+        await driver.commit([put('kept'), journal('entry')])
+        const before = await driver.readAll()
+        expect(before.ok).toBe(true)
+        if (!before.ok) return
+
+        const allowWrites = refuseWrites()
+
+        expect((await driver.replace(rowsWith(node('imported')))).ok).toBe(false)
+        const afterReplace = await driver.readAll()
+        expect(afterReplace.ok && afterReplace.value).toEqual(before.value)
+
+        // Reaches the write, because the meta store is still empty: this is a
+        // seed that was allowed to proceed and then refused, not one declined.
+        expect((await driver.seedIfPristine(rowsWith(node('seeded')))).ok).toBe(false)
+        const afterSeed = await driver.readAll()
+        expect(afterSeed.ok && afterSeed.value).toEqual(before.value)
+
+        allowWrites()
+
+        expect((await driver.commit([put('later')])).ok).toBe(true)
+        const settled = await driver.readAll()
+        expect(settled.ok && idsOf(settled.value.nodes)).toEqual(['kept', 'later'])
+
+        driver.close()
+
+        if (made.reopen) {
+          const second = made.reopen()
+          expect((await second.open()).ok).toBe(true)
+          const onDisk = await second.readAll()
+          expect(onDisk.ok && idsOf(onDisk.value.nodes)).toEqual(['kept', 'later'])
+          second.close()
+        }
       })
     }
 

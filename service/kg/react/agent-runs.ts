@@ -234,9 +234,33 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
   let busySnapshot: readonly NodeId[] = []
   let waitingSnapshot: readonly AgentRun[] = []
 
+  /**
+   * Element-wise, because that is the only difference React can see.
+   *
+   * A run streams, so `notify` fires once per delta — and both snapshots below
+   * were rebuilt every time. The CONTENT is unchanged for the whole of an
+   * answer (one busy thread, nothing waiting), but the array was new, and
+   * `useSyncExternalStore` compares by reference: measured at 200 identity
+   * changes over 200 streamed deltas, which is the thread list and the
+   * app-wide approval host re-rendering once per token for the length of every
+   * answer. The header promises "a value stable between notifications"; this is
+   * what makes that true across a notification that did not change them.
+   */
+  const same = <T>(a: readonly T[], b: readonly T[]): boolean =>
+    a.length === b.length && a.every((x, i) => x === b[i])
+
   function notify(): void {
-    busySnapshot = [...runs.values()].filter((r) => r.busy).map((r) => r.threadId)
-    waitingSnapshot = [...runs.values()].filter((r) => r.pending !== null)
+    const busy: NodeId[] = []
+    const waiting: AgentRun[] = []
+    for (const run of runs.values()) {
+      if (run.busy) busy.push(run.threadId)
+      if (run.pending !== null) waiting.push(run)
+    }
+    // Kept, not replaced, when nothing in them moved. A run object is itself
+    // replaced wholesale on every change, so identity comparison here is exact
+    // rather than approximate.
+    if (!same(busy, busySnapshot)) busySnapshot = busy
+    if (!same(waiting, waitingSnapshot)) waitingSnapshot = waiting
     // Copied before iterating: a listener that unsubscribes itself while being
     // notified would otherwise mutate the set mid-loop.
     // eslint-disable-next-line unicorn/no-useless-spread
@@ -357,6 +381,31 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
       return minted
     }
 
+    /*
+     * Is the run under this thread id still THIS run?
+     *
+     * A run that has been FORGOTTEN is not a run that is over. `forget` — Clear
+     * on the Assistant, "Ask something else" on both AskBoxes — sets the abort
+     * flag and drops the run's state, but the promise below is still unwinding:
+     * an aborted request has to come back before `runAgent` returns. `busy` is
+     * gone with the state, so a second `start` walks straight past the one-run
+     * guard and takes the thread id over. Two clicks, no timing to speak of.
+     *
+     * Everything after the await is keyed by thread id, so without this the
+     * abandoned run's settle path wrote to whatever had replaced it: `busy`
+     * went false under a live run (composer enabled, spinner stopped, Stop
+     * shown as Send), `inner.delete` took the REPLACEMENT's cancellation with
+     * it — so `stop()` became a no-op and `nextId()` fell to its `'e0'`
+     * fallback, giving every later entry the same id and overwriting the one
+     * before — and `onSettled` handed the live run's half-written transcript to
+     * `assistant.thread.set`, which replaces the stored entries and is
+     * `undoable: false`.
+     *
+     * `cancel` is minted per run and never shared, so it is already the token.
+     * A second field would be a second thing to keep in step.
+     */
+    const mine = () => inner.get(threadId)?.cancel === cancel
+
     /**
      * The approval gate, parked on the RUN.
      *
@@ -409,31 +458,6 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
      */
     let draft: { id: string; text: string } | null = null
 
-    /*
-     * Is the run under this thread id still THIS run?
-     *
-     * A run that has been FORGOTTEN is not a run that is over. `forget` — Clear
-     * on the Assistant, "Ask something else" on both AskBoxes — sets the abort
-     * flag and drops the run's state, but the promise below is still unwinding:
-     * an aborted request has to come back before `runAgent` returns. `busy` is
-     * gone with the state, so a second `start` walks straight past the one-run
-     * guard and takes the thread id over. Two clicks, no timing to speak of.
-     *
-     * Everything after the await is keyed by thread id, so without this the
-     * abandoned run's settle path wrote to whatever had replaced it: `busy`
-     * went false under a live run (composer enabled, spinner stopped, Stop
-     * shown as Send), `inner.delete` took the REPLACEMENT's cancellation with
-     * it — so `stop()` became a no-op and `nextId()` fell to its `'e0'`
-     * fallback, giving every later entry the same id and overwriting the one
-     * before — and `onSettled` handed the live run's half-written transcript to
-     * `assistant.thread.set`, which replaces the stored entries and is
-     * `undoable: false`.
-     *
-     * `cancel` is minted per run and never shared, so it is already the token.
-     * A second field would be a second thing to keep in step.
-     */
-    const mine = () => inner.get(threadId)?.cancel === cancel
-
     void (async () => {
       try {
         const run = await runAgent({
@@ -471,6 +495,25 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
           approve,
           signal: cancel satisfies Cancellation,
           onEvent: (event) => {
+            /*
+             * The same `mine()` the settle path uses, and for the same reason
+             * one line up the stack.
+             *
+             * `record` is keyed by thread id, so an abandoned run reporting
+             * anything writes into whatever took its key over. The settle path
+             * was guarded and this one was not, and the gap is reachable in the
+             * two clicks the comment above describes: `forget` aborts the
+             * request, but a chunk the socket had already read is still handed
+             * to `onDelta`, and a tool already executing still settles.
+             * Reproduced — Clear then ask again, and the dead run's half
+             * sentence appeared in the NEW conversation as `e2` and was saved
+             * there by `assistant.thread.set`, which is `undoable: false`.
+             *
+             * It also stopped the dead run stealing ids: `nextId` reads
+             * `inner.get(threadId)`, which is now the REPLACEMENT's counter.
+             */
+            if (!mine()) return
+
             if (event.type === 'step') {
               // A step ends whatever prose was streaming before it: the model
               // has stopped talking and started calling. Settling the draft here

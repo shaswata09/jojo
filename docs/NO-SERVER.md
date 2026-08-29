@@ -33,8 +33,21 @@ Brave strips the three pickers (`showDirectoryPicker`, `showOpenFilePicker`,
 `queryPermission`, and the origin-private filesystem — OPFS is built on the same
 types and Brave has no objection to those. So `'FileSystemDirectoryHandle' in
 globalThis` answers **true** on a browser that cannot pick a folder at all.
-`folderSupported()` tests `showDirectoryPicker` for that reason and must keep
-doing so.
+
+**That trap is why there is no picker left to detect.** This paragraph used to
+end "`folderSupported()` tests `showDirectoryPicker` for that reason and must
+keep doing so". The function was deleted and the sentence outlived it:
+`folderSupported` now has zero hits in the code — the only ones left are the two
+in this paragraph — and `check-docs.mjs` cannot catch that, because it verifies
+that the paths a document names resolve and says nothing about the symbols. What
+the code does instead is call no picker at all — documents live in the
+`jojo-files` IndexedDB store, `web/src/kg/storage/idb-file-store.ts`, and the
+File System Access adapter that would have needed the detection was written and
+thrown away for the same reason the server below was. `core/folder.ts` went with
+it in the 2026-08-25 audit: 291 lines reconciling a record's byte facts against a
+listing of a folder the OS owns, dead code because there is no such folder, and
+`missing` and `changed` are states that cannot arise in a store the app is the
+only writer to.
 
 ### 1.2 A deployed HTTPS page cannot reach `http://127.0.0.1` **unattended**
 

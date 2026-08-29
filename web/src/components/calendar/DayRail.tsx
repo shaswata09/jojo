@@ -17,11 +17,6 @@ import { cn } from '@/lib/utils'
 const REVEAL_IN_ROW =
   'pointer-events-none opacity-0 transition-opacity group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100'
 
-/** The current month, for the way back out of a month you paged to. Named from
-    `TODAY_PARTS` — the wall clock, sampled once at load — not from a pinned
-    fixture day, which is what this said until the clock became real. */
-const TODAY_MONTH = `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
-
 export function DayRail({
   month,
   selected,
@@ -52,6 +47,18 @@ export function DayRail({
   onOpen: (item: TimelineItem) => void
   onDelete: (item: TimelineItem) => void
 }) {
+  /*
+   * The current month, for the way back out of a month you paged to.
+   *
+   * Named in the render rather than at module scope: `TODAY_PARTS` is
+   * reassigned at the local midnight (`@/lib/today`), and as a module const
+   * this label was sampled once at import. That is invisible on 30 of 31 nights
+   * and wrong on the one that matters — a session left open across 31 Oct sent
+   * "Back to October" to a button that calls `onGoTo` with the live parts and
+   * lands you in November.
+   */
+  const todayMonth = `${MONTH_LABELS[TODAY_PARTS.month - 1]} ${TODAY_PARTS.year}`
+
   const isLastDay = selected === month.days
   const nextMonth = stepMonth(month.year, month.month, 1)
 
@@ -81,7 +88,7 @@ export function DayRail({
                   size="sm"
                   onClick={() => onGoTo({ year: TODAY_PARTS.year, month: TODAY_PARTS.month })}
                 >
-                  Back to {TODAY_MONTH}
+                  Back to {todayMonth}
                 </Button>
               )}
             </div>

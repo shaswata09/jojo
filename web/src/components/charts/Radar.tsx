@@ -10,12 +10,52 @@ export type RadarSeries = { label: string; color: string; values: number[] }
  * "erview prep". The plot itself is unchanged; the extra 100 units are gutter
  * for the labels, which only ever grow sideways.
  */
-const W = 340
-const H = 240
+export const W = 340
+export const H = 240
 const CX = W / 2
 const CY = H / 2
 const R = 78
 const RINGS = 4
+
+/**
+ * Where the axis labels sit, as a percentage of R. The gutter in `W` above is
+ * cut for exactly this ring.
+ */
+export const LABEL_RING = 128
+
+// Start at 12 o'clock and go clockwise, which is how these are read.
+function angleOf(i: number, n: number) {
+  return (Math.PI * 2 * i) / n - Math.PI / 2
+}
+
+/**
+ * A point on axis `i`, at `pct` percent of the plot radius. NOT clamped, and
+ * that is the whole reason it is separate from `plot` below.
+ *
+ * The clamp used to live in the one shared helper, so the label call — the only
+ * caller that asks for anything past the rim — was silently rewritten from 128
+ * to 100 and every label was stamped on the outer ring's own vertex, sitting on
+ * the hairline it was supposed to stand clear of. Measured: for the six axes
+ * this chart ships with, `plot(i, 6, 128)` returned (170, 42), which is exactly
+ * `plot(i, 6, 100)`. The file header has claimed a 128% ring since the viewBox
+ * was widened to 340 to make room for one, and nothing rendered there.
+ *
+ * At 128% the widest label ('Interviews', ~50px at 10px) starts at x≈256 and
+ * ends near 306, inside the 340 the viewBox gives it.
+ */
+export function ringPoint(i: number, n: number, pct: number) {
+  const r = (pct / 100) * R
+  return [CX + r * Math.cos(angleOf(i, n)), CY + r * Math.sin(angleOf(i, n))] as const
+}
+
+/**
+ * Where a plotted VALUE goes. Clamped, because this one takes series data: a
+ * score is computed elsewhere and a negative or a 121 would otherwise draw a
+ * polygon vertex inside-out or past the rings that are supposed to scale it.
+ */
+export function plot(i: number, n: number, value: number) {
+  return ringPoint(i, n, Math.max(0, Math.min(100, value)))
+}
 
 /**
  * Radar / spider chart on a 0–100 scale.
@@ -33,12 +73,7 @@ export function Radar({
   className?: string
 }) {
   const n = axes.length
-  // Start at 12 o'clock and go clockwise, which is how these are read.
-  const angle = (i: number) => (Math.PI * 2 * i) / n - Math.PI / 2
-  const point = (i: number, value: number) => {
-    const r = (Math.max(0, Math.min(100, value)) / 100) * R
-    return [CX + r * Math.cos(angle(i)), CY + r * Math.sin(angle(i))] as const
-  }
+  const point = (i: number, value: number) => plot(i, n, value)
   const polygon = (values: number[]) => values.map((v, i) => point(i, v).join(',')).join(' ')
 
   return (
@@ -88,7 +123,7 @@ export function Radar({
         })}
 
         {axes.map((label, i) => {
-          const [x, y] = point(i, 128)
+          const [x, y] = ringPoint(i, n, LABEL_RING)
           return (
             <text
               key={label}

@@ -15,7 +15,7 @@ import { callTool, type ToolHost } from '../kg/agent/execute'
 import { runAgent, type AgentRun } from '../kg/agent/loop'
 import type { ChatMessage, Turn } from '../kg/core/model-server'
 import { CONVERSATIONS } from '../kg/agent/bench-conversations'
-import { WORLD, BENCH_NOW, BENCH_TODAY, DOCUMENTS } from '../kg/agent/bench-world'
+import { WORLD, BENCH_NOW, BENCH_TODAY, readDocument } from '../kg/agent/bench-world'
 import { scoreConversation, summarise, type CallRecord, type BenchNode } from '../kg/agent/bench-score'
 
 const URL = process.env['BENCH_URL']!
@@ -76,10 +76,16 @@ function freshHost(): { host: ToolHost; nodes: () => BenchNode[] } {
     today: () => BENCH_TODAY as never,
     check: runtime.check as never,
     run: runtime.run as never,
-    convert: async (fileId: string) => {
-      const md = (DOCUMENTS as Record<string, string>)[fileId]
-      return md === undefined ? { ok: false as const, reason: 'no text' } : { ok: true as const, markdown: md }
-    },
+    /*
+     * `readDocument`, not a lookup of its own — see its header.
+     *
+     * What stood here looked the NODE id up in `DOCUMENTS`, which is keyed by
+     * file NAME, so it missed on every document in the suite and the whole
+     * `documents` group was scored on a task this harness made impossible. The
+     * offline suite had the correct version all along, which is why nothing
+     * went red.
+     */
+    convert: async (fileId: string) => readDocument(repo.getSnapshot(), fileId),
   }
   /*
    * The store's shape flattened into what the rubric asks about.

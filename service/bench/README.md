@@ -31,10 +31,10 @@ the in-app guide reads. The timestamp is an argument rather than a clock read,
 for the same reason `core` has no clock: a file whose contents depend on when a
 script ran is one that differs every time it is regenerated.
 
-## What it scores, and why there are three numbers
+## What it scores, and why there are four numbers
 
-Borrowed from τ-bench and TaskBench, which score different things and are both
-right to.
+Borrowed from τ-bench, TaskBench and WorfBench, which score different things and
+are all right to.
 
 **Turns.** Did each turn reach for a defensible tool? `mustCallOneOf` is a list
 and usually a generous one — several turns have more than one right move, and a
@@ -45,8 +45,29 @@ it. `mustNotCall` fails the turn outright.
 catches a run which called everything the rubric asked for and still got the
 wrong answer — `reschedule` failed exactly this way, with a clean turn record.
 
-**Clean.** Both axes, for a whole conversation. The headline, and deliberately
-strict: a headline that forgave a wrong final state would not be worth quoting.
+**Graph.** Every conversation carries a gold `workflow`: the calls a competent
+agent has to make, and which of them depend on which. `bench-workflow.ts` scores
+a run against it as node F1 (a multiset — calling `application.update` once when
+twice was asked is not a pass) and edge F1.
+
+The edge half is the part worth reading twice, because a run does not declare
+edges, it declares an ORDER, so both halves have to be derived and the naive
+derivation of each is wrong. RECALL allows distance: a gold `read -> write` is
+satisfied by reading at some point before writing, not immediately before, or a
+model is failed for reading twice. PRECISION was first measured over every
+ordered pair of calls, which is a bug — n calls make n(n-1)/2 pairs, so a
+perfect three-call run against a two-link chain scored 0.67 and a nine-call
+workflow could not clear 0.2. It now counts only the pairs the gold graph
+CONSTRAINS: two independent calls cost nothing in either order, and a write
+before the read that grounds it costs everything.
+
+**Clean.** Turns and state, for a whole conversation. The headline, and
+deliberately strict: a headline that forgave a wrong final state would not be
+worth quoting.
+
+The graph axis is deliberately NOT part of `clean`. A model can reach the right
+final state by a route the rubric did not anticipate, and that is a pass; the
+graph says how far it strayed, which is a diagnostic rather than a verdict.
 
 ## Two conditions
 

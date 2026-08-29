@@ -20,6 +20,7 @@ import { guidePath } from '@/lib/links'
 import {
   PROVIDERS,
   cleanKey,
+  parseContextWindow,
   providerMeta,
   type ProviderId,
   type ProviderMeta,
@@ -116,6 +117,15 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
   const shown = serversFor(servers, provider.id)
   const [endpoint, setEndpoint] = useState(settings.endpoint)
   const [model, setModel] = useState(settings.model)
+  /*
+   * An edit buffer, because the stored value is a number and the field is text
+   * — a half-typed "3" is not 3 tokens, and writing it through on every
+   * keystroke would have the app plan against a window the user is midway
+   * through changing. Committed on blur.
+   */
+  const [windowEdit, setWindowEdit] = useState(
+    settings.contextWindow === undefined ? '' : String(settings.contextWindow),
+  )
   /*
    * `null` means "not edited in this session", which is different from "" —
    * a distinction a live reload forced. Holding the name as a plain string
@@ -497,6 +507,44 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             onBlur={onRename}
           />
         ) : null}
+        {/*
+         * The window, which had no control at all until now.
+         *
+         * `contextOf` has always read `settings.contextWindow` and fallen back
+         * to the provider's default, and nothing in either app could write it —
+         * so every Ollama user planned against 4,096 tokens whatever their
+         * `num_ctx` actually was, and the agent compacted history it had room
+         * for. The default is a floor Ollama itself ships, not a measurement of
+         * anybody's deployment.
+         *
+         * Empty means "use the default", and that is a real choice rather than
+         * a missing one: for Ollama it also stops jojo sending `num_ctx` at
+         * all, which is what lets the server fall back to its own VRAM
+         * headroom instead of failing to load a model at a size the user
+         * guessed. Typing a number opts into both halves at once.
+         */}
+        <Field
+          label="Context window"
+          mono
+          inputMode="numeric"
+          spellCheck={false}
+          value={windowEdit}
+          placeholder={String(provider.defaultContext)}
+          hint={
+            provider.dialect === 'ollama'
+              ? `Tokens. Leave empty to use ${provider.defaultContext.toLocaleString()} and let Ollama size itself; a number here is also sent as num_ctx.`
+              : `Tokens your deployment can hold. Leave empty for ${provider.defaultContext.toLocaleString()}.`
+          }
+          onChange={(e) => {
+            setWindowEdit(e.target.value.replace(/[^0-9]/g, ''))
+          }}
+          onBlur={() => {
+            const keep = parseContextWindow(windowEdit)
+            setWindowEdit(keep === undefined ? '' : String(keep))
+            const { contextWindow: _dropped, ...rest } = settings
+            save({ ...rest, ...(keep === undefined ? {} : { contextWindow: keep }) })
+          }}
+        />
         {/*
           The three address chips that used to sit here are gone. They existed
           to save somebody remembering whether Ollama is 11434 or 11343 — and

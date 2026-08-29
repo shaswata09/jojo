@@ -17,6 +17,7 @@ import { applications as seedApplications } from '../../data/demo-applications'
 import { timeline as seedTimeline } from '../../data/timeline'
 import { vaultLinks as seedLinks } from '../../data/vault'
 import type { Instant } from '../core/model'
+import { dayOf } from '../core/project'
 import { bootInMemory } from '../repo/boot'
 import type { Repository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
@@ -26,7 +27,19 @@ import { recordKey } from './use-keywords'
 /** Midday local, the way `lib/store.tsx` pins it, so a whole-day offset is whole. */
 const NOW: Instant = new Date('2026-10-12T12:00:00').toISOString()
 const now = () => NOW
-const TODAY = NOW.slice(0, 10)
+
+/**
+ * `dayOf`, because that is what `KgProvider` injects — see `react/kg.tsx`.
+ *
+ * This was `NOW.slice(0, 10)`, which is the UTC day, and the projections it
+ * feeds measure `daysAgo` as `daysBetween(dayOf(lastActionAt), today)` — a LOCAL
+ * day on one side of the subtraction and a UTC day on the other. Midday hid it:
+ * at 12:00 local the two spellings name the same date in every zone inside ±12,
+ * so the suite passed and would have gone on passing had the app adopted the
+ * slice. A test that pins the bug it is meant to catch is worse than no test,
+ * and `injects the LOCAL day` below is the case where the two come apart.
+ */
+const TODAY = dayOf(NOW)
 
 function session() {
   const { repo, problems } = bootInMemory({ now })
@@ -248,6 +261,51 @@ describe('the compatibility contract', () => {
     expect(g.bySlug('application', stored.props.slug)?.id).toBe(stored.id)
   })
 
+  /**
+   * The day the provider injects, at the one hour where its spelling matters.
+   *
+   * `NOW` is midday, where the local day and the UTC day of the same instant
+   * agree everywhere inside ±12 — which is why the old `NOW.slice(0, 10)` never
+   * failed. So this picks an hour where they cannot agree: late local evening
+   * west of UTC, where the ISO string has already rolled over, and early local
+   * morning east of it, where the string has not caught up.
+   *
+   * AT UTC THE TWO ARE THE SAME DAY and no test can separate them — the second
+   * assertion says so out loud rather than pretending otherwise. Everywhere
+   * else it is what kills the slice.
+   */
+  it('measures daysAgo against the LOCAL day of the injected instant', () => {
+    // `new Date(NOW)` rather than a bare `new Date()`: D26, and the offset of a
+    // known instant is the one we want anyway.
+    const offsetMins = new Date(NOW).getTimezoneOffset() // UTC − local, in minutes
+    const awkward: Instant = (
+      offsetMins > 0
+        ? new Date(2026, 9, 12, 23, 30) // west: the ISO string is already the 13th
+        : new Date(2026, 9, 12, 0, 30)
+    ) // east: the ISO string is still the 11th
+      .toISOString()
+
+    const at = () => awkward
+    const { repo } = bootInMemory({ now: at })
+    const runtime = createToolRuntime({ repo, now: at })
+
+    const local = createProjections(dayOf(awkward))
+    const sliced = createProjections(awkward.slice(0, 10))
+    const target = local.applications(read(repo))[0]
+    if (!target) throw new Error('the seed has no applications')
+
+    // `touch` stamps `lastActionAt: ctx.now`, so the record was acted on this
+    // very instant and is zero days old.
+    runtime.runOrThrow('application.note.set', { id: target.id, note: 'Chased' })
+    const daysAgoOf = (p: ReturnType<typeof createProjections>) =>
+      p.applications(read(repo)).find((a) => a.id === target.id)?.daysAgo
+
+    expect(daysAgoOf(local)).toBe(0)
+    if (dayOf(awkward) !== awkward.slice(0, 10)) {
+      expect(daysAgoOf(sliced)).not.toBe(0)
+    }
+  })
+
   it('stamps a completion with the injected day, never the wall clock', () => {
     const { repo, runtime } = session()
     const item = read(repo).ofType('timelineItem')[0]
@@ -405,7 +463,12 @@ describe('the order snippets come back in', () => {
     add(s, 'a')
     add(s, 'b')
     add(s, 'c')
-    expect(s.p.snippets(read(s.repo)).map((x) => x.title).slice(0, 3)).toEqual(['c', 'b', 'a'])
+    expect(
+      s.p
+        .snippets(read(s.repo))
+        .map((x) => x.title)
+        .slice(0, 3),
+    ).toEqual(['c', 'b', 'a'])
   })
 
   it('puts a snippet added now above every seeded one', () => {

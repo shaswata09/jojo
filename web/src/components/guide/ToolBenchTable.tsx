@@ -22,6 +22,25 @@ import { cn } from '@/lib/utils'
  * violation, a tool that was not offered. High is not automatically bad: a
  * refusal is the system working. It is a cost, not a wound.
  *
+ * `Graph` and `Order` are the axis the other columns cannot see. A run can pass
+ * every turn and leave the store correct while taking a route that only works
+ * on a store this small — reading nothing and writing from the sentence, or
+ * doing two dependent steps in the order that happens not to matter here.
+ * `Graph` is F1 against the gold workflow's calls; `Order` is F1 over the
+ * orderings that workflow actually constrains, so two independent calls in
+ * either order cost nothing and a write before the read that grounds it costs
+ * everything.
+ *
+ * `Order` carries a caveat in its tooltip rather than in silence. An edge
+ * between two tools a graph names MORE THAN ONCE cannot be judged from a call
+ * list — three `memory.list` calls do not say which was which — so those edges
+ * count toward recall and are left out of precision. The tooltip says how many
+ * of the gold edges each row could actually judge, because a high `Order` over
+ * few judged edges is mostly absence of evidence and looks identical to a high
+ * one over many. Neither feeds `Clean`: a model may reach the right answer by a
+ * route the rubric did not anticipate, and these say how far it strayed rather
+ * than whether it was wrong.
+ *
  * ## The conversation breakdown underneath
  *
  * Ordered by how often a conversation failed, not by name, because the reason
@@ -67,8 +86,31 @@ type Run = {
    * that blocks a re-run instead of describing one.
    */
   byGroup?: GroupScore[]
+  /*
+   * The graph axis, also optional, and for a second reason on top of the one
+   * above: a payload can carry the field while `conversations` is 0, because
+   * the axis only scores the conversations that have an authored gold
+   * workflow. Both absences render as "—" rather than as a zero, which would
+   * read as a model failing at something nobody measured.
+   */
+  graph?: {
+    conversations: number
+    nodeF1: number | null
+    nodePrecision: number | null
+    nodeRecall: number | null
+    linkF1: number | null
+    argAccuracy: number | null
+    argsChecked: number
+    /** Gold edges, and how many of those the axis could actually judge. */
+    edges?: number
+    edgesAdjudicable?: number
+  }
   scores: Score[]
 }
+
+/** A rate as a percentage, or an em dash when it was not measured. */
+const rate = (n: number | null | undefined): string =>
+  n === null || n === undefined ? '—' : `${String(Math.round(n * 100))}%`
 
 const runs = report.report as Run[]
 const models = [...new Set(runs.map((r) => r.model))]
@@ -159,6 +201,12 @@ export function ToolBenchTable() {
               <th className="py-1.5 pr-3 font-medium">Clean</th>
               <th className="py-1.5 pr-3 font-medium">Turns</th>
               <th className="py-1.5 pr-3 font-medium">State</th>
+              <th className="py-1.5 pr-3 font-medium" title="F1 against the gold workflow's tool calls, macro-averaged">
+                Graph
+              </th>
+              <th className="py-1.5 pr-3 font-medium" title="F1 on the orderings the gold graph constrains">
+                Order
+              </th>
               <th className="py-1.5 pr-3 font-medium">Looked first</th>
               <th className="py-1.5 font-medium">Refused</th>
             </tr>
@@ -190,6 +238,19 @@ export function ToolBenchTable() {
                     </td>
                     <td className="tabular py-1.5 pr-3 text-text-2">
                       {r.stateChecksPassed}/{r.stateChecks}
+                    </td>
+                    <td className="tabular py-1.5 pr-3 text-text-2">
+                      {rate(r.graph?.nodeF1)}
+                    </td>
+                    <td
+                      className="tabular py-1.5 pr-3 text-text-2"
+                      title={
+                        r.graph?.edges === undefined
+                          ? undefined
+                          : `${String(r.graph.edgesAdjudicable ?? 0)} of ${String(r.graph.edges)} gold edges could be judged; the rest join two tools the graph names more than once`
+                      }
+                    >
+                      {rate(r.graph?.linkF1)}
                     </td>
                     <td className="tabular py-1.5 pr-3 text-text-2">
                       {Math.round(r.lookedFirst * 100)}%

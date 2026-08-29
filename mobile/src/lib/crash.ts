@@ -6,6 +6,7 @@ import {
 } from '@jojo/service/core/crash'
 import { CRASH_DEFAULTS, crashCapability, crashReportingOn } from '@jojo/service/core/crash-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { readOffered } from '@/lib/onboarding'
 import { REPORTING } from '@/lib/reporting-config'
 
 /**
@@ -30,6 +31,34 @@ import { REPORTING } from '@/lib/reporting-config'
  * So the module is resolved lazily and its absence is a normal state, not an
  * error. `crashCapability` reads the build flag; this reads whether the SDK is
  * actually there; and the user's switch decides the rest. All three must say yes.
+ *
+ * ## Resolving the module used to install a SECOND, unredacted reporter
+ *
+ * `nativeCrashlytics()` looks like a lookup and is not. Constructing the module
+ * runs `setGlobalErrorHandler(this.native)` and
+ * `setOnUnhandledPromiseRejectionHandler(this.native)` as a constructor side
+ * effect — `@react-native-firebase/crashlytics/lib/namespaced.ts:59-60` in the
+ * 25.1.0 installed here — and the payload those build opens with the message
+ * interpolated straight off the thrown error (`lib/handlers.ts:56`, in
+ * `createNativeErrorObj`). Every argument below about `recordCrash` sending
+ * only the redacted text was true and beside the point: the SDK had its own
+ * path out, and it ran first.
+ *
+ * `mobile/firebase.json` closes it with
+ * `crashlytics_is_error_generation_on_js_crash_enabled: false`. The handler is
+ * still installed — it is a constructor, there is no way not to install it — but
+ * with that flag off it generates no report and falls through to the previous
+ * handler, which is `installLastResortHandlers`' chain and therefore
+ * `recordCrash`. Chaining is left ON so that fall-through happens.
+ *
+ * The rejection half needs no flag on this app, and the reason is worth
+ * recording because it is not obvious: that tracker patches the `promise`
+ * npm polyfill's own class, and RN 0.81 on Hermes leaves `global.Promise` as
+ * Hermes' native one (`Libraries/Core/polyfillPromise.js` only polyfills when
+ * `HermesInternal.hasPromise()` is false). jojo's rejections are Hermes
+ * promises, so they reach `HermesInternal.enablePromiseRejectionTracker` in
+ * `lib/last-resort.ts` and nothing else. Turning Hermes off would silently
+ * revive that path.
  *
  * ## What actually leaves the phone, stated because the app has to state it
  *
@@ -98,19 +127,32 @@ function nativeCrashlytics() {
 
 /** Whether crash reporting is on. Read from storage; the default is below. */
 /*
- * UNSET MEANS ON, and the shape of this expression is the whole point.
+ * UNSET MEANS ON ONCE ASKED, and the two halves of that are the whole point.
  *
  * `=== 'on'` would make an unanswered question read as "no", which was the old
- * default. Now only an explicit 'off' turns it off, so somebody who has never
- * opened Settings gets the default from `CRASH_DEFAULTS` and somebody who said
- * no keeps saying no across restarts. Reading it as `!== 'off'` rather than
- * storing a default on first launch means there is no migration and no moment
- * where a fresh install and a cleared storage disagree.
+ * default. Only an explicit 'off' turns it off, so somebody who has never opened
+ * Settings gets the default from `CRASH_DEFAULTS` and somebody who said no keeps
+ * saying no across restarts. Reading it as `!== 'off'` rather than storing a
+ * default on first launch means there is no migration and no moment where a
+ * fresh install and a cleared storage disagree.
+ *
+ * The second half is newer and was a live defect, the same one as in
+ * `lib/analytics.ts` and fixed the same way. `CRASH_DEFAULTS.enabled` answers
+ * "they were asked and did not choose"; on a fresh install nobody has been asked
+ * at all, and this returned true anyway — measured on an empty AsyncStorage,
+ * `setUp` then handed the SDK a yes nobody had given. So an unset preference
+ * also needs the reporting stage of onboarding to have been PUT to them.
+ *
+ * The stage is marked whenever `ReportingStep` is dismissed, however it is
+ * dismissed, because what matters is that the question was on screen.
  */
 export async function crashEnabled(): Promise<boolean> {
   try {
     const stored = await AsyncStorage.getItem(ENABLED_KEY)
-    return stored === null ? CRASH_DEFAULTS.enabled : stored !== 'off'
+    if (stored !== null) return stored !== 'off'
+    // The extra read only happens while there is no stored answer, which is
+    // once per install: `ReportingStep` writes one on every exit path.
+    return (await readOffered()).reporting && CRASH_DEFAULTS.enabled
   } catch {
     return false
   }
@@ -128,15 +170,24 @@ export async function setCrashEnabled(on: boolean): Promise<void> {
 /**
  * Tells the native SDK what the answer is.
  *
- * `AndroidManifest.xml` sets `firebase_crashlytics_collection_enabled=false`, so
- * the SDK starts every launch collecting NOTHING — that is what stops it
- * reporting a startup crash from a person who was never asked. The consequence
- * is that this call is not optional: without it the switch in Settings would
- * write a preference the SDK never hears about, and crash reporting would be
- * permanently off however many times somebody turned it on.
+ * THE NATIVE DEFAULT IS OFF ON EVERY LAUNCH, and this comment used to credit the
+ * wrong file for it. jojo's own `AndroidManifest.xml` sets nothing of the sort —
+ * grep it. The `firebase_crashlytics_collection_enabled=false` meta-data is
+ * merged in from `@react-native-firebase/crashlytics`'s own manifest, and its
+ * `ReactNativeFirebaseCrashlyticsInitProvider` then OVERWRITES it at process
+ * start with `crashlytics_auto_collection_enabled` from `firebase.json` —
+ * defaulting to TRUE when the key, or the file, is missing. There was no
+ * `firebase.json` here at all, so the real behaviour was the opposite of what
+ * this paragraph claimed: collection came up enabled before any JavaScript ran,
+ * and a startup crash from somebody who had never been asked was sent.
  *
- * Called from `setUp` at launch as well as from the switch, because the native
- * default is off on EVERY launch rather than only the first.
+ * `firebase.json` now sets that key false, so the sentence is true again — and
+ * it is what makes this call non-optional. Without it the switch in Settings
+ * would write a preference the SDK never hears about, and crash reporting would
+ * be permanently off however many times somebody turned it on.
+ *
+ * Called from `setUp` at launch as well as from the switch, because that native
+ * default is re-applied on EVERY launch rather than only the first.
  */
 async function applyCollection(on: boolean): Promise<void> {
   try {

@@ -47,27 +47,46 @@ const APPLICATIONS_DEFAULTS = {
 
 const VAULT_DEFAULTS = { tool: 'reminders' } as const
 
-// The calendar opens on today rather than on a literal date. It used to open on
-// the fixtures' pinned October, which was a month in the past for anyone who
-// loaded the app after it — and because a param equal to the default is omitted
-// from the URL, "go to this month" produced a link that landed on that October
-// for the next reader.
-const CALENDAR_DEFAULTS = { y: TODAY_PARTS.year, m: TODAY_PARTS.month, d: TODAY_PARTS.day } as const
-
 /**
- * What each page shows with an empty query string.
+ * The calendar opens on today rather than on a literal date. It used to open on
+ * the fixtures' pinned October, which was a month in the past for anyone who
+ * loaded the app after it — and because a param equal to the default is omitted
+ * from the URL, "go to this month" produced a link that landed on that October
+ * for the next reader.
  *
- * Read by the param hooks below, which is the whole of its live use. It used to
- * say "exported for 'clear filters'" — `clearFilters` in `routes/Applications.tsx`
- * does not read it, it spells `{ q: '', stage: 'all' }` by hand, so the two
- * agree by coincidence and a changed default would leave Clear filters restoring
- * the old one.
+ * A FUNCTION, not a `const` object, and that is the whole point of it. It was a
+ * const, sampled once when this module was first imported, and `TODAY_PARTS`
+ * has moved with the local midnight since the pin became live. Measured on a
+ * session opened at 23:50 on 12 Oct and read at 00:10 (fake timers, 20 minutes
+ * advanced): the pin said the 13th, this object still said the 12th, and both
+ * halves of the calendar's URL contract were then wrong in opposite directions
+ * — `calendarPath({d: 13})` kept `?d=13` in the URL because 13 was no longer
+ * "the default", while a bare `/calendar` fell back to `d: 12` and opened the
+ * day panel on YESTERDAY. Adding an event from that panel stamps the 12th.
+ *
+ * Every reader below calls it, so each one samples the pin at the moment it
+ * builds or parses a URL rather than at import.
  */
-export const DEFAULTS = {
-  applications: APPLICATIONS_DEFAULTS,
-  vault: VAULT_DEFAULTS,
-  calendar: CALENDAR_DEFAULTS,
-} as const
+const calendarDefaults = () =>
+  ({ y: TODAY_PARTS.year, m: TODAY_PARTS.month, d: TODAY_PARTS.day }) as const
+
+/*
+ * `DEFAULTS` is gone, and what it claimed about itself is why.
+ *
+ * It aggregated the three constants above and its comment said "Read by the
+ * param hooks below, which is the whole of its live use". Neither half held:
+ * nothing outside this file imported it, and the hooks inside read
+ * `APPLICATIONS_DEFAULTS`, `VAULT_DEFAULTS` and `calendarDefaults()` DIRECTLY —
+ * never through the wrapper. So it was an export with no consumers describing a
+ * use it did not have.
+ *
+ * The three it wrapped are all still here and all still read; only the empty
+ * shell went. The paragraph it carried about `clearFilters` is worth keeping,
+ * because it is about the constants and not about the wrapper: `clearFilters`
+ * in `routes/Applications.tsx` spells `{ q: '', stage: 'all' }` by hand rather
+ * than reading `APPLICATIONS_DEFAULTS`, so the two agree by coincidence and
+ * changing a default here would leave Clear filters restoring the old one.
+ */
 
 /* ------------------------------- builders -------------------------------- */
 
@@ -293,10 +312,11 @@ export function vaultPath(p: { tool?: VaultTool; focus?: string } = {}) {
 }
 
 export function calendarPath(p: { y?: number; m?: number; d?: number; focus?: string } = {}) {
+  const today = calendarDefaults()
   return withQuery('/calendar', {
-    y: omitDefault(p.y, CALENDAR_DEFAULTS.y),
-    m: omitDefault(p.m, CALENDAR_DEFAULTS.m),
-    d: omitDefault(p.d, CALENDAR_DEFAULTS.d),
+    y: omitDefault(p.y, today.y),
+    m: omitDefault(p.m, today.m),
+    d: omitDefault(p.d, today.d),
     focus: p.focus,
   })
 }
@@ -473,23 +493,55 @@ export function useScoutParams() {
  * Reads a whole number, falling back when it is missing or not one, and
  * clamping when it is out of range — '?m=99' should land on December rather
  * than render a month with no days in it.
+ *
+ * THE FALLBACK IS CLAMPED TOO, and that is not tidiness. It used to return
+ * early — `if (raw === null) return fallback` — and the day's fallback is
+ * today's date, which is a number between 1 and 31 chosen by the wall clock and
+ * not by the month on screen. So '/calendar?y=2026&m=2' opened on the 31st gave
+ * the Calendar d=31 in a February with 28 days: no cell in the grid is lit,
+ * because none of them is the 31st, and the day panel beside it builds its date
+ * through `isoOf`, which normalises 2026-02-31 to 2026-03-03. Adding an event
+ * from a page headed February stamped it in March.
+ *
+ * Measured by `calendarDate` in links.test.ts, which pins a fallback of 31
+ * against February rather than waiting for the month to come round again.
  */
 function readInt(raw: string | null, fallback: number, min: number, max: number) {
-  if (raw === null || raw.trim() === '') return fallback
-  const n = Number(raw)
-  if (!Number.isInteger(n)) return fallback
-  return Math.min(Math.max(n, min), max)
+  const parsed = raw === null || raw.trim() === '' ? Number.NaN : Number(raw)
+  const value = Number.isInteger(parsed) ? parsed : fallback
+  return Math.min(Math.max(value, min), max)
+}
+
+/**
+ * The three numbers the calendar pages by, read out of a query string.
+ *
+ * A plain function beside the hook rather than inside it, because the clamping
+ * is the part that can be wrong and D20 leaves no way to mount the hook and
+ * look: the day is clamped against a month length that depends on the OTHER two
+ * params, so the interesting cases are combinations, not values.
+ *
+ * `defaults` is a parameter so a test can pin them. The live ones come from the
+ * wall clock (`TODAY_PARTS`), so a test that used them would assert something
+ * different on the 31st than on the 1st — and the bug this signature exists to
+ * pin was exactly a fallback of 31 landing in February.
+ */
+export function calendarDate(
+  params: URLSearchParams,
+  defaults: { y: number; m: number; d: number } = calendarDefaults(),
+) {
+  const y = readInt(params.get('y'), defaults.y, 1, 9999)
+  const m = readInt(params.get('m'), defaults.m, 1, 12)
+  // Clamped against the month actually on screen, the same way Calendar clamps
+  // the selected day when you page between months — '?m=2&d=31' is a URL a
+  // person can type, and February has to answer it with something real.
+  const d = readInt(params.get('d'), defaults.d, 1, buildMonth(y, m).days)
+  return { y, m, d }
 }
 
 export function useCalendarParams() {
   const [params, setParams] = useSearchParams()
 
-  const y = readInt(params.get('y'), CALENDAR_DEFAULTS.y, 1, 9999)
-  const m = readInt(params.get('m'), CALENDAR_DEFAULTS.m, 1, 12)
-  // Clamped against the month actually on screen, the same way Calendar clamps
-  // the selected day when you page between months — '?m=2&d=31' is a URL a
-  // person can type, and February has to answer it with something real.
-  const d = readInt(params.get('d'), CALENDAR_DEFAULTS.d, 1, buildMonth(y, m).days)
+  const { y, m, d } = calendarDate(params)
 
   const set = useCallback(
     (patch: { y?: number; m?: number; d?: number; focus?: string }, opts?: SetOptions) => {
@@ -499,7 +551,10 @@ export function useCalendarParams() {
       if ('d' in patch) wire.d = patch.d
       if ('focus' in patch) wire.focus = patch.focus
 
-      setParams((prev) => patched(prev, wire, CALENDAR_DEFAULTS), {
+      // Sampled inside the callback rather than closed over, so a tab left open
+      // across midnight writes the URL against today and not against the day it
+      // was opened on.
+      setParams((prev) => patched(prev, wire, calendarDefaults()), {
         replace: opts?.replace ?? true,
       })
     },

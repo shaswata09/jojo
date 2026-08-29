@@ -371,6 +371,29 @@ export const contextOf = (settings: ModelSettings): number => {
 }
 
 /**
+ * What a typed context window means, for the field both apps now show.
+ *
+ * `undefined` is a real answer and not a failure: it means "use the provider's
+ * default", and for Ollama it additionally means jojo sends no `num_ctx` at
+ * all, so the server sizes itself against its own VRAM instead of failing to
+ * load a model at a number somebody guessed. Empty, whitespace, zero, junk and
+ * a negative all collapse to it — `contextOf` would ignore each of them anyway,
+ * and storing one would leave a field reading `0` beside an app planning
+ * against 4,096.
+ *
+ * Here rather than in either settings screen because it was written twice, once
+ * per app, and a rule about what a number means is not a rule about a text
+ * input. Components are never mounted in this project's tests, so logic left in
+ * JSX is logic nothing can check.
+ */
+export const parseContextWindow = (typed: string): number | undefined => {
+  const digits = typed.trim()
+  if (!/^\d+$/.test(digits)) return undefined
+  const n = Number.parseInt(digits, 10)
+  return Number.isFinite(n) && n > 0 ? n : undefined
+}
+
+/**
  * Whether this is enough to attempt a request.
  *
  * A cloud provider with no key is unconfigured rather than broken, and saying so

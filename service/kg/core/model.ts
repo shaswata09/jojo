@@ -996,9 +996,9 @@ export type FileProps = {
    * directory the user granted, resolved through `storage/file-store.ts`;
    * this is an ABSOLUTE path into the app's own document directory, written by
    * `expo-file-system` after the picker copied the file there. They describe
-   * different facts, and collapsing either into the other would make the drift
-   * classification in `core/folder.ts` meaningless — a `path` that survives a
-   * reinstall against a `uri` that does not.
+   * different facts, and collapsing either into the other would lose the one
+   * distinction that decides whether a document is still reachable after a
+   * reinstall — a `path` that survives one against a `uri` that does not.
    *
    * It is declared in `validate.ts` alongside the other four and listed in
    * `SALVAGEABLE_FILE_PROPS`. Until this move it was declared on the phone and

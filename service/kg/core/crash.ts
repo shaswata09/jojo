@@ -62,7 +62,9 @@ const MESSAGE_MAX = 500
  * "the message mentioned a key here" is diagnostic information and the key
  * itself is not.
  */
-const RULES: readonly (readonly [RegExp, string])[] = [
+type Replacement = string | ((match: string, ...groups: string[]) => string)
+
+const RULES: readonly (readonly [RegExp, Replacement])[] = [
   /*
    * An auth header, whatever the scheme, to the END OF THE LINE.
    *
@@ -98,6 +100,64 @@ const RULES: readonly (readonly [RegExp, string])[] = [
    */
   [/(\/(?:Users|home)\/)[^/\s"')]+/g, '$1«user»'],
   [/([A-Za-z]:\\Users\\)[^\\\s"')]+/g, '$1«user»'],
+  /*
+   * The iOS equivalent of the account name: the per-install container UUID.
+   *
+   *   /var/mobile/Containers/Data/Application/9C4E…/Documents/…
+   *
+   * There was no rule for this shape at all, which an audit found by handing
+   * `redact` the path `restore-documents.ts` actually writes to on a phone —
+   * it came back unchanged, UUID and all. The UUID is stable for the life of
+   * an install, so a series of reports carrying it is a series a vendor can
+   * join up into one device's history. `/private/var/…` and the `Bundle`
+   * container are the same path under their other spellings.
+   */
+  [
+    /(\/(?:private\/)?var\/(?:mobile\/Containers|containers)\/[A-Za-z]+\/Application\/)[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/g,
+    '$1«install»',
+  ],
+  /*
+   * …and then EVERYTHING under one of those roots, because the leak an audit
+   * reproduced was not the account name — that rule already worked — it was
+   * the FILE NAME after it.
+   *
+   * The names under these roots are the user's own. `restore-documents.ts`
+   * files a restored document as `<id>__<their document's name>`, and an
+   * `ENOENT` names the whole path; `/Users/…/Documents/Offer - Fujitsu -
+   * signed.pdf` in a report tells a vendor who is hiring the user. Nothing
+   * under a user-data root is diagnostic enough to be worth that, so the tail
+   * goes and only the shape is kept.
+   *
+   * The extension and any `:line:col` survive, which is what keeps a stack
+   * frame readable as a stack frame: `at /Users/«user»/«path».tsx:12:3` still
+   * says a bundled module threw rather than a document read failing.
+   *
+   * The lazy span crosses spaces on purpose. Stopping at whitespace is what
+   * the old rule did, and a document called `Offer - Fujitsu.pdf` walked
+   * straight through it — a filename with a space in it is the normal case,
+   * not the exotic one. Nothing tells you where such a path ends, so this
+   * takes the first extension-shaped token and accepts that it will sometimes
+   * swallow a few words of message with it. That direction costs diagnostics;
+   * the other direction costs the user.
+   *
+   * The Android root is spelled out here rather than anonymised above because
+   * `dev.jojo` is the app's own package name and public — it is an anchor, not
+   * a secret. `ReactNativeBlobUtil.fs.dirs.DocumentDir` resolves to
+   * `/data/user/0/dev.jojo/files` there, which is where every document the app
+   * holds on that platform lives.
+   */
+  [
+    /((?:«user»|«install»|\/data\/(?:user\/\d+|data)\/[A-Za-z0-9_.]+))([/\\])[^\r\n"'()]{0,200}?(\.[A-Za-z0-9]{1,8})(?![A-Za-z0-9])/g,
+    (_match, root: string, separator: string, extension: string) =>
+      `${root}${separator}«path»${extension}`,
+  ],
+  // The same tail with no extension to anchor on, so it ends at whitespace.
+  // The lookahead is what stops this undoing the rule above by eating the
+  // `«path».pdf` it just wrote.
+  [
+    /((?:«user»|«install»|\/data\/(?:user\/\d+|data)\/[A-Za-z0-9_.]+))([/\\])(?!«path»)[^\s"')]+/g,
+    (_match, root: string, separator: string) => `${root}${separator}«path»`,
+  ],
   // An email address, which a profile or a contact can put into a message.
   [/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, '«redacted-email»'],
 ]
@@ -111,7 +171,15 @@ const RULES: readonly (readonly [RegExp, string])[] = [
  */
 export function redact(text: string): string {
   let out = text
-  for (const [pattern, replacement] of RULES) out = out.replace(pattern, replacement)
+  for (const [pattern, replacement] of RULES) {
+    // Narrowed rather than cast: a rule replaces with a literal or with a
+    // function of its own captures, and `String.replace` has a distinct
+    // overload for each.
+    out =
+      typeof replacement === 'string'
+        ? out.replace(pattern, replacement)
+        : out.replace(pattern, replacement)
+  }
   return out
 }
 
@@ -123,12 +191,7 @@ export function redact(text: string): string {
  * with no message at all. A reporter that assumed `Error` would itself throw
  * inside the handler for a throw, which is the worst place to have a bug.
  */
-export function toCrashReport(
-  thrown: unknown,
-  where: string,
-  at: string,
-  id: string,
-): CrashReport {
+export function toCrashReport(thrown: unknown, where: string, at: string, id: string): CrashReport {
   const error = thrown instanceof Error ? thrown : null
   const raw =
     error?.message ??
@@ -138,7 +201,8 @@ export function toCrashReport(
         ? 'Nothing was thrown, which should not be possible.'
         : safeString(thrown))
 
-  const stack = typeof error?.stack === 'string' ? redact(error.stack).slice(0, STACK_MAX) : undefined
+  const stack =
+    typeof error?.stack === 'string' ? redact(error.stack).slice(0, STACK_MAX) : undefined
 
   return {
     id,

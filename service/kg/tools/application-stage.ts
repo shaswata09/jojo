@@ -122,7 +122,22 @@ const OUTCOME_ACTION: Record<'accepted' | 'declined', string> = {
 export const applicationOfferDecide = defineTool({
   name: 'application.offer.decide',
   title: 'Decide on an offer',
-  summary: 'Records the offer as accepted or declined and closes the application.',
+  /*
+   * The PRECONDITION is in the summary, because the refusal was not enough.
+   *
+   * This described what the tool does and never that it needs an offer already
+   * recorded — so a model asked to accept an offer reached for it, was refused
+   * with "This application has no offer recorded", and had learned that only
+   * after spending a round trip. It happened in every published run including
+   * Gemma's 36/36, and was 5 of the 26 refusals in the latest three-model pass.
+   *
+   * Naming the other tool matters more than naming the rule: an earlier version
+   * of the REFUSAL named this tool's precondition and made things worse — Gemma
+   * followed it into a dead end and did nothing, turning a pass into a failure.
+   * A description that says what to use instead is the version that works.
+   */
+  summary:
+    'Records an offer already on the application as accepted or declined, and closes it. The application must have an offer recorded first — if it does not, use application.update with an outcome instead.',
   effect: 'update',
   touches: ['application'],
   input: s.object({

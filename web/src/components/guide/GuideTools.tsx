@@ -8,7 +8,7 @@ import { ToolEvalTable } from '@/components/guide/ToolEvalTable'
 import { ToolBenchTable } from '@/components/guide/ToolBenchTable'
 import { BenchAxesDiagram } from '@/components/guide/diagrams/BenchAxesDiagram'
 import { BenchAmbiguityDiagram } from '@/components/guide/diagrams/BenchAmbiguityDiagram'
-import { BenchPreviewer } from '@/components/guide/BenchPreviewer'
+import { BenchExplorer } from '@/components/guide/BenchExplorer'
 import {
   CONVERSATIONS as BENCH_CONVERSATIONS,
   GROUPS as BENCH_GROUPS,
@@ -296,7 +296,7 @@ export function GuideTools() {
           So there is a second benchmark. It builds a real store — six applications, a calendar, a
           vault, keywords — hands the assistant a script of {String(BENCH_CONVERSATIONS.length)}{' '}
           conversations across {String(BENCH_GROUPS.length)} kinds of work, and lets the tool calls
-          actually run. Then it looks at what is in the store afterwards. Three things are
+          actually run. Then it looks at what is in the store afterwards. Four things are
           scored separately, because a model can pass one and fail another:
         </p>
         <ul className="mt-3 space-y-1.5 text-sm text-text-2">
@@ -308,10 +308,23 @@ export function GuideTools() {
             changing it, or write from the sentence alone.
           </li>
           <li>
+            <span className="text-text-1">The shape of the work</span> — every case carries a gold
+            graph of the calls it takes and which of them depend on which, and the run is scored
+            against it. Two calls the graph left independent may happen in either order; a write
+            before the read that finds what to write to may not.
+          </li>
+          <li>
             <span className="text-text-1">What it left behind</span> — is the store right, and did
             anything change that should not have.
           </li>
         </ul>
+        <p className="mt-3 text-sm text-text-2">
+          The third of those is the one benchmarks usually skip, and it is the reason a model can
+          score well here and disappoint in use: on a store this small, guessing often lands on the
+          right record. The graph says whether it was reasoning or whether it was lucky. It is
+          reported beside the headline rather than folded into it — reaching the right answer by a
+          route nobody anticipated is still the right answer.
+        </p>
 
         <div className="mt-4">
           <BenchAxesDiagram />
@@ -335,9 +348,15 @@ export function GuideTools() {
           This is read from the same list the benchmark runs, not a description of it — so a case
           added tomorrow appears here with its prompts, and one that is quietly dropped disappears.
         </p>
+        <p className="mt-3 text-sm text-text-2">
+          Pick a case to see what was said, the workflow it expects drawn as a real dependency
+          graph, what each turn may and may not call, and what each model actually did with it —
+          including what it wrote back, which is where a model that did nothing and announced
+          success gives itself away.
+        </p>
 
         <div className="mt-4">
-          <BenchPreviewer />
+          <BenchExplorer />
         </div>
       </Panel>
 

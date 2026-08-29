@@ -9,12 +9,22 @@
  * wrong. A guide page is the one surface where a stale claim is invisible to
  * every gate and is read by somebody who cannot check it.
  *
- * So the rows this app can measure are measured here and the page fails the
- * build when they drift. `import.meta.glob` is rooted at the app, which is why
- * this covers the four `web/` rows and not the `service/` ones — a limit worth
- * stating rather than working around, because working around it would mean
- * giving this test `node:fs` and `tsconfig.app.json` grants `vite/client` and
- * nothing else (see `lib/links.test.ts` for the same constraint).
+ * So the rows are measured here and the page fails the build when they drift.
+ *
+ * ## Why the service rows are covered now, when they were not
+ *
+ * This used to measure the `web/` rows only, and said so: `import.meta.glob` is
+ * rooted at the app, and reaching outside it looked like it would mean
+ * `node:fs`, which `tsconfig.app.json` does not grant.
+ *
+ * That was half right. The glob cannot be ROOT-relative, but it can be
+ * FILE-relative, and a relative pattern walks out of the app the same way an
+ * import does — no `node:fs`, no new grant. The cost of not doing it was
+ * measured on 2026-08-27: every one of the seven service rows had drifted, and
+ * `service/kg/core` was printing 77 files and 20,173 lines for a directory
+ * holding 120 and 31,826. The page's own argument — that a stale claim on a
+ * guide is invisible to every gate and read by somebody who cannot check it —
+ * was true of the page itself for as long as the unguarded half existed.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -33,35 +43,79 @@ const globbed = import.meta.glob('/src/**/*.{ts,tsx}', {
   eager: true,
 }) as Record<string, string>
 
-const sources: Record<string, string> = { ...globbed, [SELF]: selfSource }
+/*
+ * The service layer, reached by a FILE-relative glob rather than a root-relative
+ * one. Vite resolves these the way it resolves an import, so this walks out of
+ * the app without `node:fs` and without a new tsconfig grant.
+ *
+ * `check-no-copies` forbids an app reaching into the package by a relative
+ * path, because Metro does not consult the exports map for one and the module
+ * then arrives as a second instance of something the graph holds as a
+ * singleton. A `query: '?raw'` glob cannot do that — it yields the file's TEXT
+ * and instantiates nothing — and the guard reads that option to tell the two
+ * apart. Writing the `?raw` into the pattern instead would have been simpler
+ * for the guard to check, and returns NOTHING from Vite; the "nothing globbed"
+ * assertion below is what caught that, which is the reason it is there.
+ *
+ * Keyed back to repo-relative paths so `under('service/kg/core')` asks the same
+ * question of both halves.
+ */
+const service = import.meta.glob('../../../../service/{kg,data}/**/*.{ts,tsx}', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
+
+const serviceSources = Object.fromEntries(
+  Object.entries(service).map(([path, source]) => [
+    `/${path.replace(/^.*?\/service\//, 'service/')}`,
+    source,
+  ]),
+)
+
+const sources: Record<string, string> = { ...globbed, ...serviceSources, [SELF]: selfSource }
 
 /** `wc -l` counts newlines, so a file with no trailing newline is one short. */
 const newlines = (source: string) => (source.match(/\n/g) ?? []).length
 
 const under = (dir: string) => {
-  const prefix = `/${dir.replace(/^web\//, '')}/`
+  // `service/kg/log.ts` is a FILE row, not a directory: no trailing slash, or
+  // it matches nothing and the row silently reports zero.
+  const key = dir.replace(/^web\//, '')
+  const prefix = dir.endsWith('.ts') ? `/${key}` : `/${key}/`
   return Object.entries(sources).filter(([path]) => path.startsWith(prefix))
 }
 
 const isTest = (path: string) => /\.test\.tsx?$/.test(path)
 
 describe('the directory table', () => {
-  const measurable = SHAPE.filter((row) => row.dir.startsWith('web/'))
-
-  it('covers the four rows this app can see, and knows it cannot see the rest', () => {
-    // Guards the guard: a `filter` that matched nothing would make every
-    // assertion below vacuous, and this table is exactly where that hides.
-    expect(measurable.map((r) => r.dir)).toEqual([
-      'web/src/kg/storage',
-      'web/src/components',
-      'web/src/routes',
-      'web/src/lib',
-      'web/src/data',
-    ])
-    expect(SHAPE.length).toBeGreaterThan(measurable.length)
+  it('covers every row on the page, with nothing left unmeasured', () => {
+    /*
+     * Guards the guard, and it has to be an EQUALITY rather than a count: a
+     * glob that matched nothing would make every assertion below vacuous, and
+     * a table of measurements is exactly where that hides. The service half
+     * drifted for months behind a `filter` that quietly excluded it.
+     */
+    expect(SHAPE.map((r) => r.dir).sort()).toEqual(
+      [
+        'service/data',
+        'service/kg/agent',
+        'service/kg/core',
+        'service/kg/log.ts',
+        'service/kg/react',
+        'service/kg/repo',
+        'service/kg/storage',
+        'service/kg/tools',
+        'web/src/components',
+        'web/src/data',
+        'web/src/kg/storage',
+        'web/src/lib',
+        'web/src/routes',
+      ].sort(),
+    )
   })
 
-  for (const row of SHAPE.filter((r) => r.dir.startsWith('web/'))) {
+  for (const row of SHAPE) {
     it(`still counts ${row.dir} the way the page prints it`, () => {
       const found = under(row.dir)
       expect(found.length, `nothing globbed for ${row.dir}`).toBeGreaterThan(0)
@@ -106,10 +160,21 @@ describe('the glob', () => {
 
 describe('the test count in the section heading', () => {
   it('still counts this app’s test files the way the page prints it', () => {
-    // The suite total spans three workspaces and only one of them is reachable
-    // from here. This app's share is the part that can be held honest, and it is
-    // the part that moved when the /graph page and the export name got covered.
-    const here = Object.keys(sources).filter(isTest)
+    /*
+     * WEB_TEST_FILES is this app's share, so it is counted from the app's own
+     * glob and not from `sources` — which now also holds the service layer, and
+     * counting that in turned 57 into 169. The number on the page says "web",
+     * so the set it is checked against has to say "web" too.
+     */
+    const here = [...Object.keys(globbed), SELF].filter(isTest)
     expect(here.length).toBe(WEB_TEST_FILES)
+  })
+
+  it('counts more test files across the workspaces than in this app alone', () => {
+    // Guards the guard above: if the service glob ever returned nothing, every
+    // service row would measure zero and the equality check would be the only
+    // thing standing. This says the second glob is actually loaded.
+    const everywhere = Object.keys(sources).filter(isTest)
+    expect(everywhere.length).toBeGreaterThan(WEB_TEST_FILES)
   })
 })
