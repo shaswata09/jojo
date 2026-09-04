@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  DEFAULT_THINKING,
+  EMPTY_RETRY_BASE_MS,
+  EMPTY_TURN_ATTEMPTS,
   chatRequest,
   chatUrl,
   cleanToolName,
@@ -16,19 +19,27 @@ import {
   readReply,
   readTurn,
   readTurnFor,
+  emptyRetryDelayMs,
+  emptyTurn,
+  isEmptyTurn,
+  rejectsThinking,
   removeServer,
   renameServer,
   saveServer,
   serverAt,
   serverId,
+  sendTurn,
+  sendsThinking,
   serversFor,
+  thinkingFields,
   truncationOf,
   truncationWarning,
   unconfigured,
   unreachable,
 } from './model-server'
 import { ANTHROPIC_VERSION } from './anthropic'
-import type { Turn } from './model-server'
+import type { ModelResponse, Thinking, Turn } from './model-server'
+import type { ModelSettings } from './provider'
 import type { ModelServer } from './model-server'
 
 const server = (over: Partial<ModelServer> = {}): ModelServer => ({
@@ -180,6 +191,10 @@ describe('the protocol, as data', () => {
       model: 'Qwen/Qwen2.5-7B',
       messages: [{ role: 'user', content: 'hi' }],
       stream: false,
+      // The default, and the reason it is asserted in the EXACT-body test rather
+      // than only in its own: this is what every local request now carries, and
+      // a change to it should have to be made here on purpose.
+      chat_template_kwargs: { enable_thinking: false },
     })
   })
 
@@ -1002,7 +1017,10 @@ describe('tool names with harmony control tokens', () => {
               tool_calls: [
                 {
                   id: 'c1',
-                  function: { name: 'memory_get<|channel|>commentary', arguments: '{"id":"app:1"}' },
+                  function: {
+                    name: 'memory_get<|channel|>commentary',
+                    arguments: '{"id":"app:1"}',
+                  },
                 },
               ],
             },
@@ -1045,7 +1063,9 @@ describe('tool names with harmony control tokens', () => {
           {
             message: {
               content: 'thinking out loud',
-              tool_calls: [{ id: 'c1', function: { name: '<|channel|>commentary', arguments: '{}' } }],
+              tool_calls: [
+                { id: 'c1', function: { name: '<|channel|>commentary', arguments: '{}' } },
+              ],
             },
           },
         ],
@@ -1104,3 +1124,360 @@ describe('tool names with harmony control tokens', () => {
     expect(turn.text).toBe('thinking out loud')
   })
 })
+
+/* -------------------------------------------------------------------------- */
+/* Thinking                                                                    */
+/* -------------------------------------------------------------------------- */
+
+const local = (over: Partial<ModelSettings> = {}): ModelSettings => ({
+  provider: 'openai-compatible',
+  endpoint: 'http://localhost:8000/v1',
+  model: 'Qwen/Qwen3-14B',
+  ...over,
+})
+
+/** The request body, parsed, for a one-line assertion about one field. */
+const bodyOf = (settings: ModelSettings, thinking?: Thinking): Record<string, unknown> =>
+  JSON.parse(
+    chatRequest(
+      settings,
+      [{ role: 'user', content: 'hi' }],
+      undefined,
+      false,
+      thinking === undefined ? {} : { thinking },
+    ).body ?? '{}',
+  ) as Record<string, unknown>
+
+describe('thinking control', () => {
+  /*
+   * The gap this closes, measured before it was written: no dialect sent any
+   * thinking parameter at all, so the one setting Aider publishes for Qwen3 —
+   * and the one the loop's empty-reply guard already blames by name — could not
+   * be expressed by this app in any provider.
+   */
+  it('asks a local OpenAI-compatible server not to think, by default', () => {
+    expect(bodyOf(local())['chat_template_kwargs']).toEqual({ enable_thinking: false })
+    // The default is the setting's value, not a second opinion about it.
+    expect(bodyOf(local(), DEFAULT_THINKING)).toEqual(bodyOf(local()))
+  })
+
+  it('spells the same thing Ollama-native way, and disturbs nothing else', () => {
+    const body = bodyOf(local({ provider: 'ollama', endpoint: 'http://localhost:11434' }))
+    expect(body['think']).toBe(false)
+    /*
+     * The hard-won fields, asserted here because this test is the one that
+     * changed the Ollama body. `shift:false` is what makes a too-large prompt a
+     * readable 400 instead of a silent truncation, and `keep_alive` is what
+     * stops the model unloading between turns; a thinking field that arrived at
+     * the cost of either would be a bad trade made invisibly.
+     */
+    expect(body['shift']).toBe(false)
+    expect(body['keep_alive']).toBe('30m')
+    expect(body['stream']).toBe(false)
+  })
+
+  it('keeps num_ctx exactly as it was — sent only when the user typed one', () => {
+    const off = local({ provider: 'ollama', endpoint: 'http://localhost:11434' })
+    expect(bodyOf(off)['options']).toBeUndefined()
+    expect(bodyOf({ ...off, contextWindow: 32768 })['options']).toEqual({ num_ctx: 32768 })
+  })
+
+  it('asks for LESS thinking where it cannot ask for none — gpt-oss', () => {
+    // gpt-oss always reasons; `enable_thinking:false` is not a thing its template
+    // reads, and `reasoning_effort` is. HIGH is what the gpt-oss report says
+    // "frequently exceeded the 128k context", so the only useful ask is low.
+    expect(bodyOf(local(), 'low')['chat_template_kwargs']).toEqual({ reasoning_effort: 'low' })
+    expect(bodyOf(local({ provider: 'ollama' }), 'low')['think']).toBe('low')
+  })
+
+  it('sends nothing at all on server-default, on either local dialect', () => {
+    expect(bodyOf(local(), 'server-default')['chat_template_kwargs']).toBeUndefined()
+    expect(bodyOf(local({ provider: 'ollama' }), 'server-default')['think']).toBeUndefined()
+    // And says so through the predicate `sendTurn` asks.
+    expect(sendsThinking('openai-compatible', 'server-default')).toBe(false)
+    expect(sendsThinking('openai-compatible', 'off')).toBe(true)
+  })
+
+  /*
+   * THE ONE THAT WOULD COST A WORKING SETUP. `chat_template_kwargs` is a knob a
+   * local inference server passes into a Jinja template; OpenAI's API answers an
+   * unrecognised body field with a 400 rather than ignoring it. Sending it to a
+   * hosted provider would turn every request from a working configuration into a
+   * failure, for a feature those providers do not expose this way anyway.
+   */
+  it('sends nothing to a hosted provider, whatever the mode', () => {
+    for (const provider of ['openai', 'groq', 'openrouter', 'nvidia'] as const) {
+      for (const mode of ['off', 'low'] as const) {
+        expect(thinkingFields(provider, mode)).toEqual({})
+        const body = bodyOf(local({ provider, model: 'gpt-4o', apiKey: 'k' }), mode)
+        expect(body['chat_template_kwargs']).toBeUndefined()
+        expect(body['think']).toBeUndefined()
+        expect(body['reasoning_effort']).toBeUndefined()
+      }
+    }
+  })
+
+  it('sends nothing to Anthropic, whose thinking is opt-in already', () => {
+    const body = bodyOf(local({ provider: 'anthropic', model: 'claude-sonnet-4-5', apiKey: 'k' }))
+    expect(body['thinking']).toBeUndefined()
+    expect(body['chat_template_kwargs']).toBeUndefined()
+    // The request is otherwise the one anthropic.ts already built.
+    expect(body['max_tokens']).toBe(8192)
+  })
+
+  it('reads an unknown provider as the open-ended one rather than throwing', () => {
+    // `providerMeta` falls back to `openai-compatible`, which is local, so a
+    // settings document from a newer build still gets the knob.
+    expect(thinkingFields('something-new', 'off')).toEqual({
+      chat_template_kwargs: { enable_thinking: false },
+    })
+  })
+})
+
+/* -------------------------------------------------------------------------- */
+/* Asking again when the model said nothing                                    */
+/* -------------------------------------------------------------------------- */
+
+/** A recorded pause. No clock in `kg/` (D26), so the delay is injected. */
+const recorder = () => {
+  const waits: number[] = []
+  return { waits, delay: (ms: number) => (waits.push(ms), Promise.resolve()) }
+}
+
+const okTurn = (text: string): Turn => ({ ok: true, text, toolCalls: [], finishReason: 'stop' })
+
+/** An empty turn as it comes off the wire, rather than hand-built. */
+const emptyFromWire = (): Turn =>
+  readTurn({
+    ok: true,
+    status: 200,
+    text: JSON.stringify({ choices: [{ message: { role: 'assistant', content: '' } }] }),
+  })
+
+describe('retrying a turn that said nothing', () => {
+  it('tags an empty turn from both readers, so the retry can recognise one', () => {
+    expect(isEmptyTurn(emptyFromWire())).toBe(true)
+    expect(
+      isEmptyTurn(
+        readOllamaTurn({
+          ok: true,
+          status: 200,
+          text: JSON.stringify({ message: { role: 'assistant', content: '' } }),
+        }),
+      ),
+    ).toBe(true)
+    // The tag, not the sentence. `why` is what code reads; `reason` is copy.
+    const turn = emptyFromWire()
+    expect(turn.ok).toBe(false)
+    if (turn.ok) return
+    expect(turn.why).toBe('empty')
+    expect(turn.kind).toBe('malformed')
+  })
+
+  it('does not call a refusal empty', () => {
+    expect(isEmptyTurn(refusedTurn(500, 'boom'))).toBe(false)
+    expect(isEmptyTurn(okTurn('hello'))).toBe(false)
+    // A body that is not JSON is malformed but not empty: the model said
+    // nothing THIS layer could read, which is a different fact.
+    expect(isEmptyTurn(readTurn({ ok: true, status: 200, text: 'not json' }))).toBe(false)
+  })
+
+  it('asks three times, waiting longer each time, then reports the empty turn', async () => {
+    const { waits, delay } = recorder()
+    const seen: number[] = []
+    const turn = await sendTurn(
+      ({ attempt }) => {
+        seen.push(attempt)
+        return Promise.resolve(emptyFromWire())
+      },
+      { delay },
+    )
+    expect(seen).toEqual([1, 2, 3])
+    expect(EMPTY_TURN_ATTEMPTS).toBe(3)
+    // 500 then 1000. Short on purpose: nothing is being waited FOR.
+    expect(waits).toEqual([EMPTY_RETRY_BASE_MS, EMPTY_RETRY_BASE_MS * 2])
+    expect(waits).toEqual([emptyRetryDelayMs(1), emptyRetryDelayMs(2)])
+
+    expect(turn.ok).toBe(false)
+    if (turn.ok) return
+    /*
+     * STILL AN EMPTY TURN, and this is the assertion the loop depends on.
+     * Exhausting the retries must not promote the failure into a refusal — the
+     * loop's empty-reply guard and everything that reads `why` would then be
+     * looking at the wrong thing, and the user would be told the server said no
+     * when the server said nothing.
+     */
+    expect(turn.why).toBe('empty')
+    expect(turn.kind).toBe('malformed')
+    // And it says how many times, because "three times running" is the fact
+    // that tells a reader jojo already tried the obvious thing.
+    expect(turn.reason).toContain('3 times')
+  })
+
+  it('stops as soon as the model says something', async () => {
+    const { waits, delay } = recorder()
+    let n = 0
+    const turn = await sendTurn(
+      () => {
+        n += 1
+        return Promise.resolve(n === 1 ? emptyFromWire() : okTurn('here it is'))
+      },
+      { delay },
+    )
+    expect(n).toBe(2)
+    expect(waits).toEqual([EMPTY_RETRY_BASE_MS])
+    expect(turn.ok).toBe(true)
+    if (!turn.ok) return
+    expect(turn.text).toBe('here it is')
+  })
+
+  /*
+   * The narrow scope, asserted. NVIDIA's entry in the provider table warns in
+   * writing that "a silent retry against a rate limit is how one slow answer
+   * becomes four", and every failure below is a FACT about the request or the
+   * server: asking again produces the same fact more slowly.
+   */
+  it('retries nothing else — not a refusal, a rate limit, or an unreadable body', async () => {
+    for (const failure of [
+      refusedTurn(500, 'boom'),
+      refusedTurn(429, 'Too Many Requests'),
+      refusedTurn(401, 'invalid api key'),
+      readTurn({ ok: true, status: 200, text: 'not json' }),
+      unreachable('http://x/v1', 'connection refused', false),
+    ]) {
+      const { waits, delay } = recorder()
+      let n = 0
+      const turn = await sendTurn(
+        () => {
+          n += 1
+          return Promise.resolve(failure)
+        },
+        { delay },
+      )
+      expect(n).toBe(1)
+      expect(waits).toEqual([])
+      expect(turn).toEqual(failure)
+    }
+  })
+
+  it('takes the caller at its word about how many attempts', async () => {
+    const { waits, delay } = recorder()
+    let n = 0
+    await sendTurn(
+      () => {
+        n += 1
+        return Promise.resolve(emptyFromWire())
+      },
+      { delay, attempts: 1 },
+    )
+    // One send, no wait: a caller that asked for one ask gets one ask.
+    expect(n).toBe(1)
+    expect(waits).toEqual([])
+  })
+
+  it('re-asks without the thinking field when the server rejects it', async () => {
+    /*
+     * WHY THIS EXISTS AT ALL. Some Ollama builds refuse `think` on a model with
+     * no thinking capability — Gemma 3 is exactly such a model and is one of the
+     * three jojo is built for — and no client can know a model's capabilities
+     * before it asks. Without this recovery a default of `off` would break the
+     * commonest local setup there is.
+     */
+    const { waits, delay } = recorder()
+    const asked: Thinking[] = []
+    const turn = await sendTurn(
+      ({ thinking }) => {
+        asked.push(thinking)
+        return Promise.resolve(
+          thinking === 'server-default'
+            ? okTurn('fine without it')
+            : refusedTurn(400, '"think" option is not supported by this model'),
+        )
+      },
+      { delay, provider: 'ollama' },
+    )
+    expect(asked).toEqual(['off', 'server-default'])
+    // No pause: the server answered at once and the fix is deterministic.
+    expect(waits).toEqual([])
+    expect(turn.ok).toBe(true)
+  })
+
+  it('does not spend the retry budget on the downgrade', async () => {
+    // The downgraded send asked nothing of the model — the request never
+    // reached one — so the three attempts must still be three.
+    const { delay } = recorder()
+    const asked: Thinking[] = []
+    await sendTurn(
+      ({ thinking }) => {
+        asked.push(thinking)
+        return Promise.resolve(
+          thinking === 'off' ? refusedTurn(400, 'unknown field think') : emptyFromWire(),
+        )
+      },
+      { delay, provider: 'ollama' },
+    )
+    expect(asked).toEqual(['off', 'server-default', 'server-default', 'server-default'])
+  })
+
+  it('downgrades once and then gives up, rather than looping', async () => {
+    const { delay } = recorder()
+    let n = 0
+    const turn = await sendTurn(
+      () => {
+        n += 1
+        return Promise.resolve(refusedTurn(400, 'thinking is not supported'))
+      },
+      { delay, provider: 'ollama' },
+    )
+    // Two sends: the original and the one downgrade. A server that refuses both
+    // is refusing for another reason, and the refusal is reported as itself.
+    expect(n).toBe(2)
+    expect(turn.ok).toBe(false)
+    if (turn.ok) return
+    expect(turn.kind).toBe('refused')
+  })
+
+  it('does not re-send when the request carried no thinking field anyway', async () => {
+    /*
+     * A hosted provider is sent nothing, so `off` and `server-default` build the
+     * same body — a second identical request could only waste a round trip on a
+     * paid API. The refusal below mentions thinking and is still not acted on.
+     */
+    const { delay } = recorder()
+    let n = 0
+    await sendTurn(
+      () => {
+        n += 1
+        return Promise.resolve(refusedTurn(400, 'thinking blocks are not supported here'))
+      },
+      { delay, provider: 'openai' },
+    )
+    expect(n).toBe(1)
+  })
+
+  it('reads a rejection off the server’s words, not jojo’s', () => {
+    expect(rejectsThinking(refusedTurn(400, '"think" option is not supported'))).toBe(true)
+    expect(rejectsThinking(refusedTurn(400, 'unknown kwarg chat_template_kwargs'))).toBe(true)
+    expect(rejectsThinking(refusedTurn(400, 'reasoning_effort must be one of low, medium'))).toBe(
+      true,
+    )
+    // Not every refusal, and not a failure that never reached the server.
+    expect(rejectsThinking(refusedTurn(400, 'model not found'))).toBe(false)
+    expect(rejectsThinking(refusedTurn(429, 'Too Many Requests'))).toBe(false)
+    expect(rejectsThinking(unreachable('http://x/v1', 'no route', true))).toBe(false)
+    expect(rejectsThinking(okTurn('thinking about it'))).toBe(false)
+  })
+
+  it('builds the same empty failure from one place', () => {
+    // `emptyTurn` is shared by both readers so the tag cannot be set in one and
+    // forgotten in the other, which is how it was before: the sentence was
+    // written twice and nothing but the sentence identified the case.
+    expect(emptyFromWire()).toEqual(emptyTurn())
+  })
+})
+
+/** A refusal as `readTurn` builds one, so the tests never hand-roll a reason. */
+function refusedTurn(status: number, body: string): Turn {
+  const response: ModelResponse = { ok: false, status, text: body }
+  return readTurn(response)
+}

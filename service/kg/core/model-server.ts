@@ -399,6 +399,18 @@ export const FAILURE_KINDS = [
   'blocked',
   'refused',
   'malformed',
+  /*
+   * A turn with no prose and no tool call, on a 200.
+   *
+   * Reported as `malformed` — that is still what it IS, a shape this layer
+   * cannot use — but named separately here because it is the one failure worth
+   * simply asking again for, and `sendTurn` below does. Cline retries this three
+   * times with backoff for the same reason: it was first seen on Ollama, and the
+   * cause is the model rather than the server. Without a name of its own the only
+   * way to recognise it from outside was to match on the sentence shown to the
+   * user, which is exactly what the note on `why` argues against.
+   */
+  'empty',
 ] as const
 
 /*
@@ -467,6 +479,136 @@ export const modelsRequest = (settings: ModelSettings): ModelRequest => {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Thinking                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * How much the model should reason to itself before it answers.
+ *
+ * ## Why this is a setting at all
+ *
+ * Because on the models jojo is built for, thinking is not free and is often a
+ * loss. Aider publishes recommended settings for Qwen3 that read
+ * `enable_thinking: false`, temp 0.7, top_p 0.8, top_k 20 — the thinking-ON
+ * configuration scored LOWER on its benchmark — and the gpt-oss report says HIGH
+ * reasoning "frequently exceeded the 128k context". Neither is a claim about
+ * intelligence; both are claims about a budget being spent somewhere other than
+ * the answer.
+ *
+ * This app feels that spend twice over. Its prompts carry a tool catalogue, so
+ * the input is already large, and its answers are short — so a model that thinks
+ * for a thousand tokens before speaking hits the server's reply limit MID-THOUGHT
+ * and returns a turn with no content and no tool call. That is not hypothetical:
+ * it is `emptyTurn` above, it is what `loop.ts`'s empty-reply guard already
+ * blames by name ("Models that reason before they speak — Qwen3, GPT-OSS,
+ * DeepSeek-R1 — do this when the server's reply limit is small"), and it is the
+ * failure `sendTurn` below retries.
+ *
+ * ## The three modes
+ *
+ * `off` asks the server not to think. `low` is for the models that cannot be
+ * asked to stop — gpt-oss always reasons, and the only thing a client can do is
+ * ask for less of it. `server-default` sends nothing at all and is the honest
+ * escape hatch: whatever the deployment was configured with stands.
+ */
+export const THINKING_MODES = ['off', 'low', 'server-default'] as const
+
+export type Thinking = (typeof THINKING_MODES)[number]
+
+/**
+ * Off, because the measurements above all point the same way and because the
+ * failure of the other choice is the worst kind: a blank reply that reads as a
+ * stupid assistant rather than as a setting.
+ *
+ * A DEFAULT AND NOT A HARDCODE. Somebody running a reasoning model on a server
+ * with a generous reply limit is entitled to the reasoning — it is exactly the
+ * setup the mode exists for — so the value travels as a parameter and this is
+ * only what is used when nobody said. The one thing that would be wrong is
+ * having no way to say.
+ */
+export const DEFAULT_THINKING: Thinking = 'off'
+
+/** What else a caller may say about a chat request. */
+export type ChatOptions = {
+  /** Defaults to `DEFAULT_THINKING`. See `thinkingFields` for what is sent. */
+  readonly thinking?: Thinking
+}
+
+/**
+ * The body fields that carry a thinking mode to THIS provider, or none.
+ *
+ * Every server spells it differently, which is why this is a table and not a
+ * constant:
+ *
+ *   - **Ollama native** takes a top-level `think`, boolean or an effort word.
+ *     Its OpenAI shim takes nothing — it discards keys it does not know — which
+ *     is the same reason `ollamaChatRequest` exists at all.
+ *   - **vLLM, SGLang, LM Studio and llama.cpp** pass `chat_template_kwargs`
+ *     straight into the model's own Jinja chat template, and `enable_thinking`
+ *     is the variable Qwen3's template reads. A template that does not know the
+ *     name ignores it: an unused kwarg is not an error in Jinja.
+ *   - **gpt-oss** has no off switch; its template reads `reasoning_effort`, so
+ *     `low` sets that instead of pretending `false` will be honoured.
+ *
+ * ## Why nothing is sent to a cloud provider
+ *
+ * Not an oversight, and not laziness — it is the difference between a request
+ * that works and a 400. OpenAI's API rejects an unrecognised body field outright
+ * ("Unrecognized request argument supplied"), and a self-hosted server ignoring
+ * one is a courtesy rather than a rule. Sending a knob that only a local
+ * inference server understands to a hosted API would turn a working setup into a
+ * failing one for a benefit those providers do not offer anyway: Anthropic's
+ * extended thinking is opt-IN and jojo never opts in, so on that dialect
+ * "thinking off" is already true, and it is why the Anthropic branch of
+ * `chatRequest` passes nothing.
+ *
+ * The gate is `cloud`, a fact the provider table already states, rather than a
+ * new list to keep in step with it.
+ */
+export function thinkingFields(
+  provider: string,
+  thinking: Thinking = DEFAULT_THINKING,
+): Record<string, unknown> {
+  if (thinking === 'server-default') return {}
+  const meta = providerMeta(provider)
+
+  if (meta.dialect === 'ollama') {
+    /*
+     * `false` rather than the string 'off': native takes a boolean here, and an
+     * effort word only where the model has efforts to choose between.
+     *
+     * NOT VERIFIED AGAINST A LIVE OLLAMA — there is none on the machine this was
+     * written on — and the failure mode if a build rejects `think` on a model
+     * with no thinking capability is a 400 naming it. That is precisely what
+     * `rejectsThinking` reads and what `sendTurn` recovers from by re-asking
+     * without the field, so the cost of being wrong here is one round trip
+     * rather than a provider that cannot be used.
+     */
+    return { think: thinking === 'off' ? false : 'low' }
+  }
+
+  if (meta.dialect === 'openai' && !meta.cloud) {
+    return {
+      chat_template_kwargs:
+        thinking === 'off' ? { enable_thinking: false } : { reasoning_effort: 'low' },
+    }
+  }
+
+  return {}
+}
+
+/**
+ * Whether a mode actually puts anything on the wire for this provider.
+ *
+ * Exists for `sendTurn`, which must not "recover" by re-sending a request that
+ * was identical the first time: on a cloud provider `off` and `server-default`
+ * build the same body, so a refusal that happens to mention thinking is about
+ * something else.
+ */
+export const sendsThinking = (provider: string, thinking: Thinking): boolean =>
+  Object.keys(thinkingFields(provider, thinking)).length > 0
+
 /**
  * A request to whichever provider is configured.
  *
@@ -493,16 +635,33 @@ export const chatRequest = (
    */
   tools?: readonly unknown[],
   browser = false,
+  /**
+   * Everything that is a preference rather than a fact about the conversation.
+   *
+   * An object rather than a fifth positional flag: `chatRequest(s, m, t, true,
+   * 'off')` at a call site says nothing about what the last argument means, and
+   * this is a parameter a reader has to be able to spot in a diff.
+   */
+  options: ChatOptions = {},
 ): ModelRequest => {
   const meta = providerMeta(settings.provider)
   const endpoint = endpointOf(settings)
   const key = (settings.apiKey ?? '').trim()
+  const thinking = options.thinking ?? DEFAULT_THINKING
 
   if (meta.dialect === 'anthropic') {
+    /*
+     * No thinking field, and that is the correct translation rather than a gap.
+     * Anthropic's extended thinking is opt-IN — a request without a `thinking`
+     * block does not think — so `off` is already what this sends, and `low`
+     * would mean inventing a budget nobody asked for. `anthropic.ts` owns this
+     * request and says the same in its header under "what is NOT translated".
+     */
     return anthropicChatRequest({ ...settings, endpoint }, messages, tools, browser)
   }
 
-  if (meta.dialect === 'ollama') return ollamaChatRequest(settings, endpoint, messages, tools)
+  if (meta.dialect === 'ollama')
+    return ollamaChatRequest(settings, endpoint, messages, tools, thinking)
 
   return {
     url: chatUrl(endpoint),
@@ -518,6 +677,9 @@ export const chatRequest = (
       model: settings.model.trim(),
       messages,
       ...(tools && tools.length > 0 ? { tools, tool_choice: 'auto' } : {}),
+      // Sent only where it means something — see `thinkingFields`, which
+      // answers with nothing for every hosted provider.
+      ...thinkingFields(settings.provider, thinking),
       // Streaming would be nicer and is a bigger change: it needs a reader on a
       // platform whose fetch does not give one without a polyfill. A local model
       // answers fast enough that the wait is tolerable, and a partial answer that
@@ -555,7 +717,8 @@ function ollamaChatRequest(
   settings: ModelSettings,
   endpoint: string,
   messages: readonly ChatMessage[],
-  tools?: readonly unknown[],
+  tools: readonly unknown[] | undefined,
+  thinking: Thinking,
 ): ModelRequest {
   // A stored endpoint may carry the `/v1` the shim wanted; native must not.
   const base = normaliseEndpoint(endpoint).replace(/\/v\d+$/, '')
@@ -575,6 +738,10 @@ function ollamaChatRequest(
       shift: false,
       // Stops the model unloading between turns of one conversation.
       keep_alive: '30m',
+      // A top-level `think`, which is native's spelling and the shim's nothing.
+      // Absent entirely on `server-default`, so a deployment that was set up
+      // deliberately is left alone.
+      ...thinkingFields(settings.provider, thinking),
       ...(typeof explicit === 'number' && explicit > 0 ? { options: { num_ctx: explicit } } : {}),
     }),
   }
@@ -702,6 +869,34 @@ const refused = (status: number, body: string, retryAfter: string | null = null)
           kind: 'refused',
           reason: `The server answered ${String(status)}${body.trim() ? ` — ${body.trim().slice(0, 200)}` : ''}.`,
         }
+
+/**
+ * A turn with nothing in it: no prose, no tool call, and a 200 in front of it.
+ *
+ * ONE CONSTRUCTOR FOR BOTH READERS, and `why` is why it exists. This sentence
+ * was written out twice — once in `readTurn`, once in `readOllamaTurn` — so the
+ * only way for a caller to recognise the case was to match the copy, and this
+ * file already argues on `ModelFailure.why` that turning a sentence written for
+ * a human into an API means the next edit to the wording silently changes what
+ * the code does. Here it would silently switch the retry off.
+ *
+ * MEASURED CAUSE, and it is not a broken server. A model that reasons before it
+ * speaks spends its whole reply budget thinking, the server stops it at the
+ * limit, and what arrives is an assistant message with an empty `content` and no
+ * calls — jojo's own Qwen3 14B benchmark runs did this, which is what the loop's
+ * empty-reply guard already blames. Cline ships a three-attempt retry for the
+ * same failure on Ollama. Asking again very often works, which is the whole
+ * argument for tagging it rather than merely reporting it.
+ */
+export const emptyTurn = (): ModelFailure => ({
+  ok: false,
+  // Unchanged: `malformed` is what every existing caller branches on, and a turn
+  // that says nothing genuinely is a shape this layer cannot use. Only the
+  // finer `why` is new, so nothing downstream behaves differently by accident.
+  kind: 'malformed',
+  why: 'empty',
+  reason: 'The model returned an empty turn — no answer and no tool call.',
+})
 
 const parse = (text: string): unknown => {
   try {
@@ -908,11 +1103,7 @@ export function readOllamaTurn(response: ModelResponse): Turn {
   }
 
   if (content === null && toolCalls.length === 0) {
-    return {
-      ok: false,
-      kind: 'malformed',
-      reason: 'The model returned an empty turn — no answer and no tool call.',
-    }
+    return emptyTurn()
   }
 
   const done = (payload as { done_reason?: unknown }).done_reason
@@ -948,11 +1139,7 @@ export function readTurn(response: ModelResponse): Turn {
   const content = readContent(message)
   const toolCalls = readToolCalls(message)
   if (content === null && toolCalls.length === 0) {
-    return {
-      ok: false,
-      kind: 'malformed',
-      reason: 'The model returned an empty turn — no answer and no tool call.',
-    }
+    return emptyTurn()
   }
   const finish = (choice as { finish_reason?: unknown }).finish_reason
   return {
@@ -1224,4 +1411,226 @@ export const unconfigured = (): ModelFailure => ({
   kind: 'unconfigured',
   why: 'unconfigured',
   reason: 'No model is connected. Settings is where the endpoint goes.',
+})
+
+/* -------------------------------------------------------------------------- */
+/* Asking again when the model said nothing                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A pause, injected.
+ *
+ * D26, and the same rule as `now`: `check-platform` bans `setTimeout` from core
+ * and tools because a module that can schedule is a module whose tests have to
+ * wait. The app passes `(ms) => new Promise((r) => setTimeout(r, ms))`; a test
+ * passes a function that records the number and returns immediately, which is
+ * how the backoff below is asserted in microseconds rather than seconds.
+ */
+export type Delay = (ms: number) => Promise<void>
+
+/**
+ * Three sends in total — one ask and two retries.
+ *
+ * Cline's number, and it retries the identical failure for the identical reason.
+ * It is a ceiling rather than a target: the second attempt is the one that
+ * usually works, because what went wrong the first time was a reply budget spent
+ * on reasoning rather than anything about the request.
+ *
+ * Not higher, because each attempt is a whole prompt through a local model —
+ * seconds, not milliseconds — and a fourth try that fails the same way costs a
+ * user more waiting to reach the same sentence.
+ */
+export const EMPTY_TURN_ATTEMPTS = 3
+
+/** The first wait. Doubles per retry — see `emptyRetryDelayMs`. */
+export const EMPTY_RETRY_BASE_MS = 500
+
+/**
+ * How long to wait before asking again, after `attempt` empty turns.
+ *
+ * 500ms then 1s. Deliberately short: this is not a rate limit, it is a model
+ * that produced nothing, and there is nothing to wait FOR — the pause exists so
+ * that a server which is genuinely unwell (a model mid-unload, a machine
+ * swapping) is not hit three times inside a millisecond, and so that the retries
+ * are visibly a retry rather than a spin.
+ *
+ * No jitter, and none is wanted. Jitter spreads a herd of clients off one clock;
+ * jojo is one client talking to one server on the same desk, and `kg/` has no
+ * randomness to spread it with (D26).
+ */
+export const emptyRetryDelayMs = (attempt: number): number =>
+  EMPTY_RETRY_BASE_MS * 2 ** Math.max(0, attempt - 1)
+
+/**
+ * Whether this failure is the model having said nothing at all.
+ *
+ * Reads the tag `emptyTurn` sets, never the sentence. NOTE for whoever owns
+ * `anthropic.ts`: its reader builds the same sentence by hand without the tag,
+ * so an empty turn from Claude is not retried. That is the safe direction to be
+ * wrong in — a hosted model with a large reply budget is not the one this failure
+ * was measured on — but it is a real gap, and one line of `why: 'empty'` there
+ * closes it.
+ */
+export const isEmptyTurn = (turn: Turn): boolean => !turn.ok && turn.why === 'empty'
+
+/**
+ * A server complaining about the thinking field itself.
+ *
+ * Matching on the server's own words, which is a different thing from matching
+ * on ours: this reads a body jojo quoted rather than a sentence jojo wrote, and
+ * the shape of an API's error is that API's contract. `refused` puts up to 200
+ * characters of it in `reason`, which is where the name lands.
+ *
+ * WHY IT IS NEEDED AT ALL. `think` on Ollama is rejected by some builds for a
+ * model with no thinking capability — Gemma 3 is exactly such a model and is one
+ * of the three jojo is built for — and no client can know a model's capabilities
+ * before it asks. Without this, a default of `off` would break the commonest
+ * local setup there is; with it, the cost of guessing wrong is one extra round
+ * trip and a request that then succeeds.
+ *
+ * Deliberately loose. A false positive costs one repeated request without the
+ * field, which is the same request jojo would have sent a week ago; a false
+ * negative costs the user a provider that will not answer at all.
+ */
+export const rejectsThinking = (turn: Turn): boolean =>
+  !turn.ok &&
+  turn.kind === 'refused' &&
+  /think|reasoning_effort|chat_template_kwargs/i.test(turn.reason)
+
+/**
+ * One whole send-and-parse, supplied by the app.
+ *
+ * A callback rather than a request, because everything between the two lives in
+ * the app: the relay decision, the abort signal, streaming, `readTurnFor` and
+ * `guardTruncation`. Handing this layer a `fetch` would put the network in core;
+ * handing it a prebuilt `ModelRequest` would leave it unable to rebuild one with
+ * a different thinking mode, which is half of what `sendTurn` does.
+ *
+ * `thinking` is passed IN so the caller builds the request with it — see
+ * `chatRequest`'s `options`. `attempt` is 1-based and is there for the caller to
+ * report with, nothing here reads it back.
+ */
+export type TurnAttempt = (plan: {
+  readonly attempt: number
+  readonly thinking: Thinking
+}) => Promise<Turn>
+
+export type SendTurnOptions = {
+  /** Required, and injected. See `Delay`. */
+  readonly delay: Delay
+  /** Defaults to `DEFAULT_THINKING`. */
+  readonly thinking?: Thinking
+  /** Total sends before giving up. Defaults to `EMPTY_TURN_ATTEMPTS`. */
+  readonly attempts?: number
+  /**
+   * The provider, when the caller knows it — and it always does.
+   *
+   * Optional only so that a test can drive this with a bare thunk. With it, the
+   * thinking downgrade fires only when a thinking field was actually sent; with
+   * it absent the check falls back to the mode alone, which is right more often
+   * than not and never unsafe.
+   */
+  readonly provider?: string
+}
+
+/**
+ * Ask, and ask again if the model said nothing.
+ *
+ * ## The failure
+ *
+ * A turn with no content and no tool call, on a 200. Measured on Ollama by
+ * Cline, which ships a three-attempt retry for it, and reproduced here on Qwen3
+ * 14B: the model reasons until the reply limit stops it and returns an empty
+ * message. jojo errored on the first one, which turned a transient into a dead
+ * end for the user.
+ *
+ * ## What it deliberately does not retry
+ *
+ * Anything else. A refusal, a rate limit, a truncated prompt, an unreachable
+ * server and a malformed body are all left exactly as they were: they are facts
+ * about the request or the server, and asking again produces the same fact more
+ * slowly. NVIDIA's entry in the provider table makes the point in writing — "a
+ * silent retry against a rate limit is how one slow answer becomes four" — and
+ * this retries a strictly narrower thing than that warning forbids.
+ *
+ * ## Exhaustion is still an empty turn
+ *
+ * The failure that comes back after the last attempt keeps `why: 'empty'` and
+ * `kind: 'malformed'`, so nothing downstream mistakes it for the server refusing
+ * — it is the same failure jojo would have reported immediately before, with the
+ * count added and the cause named. The loop's own empty-reply guard therefore
+ * still fires, on a turn that has now genuinely been asked for three times.
+ *
+ * ## The one thing it changes about the request
+ *
+ * A server that rejects the thinking field is re-asked without it, once, with no
+ * delay — the server answered straight away and the fix is deterministic, so a
+ * pause would only be latency. That send does not count against the retry
+ * budget, because nothing was asked of the model: the request never reached one.
+ */
+export async function sendTurn(attempt: TurnAttempt, options: SendTurnOptions): Promise<Turn> {
+  const total = Math.max(1, options.attempts ?? EMPTY_TURN_ATTEMPTS)
+  /*
+   * Every send, including the one downgrade, which does not count as an attempt.
+   *
+   * A SECOND COUNTER AND NOT A BOOLEAN, and the reason is a measurement rather
+   * than taste. The first version reasoned its way out of a `for(;;)`: the
+   * downgrade sets `thinking` to the one mode that puts nothing on the wire, so
+   * `carried` is false on the next pass and the branch is unreachable. That is
+   * true, and it was still the wrong thing to rely on. Mutation-testing this
+   * function with the assignment changed to a no-op did not fail a test — it
+   * HUNG, and no test timeout fired: an `await` over a delay that resolves
+   * immediately never yields to the macrotask queue, so vitest's own timer
+   * cannot run and the whole suite stops dead. In an app that is a frozen tab.
+   *
+   * A counter cannot be reasoned wrong. It bounds the loop by arithmetic no
+   * matter what the branches below do.
+   *
+   * NOTHING REACHES IT, and that is the point rather than a hole in the tests.
+   * Deleting `calls < ceiling` and `calls >= ceiling` is the one mutant of this
+   * function that survives the suite: no input can get there while the branches
+   * are correct. It is a bound, not a behaviour — the case for keeping it is the
+   * mutant above, which is not a wrong answer but a stopped process.
+   */
+  const ceiling = total + 1
+  let thinking = options.thinking ?? DEFAULT_THINKING
+  let sends = 0
+
+  for (let calls = 1; ; calls += 1) {
+    const turn = await attempt({ attempt: sends + 1, thinking })
+    if (turn.ok) return turn
+
+    const carried =
+      options.provider === undefined
+        ? thinking !== 'server-default'
+        : sendsThinking(options.provider, thinking)
+    if (carried && rejectsThinking(turn) && calls < ceiling) {
+      thinking = 'server-default'
+      continue
+    }
+
+    sends += 1
+    if (!isEmptyTurn(turn)) return turn
+    if (sends >= total || calls >= ceiling) return exhaustedEmptyTurn(total)
+    await options.delay(emptyRetryDelayMs(sends))
+  }
+}
+
+/**
+ * The sentence for a model that said nothing however often it was asked.
+ *
+ * Names the count, because "it returned nothing" and "it returned nothing three
+ * times" are different facts and only the second one tells the reader that jojo
+ * already tried the obvious thing. The rest is the loop's own wording for this
+ * cause, which was written against the same measurement and should not be said
+ * two different ways in one app.
+ */
+export const exhaustedEmptyTurn = (attempts: number): ModelFailure => ({
+  ok: false,
+  kind: 'malformed',
+  why: 'empty',
+  reason:
+    `The model returned an empty turn — no answer and no tool call — ${String(attempts)} times running. ` +
+    'Models that reason before they speak — Qwen3, GPT-OSS, DeepSeek-R1 — do this when the server’s ' +
+    'reply limit is small: raise it, or run the model with thinking turned off. Nothing was changed.',
 })

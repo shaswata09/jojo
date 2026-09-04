@@ -311,9 +311,25 @@ describe('carrying the tool set between turns', () => {
      */
     const runs = createAgentRuns()
     const seen: number[] = []
+    /*
+     * The answer is a QUESTION, and it has to be one now.
+     *
+     * This fixture is a model that calls nothing and says "done", which is
+     * exactly the shape `verify-gate.ts` was built to catch — "add a reminder
+     * for Thursday" answered with a bare completion and no write is the 44% of
+     * the benchmark `bench-score.ts` records an agent scoring for no work. The
+     * gate therefore spends one extra round sending it back, and `seen` grew a
+     * third entry that belongs to turn ONE, so `seen[1]` stopped being turn
+     * two's offer and this test stopped measuring the carry it is named for.
+     *
+     * A clarifying question is the one answer the gate must always accept — the
+     * `ambiguity` conversations score asking as the correct move — so it keeps
+     * one round per turn and leaves the assertions below measuring what they
+     * say.
+     */
     const llm = () => async (_m: readonly ChatMessage[], tools: readonly unknown[]) => {
       seen.push(tools.length)
-      return answering('done')
+      return answering('Which day did you mean?')
     }
 
     runs.start({ threadId: A, prompt: 'add a reminder for Thursday', history: [], llm, host })

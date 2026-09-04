@@ -295,6 +295,51 @@ describe('the stops', () => {
     expect(run.stopped).toBe('aborted')
     expect(h.memory().nodes()).toHaveLength(0)
   })
+
+  /*
+   * Stop pressed DURING a turn, not before one — the case the check inside the
+   * call loop exists for, and the one nothing here could fail on.
+   *
+   * The test above sets `aborted` while the model is thinking, so the per-ROUND
+   * check catches it and the per-CALL check never runs. Deleting the per-call
+   * check therefore changed no result: a mutation run over this file killed 28
+   * of 30 mutants and this was one of the two that lived. The guard's own
+   * comment records the measurement it was written for — "a model that requested
+   * three writes performed all three after the user pressed Stop" — so it is a
+   * real guard that simply had no test.
+   *
+   * Two writes in ONE turn, and the signal is tripped by the first one landing.
+   * With the check in place the second never runs; with it removed, both do.
+   */
+  it('stops between two calls of the same turn, not just between rounds', async () => {
+    const h = host()
+    const controller = { aborted: false }
+    const turn: Turn = {
+      ok: true,
+      text: null,
+      finishReason: 'tool_calls',
+      toolCalls: [1, 2].map((n) => ({
+        id: `c${String(n)}`,
+        name: 'keyword_create',
+        args: { name: `k${String(n)}` },
+        raw: `{"name":"k${String(n)}"}`,
+      })),
+    }
+    const run = await runAgent({
+      host: h,
+      llm: scripted([turn, says('done')]),
+      history: [],
+      prompt: 'add two keywords',
+      gate: 'none',
+      signal: controller,
+      onEvent: (e) => {
+        if (e.type === 'step' && e.step.status === 'done') controller.aborted = true
+      },
+    })
+    expect(run.stopped).toBe('aborted')
+    expect(run.steps).toHaveLength(1)
+    expect(h.memory().nodes().filter((n) => n.type === 'keyword')).toHaveLength(1)
+  })
 })
 
 describe('the approval gate', () => {
@@ -957,10 +1002,28 @@ describe('a model going in circles', () => {
      * nothing, and the run then blames the round cap rather than the loop.
      */
     const { run, llm, events } = await looping()
-    expect(run.stopped).toBe('error')
+    // `'stuck'` and not `'error'`. The three bad endings want three different
+    // reactions, and retrying a run that ended in a circle is the one known not
+    // to help — see `AgentRun['stopped']`.
+    expect(run.stopped).toBe('stuck')
     expect(llm.mock.calls.length).toBeLessThan(8)
     expect((events.at(-1) as { reason: string }).reason).toMatch(/same arguments/)
+    // The REGISTRY name. The wire spelling with underscores appears nowhere a
+    // person reads, and this sentence is read by a person.
     expect((events.at(-1) as { reason: string }).reason).toContain('memory.overview')
+  })
+
+  /*
+   * FIVE, not three, and the number moved deliberately.
+   *
+   * Gemini CLI's own threshold is five; twice is legitimate in this app's
+   * read-write-verify pattern; and `maxSteps` is eight, so stopping at five
+   * still leaves three rounds for the model to do something else. The old limit
+   * of three was chosen when the only intervention was a stop.
+   */
+  it('spends five rounds on an identical call, not the whole budget', async () => {
+    const { llm } = await looping()
+    expect(llm.mock.calls.length).toBe(5)
   })
 
   it('tells the model it is repeating, before giving up on it', async () => {
@@ -971,7 +1034,85 @@ describe('a model going in circles', () => {
      * to it as confirmation.
      */
     const { sent } = await looping()
-    expect(sent.some((t) => /second time you have called/.test(t))).toBe(true)
+    expect(sent.some((t) => /called memory\.overview with exactly these arguments 3 times/.test(t))).toBe(
+      true,
+    )
+  })
+
+  /*
+   * THE FAILURE THE OLD COUNTER COULD NOT SEE, and the reason this whole thing
+   * was rebuilt rather than retuned.
+   *
+   * `loop.ts` fingerprinted `${name}\u0000${call.raw}` — the RAW BYTES of the
+   * arguments. A sampler at any temperature above zero puts a different amount
+   * of whitespace inside the braces each time, and eight different byte strings
+   * are eight different calls, so the guard never fired: probed against the real
+   * loop, this fixture ran all 8 rounds and ended as `'cap'`.
+   */
+  it('sees through jittered whitespace, which the raw-bytes fingerprint did not', async () => {
+    const { onEvent } = collect()
+    let n = 0
+    const llm = vi.fn(() => {
+      n += 1
+      return Promise.resolve({
+        ok: true,
+        text: null,
+        finishReason: 'tool_calls',
+        // The same call every round. Only the formatting moves.
+        toolCalls: [{ id: `c${String(n)}`, name: 'memory_overview', args: {}, raw: `{${' '.repeat(n)}}` }],
+      } as Turn)
+    })
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    expect(run.stopped).toBe('stuck')
+    expect(llm.mock.calls.length).toBe(5)
+  })
+
+  /*
+   * THE FINGERPRINT IS TAKEN OVER WHAT RAN, not over what arrived.
+   *
+   * A model alternating `{"limit":5}` and `{"limit":"5"}` is making ONE call
+   * twice, because repair has already made them the same call by the time it
+   * runs. Fingerprinting `call.args` instead of `step.args` sees two, which
+   * turns a plain repeat into a two-step cycle and costs three more rounds to
+   * notice — 8 instead of 5, measured by flipping the line.
+   */
+  it('counts a call repaired into the same shape as the same call', async () => {
+    const { onEvent } = collect()
+    let n = 0
+    const llm = vi.fn(() => {
+      n += 1
+      return Promise.resolve(
+        calls('memory_list', { type: 'application', limit: n % 2 === 0 ? 5 : '5' }, `c${String(n)}`),
+      )
+    })
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    expect(run.stopped).toBe('stuck')
+    expect(llm.mock.calls.length).toBe(5)
+  })
+
+  /*
+   * A FAILING call is stopped sooner than a succeeding one, and this test is
+   * what proves the loop actually passes `ok`.
+   *
+   * `StuckObservation.ok` is optional and defaults to the succeeding schedule —
+   * the safe direction for an integrator who forgets it, and a silent loss of
+   * the whole failing-spiral rule. A call that failed identically twice will
+   * fail a third time; the arguments are the problem and the timing is not.
+   */
+  it('gives up sooner on a call that keeps failing than on one that keeps working', async () => {
+    const { onEvent } = collect()
+    let n = 0
+    const llm = vi.fn(() => {
+      n += 1
+      return Promise.resolve(
+        calls('application_stage_set', { id: 'app:nope', stage: 'interview' }, `c${String(n)}`),
+      )
+    })
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    expect(run.steps.every((s) => s.status === 'failed')).toBe(true)
+    expect(run.stopped).toBe('stuck')
+    // Four, against the five an identical SUCCEEDING call gets.
+    expect(llm.mock.calls.length).toBe(4)
   })
 
   it('leaves the same tool alone when the arguments differ', async () => {
@@ -1286,8 +1427,17 @@ describe('the long-conversation harness', () => {
      * where `offeredFor` REPLACES with the chooser's picks rather than unioning
      * them, so a chooser that returns only reads leaves the model no way to act.
      *
-     * Measured on a live model: "I am withdrawing from Baylor" abstains, and
+     * Measured on a live model: "I am withdrawing from Baylor" abstained, and
      * the reply claimed the application had been closed having called nothing.
+     *
+     * THAT SENTENCE NO LONGER ABSTAINS, and the fixture moved rather than the
+     * rule. `retrieve.ts` learned "withdrawing" as an outcome word, so it now
+     * selects seven application tools — which is the narrowing doing its job and
+     * leaves this test, whose whole subject is abstention, measuring nothing.
+     * Re-measured with `select` directly: "I heard back from Baylor this
+     * morning" recognises no tool word and returns null, which is the path this
+     * is about. If it ever stops abstaining, move the fixture again; do not
+     * relax the assertion.
      */
     let asked = 0
     const { llm } = seeing()
@@ -1296,7 +1446,7 @@ describe('the long-conversation harness', () => {
       llm,
       history: [],
       // Nothing here is a tool word — this is the abstention path.
-      prompt: 'I am withdrawing from Baylor',
+      prompt: 'I heard back from Baylor this morning',
       onEvent: () => {},
       window: 8_000,
       retrieve: { carried: null },
@@ -1556,10 +1706,10 @@ describe('the long-conversation harness', () => {
  */
 describe('the step budget', () => {
   /*
-   * A DIFFERENT call each round, which the fixture has to do deliberately:
-   * `REPEAT_LIMIT` stops three identical calls, so a model that asked the same
-   * thing every time would be halted by the repeat detector and never reach the
-   * cap this test is about.
+   * A DIFFERENT call each round, which the fixture has to do deliberately: the
+   * stuck detector stops five identical calls, so a model that asked the same
+   * thing every time would be halted by it and never reach the cap this test is
+   * about.
    */
   const listing = (round: number): Turn => ({
     ok: true,
@@ -1617,5 +1767,540 @@ describe('the step budget', () => {
     const withBudget = results.find((m) => (m.content ?? '').includes('step'))
     expect(withBudget).toBeDefined()
     expect(withBudget?.content).toContain('total')
+  })
+})
+
+
+/**
+ * THE WIRING, not the modules.
+ *
+ * `repair.ts`, `stuck.ts` and `verify-gate.ts` each have their own suite proving
+ * they are right in isolation. This block exists because that is not the same
+ * claim: three individually-correct guards can compose wrongly, and the joined
+ * path is the one place that shows it. Two of the failures below were real —
+ * a repair that ran before the approval gate saw it would have had a person
+ * approve one call and the loop run another, and leaving the old `REPEAT_LIMIT`
+ * block beside the new detector would have stopped at three before the nudge at
+ * three could ever be sent.
+ */
+
+/** A turn whose `arguments` string is not JSON — what the transport hands over. */
+const malformed = (name: string, raw: string, id = 'c1'): Turn => ({
+  ok: true,
+  text: null,
+  toolCalls: [{ id, name, args: null, raw }],
+  finishReason: 'tool_calls',
+})
+
+describe('malformed arguments are repaired, and then face every existing check', () => {
+  /*
+   * The format channel is not the capability channel, and jojo was scoring one
+   * as the other. Aider publishes them separately for exactly this reason — QwQ
+   * complied with the edit format 91.0% of the time and scored 42.1%;
+   * Qwen2.5-Coder-32B complied 94.7% and scored 71.4%.
+   *
+   * Probed against the real loop before this existed: `memory_list` sent as
+   * `{"type":"application","limit":"5"} </tool_call>` came back "the arguments
+   * were not valid JSON", and the same call with `limit: '5'` came back
+   * "limit: Needs to be a number". Neither is a mistake about the job; both cost
+   * one of eight rounds.
+   */
+  it('runs a call whose arguments had prose stuck to the end of them', async () => {
+    const { onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([
+        malformed('memory_list', '{"type":"application","limit":"5"} </tool_call>'),
+        says('none yet'),
+      ]),
+      history: [],
+      prompt: 'what have I got',
+      onEvent,
+    })
+    expect(run.steps[0]?.status).toBe('done')
+    expect(run.steps[0]?.repairs).toContain('trimmed-garbage')
+    expect(run.steps[0]?.repairs).toContain('coerced-number')
+  })
+
+  it('runs a call whose number arrived as a string', async () => {
+    const { onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([calls('memory_list', { type: 'application', limit: '5' }), says('none')]),
+      history: [],
+      prompt: 'what have I got',
+      onEvent,
+    })
+    expect(run.steps[0]?.status).toBe('done')
+    expect(run.steps[0]?.repairs).toEqual(['coerced-number'])
+  })
+
+  /*
+   * Nothing is repaired quietly. The loop header's original objection to
+   * repairing at all — that it "makes the trace a worse record of what happened
+   * than the thing it is a trace of" — is answered by this note and only by it.
+   */
+  it('says on screen what it had to fix', async () => {
+    const { events, onEvent } = collect()
+    await runAgent({
+      host: host(),
+      llm: scripted([calls('memory_list', { type: 'application', limit: '5' }), says('none')]),
+      history: [],
+      prompt: 'x',
+      onEvent,
+    })
+    const note = events.find((e) => e.type === 'note' && e.text.startsWith('Fixed the arguments'))
+    expect(note).toBeDefined()
+    // `app: true`, so it is never replayed to the model next turn as its own
+    // prior speech. Telling a model its arguments were reformatted teaches it
+    // nothing it can act on and costs tokens on every later request.
+    expect(note).toMatchObject({ app: true })
+  })
+
+  it('leaves a step that needed nothing without a repair record', async () => {
+    const { onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([calls('memory_list', { type: 'application' }), says('none')]),
+      history: [],
+      prompt: 'x',
+      onEvent,
+    })
+    expect(run.steps[0]?.status).toBe('done')
+    expect(run.steps[0]?.repairs).toBeUndefined()
+  })
+
+  /*
+   * THE ORDERING THAT MATTERS MOST. A repair that happened after `base` was
+   * built would show the person one set of arguments, take their approval for
+   * it, and run another — which is the exact shape of the thing the approval
+   * gate exists to prevent.
+   */
+  it('shows the approver the repaired arguments, not the broken ones', async () => {
+    const h = host()
+    const made = h.run('application.create' as ToolName, NEW_APP)
+    const id = (made as { ok: true; output: string }).output
+    const seen: unknown[] = []
+    await runAgent({
+      host: h,
+      llm: scripted([malformed('application_delete', `{"id":"${id}"} </tool_call>`), says('gone')]),
+      history: [],
+      prompt: 'delete it',
+      onEvent: () => {},
+      approve: (step) => {
+        seen.push(step.args)
+        return true
+      },
+    })
+    expect(seen).toEqual([{ id }])
+  })
+
+  it('still asks, and still obeys a refusal, when the arguments needed repairing', async () => {
+    const h = host()
+    const made = h.run('application.create' as ToolName, NEW_APP)
+    const id = (made as { ok: true; output: string }).output
+    const approve = vi.fn(() => false)
+    const run = await runAgent({
+      host: h,
+      llm: scripted([malformed('application_delete', `{"id":"${id}"} </tool_call>`), says('ok')]),
+      history: [],
+      prompt: 'delete it',
+      onEvent: () => {},
+      approve,
+    })
+    expect(approve).toHaveBeenCalledTimes(1)
+    expect(run.steps[0]?.status).toBe('declined')
+    // The record is the claim that matters. A repair that bypassed the gate
+    // would have deleted it with the person having said no.
+    expect(h.memory().ofType('application')).toHaveLength(1)
+  })
+
+  /*
+   * `NEVER_IMPLICIT` is decided on the NAME, above the repair, and repair cannot
+   * touch a name. `memory.clear` is one of the two operations in this app that
+   * cannot be undone; `offeredFor` strips it from every request that did not ask
+   * to wipe, and the loop makes that strip real rather than advisory.
+   */
+  it('refuses an un-offered memory.clear before repair can get near it', async () => {
+    const h = host()
+    const { onEvent } = collect()
+    const run = await runAgent({
+      host: h,
+      llm: scripted([malformed('memory_clear', '{} </tool_call>'), says('ok')]),
+      history: [],
+      prompt: 'what applications do I have at Rice',
+      onEvent,
+      // The retriever's own narrowing, which is what strips the two
+      // un-undoable tools. `gate: 'none'` so nothing else could stop it.
+      retrieve: { carried: null, fromHistory: [] },
+      gate: 'none',
+    })
+    expect(run.steps[0]?.status).toBe('failed')
+    expect(run.steps[0]?.detail).toContain('No tool is called')
+    expect(h.memory().ofType('application')).toHaveLength(0)
+  })
+
+  /*
+   * A REPLY CUT OFF AT THE OUTPUT LIMIT IS NOT REPAIRED, and the sentence it
+   * gets instead is the measured one.
+   *
+   * Reported from a CV import: `profile.background.add` with thirty facts in one
+   * array, cut off partway through the second title. Recovering the first
+   * fifteen and running them is not a formatting fix — it is a silent partial
+   * write the person is then told succeeded — and "send the same call again with
+   * FEWER items" is the only remedy that works, because the model cannot see its
+   * own output limit.
+   */
+  const cutOff = async (raw: string) => {
+    const { onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([
+        {
+          ok: true,
+          text: null,
+          finishReason: 'length',
+          toolCalls: [{ id: 'c1', name: 'memory_search', args: null, raw }],
+        },
+        says('sorry'),
+      ]),
+      history: [],
+      prompt: 'x',
+      onEvent,
+    })
+    return run
+  }
+
+  it('does not repair a reply that stopped at the model output limit', async () => {
+    const run = await cutOff('{"query":"ric')
+    expect(run.steps[0]?.status).toBe('failed')
+    expect(run.steps[0]?.detail).toContain('FEWER items')
+  })
+
+  /*
+   * THE ONE THAT KILLS THE MUTANT, and it took a probe to find a shape where the
+   * exclusion is load-bearing at all.
+   *
+   * `repairArgs` refuses an unterminated document on its own, so most cut-off
+   * replies would be refused with or without the guard. This shape is not one of
+   * them: a complete object followed by the start of a second call is
+   * `trimmed-garbage` as far as the repair layer can tell, and it would recover
+   * `{"query":"rice"}` and run it — measured with a probe against the real
+   * module. That is a silent half-completion. The model asked for two things,
+   * one would happen, and it would be told it succeeded, so it would never send
+   * the second.
+   *
+   * The cost of the guard is one round on the shape where recovery would have
+   * been right. The cost of not having it is a write the person is told about
+   * and a write they are not, from the same reply.
+   */
+  it('does not recover the first of two calls from a reply that was cut off', async () => {
+    const run = await cutOff(
+      '{"query":"rice"} </tool_call><tool_call>{"name":"memory_search","argum',
+    )
+    expect(run.steps[0]?.status).toBe('failed')
+    expect(run.steps[0]?.repairs).toBeUndefined()
+    expect(run.steps[0]?.detail).toContain('FEWER items')
+  })
+
+  /*
+   * A repair it cannot make changes nothing at all: the original arguments carry
+   * on to the checks that were already there, and `runtime.check` gives the
+   * accurate message. `repairArgs`'s own `reason` is deliberately never shown to
+   * the model — this file keeps ownership of every sentence a model reads.
+   */
+  it('falls through to the tool own message when it cannot fix the arguments', async () => {
+    const { onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([calls('application_stage_set', { stage: 'interview' }), says('ok')]),
+      history: [],
+      prompt: 'move it',
+      onEvent,
+    })
+    expect(run.steps[0]?.status).toBe('failed')
+    expect(run.steps[0]?.detail).toMatch(/id/i)
+    expect(run.steps[0]?.repairs).toBeUndefined()
+  })
+})
+
+describe('the pre-exit verification gate', () => {
+  const CLAIM = "I've moved your Rice application to interview."
+
+  /*
+   * The gate is handed the conversation that came BEFORE this turn, and nothing
+   * proved it: replacing `history: priorText` with `history: []` at the call
+   * site left every test in this file green (the second of two survivors in a
+   * 30-mutant run over the wiring).
+   *
+   * It is load-bearing for one rule. `named-unread-record` asks whether a
+   * capitalised name in the answer came from anywhere real, and a name the
+   * PERSON introduced two turns ago is real — it is just not in this turn's
+   * prompt. Without the prior text the gate reads it as invented and spends a
+   * round telling a model to look up something it was told.
+   *
+   * A single round is asserted, because that is the whole observable: with the
+   * history the answer is accepted immediately; without it the gate argues once
+   * and the model has to answer twice.
+   */
+  it('is given the conversation before this turn, so an earlier name is not \u201cinvented\u201d', async () => {
+    const llm = scripted([says('Your Rice University application is at the interview stage.')])
+    const { events, onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [{ role: 'user', content: 'I applied to Rice University last month.' }],
+      prompt: 'what stage is it at',
+      gate: 'none',
+      onEvent,
+    })
+    expect(run.stopped).toBe('answered')
+    // One round: the gate did not argue.
+    expect(llm.seen).toHaveLength(1)
+    expect(events.filter((e) => e.type === 'note' && e.app === true)).toHaveLength(0)
+  })
+
+  /**
+   * A model that answers with the same claim every round, and never calls
+   * anything. `n` counts the rounds it was asked for.
+   */
+  const claiming = async (maxSteps = 4) => {
+    const { events, onEvent } = collect()
+    const sent: ChatMessage[][] = []
+    const llm = vi.fn((messages: readonly ChatMessage[]) => {
+      sent.push([...messages])
+      return Promise.resolve(says(CLAIM))
+    })
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'move my Rice application to interview',
+      onEvent,
+      maxSteps,
+    })
+    const nudges = events.filter(
+      (e) => e.type === 'note' && e.text.startsWith('The assistant said it had changed'),
+    )
+    return { run, events, llm, nudges, sent }
+  }
+
+  /*
+   * `bench-score.ts` carries the number in its own comment: "an agent that calls
+   * nothing and always answers scored 16/36 clean and 45/69 turns". That is 44%
+   * of the suite for no work, and `answerMust` catches it at SCORING time —
+   * which helps whoever reads the benchmark and does nothing for the person
+   * whose application did not move.
+   */
+  it('sends an announcement with no write back to the model', async () => {
+    const { llm, nudges, sent } = await claiming()
+    expect(llm).toHaveBeenCalledTimes(2)
+    expect(nudges).toHaveLength(1)
+    // Second person, for the model — and it is the model that gets it, in the
+    // transcript, not the person.
+    expect(
+      (sent[1] ?? []).some(
+        (m) => m.role === 'user' && String(m.content).startsWith('Stop: you said you changed'),
+      ),
+    ).toBe(true)
+  })
+
+  /*
+   * ONE. `MAX_VERIFY_NUDGES_PER_TURN` is not a tuning knob: a model that cannot
+   * satisfy the gate is not made able to by being asked twice, and two nudges
+   * would double the worst case of every turn the gate misjudges.
+   *
+   * The counter lives in the loop because the bound is per USER TURN and the
+   * gate is called once per model turn — a gate counting for itself would reset
+   * every round and never bind.
+   */
+  it('argues exactly once, however often the model repeats itself', async () => {
+    const { run, llm, nudges } = await claiming(8)
+    expect(nudges).toHaveLength(1)
+    expect(llm).toHaveBeenCalledTimes(2)
+    expect(run.stopped).toBe('answered')
+    expect(run.answer).toBe(CLAIM)
+  })
+
+  /*
+   * NOT ON THE LAST ROUND. A nudge spends a round, so nudging on the final one
+   * falls out of the loop and reports `'cap'` with `answer: null` — a perfectly
+   * good reply thrown away and replaced with "stopped after N rounds". The gate
+   * is worth a round only when there is a round to spend.
+   */
+  it('accepts the answer rather than destroying it when no round is left', async () => {
+    const { run, llm, nudges } = await claiming(1)
+    expect(run.stopped).toBe('answered')
+    expect(run.answer).toBe(CLAIM)
+    expect(llm).toHaveBeenCalledTimes(1)
+    expect(nudges).toHaveLength(0)
+  })
+
+  /*
+   * A REPLY THAT HAS COME APART, which is the one thing the stuck detector can
+   * say about an answer that the verification gate cannot.
+   *
+   * Gemini CLI's content scan, and the packing test is the half that makes it
+   * usable: a 50-character chunk appearing ten times is not enough on its own —
+   * a long answer legitimately repeats a heading — it is a chant only when the
+   * occurrences are packed. A model in this state has lost the thread rather
+   * than finished, so this is an error naming the cause and not an answer.
+   *
+   * IT IS THE ONLY VERDICT THE ANSWER PATH HONOURS TODAY, and the arithmetic
+   * says so rather than the code: the other stop that can fire there is `echo`
+   * at three identical answers, and at most TWO call-free answers can happen in
+   * a run, because the verification gate argues once and then accepts. The
+   * branch covers both because it is one branch; only this half is reachable,
+   * and if `MAX_VERIFY_NUDGES_PER_TURN` ever rises the other half starts
+   * working without anything here changing.
+   */
+  it('stops a reply that is chanting at itself rather than printing it', async () => {
+    const { events, onEvent } = collect()
+    const chant = 'I will look that up for you right away, one moment. '.repeat(14)
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([says(chant)]),
+      history: [],
+      prompt: 'what have I got',
+      onEvent,
+      maxSteps: 4,
+    })
+    expect(run.stopped).toBe('stuck')
+    expect(run.answer).toBeNull()
+    expect((events.at(-1) as { reason: string }).reason).toMatch(/repeating the same phrase/)
+    // Never shown as the answer. That is what this replaces: a chat bubble
+    // holding 700 characters of the same sentence, with the run reported as
+    // having answered.
+    expect(events.some((e) => e.type === 'answer')).toBe(false)
+  })
+
+  /*
+   * The three `ambiguity` conversations score ASKING as the correct move —
+   * "Move my Rice application to interview" matches two records, and picking one
+   * is the failure. A gate that nudged a question would push the model toward
+   * the exact guess those cases exist to catch.
+   */
+  it('leaves a clarifying question alone', async () => {
+    const { onEvent } = collect()
+    const llm = vi.fn(() =>
+      Promise.resolve(says('There are two Rice applications — the postdoc and the lectureship. Which did you mean?')),
+    )
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'move my Rice application to interview',
+      onEvent,
+      maxSteps: 4,
+    })
+    expect(run.stopped).toBe('answered')
+    expect(llm).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves an ordinary answer that did the work alone', async () => {
+    const { onEvent } = collect()
+    const llm = vi.fn(
+      (() => {
+        let i = 0
+        return () => Promise.resolve(i++ === 0 ? calls('application_create', NEW_APP) : says(CLAIM))
+      })(),
+    )
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'add UT Austin',
+      onEvent,
+      maxSteps: 4,
+    })
+    expect(run.stopped).toBe('answered')
+    expect(llm).toHaveBeenCalledTimes(2)
+  })
+
+  /*
+   * The nudge is a round the model can use. A model that takes it and does the
+   * work must be answered normally — otherwise the gate would be a way of losing
+   * turns rather than saving them.
+   */
+  it('answers normally once the nudge has been taken', async () => {
+    const h = host()
+    const { onEvent } = collect()
+    let i = 0
+    const llm = vi.fn(() => {
+      i += 1
+      return Promise.resolve(i === 2 ? calls('application_create', NEW_APP) : says(CLAIM))
+    })
+    const run = await runAgent({
+      host: h,
+      llm,
+      history: [],
+      prompt: 'add UT Austin to my applications',
+      onEvent,
+      maxSteps: 6,
+    })
+    expect(run.stopped).toBe('answered')
+    expect(h.memory().ofType('application')).toHaveLength(1)
+  })
+})
+
+describe('the three bad endings are told apart', () => {
+  /*
+   * `'error'` is the transport, `'cap'` is the round budget, `'stuck'` is the
+   * model going in circles. They were two — `'stuck'` was reported as `'error'`
+   * — which told every caller the least useful of the three: retrying is
+   * reasonable for a transport failure, a bigger `maxSteps` may finish a capped
+   * run, and repeating the same request unchanged is known not to help a stuck
+   * one.
+   */
+  const endingFor = async (llm: LlmTurnFn) => {
+    const { onEvent } = collect()
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    return run.stopped
+  }
+
+  it('separates a round-cap stop from a stuck stop', async () => {
+    let n = 0
+    const capped = await endingFor(() => {
+      n += 1
+      return Promise.resolve(calls('memory_list', { type: 'application', limit: n }, `c${String(n)}`))
+    })
+    const circling = await endingFor(() => Promise.resolve(calls('memory_overview', {})))
+    expect(capped).toBe('cap')
+    expect(circling).toBe('stuck')
+  })
+
+  it('separates a transport failure from both', async () => {
+    expect(await endingFor(() => Promise.resolve({ ok: false, kind: 'unreachable', reason: 'no' }))).toBe(
+      'error',
+    )
+  })
+
+  /*
+   * THE INVARIANT THAT SURVIVES THE NEW EXIT. Every call gets a reply, on the
+   * way out as well as in the middle.
+   *
+   * `messages` is returned to the caller and stored as the thread's transcript.
+   * An assistant turn asking for a tool with no matching `tool` message is
+   * rejected outright by OpenAI-compatible servers on the NEXT request, naming
+   * neither — so a stuck stop that returned before pushing the result would have
+   * poisoned the conversation that followed it.
+   */
+  it('leaves a transcript every server will accept, even when it stops mid-turn', async () => {
+    const { onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: () => Promise.resolve(calls('memory_overview', {})),
+      history: [],
+      prompt: 'x',
+      onEvent,
+      maxSteps: 8,
+    })
+    expect(run.stopped).toBe('stuck')
+    const asked = run.messages.flatMap((m) =>
+      m.role === 'assistant' ? (m.tool_calls ?? []).map((c) => c.id) : [],
+    )
+    const answered = run.messages.filter((m) => m.role === 'tool').map((m) => m.tool_call_id)
+    expect(asked.length).toBeGreaterThan(0)
+    expect(answered).toEqual(asked)
   })
 })

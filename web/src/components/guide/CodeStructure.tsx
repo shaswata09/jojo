@@ -89,10 +89,14 @@ export const SHAPE: DirRow[] = [
   { dir: 'service/kg/tools', files: 27, tests: 7, lines: 8571, what: '82 named write operations' },
   {
     dir: 'service/kg/agent',
-    files: 52,
-    tests: 25,
-    lines: 21983,
-    what: 'the loop, the catalog, 9 reads, the pipelines',
+    // Re-measured 2026-09-02, when the harness grew its weak-model layer:
+    // `repair.ts` (schema-driven argument repair), `stuck.ts` (repeat, failing,
+    // cycle, echo and chant detection) and `verify-gate.ts` (the pre-exit
+    // check), with a test file each. Six files and about 5,500 lines.
+    files: 58,
+    tests: 28,
+    lines: 27473,
+    what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
     dir: 'service/kg/storage',

@@ -303,12 +303,25 @@ async function runOne(c: (typeof CONVERSATIONS)[number], condition: Condition) {
           // trajectory metric — grounded, lookedFirst — is a ratio over writes.
           // Leave it off and the denominator is zero, which the scorer reports
           // as a perfect 1 rather than as missing data.
+          /*
+           * `repairs` rides along, and it is the number the repair layer is
+           * judged by.
+           *
+           * `loop.ts` records what it fixed on every step and its own comment
+           * calls `repairs.length` "the number that says" whether the layer
+           * earns its place — and the benchmark captured neither, so the first
+           * run after the layer shipped could not tell a flat score caused by
+           * "repair never fires, these models emit valid arguments" from one
+           * caused by "repair fires constantly and does not help". Those are
+           * opposite conclusions and both look like no change.
+           */
           calls.push({
             turn: perTurn.length,
             name: e.step.name,
             effect: e.step.effect,
             ok: e.step.status === 'done',
             args: JSON.stringify(e.step.args ?? {}),
+            ...(e.step.repairs && e.step.repairs.length > 0 ? { repairs: [...e.step.repairs] } : {}),
           })
           if (e.step.status === 'failed') {
             // The ARGUMENTS, not just the message. Two schema misreadings were

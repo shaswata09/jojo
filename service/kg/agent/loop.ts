@@ -23,9 +23,40 @@
  *      normal failure of small models, not an exotic one.
  *
  * WHAT IT DELIBERATELY DOES NOT DO. It does not retry a failed tool call on the
- * model's behalf, and it does not repair malformed arguments. Both are ways of
- * hiding from the user that the model got it wrong, and both make the trace a
- * worse record of what happened than the thing it is a trace of.
+ * model's behalf. That is a way of hiding from the user that the model got it
+ * wrong, and it makes the trace a worse record of what happened than the thing
+ * it is a trace of.
+ *
+ * IT DOES REPAIR MALFORMED ARGUMENTS, AND THAT SENTENCE USED TO SAY OTHERWISE.
+ *
+ * The paragraph above read "and it does not repair malformed arguments", on the
+ * same reasoning. The reasoning was right about a REPAIR THAT GUESSES and wrong
+ * about the thing small models actually do, which is a formatting failure and
+ * not a reasoning one. Aider publishes the two channels separately for exactly
+ * this reason — QwQ complied with the edit format 91.0% of the time and scored
+ * 42.1%; Qwen2.5-Coder-32B complied 94.7% and scored 71.4% — and jojo was
+ * scoring the format channel as a capability failure.
+ *
+ * Measured here, with a probe against this file: `memory_list` sent as
+ * `{"type":"application","limit":"5"} </tool_call>` came back "the arguments
+ * were not valid JSON", and the same call with `limit: '5'` came back
+ * "limit: Needs to be a number". Neither is a mistake about the job. Both cost
+ * a whole round trip of somebody's GPU, out of eight.
+ *
+ * `repair.ts` is what makes that safe rather than a guess: it is schema-driven,
+ * it never invents a required field, it refuses an unterminated document, and
+ * every change it makes is REPORTED — on the step as `repairs`, and on screen as
+ * an app note. `runtime.check` remains the authority, and the approval gate sees
+ * the repaired arguments, not the ones that arrived. Nothing is hidden; what
+ * changed is that a comma in the wrong place no longer costs a round.
+ *
+ * TWO MORE GUARDS LIVE HERE NOW, both in their own modules and both wired below.
+ * `stuck.ts` replaces the repeat counter this file used to keep — it fingerprinted
+ * the RAW BYTES, so the commonest small-model behaviour, re-emitting the same
+ * call with jittered whitespace, defeated it completely and burned all eight
+ * rounds (probe: 8/8 rounds, `stopped: 'cap'`). `verify-gate.ts` is consulted
+ * when the model answers with no tool call, because "I've moved your Rice
+ * application to interview" with zero steps was accepted as an answer.
  */
 
 import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
@@ -38,6 +69,11 @@ import { asMessage, compact, type CompactDeps } from './compact'
 import type { Effect } from './catalog'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
+import { repairArgs, summarizeRepairs } from './repair'
+import type { RepairKind } from './repair'
+import { createStuckDetector } from './stuck'
+import { verifyBeforeExit } from './verify-gate'
+import type { VerifyReason } from './verify-gate'
 
 /* ---------------------------------- trace --------------------------------- */
 
@@ -83,6 +119,22 @@ export type AgentStep = {
   output?: unknown
   /** The sentence the app's own toast would have shown for this write. */
   announcement?: Announcement
+  /**
+   * What `repair.ts` had to fix about the arguments before this ran. Absent when
+   * nothing was wrong, which is the overwhelming majority of calls.
+   *
+   * The KINDS rather than the prose, and that is what makes it worth carrying:
+   * the prose is already on screen as an app note, and what the benchmark needs
+   * is a countable channel. `repairs.length` per run is the number that says
+   * whether a prompt change or a model change moved the FORMAT channel, which
+   * Aider measures separately from the capability channel precisely because the
+   * two move independently.
+   *
+   * Present on the settled step only. The `running` emission carries the
+   * repaired `args` — a person watching the row appear should see what will
+   * actually run — but not yet the note about them.
+   */
+  repairs?: readonly RepairKind[]
   /** Present and non-null when this step can be taken back. */
   undo?: (() => void) | null
 }
@@ -332,7 +384,19 @@ export type AgentRun = {
   messages: ChatMessage[]
   answer: string | null
   steps: AgentStep[]
-  stopped: 'answered' | 'cap' | 'error' | 'aborted'
+  /**
+   * `'stuck'` is its own outcome and not a flavour of `'error'`, and the
+   * separation is the point rather than tidiness.
+   *
+   * The three ways a run can end badly want three different reactions. `'error'`
+   * is the transport or the server — retrying is reasonable. `'cap'` is the
+   * round budget — the work may have been nearly done and a bigger `maxSteps`
+   * would finish it. `'stuck'` is the model going in circles, and it is the one
+   * where retrying the same request unchanged is known not to help. Folding it
+   * into `'error'`, which is what this did, told every caller the least useful
+   * of the three.
+   */
+  stopped: 'answered' | 'cap' | 'error' | 'stuck' | 'aborted'
   /**
    * The tools this run was actually offered, for the next turn to carry.
    *
@@ -433,14 +497,30 @@ function toolCallInText(text: string, offered: Set<string> | null): string | nul
 const DEFAULT_MAX_STEPS = 8
 
 /**
- * How many identical calls before the run is stopped.
+ * What the PERSON is told when the verification gate sends an answer back.
  *
- * Three: the first is work, the second is a mistake, the third is a loop. The
- * second gets a warning appended to its result — which is the intervention
- * most likely to break the cycle, because the model's own transcript already
- * holds the answer and what it has not been told is that it is repeating.
+ * One sentence per reason, because the reasons are not interchangeable and a
+ * single generic line would be the least useful of the four. The model gets
+ * `verdict.nudge`, which is an instruction in the second person; this is the
+ * fact in the third, for the screen.
+ *
+ * Written to be readable by somebody who does not know a gate exists: it says
+ * what the assistant claimed, what the store actually shows, and that a round is
+ * being spent on the difference. Somebody who sees this and then sees a correct
+ * answer has learned the app checked; somebody who sees it and then sees the
+ * same claim again has learned not to trust that claim, which is the whole
+ * point.
  */
-const REPEAT_LIMIT = 3
+const VERIFY_NOTE: Record<VerifyReason, string> = {
+  'claimed-write-none-attempted':
+    'The assistant said it had changed something, but nothing that writes was called and the store is unchanged. It has been asked to check before finishing.',
+  'claimed-write-none-landed':
+    'The assistant said it had changed something, but every write it tried this turn failed or was declined, so the store is unchanged. It has been asked to check before finishing.',
+  'named-unread-record':
+    'The assistant named a record it did not read this turn. It has been asked to look it up before answering, rather than answering from memory.',
+  'bare-acknowledgement':
+    'The assistant agreed to do the work without doing it, so nothing has happened yet. It has been asked to make the call.',
+}
 
 /**
  * The registry names a caller offered, resolved and de-aliased.
@@ -834,13 +914,55 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   let counter = 0
 
   /**
-   * Identical calls made in this run, and how often.
+   * Every way this run can be going nowhere, watched at once.
    *
    * Per run rather than per round: the loop a small model gets into spans
    * rounds — call, misread the refusal, call again — and a per-round counter
    * would never see it.
+   *
+   * THIS REPLACED A COUNTER THAT COULD NOT DO ITS JOB, and the failure is worth
+   * recording because it looked like it worked. The old code keyed on
+   * `${name}\u0000${raw}` — the RAW BYTES of the arguments — and stopped at
+   * three. Probed against this file: a model re-emitting `memory_overview` with
+   * one more space inside the braces each round ran all eight rounds and ended
+   * as `'cap'`, because eight different byte strings are eight different calls.
+   * Jittered whitespace is not an exotic failure; it is what a sampler at any
+   * temperature above zero does to an unconstrained argument string.
+   *
+   * `stuck.ts` fingerprints the PARSED arguments — keys sorted, spacing gone —
+   * and watches four more shapes the counter could not see at all: a call that
+   * keeps FAILING (stopped sooner, because a repeated failure never resolves
+   * itself), a CYCLE of calls (A,B,A,B), the same ANSWER given twice with
+   * nothing done between, and one reply CHANTING a phrase at itself.
    */
-  const repeats = new Map<string, number>()
+  const stuck = createStuckDetector()
+
+  /**
+   * How many times the verification gate has sent this USER TURN back.
+   *
+   * Owned here rather than inside the gate because the bound is per user turn
+   * and the gate is called once per model turn — see
+   * `MAX_VERIFY_NUDGES_PER_TURN`. One `runAgent` call is one user turn, so a
+   * counter scoped to this function is exactly the right scope, and the gate
+   * enforces the bound itself once it is told the number.
+   */
+  let verifyNudges = 0
+
+  /**
+   * The conversation as it stood BEFORE this turn, as plain text.
+   *
+   * Built once, here, and deliberately not from `messages` at the point of use.
+   * The verification gate's fabrication rule asks whether a name in the answer
+   * came from anywhere real, and `messages` grows during the run to include the
+   * model's OWN narration — so reading it live would let a model launder a name
+   * it invented in round one by repeating it in round three. The prior
+   * conversation cannot do that.
+   */
+  const priorText: string[] = [
+    ...(recovered === null ? [] : [String(recovered.content ?? '')]),
+    ...(carriedContext === null ? [] : [String(carriedContext.content ?? '')]),
+    ...fitted.history.map((m) => (typeof m.content === 'string' ? m.content : '')),
+  ]
 
   const finish = (stopped: AgentRun['stopped'], answer: string | null = null): AgentRun => ({
     messages,
@@ -967,6 +1089,108 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
         return finish('error')
       }
 
+      /*
+       * The reply itself, before anything is decided about it.
+       *
+       * Only a STOP is honoured here, and the omission is deliberate rather than
+       * an oversight. Two of the detector's five shapes can fire on a call-free
+       * turn: `chant` (this one reply has come apart, repeating a phrase at
+       * itself) and `echo` (the same answer twice with nothing done between).
+       * Both stops are real and neither has any other guard.
+       *
+       * Its `echo` NUDGE is dropped on purpose. A nudge on this path means "do
+       * not finish yet", and the verification gate below is the purpose-built
+       * mechanism for exactly that decision, with a bound — one per user turn —
+       * that exists so a model which cannot satisfy it is not argued with
+       * forever. A second, separately-bounded thing that also blocks the exit
+       * would quietly double that budget, which is the composition failure
+       * mutation testing cannot see: two correct guards joining wrongly.
+       *
+       * WHICH LEAVES `chant` AS THE ONLY VERDICT THIS BRANCH CAN ACT ON TODAY,
+       * and the arithmetic is worth writing down rather than discovering later.
+       * `echoStop` is three identical answers, and at most TWO call-free answers
+       * can occur in a run: the gate argues once, and every answer after that is
+       * accepted. So the `echo` stop is unreachable while
+       * `MAX_VERIFY_NUDGES_PER_TURN` is 1. The branch still tests `action ===
+       * 'stop'` rather than `kind === 'chant'`, because it is one branch and
+       * because raising that bound should make the other half start working
+       * without anything here changing — but nobody should read this line and
+       * believe an echo can stop a run today. The counts still accumulate, so
+       * the day it can, it will.
+       */
+      const spinning = stuck.observe({ call: null, text: answer })
+      if (spinning.action === 'stop') {
+        // Third-person, for the person reading the screen. See `StuckVerdict`:
+        // the nudge text and the stop text have different audiences and are not
+        // interchangeable.
+        onEvent({ type: 'error', reason: spinning.text })
+        return finish('stuck')
+      }
+
+      /*
+       * The pre-exit verification gate: one question asked the moment the model
+       * says it is finished.
+       *
+       * A model that calls NOTHING and announces success was scored as having
+       * succeeded — `bench-score.ts` carries the number in its own comment, "an
+       * agent that calls nothing and always answers scored 16/36 clean and 45/69
+       * turns". Probed against this file: "move my Rice application to
+       * interview", answered "I've moved your Rice application to interview.",
+       * zero steps, `stopped: 'answered'`. `answerMust` catches that at SCORING
+       * time, which helps whoever reads the benchmark and does nothing at all
+       * for the person whose application did not move.
+       *
+       * It is the first of the four changes LangChain shipped to take
+       * GPT-5.2-Codex from 52.8% to 66.5% on Terminal-Bench 2.0 with no model
+       * change, and it is the cheapest: no clock, no model call, string work
+       * over facts this function already has.
+       *
+       * NOT ON THE LAST ROUND, and that guard is not caution — it is the
+       * difference between the gate helping and the gate destroying an answer.
+       * A nudge spends a round, so nudging on the final one falls straight out
+       * of the loop below and reports `'cap'` with `answer: null`: a perfectly
+       * good reply thrown away and replaced with "stopped after N rounds". The
+       * gate is worth a round only when there is a round to spend.
+       */
+      const verdict =
+        round < maxSteps - 1
+          ? verifyBeforeExit({
+              request: options.prompt,
+              answer,
+              steps,
+              history: priorText,
+              nudgesUsed: verifyNudges,
+            })
+          : ({ accept: true } as const)
+
+      if (!verdict.accept) {
+        verifyNudges += 1
+        /*
+         * Told to the person as well as to the model, and in the person's own
+         * voice rather than the model's.
+         *
+         * `verdict.nudge` opens "Stop: you said you changed something…" — it is
+         * an instruction, written second-person, FOR THE MODEL. Showing that
+         * verbatim on screen would read as the app barking at the reader. What
+         * the reader needs is the fact underneath it: the assistant said one
+         * thing and the store says another, and the run is spending a round on
+         * it rather than quietly accepting the claim.
+         *
+         * `app: true` so it is never replayed to the model as its own prior
+         * speech next turn — the model already gets the nudge itself, below.
+         */
+        onEvent({ type: 'note', app: true, text: VERIFY_NOTE[verdict.reason] })
+        messages.push({ role: 'assistant', content: answer })
+        /*
+         * `user`, not `system`. The comment on the step-budget note a few lines
+         * down records why: a system message appearing mid-conversation is a
+         * shape some OpenAI-compatible servers handle badly, and this one has to
+         * survive on llama.cpp and Ollama as well as on a hosted endpoint.
+         */
+        messages.push({ role: 'user', content: verdict.nudge })
+        continue
+      }
+
       onEvent({ type: 'answer', text: answer })
       messages.push({ role: 'assistant', content: answer })
       return finish('answered', answer)
@@ -1013,17 +1237,32 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
       steps.push(step)
 
       /*
-       * How many times this exact call has been made in this run.
+       * Is this run going anywhere? Asked once per CALL, not once per round —
+       * a turn routinely asks for three tools, and a cycle can live entirely
+       * inside one of them.
        *
-       * Nothing watched for repetition, and a small model that has misread a
-       * refusal will re-issue the identical call every round until the cap —
-       * eight rounds at an 18k-token prompt is minutes of somebody's GPU spent
-       * discovering nothing. Keyed on name AND arguments, because calling the
-       * same tool with different arguments is ordinary work.
+       * `step.name` rather than `call.name`, and that is a user-facing choice:
+       * the stop sentence ends up on screen, the step carries the registry name
+       * the rest of the app shows, and the wire spelling with underscores
+       * appears nowhere a person reads.
+       *
+       * `step.args` rather than `call.args`, so the fingerprint is taken over
+       * the arguments that actually RAN. After repair, `{"limit":"5"}` and
+       * `{"limit":5}` are the same call — because they are — and a detector
+       * that saw them as two would need one more round to notice a spiral it
+       * could already see.
+       *
+       * `ok` is not optional in practice even though the type allows it:
+       * omitting it defaults to the SUCCEEDING schedule, which is later and
+       * gentler, and the failing spiral — the one worth catching soonest,
+       * because a call that failed identically twice will fail a third time —
+       * would never fire.
        */
-      const fingerprint = `${call.name}\u0000${call.raw}`
-      const seen = (repeats.get(fingerprint) ?? 0) + 1
-      repeats.set(fingerprint, seen)
+      const verdict = stuck.observe({
+        call: { name: step.name, args: step.args, raw: call.raw },
+        ok: step.status === 'done',
+        text: turn.text,
+      })
 
       // Every call gets a reply, including the ones that failed. A model left
       // waiting on a result it never receives will re-issue the same call
@@ -1048,28 +1287,39 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
           ? `\n\n${left === 0 ? 'This was your last step.' : 'You have one step left.'} Answer now with what you have, and say plainly what you could not finish.`
           : ''
 
+      /*
+       * Told, rather than silently answered the same way again. The model's own
+       * transcript already contains the first answer; what it has not been told
+       * is that it is going in circles, and a repeated identical result reads to
+       * it as confirmation.
+       *
+       * `verdict.text` on a NUDGE is written in the second person, for the model,
+       * which is why it is appended to the tool result the model is already
+       * reading rather than emitted as an event. On a STOP it is third person,
+       * for the person, and goes to `onEvent` below. Swapping the two would show
+       * the user an instruction and the model a status line.
+       */
+      const nudge = verdict.action === 'nudge' ? `\n\n${verdict.text}` : ''
+
       messages.push({
         role: 'tool',
         tool_call_id: call.id,
-        content:
-          seen >= 2
-            ? /*
-               * Told, rather than silently answered the same way again. The
-               * model's own transcript already contains the first answer; what
-               * it has not been told is that it is going in circles, and a
-               * repeated identical result reads to it as confirmation.
-               */
-              `${step.detail ?? 'Done.'}\n\nNote: this is the ${seen === 2 ? 'second' : 'third'} time you have called ${step.name} with exactly these arguments in this conversation, and the answer has not changed. Do something different, or tell the user what is blocking you.${budget}`
-            : `${step.detail ?? 'Done.'}${budget}`,
+        content: `${step.detail ?? 'Done.'}${nudge}${budget}`,
       })
 
-      if (seen >= REPEAT_LIMIT) {
-        // `step.name` rather than `call.name`: the step carries the registry
-        // name the rest of the app shows, and the wire spelling with underscores
-        // appears nowhere a person reads.
-        const reason = `The model called ${step.name} with the same arguments ${String(seen)} times without getting anywhere. Stopped, so it does not keep going. What did run is listed above.`
-        onEvent({ type: 'error', reason })
-        return finish('error')
+      /*
+       * Stopped AFTER the result was pushed, never before.
+       *
+       * The invariant three lines up — every call gets a reply — holds on the
+       * way out too. `messages` is returned to the caller and stored as the
+       * thread's transcript, and an assistant turn asking for a tool with no
+       * matching `tool` message is rejected outright by OpenAI-compatible
+       * servers on the NEXT request, with a message that names neither. A run
+       * that stopped would have poisoned the conversation that followed it.
+       */
+      if (verdict.action === 'stop') {
+        onEvent({ type: 'error', reason: verdict.text })
+        return finish('stuck')
       }
     }
   }
@@ -1158,20 +1408,100 @@ async function performCall(
     return step
   }
 
+  /*
+   * The arguments repaired against the tool's own schema, BEFORE anything is
+   * shown, gated or run.
+   *
+   * ## Why here and not later
+   *
+   * The position is the whole safety argument. `base` is what the approval gate
+   * is handed and what the UI renders, so a repair that happened after it would
+   * ask a person to approve one set of arguments and then run another — which
+   * is the exact shape of the thing the gate exists to prevent. Repairing first
+   * means the person sees, approves and gets the same call. Every check below
+   * this line — the approval gate, `runtime.check`, `callTool`'s own catalogue
+   * resolution — runs on the repaired call exactly as it ran on the raw one.
+   *
+   * `NEVER_IMPLICIT` and the offered-list refusal are decided above this line,
+   * on the NAME, and repair cannot touch a name. A model that asks for
+   * `memory.clear` when it was not offered is refused before this runs, and
+   * nothing here can change that.
+   *
+   * ## What is passed in
+   *
+   * One call covers both failures, because `repairArgs` takes `unknown`:
+   * arguments that parsed go in as the object, arguments that did not go in as
+   * the raw string — and the second is the half that currently costs a whole
+   * turn, because trailing garbage, a prose-wrapped object and a
+   * double-JSON-encoded one all live there.
+   *
+   * ## The two cases it is deliberately NOT given
+   *
+   * No entry means no schema, and nothing to repair against — a name the
+   * catalogue does not know is already a refusal one line down.
+   *
+   * A TRUNCATED reply is not repaired at all, even though `repairArgs` would
+   * refuse most of them on its own. A reply cut off at the model's output limit
+   * has arguments that are genuinely incomplete: thirty facts from a CV import
+   * cut partway through the second title. Recovering the first fifteen and
+   * running them is not a formatting fix, it is a silent partial write that the
+   * person is then told succeeded — and the measured remedy, "send the same call
+   * again with FEWER items", stops being sent. This costs almost nothing: in a
+   * length-truncated turn only the call that actually failed to parse is
+   * affected, and the earlier calls in the same turn parsed fine and are
+   * repaired normally.
+   */
+  const repaired =
+    entry !== undefined && !(truncated && call.args === null)
+      ? repairArgs(entry.parameters, call.args === null ? call.raw : call.args)
+      : null
+
+  /*
+   * A refused repair changes NOTHING. The original arguments carry on to the
+   * paths that were already there — the not-valid-JSON sentence below for a
+   * `null`, `runtime.check`'s own message for an object it cannot fix — because
+   * those messages are accurate and `repairArgs`'s `reason` is deliberately not
+   * model-facing. This file keeps ownership of every sentence a model reads.
+   */
+  const args = repaired?.ok === true ? repaired.args : call.args
+  const repairs = repaired?.ok === true ? repaired.repairs : []
+
   const base: AgentStep = {
     id,
     name: entry?.name ?? call.name,
     title: entry?.title ?? call.name,
     effect: entry?.effect ?? 'unknown',
     destructive: entry?.destructive ?? false,
-    args: call.args,
+    args,
     status: 'running',
   }
   onEvent({ type: 'step', step: base })
 
+  /*
+   * Said out loud, as an app note, and not to the model.
+   *
+   * A repair is a change to what the person is about to be told happened, and
+   * the header's original objection to repairing at all — that it "makes the
+   * trace a worse record of what happened than the thing it is a trace of" — is
+   * answered by this line and only by this line. `app: true` keeps it out of the
+   * model's next turn: telling a model its own arguments were reformatted
+   * teaches it nothing it can act on and costs tokens on every subsequent
+   * request.
+   */
+  if (repairs.length > 0) {
+    onEvent({ type: 'note', app: true, text: `Fixed the arguments: ${summarizeRepairs(repairs)}.` })
+  }
+
   const settle = (step: AgentStep): AgentStep => {
-    onEvent({ type: 'step', step })
-    return step
+    // Spread conditionally, and only when something was repaired: under
+    // `exactOptionalPropertyTypes` an explicit `undefined` is not an absent key,
+    // and an empty array on every step would be noise in every trace.
+    const settled: AgentStep = {
+      ...step,
+      ...(repairs.length === 0 ? {} : { repairs: repairs.map((r) => r.kind) }),
+    }
+    onEvent({ type: 'step', step: settled })
+    return settled
   }
 
   /*
@@ -1190,7 +1520,7 @@ async function performCall(
    * output limit. "Send fewer" is the only thing that works, and the bulk tools
    * are precisely the ones that can be split.
    */
-  if (call.args === null) {
+  if (args === null) {
     return settle({
       ...base,
       status: 'failed',
@@ -1236,7 +1566,10 @@ async function performCall(
     }
   }
 
-  const outcome = await callTool(host, call.name, call.args)
+  // The repaired arguments, which are also the ones on `base` that the approval
+  // gate was just shown. One value, so what was approved and what runs cannot
+  // differ.
+  const outcome = await callTool(host, call.name, args)
   const detail = renderOutcome(outcome)
   if (!outcome.ok) return settle({ ...base, status: 'failed', detail })
   // Spread conditionally: under `exactOptionalPropertyTypes` an explicit

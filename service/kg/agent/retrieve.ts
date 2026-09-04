@@ -22,8 +22,38 @@
  * rule is not a threshold to tune, it is the shape of the thing.
  *
  * This is why there is no cleverness below. Weighted term matching over the
- * tool names, titles and summaries, a floor, and a graph closure. Anything
- * subtler would abstain less often, which is the wrong direction.
+ * tool names, titles, summaries, enum values and field names; a floor; a ranked
+ * cut; a family lift; and a graph closure. Anything subtler would abstain less
+ * often, which is the wrong direction.
+ *
+ * ## How MUCH it offers, which is the other half of the job
+ *
+ * Abstention is a safety property and narrowing is a performance one, and for a
+ * long time this file only had the first. Measured across the 48 conversations
+ * of `bench-conversations.ts`, driving `offeredFor` turn by turn exactly as
+ * `bench.test.ts` does, it put a MEAN of 37.9 tools in front of the model per
+ * turn — median 34, ninetieth percentile 67, and nine of 99 turns offering the
+ * entire catalogue. The published knee for retrieval over a catalogue this size
+ * is K=3 (hit rate 85.0% at K=1, 97.1% at K=3, 98.6% at K=10, with precision
+ * collapsing from 92.1% to 26.5% across that range), and MCPGauge measured a
+ * 9.5% average task-performance decline from tools that are merely ATTACHED and
+ * never called — a cost the small models this app runs pay harder than the
+ * commercial ones it was measured on.
+ *
+ * Four changes brought that to a mean of 18.9, median 18, p90 25, max 34, and
+ * no turn offering the catalogue, while gold-tool recall went UP from 114/116
+ * of the benchmark's own workflow nodes to 116/116:
+ *
+ *   1. a RANKED seed cut at `SEED_LIMIT`, replacing a flat threshold that
+ *      admitted a whole domain for one domain word;
+ *   2. a FAMILY lift (`timeline.item.*`) replacing a domain lift (`timeline.*`,
+ *      `vault.*` — nineteen tools for one file word);
+ *   3. four reads that are earned rather than resident — see `EARNED_READS`;
+ *   4. vocabulary for the sentences that scored zero, since scoring zero means
+ *      offering everything.
+ *
+ * `retrieve.test.ts` asserts the sizes with headroom. They are a floor on the
+ * property, not a fingerprint of today's catalogue.
  *
  * ## Why it is lexical
  *
@@ -47,14 +77,44 @@ import { READS } from './queries'
 import { closeOver } from './tool-graph'
 
 /**
- * The reads, always offered, whatever the question.
+ * The reads that are ACTIONS, and are therefore asked for rather than assumed.
+ *
+ * `RESIDENT` used to be every read in `queries.ts` — ten tools in front of the
+ * model on every turn, whatever the question, which is a floor no narrowing can
+ * get below. Six of those are the graph reads the system prompt's "look before
+ * you write" depends on: they are how an id is found, and nearly every write
+ * needs one.
+ *
+ * These four are not that. Opening a document, searching a job board, working
+ * out a number, reporting the numbers — each is a thing somebody asks for in
+ * words of its own, and none of them produces an id another tool needs, so the
+ * closure never has to reach for one. Measured over the benchmark, moving them
+ * out cut the mean offered set from 23.4 tools a turn to 18.5 and cost exactly
+ * one gold node — `stats.report` on "do referrals do better than the job
+ * boards", a comparison question with no analytics word in it, which the
+ * `better`/`compare` aliases then recovered.
+ *
+ * The property they keep is REACHABILITY, not residency, and `retrieve.test.ts`
+ * asserts it one tool at a time.
+ */
+const EARNED_READS: readonly string[] = [
+  'vault.file.read',
+  'board.search',
+  'calc.eval',
+  'stats.report',
+]
+
+/**
+ * The reads that are always offered, whatever the question.
  *
  * Most of the catalog needs an id that only a read can produce, and the system
  * prompt tells the model to look before it writes. A narrowed set that dropped
- * the reads would make that instruction unfollowable — and they are 1,750
- * tokens, the cheapest part of the catalog to keep.
+ * these would make that instruction unfollowable — and they are the cheapest
+ * part of the catalog to keep.
  */
-export const RESIDENT: readonly string[] = Object.keys(READS)
+export const RESIDENT: readonly string[] = Object.keys(READS).filter(
+  (name) => !EARNED_READS.includes(name),
+)
 
 /**
  * Words that mean a tool without naming it.
@@ -113,6 +173,22 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = Object.assign(Objec
 
   reject: ['stage', 'application'],
   rejected: ['stage', 'application'],
+  /*
+   * Withdrawing is a STAGE change, and the app's word for it is an outcome
+   * value the person never sees.
+   *
+   * `OUTCOME_VALUES` in `core/model.ts` has `withdrawn`; the sentence people
+   * write is "I am withdrawing from Baylor", and the naive plural fold cannot
+   * turn `withdrawing` into `withdrawn`. Measured: that exact sentence abstained
+   * — ninety tools offered for a one-field stage change — and so did the
+   * follow-up "is there anything left over from that I should deal with",
+   * because a conversation whose first turn abstains carries nothing into its
+   * second.
+   */
+  withdraw: ['stage', 'application', 'outcome'],
+  withdrawing: ['stage', 'application', 'outcome'],
+  withdrew: ['stage', 'application', 'outcome'],
+  withdrawal: ['stage', 'application', 'outcome'],
   offer: ['stage', 'application'],
   interview: ['stage', 'timeline', 'application'],
   applied: ['stage', 'application'],
@@ -128,8 +204,75 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = Object.assign(Objec
   deadline: ['timeline'],
   calendar: ['timeline'],
   due: ['timeline'],
-  tag: ['keyword'],
-  label: ['keyword'],
+  /*
+   * The calendar words that carry no calendar word.
+   *
+   * Every one of these was measured abstaining on the benchmark — the whole
+   * catalogue offered, ninety tools, for a sentence about one dated item.
+   * "Anything overdue in there?", "I never got to that UT Austin chase and it's
+   * a week late — push it out to a week from today", "what is the weather in
+   * Houston tomorrow" (out of scope, and it still got ninety tools).
+   *
+   * `overdue` and `late` are `due` with a judgement attached; `push`,
+   * `postpone` and `defer` are what people say instead of `snooze` or
+   * `reschedule`, neither of which anybody types. `tomorrow` and `today` are in
+   * here because a date is the only thing they can be about, and the cost of
+   * being wrong is a handful of timeline tools rather than the catalogue.
+   */
+  overdue: ['timeline', 'due'],
+  late: ['timeline', 'due'],
+  upcoming: ['timeline'],
+  push: ['timeline', 'snooze'],
+  postpone: ['timeline', 'snooze'],
+  defer: ['timeline', 'snooze'],
+  today: ['timeline'],
+  tomorrow: ['timeline'],
+  yesterday: ['timeline'],
+  /*
+   * A month name is a calendar reference and nothing else in this app.
+   *
+   * "What does the rest of September look like — how much is on?" was the last
+   * sentence in the benchmark that scored zero against the whole index, and
+   * zero means the entire catalogue: ninety tools for a question about one
+   * month of one calendar. There is no way to derive these from the registry —
+   * a month is a value, not a word any tool contains — so they are written
+   * down, like the degree abbreviations above and for the same reason.
+   */
+  /*
+   * `may` is deliberately absent. It is a modal verb far more often than a
+   * month — "may I", "you may", "that may be out of date" — and aliasing it
+   * would put the timeline family in front of the model on sentences with no
+   * date in them at all.
+   */
+  january: ['timeline'],
+  february: ['timeline'],
+  march: ['timeline'],
+  april: ['timeline'],
+  june: ['timeline'],
+  july: ['timeline'],
+  august: ['timeline'],
+  september: ['timeline'],
+  october: ['timeline'],
+  november: ['timeline'],
+  december: ['timeline'],
+  /*
+   * `attach`, not just `keyword` — because the noun alone cannot rank.
+   *
+   * Every one of the seven `keyword.*` tools carries `keyword` as a name word,
+   * so the bare alias scored all seven identically at 3 and the ranked seed
+   * broke the tie on catalog order: `create`, `rename`, `delete`. Measured on
+   * "tag my Stripe application with a new keyword called negotiation" and on
+   * "tag the UT Austin application with the keyword I made at the start" —
+   * `keyword.attach` is the gold node in both and was in neither offered set,
+   * while `keyword.rename` was in both.
+   *
+   * "Tag X with Y" is the verb `attach` and nothing else in this registry; the
+   * word is in that tool's NAME, so pointing at it costs one table entry and
+   * lifts the whole keyword family behind it.
+   */
+  tag: ['keyword', 'attach'],
+  label: ['keyword', 'attach'],
+  untag: ['keyword', 'detach'],
   bookmark: ['link', 'vault'],
   url: ['link'],
   template: ['snippet'],
@@ -137,6 +280,65 @@ const ALIASES: Readonly<Record<string, readonly string[]>> = Object.assign(Objec
   note: ['snippet', 'application'],
   search: ['scout', 'pipeline'],
   board: ['scout', 'posting'],
+  /*
+   * The analytics vocabulary, none of which is a tool name.
+   *
+   * `stats.report` is the tool; "what is my reply rate so far" is the question,
+   * and it abstained. `rate`, `average` and `percentage` are how a number about
+   * the whole store gets asked for, and `stats` appears in no sentence anybody
+   * types.
+   */
+  rate: ['stats', 'report'],
+  average: ['stats', 'report'],
+  percentage: ['stats', 'report'],
+  proportion: ['stats', 'report'],
+  /*
+   * Comparison is analytics, and `stats.report` is the only tool that can do it
+   * honestly.
+   *
+   * "Do referrals do better than the job boards for me?" — the benchmark's
+   * source-comparison case, whose whole point is that six applications cannot
+   * separate two sources and only `stats.report` knows that, because it returns
+   * `differenceIsReal` per split. Nothing in the sentence says `stats`; `board`
+   * aliases to the scout domain and carried the message somewhere else
+   * entirely.
+   */
+  better: ['stats', 'report'],
+  worse: ['stats', 'report'],
+  compare: ['stats', 'report'],
+  comparison: ['stats', 'report'],
+  versus: ['stats', 'report'],
+  /*
+   * A scout IS a pipeline, and the vocabulary does not say so anywhere.
+   *
+   * The app calls them scouts on screen and `scout.pipeline.*` in the registry,
+   * so `scout` alone scores all twelve `scout.*` tools at 3 and the four that
+   * are actually pipelines never separate from the eight that are postings and
+   * matches. Measured on "which of my job scouts is not actually running":
+   * `job` aliases to application and posting, so `scout.posting.*` scored 7 and
+   * ranked first, and `scout.pipeline.enable.set` — the gold node for the turn
+   * after it, "turn it back on" — was never offered on either turn, because
+   * that sentence contains no indexable word at all and can only inherit.
+   *
+   * `running`, `paused` and `resume` are the words for a pipeline's enabled
+   * flag. Nothing in the registry spells it that way: the tool is
+   * `scout.pipeline.enable.set` and its title is "Pause or resume a pipeline",
+   * so `pause` matches at title weight and `running` matches nothing whatever.
+   */
+  scout: ['scout', 'pipeline'],
+  running: ['pipeline', 'enable'],
+  paused: ['pipeline', 'enable'],
+  /*
+   * NOT `resume`. It is already in this table, meaning a CV — which is what the
+   * word means to the people this app is for far more often than "un-pause",
+   * and a duplicate key would have silently taken the later of the two.
+   * `unpause` and `restart` carry the pipeline sense without the collision.
+   */
+  unpause: ['pipeline', 'enable'],
+  restart: ['pipeline', 'enable'],
+  watch: ['pipeline', 'scout'],
+  monitor: ['pipeline', 'scout'],
+  feed: ['scout', 'match'],
   /*
    * The words people use for a person, none of which was here.
    *
@@ -254,7 +456,19 @@ export function terms(message: string): Set<string> {
   const out = new Set<string>()
   for (const word of words) {
     const singular = word.length > 2 && word.endsWith('s') ? word.slice(0, -1) : word
-    for (const alias of ALIASES[word] ?? ALIASES[singular] ?? []) out.add(alias)
+    /*
+     * And the `-es` plural, which the naive fold turns into a non-word.
+     *
+     * "Are any of my saved searches switched off?" produces `searches`, folds
+     * to `searche`, matches nothing, and the whole message scored zero — so a
+     * question about scouts was answered with the entire catalogue. English
+     * makes `-es` plurals of exactly the stems this app is full of: searches,
+     * matches, pitches, batches. Tried second, so a word that is genuinely a
+     * bare `-s` plural still folds the ordinary way first.
+     */
+    const esSingular = word.length > 4 && word.endsWith('es') ? word.slice(0, -2) : word
+    for (const alias of ALIASES[word] ?? ALIASES[singular] ?? ALIASES[esSingular] ?? [])
+      out.add(alias)
     if (word.length < 3 || STOP.has(word)) continue
     out.add(word)
     if (word.length > 4) out.add(singular)
@@ -317,6 +531,48 @@ const INDEX: ReadonlyMap<string, ReadonlyMap<string, number>> = (() => {
     }
   }
 
+  /*
+   * Every FIELD the tool's own schema declares, at title weight.
+   *
+   * Derived like the enum values above and for the same reason: the field name
+   * is the word for the thing being changed, and half the time it appears
+   * nowhere else. `application.update` takes a `deadline`; nothing in its name
+   * ("Edit application") or its title says so, and the summary mentions it once,
+   * at prose weight.
+   *
+   * Measured on the sentence the benchmark calls its most dangerous —
+   * **"Clear the deadline on the Rice assistant professor application"**, whose
+   * gold move is `application.update { deadline: null }`. Before this, `clear`
+   * aliases to the memory domain and `application` scores every application
+   * tool alike, so `application.offer.clear` ranked first and
+   * `application.update` — the one tool that can do it — was ranked fourteenth
+   * and cut. The field name is the only place in the registry where the word
+   * `deadline` is attached to the tool that owns it.
+   *
+   * `id` and the other structural names cost nothing: the tokeniser drops
+   * anything under three letters, and `query`, `limit` and `record` are already
+   * ordinary catalog words. What this adds is the domain vocabulary — deadline,
+   * stage, colour, url, note — which is what people type.
+   */
+  const fieldWords = (schema: unknown, into: Set<string>): void => {
+    if (typeof schema !== 'object' || schema === null) return
+    if (Array.isArray(schema)) {
+      for (const item of schema) fieldWords(item, into)
+      return
+    }
+    for (const [key, value] of Object.entries(schema as Record<string, unknown>)) {
+      if (
+        key === 'properties' &&
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        for (const field of Object.keys(value)) for (const word of words(field)) into.add(word)
+      }
+      fieldWords(value, into)
+    }
+  }
+
   for (const entry of CATALOG) {
     for (const word of entry.name.split('.')) add(word.toLowerCase(), entry.name, 3)
     for (const word of words(entry.title)) add(word, entry.name, 2)
@@ -324,17 +580,103 @@ const INDEX: ReadonlyMap<string, ReadonlyMap<string, number>> = (() => {
     const fromEnums = new Set<string>()
     enumWords(entry.parameters, fromEnums)
     for (const word of fromEnums) add(word, entry.name, 2)
+    const fromFields = new Set<string>()
+    fieldWords(entry.parameters, fromFields)
+    for (const word of fromFields) add(word, entry.name, 2)
   }
   return out
 })()
 
 /** Below this, a match is noise. */
 const SEED_FLOOR = 3
-/** A tool this strongly matched brings its whole domain — `vault.*`, `scout.*`. */
-const DOMAIN_LIFT = 6
 
-/** The domain half of a registry name: `vault.file.add` -> `vault`. */
-const domainOf = (name: string) => name.split('.')[0] ?? name
+/**
+ * How many tools a message may seed on SCORE ALONE.
+ *
+ * The published knee, and the single largest change this file has had.
+ *
+ * Before this, seeding was a flat threshold: every tool at or above
+ * `SEED_FLOOR` got in. A tool's own name words weigh 3 and the floor IS 3, so
+ * one domain word admitted its whole domain outright — "application" seeded all
+ * ten `application.*`, "vault" all nineteen, "timeline" all nine — before any
+ * lift or closure ran. Measured over the 48 benchmark conversations that put a
+ * MEAN of 37.9 tools in front of the model per turn, median 34, with nine turns
+ * offering the entire safe catalogue.
+ *
+ * The retrieval literature this is taken from measures hit rate against K over
+ * a catalogue this size: 85.0% at K=1, 97.1% at K=3, 98.6% at K=10, while
+ * precision collapses from 92.1% to 26.5% across that range. K=3 is the knee —
+ * nearly all of the recall for a quarter of the noise. MCPGauge measured the
+ * other side of it: attaching tools a task never uses costs 9.5% of task
+ * performance on its own, and the models this app runs on are smaller than the
+ * ones it measured.
+ *
+ * Five rather than three, and the two extra places are paid for: this seeds
+ * REGISTRY tools that are then closed over the graph and joined by `RESIDENT`,
+ * so K here is not the offered count — it is the number of guesses allowed
+ * before the closure and the reads have their say. Swept over the benchmark at
+ * 3, 4, 5, 6 and 8 with everything else fixed: gold-tool recall was 106, 108,
+ * 108, 109 and 109 of 116, and mean offered size 24.1, 25.1, 26.1, 27.1 and
+ * 28.8. Five is where recall stops paying for size.
+ */
+const SEED_LIMIT = 5
+
+/**
+ * A tool this strongly matched brings its VERB SIBLINGS — not its whole domain.
+ *
+ * This was `DOMAIN_LIFT`, and a domain is far too coarse a unit: one strong
+ * match on `vault.file.add` used to pull in every link, person and snippet tool
+ * as well, nineteen in all, because they happen to share a first name segment.
+ *
+ * The sibling set is the useful one, and the benchmark says why. The misses
+ * that a ranked seed introduces are almost all FOLLOW-UP turns naming a
+ * different verb on the same noun: "make that the 21st instead" after a
+ * reminder was created (`timeline.item.reschedule`), "put that back on my list"
+ * after one was ticked off (`timeline.item.reopen`), "turn it back on" after a
+ * scout was found paused (`scout.pipeline.enable.set`). None of those sentences
+ * carries a term the index knows; they are reachable only because the turn
+ * BEFORE them offered the sibling.
+ *
+ * So the lift is by family — `timeline.item.*`, `scout.pipeline.*`,
+ * `application.stage.*` — which is 2 to 9 tools rather than 10 to 19.
+ */
+const FAMILY_LIFT = 6
+
+/**
+ * Where a tool sits in the catalog, for a deterministic tie-break.
+ *
+ * Built once. A linear `findIndex` per comparison would be O(n log n) scans of
+ * a ninety-entry array on every message, for a value that never changes.
+ */
+const ORDER: ReadonlyMap<string, number> = new Map(CATALOG.map((entry, at) => [entry.name, at]))
+const catalogIndex = (name: string) => ORDER.get(name) ?? CATALOG.length
+
+/**
+ * The verb family a tool belongs to, as a name PREFIX.
+ *
+ * `timeline.item.create` -> `timeline.item`; `keyword.attach` -> `keyword`.
+ * Two segments where there are three or more, one where there are two, because
+ * the second segment is the NOUN — the thing the verb acts on — and a
+ * two-segment name has no noun of its own.
+ *
+ * FIRST TWO, not a prefix walk, and that is what puts the four-segment names
+ * where they belong: `scout.pipeline.enable.set` and `timeline.item.remind.set`
+ * fold to `scout.pipeline` and `timeline.item`, alongside
+ * `scout.pipeline.create` and `timeline.item.create`. Taking the whole name
+ * minus its last segment would have left each of them alone in a family of one
+ * — no lift at all, on exactly the tools the follow-up turns reach for.
+ *
+ * And membership is EQUALITY of this fold, not a prefix test. A prefix test
+ * makes `application` — the family of `application.create` — swallow
+ * `application.stage.set`, `application.offer.clear` and the rest, which is the
+ * whole-domain lift this replaced, back again by the side door. Measured: "which
+ * of my job scouts is not actually running" seeded fourteen tools that way, ten
+ * of them the entire application domain, on a question about scouts.
+ */
+const familyOf = (name: string): string => {
+  const parts = name.split('.')
+  return parts.length > 2 ? `${parts[0]}.${parts[1]}` : (parts[0] ?? name)
+}
 
 /**
  * The tools a message points at, or null when it points at nothing clearly.
@@ -351,6 +693,19 @@ export function select(message: string): Set<string> | null {
   const scores = new Map<string, number>()
   for (const term of wanted) {
     for (const [tool, weight] of INDEX.get(term) ?? []) {
+      /*
+       * The two whole-store wipes never compete for a slot.
+       *
+       * They are stripped from the offered set at the end of `offeredFor`
+       * unless `asksToWipe` said the person's own words asked for them, and
+       * they are ADDED there when it did — so their presence here changes
+       * nothing about whether they are offered. What it changed was what ELSE
+       * was: `clear` and `reset` alias to the memory domain, so "clear the
+       * deadline on the Rice application" scored `memory.clear` at 6 — above
+       * every application tool — and under a ranked seed that spent one of five
+       * places on a tool guaranteed to be deleted three steps later.
+       */
+      if (NEVER_IMPLICIT.includes(tool)) continue
       scores.set(tool, (scores.get(tool) ?? 0) + weight)
     }
   }
@@ -359,15 +714,83 @@ export function select(message: string): Set<string> | null {
   for (const score of scores.values()) best = Math.max(best, score)
   if (best < SEED_FLOOR) return null
 
-  const seed = new Set<string>()
-  const domains = new Set<string>()
-  for (const [tool, score] of scores) {
-    if (score >= SEED_FLOOR) seed.add(tool)
-    if (score >= DOMAIN_LIFT) domains.add(domainOf(tool))
+  /*
+   * Ranked, then cut — and ties broken by CATALOG ORDER rather than by
+   * whatever order the index happened to build in.
+   *
+   * A tie at the cut is the common case, not the exception: a bare domain word
+   * scores every tool in that domain identically, so which three of ten survive
+   * is decided entirely by the tie-break. Catalog order puts the creates and
+   * the edits ahead of the duplicates and the recolours, which is the right
+   * prior when the words give no other signal — and, being deterministic, it
+   * keeps the offered array byte-identical between runs, which is what the
+   * prefix cache is built on.
+   */
+  const ranked = [...scores]
+    .filter(([, score]) => score >= SEED_FLOOR)
+    .sort((a, b) => b[1] - a[1] || catalogIndex(a[0]) - catalogIndex(b[0]))
+
+  const seed = new Set(ranked.slice(0, SEED_LIMIT).map(([tool]) => tool))
+
+  /*
+   * Every term that matched anything keeps its best tool, whatever the rank.
+   *
+   * A global top-K reads a sentence as one intent, and plenty of these are two.
+   * Measured: "add a reminder to tell my referees about it, on the 18th" spent
+   * all five ranked places on `vault.person.*` and `vault.link.*`, on the
+   * strength of `referees`, and `timeline.item.create` — the other half of the
+   * request, and the gold node of the benchmark's `offer-to-timeline`
+   * conversation — fell outside the cut. "Read my CV and build my profile" is
+   * the same shape with the halves the other way round.
+   *
+   * One tool per matched term is a bound of the same order as K (a message has
+   * a handful of content words), and it is the cheapest possible guarantee that
+   * no intent in the sentence is dropped in silence. Over the benchmark it is
+   * worth six gold nodes of recall at K=3 (100/116 to 106/116) and one in the
+   * configuration that shipped (115/116 to 116/116), for 0.3 tools a turn.
+   */
+  for (const term of wanted) {
+    const row = INDEX.get(term)
+    if (row === undefined) continue
+    let bestTool: string | null = null
+    let bestScore = 0
+    for (const tool of row.keys()) {
+      const score = scores.get(tool) ?? 0
+      if (score < SEED_FLOOR) continue
+      if (
+        score > bestScore ||
+        (score === bestScore && bestTool !== null && catalogIndex(tool) < catalogIndex(bestTool))
+      ) {
+        bestScore = score
+        bestTool = tool
+      }
+    }
+    if (bestTool !== null) seed.add(bestTool)
   }
-  // A strongly matched tool brings its neighbours: somebody asking about files
-  // usually wants more than the one file verb their words happened to hit.
-  for (const entry of CATALOG) if (domains.has(domainOf(entry.name))) seed.add(entry.name)
+
+  /*
+   * A strongly matched tool brings its siblings, and so does the BEST match
+   * whatever it scored.
+   *
+   * The second half is not a weakening of the threshold, it is the case the
+   * threshold cannot see. "I replied to Stripe on the 12th — tick that one off
+   * as done that day" matches `timeline.item.complete` at 5 and nothing else at
+   * all: an unambiguous single-tool request, below `FAMILY_LIFT` precisely
+   * because only one word pointed anywhere. The turn after it is "put that back
+   * on my list, and give me until the 18th", which needs
+   * `timeline.item.reopen` and `timeline.item.reschedule` and names neither —
+   * and got neither, in the version of this file before the ranked seed and in
+   * the version before that. A top match is a family the conversation is now
+   * in.
+   */
+  const families = new Set<string>()
+  for (const [tool, score] of scores) if (score >= FAMILY_LIFT) families.add(familyOf(tool))
+  const top = ranked[0]
+  if (top !== undefined) families.add(familyOf(top[0]))
+  for (const entry of CATALOG) {
+    if (NEVER_IMPLICIT.includes(entry.name)) continue
+    if (families.has(familyOf(entry.name))) seed.add(entry.name)
+  }
 
   return seed
 }
@@ -454,6 +877,38 @@ export const NEVER_IMPLICIT: readonly string[] = ['memory.reset', 'memory.clear'
 export const EVERYTHING_SAFE: readonly string[] = CATALOG.map((e) => e.name).filter(
   (name) => !NEVER_IMPLICIT.includes(name),
 )
+
+/**
+ * What a wipe request is offered ALONGSIDE the wipes, when nothing else is known.
+ *
+ * The abstaining wipe path used to answer with `EVERYTHING_SAFE`, and the
+ * comment justifying that is still below and still right about the failure it
+ * was fixing: handing the model exactly `memory.reset` and `memory.clear`, with
+ * no reads and no alternative action, on the one pair of calls in this app that
+ * cannot be undone. **A wipe offer is not a menu of two.**
+ *
+ * But the catalogue was never what made it not-a-menu-of-two. Measured, "erase
+ * everything" and "purge everything that is out of date" — two sentences the
+ * lexicon indexes no term of — each put all ninety-two tools in front of a
+ * model, which is the largest offered set this app can produce, on its most
+ * dangerous request. Sixteen thousand tokens of schema, on a small window,
+ * immediately before an irreversible call: exactly the condition MCPGauge
+ * measured a 9.5% task-performance cost for, at the moment there is least
+ * margin for a mistake.
+ *
+ * The alternative to a total wipe is a SCOPED one, so this is every read plus
+ * every scoped delete — the model can look at what is there, and it can remove
+ * one thing rather than everything. That is the whole of what the wide
+ * fallback was providing that mattered, at about a quarter of the size, and it
+ * is derived from the catalog's own `effect` rather than listed here, so a
+ * delete added tomorrow is in it.
+ */
+const SCOPED_ERASE: readonly string[] = [
+  ...RESIDENT,
+  ...CATALOG.filter((e) => e.effect === 'delete' && !NEVER_IMPLICIT.includes(e.name)).map(
+    (e) => e.name,
+  ),
+]
 
 /**
  * The full offered set for a run: what was asked for, closed over the graph.
@@ -574,7 +1029,7 @@ export function offeredFor(
        * than a widening: the system prompt tells the model to look before it
        * writes, and a set with no reads in it makes that unfollowable.
        */
-      for (const name of carried === null ? EVERYTHING_SAFE : RESIDENT) kept.add(name)
+      for (const name of carried === null ? SCOPED_ERASE : RESIDENT) kept.add(name)
       for (const name of NEVER_IMPLICIT) kept.add(name)
       return closeOver(kept)
     }

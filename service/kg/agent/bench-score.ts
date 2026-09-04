@@ -43,6 +43,16 @@ export type CallRecord = {
    * one would make every stored run unreadable.
    */
   readonly args?: string
+  /**
+   * What the argument-repair layer fixed on this call, if anything.
+   *
+   * Optional for the same reason `args` is: a report written before the layer
+   * existed carries none, and a scorer that required it would make every stored
+   * run unreadable. Counted rather than judged — a repaired call is not a worse
+   * call, it is a call that would otherwise have been a refusal, and the ratio
+   * of repairs to refusals is what says whether the layer is earning its place.
+   */
+  readonly repairs?: readonly string[]
 }
 
 /** A record as the scorer sees it. Flattened by the runner from the real store. */
@@ -206,6 +216,15 @@ export type TrajectoryScore = {
   readonly calls: number
   /** The same tool with the same effect called twice running. */
   readonly repeats: number
+  /**
+   * Every repair the argument layer applied across this conversation, by kind.
+   *
+   * Absent on a run recorded before the layer existed, which is different from
+   * an empty list and has to stay different: absent means "not measured", empty
+   * means "measured, fired nothing". Averaging the first in as the second is
+   * how a metric quietly reports success for something it never observed.
+   */
+  readonly repairKinds?: readonly string[]
 }
 
 /**
@@ -277,6 +296,7 @@ export function scoreTrajectory(calls: readonly CallRecord[]): TrajectoryScore {
     if (satisfied) grounded += 1
   }
 
+  const repairKinds = calls.flatMap((c) => (c.repairs === undefined ? [] : [...c.repairs]))
   return {
     grounded,
     writes: writes.length,
@@ -284,6 +304,7 @@ export function scoreTrajectory(calls: readonly CallRecord[]): TrajectoryScore {
     refused: calls.filter((c) => !c.ok).length,
     calls: calls.length,
     repeats,
+    ...(calls.some((c) => c.repairs !== undefined) ? { repairKinds } : {}),
   }
 }
 
@@ -421,6 +442,23 @@ export function summarise(scores: readonly ConversationScore[]) {
     repeats: sum((t) => t.repeats),
     calls,
     writes,
+    /**
+     * How often the argument-repair layer fired, and on what.
+     *
+     * A flat headline after shipping the layer has two opposite explanations —
+     * it never fires because these models emit valid arguments, or it fires
+     * constantly and does not change outcomes — and without this count they are
+     * indistinguishable. `byKind` says WHICH malformation the models actually
+     * produce, which is what decides where to spend the next fix.
+     */
+    repairs: (() => {
+      const all = scores.flatMap((s) =>
+        s.trajectory.repairKinds === undefined ? [] : [...s.trajectory.repairKinds],
+      )
+      const byKind: Record<string, number> = {}
+      for (const k of all) byKind[k] = (byKind[k] ?? 0) + 1
+      return { total: all.length, byKind }
+    })(),
     /**
      * The graph axis, averaged over the conversations that HAVE a gold workflow.
      *

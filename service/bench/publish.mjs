@@ -104,6 +104,17 @@ const recount = (row, scores) => ({
   stateChecksPassed: scores.flatMap((s) => s.state).filter((c) => c.pass).length,
   stateChecks: scores.flatMap((s) => s.state).length,
   graph: regraph(scores),
+  /*
+   * Recomputed like the rest, and for the same reason: a spliced re-run row
+   * carries its own repairs, and inheriting the pre-splice count would report
+   * the layer firing on work that was thrown away.
+   */
+  repairs: (() => {
+    const all = scores.flatMap((s) => s.trajectory?.repairKinds ?? [])
+    const byKind = {}
+    for (const k of all) byKind[k] = (byKind[k] ?? 0) + 1
+    return { total: all.length, byKind }
+  })(),
 })
 
 /*

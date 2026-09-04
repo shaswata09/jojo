@@ -129,22 +129,28 @@ describe('what is always there', () => {
    * term index over the catalog. They disagree, and "erase everything" is where:
    * it asks to wipe, and it indexes no term at all, so `select` abstains. That
    * abstention branch returns early and used to skip the closure, the resident
-   * reads and `EVERYTHING_SAFE` entirely — so the offered set was exactly
+   * reads and the wide fallback entirely — so the offered set was exactly
    * `NEVER_IMPLICIT`, a two-item menu of the only two calls in this app that
    * cannot be undone, with no read to check with and nothing else to do
-   * instead. Measured: recognised phrasings of the same request came back with
-   * 18 and 42 tools including every read.
+   * instead.
    *
-   * Both halves are asserted. The reads make "look before you write"
-   * followable; the size is what stops a future edit from satisfying this by
-   * adding the reads and calling it done.
+   * THREE halves are asserted now, and the third replaced a bad one. It used to
+   * demand a set LARGER than `EVERYTHING_SAFE`, which pinned this branch to the
+   * biggest offered set the app can build — ninety-two tools, sixteen thousand
+   * tokens of schema, on the most dangerous request there is. Size was never
+   * the property; having somewhere else to go was. So: the reads, so "look
+   * before you write" is followable; a SCOPED delete, so removing one record is
+   * an available answer to "erase everything"; and a ceiling, so a future edit
+   * cannot satisfy the first two by going back to the whole catalogue.
    */
   it('does not narrow a wipe it failed to recognise down to the wipes themselves', () => {
+    const deletes = CATALOG.filter((e) => e.effect === 'delete').map((e) => e.name)
     for (const message of ['erase everything', 'purge everything that is out of date']) {
       expect(select(message), message).toBeNull()
       const out = offered(message)!
       for (const read of RESIDENT) expect(out.has(read), `${message}: ${read}`).toBe(true)
-      expect(out.size, message).toBeGreaterThan(EVERYTHING_SAFE.length)
+      expect(deletes.filter((name) => out.has(name)).length, message).toBeGreaterThan(0)
+      expect(out.size, message).toBeLessThan(EVERYTHING_SAFE.length)
     }
   })
 })
@@ -461,7 +467,14 @@ describe('a substituted picker cannot widen past what is safe', () => {
   it('uses the chooser alone exactly where the lexicon gave up', () => {
     // The case the chooser exists for, and the largest win: an unrecognised
     // message used to mean "offer all ninety-two".
-    const opaque = 'I heard back from them yesterday'
+    /*
+     * `yesterday` used to be in this sentence, and it stopped being opaque: it
+     * is now an alias for the timeline family, because a benchmark turn asking
+     * "what is the weather in Houston tomorrow" was abstaining and being handed
+     * all ninety tools for it. The property under test is about the ABSTENTION
+     * path, so the fixture has to be a sentence that still takes it.
+     */
+    const opaque = 'I heard back from them'
     expect(select(opaque)).toBeNull()
 
     const out = offeredFor(opaque, null, [], new Set(['application.stage.set']))
@@ -719,5 +732,312 @@ describe('asking to record something about yourself', () => {
     // Widening the vocabulary must not make this the answer to everything —
     // the retriever's value is in what it leaves out.
     expect(offersBackground('what applications am I waiting on')).toBe(false)
+  })
+})
+
+/**
+ * How MUCH is offered, which nothing here used to measure.
+ *
+ * Every test above this point asks whether some tool is in the set. None of
+ * them could fail if the set were the whole catalogue — and for a long time it
+ * effectively was: a tool's own name words weigh 3 and `SEED_FLOOR` is 3, so one
+ * domain word admitted its entire domain before any lift or closure ran.
+ *
+ * Measured across the 48 conversations of `bench-conversations.ts`, driving
+ * `offeredFor` turn by turn exactly as `bench.test.ts` does: a MEAN of 37.9
+ * tools offered per turn, median 34, ninetieth percentile 67, and nine turns
+ * offering all ninety. The retrieval literature this file cites puts the knee
+ * at K=3 for a catalogue this size, and MCPGauge measured a 9.5% average
+ * task-performance cost for tools that are merely ATTACHED and never used.
+ *
+ * After the ranked seed, the family lift, the earned reads and the alias work:
+ * mean 18.9, median 18, p90 25, max 34, and no turn offering the catalogue —
+ * with gold-tool recall going UP, from 114/116 of the benchmark's own workflow
+ * nodes to 116/116.
+ *
+ * These numbers are asserted with headroom, because they are a floor on the
+ * property rather than a fingerprint of today's catalogue: a tool added
+ * tomorrow should not turn this red. What they cannot do is pass while the
+ * retriever offers everything, which is the whole point of writing them down.
+ */
+describe('how much it offers', () => {
+  /** The sentences the audit measured, one per shape of request. */
+  const REPRESENTATIVE = [
+    'move my Rice application to interview',
+    'what is on my calendar',
+    'save this posting for later',
+    'tag it with systems',
+    'read my CV and build my profile',
+    'add a reminder for Thursday',
+    'Rice rejected me',
+    'add Dr Chen as a referee on the Rice application',
+    'what CVs do I have',
+    'which of my job scouts is not actually running',
+    'clear the deadline on the Rice assistant professor application',
+    'what is my reply rate so far',
+  ]
+
+  it('keeps an ordinary request well under a third of the catalogue', () => {
+    for (const message of REPRESENTATIVE) {
+      const out = offered(message)
+      expect(out, message).not.toBeNull()
+      expect(out!.size, `${message} offered ${out!.size}`).toBeLessThanOrEqual(30)
+    }
+  })
+
+  it('averages under twenty across them', () => {
+    const sizes = REPRESENTATIVE.map((m) => offered(m)?.size ?? EVERYTHING_SAFE.length)
+    const mean = sizes.reduce((a, b) => a + b, 0) / sizes.length
+    expect(mean).toBeLessThan(20)
+  })
+
+  it('does not offer a whole domain for one bare domain word', () => {
+    /*
+     * The specific defect the ranked seed replaced, and the one a future edit
+     * is most likely to reintroduce by raising `SEED_LIMIT` or by widening the
+     * family lift back out to a domain.
+     *
+     * "what applications do I have" is a READ. It named a domain and no verb,
+     * and it used to seed all ten `application.*` tools — every delete, every
+     * stage move, the offer decision — on a question that changes nothing.
+     */
+    const out = offered('what applications do I have')!
+    const application = [...out].filter((n) => n.startsWith('application.'))
+    expect(application.length).toBeLessThan(
+      CATALOG.filter((e) => e.name.startsWith('application.')).length,
+    )
+    expect(out.has('application.delete') && out.has('application.stage.set')).toBe(false)
+  })
+
+  it('does not let a strong match in one family drag in its cousins', () => {
+    /*
+     * `vault` is nineteen tools — files, links, people and snippets — and the
+     * old domain lift offered all nineteen the moment one file word landed.
+     * The family is `vault.file`, which is six.
+     */
+    const out = offered('what CVs do I have')!
+    expect([...out].some((n) => n.startsWith('vault.file.'))).toBe(true)
+    expect([...out].some((n) => n.startsWith('vault.snippet.'))).toBe(false)
+    expect([...out].some((n) => n.startsWith('vault.link.'))).toBe(false)
+  })
+})
+
+/**
+ * The recall the narrowing had to keep, case by case.
+ *
+ * Each of these is a benchmark conversation whose gold workflow node went
+ * missing at some point while this file was being narrowed, and each is fixed
+ * by a different mechanism. They are written out separately rather than as a
+ * loop over the benchmark because a loop that fails tells you the number went
+ * down and not which mechanism broke.
+ */
+describe('what the narrowing must not lose', () => {
+  it('keeps both halves of a two-intent sentence', () => {
+    /*
+     * The per-term guarantee. A global top-K reads a sentence as one intent and
+     * this one is two — a reminder AND the people it is about — so the five
+     * ranked places went to `vault.person.*` and `vault.link.*` on the strength
+     * of `referees`, and `timeline.item.create` was cut. It is the gold node of
+     * the benchmark's `offer-to-timeline` conversation, and removing this loop
+     * is the one mutation that takes gold recall off 116/116, to 115.
+     *
+     * The second sentence is the same shape with the halves the other way
+     * round: `vault.file.*` outranks everything on "CV", and `profile.*` is the
+     * rest of the request.
+     */
+    const reminder = offered('Add a reminder to tell my referees about it, on the 18th')!
+    expect(reminder.has('timeline.item.create')).toBe(true)
+    expect([...reminder].some((n) => n.startsWith('vault.person.'))).toBe(true)
+
+    const cv = offered('read my CV and build my profile')!
+    expect(cv.has('vault.file.read')).toBe(true)
+    expect([...cv].some((n) => n.startsWith('profile.'))).toBe(true)
+  })
+
+  it('keeps the sibling verb a follow-up turn will need', () => {
+    /*
+     * The family lift, and specifically its top-match half. "Tick that one off"
+     * matches `timeline.item.complete` at 5 and nothing else at all — an
+     * unambiguous single-tool request, below `FAMILY_LIFT` precisely because
+     * only one word pointed anywhere. The turn after it is "put that back on my
+     * list, and give me until the 18th", which needs `reopen` and `reschedule`
+     * and names neither.
+     */
+    const out = offered('I replied to Stripe on the 12th — tick that one off as done that day')!
+    expect(out.has('timeline.item.complete')).toBe(true)
+    expect(out.has('timeline.item.reopen')).toBe(true)
+    expect(out.has('timeline.item.reschedule')).toBe(true)
+  })
+
+  it('offers the tool that owns a FIELD the sentence names', () => {
+    /*
+     * The field-name index, on the sentence `bench-conversations.ts` calls the
+     * most dangerous in the suite. Clearing a deadline is
+     * `application.update { deadline: null }` — the application owns its
+     * deadline — and `deadline` appears in that tool's name, title and enum
+     * values exactly nowhere. `clear` aliases to the memory domain and
+     * `application` scores all ten application tools alike, so
+     * `application.offer.clear` ranked first and `application.update` was cut.
+     */
+    const out = offered('clear the deadline on the Rice assistant professor application')!
+    expect(out.has('application.update')).toBe(true)
+    expect(out.has('memory.clear')).toBe(false)
+    expect(out.has('memory.reset')).toBe(false)
+  })
+
+  it('does not spend a ranked slot on a tool it is about to strip', () => {
+    /*
+     * `memory.clear` scored 6 on the sentence above — `clear` aliases to the
+     * memory domain and `memory` is a name word — which put it top of the
+     * ranking and cost one of the five seed places, on a tool guaranteed to be
+     * deleted before the set is returned. Asserted through the ONLY observable
+     * that changes: a message that says "clear" still gets its own domain's
+     * tools rather than five memory ones.
+     */
+    const out = offered('clear the tags off the Baylor application')!
+    expect([...out].some((n) => n.startsWith('keyword.'))).toBe(true)
+    expect(out.has('memory.clear')).toBe(false)
+  })
+})
+
+/**
+ * The vocabulary added to close the abstentions, one fixture per family.
+ *
+ * The file's own rule, stated over `ALIASES`: every family needs a fixture, so
+ * deleting one fails loudly rather than quietly costing recall. Nine of the 99
+ * benchmark turns used to score zero against the whole index — and zero means
+ * the entire catalogue, ninety tools, for sentences as ordinary as "anything
+ * overdue in there?".
+ */
+describe('the words that used to score nothing at all', () => {
+  const offersFrom = (message: string, prefix: string) => {
+    const out = offeredFor(message, null, [])
+    return out !== null && [...out].some((n) => n === prefix || n.startsWith(`${prefix}.`))
+  }
+
+  it('reads "withdrawing" as a stage change', () => {
+    // `OUTCOME_VALUES` has `withdrawn`; people write "withdrawing", and no fold
+    // gets from one to the other. Measured abstaining, on both turns of the
+    // conversation, because a first turn that abstains carries nothing forward.
+    expect(select('I am withdrawing from Baylor')).not.toBeNull()
+    expect(offersFrom('I am withdrawing from Baylor', 'application')).toBe(true)
+  })
+
+  it('reads "overdue", "late" and "push it out" as calendar words', () => {
+    for (const message of [
+      'anything overdue in there?',
+      "I never got to that UT Austin chase and it's a week late",
+      // No date word at all in this one — `push` is carrying it alone, which is
+      // what makes it a test of the alias rather than of `today`.
+      'push that back by a week',
+    ]) {
+      expect(select(message), message).not.toBeNull()
+      expect(offersFrom(message, 'timeline'), message).toBe(true)
+    }
+  })
+
+  it('reads a month name as a calendar word, and "may" as an ordinary one', () => {
+    expect(offersFrom('what does the rest of September look like', 'timeline')).toBe(true)
+    // `may` is a modal verb far more often than a month. Aliasing it would put
+    // the timeline family in front of the model on sentences with no date in
+    // them at all — this one is about a note.
+    expect(offersFrom('may I add a note about that', 'timeline')).toBe(false)
+  })
+
+  it('reads a rate or a comparison as analytics', () => {
+    expect(offersFrom('what is my reply rate so far', 'stats')).toBe(true)
+    expect(offersFrom('do referrals do better than the job boards for me?', 'stats')).toBe(true)
+  })
+
+  it('reads "tag X with Y" as attaching, not as renaming', () => {
+    /*
+     * All seven `keyword.*` tools carry `keyword` as a name word, so the bare
+     * alias scored them identically and the tie broke on catalog order:
+     * `create`, `rename`, `delete`. `keyword.attach` is the gold node for two
+     * benchmark conversations and was in neither set, while `keyword.rename`
+     * was in both.
+     */
+    const out = offered('tag my Stripe application with a new keyword called negotiation')!
+    expect(out.has('keyword.attach')).toBe(true)
+    expect(out.has('keyword.create')).toBe(true)
+  })
+
+  it('knows a scout is a pipeline, and that "running" is its enabled flag', () => {
+    /*
+     * The app says scout on screen and `scout.pipeline.*` in the registry, so
+     * `scout` alone scored all twelve `scout.*` tools alike and the four that
+     * are pipelines never separated from the eight that are postings and
+     * matches. The turn after this one is "turn it back on", which contains no
+     * indexable word and can only inherit.
+     */
+    const out = offered('which of my job scouts is not actually running')!
+    expect(out.has('scout.pipeline.enable.set')).toBe(true)
+  })
+
+  it('folds an -es plural, which the naive fold turned into a non-word', () => {
+    // `searches` -> `searche` matched nothing, so a question about scouts was
+    // answered with the entire catalogue.
+    expect(terms('are any of my saved searches switched off?').has('scout')).toBe(true)
+    expect(select('are any of my saved searches switched off?')).not.toBeNull()
+  })
+})
+
+/**
+ * The four reads that stopped being resident, and stayed reachable.
+ *
+ * `RESIDENT` was every read in `queries.ts` — ten tools in front of the model on
+ * every single turn, which is a floor no narrowing can go below. Six of them are
+ * the graph reads the system prompt's "look before you write" actually depends
+ * on: they are how an id is found, and every write needs one.
+ *
+ * The other four are not that. `vault.file.read`, `board.search`, `calc.eval`
+ * and `stats.report` are ACTIONS that happen to be read-only — opening a
+ * document, searching a job board, working out a number — each with its own
+ * plain vocabulary, and none of them produces an id anything else needs.
+ * Measured over the benchmark, dropping them cut the mean offered set from 23.4
+ * to 18.5 and cost exactly one gold node, `stats.report` on "do referrals do
+ * better than the job boards", which the comparison aliases then recovered.
+ *
+ * So the property is REACHABILITY, not residency, and it is asserted per tool.
+ */
+describe('the reads that are earned rather than resident', () => {
+  it('keeps the six id-producing reads in every narrowed set', () => {
+    for (const message of ['remind me on Thursday', 'Rice rejected me', 'tag it rust']) {
+      const out = offered(message)!
+      for (const read of [
+        'memory.overview',
+        'memory.list',
+        'memory.get',
+        'memory.search',
+        'memory.related',
+        'graph.query',
+      ]) {
+        expect(out.has(read), `${read} for "${message}"`).toBe(true)
+      }
+    }
+    expect([...RESIDENT].sort()).toEqual(
+      [
+        'graph.query',
+        'memory.get',
+        'memory.list',
+        'memory.overview',
+        'memory.related',
+        'memory.search',
+      ].sort(),
+    )
+  })
+
+  it('does not put the other four in front of every question', () => {
+    const out = offered('Rice rejected me')!
+    for (const read of ['vault.file.read', 'board.search', 'calc.eval', 'stats.report']) {
+      expect(out.has(read), read).toBe(false)
+    }
+  })
+
+  it('offers each of them for the question that needs it', () => {
+    expect(offered('what is in my CV')!.has('vault.file.read')).toBe(true)
+    expect(offered('search the job boards for postdocs')!.has('board.search')).toBe(true)
+    expect(offered('what is my reply rate so far')!.has('stats.report')).toBe(true)
+    expect(offered('work out the average for me')!.has('stats.report')).toBe(true)
   })
 })
