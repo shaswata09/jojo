@@ -138,6 +138,15 @@ export function graphOf(conversation: Conversation): BenchGraph {
       nodes.push({ id, kind: 'answer', label: `says “${fact}”`, detail: 'the answer must contain this', column: i, row: row++ })
       edges.push({ from: turnId, to: id, kind: 'answer' })
     }
+    // The mirror image, drawn in the forbidden style: a claim the answer must
+    // NOT make. Added with `answerMustNot`, which exists because a model that
+    // did the work and then announced a second action it never took passed
+    // every axis — the store showed the write it made, not the one it invented.
+    for (const fact of turn.answerMustNot ?? []) {
+      const id = `${turnId}-never-${fact}`
+      nodes.push({ id, kind: 'forbidden', label: `never says “${fact}”`, detail: 'the answer must not contain this', column: i, row: row++ })
+      edges.push({ from: turnId, to: id, kind: 'forbidden' })
+    }
 
     /*
      * Forbidden tools are SUMMARISED, not listed. `mustNotCall` is usually

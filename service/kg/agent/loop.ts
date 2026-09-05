@@ -1204,15 +1204,40 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
     // The assistant's own turn goes in BEFORE the results. OpenAI-compatible
     // servers reject a `tool` message whose `tool_call_id` has no preceding
     // assistant turn asking for it, and the rejection names neither.
-    messages.push({
-      role: 'assistant',
+    /*
+     * `arguments` is what the harness UNDERSTOOD, never the model's raw bytes.
+     *
+     * This carried `c.raw` — the exact text the model emitted — and that was a
+     * 400 waiting to happen. vLLM's chat template requires
+     * `tool_calls[].function.arguments` to parse as a JSON object; a model that
+     * double-encodes once, or trails a `</tool_call>` after the brace, produced
+     * a call that `repair.ts` fixed for the executor while its unrepaired text
+     * went into history — and every request after it was rejected wholesale:
+     * "chat_template: tool_calls[].function.arguments must be a JSON object".
+     * The conversation could not recover, because the poison was re-sent on
+     * every turn.
+     *
+     * Found by fault injection on its first live run: 60% corrupted arguments,
+     * 3 of 3 calls repaired and executed, 0 of 3 conversations clean, every
+     * turn after the first answering 400. Repair had made the call succeed and
+     * the conversation fail.
+     *
+     * So the entry is minted as canonical JSON of the PARSED arguments, or `{}`
+     * when nothing parsed, and is UPDATED below once repair has run — the
+     * assistant message is held by reference for exactly that. `{}` plus a tool
+     * result saying the arguments were invalid is a state the model can retry
+     * from; a rejected request is not.
+     */
+    const assistantTurn = {
+      role: 'assistant' as const,
       content: turn.text,
       tool_calls: turn.toolCalls.map((c) => ({
         id: c.id,
         type: 'function' as const,
-        function: { name: c.name, arguments: c.raw },
+        function: { name: c.name, arguments: JSON.stringify(c.args ?? {}) },
       })),
-    })
+    }
+    messages.push(assistantTurn)
 
     for (const call of turn.toolCalls) {
       /*
@@ -1235,6 +1260,15 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
         turn.finishReason === 'length',
       )
       steps.push(step)
+      /*
+       * History carries what RAN. `step.args` is the repaired object when
+       * `repair.ts` fixed the call and the parsed object otherwise; `{}` when
+       * nothing parsed at all. Written back here, in the scope that holds the
+       * assistant message, because `performCall` neither sees history nor
+       * should — see the comment on `assistantTurn` for the 400 this prevents.
+       */
+      const slot = assistantTurn.tool_calls.find((t) => t.id === call.id)
+      if (slot) slot.function.arguments = JSON.stringify(step.args ?? {})
 
       /*
        * Is this run going anywhere? Asked once per CALL, not once per round —

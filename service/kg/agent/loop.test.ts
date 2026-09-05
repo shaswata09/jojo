@@ -2304,3 +2304,66 @@ describe('the three bad endings are told apart', () => {
     expect(answered).toEqual(asked)
   })
 })
+
+
+describe('what history carries for a call the model malformed', () => {
+  /**
+   * Found by fault injection on its first live run, and it was a 400.
+   *
+   * The assistant turn went into history with `arguments: c.raw` — the model's
+   * exact bytes. vLLM's chat template requires `tool_calls[].function.arguments`
+   * to parse as a JSON object, so a model that double-encoded once, or trailed
+   * a `</tool_call>` after the brace, had its call REPAIRED and executed while
+   * the unrepaired text was re-sent on every subsequent request — each of which
+   * the server rejected wholesale: "chat_template: tool_calls[].function.arguments
+   * must be a JSON object". Measured at a 60% fault rate against Gemma: 3 of 3
+   * calls repaired and run, 0 of 3 conversations clean, every turn after the
+   * first answering 400. Repair had made the call succeed and the conversation
+   * fail.
+   *
+   * History must carry what the harness UNDERSTOOD — the repaired object, or
+   * `{}` when nothing parsed — never what the model said.
+   */
+  const doubleEncoded = (): Turn => ({
+    ok: true,
+    text: null,
+    // A JSON *string* whose content is the object — the commonest small-model
+    // malformation. `args` is null because the outer parse yields a string.
+    toolCalls: [{ id: 'c1', name: 'memory_list', args: null, raw: JSON.stringify(JSON.stringify({ type: 'application' })) }],
+    finishReason: 'tool_calls',
+  })
+
+  it('re-sends a JSON object, not the raw bytes, after repair', async () => {
+    const llm = scripted([doubleEncoded(), says('done')])
+    await runAgent({ host: host(), llm, history: [], prompt: 'list my applications', onEvent: collect().onEvent })
+    // The SECOND request is the one that carries the assistant turn back.
+    const second = llm.seen[1]
+    const assistant = second?.find((m) => m.role === 'assistant' && 'tool_calls' in m) as
+      | { tool_calls?: { function: { arguments: string } }[] }
+      | undefined
+    const sent = assistant?.tool_calls?.[0]?.function.arguments
+    expect(sent, 'no assistant tool_call was re-sent').toBeDefined()
+    // Must parse, and must parse to an OBJECT — a string would be the bug.
+    const parsed: unknown = JSON.parse(sent!)
+    expect(typeof parsed).toBe('object')
+    expect(parsed).toEqual({ type: 'application' })
+  })
+
+  it('sends {} rather than garbage when nothing could be repaired', async () => {
+    const garbage: Turn = {
+      ok: true,
+      text: null,
+      toolCalls: [{ id: 'c1', name: 'memory_list', args: null, raw: 'not json at all {{{' }],
+      finishReason: 'tool_calls',
+    }
+    const llm = scripted([garbage, says('gave up')])
+    await runAgent({ host: host(), llm, history: [], prompt: 'list my applications', onEvent: collect().onEvent })
+    const assistant = llm.seen[1]?.find((m) => m.role === 'assistant' && 'tool_calls' in m) as
+      | { tool_calls?: { function: { arguments: string } }[] }
+      | undefined
+    const sent = assistant?.tool_calls?.[0]?.function.arguments
+    expect(sent).toBeDefined()
+    expect(() => JSON.parse(sent!)).not.toThrow()
+    expect(typeof JSON.parse(sent!)).toBe('object')
+  })
+})

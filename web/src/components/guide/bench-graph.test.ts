@@ -111,3 +111,13 @@ describe('what a turn may call', () => {
     expect([...writes, ...reads].sort()).toEqual([...(turn.mustCallOneOf ?? [])].sort())
   })
 })
+
+describe('a claim the answer must not make', () => {
+  it('draws it as a forbidden node, the mirror of an answer node', () => {
+    const c = CONVERSATIONS.find((x) => x.turns.some((t) => t.answerMustNot?.length))!
+    const g = graphOf(c)
+    const never = g.nodes.filter((n) => n.kind === 'forbidden' && n.label.startsWith('never says'))
+    expect(never.length).toBeGreaterThan(0)
+    expect(g.edges.some((e) => e.kind === 'forbidden' && never.some((n) => n.id === e.to))).toBe(true)
+  })
+})

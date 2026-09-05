@@ -1,4 +1,5 @@
 import report from '@/components/guide/tool-bench.json'
+import { costText, noiseText, RUNS, rowTelemetry, stopsText } from '@/components/guide/bench-runs'
 import { cn } from '@/lib/utils'
 
 /**
@@ -40,6 +41,18 @@ import { cn } from '@/lib/utils'
  * one over many. Neither feeds `Clean`: a model may reach the right answer by a
  * route the rubric did not anticipate, and these say how far it strayed rather
  * than whether it was wrong.
+ *
+ * `Cost`, `Noise` and `Stops` are what the run cost rather than what it got
+ * right, and they were missing for as long as the page had only the score: a
+ * model that reaches 81/98 in six rounds and one that reaches it in twelve,
+ * with a third of its conversations cut off at the step cap, were the same
+ * row. `Cost` is mean rounds and prompt tokens per conversation; `Stops` is how
+ * many conversations ended by the harness rather than by the model answering;
+ * `Noise` is the clean count's band across repeated passes and appears only
+ * when the payload was more than one pass — a deviation over one run is not a
+ * measurement. All three are derived in `bench-runs.ts` and tested there; an
+ * absent field prints "—", never a zero, because a run recorded before the
+ * loop reported its stops has not measured zero of them.
  *
  * ## The conversation breakdown underneath
  *
@@ -93,6 +106,8 @@ type Run = {
    * workflow. Both absences render as "—" rather than as a zero, which would
    * read as a model failing at something nobody measured.
    */
+  /** Argument repairs the loop applied across the run; null when the layer was off. */
+  repairs?: { conversations: number; total: number; byKind: Record<string, number> } | null
   graph?: {
     conversations: number
     nodeF1: number | null
@@ -114,6 +129,8 @@ const rate = (n: number | null | undefined): string =>
 
 const runs = report.report as Run[]
 const models = [...new Set(runs.map((r) => r.model))]
+/** The band is a column only when there is a band to print. */
+const SHOW_NOISE = RUNS !== null && RUNS > 1
 
 /** How often each conversation failed, across every run. */
 const byConversation = (() => {
@@ -161,6 +178,7 @@ const PLAIN: Record<string, string> = {
   'acted-when-it-should-have-asked': 'guessed instead of asking',
   'said-nothing': 'went silent',
   'answer-missing-fact': 'answered without the fact it was asked for',
+  'answer-forbidden-claim': 'claimed to have done something it did not',
   'wrong-final-state': 'left the records wrong',
 }
 
@@ -207,8 +225,31 @@ export function ToolBenchTable() {
               <th className="py-1.5 pr-3 font-medium" title="F1 on the orderings the gold graph constrains">
                 Order
               </th>
+              <th className="py-1.5 pr-3 font-medium" title="Malformed tool arguments the loop repaired rather than refused — a small-model failure channel that used to end the call">
+                Repaired
+              </th>
               <th className="py-1.5 pr-3 font-medium">Looked first</th>
-              <th className="py-1.5 font-medium">Refused</th>
+              <th className="py-1.5 pr-3 font-medium">Refused</th>
+              <th
+                className="py-1.5 pr-3 font-medium"
+                title="Mean model calls per conversation, and mean prompt tokens per conversation"
+              >
+                Cost
+              </th>
+              {SHOW_NOISE ? (
+                <th
+                  className="py-1.5 pr-3 font-medium"
+                  title={`Clean conversations, mean ± sample deviation over ${String(RUNS)} passes, and how many cases flipped between passes`}
+                >
+                  Noise
+                </th>
+              ) : null}
+              <th
+                className="py-1.5 font-medium"
+                title="Conversations the harness ended — at the step cap, or because the model was going in circles"
+              >
+                Stops
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -252,12 +293,46 @@ export function ToolBenchTable() {
                     >
                       {rate(r.graph?.linkF1)}
                     </td>
+                    <td
+                      className="tabular py-1.5 pr-3 text-text-2"
+                      title={
+                        r.repairs
+                          ? Object.entries(r.repairs.byKind).map(([k, n]) => `${k} ×${String(n)}`).join(', ') || 'nothing needed repairing'
+                          : 'repair layer off, or a run from before it existed'
+                      }
+                    >
+                      {r.repairs ? String(r.repairs.total) : '—'}
+                    </td>
                     <td className="tabular py-1.5 pr-3 text-text-2">
                       {Math.round(r.lookedFirst * 100)}%
                     </td>
-                    <td className="tabular py-1.5 text-text-3">
+                    <td className="tabular py-1.5 pr-3 text-text-3">
                       {Math.round(r.refusalRate * 100)}%
                     </td>
+                    {/* Derived in bench-runs.ts, painted here. `—` is an absence. */}
+                    {(() => {
+                      const t = rowTelemetry(r.model, r.condition)
+                      return (
+                        <>
+                          <td className="tabular whitespace-nowrap py-1.5 pr-3 text-text-2">{costText(t.cost)}</td>
+                          {SHOW_NOISE ? (
+                            <td className="tabular whitespace-nowrap py-1.5 pr-3 text-text-2">
+                              {noiseText(t.noise)}
+                            </td>
+                          ) : null}
+                          <td
+                            className={cn(
+                              'tabular whitespace-nowrap py-1.5',
+                              t.stops !== null && t.stops.maxSteps + t.stops.stuck > 0
+                                ? 'text-warning'
+                                : 'text-text-3',
+                            )}
+                          >
+                            {stopsText(t.stops)}
+                          </td>
+                        </>
+                      )
+                    })()}
                   </tr>
                 )),
             )}
@@ -336,7 +411,8 @@ export function ToolBenchTable() {
       ) : null}
 
       <p className="mt-4 text-xs text-text-3">
-        Run on {ran.toLocaleDateString()} against three vLLM servers, one pass each, {setupSaid}.
+        Run on {ran.toLocaleDateString()} against three vLLM servers,{' '}
+        {RUNS === null || RUNS === 1 ? 'one pass each' : `${String(RUNS)} passes each`}, {setupSaid}.
         Re-running the benchmark is what updates this — the numbers are generated, not typed.
       </p>
     </div>

@@ -11,7 +11,7 @@ import {
 import { DOCUMENTS, WORLD_SHAPE } from '@jojo/service/agent/bench-world'
 import { Segment } from '@/components/common/Segment'
 import { graphOf, type BenchNode } from '@/components/guide/bench-graph'
-import { publishedConversations, runsFor } from '@/components/guide/bench-runs'
+import { publishedConversations, runsFor, stoppedText } from '@/components/guide/bench-runs'
 /*
  * Split out, for the reason `App.tsx` splits Transfer and Graph: ReactFlow is
  * ~100 kB and it is behind a TAB, on a sub-page of the guide, on a page most
@@ -151,6 +151,15 @@ function RunsView({ conversation }: { conversation: Conversation }) {
             <span className="text-xs text-text-3">
               {run.condition === 'full' ? 'all tools' : 'narrowed'}
             </span>
+            {/* Only a many-pass payload can say this; one pass says nothing. */}
+            {run.unstable === true ? (
+              <span
+                className="rounded border border-hairline bg-well px-1.5 py-0.5 text-[11px] text-text-2"
+                title="Clean on some passes and not on others"
+              >
+                unstable across passes
+              </span>
+            ) : null}
             <span
               className={cn(
                 'ml-auto inline-flex items-center gap-1 text-xs',
@@ -197,6 +206,31 @@ function RunsView({ conversation }: { conversation: Conversation }) {
                 ) : null}
               </>
             )}
+          </div>
+
+          {/* What the run cost, from the loop's own account. Absent fields are
+              "—": a score published before the loop reported anything has not
+              measured zero compactions. */}
+          <div className="tabular mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-3">
+            <span title="How the conversation ended">
+              {run.run === null ? '—' : stoppedText(run.run.stoppedBy)}
+            </span>
+            <span title="Model calls across the conversation">
+              {run.run === null ? '—' : `${String(run.run.rounds)} rounds`}
+            </span>
+            <span title="Prompt / completion tokens across the conversation">
+              {run.run === null
+                ? '—'
+                : `${run.run.promptTokens.toLocaleString()} / ${run.run.completionTokens.toLocaleString()} tokens`}
+            </span>
+            <span title="Times the context was summarised to fit the window">
+              {run.run === null ? '—' : `${String(run.run.compactions)} compactions`}
+            </span>
+            <span title="Nudges from the verify gate and the stuck detector">
+              {run.run === null
+                ? '—'
+                : `${String(run.run.verifyNudges)} verify / ${String(run.run.stuckNudges)} stuck nudges`}
+            </span>
           </div>
 
           {/* Turn numbers are only meaningful against the rubric the run was
@@ -371,6 +405,14 @@ export function BenchExplorer() {
                           className="rounded border border-hairline bg-well px-1.5 py-0.5 text-text-2"
                         >
                           must say “{fact}”
+                        </span>
+                      ))}
+                      {(turn.answerMustNot ?? []).map((fact) => (
+                        <span
+                          key={`not-${fact}`}
+                          className="rounded border border-danger-border bg-danger-soft px-1.5 py-0.5 text-danger-fg"
+                        >
+                          must not say “{fact}”
                         </span>
                       ))}
                     </div>

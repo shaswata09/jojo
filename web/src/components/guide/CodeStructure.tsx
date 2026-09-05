@@ -82,7 +82,7 @@ export const SHAPE: DirRow[] = [
     // the test imported, for a folder the OS no longer owns. See service/README.
     files: 118,
     tests: 57,
-    lines: 32159,
+    lines: 32945,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },
@@ -95,7 +95,7 @@ export const SHAPE: DirRow[] = [
     // check), with a test file each. Six files and about 5,500 lines.
     files: 58,
     tests: 28,
-    lines: 27473,
+    lines: 33899,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -105,7 +105,7 @@ export const SHAPE: DirRow[] = [
     lines: 2963,
     what: 'the port, and no platform',
   },
-  { dir: 'service/kg/react', files: 41, tests: 11, lines: 8646, what: 'providers and hooks' },
+  { dir: 'service/kg/react', files: 41, tests: 11, lines: 8662, what: 'providers and hooks' },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
   {
     dir: 'web/src/kg/storage',
@@ -116,9 +116,11 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'web/src/components',
+    // Re-measured 2026-09-05, when the guide's benchmark table grew its cost,
+    // noise and stops columns and `bench-runs.ts` the derivations behind them.
     files: 283,
     tests: 29,
-    lines: 47350,
+    lines: 48069,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 15, tests: 0, lines: 4795, what: 'fifteen pages' },
