@@ -8,7 +8,6 @@ import {
   DarkTheme,
   DefaultTheme,
   NavigationContainer,
-  useNavigationContainerRef,
 } from '@react-navigation/native'
 import type { Theme } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -18,6 +17,7 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { Txt } from '@/components/ui/Text'
 import { bucketOf } from '@jojo/service/data/timeline'
 import { useCreateActions, useRunCreateAction } from '@/lib/create-actions'
+import { navigationRef } from '@/navigation/ref'
 import { useApplications, useScout, useTimeline } from '@/lib/store-context'
 import { linking } from '@/navigation/linking'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'
@@ -218,9 +218,15 @@ const SCREEN_FOR_ROUTE: Readonly<Record<string, (typeof SCREENS)[number]>> = {
 
 export function RootNavigator() {
   const { theme, colors: c } = useTheme()
-  // A container ref rather than `useNavigation`: `headerRight` is rendered by
-  // the navigator itself, which is outside any screen's navigation context.
-  const navigationRef = useNavigationContainerRef<RootStackParamList>()
+  /*
+   * A container ref rather than `useNavigation`: `headerRight` is rendered by
+   * the navigator itself, which is outside any screen's navigation context.
+   *
+   * Module scope rather than `useNavigationContainerRef`, because the overlays
+   * mounted BESIDE this navigator — the sheet host, the approval sheet, the
+   * first-run steps — need the same ref and cannot reach a hook's. See
+   * `navigation/ref.ts` for the crash that came of them using `useNavigation`.
+   */
 
   const navTheme: Theme = {
     ...(theme === 'dark' ? DarkTheme : DefaultTheme),

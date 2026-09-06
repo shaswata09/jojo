@@ -22,6 +22,7 @@ import { deadlineUrgency } from '@jojo/service/tools/support'
 import { DEADLINE_DETAIL, applicationDeadlineOf } from '@/lib/deadline'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
+import { fromOverlay } from '@/navigation/ref'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications, useTimeline } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
@@ -32,9 +33,6 @@ import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useReadFit } from '@/lib/fit-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import type { RootStackParamList } from '@/navigation/types'
 import { space } from '@/theme/tokens'
 
 /**
@@ -132,7 +130,6 @@ export function ApplicationSheet({
   const vocabulary = useRoleVocabulary()
   const { open: openSheet } = useSheets()
   const c = useColors()
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const [form, setForm] = useState<FormState>(() => formFrom(initial))
   const [keywords, setKeywords] = useState<string[]>(() => keywordsOf(initial, labelIdsOf))
@@ -407,7 +404,7 @@ export function ApplicationSheet({
             accessibilityLabel={`Open ${displayName(duplicate.record)}, which you already have`}
             onPress={() => {
               onDismiss()
-              navigation.navigate('ApplicationDetail', { id: duplicate.record.id })
+              fromOverlay((nav) => nav.navigate('ApplicationDetail', { id: duplicate.record.id }))
             }}
             style={[
               styles.duplicate,

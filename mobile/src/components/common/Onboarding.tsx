@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
@@ -11,10 +9,10 @@ import { WelcomeDetails } from '@/components/common/WelcomeDetails'
 import { GuidedTour } from '@/screens/guide/GuidedTour'
 import { markOffered, readOffered } from '@/lib/onboarding'
 import type { OnboardingStage } from '@/lib/onboarding'
+import { fromOverlay } from '@/navigation/ref'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { isConfigured } from '@/lib/llm'
 import { useProfile } from '@/lib/store-context'
-import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
@@ -56,7 +54,6 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
   const [offered, setOffered] = useState<Record<OnboardingStage, boolean> | null>(null)
   const [tourOpen, setTourOpen] = useState(false)
   const { settings } = useModelSettings()
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   useEffect(() => {
     let live = true
@@ -111,7 +108,7 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
                 // never arrive and the question would be asked again next
                 // launch — of somebody who had just gone and answered it.
                 finish('model')
-                navigation.navigate('Settings')
+                fromOverlay((nav) => nav.navigate('Settings'))
               }}
             />
           </>
