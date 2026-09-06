@@ -10,7 +10,15 @@
  */
 import { describe, expect, it } from 'vitest'
 import { functionSpecs } from './catalog'
-import { COMPACT_TARGET, RESERVED_FOR_REPLY, fitHistory, fitsWindow, trimNote } from './budget'
+import {
+  COMPACT_TARGET,
+  RESERVED_FOR_REPLY,
+  SUMMARY_SHARE,
+  fitHistory,
+  fitsWindow,
+  stubFor,
+  trimNote,
+} from './budget'
 import type { ChatMessage } from '../core/model-server'
 
 const user = (text: string): ChatMessage => ({ role: 'user', content: text })
@@ -28,6 +36,35 @@ const result = (id: string, text: string): ChatMessage => ({
 
 /** Big enough that a handful of them force a decision. */
 const bulk = (n: number) => 'x'.repeat(n)
+
+/** The loop's own measure of a request, so the tests cannot disagree with it. */
+const tokensOf = (parts: readonly unknown[]) =>
+  Math.round((JSON.stringify(parts).length / 3.6) * 1.15)
+
+/**
+ * Every `tool` message answers an assistant call that is still in front of it.
+ * This is the shape every provider checks, and the one a bad cut breaks.
+ */
+const wellFormed = (history: readonly ChatMessage[]): boolean => {
+  const answered = new Set<string>()
+  for (const m of history) {
+    if (m.role === 'assistant') for (const c of m.tool_calls ?? []) answered.add(c.id)
+    if (m.role === 'tool' && !answered.has(m.tool_call_id)) return false
+  }
+  return true
+}
+
+/** A serialised `memory.list` of `n` records, the shape `queries.ts` produces. */
+const listing = (n: number): string =>
+  JSON.stringify({
+    total: n,
+    shown: n,
+    matches: Array.from({ length: n }, (_, i) => ({
+      id: `app:${String(i)}`,
+      org: `Org ${String(i)}`,
+      note: bulk(120),
+    })),
+  })
 
 describe('fitHistory', () => {
   it('leaves a conversation that fits exactly as it is', () => {
@@ -56,14 +93,48 @@ describe('fitHistory', () => {
   })
 
   it('never cuts a tool result away from the call it answers', () => {
-    // Cutting between these two leaves `tool_call_id: c1` pointing at nothing,
-    // which every provider rejects outright.
-    const history = [user(bulk(6000)), calling('c1'), result('c1', bulk(6000)), assistant('done')]
-    const out = fitHistory(history, [{ system: 'rules' }], 3_000)
-    const orphan = out.history.findIndex(
-      (m, i) => m.role === 'tool' && out.history[i - 1]?.role !== 'assistant' && i === 0,
-    )
-    expect(orphan).toBe(-1)
+    /*
+     * Cutting between a call and its result leaves `tool_call_id: c1` pointing
+     * at nothing, which every provider rejects outright.
+     *
+     * This used to run at a 3,000 window, which is below the reply reserve —
+     * the overflow branch, where the history is emptied and nothing is cut at
+     * all. And a first rewrite used big RESULTS, which stage 1 stubs, so the
+     * first cut that fitted never fell on a tool message and an unguarded cut
+     * passed by luck (found by mutation). The bulk is in the CALLS here — a
+     * document being filed, its text in the arguments — with results too
+     * short to stub, so that the first cut that fits is exactly the one that
+     * would strand `c1`.
+     */
+    const filing = (id: string): ChatMessage => ({
+      role: 'assistant',
+      content: null,
+      tool_calls: [
+        {
+          id,
+          type: 'function',
+          function: { name: 'document.file', arguments: JSON.stringify({ text: bulk(5000) }) },
+        },
+      ],
+    })
+    const history = [
+      user('file these'),
+      filing('c1'),
+      result('c1', 'Filed (id: doc:1)'),
+      assistant('Filed the first.'),
+      filing('c2'),
+      result('c2', 'Filed (id: doc:2)'),
+      assistant('Filed the second.'),
+    ]
+    const out = fitHistory(history, [{ system: 'rules' }], RESERVED_FOR_REPLY + 3_000)
+    expect(out.overflows).toBe(false)
+    expect(out.stubbed).toBe(0)
+    expect(out.dropped).toBeGreaterThan(0)
+    expect(wellFormed(out.history)).toBe(true)
+    // Not a vacuous pass: the cut landed past `c1`, so its result was the one
+    // an unguarded cut would have stranded.
+    expect(out.dropped).toBeGreaterThanOrEqual(3)
+    expect(out.history.some((m) => m.role === 'tool' && m.tool_call_id === 'c2')).toBe(true)
   })
 
   it('reserves room for the answer, so a perfect fit is not a full window', () => {
@@ -97,10 +168,25 @@ describe('fitHistory', () => {
 })
 
 describe('compacting to a target, not to the line', () => {
-  /** A conversation of `n` sizeable exchanges. */
+  /**
+   * A conversation of `n` exchanges: the person asks in a sentence, and the
+   * assistant answers at length.
+   *
+   * The person's turns used to be 1,200-character walls too, and the two
+   * headroom tests below stopped passing when user turns became something the
+   * trim keeps verbatim — twenty walls of the person's own words are more than
+   * a third of a 16k window on their own. That fixture was making a claim
+   * about a conversation nobody has: measured on the endurance transcripts,
+   * 34 messages come to 5,920 tokens, with the bulk in tool results and
+   * assistant prose. The headroom claim holds for THAT shape, which is what
+   * this fixture is now; the wall case has its own tests further down, where
+   * what is given up is stated.
+   */
   const conversation = (n: number): ChatMessage[] =>
     Array.from({ length: n }, (_, i) =>
-      i % 2 === 0 ? user(`ask ${String(i)} ${bulk(1200)}`) : assistant(`answer ${String(i)} ${bulk(1200)}`),
+      i % 2 === 0
+        ? user(`ask ${String(i)}: what about the next one?`)
+        : assistant(`answer ${String(i)} ${bulk(2400)}`),
     )
 
   it('lands near a third of the window, not just under the ceiling', () => {
@@ -216,7 +302,8 @@ describe('trimNote', () => {
  * genuinely cannot work, and this is that test.
  */
 describe('fitsWindow', () => {
-  const specs = (n: number) => Array.from({ length: n }, (_, i) => ({ name: `t${String(i)}`, schema: bulk(600) }))
+  const specs = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({ name: `t${String(i)}`, schema: bulk(600) }))
 
   it('is measured against the compaction target, not the whole window', () => {
     // "Fits at all" is the wrong bar: a request where the schemas take
@@ -294,7 +381,11 @@ describe('what survives when the target is smaller than one exchange', () => {
   it('still reports overflow when even one exchange cannot fit', () => {
     // The honest end of the scale: not "keep something regardless", but "keep
     // what genuinely fits". Here nothing does.
-    const out = fitHistory([user(bulk(90_000))], [{ tools: bulk(30_000) }], RESERVED_FOR_REPLY + 12_000)
+    const out = fitHistory(
+      [user(bulk(90_000))],
+      [{ tools: bulk(30_000) }],
+      RESERVED_FOR_REPLY + 12_000,
+    )
     expect(out.history).toEqual([])
   })
 })
@@ -343,4 +434,633 @@ it('measures a list the same way the trim does', () => {
   const size = Math.round((JSON.stringify(tools).length / 3.6) * 1.15)
   expect(fitsWindow(tools, Math.ceil(size / COMPACT_TARGET))).toBe(true)
   expect(fitsWindow(tools, Math.floor((size - 1) / COMPACT_TARGET))).toBe(false)
+})
+
+/**
+ * Stage 1: old tool results become one-line stubs before anything is cut.
+ *
+ * The measured failure this exists for: under the six endurance cases the
+ * person's turn-one sentence was summarised alongside forty serialised records
+ * at ~20:1 and survived in 1 of 18 cells. A tool result is the one message
+ * nobody wrote and everybody can re-derive, so it is the first thing to go —
+ * and going first, it is usually the ONLY thing that has to.
+ */
+describe('stubbing tool results before cutting anything', () => {
+  /** `n` exchanges, each a question, a `memory.list` call and its 40 records. */
+  const listed = (n: number): ChatMessage[] =>
+    Array.from({ length: n }, (_, i) => [
+      user(`turn ${String(i)}: which ones are open?`),
+      calling(`c${String(i)}`),
+      result(`c${String(i)}`, listing(40)),
+      assistant(`Turn ${String(i)}: there are 40, the newest is Org 0.`),
+    ]).flat()
+
+  it('fits by stubbing alone, so nothing is cut and no summary is needed', () => {
+    const history = listed(12)
+    const out = fitHistory(history, [{ system: 'rules' }], 26_600)
+    expect(out.overflows).toBe(false)
+    expect(out.stubbed).toBeGreaterThan(0)
+    expect(out.dropped).toBe(0)
+    expect(out.toSummarise).toEqual([])
+    expect(out.kept).toEqual([])
+    expect(out.history).toHaveLength(history.length)
+  })
+
+  it('leaves every user turn and every assistant turn byte-identical', () => {
+    const history = listed(12)
+    const out = fitHistory(history, [{ system: 'rules' }], 26_600)
+    for (const [i, m] of history.entries()) {
+      if (m.role !== 'tool') expect(out.history[i]).toBe(m)
+    }
+  })
+
+  it('keeps the call and answers it with a stub that names the tool and the count', () => {
+    const history = listed(12)
+    const out = fitHistory(history, [{ system: 'rules' }], 26_600)
+    const first = out.history[2]
+    expect(first?.role).toBe('tool')
+    if (first?.role !== 'tool') return
+    expect(first.tool_call_id).toBe('c0')
+    expect(first.content).toContain('memory.list')
+    expect(first.content).toContain('40 records')
+    expect(first.content).toContain('re-read if needed')
+    expect(wellFormed(out.history)).toBe(true)
+  })
+
+  it('stubs the OLDEST results first and stops as soon as the request fits', () => {
+    // The newest results are the ones a follow-up is about. Stubbing from the
+    // far end, or stubbing everything regardless, would take them too.
+    const history = listed(12)
+    const out = fitHistory(history, [{ system: 'rules' }], 26_600)
+    const results = out.history.filter((m) => m.role === 'tool')
+    const intact = results.filter((m) => m.content === listing(40))
+    expect(results).toHaveLength(12)
+    expect(out.stubbed).toBeGreaterThan(0)
+    expect(out.stubbed).toBeLessThan(12)
+    expect(intact.length).toBe(12 - out.stubbed)
+    // And the intact ones are the LAST ones.
+    expect(results.slice(out.stubbed).every((m) => m.content === listing(40))).toBe(true)
+    expect(results.slice(0, out.stubbed).every((m) => m.content !== listing(40))).toBe(true)
+  })
+
+  it('lands under the compaction target, so the next turns do not compact again', () => {
+    const window = 26_600
+    const out = fitHistory(listed(12), [{ system: 'rules' }], window)
+    expect(tokensOf(out.history)).toBeLessThanOrEqual(Math.round(window * COMPACT_TARGET))
+  })
+
+  it('does not stub a result its stub would not shorten', () => {
+    // A write comes back as one sentence with the id in it. A stub of the
+    // same length saves nothing and loses the id. The write goes FIRST, so
+    // stage 1 reaches it before the listing whose stub is what fits the
+    // request — an earlier order let the guard go untested (found by mutation).
+    const history = [
+      user('file it'),
+      calling('w1'),
+      result('w1', 'Filed (id: doc:7)'),
+      assistant('Filed.'),
+      user('list them'),
+      calling('r1'),
+      result('r1', listing(40)),
+      assistant('40 of them.'),
+    ]
+    const out = fitHistory(history, [{ system: 'rules' }], RESERVED_FOR_REPLY + 2_000)
+    expect(out.dropped).toBe(0)
+    expect(out.stubbed).toBe(1)
+    const short = out.history.find((m) => m.role === 'tool' && m.tool_call_id === 'w1')
+    expect(short?.content).toBe('Filed (id: doc:7)')
+    expect(
+      out.history.find((m) => m.role === 'tool' && m.tool_call_id === 'r1')?.content,
+    ).toContain('40 records')
+  })
+
+  it('leaves a result exactly as long as its stub alone', () => {
+    // The boundary of "would not shorten": equal length saves nothing and
+    // would still lose the id (the `>` mutant survived until this).
+    const same = 'Filed (id: doc:7)'.padEnd(stubFor('memory.list', 'not json').length, '.')
+    const history = [
+      user('file it'),
+      calling('w1'),
+      result('w1', same),
+      assistant('Filed.'),
+      user('list them'),
+      calling('r1'),
+      result('r1', listing(40)),
+      assistant('40 of them.'),
+    ]
+    const out = fitHistory(history, [{ system: 'rules' }], RESERVED_FOR_REPLY + 2_000)
+    expect(out.stubbed).toBe(1)
+    expect(out.history.find((m) => m.role === 'tool' && m.tool_call_id === 'w1')?.content).toBe(
+      same,
+    )
+  })
+
+  it('sends the whole history as `dropped: 0` when the person’s turns alone exceed the target', () => {
+    /*
+     * The first pass finds no cut — the person's turns are over the target on
+     * their own — and the whole stubbed history is within the reserve line.
+     * Nothing is evicted, and the boundary must say so: `cut` starting at 1
+     * sent the same bytes and reported the first message as
+     * evicted-and-carried (found by mutation, and the mutant was the truthful
+     * one).
+     */
+    const window = 16_000
+    const fixed = [{ tools: bulk(Math.round((8_000 / 1.15) * 3.6)) }]
+    const room = window - RESERVED_FOR_REPLY - tokensOf(fixed)
+    const target = Math.max(
+      Math.round(window * COMPACT_TARGET) - tokensOf(fixed),
+      Math.round(room * COMPACT_TARGET),
+    )
+    const history = Array.from({ length: 4 }, (_, i) => [
+      user(`turn ${String(i)}: ${bulk(1100)}`),
+      calling(`c${String(i)}`),
+      result(`c${String(i)}`, listing(40)),
+      assistant(`Turn ${String(i)}: 40 of them.`),
+    ]).flat()
+    const out = fitHistory(history, fixed, window)
+    expect(out.stubbed).toBe(4)
+    // The shape: the person's turns are over the target on their own, and the
+    // whole history, stubbed, is under the reserve line.
+    expect(tokensOf(history.filter((m) => m.role === 'user'))).toBeGreaterThan(target)
+    expect(tokensOf(out.history)).toBeLessThanOrEqual(room - Math.round(window * SUMMARY_SHARE))
+    expect(out.dropped).toBe(0)
+    expect(out.kept).toEqual([])
+    expect(out.toSummarise).toEqual([])
+    expect(out.history).toHaveLength(history.length)
+  })
+
+  it('leaves a conversation that fits with every result intact', () => {
+    // Stubbing is a response to pressure, never a default: a result the window
+    // can hold is the better version of the stub.
+    const history = listed(1)
+    const out = fitHistory(history, [{ system: 'rules' }], 100_000)
+    expect(out.stubbed).toBe(0)
+    expect(out.history).toBe(history)
+  })
+})
+
+describe('stubFor', () => {
+  it('reads the count off the list envelope, truncated or not', () => {
+    // `queries.ts` puts `total` and `shown` FIRST so they survive the cut at
+    // 6,000 characters. A truncated result will not parse; its head will.
+    const cut = `${listing(80).slice(0, 6000)}\n\n[Truncated at 6000 characters.]`
+    expect(stubFor('memory.list', cut)).toContain('80 records')
+    expect(stubFor('memory.list', listing(3))).toContain('3 records')
+    // `total`, not `shown`: a model asked for `limit: 50` of 80 should hear 80,
+    // which is the number the envelope exists to deliver.
+    const limited = listing(50).replace('"total":50', '"total":80')
+    expect(stubFor('memory.list', limited)).toContain('80 records')
+  })
+
+  it('counts a bare array and reads one record as one', () => {
+    expect(stubFor('memory.search', '[{"id":"a"},{"id":"b"}]')).toContain('2 records')
+    expect(stubFor('memory.search', '[{"id":"a"}]')).toContain('1 record ')
+  })
+
+  it('names the tool without a count when the result is not a list', () => {
+    const text = stubFor('memory.get', '{"id":"app:1","org":"Rice"}')
+    expect(text).toContain('memory.get result')
+    expect(text).not.toMatch(/\d+ record/)
+    expect(stubFor('document.read', 'plain prose, not JSON')).toContain('document.read')
+  })
+})
+
+/**
+ * Stage 2: the cut. The person's turns are carried forward verbatim; only the
+ * assistant's are offered for summarising.
+ */
+describe('cutting, with the person’s turns kept', () => {
+  /** The bulk is the assistant's prose: nothing here can be stubbed. */
+  const prose = (n: number): ChatMessage[] =>
+    Array.from({ length: n }, (_, i) => [
+      user(`turn ${String(i)}: the fact is ${String(i)}`),
+      assistant(`answer ${String(i)} ${bulk(3000)}`),
+    ]).flat()
+
+  it('keeps every user turn from the cut prefix, verbatim and in order, ahead of the tail', () => {
+    const history = prose(16)
+    const out = fitHistory(history, [{ system: 'rules' }], 16_000)
+    expect(out.dropped).toBeGreaterThan(0)
+    expect(out.kept.length).toBeGreaterThan(0)
+    // Verbatim: the same objects, not copies or paraphrases.
+    const prefixUsers = history.slice(0, out.dropped).filter((m) => m.role === 'user')
+    expect(out.kept).toEqual(prefixUsers)
+    out.kept.forEach((m, i) => expect(m).toBe(prefixUsers[i]))
+    // And they are the head of what is sent, followed by the untouched tail.
+    expect(out.history.slice(0, out.kept.length)).toEqual(out.kept)
+    expect(out.history.slice(out.kept.length)).toEqual(history.slice(out.dropped))
+    expect(out.lost).toBeNull()
+  })
+
+  it('offers the summariser the assistant’s messages and nothing else', () => {
+    const history = prose(16)
+    const out = fitHistory(history, [{ system: 'rules' }], 16_000)
+    expect(out.toSummarise.length).toBeGreaterThan(0)
+    expect(out.toSummarise.every((m) => m.role === 'assistant')).toBe(true)
+    expect(out.toSummarise).toEqual(
+      history.slice(0, out.dropped).filter((m) => m.role === 'assistant'),
+    )
+    // `dropped` is the boundary, and it counts the kept user turns: the two
+    // together are the whole prefix.
+    expect(out.kept.length + out.toSummarise.length).toBe(out.dropped)
+  })
+
+  it('offers no tool result to the summariser, stubbed or not', () => {
+    const history = Array.from({ length: 8 }, (_, i) => [
+      user(`turn ${String(i)}`),
+      calling(`c${String(i)}`),
+      result(`c${String(i)}`, listing(40)),
+      assistant(`answer ${String(i)} ${bulk(3000)}`),
+    ]).flat()
+    const out = fitHistory(history, [{ system: 'rules' }], 16_000)
+    expect(out.dropped).toBeGreaterThan(0)
+    expect(out.toSummarise.some((m) => m.role === 'tool')).toBe(false)
+    expect(out.toSummarise.some((m) => m.role === 'user')).toBe(false)
+    expect(wellFormed(out.history)).toBe(true)
+  })
+
+  it('cuts only after every stub has been tried', () => {
+    // The order is the whole design: a cut loses the assistant's words for
+    // good, a stub loses nothing. So no result may still be intact when a cut
+    // is made — except one too short to be worth stubbing.
+    const history = Array.from({ length: 8 }, (_, i) => [
+      user(`turn ${String(i)}`),
+      calling(`c${String(i)}`),
+      result(`c${String(i)}`, listing(40)),
+      assistant(`answer ${String(i)} ${bulk(3000)}`),
+    ]).flat()
+    const out = fitHistory(history, [{ system: 'rules' }], 16_000)
+    expect(out.dropped).toBeGreaterThan(0)
+    expect(out.stubbed).toBe(8)
+    expect(out.history.some((m) => m.role === 'tool' && m.content === listing(40))).toBe(false)
+  })
+
+  it('can cut everything the assistant said and still send what the person said', () => {
+    // The last exchange alone is bigger than the room. The old trim had no
+    // answer but "drop everything"; now the answer is the person's own words.
+    const history = [user('my dog is called Bruno'), assistant(bulk(60_000))]
+    const out = fitHistory(history, [{ system: 'rules' }], 16_000)
+    expect(out.overflows).toBe(false)
+    expect(out.lost).toBeNull()
+    expect(out.history).toEqual([history[0]])
+    expect(out.toSummarise).toEqual([history[1]])
+  })
+
+  it('a stubbed-only fit and a cut are told apart by the fields, not by guessing', () => {
+    const stubbedOnly = fitHistory(
+      Array.from({ length: 12 }, (_, i) => [
+        user(`turn ${String(i)}`),
+        calling(`c${String(i)}`),
+        result(`c${String(i)}`, listing(40)),
+        assistant('ok'),
+      ]).flat(),
+      [{ system: 'rules' }],
+      26_600,
+    )
+    const cut = fitHistory(prose(16), [{ system: 'rules' }], 16_000)
+    expect(
+      stubbedOnly.dropped === 0 && stubbedOnly.stubbed > 0 && stubbedOnly.toSummarise.length === 0,
+    ).toBe(true)
+    expect(cut.dropped > 0 && cut.toSummarise.length > 0).toBe(true)
+  })
+})
+
+/**
+ * The wall case: the person's own turns are too big for the target.
+ *
+ * What is given up is HEADROOM, not words. A conversation whose user turns
+ * exceed a third of the window lands wherever those turns fit under the
+ * ceiling and compacts again next turn; that costs a summariser call per turn
+ * while it lasts, and the alternative — paraphrasing what the person wrote —
+ * is the measured failure this whole design replaced. Only when even the
+ * words alone do not fit under the ceiling does stage 3 drop the oldest of
+ * them, and it says so.
+ */
+describe('when the person’s turns alone exceed the target', () => {
+  const walls = (n: number): ChatMessage[] =>
+    Array.from({ length: n }, (_, i) => [
+      user(`wall ${String(i)} ${bulk(1200)}`),
+      assistant(`answer ${String(i)}`),
+    ]).flat()
+
+  it('keeps them all when they fit under the ceiling, giving up headroom instead', () => {
+    const window = 16_000
+    const history = walls(20)
+    const out = fitHistory(history, [{ system: 'rules' }], window)
+    const users = history.filter((m) => m.role === 'user')
+    expect(tokensOf(users)).toBeGreaterThan(Math.round(window * COMPACT_TARGET))
+    expect(out.lost).toBeNull()
+    expect(out.history.filter((m) => m.role === 'user')).toEqual(users)
+    expect(tokensOf(out.history)).toBeLessThanOrEqual(window - RESERVED_FOR_REPLY)
+  })
+
+  it('drops the oldest of them only when even they alone do not fit, and says how many', () => {
+    const window = 16_000
+    const history = walls(40)
+    const out = fitHistory(history, [{ system: 'rules' }], window)
+    expect(out.overflows).toBe(false)
+    expect(out.lost).not.toBeNull()
+    expect(out.lost?.reason).toContain('did not fit even with every reply and result removed')
+    const users = history.filter((m) => m.role === 'user')
+    // The survivors are the NEWEST, verbatim, and they are all that is sent.
+    expect(out.history).toEqual(users.slice(out.lost?.count))
+    expect(out.kept).toEqual(out.history)
+    expect(out.lost?.count).toBeGreaterThan(0)
+    expect(out.lost?.count).toBeLessThan(users.length)
+    // As few as will fit: one more would not.
+    expect(tokensOf(users.slice((out.lost?.count ?? 0) - 1))).toBeGreaterThan(
+      window - RESERVED_FOR_REPLY,
+    )
+    expect(tokensOf(out.history)).toBeLessThanOrEqual(window - RESERVED_FOR_REPLY)
+  })
+})
+
+/**
+ * The summary budget is a share of the window, bounded by what is left.
+ *
+ * It replaced a fixed 1,200 characters, which was the other half of the
+ * measured failure: the same paragraph at 8k and at 128k.
+ */
+describe('the summary budget', () => {
+  it('is a tenth of the window when the request leaves that much room', () => {
+    const window = 32_000
+    const out = fitHistory([user('hi')], [{ system: 'rules' }], window)
+    // In characters, through the estimator and the margin: a tenth of the
+    // window in tokens, given back as the characters that measure to it.
+    const expected = Math.floor(((window * SUMMARY_SHARE) / 1.15) * 3.6)
+    expect(Math.abs(out.summaryChars - expected)).toBeLessThan(40)
+    expect(tokensOf([bulk(out.summaryChars)])).toBeLessThanOrEqual(
+      Math.round(window * SUMMARY_SHARE),
+    )
+  })
+
+  it('never exceeds what the fitted request leaves under the ceiling', () => {
+    // The endurance shape: 21.7k of tools at 26.6k leaves ~800 tokens of room,
+    // and a tenth of the window would be 2.6k — a summary that size would
+    // re-overflow the request the trim just fixed.
+    const fixed = [{ tools: bulk(Math.round((21_000 / 1.15) * 3.6)) }]
+    const window = 26_600
+    const out = fitHistory([user('hi')], fixed, window)
+    expect(out.overflows).toBe(false)
+    const room = window - RESERVED_FOR_REPLY - tokensOf(fixed)
+    expect(tokensOf([bulk(out.summaryChars)])).toBeLessThanOrEqual(room - tokensOf(out.history))
+    expect(out.summaryChars).toBeLessThan(Math.floor(((window * SUMMARY_SHARE) / 1.15) * 3.6))
+  })
+
+  it('is zero on overflow, where nothing is summarised', () => {
+    expect(fitHistory([user('hi')], [{ tools: bulk(40_000) }], 4_000).summaryChars).toBe(0)
+  })
+
+  it('fits beside the compaction target and the reply reserve at the smallest window anybody runs', () => {
+    // A third, a tenth and the reserve must add up to less than the window,
+    // or a compaction would set up the next overflow itself.
+    const smallest = 8_192
+    expect(
+      Math.round(smallest * COMPACT_TARGET) +
+        Math.round(smallest * SUMMARY_SHARE) +
+        RESERVED_FOR_REPLY,
+    ).toBeLessThan(smallest)
+  })
+})
+
+/**
+ * The share is RESERVED by the cut, not hoped for.
+ *
+ * `summaryChars` is what the fitted tail leaves under the ceiling. When the
+ * person's turns alone exceed the target, the cut is decided by `room`, and a
+ * pass that took the FIRST cut under it left anything from nothing to one
+ * exchange. Measured on long-vault-convention against Qwen3 14B at 26,100:
+ * summaryChars 90 and 172 — a summariser call spent on a note cut
+ * mid-heading. The middle pass aims for `room - share` first, so the share is
+ * taken from exchanges that were going anyway.
+ */
+describe('reserving the summary share', () => {
+  const window = 16_000
+  const fixed = [{ system: 'rules' }]
+  const room = window - RESERVED_FOR_REPLY - tokensOf(fixed)
+  const share = Math.round(window * SUMMARY_SHARE)
+  /**
+   * Fourteen exchanges whose user turns alone exceed the target, sized so the
+   * first cut under `room` lands ONE token short of it (found by sweeping the
+   * sizes against the previous trim: summaryChars 0).
+   */
+  const history = Array.from({ length: 14 }, (_, i) => [
+    user(`turn ${String(i)}: ${bulk(1500)}`),
+    assistant(`answer ${String(i)} ${bulk(3100)}`),
+  ]).flat()
+  const users = history.filter((m) => m.role === 'user')
+
+  it('is the shape where the target pass cannot land, so the cut is decided by room', () => {
+    expect(tokensOf(users)).toBeGreaterThan(Math.round(window * COMPACT_TARGET))
+    // And the share IS affordable: the person's turns plus one exchange fit
+    // under `room - share`, so a cut exists that leaves it.
+    expect(tokensOf([...users, ...history.slice(-2)])).toBeLessThanOrEqual(room - share)
+  })
+
+  it('leaves the whole share, taken from what was evicted and nothing else', () => {
+    const out = fitHistory(history, fixed, window)
+    expect(out.overflows).toBe(false)
+    expect(out.lost).toBeNull()
+    // The whole share, in characters through the estimator and the margin.
+    const expected = Math.floor((share / 1.15) * 3.6)
+    expect(Math.abs(out.summaryChars - expected)).toBeLessThan(40)
+    expect(tokensOf([bulk(out.summaryChars)])).toBeLessThanOrEqual(share)
+    // Every user turn still goes, verbatim: the reserve is never the person's words.
+    expect(out.history.filter((m) => m.role === 'user')).toEqual(users)
+    // And the tail is not emptied to make room: something of the assistant's went too.
+    expect(out.history.some((m) => m.role === 'assistant')).toBe(true)
+  })
+
+  /**
+   * The trim's own two roundings — `estimateTokens` rounds, then the margin
+   * rounds again. `tokensOf` above folds them into one and can differ by a
+   * token, which the tests below cannot afford: they sit ON the line.
+   */
+  const measure = (parts: readonly unknown[]) =>
+    Math.round(Math.round(JSON.stringify(parts).length / 3.6) * 1.15)
+  const line = window - RESERVED_FOR_REPLY - measure(fixed) - share
+
+  /**
+   * A history whose tightest affording cut lands EXACTLY on `room - share`
+   * (`offset` 0) or one token past it (`offset` 1). The last answer, which is
+   * in every candidate, is padded until the candidate just under the mark
+   * measures to it — a token is ~3.1 characters, so the deficit says roughly
+   * how much and a short scan finds the exact hit. The line is what
+   * "reserved" means: a cut landing on it is taken, one past it is not, and
+   * both `± 1` mutants of the pass survived until this pinned it.
+   */
+  const landing = (offset: number): { readonly history: ChatMessage[]; readonly cut: number } => {
+    const want = line + offset
+    const build = (pad: number): ChatMessage[] =>
+      Array.from({ length: 14 }, (_, i) => [
+        user(`turn ${String(i)}: ${bulk(1500)}`),
+        assistant(`answer ${String(i)} ${bulk(i === 13 ? 3100 + pad : 3100)}`),
+      ]).flat()
+    const sizeAt = (h: readonly ChatMessage[], cut: number) =>
+      measure([...h.slice(0, cut).filter((m) => m.role === 'user'), ...h.slice(cut)])
+    const bare = build(0)
+    let cut = 2
+    while (cut < bare.length && sizeAt(bare, cut) > want) cut += 2
+    const deficit = want - sizeAt(bare, cut)
+    const from = Math.max(0, Math.floor((deficit / 1.15) * 3.6) - 12)
+    for (let pad = from; pad < from + 48; pad += 1) {
+      const h = build(pad)
+      if (sizeAt(h, cut) === want) return { history: h, cut }
+    }
+    throw new Error('no padding lands on the boundary')
+  }
+
+  it('takes a cut that lands exactly on the reserve line', () => {
+    const { history: exact, cut } = landing(0)
+    const out = fitHistory(exact, fixed, window)
+    expect(measure(out.history)).toBe(line)
+    expect(out.dropped).toBe(cut)
+  })
+
+  it('refuses a cut one token past the reserve line and takes the next', () => {
+    const { history: over, cut } = landing(1)
+    const out = fitHistory(over, fixed, window)
+    expect(measure(out.history)).toBeLessThanOrEqual(line)
+    expect(out.dropped).toBe(cut + 2)
+  })
+
+  it('evicts the FEWEST exchanges that afford the share, not one more', () => {
+    // Putting back the exchange nearest the boundary would eat into the share.
+    // This is what tells "reserve the share" apart from "cut harder".
+    const out = fitHistory(history, fixed, window)
+    const back = out.dropped - 1
+    expect(history[back]?.role).toBe('assistant')
+    const candidate = [
+      ...history.slice(0, back).filter((m) => m.role === 'user'),
+      ...history.slice(back),
+    ]
+    expect(room - tokensOf(candidate)).toBeLessThan(share)
+    expect(tokensOf(out.history)).toBeLessThanOrEqual(room - share)
+  })
+})
+
+/**
+ * The same shape at the window the case declares, where the share cannot be
+ * had: the fixed part is 21,693 tokens by this estimator (92 specs and the
+ * system prompt), the room 311, the share 2,610 — eight times the room.
+ *
+ * What the cut owes here is honesty, not the share. The person's seven turns
+ * take 200 of the 311 tokens; the exchange around turn seven's listing is 159
+ * intact and 119 stubbed and fits neither way; the closing answer alone does.
+ * So the last pass keeps that answer verbatim and leaves what it leaves — 75
+ * characters — rather than evicting a sentence that fits to widen a summary
+ * that could only paraphrase it. Below any summary's skeleton, that number is
+ * `compact`'s floor to refuse; this file's job is to report the room.
+ */
+describe('the long-vault-convention shape at 26,100', () => {
+  const window = 26_100
+  const base = 21_693
+  const fixed = [{ tools: bulk(Math.round((base / 1.15) * 3.6) - 14) }]
+  const room = window - RESERVED_FOR_REPLY - tokensOf(fixed)
+  const share = Math.round(window * SUMMARY_SHARE)
+  const says = [
+    'House rule for this chat: every URL you store in the vault for me carries the note ‘found by assistant’, so I can tell yours from mine later.',
+    'What documents do I have in the vault?',
+    'Open my teaching statement — what course do I say I want to build?',
+    'And the research statement — what is the second of the three threads?',
+    'Which referees are on my current CV?',
+    'What snippets do I have saved?',
+    'And which link is in the vault right now?',
+  ]
+  const answers = [
+    'Understood — every URL I store carries the note "found by assistant".',
+    'Four documents: CV-2026, Research-statement, Teaching-statement and Old-CV-2024.',
+    'A project-based operating systems course.',
+    'Cache coherence under partition.',
+    'Prof. Marta Oyelaran and Dr Idris Whitfield.',
+    'One snippet: Follow-up after interview.',
+    // Qwen answers at length; two hundred characters is the measured shape.
+    `One link: Rice CS faculty openings. ${bulk(165)}`,
+  ]
+  /** The listing, three reads (the CV truncated at 6,000), two more listings. */
+  const results = [
+    listing(4),
+    bulk(3200),
+    bulk(3600),
+    `${bulk(6000)}\n\n[Truncated at 6000 characters.]`,
+    listing(1),
+    listing(1),
+  ]
+  const history: ChatMessage[] = [user(says[0] ?? ''), assistant(answers[0] ?? '')]
+  for (let t = 1; t < 7; t += 1) {
+    history.push(
+      user(says[t] ?? ''),
+      calling(`c${String(t)}`),
+      result(`c${String(t)}`, results[t - 1] ?? ''),
+      assistant(answers[t] ?? ''),
+    )
+  }
+  const users = history.filter((m) => m.role === 'user')
+
+  it('is the shape where no cut can afford the share', () => {
+    expect(Math.abs(tokensOf(fixed) - base)).toBeLessThan(4)
+    expect(room).toBeLessThan(share)
+    expect(tokensOf(users)).toBeGreaterThan(Math.round(room * COMPACT_TARGET))
+  })
+
+  it('keeps the closing answer verbatim rather than evicting it for summary room', () => {
+    const out = fitHistory(history, fixed, window)
+    expect(out.overflows).toBe(false)
+    expect(out.lost).toBeNull()
+    expect(out.history.filter((m) => m.role === 'user')).toEqual(users)
+    expect(out.history.at(-1)).toBe(history.at(-1))
+    expect(wellFormed(out.history)).toBe(true)
+    // The last exchange's result was stubbed like every other: nothing is
+    // protected, and the numbers above are why.
+    expect(out.stubbed).toBe(6)
+  })
+
+  it('reports the honest remainder, which is below any summary', () => {
+    const out = fitHistory(history, fixed, window)
+    // What the tail leaves, exactly — not the share, and not rounded up.
+    expect(tokensOf([bulk(out.summaryChars)])).toBeLessThanOrEqual(room - tokensOf(out.history))
+    expect(out.summaryChars).toBeGreaterThan(0)
+    expect(out.summaryChars).toBeLessThan(200)
+  })
+})
+
+/**
+ * The proof the design is for: a history of the shape that failed 17 times in
+ * 18, fitted, with the turn-one fact intact and no summariser involved.
+ */
+describe('the turn-one fact, twenty thousand tokens later', () => {
+  it('is sent verbatim, and no summary was needed to keep it', () => {
+    const fact = user('My dog is called Bruno, and the Rice application is the one at Houston.')
+    const exchanges = Array.from({ length: 10 }, (_, i) => [
+      user(`turn ${String(i + 1)}: what is open now?`),
+      calling(`c${String(i)}`),
+      result(`c${String(i)}`, listing(40)),
+      assistant(`Turn ${String(i + 1)}: 40 open, newest first.`),
+    ]).flat()
+    const history = [fact, ...exchanges]
+    // ~20k tokens by the loop's own measure, the size of the endurance cases.
+    const size = tokensOf(history)
+    expect(size).toBeGreaterThan(20_000)
+    expect(size).toBeLessThan(24_000)
+
+    // The endurance window: 26,600, with a small fixed part so the trim is
+    // deciding about history and not about tool schemas.
+    const out = fitHistory(
+      history,
+      [{ system: 'rules' }, { question: 'What is my dog called?' }],
+      26_600,
+    )
+    expect(out.overflows).toBe(false)
+    // Verbatim: the same object, in the same place.
+    expect(out.history[0]).toBe(fact)
+    expect(out.history[0]?.content).toBe(fact.content)
+    // No summary was needed: nothing was cut, nothing is offered to the
+    // summariser, nothing is lost — the records were stubbed and can be re-read.
+    expect(out.dropped).toBe(0)
+    expect(out.toSummarise).toEqual([])
+    expect(out.lost).toBeNull()
+    expect(out.stubbed).toBeGreaterThan(0)
+    expect(wellFormed(out.history)).toBe(true)
+    expect(tokensOf(out.history)).toBeLessThanOrEqual(Math.round(26_600 * COMPACT_TARGET))
+  })
 })

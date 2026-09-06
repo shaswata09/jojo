@@ -1075,8 +1075,14 @@ const fixedSizeOf = (fixed: readonly unknown[]): number => {
  * Drives the real loop through the turns before the recall turn and returns
  * the history the runner would hand to that turn.
  *
- * `history = out.messages` exactly as `bench/run.mts` does it, system message
- * included: the guard is about the request the runner sends, not a tidier one.
+ * Fed back the way `bench/run.mts` (`createFeedback`) and the app
+ * (`historyFor` in kg/react) do it: the ORIGINAL transcript, question and
+ * what each run appended, never the system message. It used to be
+ * `history = out.messages` — the sent request, system message included —
+ * because that was the runner's shape at the time; that shape put a fresh
+ * copy of the system prompt into the history on every turn (about 340 tokens
+ * each), and the windows below were measured against it. The guard is about
+ * the request the runner sends, so it follows the runner.
  */
 async function driveTo(id: string, drive: Drive, host: ToolHost, refs: Refs): Promise<ChatMessage[]> {
   const c = CONVERSATIONS.find((x) => x.id === id)
@@ -1115,9 +1121,23 @@ async function driveTo(id: string, drive: Drive, host: ToolHost, refs: Refs): Pr
     if (out.stopped !== 'answered' || failed.length > 0) {
       throw new Error(`${id} turn ${String(t + 1)} stopped ${out.stopped}; ${failed.join('; ')}`)
     }
-    history = out.messages
+    history = [...history, ...addedBy(out.messages, say)]
   }
   return history
+}
+
+/**
+ * What a run ADDED: its question and everything after it — `addedBy` in
+ * `bench/run.mts`, whose shape this fixture has to keep matching. The question
+ * is the last user message carrying the prompt's exact text; what precedes it
+ * in `AgentRun.messages` is the request as fitted, system message first.
+ */
+function addedBy(messages: readonly ChatMessage[], prompt: string): ChatMessage[] {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const m = messages[i]
+    if (m !== undefined && m.role === 'user' && m.content === prompt) return messages.slice(i)
+  }
+  throw new Error('the loop returned a transcript without the question it was asked')
 }
 
 describe('the endurance windows', () => {
@@ -1156,22 +1176,38 @@ describe('the endurance windows', () => {
       const base = fixedSizeOf(fixed)
       /*
        * The band. Below the floor the fixed part alone overflows and history is
-       * dropped unsummarised; at or above the request, nothing is compacted.
-       * The reply reserve is the margin between "compacts" and "window below
-       * prompt", which is what the contract asks for.
+       * dropped unsummarised. At the top, `fitHistory` compacts exactly when
+       * the request exceeds the window LESS the reply reserve — so the window
+       * has to sit under the request plus that reserve, not under the request.
+       * The stricter form (`win < prompt`) stood here while the drive fed the
+       * sent request back whole, system message included, which made every
+       * request ~2,300 tokens larger than the app's and hid the difference;
+       * with the app's shape the six requests are 23.5–25.5k against windows
+       * of 26.1–27k, and all six still compact — by 1.4–2.7k tokens.
        */
       expect(win, `${c.id}: window ${String(win)} overflows — the fixed part is ${String(base)} and needs ${String(base + RESERVED_FOR_REPLY)}`).toBeGreaterThan(base + RESERVED_FOR_REPLY)
-      expect(win, `${c.id}: window ${String(win)} never compacts — the request at turn ${String(drive.recallAt)} is only ${String(prompt)}`).toBeLessThan(prompt)
+      expect(win, `${c.id}: window ${String(win)} never compacts — the request at turn ${String(drive.recallAt)} is ${String(prompt)}, under the ${String(win - RESERVED_FOR_REPLY)} the window leaves it`).toBeLessThan(prompt + RESERVED_FOR_REPLY)
 
       const fitted = fitHistory(history, fixed, win)
       expect(fitted.overflows).toBe(false)
       expect(fitted.summarisable).toBe(true)
       expect(fitted.dropped).toBeGreaterThan(0)
-      // Turn one — the planted fact — is in what was dropped, and not in what is sent.
+      /*
+       * Turn one — the planted fact — is inside the evicted prefix, and is
+       * STILL SENT, verbatim, because the person's own turns are carried
+       * rather than summarised. The reverse used to be asserted here: the
+       * original single-stage trim dropped turn one into the summariser, and
+       * measured on these six cases the fact survived that in 1 of 18
+       * model×case cells. What the window guarantees now is that the cut
+       * reaches turn one (so the case exercises the carry) and that nothing
+       * the person said is ever the summariser's input.
+       */
       const planted = c.turns[0]?.say
       const isPlanted = (m: ChatMessage) => m.role === 'user' && m.content === planted
       expect(history.slice(0, fitted.dropped).some(isPlanted), `${c.id}: the trim did not reach turn one`).toBe(true)
-      expect(fitted.history.some(isPlanted)).toBe(false)
+      expect(fitted.kept.some(isPlanted), `${c.id}: turn one was evicted but not carried`).toBe(true)
+      expect(fitted.history.some(isPlanted), `${c.id}: turn one is not in what is sent`).toBe(true)
+      expect(fitted.toSummarise.some((m) => m.role === 'user'), `${c.id}: a user turn reached the summariser`).toBe(false)
 
       /*
        * The `why` has to quote the size it was chosen against.

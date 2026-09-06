@@ -95,7 +95,12 @@ export const SHAPE: DirRow[] = [
     // check), with a test file each. Six files and about 5,500 lines.
     files: 58,
     tests: 28,
-    lines: 33899,
+    // Re-measured 2026-09-05, when compaction was rebuilt: `budget.ts` evicts
+    // in three stages and keeps the person's turns verbatim, `compact.ts`
+    // writes a structured summary with a harness-built ledger of record ids,
+    // and the endurance guard follows the app's history shape. No new files;
+    // about 4,200 lines, most of them the tests that pin each measure.
+    lines: 38143,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -105,7 +110,16 @@ export const SHAPE: DirRow[] = [
     lines: 2963,
     what: 'the port, and no platform',
   },
-  { dir: 'service/kg/react', files: 41, tests: 11, lines: 8662, what: 'providers and hooks' },
+  {
+    dir: 'service/kg/react',
+    files: 41,
+    tests: 11,
+    // Re-measured 2026-09-05: `historyFor` replays the covered user turns
+    // ahead of the tail so a compaction never loses what the person said,
+    // and `agent-runs` forwards the stored summary and the thread id.
+    lines: 8960,
+    what: 'providers and hooks',
+  },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
   {
     dir: 'web/src/kg/storage',

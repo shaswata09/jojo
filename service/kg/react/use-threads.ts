@@ -105,10 +105,15 @@ export function useThreads() {
   /**
    * Remember what a compacted conversation established.
    *
-   * `throughMessages` is what the loop counted; `entriesForMessages` turns it
+   * `throughMessages` is what the loop counted; `nextContextThrough` turns it
    * into a count of entries, because that is what a thread stores and the two
    * are not one-to-one. It rounds down, so the boundary never claims more than
-   * the summary actually saw.
+   * the summary actually saw — and it discounts the user turns `historyFor`
+   * replayed ahead of the tail, which the loop counted as part of its cut.
+   *
+   * `threads` here is the list the screen built its history from: `start`
+   * captures this callback at send, and a compaction is reported before the
+   * exchange is saved, so the entries it measures are the ones that were sent.
    */
   const setContext = useCallback(
     (id: NodeId, context: string, throughMessages: number) => {
@@ -304,18 +309,78 @@ export function entriesForMessages(
 }
 
 /**
+ * The person's own turns from the part a summary covers.
+ *
+ * Rendered by `toTranscript` and not rebuilt by hand, so a replayed turn is
+ * byte-identical to the message the loop carried when it compacted — the same
+ * `content` for the same entry, whichever side produced it. Only `you` entries:
+ * an `error` entry also becomes a user-role message on the wire, but it is
+ * the app reporting a failed attempt, not a fact the person stated, and the
+ * summary's job is the facts.
+ *
+ * One function for both readers below, because `nextContextThrough` has to
+ * subtract exactly what `historyFor` added: a second, hand-written count that
+ * agreed with this one today would disagree the first time either changed.
+ */
+const replayHead = (entries: readonly ThreadEntry[], through: number): ChatMessage[] =>
+  toTranscript(entries.slice(0, through).filter((e) => e.kind === 'you'))
+
+/**
+ * The history a turn sends, for a thread whose summary covers a prefix.
+ *
+ * Two parts, in this order: the person's own turns from inside the covered
+ * prefix, verbatim, then the tail the summary does not cover — as before. The
+ * head is the fix for a summary that holds no user words BY DESIGN: the loop
+ * never shows the summariser a user turn (see `budget.ts` for the measurement),
+ * so it carries them ahead of the surviving tail instead. That carry lived
+ * only for the turn it was made in. `contextThrough` was then advanced by the
+ * loop's count, which includes the carried turns, so the next request began
+ * after them: the fact the person stated in turn one was gone from the request
+ * with nothing standing in for it. Measured under the endurance bench before
+ * this existed — 1 of 18 cells clean; with the carry alone, 7–8 of 18.
+ *
+ * Re-derived from the stored entries each turn rather than stored beside the
+ * summary, because the thread already holds every entry: a second copy of the
+ * user turns is a second thing to keep in step, and the loop's own `kept` is
+ * exactly this slice rendered the same way.
+ *
+ * `replayed` is how many messages the head contributed, for the boundary
+ * arithmetic in `nextContextThrough`, which has to take them back out of the
+ * loop's count before mapping it onto entries.
+ */
+export function historyFor(
+  entries: readonly ThreadEntry[],
+  contextThrough: number,
+): { history: ChatMessage[]; replayed: number } {
+  // Below zero would slice off the END of the list; past the end, `slice`
+  // already answers the whole list and an empty tail, so there is no upper clamp.
+  const through = Math.max(0, contextThrough)
+  const head = replayHead(entries, through)
+  return { history: [...head, ...toTranscript(entries.slice(through))], replayed: head.length }
+}
+
+/**
  * Where a summary now reaches, given where the last one did.
  *
- * The loop counts MESSAGES, and the messages it counted were made from
- * `entries.slice(contextThrough)` — not from the whole thread. So the new
- * boundary is the old one PLUS however many of the remaining entries those
- * messages cover.
+ * The loop counts MESSAGES, and the messages it counted were made by
+ * `historyFor(entries, contextThrough)` — the replayed user turns from the
+ * covered prefix, then `entries.slice(contextThrough)`. So the new boundary is
+ * the old one PLUS however many of the remaining entries those messages cover
+ * ONCE THE REPLAYED HEAD IS TAKEN BACK OUT: the loop's cut is a prefix of what
+ * it was sent, and the head is that prefix's first `replayed` messages, none
+ * of which is a remaining entry.
  *
  * Measuring against the full list instead moved the boundary BACKWARDS on every
  * compaction after the first: a thread summarised through entry 6 that then
  * dropped 4 more messages stored `contextThrough: 4`, un-covering two entries
  * the summary had already replaced — so they were sent again, beside a summary
- * that already contained them.
+ * that already contained them. Not subtracting the head would over-advance by
+ * the same mechanism in the other direction: three replayed turns counted as
+ * three covered entries of the tail, so three exchanges the summary never saw
+ * would be dropped from the next turn with nothing standing in for them.
+ *
+ * Never moves backwards: the head is discounted, never charged, and a count
+ * smaller than the head leaves the boundary where it was.
  *
  * Extracted from the hook because that is the only way it can be tested: a hook
  * cannot be mounted here (D20), and arithmetic nobody can run is arithmetic
@@ -327,5 +392,6 @@ export function nextContextThrough(
   throughMessages: number,
 ): number {
   const start = Math.max(0, Math.min(from, entries.length))
-  return start + entriesForMessages(entries.slice(start), throughMessages)
+  const replayed = replayHead(entries, start).length
+  return start + entriesForMessages(entries.slice(start), throughMessages - replayed)
 }

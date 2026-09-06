@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest'
 import type { ThreadEntry } from '../core/model'
 import {
   entriesForMessages,
+  historyFor,
   nextContextThrough,
   toAgentEntries,
   toThreadEntries,
@@ -243,8 +244,48 @@ describe('nextContextThrough', () => {
   const entries = Array.from({ length: 20 }, (_, i) => (i % 2 === 0 ? you(`q${String(i)}`) : answer(`a${String(i)}`)))
 
   it('moves forward from where the last summary reached', () => {
-    // Six already covered, four more messages summarised -> ten, not four.
-    expect(nextContextThrough(entries, 6, 4)).toBe(10)
+    // Six already covered, of which three are the person's turns and were
+    // replayed ahead of the tail; the loop cut those three and four more ->
+    // ten, not four (the old backwards bug) and not thirteen (the head charged
+    // as tail).
+    expect(historyFor(entries, 6).replayed).toBe(3)
+    expect(nextContextThrough(entries, 6, 3 + 4)).toBe(10)
+  })
+
+  /*
+   * The join between the two readings, and the property the whole boundary
+   * rests on: what `historyFor` puts in front is exactly what this takes back
+   * out, for every boundary and every cut depth. A count that under-subtracts
+   * marks exchanges summarised that the summary never saw; one that
+   * over-subtracts sends the same exchanges beside the summary again.
+   */
+  it('takes back out exactly what historyFor replayed, at every boundary', () => {
+    for (const from of [0, 1, 6, 7, 12, 19, 20]) {
+      const { history, replayed } = historyFor(entries, from)
+      const tail = history.length - replayed
+      for (let cut = 0; cut <= tail; cut += 1) {
+        expect(nextContextThrough(entries, from, replayed + cut)).toBe(
+          from + entriesForMessages(entries.slice(from), cut),
+        )
+      }
+    }
+  })
+
+  it('does not over-advance when the loop counted replayed turns inside its cut', () => {
+    // The loop reports a boundary over the history it was SENT, whose first
+    // three messages are the replay. Charging them to the tail would cover
+    // three entries the summary never saw.
+    expect(nextContextThrough(entries, 6, 7)).toBe(10)
+    expect(nextContextThrough(entries, 6, 7)).not.toBe(13)
+  })
+
+  it('stays put when the cut reached no further than the replayed head', () => {
+    // A cut of three is the three replayed turns and nothing of the tail; a
+    // cut of two is less than the head. Neither covers a new entry, and neither
+    // may move the boundary back.
+    expect(nextContextThrough(entries, 6, 3)).toBe(6)
+    expect(nextContextThrough(entries, 6, 2)).toBe(6)
+    expect(nextContextThrough(entries, 6, 0)).toBe(6)
   })
 
   it('never moves backwards', () => {
@@ -262,6 +303,78 @@ describe('nextContextThrough', () => {
   it('stays inside the list whatever it is handed', () => {
     expect(nextContextThrough(entries, 99, 5)).toBe(entries.length)
     expect(nextContextThrough(entries, -3, 0)).toBe(0)
+    // A boundary below zero replays nothing, so nothing is subtracted: the
+    // count is the plain one. (Measuring the head from the raw `from` would
+    // slice off the END of the list and subtract nine.)
+    expect(nextContextThrough(entries, -3, 2)).toBe(2)
     expect(nextContextThrough([], 0, 5)).toBe(0)
+  })
+})
+
+/**
+ * The history a turn is sent once a thread has been compacted.
+ *
+ * The summary holds no user words by design — the summariser is never shown a
+ * user turn — so the loop carries them ahead of the tail verbatim. That carry
+ * lived one turn: the stored boundary then advanced past them and the next
+ * request began after them. Measured under the endurance bench: 1 of 18 cells
+ * kept the turn-one fact before the carry, 7–8 of 18 with it, and the fact was
+ * in the recall request in all 18 only once the app replayed it every turn.
+ */
+describe('historyFor', () => {
+  const you = (text: string): ThreadEntry => ({ kind: 'you', text })
+  const answer = (text: string): ThreadEntry => ({ kind: 'answer', text })
+  const entries: ThreadEntry[] = [
+    you('I moved to Boston in March'),
+    answer('Noted.'),
+    step(),
+    you('Which cities did I mention?'),
+    answer('Boston.'),
+    you('And the month?'),
+    answer('March.'),
+  ]
+
+  it('replays the covered user turns byte-identically, ahead of the tail', () => {
+    const { history, replayed } = historyFor(entries, 5)
+    expect(replayed).toBe(2)
+    // The same renderer as the loop's own carry: identical `content`, not a
+    // paraphrase or a reformat.
+    expect(history.slice(0, 2)).toEqual(
+      toTranscript([you('I moved to Boston in March'), you('Which cities did I mention?')]),
+    )
+    expect(history.slice(0, 2).map((m) => m.role)).toEqual(['user', 'user'])
+    // And the tail exactly as it was sent before this existed.
+    expect(history.slice(2)).toEqual(toTranscript(entries.slice(5)))
+  })
+
+  it('replays only what the person said, never the model, the app, or a failure', () => {
+    // An `error` entry is user-ROLE on the wire, which is the trap: it is the
+    // app reporting a failed attempt, not a fact the person stated.
+    const covered: ThreadEntry[] = [
+      answer('the model said this'),
+      step(),
+      { kind: 'note', text: 'This conversation was trimmed.', app: true },
+      { kind: 'error', text: 'Nothing answered.' },
+      you('the only line that comes back'),
+    ]
+    const { history, replayed } = historyFor([...covered, you('tail')], covered.length)
+    expect(replayed).toBe(1)
+    expect(history.map((m) => m.content)).toEqual(['the only line that comes back', 'tail'])
+  })
+
+  it('replays nothing for a thread nothing has summarised', () => {
+    const { history, replayed } = historyFor(entries, 0)
+    expect(replayed).toBe(0)
+    expect(history).toEqual(toTranscript(entries))
+  })
+
+  it('stays inside the list whatever it is handed', () => {
+    // Past the end: everything the person said, and no tail.
+    const past = historyFor(entries, 99)
+    expect(past.replayed).toBe(3)
+    expect(past.history).toHaveLength(3)
+    // Below zero: the same as zero, not a slice off the END of the list.
+    expect(historyFor(entries, -3)).toEqual(historyFor(entries, 0))
+    expect(historyFor([], 4)).toEqual({ history: [], replayed: 0 })
   })
 })

@@ -67,7 +67,8 @@ import {
   type RunTelemetry,
   type StoppedBy,
 } from '../kg/agent/bench-score'
-import { RESERVED_FOR_REPLY } from '../kg/agent/budget'
+import { RESERVED_FOR_REPLY, fitHistory, type Trimmed } from '../kg/agent/budget'
+import { LEDGER_HEADING, MIN_SUMMARY_CHARS } from '../kg/agent/compact'
 import { approvalOf } from '../kg/core/model'
 import {
   INJECTION_TARGETS,
@@ -999,6 +1000,9 @@ function truncatedReply(turn: Turn & { ok: true }): Turn & { ok: true } {
 let transport: (messages: readonly ChatMessage[], tools: readonly unknown[]) => Promise<Turn> =
   TRANSPORT === 'raw' ? rawTurn : dialectTurn
 
+/** The specs the loop last offered — for the round-three fit diagnostic under `BENCH_TRACE`. */
+let lastSpecs: readonly unknown[] = []
+
 async function llm(messages: readonly ChatMessage[], tools: readonly unknown[]): Promise<Turn> {
   if (process.env['BENCH_SIZE']) {
     // Rough, and rough is enough: what matters is the SHAPE of the growth.
@@ -1010,7 +1014,15 @@ async function llm(messages: readonly ChatMessage[], tools: readonly unknown[]):
   const sent = INJECT ? withInjection(messages) : messages
   // A round is a call the LOOP makes: one with tools on offer. See `ctx.rounds`.
   if (tools.length > 0) ctx.rounds += 1
+  if (tools.length > 0) lastSpecs = tools
   const turn = await transport(sent, tools)
+  if (tools.length === 0 && process.env['BENCH_TRACE']) {
+    // Round-three measurement: which no-tools call this was, and what came back.
+    const head = messages[0]
+    const what = head !== undefined && typeof head.content === 'string' ? head.content.slice(0, 40) : ''
+    const reply = turn.ok ? `ok ${String((turn.text ?? '').length)} chars` : `${turn.kind}: ${turn.reason.slice(0, 80)}`
+    process.stderr.write(`      no-tools call: ${String(messages.length)} msgs, system=${JSON.stringify(what)} reply=${reply}\n`)
+  }
   // The raw transport parses no `usage`, so under it every reply is
   // unreported and `tokens` is null — which is literally what that path knows.
   if (TRANSPORT === 'raw') countUsage(turn)
@@ -1167,6 +1179,98 @@ function harnessFor(c: Case, ask: (m: readonly ChatMessage[]) => Promise<Turn>) 
   return HARNESS ? { chooser: { ask }, summariser: { ask }, window: windowFor(c) } : {}
 }
 
+/* -------------------------------------------------------------------------- */
+/* What one conversation feeds back between turns                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The history the next turn is given, built the way the app builds it.
+ *
+ * This used to be `history = out.messages`: the previous turn's SENT messages,
+ * fed straight back. `AgentRun.messages` is the request as the loop made it —
+ * the system prompt first, then the summary note when there is one (a fresh
+ * one, or the carried `context`, both `system` role), then the history AS
+ * FITTED (old tool results replaced by one-line stubs, evicted exchanges gone,
+ * the covered prefix's user turns carried ahead of the tail), then the question
+ * and everything the run appended (assistant turns, tool replies, verify
+ * nudges as `user` messages). Feeding that back measured a conversation the
+ * app never has, and round two of the compaction work put numbers on it:
+ *
+ *   - a copy of the system prompt entered the history on every turn, and the
+ *     loop later "evicted" those copies as though they were exchanges — 12 of
+ *     26 no-call trims were exactly that, the person was told 'earliest 2
+ *     messages were left out' for two copies of the system prompt, and the
+ *     summariser's `replaces` was inflated by 1,220 characters per copy;
+ *   - the summary note went in as a `system` message and was subject to the
+ *     next cut (`priorSummaryIn` in `loop.ts` exists to fish it back out);
+ *   - a tool result the previous fit had stubbed came back as the STUB, so by
+ *     the time a cut evicted it the ledger walk in `compact` had nothing to
+ *     read: Gemma 36 of 60 evicted results were already stubs, Qwen 21/35,
+ *     GPT-OSS 29/83, and the ledger — the part of the summary that exists to
+ *     carry ids — was under-measured on every endurance case.
+ *
+ * The app (`kg/react/use-threads.ts`, `historyFor` and `nextContextThrough`)
+ * keeps the ORIGINAL entries and rebuilds the history each turn: the user
+ * turns of the summarised prefix replayed verbatim, then the tail the summary
+ * does not cover; the summary itself travels as `context`, never as a
+ * message, and the boundary advances by the loop's count LESS the replayed
+ * head. This is that, over wire messages instead of entries — the two are
+ * one-to-one here, so the app's `entriesForMessages` collapses to a clamp.
+ * `proveFeedback` drives it through `runOne` against the real loop on every
+ * start.
+ */
+function createFeedback() {
+  /** Every wire message in ORIGINAL form: each turn's question and what its run appended. */
+  const transcript: ChatMessage[] = []
+  /** The latest summary, kept as the app keeps `ThreadProps.context`. */
+  let context: string | undefined
+  /** How much of `transcript` the summary covers — the app's `contextThrough`. */
+  let through = 0
+  return {
+    /** The next turn's history, and how many replayed head messages it starts with. */
+    history(): { history: ChatMessage[]; replayed: number } {
+      const head = transcript.slice(0, through).filter((m) => m.role === 'user')
+      return { history: [...head, ...transcript.slice(through)], replayed: head.length }
+    },
+    context: (): string | undefined => context,
+    /**
+     * Record what a turn did: advance the boundary if it compacted, keep its
+     * summary, append what it added. `replayed` is what `history()` reported
+     * for the history this run was given — the head is discounted from the
+     * loop's count exactly as `nextContextThrough` discounts it. The two
+     * clamps — never backwards, never past the end — cannot be reached by
+     * construction (a summary is written only when the cut passes the head
+     * into an assistant turn, and the cut never exceeds what was sent);
+     * `proveFeedback`'s mutation sweep records them as the survivors.
+     */
+    absorb(out: AgentRun, prompt: string, replayed: number): void {
+      if (out.compacted !== undefined) {
+        context = out.compacted.context
+        through = Math.min(transcript.length, through + Math.max(0, out.compacted.messages - replayed))
+      }
+      transcript.push(...addedBy(out.messages, prompt))
+    },
+  }
+}
+
+/**
+ * The messages a run ADDED: its question and everything after it.
+ *
+ * Found by the question rather than counted from the sent history, because
+ * what precedes it in `AgentRun.messages` is the request as fitted, and a
+ * plain trim — no summary written, so `compacted` is absent — drops messages
+ * the caller is told nothing about. The question is the LAST user message
+ * carrying the prompt's exact text: the loop pushes only verify nudges as user
+ * messages after it, and those are its own sentences, not the person's.
+ */
+function addedBy(messages: readonly ChatMessage[], prompt: string): ChatMessage[] {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const m = messages[i]
+    if (m !== undefined && m.role === 'user' && m.content === prompt) return messages.slice(i)
+  }
+  throw new Error('the loop returned a transcript without the question it was asked; the runner cannot tell what this turn added')
+}
+
 /**
  * A call as this runner records it: the scorer's record, plus what the fault
  * layer did to it. `faultsInjected` is this file's field — `bench-score.ts`
@@ -1185,7 +1289,7 @@ async function runOne(
   const { host, nodes } = freshHost()
   await seed(host)
   ctx = freshContext(c.id, c.truncateFirstCall === true)
-  let history: ChatMessage[] = []
+  const feed = createFeedback()
   let carried: readonly string[] | null = null
   /*
    * `finishReason` and the answer text, kept per turn.
@@ -1235,6 +1339,11 @@ async function runOne(
     // `truncate` moves to `done` inside `llm`, so "fired this turn" is read
     // after the run, in both the thrown and the returned branch.
     const firedThisTurn = () => truncationPending && ctx.truncate === 'done'
+    // What the app sends: the replayed head, the uncovered tail, and the
+    // summary as `context` — see `createFeedback`. Omitted rather than set to
+    // undefined, for `exactOptionalPropertyTypes`.
+    const { history, replayed } = feed.history()
+    const context = feed.context()
     let out: AgentRun
     try {
       out = await run({
@@ -1242,6 +1351,7 @@ async function runOne(
         llm,
         history,
         prompt: turn.say,
+        ...(context === undefined ? {} : { context }),
         gate: GATE,
         onEvent: (e) => {
           if (process.env['BENCH_TRACE'] && e.type === 'note') {
@@ -1334,7 +1444,22 @@ async function runOne(
     if (process.env['BENCH_TRACE']) {
       process.stderr.write(`   > "${turn.say.slice(0, 70)}"\n   < stopped=${out.stopped} answer=${JSON.stringify((out.answer ?? '').slice(0, 120))}\n`)
     }
-    history = out.messages
+    if (process.env['BENCH_TRACE']) {
+      // Round-three measurement: the summary the loop wrote, and the loop's own
+      // fit of the history this turn was GIVEN, re-run here so a trim with no
+      // summariser call can be attributed (floor, overflow, or nothing to summarise).
+      if (out.compacted !== undefined) {
+        process.stderr.write(`      summary(${String(out.compacted.messages)} msgs, kept ${String(out.compacted.kept.length)}): ${out.compacted.context.replace(/\n/g, '\\n')}\n`)
+      }
+      if (HARNESS) {
+        const q = addedBy(out.messages, turn.say)[0]
+        const fit = fitHistory(history, [out.messages[0], q, lastSpecs], windowFor(c))
+        process.stderr.write(
+          `      fit: window=${String(windowFor(c))} history=${String(history.length)} dropped=${String(fit.dropped)} kept=${String(fit.kept.length)} stubbed=${String(fit.stubbed)} toSummarise=${String(fit.toSummarise.length)} summaryChars=${String(fit.summaryChars)} summarisable=${String(fit.summarisable)} overflows=${String(fit.overflows)} lost=${JSON.stringify(fit.lost)} evicted=${JSON.stringify(history.slice(0, fit.dropped).map((m) => (m.role === 'tool' ? `tool${m.content.includes('withheld to save room') ? '(stub)' : ''}` : m.role)))}\n`,
+        )
+      }
+    }
+    feed.absorb(out, turn.say, replayed)
     carried = out.offered
     perTurn.push({
       calls,
@@ -1495,6 +1620,7 @@ const MAX_STEPS = (() => {
 })()
 
 await proveRecords(runAgent)
+await proveFeedback(runAgent)
 
 type Score = Awaited<ReturnType<typeof runOne>>
 
@@ -1551,6 +1677,292 @@ async function proveRecords(run: RunAgent): Promise<void> {
     throw new Error(`truncateFirstCall did not reach the file: run=${JSON.stringify(cut.run)} turn0=${JSON.stringify(firstCall)}`)
   }
   if (cut.trajectory.refused < 1) throw new Error('truncateFirstCall fired but no call was refused; the loop did not see the cut')
+}
+
+/**
+ * The feedback contract (`createFeedback`), proven through `runOne` against
+ * the real loop with a scripted wire, on every start.
+ *
+ * Two runs of a fake case built on the suite's first conversation. The wire
+ * answers turn one with a `memory_search` (a real JSON result from the seeded
+ * world), every later turn with a fixed paragraph, and the summariser with a
+ * sentence carrying a marker. A wrapper around `run` records the `history`
+ * and `context` each turn was GIVEN, which is the thing this proves — the
+ * transport sees the request the loop built from them, which is the loop's
+ * business and `proveWindow`'s.
+ *
+ * With the harness on, the case's window is PLANNED rather than guessed: the
+ * one-turn run yields the exact system message, tool list and turn-one
+ * transcript, and `fitHistory` — the loop's own estimate — is then asked for
+ * the smallest window at which turn two goes untouched, turn three is fitted
+ * by a stub alone, and turn four has to cut and can afford a summary. That
+ * shape is the one the old feedback got wrong: the runner that fed
+ * `out.messages` back handed turn four the STUB turn three had written, and
+ * the ledger walk in `compact` had nothing to read. Sized from the loop's
+ * estimate so that a bigger catalogue moves the window rather than breaking
+ * the probe; the assertions still say what actually happened.
+ *
+ * What is checked, over the five turns:
+ *   1. no history the loop was given holds a `system` message, a summary
+ *      note, or a stubbed tool result;
+ *   2. the history of the turn that compacts carries turn one's tool result
+ *      VERBATIM — the JSON the executor rendered, not the stub the previous
+ *      fit sent — so the evicted prefix `compact` walks is the original;
+ *   3. the turn after the compaction is given the app's history exactly: the
+ *      user turns of the covered prefix (the loop's own `kept`) verbatim,
+ *      then the uncovered tail of ORIGINAL messages — turn one's question
+ *      first — and the summary as `context`, which the loop then places
+ *      (the marker is in that turn's request).
+ * With the harness off nothing compacts, and the last turn must be given the
+ * whole transcript, original and system-free.
+ */
+async function proveFeedback(run: RunAgent): Promise<void> {
+  const base = CONVERSATIONS[0] as Case
+  /*
+   * Sixteen turns, for at least THREE compactions the probe can look past
+   * (measured: turns 4, 6, 9, 11, 13, 14, 15 and 16). One
+   * would prove the head and the context; it would not prove the arithmetic.
+   * With nothing replayed yet the first boundary is the loop's count whether
+   * or not the head is discounted; at the second the difference is one
+   * message, and it is the user turn the cut stopped before, which the next
+   * history replays at the head either way — the same sequence. Only at the
+   * third does a boundary that never discounted the head over-advance by the
+   * head's whole size and drop an assistant turn from the tail, which is
+   * where a wrong boundary is visible.
+   *
+   * Few turns and fat replies rather than many thin ones, and that was
+   * measured: with 24 one-line turns the loop compacted on 4 and 12 and then
+   * trimmed plain six times, because every user turn is kept and by turn 19
+   * the person's turns alone filled the target (a third of an ~820-token
+   * room), so no cut left room for a summary — the loop's floor case, not a
+   * fault. Replies of seven sentences from turn five keep the user share
+   * small and the compactions three turns apart.
+   */
+  const SAY = [
+    'What do I have on file about applications?',
+    'Which of those is the furthest along?',
+    'And which one is the earliest?',
+    'Is anything on that list waiting on me?',
+    'What did we start with?',
+    // Turn 11 repeats turn 8 word for word: the runner finds what a turn added
+    // by its question, and a search from the front would take the earlier
+    // copy — still in the history — and duplicate everything between.
+    ...[6, 7, 8, 9, 10, 8, 12, 13, 14, 15, 16].map((n) => `Question ${String(n)}: which of those has the nearest date?`),
+  ] as const
+  const MARKER = 'probe-summary-7f3a'
+  const SUMMARY = `Earlier turns listed the applications on file and compared their stages (${MARKER}).`
+  // No capitalised name, no first-person claim, nothing repeated ten times:
+  // the verify gate and the chant scan must both stay quiet, and each reply
+  // differs so the stuck detector sees no repeat. `sentences` is the plan's
+  // second axis, below: the reply has to be small beside the tool result for
+  // a stub alone to fit turn three, and big enough that turn four cannot.
+  let sentences = 3
+  const reply = (n: number): string =>
+    `Reply ${String(n)}. ${Array.from(
+      // The plan sizes replies one and two; from the third on they are fat.
+      { length: n < 3 ? sentences : sentences + 5 },
+      (_, i) =>
+        `point ${String(i + 1)} of reply ${String(n)}: the listing covered the employer, the stage and the next date for each application on file, in the order the store returned them.`,
+    ).join(' ')}`
+  const FIRST = 'The store lists the applications on file, each with an employer and a stage.'
+
+  const sent: { history: readonly ChatMessage[]; context: string | undefined }[] = []
+  const outs: AgentRun[] = []
+  const wrapped: RunAgent = async (o) => {
+    sent.push({ history: o.history, context: o.context })
+    const out = await run(o)
+    outs.push(out)
+    return out
+  }
+  const WITHHELD = 'withheld to save room'
+  const NOTE = 'summarised, not verbatim'
+  let system: ChatMessage | undefined
+  let tools: readonly unknown[] = []
+  /** Turn index of each request that carried a stubbed result, and each that carried the marker. */
+  const stubbedAt = new Set<number>()
+  const markerAt = new Set<number>()
+  let rounds = 0
+  const real = transport
+  transport = async (m, t) => {
+    const turn = sent.length - 1
+    if (m.some((x) => x.role === 'tool' && x.content.includes(WITHHELD))) stubbedAt.add(turn)
+    if (m.some((x) => typeof x.content === 'string' && x.content.includes(MARKER))) markerAt.add(turn)
+    if (t.length === 0) return sayTurn(SUMMARY)
+    rounds += 1
+    system ??= m[0]
+    if (tools.length === 0) tools = t
+    const last = m[m.length - 1]
+    if (last?.role === 'tool') return sayTurn(FIRST)
+    if (last?.role !== 'user') throw new Error(`the feedback probe's wire was asked after a ${String(last?.role)} message`)
+    const i = (SAY as readonly string[]).indexOf(last.content)
+    if (i === 0) return callTurn('memory_search', JSON.stringify({ query: 'application' }), { query: 'application' })
+    if (i > 0) return sayTurn(reply(i))
+    throw new Error(`the feedback probe's wire was asked after an unscripted user message: ${JSON.stringify(last.content.slice(0, 120))}`)
+  }
+  const drive = (id: string, says: readonly string[], knobs: { window?: number }) =>
+    runOne(wrapped, { ...base, id, turns: says.map((say) => ({ say, why: 'feedback probe' })), ...knobs }, 'full')
+  const user = (content: string): ChatMessage => ({ role: 'user', content })
+  const assistant = (content: string): ChatMessage => ({ role: 'assistant', content })
+  const same = (a: readonly ChatMessage[], b: readonly ChatMessage[]): boolean =>
+    JSON.stringify(a) === JSON.stringify(b)
+  const untouched = (t: Trimmed): boolean => !t.overflows && t.dropped === 0 && t.stubbed === 0
+
+  try {
+    // One turn, no ceiling: the original transcript of turn one, and the fixed part.
+    await drive('(probe feedback: one turn)', [SAY[0]], { window: 1_000_000 })
+    const first = outs[0]
+    if (first === undefined || system?.role !== 'system') throw new Error('the feedback probe did not reach the loop')
+    const turnOne = addedBy(first.messages, SAY[0])
+    const result = turnOne.find((m) => m.role === 'tool')
+    if (result === undefined || result.content.includes(WITHHELD)) throw new Error('the feedback probe recorded no tool result on turn one')
+    try {
+      JSON.parse(result.content)
+    } catch {
+      throw new Error(`turn one's tool result is not the executor's JSON: ${result.content.slice(0, 120)}`)
+    }
+    if (rounds !== 2) throw new Error(`the one-turn probe made ${String(rounds)} rounds, not 2`)
+
+    /*
+     * The plan, from the loop's own estimate. `fixed` is what the loop
+     * measures against: the system message, the question and the offered
+     * specs. Two axes: the window, scanned upward from the smallest at which
+     * turn two goes untouched (a wider one only makes turn three fit whole),
+     * and the reply's length, because the shape wanted is a ratio — after the
+     * stub, turn three's prose must sit under the target (a third of the room
+     * once the schemas take more than a third of the window) and turn four's
+     * must not. Measured on the seeded world: the result is 714 tokens and
+     * its stub 49, the rest of turn one 105, so a three-sentence reply (178
+     * with its question) left turn three at 333 against a target of 273 and
+     * the loop cut on turn three; two sentences fit it and let turn four cut.
+     */
+    const fixed = (q: string): unknown[] => [system, user(q), tools]
+    const plan = (): number | null => {
+      const two = turnOne
+      const three = [...two, user(SAY[1]), assistant(reply(1))]
+      const four = [...three, user(SAY[2]), assistant(reply(2))]
+      let lo = 1
+      let hi = 1 << 22
+      while (lo < hi) {
+        const mid = Math.floor((lo + hi) / 2)
+        if (untouched(fitHistory(two, fixed(SAY[1]), mid))) hi = mid
+        else lo = mid + 1
+      }
+      for (let w = lo; ; w += 4) {
+        const t3 = fitHistory(three, fixed(SAY[2]), w)
+        if (untouched(t3)) return null
+        const t4 = fitHistory(four, fixed(SAY[3]), w)
+        const stubOnly = t3.dropped === 0 && t3.stubbed > 0
+        const cuts = t4.dropped > 0 && t4.summarisable && t4.toSummarise.length > 0 && t4.summaryChars >= MIN_SUMMARY_CHARS
+        if (stubOnly && cuts) return w
+      }
+    }
+    let window: number | undefined
+    if (HARNESS) {
+      for (sentences = 1; sentences <= 8 && window === undefined; sentences += 1) window = plan() ?? undefined
+      if (window === undefined) {
+        throw new Error(`no reply length up to eight sentences and no window make turn three stub and turn four cut against a ${String(result.content.length)}-character tool result; the fit's stages have changed shape and this probe needs re-planning`)
+      }
+      sentences -= 1
+    }
+
+    sent.length = 0
+    outs.length = 0
+    rounds = 0
+    const score = await drive('(probe feedback)', SAY, window === undefined ? {} : { window })
+    if (sent.length !== SAY.length || outs.length !== SAY.length) throw new Error(`the feedback probe ran ${String(outs.length)} of ${String(SAY.length)} turns`)
+    if (rounds !== SAY.length + 1) throw new Error(`the feedback probe made ${String(rounds)} rounds over ${String(SAY.length)} turns, not ${String(SAY.length + 1)} — a nudge or a retry the script did not plan for`)
+    /*
+     * What each turn added, from the script rather than from `addedBy`: the
+     * wire is known — two rounds on turn one (call, result, answer), one on
+     * every later turn — so the count is known, and an `addedBy` that found
+     * the wrong question would otherwise be checked against itself.
+     */
+    const addedIn = (i: number): ChatMessage[] => {
+      const added = (outs[i]?.messages ?? []).slice(i === 0 ? -4 : -2)
+      if (added[0]?.role !== 'user' || added[0].content !== SAY[i]) throw new Error(`turn ${String(i + 1)}'s run did not end with its question and reply as scripted`)
+      return added
+    }
+    const transcript = outs.flatMap((_, i) => addedIn(i))
+
+    // 1. Never the system prompt, never a summary note, never a stub.
+    sent.forEach((s, i) => {
+      if (s.history.some((m) => m.role === 'system')) throw new Error(`turn ${String(i + 1)} was given a system message in its history — the runner is feeding the request back, not the conversation`)
+      if (s.history.some((m) => typeof m.content === 'string' && m.content.includes(NOTE))) throw new Error(`turn ${String(i + 1)} was given a summary note in its history; the summary travels as context`)
+      if (s.history.some((m) => m.role === 'tool' && m.content.includes(WITHHELD))) throw new Error(`turn ${String(i + 1)} was given a stubbed tool result; the runner must keep the original`)
+    })
+
+    /** The transcript as it stood BEFORE turn `i`: what turns `0..i` added. */
+    const before = (i: number): ChatMessage[] => transcript.slice(0, i === 0 ? 0 : 4 + 2 * (i - 1))
+
+    if (window === undefined) {
+      // Nothing compacts, so the last turn is given everything before it, original.
+      const last = sent[SAY.length - 1]
+      if (last === undefined || !same(last.history, before(SAY.length - 1))) throw new Error('with the harness off, the last turn was not given the whole original transcript')
+      if (sent.some((s) => s.context !== undefined)) throw new Error('with the harness off a context was passed; nothing was summarised')
+      return
+    }
+
+    // 2. The first compaction, where planned, after a turn that was fitted by
+    // a stub — and the ledger it wrote, which is what the original buys.
+    const compactedAt = score.reasons.flatMap((r, i) => (r.compacted ? [i] : []))
+    if (compactedAt[0] !== 3) {
+      throw new Error(`the plan was a first compaction on turn 4 at window ${String(window)}; the loop compacted on ${JSON.stringify(compactedAt.map((i) => i + 1))} (stubs seen on ${JSON.stringify([...stubbedAt].map((i) => i + 1))})`)
+    }
+    if (compactedAt.length < 3) {
+      throw new Error(`the probe needs three compactions over ${String(SAY.length)} turns to check the boundary arithmetic; the loop compacted on ${JSON.stringify(compactedAt.map((i) => i + 1))} at window ${String(window)}`)
+    }
+    if (!stubbedAt.has(2)) throw new Error(`the plan was a stub-only fit on turn 3 at window ${String(window)}; stubs were seen on ${JSON.stringify([...stubbedAt].map((i) => i + 1))}, so the probe cannot tell the original from the stub`)
+    // This run's own turn one, not the one-turn run's: each `runOne` seeds a
+    // fresh world, and the ids in the result are minted per world.
+    const original = transcript.find((m) => m.role === 'tool')
+    const given = sent[3]?.history.find((m) => m.role === 'tool')
+    if (original === undefined || original.content.includes(WITHHELD)) throw new Error('the probe recorded no original tool result on turn one')
+    if (given === undefined || given.content !== original.content) {
+      throw new Error(`the compacting turn was given ${given === undefined ? 'no tool result' : `a tool result that is not the original: ${given.content.slice(0, 100)}`}`)
+    }
+    const firstSummary = outs[3]?.compacted?.context ?? ''
+    if (!firstSummary.includes(LEDGER_HEADING)) {
+      throw new Error(`the first summary names no records — the evicted result reached compact as something other than the executor's JSON: ${firstSummary.slice(0, 200)}`)
+    }
+
+    // 3. After every compaction: the app's history, and the summary as
+    // context. `through` here is the app's arithmetic (`nextContextThrough`
+    // over messages) run beside the runner's, from the loop's own counts.
+    let through = 0
+    let checked = 0
+    for (const k of compactedAt) {
+      const written = outs[k]?.compacted
+      const after = sent[k + 1]
+      if (written === undefined) throw new Error(`turn ${String(k + 1)} compacted but reported no summary`)
+      // A compaction on the last turn has no successor to check.
+      if (after === undefined) break
+      checked += 1
+      const stood = before(k)
+      const replayed = stood.slice(0, through).filter((m) => m.role === 'user').length
+      if (written.messages <= replayed) throw new Error(`turn ${String(k + 1)}'s cut (${String(written.messages)}) covered only the replayed head (${String(replayed)}); nothing to check`)
+      through += written.messages - replayed
+      const next = before(k + 1)
+      const covered = next.slice(0, through)
+      if (k === 3 && (covered[0]?.role !== 'user' || !covered.some((m) => m.role === 'tool'))) {
+        throw new Error(`the first cut covered ${String(written.messages)} messages and left turn one's result in the tail; the probe would prove nothing`)
+      }
+      const expected = [...covered.filter((m) => m.role === 'user'), ...next.slice(through)]
+      if (!same(after.history, expected)) {
+        throw new Error(`turn ${String(k + 2)} was not given the app's history.\n  expected: ${JSON.stringify(expected.map((m) => [m.role, String(m.content ?? '').slice(0, 40)]))}\n  given:    ${JSON.stringify(after.history.map((m) => [m.role, String(m.content ?? '').slice(0, 40)]))}`)
+      }
+      const head = after.history[0]
+      if (head === undefined || head.role !== 'user' || head.content !== SAY[0]) throw new Error(`turn ${String(k + 2)}'s history does not start with turn one's question verbatim`)
+      if (!same(stood.slice(0, through).flatMap((m) => (m.role === 'user' ? [user(m.content)] : [])), written.kept.map(user))) {
+        throw new Error(`turn ${String(k + 1)}: the covered prefix's user turns are not what the loop reported as kept`)
+      }
+      if (after.context !== written.context) throw new Error(`turn ${String(k + 2)} was given context ${JSON.stringify(after.context?.slice(0, 80))}, not the summary turn ${String(k + 1)} wrote`)
+      if (!written.context.includes(MARKER)) throw new Error(`the summary the loop wrote on turn ${String(k + 1)} does not carry the scripted sentence: ${written.context.slice(0, 160)}`)
+      if (!markerAt.has(k + 1)) throw new Error(`the context turn ${String(k + 2)} was given did not reach the model; the loop placed no note carrying it`)
+    }
+    if (checked < 3) throw new Error(`the probe checked ${String(checked)} compaction(s); it needs three to see a wrong boundary (compacted on ${JSON.stringify(compactedAt.map((i) => i + 1))})`)
+  } finally {
+    transport = real
+  }
 }
 
 /**

@@ -64,8 +64,10 @@ import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
 import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor, select } from './retrieve'
 import { fitHistory, fitsWindow, summarisedNote, trimNote } from './budget'
+import type { Trimmed } from './budget'
 import { pickTools, type ChooserDeps } from './retrieve-llm'
-import { asMessage, compact, type CompactDeps } from './compact'
+import { asMessage, compact, MIN_SUMMARY_CHARS } from './compact'
+import type { CompactDeps, CompactOptions, ThreadRef } from './compact'
 import type { Effect } from './catalog'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
@@ -334,6 +336,18 @@ export type AgentOptions = {
    * AND the history it does not cover; this puts the summary in front.
    */
   context?: string
+  /**
+   * The conversation this run belongs to, for the summary's pointer line.
+   *
+   * A compaction summary ends by saying where the verbatim exchange still is,
+   * so a model that needs a detail the summary left out can read it back with
+   * `memory.get` instead of guessing. That needs the thread's id, and the loop
+   * does not have one of its own: `agent-runs.ts` does (`StartOptions.threadId`,
+   * decided before the first token) and can pass `{ id: threadId }`; the bench
+   * runner runs against a host with no thread node, so it passes nothing.
+   * Absent means no pointer line — never an id the model could not read.
+   */
+  thread?: ThreadRef
   signal?: Cancellation
   /**
    * The tools to offer this run, by registry name. All of them when absent.
@@ -418,8 +432,20 @@ export type AgentRun = {
    * of the history messages it accounts for — the caller translates that back
    * into its own entries (see `entriesForMessages`) and stores both, so the
    * next turn sends the summary and only the part it does not cover.
+   *
+   * `kept` is the person's own turns from inside that covered part, verbatim
+   * and in order. They were SENT this turn — the budget carries them ahead of
+   * the surviving tail rather than paraphrasing them — but they are not in
+   * `context`: the summariser never sees a user turn, by design (see
+   * `budget.ts` for the measurement). So a caller that advances its stored
+   * boundary by `messages` has to carry `kept` forward itself, or the next
+   * turn's history starts after them and the fact the person stated in turn
+   * one is gone with nothing standing in for it. Reported here rather than
+   * folded into `context` because folding would feed the person's words to
+   * the next compaction's summariser as "earlier notes", which is the exact
+   * path this design closed.
    */
-  compacted?: { readonly context: string; readonly messages: number }
+  compacted?: { readonly context: string; readonly messages: number; readonly kept: readonly string[] }
 }
 
 /**
@@ -545,6 +571,50 @@ const resolveOffered = (only: readonly string[] | undefined): Set<string> | null
     }
   }
   return out
+}
+
+/**
+ * A previous compaction's summary, when it arrived INSIDE the history.
+ *
+ * Both callers now hand the summary back as `context`: `agent-runs.ts` stores
+ * it on the thread, and the bench runner keeps it beside its transcript
+ * (`createFeedback` in bench/run.mts). This exists for a history that carries
+ * one anyway — a caller that fed a turn's sent messages straight back as the
+ * next turn's history, which the runner did until 2026-09-05, so that the
+ * summary sat in the history as a `system` message and a cut that evicted it
+ * would have lost it. `compact` does not read system messages, because on
+ * that path a system message in the prefix was as likely to be a copy of the
+ * system prompt. Kept: it costs a scan of the evicted prefix and nothing
+ * else, and `context` wins over it whenever a caller passes one.
+ *
+ * So the summary is recognised by the wrapper `asMessage` puts on it — asked
+ * of `asMessage` rather than copied here, so the two cannot drift — and
+ * unwrapped back to the raw notes, prefix and pointer both off. What reaches
+ * the next summariser as `earlier` is then the notes and not the boilerplate
+ * around them, which is the same doubling the raw-return in `compact` closed
+ * from the other side. The newest one in the prefix wins: each supersedes
+ * the last.
+ */
+const priorSummaryIn = (
+  evicted: readonly ChatMessage[],
+  thread: ThreadRef | undefined,
+): string | undefined => {
+  // `asMessage` returns the message union; a system message's content is a
+  // string, which is what is read here.
+  const wrapped = (options: Pick<CompactOptions, 'thread'>): string => String(asMessage('', options).content ?? '')
+  const prefix = wrapped({})
+  const suffix = thread === undefined ? '' : wrapped({ thread }).slice(prefix.length)
+  for (let i = evicted.length - 1; i >= 0; i -= 1) {
+    const m = evicted[i]
+    if (m?.role !== 'system' || !m.content.startsWith(prefix)) continue
+    const body = m.content.slice(prefix.length)
+    const raw = (suffix !== '' && body.endsWith(suffix) ? body.slice(0, -suffix.length) : body).trim()
+    // A wrapper with nothing inside supersedes nothing: an older one may still
+    // be the notes, so the search goes on rather than ending on it.
+    if (raw === '') continue
+    return raw
+  }
+  return undefined
 }
 
 /** The whole catalog, or the named subset of it, in the model's own shape. */
@@ -825,8 +895,18 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    * is a floor on the damage rather than a guarantee, and `guardTruncation`
    * still runs afterwards for the case where the guess was too generous.
    */
-  const fitted = options.window === undefined
-    ? { history: options.history, dropped: 0, summarisable: true, overflows: false }
+  const fitted: Trimmed = options.window === undefined
+    ? {
+        history: options.history,
+        dropped: 0,
+        stubbed: 0,
+        kept: [],
+        toSummarise: [],
+        lost: null,
+        summaryChars: 0,
+        summarisable: true,
+        overflows: false,
+      }
     : fitHistory(options.history, [system, question, tools], options.window)
 
   /*
@@ -839,40 +919,117 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    * to leave Baylor alone. It asks again, or acts as though none of it
    * happened.
    *
-   * One system note takes their place — system, not assistant, because a model
-   * defends its own prior speech and this is context rather than something it
-   * said. It is asked for only when a trim actually drops something, so an
-   * ordinary conversation never pays for it, and it is allowed to fail: without
-   * it the trim is a plain one, which is what happened before this existed.
+   * `compact` is handed the WHOLE evicted prefix — `history.slice(0,
+   * dropped)`: the person's turns, the assistant's, and the original tool
+   * results — and does its own marking. What its model is shown is still only
+   * the assistant's side (`summarisable` there): the person's turns from that
+   * prefix are already at the head of `fitted.history`, verbatim, and the
+   * results are never shown to a model at all. That split is the round-one
+   * fix and it stands: the first version's summariser was given the prefix
+   * whole and, measured on the six endurance cases, the person's turn-one
+   * sentence survived in 1 of 18 model×case cells — compressed ~20:1
+   * alongside forty serialised records. See `budget.ts` for the numbers.
    *
-   * `RESERVED_FOR_REPLY` already left room, and the summary is capped, so
-   * putting it back cannot re-overflow what the trim just fixed.
+   * Round one then passed `fitted.toSummarise` — the marked assistant turns
+   * and nothing else — and that lost twice, measured on the same cases:
+   *
+   *   - `compact` refused a reply longer than its INPUT, and that input was
+   *     now prose and tool names, 87–831 characters, so a four-heading summary
+   *     was "longer than its source". GPT-OSS lost 12 of 34 summaries that
+   *     way, Gemma 4 of 34, Qwen 4 of 31 — every Gemma/Qwen refusal had an
+   *     input of ≤202 characters against a 106-character skeleton. The rule
+   *     is against what the summary REPLACES in the request, which includes
+   *     the 6,000-character results the budget stubbed or cut, and only the
+   *     full prefix carries those.
+   *   - The summariser was not shown the results, so it could not name a
+   *     record it had only ever seen there: Qwen and GPT-OSS wrote "app:
+   *     unknown", and Qwen then updated the Rice application instead of
+   *     Stripe. `compact` now walks the results for a ledger of `label (id)`
+   *     pairs, deterministically, and appends it to what it returns — so the
+   *     ids reach the stored context whatever the model wrote. It needs the
+   *     tool messages to walk.
+   *
+   * One system note takes the evicted assistant turns' place — system, not
+   * assistant, because a model defends its own prior speech and this is
+   * context rather than something it said. It is asked for only when a cut
+   * actually removed something of the assistant's, so an ordinary conversation
+   * never pays for it, and a cut that evicted only user turns (all of them
+   * carried) pays for nothing either. It is allowed to fail: without it the
+   * trim is a plain one, which is what happened before this existed.
    */
+  /*
+   * How long a summary may be THIS turn, in characters, or no limit when
+   * there is no window to derive one from.
+   *
+   * `summaryChars` is a share of the window (`SUMMARY_SHARE`) bounded by the
+   * room the fitted request actually leaves under the ceiling, so putting the
+   * summary back cannot re-overflow what the trim just fixed. It is 0 both
+   * without a window and on overflow, and those zeros mean opposite things:
+   * no window is no ceiling at all, overflow is no room at all. `undefined`
+   * here is the first; the second is handled where the summary is placed.
+   */
+  const budget = options.window === undefined ? undefined : fitted.summaryChars
+  const framing: Pick<CompactOptions, 'budget' | 'thread'> = {
+    ...(budget === undefined ? {} : { budget }),
+    ...(options.thread === undefined ? {} : { thread: options.thread }),
+  }
+  /*
+   * The summary this one supersedes, from wherever the caller keeps it.
+   *
+   * It used to be sent as a user message reading "Earlier still: …", which
+   * `compact` now ignores along with every other user message — so a
+   * twice-compacted thread would keep only its second summary. It goes through
+   * `earlier` instead, where the summariser is told what it is.
+   */
+  const evicted = options.history.slice(0, fitted.dropped)
+  const earlier = options.context ?? priorSummaryIn(evicted, options.thread)
+  /*
+   * Under the floor, no summary at all — not even the ledger `compact` would
+   * still hand back without a model call.
+   *
+   * `summaryChars` is the honest remainder when no cut could reserve the
+   * share, and measured on long-vault-convention against Qwen3 14B at its
+   * 26,100 window it was 90 and 172 characters: a summariser call each time,
+   * for a note cut mid-heading. `compact` refuses the call itself under
+   * `MIN_SUMMARY_CHARS` (320: three empty skeletons), but from roughly 240
+   * — the 59-character heading plus one short entry, in a third — it still
+   * returns the ledger line alone, and placing that here would cost
+   * more than the budget says. The note's wrapper — 57 characters of "Earlier
+   * in this conversation (summarised, not verbatim): " — is not counted in
+   * the budget, so a ledger-only note under the floor is a line of ids with
+   * nothing said about any of them, in up to a fifth more room than the fit
+   * left. The person is told the earliest messages were LEFT OUT, which is
+   * the truth of it; "replaced with a short summary" is for when there is
+   * one. No window is no floor: `budget` is undefined, and `compact` is
+   * asked with no limit.
+   */
+  const underFloor = budget !== undefined && budget < MIN_SUMMARY_CHARS
   let recovered: ChatMessage | null = null
-  let written: { context: string; messages: number } | undefined
+  let written: AgentRun['compacted']
   // The abort check also covers a Stop pressed DURING the chooser call above,
   // which is the only window in which that call is running and cancellable by
   // nothing. See there for why this is skipped rather than returned from.
-  if (fitted.dropped > 0 && fitted.summarisable && options.summariser && !signal?.aborted) {
-    /*
-     * The exchanges being dropped, PLUS whatever a previous compaction already
-     * summarised — so the new summary supersedes the old rather than sitting
-     * beside it. Without this the thread would accumulate summaries, which is
-     * the growth this whole mechanism exists to stop.
-     */
-    const earlier: ChatMessage[] =
-      options.context === undefined
-        ? []
-        : [{ role: 'user', content: `Earlier still: ${options.context}` }]
-    const summary = await compact(options.summariser, [
-      ...earlier,
-      ...options.history.slice(0, fitted.dropped),
-    ])
+  if (
+    fitted.dropped > 0 &&
+    fitted.summarisable &&
+    fitted.toSummarise.length > 0 &&
+    !underFloor &&
+    options.summariser &&
+    !signal?.aborted
+  ) {
+    const summary = await compact(options.summariser, evicted, {
+      ...framing,
+      ...(earlier === undefined ? {} : { earlier }),
+    })
     if (summary !== null) {
-      // `asMessage` owns the prefix; the thread stores the summary itself. See
-      // `compact` for the doubling this avoids.
-      recovered = asMessage(summary)
-      written = { context: summary, messages: fitted.dropped }
+      // `asMessage` owns the prefix and the pointer; the thread stores the
+      // summary itself. See `compact` for the doubling this avoids.
+      recovered = asMessage(summary, framing)
+      written = {
+        context: summary,
+        messages: fitted.dropped,
+        kept: fitted.kept.flatMap((m) => (m.role === 'user' ? [m.content] : [])),
+      }
     }
   }
 
@@ -881,18 +1038,47 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    *
    * The common case once a conversation has been compacted once: it fits now,
    * nothing is dropped, and what the model still needs is the note about the
-   * part that is no longer here.
+   * part that is no longer here. Placed only where there is room for it:
+   * `budget` is 0 exactly when the fitted request already fills the ceiling
+   * (overflow, or a tail that fits with nothing to spare), and a summary added
+   * there is the thing that overflows.
+   *
+   * Never BOTH. A fresh summary supersedes `earlier`: the summariser was
+   * shown the earlier notes and told to carry forward what still matters, and
+   * `compact` merged the earlier ledger into the new one — so everything the
+   * old note held that is still true is in the new note, and placing the old
+   * one beside it is two notes that disagree wherever the person corrected
+   * something in between. The `recovered === null` here is the guard, and a
+   * test pins that exactly one "summarised, not verbatim" message goes out
+   * when a thread with stored context compacts again (mutation found it
+   * unpinned: dropping the guard survived every test then in this file).
    */
   const carriedContext: ChatMessage | null =
-    recovered === null && options.context !== undefined
-      ? asMessage(options.context)
+    recovered === null && earlier !== undefined && budget !== 0
+      ? asMessage(earlier, framing)
       : null
 
-  if (fitted.dropped > 0) {
+  /*
+   * What the person is told, counted by what actually went. `dropped` is the
+   * boundary and it includes the user turns carried forward; those were sent,
+   * so "left out" would be false of them. A cut that evicted only user turns
+   * removed nothing and says nothing.
+   */
+  const removed = fitted.dropped - fitted.kept.length
+  if (removed > 0) {
     onEvent({
       type: 'note',
       app: true,
-      text: recovered === null ? trimNote(fitted.dropped) : summarisedNote(fitted.dropped),
+      text: recovered === null ? trimNote(removed) : summarisedNote(removed),
+    })
+  }
+  if (fitted.lost !== null) {
+    // The one stage that loses something nobody can re-derive, so it is
+    // reported on its own terms rather than folded into the count above.
+    onEvent({
+      type: 'note',
+      app: true,
+      text: `Even your own earlier messages did not all fit this model: ${fitted.lost.reason}. ${String(fitted.lost.count)} ${fitted.lost.count === 1 ? 'was' : 'were'} left out of this request; your records are untouched.`,
     })
   }
   if (fitted.overflows) {

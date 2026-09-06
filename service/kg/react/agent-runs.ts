@@ -471,6 +471,21 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
           ...(options.summariser === undefined ? {} : { summariser: options.summariser }),
           ...(options.tools === undefined ? {} : { tools: options.tools }),
           /*
+           * The stored summary, and which conversation this is.
+           *
+           * Both were on `StartOptions` and neither reached the loop. `context`
+           * was accepted here, passed by `use-agent.ts`, and dropped on this
+           * line — so a compacted thread paid for its summary, stored it, and
+           * then sent the next turn as if it had never been written: the loop
+           * saw a history that began after the covered prefix and no note about
+           * what the prefix had established. `thread` gives the summary its
+           * pointer line — "the full exchange is the conversation with id …" —
+           * so a model missing a detail reads it back with `memory.get` rather
+           * than guessing; the bench passes nothing here and gets no line.
+           */
+          ...(options.context === undefined ? {} : { context: options.context }),
+          thread: { id: threadId },
+          /*
            * The retriever, on for the Assistant and nothing else.
            *
            * `tools` wins outright when a caller named one — AskBox and the

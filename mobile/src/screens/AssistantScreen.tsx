@@ -8,9 +8,9 @@ import { useAgent } from '@jojo/service/react/use-agent'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import {
+  historyFor,
   toAgentEntries,
   toThreadEntries,
-  toTranscript,
   useThreads,
 } from '@jojo/service/react/use-threads'
 import { useApplications } from '@/lib/store-context'
@@ -374,13 +374,19 @@ function AgentScreen() {
       id: activeId,
       entries: active ? toAgentEntries(active.entries) : [],
       /*
-       * Only the part the stored summary does NOT cover.
+       * The part the stored summary does NOT cover — and, ahead of it, the
+       * person's own turns from the part it does.
        *
        * `contextThrough` is where a previous compaction reached; sending those
        * entries again alongside the summary would defeat the compaction and
-       * make the conversation grow faster than before it happened.
+       * make the conversation grow faster than before it happened. But the
+       * summary holds no user words by design (the summariser never sees a
+       * user turn), so the loop carries them verbatim instead — and a boundary
+       * advanced past them lost them on the very next turn. `historyFor` does
+       * the replay and the slice as one reading, so this screen and the other
+       * cannot disagree about it; see `use-threads.ts`.
        */
-      history: active ? toTranscript(active.entries.slice(active.contextThrough)) : [],
+      history: active ? historyFor(active.entries, active.contextThrough).history : [],
       ...(active?.context === undefined ? {} : { context: active.context }),
       approval: active?.approval ?? 'manual',
     },

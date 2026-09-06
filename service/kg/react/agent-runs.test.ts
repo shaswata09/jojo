@@ -17,6 +17,19 @@ import { RESERVED_FOR_REPLY } from '../agent/budget'
 import { RESIDENT } from '../agent/retrieve'
 import { CATALOG } from '../agent/catalog'
 import type { RunSignal, StartOptions } from './agent-runs'
+import { runAgent } from '../agent/loop'
+
+/*
+ * The real loop, watched. Every test below drives `runAgent` for real — that
+ * is the point of a registry tested with a two-line fake model — but two of
+ * `StartOptions`' fields were accepted, documented, and never handed on, and
+ * only the options object itself can show that. So the loop is wrapped, not
+ * replaced: it runs as it always did and also records what it was given.
+ */
+vi.mock('../agent/loop', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../agent/loop')>()
+  return { ...actual, runAgent: vi.fn(actual.runAgent) }
+})
 
 const answering = (text: string): Turn => ({ ok: true, text, toolCalls: [], finishReason: 'stop' })
 
@@ -374,11 +387,21 @@ describe('carrying the tool set between turns', () => {
  * passed without it. So it is tested here rather than trusted.
  */
 describe('what a compaction has to tell the thread', () => {
-  /** Long enough that the fixed part plus history cannot fit the window. */
+  /**
+   * Long enough that the fixed part plus history cannot fit the window — and
+   * COARSE enough that the cut leaves room for a summary.
+   *
+   * The share `fitHistory` grants is bounded by the room the fitted tail
+   * leaves under the ceiling, and the tail is packed in whole messages: with
+   * 400-char turns it packed to within nothing of the ceiling and the share
+   * came out at 0 chars, which is below `MIN_SUMMARY_CHARS` and so a turn on
+   * which `compact` is never called. Measured at this window: 400-char turns
+   * leave 0, 2,000-char turns leave 1,979 (40 dropped, 20 to summarise).
+   */
   const longHistory = (turns: number): ChatMessage[] =>
     Array.from({ length: turns }, (_, i) => [
-      { role: 'user' as const, content: `question ${String(i)} ${'x'.repeat(400)}` },
-      { role: 'assistant' as const, content: `answer ${String(i)} ${'y'.repeat(400)}` },
+      { role: 'user' as const, content: `question ${String(i)} ${'x'.repeat(2000)}` },
+      { role: 'assistant' as const, content: `answer ${String(i)} ${'y'.repeat(2000)}` },
     ]).flat()
 
   it('reports the summary, the thread it belongs to, and how far it reaches', async () => {
@@ -429,6 +452,87 @@ describe('what a compaction has to tell the thread', () => {
 
     await vi.waitFor(() => expect(onSettled).toHaveBeenCalled())
     expect(onCompacted).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * What the loop is told about a conversation that has been compacted before.
+ *
+ * `use-agent.ts` passed `context` and `start` accepted it, and it stopped on
+ * this side of `runAgent`: the summary was paid for, stored on the thread, and
+ * then never sent. The next turn's history began after the covered prefix
+ * with nothing standing in for it — every stored fact from before the boundary
+ * was gone on the turn after it was written. `thread` is what lets the
+ * summary's pointer line name the conversation the full exchange still lives
+ * in, so a model missing a detail reads it back rather than guessing.
+ */
+describe('what a compacted thread is started with', () => {
+  it('forwards the stored summary and the thread to the loop', async () => {
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    vi.mocked(runAgent).mockClear()
+
+    runs.start({
+      threadId: A,
+      prompt: 'and the deadline?',
+      history: [],
+      llm: () => echo,
+      host,
+      tools: ['memory.overview'],
+      context: 'The person applied to Rice (app:0192a) and prefers remote roles.',
+      onSettled,
+    })
+
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalled())
+    const options = vi.mocked(runAgent).mock.calls[0]?.[0]
+    expect(options?.context).toBe('The person applied to Rice (app:0192a) and prefers remote roles.')
+    expect(options?.thread).toEqual({ id: A })
+  })
+
+  it('reaches the model as a note with the pointer to this conversation', async () => {
+    // The join, not just the plumbing: what the model is actually sent.
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    const seen: ChatMessage[][] = []
+    const watching = async (messages: readonly ChatMessage[]) => {
+      seen.push([...messages])
+      return echo(messages)
+    }
+
+    runs.start({
+      threadId: A,
+      prompt: 'and the deadline?',
+      history: [],
+      llm: () => watching,
+      host,
+      tools: ['memory.overview'],
+      context: 'The person applied to Rice (app:0192a).',
+      onSettled,
+    })
+
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalled())
+    const note = seen[0]?.find(
+      (m) => m.role === 'system' && m.content.includes('Rice (app:0192a)'),
+    )
+    expect(note).toBeDefined()
+    expect(note?.content).toContain(A)
+  })
+
+  it('leaves the loop without a summary when the thread has none', async () => {
+    // `undefined` and absent are not the same thing under
+    // `exactOptionalPropertyTypes`, and the loop's own guard is `=== undefined`
+    // — but a key that is present is a key some future `in` check will see.
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    vi.mocked(runAgent).mockClear()
+
+    runs.start({ threadId: B, prompt: 'hello', history: [], llm: () => echo, host, onSettled })
+
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalled())
+    const options = vi.mocked(runAgent).mock.calls[0]?.[0]
+    expect(options).toBeDefined()
+    expect(options && 'context' in options).toBe(false)
+    expect(options?.thread).toEqual({ id: B })
   })
 })
 

@@ -15,8 +15,10 @@ import type { GraphSnapshot } from '../core/snapshot'
 import type { ToolName } from '../tools/index'
 import type { ToolHost } from './execute'
 import { CATALOG } from './catalog'
-import { RESERVED_FOR_REPLY } from './budget'
-import { runAgent } from './loop'
+import { fitHistory, RESERVED_FOR_REPLY, SUMMARY_SHARE } from './budget'
+import { asMessage, compact, MIN_SUMMARY_CHARS, replacedBy } from './compact'
+import { estimateTokens } from '../core/model-server'
+import { runAgent, SYSTEM_PROMPT } from './loop'
 import type { AgentEvent, LlmTurnFn } from './loop'
 
 const START = Date.parse('2026-08-22T09:00:00.000Z')
@@ -2365,5 +2367,809 @@ describe('what history carries for a call the model malformed', () => {
     expect(sent).toBeDefined()
     expect(() => JSON.parse(sent!)).not.toThrow()
     expect(typeof JSON.parse(sent!)).toBe('object')
+  })
+})
+
+/**
+ * What a compaction keeps, and what it never shows the summariser.
+ *
+ * The six endurance benchmark cases plant a fact in the person's first turn
+ * and ask for it after four to seven compactions. Under the old single-stage
+ * trim it survived in 1 of 18 model×case cells: the sentence was compressed
+ * ~20:1 alongside forty serialised records. These tests pin the three things
+ * that replaced that, at the join between `budget`, `compact` and this loop:
+ * old results are stubbed and can be read back; the person's own turns are
+ * sent verbatim and never handed to the summariser; and what the summariser
+ * gets is the assistant's side under a budget that scales with the window.
+ */
+describe('what a compaction keeps', () => {
+  const FACT = 'My name is Priya Natarajan and I only want to hear about roles in Austin.'
+
+  const listCall = (id: string): ChatMessage => ({
+    role: 'assistant',
+    content: null,
+    tool_calls: [{ id, type: 'function', function: { name: 'memory_list', arguments: '{}' } }],
+  })
+  /** About 6,000 characters, the measured size of one real `memory.list` result. */
+  const listResult = (id: string, n = 40): ChatMessage => ({
+    role: 'tool',
+    tool_call_id: id,
+    content: JSON.stringify({
+      total: n,
+      shown: n,
+      matches: Array.from({ length: n }, (_, i) => ({
+        id: `app:${String(i)}`,
+        kind: 'application',
+        org: `University ${String(i)}`,
+        role: 'Assistant professor of computer science',
+        stage: 'submitted',
+        notes: 'z'.repeat(60),
+      })),
+    }),
+  })
+  /**
+   * A conversation shaped like the endurance cases: the fact, then `exchanges`
+   * rounds of "show me the list", a call, its 6k result, and a reply of
+   * `prose` characters. Prose is the knob: small and stubbing alone fits the
+   * history; large and the oldest exchanges have to be cut as well.
+   */
+  const endurance = (exchanges: number, prose: number): ChatMessage[] => [
+    { role: 'user', content: FACT },
+    ...Array.from({ length: exchanges }, (_, i): ChatMessage[] => [
+      { role: 'user', content: `show me the list again (${String(i)})` },
+      listCall(`c${String(i)}`),
+      listResult(`c${String(i)}`),
+      { role: 'assistant', content: `Listed round ${String(i)}. ${'y'.repeat(prose)}` },
+    ]).flat(),
+  ]
+
+  const summariserSeeing = (reply = 'FACTS THE PERSON STATED: none. RECORDS ESTABLISHED: none. CORRECTIONS AND REFUSALS: none. OPEN REQUESTS: none.') => {
+    const asked: ChatMessage[][] = []
+    const ask = async (messages: readonly ChatMessage[]): Promise<Turn> => {
+      asked.push([...messages])
+      return { ok: true, text: reply, toolCalls: [], finishReason: 'stop' }
+    }
+    return { asked, summariser: { ask } }
+  }
+
+  const text = (m: ChatMessage | undefined): string => (typeof m?.content === 'string' ? m.content : '')
+
+  /** A window that makes stubbing alone insufficient for `endurance(6, 2000)`. */
+  const CUTTING = RESERVED_FOR_REPLY + 8_000
+
+  /**
+   * A scripted model that also keeps the FIXED parts of the request it saw —
+   * the system message, the question and the tool schemas — so a test can run
+   * `fitHistory` over exactly what the loop fitted and know the boundary and
+   * the budget the loop had, without the loop exporting either.
+   */
+  const capturing = (turns: Turn[]) => {
+    let i = 0
+    const seen: ChatMessage[][] = []
+    let tools: readonly unknown[] = []
+    const llm: LlmTurnFn = (messages, offered) => {
+      seen.push([...messages])
+      tools = offered
+      const turn = turns[Math.min(i, turns.length - 1)]
+      i += 1
+      return Promise.resolve(turn as Turn)
+    }
+    const fixed = (): readonly unknown[] => [seen[0]?.[0], seen[0]?.at(-1), tools]
+    return { llm, seen, fixed }
+  }
+
+  /** A `memory.list` result WITH labels, about 6,000 characters: what the ledger walks. */
+  const labelled = (id: string, n = 40): ChatMessage => ({
+    role: 'tool',
+    tool_call_id: id,
+    content: JSON.stringify({
+      total: n,
+      shown: n,
+      matches: Array.from({ length: n }, (_, i) => ({
+        id: `app:${String(i)}`,
+        type: 'application',
+        label: `University ${String(i)}`,
+        role: 'Assistant professor of computer science',
+        stage: 'submitted',
+        notes: 'z'.repeat(20),
+      })),
+    }),
+  })
+  /**
+   * One big result early, then `exchanges` rounds of the person saying `said`
+   * characters and the assistant replying with `replied`. With the person
+   * saying most of the words the cut evicts the result and very little of the
+   * assistant's prose, which is the shape that made round one's refusal
+   * misfire; with the person saying almost nothing, every turn of theirs is
+   * carried even when the room is a sliver, which is the vault shape.
+   */
+  const resultThenChat = (exchanges: number, said: number, replied: number): ChatMessage[] => [
+    { role: 'user', content: FACT },
+    { role: 'user', content: 'list my applications' },
+    {
+      role: 'assistant',
+      content: null,
+      tool_calls: [{ id: 'c0', type: 'function', function: { name: 'memory_list', arguments: '{"type":"application"}' } }],
+    },
+    labelled('c0'),
+    { role: 'assistant', content: 'There are 40; the first is University 0.' },
+    ...Array.from({ length: exchanges }, (_, i): ChatMessage[] => [
+      { role: 'user', content: `note ${String(i)} ${'x'.repeat(said)}` },
+      { role: 'assistant', content: `noted ${String(i)} ${'y'.repeat(replied)}` },
+    ]).flat(),
+  ]
+
+  it('sends the fact from turn one verbatim, ahead of the tail, after a cut', async () => {
+    const llm = scripted([says('Done.')])
+    const { asked, summariser } = summariserSeeing()
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: endurance(6, 2000),
+      prompt: 'what did I tell you my name was?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+    })
+    // A cut happened and was summarised: this is the case, not the stub-only one.
+    expect(asked).toHaveLength(1)
+    expect(run.compacted).toBeDefined()
+    const sent = llm.seen[0] ?? []
+    const users = sent.filter((m) => m.role === 'user').map(text)
+    // The sentence, byte for byte, as a user turn — not inside the summary.
+    expect(users[0]).toBe(FACT)
+    // And it sits right after the summary note, before the surviving tail.
+    expect(sent[1]?.role).toBe('system')
+    expect(text(sent[1])).toContain('summarised, not verbatim')
+    expect(sent[2]).toEqual({ role: 'user', content: FACT })
+    // The caller is handed the same turns to carry, since `messages` covers them.
+    expect(run.compacted?.kept[0]).toBe(FACT)
+    const messages = run.compacted?.messages ?? 0
+    const kept = run.compacted?.kept ?? []
+    expect(messages).toBeGreaterThan(kept.length)
+    // `messages` is a BOUNDARY, kept turns included: the prefix it names holds
+    // exactly the kept turns, and what was sent is system + summary + those
+    // turns + the tail after the boundary + the question.
+    const history = endurance(6, 2000)
+    expect(history.slice(0, messages).filter((m) => m.role === 'user').map(text)).toEqual(kept)
+    expect(sent).toHaveLength(2 + kept.length + (history.length - messages) + 1)
+  })
+
+  it('never shows the summariser a user sentence, so none can come back rewritten', async () => {
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: endurance(6, 2000),
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+    })
+    const [request] = asked
+    expect(request).toBeDefined()
+    const shown = (request ?? []).map(text).join('\n')
+    // Not the fact, not any other turn of the person's, not a tool result.
+    expect(shown).not.toContain('Priya')
+    expect(shown).not.toContain('show me the list again')
+    expect(shown).not.toContain('University 0')
+    // What it IS shown: the assistant's prose and the names of what it called.
+    expect(shown).toContain('Listed round 0')
+    expect(shown).toContain('memory_list')
+    // And nothing pretending to be the person: the request is system + one user
+    // message whose text is the framed assistant replies.
+    expect((request ?? []).map((m) => m.role)).toEqual(['system', 'user'])
+    expect(text(request?.[1])).toContain('[assistant replies being dropped]')
+  })
+
+  it('stubs an old result instead of cutting, and the model can read it back', async () => {
+    const h = host()
+    const { asked, summariser } = summariserSeeing()
+    const { events, onEvent } = collect()
+    // The model does what the stub tells it to: calls the tool again.
+    const llm = scripted([calls('memory_list', { type: 'application' }, 'again'), says('Read it back.')])
+    const run = await runAgent({
+      host: h,
+      llm,
+      history: [
+        { role: 'user', content: 'list my applications' },
+        listCall('c1'),
+        listResult('c1'),
+        { role: 'assistant', content: 'There are 40.' },
+      ],
+      prompt: 'how many were there?',
+      onEvent,
+      window: RESERVED_FOR_REPLY + 3_000,
+      tools: ['memory.list'],
+      summariser,
+    })
+    const sent = llm.seen[0] ?? []
+    const stub = sent.find((m) => m.role === 'tool')
+    expect(text(stub)).toContain('40 records withheld to save room')
+    // The stub names the WIRE name — the one the model can actually call.
+    expect(text(stub)).toContain('calling memory_list again')
+    // History stays well-formed: the call the stub answers is still there.
+    const call = sent.find((m) => m.role === 'assistant' && m.tool_calls !== undefined)
+    expect(call?.role === 'assistant' && call.tool_calls?.[0]?.id).toBe('c1')
+    expect(stub?.role === 'tool' && stub.tool_call_id).toBe('c1')
+    // Stubbing needs no summary and tells the person nothing: nothing they or
+    // the assistant wrote has changed.
+    expect(asked).toHaveLength(0)
+    expect(run.compacted).toBeUndefined()
+    expect(events.filter((e) => e.type === 'note')).toEqual([])
+    // And the re-read is a real call against the real runtime.
+    expect(run.steps[0]).toMatchObject({ name: 'memory.list', status: 'done' })
+    expect(run.answer).toBe('Read it back.')
+  })
+
+  it('hands the previous summary over as `earlier`, never as a user message', async () => {
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: endurance(6, 2000),
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+      context: 'RECORDS ESTABLISHED: Rice application app:rice.',
+    })
+    const request = asked[0] ?? []
+    expect(text(request[1])).toContain('[earlier summary, superseded by yours')
+    expect(text(request[1])).toContain('app:rice')
+    expect(request.map(text).join('\n')).not.toContain('Earlier still')
+  })
+
+  it('prefers the thread’s stored context to a summary found in the history', async () => {
+    // Both at once should not happen — one caller stores, the other feeds
+    // back — but if it does, what the thread stores is the record.
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: [asMessage('OPEN REQUESTS: the stale one.'), ...endurance(6, 2000)],
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+      context: 'RECORDS ESTABLISHED: Rice application app:rice.',
+    })
+    const shown = text(asked[0]?.[1])
+    expect(shown).toContain('app:rice')
+    expect(shown).not.toContain('the stale one')
+  })
+
+  it('lifts a summary out of the history when the caller feeds messages straight back', async () => {
+    /*
+     * A caller that feeds a turn's sent messages straight back as the next
+     * history (`history = out.messages` — the bench runner's shape until
+     * 2026-09-05; both callers now pass `context`): a previous summary arrives
+     * as a system message INSIDE the history, wrapped and carrying its
+     * pointer. `compact` ignores system messages; the loop has to unwrap it
+     * and pass the raw notes as `earlier`, or a second compaction forgets the
+     * first. Kept for any caller that still does this; `context` wins when
+     * both are present (the test before this one).
+     */
+    const thread = { id: 'thread:01', title: 'Austin search' }
+    const stored = asMessage('OPEN REQUESTS: file the CV for Rice.', { thread })
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: [stored, ...endurance(6, 2000)],
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+      thread,
+    })
+    const shown = text(asked[0]?.[1])
+    expect(shown).toContain('[earlier summary, superseded by yours')
+    expect(shown).toContain('file the CV for Rice')
+    // Raw notes: neither the wrapper's prefix nor the pointer line goes round again.
+    expect(shown).not.toContain('summarised, not verbatim')
+    expect(shown).not.toContain('memory.get')
+  })
+
+  it('takes the newest summary in the prefix, and only from the prefix', async () => {
+    const drive = async (history: ChatMessage[]): Promise<string> => {
+      const { asked, summariser } = summariserSeeing()
+      await runAgent({
+        host: host(),
+        llm: scripted([says('Done.')]),
+        history,
+        prompt: 'and now?',
+        onEvent: () => {},
+        window: CUTTING,
+        tools: ['memory.list'],
+        summariser,
+      })
+      return text(asked[0]?.[1])
+    }
+    // Two in the prefix: each supersedes the last, so the second is the one.
+    const twice = await drive([asMessage('OPEN REQUESTS: the first.'), asMessage('OPEN REQUESTS: the second.'), ...endurance(6, 2000)])
+    expect(twice).toContain('the second')
+    expect(twice).not.toContain('the first')
+    // One in the TAIL, which is still being sent as it stands: not a
+    // superseded summary, so it is not fed round again.
+    const surviving = await drive([...endurance(6, 2000), asMessage('OPEN REQUESTS: still in the tail.')])
+    expect(surviving).not.toContain('[earlier summary')
+  })
+
+  it('does not mistake a copy of the system prompt for a summary', async () => {
+    // The other system message the bench shape carries. It must not become
+    // `earlier`, and with no summary in the prefix there is none.
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: [
+        // The real prompt: the bench shape carries it back, verbatim.
+        { role: 'system', content: SYSTEM_PROMPT },
+        // A wrapper with nothing inside is not earlier notes either — and it
+        // does not hide the message before it from the search.
+        asMessage('   '),
+        ...endurance(6, 2000),
+      ],
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+    })
+    expect(text(asked[0]?.[1])).not.toContain('[earlier summary')
+  })
+
+  it('gives the summariser a budget that is a share of the window, not a constant', async () => {
+    const budgetAt = async (window: number): Promise<number> => {
+      const { asked, summariser } = summariserSeeing()
+      await runAgent({
+        host: host(),
+        llm: scripted([says('Done.')]),
+        history: endurance(6, 2000),
+        prompt: 'and now?',
+        onEvent: () => {},
+        window,
+        tools: ['memory.list'],
+        summariser,
+      })
+      // Both windows have to cut, or the comparison below compares nothing.
+      expect(asked).toHaveLength(1)
+      const m = /At most (\d+) characters/.exec(text(asked[0]?.[0]))
+      expect(m?.[1]).toBeDefined()
+      return Number(m?.[1])
+    }
+    const small = await budgetAt(CUTTING)
+    const large = await budgetAt(CUTTING + 2_000)
+    // A share of the window: never above it, and it grows when the window does.
+    const charsPerToken = 1000 / estimateTokens('x'.repeat(1000))
+    expect(small).toBeGreaterThan(0)
+    expect(small).toBeLessThanOrEqual(Math.ceil(CUTTING * SUMMARY_SHARE * charsPerToken))
+    expect(large).toBeGreaterThan(small)
+  })
+
+  it('cuts the summary it places to the budget the trim left', async () => {
+    // A summariser that ignores its limit is bounded here, not trusted. Its
+    // reply is as long as what it was shown — far under what it replaces,
+    // which includes the 6,000-character results, so `compact` accepts it —
+    // and far over the budget, so it is cut to the budget and placed.
+    const asked: ChatMessage[][] = []
+    const summariser = {
+      ask: async (messages: readonly ChatMessage[]): Promise<Turn> => {
+        asked.push([...messages])
+        return { ok: true, text: 'w'.repeat(text(messages[1]).length), toolCalls: [], finishReason: 'stop' }
+      },
+    }
+    const history = endurance(6, 2000)
+    const llm = capturing([says('Done.')])
+    await runAgent({
+      host: host(),
+      llm: llm.llm,
+      history,
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+    })
+    const told = Number(/At most (\d+) characters/.exec(text(asked[0]?.[0]))?.[1])
+    const reply = text(asked[0]?.[1]).length
+    expect(reply).toBeGreaterThan(told)
+    const { summaryChars } = fitHistory(history, llm.fixed(), CUTTING)
+    expect(summaryChars).toBeGreaterThanOrEqual(MIN_SUMMARY_CHARS)
+    expect(reply).toBeGreaterThan(summaryChars)
+    const placed = text(llm.seen[0]?.[1])
+    expect(placed).toContain('summarised, not verbatim')
+    const wrapper = asMessage('').content?.length ?? 0
+    expect(placed.length).toBeLessThanOrEqual(wrapper + summaryChars)
+    expect(placed.length).toBeLessThan(wrapper + reply)
+  })
+
+  it('hands `compact` the whole evicted prefix, results included', async () => {
+    /*
+     * Round one passed the marked assistant turns alone, and measured on the
+     * endurance cases that lost twice. `compact` refused a reply longer than
+     * its INPUT, and the input was prose and tool names, 87–831 characters —
+     * so a four-heading summary was "longer than its source" (GPT-OSS lost 12
+     * of 34). And the summariser, never shown a result, wrote "app: unknown"
+     * for records it had only ever seen there. Both need the tool messages in
+     * `compact`'s hands: one to measure what the summary REPLACES, the other
+     * to walk for ids — while its model still sees neither a user turn nor a
+     * result.
+     */
+    const history = resultThenChat(40, 300, 30)
+    // The window is found, not written down: one at which the cut reaches
+    // past the result, carries every turn of the person's, and evicts so
+    // little of the assistant's that a reply longer than all of it is still
+    // well inside the budget.
+    const probe = capturing([says('Done.')])
+    await runAgent({ host: host(), llm: probe.llm, history, prompt: 'and now?', onEvent: () => {}, tools: ['memory.list'] })
+    let window = 0
+    for (let w = 10_000; w <= 20_000 && window === 0; w += 100) {
+      const f = fitHistory(history, probe.fixed(), w)
+      if (f.dropped > 4 && f.lost === null && f.toSummarise.length > 0 && replacedBy(f.toSummarise) * 3 < f.summaryChars) window = w
+    }
+    expect(window).toBeGreaterThan(0)
+
+    const asked: ChatMessage[][] = []
+    let reply = ''
+    const summariser = {
+      ask: async (messages: readonly ChatMessage[]): Promise<Turn> => {
+        asked.push([...messages])
+        // One character LONGER than everything it was shown.
+        reply = 'w'.repeat(text(messages[1]).length + 1)
+        return { ok: true, text: reply, toolCalls: [], finishReason: 'stop' }
+      },
+    }
+    const llm = capturing([says('Done.')])
+    const run = await runAgent({
+      host: host(),
+      llm: llm.llm,
+      history,
+      prompt: 'and now?',
+      onEvent: () => {},
+      window,
+      tools: ['memory.list'],
+      summariser,
+    })
+    expect(asked).toHaveLength(1)
+    const fitted = fitHistory(history, llm.fixed(), window)
+    const evicted = history.slice(0, fitted.dropped)
+    // The cut evicted the 6,000-character result along with a little prose.
+    expect(evicted.some((m) => m.role === 'tool' && m.content.length > 6_000)).toBe(true)
+    // The reply is longer than every word of the assistant's that was evicted
+    // — round one's measure, which would refuse it — and well inside both what
+    // it actually replaces and the budget it was told.
+    expect(reply.length).toBeGreaterThan(replacedBy(fitted.toSummarise))
+    expect(reply.length).toBeLessThanOrEqual(replacedBy(evicted))
+    expect(reply.length).toBeLessThanOrEqual(Number(/At most (\d+) characters/.exec(text(asked[0]?.[0]))?.[1]))
+    // Accepted, placed whole, and followed by the ids from a result the
+    // summariser was never shown.
+    const placed = text(llm.seen[0]?.[1])
+    expect(placed).toContain('summarised, not verbatim')
+    expect(placed).toContain(reply)
+    // (The assistant's own prose names University 0; the other thirty-nine
+    // are in the result alone.)
+    expect(text(asked[0]?.[1])).not.toContain('University 7')
+    expect(placed).toContain('RECORDS SEEN')
+    expect(placed).toContain('University 0 (app:0)')
+    expect(run.compacted?.context).toContain('University 0 (app:0)')
+  })
+
+  it('makes no summariser call under the floor, and says the messages were left out', async () => {
+    /*
+     * The vault-convention shape: every tool there is, so the fixed part takes
+     * most of the window and no cut can reserve the summary's share. Measured
+     * at that case's 26,100 window the budget was 90 and 172 characters, and
+     * each spent a summariser call on a note cut mid-heading.
+     *
+     * The window is found rather than written down, because the budget at a
+     * given window moves with the system prompt and the catalog. What is
+     * pinned is the band: a budget under `MIN_SUMMARY_CHARS` at which
+     * `compact` — asked directly — would still hand back the ledger alone.
+     * The loop does not ask: the note's wrapper is outside the budget, and a
+     * line of ids with nothing said about them is not a summary.
+     */
+    const history = resultThenChat(6, 0, 200)
+    const probe = capturing([says('Done.')])
+    await runAgent({ host: host(), llm: probe.llm, history, prompt: 'and now?', onEvent: () => {}, window: 40_000 })
+    const fixed = probe.fixed()
+    expect((fixed[2] as unknown[]).length).toBeGreaterThan(50)
+    let window = 0
+    let budget = 0
+    // Coarse, to the first window that cuts at all; then fine, to the band.
+    let first = 0
+    for (let w = 16_000; w < 40_000 && first === 0; w += 200) {
+      const f = fitHistory(history, fixed, w)
+      if (!f.overflows && f.dropped > 0 && f.toSummarise.length > 0) first = w
+    }
+    expect(first).toBeGreaterThan(0)
+    for (let w = first - 200; w < first + 2_000 && window === 0; w += 2) {
+      const f = fitHistory(history, fixed, w)
+      // The vault shape carries every turn of the person's; `lost` is a
+      // different note and a different case.
+      if (f.overflows || f.dropped === 0 || f.toSummarise.length === 0 || f.lost !== null) continue
+      if (f.summaryChars >= MIN_SUMMARY_CHARS) continue
+      const alone = await compact(summariserSeeing().summariser, history.slice(0, f.dropped), { budget: f.summaryChars })
+      if (alone === null) continue
+      expect(alone).toContain('RECORDS SEEN')
+      window = w
+      budget = f.summaryChars
+    }
+    expect(window).toBeGreaterThan(0)
+    expect(budget).toBeGreaterThan(0)
+    expect(budget).toBeLessThan(MIN_SUMMARY_CHARS)
+
+    const { asked, summariser } = summariserSeeing()
+    const { events, onEvent } = collect()
+    const llm = capturing([says('Done.')])
+    const run = await runAgent({ host: host(), llm: llm.llm, history, prompt: 'and now?', onEvent, window, summariser })
+    expect(asked).toHaveLength(0)
+    expect(run.compacted).toBeUndefined()
+    const sent = llm.seen[0] ?? []
+    expect(sent.map(text).join('\n')).not.toContain('summarised, not verbatim')
+    // The plain trim note, with the real count: left out, not summarised.
+    const f = fitHistory(history, fixed, window)
+    const removed = f.dropped - f.kept.length
+    expect(removed).toBeGreaterThan(0)
+    const notes = events.filter((e) => e.type === 'note').map((e) => (e as { text: string }).text)
+    expect(notes).toHaveLength(1)
+    expect(notes[0]).toContain(`earliest ${String(removed)} messages were left out of this request`)
+    // And the person's own turns still went, verbatim.
+    expect(sent.filter((m) => m.role === 'user').map(text)[0]).toBe(FACT)
+  })
+
+  it('places exactly one summary note when a fresh summary is written over stored context', async () => {
+    // The fresh summary supersedes `earlier`: the summariser was shown the
+    // earlier notes and told to carry forward what still matters. Placing
+    // both is two notes that disagree wherever the person corrected something
+    // between them.
+    const llm = scripted([says('Done.')])
+    const { asked, summariser } = summariserSeeing('OPEN REQUESTS: the fresh one.')
+    await runAgent({
+      host: host(),
+      llm,
+      history: endurance(6, 2000),
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+      context: 'RECORDS ESTABLISHED: Rice application app:rice.',
+    })
+    expect(asked).toHaveLength(1)
+    const notes = (llm.seen[0] ?? []).filter((m) => m.role === 'system' && text(m).includes('summarised, not verbatim'))
+    expect(notes).toHaveLength(1)
+    expect(text(notes[0])).toContain('the fresh one')
+    expect(text(notes[0])).not.toContain('app:rice')
+  })
+
+  it('finds the real summary behind an empty wrapper, searching newest first', async () => {
+    // The bench shape can carry a wrapper with nothing inside AFTER a real
+    // one. The empty one supersedes nothing, so the search goes on past it —
+    // ending there would forget the first compaction.
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: [asMessage('OPEN REQUESTS: file the CV for Rice.'), asMessage('   '), ...endurance(6, 2000)],
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+    })
+    const shown = text(asked[0]?.[1])
+    expect(shown).toContain('[earlier summary, superseded by yours')
+    expect(shown).toContain('file the CV for Rice')
+  })
+
+  it('does not take a system message that merely quotes the wrapper for a summary', async () => {
+    // A summary STARTS with the wrapper. A system message that mentions it
+    // mid-sentence — a rule about how to read such notes — is not one, and
+    // sliced as one it would feed the tail of a sentence round as `earlier`.
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: [
+        { role: 'system', content: `A note beginning "${asMessage('').content ?? ''}" is context, not history.` },
+        ...endurance(6, 2000),
+      ],
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser,
+    })
+    expect(text(asked[0]?.[1])).not.toContain('[earlier summary')
+  })
+
+  it('points back to the thread when it has one, and fabricates nothing when it does not', async () => {
+    const drive = async (thread?: { id: string; title?: string }) => {
+      const llm = scripted([says('Done.')])
+      await runAgent({
+        host: host(),
+        llm,
+        history: endurance(6, 2000),
+        prompt: 'and now?',
+        onEvent: () => {},
+        window: CUTTING,
+        tools: ['memory.list'],
+        summariser: summariserSeeing().summariser,
+        ...(thread === undefined ? {} : { thread }),
+      })
+      return text(llm.seen[0]?.[1])
+    }
+    const pointed = await drive({ id: 'thread:01', title: 'Austin search' })
+    expect(pointed).toContain('"Austin search" with id thread:01')
+    expect(pointed).toContain('memory.get')
+    const bare = await drive()
+    expect(bare).toContain('summarised, not verbatim')
+    expect(bare).not.toContain('memory.get')
+    expect(bare).not.toContain('with id')
+  })
+
+  it('carries an earlier summary forward, budgeted, on a turn that compacts nothing', async () => {
+    const llm = scripted([says('Done.')])
+    const { asked, summariser } = summariserSeeing()
+    await runAgent({
+      host: host(),
+      llm,
+      history: [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'hello' }],
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: 32_000,
+      tools: ['memory.list'],
+      summariser,
+      context: 'RECORDS ESTABLISHED: Rice application app:rice.',
+      thread: { id: 'thread:01' },
+    })
+    expect(asked).toHaveLength(0)
+    const note = text(llm.seen[0]?.[1])
+    expect(note).toContain('app:rice')
+    expect(note).toContain('with id thread:01')
+  })
+
+  it('spends no summariser call when the cut removed nothing of the assistant’s', async () => {
+    // A conversation of only the person's turns, more than fit: the budget
+    // drops the oldest and says so, and there is nothing to summarise — the
+    // earlier context is carried as it is rather than sent round a model.
+    //
+    // At a window where the budget is OVER the floor, on purpose: `compact`
+    // given an empty page and earlier notes would call the model to rewrite
+    // the notes with nothing new to add, and the floor must not be what
+    // stops it (mutation: the emptiness check survived while every window
+    // that dropped user turns was also under the floor).
+    const history = Array.from({ length: 8 }, (_, i): ChatMessage => ({ role: 'user', content: `note ${String(i)} ${'x'.repeat(1500)}` }))
+    const probe = capturing([says('Done.')])
+    await runAgent({ host: host(), llm: probe.llm, history, prompt: 'and now?', onEvent: () => {}, tools: ['memory.overview'] })
+    let window = 0
+    for (let w = RESERVED_FOR_REPLY + 1_000; w <= RESERVED_FOR_REPLY + 4_000 && window === 0; w += 50) {
+      const f = fitHistory(history, probe.fixed(), w)
+      if (f.lost !== null && f.toSummarise.length === 0 && f.summaryChars >= MIN_SUMMARY_CHARS) window = w
+    }
+    expect(window).toBeGreaterThan(0)
+    const llm = scripted([says('Done.')])
+    const { asked, summariser } = summariserSeeing()
+    const { events, onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history,
+      prompt: 'and now?',
+      onEvent,
+      window,
+      tools: ['memory.overview'],
+      summariser,
+      context: 'RECORDS ESTABLISHED: Rice application app:rice.',
+    })
+    expect(asked).toHaveLength(0)
+    expect(run.compacted).toBeUndefined()
+    expect(text(llm.seen[0]?.[1])).toContain('app:rice')
+    expect(events.some((e) => e.type === 'note' && e.text.includes('did not fit even with every reply'))).toBe(true)
+  })
+
+  it('trims plain, and says so, when the summariser fails and there are no ids to keep', async () => {
+    // Compaction improves a long chat; it is never what makes one possible.
+    // `compact` answers `null` only when the model gave nothing AND the
+    // evicted results held no records — and that null must land as a plain
+    // trim, not as a note wrapped around nothing.
+    const llm = scripted([says('Done.')])
+    const { events, onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: endurance(6, 2000),
+      prompt: 'and now?',
+      onEvent,
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser: { ask: () => Promise.reject(new Error('down')) },
+    })
+    expect(run.compacted).toBeUndefined()
+    const sent = llm.seen[0] ?? []
+    expect(sent.map(text).join('\n')).not.toContain('summarised, not verbatim')
+    expect(sent[1]).toEqual({ role: 'user', content: FACT })
+    const notes = events.filter((e) => e.type === 'note').map((e) => (e as { text: string }).text)
+    expect(notes).toHaveLength(1)
+    expect(notes[0]).toMatch(/earliest \d+ messages were left out of this request/)
+  })
+
+  it('carries the earlier context with no window at all, unbounded', async () => {
+    // No window is no ceiling, not a ceiling of zero.
+    const llm = scripted([says('Done.')])
+    await runAgent({
+      host: host(),
+      llm,
+      history: [{ role: 'user', content: 'hi' }],
+      prompt: 'and now?',
+      onEvent: () => {},
+      context: 'RECORDS ESTABLISHED: Rice application app:rice.',
+    })
+    expect(text(llm.seen[0]?.[1])).toContain('app:rice')
+  })
+
+  it('sends no empty summary note on overflow, where there is no room for one', async () => {
+    const llm = scripted([says('Done.')])
+    await runAgent({
+      host: host(),
+      llm,
+      history: endurance(2, 100),
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: 1_000,
+      context: 'RECORDS ESTABLISHED: Rice application app:rice.',
+    })
+    // Fixed part only: system and the question.
+    expect((llm.seen[0] ?? []).map((m) => m.role)).toEqual(['system', 'user'])
+  })
+
+  it('counts only what was actually removed in the note to the person', async () => {
+    const { events, onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: endurance(6, 2000),
+      prompt: 'and now?',
+      onEvent,
+      window: CUTTING,
+      tools: ['memory.list'],
+      summariser: summariserSeeing().summariser,
+    })
+    const notes = events.filter((e) => e.type === 'note').map((e) => (e as { text: string }).text)
+    expect(notes).toHaveLength(1)
+    const removed = (run.compacted?.messages ?? 0) - (run.compacted?.kept.length ?? 0)
+    expect(removed).toBeGreaterThan(0)
+    expect(notes[0]).toContain(`earliest ${String(removed)} messages were replaced with a short summary`)
+  })
+
+  it('says so, with the count and the reason, when the person’s own turns had to go', async () => {
+    // Six user turns of 2,000 characters against a window whose room is a
+    // fraction of that: even with every reply gone they do not fit.
+    const big = Array.from({ length: 12 }, (_, i): ChatMessage =>
+      i % 2 === 0
+        ? { role: 'user', content: `question ${String(i)} ${'x'.repeat(2000)}` }
+        : { role: 'assistant', content: `answer ${String(i)} ${'y'.repeat(2000)}` },
+    )
+    const { events, onEvent } = collect()
+    await runAgent({
+      host: host(),
+      llm: scripted([says('Done.')]),
+      history: big,
+      prompt: 'and now?',
+      onEvent,
+      window: RESERVED_FOR_REPLY + 2_000,
+      tools: ['memory.overview'],
+    })
+    const notes = events.filter((e) => e.type === 'note').map((e) => (e as { text: string }).text)
+    const lost = notes.find((n) => n.includes('did not fit even with every reply and result removed'))
+    expect(lost).toBeDefined()
+    expect(lost).toMatch(/\d+ (was|were) left out of this request/)
   })
 })

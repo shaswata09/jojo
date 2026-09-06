@@ -266,9 +266,12 @@ score for a summary that was never written.
 So a case may declare `window`, and the runner passes it as the loop's
 `window` for that conversation only and writes it as `run.window`. Choosing
 it is the case's business — the fixture guard asserts every endurance case
-has one and that it is below the case's own measured prompt size at the turn
-that needs the early fact — but two measurements on `long-recall-early-fact`
-against Gemma 4 31B bound the choice:
+has one, that it sits above the fixed part plus the reply reserve, and that it
+sits below the case's own measured request at the turn that needs the early
+fact PLUS that reserve, which is exactly when `fitHistory` cuts (the guard
+asked for "below the request" until 2026-09-05, a stricter condition that the
+runner's old feedback shape happened to satisfy) — but two measurements on
+`long-recall-early-fact` against Gemma 4 31B bound the choice:
 
 - **6,000** (the first stand-in tried) is below the fixed part under `full`:
   the loop says "The tool list alone is larger than this model can hold",
@@ -293,29 +296,49 @@ A case's `window` therefore decides which condition its compaction number is
 about, and the other condition's `run.compactions` will read 0 for a reason
 the file states (`run.window` beside it).
 
-Measured with the six windows the cases now carry (26,100–27,000), all six
-against Gemma 4 31B on 2026-09-05: under `full` every case compacts — 5, 5,
-6, 6, 7 and 7 times, 37 in all, one on nearly every turn because the band
-leaves only 0.3–1.2k over the fixed part — and three of the six fail for the
-first time in the group's history, each on the thing the case was written to
-lose: `long-scout-threshold` approves the fit-41 match (the threshold is
-behind the summary), `long-vault-convention` saves the link without the
-note, `long-profile-then-applications` adds instead of updating. Under
-`narrowed` all six record 0 compactions, `long-profile-then-applications`
-included — the offline drive's retriever abstains on its recall turn and
-offers all 92 specs, the live one did not — and 5 of 6 pass. The narrowed
-row for this group is still a distance-recall number, and the file says so
-in `run.compactions`.
+Measured with the six windows the cases carry (26,100–27,000), the table was
+published twice in two days, and the group's number changed meaning between:
 
-The three-model matrix published the same day (`BENCH_RUNS=2`) says the
-same thing at scale and worse: every one of the 18 model×case cells compacts
-under `full` (4–7 times each, 32–36 per model) and none of the 18 does under
-`narrowed`; under `full` Gemma fails 5 of the 6, Qwen3 and GPT-OSS 6 of 6,
-where under `narrowed` — no summary written — they fail 1, 5 and 3. So the
-summary the endurance group was written to test loses the early fact on
-almost every case for every model, which no published number had shown
-before the windows existed, and the cost of the window is the same headline
-number read the other way round: an endurance row that says `clean` under
+- **2026-09-05 19:29Z, the old summariser.** Every one of the 18 model×case
+  cells compacted under `full` (4–7 times each) and the group failed almost
+  everywhere a summary was written: Gemma 1 of 6 clean, Qwen3 and GPT-OSS 0
+  of 6, against 5, 1 and 3 under `narrowed` where no summary is written. The
+  summariser was given the whole evicted prefix — the person's turn-one
+  sentence beside forty serialised records — under a 1,200-character cap, and
+  the sentence survived that in 1 of 18 cells.
+- **The rebuild** (`kg/agent/budget.ts`, `compact.ts`, `loop.ts`; kg/react's
+  `historyFor` for the app): tool results are stubbed before anything is
+  cut; the person's own turns are never summarised, they are carried verbatim
+  ahead of the tail; the summary has a share of the window instead of a
+  constant, is written under four fixed headings, and carries a harness-built
+  `RECORDS SEEN` ledger of every id that appeared in the results no longer
+  shown. Measured on the six cases alone (`BENCH_RUNS=2`, three rounds): the
+  turn-one sentence reached the model byte-for-byte at the recall turn in 18
+  of 18 cells; the summariser's reply was refused 20 times in 99 calls under
+  the first rebuild and 0 in 187 once the refusal was measured against what
+  the summary replaces rather than what the summariser was shown; Qwen's
+  correction case wrote to Stripe instead of Rice. Round two also found the
+  runner feeding the sent request back as history — see "What the runner
+  feeds back" — which every multi-turn case had been measured under.
+- **2026-09-06 01:10Z, the published table** (`BENCH_RUNS=2`, the app's
+  feedback): under `full` Gemma 5 of 6 in both runs (from 1), GPT-OSS 3 and 2
+  (from 0), Qwen 1 and 0 (from 0); compactions 3–4 per case for Gemma and
+  GPT-OSS, 1–3 for Qwen, every cell above zero. The remaining failures are
+  read in the traces, not inferred: Gemma's is `long-scout-threshold` at turn
+  two, which fails identically under `narrowed` with no compaction; Qwen's
+  begin at turn zero — a placeholder id `application-123`, a `graph.query`
+  with a relation that does not exist, tools that do not exist — before any
+  summary is written; GPT-OSS writes on read turns. The whole-suite numbers
+  moved with the runner fix as well: `full` Gemma 80 → 84, GPT-OSS 67 → 69,
+  Qwen 29 → 29; `narrowed` Gemma 82 → 80, GPT-OSS 67 → 63, Qwen 35 → 33. The
+  narrowed rows never compact, so what changed there is the history the
+  model was given: the old runner put a fresh copy of the system prompt into
+  it on every turn, and a turn-seven request carried six of them. GPT-OSS's
+  narrowed drop is at the edge of its band — 10 of its conversations flip
+  between the two runs.
+
+The narrowed row for this group is still a distance-recall number, and the
+file says so in `run.compactions`: an endurance row that says `clean` under
 `narrowed` is a model that never had to survive a summary.
 
 `proveWindow` runs on every start: two fake cases with the same scripted
@@ -327,6 +350,80 @@ one of the two fails whatever that is set to. The sizes are measured through
 `fitHistory` with the loop's estimate: fixed part 516 tokens with one schema,
 history 5,274 against the 4,096 ceiling, 70 messages dropped; sixty messages
 (the first draft) are 2,632 and fit.
+
+### What the runner feeds back between turns — the app's history, not the last request
+
+`AgentRun.messages` is the request as the loop MADE it: the system prompt,
+then the summary note when there is one (freshly written, or the carried
+`context` — both `system` role), then the history as fitted — old tool results
+already replaced by one-line stubs, evicted exchanges gone, the covered
+prefix's user turns carried ahead of the tail — then the question and what the
+run appended (assistant turns, tool replies, verify nudges as `user`
+messages). The runner used to feed exactly that back as the next turn's
+`history` (`history = out.messages`), and round two of the compaction work
+measured what that did: a copy of the system prompt entered the history on
+every turn and was later "evicted" as though it were an exchange (12 of 26
+no-call trims were exactly that; the person was told 'earliest 2 messages were
+left out' for two copies of the system prompt; the summariser's `replaces` was
+inflated by 1,220 characters per copy), the summary note was a message subject
+to the next cut, and a result the previous fit had stubbed came back as the
+STUB — so by the time a cut evicted it the ledger walk in `compact` had
+nothing to read: 36 of Gemma's 60 evicted results were already stubs, Qwen's
+21 of 35, GPT-OSS's 29 of 83. The ledger, which exists to carry ids across a
+summary, was under-measured on every endurance case.
+
+The app does none of this. `kg/react/use-threads.ts` keeps the ORIGINAL
+entries and rebuilds the history each turn (`historyFor`): the user turns of
+the summarised prefix replayed verbatim, then the tail the summary does not
+cover; the summary travels as `context`, never as a message; and the boundary
+(`contextThrough`) advances by the loop's count less the replayed head
+(`nextContextThrough`). The runner now mirrors that, per conversation
+(`createFeedback` in `run.mts`):
+
+- `transcript` — every wire message in ORIGINAL form. Each turn appends what
+  it ADDED: its question and the messages the run pushed after it (found by
+  the question, since a plain trim drops messages the caller is not told
+  about). Never the system prompt, never a summary note, never a stub.
+- `context` — the latest `AgentRun.compacted.context`, passed to `runAgent`
+  as `context` on every later turn, exactly as `agent-runs.ts` passes the
+  thread's stored context.
+- `through` — how much of the transcript the summary covers. Each turn's
+  history is the user messages of `transcript[0..through)` followed by
+  `transcript[through..]`; on a compaction `through` advances by
+  `compacted.messages` minus the replayed head, never backwards.
+
+`proveFeedback` drives this through `runOne` against the real loop on every
+start, with a scripted wire and a window PLANNED from the loop's own
+estimate (`fitHistory` over the one-turn run's exact system message, tool
+list and transcript) so that turn two goes untouched, turn three is fitted by
+a stub alone and turn four has to cut — the shape the old feedback got wrong.
+Over sixteen turns and at least three compactions it checks that no history
+the loop is given holds a system message, a summary note or a stub; that the
+compacting turn is given turn one's result verbatim and the summary it writes
+names records (`RECORDS SEEN`); and that after every compaction the next turn
+is given the app's history exactly — turn one's question first — with the
+summary as `context`, which the loop then places (the scripted marker is in
+that turn's request). Three compactions rather than one because the boundary
+arithmetic is only visible at the third: with nothing replayed the first
+boundary is right either way, at the second an undiscounted head is off by
+the one user turn the next history replays anyway, and only at the third does
+it drop an assistant turn. Mutated by hand against the probe (old feedback,
+context not passed, boundary never advanced, head not discounted, head not
+filtered to user turns, head omitted, the question dropped or found from the
+front): each refused the start. The two clamps — never below the old boundary,
+never past the transcript — cannot be reached by construction (a summary is
+written only when the cut passes the head into an assistant turn, and the cut
+never exceeds what was sent) and are the survivors.
+
+**What `run.compactions` counts.** A turn in which `AgentRun.compacted` is
+present, which is a turn in which `compact` returned a note. That note may be
+LEDGER-ONLY: when the model's reply was refused (longer than what it replaces),
+failed, or was skipped, `compact` still returns the `RECORDS SEEN` line
+recovered from the evicted results, and the loop stores and counts it as a
+compaction. A count of 1 therefore says a note exists behind the trim, not
+that a model wrote prose into it; `reasons[].compacted` says which turn, and
+the note itself is not in the file. A plain trim (`summaryChars` under
+`MIN_SUMMARY_CHARS`, or nothing to summarise) counts 0.
 
 ### `truncateFirstCall` — forcing the "send FEWER items" path
 
@@ -418,7 +515,7 @@ never as zero.
 | `rounds` | model calls the loop made, over every turn | the runner's transport: one per call to `llm` with a tool list |
 | `verifyNudges` | times the verify gate sent the model back | the `{ type: 'note', app: true }` event carrying a `VERIFY_NOTE` sentence |
 | `stuckNudges` | times the stuck detector nudged (repeat, fail, cycle) | the transcript — see below |
-| `compactions` | turns in which a summary was written | `AgentRun.compacted` |
+| `compactions` | turns in which a note was written — prose, or the ledger alone | `AgentRun.compacted`; see "What the runner feeds back" |
 | `tokens` | `{ prompt, completion }` summed, or `null` | `Turn.usage` on every reply, chooser and summariser included |
 | `wallMs` | first request to last reply | the runner's clock |
 | `injection` | `{ exposures, attempted, landed }` | only under `BENCH_INJECT=1` |
@@ -451,10 +548,11 @@ assumed:
   nudge on a call-free answer is dropped by the loop on purpose (its comment
   explains why) and so is neither emitted nor injected; it cannot be counted by
   anyone.
-- A compaction is `AgentRun.compacted`, present exactly when a summary was
-  written. The loop also emits a trim note, but that fires for a plain trim
-  (no summariser, or one that returned nothing) as well, and a trim is not a
-  compaction.
+- A compaction is `AgentRun.compacted`, present exactly when `compact`
+  returned a note — the model's prose with the ledger appended, or the ledger
+  alone when the model's reply was refused. The loop also emits a trim note,
+  but that fires for a plain trim (no summariser, under the summary floor, or
+  nothing to summarise) as well, and a trim is not a compaction.
 - `rounds` counts calls with a tool list — the thing `maxSteps` caps — so the
   chooser and summariser are not rounds; their cost is in `tokens`, which sums
   every reply including `sendTurn`'s empty-turn re-asks. `tokens` is `null`

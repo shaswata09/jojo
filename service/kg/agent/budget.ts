@@ -25,9 +25,42 @@
  *
  * ## What this does instead
  *
- * Drops the OLDEST exchanges until the request fits, and says so. Recent turns
- * are what a follow-up refers to; the system prompt and the current question
- * are never candidates.
+ * Three stages, in the order of how little each one loses, and each stage runs
+ * only if the one before it did not bring the request under the target:
+ *
+ *   1. STUB old tool results. A tool result is re-derivable — the store still
+ *      holds what `memory.list` returned — so it is the one kind of message
+ *      that can be replaced by a one-line pointer ("40 records; re-read if
+ *      needed") without losing anything the person said or the assistant
+ *      decided. Oldest first, stopping as soon as the request fits, so the
+ *      newest results — the ones a follow-up is most likely about — survive
+ *      longest. The assistant's tool CALLS stay, so every `tool_call_id` still
+ *      answers something.
+ *   2. CUT the oldest exchanges, at a boundary that leaves no orphaned result —
+ *      but the person's own turns are never cut. They are carried forward
+ *      verbatim ahead of what remains, and only the ASSISTANT's messages from
+ *      the cut prefix are offered for summarising.
+ *   3. As a last resort, drop the oldest user turns too, and say why.
+ *
+ * ## Why user turns are kept and not summarised — measured
+ *
+ * The six endurance benchmark cases plant a fact in turn one and ask for it
+ * after 4–7 compactions. Under the old single-stage trim — cut whole
+ * exchanges, summarise everything cut — the fact survived in 1 of 18
+ * model×case cells (Gemma 1/6, Qwen 0/6, GPT-OSS 0/6). The reason is
+ * arithmetic, not model quality: one `memory.list` result is ~6,000
+ * characters, and the person's one-sentence turn was being compressed ~20:1
+ * alongside forty serialised records. No summariser keeps the sentence at
+ * that ratio. So the records are stubbed (they can be re-read), and the
+ * sentence is kept as the person wrote it — the same split Codex makes
+ * (user messages kept, assistant and tool content dropped) and SWE-agent's
+ * `LastNObservations` makes for the tool half.
+ *
+ * Keeping user turns means the sent history can hold two user messages in a
+ * row. Measured on 2026-09-05 against all three bench servers with
+ * `user, user, assistant, user` and a fact in the first: Gemma 4 31B, Qwen3
+ * 14B and GPT-OSS 120B each answered it (prompt_tokens 59, 53 and 113), so
+ * the shape is accepted where it has to be.
  *
  * ## Why whole exchanges
  *
@@ -121,10 +154,84 @@ const MARGIN = 1.15
  */
 export const COMPACT_TARGET = 1 / 3
 
+/**
+ * How much of the window a compaction summary may take, as a share of it.
+ *
+ * This replaced a fixed 1,200 characters (~380 tokens under the margin), which
+ * was the same size at 8k as at 128k. That constant is half of why the
+ * endurance cases failed: forty records and a sentence were being asked to fit
+ * in the space of a paragraph whatever the window. A tenth of the window is a
+ * paragraph at 8k and two pages at 128k — enough to hold the structured
+ * sections the summariser is asked for without being enough to become the
+ * thing that overflows: with the target at a third and the reply reserve at
+ * 4,096, a third plus a tenth plus the reserve is under the window at every
+ * size the providers declare.
+ *
+ * A share and not a number, so that nothing downstream can carry its own copy.
+ */
+export const SUMMARY_SHARE = 0.1
+
 export type Trimmed = {
+  /**
+   * What to send: the user turns carried out of the cut prefix, verbatim and in
+   * order, followed by the tail that survived — with old tool results replaced
+   * by stubs where that was needed.
+   */
   readonly history: readonly ChatMessage[]
-  /** How many messages were dropped from the request. 0 means it fitted. */
+  /**
+   * The compaction boundary: how many leading messages of the input are no
+   * longer sent as they stood. `input.slice(0, dropped)` is the prefix that was
+   * evicted, and it is what the thread records as covered by a summary.
+   *
+   * It COUNTS the user turns that were carried forward — they are in the prefix
+   * and also in `history` — so `dropped - kept.length` is the number of messages
+   * actually removed. 0 means the request fitted, or fitted once tool results
+   * were stubbed; check `stubbed` to tell those apart.
+   */
   readonly dropped: number
+  /**
+   * How many tool results were replaced by a one-line stub. Stubbing changes no
+   * message the person or the assistant wrote and needs no summary — the record
+   * is still in the store and the stub says how to read it back.
+   */
+  readonly stubbed: number
+  /**
+   * The user turns from the evicted prefix, carried into `history` verbatim.
+   * Never candidates for the summariser: a sentence the person wrote survives
+   * intact or, at the very end, is dropped with `lost` saying so — it is never
+   * paraphrased.
+   */
+  readonly kept: readonly ChatMessage[]
+  /**
+   * What the summariser may see: the ASSISTANT's messages from the evicted
+   * prefix — its prose and the names and arguments of what it called. No user
+   * turn, and no tool result (those are in the store). Empty means nothing of
+   * the assistant's was cut and no summary is needed this turn.
+   */
+  readonly toSummarise: readonly ChatMessage[]
+  /**
+   * User turns dropped at the very end, when even the person's own messages
+   * with everything else gone did not fit. `null` whenever every user turn
+   * survived, which is the case this whole design exists to make normal.
+   */
+  readonly lost: { readonly count: number; readonly reason: string } | null
+  /**
+   * How many characters of summary the window can afford this turn: a
+   * `SUMMARY_SHARE` of the window, and never more than the room the fitted
+   * request actually leaves under the ceiling — the second bound is what stops
+   * a summary from re-overflowing a request the trim just fixed when the fixed
+   * part takes most of the window (measured: 21.7k of tools at 26.6k leaves
+   * ~800 tokens of room, and a tenth of the window would be 2.6k).
+   *
+   * The cut RESERVES the share when evicting more can afford it (stage 2's
+   * middle pass), so this is the whole share whenever the exchanges being
+   * evicted could make room for it, and the honest remainder when they
+   * cannot. That remainder can be below what any summary needs — 75
+   * characters on the vault-convention shape at its 26,100 window, where the
+   * share is eight times the room — and a number that small is `compact`'s
+   * floor to refuse, not this field's to round up: the room is what it is.
+   */
+  readonly summaryChars: number
   /**
    * Whether what was dropped may be SUMMARISED and recorded on the thread.
    *
@@ -146,6 +253,21 @@ const sizeOf = (parts: readonly unknown[]): number =>
   Math.round(estimateTokens(JSON.stringify(parts)) * MARGIN)
 
 /**
+ * Characters per token, DERIVED from the estimator rather than copied from it.
+ *
+ * The summary budget is handed out in characters because that is what a
+ * `slice` takes, while everything here is measured in tokens. The divisor lives
+ * in `model-server` and it is measured; a second 3.6 written here would be a
+ * second thing that can stop agreeing with the first, so this asks the
+ * estimator what a thousand characters weigh and inverts that.
+ */
+const CHARS_PER_TOKEN = 1000 / estimateTokens('x'.repeat(1000))
+
+/** Characters a budget of `tokens` can hold once the margin is applied to it. */
+const charsFor = (tokens: number): number =>
+  Math.max(0, Math.floor((tokens / MARGIN) * CHARS_PER_TOKEN))
+
+/**
  * Whether `history[0..n)` can be cut without orphaning a tool result.
  *
  * A `tool` message answers the assistant turn before it. Cutting immediately
@@ -154,6 +276,55 @@ const sizeOf = (parts: readonly unknown[]): number =>
  */
 const cuttable = (history: readonly ChatMessage[], at: number): boolean =>
   at >= history.length || history[at]?.role !== 'tool'
+
+/**
+ * The number of records in a serialised read result, when it is a list.
+ *
+ * Two shapes. `queries.ts` wraps every list in `{ total, shown, matches }` with
+ * the counts FIRST, precisely so that they survive `renderOutcome`'s cut — a
+ * truncated result is not parseable, but its first thirty characters are, and
+ * that is what the regex reads. A bare array is counted by parsing it. Anything
+ * else is a single record or prose, and the stub names the tool without a
+ * count rather than guessing one.
+ */
+const recordCount = (content: string): number | null => {
+  const counted = /^\{"total":(\d+),"shown":(\d+)/.exec(content)
+  if (counted?.[1] !== undefined) return Number(counted[1])
+  try {
+    const parsed: unknown = JSON.parse(content)
+    return Array.isArray(parsed) ? parsed.length : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The one line that stands in for an evicted tool result.
+ *
+ * It names the tool, so the model knows which call to repeat; gives the count
+ * when the result was a list, so "were there any?" is still answerable without
+ * a call; and says the result can be re-read, because a model that reads a
+ * bare gap either assumes the call failed or invents what it returned.
+ */
+export const stubFor = (tool: string, content: string): string => {
+  const count = recordCount(content)
+  const what = count === null ? 'result' : `${String(count)} record${count === 1 ? '' : 's'}`
+  return `[${tool} ${what} withheld to save room — re-read if needed by calling ${tool} again]`
+}
+
+/** Which tool each `tool_call_id` in `history` was made to. */
+const callNames = (history: readonly ChatMessage[]): ReadonlyMap<string, string> => {
+  const names = new Map<string, string>()
+  for (const m of history) {
+    if (m.role !== 'assistant') continue
+    for (const c of m.tool_calls ?? []) names.set(c.id, c.function.name)
+  }
+  return names
+}
+
+/** The user turns in `messages[0..end)`, in order. */
+const usersIn = (messages: readonly ChatMessage[], end: number): ChatMessage[] =>
+  messages.slice(0, end).filter((m) => m.role === 'user')
 
 /**
  * The longest tail of `history` that fits, with the fixed parts accounted for.
@@ -171,6 +342,7 @@ export function fitHistory(
 ): Trimmed {
   const ceiling = window - RESERVED_FOR_REPLY
   const base = sizeOf(fixed)
+  const share = Math.round(window * SUMMARY_SHARE)
   /*
    * `dropped: 0`, and that is not cosmetic.
    *
@@ -184,13 +356,44 @@ export function fitHistory(
    * a summary of a request that was never sent.
    */
   if (base >= ceiling) {
-    return { history: [], dropped: history.length, summarisable: false, overflows: true }
+    return {
+      history: [],
+      dropped: history.length,
+      stubbed: 0,
+      kept: [],
+      toSummarise: [],
+      lost: null,
+      summaryChars: 0,
+      summarisable: false,
+      overflows: true,
+    }
   }
+
+  const room = ceiling - base
+  /** A result that was sent, with the summary bounded by what is actually left. */
+  const sent = (
+    out: readonly ChatMessage[],
+    dropped: number,
+    stubbed: number,
+    kept: readonly ChatMessage[],
+    toSummarise: readonly ChatMessage[],
+    lost: Trimmed['lost'],
+  ): Trimmed => ({
+    history: out,
+    dropped,
+    stubbed,
+    kept,
+    toSummarise,
+    lost,
+    summaryChars: charsFor(Math.min(share, room - sizeOf(out))),
+    summarisable: true,
+    overflows: false,
+  })
 
   // Nothing to do until the window is actually threatened. A conversation that
   // fits is left byte-identical, which is also what keeps the prefix cached.
   if (base + sizeOf(history) <= ceiling) {
-    return { history, dropped: 0, summarisable: true, overflows: false }
+    return sent(history, 0, 0, [], [], null)
   }
 
   /*
@@ -213,52 +416,139 @@ export function fitHistory(
    * leaves space for that, and degrades to "a third of what is left" instead of
    * to nothing when it does not.
    */
-  const room = ceiling - base
-  const target = Math.max(Math.round(window * COMPACT_TARGET) - base, Math.round(room * COMPACT_TARGET))
+  const target = Math.max(
+    Math.round(window * COMPACT_TARGET) - base,
+    Math.round(room * COMPACT_TARGET),
+  )
 
   /*
-   * Oldest first, at a boundary that leaves no orphaned tool result — and never
-   * as far as emptying the history, which is the subtle half.
+   * Stage 1: stub tool results, oldest first, until the request is under the
+   * target. Nothing the person or the assistant wrote is touched, so a request
+   * that fits after this stage needs no summary — and measured on the
+   * endurance histories, where results are ~6,000 characters each and prose is
+   * a sentence, this stage alone is what fits them.
    *
-   * This ran to `cut <= history.length`, so the empty tail was a candidate and
-   * it trivially satisfies ANY target. A conversation whose last exchange was
-   * one token too big for the target therefore fell through to "drop
-   * everything" rather than to "keep what fits", with `overflows: false`
-   * reporting that all was well. Raising `RESERVED_FOR_REPLY` is what made that
-   * reachable; it was always the behaviour.
+   * A result no longer than its stub is left alone. The stub exists to save
+   * room; where it would save none it would only lose the one thing a short
+   * result carries, which is the id of a record just written.
+   *
+   * The LAST exchange's result is not protected either, and that was measured
+   * rather than assumed, because it is the result the next question is most
+   * likely about — long-vault-convention is exactly that shape: turn eight
+   * saves a link beside the one turn seven's listing returned. At the case's
+   * 26,100 window the fixed part is 21,693 tokens and the room 311; the
+   * person's seven turns take 200 of it, leaving 111 for anything else. The
+   * link record is 87 tokens intact and 48 as a stub, and the exchange around
+   * it 159 intact and 119 stubbed — neither fits, and the answer alone (22)
+   * does. Protecting the record would have bought nothing there, and at any
+   * wider window it would take from the summary's reserve what one re-read
+   * gives back.
    */
-  for (let cut = 1; cut < history.length; cut += 1) {
-    if (!cuttable(history, cut)) continue
-    const tail = history.slice(cut)
-    if (sizeOf(tail) <= target) {
-      return { history: tail, dropped: cut, summarisable: true, overflows: false }
+  const names = callNames(history)
+  const working: ChatMessage[] = [...history]
+  let stubbed = 0
+  for (let i = 0; i < working.length; i += 1) {
+    const m = working[i]
+    if (m === undefined || m.role !== 'tool') continue
+    const content = stubFor(names.get(m.tool_call_id) ?? 'the tool', m.content)
+    if (content.length >= m.content.length) continue
+    working[i] = { role: 'tool', tool_call_id: m.tool_call_id, content }
+    stubbed += 1
+    if (sizeOf(working) <= target) return sent(working, 0, stubbed, [], [], null)
+  }
+
+  /*
+   * Stage 2: cut the oldest exchanges, at a boundary that leaves no orphaned
+   * tool result, carrying the user turns of the cut prefix forward verbatim.
+   *
+   * `cut` runs to `working.length` inclusive, which is deliberate and was not
+   * always so. When the whole history was a candidate for cutting, the empty
+   * tail satisfied any target trivially and a conversation whose last exchange
+   * was one token too big lost everything. Now the cut prefix is never empty of
+   * the person's words: at `cut === length` what is sent is every user turn
+   * they wrote, which is not "nothing" — and if even that is too much, stage 3
+   * says so rather than pretending.
+   *
+   * And it starts at 0, so the whole stubbed history is itself a candidate.
+   * That matters in one case: the person's turns alone exceed the target, so
+   * the first pass finds no cut at all, and the whole history is within the
+   * next limit. Starting at 1 sent the same bytes but counted the first
+   * message as evicted-and-carried — `dropped: 1` over nothing, a boundary
+   * for the thread to record where nothing happened (found by mutation, and
+   * the mutant was the truthful one).
+   *
+   * Three passes. The target is a GOAL and `room` is the constraint, and
+   * falling between them must not mean losing the conversation: under a tool
+   * list taking most of the ceiling the target drops below one exchange, no
+   * cut satisfies it, and the old code returned an empty history with
+   * `overflows: false`. So aim for the target, and settle for what FITS.
+   *
+   * The middle pass, `room - share`, reserves the summary's room, and it is
+   * there because the budget collapsed without it. `summaryChars` is whatever
+   * the fitted tail leaves under the ceiling, and a pass that takes the FIRST
+   * cut under `room` leaves anything from nothing to one exchange — measured
+   * on long-vault-convention against Qwen3 14B at a 26,100 window: 90 and
+   * 172 characters, a summariser call spent for a note cut mid-heading. So
+   * when the target is out of reach, aim for `room - share` before `room`.
+   * The share is then taken from exchanges that were being evicted anyway —
+   * never from the person's words, which are in every candidate, and never by
+   * evicting an exchange that would have fitted: the last pass is still
+   * tightest-first, because a verbatim exchange is worth more than the same
+   * tokens of a summary of it.
+   *
+   * The first pass needs no reserve of its own. A cut under the target leaves
+   * `room - target`, and that is at least the share whenever the target is a
+   * third of the window (`0.9·window − 4,096 − base` against
+   * `window/3 − base`: covered above 7,229 tokens, and no provider declares
+   * less than 8,192) and whenever the degraded target `room/3` has
+   * `room ≥ 0.15·window`. Below that the tools take all but a sliver, two
+   * thirds of the room is the honest maximum, and the vault case is the
+   * measurement: at 26,100 the room is 311 tokens and the share 2,610, the
+   * person's seven turns are 200 of the 311, so no cut can afford the share
+   * and the last pass keeps the closing answer (22 tokens) and leaves 25 —
+   * 75 characters. `compact` refuses to call the model under
+   * `MIN_SUMMARY_CHARS`, and the trim stands plain, which is right: the
+   * person's turns went verbatim and there was no room for anything else.
+   */
+  const evict = (cut: number, out: readonly ChatMessage[]): Trimmed =>
+    sent(
+      out,
+      cut,
+      stubbed,
+      usersIn(working, cut),
+      working.slice(0, cut).filter((m) => m.role === 'assistant'),
+      null,
+    )
+  for (const limit of [target, room - share, room]) {
+    for (let cut = 0; cut <= working.length; cut += 1) {
+      if (!cuttable(working, cut)) continue
+      const candidate = [...usersIn(working, cut), ...working.slice(cut)]
+      if (sizeOf(candidate) <= limit) return evict(cut, candidate)
     }
   }
 
   /*
-   * The target is a GOAL, and `room` is the constraint. Falling between them
-   * must not mean losing the conversation.
-   *
-   * Found by raising `RESERVED_FOR_REPLY`: under a tool list taking most of the
-   * ceiling, the target dropped below the size of a single exchange, no `cut`
-   * ever satisfied it, and this returned an empty history with
-   * `overflows: false` — the request says everything is fine and the person's
-   * last turn is gone. That is the same silent loss the overflow branch above
-   * was split apart to prevent, arriving by a different route.
-   *
-   * So: aim for the target, and settle for whatever genuinely FITS. Compacting
-   * sooner next turn is a cost; answering a follow-up with no idea what it
-   * follows is a failure.
+   * Stage 3: even the person's own turns, with everything else gone, do not
+   * fit. Drop the oldest of them until what is left does — and say how many
+   * and why, because this is the only stage that loses something nobody can
+   * re-derive. A summary is still offered for the assistant's side; the user
+   * turns that went are counted in `lost`, never paraphrased.
    */
-  for (let cut = 1; cut < history.length; cut += 1) {
-    if (!cuttable(history, cut)) continue
-    const tail = history.slice(cut)
-    if (sizeOf(tail) <= room) {
-      return { history: tail, dropped: cut, summarisable: true, overflows: false }
+  const users = usersIn(working, working.length)
+  for (let from = 1; from <= users.length; from += 1) {
+    const survivors = users.slice(from)
+    if (sizeOf(survivors) <= room) {
+      return {
+        ...evict(working.length, survivors),
+        kept: survivors,
+        lost: {
+          count: from,
+          reason: `${String(from)} of the person's earliest message${from === 1 ? '' : 's'} did not fit even with every reply and result removed`,
+        },
+      }
     }
   }
-
-  return { history: [], dropped: history.length, summarisable: true, overflows: false }
+  return { ...evict(working.length, []), kept: [], lost: null }
 }
 
 /** What to tell the person when earlier turns were summarised rather than lost. */
