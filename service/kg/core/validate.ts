@@ -361,6 +361,7 @@ export const NODE_PROP_SCHEMAS = {
     proposedAt: s.instant({ label: 'Proposed at' }),
     decidedAt: s.optional(s.instant({ label: 'Decided at' })),
     error: s.optional(s.string({ label: 'Error' })),
+    swept: s.optional(s.boolean({ label: 'Swept' })),
   }),
   profile: s.object({
     text: profileTextSchema,

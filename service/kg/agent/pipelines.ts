@@ -208,9 +208,26 @@ export type ProposalSink = {
  * Three sources, and all three are needed. Saved postings are the obvious one.
  * Applications carry a `url` too, and a scout that re-proposed a job the user
  * has already APPLIED to would be the most annoying version of this bug.
- * Pending proposals are the third and least obvious: two rounds in the same
- * session would otherwise each propose the same posting, because the first
- * one's suggestion has not been accepted yet and so is not a posting.
+ * Proposals are the third and least obvious: two rounds in the same session
+ * would otherwise each propose the same posting, because the first one's
+ * suggestion has not been accepted yet and so is not a posting.
+ *
+ * ## Every proposal counts, whatever became of it
+ *
+ * This filtered on `status === 'pending'`, and that one word was the pile-up.
+ * A proposal stops being pending the moment the person answers it — so the
+ * round after somebody pressed Discard, the job was invisible to this function
+ * and came straight back. Dismissing it again produced another discarded
+ * proposal, which was equally invisible, and the queue refilled with the same
+ * few jobs forever. The harder somebody tidied, the more there was to tidy.
+ *
+ * Read the four statuses as one question — has this person been shown this job
+ * before? — and the answer is yes for all of them. `discarded` is an explicit
+ * no from the user and the strongest reason of the four not to ask again.
+ * `approved` is normally caught by the posting it created, but not once that
+ * posting is deleted, which is the same "I have dealt with this" gesture
+ * wearing different clothes. `failed` means the write broke, and re-proposing
+ * it would queue a card that breaks the same way.
  */
 function knownPostings(memory: GraphSnapshot): string[] {
   const urls: string[] = []
@@ -219,7 +236,9 @@ function knownPostings(memory: GraphSnapshot): string[] {
     if (node.props.url) urls.push(node.props.url)
   }
   for (const node of memory.ofType('proposal')) {
-    if (node.props.status !== 'pending' || node.props.tool !== 'scout.posting.save') continue
+    // Any status. See above: filtering to `pending` is what let a discarded
+    // suggestion come back on the next round.
+    if (node.props.tool !== 'scout.posting.save') continue
     try {
       const parsed = JSON.parse(node.props.input) as { url?: unknown }
       if (typeof parsed.url === 'string') urls.push(parsed.url)
@@ -237,7 +256,8 @@ function knownRoles(memory: GraphSnapshot): Set<string> {
   const fold = (text: string) => text.trim().toLowerCase().replace(/\s+/g, ' ')
   for (const node of memory.ofType('match')) roles.add(fold(node.props.role))
   for (const node of memory.ofType('proposal')) {
-    if (node.props.status !== 'pending' || node.props.tool !== 'scout.match.save') continue
+    // Any status, for the reason `knownPostings` sets out at length.
+    if (node.props.tool !== 'scout.match.save') continue
     try {
       const parsed = JSON.parse(node.props.input) as { role?: unknown }
       if (typeof parsed.role === 'string') roles.add(fold(parsed.role))

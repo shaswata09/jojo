@@ -66,7 +66,7 @@ import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor, select } f
 import { fitHistory, fitsWindow, summarisedNote, trimNote } from './budget'
 import type { Trimmed } from './budget'
 import { pickTools, type ChooserDeps } from './retrieve-llm'
-import { asMessage, compact, MIN_SUMMARY_CHARS } from './compact'
+import { asMessage, compact } from './compact'
 import type { CompactDeps, CompactOptions, ThreadRef } from './compact'
 import type { Effect } from './catalog'
 import { callTool, renderOutcome } from './execute'
@@ -984,26 +984,29 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   const evicted = options.history.slice(0, fitted.dropped)
   const earlier = options.context ?? priorSummaryIn(evicted, options.thread)
   /*
-   * Under the floor, no summary at all — not even the ledger `compact` would
-   * still hand back without a model call.
+   * THE FLOOR IS `compact`'S, AND ONLY `compact`'S.
    *
-   * `summaryChars` is the honest remainder when no cut could reserve the
-   * share, and measured on long-vault-convention against Qwen3 14B at its
-   * 26,100 window it was 90 and 172 characters: a summariser call each time,
-   * for a note cut mid-heading. `compact` refuses the call itself under
-   * `MIN_SUMMARY_CHARS` (320: three empty skeletons), but from roughly 240
-   * — the 59-character heading plus one short entry, in a third — it still
-   * returns the ledger line alone, and placing that here would cost
-   * more than the budget says. The note's wrapper — 57 characters of "Earlier
-   * in this conversation (summarised, not verbatim): " — is not counted in
-   * the budget, so a ledger-only note under the floor is a line of ids with
-   * nothing said about any of them, in up to a fifth more room than the fit
-   * left. The person is told the earliest messages were LEFT OUT, which is
-   * the truth of it; "replaced with a short summary" is for when there is
-   * one. No window is no floor: `budget` is undefined, and `compact` is
-   * asked with no limit.
+   * This used to hold a second copy of it — skip the call when `budget <
+   * MIN_SUMMARY_CHARS` — and the copy did more than the constant says.
+   * `compact` refuses the MODEL under that floor and still returns the ledger
+   * line, which costs no call and is the half of a summary that carries ids;
+   * skipping `compact` outright threw the ledger away with it. Measured
+   * 2026-09-06 by driving the real loop through the endurance cases:
+   * long-vault-convention came out at 112, 53, 18 and 275 characters on turns
+   * 4-7, and on all four neither a summary NOR the ids were placed.
+   *
+   * The reason it was written that way was real and is now fixed at the source:
+   * the note's wrapper — 57 characters of "Earlier in this conversation
+   * (summarised, not verbatim): ", plus the pointer when there is a thread —
+   * was spent OUTSIDE the budget, so a ledger-only note under the floor took up
+   * to a fifth more room than the fit had left. `textBudget` counts it inside
+   * the budget instead, so what `compact` returns is what fits.
+   *
+   * What remains here is the two questions this file can answer and `compact`
+   * cannot: whether anything was evicted at all, and whether it may be
+   * summarised. No window is no floor either: `budget` is undefined and
+   * `compact` is asked with no limit.
    */
-  const underFloor = budget !== undefined && budget < MIN_SUMMARY_CHARS
   let recovered: ChatMessage | null = null
   let written: AgentRun['compacted']
   // The abort check also covers a Stop pressed DURING the chooser call above,
@@ -1013,7 +1016,6 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
     fitted.dropped > 0 &&
     fitted.summarisable &&
     fitted.toSummarise.length > 0 &&
-    !underFloor &&
     options.summariser &&
     !signal?.aborted
   ) {
@@ -1039,9 +1041,13 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    * The common case once a conversation has been compacted once: it fits now,
    * nothing is dropped, and what the model still needs is the note about the
    * part that is no longer here. Placed only where there is room for it:
-   * `budget` is 0 exactly when the fitted request already fills the ceiling
-   * (overflow, or a tail that fits with nothing to spare), and a summary added
-   * there is the thing that overflows.
+   * `asMessage` fits the body to what is left of the budget once the wrapper is
+   * paid for, so a budget the wrapper alone can consume — 0 on overflow, or a
+   * tail that fits with nothing to spare — leaves the prefix and the pointer
+   * with nothing between them. That is not context, it is the thing that
+   * overflows, so it is compared against the empty note and dropped when it
+   * says no more than one. (This subsumes the `budget !== 0` it replaces: at 0
+   * there is no body, and above 0 there can still be none.)
    *
    * Never BOTH. A fresh summary supersedes `earlier`: the summariser was
    * shown the earlier notes and told to carry forward what still matters, and
@@ -1053,10 +1059,9 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    * when a thread with stored context compacts again (mutation found it
    * unpinned: dropping the guard survived every test then in this file).
    */
+  const carried = recovered === null && earlier !== undefined ? asMessage(earlier, framing) : null
   const carriedContext: ChatMessage | null =
-    recovered === null && earlier !== undefined && budget !== 0
-      ? asMessage(earlier, framing)
-      : null
+    carried !== null && carried.content !== asMessage('', framing).content ? carried : null
 
   /*
    * What the person is told, counted by what actually went. `dropped` is the
@@ -1758,7 +1763,7 @@ async function performCall(
   /*
    * Three settings, and the middle one is where the interesting failure lives.
    *
-   *   writes       — every non-read step (82 of 92 tools)
+   *   writes       — every non-read step (83 of 93 tools)
    *   destructive  — only `delete` and `admin` effects (15 of 92)
    *   none         — nothing, and the person chose that explicitly
    *

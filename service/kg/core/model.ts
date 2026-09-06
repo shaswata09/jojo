@@ -751,6 +751,8 @@ export type Pipeline = {
 export type Proposal = {
   id: string
   pipelineId: string | null
+  /** See `ProposalProps.swept`. Filtered out before any screen sees it. */
+  swept?: boolean
   kind: PipelineKind
   tool: string
   input: string
@@ -1159,6 +1161,25 @@ export type ProposalProps = {
    * field, as the never-written `FROM` edge on `match` has been demonstrating.
    */
   error?: string
+  /**
+   * Answered, and cleared off the queue — but still remembered.
+   *
+   * `pipeline.proposal.sweep` used to DELETE these rows, and once the scout
+   * started deduping against every proposal rather than only the pending ones,
+   * that delete became a hole: pressing Clear forgot which jobs the person had
+   * already turned down, and the next round proposed them again. The button
+   * meant to empty the queue refilled it.
+   *
+   * So sweeping marks instead. The card goes — `use-pipelines` filters these
+   * out and no screen ever sees one — and the record stays where
+   * `knownPostings` can still read it. A discarded suggestion is the strongest
+   * evidence there is that a job should not be offered again, and it was the
+   * one piece of evidence being thrown away.
+   *
+   * Optional, so every proposal written before this field existed reads back as
+   * unswept, which is what it was.
+   */
+  swept?: boolean
 }
 
 export type ProfileProps = Profile

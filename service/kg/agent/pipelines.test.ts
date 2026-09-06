@@ -258,6 +258,102 @@ describe('refusing a job the person has already seen', () => {
     )
   })
 
+  /*
+   * REPRODUCTION of the pile-up. A proposal the person has already answered is
+   * not `pending`, so neither `knownPostings` nor `knownRoles` counts it — and
+   * the very next round proposes the identical job again.
+   */
+  it.each(['discarded', 'failed', 'approved'] as const)(
+    'does not re-propose a posting whose suggestion is already %s',
+    (status) => {
+      const m = new MutableSnapshot()
+      m.putNode({
+        id: 'proposal:1' as never,
+        type: 'proposal',
+        props: {
+          slug: 'x',
+          kind: 'scout',
+          tool: 'scout.posting.save',
+          input: JSON.stringify({ url: 'https://example.test/jobs/9' }),
+          title: 'Save posting',
+          rationale: '',
+          status,
+          proposedAt: at,
+        },
+        createdAt: at,
+        updatedAt: at,
+      })
+      const { wrapped, calls } = scoutOn(m)
+      const result = wrapped.run('scout.posting.save' as never, {
+        url: 'https://example.test/jobs/9',
+      })
+      expect(result.ok).toBe(false)
+      expect(calls).toHaveLength(0)
+    },
+  )
+
+  it.each(['discarded', 'failed', 'approved'] as const)(
+    'does not re-propose a match whose suggestion is already %s',
+    (status) => {
+      const m = new MutableSnapshot()
+      m.putNode({
+        id: 'proposal:2' as never,
+        type: 'proposal',
+        props: {
+          slug: 'y',
+          kind: 'scout',
+          tool: 'scout.match.save',
+          input: JSON.stringify({ role: 'Research Scientist' }),
+          title: 'Suggest match',
+          rationale: '',
+          status,
+          proposedAt: at,
+        },
+        createdAt: at,
+        updatedAt: at,
+      })
+      const { wrapped, calls } = scoutOn(m)
+      const result = wrapped.run('scout.match.save' as never, { role: 'Research Scientist' })
+      expect(result.ok).toBe(false)
+      expect(calls).toHaveLength(0)
+    },
+  )
+
+  /*
+   * THE PROPERTY THE WHOLE THING RESTS ON.
+   *
+   * "Clear all" marks rows `swept` rather than deleting them, and this is why.
+   * If clearing removed the record, the round after the person emptied the
+   * queue would refill it with the jobs they had just turned down — a button
+   * that makes more work than it saves. The card is gone from the screen
+   * (`use-pipelines` filters these out); the memory is not.
+   */
+  it('still refuses a job whose suggestion was cleared off the queue', () => {
+    const m = new MutableSnapshot()
+    m.putNode({
+      id: 'proposal:1' as never,
+      type: 'proposal',
+      props: {
+        slug: 'x',
+        kind: 'scout',
+        tool: 'scout.posting.save',
+        input: JSON.stringify({ url: 'https://example.test/jobs/9' }),
+        title: 'Save posting',
+        rationale: '',
+        status: 'discarded',
+        swept: true,
+        proposedAt: at,
+      },
+      createdAt: at,
+      updatedAt: at,
+    })
+    const { wrapped, calls } = scoutOn(m)
+    expect(wrapped.run('scout.posting.save' as never, { url: 'https://example.test/jobs/9' }).ok).toBe(
+      false,
+    )
+    expect(calls).toHaveLength(0)
+  })
+
   it('refuses one the person has already applied to', () => {
     const m = new MutableSnapshot()
     m.putNode({

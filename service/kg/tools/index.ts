@@ -52,6 +52,7 @@ import {
   proposalDiscard,
   proposalFail,
   proposalRaise,
+  proposalClear,
   proposalSweep,
 } from './pipeline'
 import { memoryClear, memoryReset } from './memory'
@@ -200,6 +201,7 @@ export const TOOLS = {
   'pipeline.proposal.approve': proposalApprove,
   'pipeline.proposal.discard': proposalDiscard,
   'pipeline.proposal.fail': proposalFail,
+  'pipeline.proposal.clear': proposalClear,
   'pipeline.proposal.sweep': proposalSweep,
   'pipeline.run.record': pipelineRunRecord,
 

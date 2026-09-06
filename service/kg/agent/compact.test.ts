@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest'
 import {
   LEDGER_HEADING,
   MIN_SUMMARY_CHARS,
+  SECTION_MARK,
   SUMMARY_SLOTS,
   asMessage,
   compact,
@@ -30,6 +31,7 @@ import {
   ledgerLine,
   recordsIn,
   replacedBy,
+  stripIds,
   summarisable,
 } from './compact'
 import type { Summarisable } from './compact'
@@ -69,13 +71,31 @@ const scripted = (text: string) => {
 const inputFor = (dropped: readonly ChatMessage[]): string =>
   compactionMessages(summarisable(dropped))[1]?.content ?? ''
 
-/** A well-formed reply: every slot, in order. Long enough to be worth keeping. */
+/**
+ * A well-formed reply: every slot, in order, and every one of them FILLED.
+ * Long enough to be worth keeping, and with no id in it — a model is told not
+ * to write one and `stripIds` takes out any it writes anyway, so a fixture
+ * carrying one would be testing the stripper by accident everywhere it is
+ * used. It is tested on purpose instead, and so is the empty slot: the last
+ * heading here said "none." until 2026-09-06, which made every expectation in
+ * this file quietly a test of `withoutEmptySlots` as well.
+ */
 const filled = [
   `${SUMMARY_SLOTS[0]}: they meant the Rice application, the one at Houston.`,
-  `${SUMMARY_SLOTS[1]}: Rice University application — app:0192a.`,
+  `${SUMMARY_SLOTS[1]}: the Rice University application, moved to Interview.`,
   `${SUMMARY_SLOTS[2]}: do not touch the Baylor one.`,
-  `${SUMMARY_SLOTS[3]}: none.`,
+  `${SUMMARY_SLOTS[3]}: file the CV against the Houston one.`,
 ].join('\n')
+
+/**
+ * The wrapper `asMessage` puts round a summary, in characters — asked of the
+ * code rather than written down, since what is pinned about it is that the
+ * BUDGET pays for it (`asMessage`'s own tests spell the text out).
+ */
+const WRAPPER = (asMessage('').content ?? '').length
+
+/** The join between two sections of append-only notes. */
+const join = (...sections: readonly string[]): string => sections.join(`\n${SECTION_MARK}\n`)
 
 /** The ledger line exactly as the contract spells it. */
 const ledger = (...entries: readonly string[]): string =>
@@ -237,7 +257,7 @@ describe('compactionMessages — what the summariser is shown', () => {
       `${SUMMARY_SLOTS[0]}: what the assistant’s replies show the person TOLD it — which record they meant, names, dates, preferences. What they told it, never what they asked it to do.`,
     )
     expect(text).toContain(
-      `${SUMMARY_SLOTS[1]}: things DONE — each record the assistant created, found or changed, as name and id; the ids are in the arguments and replies, copy them exactly. A record here is finished work: do not restate it as a request.`,
+      `${SUMMARY_SLOTS[1]}: things DONE — each record the assistant created, found or changed, by NAME. Do not write ids: every id is listed exactly on the line under your notes. A record here is finished work: do not restate it as a request.`,
     )
     expect(text).toContain(
       `${SUMMARY_SLOTS[2]}: anything the person corrected, declined, or asked the assistant not to touch.`,
@@ -247,49 +267,66 @@ describe('compactionMessages — what the summariser is shown', () => {
     )
   })
 
-  it('tells the summariser not to invent agreement, and to copy ids exactly', () => {
+  it('tells the summariser not to invent agreement, and not to write ids at all', () => {
+    // Ids are the ledger's: it is derived, the notes are not, so the notes are
+    // the only place in a summary where a wrong id can enter (round two:
+    // app:…7649, Stripe in the ledger, called Baylor in the notes). The model
+    // is told where they are so it does not think they have been lost.
     const [system] = compactionMessages([said('x')])
     expect(system?.content).toContain('never write that they agreed')
     expect(system?.content).toContain('State only what is in the messages')
-    expect(system?.content).toContain('copy them exactly')
+    expect(system?.content).toContain('Never write a record id')
+    expect(system?.content).toContain('on the line directly under your notes')
+    expect(system?.content).not.toContain('copy them exactly')
   })
 
-  it('puts the notes’ share of the budget in the prompt, so the model writes to it rather than being cut at it', () => {
-    // The ledger takes up to a third of the budget ahead of the notes. A model
-    // told the whole figure writes over the ledger's third and is cut there.
+  it('puts this section’s room in the prompt, wrapper and ledger and earlier sections all taken off first', () => {
+    // A model told a figure writes to it, so the figure must be what is
+    // actually left: the budget is the whole placed NOTE, the wrapper comes
+    // off it (57 characters), the ledger keeps a third of the rest, and the
+    // earlier sections are already written. 2700 − 57 = 2643; a third of that
+    // is 881 for the ledger; 1762 is the notes' room and there is nothing
+    // earlier, so the whole of it is this section's.
+    expect(WRAPPER).toBe(57)
     const [system] = compactionMessages([said('x')], { budget: 2_700 })
-    expect(system?.content).toContain('At most 1800 characters')
+    expect(system?.content).toContain('At most 1762 characters')
     expect(system?.content).not.toContain('2700')
-    // And without one, the only limit stated is the one always enforced.
+    // With earlier sections written, the ask is what they left: 1762 − 400 −
+    // 42 (the section mark and its two newlines).
+    const [after] = compactionMessages([said('x')], {
+      budget: 2_700,
+      earlier: 'e'.repeat(400),
+    })
+    expect(after?.content).toContain(
+      `At most ${String(1762 - 400 - SECTION_MARK.length - 2)} characters`,
+    )
+    // And never below a third of the notes' room, however full they are: a
+    // chain so full that nothing new could be written would freeze the summary
+    // at the oldest facts. Past that the oldest section is dropped instead.
+    const [full] = compactionMessages([said('x')], { budget: 2_700, earlier: 'e'.repeat(5_000) })
+    expect(full?.content).toContain(`At most ${String(Math.floor(1762 / 3))} characters`)
+    // And without a budget, the only limit stated is the one always enforced.
     const [bare] = compactionMessages([said('x')])
     expect(bare?.content).not.toContain('At most')
     expect(bare?.content).toContain('shorter than what it stands in for')
   })
 
-  it('carries the earlier summary in, labelled as what it is', () => {
-    // A second compaction supersedes the first. Passed as text with a label
-    // rather than as a `user` message, so nothing reads it as something said.
-    const [, input] = compactionMessages([said('x')], { earlier: 'They filed the CV as doc:7.' })
-    expect(input?.content).toContain('earlier summary, superseded by yours')
-    expect(input?.content).toContain('They filed the CV as doc:7.')
-    const [, without] = compactionMessages([said('x')])
-    expect(without?.content).not.toContain('earlier summary')
-  })
-
-  it('withholds the earlier summary’s ledger line from the model', () => {
-    // The harness merges those ids into the new ledger itself. A model shown
-    // them copies them under RECORDS ESTABLISHED, and the appended ledger
-    // then says them twice.
+  it('shows the summariser nothing of the earlier notes, so it cannot rewrite them', () => {
+    // THE round-three failure. Handing the earlier notes over as "carry
+    // forward what still matters" made every summary a rewrite of a rewrite,
+    // and measured over 72 summary→summary transitions on 2026-09-06, 21 of 85
+    // statements were wholly gone from the next summary. They are kept
+    // verbatim by `compact` now, so there is nothing here to rewrite — and
+    // nothing to copy an id out of either.
     const earlier = `They filed the CV as doc:7.\n${ledger('Rice University (app:0192a)')}`
-    const [, input] = compactionMessages([said('x')], { earlier })
-    expect(input?.content).toContain('They filed the CV as doc:7.')
+    const [system, input] = compactionMessages([said('x')], { earlier })
+    expect(input?.content).not.toContain('They filed the CV')
+    expect(input?.content).not.toContain('earlier summary')
     expect(input?.content).not.toContain(LEDGER_HEADING)
     expect(input?.content).not.toContain('app:0192a')
-    // An earlier summary that is a ledger alone carries no notes to show.
-    const [, bare] = compactionMessages([said('x')], {
-      earlier: ledger('Rice University (app:0192a)'),
-    })
-    expect(bare?.content).not.toContain('earlier summary')
+    // It is told they exist, so it does not restate them or think them lost.
+    expect(system?.content).toContain('kept exactly as they were written and are not shown to you')
+    expect(system?.content).toContain('later notes supersede earlier ones where they disagree')
   })
 
   it('tells the summariser the transcript stays readable, only when it does', () => {
@@ -506,9 +543,10 @@ describe('ledgerLine and ledgerIn — the line and its parse', () => {
     // The LAST line is the ledger, whichever heading it carries.
     expect(ledgerIn(`${old}\n${ledger('New (app:9)')}`)).toEqual([{ id: 'app:9', label: 'New' }])
     expect(ledgerIn(`${ledger('New (app:9)')}\n${old}`)).toEqual(entries)
-    // And neither heading is shown to the model as earlier notes.
+    // And neither heading reaches the model: the notes are not shown to it at
+    // all now, and the ids on either heading are the harness's to merge.
     const [, input] = compactionMessages([said('x')], { earlier: `${filled}\n${old}` })
-    expect(input?.content).toContain(filled)
+    expect(input?.content).not.toContain(filled)
     expect(input?.content).not.toContain(LEDGER_HEADING)
     expect(input?.content).not.toContain('app:1')
   })
@@ -563,9 +601,11 @@ describe('ledgerLine and ledgerIn — the line and its parse', () => {
     // is the last one.
     const quoted = `${filled}\n${ledger('Old (app:old)')}\n${ledger('Rice (app:1)')}`
     expect(ledgerIn(quoted)).toEqual([{ id: 'app:1', label: 'Rice' }])
-    const [, input] = compactionMessages([said('x')], { earlier: quoted })
-    expect(input?.content).toContain('Old (app:old)')
-    expect(input?.content).not.toContain('Rice (app:1)')
+    // The quoted line stays in the NOTES, and the notes are carried verbatim,
+    // so it comes back out as text — while the harness's line is the last one.
+    const out = asMessage(quoted).content ?? ''
+    expect(out).toContain('Old (app:old)')
+    expect(out.endsWith(ledger('Rice (app:1)'))).toBe(true)
   })
 
   it('keeps the separator out of labels, and folds their whitespace', () => {
@@ -576,7 +616,7 @@ describe('ledgerLine and ledgerIn — the line and its parse', () => {
 })
 
 describe('replacedBy — what the summary stands in for', () => {
-  it('counts assistant prose, call arguments, tool results and earlier notes, never the person', () => {
+  it('counts assistant prose, call arguments and tool results, never the person and never the earlier notes', () => {
     const dropped: ChatMessage[] = [
       user('a'.repeat(1_000)),
       calling(['memory.list', '{"type":"application"}']),
@@ -585,10 +625,78 @@ describe('replacedBy — what the summary stands in for', () => {
       { role: 'system', content: 'z'.repeat(7) },
     ]
     expect(replacedBy(dropped)).toBe('{"type":"application"}'.length + 6_000 + 50 + 7)
-    expect(replacedBy(dropped, 'e'.repeat(11))).toBe(
-      '{"type":"application"}'.length + 6_000 + 50 + 7 + 11,
-    )
     expect(replacedBy([])).toBe(0)
+    // The earlier notes were counted here until the notes became append-only:
+    // a new section is added to them, so nothing it says stands in for them.
+    expect(replacedBy([{ role: 'system', content: 'z'.repeat(7) }])).toBe(7)
+  })
+})
+
+describe('stripIds — the notes are the only place a wrong id can enter', () => {
+  // A real one, as `core/ref.ts` mints them: a type prefix and a uuidv7.
+  const real = 'app:0193c4a2-7b1e-4f0a-9c3d-2e5f6a7b8c9d'
+
+  it('takes the id and its wrapper, leaving a sentence that still reads', () => {
+    // "Note saved (id: note:…)" must not become "Note saved ()", and the
+    // space before the parenthesis goes with it.
+    expect(stripIds(`Note saved (id: ${real}) for Rice.`)).toBe('Note saved for Rice.')
+    expect(stripIds(`Moved the Rice application (${real}) to Interview.`)).toBe(
+      'Moved the Rice application to Interview.',
+    )
+    expect(stripIds(`Rice (${real}).`)).toBe('Rice.')
+    expect(stripIds(`Two records (${real}, kw:01a0b2c3) were added.`)).toBe(
+      'Two records were added.',
+    )
+  })
+
+  it('takes a bare id out of the middle of a sentence, label and all', () => {
+    expect(stripIds(`${SUMMARY_SLOTS[1]}: Rice University — ${real}.`)).toBe(
+      `${SUMMARY_SLOTS[1]}: Rice University —.`,
+    )
+    expect(stripIds(`the application id: ${real} was updated`)).toBe('the application was updated')
+  })
+
+  it('takes a HALF id too, which is the dangerous one', () => {
+    // A model reading `kw:01a0b2c3` completes it, and a uuid-shaped test
+    // would pass it through. Round two wrote "keyword: consensus (id:
+    // consensus)" — a guess — for a record it had just created.
+    expect(stripIds('consensus added (id: kw:01a0b2c3)')).toBe('consensus added')
+    expect(stripIds('the note app:0193c4a2… was saved')).toBe('the note was saved')
+  })
+
+  it('returns a line with no id in it byte-identical', () => {
+    // The tidying only runs where something was removed, so notes it does not
+    // touch cannot be reformatted — indentation, double spaces and all.
+    const prose = `${SUMMARY_SLOTS[0]}:  they meant the Rice one, at Houston.\n   - do not touch Baylor`
+    expect(stripIds(prose)).toBe(prose)
+    expect(stripIds(filled)).toBe(filled)
+    // Nor is a colon that is not an id one: the prefix has to be one this app
+    // mints, and the tail has to start immediately and be hex.
+    const near = 'link: https://stripe.com/jobs, interview: 3pm, notes: added, org: Rice'
+    expect(stripIds(near)).toBe(near)
+  })
+
+  it('strips what the summariser sends, whatever it was told', async () => {
+    // The prompt asks for no ids; this is what happens when one comes anyway,
+    // and the ledger's own ids are untouched because it is appended after.
+    // The two empty slots go with them — see `withoutEmptySlots`.
+    const reply = [
+      `${SUMMARY_SLOTS[0]}: they meant Rice.`,
+      `${SUMMARY_SLOTS[1]}: Rice University (id: app:0192b) — the WRONG one.`,
+      `${SUMMARY_SLOTS[2]}: none`,
+      `${SUMMARY_SLOTS[3]}: none`,
+    ].join('\n')
+    const out = (await compact({ ask: answering(reply) }, bulky())) ?? ''
+    const line = ledger('Rice University (app:0192a)', 'Baylor (app:0192b)')
+    expect(out).toBe(
+      `${[
+        `${SUMMARY_SLOTS[0]}: they meant Rice.`,
+        `${SUMMARY_SLOTS[1]}: Rice University — the WRONG one.`,
+      ].join('\n')}\n${line}`,
+    )
+    // The id survives only where it is derived: on the line, against the label
+    // the tool actually returned for it.
+    expect(out.slice(0, out.length - line.length)).not.toContain('app:')
   })
 })
 
@@ -605,24 +713,50 @@ describe('asMessage', () => {
     )
   })
 
-  it('cannot grow past the budget it is given', () => {
+  it('cannot grow past the budget it is given, wrapper counted inside it', () => {
     // A summary that grew with the conversation would just move the overflow.
-    // The budget is the caller's share of the window, not a constant here.
+    // The budget is the caller's share of the window, not a constant here —
+    // and it is the room for the whole MESSAGE. The wrapper used to be spent
+    // outside it, which at the budgets that matter is up to a fifth more room
+    // than the fit had left (see the loop, where a ledger-only note is placed).
     const huge = asMessage('y'.repeat(5_000), { budget: 1_000 })
-    expect((huge.content ?? '').length).toBeLessThan(1_000 + 100)
-    expect(huge.content).toContain('y'.repeat(1_000))
-    expect(huge.content).not.toContain('y'.repeat(1_001))
+    expect((huge.content ?? '').length).toBe(1_000)
+    expect(huge.content).toContain('y'.repeat(1_000 - WRAPPER))
+    expect(huge.content).not.toContain('y'.repeat(1_000 - WRAPPER + 1))
+    // The pointer is part of the wrapper and is paid for the same way.
+    const pointed = asMessage('y'.repeat(5_000), { budget: 1_000, thread: { id: 'thread:01' } })
+    expect((pointed.content ?? '').length).toBe(1_000)
+    expect(pointed.content).toContain('thread:01')
   })
 
-  it('keeps the ledger when a stored summary is cut to a smaller budget', () => {
+  it('keeps the ledger when a stored summary is cut to a smaller share', () => {
     // A later turn can place the stored summary under a smaller share. The
     // old cut took the tail, and the tail is where the ids are.
     const line = ledger('Rice University (app:0192a)', 'Stripe (app:0193b)')
     const stored = `${'y'.repeat(2_000)}\n${line}`
     const note = asMessage(stored, { budget: 600 }).content ?? ''
+    const room = 600 - WRAPPER
     expect(note).toContain(line)
-    expect(note).toContain('y'.repeat(600 - line.length - 1))
-    expect(note).not.toContain('y'.repeat(600 - line.length))
+    expect(note).toContain('y'.repeat(room - line.length - 1))
+    expect(note).not.toContain('y'.repeat(room - line.length))
+  })
+
+  it('drops the OLDEST section of append-only notes, and cuts only a section standing alone', () => {
+    // A fact written once is kept as it was written or dropped whole; it is
+    // never rewritten into a wrong one. So a budget that cannot hold every
+    // section loses the front — while the ledger's first-seen rule points the
+    // other way, so the ids of the oldest records survive on the line.
+    const empty = asMessage('').content ?? ''
+    const notes = join('a'.repeat(100), 'b'.repeat(100), 'c'.repeat(100))
+    const both = asMessage(notes, { budget: WRAPPER + 200 + SECTION_MARK.length + 2 })
+    expect(both.content).toBe(`${empty}${join('b'.repeat(100), 'c'.repeat(100))}`)
+    // One short of that and only the newest survives, whole.
+    const one = asMessage(notes, { budget: WRAPPER + 200 + SECTION_MARK.length + 1 })
+    expect(one.content).toBe(`${empty}${'c'.repeat(100)}`)
+    // Below one whole section there is nothing left to drop, so the newest is
+    // cut at its tail — the headings run facts-first, so the tail loses least.
+    const cut = asMessage(notes, { budget: WRAPPER + 40 })
+    expect(cut.content).toBe(`${empty}${'c'.repeat(40)}`)
   })
 
   it('ends with where the full exchange lives, when the caller says where', () => {
@@ -660,7 +794,9 @@ describe('compact', () => {
     expect(out).toBe(`${filled}\n${rice}`)
     const [system, input] = seen[0] ?? []
     for (const slot of SUMMARY_SLOTS) expect(system?.content).toContain(`${slot}:`)
-    expect(system?.content).toContain('At most 1800 characters')
+    // 2700 less the wrapper (57 of label and 124 of pointer), less the
+    // ledger's third of what remains: 2519 → 1680.
+    expect(system?.content).toContain('At most 1680 characters')
     expect(input?.role).toBe('user')
     expect(input?.content).not.toContain('at Houston')
     expect(input?.content).not.toContain('nnnn')
@@ -693,15 +829,21 @@ describe('compact', () => {
     // away. The headings are a fixed cost; `MIN_SUMMARY_CHARS` is the allowance.
     const tiny: ChatMessage[] = [
       user('I have a PhD in Computer Science and I was a Research Engineer.'),
-      calling(['profile_background_add', '{"facts":["PhD in Computer Science","Research Engineer"]}']),
+      calling([
+        'profile_background_add',
+        '{"facts":["PhD in Computer Science","Research Engineer"]}',
+      ]),
       result('2 facts recorded — PhD in Computer Science, Research Engineer'),
     ]
     expect(replacedBy(tiny)).toBeLessThan(MIN_SUMMARY_CHARS)
+    // Every slot filled, so what is measured here is the allowance and not
+    // the empty-slot strip: an all-"none" tail would be removed before the
+    // length this test is about could be compared.
     const within = [
       'FACTS THE PERSON STATED: PhD in Computer Science; Research Engineer.',
       'RECORDS ESTABLISHED: two background entries.',
-      'CORRECTIONS AND REFUSALS: none',
-      'OPEN REQUESTS: none',
+      'CORRECTIONS AND REFUSALS: they corrected the year to 2021.',
+      'OPEN REQUESTS: file the CV against the Houston application.',
     ]
       .join('\n')
       .padEnd(MIN_SUMMARY_CHARS, '.')
@@ -711,27 +853,64 @@ describe('compact', () => {
     expect(await compact({ ask: answering(`${within}!`) }, tiny)).toBeNull()
   })
 
-  it('discards notes that say none under every heading, keeping the ledger', async () => {
-    // Qwen3 14B, long-chain-across-a-summary, both runs (2026-09-05): four
-    // "none"s for a 19-message prefix holding a keyword.create and a listing,
-    // placed beside a ledger naming the keyword — then "I cannot find any
-    // applications" without a call.
+  it('removes an empty slot, and keeps nothing when every slot is empty', async () => {
+    /*
+     * An empty slot is a contradiction waiting to happen, not a gap. Qwen3
+     * 14B wrote four "none"s for a 19-message prefix holding a keyword.create
+     * and a listing, beside a ledger naming the keyword, and then answered "I
+     * cannot find any applications" without a call (2026-09-05); GPT-OSS wrote
+     * "RECORDS ESTABLISHED: none" on the turn it re-created a keyword whose id
+     * its own ledger carried (2026-09-06). MEASURED over that run's 138 notes:
+     * 38 said "none" under a heading while their ledger named records, and 299
+     * empty slot lines were stored at ~30 characters each.
+     */
     const empty = SUMMARY_SLOTS.map((slot) => `${slot}: none  `).join('\n')
     expect(await compact({ ask: answering(empty) }, bulky())).toBe(rice)
     expect(await compact({ ask: answering(empty) }, plain())).toBeNull()
     // Case is the model's choice, not information.
     expect(await compact({ ask: answering(empty.toLowerCase()) }, plain())).toBeNull()
-    // Anything under any heading is kept, and so is a shape it cannot read:
-    // the check refuses only what it can prove empty.
+    // A slot with something in it stays, and only the empty ones go.
     const partly = [
       `${SUMMARY_SLOTS[0]}: none`,
-      `${SUMMARY_SLOTS[1]}: the Rice application (app:0192a)`,
+      `${SUMMARY_SLOTS[1]}: the Rice application`,
       `${SUMMARY_SLOTS[2]}: none.`,
       `${SUMMARY_SLOTS[3]}: none`,
     ].join('\n')
-    expect(await compact({ ask: answering(partly) }, plain())).toBe(partly)
+    expect(await compact({ ask: answering(partly) }, plain())).toBe(
+      `${SUMMARY_SLOTS[1]}: the Rice application`,
+    )
+    // A shape this cannot read is kept whole: it refuses only what it proves.
     const bold = SUMMARY_SLOTS.map((slot) => `**${slot}:** none`).join('\n')
     expect(await compact({ ask: answering(bold) }, plain())).toBe(bold)
+    // A heading on its own line, with "none" under it. Measured on 2026-09-06:
+    // 6 of 108 summaries were written this way and every one got past the
+    // check this replaces.
+    const twoLine = SUMMARY_SLOTS.map((slot) => `${slot}:\nnone`).join('\n\n')
+    expect(await compact({ ask: answering(twoLine) }, bulky())).toBe(rice)
+    expect(await compact({ ask: answering(twoLine) }, plain())).toBeNull()
+    // And an all-"none" new section leaves the earlier sections as they were,
+    // rather than appending a section that says nothing and costs room.
+    expect(await compact({ ask: answering(twoLine) }, plain(), { earlier: 'The fact.' })).toBe(
+      'The fact.',
+    )
+    // A heading on its own line with something real under it is kept, folded
+    // onto one line; the three empty ones after it are not.
+    const spread = [
+      `${SUMMARY_SLOTS[0]}:`,
+      'they only want roles in Austin',
+      `${SUMMARY_SLOTS[1]}:`,
+      'none',
+      `${SUMMARY_SLOTS[2]}:`,
+      'none',
+      `${SUMMARY_SLOTS[3]}:`,
+      'none',
+    ].join('\n')
+    expect(await compact({ ask: answering(spread) }, plain())).toBe(
+      `${SUMMARY_SLOTS[0]}: they only want roles in Austin`,
+    )
+    // A heading with nothing under it at all proves nothing, so it is kept.
+    const dangling = `${SUMMARY_SLOTS[0]}: none\n${SUMMARY_SLOTS[1]}:`
+    expect(await compact({ ask: answering(dangling) }, plain())).toBe(`${SUMMARY_SLOTS[1]}:`)
     // "none" at the head of a sentence is not an empty slot.
     const sentence = [
       `${SUMMARY_SLOTS[0]}: none of the Rice ones; they meant Baylor.`,
@@ -739,7 +918,9 @@ describe('compact', () => {
       `${SUMMARY_SLOTS[2]}: none`,
       `${SUMMARY_SLOTS[3]}: none`,
     ].join('\n')
-    expect(await compact({ ask: answering(sentence) }, plain())).toBe(sentence)
+    expect(await compact({ ask: answering(sentence) }, plain())).toBe(
+      `${SUMMARY_SLOTS[0]}: none of the Rice ones; they meant Baylor.`,
+    )
   })
 
   it('accepts a reply longer than its tiny input when it is shorter than the results it replaces', async () => {
@@ -762,8 +943,8 @@ describe('compact', () => {
    * added (2026-09-05), and `plain()` at ~250 non-user characters now sits
    * under it, so its boundary is the allowance, not its size.
    */
-  const refusedAbove = (dropped: readonly ChatMessage[], earlier = ''): number =>
-    Math.max(replacedBy(dropped, earlier), MIN_SUMMARY_CHARS)
+  const refusedAbove = (dropped: readonly ChatMessage[]): number =>
+    Math.max(replacedBy(dropped), MIN_SUMMARY_CHARS)
 
   it('refuses a reply longer than what it replaces, and returns the ledger alone', async () => {
     // A summary cannot be longer than what it stands in for without inventing
@@ -778,7 +959,9 @@ describe('compact', () => {
     )
     // With nothing to walk, a refusal is a plain trim.
     expect(replacedBy(plain())).toBeLessThan(MIN_SUMMARY_CHARS)
-    expect(await compact({ ask: answering('z'.repeat(refusedAbove(plain()) + 1)) }, plain())).toBeNull()
+    expect(
+      await compact({ ask: answering('z'.repeat(refusedAbove(plain()) + 1)) }, plain()),
+    ).toBeNull()
     expect(await compact({ ask: answering('z'.repeat(refusedAbove(plain()))) }, plain())).toBe(
       'z'.repeat(refusedAbove(plain())),
     )
@@ -791,38 +974,83 @@ describe('compact', () => {
     ).toBeNull()
   })
 
-  it('counts the earlier notes it supersedes as replaced, not their ledger', async () => {
-    // Dropped can be a person's turn alone with earlier notes to carry. The
-    // reply replaces those notes; the ledger line is carried by the harness.
-    // The notes are sized past the allowance so the boundary is theirs.
-    const notes = 'e'.repeat(MIN_SUMMARY_CHARS + 40)
-    const earlier = `${notes}\n${rice}`
-    expect(replacedBy([user('hi')], notes)).toBe(notes.length)
-    const reply = 'r'.repeat(notes.length)
-    expect(await compact({ ask: answering(reply) }, [user('hi')], { earlier })).toBe(
-      `${reply}\n${rice}`,
+  it('appends a new section to the earlier notes instead of replacing them', async () => {
+    // THE round-three change, at the entry point. The earlier notes come back
+    // character for character with the new section under a mark that says
+    // which way the two point — no model is asked to carry them forward, and
+    // measured over 72 transitions on 2026-09-06 the carrying lost 21 of 85
+    // statements outright. The ledger is merged under both.
+    const notes = 'These are the earlier notes, kept as they were written.'
+    const { seen, ask } = scripted(filled)
+    const out = await compact({ ask }, bulky(), {
+      earlier: `${notes}\n${ledger('Stripe (app:0193b)')}`,
+    })
+    expect(out).toBe(
+      `${join(notes, filled)}\n${ledger('Stripe (app:0193b)', 'Rice University (app:0192a)', 'Baylor (app:0192b)')}`,
     )
-    expect(await compact({ ask: answering(`${reply}r`) }, [user('hi')], { earlier })).toBe(rice)
+    // The model was shown neither the notes nor their ledger.
+    expect(seen[0]?.[1]?.content).not.toContain('kept as they were written')
+    expect(seen[0]?.[1]?.content).not.toContain('app:0193b')
+    // A third compaction appends again: three sections, oldest first.
+    const again = await compact({ ask: answering('A third section.') }, plain(), {
+      earlier: out ?? '',
+    })
+    expect(again).toBe(
+      `${join(notes, filled, 'A third section.')}\n${ledger('Stripe (app:0193b)', 'Rice University (app:0192a)', 'Baylor (app:0192b)')}`,
+    )
+  })
+
+  it('keeps the earlier notes with no call at all when nothing of the assistant’s was dropped', async () => {
+    // Dropped can be a person's turn alone. There is nothing new to write, and
+    // rewriting the earlier notes to say the same thing is the drift this
+    // stopped — so the summary is the earlier notes, unchanged, and free.
+    const { seen, ask } = scripted('a rewrite nobody asked for')
+    const notes = 'They filed the CV as doc 7.'
+    expect(await compact({ ask }, [user('hi')], { earlier: `${notes}\n${rice}` })).toBe(
+      `${notes}\n${rice}`,
+    )
+    expect(seen).toHaveLength(0)
+  })
+
+  it('measures a refusal against the evicted prefix alone, not the notes it is appended to', async () => {
+    // A reply is refused when it is longer than what it REPLACES, and it no
+    // longer replaces the earlier notes — it is added to them. Counting them
+    // would let a long chain buy a long summary of a short exchange.
+    const earlier = `${'e'.repeat(4_000)}\n${rice}`
+    const over = 'z'.repeat(replacedBy(plain()) + MIN_SUMMARY_CHARS)
+    expect(over.length).toBeLessThan(4_000)
+    expect(await compact({ ask: answering(over) }, plain(), { earlier })).toBe(earlier)
   })
 
   it('makes no call under MIN_SUMMARY_CHARS, and still returns the ledger it can fit', async () => {
     // long-vault-convention on Qwen: budgets of 90 and 172 each bought a
-    // summariser call for a note cut mid-heading. The ledger costs no call.
+    // summariser call for a note cut mid-heading. The ledger costs no call —
+    // and with no notes to leave room for it takes the whole budget rather
+    // than a third of it, which is what makes it fit at all down here.
     const { seen, ask } = scripted(filled)
-    // Just under the floor a third is 106 and the two-entry line is 73; at
-    // 172 the third is 57 and holds the first entry (53) alone; at 90 it is
-    // 30 and holds none. (Under round two's 59-character heading the line
-    // was 106 and 172 held nothing — the heading was the cost; see
-    // `ledgerLine`'s budget-328 test.)
     expect(rice).toHaveLength(73)
-    expect(await compact({ ask }, bulky(), { budget: MIN_SUMMARY_CHARS - 1 })).toBe(rice)
-    expect(await compact({ ask }, bulky(), { budget: 172 })).toBe(
+    // The four budgets measured on long-vault-convention turns 4-7 on
+    // 2026-09-06: 112, 53, 18, 275. Net of the 57-character wrapper, 275
+    // holds both entries and 112 holds the first (53 of 55); 53 and 18 do
+    // not pay for the wrapper at all.
+    expect(await compact({ ask }, bulky(), { budget: 275 })).toBe(rice)
+    expect(await compact({ ask }, bulky(), { budget: 112 })).toBe(
       ledger('Rice University (app:0192a)'),
     )
-    expect(await compact({ ask }, bulky(), { budget: 90 })).toBeNull()
+    expect(
+      (asMessage(ledger('Rice University (app:0192a)')).content ?? '').length,
+    ).toBeLessThanOrEqual(112)
+    expect(await compact({ ask }, bulky(), { budget: 53 })).toBeNull()
+    expect(await compact({ ask }, bulky(), { budget: 18 })).toBeNull()
     expect(seen).toHaveLength(0)
-    // At the floor, the call is made.
-    expect(await compact({ ask }, bulky(), { budget: MIN_SUMMARY_CHARS })).toContain(
+    // The floor is the budget NET of the wrapper, so the call begins one
+    // wrapper above it — not at the number itself, which would be a note the
+    // wrapper had already eaten a fifth of.
+    expect(await compact({ ask }, bulky(), { budget: MIN_SUMMARY_CHARS })).toBe(rice)
+    expect(seen).toHaveLength(0)
+    expect(await compact({ ask }, bulky(), { budget: MIN_SUMMARY_CHARS + WRAPPER - 1 })).toBe(rice)
+    expect(seen).toHaveLength(0)
+    expect(await compact({ ask }, bulky(), { budget: MIN_SUMMARY_CHARS + WRAPPER })).toContain(
       SUMMARY_SLOTS[0],
     )
     expect(seen).toHaveLength(1)
@@ -831,28 +1059,50 @@ describe('compact', () => {
   it('reserves the ledger first and shortens the model’s text to what is left', async () => {
     // The ledger is deterministic and holds the ids; the notes are the
     // model's, in a fixed order with the person's facts first, so a cut
-    // loses their tail and never the ledger.
+    // loses their tail and never the ledger. The cut lands on the last line
+    // break inside the room — see the sibling test below for why.
     const long = `${filled}\n${'more. '.repeat(300)}`.trim()
+    const room = 400 - WRAPPER
     const out = await compact({ ask: answering(long) }, bulky(), { budget: 400 })
-    expect(out).toBe(`${long.slice(0, 400 - rice.length - 1).trimEnd()}\n${rice}`)
-    expect((out ?? '').length).toBeLessThanOrEqual(400)
+    const cut = long.slice(0, room - rice.length - 1)
+    expect(out).toBe(`${cut.slice(0, cut.lastIndexOf('\n')).trimEnd()}\n${rice}`)
+    expect((out ?? '').length).toBeLessThanOrEqual(room)
     expect(out).toContain(SUMMARY_SLOTS[0])
   })
 
-  it('cuts the notes at a word’s end cleanly, with no space before the ledger', async () => {
-    // 'word ' repeats every five characters; a room that is a multiple of
-    // five lands the cut on the space, which is then not kept. (399, not
-    // 402: the ledger line is 33 characters shorter since its heading was.)
-    const room = 399 - rice.length - 1
-    expect(room % 5).toBe(0)
-    const out = await compact({ ask: answering('word '.repeat(100)) }, bulky(), { budget: 399 })
-    expect(out).toBe(`${'word '.repeat(room / 5).trimEnd()}\n${rice}`)
-    expect(out).not.toContain(' \n')
+  it('cuts a section at a line break, never mid-fact', async () => {
+    /*
+     * MEASURED once in the 130 notes of the 2026-09-06 endurance run: a
+     * section ended "- Application record: Assistan", which a reader cannot
+     * tell from a complete line and a model will finish for itself.
+     */
+    const line = '- Application record: Assistant Professor, Computer Science — Rice University'
+    const notes = [`${SUMMARY_SLOTS[0]}: they meant the Houston one.`, ...Array(8).fill(line)].join(
+      '\n',
+    )
+    const out = (await compact({ ask: answering(notes) }, bulky(), { budget: 420 + WRAPPER })) ?? ''
+    expect(out).not.toBe('')
+    expect(out).toContain(SUMMARY_SLOTS[0])
+    expect(out.length).toBeLessThanOrEqual(420)
+    // Every line of what survives is a WHOLE line of what was written — the
+    // ledger, which the harness wrote, being the one line that is not.
+    for (const kept of out.split('\n')) {
+      if (kept.startsWith(LEDGER_HEADING)) continue
+      expect(notes.split('\n')).toContain(kept)
+    }
+    // The cut happened: this is not the whole of the notes.
+    expect(out).not.toContain(notes)
   })
 
-  it('gives the ledger at most a third of the budget, by whole entries', async () => {
-    // Forty ids at ~30 characters fill a third of the ordinary share exactly.
-    // Past that the notes need the room, and a cut entry is a completed id.
+  it('reserves the ledger a third, and gives it whatever the notes do not use', async () => {
+    /*
+     * The third is a FLOOR, not a ceiling. It was a ceiling until 2026-09-06,
+     * and over 130 notes the median summary used 0.41 of its room while none
+     * ever exceeded it — so a quarter of every budget was thrown away and the
+     * ledger fell from 5.87 entries a note to 2.94. Entries are the half of a
+     * note a model can act on: GPT-OSS went from five ids to one on
+     * long-chain-across-a-summary and then re-created the keyword it had.
+     */
     const many = Array.from({ length: 30 }, (_, i) =>
       record(`app:${String(i)}`, `Organisation ${String(i)}`),
     )
@@ -860,11 +1110,63 @@ describe('compact', () => {
     const out = (await compact({ ask: answering(filled) }, dropped, { budget: 600 })) ?? ''
     const [notes, line] = out.split('\n' + LEDGER_HEADING)
     expect(line).toBeDefined()
-    expect((LEDGER_HEADING + (line ?? '')).length).toBeLessThanOrEqual(200)
-    expect(ledgerIn(out).length).toBeGreaterThan(2)
-    expect(ledgerIn(out)[0]).toEqual({ id: 'app:0', label: 'Organisation 0' })
-    // The notes were not touched: the ledger's third was enough.
+    // The notes were not touched: the ledger never eats into their two thirds.
     expect(notes).toBe(filled)
+    expect(out.length).toBeLessThanOrEqual(600 - WRAPPER)
+    expect(ledgerIn(out)[0]).toEqual({ id: 'app:0', label: 'Organisation 0' })
+    // A third of 600 − 57 is 181, and the ledger has more than that, because
+    // `filled` left it more: every character the notes did not use.
+    const third = Math.floor((600 - WRAPPER) / 3)
+    expect((LEDGER_HEADING + (line ?? '')).length).toBeGreaterThan(third)
+    // And the budget is nearly all used: what is left is under one entry.
+    expect(600 - WRAPPER - out.length).toBeLessThan(30)
+  })
+
+  it('never reserves for ids that do not exist', async () => {
+    // Reserving the third unconditionally would shorten the notes on behalf
+    // of a ledger with nothing in it: two records are a 90-character line.
+    // Line-broken throughout, so what the notes get is decided by the room
+    // and not by where the last line break happens to fall.
+    const long = [filled, ...Array(40).fill('- more detail about the Rice application.')].join('\n')
+    // Wordy enough that the reply is not refused, and carrying no id at all.
+    const wordy = [...plain(), result('The vault holds three documents. '.repeat(100))]
+    expect(replacedBy(wordy)).toBeGreaterThan(long.length)
+    const withTwo = (await compact({ ask: answering(long) }, bulky(), { budget: 900 })) ?? ''
+    const withNone = (await compact({ ask: answering(long) }, wordy, { budget: 900 })) ?? ''
+    expect(withNone).not.toContain(LEDGER_HEADING)
+    const room = 900 - WRAPPER
+    const notesOf = (out: string) => out.split(`\n${LEDGER_HEADING}`)[0] ?? ''
+    // With no ledger the notes get the whole room, not two thirds of it.
+    expect(notesOf(withNone).length).toBeGreaterThan(Math.floor((room * 2) / 3))
+    // With a two-entry ledger they get all but its ~90 characters — still
+    // more than the two thirds a reserved third would have left them.
+    expect(notesOf(withTwo).length).toBeGreaterThan(Math.floor((room * 2) / 3))
+    expect(notesOf(withNone).length - notesOf(withTwo).length).toBeLessThan(rice.length + 45)
+  })
+
+  it('keeps the earlier notes when the fresh call refuses, fails, or answers nothing', async () => {
+    /*
+     * The wipe. MEASURED on the 2026-09-06 drift run, before the notes were
+     * append-only: 2 of 72 transitions (Qwen, long-profile-then-applications,
+     * both runs, at a 2,984-character budget) went from a summary with notes
+     * to a ledger alone — "Research Engineer at Cloudflare" and everything
+     * else stated before it discarded permanently, because one summariser
+     * call failed and `compact` rebuilt the summary from that call alone.
+     * Carrying `earlier` verbatim is what makes a bad call cost only its own
+     * turn.
+     */
+    const earlier = `${SUMMARY_SLOTS[0]}: Research Engineer at Cloudflare since 2024.\n${rice}`
+    const asks: readonly ((messages: readonly ChatMessage[]) => Promise<Turn>)[] = [
+      async (): Promise<Turn> => ({ ok: false, kind: 'refused', reason: '429' }),
+      () => Promise.reject(new Error('the summariser is down')),
+      answering('   '),
+      answering('z'.repeat(replacedBy(bulky()) + 1)),
+    ]
+    for (const ask of asks) {
+      const out = (await compact({ ask }, bulky(), { earlier, budget: 3_000 })) ?? ''
+      expect(out).toContain('Research Engineer at Cloudflare')
+      expect(out).toContain(LEDGER_HEADING)
+    }
   })
 
   it('returns the ledger alone when the model refuses, fails, or answers nothing', async () => {
@@ -893,14 +1195,15 @@ describe('compact', () => {
       ledger('Rice (app:1)'),
     )
     expect(seen).toHaveLength(0)
-    // Unless there are earlier notes to carry forward, which is real work.
-    const { seen: again, ask: askAgain } = scripted('They filed the CV as doc:7.')
+    // And earlier notes are no longer a reason to call: they are kept as
+    // written rather than rewritten, so an empty page has nothing to write.
+    const { seen: again, ask: askAgain } = scripted('They filed the CV as doc 7.')
     expect(
       await compact({ ask: askAgain }, [user('hi')], {
-        earlier: 'They filed the CV as doc:7 last week.',
+        earlier: 'They filed the CV as doc 7 last week.',
       }),
-    ).toBe('They filed the CV as doc:7.')
-    expect(again).toHaveLength(1)
+    ).toBe('They filed the CV as doc 7 last week.')
+    expect(again).toHaveLength(0)
   })
 
   it('puts a record the assistant created into the ledger, from the write’s prose result', async () => {
@@ -922,25 +1225,25 @@ describe('compact', () => {
   })
 
   it('merges an earlier ledger under round two’s heading, and writes the new one', async () => {
-    const earlier = `They filed the CV as doc:7.\n${ledgerRoundTwo('Stripe (app:0193b)')}`
+    const earlier = `They filed the CV as doc 7.\n${ledgerRoundTwo('Stripe (app:0193b)')}`
     const out = await compact({ ask: answering(filled) }, bulky(), { earlier })
     expect(out).toBe(
-      `${filled}\n${ledger('Stripe (app:0193b)', 'Rice University (app:0192a)', 'Baylor (app:0192b)')}`,
+      `${join('They filed the CV as doc 7.', filled)}\n${ledger('Stripe (app:0193b)', 'Rice University (app:0192a)', 'Baylor (app:0192b)')}`,
     )
   })
 
   it('merges the earlier ledger ahead of the new one, deduped by id', async () => {
     // Ids accumulate across compactions without a model copying them, and the
     // earlier records were seen first — first-seen is what a tight room keeps.
-    const earlier = `They filed the CV as doc:7.\n${ledger('Stripe (app:0193b)', 'Rice (app:0192a)')}`
+    const earlier = `They filed the CV as doc 7.\n${ledger('Stripe (app:0193b)', 'Rice (app:0192a)')}`
     const { seen, ask } = scripted(filled)
     const out = await compact({ ask }, bulky(), { earlier })
     // app:0192a is in both; the earlier label "Rice" is the one first seen.
     expect(out).toBe(
-      `${filled}\n${ledger('Stripe (app:0193b)', 'Rice (app:0192a)', 'Baylor (app:0192b)')}`,
+      `${join('They filed the CV as doc 7.', filled)}\n${ledger('Stripe (app:0193b)', 'Rice (app:0192a)', 'Baylor (app:0192b)')}`,
     )
-    // And the model saw the earlier notes, not the earlier ledger.
-    expect(seen[0]?.[1]?.content).toContain('They filed the CV as doc:7.')
+    // And the model saw neither the earlier notes nor the earlier ledger.
+    expect(seen[0]?.[1]?.content).not.toContain('They filed the CV')
     expect(seen[0]?.[1]?.content).not.toContain(LEDGER_HEADING)
     expect(seen[0]?.[1]?.content).not.toContain('app:0193b')
   })

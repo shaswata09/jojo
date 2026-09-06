@@ -1631,8 +1631,106 @@ describe('the proposal queue', () => {
 
     expect(okOr(h.runtime.run('pipeline.proposal.sweep', { pipelineId: pipeline }))).toBe(1)
     const m = h.repo.getSnapshot()
-    expect(m.node(answered, 'proposal')).toBeUndefined()
+    /*
+     * MARKED, not deleted. The row has to outlive the card, because the scout
+     * dedupes against every proposal it has ever raised — deleting here is what
+     * made "Clear" forget which jobs had been declined and let the next round
+     * propose them straight back.
+     */
+    expect(m.node(answered, 'proposal')?.props.swept).toBe(true)
     expect(m.node(waiting, 'proposal')?.props.status).toBe('pending')
+    expect(m.node(waiting, 'proposal')?.props.swept).toBeUndefined()
+  })
+
+  it('sweeps each answered suggestion once', () => {
+    // A second press must report nothing left rather than counting the same
+    // rows again — the number goes in the toast the user reads.
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'a' }),
+        title: 'Note a',
+        rationale: 'because',
+      }),
+    )
+    okOr(h.runtime.run('pipeline.proposal.discard', { id }))
+    expect(okOr(h.runtime.run('pipeline.proposal.sweep', { pipelineId: pipeline }))).toBe(1)
+    expect(okOr(h.runtime.run('pipeline.proposal.sweep', { pipelineId: pipeline }))).toBe(0)
+  })
+
+  describe('clearing the whole queue', () => {
+    /** The first queued id, or a loud failure. `?? ''` here would hide a broken fixture. */
+    const first = (ids: readonly string[]): string => {
+      const id = ids[0]
+      if (id === undefined) throw new Error('the fixture queued no proposals')
+      return id
+    }
+    const queued = (h: ReturnType<typeof harness>, pipeline: string, app: string, n: number) =>
+      Array.from({ length: n }, (_, i) =>
+        okOr(
+          h.runtime.run('pipeline.proposal.raise', {
+            pipelineId: pipeline,
+            kind: 'twin',
+            tool: 'application.note.set',
+            input: JSON.stringify({ id: app, note: `n${String(i)}` }),
+            title: `Note ${String(i)}`,
+            rationale: 'because',
+          }),
+        ),
+      )
+
+    it('declines what is waiting and takes the answered cards off the list', () => {
+      const h = harness()
+      const pipeline = aPipeline(h)
+      const app = anApplication(h)
+      const ids = queued(h, pipeline, app, 3)
+      okOr(h.runtime.run('pipeline.proposal.discard', { id: first(ids) }))
+
+      expect(okOr(h.runtime.run('pipeline.proposal.clear', {}))).toBe(3)
+      const m = h.repo.getSnapshot()
+      for (const id of ids) {
+        expect(m.node(id, 'proposal')?.props.swept).toBe(true)
+        expect(m.node(id, 'proposal')?.props.status).toBe('discarded')
+      }
+    })
+
+    /*
+     * The case `sweep` cannot reach, and the reason this is a tool rather than
+     * a loop in the hook. `sweep` filters on a `FROM` edge to a pipeline, so a
+     * proposal whose pipeline has been deleted belongs to none of them — it
+     * would survive "Clear all" and sit on the queue afterwards, which is the
+     * one outcome a button with that name may not produce.
+     */
+    it('reaches a suggestion whose pipeline has been deleted', () => {
+      const h = harness()
+      const pipeline = aPipeline(h)
+      const app = anApplication(h)
+      const orphan = first(queued(h, pipeline, app, 1))
+      okOr(h.runtime.run('scout.pipeline.delete', { id: pipeline }))
+
+      expect(okOr(h.runtime.run('pipeline.proposal.clear', {}))).toBe(1)
+      expect(h.repo.getSnapshot().node(orphan, 'proposal')?.props.swept).toBe(true)
+    })
+
+    it('is a no-op on an empty queue', () => {
+      expect(okOr(harness().runtime.run('pipeline.proposal.clear', {}))).toBe(0)
+    })
+
+    it('does not touch anything but proposals', () => {
+      const h = harness()
+      const pipeline = aPipeline(h)
+      const app = anApplication(h)
+      queued(h, pipeline, app, 2)
+      okOr(h.runtime.run('pipeline.proposal.clear', {}))
+      const m = h.repo.getSnapshot()
+      expect(m.node(app, 'application')).toBeDefined()
+      expect(m.node(pipeline, 'pipeline')?.props.enabled).toBeDefined()
+    })
   })
 
   it('counts consecutive empty rounds and forgets them on a productive one', () => {

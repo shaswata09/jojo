@@ -1,5 +1,7 @@
-import { Check, Inbox, ListChecks, Sparkles, TriangleAlert, X } from 'lucide-react'
+import { Check, Inbox, ListChecks, Sparkles, Trash2, TriangleAlert, X } from 'lucide-react'
+import { useState } from 'react'
 import { Chip } from '@/components/common/Chip'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
@@ -26,6 +28,7 @@ export function ProposalQueue({
   onDiscard,
   onApproveAll,
   onSweep,
+  onClearAll,
 }: {
   /** Every proposal, in creation order. This component splits them. */
   proposals: readonly Proposal[]
@@ -34,7 +37,9 @@ export function ProposalQueue({
   onDiscard: (id: string) => void
   onApproveAll: (pipelineId: string) => void
   onSweep: (pipelineId: string) => void
+  onClearAll: () => void
 }) {
+  const [confirming, setConfirming] = useState(false)
   const pending = proposals.filter((p) => p.status === 'pending')
   const answered = proposals.filter((p) => p.status !== 'pending')
   const nameOf = (id: string | null) => pipelines.find((p) => p.id === id)?.name ?? 'a pipeline'
@@ -71,6 +76,20 @@ export function ProposalQueue({
               Approve all {pending.length}
             </Button>
           ) : null}
+          {/* Not restricted to one pipeline, unlike its two neighbours.
+              Approve all is limited that way because approving writes to the
+              person's records and a single press spanning two searches is a
+              gesture they could not describe afterwards. Clearing writes to
+              nothing but the queue, and the queue is exactly what someone
+              wants gone when two pipelines have both been filling it — the
+              restriction would withhold the button at the one moment it is
+              worth having. */}
+          {proposals.length > 0 ? (
+            <Button size="sm" variant="ghost" onClick={() => setConfirming(true)}>
+              <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden />
+              Clear all
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -93,6 +112,26 @@ export function ProposalQueue({
           ))}
         </ul>
       )}
+
+      {/* Asked for, because it declines things. The answered half is only a
+          tidy-up, but anything still pending is a decision the person has not
+          made yet and this makes it for them — silently turning down five
+          suggestions on a mis-click is the failure worth a dialog. The count
+          is in the sentence so they know the size of what they are agreeing
+          to. */}
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title="Clear all suggestions?"
+        description={
+          pending.length > 0
+            ? `${String(pending.length)} ${pending.length === 1 ? 'suggestion is' : 'suggestions are'} still waiting for you and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.`
+            : 'The answered cards come off the list. Nothing in your records changes.'
+        }
+        confirmLabel="Clear all"
+        tone="danger"
+        onConfirm={onClearAll}
+      />
     </Panel>
   )
 }

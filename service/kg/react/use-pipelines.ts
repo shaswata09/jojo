@@ -97,6 +97,8 @@ export type PipelinesState = {
   discard: (id: string) => void
   approveAll: (pipelineId: string) => void
   sweep: (pipelineId: string) => void
+  /** Empties the queue: declines what is pending, clears what is answered. */
+  clearAll: () => void
   setEnabled: (pipeline: Pipeline, enabled: boolean) => void
   setAuto: (pipeline: Pipeline, auto: boolean) => void
   runNow: (pipelineId: string) => void
@@ -139,7 +141,13 @@ export function usePipelines({
   const run = useRun()
 
   const pipelines = projections.pipelines(graph)
-  const proposals = projections.proposals(graph)
+  /*
+   * Swept rows are storage, not screen. They stay in the graph so the scout can
+   * still tell that a job has been offered before (`agent/pipelines.ts`), and
+   * they are filtered here — once, at the single place every surface reads
+   * proposals from — so no component has to remember the distinction.
+   */
+  const proposals = projections.proposals(graph).filter((p) => p.swept !== true)
 
   const [running, setRunning] = useState<string | null>(null)
   const [activity, setActivity] = useState<string | null>(null)
@@ -293,6 +301,13 @@ export function usePipelines({
     [run],
   )
 
+  /*
+   * One call, not a loop over `sweep`. See `pipeline.proposal.clear`: a
+   * proposal whose pipeline was deleted belongs to no pipeline and no loop
+   * would reach it, and `sweep` leaves pending cards alone in any case.
+   */
+  const clearAll = useCallback(() => void run('pipeline.proposal.clear', {}), [run])
+
   /* -------------------------------- the toggle ---------------------------- */
 
   const setEnabled = useCallback(
@@ -382,6 +397,7 @@ export function usePipelines({
     discard,
     approveAll,
     sweep,
+    clearAll,
     setEnabled,
     setAuto,
     runNow,

@@ -16,7 +16,7 @@ import type { ToolName } from '../tools/index'
 import type { ToolHost } from './execute'
 import { CATALOG } from './catalog'
 import { fitHistory, RESERVED_FOR_REPLY, SUMMARY_SHARE } from './budget'
-import { asMessage, compact, MIN_SUMMARY_CHARS, replacedBy } from './compact'
+import { SECTION_MARK, asMessage, compact, MIN_SUMMARY_CHARS, replacedBy } from './compact'
 import { estimateTokens } from '../core/model-server'
 import { runAgent, SYSTEM_PROMPT } from './loop'
 import type { AgentEvent, LlmTurnFn } from './loop'
@@ -2604,11 +2604,17 @@ describe('what a compaction keeps', () => {
     expect(run.answer).toBe('Read it back.')
   })
 
-  it('hands the previous summary over as `earlier`, never as a user message', async () => {
-    const { asked, summariser } = summariserSeeing()
-    await runAgent({
+  it('carries the previous summary forward verbatim, and shows it to no model', async () => {
+    // It used to go to the summariser as `earlier`, labelled "carry forward
+    // what still matters", and the carrying is what lost facts — 21 of 85
+    // statements over 72 transitions, measured 2026-09-06. Now it is kept as
+    // the older SECTION of the new summary and the model never sees it: what
+    // it wrote cannot be a rewrite of something it was not shown.
+    const llm = scripted([says('Done.')])
+    const { asked, summariser } = summariserSeeing('OPEN REQUESTS: the fresh one.')
+    const run = await runAgent({
       host: host(),
-      llm: scripted([says('Done.')]),
+      llm,
       history: endurance(6, 2000),
       prompt: 'and now?',
       onEvent: () => {},
@@ -2618,16 +2624,22 @@ describe('what a compaction keeps', () => {
       context: 'RECORDS ESTABLISHED: Rice application app:rice.',
     })
     const request = asked[0] ?? []
-    expect(text(request[1])).toContain('[earlier summary, superseded by yours')
-    expect(text(request[1])).toContain('app:rice')
+    expect(request.map(text).join('\n')).not.toContain('app:rice')
+    expect(request.map(text).join('\n')).not.toContain('earlier summary')
     expect(request.map(text).join('\n')).not.toContain('Earlier still')
+    // Both sections, oldest first, in the stored context and in what was sent.
+    expect(run.compacted?.context).toBe(
+      `RECORDS ESTABLISHED: Rice application app:rice.\n${SECTION_MARK}\nOPEN REQUESTS: the fresh one.`,
+    )
+    expect(text(llm.seen[0]?.[1])).toContain('app:rice')
+    expect(text(llm.seen[0]?.[1])).toContain('the fresh one')
   })
 
   it('prefers the thread’s stored context to a summary found in the history', async () => {
     // Both at once should not happen — one caller stores, the other feeds
     // back — but if it does, what the thread stores is the record.
     const { asked, summariser } = summariserSeeing()
-    await runAgent({
+    const run = await runAgent({
       host: host(),
       llm: scripted([says('Done.')]),
       history: [asMessage('OPEN REQUESTS: the stale one.'), ...endurance(6, 2000)],
@@ -2638,9 +2650,11 @@ describe('what a compaction keeps', () => {
       summariser,
       context: 'RECORDS ESTABLISHED: Rice application app:rice.',
     })
-    const shown = text(asked[0]?.[1])
-    expect(shown).toContain('app:rice')
-    expect(shown).not.toContain('the stale one')
+    // Read off what was CARRIED, since the summariser is shown neither.
+    const carried = run.compacted?.context ?? ''
+    expect(asked[0]?.map(text).join('\n')).not.toContain('app:rice')
+    expect(carried).toContain('app:rice')
+    expect(carried).not.toContain('the stale one')
   })
 
   it('lifts a summary out of the history when the caller feeds messages straight back', async () => {
@@ -2657,7 +2671,7 @@ describe('what a compaction keeps', () => {
     const thread = { id: 'thread:01', title: 'Austin search' }
     const stored = asMessage('OPEN REQUESTS: file the CV for Rice.', { thread })
     const { asked, summariser } = summariserSeeing()
-    await runAgent({
+    const run = await runAgent({
       host: host(),
       llm: scripted([says('Done.')]),
       history: [stored, ...endurance(6, 2000)],
@@ -2668,18 +2682,20 @@ describe('what a compaction keeps', () => {
       summariser,
       thread,
     })
-    const shown = text(asked[0]?.[1])
-    expect(shown).toContain('[earlier summary, superseded by yours')
-    expect(shown).toContain('file the CV for Rice')
-    // Raw notes: neither the wrapper's prefix nor the pointer line goes round again.
-    expect(shown).not.toContain('summarised, not verbatim')
-    expect(shown).not.toContain('memory.get')
+    const carried = run.compacted?.context ?? ''
+    expect(carried).toContain('file the CV for Rice')
+    // Raw notes: neither the wrapper's prefix nor the pointer line goes round
+    // again — that doubling is what unwrapping exists to stop.
+    expect(carried).not.toContain('summarised, not verbatim')
+    expect(carried).not.toContain('memory.get')
+    // And it reached the next summary without passing through a model.
+    expect(asked[0]?.map(text).join('\n')).not.toContain('file the CV for Rice')
   })
 
   it('takes the newest summary in the prefix, and only from the prefix', async () => {
     const drive = async (history: ChatMessage[]): Promise<string> => {
-      const { asked, summariser } = summariserSeeing()
-      await runAgent({
+      const { summariser } = summariserSeeing()
+      const run = await runAgent({
         host: host(),
         llm: scripted([says('Done.')]),
         history,
@@ -2689,16 +2705,17 @@ describe('what a compaction keeps', () => {
         tools: ['memory.list'],
         summariser,
       })
-      return text(asked[0]?.[1])
+      return run.compacted?.context ?? ''
     }
     // Two in the prefix: each supersedes the last, so the second is the one.
     const twice = await drive([asMessage('OPEN REQUESTS: the first.'), asMessage('OPEN REQUESTS: the second.'), ...endurance(6, 2000)])
     expect(twice).toContain('the second')
     expect(twice).not.toContain('the first')
     // One in the TAIL, which is still being sent as it stands: not a
-    // superseded summary, so it is not fed round again.
+    // superseded summary, so it is not carried forward on top of itself.
     const surviving = await drive([...endurance(6, 2000), asMessage('OPEN REQUESTS: still in the tail.')])
-    expect(surviving).not.toContain('[earlier summary')
+    expect(surviving).not.toContain('still in the tail')
+    expect(surviving).not.toContain(SECTION_MARK)
   })
 
   it('does not mistake a copy of the system prompt for a summary', async () => {
@@ -2861,25 +2878,33 @@ describe('what a compaction keeps', () => {
     expect(run.compacted?.context).toContain('University 0 (app:0)')
   })
 
-  it('makes no summariser call under the floor, and says the messages were left out', async () => {
+  it('makes no summariser call under the floor, and still places the ledger under it', async () => {
     /*
      * The vault-convention shape: every tool there is, so the fixed part takes
      * most of the window and no cut can reserve the summary's share. Measured
-     * at that case's 26,100 window the budget was 90 and 172 characters, and
-     * each spent a summariser call on a note cut mid-heading.
+     * on 2026-09-06 by driving the real loop, long-vault-convention's turns 4-7
+     * came out at budgets of 112, 53, 18 and 275 characters — under
+     * `MIN_SUMMARY_CHARS`, so `compact` refuses the model call there, which is
+     * right: a call that size buys headings with nothing under them.
+     *
+     * What was wrong is what happened NEXT. This file kept its own copy of that
+     * floor and skipped `compact` outright, so the harness-built ledger — no
+     * model call, and the half of a summary that carries the ids — was not
+     * placed either. On all four of those turns the ids of every record the
+     * assistant had just been shown were dropped on the floor.
      *
      * The window is found rather than written down, because the budget at a
      * given window moves with the system prompt and the catalog. What is
-     * pinned is the band: a budget under `MIN_SUMMARY_CHARS` at which
-     * `compact` — asked directly — would still hand back the ledger alone.
-     * The loop does not ask: the note's wrapper is outside the budget, and a
-     * line of ids with nothing said about them is not a summary.
+     * pinned is the band: a budget under the floor at which the ledger fits.
      */
     const history = resultThenChat(6, 0, 200)
     const probe = capturing([says('Done.')])
     await runAgent({ host: host(), llm: probe.llm, history, prompt: 'and now?', onEvent: () => {}, window: 40_000 })
     const fixed = probe.fixed()
     expect((fixed[2] as unknown[]).length).toBeGreaterThan(50)
+    // The wrapper is inside the budget now, so the floor bites at the budget
+    // that cannot pay for both it and three empty skeletons.
+    const wrapper = asMessage('').content?.length ?? 0
     let window = 0
     let budget = 0
     // Coarse, to the first window that cuts at all; then fine, to the band.
@@ -2894,7 +2919,7 @@ describe('what a compaction keeps', () => {
       // The vault shape carries every turn of the person's; `lost` is a
       // different note and a different case.
       if (f.overflows || f.dropped === 0 || f.toSummarise.length === 0 || f.lost !== null) continue
-      if (f.summaryChars >= MIN_SUMMARY_CHARS) continue
+      if (f.summaryChars >= MIN_SUMMARY_CHARS + wrapper) continue
       const alone = await compact(summariserSeeing().summariser, history.slice(0, f.dropped), { budget: f.summaryChars })
       if (alone === null) continue
       expect(alone).toContain('RECORDS SEEN')
@@ -2903,32 +2928,59 @@ describe('what a compaction keeps', () => {
     }
     expect(window).toBeGreaterThan(0)
     expect(budget).toBeGreaterThan(0)
-    expect(budget).toBeLessThan(MIN_SUMMARY_CHARS)
+    expect(budget).toBeLessThan(MIN_SUMMARY_CHARS + wrapper)
 
     const { asked, summariser } = summariserSeeing()
     const { events, onEvent } = collect()
     const llm = capturing([says('Done.')])
     const run = await runAgent({ host: host(), llm: llm.llm, history, prompt: 'and now?', onEvent, window, summariser })
+    // No call was made, and the ids were placed anyway.
     expect(asked).toHaveLength(0)
-    expect(run.compacted).toBeUndefined()
     const sent = llm.seen[0] ?? []
-    expect(sent.map(text).join('\n')).not.toContain('summarised, not verbatim')
-    // The plain trim note, with the real count: left out, not summarised.
+    const note = sent.filter((m) => m.role === 'system' && text(m).includes('summarised, not verbatim'))
+    expect(note).toHaveLength(1)
+    expect(text(note[0])).toContain('RECORDS SEEN')
+    expect(text(note[0])).toContain('University 0 (app:0)')
+    // And it fits the budget the trim left, wrapper and all — the reason this
+    // file used to skip it was that the wrapper was spent outside that budget.
+    expect(text(note[0]).length).toBeLessThanOrEqual(budget)
+    // The ids reach the thread, so the next turn carries them without a model.
+    expect(run.compacted?.context).toContain('University 0 (app:0)')
     const f = fitHistory(history, fixed, window)
     const removed = f.dropped - f.kept.length
     expect(removed).toBeGreaterThan(0)
     const notes = events.filter((e) => e.type === 'note').map((e) => (e as { text: string }).text)
     expect(notes).toHaveLength(1)
-    expect(notes[0]).toContain(`earliest ${String(removed)} messages were left out of this request`)
+    expect(notes[0]).toContain(`earliest ${String(removed)} messages were replaced with a short summary`)
     // And the person's own turns still went, verbatim.
     expect(sent.filter((m) => m.role === 'user').map(text)[0]).toBe(FACT)
   })
 
+  it('places nothing at a budget of nothing, where even the wrapper does not fit', async () => {
+    // The floor's other side, and the reason the loop cannot simply always
+    // place a note: on overflow the fixed part alone fills the window, so a
+    // note is the thing that overflows. `compact` returns null there because
+    // nothing fits in nothing, and the person is told the plain-trim truth.
+    const llm = capturing([says('Done.')])
+    const { events, onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: llm.llm,
+      history: endurance(2, 100),
+      prompt: 'and now?',
+      onEvent,
+      window: 1_000,
+      summariser: summariserSeeing().summariser,
+    })
+    expect(run.compacted).toBeUndefined()
+    expect((llm.seen[0] ?? []).map((m) => m.role)).toEqual(['system', 'user'])
+    expect(events.some((e) => e.type === 'note' && e.text.includes('left out of this request'))).toBe(true)
+  })
   it('places exactly one summary note when a fresh summary is written over stored context', async () => {
-    // The fresh summary supersedes `earlier`: the summariser was shown the
-    // earlier notes and told to carry forward what still matters. Placing
-    // both is two notes that disagree wherever the person corrected something
-    // between them.
+    // The fresh summary CONTAINS `earlier` — the earlier notes are its older
+    // section — so placing the stored note beside it would say everything
+    // twice, and a model reading two notes that overlap has to decide which
+    // is current. One note, both sections, oldest first.
     const llm = scripted([says('Done.')])
     const { asked, summariser } = summariserSeeing('OPEN REQUESTS: the fresh one.')
     await runAgent({
@@ -2946,15 +2998,16 @@ describe('what a compaction keeps', () => {
     const notes = (llm.seen[0] ?? []).filter((m) => m.role === 'system' && text(m).includes('summarised, not verbatim'))
     expect(notes).toHaveLength(1)
     expect(text(notes[0])).toContain('the fresh one')
-    expect(text(notes[0])).not.toContain('app:rice')
+    expect(text(notes[0])).toContain('app:rice')
+    expect(text(notes[0]).match(new RegExp(SECTION_MARK, 'g'))).toHaveLength(1)
   })
 
   it('finds the real summary behind an empty wrapper, searching newest first', async () => {
     // The bench shape can carry a wrapper with nothing inside AFTER a real
     // one. The empty one supersedes nothing, so the search goes on past it —
     // ending there would forget the first compaction.
-    const { asked, summariser } = summariserSeeing()
-    await runAgent({
+    const { summariser } = summariserSeeing()
+    const run = await runAgent({
       host: host(),
       llm: scripted([says('Done.')]),
       history: [asMessage('OPEN REQUESTS: file the CV for Rice.'), asMessage('   '), ...endurance(6, 2000)],
@@ -2964,9 +3017,7 @@ describe('what a compaction keeps', () => {
       tools: ['memory.list'],
       summariser,
     })
-    const shown = text(asked[0]?.[1])
-    expect(shown).toContain('[earlier summary, superseded by yours')
-    expect(shown).toContain('file the CV for Rice')
+    expect(run.compacted?.context).toContain('file the CV for Rice')
   })
 
   it('does not take a system message that merely quotes the wrapper for a summary', async () => {

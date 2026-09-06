@@ -64,6 +64,50 @@
  * is appended to the summary, reserved before the model's text, and carried
  * forward across compactions (see `compact`).
  *
+ * ## Ids are the ledger's, and are taken out of the notes
+ *
+ * The ledger is derived; the notes are written by a model, so the notes are the
+ * only place in a summary where a wrong id can enter. Round two saw exactly
+ * that — `app:…7649` (Stripe) called Baylor, and a keyword created as
+ * `kw:01a0…` written back as `(id: consensus)`.
+ *
+ * Re-measured 2026-09-06 across all three bench models, 108 summaries: 0
+ * fabricated and 0 mislabelled ids out of the 25 that appear in notes at all.
+ * The denominator is the finding. Only 10 of 36 conversations ever put an id in
+ * the notes — 0.23 ids per summary — while the ledger carried them on every one
+ * (395 id-carry-forward checks). The models had already mostly stopped writing
+ * ids; what was left was 9 of 25 named only generically ("application_note_set:
+ * app:…d149"), which is an id with no information beside it.
+ *
+ * So the summariser is told not to write ids, and `stripIds` removes any it
+ * writes anyway — the token, and a wrapping `(id: …)` or bare parenthetical
+ * with it, so the sentence still reads. What it is SHOWN keeps them: the tool
+ * arguments are how it knows which record it means, and they are what round two
+ * added to stop "app: unknown".
+ *
+ * ## Append-only, because a rewrite of a rewrite loses facts
+ *
+ * Each compaction used to hand the previous notes to the model as `earlier` and
+ * ask it to carry forward what still mattered, so summary five was a rewrite of
+ * a rewrite of a rewrite. MEASURED on 2026-09-06 over 72 summary→summary
+ * transitions in 36 `full` conversations: 21 of 85 statements were wholly gone
+ * from the next summary (24.7%) and 25 more lost more of their fact tokens than
+ * they kept; 73 of 336 fact tokens vanished (Gemma 6/82, Qwen 22/50, GPT-OSS
+ * 45/204). What rules out noise is that the losses REPEAT across both runs of
+ * the same cell: long-scout-threshold's 60-point threshold — the case's whole
+ * point — is lost in all four Gemma and GPT-OSS run-cells, and
+ * long-vault-convention's house rule ("note 'found by assistant' on every URL")
+ * at t2→t3 in both runs of two models. Amp removed auto-compaction over this.
+ *
+ * So the earlier notes are no longer rewritten. They are kept verbatim, the
+ * model is asked for notes on the NEW messages only, and the two are joined
+ * oldest-first with `SECTION_MARK` between them. When the budget cannot hold
+ * them all the OLDEST section is dropped whole. A fact written once is then
+ * either present as it was written or gone — never rewritten into a wrong one.
+ * The cost is bounded the other way: a model that filled the whole budget every
+ * time would evict every earlier section, so the room it is ASKED for is what
+ * is left after the earlier notes, and never less than a third (`sectionRoom`).
+ *
  * ## What it must not do
  *
  * Invent, and speak as though it were the person. A summary that says "you
@@ -77,12 +121,23 @@
  * Only when trimming would otherwise drop something, so an ordinary short
  * conversation never pays for it. It costs one model call at the moment a chat
  * gets long, and it is allowed to fail: a compaction that does not come back is
- * a plain trim, which is what would have happened anyway. And not at all under
- * `MIN_SUMMARY_CHARS`, where a call could only buy headings.
+ * a plain trim, which is what would have happened anyway. And the model is not
+ * called at all under `MIN_SUMMARY_CHARS`, where a call could only buy
+ * headings — but `compact` is, because the ledger costs no call and is the part
+ * that carries the ids. The floor lives here and only here: the loop used to
+ * keep a copy of it and skip `compact` outright, which is what stopped the
+ * ledger being placed on the four long-vault-convention turns where the budget
+ * came out at 18-275 characters.
+ *
+ * The budget is the size of the PLACED NOTE, wrapper included. `asMessage`'s
+ * prefix is 57 characters and its pointer another ~130, and counting them
+ * outside the budget was how a ledger-only note could be placed in a fifth more
+ * room than the fit had left (`textBudget`).
  */
 
 import type { NodeId } from '../core/model'
 import type { ChatMessage, Turn } from '../core/model-server'
+import { TYPE_PREFIX } from '../core/ref'
 
 /**
  * A message the budget layer has marked for the summariser.
@@ -133,13 +188,14 @@ export type CompactOptions = {
    */
   readonly thread?: ThreadRef
   /**
-   * A previous compaction's summary, which the new one supersedes.
+   * A previous compaction's summary, which the new one is APPENDED TO.
    *
-   * Passed here rather than as a message so the summariser is told what it is
-   * — earlier notes to carry forward, not something anyone said this time.
-   * Its ledger line, if it has one, is not shown to the model at all: it is
-   * merged into the new ledger by the harness, so the ids survive without a
-   * model copying them.
+   * Not shown to the summariser at all, since 2026-09-06: a model handed its
+   * own earlier notes to carry forward rewrites them, and 24.7% of statements
+   * did not survive the rewrite (see the file comment). Its notes are kept
+   * verbatim as the older sections of the new summary, and its ledger line is
+   * merged into the new ledger by the harness — so the ids survive without a
+   * model copying them, and the sentences survive without one rephrasing them.
    */
   readonly earlier?: string
 }
@@ -174,6 +230,13 @@ export const SUMMARY_SLOTS = [
  * (window 26,100), and each spent a summariser call on a note cut
  * mid-heading. Both are below this line; the ordinary share (10% of the
  * window, ~2,600 there) is far above it.
+ *
+ * It bounds the MODEL CALL and nothing else. Under it `compact` still returns
+ * whatever ledger the budget can hold, which costs nothing and is the half of a
+ * summary that carries ids. The loop kept a second copy of this constant and
+ * skipped `compact` entirely under it, so on long-vault-convention's turns 4-7
+ * (budgets 112, 53, 18, 275, measured 2026-09-06) neither a summary nor the
+ * ledger was placed. One floor, in the file that owns the call.
  */
 export const MIN_SUMMARY_CHARS = 320
 
@@ -217,7 +280,7 @@ const ARGS_SHOWN = 160
  */
 const SLOT_GUIDANCE = [
   `${SUMMARY_SLOTS[0]}: what the assistant’s replies show the person TOLD it — which record they meant, names, dates, preferences. What they told it, never what they asked it to do.`,
-  `${SUMMARY_SLOTS[1]}: things DONE — each record the assistant created, found or changed, as name and id; the ids are in the arguments and replies, copy them exactly. A record here is finished work: do not restate it as a request.`,
+  `${SUMMARY_SLOTS[1]}: things DONE — each record the assistant created, found or changed, by NAME. Do not write ids: every id is listed exactly on the line under your notes. A record here is finished work: do not restate it as a request.`,
   `${SUMMARY_SLOTS[2]}: anything the person corrected, declined, or asked the assistant not to touch.`,
   `${SUMMARY_SLOTS[3]}: only what the person asked for that was NOT finished. A request whose record appears under ${SUMMARY_SLOTS[1]} is finished and does not belong here.`,
 ] as const
@@ -225,8 +288,10 @@ const SLOT_GUIDANCE = [
 const SYSTEM = [
   'You summarise part of a conversation between a person and their job-application assistant, so the assistant can keep working after the earlier messages are dropped.',
   'You are shown the assistant’s own replies and the tools it called, with the arguments it called them with. The person’s messages are not shown: they stay in the conversation verbatim, so do not reconstruct them.',
+  'Notes on earlier parts of this conversation are kept exactly as they were written and are not shown to you. Write notes on the messages below and nothing else; yours are appended after the earlier ones, and later notes supersede earlier ones where they disagree.',
   'Write notes in the third person under exactly these four headings, in this order, and write "none" under a heading with nothing to record:',
   ...SLOT_GUIDANCE,
+  'Never write a record id. The ids are listed exactly, by the program, on the line directly under your notes; an id you copy is one that can be wrong, and any you write will be removed.',
   'Drop: pleasantries, the assistant’s explanations, anything already undone.',
   'State only what is in the messages. Do not guess what the person wanted, and never write that they agreed to something unless they said so — the assistant will act on this.',
 ].join(' ')
@@ -257,10 +322,10 @@ const textOf = (message: Summarisable): string => {
  *
  * Every non-user message of the evicted prefix — assistant prose, the
  * arguments of its calls, and the tool results in full whether the budget
- * layer stubbed or cut them — plus the earlier notes it supersedes (the
- * notes, not their ledger line: the harness carries that). The person's
- * turns are not counted because they are not replaced: the budget layer
- * carries them verbatim.
+ * layer stubbed or cut them. The person's turns are not counted because they
+ * are not replaced: the budget layer carries them verbatim. Nor, since
+ * 2026-09-06, are the earlier notes: a section is appended to them rather than
+ * standing in for them, so they are not part of what a reply replaces.
  *
  * This is what the refusal in `compact` measures against. Round one measured
  * against the summariser's INPUT, which by then was prose and tool names —
@@ -271,7 +336,7 @@ const textOf = (message: Summarisable): string => {
  * stands in for, and what it stands in for includes the 6,000-character
  * results.
  */
-export const replacedBy = (dropped: readonly ChatMessage[], earlier = ''): number =>
+export const replacedBy = (dropped: readonly ChatMessage[]): number =>
   dropped.reduce((total, message) => {
     if (message.role === 'user') return total
     if (message.role === 'assistant') {
@@ -282,7 +347,58 @@ export const replacedBy = (dropped: readonly ChatMessage[], earlier = ''): numbe
       )
     }
     return total + message.content.length
-  }, earlier.length)
+  }, 0)
+
+/**
+ * An id as this app mints one, for taking one back OUT of a model's notes.
+ *
+ * `core/ref.ts` mints `${prefix}:${uuidv7}`, and the prefixes come from there
+ * rather than being spelled again here — a second list is a second thing that
+ * can stop agreeing. The tail is hex and dashes rather than the exact uuid
+ * shape on purpose: a HALF id is the dangerous one, because a model reading
+ * `kw:01a0b2c3` completes it, and it would pass a uuid-shaped test.
+ */
+const ID_TOKEN = `\\b(?:${[...new Set(Object.values(TYPE_PREFIX))]
+  .sort((a, b) => b.length - a.length)
+  .join('|')}):[0-9a-f][0-9a-f-]*…?`
+
+/** `(app:0192a)`, `(id: app:0192a)`, `(id: app:0192a, kw:1)` — the whole thing goes. */
+const ID_IN_PARENS = new RegExp(
+  `[ \\t]*\\((?:id:\\s*)?${ID_TOKEN}(?:\\s*[,;]\\s*${ID_TOKEN})*\\)`,
+  'gi',
+)
+
+/** What is left after the parentheticals: `id: app:0192a`, or the token alone. */
+const ID_LOOSE = new RegExp(`(?:\\bid:\\s*)?${ID_TOKEN}`, 'gi')
+
+/**
+ * The model's notes with every id taken out of them.
+ *
+ * The ledger is derived and the notes are not, so an id in the notes is the
+ * one id in a summary that can be wrong — round two's `app:…7649` labelled
+ * Baylor, and a created keyword written back as `(id: consensus)`. The
+ * summariser is told not to write them; this is what happens when it does
+ * anyway, and it runs on the model's reply ONLY — never on the ledger line,
+ * which is appended afterwards.
+ *
+ * A wrapping parenthetical goes with the token so the sentence still reads:
+ * "Note saved (id: note:0193c)" becomes "Note saved", not "Note saved ()".
+ * A line that loses nothing is returned byte-identical, so the whitespace
+ * tidying can never reformat notes it did not touch.
+ */
+export const stripIds = (notes: string): string =>
+  notes
+    .split('\n')
+    .map((line) => {
+      const stripped = line.replace(ID_IN_PARENS, '').replace(ID_LOOSE, '')
+      if (stripped === line) return line
+      return stripped
+        .replace(/\(\s*\)/g, '')
+        .replace(/ {2,}/g, ' ')
+        .replace(/ ([,.;:])/g, '$1')
+        .trimEnd()
+    })
+    .join('\n')
 
 /** One line of the ledger: a record the assistant was shown. */
 export type LedgerEntry = { readonly id: string; readonly label: string }
@@ -454,6 +570,62 @@ const merged = (
 }
 
 /**
+ * The line between one compaction's notes and the next one's.
+ *
+ * The notes are append-only (see the file comment), so a stored summary is one
+ * section per compaction, oldest first, and this is both the join and the parse
+ * — it has to round-trip, so it is a whole line and nothing a model writes.
+ *
+ * It says which way the sections point, because the note's READER is the
+ * assistant on the next turn: two sections that disagree — the person corrected
+ * something between them — are not a contradiction if it knows which is later.
+ */
+export const SECTION_MARK = '——— later, and superseding the above ———'
+
+const SECTION_JOIN = `\n${SECTION_MARK}\n`
+
+/** The sections of `notes`, oldest first. Empty for empty notes. */
+const sectionsIn = (notes: string): readonly string[] =>
+  notes === '' ? [] : notes.split(SECTION_JOIN)
+
+/**
+ * The notes fitted to `room` by dropping WHOLE sections from the front.
+ *
+ * The oldest goes first, which is the one trade append-only makes: a fact is
+ * kept as it was written or dropped, never rewritten into a wrong one. Only
+ * when a single section is still too big is anything cut mid-notes, and then it
+ * is the newest section's tail — the headings are in a fixed order with the
+ * person's facts first, so a tail cut loses the least.
+ */
+const fitSections = (notes: string, room: number): string => {
+  const sections = sectionsIn(notes)
+  for (let from = 0; from < sections.length; from += 1) {
+    const kept = sections.slice(from).join(SECTION_JOIN)
+    if (kept.length <= room) return kept
+  }
+  /*
+   * `from === 0` above is the whole of the notes, so reaching here means not
+   * even the newest section fits. It needs no guard for a room of zero or less:
+   * a room that small is one the ledger took, which only happens when there are
+   * no notes at all — and no sections means no last one, so this is `''` before
+   * the slice ever sees the number. Two guards stood here and mutation showed
+   * both were dead: `room <= 0` and a fast path for notes that already fit.
+   */
+  const cut = (sections.at(-1) ?? '').slice(0, room)
+  /*
+   * Back to the last line break, so a cut never leaves half a fact standing.
+   * MEASURED once in 130 notes (GPT-OSS, long-recall-early-fact): a section
+   * ended "- Application record: Assistan", which a reader cannot tell from a
+   * complete line and a model will finish for itself. A single line too long
+   * for the room is kept as the slice — there is no boundary to fall back to,
+   * and the headings are ordered facts-first so what it holds is the most
+   * worth keeping.
+   */
+  const boundary = cut.lastIndexOf('\n')
+  return (boundary > 0 ? cut.slice(0, boundary) : cut).trimEnd()
+}
+
+/**
  * The share of a budget the ledger may take: a third, in whole entries.
  *
  * A third because the four-heading notes need the rest to say anything, and
@@ -463,20 +635,69 @@ const merged = (
 const ledgerRoom = (budget: number): number => Math.floor(budget / 3)
 
 /**
- * Notes and ledger fitted into `budget`, ledger reserved first.
+ * What the summariser is asked to write, in characters: what the notes' room
+ * has left once the earlier sections have had theirs, and never under a third.
  *
- * The ledger is deterministic and small and holds the ids; the notes are
- * the model's and can be cut. So the ledger gets its third by whole entries,
- * and the notes get what is left, cut at the tail: the headings are in a
- * fixed order with the person's facts first, so a cut loses the tail. Absent
- * a budget nothing is cut except the ledger's forty-entry cap.
+ * A model told the whole notes room writes to it, and a section that fills the
+ * room evicts every section before it — which would make an append-only chain
+ * one section long and lose more than the rewriting it replaced. So the ask
+ * shrinks as the earlier notes grow. The floor of a third is what stops the
+ * opposite failure, a chain so full that nothing new can ever be recorded: past
+ * that point the newest section takes its third and the oldest are dropped.
+ *
+ * Measured 2026-09-06 over 108 summaries: the median summary was 0.41 of its
+ * budget and none exceeded it, so on the ordinary shape this asks for what the
+ * models were already writing and drops nothing.
+ */
+const sectionRoom = (budget: number, carried: string): number => {
+  const notes = budget - ledgerRoom(budget)
+  const taken = carried === '' ? 0 : carried.length + SECTION_JOIN.length
+  return Math.max(notes - taken, Math.floor(notes / 3))
+}
+
+/**
+ * Notes and ledger fitted into `budget`: a third RESERVED for the ledger, and
+ * everything the notes do not use given back to it.
+ *
+ * The ledger is deterministic, holds the ids, and is the half of a note a
+ * model can act on; the notes are the model's and can be cut. So the ledger's
+ * third is a floor rather than a ceiling, and the order is: reserve no more
+ * than the ledger could actually use, fit the notes by whole sections into
+ * what is left, then give the ledger the rest. Absent a budget nothing is cut
+ * except the ledger's forty-entry cap.
+ *
+ * The third was a ceiling until 2026-09-06, and it cost the thing the ledger
+ * exists for. MEASURED over 130 notes on three models: the median summary uses
+ * 0.41 of the room it is given and none has ever exceeded it, so a quarter of
+ * every budget was being thrown away — the ledger fell to a mean of 2.94
+ * entries a note where it had carried 5.87, and GPT-OSS's
+ * long-chain-across-a-summary went from five ids to one and then re-created
+ * the keyword it already had (`wrote-on-a-question`, both runs). What the
+ * notes leave is exactly what the ledger should have.
+ *
+ * With NO notes the ledger gets the whole budget. The third exists to leave
+ * the notes room to say something; where there are no notes it only threw ids
+ * away — and that is precisely the under-the-floor case, where the ledger is
+ * the entire summary. At the 112-character budget measured on
+ * long-vault-convention turn 4, a third is 37 and the heading alone is 26, so
+ * not one entry fitted.
  */
 function fit(notes: string, entries: readonly LedgerEntry[], budget: number | undefined): string {
-  const ledger = ledgerLine(entries, budget === undefined ? undefined : ledgerRoom(budget))
-  // Never negative: the ledger is at most a third of the budget.
-  const roomForNotes =
-    budget === undefined ? notes.length : budget - (ledger === '' ? 0 : ledger.length + 1)
-  const kept = notes.slice(0, roomForNotes).trimEnd()
+  if (budget === undefined) {
+    return [fitSections(notes, notes.length), ledgerLine(entries)]
+      .filter((part) => part !== '')
+      .join('\n')
+  }
+  /*
+   * Reserved: what the ledger could use, and never more than its third. Taking
+   * the third unconditionally would shorten the notes on behalf of ids that do
+   * not exist — a conversation whose evicted results carried two records would
+   * have lost a third of its notes to a 90-character line.
+   */
+  const whole = ledgerLine(entries)
+  const reserved = whole === '' ? 0 : Math.min(whole.length + 1, ledgerRoom(budget))
+  const kept = fitSections(notes, budget - reserved)
+  const ledger = ledgerLine(entries, budget - (kept === '' ? 0 : kept.length + 1))
   return [kept, ledger].filter((part) => part !== '').join('\n')
 }
 
@@ -492,43 +713,65 @@ function fit(notes: string, entries: readonly LedgerEntry[], budget: number | un
 const pointer = (thread: ThreadRef): string =>
   `The full earlier exchange is ${thread.title === undefined ? 'the conversation' : `the conversation "${thread.title}"`} with id ${thread.id}; memory.get on that id reads it back if a detail is needed.`
 
+/** What `asMessage` puts AROUND the summary: the label, and the pointer. */
+const NOTE_PREFIX = 'Earlier in this conversation (summarised, not verbatim): '
+
+/**
+ * The budget for the summary TEXT: the caller's budget less that wrapper.
+ *
+ * The caller's number is the room the fitted request actually left, so it is
+ * the room for the whole placed MESSAGE. The wrapper is 57 characters of label
+ * and, with a thread, another ~130 of pointer, and it used to be spent outside
+ * the budget — which at the small budgets that matter is up to a fifth more
+ * room than the fit had left, for a note that is a line of ids and no words.
+ * Counted here, once, so `compact` and `asMessage` agree on what fits.
+ */
+const textBudget = (options: Pick<CompactOptions, 'budget' | 'thread'>): number | undefined =>
+  options.budget === undefined
+    ? undefined
+    : Math.max(
+        0,
+        options.budget -
+          NOTE_PREFIX.length -
+          (options.thread === undefined ? 0 : 1 + pointer(options.thread).length),
+      )
+
 /**
  * The request to the summariser: what it is asked for, and what it is shown.
  *
  * Takes `Summarisable` and nothing wider — see the type. The budget is put in
  * the prompt as well as enforced afterwards, because a model told its limit
  * writes to it, and one that is merely cut at it loses its last heading. The
- * budget it is told is the NOTES' share — the ledger's third is taken by the
- * harness, so a model told the whole figure would write over it.
+ * figure it is told is this SECTION's room (`sectionRoom`): the wrapper and the
+ * ledger's third are the harness's, and the earlier sections are already
+ * written, so a model told the whole budget would write over all three.
  *
- * `earlier` is shown without its ledger line: those ids are merged into the
- * new ledger by the harness, and a model shown them copies them under
- * RECORDS ESTABLISHED, where the appended ledger then repeats them.
+ * `earlier` is NOT shown. It used to be, labelled "carry forward what still
+ * matters", and 24.7% of its statements did not survive the carrying — see the
+ * file comment. It is kept verbatim by `compact` instead, so there is nothing
+ * here for a model to rewrite and nothing for it to repeat.
  */
 export function compactionMessages(
   input: readonly Summarisable[],
   options: CompactOptions = {},
 ): ChatMessage[] {
+  const budget = textBudget(options)
+  const carried = options.earlier === undefined ? '' : split(options.earlier).notes.trim()
   const limits = [
-    options.budget === undefined
+    budget === undefined
       ? 'Keep it shorter than what it stands in for.'
-      : `At most ${String(options.budget - ledgerRoom(options.budget))} characters in total.`,
+      : `At most ${String(sectionRoom(budget, carried))} characters in total.`,
     options.thread === undefined
       ? ''
       : `The full transcript stays readable as record ${options.thread.id}, so leave out anything the assistant could read back and keep what decides its next action.`,
   ]
     .filter((line) => line !== '')
     .join(' ')
-  const notes = options.earlier === undefined ? '' : split(options.earlier).notes
-  const earlier =
-    notes === ''
-      ? ''
-      : `[earlier summary, superseded by yours — carry forward what still matters]\n${notes}\n\n`
   return [
     { role: 'system', content: `${SYSTEM} ${limits}` },
     {
       role: 'user',
-      content: `${earlier}[assistant replies being dropped]\n${input.map(textOf).join('\n')}`,
+      content: `[assistant replies being dropped]\n${input.map(textOf).join('\n')}`,
     },
   ]
 }
@@ -546,21 +789,20 @@ export function compactionMessages(
  * would be fed back to the next summariser as part of `earlier`, which is the
  * same doubling the prefix used to suffer.
  *
- * Cut to the budget the same way `compact` cuts — ledger reserved, notes
- * shortened — because a stored summary placed under a smaller budget on a
- * later turn used to lose its tail, and the tail is where the ids are.
+ * Cut to the budget the same way `compact` cuts — ledger reserved, oldest
+ * sections dropped — because a stored summary placed under a smaller budget on
+ * a later turn used to lose its tail, and the tail is where the ids are. The
+ * budget it is cut to is `textBudget`: what is left of the caller's number once
+ * this wrapper has been paid for out of it.
  */
 export const asMessage = (
   summary: string,
   options: Pick<CompactOptions, 'budget' | 'thread'> = {},
 ): ChatMessage => {
-  const { notes } = split(summary.trim())
-  const body = fit(notes, ledgerIn(summary.trim()), options.budget)
+  const trimmed = summary.trim()
+  const body = fit(split(trimmed).notes, ledgerIn(trimmed), textBudget(options))
   const where = options.thread === undefined ? '' : ` ${pointer(options.thread)}`
-  return {
-    role: 'system',
-    content: `Earlier in this conversation (summarised, not verbatim): ${body}${where}`,
-  }
+  return { role: 'system', content: `${NOTE_PREFIX}${body}${where}` }
 }
 
 export type CompactDeps = {
@@ -569,23 +811,24 @@ export type CompactDeps = {
 }
 
 /**
- * The summariser's notes on `dropped`, or `null` for every kind of not-working.
+ * The summariser's notes on `dropped` — ONE new section — or `null` for every
+ * kind of not-working.
  *
- * Not called at all under `MIN_SUMMARY_CHARS`, and not for a page with nothing
- * of the assistant's on it and no earlier notes: asking a model to summarise an
- * empty page is asking it to invent one.
+ * Not called at all under `MIN_SUMMARY_CHARS`, measured against the budget net
+ * of the wrapper, and not for a page with nothing of the assistant's on it:
+ * asking a model to summarise an empty page is asking it to invent one. Earlier
+ * notes are no longer a reason to call either — they are kept as they were
+ * written, so a page with nothing new on it has nothing to write.
  */
 async function notesFor(
   { ask }: CompactDeps,
   dropped: readonly ChatMessage[],
   options: CompactOptions,
 ): Promise<string | null> {
+  const budget = textBudget(options)
+  if (budget !== undefined && budget < MIN_SUMMARY_CHARS) return null
   const input = summarisable(dropped)
-  if (options.budget !== undefined && options.budget < MIN_SUMMARY_CHARS) return null
-  // The earlier NOTES: an earlier summary that is a ledger alone carries no
-  // notes to supersede, and its ids are merged by the harness, not the model.
-  const carried = options.earlier === undefined ? '' : split(options.earlier).notes
-  if (input.length === 0 && carried === '') return null
+  if (input.length === 0) return null
   let turn: Turn
   try {
     turn = await ask(compactionMessages(input, options))
@@ -593,8 +836,11 @@ async function notesFor(
     return null
   }
   if (!turn.ok || turn.text === null) return null
-  // An empty reply is refused by `fit`, which keeps no empty part.
-  const text = turn.text.trim()
+  // An empty reply is refused by `fit`, which keeps no empty part. Ids come
+  // out first: they belong to the ledger, and the notes are the only place a
+  // wrong one can enter (`stripIds`). The length rules then measure what is
+  // actually kept, not what the model sent.
+  const text = stripIds(turn.text.trim()).trim()
   /*
    * Longer than what it replaces is refused outright, not cut down.
    *
@@ -613,40 +859,63 @@ async function notesFor(
    * summary carrying both facts, refused here against 260, the call paid for
    * and the person told the messages were "left out".
    */
-  if (text.length > Math.max(replacedBy(dropped, carried), MIN_SUMMARY_CHARS)) return null
+  if (text.length > Math.max(replacedBy(dropped), MIN_SUMMARY_CHARS)) return null
   /*
-   * Four headings with "none" under each are not notes, and they are worse
-   * than no notes: "RECORDS ESTABLISHED: none" placed beside a ledger that
-   * names the keyword the assistant just created is a contradiction the model
-   * has to resolve, and a small one resolves it the wrong way. Qwen3 14B wrote
-   * exactly that for a 19-message prefix holding a `keyword.create` and a
-   * listing (long-chain-across-a-summary, both runs, 2026-09-05) and then
-   * answered "I cannot find any applications" without calling anything.
-   * Discarded, so the ledger — which does name them — stands alone.
+   * An empty slot is dropped, and a reply that is nothing but empty slots is
+   * no reply at all.
+   *
+   * "RECORDS ESTABLISHED: none" beside a ledger that names the keyword the
+   * assistant just created is not a gap, it is a CONTRADICTION, and a small
+   * model resolves it the wrong way: Qwen3 14B wrote exactly that and then
+   * answered "I cannot find any applications" without calling anything
+   * (long-chain-across-a-summary, both runs, 2026-09-05), and GPT-OSS wrote it
+   * on the turn it re-created a keyword whose id its own ledger was carrying
+   * (2026-09-06). MEASURED over the 138 notes of the 2026-09-06 endurance run:
+   * 38 of them — more than one in four — said "none" under a heading while
+   * their own ledger named records, and 299 empty slot lines were stored
+   * across the run at about thirty characters each, budget spent to say
+   * nothing. The prompt still ASKS for "none" so a skipped heading is
+   * visible as a choice rather than an omission; what it buys is checked
+   * here and then thrown away.
    */
-  return isEmptyNotes(text) ? null : text
+  const kept = withoutEmptySlots(text)
+  return kept === '' ? null : kept
 }
 
-/** The heading-and-"none" line a summariser writes for a slot with nothing in it. */
-const EMPTY_SLOT = new RegExp(
-  `^(?:${SUMMARY_SLOTS.map((slot) => slot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}):\\s*none\\.?$`,
-  'i',
+const SLOTS_PATTERN = SUMMARY_SLOTS.map((slot) => slot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join(
+  '|',
 )
 
+/** The heading-and-"none" line a summariser writes for a slot with nothing in it. */
+const EMPTY_SLOT = new RegExp(`^(?:${SLOTS_PATTERN}):\\s*none\\.?$`, 'i')
+
+/** A heading that ends at the line break, with whatever it holds on the next line. */
+const HEADING_ALONE = new RegExp(`^(?:${SLOTS_PATTERN}):$`, 'i')
+
 /**
- * Whether notes say "none" under every heading and nothing else.
+ * The notes with every empty slot removed, and nothing else changed.
  *
- * Every non-blank line has to be an empty slot, and there has to be at least
- * one: a reply that says anything at all under any heading is kept, and a
- * reply in a shape this cannot read (bold headings, prose) is kept too — the
- * check refuses only what it can prove empty.
+ * A heading on its own line counts as the head of the line under it, and that
+ * is not a nicety. MEASURED on 2026-09-06 over the 108 summaries of the drift
+ * run: 6 of them said "none" under all four headings and nothing else,
+ * written across two lines by Gemma and GPT-OSS, and every one got past the
+ * check this replaces — so exactly the contradiction it exists to prevent was
+ * still shipping. Folding the pair into one line is also how a kept two-line
+ * slot is stored, which costs a line break and reads the same.
+ *
+ * Only what it can PROVE empty goes: a slot with anything under it stays, a
+ * shape this cannot read (bold headings, prose, a model that answers in one
+ * paragraph) stays whole, and "none of the Rice ones" is not "none".
  */
-const isEmptyNotes = (text: string): boolean => {
-  const lines = text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line !== '')
-  return lines.length > 0 && lines.every((line) => EMPTY_SLOT.test(line))
+const withoutEmptySlots = (text: string): string => {
+  const lines: string[] = []
+  for (const line of text.split('\n').map((raw) => raw.trim())) {
+    if (line === '') continue
+    const open = lines.at(-1)
+    if (open !== undefined && HEADING_ALONE.test(open)) lines[lines.length - 1] = `${open} ${line}`
+    else lines.push(line)
+  }
+  return lines.filter((line) => !EMPTY_SLOT.test(line)).join('\n')
 }
 
 /**
@@ -657,12 +926,14 @@ const isEmptyNotes = (text: string): boolean => {
  * here, so a person's turn in it is ignored rather than paraphrased, and the
  * results are walked for the ledger rather than shown to a model.
  *
- * What comes back is the model's notes with the ledger appended, fitted to the
- * budget with the ledger reserved first — so the stored context, and the next
- * turn's `earlier`, carry the ids whatever the model wrote. The ledger is the
- * records in THIS prefix's results plus the ones the earlier summary's ledger
- * already held, so ids accumulate across compactions without a model copying
- * them (and are capped by the third, oldest first).
+ * What comes back is the earlier notes with a NEW SECTION appended and the
+ * ledger under both, fitted to the budget with the ledger reserved first — so
+ * the stored context, and the next turn's `earlier`, carry the ids whatever the
+ * model wrote. The earlier notes are copied, not rewritten: see the file
+ * comment for the 24.7% of statements that did not survive being rewritten. The
+ * ledger is the records in THIS prefix's results plus the ones the earlier
+ * summary's ledger already held, so ids accumulate across compactions without a
+ * model copying them (and are capped by the third, oldest first).
  *
  * The ledger alone when the model refused, failed, was skipped, or had nothing
  * to summarise: ids recovered without a model are still ids. `null` only when
@@ -685,7 +956,11 @@ export async function compact(
     options.earlier === undefined ? [] : ledgerIn(options.earlier),
     recordsIn(dropped),
   )
-  const notes = await notesFor(deps, dropped, options)
-  const out = fit(notes ?? '', entries, options.budget)
+  // The earlier NOTES, verbatim: an earlier summary that is a ledger alone
+  // carries none, and its ids are merged above rather than copied by a model.
+  const carried = options.earlier === undefined ? '' : split(options.earlier).notes.trim()
+  const fresh = await notesFor(deps, dropped, options)
+  const notes = [carried, fresh ?? ''].filter((part) => part !== '').join(SECTION_JOIN)
+  const out = fit(notes, entries, textBudget(options))
   return out === '' ? null : out
 }

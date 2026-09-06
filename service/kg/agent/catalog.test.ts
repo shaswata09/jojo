@@ -159,16 +159,16 @@ describe('what a model reads about a tool', () => {
 describe('the counts the comments quote', () => {
   it('matches what queries.ts, mcp.ts and execute.ts say out loud', () => {
     // If this fails, the number changed. Update it here AND in:
-    //   kg/agent/queries.ts   — "ninety-two entries", "a hundred and three names"
-    //   kg/agent/mcp.ts       — "ninety-two tools is one page" (twice)
-    //   kg/agent/execute.ts   — "listing ninety-two tools"
-    expect(CATALOG.length).toBe(92)
+    //   kg/agent/queries.ts   — "ninety-three entries", "a hundred and four names"
+    //   kg/agent/mcp.ts       — "ninety-three tools is one page" (twice)
+    //   kg/agent/execute.ts   — "listing ninety-three tools"
+    expect(CATALOG.length).toBe(93)
   })
 
   it('matches the write/read split queries.ts quotes', () => {
-    // "eighty-one write tools already" — the number the generic-readers
+    // "eighty-three write tools already" — the number the generic-readers
     // argument is measured against.
-    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(82)
+    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(83)
   })
 
   it('matches the sixteen node types that paragraph counts', () => {

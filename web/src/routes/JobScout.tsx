@@ -273,6 +273,7 @@ export function JobScout() {
         }}
         onApproveAll={engine.approveAll}
         onSweep={engine.sweep}
+        onClearAll={engine.clearAll}
       />
 
       <MatchesPanel

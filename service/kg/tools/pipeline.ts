@@ -245,12 +245,26 @@ export const proposalFail = defineTool({
 /* ------------------------------- housekeeping ----------------------------- */
 
 /**
- * Removes answered suggestions for one pipeline.
+ * Takes answered suggestions off the queue for one pipeline.
  *
- * Answered proposals are kept until swept rather than deleted on the spot,
- * because the card that was just approved should stay on screen long enough to
- * be undone — a row that vanishes at the moment you act on it takes its Undo
- * with it. The sweep is what the UI calls when the user clears the list.
+ * Answered proposals stay on screen until swept rather than vanishing on the
+ * spot, because the card that was just approved has to outlive the toast that
+ * offers to undo it — a row that disappears at the moment you act on it takes
+ * its Undo with it. The sweep is what the UI calls when the user clears.
+ *
+ * MARKS, DOES NOT DELETE, and the difference is the whole point. This called
+ * `ctx.tx.del` until the scout started deduping against every proposal rather
+ * than only the pending ones (`agent/pipelines.ts`, `knownPostings`). From that
+ * moment a delete here was amnesia: clearing the list forgot which jobs the
+ * person had already declined, and the next round proposed them straight back.
+ * Setting `swept` keeps the row where the dedupe can read it and takes the card
+ * off the screen, which is all the user asked for.
+ *
+ * `effect: 'delete'` still, and deliberately. The gate classifies destructive
+ * work by that field, and what this does is destructive as the person
+ * experiences it — a list they were reading is gone. Classifying it as an
+ * update because the row survives would be arguing with the user about their
+ * own screen.
  */
 export const proposalSweep = defineTool({
   name: 'pipeline.proposal.sweep',
@@ -263,14 +277,75 @@ export const proposalSweep = defineTool({
     ctx.require('pipeline', input.pipelineId)
     const settled = ctx.memory
       .ofType('proposal')
-      .filter((p) => p.props.status !== 'pending')
+      .filter((p) => p.props.status !== 'pending' && p.props.swept !== true)
       .filter((p) => ctx.memory.out(p.id, 'FROM').some((edge) => edge.to === input.pipelineId))
-    for (const p of settled) ctx.tx.del(p.id)
+    for (const p of settled) ctx.tx.patch<'proposal'>(p.id, { swept: true })
     return settled.length
   },
   describe: (_input, output) => ({
     title: 'Cleared',
     description: `${String(output)} answered ${output === 1 ? 'suggestion' : 'suggestions'}`,
+  }),
+})
+
+/**
+ * Empties the whole queue in one press, whatever it holds.
+ *
+ * ## Why this is not `sweep` in a loop
+ *
+ * Two things `sweep` structurally cannot do. It takes a `pipelineId` and
+ * filters on a `FROM` edge, so a proposal whose pipeline has since been deleted
+ * — `Proposal.pipelineId` is `string | null` precisely because that state is
+ * real and has to render — belongs to no pipeline and would be swept by no
+ * loop. It would sit on the queue after "Clear all", which is the one outcome a
+ * button with that name may not produce. And it only touches settled rows, so
+ * looping it leaves every pending card exactly where it was.
+ *
+ * ## One transaction, one undo
+ *
+ * `approveAll` deliberately runs one proposal at a time, because each approval
+ * writes to a DIFFERENT record and a batch that rolled back over the fourth
+ * card would throw away three decisions the person meant. Nothing of the sort
+ * applies here: every write lands on a proposal row, there is no foreign record
+ * to be missing, and the failure mode that justified the loop cannot occur. So
+ * this is one transaction — and one Undo, which is what somebody who has just
+ * cleared a list they meant to read actually wants.
+ *
+ * ## What it does not do
+ *
+ * It does not forget. Pending rows are marked `discarded`, settled rows are
+ * marked `swept`, and nothing is deleted — so the scout still knows every job
+ * it has offered and will not spend the next round proposing them again. A
+ * clear that emptied the record as well as the screen would be a treadmill:
+ * press it, and the same suggestions come back.
+ */
+export const proposalClear = defineTool({
+  name: 'pipeline.proposal.clear',
+  title: 'Clear all suggestions',
+  summary:
+    'Empties the suggestion queue — declines anything still waiting and takes the answered cards off the list. Nothing else is changed, and the pipelines keep running.',
+  effect: 'delete',
+  touches: ['proposal'],
+  input: s.object({}),
+
+  run(ctx): number {
+    let cleared = 0
+    for (const p of ctx.memory.ofType('proposal')) {
+      if (p.props.status === 'pending') {
+        ctx.tx.patch<'proposal'>(p.id, { status: 'discarded', decidedAt: ctx.now, swept: true })
+        cleared += 1
+      } else if (p.props.swept !== true) {
+        ctx.tx.patch<'proposal'>(p.id, { swept: true })
+        cleared += 1
+      }
+    }
+    return cleared
+  },
+
+  describe: (_input, output) => ({
+    title: 'Queue cleared',
+    description: `${String(output)} ${output === 1 ? 'suggestion' : 'suggestions'}`,
+    tone: 'danger',
   }),
 })
 

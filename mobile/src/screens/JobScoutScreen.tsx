@@ -340,6 +340,7 @@ export function JobScoutScreen() {
         onApprove={engine.approve}
         onDiscard={engine.discard}
         onSweep={engine.sweep}
+        onClearAll={engine.clearAll}
       />
 
       <Panel>

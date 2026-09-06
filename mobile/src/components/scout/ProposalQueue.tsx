@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { View } from 'react-native'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
@@ -25,13 +27,16 @@ export function ProposalQueue({
   onApprove,
   onDiscard,
   onSweep,
+  onClearAll,
 }: {
   proposals: readonly Proposal[]
   pipelines: readonly Pipeline[]
   onApprove: (id: string) => void
   onDiscard: (id: string) => void
   onSweep: (pipelineId: string) => void
+  onClearAll: () => void
 }) {
+  const [confirming, setConfirming] = useState(false)
   const pending = proposals.filter((p) => p.status === 'pending')
   const answered = proposals.filter((p) => p.status !== 'pending')
   const ordered = [...pending, ...answered]
@@ -143,18 +148,50 @@ export function ProposalQueue({
             </View>
           ))}
 
-          {answered.length > 0 && sweepable ? (
-            <View style={{ marginTop: space[2], alignItems: 'flex-start' }}>
+          {/* Clear all is not restricted to a single pipeline the way Clear
+              answered is: it writes to nothing but the queue, and two
+              pipelines both filling the list is exactly when it is wanted. */}
+          <View
+            style={{
+              marginTop: space[2],
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: space[2],
+            }}
+          >
+            {answered.length > 0 && sweepable ? (
               <Button
                 label="Clear answered"
                 variant="outline"
                 size="sm"
                 onPress={() => onSweep(sweepable)}
               />
-            </View>
-          ) : null}
+            ) : null}
+            <Button
+              label="Clear all"
+              variant="outline"
+              size="sm"
+              onPress={() => setConfirming(true)}
+            />
+          </View>
         </>
       )}
+
+      {/* Confirmed because it declines: anything still pending is a decision
+          the person has not made, and this makes it for them. */}
+      <ConfirmSheet
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="Clear all suggestions?"
+        description={
+          pending.length > 0
+            ? `${String(pending.length)} ${pending.length === 1 ? 'suggestion is' : 'suggestions are'} still waiting and will be declined. Nothing in your records changes, and the pipelines keep running — but they will not offer these again.`
+            : 'The answered cards come off the list. Nothing in your records changes.'
+        }
+        confirmLabel="Clear all"
+        tone="danger"
+        onConfirm={onClearAll}
+      />
     </Panel>
   )
 }
