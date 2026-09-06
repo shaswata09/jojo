@@ -337,6 +337,43 @@ published twice in two days, and the group's number changed meaning between:
   narrowed drop is at the edge of its band — 10 of its conversations flip
   between the two runs.
 
+**GPT-OSS's spread is wider than any change measured against it.** Measured
+2026-09-06 by running the whole suite twice on each of two builds — the
+compaction rebuild, and the build published the night before — against the same
+server on the same day, GPT-OSS 120B under `full` scored 64 and 69 on one and 67
+and 68 on the other: a 5-point spread between two runs of the SAME build, and a
+1-point difference between the builds. `narrowed` moved the other way (67, 64
+against 62, 64). Nine of its hundred conversations flip between two runs. Any
+claim about GPT-OSS that rests on a difference under about 6 points is a claim
+about the day. The A/B is the only way to tell, and it costs one extra run of
+the suite: `git worktree add --detach <dir> <commit>`, symlink the repo's
+`node_modules` into it, and run the bench from there — the working tree is never
+touched, which matters when another session is editing it.
+
+Gemma is the opposite and is the model to bisect against: 82 and 83 under
+`full`, 1 conversation unstable. Qwen is stable at its own low number (29 and
+29, 2 unstable).
+
+**Most of what the endurance group counts is not compaction.** Measured on the
+2026-09-06 matrix (three models, two runs, condition `full`): of the 23 failing
+case-runs, 13 — 57% — have their first wrong turn BEFORE any summary has been
+written, so no summariser had yet run when the case went wrong. Gemma's two
+failures are both of this kind (`long-scout-threshold` turn 1, a fact the model
+never states); GPT-OSS has 7 of 12, including `long-recall-early-fact` turn 0,
+where it creates a keyword in answer to a question and then answers every one
+of the remaining seven turns correctly, the theme from turn one included. Under
+`narrowed` that same case is clean, because the narrowed catalogue does not put
+`keyword.create` in front of it — a restraint difference between the
+conditions, not a memory one.
+
+So an endurance row's `clean` is at most half a statement about compaction, and
+the `full` − `narrowed` gap is not a compaction cost. Recompute the split from
+any published run without re-running it: a case's first wrong turn is the first
+`false` in `scores[].turns[].correct` (or the whole case when only `state`
+fails), and `scores[].reasons[].compacted` says whether a summary had been
+written by then. Do that before attributing a movement in this group to the
+summariser.
+
 The narrowed row for this group is still a distance-recall number, and the
 file says so in `run.compactions`: an endurance row that says `clean` under
 `narrowed` is a model that never had to survive a summary.
