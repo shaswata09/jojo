@@ -210,7 +210,7 @@ export function GuideBuiltWith() {
           />
           <OtherCredit
             title="jojo itself"
-            meta="MIT — Copyright (c) 2026 Shaswata Mitra"
+            meta="Apache-2.0 — Copyright 2026 Shaswata Mitra"
             body={
               <>
                 The full text is in <span className="font-mono text-xs break-all">LICENSE</span> at

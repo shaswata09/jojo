@@ -14,6 +14,7 @@ import { needsExtension, testReader } from '@/lib/markitdown'
 import { report } from '@/lib/analytics'
 import { reportableProvider } from '@jojo/service/core/analytics'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
+import { CopyButton } from '@/components/common/CopyButton'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { publicUrl } from '@/lib/public-url'
 import { guidePath } from '@/lib/links'
@@ -752,6 +753,16 @@ const localHost = () => {
 const defaultReaderAddress = () => (localHost() ? PROXY_PATH : MARKITDOWN.defaultEndpoint)
 
 /**
+ * The setup, as one block — shown and copied from the same constant.
+ *
+ * Built here rather than written out, so the text on screen and the text on the
+ * clipboard cannot drift: a copy button that pastes a port the panel does not
+ * show is worse than no button, because the person trusts the paste and then
+ * debugs the wrong address.
+ */
+const SETUP_COMMANDS = `${MARKITDOWN.install}\n${MARKITDOWN.serve}`
+
+/**
  * What choosing this provider actually commits you to.
  *
  * Shown the instant the dropdown changes, in Settings AND in the first-run
@@ -913,15 +924,29 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
           }}
         />
 
-        {/* The two commands, copyable. A setting that needs a program the user
-            has not installed is a setting that has to say how. */}
+        {/* A setting that needs a program the user has not installed is a
+            setting that has to say how.
+
+            ONE BOX, ONE BUTTON, copying both lines. They are two commands but a
+            single act — install it, then start it — and someone who has just
+            been told they need a program they do not have wants the whole
+            recipe in their terminal, not two trips back to this panel. Pasting
+            both into bash, zsh or PowerShell runs them in order, which is the
+            order they are wanted in.
+
+            The commands are also the two lines most likely to be mistyped: a
+            lost hyphen in `--http` or a transposed port produces a reader that
+            starts, prints a cheerful address, and cannot be reached. */}
         <div className="rounded-md border border-hairline bg-well p-2.5">
           <p className="text-xs text-text-3">Not running it yet?</p>
-          <pre className="mt-1 font-mono text-xs break-words whitespace-pre-wrap text-text-2">
-            {MARKITDOWN.install}
-            {'\n'}
-            {MARKITDOWN.serve}
-          </pre>
+          <div className="mt-1.5 flex items-start gap-2 rounded-md border border-hairline bg-raised py-1.5 pr-1 pl-2.5">
+            {/* `min-w-0` on the flex child, or a long command refuses to shrink
+                and pushes the button off the edge of the card. */}
+            <pre className="min-w-0 flex-1 overflow-x-auto py-0.5 font-mono text-xs whitespace-pre text-text-1">
+              {SETUP_COMMANDS}
+            </pre>
+            <CopyButton text={SETUP_COMMANDS} label="Copy the setup commands" />
+          </div>
           {/* Not a footnote. Someone who types the address it prints on startup
               gets an unexplainable failure, so the explanation goes where they
               would type it. */}

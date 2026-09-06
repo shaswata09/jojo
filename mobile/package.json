@@ -1,7 +1,7 @@
 {
   "name": "jojo-mobile",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "index.ts",
   "dependencies": {
     "@jojo/service": "*",

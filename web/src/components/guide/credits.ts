@@ -452,3 +452,40 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 export const ISC_TEXT = `Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
 THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.`
+
+/**
+ * The four clauses of Apache-2.0 that decide what a reader may actually do.
+ *
+ * ## Why a summary here and the full text in `LICENSE`
+ *
+ * MIT is three paragraphs, so `MIT_TEXT` above quotes all of it. Apache-2.0 is
+ * 201 lines and 11KB, and inlining it would put that in the bundle of every
+ * person who opens the app and never visits this page — to say, at length,
+ * things the page can state accurately in a quarter of the space. What is
+ * quoted below is verbatim; what is omitted is definitions, the boilerplate
+ * appendix, and the trademark and warranty-acceptance clauses that do not change
+ * a reader's rights.
+ *
+ * THE FULL TEXT SHIPS WITH THE SOFTWARE, in `LICENSE` at the repository root,
+ * which is what the licence itself requires — this page points at it rather than
+ * standing in for it.
+ */
+export const APACHE_CLAUSES: readonly { heading: string; text: string }[] = [
+  {
+    heading: '2. Grant of Copyright License',
+    text: 'each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form.',
+  },
+  {
+    heading: '3. Grant of Patent License',
+    text: 'each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable … patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work … If You institute patent litigation against any entity … alleging that the Work or a Contribution incorporated within the Work constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Work shall terminate as of the date such litigation is filed.',
+  },
+  {
+    heading: '4. Redistribution',
+    text: 'You may reproduce and distribute copies of the Work … provided that You meet the following conditions: (a) You must give any other recipients of the Work or Derivative Works a copy of this License; and (b) You must cause any modified files to carry prominent notices stating that You changed the files; and (c) You must retain … all copyright, patent, trademark, and attribution notices; and (d) If the Work includes a "NOTICE" text file … You must include a readable copy of the attribution notices contained within such NOTICE file.',
+  },
+  {
+    heading: '7. Disclaimer of Warranty · 8. Limitation of Liability',
+    text: 'Unless required by applicable law or agreed to in writing, Licensor provides the Work … on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied … In no event and under no legal theory … shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work.',
+  },
+]
+

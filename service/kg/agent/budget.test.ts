@@ -13,12 +13,14 @@ import { functionSpecs } from './catalog'
 import {
   COMPACT_TARGET,
   RESERVED_FOR_REPLY,
+  SUMMARY_ROOM_SHARE,
   SUMMARY_SHARE,
   fitHistory,
   fitsWindow,
   stubFor,
   trimNote,
 } from './budget'
+import { MIN_SUMMARY_CHARS } from './compact'
 import type { ChatMessage } from '../core/model-server'
 
 const user = (text: string): ChatMessage => ({ role: 'user', content: text })
@@ -40,6 +42,23 @@ const bulk = (n: number) => 'x'.repeat(n)
 /** The loop's own measure of a request, so the tests cannot disagree with it. */
 const tokensOf = (parts: readonly unknown[]) =>
   Math.round((JSON.stringify(parts).length / 3.6) * 1.15)
+
+/**
+ * The trim's own size, with BOTH of its roundings: `estimateTokens` rounds, and
+ * then the margin rounds again. `tokensOf` above folds them into one and can
+ * differ by a token — which the exact character counts below cannot afford,
+ * because they sit ON the boundary.
+ */
+const measure = (parts: readonly unknown[]) =>
+  Math.round(Math.round(JSON.stringify(parts).length / 3.6) * 1.15)
+
+/**
+ * What a token buys in characters, derived from the estimator's divisor the way
+ * `budget.ts` derives it — 3.6 rounded to whole tokens per thousand characters,
+ * inverted. Writing 3.6 straight would be off by a thousandth and the exact
+ * character counts below sit on the boundary.
+ */
+const charsPerToken = 1000 / Math.round(1000 / 3.6)
 
 /**
  * Every `tool` message answers an assistant call that is still in front of it.
@@ -871,13 +890,6 @@ describe('reserving the summary share', () => {
     expect(out.history.some((m) => m.role === 'assistant')).toBe(true)
   })
 
-  /**
-   * The trim's own two roundings — `estimateTokens` rounds, then the margin
-   * rounds again. `tokensOf` above folds them into one and can differ by a
-   * token, which the tests below cannot afford: they sit ON the line.
-   */
-  const measure = (parts: readonly unknown[]) =>
-    Math.round(Math.round(JSON.stringify(parts).length / 3.6) * 1.15)
   const line = window - RESERVED_FOR_REPLY - measure(fixed) - share
 
   /**
@@ -940,23 +952,41 @@ describe('reserving the summary share', () => {
 })
 
 /**
- * The same shape at the window the case declares, where the share cannot be
- * had: the fixed part is 21,693 tokens by this estimator (92 specs and the
- * system prompt), the room 311, the share 2,610 — eight times the room.
+ * The shape this commit was written for, at the window the case declares.
  *
- * What the cut owes here is honesty, not the share. The person's seven turns
- * take 200 of the 311 tokens; the exchange around turn seven's listing is 159
- * intact and 119 stubbed and fits neither way; the closing answer alone does.
- * So the last pass keeps that answer verbatim and leaves what it leaves — 75
- * characters — rather than evicting a sentence that fits to widen a summary
- * that could only paraphrase it. Below any summary's skeleton, that number is
- * `compact`'s floor to refuse; this file's job is to report the room.
+ * The fixed part is ~21,695 tokens by this estimator (92 specs and the system
+ * prompt) against a 26,100 window: the room for history is 309 tokens and a
+ * TENTH OF THE WINDOW is 2,610 — eight times it. `room - share` was then
+ * negative, the reserving pass could not fire, the last pass settled for `room`
+ * and filled it, and the summary was left the crumb the fit happened not to
+ * use. Measured on 2026-09-06 by driving the real loop through the case and
+ * replaying `fitHistory` at each turn (`dropped`, `summaryChars`):
+ *
+ *     turn 5   room 329   dropped  9   112
+ *     turn 6   room 331   dropped 13    53
+ *     turn 7   room 328   dropped 17    18
+ *     turn 8   room 309   dropped 25   275
+ *
+ * All four are under `MIN_SUMMARY_CHARS`, so `compact` refused every one of
+ * them — and the loop, which carries a second copy of that floor, skipped the
+ * call entirely, so the id ledger it builds without a model was not placed
+ * either. Bounding the share by a third of the ROOM as well as a tenth of the
+ * window (`SUMMARY_ROOM_SHARE`) makes the reserving pass reachable again: 103
+ * tokens here, 322 characters, over the floor on all four turns.
+ *
+ * What it costs is one message. In the fixture below — the case's own turns at
+ * its own window, room 310 — the person's seven turns are 200 of those tokens
+ * and the closing answer is 75 more, so the unreserved cut sent 275 and left 35
+ * (109 characters); reserving the 103 evicts that one answer, sends the 200 and
+ * leaves the whole share. Which is the trade this file has to keep
+ * checking in both directions: a verbatim exchange is worth more than the same
+ * tokens of a summary of it, so the reserve may never take a SECOND one.
  */
 describe('the long-vault-convention shape at 26,100', () => {
   const window = 26_100
   const base = 21_693
   const fixed = [{ tools: bulk(Math.round((base / 1.15) * 3.6) - 14) }]
-  const room = window - RESERVED_FOR_REPLY - tokensOf(fixed)
+  const room = window - RESERVED_FOR_REPLY - measure(fixed)
   const share = Math.round(window * SUMMARY_SHARE)
   const says = [
     'House rule for this chat: every URL you store in the vault for me carries the note ‘found by assistant’, so I can tell yours from mine later.',
@@ -997,30 +1027,208 @@ describe('the long-vault-convention shape at 26,100', () => {
   }
   const users = history.filter((m) => m.role === 'user')
 
-  it('is the shape where no cut can afford the share', () => {
-    expect(Math.abs(tokensOf(fixed) - base)).toBeLessThan(4)
+  it('is the shape where no cut can afford a tenth of the window, or reach the target', () => {
+    expect(Math.abs(measure(fixed) - base)).toBeLessThan(4)
     expect(room).toBeLessThan(share)
-    expect(tokensOf(users)).toBeGreaterThan(Math.round(room * COMPACT_TARGET))
+    // Eight times the room, which is what makes the old middle pass unreachable.
+    expect(share / room).toBeGreaterThan(8)
+    // And the target pass cannot land either — the person's turns exceed it on
+    // their own — so what decides the cut is the reserve line and then `room`.
+    expect(measure(users)).toBeGreaterThan(Math.round(room * COMPACT_TARGET))
   })
 
-  it('keeps the closing answer verbatim rather than evicting it for summary room', () => {
+  /**
+   * The reproduction, from the two lines that changed and nothing else.
+   *
+   * With the share at a tenth of the window the middle pass is negative here,
+   * so the trim was `[target (unreachable), _, room]` — the tightest cut under
+   * `room`, and whatever it left over. `unreserved` is exactly that pass, run
+   * over the same stubbed history the real trim builds (cross-checked below
+   * against `out.stubbed`), so the before-number is measured rather than
+   * remembered.
+   */
+  const stubbedHistory = history.map((m) =>
+    m.role === 'tool' && stubFor('memory.list', m.content).length < m.content.length
+      ? result(m.tool_call_id, stubFor('memory.list', m.content))
+      : m,
+  )
+  const unreserved = (): { readonly dropped: number; readonly summaryChars: number } => {
+    for (let cut = 0; cut <= stubbedHistory.length; cut += 1) {
+      if (cut < stubbedHistory.length && stubbedHistory[cut]?.role === 'tool') continue
+      const candidate = [
+        ...stubbedHistory.slice(0, cut).filter((m) => m.role === 'user'),
+        ...stubbedHistory.slice(cut),
+      ]
+      if (measure(candidate) <= room) {
+        const left = Math.min(share, room - measure(candidate))
+        return {
+          dropped: cut,
+          summaryChars: Math.max(0, Math.floor((left / 1.15) * charsPerToken)),
+        }
+      }
+    }
+    throw new Error('the unreserved pass fitted nothing')
+  }
+
+  it('had a budget under compact’s floor, and has one over it', () => {
+    const before = unreserved()
+    // The old numbers, exactly: a cut that filled the room (275 of 310) and
+    // left the summary the 35 tokens nobody else wanted.
+    expect(before.dropped).toBe(25)
+    expect(before.summaryChars).toBe(109)
+    expect(before.summaryChars).toBeLessThan(MIN_SUMMARY_CHARS)
+
+    const out = fitHistory(history, fixed, window)
+    // A third of the room — 103 tokens — reserved and handed back in characters.
+    expect(out.summaryChars).toBe(322)
+    expect(out.summaryChars).toBeGreaterThanOrEqual(MIN_SUMMARY_CHARS)
+    expect(out.summaryChars).toBe(
+      Math.floor((Math.round(room * SUMMARY_ROOM_SHARE) / 1.15) * charsPerToken),
+    )
+    // And it is still the honest remainder: it never exceeds what the tail left.
+    expect(measure([bulk(out.summaryChars)])).toBeLessThanOrEqual(room - measure(out.history))
+  })
+
+  it('pays for it with ONE message of history, and never with the person’s words', () => {
+    const out = fitHistory(history, fixed, window)
+    expect(out.dropped).toBe(unreserved().dropped + 1)
+    // The message it costs is the assistant's closing answer, and the whole
+    // history is 26 messages: what is sent is the seven turns the person wrote.
+    expect(out.dropped).toBe(history.length)
+    expect(out.history).toEqual(users)
+    expect(out.lost).toBeNull()
+    expect(out.overflows).toBe(false)
+    expect(wellFormed(out.history)).toBe(true)
+    // The last exchange's result was stubbed like every other: nothing is
+    // protected, and the numbers in the header are why.
+    expect(out.stubbed).toBe(6)
+    // The stubbed history the reproduction above works from replaced the same
+    // messages the trim did — otherwise the before-number measures another run.
+    expect(stubbedHistory.filter((m, i) => m !== history[i])).toHaveLength(out.stubbed)
+  })
+})
+
+/**
+ * The same window, with the person talking more: the case where the share still
+ * cannot be reserved, and `summaryChars` is the honest remainder again.
+ *
+ * The reserve line is `room - room/3`, two thirds of the room. Below it the
+ * fitted tail can be nothing but the person's own turns — those are in every
+ * candidate — so a conversation whose user turns alone exceed two thirds of the
+ * room has no cut that affords the share, whatever the share is. The last pass
+ * then takes what FITS and the summary gets what is left over, which is the
+ * only honest answer: widening it would mean evicting a sentence the person
+ * wrote to make room for a paraphrase of it, and the trim never does that.
+ *
+ * This is also the pass that keeps `lost` empty here. Without it the fit falls
+ * through to stage 3 and starts dropping the person's earliest turns for a
+ * budget it cannot spend.
+ */
+describe('when the person’s own turns take more than two thirds of the room', () => {
+  const window = 26_100
+  const fixed = [{ tools: bulk(Math.round((21_693 / 1.15) * 3.6) - 14) }]
+  const room = window - RESERVED_FOR_REPLY - measure(fixed)
+  const share = Math.min(Math.round(window * SUMMARY_SHARE), Math.round(room * SUMMARY_ROOM_SHARE))
+  /** Seven questions of the length people actually type, and long answers. */
+  const history = Array.from({ length: 7 }, (_, i) => [
+    user(
+      `turn ${String(i)}: which of the applications I opened this month is still waiting on me?`,
+    ),
+    assistant(`Turn ${String(i)}: ${bulk(400)}`),
+  ]).flat()
+  const users = history.filter((m) => m.role === 'user')
+
+  it('is the shape where no cut can reserve the share', () => {
+    expect(measure(users)).toBeGreaterThan(room - share)
+    expect(measure(users)).toBeLessThanOrEqual(room)
+  })
+
+  it('sends every user turn and reports what they left, not the share', () => {
     const out = fitHistory(history, fixed, window)
     expect(out.overflows).toBe(false)
     expect(out.lost).toBeNull()
-    expect(out.history.filter((m) => m.role === 'user')).toEqual(users)
-    expect(out.history.at(-1)).toBe(history.at(-1))
-    expect(wellFormed(out.history)).toBe(true)
-    // The last exchange's result was stubbed like every other: nothing is
-    // protected, and the numbers above are why.
-    expect(out.stubbed).toBe(6)
+    expect(out.history).toEqual(users)
+    // The remainder, exactly — and it is below the share, which is the whole
+    // difference between "reserved" and "whatever was left".
+    expect(out.summaryChars).toBe(Math.floor(((room - measure(users)) / 1.15) * charsPerToken))
+    expect(out.summaryChars).toBeLessThan(Math.floor((share / 1.15) * charsPerToken))
+    expect(out.summaryChars).toBeLessThan(MIN_SUMMARY_CHARS)
+  })
+})
+
+/**
+ * The other five endurance shapes, whose rooms are 420-1,232 tokens.
+ *
+ * A third of those is 140-410 tokens against a window-tenth of 2,620-2,700, so
+ * every one of them now RESERVES LESS than it did. That is not a loss, and the
+ * reason is structural rather than lucky: the reserve line is `room - room/3`,
+ * two thirds of the room, and the target the first pass aims at is `room/3`
+ * when the window figure collapses — so wherever the target pass can land, it
+ * lands first and the reserve is never consulted. Measured against the real
+ * loop on 2026-09-06, all five keep the same `dropped` and the same messages
+ * they had before; what changes is the CAP on the summary, from ~2,600
+ * characters to ~1,257, and a shorter cap costs nothing while the summary is
+ * the paraphrase and the history it stops displacing is verbatim.
+ */
+describe('the wider endurance rooms', () => {
+  const window = 27_000
+  const base = 21_700
+  const fixed = [{ tools: bulk(Math.round((base / 1.15) * 3.6) - 14) }]
+  const room = window - RESERVED_FOR_REPLY - measure(fixed)
+  const target = Math.max(
+    Math.round(window * COMPACT_TARGET) - measure(fixed),
+    Math.round(room * COMPACT_TARGET),
+  )
+  /** Seven exchanges around big results — the endurance shape, at a wider room. */
+  const history = [
+    user('House rule: my referees are Prof. Marta Oyelaran and Dr Idris Whitfield.'),
+    assistant('Noted.'),
+    ...Array.from({ length: 6 }, (_, i) => [
+      user(`turn ${String(i + 2)}: what is open now?`),
+      calling(`c${String(i)}`),
+      result(`c${String(i)}`, listing(20)),
+      assistant(`Turn ${String(i + 2)}: twenty of them, newest first.`),
+    ]).flat(),
+  ]
+
+  it('is decided by the target pass, which this change did not touch', () => {
+    const out = fitHistory(history, fixed, window)
+    // The fit lands under the target, so the reserve line — which is looser —
+    // was never reached: the same cut the old arithmetic made.
+    expect(measure(out.history)).toBeLessThanOrEqual(target)
+    expect(out.dropped).toBeGreaterThan(0)
+    expect(out.lost).toBeNull()
+    expect(out.history.filter((m) => m.role === 'user')).toEqual(
+      history.filter((m) => m.role === 'user'),
+    )
   })
 
-  it('reports the honest remainder, which is below any summary', () => {
+  it('reserves a third of the room instead of a tenth of the window, and clears the floor', () => {
     const out = fitHistory(history, fixed, window)
-    // What the tail leaves, exactly — not the share, and not rounded up.
-    expect(tokensOf([bulk(out.summaryChars)])).toBeLessThanOrEqual(room - tokensOf(out.history))
-    expect(out.summaryChars).toBeGreaterThan(0)
-    expect(out.summaryChars).toBeLessThan(200)
+    const third = Math.round(room * SUMMARY_ROOM_SHARE)
+    expect(third).toBeLessThan(Math.round(window * SUMMARY_SHARE))
+    expect(out.summaryChars).toBe(Math.floor((third / 1.15) * charsPerToken))
+    // A seventh of what the window's tenth would have asked for — 1,257
+    // characters against 8,445, a cap the 1,205 tokens of room could never have
+    // left anyway — and still nearly four times `compact`'s floor.
+    expect(out.summaryChars).toBe(1_257)
+    expect(out.summaryChars).toBeLessThan(
+      Math.floor(((window * SUMMARY_SHARE) / 1.15) * charsPerToken) / 5,
+    )
+    expect(out.summaryChars).toBeGreaterThan(3 * MIN_SUMMARY_CHARS)
+  })
+
+  it('leaves the reserve line looser than the target at every room, so it can only act where the target cannot', () => {
+    /*
+     * `room - room/3` against `room/3`: two thirds against one. This is the
+     * invariant behind "the five wider cases keep their history" — a reserve
+     * that were TIGHTER than the target would re-cut every fit the target pass
+     * already made, which is how a summary reserve turns into a second trim.
+     */
+    for (const r of [420, 620, 811, 1009, 1204, 1232, 8_000, 40_000]) {
+      const reserveLine = r - Math.round(r * SUMMARY_ROOM_SHARE)
+      expect(reserveLine).toBeGreaterThanOrEqual(Math.round(r * COMPACT_TARGET))
+    }
   })
 })
 

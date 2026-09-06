@@ -171,6 +171,54 @@ export const COMPACT_TARGET = 1 / 3
  */
 export const SUMMARY_SHARE = 0.1
 
+/**
+ * The same budget as a share of the ROOM, and the smaller of the two wins.
+ *
+ * A share of the window is the right size when the window is mostly
+ * conversation, and eight times too big when it is mostly tool schemas. This is
+ * the same collapse `target` already handles one paragraph below — a figure
+ * computed from the window, checked against what is actually AVAILABLE — and it
+ * is here for the same reason: a number bigger than the room is not a budget,
+ * it is a pass that never fires.
+ *
+ * MEASURED on 2026-09-06 by driving the real loop through every endurance case
+ * and replaying `fitHistory` at each turn. Under `full` the window is ~83% tool
+ * schemas (base ~21,695 of 26,100), so long-vault-convention has 309-331 tokens
+ * of room and a window-tenth share of 2,610 — eight times it. `room - share` is
+ * then negative, the reserving pass cannot fire, the last pass settles for
+ * `room` and fills it, and what the summary is left with is the crumb:
+ *
+ * | turn | room | summaryChars, a tenth of the window | bounded by a third of the room |
+ * | --- | --- | --- | --- |
+ * | 5 | 329 | 112 | 344 |
+ * | 6 | 331 | 53 | 347 |
+ * | 7 | 328 | 18 | 344 |
+ * | 8 | 309 | 275 | 322 |
+ *
+ * Every one of those is under `compact`'s `MIN_SUMMARY_CHARS` (320), so no
+ * summary was written on any of them — and the loop, which skips `compact`
+ * under the same floor, did not place the id ledger either. A third of the room
+ * is 103-110 tokens there, the reserving pass fires, and the budget clears the
+ * floor on all four.
+ *
+ * A third and not a half: `COMPACT_TARGET` is the share of the window a
+ * compaction aims to leave, and the summary is the compensation for what was
+ * evicted to reach it — it should not be able to become the majority of what is
+ * sent. What it costs is one more exchange, measured on the same four turns of
+ * the real loop: `dropped` goes 9 → 13, 13 → 17 and 17 → 21 on turns 5-7 (one
+ * four-message exchange each) and 25 → 26 on turn 8 (the closing answer alone).
+ * Never two, and never a user turn — those are in every candidate.
+ *
+ * The five wider cases (room 420-1,232) reserve LESS than they did — a third of
+ * 1,214 is 405 tokens against the window's tenth of 2,700 — and that is the
+ * trade this makes deliberately: what the summary gives back is history it
+ * paraphrases, and the tokens it stops taking are exchanges that go verbatim
+ * instead. At 402 tokens the budget is still 1,257 characters, nearly four
+ * times the floor, and the five keep the cut they had — measured, `dropped`
+ * identical on all five at every turn.
+ */
+export const SUMMARY_ROOM_SHARE = 1 / 3
+
 export type Trimmed = {
   /**
    * What to send: the user turns carried out of the cut prefix, verbatim and in
@@ -216,20 +264,28 @@ export type Trimmed = {
    */
   readonly lost: { readonly count: number; readonly reason: string } | null
   /**
-   * How many characters of summary the window can afford this turn: a
-   * `SUMMARY_SHARE` of the window, and never more than the room the fitted
-   * request actually leaves under the ceiling — the second bound is what stops
-   * a summary from re-overflowing a request the trim just fixed when the fixed
-   * part takes most of the window (measured: 21.7k of tools at 26.6k leaves
-   * ~800 tokens of room, and a tenth of the window would be 2.6k).
+   * How many characters of summary the request can afford this turn: the share
+   * — a `SUMMARY_SHARE` of the window or a `SUMMARY_ROOM_SHARE` of the room,
+   * whichever is smaller — and never more than the room the fitted request
+   * actually leaves under the ceiling.
+   *
+   * Both bounds stop the same failure from opposite sides. The room bound stops
+   * a summary from re-overflowing a request the trim just fixed. The share's
+   * own room term stops the budget from being a number the room could never
+   * hold: with 21.7k of tool schemas at a 26,100 window the room is ~310 tokens
+   * and a tenth of the window is 2,610, so the reserving pass could not fire
+   * and this field came back at 18-275 characters — under `compact`'s floor, so
+   * nothing was summarised and no id ledger was placed either.
    *
    * The cut RESERVES the share when evicting more can afford it (stage 2's
    * middle pass), so this is the whole share whenever the exchanges being
-   * evicted could make room for it, and the honest remainder when they
-   * cannot. That remainder can be below what any summary needs — 75
-   * characters on the vault-convention shape at its 26,100 window, where the
-   * share is eight times the room — and a number that small is `compact`'s
-   * floor to refuse, not this field's to round up: the room is what it is.
+   * evicted could make room for it, and the honest remainder when they cannot.
+   * It cannot be reserved when the person's own turns take more than
+   * `1 - SUMMARY_ROOM_SHARE` of the room — they are in every candidate — and
+   * the remainder there can still be below what any summary needs. A number
+   * that small is `compact`'s floor to refuse, not this field's to round up:
+   * evicting a sentence the person wrote to widen a paraphrase of it is not a
+   * trade this makes.
    */
   readonly summaryChars: number
   /**
@@ -342,7 +398,6 @@ export function fitHistory(
 ): Trimmed {
   const ceiling = window - RESERVED_FOR_REPLY
   const base = sizeOf(fixed)
-  const share = Math.round(window * SUMMARY_SHARE)
   /*
    * `dropped: 0`, and that is not cosmetic.
    *
@@ -370,6 +425,13 @@ export function fitHistory(
   }
 
   const room = ceiling - base
+  /*
+   * The smaller of the two shares — see `SUMMARY_ROOM_SHARE`. A tenth of the
+   * WINDOW alone was eight times the room on the vault shape (2,610 against
+   * 309), which made the reserving pass unreachable and left the summary the
+   * 18-275 characters the fit happened not to use.
+   */
+  const share = Math.min(Math.round(window * SUMMARY_SHARE), Math.round(room * SUMMARY_ROOM_SHARE))
   /** A result that was sent, with the summary bounded by what is actually left. */
   const sent = (
     out: readonly ChatMessage[],
@@ -436,11 +498,12 @@ export function fitHistory(
    * rather than assumed, because it is the result the next question is most
    * likely about — long-vault-convention is exactly that shape: turn eight
    * saves a link beside the one turn seven's listing returned. At the case's
-   * 26,100 window the fixed part is 21,693 tokens and the room 311; the
-   * person's seven turns take 200 of it, leaving 111 for anything else. The
+   * 26,100 window the fixed part is ~21,694 tokens and the room 310; the
+   * person's seven turns take 200 of it, leaving 110 for anything else. The
    * link record is 87 tokens intact and 48 as a stub, and the exchange around
-   * it 159 intact and 119 stubbed — neither fits, and the answer alone (22)
-   * does. Protecting the record would have bought nothing there, and at any
+   * it 159 intact and 119 stubbed — neither fits either way, and once the
+   * share (103) is reserved from those 110, the closing answer does not fit
+   * either. Protecting the record would have bought nothing there, and at any
    * wider window it would take from the summary's reserve what one re-read
    * gives back.
    */
@@ -496,19 +559,33 @@ export function fitHistory(
    * tightest-first, because a verbatim exchange is worth more than the same
    * tokens of a summary of it.
    *
-   * The first pass needs no reserve of its own. A cut under the target leaves
-   * `room - target`, and that is at least the share whenever the target is a
-   * third of the window (`0.9·window − 4,096 − base` against
-   * `window/3 − base`: covered above 7,229 tokens, and no provider declares
-   * less than 8,192) and whenever the degraded target `room/3` has
-   * `room ≥ 0.15·window`. Below that the tools take all but a sliver, two
-   * thirds of the room is the honest maximum, and the vault case is the
-   * measurement: at 26,100 the room is 311 tokens and the share 2,610, the
-   * person's seven turns are 200 of the 311, so no cut can afford the share
-   * and the last pass keeps the closing answer (22 tokens) and leaves 25 —
-   * 75 characters. `compact` refuses to call the model under
-   * `MIN_SUMMARY_CHARS`, and the trim stands plain, which is right: the
-   * person's turns went verbatim and there was no room for anything else.
+   * That pass only became reachable when the share stopped being a tenth of
+   * the WINDOW (`SUMMARY_ROOM_SHARE`). Under `full` the schemas are ~83% of
+   * the window, `room - share` was negative on every endurance turn, and the
+   * fit fell through to `room` and filled it — summaryChars 18-275 on
+   * long-vault-convention's turns 5-8, all under `compact`'s floor, so neither
+   * a summary NOR the harness-built id ledger was placed. Bounded by a third
+   * of the room the same four turns reserve 103-110 tokens and clear it, for
+   * one more exchange each on turns 5-7 and one message — the closing answer —
+   * on turn 8.
+   *
+   * The first pass needs no reserve of its own, and with the share bounded by
+   * the room that is now unconditional rather than a case analysis. A cut under
+   * the target leaves at least `room - target`; the target is at most
+   * `room/3` — `COMPACT_TARGET` of the room, or less when the window figure is
+   * the smaller of the two — and the share is at most `room/3` as well, so
+   * `room - target ≥ share` wherever the first pass lands. This is why the five
+   * wider endurance cases keep the exact cut they had: the reserve line is two
+   * thirds of the room and the target is one, so the reserve is only ever
+   * consulted for fits the target pass could not make.
+   *
+   * The share still cannot always be HAD. The person's turns are in every
+   * candidate, so a conversation whose user turns alone exceed `room - share`
+   * has no cut that affords it; the last pass then takes what fits and
+   * `summaryChars` is the remainder, which can be below `MIN_SUMMARY_CHARS`.
+   * `compact` refuses the call there and the trim stands plain, which is
+   * right: the person's turns went verbatim and there was no room for anything
+   * else.
    */
   const evict = (cut: number, out: readonly ChatMessage[]): Trimmed =>
     sent(

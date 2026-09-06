@@ -2,7 +2,7 @@
   "name": "jojo",
   "version": "0.1.0",
   "private": true,
-  "license": "MIT",
+  "license": "Apache-2.0",
   "description": "Agentic job-search assistant, local-first. One shared service layer, two apps.",
   "workspaces": [
     "service",

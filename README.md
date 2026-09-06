@@ -516,10 +516,19 @@ copy needs the same forwarding.
 
 ## Licence
 
-**jojo is MIT-licensed and free to use** — including commercially. Copy it,
-change it, ship it inside something you sell. The two conditions are MIT's own:
-keep the copyright and permission notice with any substantial copy, and accept
-that it comes with no warranty. Full text in [`LICENSE`](LICENSE).
+**jojo is Apache-2.0 licensed and free to use** — including commercially. Copy
+it, change it, ship it inside something you sell. What the licence asks in
+return: keep the copyright and licence notice with any substantial copy, pass on
+[`NOTICE`](NOTICE), say which files you changed, and accept that it comes with
+no warranty. Full text in [`LICENSE`](LICENSE).
+
+It also does something MIT could not, and this is why it was chosen over MIT:
+**every contributor grants a patent licence along with their code, and loses it
+if they sue anyone over the project.** MIT never mentions patents, which leaves
+open the case where somebody contributes a patented method and later sues the
+people using it — their copyright grant would not have stopped them. That
+protection covers contributors' patents only; no licence can shield you from a
+third party who never touched this code.
 
 **The services you point it at are not covered by that.** jojo ships no API key
 and calls nothing on its own, so every connection is one you configure with your

@@ -130,9 +130,9 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'web/src/components',
-    // Re-measured 2026-09-05, when the guide's benchmark table grew its cost,
-    // noise and stops columns and `bench-runs.ts` the derivations behind them.
-    files: 283,
+    // Re-measured when `common/CopyButton.tsx` was added, so the setup
+    // commands in Settings could be copied rather than retyped.
+    files: 284,
     tests: 29,
     lines: 48069,
     what: 'every surface you can see',

@@ -3,7 +3,7 @@ import { Chip } from '@/components/common/Chip'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { GuideContents } from '@/components/guide/GuideNav'
-import { MIT_TEXT } from '@/components/guide/credits'
+import { APACHE_CLAUSES } from '@/components/guide/credits'
 import { useTitle } from '@/lib/links'
 
 /**
@@ -39,29 +39,39 @@ export function GuideLicence() {
     <>
       <PageHeader
         title="Licence"
-        subtitle="jojo is MIT-licensed and free to use. The services you can point it at are not jojo's, and they come with their own terms."
+        subtitle="jojo is Apache-2.0 licensed and free to use. The services you can point it at are not jojo's, and they come with their own terms."
       />
 
       {/* ------------------------------------------------------ jojo itself */}
       <Panel>
-        <PanelTitle hint="MIT · free for any use, including commercial">
+        <PanelTitle hint="Apache-2.0 · free for any use, including commercial">
           jojo’s own licence
         </PanelTitle>
         <div className="space-y-2.5 text-sm text-text-2">
           <p>
             <span className="text-text-1">
-              jojo is open source under the MIT licence, © 2026 Shaswata Mitra.
+              jojo is open source under the Apache License 2.0, © 2026 Shaswata Mitra.
             </span>{' '}
             You may use it, copy it, change it, and ship it in something you sell. There is no fee,
             no account, no licence key and no per-seat anything. The full text is in{' '}
-            <span className="font-mono text-xs">LICENSE</span> at the root of the repository and is
-            quoted at the foot of this page.
+            <span className="font-mono text-xs">LICENSE</span> at the root of the repository; the
+            clauses that decide what you may do are quoted at the foot of this page.
           </p>
           <p>
-            The two conditions are the ones MIT always carries, and they are short. Keep the
-            copyright notice and the permission notice with any substantial copy you distribute. And
+            What it asks in return is short. Keep the copyright and licence notice with any
+            substantial copy you distribute, pass on the{' '}
+            <span className="font-mono text-xs">NOTICE</span> file, mark any files you changed, and
             accept that it comes with <span className="text-text-1">no warranty of any kind</span> —
             see the disclaimer below, which is not boilerplate here.
+          </p>
+          <p>
+            Apache-2.0 rather than MIT for one reason:{' '}
+            <span className="text-text-1">patents</span>. Every contributor grants a patent licence
+            along with their code, and loses it if they sue anyone over this project. MIT never
+            mentions patents at all, which leaves open the case where somebody contributes a
+            patented method and later sues the people using it — a copyright licence would not have
+            stopped them. It covers contributors only: no licence can shield you from a third party
+            who never touched this code.
           </p>
         </div>
       </Panel>
@@ -229,11 +239,24 @@ export function GuideLicence() {
       </Panel>
 
       <Panel>
-        <PanelTitle hint="the whole of it">The MIT licence, in full</PanelTitle>
-        <p className="mb-2 text-sm text-text-2">MIT License · Copyright (c) 2026 Shaswata Mitra</p>
-        <blockquote className="border-l-2 border-hairline pl-3 text-xs whitespace-pre-line text-text-3">
-          {MIT_TEXT}
-        </blockquote>
+        <PanelTitle hint="quoted verbatim">The clauses that decide what you may do</PanelTitle>
+        <p className="mb-3 text-sm text-text-2">
+          Apache License 2.0 · Copyright 2026 Shaswata Mitra. These four are quoted word for word;
+          what is left out is definitions, the boilerplate appendix, and the trademark clause, none
+          of which change what you may do. The whole of it is in{' '}
+          <span className="font-mono text-xs">LICENSE</span> at the root of the repository — which
+          is where the licence itself says it must travel.
+        </p>
+        <div className="space-y-3">
+          {APACHE_CLAUSES.map((clause) => (
+            <div key={clause.heading}>
+              <p className="text-xs font-medium text-text-2">{clause.heading}</p>
+              <blockquote className="mt-1 border-l-2 border-hairline pl-3 text-xs wrap-anywhere text-text-3">
+                {clause.text}
+              </blockquote>
+            </div>
+          ))}
+        </div>
       </Panel>
 
       <GuideContents />
