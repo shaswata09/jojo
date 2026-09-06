@@ -148,6 +148,7 @@ export function StatisticsScreen() {
 
   return (
     <Screen
+      wide
       title="Statistics"
       subtitle={
         sent > 0

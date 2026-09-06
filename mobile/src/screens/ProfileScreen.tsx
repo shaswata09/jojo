@@ -95,6 +95,7 @@ export function ProfileScreen() {
     <Screen
       title="My profile"
       subtitle="What the scout and assistant use to match and draft. None of it leaves your device."
+      wide
     >
       {/* Profile sections. The edit sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>

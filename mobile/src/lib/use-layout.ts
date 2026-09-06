@@ -1,6 +1,11 @@
 import { useWindowDimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { space } from '@/theme/tokens'
+import { layoutFor } from '@/lib/layout-math'
+import type { LayoutResult } from '@/lib/layout-math'
+
+/** Re-exported so callers keep importing the layout type from the hook. */
+export type Layout = LayoutResult
 
 /**
  * The one place that knows how wide the app is right now.
@@ -28,46 +33,25 @@ import { space } from '@/theme/tokens'
  */
 
 /**
- * Where a tablet stops being a big phone.
+ * The arithmetic lives in `layout-math.ts`, where a test can reach it. This is
+ * the two readings it needs, and nothing else.
  *
- * 900dp is a landscape 10" tablet and up; a portrait one is ~800dp and a phone
- * on its side ~850dp, so both stay on the phone layout — which is right, since
- * neither has the width to run two useful columns of panels.
+ * `maxColumns` is what the CALLING SCREEN draws, not what the device could
+ * carry — the two used to be the same value and that was the bug: a screen
+ * rendering one column on a tablet was given the two-column width cap, so its
+ * content ran to 1042dp instead of stopping at a readable 720. See the header of
+ * `layout-math.ts` for the measurement.
  */
-const TWO_COLUMN = 900
-
-/**
- * How wide the content is allowed to get, by layout.
- *
- * One column stops at 720 because past that a line of text is longer than the
- * eye can track back. Two columns may go to 1200, because the constraint there
- * is the width of a single column — 1200 split in two is ~590 each, which is
- * inside the same readable range. The web app makes the same trade with a
- * 1440px shell and `lg:grid-cols-2` inside it.
- */
-const MAX_WIDTH = { 1: 720, 2: 1200 } as const
-
-export type Layout = {
-  width: number
-  height: number
-  landscape: boolean
-  /** How many columns of panels the screen can carry. */
-  columns: 1 | 2
-  /** Horizontal padding: safe area, then centring, whichever is larger. */
-  gutter: number
-}
-
-export function useLayout(): Layout {
+export function useLayout(maxColumns: 1 | 2 = 1): Layout {
   const { width, height } = useWindowDimensions()
   const insets = useSafeAreaInsets()
 
-  const landscape = width > height
-  const columns: 1 | 2 = width >= TWO_COLUMN ? 2 : 1
-  // The safe area is asymmetric — the notch is on one side only — so the larger
-  // of the two is used for both. Padding a row unevenly to match the hardware
-  // is more distracting than the few points it saves.
-  const safe = space[3] + Math.max(insets.left, insets.right)
-  const centring = (width - MAX_WIDTH[columns]) / 2
-
-  return { width, height, landscape, columns, gutter: Math.max(safe, centring) }
+  return layoutFor({
+    width,
+    height,
+    insetLeft: insets.left,
+    insetRight: insets.right,
+    basePadding: space[3],
+    maxColumns,
+  })
 }

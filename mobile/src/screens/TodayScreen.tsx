@@ -85,7 +85,7 @@ export function TodayScreen() {
       : `${todayLabel()} · ${all.length} application${all.length === 1 ? '' : 's'}, all on this device.`
 
   return (
-    <Screen title="Today" subtitle={subtitle}>
+    <Screen title="Today" subtitle={subtitle} wide>
       {/* Five independent panels with no reading order between them, which is
           what makes this screen safe to cut into two columns on a tablet. The
           order still holds down each column: the two things you act on first

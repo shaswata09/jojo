@@ -1,4 +1,4 @@
-import { Children, useState } from 'react'
+import { Children, createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import type { ScrollViewProps } from 'react-native'
@@ -10,6 +10,20 @@ import { useLayout } from '@/lib/use-layout'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+
+/**
+ * How many columns the surrounding `Screen` settled on.
+ *
+ * `Columns` cannot work this out for itself: it would have to re-read the device
+ * width and re-apply the rule, and the two copies could disagree with the
+ * padding `Screen` already committed to — which is how content ends up split
+ * into two columns inside a frame sized for one. So `Screen` decides once and
+ * says so here.
+ *
+ * The default is 1 rather than "ask the device", so a `Columns` rendered outside
+ * a `Screen` stacks instead of silently splitting into a width nobody reserved.
+ */
+const ColumnsContext = createContext<1 | 2>(1)
 
 /**
  * The page frame: a title block, then whatever the screen renders.
@@ -25,6 +39,7 @@ export function Screen({
   actions,
   options,
   children,
+  wide = false,
   scroll = true,
   contentContainerStyle,
   ...rest
@@ -36,11 +51,25 @@ export function Screen({
   /** Switches behind the ⋯ button. */
   options?: ReactNode
   children: ReactNode
+  /**
+   * This screen lays its panels out in two columns when there is room.
+   *
+   * Set it on a screen that renders `<Columns>`, and leave it off everywhere
+   * else. It decides BOTH how wide the content may get and whether `Columns`
+   * actually splits — one answer, computed here, shared through the context
+   * below, so the padding and the split can never disagree.
+   *
+   * Off by default because most screens are a single column, and the old
+   * behaviour — deciding from the device width alone — gave those screens the
+   * two-column width cap and drew them 1042dp wide on a tablet.
+   */
+  wide?: boolean
   scroll?: boolean
 }) {
   const c = useColors()
   const insets = useSafeAreaInsets()
-  const { gutter } = useLayout()
+  const layout = useLayout(wide ? 2 : 1)
+  const { gutter, short } = layout
   const [optionsOpen, setOptionsOpen] = useState(false)
 
   // Recomputed every render rather than baked into the stylesheet, because both
@@ -54,10 +83,16 @@ export function Screen({
         {/* The screen's heading, and the phone's equivalent of an <h1>. Every
             screen goes through this frame, so one prop here gives TalkBack and
             VoiceOver a heading to land on everywhere. */}
-        <Txt size="xl" weight="semibold" heading>
+        {/* Smaller on a phone held sideways, and the subtitle goes entirely.
+            Together they give back ~35dp of a 411dp-tall screen — see `short`
+            in `layout-math.ts` for where that number comes from. The subtitle
+            is the right thing to drop because it is context rather than
+            navigation: it says what the page is FOR, which is worth reading
+            once and never again, while the title says where you are. */}
+        <Txt size={short ? 'lg' : 'xl'} weight="semibold" heading>
           {title}
         </Txt>
-        {subtitle ? (
+        {subtitle && !short ? (
           <Txt size="sm" tone="muted" style={{ marginTop: space[1] }}>
             {subtitle}
           </Txt>
@@ -78,10 +113,10 @@ export function Screen({
   )
 
   const body = (
-    <>
+    <ColumnsContext.Provider value={layout.columns}>
       {header}
       {children}
-    </>
+    </ColumnsContext.Provider>
   )
 
   return (
@@ -93,6 +128,10 @@ export function Screen({
           contentContainerStyle={[
             styles.content,
             pad,
+            // Tighter top-and-gap in a short viewport, for the same reason the
+            // type shrinks. The bottom keeps its full run-out so the last panel
+            // can still be scrolled clear of the tab bar.
+            short ? styles.contentShort : null,
             { paddingBottom: insets.bottom + space[10] },
             contentContainerStyle,
           ]}
@@ -100,7 +139,9 @@ export function Screen({
           {body}
         </ScrollView>
       ) : (
-        <View style={[styles.content, pad, styles.fill]}>{body}</View>
+        <View style={[styles.content, pad, short ? styles.contentShort : null, styles.fill]}>
+          {body}
+        </View>
       )}
 
       {options ? (
@@ -134,7 +175,7 @@ export function Screen({
  * lands close enough that the difference is not worth the flash.
  */
 export function Columns({ children }: { children: ReactNode }) {
-  const { columns } = useLayout()
+  const columns = useContext(ColumnsContext)
   const items = Children.toArray(children).filter(Boolean)
 
   if (columns === 1) return <View style={styles.stack}>{children}</View>
@@ -157,6 +198,7 @@ const styles = StyleSheet.create({
   // Horizontal padding is supplied by `useLayout`, not here — it has to track
   // rotation. Only the vertical half is static.
   content: { paddingVertical: space[3], gap: space[4] },
+  contentShort: { paddingTop: space[2], gap: space[3] },
   fill: { flex: 1, minHeight: 0 },
   header: {
     flexDirection: 'row',

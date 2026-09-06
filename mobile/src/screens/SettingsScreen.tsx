@@ -361,7 +361,7 @@ export function SettingsScreen() {
     }
 
   return (
-    <Screen title="Settings" subtitle="Connections, sync and your data">
+    <Screen title="Settings" subtitle="Connections, sync and your data" wide>
       {/* Setting groups. The confirm sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>
         <Panel>
@@ -607,11 +607,22 @@ export function SettingsScreen() {
         </Panel>
 
         <Panel>
-          <PanelTitle hint="optional">Read my documents</PanelTitle>
+          <PanelTitle hint="PDFs only">Read my documents</PanelTitle>
+          {/* The honest split, because the old copy asked for a server before
+              anything could be read and that is no longer true. Saying what
+              already works is what stops somebody setting up a reader they do
+              not need — and naming PDF plainly is what stops the opposite. */}
           <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            The assistant can only see a document’s name until something turns it into text. Run{' '}
-            {MARKITDOWN.name} on a machine this phone can reach and it can read what is inside your
-            PDFs, Word files, decks and spreadsheets.
+            This phone already reads Word files, OpenDocument files, decks, saved pages and plain
+            text on its own — nothing to set up and nothing sent anywhere.
+          </Txt>
+          <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
+            <Txt size="sm" tone="primary">
+              PDFs are the exception.
+            </Txt>{' '}
+            Turning one back into text needs the font tables inside it, which is more than this app
+            carries. For those, run {MARKITDOWN.name} on a machine this phone can reach and give its
+            address below.
           </Txt>
           <TextField
             label="Address"

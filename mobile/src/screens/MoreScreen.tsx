@@ -156,7 +156,7 @@ export function MoreScreen() {
   )
 
   return (
-    <Screen title="More" subtitle="The rest of jojo">
+    <Screen title="More" subtitle="The rest of jojo" wide>
       {/* Three panels of navigation rows. Side by side on a tablet, because a
           row stretched to 1200pt puts its chevron a thousand points from its
           label and turns a scannable list into a search. */}

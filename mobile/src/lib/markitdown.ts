@@ -12,6 +12,7 @@ import {
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
 import { mimeOfFile } from '@jojo/service/core/files'
 import { failed, send } from '@/lib/local-service'
+import { readOnDevice } from '@/lib/on-device-reader'
 
 /**
  * Reading a document, through MarkItDown running on the machine this phone can
@@ -84,6 +85,30 @@ export async function convertDocument(
   uri: string,
   name: string,
 ): Promise<ConvertResult> {
+  /*
+   * THE PHONE FIRST, and only then the machine across the room.
+   *
+   * A DOCX, an ODT, a deck, an HTML capture or a plain text file is read here
+   * on the handset with nothing configured — see `on-device-reader.ts`. That is
+   * the difference between a local-first app and one that needs a server on
+   * somebody's laptop before it will open the CV already on the phone, and it
+   * matters more here than on the web, where an extension can bridge to a local
+   * MarkItDown and on a phone nothing can.
+   *
+   * Order, and why this way round. On-device is instant, works offline, and is
+   * always available; MarkItDown is richer but usually absent. So the reader
+   * that is there wins for the formats it genuinely handles, and everything
+   * else — PDF above all, which needs font tables this cannot carry — falls
+   * through to the code below exactly as before.
+   *
+   * `null` means "not a format I read". A `{ ok: false }` means it was mine and
+   * I failed, and that ALSO falls through: a DOCX that extracts to nothing is
+   * usually a scan, and MarkItDown has OCR. The person gets the better answer
+   * when a reader is configured and an honest sentence when it is not.
+   */
+  const here = await readOnDevice(uri, name)
+  if (here?.ok === true) return here
+
   const path = pathOf(uri)
   try {
     const stat = await ReactNativeBlobUtil.fs.stat(path)
@@ -98,8 +123,20 @@ export async function convertDocument(
     return { ok: false, reason: 'The copy of that document is no longer on this device.' }
   }
 
+  /*
+   * When BOTH readers fail, the one that actually looked at the file wins.
+   *
+   * Without this the sentence a person sees for a scanned DOCX on a phone with
+   * no reader configured is MarkItDown's — "could not reach the reader" —
+   * which sends them to set up a server that would not have helped either. The
+   * on-device reason names the real problem: nothing could be extracted, it is
+   * probably a scan. `preferred` carries it past the MCP attempt so the better
+   * sentence survives.
+   */
+  const preferred = (fallback: ConvertResult): ConvertResult => here ?? fallback
+
   const ready = await handshake(endpoint)
-  if (!ready.ok) return ready
+  if (!ready.ok) return preferred(ready)
 
   let base64: string
   try {
@@ -114,7 +151,7 @@ export async function convertDocument(
   const answer = await send(convertRequest(endpoint, dataUri(mimeOfFile(name), base64)), endpoint)
   if (failed(answer)) {
     shookHands = null
-    return { ok: false, reason: answer.failed.reason }
+    return preferred({ ok: false, reason: answer.failed.reason })
   }
   const out = readConvertResponse(answer)
   /*

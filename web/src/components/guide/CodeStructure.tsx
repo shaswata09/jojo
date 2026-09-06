@@ -93,14 +93,18 @@ export const SHAPE: DirRow[] = [
     // `repair.ts` (schema-driven argument repair), `stuck.ts` (repeat, failing,
     // cycle, echo and chant detection) and `verify-gate.ts` (the pre-exit
     // check), with a test file each. Six files and about 5,500 lines.
-    files: 58,
-    tests: 28,
-    // Re-measured 2026-09-05, when compaction was rebuilt: `budget.ts` evicts
+    files: 60,
+    tests: 29,
+    // Re-measured when the phone got a reader of its own: `documents.ts` turns
+    // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
+    // handset — which has no Python and cannot install an extension — reads
+    // most documents with nothing configured. PDF still goes to MarkItDown.
+    // Previously re-measured 2026-09-05, when compaction was rebuilt: `budget.ts` evicts
     // in three stages and keeps the person's turns verbatim, `compact.ts`
     // writes a structured summary with a harness-built ledger of record ids,
     // and the endurance guard follows the app's history shape. No new files;
     // about 4,200 lines, most of them the tests that pin each measure.
-    lines: 38143,
+    lines: 39787,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
