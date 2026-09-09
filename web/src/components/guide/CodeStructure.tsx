@@ -76,13 +76,14 @@ type DirRow = { dir: string; files: number; tests: number; lines: number; what: 
 export const SHAPE: DirRow[] = [
   {
     dir: 'service/kg/core',
-    // 118/57 rather than 120/58 since `core/folder.ts` and its test were
-    // deleted: 555 lines of File System Access folder rules — naming, drift
-    // classification, orphan pairing, rebuild planning — that nothing outside
-    // the test imported, for a folder the OS no longer owns. See service/README.
-    files: 118,
-    tests: 57,
-    lines: 32945,
+    // Back to 120/58 with `core/status.ts` and its test — the research-preview
+    // notice the two apps and the two guards all read from. The previous note
+    // here explained 118/57: `core/folder.ts` and its test had been deleted,
+    // 555 lines of File System Access folder rules for a folder the OS no
+    // longer owns. Both movements are real; the count is simply current again.
+    files: 120,
+    tests: 58,
+    lines: 33105,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },

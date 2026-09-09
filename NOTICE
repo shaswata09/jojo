@@ -15,6 +15,27 @@ limitations under the License.
 
 --------------------------------------------------------------------------
 
+STATUS: Research preview — a work in progress, not a finished product.
+
+jojo is an ongoing research and development project, published so the approach
+can be examined and tested. It is not a finished product, it is not supported,
+and it should not be relied on for anything that matters without your own
+backups and your own judgement.
+
+Features exist to be tried and measured rather than because they are settled.
+Behaviour, storage formats and screens can change between versions, and a change
+may lose records written by an earlier one.
+
+The Apache-2.0 licence above lets you use, change and redistribute this, and
+that grant stands. What we ask is that you do not pass it on as a finished or
+supported product, and that anything built on it carries this notice — the
+person downstream deserves to know it is research code as much as you did.
+
+Provided "as is", with no warranty of any kind and no liability for any loss
+arising from its use or distribution. See sections 7 and 8 of the License.
+
+--------------------------------------------------------------------------
+
 This product bundles no third-party source code.
 
 The programs jojo TALKS TO — MarkItDown, and whichever model server you point

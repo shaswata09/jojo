@@ -19,6 +19,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
 
 type Entry = {
   screen: keyof RootStackParamList
@@ -243,6 +244,26 @@ export function MoreScreen() {
           ))}
         </Panel>
       </Columns>
+
+      {/* The status notice, at the foot of the screen that holds everything
+          else about the app. The web app puts the same line in its sidebar; the
+          phone has no sidebar, and More is where somebody goes when they want
+          to know what jojo is. The words come from `core/status.ts` so the two
+          platforms cannot drift. */}
+      <Panel>
+        <Txt size="sm" weight="medium" tone="warning">
+          {STATUS_HEADLINE}
+        </Txt>
+        <Txt size="xs" tone="muted" style={{ marginTop: space[1] }}>
+          {STATUS_SUMMARY}
+        </Txt>
+        {STATUS_POINTS.map((point) => (
+          <Txt key={point.label} size="xs" tone="muted" style={{ marginTop: space[2] }}>
+            <Txt size="xs">{point.label}. </Txt>
+            {point.body}
+          </Txt>
+        ))}
+      </Panel>
 
       <Txt size="xs" tone="muted" center>
         jojo — Jarvis fOr Job Organization. Everything runs on this device.

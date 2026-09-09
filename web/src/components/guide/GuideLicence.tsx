@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { GuideContents } from '@/components/guide/GuideNav'
 import { APACHE_CLAUSES } from '@/components/guide/credits'
+import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
 import { useTitle } from '@/lib/links'
 
 /**
@@ -39,8 +40,26 @@ export function GuideLicence() {
     <>
       <PageHeader
         title="Licence"
-        subtitle="jojo is Apache-2.0 licensed and free to use. The services you can point it at are not jojo's, and they come with their own terms."
+        subtitle="jojo is a research preview under Apache-2.0. The services you can point it at are not jojo's, and they come with their own terms."
       />
+
+      {/* ------------------------------------------------------------ status
+          FIRST on the page, above the licence itself, because it is the thing
+          that changes what everything below means. Somebody reading "free for
+          any use, including commercial" without knowing this is research code
+          has been told the truth and still misled. */}
+      <Panel className="border-warning-border bg-warning-soft">
+        <PanelTitle hint="read this before the rest">{STATUS_HEADLINE}</PanelTitle>
+        <p className="mb-3 text-sm text-text-2">{STATUS_SUMMARY}</p>
+        <dl className="space-y-2.5 text-sm text-text-2">
+          {STATUS_POINTS.map((point) => (
+            <div key={point.label}>
+              <dt className="inline text-text-1">{point.label}. </dt>
+              <dd className="inline">{point.body}</dd>
+            </div>
+          ))}
+        </dl>
+      </Panel>
 
       {/* ------------------------------------------------------ jojo itself */}
       <Panel>
