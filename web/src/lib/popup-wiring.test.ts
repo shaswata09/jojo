@@ -302,7 +302,40 @@ describe('the popup, when the worker is awake', () => {
     // would answer 'No page to capture.' on a perfectly capturable page.
     const capture = popup.sent.find((m) => m.type === 'jojo:capture-tab')
     expect(capture?.tabId).toBe(page.id)
-    expect(popup.at('capture-note').textContent).toBe('Kept.')
+    expect(popup.at('capture-note').textContent).toBe(
+      'Kept. Use Save to download it as one HTML file, or open jojo to file it.',
+    )
+  })
+
+  it('says why, instead of "Kept.", when the worker could not keep the page', async () => {
+    /*
+     * The bug this guards. The worker used to answer `ok: true` whatever
+     * `capture()` did, so a page refused as too big — or one the browser will
+     * not let an extension read — came back as "Kept." with nothing stored.
+     * Measured on chrome://version and on gitlab.com/jobs.
+     */
+    const reason =
+      'That page is too big to keep, even with its images and fonts left out — the limit is 8 MB.'
+    const popup = mount({
+      tab: page,
+      reply: (m) => (m.type === 'jojo:capture-tab' ? { response: { ok: false, reason } } : awake(m)),
+    })
+    await popup.start()
+    await popup.at('capture').fire('click')
+    expect(popup.at('capture-note').textContent).toBe(reason)
+  })
+
+  it('says how many large assets were left out when a page was trimmed to fit', async () => {
+    const popup = mount({
+      tab: page,
+      reply: (m) =>
+        m.type === 'jojo:capture-tab' ? { response: { ok: true, count: 1, trimmed: 2 } } : awake(m),
+    })
+    await popup.start()
+    await popup.at('capture').fire('click')
+    const note = popup.at('capture-note').textContent
+    expect(note).toContain('Kept')
+    expect(note).toContain('2 of its largest images or fonts left out')
   })
 
   it('draws the queue and the switches as before', async () => {

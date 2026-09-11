@@ -9,7 +9,7 @@ import type { DataSet } from '@jojo/service/repo/meta'
 import { estimateStorage, isStoragePersisted } from '@/kg/storage/probe'
 import type { StorageEstimate } from '@/kg/storage/probe'
 import { sessionOf, useBoot } from '@/lib/boot-context'
-import { useSettingsParams } from '@/lib/links'
+import { useSettingsParams } from '@/lib/link-params'
 import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
 

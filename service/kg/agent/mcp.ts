@@ -8,14 +8,19 @@
  * client: `check-platform` bans the network from this layer, so the protocol is
  * data and whoever carries it lives in the app.
  *
- * WHY AN IN-PROCESS MCP SERVER IS NOT A CONTRADICTION. There is no daemon here
- * and no port: jojo is a browser tab and a phone app, and a local-first app that
- * opened a listening socket would be a different promise. What MCP buys without
- * a socket is the interface — one tool list, one call shape, one error
- * convention, generated from the registry rather than written twice. `handle`
- * below is a complete server; giving it a stdio or HTTP transport later is
- * twenty lines in a host that is allowed to have one, and nothing in here
- * changes.
+ * WHY AN IN-PROCESS MCP SERVER IS NOT A CONTRADICTION. jojo itself opens no
+ * port: it is a browser tab and a phone app, and a local-first app that listened
+ * on a socket would be a different promise. What MCP buys without a socket is
+ * the interface — one tool list, one call shape, one error convention, generated
+ * from the registry rather than written twice.
+ *
+ * The transport, when a person wants one, lives outside this package and
+ * outside the app. `web/public/jojo-bridge.mjs` is a small program they run
+ * themselves, which listens on 127.0.0.1 for a client such as Claude Code; the
+ * tab keeps a line open to it (`web/src/lib/mcp-link.ts`) and answers every
+ * message by calling `handleMcp` below against the live records. The tab stays
+ * the server. Nothing in here changed to allow that, which was the point of
+ * keeping the protocol a function.
  *
  * The `isError` convention is the part people get wrong. A tool that refuses is
  * NOT a JSON-RPC error: the call succeeded, the tool said no, and the model has
@@ -24,7 +29,7 @@
  * in the client rather than something a model can recover from.
  */
 
-import { mcpSpecs } from './catalog'
+import { CATALOG, mcpSpecs, toMcpSpec } from './catalog'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
 
@@ -50,6 +55,34 @@ export type McpResponse =
   | { jsonrpc: '2.0'; id: JsonRpcId; result: unknown }
   | { jsonrpc: '2.0'; id: JsonRpcId; error: { code: number; message: string } }
 
+/**
+ * What a particular connection may reach.
+ *
+ * `allow` takes a REGISTRY name — `memory.reset`, never `memory_reset` — so a
+ * policy is written once, in the spelling the rest of the app uses, whichever
+ * spelling the client sends.
+ */
+export type McpOptions = {
+  allow?: (toolName: string) => boolean
+}
+
+/**
+ * The two tools an outside client is never offered.
+ *
+ * Not "the destructive ones". Deletes are journalled like any other write, so
+ * Undo in the tab reverses them, and the client already asks before running one
+ * because the catalog marks it `destructiveHint`. These two are different in
+ * kind: `memory.reset` and `memory.clear` replace the store rather than editing
+ * it, and nothing can take them back. They are also the two the retriever
+ * already strips unless asked for by name — the same judgement, applied at a
+ * different door.
+ */
+export const MCP_WITHHELD = ['memory.reset', 'memory.clear'] as const
+
+/** The policy the MCP link applies: everything except `MCP_WITHHELD`. */
+export const mcpAllowed = (toolName: string): boolean =>
+  !(MCP_WITHHELD as readonly string[]).includes(toolName)
+
 /** JSON-RPC's reserved codes. Only the three that can actually happen here. */
 const METHOD_NOT_FOUND = -32601
 const INVALID_PARAMS = -32602
@@ -72,10 +105,17 @@ const err = (id: JsonRpcId, code: number, message: string): McpResponse => ({
  * says must not be answered. `notifications/initialized` is the one that
  * actually arrives, and answering it is a protocol violation that some clients
  * treat as fatal.
+ *
+ * `options.allow` narrows what this connection can reach. It is applied at BOTH
+ * doors — `tools/list` and `tools/call` — and the second is the one that
+ * matters: a client that never saw a tool in the list can still send its name,
+ * and a policy that only hid it would be the same prompt-only narrowing
+ * `loop.ts` was once caught running.
  */
 export async function handleMcp(
   host: ToolHost,
   request: unknown,
+  options: McpOptions = {},
 ): Promise<McpResponse | null> {
   if (typeof request !== 'object' || request === null) {
     return err(null, INVALID_REQUEST, 'Request must be a JSON-RPC object.')
@@ -88,6 +128,8 @@ export async function handleMcp(
   // Notifications carry no id and get no reply, whatever they say.
   const isNotification = !('id' in (request as object)) || (request as McpRequest).id === undefined
   if (method.startsWith('notifications/')) return isNotification ? null : ok(id, {})
+
+  const allow = options.allow
 
   switch (method) {
     case 'initialize':
@@ -110,12 +152,33 @@ export async function handleMcp(
       // never grows past a screen is a second code path with no second caller.
       // The count is pinned in `catalog.test.ts`, so this line is told when it
       // stops being true rather than quietly becoming a different claim.
-      return ok(id, { tools: mcpSpecs() })
+      return ok(id, {
+        tools:
+          allow === undefined
+            ? mcpSpecs()
+            : CATALOG.filter((entry) => allow(entry.name)).map(toMcpSpec),
+      })
 
     case 'tools/call': {
       const p = params as { name?: unknown; arguments?: unknown } | undefined
       if (!p || typeof p.name !== 'string') {
         return err(id, INVALID_PARAMS, 'tools/call needs a string `name`.')
+      }
+      // Resolved to the registry name before the policy sees it, so asking for
+      // `memory_reset` and `memory.reset` are refused alike. A name that is not
+      // a tool at all falls through to `callTool`, which says so in its own
+      // words.
+      const entry = CATALOG.find((e) => e.name === p.name || e.wireName === p.name)
+      if (allow !== undefined && entry !== undefined && !allow(entry.name)) {
+        return ok(id, {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${entry.name} is not available over this connection. It cannot be undone, so it is only offered inside jojo itself, where the person can see what it would do.`,
+            },
+          ],
+          isError: true,
+        })
       }
       const outcome = await callTool(host, p.name, p.arguments)
       // A refusal is a RESULT, not a JSON-RPC error. The call succeeded; the

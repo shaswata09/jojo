@@ -4,6 +4,7 @@ import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, RoleTag } from '@/data/seed'
 import { shortDate } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { useVault } from '@jojo/service/react/use-vault'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { report } from '@/lib/analytics'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
@@ -49,6 +50,16 @@ export function useApplicationWrites({
   const { setRecord } = useLabels()
   const { toast } = useToast()
   const undoable = useUndoable()
+  const vault = useVault()
+
+  /**
+   * The saved posting this form was started from, while it is still in the
+   * Vault. "From link" keeps the page before the form opens and hands its id
+   * over in `initial`; a person who deleted the page in the meantime gets an
+   * application with nothing filed under it, not an edge to a missing record.
+   */
+  const postingId = initial?.postingFileId
+  const posting = postingId === undefined ? undefined : vault.files.find((f) => f.id === postingId)
 
   /** Only ever called on a form that has passed `validate`, hence the cast. */
   const shared = () => ({
@@ -141,7 +152,12 @@ export function useApplicationWrites({
    * the same reason in place, and offers a retry.
    */
   function prewarmFit(): void {
-    const source = postingSourceForUrl(graph, form.url.trim() || undefined)
+    // The page this form was started from, when there is one: then the join is
+    // a fact rather than a match on the address, and it holds when the tab the
+    // extension opened landed somewhere other than the address pasted.
+    const source = posting
+      ? { fileId: posting.id, name: posting.name }
+      : postingSourceForUrl(graph, form.url.trim() || undefined)
     if (!source) return
     if (settings.model.trim() === '') return
     if (projections.background(graph).length === 0) return
@@ -182,6 +198,19 @@ export function useApplicationWrites({
       })
 
       setRecord(refKey('app', record.id), keywords)
+      /*
+       * The posting "From link" saved, filed under what it became — inside the
+       * same undo, because an Undo that took the application away and left the
+       * page filed under it would be an edge to a record that no longer exists.
+       * Added to whatever it is already filed under rather than replacing it:
+       * `applicationIds` is a set, and the capture may have matched another
+       * application by its address on the way in.
+       */
+      if (posting) {
+        vault.updateFile(posting.id, {
+          applicationIds: [...new Set([...posting.applicationIds, record.id])],
+        })
+      }
       if (form.deadline) mintDeadline(record)
       // 'manual' because this is the dialog: somebody typed it in. The other
       // three sources in the vocabulary belong to the scout, the link importer
@@ -198,9 +227,14 @@ export function useApplicationWrites({
 
     toast({
       title: `${displayName(created)} added`,
-      description: form.deadline
-        ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
-        : 'No deadline yet — add one and it shows up in This week.',
+      description: [
+        form.deadline
+          ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
+          : 'No deadline yet — add one and it shows up in This week.',
+        posting ? 'The posting is filed under it.' : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
       action: restore ? { label: 'Undo', onClick: restore } : undefined,
     })
     return created

@@ -14,7 +14,7 @@ import type { GraphSnapshot } from '../core/snapshot'
 import type { ToolName } from '../tools/index'
 import { callTool, renderOutcome } from './execute'
 import type { ToolHost } from './execute'
-import { MCP_PROTOCOL_VERSION, handleMcp, mcpManifest } from './mcp'
+import { MCP_PROTOCOL_VERSION, handleMcp, mcpAllowed, mcpManifest } from './mcp'
 
 const START = Date.parse('2026-08-22T09:00:00.000Z')
 
@@ -99,6 +99,70 @@ describe('tools/list', () => {
     }
     expect(r.result.tools.length).toBe(mcpManifest().tools.length)
     expect(r.result.tools.every((t) => t.inputSchema !== undefined)).toBe(true)
+  })
+})
+
+describe('what an outside client may reach', () => {
+  /*
+   * The link from an outside MCP client — Claude Code, through `jojo-bridge` —
+   * passes `mcpAllowed`. It withholds exactly the two tools nothing can take
+   * back: `memory.reset` and `memory.clear` go around the journal, so a client
+   * that called one by mistake would leave nothing for Undo to restore. Every
+   * other write stays reachable, and the ones that delete say so in
+   * `destructiveHint`, which is what makes the client ask before running them.
+   */
+  const list = async (h: ToolHost) =>
+    (
+      (await handleMcp(h, { jsonrpc: '2.0', id: 2, method: 'tools/list' }, { allow: mcpAllowed })) as {
+        result: { tools: { name: string; annotations: { destructiveHint: boolean } }[] }
+      }
+    ).result.tools
+
+  it('lists everything except the two tools that cannot be undone', async () => {
+    const tools = await list(host())
+    const names = tools.map((t) => t.name)
+    expect(names).not.toContain('memory_reset')
+    expect(names).not.toContain('memory_clear')
+    expect(tools).toHaveLength(mcpManifest().tools.length - 2)
+  })
+
+  it('still offers deletes, marked so the client asks first', async () => {
+    const remove = (await list(host())).find((t) => t.name === 'application_delete')
+    expect(remove?.annotations.destructiveHint).toBe(true)
+  })
+
+  it.each(['memory_reset', 'memory.clear'])(
+    'refuses %s under either spelling, as a result the model can read',
+    async (name) => {
+      const h = host()
+      await callTool(h, 'application.create', {
+        org: 'Stripe',
+        role: 'ML engineer',
+        roleTag: 'ML Engineer',
+        stage: 'submitted',
+      })
+      const r = (await handleMcp(
+        h,
+        { jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name, arguments: {} } },
+        { allow: mcpAllowed },
+      )) as { result: { isError: boolean; content: { text: string }[] }; error?: unknown }
+      // A refusal, not a transport failure: the call arrived and was said no to.
+      expect(r.error).toBeUndefined()
+      expect(r.result.isError).toBe(true)
+      expect(r.result.content[0]?.text).toContain('not available')
+      // And, the point of it, nothing was wiped.
+      expect(h.memory().ofType('application')).toHaveLength(1)
+    },
+  )
+
+  it('changes nothing about notifications', async () => {
+    expect(
+      await handleMcp(
+        host(),
+        { jsonrpc: '2.0', method: 'notifications/initialized' },
+        { allow: mcpAllowed },
+      ),
+    ).toBeNull()
   })
 })
 

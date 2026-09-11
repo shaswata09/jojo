@@ -522,6 +522,31 @@ CORS headers and answers the preflight with 405, so the web app reaches it
 through a same-origin path — the dev server proxies `/reader` to it, and a hosted
 copy needs the same forwarding.
 
+### Letting your own assistant use jojo
+
+If you already pay for an assistant — Claude Code on a Pro or Max plan, say — it
+can work on your job search directly, with its own model and its own harness:
+jojo is an MCP server it connects to. Turn on **Settings → Connect from an MCP
+client** in the web app and run the two commands it shows, which carry a token
+minted for you:
+
+```
+curl -fsSL <jojo's address>/jojo-bridge.mjs -o jojo-bridge.mjs && node jojo-bridge.mjs --token <token>
+claude mcp add --transport http jojo http://127.0.0.1:3002/mcp --header "Authorization: Bearer <token>"
+```
+
+The first starts `web/public/jojo-bridge.mjs`, one dependency-free file that
+listens on 127.0.0.1 and hands each MCP message to the open jojo tab. The tab
+answers it with the same tools, undo and screen you use, so the records never
+leave it. A hosted copy reaches the bridge through the jojo extension, because
+Chrome keeps https pages off 127.0.0.1. Every tool is offered except reset and
+clear, the two that cannot be undone, and deletes are marked destructive so the
+client asks first.
+
+jojo does not offer a Claude login as a model provider, and will not: Anthropic
+does not permit third-party apps to. This is the other way round — your client
+uses its own login, and jojo never sees it.
+
 ---
 
 ## Licence

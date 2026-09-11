@@ -1,6 +1,6 @@
-import { useId, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Check, Link as LinkIcon, Loader2, Sparkles } from 'lucide-react'
+import { draftFromUrl } from '@/components/applications/draft-from'
 import {
   Dialog,
   DialogContent,
@@ -16,26 +16,32 @@ import { useModelSettings } from '@/lib/model-settings-context'
 import { useReadPosting } from '@/lib/posting-agent'
 import type { PostingStep } from '@/lib/posting-agent'
 import { useToast } from '@/lib/toast-context'
-import { vaultPath } from '@/lib/links'
 import { cn } from '@/lib/utils'
 
 /**
  * Paste a posting URL and let the model fill the form in.
  *
- * The plain `AddByUrl` beside it reads the URL and nothing else — employer from
- * the hostname, role from the last path segment — which is free, instant and
- * cannot see a deadline. This one fetches the page through the document reader
- * and asks the model what is in it, which is slower, needs two services running
- * and can see everything the URL cannot.
+ * Reached two ways: the create menu's "Application from a link", which opens it
+ * empty, and the "From link" field on the Applications page and the dashboard,
+ * which opens it on the pasted URL and starts at once — when a model is
+ * connected. Without one, that field fills the form from the address alone;
+ * see `AddByUrl`.
+ *
+ * The page is opened through the jojo extension when it is installed — as the
+ * person would see it, signed in, rendered — and through the document reader
+ * when it is not. See `lib/posting-agent.ts` for why in that order.
  *
  * Both end in the same place: the ordinary create form, prefilled, waiting to
  * be checked. Nothing here writes an application. What it DOES write is the
  * page — a posting is worth keeping whether or not it becomes an application,
- * and the Vault has a drawer for exactly that.
+ * and the Vault has a drawer for exactly that. The page's id rides into the
+ * form, which files it under the application when one is saved.
  *
  * THE STEPS ARE ON SCREEN because they take real seconds and fail differently.
  * A spinner that sat for fifteen seconds and then said "could not add" would
- * leave the user with no idea which of three services to go and look at.
+ * leave the user with no idea which of three things to go and look at. And a
+ * failure offers the address-only form, because the person came here to add an
+ * application and a page that would not open is no reason to stop them.
  */
 
 const STEPS: { id: PostingStep; label: string }[] = [
@@ -44,62 +50,115 @@ const STEPS: { id: PostingStep; label: string }[] = [
   { id: 'saving', label: 'Saving the posting' },
 ]
 
-export function AddFromLinkDialog({ open }: { open: boolean }) {
+export function AddFromLinkDialog({
+  open,
+  url: opening = '',
+  start = false,
+}: {
+  open: boolean
+  /** The URL "From link" was pressed with. Empty when the create menu opened this. */
+  url?: string | undefined
+  /** Read it straight away: the person has already pressed a button for it once. */
+  start?: boolean | undefined
+}) {
   const id = useId()
   const { open: openDialog, close } = useDialogs()
   const { settings, reader } = useModelSettings()
   const readPosting = useReadPosting()
   const { toast } = useToast()
-  const navigate = useNavigate()
 
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(opening)
   const [step, setStep] = useState<PostingStep | null>(null)
   const [error, setError] = useState<string | null>(null)
   const abort = useRef<AbortController | null>(null)
 
   const busy = step !== null
 
-  const submit = async () => {
+  /*
+   * Memoised, because the effect below starts it and the lint rule is right
+   * that a function made fresh on every render would re-run that effect on
+   * every render. The `started` ref is still what makes it once.
+   */
+  const submit = useCallback(
+    async (value: string = url) => {
+      const text = value.trim()
+      if (!text || busy) return
+      setError(null)
+      const stop = new AbortController()
+      abort.current = stop
+
+      const outcome = await readPosting({
+        url: text,
+        settings,
+        reader,
+        signal: stop.signal,
+        onStep: setStep,
+      })
+
+      abort.current = null
+      setStep(null)
+
+      if (!outcome.ok) {
+        setError(outcome.reason)
+        return
+      }
+
+      // Straight into the ordinary create form. `close` first so only one dialog
+      // is ever mounted — `open` would replace this one anyway, but the host
+      // keys its mounts off the name and the explicit close reads as intended.
+      close()
+      openDialog('application', {
+        mode: 'create',
+        initial: { ...outcome.draft, postingFileId: outcome.file.id },
+      })
+
+      const gaps = outcome.missing.length
+      toast({
+        title: 'Posting read and saved',
+        description: [
+          outcome.via === 'extension'
+            ? 'The extension saved the page to the Vault'
+            : `${outcome.file.name} is in the Vault`,
+          'and it is filed under the application when you save it.',
+          gaps === 0
+            ? ''
+            : `${String(gaps)} field${gaps === 1 ? ' was' : 's were'} not on the page.`,
+          'Check the form before saving it.',
+        ]
+          .filter(Boolean)
+          .join(' '),
+        // No "See it in the Vault" action. This toast is raised as the create form
+        // opens over it, so a navigation would change the page out of sight, under a
+        // modal the person is still filling in — measured, 2026-09-11. The page is
+        // filed under the application when they save, which is where they will look.
+      })
+    },
+    [url, busy, settings, reader, readPosting, close, openDialog, toast],
+  )
+
+  /*
+   * "From link" has already been pressed, so the read starts on its own.
+   *
+   * A ref rather than an empty dependency list: the lint rule is right that
+   * this effect reads `submit`, which is new on every render, and the ref is
+   * what makes "exactly once" true under StrictMode's double mount as well —
+   * the second pass finds it started. There is deliberately no cleanup that
+   * aborts: closing the dialog is what stops a read (see `onOpenChange`), and
+   * StrictMode's simulated unmount is not somebody closing it.
+   */
+  const started = useRef(false)
+  useEffect(() => {
+    if (!start || started.current || opening.trim() === '') return
+    started.current = true
+    void submit(opening)
+  }, [start, opening, submit])
+
+  /** The form, filled from the address alone — what "From link" does without a model. */
+  const fromAddress = () => {
     const text = url.trim()
-    if (!text || busy) return
-    setError(null)
-    const stop = new AbortController()
-    abort.current = stop
-
-    const outcome = await readPosting({
-      url: text,
-      settings,
-      reader,
-      signal: stop.signal,
-      onStep: setStep,
-    })
-
-    abort.current = null
-    setStep(null)
-
-    if (!outcome.ok) {
-      setError(outcome.reason)
-      return
-    }
-
-    // Straight into the ordinary create form. `close` first so only one dialog
-    // is ever mounted — `open` would replace this one anyway, but the host
-    // keys its mounts off the name and the explicit close reads as intended.
+    if (!text) return
     close()
-    openDialog('application', { mode: 'create', initial: outcome.draft })
-
-    const gaps = outcome.missing.length
-    toast({
-      title: 'Posting saved and read',
-      description:
-        gaps === 0
-          ? `${outcome.file.name} is in the Vault. Check the form before saving it.`
-          : `${outcome.file.name} is in the Vault. ${String(gaps)} field${gaps === 1 ? '' : 's'} were not on the page — check the form before saving it.`,
-      action: {
-        label: 'See it in the Vault',
-        onClick: () => navigate(vaultPath({ tool: 'files' })),
-      },
-    })
+    openDialog('application', { mode: 'create', initial: draftFromUrl(text) })
   }
 
   return (
@@ -118,7 +177,8 @@ export function AddFromLinkDialog({ open }: { open: boolean }) {
           <DialogTitle>New application from a link</DialogTitle>
           <DialogDescription>
             The model reads the posting and fills the form in. The page is kept in the Vault under
-            Job postings, and nothing is saved as an application until you say so.
+            Job postings — saved by the jojo extension when it is installed — and filed under the
+            application once you save it. Nothing is saved as an application until you say so.
           </DialogDescription>
         </DialogHeader>
 
@@ -190,6 +250,13 @@ export function AddFromLinkDialog({ open }: { open: boolean }) {
           ) : null}
 
           <DialogFooter className="mt-4">
+            {/* Only after a failure: before one, it is a way to skip the
+                model the person chose to use. */}
+            {error && !busy ? (
+              <Button type="button" variant="ghost" className="sm:mr-auto" onClick={fromAddress}>
+                Use the address only
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="outline"
@@ -202,7 +269,7 @@ export function AddFromLinkDialog({ open }: { open: boolean }) {
             </Button>
             <Button type="submit" disabled={!url.trim() || busy}>
               <Sparkles className="size-3.5" strokeWidth={2} aria-hidden />
-              {busy ? 'Reading…' : 'Read and prefill'}
+              {busy ? 'Reading…' : error ? 'Try again' : 'Read and prefill'}
             </Button>
           </DialogFooter>
         </form>

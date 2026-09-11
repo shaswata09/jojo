@@ -100,6 +100,132 @@ export function postingDocument(url: string, markdown: string): string {
   ].join('\n')
 }
 
+/**
+ * Elements whose content is never the posting, removed whole before any text is
+ * read.
+ *
+ * The head and inlined stylesheets are most of a captured page's bytes; SVG is
+ * path data; `nav` and `footer` are the site around the listing — and together
+ * they are what pushes a long posting past `POSTING_BUDGET` before the model
+ * has seen its requirements. `header` is deliberately NOT here: boards put the
+ * title, the employer and the location in it, which are three of the fields
+ * this read exists to fill. `select` goes because a country picker is two
+ * hundred lines of options the model would otherwise read as the posting.
+ */
+const NOT_THE_POSTING = [
+  'head',
+  'style',
+  'script',
+  'noscript',
+  'template',
+  'svg',
+  'nav',
+  'footer',
+  'select',
+  'iframe',
+] as const
+
+/**
+ * An attribute list, quote-aware. A `>` inside a quoted value is legal and the
+ * HTML serialiser leaves it unescaped, so `[^>]*` would end the tag early and
+ * spill the rest of the attribute into the text. The three alternatives start
+ * with disjoint characters, so this cannot backtrack.
+ */
+const ATTRS = `(?:[^>"']|"[^"]*"|'[^']*')*`
+
+/** Elements that end a line. `li` is handled on its own, to keep its bullet. */
+const LINE_ENDS =
+  'p|div|ul|ol|tr|table|h[1-6]|section|article|header|aside|main|blockquote|pre|dl|dt|dd|figure|figcaption|form|fieldset|hr|address|details|summary'
+
+/**
+ * How much text a `<main>` has to hold before it is read instead of the page.
+ *
+ * A board that marks its content with `<main>` is telling the truth about where
+ * the posting is, and reading only that drops the "other jobs you might like"
+ * rail that otherwise fills the budget. But an app shell's `<main>` can hold a
+ * spinner while the listing renders elsewhere, and reading "Loading…" as the
+ * posting would be worse than reading too much — so it has to be worth it.
+ */
+const MAIN_MIN = 400
+
+/**
+ * The entities a serialised page actually contains. Chrome's serialiser writes
+ * text as UTF-8 and escapes only these, plus numeric references; the long tail
+ * of named entities does not occur in what the extension hands back.
+ */
+const NAMED: Readonly<Record<string, string>> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+}
+
+/** One pass, so `&amp;lt;` becomes `&lt;` and not `<`. */
+function decodeEntities(text: string): string {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, body: string) => {
+    if (body.startsWith('#')) {
+      const hex = body[1] === 'x' || body[1] === 'X'
+      const code = Number.parseInt(body.slice(hex ? 2 : 1), hex ? 16 : 10)
+      return Number.isInteger(code) && code > 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : whole
+    }
+    return NAMED[body.toLowerCase()] ?? whole
+  })
+}
+
+/** Markup → lines of text: blocks end lines, list items keep a bullet. */
+function flatten(html: string): string {
+  const text = html
+    .replace(new RegExp(`<br${ATTRS}>`, 'gi'), '\n')
+    .replace(new RegExp(`<li\\b${ATTRS}>`, 'gi'), '\n- ')
+    .replace(new RegExp(`</?(?:${LINE_ENDS})\\b${ATTRS}>`, 'gi'), '\n')
+    .replace(/<\/t[dh]\s*>/gi, ' ')
+    .replace(new RegExp(`<${ATTRS}>`, 'g'), '')
+  return (
+    decodeEntities(text)
+      .replace(/\r/g, '')
+      .replace(/[^\S\n]+/g, ' ')
+      .split('\n')
+      .map((line) => line.trim())
+      .join('\n')
+      // A list item whose content starts a block of its own leaves its bullet
+      // on a line by itself; it belongs in front of the text that follows.
+      .replace(/^-\n+(?=\S)/gm, '- ')
+      .replace(/^-$/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  )
+}
+
+/**
+ * The readable text of a captured page, for the model to read.
+ *
+ * The extension hands back the RENDERED page — the whole serialised document,
+ * assets inlined — and that is the reason to go through it: a board that renders
+ * in JavaScript sends a server-side fetch a blank shell, where a tab that has
+ * finished rendering holds the posting. So the text is recovered here, and
+ * without a DOM: this layer runs on the phone too, and neither Hermes nor the
+ * test runner has a `DOMParser` (D20). What it is not is an HTML parser, and it
+ * does not need to be one — the input is a serialiser's output, which is
+ * well-formed by construction, and the output is read by a model that forgives
+ * a stray space and cannot forgive a missing requirement.
+ */
+export function postingTextFromHtml(html: string): string {
+  let page = html.replace(/<!--[\s\S]*?-->/g, '')
+  for (const tag of NOT_THE_POSTING) {
+    page = page.replace(new RegExp(`<${tag}\\b${ATTRS}>[\\s\\S]*?</${tag}\\s*>`, 'gi'), ' ')
+  }
+  const main = /<main\b[^>]*>([\s\S]*)<\/main\s*>/i.exec(page)?.[1]
+  if (main !== undefined) {
+    const text = flatten(main)
+    if (text.length >= MAIN_MIN) return text
+  }
+  return flatten(page)
+}
+
 /** What the model is asked to produce, and nothing else. */
 const FIELDS = ['org', 'role', 'roleTag', 'location', 'comp', 'deadline', 'source'] as const
 

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Saving a kept page — jojo</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="save-page">
+    <!--
+      Why this is a TAB and not a download from the popup.
+
+      The popup cannot own a download. Its blob URL belongs to the popup's own
+      document, and a toolbar popup closes the moment it loses focus — which is
+      what happens when the browser shows its download bubble. Measured: Save,
+      then close the popup at once, and a 4.9 MB page never arrived. A tab does
+      not close on blur, so it lives long enough for the browser to read the file.
+
+      No inline script, as in popup.html: MV3's extension CSP refuses it.
+    -->
+    <header class="head">
+      <img class="mark" src="icons/icon-48.png" alt="" width="24" height="24" />
+      <div class="head-text">
+        <h1>jojo</h1>
+        <p>Saving a kept page</p>
+      </div>
+    </header>
+
+    <section class="block">
+      <p id="save-title" class="tab-title">Fetching the kept page…</p>
+      <p id="save-url" class="tab-url mono"></p>
+      <p id="save-note" class="note" role="status"></p>
+      <button id="save-again" class="primary" type="button" hidden>Download it again</button>
+    </section>
+
+    <script src="save.js" type="module"></script>
+  </body>
+</html>

@@ -405,3 +405,61 @@ describe('the two ends of one relayed request agree on how long it gets', () => 
     expect(chooser).toContain('SCAN_TIMEOUT_MS')
   })
 })
+
+describe('the MCP link has a verb of its own', () => {
+  /*
+   * `jojo:mcp-link` carries the tab's side of the link to `jojo-bridge`, which
+   * is how Claude Code reaches jojo's records. It is deliberately NOT
+   * `jojo:read-document`: that verb is stopped by the popup's "Document reader"
+   * switch, which is about MarkItDown. Borrowing it would mean somebody who
+   * turned document reading off lost the link as well, and was told it was
+   * because document reading is off.
+   */
+  const handler = backgroundSource.slice(
+    backgroundSource.indexOf("message?.type === 'jojo:mcp-link'"),
+    backgroundSource.indexOf("message?.type === 'jojo:call-model'"),
+  )
+
+  it('is handled in the worker, checking the address before fetching', () => {
+    expect(backgroundSource).toContain("message?.type === 'jojo:mcp-link'")
+    expect(handler.indexOf('isLoopback')).toBeGreaterThan(-1)
+    expect(handler.indexOf('isLoopback')).toBeLessThan(handler.indexOf('await relay('))
+  })
+
+  it('is not behind the document reader switch', () => {
+    // Comments stripped: the handler explains the switch at length, and an
+    // assertion that matched the explanation would pass on prose.
+    expect(withoutComments(handler)).not.toContain('reader.enabled')
+  })
+
+  it('is chosen by the bridge from the shape of the message', () => {
+    expect(bridgeSource).toContain("'jojo:mcp-link'")
+    expect(bridgeSource).toMatch(/data\.link !== undefined && data\.link !== null/)
+  })
+
+  it('is posted by the page and given the relayed budget', () => {
+    const posted = bridgeCallerSource.slice(
+      bridgeCallerSource.indexOf('window.postMessage('),
+      bridgeCallerSource.indexOf(
+        'window.location.origin',
+        bridgeCallerSource.indexOf('window.postMessage('),
+      ),
+    )
+    expect(posted).toContain('link: request.link')
+    const chooser = withoutComments(
+      bridgeCallerSource.slice(
+        bridgeCallerSource.indexOf('const timeout ='),
+        endOfTimeoutBlock(bridgeCallerSource),
+      ),
+    )
+    expect(chooser).toContain('request.link !== undefined')
+  })
+
+  it('is only asked of a bridge new enough to carry it', () => {
+    // Two constants in two files with no import between them — the same
+    // situation as the timeouts above, with the same answer.
+    expect(numberIn(bridgeSource, 'BRIDGE_PROTOCOL')).toBeGreaterThanOrEqual(
+      numberIn(bridgeCallerSource, 'MCP_LINK_PROTOCOL'),
+    )
+  })
+})

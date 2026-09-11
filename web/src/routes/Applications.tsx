@@ -23,13 +23,8 @@ import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
-import {
-  formatSort,
-  parseSort,
-  useApplicationsParams,
-  useTitle,
-  type ApplicationsSortKey,
-} from '@/lib/links'
+import { formatSort, parseSort, useTitle, type ApplicationsSortKey } from '@/lib/links'
+import { useApplicationsParams } from '@/lib/link-params'
 import { useFillViewport } from '@/lib/use-fill-viewport'
 import { DESKTOP_QUERY, useMediaQuery, useReducedMotion } from '@/lib/use-media-query'
 import { useRoles } from '@/lib/roles-context'

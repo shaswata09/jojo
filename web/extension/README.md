@@ -24,8 +24,12 @@ here and not in the app:
 - **Keep this page** — the capture that used to happen on the click itself.
   Disabled with a reason on a page browsers do not let an extension read
   (`chrome://`, the Web Store, a PDF), rather than offered and then failing.
-- **Kept pages** — what is queued, with its address, age and size. Delete one,
-  or all. Before this the queue was invisible and a page kept by accident could
+  It reports what actually happened: a page that could not be kept comes back
+  with the reason. It used to answer "Kept." either way — measured on
+  `chrome://version` and on a page refused as too big, both of which stored
+  nothing.
+- **Kept pages** — what is queued, with its address, age and size. **Save** one
+  as a single HTML file, delete one, or delete all. Before this the queue was invisible and a page kept by accident could
   only be removed by clearing the extension's storage.
 - **Document reader** — the loopback MarkItDown hop, with a switch, the address,
   and a dot that means something: the check is a real MCP `initialize`, because
@@ -42,7 +46,7 @@ broken, and its refusal reads exactly like the bug the relay exists to fix.
 an action that declares a `default_popup`. The capture path is the same
 function, reached from the popup through `jojo:capture-tab`.
 
-The popup's five verbs are answered only for pages served out of this extension
+The verbs the popup and the save page use are answered only for pages served out of this extension
 — the check is the sender's own URL, in `background.js`. They are more powerful
 than the ones the web app gets (`jojo:capture-tab` scripts a tab of its
 choosing; `jojo:set-routing` changes what the relays carry) and no page on the
@@ -223,7 +227,37 @@ What that costs:
 - Anything that cannot be inlined — an asset behind the same login, one over
   2 MB, one that fails — is dropped and **counted**. The count is on the file's
   note, so a page that looks plainer than you remember tells you why.
-- A capture is capped at 8 MB.
+- A capture is capped at 8 MB — but a page over the cap is **not thrown away**.
+  Its heaviest embedded images and fonts are left out, most expensive first,
+  until it fits, and they are counted with the rest of the dropped assets. The
+  text and the layout CSS are never touched. This used to discard the whole
+  page: gitlab.com/jobs inlined to 8.04 MB, over by 40 KB, and was lost. Only a
+  page too large even with every embedded asset removed is refused, and the
+  popup says so. See `shrink.js`.
+
+## Saving a kept page as a file
+
+**Save** on a kept page downloads it as one `.html` file — for example
+`senior-ml-engineer-2026-09-11.html`. Everything is inside it: every stylesheet
+is a `<style>` block and every image and font a `data:` URI, so it opens in any
+browser with **no connection**, long after the original listing has gone.
+Verified with the origin server stopped: styles applied, 19 of 19 images drawn,
+zero network requests.
+
+The file opens with a comment naming the address it came from and when it was
+kept, so a file found a year later can still say where it was from. Saving uses
+the browser's ordinary download, so the extension needs no `downloads`
+permission and asks for nothing new.
+
+**Why the file has no scripts.** A page is captured *after* its JavaScript has
+run, so what the scripts built — the job description a board loads after the
+page opens, the list it fills in — is already in the file as ordinary HTML.
+Verified on a page whose requirements list is written entirely by script: every
+item is in the saved file. Keeping the scripts as well would work against the
+reason for saving at all. Opened offline, a modern job board's script
+re-renders the page against an API that is no longer there, and usually leaves
+it blank; the scripts that do run are the site's trackers, which would report
+every time the file is opened. The rendered page is what you wanted to keep.
 
 Nothing is uploaded anywhere. The extension fetches subresources your browser
 was already showing you, holds the result in `chrome.storage.local` on your own
@@ -238,6 +272,9 @@ machine, and hands it to jojo the next time you open it.
 | `background.js` | Fetches those addresses, inlines them, sweeps anything left, queues the result.   |
 | `bridge.js`     | Runs on jojo's own origin and relays between the page and the worker.             |
 | `policy.js`     | What may be kept. A transcription of `service/kg/core/capture.ts`, checked below. |
+| `shrink.js`     | Fits a capture over the size cap by leaving out its heaviest embedded images and fonts, instead of discarding the page. Checked by `web/src/lib/capture-shrink.test.ts`. |
+| `save.html`, `save.js` | The tab Save opens to download a kept page. A tab rather than the popup, because a popup closes on blur and takes its download with it. |
+| `save-file.js`  | A kept page as one file: doctype, provenance comment, filename. No side effects, so it is checked by `web/src/lib/capture-save.test.ts`. |
 | `harvest.js`    | The link sweep on a job board. Injected into a background tab; judges nothing.    |
 | `icons/`        | Four PNGs, 16 to 128. Generated — see below — never edited by hand.               |
 

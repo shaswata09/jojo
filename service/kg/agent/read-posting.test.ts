@@ -9,7 +9,14 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { POSTING_BUDGET, askForPosting, postingDocument, postingMessages, readPosting } from './read-posting'
+import {
+  POSTING_BUDGET,
+  askForPosting,
+  postingDocument,
+  postingMessages,
+  postingTextFromHtml,
+  readPosting,
+} from './read-posting'
 
 const reply = (o: unknown) => JSON.stringify(o)
 
@@ -255,5 +262,97 @@ describe('askForPosting', () => {
     expect(calls).toBe(2)
     expect(read.ok).toBe(false)
     if (!read.ok) expect(read.reason).toContain('did not answer with JSON')
+  })
+})
+
+describe('the page text, from a page the extension captured', () => {
+  const page = (body: string) =>
+    `<!doctype html><html><head><title>t</title><style>.x{color:red}</style></head><body>${body}</body></html>`
+
+  it('leaves out what is never the posting, and keeps the header', () => {
+    const text = postingTextFromHtml(
+      page(
+        '<nav>Jobs · Sign in</nav><header><h1>Research Engineer</h1><p>Acme · Houston</p></header>' +
+          '<style>.y{margin:0}</style><svg><path d="M0 0L10 10"/></svg><script>track()</script>' +
+          '<!-- a comment --><p>Apply by 1 October.</p><footer>© Acme 2026</footer>',
+      ),
+    )
+    expect(text).toContain('Research Engineer')
+    expect(text).toContain('Acme · Houston')
+    expect(text).toContain('Apply by 1 October.')
+    for (const gone of ['Sign in', 'color:red', 'margin', 'M0 0', 'track()', 'a comment', '© Acme', '<']) {
+      expect(text).not.toContain(gone)
+    }
+  })
+
+  it('ends a line at every block and keeps a list as a list', () => {
+    expect(
+      postingTextFromHtml(
+        '<h2>Requirements</h2><ul><li>A PhD</li><li>Teaching<br>experience</li></ul><p>Salary</p>',
+      ),
+    ).toBe('Requirements\n\n- A PhD\n- Teaching\nexperience\n\nSalary')
+  })
+
+  it('puts a bullet in front of an item whose content is a block of its own', () => {
+    expect(postingTextFromHtml('<ul><li><p>Distributed systems</p></li></ul>')).toBe(
+      '- Distributed systems',
+    )
+  })
+
+  it('decodes an entity once, not twice', () => {
+    expect(postingTextFromHtml('<p>R&amp;D &amp;lt;team&amp;gt; &#8212; &#x2014;&nbsp;now</p>')).toBe(
+      'R&D &lt;team&gt; — — now',
+    )
+  })
+
+  it('does not end a tag at a > inside a quoted attribute', () => {
+    expect(postingTextFromHtml('<p title="a > b" data-x=\'c > d\'>Deadline 1 Oct</p>')).toBe(
+      'Deadline 1 Oct',
+    )
+  })
+
+  it('reads the main content instead of the page around it, when there is one', () => {
+    const text = postingTextFromHtml(
+      page(
+        `<div>Other jobs you might like: ${'Filler role. '.repeat(20)}</div>` +
+          `<main><h1>Systems Engineer</h1><p>${'Build distributed systems. '.repeat(30)}</p></main>`,
+      ),
+    )
+    expect(text.startsWith('Systems Engineer')).toBe(true)
+    expect(text).not.toContain('Other jobs you might like')
+  })
+
+  it('reads the whole page when main is too thin to be the posting', () => {
+    const text = postingTextFromHtml(
+      page('<main>Loading…</main><div><h1>Lecturer</h1><p>Teach computer science.</p></div>'),
+    )
+    expect(text).toContain('Lecturer')
+    expect(text).toContain('Teach computer science.')
+  })
+
+  it('drops a country picker rather than reading two hundred options as the posting', () => {
+    const text = postingTextFromHtml(
+      '<p>Location</p><select><option>Afghanistan</option><option>Albania</option></select><p>Remote</p>',
+    )
+    expect(text).toBe('Location\n\nRemote')
+  })
+
+  it('drops a comment whole, even one with a > inside it', () => {
+    // The tag strip at the end would take `<!-- a` up to the first `>` and
+    // leave ` b -->` behind as text; comments go first for that reason.
+    expect(postingTextFromHtml('<p>Apply</p><!-- if a > b show the banner --><p>Now</p>')).toBe(
+      'Apply\n\nNow',
+    )
+  })
+
+  it('keeps the cells of a table row apart', () => {
+    expect(postingTextFromHtml('<table><tr><td>Salary</td><td>$100k</td></tr></table>')).toBe(
+      'Salary $100k',
+    )
+  })
+
+  it('collapses runs of space and never leaves more than one blank line', () => {
+    const text = postingTextFromHtml('<div>  a   b </div><div></div><div></div><div>c</div>')
+    expect(text).toBe('a b\n\nc')
   })
 })

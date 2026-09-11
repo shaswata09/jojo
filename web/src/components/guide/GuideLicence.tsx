@@ -180,6 +180,25 @@ export function GuideLicence() {
           />
 
           <Term
+            title="Claude Code, or any MCP client"
+            chip={<Chip tone="green">Your plan · nothing sent</Chip>}
+            body={
+              <p>
+                With <span className="text-text-1">Connect from an MCP client</span> switched on in
+                Settings, an assistant you run can use jojo’s tools. It runs on{' '}
+                <span className="text-text-1">your</span> plan with{' '}
+                <span className="text-text-1">your</span> login, under its vendor’s terms — jojo
+                sees neither and sends nothing to Anthropic or anyone else. jojo does not offer a
+                Claude login of its own, which Anthropic does not permit third-party apps to do; this
+                is the reverse, and what MCP is for. The small program that carries the link,{' '}
+                <span className="font-mono text-xs">jojo-bridge</span>, is jojo’s own and listens
+                only on 127.0.0.1. “Claude” and “Claude Code” are Anthropic’s marks; naming a client
+                jojo works with is not a claim of endorsement or affiliation.
+              </p>
+            }
+          />
+
+          <Term
             title="Ollama · vLLM · LM Studio · llama.cpp"
             chip={<Chip tone="green">Nothing leaves</Chip>}
             body={

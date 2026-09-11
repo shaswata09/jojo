@@ -9,6 +9,13 @@ import { refKey } from '@/lib/ids'
 export type ApplicationInitial = Partial<Application> & {
   deadline?: string
   keywords?: string[]
+  /**
+   * The saved posting this form was started from — "From link" keeps the page
+   * before the form opens — which is filed under the application when it is
+   * created. Carried in `initial` rather than beside it so that "Draft
+   * discarded · Undo" hands the form back still knowing which page it came from.
+   */
+  postingFileId?: string
 }
 
 export type FormState = {

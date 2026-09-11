@@ -63,8 +63,12 @@ const REPLY = 'jojo:capture-reply'
  *   3 — + read and model (relayed requests; a body only when there is one)
  *   4 — + crash (one crash-reporting choice, governing both halves)
  *   5 — + streamed model answers (chunk messages, then the usual reply)
+ *   6 — + capture a page by its address (the app's "From link"), handed back on the reply
+ *   7 — + link (the tab's side of the MCP link to jojo-bridge; loopback only)
+ *   8 — capture by address shrinks an oversized page to fit, as Capture does (the page asks
+ *       for 8 so a worker that would refuse it outright is named stale instead)
  */
-const BRIDGE_PROTOCOL = 5
+const BRIDGE_PROTOCOL = 8
 
 /** Must match `background.js`. A mismatch is a silent no-op, not an error. */
 const MODEL_STREAM_PORT = 'jojo:model-stream'
@@ -91,15 +95,19 @@ window.addEventListener('message', (event) => {
       ? 'jojo:crash-reporting'
       : data.model !== undefined && data.model !== null
         ? 'jojo:call-model'
-        : data.read !== undefined && data.read !== null
-          ? 'jojo:read-document'
-          : typeof data.scan === 'string'
-            ? 'jojo:scan-board'
-            : data.ack !== undefined
-              ? 'jojo:ack-captures'
-              : data.take === true
-                ? 'jojo:take-captures'
-                : 'jojo:peek-captures'
+        : data.link !== undefined && data.link !== null
+          ? 'jojo:mcp-link'
+          : data.read !== undefined && data.read !== null
+            ? 'jojo:read-document'
+            : typeof data.capture === 'string'
+              ? 'jojo:capture-url'
+              : typeof data.scan === 'string'
+                ? 'jojo:scan-board'
+                : data.ack !== undefined
+                  ? 'jojo:ack-captures'
+                  : data.take === true
+                    ? 'jojo:take-captures'
+                    : 'jojo:peek-captures'
 
   // Only these three fields cross, and only ever from this shape. Forwarding
   // the request wholesale would let anything on jojo's own page hand the worker
@@ -111,8 +119,13 @@ window.addEventListener('message', (event) => {
    * the worker must never receive a shape the page composed freely. Anything
    * else on the object is dropped, and the worker checks the url again anyway.
    */
-  // Both relayed verbs carry the same shape, so one rebuilder serves both.
-  const relayed = data.model && typeof data.model === 'object' ? data.model : data.read
+  // The relayed verbs carry the same shape, so one rebuilder serves all three.
+  const relayed =
+    data.model && typeof data.model === 'object'
+      ? data.model
+      : data.link && typeof data.link === 'object'
+        ? data.link
+        : data.read
   const read =
     relayed && typeof relayed === 'object'
       ? {
@@ -217,7 +230,8 @@ window.addEventListener('message', (event) => {
     {
       type: wanted,
       ids: data.ack,
-      url: data.scan,
+      // One field for both verbs that take an address. Only a string crosses.
+      url: typeof data.capture === 'string' ? data.capture : data.scan,
       request: read,
       on: crash ? crash.on : undefined,
       clear: crash ? crash.clear : undefined,
@@ -242,6 +256,9 @@ window.addEventListener('message', (event) => {
           // count. Both shapes ride the one reply, because the page correlates on
           // `id` and already knows which question it asked.
           rows: failed ? null : (response?.rows ?? null),
+          // A page captured by address: the whole envelope, which the app passes
+          // through `readCapture` before it files anything.
+          capture: failed ? null : (response?.capture ?? null),
           ok: failed ? false : response?.ok === true,
           // A read answers with an HTTP status and a body. Carried on the same
           // reply as everything else, because the page correlates on `id` and

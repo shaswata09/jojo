@@ -41,6 +41,8 @@ import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { useRoles } from '@/lib/roles-context'
 import { useSheets } from '@/lib/sheets-context'
+import { isConfigured } from '@/lib/llm'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { matchesQuery } from '@/lib/search'
 import { useApplications, useTimeline } from '@/lib/store-context'
 import type { RootStackParamList, TabParamList } from '@/navigation/types'
@@ -593,17 +595,23 @@ function RoleFilterSheet({ open, onClose }: { open: boolean; onClose: () => void
 /**
  * Start a record from a posting URL.
  *
- * Nothing is fetched — the employer and role are guessed from the URL itself
- * and handed to the create sheet as a prefill the user still has to look at.
+ * With a model connected the page is READ — the reader sheet opens on this URL
+ * and starts, so the model fills the form from the posting. Without one, the
+ * employer and role are guessed from the URL itself and handed to the create
+ * sheet as a prefill the user still has to look at. Web's `AddByUrl` makes the
+ * same choice for the same reason; see there.
  */
 function PasteUrlRow() {
   const { open } = useSheets()
+  const { settings } = useModelSettings()
+  const connected = isConfigured(settings)
   const [url, setUrl] = useState('')
 
   const submit = () => {
     const text = url.trim()
     if (!text) return
-    open('application', { initial: draftFromUrl(text) })
+    if (connected) open('applicationFromLink', { url: text, start: true })
+    else open('application', { initial: draftFromUrl(text) })
     setUrl('')
   }
 

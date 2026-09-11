@@ -24,7 +24,7 @@ import { refKey } from '@/lib/ids'
 import { useLabels } from '@/lib/labels-context'
 import { fromOverlay } from '@/navigation/ref'
 import { useSheets } from '@/lib/sheets-context'
-import { useApplications, useTimeline } from '@/lib/store-context'
+import { useApplications, useTimeline, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
 import { useColors } from '@/theme/theme-context'
 import { isOpenableUrl } from '@/lib/urls'
@@ -43,6 +43,8 @@ import { space } from '@/theme/tokens'
 export type ApplicationInitial = Partial<Application> & {
   deadline?: string
   keywords?: string[]
+  /** The saved posting "From link" kept, filed under the application on create. See web's `form-state.ts`. */
+  postingFileId?: string
 }
 
 type FormState = {
@@ -124,6 +126,14 @@ export function ApplicationSheet({
   const graph = useGraph()
   const { projections } = useKg()
   const { settings } = useModelSettings()
+  const vault = useVault()
+  /**
+   * The saved posting this sheet was started from, while it is still in the
+   * Vault. A page deleted in the meantime files nothing, rather than an edge to
+   * a record that is gone.
+   */
+  const postingId = initial?.postingFileId
+  const posting = postingId === undefined ? undefined : vault.files.find((f) => f.id === postingId)
   const readFit = useReadFit()
   const { labelIdsOf, setRecord } = useLabels()
   const { toast } = useToast()
@@ -287,7 +297,10 @@ export function ApplicationSheet({
    * tokens.
    */
   const prewarmFit = () => {
-    const source = postingSourceForUrl(graph, form.url.trim() || undefined)
+    // The page this sheet was started from, when there is one — see `posting`.
+    const source = posting
+      ? { fileId: posting.id, name: posting.name }
+      : postingSourceForUrl(graph, form.url.trim() || undefined)
     if (!source) return
     if (settings.model.trim() === '') return
     if (projections.background(graph).length === 0) return
@@ -319,14 +332,26 @@ export function ApplicationSheet({
         lastAction: fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
       })
       setRecord(refKey('app', created.id), keywords)
+      // Filed under what it became; added to any filing it already has, since
+      // `applicationIds` is a set. Web does this inside its undo; see there.
+      if (posting) {
+        vault.updateFile(posting.id, {
+          applicationIds: [...new Set([...posting.applicationIds, created.id])],
+        })
+      }
       if (form.deadline) mintDeadline(created, form.deadline)
       prewarmFit()
 
       toast({
         title: `${displayName(created)} added`,
-        description: form.deadline
-          ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
-          : 'No deadline yet — add one and it shows up in the week ahead.',
+        description: [
+          form.deadline
+            ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
+            : 'No deadline yet — add one and it shows up in the week ahead.',
+          posting ? 'The posting is filed under it.' : '',
+        ]
+          .filter(Boolean)
+          .join(' '),
       })
     } else if (record) {
       const fields = shared()

@@ -1,7 +1,6 @@
-import { useCallback, useEffect } from 'react'
-import { useLocation, useSearchParams } from 'react-router'
+import { useEffect } from 'react'
 import { buildMonth } from '@/data/calendar'
-import { STAGES, type Stage } from '@/data/seed'
+import { type Stage } from '@/data/seed'
 import { addressOf } from '@jojo/service/core/address'
 import type { Addressable } from '@jojo/service/core/address'
 import { TODAY_PARTS } from '@/lib/today'
@@ -12,14 +11,18 @@ import { TODAY_PARTS } from '@/lib/today'
  * Eight surfaces point at the same three destinations — the dashboard, the
  * board, the vault tools, the scout, the calendar's day list — and a route
  * composed by hand at each of them is eight chances to write '?view=kanban'
- * against a page that only understands 'board'. Builders and readers sit in
- * this one file so a param cannot be written in a shape nothing reads.
+ * against a page that only understands 'board'. The builders live here and
+ * their readers in `link-params.ts`, which imports the same defaults and codec
+ * from this file — so a param still cannot be written in a shape nothing reads.
+ * The readers moved out on 2026-09-11 because they need the router and the
+ * builders must not: a dialog imports a path from here, and a dialog is drawn
+ * outside the router (see `lib/dialogs.tsx`).
  *
  * Params matching the default are left out of the URL: the page renders the
  * same either way, and '/applications' is a nicer thing to land on and to share
  * than '/applications?view=board&stage=all&q=&sort=daysAgo'. The readers supply
- * those defaults, so the two halves have to agree on them — hence `DEFAULTS`,
- * lifted from what the routes hardcode today.
+ * those defaults, so the two halves have to agree on them — hence the
+ * `*_DEFAULTS` below, lifted from what the routes hardcode today.
  */
 
 export type ApplicationsView = 'board' | 'table'
@@ -38,14 +41,14 @@ export type VaultTool = (typeof VAULT_TOOLS)[number]
 
 const SORT_KEYS: readonly ApplicationsSortKey[] = ['role', 'stage', 'daysAgo']
 
-const APPLICATIONS_DEFAULTS = {
+export const APPLICATIONS_DEFAULTS = {
   view: 'board',
   stage: 'all',
   q: '',
   sort: 'daysAgo',
 } as const
 
-const VAULT_DEFAULTS = { tool: 'reminders' } as const
+export const VAULT_DEFAULTS = { tool: 'reminders' } as const
 
 /**
  * The calendar opens on today rather than on a literal date. It used to open on
@@ -64,10 +67,11 @@ const VAULT_DEFAULTS = { tool: 'reminders' } as const
  * "the default", while a bare `/calendar` fell back to `d: 12` and opened the
  * day panel on YESTERDAY. Adding an event from that panel stamps the 12th.
  *
- * Every reader below calls it, so each one samples the pin at the moment it
- * builds or parses a URL rather than at import.
+ * `calendarPath` and `calendarDate` below call it, and so does
+ * `useCalendarParams` in `link-params.ts`, so each samples the pin at the moment
+ * it builds or parses a URL rather than at import.
  */
-const calendarDefaults = () =>
+export const calendarDefaults = () =>
   ({ y: TODAY_PARTS.year, m: TODAY_PARTS.month, d: TODAY_PARTS.day }) as const
 
 /*
@@ -75,7 +79,8 @@ const calendarDefaults = () =>
  *
  * It aggregated the three constants above and its comment said "Read by the
  * param hooks below, which is the whole of its live use". Neither half held:
- * nothing outside this file imported it, and the hooks inside read
+ * nothing outside this file imported it, and the hooks — then in this file,
+ * now in `link-params.ts` — read
  * `APPLICATIONS_DEFAULTS`, `VAULT_DEFAULTS` and `calendarDefaults()` DIRECTLY —
  * never through the wrapper. So it was an export with no consumers describing a
  * use it did not have.
@@ -90,7 +95,7 @@ const calendarDefaults = () =>
 
 /* ------------------------------- builders -------------------------------- */
 
-type ParamValue = string | number | undefined
+export type ParamValue = string | number | undefined
 
 function withQuery(path: string, params: Record<string, ParamValue>) {
   const search = new URLSearchParams()
@@ -135,27 +140,6 @@ export function settingsPath(p?: { focus?: string }) {
   return focus ? `/settings?focus=${encodeURIComponent(focus)}` : '/settings'
 }
 
-/** The row a link is pointing at, if any. Cleared once the highlight fades. */
-export function useSettingsParams() {
-  const [params, setParams] = useSearchParams()
-  const focus = params.get('focus') ?? undefined
-
-  const clearFocus = useCallback(() => {
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        next.delete('focus')
-        return next
-      },
-      // Replace, so an expired highlight does not become a Back entry — the
-      // same reason `useVaultParams` replaces.
-      { replace: true },
-    )
-  }, [setParams])
-
-  return { focus, clearFocus }
-}
-
 /**
  * The assistant. The last route still linked to by a literal — the guide points
  * at it from two pages now, and one of them is the page whose whole job is
@@ -189,25 +173,10 @@ export const GUIDE_PAGES = [
 ] as const
 export type GuidePage = (typeof GUIDE_PAGES)[number]
 
-const GUIDE_DEFAULTS = { page: 'overview' } as const
+export const GUIDE_DEFAULTS = { page: 'overview' } as const
 
 export function guidePath(page: GuidePage = GUIDE_DEFAULTS.page) {
   return page === GUIDE_DEFAULTS.page ? '/guide' : `/guide/${page}`
-}
-
-/**
- * Which of the six is open.
- *
- * A path reader rather than a param one, because the guide's pages are routes:
- * they each want their own title, their own h1 and their own history entry, and
- * a query string gives none of those. Anything unrecognised reads as the
- * landing page rather than throwing — the router has already decided this URL
- * matches the section, so the only question left is which pill to light.
- */
-export function useGuidePage(): GuidePage {
-  const { pathname } = useLocation()
-  const segment = pathname.replace(/^\/guide\/?/, '').replace(/\/+$/, '')
-  return GUIDE_PAGES.includes(segment as GuidePage) ? (segment as GuidePage) : GUIDE_DEFAULTS.page
 }
 
 /** The knowledge-graph preview. No params — it reads the whole store. */
@@ -366,7 +335,7 @@ export function parseSort(token: string): { key: ApplicationsSortKey; dir: SortD
  * back at a clean '/applications' when you clear a filter, rather than
  * accumulating the fossil of every control you have touched.
  */
-function patched(
+export function patched(
   prev: URLSearchParams,
   patch: Record<string, ParamValue>,
   defaults: Readonly<Record<string, string | number>>,
@@ -386,108 +355,10 @@ function patched(
  * box one character at a time. Anything that opens a record can pass
  * `{ replace: false }` so Back closes it again.
  */
-type SetOptions = { replace?: boolean }
-
-export function useApplicationsParams() {
-  const [params, setParams] = useSearchParams()
-
-  const rawView = params.get('view')
-  const view: ApplicationsView =
-    rawView === 'board' || rawView === 'table' ? rawView : APPLICATIONS_DEFAULTS.view
-
-  // Validated against the stage list itself, so a stage added to the data is
-  // linkable without touching this file, and a hand-typed '?stage=hired' shows
-  // everything rather than an empty table.
-  const rawStage = params.get('stage')
-  const stage: Stage | 'all' =
-    rawStage !== null && STAGES.some((s) => s.id === rawStage)
-      ? (rawStage as Stage)
-      : APPLICATIONS_DEFAULTS.stage
-
-  const set = useCallback(
-    (
-      patch: {
-        view?: ApplicationsView
-        stage?: Stage | 'all'
-        q?: string
-        sort?: string
-      },
-      opts?: SetOptions,
-    ) => {
-      const wire: Record<string, ParamValue> = {}
-      if ('view' in patch) wire.view = patch.view
-      if ('stage' in patch) wire.stage = patch.stage
-      if ('q' in patch) wire.q = patch.q
-      if ('sort' in patch) wire.sort = patch.sort
-
-      setParams((prev) => patched(prev, wire, APPLICATIONS_DEFAULTS), {
-        replace: opts?.replace ?? true,
-      })
-    },
-    [setParams],
-  )
-
-  return {
-    view,
-    stage,
-    q: params.get('q') ?? APPLICATIONS_DEFAULTS.q,
-    /** Wire form; run it through `parseSort` for the key and direction. */
-    sort: params.get('sort') ?? APPLICATIONS_DEFAULTS.sort,
-    set,
-  }
-}
-
-export function useVaultParams() {
-  const [params, setParams] = useSearchParams()
-
-  const rawTool = params.get('tool')
-  const tool: VaultTool = VAULT_TOOLS.includes(rawTool as VaultTool)
-    ? (rawTool as VaultTool)
-    : VAULT_DEFAULTS.tool
-
-  const set = useCallback(
-    (patch: { tool?: VaultTool; focus?: string }, opts?: SetOptions) => {
-      const wire: Record<string, ParamValue> = {}
-      if ('tool' in patch) wire.tool = patch.tool
-      if ('focus' in patch) wire.focus = patch.focus
-
-      setParams((prev) => patched(prev, wire, VAULT_DEFAULTS), { replace: opts?.replace ?? true })
-    },
-    [setParams],
-  )
-
-  return { tool, focus: params.get('focus') ?? undefined, set }
-}
+export type SetOptions = { replace?: boolean }
 
 /** No defaults of its own: `focus` is the only param the scout reads. */
-const SCOUT_DEFAULTS: Readonly<Record<string, string | number>> = {}
-
-export function useScoutParams() {
-  const [params, setParams] = useSearchParams()
-
-  const raw = params.get('focus') ?? ''
-  const cut = raw.indexOf(':')
-  const kind = cut > 0 ? raw.slice(0, cut) : null
-  // A hand-typed or stale '?focus=' naming no list is dropped whole rather than
-  // half-read: lighting up the wrong list is worse than lighting up nothing.
-  const focus: ScoutFocus | undefined =
-    kind === 'match' || kind === 'posting' ? { kind, id: raw.slice(cut + 1) } : undefined
-
-  const set = useCallback(
-    (patch: { focus?: ScoutFocus }, opts?: SetOptions) => {
-      const wire: Record<string, ParamValue> = {}
-      if ('focus' in patch) wire.focus = patch.focus ? `${patch.focus.kind}:${patch.focus.id}` : ''
-
-      setParams((prev) => patched(prev, wire, SCOUT_DEFAULTS), { replace: opts?.replace ?? true })
-    },
-    [setParams],
-  )
-
-  /** The validated parameter as it stands in the URL — what drives the fade timer. */
-  const token = focus ? raw : undefined
-
-  return { focus, token, set }
-}
+export const SCOUT_DEFAULTS: Readonly<Record<string, string | number>> = {}
 
 /**
  * Reads a whole number, falling back when it is missing or not one, and
@@ -515,7 +386,8 @@ function readInt(raw: string | null, fallback: number, min: number, max: number)
 /**
  * The three numbers the calendar pages by, read out of a query string.
  *
- * A plain function beside the hook rather than inside it, because the clamping
+ * A plain function here rather than inside `useCalendarParams` (now in
+ * `link-params.ts`), because the clamping
  * is the part that can be wrong and D20 leaves no way to mount the hook and
  * look: the day is clamped against a month length that depends on the OTHER two
  * params, so the interesting cases are combinations, not values.
@@ -536,32 +408,6 @@ export function calendarDate(
   // person can type, and February has to answer it with something real.
   const d = readInt(params.get('d'), defaults.d, 1, buildMonth(y, m).days)
   return { y, m, d }
-}
-
-export function useCalendarParams() {
-  const [params, setParams] = useSearchParams()
-
-  const { y, m, d } = calendarDate(params)
-
-  const set = useCallback(
-    (patch: { y?: number; m?: number; d?: number; focus?: string }, opts?: SetOptions) => {
-      const wire: Record<string, ParamValue> = {}
-      if ('y' in patch) wire.y = patch.y
-      if ('m' in patch) wire.m = patch.m
-      if ('d' in patch) wire.d = patch.d
-      if ('focus' in patch) wire.focus = patch.focus
-
-      // Sampled inside the callback rather than closed over, so a tab left open
-      // across midnight writes the URL against today and not against the day it
-      // was opened on.
-      setParams((prev) => patched(prev, wire, calendarDefaults()), {
-        replace: opts?.replace ?? true,
-      })
-    },
-    [setParams],
-  )
-
-  return { y, m, d, focus: params.get('focus') ?? undefined, set }
 }
 
 /**

@@ -4,6 +4,8 @@ import { draftFromUrl } from '@/components/applications/draft-from'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDialogs } from '@/lib/dialogs-context'
+import { isConfigured } from '@/lib/llm'
+import { useModelSettings } from '@/lib/model-settings-context'
 import { cn } from '@/lib/utils'
 
 /**
@@ -13,10 +15,19 @@ import { cn } from '@/lib/utils'
  * so the two cannot drift apart — the placeholder and field width differ, the
  * behaviour does not.
  *
- * Nothing is saved from here. The URL is turned into a guess and handed to the
- * application dialog, which is the only thing that writes: the employer read
- * out of a hostname is wrong often enough that a silent save would file records
- * under names nobody chose. See `draft-from.ts`.
+ * With a model connected, the page is READ: "From link" opens the reader
+ * dialog on this URL and starts it, so the model fills the form from the
+ * posting and the extension keeps the page. Without one, the URL is turned into
+ * a guess — employer from the hostname, role from the last path segment — and
+ * handed straight to the form. The button used to do only the second whatever
+ * was connected, so a person with a model running pasted a link, pressed the
+ * button labelled for it, and got a guess from the address; the model path
+ * existed only behind a create-menu item they had no reason to look for.
+ *
+ * Nothing is saved as an application from here either way. The form is the
+ * only thing that writes one: the employer read out of a hostname is wrong
+ * often enough that a silent save would file records under names nobody chose.
+ * See `draft-from.ts`.
  */
 export function AddByUrl({
   className,
@@ -38,12 +49,15 @@ export function AddByUrl({
   // id would point every label at the first field.
   const id = useId()
   const { open } = useDialogs()
+  const { settings } = useModelSettings()
+  const connected = isConfigured(settings)
   const [url, setUrl] = useState('')
 
   const submit = () => {
     const text = url.trim()
     if (!text) return
-    open('application', { mode: 'create', initial: draftFromUrl(text) })
+    if (connected) open('applicationFromLink', { url: text, start: true })
+    else open('application', { mode: 'create', initial: draftFromUrl(text) })
     // Cleared, because the URL now lives in the form. Left behind, a second
     // Enter would start a duplicate record from a field that looks like it has
     // already been dealt with.
@@ -89,7 +103,13 @@ export function AddByUrl({
         size="sm"
         // Disabled only while there is nothing to work with, and it says so.
         disabled={!url.trim()}
-        title={url.trim() ? undefined : 'Paste a posting URL first'}
+        title={
+          !url.trim()
+            ? 'Paste a posting URL first'
+            : connected
+              ? 'The model reads the posting and fills the form in'
+              : undefined
+        }
         className="shrink-0"
       >
         <Plus className="size-3.5" strokeWidth={2} aria-hidden />

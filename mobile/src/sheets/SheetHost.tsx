@@ -99,9 +99,11 @@ export function SheetHost() {
   }
 
   if (current.name === 'applicationFromLink') {
-    // No props and no key: it takes nothing, and its state is a URL being typed
-    // plus a read in flight, neither of which should survive a close.
-    return <AddFromLinkSheet open />
+    // No key: its state is a URL being typed plus a read in flight, neither of
+    // which should survive a close. The URL and `start` come from "From link",
+    // which has already been pressed and should not have to be pressed twice.
+    const props = current.props as { url?: string; start?: boolean }
+    return <AddFromLinkSheet open url={props.url} start={props.start} />
   }
 
   if (current.name === 'draft') {

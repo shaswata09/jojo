@@ -6,6 +6,9 @@ import { defineConfig } from 'vitest/config'
 import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { execFile } from 'node:child_process'
+import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
+import type { Plugin } from 'vite'
 
 // https://vite.dev/config/
 /**
@@ -23,9 +26,84 @@ import tailwindcss from '@tailwindcss/vite'
  */
 const base = process.env.BASE_PATH ?? '/'
 
+/**
+ * Keeps the Settings page's extension download no older than the extension.
+ *
+ * `npm run dev` packs `extension/` into `public/jojo-extension.zip` once, before
+ * Vite starts, and nothing packed it again — so an extension changed while the
+ * dev server ran was served as the OLD zip. Measured 2026-09-11: the zip was
+ * built at 11:55, a fix to `background.js` landed at 12:06, and a copy unzipped
+ * from Settings went on failing after every Reload, because Reload re-reads the
+ * same stale folder.
+ *
+ * Checked when the zip is ASKED FOR rather than on every save, so editing the
+ * extension does not reload the app each time the zip is rewritten: a download
+ * whose sources are newer than it is repacked first, and a current one is served
+ * as it is. Dev only — `npm run build` packs before it bundles.
+ *
+ * SERVED HERE, not handed back to Vite. The pack deletes the old zip before it
+ * writes the new one, and Vite's list of public files follows its file watcher,
+ * which lags: handed on straight after a repack, 3 of 25 downloads came back as
+ * the app's index.html — a 200 that was not a zip — because for that moment Vite
+ * believed the file did not exist and fell through to the SPA fallback. A corrupt
+ * download is worse than a stale one, so the file is streamed from disk here,
+ * where it is known to be complete.
+ */
+function freshExtensionZip(): Plugin {
+  const here = fileURLToPath(new URL('.', import.meta.url))
+  const extension = path.join(here, 'extension')
+  const zip = path.join(here, 'public', 'jojo-extension.zip')
+  const newest = (dir: string): number =>
+    readdirSync(dir, { withFileTypes: true }).reduce((latest, entry) => {
+      const full = path.join(dir, entry.name)
+      return Math.max(latest, entry.isDirectory() ? newest(full) : statSync(full).mtimeMs)
+    }, 0)
+  const pack = () =>
+    new Promise<void>((resolve) => {
+      execFile(
+        process.execPath,
+        [path.join(here, 'scripts', 'pack-extension.mjs'), '--optional'],
+        { cwd: here },
+        () => {
+          resolve()
+        },
+      )
+    })
+  return {
+    name: 'jojo:fresh-extension-zip',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (!(req.url ?? '').split('?')[0]?.endsWith('/jojo-extension.zip')) {
+          next()
+          return
+        }
+        const serve = () => {
+          // A pack that failed leaves nothing to send: let Vite answer as usual.
+          if (!existsSync(zip)) {
+            next()
+            return
+          }
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'application/zip')
+          res.setHeader('Content-Length', String(statSync(zip).size))
+          if (req.method === 'HEAD') {
+            res.end()
+            return
+          }
+          createReadStream(zip).pipe(res)
+        }
+        const stale = !existsSync(zip) || newest(extension) > statSync(zip).mtimeMs
+        if (stale) void pack().then(serve)
+        else serve()
+      })
+    },
+  }
+}
+
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), freshExtensionZip()],
   /*
    * `.env` lives at the REPO ROOT, not in `web/`.
    *

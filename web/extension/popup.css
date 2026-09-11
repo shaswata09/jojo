@@ -240,6 +240,11 @@ button:focus-visible {
   background: #2a2a2a;
   color: var(--danger);
 }
+/* Save sits between the title and ×. `.link` alone would let the flex row
+   squeeze it; the title is the part that should truncate, not the control. */
+.kept .save {
+  flex: none;
+}
 
 /* ------------------------------------------------------------------ fields */
 .field {
@@ -375,4 +380,11 @@ input[type='text']:focus-visible {
   * {
     transition: none !important;
   }
+}
+
+/* ---------------------------------------------------------------- save tab
+   save.html reuses this sheet. The popup's body is sized for a toolbar panel;
+   in a tab it is centred and given room, and nothing else changes. */
+body.save-page {
+  margin: 48px auto;
 }

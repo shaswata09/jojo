@@ -15,6 +15,7 @@ import { report } from '@/lib/analytics'
 import { reportableProvider } from '@jojo/service/core/analytics'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
 import { CopyButton } from '@/components/common/CopyButton'
+import { McpLinkPanel } from '@/components/settings/McpLinkPanel'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { publicUrl } from '@/lib/public-url'
 import { guidePath } from '@/lib/links'
@@ -67,6 +68,12 @@ export function ConnectionsSection() {
     <div className="grid grid-cols-1 items-start gap-4 sm:gap-5 lg:grid-cols-2">
       <LocalModelPanel />
       <DocumentReaderPanel />
+      {/* Full width rather than a third half-card: an odd card in this grid is
+          the orphan the paragraph above describes. It is also the other
+          question — not "what does jojo talk to" but "what may talk to jojo". */}
+      <div className="lg:col-span-2">
+        <McpLinkPanel />
+      </div>
     </div>
   )
 }

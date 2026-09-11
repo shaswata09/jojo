@@ -117,7 +117,10 @@ export const SHAPE: DirRow[] = [
   },
   {
     dir: 'service/kg/react',
-    files: 41,
+    // 42 with `use-tool-host.ts`: the host the assistant and the MCP link both
+    // run tools against, so a capability added to one cannot be missing from
+    // the other.
+    files: 42,
     tests: 11,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
@@ -136,8 +139,9 @@ export const SHAPE: DirRow[] = [
   {
     dir: 'web/src/components',
     // Re-measured when `common/CopyButton.tsx` was added, so the setup
-    // commands in Settings could be copied rather than retyped.
-    files: 284,
+    // commands in Settings could be copied rather than retyped; 285 with
+    // `settings/McpLinkPanel.tsx`, the switch and two commands for Claude Code.
+    files: 285,
     tests: 29,
     lines: 48069,
     what: 'every surface you can see',
@@ -145,9 +149,15 @@ export const SHAPE: DirRow[] = [
   { dir: 'web/src/routes', files: 15, tests: 0, lines: 4795, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
-    files: 112,
-    tests: 37,
-    lines: 16327,
+    // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
+    // pasted link; then the MCP link — `mcp-link.ts`, its provider, and the
+    // bridge and joined-path tests that pin the two ends together; and
+    // `capture-save.test.ts` beside `capture-page` and `capture-shrink`.
+    // And `link-params.ts` with `check-outside-router.test.ts`: the router hooks
+    // moved out of `links.ts`, so a dialog can import a path without the router.
+    files: 121,
+    tests: 43,
+    lines: 18199,
     what: 'web-only adapters and URL state',
   },
   {
@@ -177,7 +187,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 70
+export const WEB_TEST_FILES = 76
 
 type TestGroup = { title: string; files: string; body: string }
 

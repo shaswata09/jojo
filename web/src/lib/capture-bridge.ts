@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  CAPTURE_REJECTION_MESSAGE,
   readCapture,
   type CaptureEnvelope,
   type CaptureRejection,
@@ -55,10 +56,22 @@ const READY = 'jojo:capture-ready'
  */
 const NEEDS_PROTOCOL = 3
 
-/** Said the same way wherever a stale bridge is found, because the fix is one thing. */
+/**
+ * Said the same way wherever a stale bridge is found, because the fix is the same
+ * whatever was asked: bring the extension up to date.
+ *
+ * It names both ways of doing that, and the second is the one that was missing.
+ * "Press Reload" is right for a folder loaded straight from the repo and wrong
+ * for one unzipped from the Settings download: Reload re-reads the same folder,
+ * so a copy that is behind stays behind however often it is pressed. Measured
+ * 2026-09-11 — a copy unzipped at 11:55, eleven minutes before a fix, went on
+ * failing after every Reload. And "chrome://" was wrong for the person it was
+ * said to, who was on Brave.
+ */
 const STALE =
-  'The jojo extension loaded in this browser is older than this page and cannot carry the request. ' +
-  'Open chrome://extensions and press Reload on jojo — an unpacked extension never updates itself.'
+  'The jojo extension in this browser is older than this page and cannot carry the request. ' +
+  'Update it: press Reload on jojo in your browser’s extensions page — or, if you installed it from Settings, ' +
+  'download it again there and load the new folder in place of the old one. An unpacked extension never updates itself.'
 
 /**
  * How long a relay gets to answer a PROBE before it is treated as absent.
@@ -144,6 +157,8 @@ type Reply = {
   /** Set by a bridge that actually streamed, so the caller can tell. */
   streamed?: boolean
   error?: string | null
+  /** A page captured by address. Unvalidated until `readCapture`. See `capturePage`. */
+  capture?: unknown
 }
 
 /** What one round trip is asking for. Exactly one of these is ever set. */
@@ -162,10 +177,14 @@ type Ask = {
   ack?: string[]
   /** A board to open and read. See `scanBoard`. */
   scan?: string
+  /** A posting to open, render and bring back whole. See `capturePage`. */
+  capture?: string
   /** A request to relay to a reader on this machine. See `readDocument`. */
   read?: { url: string; method: string; headers: Record<string, string>; body?: string }
   /** A request to relay to a model provider. See `callModel`. */
   model?: { url: string; method: string; headers: Record<string, string>; body?: string }
+  /** A request to relay to jojo-bridge on this machine. See `relayToBridge`. */
+  link?: { url: string; method: string; headers: Record<string, string>; body?: string }
   /** The crash-reporting choice, and a request for what the worker has kept. */
   crash?: { on?: boolean; clear?: boolean }
   /**
@@ -192,6 +211,19 @@ type Ask = {
  * read.
  */
 const SCAN_TIMEOUT_MS = 40000
+
+/**
+ * How long a CAPTURE gets: a scan's budget, and the inlining on top of it.
+ *
+ * The worker opens a tab and waits up to 25s for it to load and 2.5s more for
+ * its JavaScript, as a scan does — and then does what a scan does not: fetches
+ * every stylesheet, image and font the page uses and folds them in, which on a
+ * heavy board is most of the time spent. The Capture button has no clock on
+ * that at all; this one needs one, because somebody is watching a spinner, so
+ * it is set well past the scan's rather than at it. The worker closes the tab
+ * in a `finally` whichever side gives up first.
+ */
+const CAPTURE_TIMEOUT_MS = 90000
 
 /**
  * How long a relayed READ or MODEL call gets, once the extension has proved it
@@ -289,12 +321,15 @@ function ask(request: Ask): Promise<Reply | null> {
      * worker was meanwhile giving the same request 120.
      */
     const timeout =
-      request.read !== undefined || request.model !== undefined
+      request.read !== undefined || request.model !== undefined || request.link !== undefined
         ? // The worker's own budget, once there is a worker known to be running.
           // Borrowing the scan's was what threw away conversions and model
-          // answers that had not finished yet — see `RELAY_TIMEOUT_MS`.
+          // answers that had not finished yet — see `RELAY_TIMEOUT_MS`. The
+          // link's held poll (25 s) fits under either.
           (answered ? RELAY_TIMEOUT_MS : SCAN_TIMEOUT_MS)
-        : request.scan !== undefined
+        : request.capture !== undefined
+          ? CAPTURE_TIMEOUT_MS
+          : request.scan !== undefined
           ? SCAN_TIMEOUT_MS
           : request.take === true
             ? TAKE_TIMEOUT_MS
@@ -317,11 +352,13 @@ function ask(request: Ask): Promise<Reply | null> {
         take: request.take,
         ack: request.ack,
         scan: request.scan,
+        capture: request.capture,
         // Forwarded, which they were not. The bridge picks its verb from the
         // SHAPE of what arrives, so a `read` that never crossed the wire was
         // read as a peek — the relay could not have worked at all.
         read: request.read,
         model: request.model,
+        link: request.link,
         crash: request.crash,
       },
       window.location.origin,
@@ -376,6 +413,91 @@ export async function scanBoard(
     return { ok: false, reason: reply.error ?? 'That board could not be read.' }
   }
   return { ok: true, rows: reply.rows }
+}
+
+/**
+ * The bridge revision whose capture-by-address the page can rely on. See `bridge.js`.
+ *
+ * 8, not the 6 the verb arrived in. A revision-6 or -7 worker refuses any page
+ * over the cap outright — "That page is too big to keep." — where 8 shrinks it
+ * to fit as the Capture button does, and the refusal blames the PAGE for what is
+ * really an out-of-date extension. Asking for 8 turns it into the stale
+ * sentence, which names the fix.
+ */
+const CAPTURES_BY_ADDRESS = 8
+
+/** What `capturePage` comes back with. */
+export type PageCapture =
+  | { ok: true; capture: CaptureEnvelope }
+  | {
+      ok: false
+      /**
+       * True only when nothing answered at all — no extension in this browser.
+       *
+       * The one failure a caller may route around, because it says nothing
+       * about the page: the document reader can still fetch it. Every other
+       * failure is the page's or the extension's to explain, and quietly trying
+       * another way would hide the sentence the person needs — "sign in", or
+       * "reload the extension".
+       */
+      absent: boolean
+      reason: string
+    }
+
+/**
+ * Opens a posting in a background tab and brings the whole page back.
+ *
+ * The "From link" read. A page cannot fetch a job board — no board sends CORS
+ * headers — and the document reader fetches server-side, which on a board that
+ * renders in JavaScript is a blank shell. The extension opens the address the
+ * way the person would, signed in as they are, lets it finish rendering and
+ * serialises it exactly as its Capture button does: so what the model reads is
+ * the posting as it appears on screen, and what the Vault keeps is the page
+ * itself rather than a text dump of it.
+ *
+ * Probed first, for the reason `callModel` gives: "is anything listening" is a
+ * 400ms question, and asking it inside a 90-second budget would cost everyone
+ * without the extension a minute and a half before the reader was tried. The
+ * probe also carries the bridge's revision, so a stale extension is named before
+ * it is handed a verb it would misroute as a peek.
+ *
+ * What comes back passes `readCapture` — the gate the capture inbox and the
+ * phone's captures pass through — before anything is filed.
+ */
+export async function capturePage(url: string, signal?: AbortSignal): Promise<PageCapture> {
+  const waiting = signal === undefined ? {} : { signal }
+  const cancelled: PageCapture = { ok: false, absent: false, reason: 'The read was cancelled.' }
+
+  const probe = await ask(waiting)
+  if (probe === null) {
+    if (signal?.aborted === true) return cancelled
+    return {
+      ok: false,
+      absent: true,
+      reason:
+        'The jojo browser extension did not answer, so the page could not be opened. Settings has the installer.',
+    }
+  }
+  if ((probe.protocol ?? 0) < CAPTURES_BY_ADDRESS) return { ok: false, absent: false, reason: STALE }
+
+  const reply = await ask({ capture: url, ...waiting })
+  if (reply === null) {
+    if (signal?.aborted === true) return cancelled
+    return {
+      ok: false,
+      absent: false,
+      reason:
+        'The jojo extension opened the page but did not finish saving it in time. A very heavy page can take longer — try again, or open it and use the extension’s Capture button.',
+    }
+  }
+  if (reply.ok !== true) {
+    return { ok: false, absent: false, reason: reply.error ?? 'That page could not be saved.' }
+  }
+  const read = readCapture(reply.capture)
+  if (typeof read === 'string') {
+    return { ok: false, absent: false, reason: CAPTURE_REJECTION_MESSAGE[read] }
+  }
+  return { ok: true, capture: read }
 }
 
 /**
@@ -436,6 +558,60 @@ export async function readDocument(
   // a status even when it is a bad one, and belongs to the protocol layer.
   if (reply.error != null && !reply.status) return { failed: { reason: reply.error } }
 
+  return { ok: reply.ok === true, status: reply.status ?? 0, text: reply.text ?? '' }
+}
+
+/**
+ * The bridge revision that carries the MCP link. See `extension/bridge.js`, 7.
+ *
+ * Its own number rather than `NEEDS_PROTOCOL`: a bridge between 3 and 6 relays
+ * reads perfectly well, and handed a `link` it would pick the nearest verb it
+ * knows and answer a capture peek.
+ */
+const MCP_LINK_PROTOCOL = 7
+
+/**
+ * One request to jojo-bridge on this machine, carried by the extension.
+ *
+ * The MCP link's road on a hosted copy of jojo — see `mcp-link.ts` for what
+ * travels on it. The page is https, Chrome's Local Network Access gate keeps it
+ * away from 127.0.0.1, and the extension is not a page.
+ *
+ * Its own verb in the worker rather than `read`, because `read` sits behind the
+ * popup's "Document reader" switch, and turning document reading off is not a
+ * request for Claude Code to lose the link.
+ *
+ * The failure names which of three things went wrong, because each has its own
+ * fix: no extension (install it), an old one (reload it), or nothing answering
+ * at the bridge's address (start it).
+ */
+export async function relayToBridge(
+  request: { url: string; method: string; headers: Record<string, string>; body?: string },
+  signal?: AbortSignal,
+): Promise<
+  | { ok: boolean; status: number; text: string }
+  | { failed: { reason: string; kind: 'absent' | 'stale' | 'transport' } }
+> {
+  const reply = await ask({ link: request, ...(signal === undefined ? {} : { signal }) })
+
+  if (reply === null) {
+    // A switch turned off and a missing extension are the same silence here,
+    // and only one of them should send somebody to the installer.
+    if (signal?.aborted === true) {
+      return { failed: { kind: 'transport', reason: 'The link was switched off.' } }
+    }
+    return {
+      failed: {
+        kind: 'absent',
+        reason:
+          'The jojo browser extension did not answer. On a copy of jojo served from the web it is what carries the link to jojo-bridge; Settings has the installer.',
+      },
+    }
+  }
+  if ((reply.protocol ?? 0) < MCP_LINK_PROTOCOL) return { failed: { kind: 'stale', reason: STALE } }
+  if (reply.error != null && !reply.status) {
+    return { failed: { kind: 'transport', reason: reply.error } }
+  }
   return { ok: reply.ok === true, status: reply.status ?? 0, text: reply.text ?? '' }
 }
 

@@ -7,7 +7,8 @@ import { RoleFilter } from '@/components/layout/RoleFilter'
 import { Input } from '@/components/ui/input'
 import { STAGES, STAGE_LABEL, type Application } from '@/data/seed'
 import { refKey } from '@/lib/ids'
-import type { ApplicationsView, useApplicationsParams } from '@/lib/links'
+import type { ApplicationsView } from '@/lib/links'
+import type { useApplicationsParams } from '@/lib/link-params'
 
 const VIEWS = [
   { value: 'table', label: 'Table' },

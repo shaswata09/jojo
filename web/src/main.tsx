@@ -10,6 +10,7 @@ import { ApprovalHost } from '@/components/assistant/ApprovalHost'
 import { DialogHost, DialogsProvider } from '@/lib/dialogs'
 import { LabelsProvider } from '@/lib/labels'
 import { PipelinesProvider } from '@/lib/pipelines'
+import { McpLinkProvider } from '@/lib/mcp-link-provider'
 import { ModelSettingsProvider } from '@/lib/model-settings'
 import { MascotProvider } from '@/lib/mascot'
 import { RolesProvider } from '@/lib/roles'
@@ -83,9 +84,15 @@ createRoot(container).render(
                             pipeline that stopped when you left Job Scout was a
                             pipeline that did not do what its own caption said. */}
                         <PipelinesProvider>
-                          <App />
-                          <DialogHost />
-                          <ApprovalHost />
+                          {/* Up here with the pipelines, for the same reason:
+                              a link that lived on the Settings page would stop
+                              answering Claude Code the moment you went to look
+                              at what it had just changed. */}
+                          <McpLinkProvider>
+                            <App />
+                            <DialogHost />
+                            <ApprovalHost />
+                          </McpLinkProvider>
                         </PipelinesProvider>
                       </AgentRunsProvider>
                     </MascotProvider>

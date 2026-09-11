@@ -64,6 +64,12 @@ type ApplicationProps = {
   initial?: ApplicationInitial
 }
 
+/** What `open('applicationFromLink', …)` accepts: a URL, and whether to read it at once. */
+type FromLinkProps = {
+  url?: string
+  start?: boolean
+}
+
 /** What `open('timelineItem', …)` accepts. Pass an `initial` with an id to edit. */
 type TimelineItemProps = {
   mode?: 'reminder' | 'event'
@@ -77,10 +83,15 @@ type DraftProps = Pick<DraftDialogProps, 'itemId' | 'applicationId'>
  * Renders whichever dialog is open. Mount it once, next to the router outlet.
  *
  * It is mounted at the root, OUTSIDE the router — so nothing reachable from
- * here may call `useNavigate`, `useParams` or `useSearchParams`. None of the
- * three dialogs below does today; keep it that way, or check the mount point in
- * main.tsx before adding one that does. It is also why `DraftDialog` disables
- * its "Open in assistant" button rather than linking to the route.
+ * here may import a value from `react-router`: a hook throws at render, a
+ * `<Link>` does too, and the root boundary then replaces the whole app with
+ * "Something broke". This used to be a sentence — "none of the three dialogs
+ * below does today" — and the fourth, `AddFromLinkDialog`, did from the day it
+ * was written. `scripts/check-outside-router.mjs` enforces it in lint now. A
+ * dialog that needs to go somewhere closes and lets the route that opened it
+ * navigate, or links with `hrefOutsideRouter` when a page load is wanted. It is
+ * also why `DraftDialog` disables its "Open in assistant" button rather than
+ * linking to the route.
  *
  * Every name in `DialogName` has a branch here. That is the contract: a name
  * with no branch is an `open()` that type-checks and does nothing, which is
@@ -164,7 +175,15 @@ export function DialogHost() {
   if (current.name === 'applicationFromLink') {
     // Keyed per open, like the two above: its state is a URL being typed and a
     // read in flight, and neither should survive a close and reopen.
-    return <AddFromLinkDialog key={mountKey('applicationFromLink', showing)} open />
+    const props = current.props as FromLinkProps
+    return (
+      <AddFromLinkDialog
+        key={mountKey('applicationFromLink', showing)}
+        open
+        url={props.url}
+        start={props.start}
+      />
+    )
   }
 
   if (current.name === 'draft') {

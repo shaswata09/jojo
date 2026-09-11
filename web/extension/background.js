@@ -15,6 +15,7 @@
 
 import { harvest } from './harvest.js'
 import { serialise } from './serialise.js'
+import { shrinkToFit } from './shrink.js'
 import {
   CAPTURE_HREF_ATTR,
   CAPTURE_LAZY_ATTRS,
@@ -476,6 +477,122 @@ function hostOf(url) {
   }
 }
 
+/**
+ * Whether a redirect landed on an account page rather than a posting.
+ *
+ * Only a page it was SENT to counts — the address asked for is never judged, so
+ * a posting whose own path happens to say "auth" is not refused — and only one
+ * that looks like a sign-in. `scanBoard` refuses any change of host, which is
+ * right for a board and wrong here: a careers page handing over to the tracking
+ * system that hosts its listings (careers.acme.com → boards.greenhouse.io) is
+ * the ordinary shape of a posting link. The host alone is not enough either,
+ * because the commonest wall is on the same one: LinkedIn sends a signed-out
+ * reader of /jobs/view to /authwall.
+ */
+const SIGN_IN = /(^|[./-])(log-?in|sign-?in|sso|auth|authwall|accounts?|checkpoint)([./-]|$)/i
+
+function looksLikeSignIn(requested, landed) {
+  if (landed === requested) return false
+  try {
+    const at = new URL(landed)
+    return SIGN_IN.test(`${at.hostname}${at.pathname}`)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Opens a posting in a background tab and hands the whole page back.
+ *
+ * The app's "From link". `capture()` below reads the tab the person is looking
+ * at; this reads a page the app was given the ADDRESS of. Everything after the
+ * tab exists is the same — the same serialiser, the same policy, the same
+ * inlining and the same size cap — so a posting saved from a pasted link is the
+ * same kind of document the Capture button saves, and the Vault's viewer, the
+ * fit reader and the posting lookup cannot tell them apart.
+ *
+ * NOT queued. `capture()` queues because the person is in another tab and jojo
+ * may not even be open; here jojo asked and is waiting, so the page goes back on
+ * the reply and the app files it. Queuing it as well would file it twice the
+ * next time the inbox drained.
+ *
+ * Inactive, and closed in a `finally`, for the reason `scanBoard` gives. It
+ * carries the person's own cookies, which is the point — a posting behind a
+ * sign-in reads as it does for them — and a sign-in wall is refused rather than
+ * saved, because a login form filed under a job is worse than nothing.
+ */
+async function capturePage(url) {
+  let tabId = null
+  try {
+    const tab = await chrome.tabs.create({ url, active: false })
+    tabId = typeof tab.id === 'number' ? tab.id : null
+    if (tabId === null) return { ok: false, reason: 'That page could not be opened.' }
+
+    const loaded = await waitForLoad(tabId)
+    if (!loaded) return { ok: false, reason: 'That page took too long to load.' }
+    await sleep(SETTLE_MS)
+
+    const landed = await chrome.tabs.get(tabId)
+    if (typeof landed.url === 'string' && looksLikeSignIn(url, landed.url)) {
+      return {
+        ok: false,
+        reason: `That page sent us to ${hostOf(landed.url)} to sign in. Open the posting in a tab and sign in, then try again.`,
+      }
+    }
+
+    const [run] = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: serialise,
+      args: [POLICY],
+    })
+    const page = run?.result
+    if (!page) return { ok: false, reason: 'Nothing came back from that page.' }
+
+    let { html, dropped } = await inline(page)
+
+    /*
+     * Over the cap: leave out the heaviest embedded assets until it fits — the
+     * step `capture()` takes, through the same `shrinkToFit`, so a page the
+     * Capture button keeps is a page "From link" keeps too.
+     *
+     * This path refused outright until 2026-09-11, after `capture()` had already
+     * learned to shrink. A HigherEdJobs posting — 56 KB of HTML and ~9,700
+     * characters of text — inlined to ~8.8 MB because its stylesheets pull in
+     * 32 Font Awesome files, the .ttf and the .woff2 of every face, and "+ From
+     * link" said "That page is too big to keep." about a posting the model
+     * needed none of that to read. `capture-page.test.ts` pins both paths to
+     * the one shrinker so they cannot drift apart again.
+     */
+    if (byteLength(html) > CAPTURE_MAX_BYTES) {
+      const fitted = shrinkToFit(html, CAPTURE_MAX_BYTES)
+      if (fitted.html === null) {
+        return {
+          ok: false,
+          reason: `That page is too big to keep, even with its images and fonts left out — the limit is ${String(CAPTURE_MAX_BYTES / 1048576)} MB.`,
+        }
+      }
+      html = fitted.html
+      dropped += fitted.dropped
+    }
+
+    return {
+      ok: true,
+      capture: {
+        url: page.url,
+        title: page.title,
+        html,
+        capturedAt: page.capturedAt,
+        dropped,
+        shadowRoots: page.shadowRoots ?? 0,
+      },
+    }
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : String(error) }
+  } finally {
+    if (tabId !== null) await chrome.tabs.remove(tabId).catch(() => undefined)
+  }
+}
+
 /*
  * There is no `onClicked` listener any more, and that is not an omission.
  *
@@ -498,26 +615,51 @@ async function capture(tabId) {
       args: [POLICY],
     })
     const page = run?.result
-    if (!page) return badge(tabId, '!', 'Nothing came back from that page')
+    if (!page) return fail(tabId, 'Nothing came back from that page.')
 
-    const { html, dropped } = await inline(page)
+    let { html, dropped } = await inline(page)
 
+    /*
+     * Over the cap: leave out the heaviest embedded assets until it fits,
+     * rather than throwing the whole page away.
+     *
+     * This used to discard outright. Measured on gitlab.com/jobs: 8.04 MB
+     * against 8 MB, over by 40 KB, and the posting was lost — text and all —
+     * while the popup said "Kept.". Most of that page was base64 fonts and
+     * images; the text and layout CSS are not `data:` URIs and are never
+     * touched. See `shrink.js`. Only when the page is too large even with every
+     * embedded asset gone is it refused, and then the reason says so.
+     */
+    let trimmed = 0
     if (byteLength(html) > CAPTURE_MAX_BYTES) {
-      return badge(tabId, '!', 'That page is too big to keep')
+      const fitted = shrinkToFit(html, CAPTURE_MAX_BYTES)
+      if (fitted.html === null) {
+        return fail(
+          tabId,
+          `That page is too big to keep, even with its images and fonts left out — the limit is ${String(CAPTURE_MAX_BYTES / 1048576)} MB.`,
+        )
+      }
+      html = fitted.html
+      trimmed = fitted.dropped
+      dropped += fitted.dropped
     }
 
     const queued = await read()
+    // Its handle for the acknowledgement below, and what the popup's Save
+    // button asks for. Minted here because this is the only place that can.
+    const id = `cap_${String(Date.now())}_${String(queued.length)}`
     queued.push({
       // Its handle for the acknowledgement below. Minted here because this is
       // the only place that can, and a counter would collide across a worker
       // restart — MV3 stops the worker whenever it is idle.
-      id: `cap_${String(Date.now())}_${String(queued.length)}`,
+      id,
       url: page.url,
       title: page.title,
       html,
       capturedAt: page.capturedAt,
       dropped,
       shadowRoots: page.shadowRoots ?? 0,
+      trimmed,
     })
     await chrome.storage.local.set({ [QUEUE]: queued })
     // Global as well as per-tab: `setBadgeText` with a tabId sets it for THAT
@@ -526,9 +668,25 @@ async function capture(tabId) {
     // The queue is one thing, so the badge is one number.
     await chrome.action.setBadgeText({ text: String(queued.length) })
     await badge(tabId, String(queued.length), 'Saved — open jojo to file it')
+    return { ok: true, count: queued.length, id, trimmed }
   } catch (error) {
-    await badge(tabId, '!', error instanceof Error ? error.message : String(error))
+    return fail(tabId, error instanceof Error ? error.message : String(error))
   }
+}
+
+/**
+ * Marks the tab as failed AND hands the reason back.
+ *
+ * `capture()` used to report failure only through the badge, and return
+ * nothing — so the `jojo:capture-tab` handler could not tell success from
+ * failure and answered `ok: true` every time. Measured: capturing
+ * `chrome://version` and gitlab.com/jobs both stored nothing, and in both the
+ * popup said "Kept.". Returning the outcome is what lets the popup say what
+ * actually happened.
+ */
+async function fail(tabId, reason) {
+  await badge(tabId, '!', reason)
+  return { ok: false, reason }
 }
 
 /**
@@ -1121,6 +1279,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true
   }
 
+  /*
+   * One kept page, WITH its body — for the popup's Save button.
+   *
+   * `jojo:list-captures` deliberately omits `html` (a queue of multi-megabyte
+   * pages is a large structured clone to draw a list of titles). Saving needs
+   * exactly one body, so it is asked for by id, when it is wanted. Gated like
+   * every other popup verb: only a page served from this extension may ask.
+   */
+  if (message?.type === 'jojo:get-capture' && fromOwnPage) {
+    void (async () => {
+      const id = typeof message.id === 'string' ? message.id : ''
+      const found = (await read()).find((c) => c.id === id)
+      sendResponse(
+        found
+          ? { ok: true, url: found.url, title: found.title, capturedAt: found.capturedAt, html: found.html }
+          : { ok: false, reason: 'That page is no longer kept.' },
+      )
+    })()
+    return true
+  }
+
   if (message?.type === 'jojo:capture-tab' && fromOwnPage) {
     void (async () => {
       const tabId = typeof message.tabId === 'number' ? message.tabId : null
@@ -1128,9 +1307,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ ok: false, reason: 'No page to capture.' })
         return
       }
-      await capture(tabId)
-      const queued = await read()
-      sendResponse({ ok: true, count: queued.length })
+      // capture() reports its own outcome. This used to answer `ok: true`
+      // unconditionally, which is how a page that was never stored came back
+      // to the popup as "Kept.".
+      sendResponse(await capture(tabId))
     })()
     return true
   }
@@ -1329,6 +1509,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   /*
+   * The MCP link: the jojo tab talking to `jojo-bridge` on this machine, which
+   * is how an MCP client such as Claude Code reaches the tab's records.
+   *
+   * Its own verb rather than a second use of `jojo:read-document`, for the
+   * reason the model verb below gives: different gates. A read is stopped by the
+   * popup's "Document reader" switch, which is about sending documents to
+   * MarkItDown. Somebody who turns that off has not asked for the link to stop
+   * — and would be told "Document reading is switched off" by something that has
+   * nothing to do with documents. The link is turned on and off in jojo's own
+   * Settings, which is where the person who wants it went to turn it on.
+   *
+   * LOOPBACK ONLY, for the same reason as a read: the page composed this
+   * request, and the extension's own permissions are the whole web.
+   */
+  if (message?.type === 'jojo:mcp-link') {
+    void (async () => {
+      const request = message.request
+      const url = typeof request?.url === 'string' ? request.url : ''
+      if (!isLoopback(url)) {
+        sendResponse({
+          ok: false,
+          status: 0,
+          text: '',
+          reason:
+            'jojo-bridge has to be on this machine — the extension only relays the link to loopback.',
+        })
+        return
+      }
+      sendResponse(await relay(request, 'jojo-bridge'))
+    })()
+    return true
+  }
+
+  /*
    * A model request, relayed for the same reason a document read is.
    *
    * Separate from `jojo:read-document` rather than one verb with a mode, because
@@ -1359,6 +1573,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return
       }
       sendResponse(await scanBoard(url))
+    })()
+    return true
+  }
+
+  /*
+   * The app's "From link": one address, opened, rendered and handed back.
+   *
+   * Bounded like the scan — a content script on jojo's own origin is the only
+   * sender, and the only thing it can ask for is one http(s) page opened and
+   * read — and for the same reason: opening a public page IS the feature.
+   */
+  if (message?.type === 'jojo:capture-url') {
+    void (async () => {
+      const url = typeof message.url === 'string' ? message.url : ''
+      if (!/^https?:\/\//i.test(url)) {
+        sendResponse({ ok: false, reason: 'That is not an address I can open.' })
+        return
+      }
+      sendResponse(await capturePage(url))
     })()
     return true
   }

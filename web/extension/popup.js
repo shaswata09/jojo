@@ -161,7 +161,28 @@ async function drawKept() {
       await drawKept()
     })
 
-    row.append(who, remove)
+    const save = document.createElement('button')
+    save.className = 'link save'
+    save.type = 'button'
+    save.textContent = 'Save'
+    save.title = `Save ${capture.title || capture.url} as one HTML file`
+    save.setAttribute('aria-label', save.title)
+    /*
+     * Opens `save.html` in a tab, which does the download.
+     *
+     * Not a download from here: a toolbar popup closes the moment it loses
+     * focus, and the file's blob belongs to the popup's document. Measured —
+     * Save, then close the popup at once, and a 4.9 MB page never arrived.
+     * `tabs.create` is handed to the browser immediately, so the tab opens even
+     * if this popup is gone a moment later, and a tab does not close on blur.
+     */
+    save.addEventListener('click', () => {
+      void chrome.tabs.create({
+        url: chrome.runtime.getURL(`save.html#${encodeURIComponent(capture.id)}`),
+      })
+    })
+
+    row.append(who, save, remove)
     list.append(row)
   }
 }
@@ -308,7 +329,17 @@ async function start() {
      */
     try {
       const answer = await ask({ type: 'jojo:capture-tab', tabId: openTab?.id })
-      $('capture-note').textContent = answer.ok ? 'Kept.' : (answer.reason ?? 'Could not keep it.')
+      /*
+       * The worker now reports its real outcome — it used to answer ok:true
+       * even when nothing was stored, so this said "Kept." over pages that had
+       * been refused as too big or unreadable. `trimmed` counts embedded images
+       * and fonts left out to fit the size cap; the text is always kept whole.
+       */
+      $('capture-note').textContent = !answer.ok
+        ? (answer.reason ?? 'Could not keep it.')
+        : answer.trimmed > 0
+          ? `Kept, with ${String(answer.trimmed)} of its largest images or fonts left out to fit. Use Save to download it as one HTML file.`
+          : 'Kept. Use Save to download it as one HTML file, or open jojo to file it.'
       await drawKept()
     } catch (error) {
       $('capture-note').textContent = error instanceof Error ? error.message : String(error)

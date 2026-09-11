@@ -15,7 +15,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-type Posted = { type: string; id: number; read?: { url: string } }
+type Posted = { type: string; id: number; read?: { url: string }; capture?: string }
 type Listener = (event: { source: unknown; origin: string; data: unknown }) => void
 
 const listeners = new Set<Listener>()
@@ -40,7 +40,8 @@ const fakeWindow = {
 
 vi.stubGlobal('window', fakeWindow)
 
-const { readDocument } = await import('./capture-bridge')
+const { readDocument, capturePage } = await import('./capture-bridge')
+const { CAPTURE_REJECTION_MESSAGE } = await import('@jojo/service/core/capture')
 
 /** What the bridge would post back, correlated on the id the page chose. */
 const reply = (extra: Record<string, unknown>) => {
@@ -166,5 +167,99 @@ describe('how long a relayed read waits', () => {
     expect('failed' in answer && answer.failed.reason).toContain(
       'The jojo browser extension did not answer',
     )
+  })
+})
+
+/** Lets the page's next round trip get posted: `capturePage` awaits between the two. */
+const settle = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+describe('capturing a page by its address', () => {
+  const url = 'https://job-boards.greenhouse.io/acme/jobs/4'
+  const page = {
+    url,
+    title: 'Research Engineer — Acme',
+    html: '<!doctype html><html><body><h1>Research Engineer</h1></body></html>',
+    capturedAt: '2026-09-11T10:00:00.000Z',
+    dropped: 0,
+    shadowRoots: 0,
+  }
+
+  it('says the extension is ABSENT when nothing answers, so the caller may use the reader', async () => {
+    vi.useFakeTimers()
+    const read = capturePage(url)
+    await vi.advanceTimersByTimeAsync(401)
+    await expect(read).resolves.toMatchObject({ ok: false, absent: true })
+    // Only the 400ms probe went out — not a 90-second capture into silence.
+    expect(posted).toHaveLength(1)
+    expect(posted[0]?.capture).toBeUndefined()
+  })
+
+  it('names a stale extension, and never hands it a verb it would misroute', async () => {
+    const read = capturePage(url)
+    reply({ count: 0 }) // a protocol-5 bridge: before capture-by-address existed
+    await expect(read).resolves.toMatchObject({ ok: false, absent: false })
+    expect((await read).ok === false && (await read)).toMatchObject({
+      reason: expect.stringContaining('Reload'),
+    })
+    expect(posted).toHaveLength(1)
+  })
+
+  it('names a revision-7 extension stale, rather than letting it refuse a big page as too big', async () => {
+    // Revision 7 can capture by address but refuses any page over the cap
+    // outright, in a sentence that blames the page. A copy unzipped from the
+    // Settings download before the fix did exactly that after every Reload.
+    const read = capturePage(url)
+    reply({ protocol: 7, count: 0 })
+    const out = await read
+    expect(out).toMatchObject({ ok: false, absent: false })
+    expect(out.ok === false && out.reason).toContain('older than this page')
+    expect(out.ok === false && out.reason).toContain('download it again')
+    // Never asked: a stale worker is not handed the verb at all.
+    expect(posted).toHaveLength(1)
+  })
+
+  it('asks for the address, and brings the page back through the inbox’s own gate', async () => {
+    const read = capturePage(url)
+    reply({ protocol: 8, count: 0 })
+    await settle()
+    expect(posted.at(-1)).toMatchObject({ capture: url })
+    reply({ protocol: 8, ok: true, capture: page })
+    await expect(read).resolves.toEqual({ ok: true, capture: page })
+  })
+
+  it('refuses a page that fails the checks every capture has to pass', async () => {
+    const read = capturePage(url)
+    reply({ protocol: 8 })
+    await settle()
+    reply({ protocol: 8, ok: true, capture: { ...page, html: '   ' } })
+    await expect(read).resolves.toEqual({
+      ok: false,
+      absent: false,
+      reason: CAPTURE_REJECTION_MESSAGE.empty,
+    })
+  })
+
+  it('carries the worker’s own sentence when it could not save the page', async () => {
+    const read = capturePage(url)
+    reply({ protocol: 8 })
+    await settle()
+    const why =
+      'That page sent us to www.linkedin.com to sign in. Open the posting in a tab and sign in, then try again.'
+    reply({ protocol: 8, ok: false, error: why })
+    await expect(read).resolves.toEqual({ ok: false, absent: false, reason: why })
+  })
+
+  it('stops waiting when the caller cancels, and blames nobody else for it', async () => {
+    const stop = new AbortController()
+    const read = capturePage(url, stop.signal)
+    reply({ protocol: 8 })
+    await settle()
+    stop.abort()
+    await expect(read).resolves.toEqual({
+      ok: false,
+      absent: false,
+      reason: 'The read was cancelled.',
+    })
+    expect(listeners.size).toBe(0)
   })
 })

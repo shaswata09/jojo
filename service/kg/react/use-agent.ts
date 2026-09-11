@@ -32,13 +32,11 @@
 import { useCallback, useMemo } from 'react'
 import type { AgentOptions, AgentStep, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
-import { dayOf } from '../core/project'
 import type { ChatMessage } from '../core/model-server'
 import type { ApprovalMode, NodeId } from '../core/model'
 import { useAgentRun, useAgentRuns } from './agent-runs-context'
 import type { AgentEntry, RunSignal } from './agent-runs'
-import { useKg } from './kg-context'
-import type { ToolName } from '../tools/index'
+import { useToolHost } from './use-tool-host'
 
 export type { AgentEntry } from './agent-runs'
 
@@ -191,29 +189,15 @@ export function useAgent({
   startThread,
   onSettled,
 }: UseAgentOptions): AgentState {
-  const { repo, runtime, now } = useKg()
   const runs = useAgentRuns()
   const run = useAgentRun(thread.id)
 
   /**
-   * The three functions the agent is allowed.
-   *
-   * `memory` is a getter, not a captured snapshot: the agent writes and then
-   * reads within one run, and a snapshot taken when the hook rendered would
-   * describe the graph as it was before its own first write.
+   * The functions the agent is allowed. Shared with the MCP link, which drives
+   * the same tools from an outside client — see `use-tool-host.ts` for why
+   * every one of them is a getter rather than a captured value.
    */
-  const host = useMemo<ToolHost>(
-    () => ({
-      memory: () => repo.getSnapshot(),
-      // A getter for the same reason `memory` is one: a conversation left open
-      // overnight must not answer "is this overdue" against yesterday.
-      today: () => dayOf(now()),
-      check: (name, input) => runtime.check(name as ToolName, input) as never,
-      run: (name, input) => runtime.run(name as ToolName, input as never) as never,
-      ...(convert ? { convert } : {}),
-    }),
-    [convert, now, repo, runtime],
-  )
+  const host = useToolHost(convert)
 
   const send = useCallback(
     (prompt: string) => {

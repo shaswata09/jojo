@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
@@ -9,6 +9,7 @@ import { useModelSettings } from '@/lib/model-settings-context'
 import { useReadPosting } from '@/lib/posting-agent'
 import type { PostingStep } from '@/lib/posting-agent'
 import { useSheets } from '@/lib/sheets-context'
+import { draftFromUrl } from '@jojo/service/core/parse-posting'
 import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
@@ -21,10 +22,12 @@ import { space } from '@/theme/tokens'
  * three steps: it is one feature, and somebody who learns it on the laptop
  * should recognise it here.
  *
- * The Applications screen already has a "From link" field beside its search
- * box, and that one stays: it reads the URL and nothing else — employer from
- * the hostname, role from the last path segment — which is instant, needs
- * nothing running, and cannot see a deadline. This is the other trade.
+ * Reached two ways: the create menu, which opens it empty, and the "From link"
+ * field beside the Applications search box, which opens it on the pasted URL
+ * and starts at once when a model is connected. Without one, that field fills
+ * the form from the address alone — instant, needs nothing running, and
+ * cannot see a deadline. The phone has no extension, so the page is always
+ * fetched by the document reader here.
  *
  * Both end in the same place: the ordinary create sheet, prefilled, waiting to
  * be checked. Nothing here writes an application. What it DOES write is the
@@ -37,14 +40,24 @@ const STEPS: { id: PostingStep; label: string }[] = [
   { id: 'saving', label: 'Saving the posting' },
 ]
 
-export function AddFromLinkSheet({ open }: { open: boolean }) {
+export function AddFromLinkSheet({
+  open,
+  url: opening = '',
+  start = false,
+}: {
+  open: boolean
+  /** The URL "From link" was pressed with. Empty when the create menu opened this. */
+  url?: string | undefined
+  /** Read it straight away: the person has already pressed a button for it once. */
+  start?: boolean | undefined
+}) {
   const c = useColors()
   const { open: openSheet, close } = useSheets()
   const { settings, reader } = useModelSettings()
   const readPosting = useReadPosting()
   const { toast } = useToast()
 
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(opening)
   const [step, setStep] = useState<PostingStep | null>(null)
   const [error, setError] = useState<string | null>(null)
   const abort = useRef<AbortController | null>(null)
@@ -58,56 +71,83 @@ export function AddFromLinkSheet({ open }: { open: boolean }) {
     close()
   }
 
-  const submit = () => {
-    const text = url.trim()
-    if (!text || busy) return
-    setError(null)
-    const stop = new AbortController()
-    abort.current = stop
+  // Memoised for the effect below; see web's `AddFromLinkDialog`.
+  const submit = useCallback(
+    (value: string = url) => {
+      const text = value.trim()
+      if (!text || busy) return
+      setError(null)
+      const stop = new AbortController()
+      abort.current = stop
 
-    void (async () => {
-      const outcome = await readPosting({
-        url: text,
-        settings,
-        reader,
-        signal: stop.signal,
-        onStep: setStep,
-      })
+      void (async () => {
+        const outcome = await readPosting({
+          url: text,
+          settings,
+          reader,
+          signal: stop.signal,
+          onStep: setStep,
+        })
 
-      abort.current = null
-      setStep(null)
-
-      if (!outcome.ok) {
-        setError(outcome.reason)
-        return
-      }
-
-      close()
-      openSheet('application', { mode: 'create', initial: outcome.draft })
-
-      const gaps = outcome.missing.length
-      toast({
-        title: 'Posting saved and read',
-        description:
-          gaps === 0
-            ? `${outcome.file.name} is in the Vault. Check the form before saving it.`
-            : `${outcome.file.name} is in the Vault. ${String(gaps)} field${gaps === 1 ? '' : 's'} were not on the page.`,
-      })
-    })()
-      /*
-       * Every layer under this reports failure as a value, so reaching here
-       * means something threw that none of them expected. `writeCapture` is the
-       * live one: its three `fs` calls are bare, and a full disk rejects the
-       * write AFTER the Vault record has been added. Without the catch that is
-       * an unhandled rejection and a sheet left on "Reading…" with the button
-       * disabled and nothing said — while the Vault holds a row with no bytes
-       * behind it.
-       */
-      .catch((thrown: unknown) => {
         abort.current = null
         setStep(null)
-        setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
-      })
+
+        if (!outcome.ok) {
+          setError(outcome.reason)
+          return
+        }
+
+        close()
+        openSheet('application', {
+          mode: 'create',
+          initial: { ...outcome.draft, postingFileId: outcome.file.id },
+        })
+
+        const gaps = outcome.missing.length
+        toast({
+          title: 'Posting saved and read',
+          description:
+            gaps === 0
+              ? `${outcome.file.name} is in the Vault, and is filed under the application when you save it.`
+              : `${outcome.file.name} is in the Vault, and is filed under the application when you save it. ${String(gaps)} field${gaps === 1 ? ' was' : 's were'} not on the page.`,
+        })
+      })()
+        /*
+         * Every layer under this reports failure as a value, so reaching here
+         * means something threw that none of them expected. `writeCapture` is the
+         * live one: its three `fs` calls are bare, and a full disk rejects the
+         * write AFTER the Vault record has been added. Without the catch that is
+         * an unhandled rejection and a sheet left on "Reading…" with the button
+         * disabled and nothing said — while the Vault holds a row with no bytes
+         * behind it.
+         */
+        .catch((thrown: unknown) => {
+          abort.current = null
+          setStep(null)
+          setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
+        })
+    },
+    [url, busy, settings, reader, readPosting, close, openSheet, toast],
+  )
+
+  /*
+   * "From link" has already been pressed, so the read starts on its own. The
+   * ref makes it exactly once, StrictMode's double mount included; see web's
+   * `AddFromLinkDialog` for why there is no cleanup that aborts.
+   */
+  const started = useRef(false)
+  useEffect(() => {
+    if (!start || started.current || opening.trim() === '') return
+    started.current = true
+    submit(opening)
+  }, [start, opening, submit])
+
+  /** The form, filled from the address alone — what "From link" does without a model. */
+  const fromAddress = () => {
+    const text = url.trim()
+    if (!text) return
+    close()
+    openSheet('application', { initial: draftFromUrl(text) })
   }
 
   return (
@@ -118,12 +158,15 @@ export function AddFromLinkSheet({ open }: { open: boolean }) {
       description="The model reads the posting and fills the form in. The page is kept in the Vault under Job postings, and nothing is saved as an application until you say so."
       footer={
         <>
+          {error && !busy ? (
+            <Button label="Use the address only" variant="ghost" size="md" onPress={fromAddress} />
+          ) : null}
           <Button label="Cancel" variant="ghost" size="md" onPress={dismiss} />
           <Button
-            label={busy ? 'Reading…' : 'Read and prefill'}
+            label={busy ? 'Reading…' : error ? 'Try again' : 'Read and prefill'}
             size="md"
             disabled={!url.trim() || busy}
-            onPress={submit}
+            onPress={() => submit()}
           />
         </>
       }

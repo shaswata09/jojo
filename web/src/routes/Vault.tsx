@@ -11,7 +11,8 @@ import { PeopleTool } from '@/components/vault/PeopleTool'
 import { SnippetsTool } from '@/components/vault/SnippetsTool'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useVault } from '@jojo/service/react/use-vault'
-import { type VaultTool, useTitle, useVaultParams } from '@/lib/links'
+import { type VaultTool, useTitle } from '@/lib/links'
+import { useVaultParams } from '@/lib/link-params'
 import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
 
 /**

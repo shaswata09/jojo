@@ -1,7 +1,8 @@
 import { Link, NavLink } from 'react-router'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { GUIDE_PAGE_META } from '@/components/guide/pages'
-import { GUIDE_PAGES, guidePath, useGuidePage } from '@/lib/links'
+import { GUIDE_PAGES, guidePath } from '@/lib/links'
+import { useGuidePage } from '@/lib/link-params'
 import { cn } from '@/lib/utils'
 
 /**
