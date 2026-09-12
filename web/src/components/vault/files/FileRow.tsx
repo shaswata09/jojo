@@ -7,6 +7,7 @@ import {
   Globe,
   Pencil,
   Presentation,
+  Sparkles,
   StickyNote,
   Trash2,
 } from 'lucide-react'
@@ -60,6 +61,7 @@ export function FileRow({
   onFileUnder,
   onMove,
   onDelete,
+  onReadIntoProfile,
 }: {
   file: VaultFile
   /** The application it is filed under — the record, so `appPath` has the slug. */
@@ -83,6 +85,12 @@ export function FileRow({
   onTogglePreview: () => void
   onMove: (file: VaultFile, next: FileBucket) => void
   onDelete: (file: VaultFile) => void
+  /**
+   * Offered only for a document that can be read into the profile here — one
+   * with bytes on this device, a model to read it with, and not an employer's.
+   * The tool decides that; the row only draws the item when handed it.
+   */
+  onReadIntoProfile?: ((file: VaultFile) => void) | undefined
 }) {
   const Icon = kindIcon[f.kind]
 
@@ -197,6 +205,11 @@ export function FileRow({
           <MenuItem icon={Briefcase} onSelect={() => onEdit('application')}>
             {related.length > 0 ? 'Change applications' : 'File under an application'}
           </MenuItem>
+          {onReadIntoProfile && (
+            <MenuItem icon={Sparkles} onSelect={() => onReadIntoProfile(f)}>
+              Read into your profile
+            </MenuItem>
+          )}
           <MenuSection title="Move to">
             {FILE_BUCKETS.map((b) => (
               <MenuItem key={b} current={b === f.bucket} onSelect={() => onMove(f, b)}>

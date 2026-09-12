@@ -26,6 +26,10 @@ import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
 import { report } from '@/lib/analytics'
+import { readableDocuments } from '@jojo/service/core/twin'
+import { useGraph } from '@jojo/service/react/kg-context'
+import { requestProfileRead } from '@jojo/service/react/profile-read-request'
+import { useModelSettings } from '@/lib/model-settings-context'
 
 /**
  * Read-later files, in buckets.
@@ -68,6 +72,26 @@ export function FilesTool({ focus }: { focus?: string }) {
    * each application, that is the one thing it must not do.
    */
   const blobs = useVaultBlobs()
+  const graph = useGraph()
+  const { settings } = useModelSettings()
+  /*
+   * The rows that can be read into the profile from here: a document with
+   * bytes on this device, that is not an employer's, while a model is
+   * connected to read it with. `blobs` carries its revision, so a document
+   * whose bytes land a moment after its record is offered on the next render.
+   */
+  const readable = useMemo(
+    () =>
+      settings.model.trim() === ''
+        ? new Set<string>()
+        : new Set(readableDocuments(graph, (f) => blobs.has(f.id)).map((d) => d.id)),
+    [graph, blobs, settings.model],
+  )
+  const readIntoProfile = (file: VaultFile) => {
+    requestProfileRead({ fileId: file.id, name: file.name })
+    // The banner is above the route; a question nobody can see is not asked.
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
   /**
    * The open document's bytes.
    *
@@ -461,6 +485,7 @@ export function FilesTool({ focus }: { focus?: string }) {
                 onFileUnder={onFileUnder}
                 onMove={onMove}
                 onDelete={onDelete}
+                onReadIntoProfile={readable.has(f.id) ? readIntoProfile : undefined}
               />
             ))}
           </ul>

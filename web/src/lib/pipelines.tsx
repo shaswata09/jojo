@@ -6,6 +6,7 @@ import { usePipelines } from '@jojo/service/react/use-pipelines'
 import { agentTurn, isConfigured } from '@/lib/llm'
 import { scanBoard } from '@/lib/capture-bridge'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { useVaultBlobs } from '@/lib/vault-blobs'
 
 /**
  * Runs the pipelines for as long as this tab is open.
@@ -26,9 +27,13 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
       agentTurn(settings, messages, tools),
     [settings],
   )
+  // The twin's briefing names the documents worth reading, and on this platform
+  // only the blob store knows which records have one behind them.
+  const blobs = useVaultBlobs()
   const state = usePipelines({
     llm: isConfigured(settings) ? llm : null,
     scan: scanBoard,
+    hasDocument: blobs.has,
     /*
      * A round that throws is caught inside the hook so the schedule is not left
      * wedged — and catching it took away the only durable record. It used to

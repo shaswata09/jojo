@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin'
 import type { TwinGap } from '@jojo/service/core/twin'
 import { useGraph } from '@jojo/service/react/kg-context'
+import { clearProfileRead, useProfileReadRequest } from '@jojo/service/react/profile-read-request'
 import { useRun } from '@jojo/service/react/use-tool'
 import { useToast } from '@jojo/service/react/toast'
 import type { BackgroundDraft, RelationDraft } from '@jojo/service/agent/read-cv'
@@ -11,6 +12,7 @@ import { labelOf } from '@jojo/service/core/ontology'
 import { useReadCv } from '@/lib/cv-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { markOffered, offered } from '@/lib/twin-offer'
+import { useVaultBlobs } from '@/lib/vault-blobs'
 
 /**
  * The offer to read a newly filed document into the person's profile.
@@ -66,6 +68,15 @@ export function ProfileUpdateOffer() {
   const readCv = useReadCv()
   const run = useRun()
   const { toast } = useToast()
+  /*
+   * Whether a record has a document behind it is the blob store's to answer
+   * on this platform, not the record's: the web never writes `path` onto a
+   * file node, so the rule in core, left to the record, read every CV dropped
+   * on the Vault as empty and this banner never appeared. See `worthReading`.
+   */
+  const blobs = useVaultBlobs()
+  /* Asked for by name — from the profile's background panel or a Vault row. */
+  const requested = useProfileReadRequest()
 
   /*
    * The ids asked about, held in state rather than read from storage on every
@@ -109,12 +120,27 @@ export function ProfileUpdateOffer() {
   const abort = useRef<AbortController | null>(null)
 
   const gaps: readonly TwinGap[] = useMemo(
-    () => newlyReadable(seen, twinState(graph, 12)),
-    [graph, seen],
+    () =>
+      newlyReadable(
+        seen,
+        twinState(graph, 12, (f) => blobs.has(f.id)),
+      ),
+    // `blobs` changes identity with its `revision`, which is what re-asks the
+    // question when a document's bytes arrive after its record did.
+    [graph, seen, blobs],
   )
 
-  const target = gaps[0]
-  const copy = useMemo(() => twinOfferCopy(gaps), [gaps])
+  /*
+   * An explicit request wins over the offer's own choice, and bypasses the
+   * memory of what was declined: the person is asking, not being asked.
+   */
+  const { target, offering } = useMemo(() => {
+    const chosen: TwinGap | undefined = requested
+      ? { kind: 'unread-document', subject: requested.name, id: requested.fileId, instruction: '' }
+      : gaps[0]
+    return { target: chosen, offering: requested && chosen ? [chosen] : gaps }
+  }, [requested, gaps])
+  const copy = useMemo(() => twinOfferCopy(offering), [offering])
 
   /*
    * Nothing to ask, or nothing to ask WITH. A model has to be configured for
@@ -138,9 +164,10 @@ export function ProfileUpdateOffer() {
     // Every id currently on offer, not just the one named. The title says "and
     // 2 more", so saying no to it is saying no to all three — leaving the other
     // two unrecorded would put the same banner straight back on screen.
-    const ids = gaps.map((g) => g.id).filter((id): id is string => id !== undefined)
+    const ids = offering.map((g) => g.id).filter((id): id is string => id !== undefined)
     markOffered(ids)
     setSeen((current) => [...current, ...ids])
+    clearProfileRead()
   }
 
   const accept = async () => {
@@ -161,13 +188,16 @@ export function ProfileUpdateOffer() {
 
     if (!outcome.ok) {
       /*
-       * Recorded as asked even though it failed. Without this the banner comes
-       * straight back with the same document and the same failure waiting
-       * behind it — a loop the person can only escape by declining something
-       * they already said yes to.
+       * Shown, and the document is NOT yet recorded as asked.
+       *
+       * It used to be: the failure marked the document as offered, `seen` grew
+       * to include it, the gap list recomputed without it, and this component
+       * returned null on the very next render — with the error it had just set
+       * never drawn. A person who pressed "Read it" saw the banner vanish and
+       * nothing else, which reads as "it did nothing" rather than "it failed
+       * because no reader is connected". The banner now stays with the sentence
+       * in it; "Read it" tries again and "Not now" is what records the answer.
        */
-      markOffered([fileId])
-      setSeen((current) => [...current, fileId])
       setError(outcome.reason)
       return
     }
@@ -192,9 +222,7 @@ export function ProfileUpdateOffer() {
      * entries by their position in the list the model was shown, and filtering
      * renumbers everything.
      */
-    const keeping = drafts
-      .map((draft, at) => ({ draft, at }))
-      .filter(({ at }) => !dropped.has(at))
+    const keeping = drafts.map((draft, at) => ({ draft, at })).filter(({ at }) => !dropped.has(at))
     if (keeping.length === 0) return
 
     const result = run('profile.background.add', {
@@ -244,6 +272,7 @@ export function ProfileUpdateOffer() {
     setSeen((current) => [...current, fileId])
     setDrafts(null)
     setLinks([])
+    clearProfileRead()
 
     toast({
       title: result.ok
@@ -273,15 +302,21 @@ export function ProfileUpdateOffer() {
 
         <div className="flex shrink-0 items-center gap-2">
           {drafts === null && (
-            <Button size="sm" disabled={busy} onClick={() => {
-              void accept().catch((thrown: unknown) => {
-                // Same reason as the fit panel: everything under this reports
-                // failure as a value, so a throw here would otherwise leave the
-                // button stuck mid-step with nothing said.
-                setStep(null)
-                setError(thrown instanceof Error ? thrown.message : 'Reading the document failed.')
-              })
-            }}>
+            <Button
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                void accept().catch((thrown: unknown) => {
+                  // Same reason as the fit panel: everything under this reports
+                  // failure as a value, so a throw here would otherwise leave the
+                  // button stuck mid-step with nothing said.
+                  setStep(null)
+                  setError(
+                    thrown instanceof Error ? thrown.message : 'Reading the document failed.',
+                  )
+                })
+              }}
+            >
               {busy ? (
                 <>
                   <Loader2 aria-hidden className="size-3.5 animate-spin" />
@@ -336,15 +371,19 @@ export function ProfileUpdateOffer() {
                     })
                   }
                 />
-                <span className="w-24 shrink-0 text-xs uppercase tracking-wide">
+                <span className="w-24 shrink-0 text-xs tracking-wide uppercase">
                   {KIND_LABEL[d.kind] ?? d.kind}
                 </span>
                 <span
                   className={`min-w-0 flex-1 ${dropped.has(i) ? 'text-text-3 line-through' : 'text-foreground'}`}
                 >
                   {d.title}
-                  {d.where !== undefined && <span className="text-muted-foreground"> · {d.where}</span>}
-                  {d.period !== undefined && <span className="text-muted-foreground"> · {d.period}</span>}
+                  {d.where !== undefined && (
+                    <span className="text-muted-foreground"> · {d.where}</span>
+                  )}
+                  {d.period !== undefined && (
+                    <span className="text-muted-foreground"> · {d.period}</span>
+                  )}
                 </span>
               </li>
             ))}

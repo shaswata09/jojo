@@ -38,20 +38,41 @@ import { mimeOfFile } from '@jojo/service/core/files'
  * file: a phone receiving one over the local network parses them too, and a
  * format with two implementations is a format with two spellings.
  */
-import {
-  BLOB_DIR as DIR,
-  blobPath,
-  idOfPath,
-  nameOfPath,
-} from '@jojo/service/core/blob-path'
+import { BLOB_DIR as DIR, blobPath, idOfPath, nameOfPath } from '@jojo/service/core/blob-path'
 
 export { blobPath, idOfPath, nameOfPath }
+
+/**
+ * Record id -> stored path, from one listing of the documents folder.
+ *
+ * Pure and exported so it can be tested without a browser, and so the two
+ * places that build the index — the mount refresh and a lookup that missed —
+ * cannot disagree about what counts as one of jojo's documents.
+ */
+export function indexFrom(entries: readonly { readonly path: string }[]): Map<string, string> {
+  const next = new Map<string, string>()
+  for (const entry of entries) {
+    const id = idOfPath(entry.path)
+    if (id !== null) next.set(id, entry.path)
+  }
+  return next
+}
 
 export type VaultBlobs = {
   /** Ids whose bytes are stored. Synchronous, because the list renders it. */
   has: (id: string) => boolean
   /** Whether the index has finished loading — `has` is empty until it has. */
   ready: boolean
+  /**
+   * Bumped whenever the set of stored documents changes.
+   *
+   * `has` is deliberately a stable function that reads a ref, so nothing that
+   * depends on it re-renders when a document arrives. That is right for a list
+   * of five hundred rows and wrong for a decision that has to be re-taken when
+   * the answer changes — whether a CV that was just dropped can be offered for
+   * reading. Put this in the dependency array beside `has`.
+   */
+  revision: number
   put: (id: string, file: File) => Promise<boolean>
   get: (id: string) => Promise<File | null>
   remove: (id: string) => Promise<void>
@@ -227,12 +248,7 @@ export function useVaultBlobs(): VaultBlobs {
       setReady(true)
       return
     }
-    const next = new Map<string, string>()
-    for (const entry of listed.value) {
-      const id = idOfPath(entry.path)
-      if (id !== null) next.set(id, entry.path)
-    }
-    setIndex(next)
+    setIndex(indexFrom(listed.value))
     setReady(true)
   }, [])
 
@@ -281,8 +297,31 @@ export function useVaultBlobs(): VaultBlobs {
   }, [])
 
   const get = useCallback(async (id: string) => {
-    const path = latest.current.get(id)
-    if (path === undefined) return null
+    /*
+     * The index first, and the folder itself when the index has no answer.
+     *
+     * The index is React state filled by a mount effect that waits on the
+     * trash sweep, so for the first moments of a page it is empty — and a
+     * caller that asked then was told "no copy of that document is stored in
+     * this browser" about a document that plainly was. The fit panel on an
+     * application is exactly such a caller: it opens the saved posting in its
+     * own mount effect, was told there was nothing to read, and by design never
+     * asked again. Reported 2026-09-12.
+     *
+     * A miss costs one `getAllKeys`, which is what the index itself costs, and
+     * it also covers a document written by another hook instance whose
+     * announcement has not reached this one yet. What it cannot do is invent a
+     * document: a second miss is a real one.
+     */
+    let path = latest.current.get(id)
+    if (path === undefined) {
+      const listed = await store().list(DIR)
+      if (!listed.ok) return null
+      const fresh = indexFrom(listed.value)
+      path = fresh.get(id)
+      if (path === undefined) return null
+      setIndex(fresh)
+    }
     const read = await store().read(path)
     if (!read.ok) return null
     const name = nameOfPath(path)
@@ -360,8 +399,7 @@ export function useVaultBlobs(): VaultBlobs {
   )
 
   const all = useCallback(
-    async () =>
-      [...latest.current.entries()].map(([id, path]) => ({ id, name: nameOfPath(path) })),
+    async () => [...latest.current.entries()].map(([id, path]) => ({ id, name: nameOfPath(path) })),
     [],
   )
 
@@ -400,8 +438,35 @@ export function useVaultBlobs(): VaultBlobs {
     [],
   )
 
+  /*
+   * Counted from the index rather than kept as a second piece of state, so it
+   * cannot drift: every path that changes the index changes this, including
+   * the miss above, and nothing has to remember to bump it.
+   */
+  const revision = useRef(0)
+  const seen = useRef<Map<string, string> | null>(null)
+  if (seen.current !== index) {
+    seen.current = index
+    revision.current += 1
+  }
+
   return useMemo(
-    () => ({ has, ready, put, get, remove, restore, download, all, persisted, replaceAll }),
-    [has, ready, put, get, remove, restore, download, all, persisted, replaceAll],
+    () => ({
+      has,
+      ready,
+      revision: revision.current,
+      put,
+      get,
+      remove,
+      restore,
+      download,
+      all,
+      persisted,
+      replaceAll,
+    }),
+    // `index` is what `revision` stands for; it is in the list so the object
+    // changes identity exactly when the set of documents does.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [has, ready, index, put, get, remove, restore, download, all, persisted, replaceAll],
   )
 }

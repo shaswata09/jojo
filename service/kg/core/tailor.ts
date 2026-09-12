@@ -101,16 +101,29 @@ export function guidanceFrom(assessment: Assessment): Guidance {
    * A score can be respectable while the one thing the posting says it requires
    * is missing — meeting every preference and no requirement. Reporting that as
    * "worth tailoring" would be technically defensible arithmetic and terrible
-   * advice, so a missing essential caps the verdict regardless of the number.
+   * advice, so a missing essential costs a band regardless of the number: a
+   * "strong" score reads as worth tailoring, anything less as a stretch.
    */
+  /*
+   * One band down for a missing essential, whatever the number says.
+   *
+   * It used to be "a stretch" below 70 and untouched above it — so a person
+   * missing the one thing a posting calls required was told "a stretch" at 65
+   * and "a strong fit, the application mostly writes itself" at 72. Found by
+   * measuring: three models read a real posting whose "interdisciplinary
+   * collaboration" is stated as required, and one of them scored a candidate
+   * with nothing behind it at 73. The sentence for "worth tailoring, but N of
+   * what they state as required is not in it" existed for exactly this case
+   * and nothing could reach it.
+   */
+  const byScore: Verdict =
+    assessment.score >= STRONG
+      ? 'strong'
+      : assessment.score >= STRETCH
+        ? 'worth-tailoring'
+        : 'a-stretch'
   const verdict: Verdict =
-    essentialGaps.length > 0 && assessment.score < STRONG
-      ? 'a-stretch'
-      : assessment.score >= STRONG
-        ? 'strong'
-        : assessment.score >= STRETCH
-          ? 'worth-tailoring'
-          : 'a-stretch'
+    essentialGaps.length === 0 ? byScore : byScore === 'strong' ? 'worth-tailoring' : 'a-stretch'
 
   /*
    * Each record paired with the requirement it best answers.
@@ -148,7 +161,12 @@ export function guidanceFrom(assessment: Assessment): Guidance {
     advice: gapAdvice(gap),
   }))
 
-  return { verdict, summary: summaryFor(verdict, assessment, essentialGaps.length), tailor, prepare }
+  return {
+    verdict,
+    summary: summaryFor(verdict, assessment, essentialGaps.length),
+    tailor,
+    prepare,
+  }
 }
 
 /**

@@ -82,6 +82,31 @@ describe('the verdict', () => {
     expect(g.verdict).toBe('a-stretch')
   })
 
+  it('never calls it strong while something stated as required is missing, however high the score', () => {
+    /*
+     * The hole the previous rule had: it capped only below 70. Three models
+     * reading a real posting put a candidate at 73 with "interdisciplinary
+     * collaboration" — stated as required — answered by nothing, and the
+     * verdict was "a strong fit, the application mostly writes itself".
+     */
+    const g = guidanceFrom(
+      assess(
+        [
+          need('PhD in Computer Science'),
+          need('distributed systems'),
+          need('Rust'),
+          need('publication record'),
+          need('interdisciplinary collaboration'),
+        ],
+        strongBackground,
+      ),
+    )
+    expect(g.prepare.map((p) => p.requirement)).toEqual(['interdisciplinary collaboration'])
+    expect(g.verdict).toBe('worth-tailoring')
+    // The sentence that exists for exactly this, and was unreachable before.
+    expect(g.summary).toContain('of what they state as required is not in it')
+  })
+
   it('leaves it at worth-tailoring when every gap is only preferred', () => {
     // The other side of the same rule. Missing a nice-to-have is not the news
     // that missing a requirement is, and flattening the two would make the
@@ -110,9 +135,7 @@ describe('the verdict', () => {
   })
 
   it('names the reason, so the sentence can be disagreed with', () => {
-    const g = guidanceFrom(
-      assess([need('distributed systems'), need('Rust')], strongBackground),
-    )
+    const g = guidanceFrom(assess([need('distributed systems'), need('Rust')], strongBackground))
     // "2 of 2" is checkable against the list underneath. "A strong fit" is a
     // horoscope, and reads the same whatever is in the graph.
     expect(g.summary).toMatch(/\d+ of \d+/)
@@ -187,7 +210,10 @@ describe('what to lead with', () => {
     // The best paper in somebody's record is not the one to lead with if this
     // employer never asked about the subject.
     const g = guidanceFrom(
-      assess([need('quantum optics')], [record('b1', 'publication', 'Consensus under partial synchrony')]),
+      assess(
+        [need('quantum optics')],
+        [record('b1', 'publication', 'Consensus under partial synchrony')],
+      ),
     )
     expect(g.tailor).toEqual([])
   })

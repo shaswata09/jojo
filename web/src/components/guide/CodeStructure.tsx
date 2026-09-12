@@ -106,8 +106,10 @@ export const SHAPE: DirRow[] = [
     // `repair.ts` (schema-driven argument repair), `stuck.ts` (repeat, failing,
     // cycle, echo and chant detection) and `verify-gate.ts` (the pre-exit
     // check), with a test file each. Six files and about 5,500 lines.
-    files: 60,
-    tests: 29,
+    // `fit-fixtures.ts` and its guard: a second invented person and three
+    // postings, so the chain can be measured end to end against real models.
+    files: 62,
+    tests: 30,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -119,7 +121,7 @@ export const SHAPE: DirRow[] = [
     // about 4,200 lines, most of them the tests that pin each measure.
     // Re-measured when `read-posting.ts` learnt to offer the person's own
     // keywords to the model and match the reply back onto the ones that exist.
-    lines: 40305,
+    lines: 40859,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -134,12 +136,12 @@ export const SHAPE: DirRow[] = [
     // 42 with `use-tool-host.ts`: the host the assistant and the MCP link both
     // run tools against, so a capability added to one cannot be missing from
     // the other.
-    files: 42,
-    tests: 11,
+    files: 44,
+    tests: 12,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 8960,
+    lines: 9087,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -172,9 +174,14 @@ export const SHAPE: DirRow[] = [
     // moved out of `links.ts`, so a dialog can import a path without the router.
     // Then `file-capture.test.ts`: which application a captured page is filed
     // under, after one saved posting turned up against two of them.
-    files: 122,
-    tests: 44,
-    lines: 18259,
+    // `file-input.ts`: the files are taken off a picker before it is cleared —
+    // the list is live, and the Profile page had cleared first for as long as
+    // it existed.
+    // And `read-here.ts`: a saved page is read in this tab, never sent to a
+    // reader that refuses the extension's captures as too large.
+    files: 126,
+    tests: 46,
+    lines: 19107,
     what: 'web-only adapters and URL state',
   },
   {
@@ -204,7 +211,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 77
+export const WEB_TEST_FILES = 79
 
 type TestGroup = { title: string; files: string; body: string }
 

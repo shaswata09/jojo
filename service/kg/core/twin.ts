@@ -94,7 +94,8 @@ const ABOUT_THE_PERSON =
  * uses it — so this only fires for something put in the wrong place by hand,
  * which is precisely the case a bucket signal cannot catch.
  */
-const ABOUT_AN_EMPLOYER = /\b(posting|vacancy|advert|advertisement|job.?description|offer.?letter)\b/i
+const ABOUT_AN_EMPLOYER =
+  /\b(posting|vacancy|advert|advertisement|job.?description|offer.?letter)\b/i
 
 /**
  * Whether a file is one the twin should read.
@@ -122,13 +123,76 @@ const ABOUT_AN_EMPLOYER = /\b(posting|vacancy|advert|advertisement|job.?descript
  * first that "its PRESENCE is the 'has bytes' flag". Both are checked here
  * rather than in each app because the question — can this be opened at all — is
  * the same question on both.
+ *
+ * EXCEPT THAT THE WEB NEVER WRITES `path`. Its blob store keys bytes by record
+ * id on purpose — "the graph is untouched", `web/src/lib/vault-blobs.ts` — so a
+ * CV dropped on the Vault is a record with no `path` and a document behind it,
+ * and this rule read every one of them as empty. The offer never fired on the
+ * browser at all, and the tests did not notice because their fixtures set the
+ * flag the app never sets. Reported 2026-09-12 as "the profile is not being
+ * developed".
+ *
+ * So the answer now comes from the caller when the caller knows better:
+ * `hasBytes` is the blob store's `has` on web, and the default — the two
+ * flags — everywhere else, which is the phone and the pipeline's own reads.
  */
-function worthReading(memory: GraphSnapshot, file: StoredNode<'file'>): boolean {
-  const { name, bucket, path, uri } = file.props
+function worthReading(
+  memory: GraphSnapshot,
+  file: StoredNode<'file'>,
+  hasBytes: HasBytes,
+): boolean {
+  const { name, bucket } = file.props
   if (ABOUT_AN_EMPLOYER.test(name)) return false
   if (bucket !== 'Applications' && !ABOUT_THE_PERSON.test(name)) return false
-  if (path === undefined && uri === undefined) return false
+  if (!hasBytes(file)) return false
   return memory.many(file.id, 'FILED_UNDER', 'out', 'application').length === 0
+}
+
+/**
+ * Whether a document can be opened where this is running.
+ *
+ * A function rather than a flag on the node because the two platforms answer
+ * it from different places: the phone writes `uri` onto the record, the browser
+ * keeps an index beside the graph. The default reads the record, which is
+ * right wherever a record is all there is to read.
+ */
+export type HasBytes = (file: StoredNode<'file'>) => boolean
+
+export const hasBytesOnRecord: HasBytes = (file) =>
+  file.props.path !== undefined || file.props.uri !== undefined
+
+/**
+ * Every document a person could choose to read into their profile by hand.
+ *
+ * Wider than what the twin offers on its own, and deliberately. The offer has
+ * to guess whether a document is about the person, and a guess that asks too
+ * often is a prompt people learn to dismiss — so `worthReading` wants the
+ * `Applications` drawer or a name that says CV or statement. Somebody picking
+ * a document from a list is not a guess: "Shaswata.pdf" in `Documents` is
+ * their CV because they said so. What stays out is what could not be right
+ * whatever they say — a document named as an employer's, the `Job postings`
+ * drawer, and anything with no bytes to open.
+ *
+ * Read ones are reported, not hidden: the list says which have been read so a
+ * person can see that the document they are looking for already was, rather
+ * than reading it a second time and filing every fact twice.
+ */
+export function readableDocuments(
+  memory: GraphSnapshot,
+  hasBytes: HasBytes = hasBytesOnRecord,
+): readonly { readonly id: string; readonly name: string; readonly read: boolean }[] {
+  const readFrom = new Set(
+    memory
+      .ofType('background')
+      .map((n) => n.props.source)
+      .filter((s): s is string => typeof s === 'string'),
+  )
+  return memory
+    .ofType('file')
+    .filter((f) => !ABOUT_AN_EMPLOYER.test(f.props.name))
+    .filter((f) => f.props.bucket !== 'Job postings')
+    .filter((f) => hasBytes(f))
+    .map((f) => ({ id: f.id, name: f.props.name, read: readFrom.has(f.id) }))
 }
 
 /**
@@ -139,7 +203,11 @@ function worthReading(memory: GraphSnapshot, file: StoredNode<'file'>): boolean 
  * prompt: a model handed forty instructions follows none of them, and the
  * twin's whole value is a short list somebody will actually approve.
  */
-export function twinState(memory: GraphSnapshot, limit = 6): TwinState {
+export function twinState(
+  memory: GraphSnapshot,
+  limit = 6,
+  hasBytes: HasBytes = hasBytesOnRecord,
+): TwinState {
   const background = memory.ofType('background')
   const files = memory.ofType('file')
 
@@ -153,7 +221,7 @@ export function twinState(memory: GraphSnapshot, limit = 6): TwinState {
     background.map((n) => n.props.source).filter((s): s is string => typeof s === 'string'),
   )
 
-  const unread = files.filter((f) => !readFrom.has(f.id) && worthReading(memory, f))
+  const unread = files.filter((f) => !readFrom.has(f.id) && worthReading(memory, f, hasBytes))
 
   const gaps: TwinGap[] = []
 
@@ -258,8 +326,7 @@ export function twinOfferCopy(gaps: readonly TwinGap[]): { title: string; body: 
       gaps.length <= 1
         ? `Read ${first} into your profile?`
         : `Read ${first} and ${String(more)} more into your profile?`,
-    body:
-      'jojo will read what is inside and record the facts it states — your degrees, posts, publications and skills — so it can weigh a job posting against what you have actually done. Every entry it adds is shown to you first, and says which document it came from.',
+    body: 'jojo will read what is inside and record the facts it states — your degrees, posts, publications and skills — so it can weigh a job posting against what you have actually done. Every entry it adds is shown to you first, and says which document it came from.',
   }
 }
 

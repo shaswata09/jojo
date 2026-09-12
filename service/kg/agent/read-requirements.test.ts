@@ -195,3 +195,29 @@ describe('what the model is shown', () => {
     expect(system).toMatch(/equal-opportunity/i)
   })
 })
+
+describe('entries that are only a string', () => {
+  it('takes a bare string as a preferred requirement rather than refusing the read', () => {
+    // Gemma, asked for the research areas a posting seeks, listed them as
+    // strings beside the object entries. The read used to fail as a whole.
+    const read = readRequirements(
+      JSON.stringify({
+        requirements: [
+          { text: 'PhD in Computer Science', essential: true },
+          'security and privacy',
+          'robotics',
+          7,
+        ],
+      }),
+    )
+    expect(read.ok).toBe(true)
+    if (read.ok) {
+      expect(read.requirements.map((r) => [r.text, r.essential])).toEqual([
+        ['PhD in Computer Science', true],
+        ['security and privacy', false],
+        ['robotics', false],
+      ])
+      expect(read.skipped).toEqual(['entry 4: not an object'])
+    }
+  })
+})

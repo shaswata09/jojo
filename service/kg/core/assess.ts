@@ -152,16 +152,76 @@ const SAME_THING: readonly (readonly string[])[] = [
   ['kubernetes', 'k8s', 'container', 'containers', 'orchestration'],
   ['docker', 'containerisation', 'containerization'],
   ['ci', 'cd', 'continuous', 'integration', 'deployment', 'devops'],
-  ['ml', 'machine', 'learning', 'deep'],
+  ['ml', 'machine', 'learning', 'ai', 'artificial', 'intelligence', 'neural', 'llm', 'llms'],
   ['nlp', 'language', 'linguistics'],
   ['distributed', 'systems', 'scalable', 'scale'],
   ['database', 'databases', 'sql', 'postgres', 'postgresql', 'mysql'],
   ['frontend', 'ui', 'interface', 'react', 'javascript', 'typescript'],
   ['statistics', 'statistical', 'stats', 'quantitative'],
-  ['teaching', 'lecturing', 'instruction', 'pedagogy', 'supervision'],
-  ['publication', 'publications', 'published', 'peer', 'reviewed', 'papers'],
-  ['grant', 'grants', 'funding', 'fellowship', 'award'],
-  ['leadership', 'managing', 'management', 'mentoring', 'mentorship'],
+  [
+    'teaching',
+    'teach',
+    'taught',
+    'lecturing',
+    'lecturer',
+    'instruction',
+    'instructor',
+    'pedagogy',
+    'course',
+    'courses',
+    'curriculum',
+  ],
+  /*
+   * `venue`/`venues` are deliberately NOT here. They are kind cues (below):
+   * putting them in this family made every publication record answer "venues"
+   * through its own kind term, five related-word hits for free, and two papers
+   * could no longer be told apart by which of the named venues they were at.
+   */
+  [
+    'publication',
+    'publications',
+    'published',
+    'publishing',
+    'peer',
+    'reviewed',
+    'papers',
+    'paper',
+    'scholarly',
+  ],
+  ['grant', 'grants', 'funding', 'funded', 'fellowship', 'fellowships', 'award'],
+  ['leadership', 'managing', 'management'],
+  /*
+   * Mentoring is its own family, and `supervision` is in it rather than in
+   * teaching: a posting asking to "mentor graduate students" is answered by a
+   * line saying "supervised two PhD students" under a job, not by a lecture
+   * course — and the two used to sit in different families, so it was not.
+   */
+  [
+    'mentor',
+    'mentoring',
+    'mentorship',
+    'mentored',
+    'supervise',
+    'supervising',
+    'supervised',
+    'supervision',
+    'advising',
+    'advisor',
+    'adviser',
+  ],
+  ['phd', 'doctorate', 'doctoral', 'dphil', 'doctor'],
+  ['msc', 'ms', 'master', 'masters', 'mtech', 'mphil'],
+  ['bsc', 'bs', 'bachelor', 'bachelors', 'btech', 'beng'],
+  ['postdoc', 'postdoctoral', 'postdoctorate'],
+  [
+    'interdisciplinary',
+    'multidisciplinary',
+    'collaboration',
+    'collaborative',
+    'collaborator',
+    'collaborators',
+  ],
+  ['production', 'deployed', 'shipped', 'shipping', 'serving'],
   ['cloud', 'aws', 'azure', 'gcp'],
 ]
 
@@ -180,11 +240,105 @@ const RELATED: ReadonlyMap<string, readonly string[]> = (() => {
 
 /** Words too common to carry a match. Shorter than a stoplist for prose. */
 const NOISE = new Set([
-  'and', 'the', 'for', 'with', 'you', 'our', 'are', 'have', 'has', 'will', 'work',
-  'working', 'experience', 'strong', 'excellent', 'ability', 'skills', 'knowledge',
-  'related', 'field', 'years', 'year', 'plus', 'preferred', 'required', 'must',
-  'should', 'demonstrated', 'proven', 'track', 'record', 'candidate', 'candidates',
-  'role', 'position', 'team', 'teams',
+  'and',
+  'the',
+  'for',
+  'with',
+  'you',
+  'our',
+  'are',
+  'have',
+  'has',
+  'will',
+  'work',
+  'working',
+  'experience',
+  'strong',
+  'excellent',
+  'ability',
+  'skills',
+  'knowledge',
+  'related',
+  'field',
+  'years',
+  'year',
+  'plus',
+  'preferred',
+  'required',
+  'must',
+  'should',
+  'demonstrated',
+  'proven',
+  'track',
+  'record',
+  'candidate',
+  'candidates',
+  'role',
+  'position',
+  'team',
+  'teams',
+  /*
+   * The words a posting wraps a requirement in, found by measuring. The model
+   * is told to copy the posting's words — rightly, so a person can find the
+   * phrase on the page — which means a requirement arrives as a sentence:
+   * "evidence of potential to secure external research funding". Overlap
+   * divides by every content word in it, and against a record that says "NSF
+   * Graduate Research Fellowship" that sentence scored 0.27 and was filed as a
+   * required gap. Every word below was one of those, on a real posting, and
+   * none of them is ever the thing a record has to contain to answer.
+   */
+  'evidence',
+  'potential',
+  'secure',
+  'securing',
+  'external',
+  'commitment',
+  'committed',
+  'through',
+  'level',
+  'levels',
+  'closely',
+  'start',
+  'date',
+  'time',
+  'appointment',
+  'demonstrate',
+  'demonstrates',
+  'effective',
+  'effectively',
+  'high',
+  'quality',
+  'hands',
+  'familiarity',
+  'familiar',
+  'keeping',
+  'healthy',
+  'building',
+  'build',
+  'establish',
+  'independent',
+  'program',
+  'programme',
+  'contribute',
+  'contributing',
+  'able',
+  'understanding',
+  'solid',
+  'good',
+  'great',
+  'background',
+  'expertise',
+  'minimum',
+  'top',
+  'tier',
+  'such',
+  'undergraduate',
+  'graduate',
+  'students',
+  'student',
+  // "deep familiarity", "deep understanding", "deep knowledge" — and "deep
+  // learning" loses nothing, because "learning" is the word that matches.
+  'deep',
 ])
 
 /** The content words of a phrase, folded for comparison. */
@@ -240,6 +394,92 @@ const RELATED_WEIGHT = 0.6
 const MATCH_FLOOR = 0.34
 
 /**
+ * What a requirement is ABOUT, when a whole kind of record answers it.
+ *
+ * Term overlap asks whether the record uses the posting's words. Some
+ * requirements are not about words at all — "publications in top-tier venues
+ * such as NeurIPS, ICML, ICLR, or ACL" is answered by having publications, and
+ * a NeurIPS paper shares two of that sentence's ten terms and scored 0.20, a
+ * gap. "A commitment to teaching at the undergraduate and graduate levels" is
+ * answered by having taught. The record's KIND is the fact that answers, and
+ * the kinds exist precisely so that a fact can be filed as a grant rather than
+ * as prose that happens to mention money.
+ *
+ * So a requirement that names one of these things is answered by every record
+ * of that kind, starting at `CUE_STRENGTH` — above the floor — with the
+ * posting's own words carrying it the rest of the way, so of two papers the
+ * one that names the venue asked for still leads. It expands the REQUIREMENT,
+ * never the record, like the table above: the only thing this can do is
+ * recognise an answer the person already filed under the right heading.
+ *
+ * Verified 2026-09-12 against three models reading two people and three
+ * postings: without this the AI researcher was "a stretch" (33–35) for the AI
+ * faculty post, with her fellowship and her NeurIPS paper both filed as
+ * missing.
+ */
+const KIND_CUES: readonly (readonly [kind: string, cues: readonly string[]])[] = [
+  ['grant', ['funding', 'funded', 'grant', 'grants', 'fellowship', 'fellowships']],
+  [
+    'publication',
+    [
+      'publication',
+      'publications',
+      'published',
+      'publishing',
+      'papers',
+      'paper',
+      'venue',
+      'venues',
+      'scholarly',
+    ],
+  ],
+  [
+    'teaching',
+    [
+      'teaching',
+      'teach',
+      'taught',
+      'lecturing',
+      'instruction',
+      'course',
+      'courses',
+      'curriculum',
+      'classroom',
+    ],
+  ],
+  [
+    'service',
+    [
+      'service',
+      'committee',
+      'committees',
+      'reviewer',
+      'reviewing',
+      'editorial',
+      'organiser',
+      'organizer',
+    ],
+  ],
+  ['award', ['award', 'awards', 'prize', 'prizes', 'honor', 'honour', 'honors', 'honours']],
+]
+
+/**
+ * Where a record of the right kind starts. Its word overlap fills the rest of
+ * the distance to 1, so the cue never outranks the posting's own words and a
+ * record that has both outranks one that has either.
+ */
+const CUE_STRENGTH = 0.5
+
+/** The kinds a requirement's words point at. Usually none; rarely more than one. */
+function cuedKinds(wanted: ReadonlySet<string>): ReadonlySet<string> {
+  const out = new Set<string>()
+  for (const [kind, cues] of KIND_CUES) {
+    if (cues.some((cue) => wanted.has(cue))) out.add(kind)
+  }
+  return out
+}
+
+/**
  * The person's record, weighed against what a posting asks for.
  *
  * `requirements` come from reading the posting — a model's job, and the one
@@ -258,8 +498,18 @@ export function assess(
 
   const answered: Answered[] = requirements.map((requirement) => {
     const wanted = terms(requirement.text)
+    const kinds = cuedKinds(wanted)
     const scored = bags
-      .map((b) => ({ evidence: b.evidence, strength: overlap(wanted, b.terms) }))
+      .map((b) => {
+        const words = overlap(wanted, b.terms)
+        // A record of the kind the posting asked for starts at the cue and the
+        // posting's own words carry it the rest of the way; any other record
+        // has only its words.
+        const strength = kinds.has(b.evidence.kind)
+          ? CUE_STRENGTH + (1 - CUE_STRENGTH) * words
+          : words
+        return { evidence: b.evidence, strength }
+      })
       .filter((m) => m.strength >= MATCH_FLOOR)
       .sort((a, b) => b.strength - a.strength)
 

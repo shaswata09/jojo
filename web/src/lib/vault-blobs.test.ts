@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { blobPath, idOfPath, nameOfPath } from '@/lib/vault-blobs'
+import { blobPath, idOfPath, indexFrom, nameOfPath } from '@/lib/vault-blobs'
 
 describe('the path a document is stored at', () => {
   it('round-trips an id and a name', () => {
@@ -72,5 +72,24 @@ describe('the path a document is stored at', () => {
     ]) {
       expect(idOfPath(foreign), foreign).toBeNull()
     }
+  })
+})
+
+describe('the index a listing becomes', () => {
+  it('maps each of jojo’s documents by its record id and ignores the rest', () => {
+    // A lookup that missed re-lists the folder and reads this same map, so
+    // what counts as one of jojo's documents is decided in one place.
+    const index = indexFrom([
+      { path: blobPath('file:0192a', 'CV.pdf') },
+      { path: blobPath('file:0192b', 'Cover letter — Rice.pdf') },
+      { path: 'Documents/not-ours.pdf' },
+      { path: 'jojo/folder.json' },
+    ])
+    expect([...index.keys()]).toEqual(['file:0192a', 'file:0192b'])
+    expect(index.get('file:0192a')).toBe(blobPath('file:0192a', 'CV.pdf'))
+  })
+
+  it('is empty for an empty folder', () => {
+    expect(indexFrom([]).size).toBe(0)
   })
 })

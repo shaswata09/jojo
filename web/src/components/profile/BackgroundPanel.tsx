@@ -1,14 +1,20 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, FileText, Trash2 } from 'lucide-react'
+import { ChevronDown, FileText, Sparkles, Trash2 } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { EmptyState } from '@/components/common/EmptyState'
+import { menuItemClass } from '@/components/common/RowMenu'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { BACKGROUND_LABEL, BACKGROUND_ORDER } from '@jojo/service/core/model'
 import type { Background, BackgroundKind } from '@jojo/service/core/model'
+import { readableDocuments } from '@jojo/service/core/twin'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
+import { requestProfileRead } from '@jojo/service/react/profile-read-request'
 import { useRun } from '@jojo/service/react/use-tool'
 import { useToast } from '@/lib/toast-context'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { useVaultBlobs } from '@/lib/vault-blobs'
+import { cn } from '@/lib/utils'
 
 /**
  * What jojo knows about the person, grouped and listed.
@@ -53,7 +59,9 @@ function Entry({ entry, onDelete }: { entry: Background; onDelete: () => void })
             {entry.where !== undefined && <span className="text-text-2"> · {entry.where}</span>}
             {entry.period !== undefined && <span className="text-text-3"> · {entry.period}</span>}
           </p>
-          {entry.detail !== undefined && <p className="mt-0.5 text-sm text-text-2">{entry.detail}</p>}
+          {entry.detail !== undefined && (
+            <p className="mt-0.5 text-sm text-text-2">{entry.detail}</p>
+          )}
 
           {bullets.length > 0 && (
             <>
@@ -143,7 +151,13 @@ export function BackgroundPanel() {
    * document this entry did NOT come from.
    */
   const [adding, setAdding] = useState(false)
-  const [draft, setDraft] = useState({ kind: 'employment' as BackgroundKind, title: '', where: '', period: '', detail: '' })
+  const [draft, setDraft] = useState({
+    kind: 'employment' as BackgroundKind,
+    title: '',
+    where: '',
+    period: '',
+    detail: '',
+  })
   const reset = () => {
     setDraft({ kind: 'employment', title: '', where: '', period: '', detail: '' })
     setAdding(false)
@@ -207,7 +221,7 @@ export function BackgroundPanel() {
           <div className="flex gap-2">
             <select
               aria-label="Kind"
-              className="rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              className="bg-surface rounded-md border border-hairline px-2 py-1.5 text-sm"
               value={draft.kind}
               onChange={(e) => setDraft({ ...draft, kind: e.target.value as BackgroundKind })}
             >
@@ -222,7 +236,7 @@ export function BackgroundPanel() {
               required
               autoFocus
               placeholder="What it was"
-              className="flex-1 rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              className="bg-surface flex-1 rounded-md border border-hairline px-2 py-1.5 text-sm"
               value={draft.title}
               onChange={(e) => setDraft({ ...draft, title: e.target.value })}
             />
@@ -231,14 +245,14 @@ export function BackgroundPanel() {
             <input
               aria-label="Where"
               placeholder="Where (optional)"
-              className="flex-1 rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              className="bg-surface flex-1 rounded-md border border-hairline px-2 py-1.5 text-sm"
               value={draft.where}
               onChange={(e) => setDraft({ ...draft, where: e.target.value })}
             />
             <input
               aria-label="When"
               placeholder="When — “2021–2024” (optional)"
-              className="flex-1 rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+              className="bg-surface flex-1 rounded-md border border-hairline px-2 py-1.5 text-sm"
               value={draft.period}
               onChange={(e) => setDraft({ ...draft, period: e.target.value })}
             />
@@ -247,7 +261,7 @@ export function BackgroundPanel() {
             aria-label="Detail"
             rows={2}
             placeholder="Anything worth weighing a posting against (optional)"
-            className="w-full rounded-md border border-hairline bg-surface px-2 py-1.5 text-sm"
+            className="bg-surface w-full rounded-md border border-hairline px-2 py-1.5 text-sm"
             value={draft.detail}
             onChange={(e) => setDraft({ ...draft, detail: e.target.value })}
           />
@@ -261,7 +275,8 @@ export function BackgroundPanel() {
           </div>
         </form>
       ) : (
-        <div className="mb-3 flex justify-end">
+        <div className="mb-3 flex justify-end gap-2">
+          <ReadDocumentMenu configured={configured} />
           <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
             Add an entry
           </Button>
@@ -293,7 +308,7 @@ export function BackgroundPanel() {
         <div className="space-y-5">
           {groups.map(({ kind, rows }) => (
             <section key={kind}>
-              <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-text-3">
+              <h3 className="mb-1 text-xs font-medium tracking-wide text-text-3 uppercase">
                 {BACKGROUND_LABEL[kind]}
               </h3>
               <ul>
@@ -306,5 +321,85 @@ export function BackgroundPanel() {
         </div>
       )}
     </Panel>
+  )
+}
+
+/**
+ * Pick a document in the Vault and have it read into the profile, now.
+ *
+ * The offer banner asks about documents on its own terms and remembers what
+ * was declined; this is the other direction. It exists because the fit panel
+ * on an application said "put your CV in the Vault and say yes when it offers
+ * to read it" to people whose CV was already there — the offer had been
+ * dismissed once, or never fired — and nothing anywhere let them say "that
+ * one, read it".
+ *
+ * Choosing here opens the same banner above the page, with the same review
+ * list, and nothing is written until they press Add: the request only decides
+ * WHICH document the question is about. See `profile-read-request.ts`.
+ *
+ * Documents already read are listed and disabled rather than hidden, so
+ * somebody looking for their CV can see that it was read rather than read it
+ * again and file every fact twice.
+ */
+function ReadDocumentMenu({ configured }: { configured: boolean }) {
+  const graph = useGraph()
+  const blobs = useVaultBlobs()
+  const [open, setOpen] = useState(false)
+  // `blobs` is in the list for its revision: a document dropped on the Vault a
+  // moment ago has bytes now, and this list has to say so.
+  const documents = useMemo(() => readableDocuments(graph, (f) => blobs.has(f.id)), [graph, blobs])
+  const unread = documents.filter((d) => !d.read)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!configured}
+          title={
+            configured ? undefined : 'Reading a document needs a model. Connect one in Settings.'
+          }
+        >
+          <Sparkles className="size-3.5" strokeWidth={2} aria-hidden />
+          Read a document
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 gap-1 p-1.5">
+        {documents.length === 0 ? (
+          <p className="px-2 py-1.5 text-xs text-text-3">
+            Nothing in the Vault can be read yet. Drop your CV or a statement in and it appears
+            here.
+          </p>
+        ) : (
+          <>
+            {unread.length === 0 && (
+              <p className="px-2 py-1.5 text-xs text-text-3">
+                Everything readable in the Vault has been read.
+              </p>
+            )}
+            {documents.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                disabled={d.read}
+                className={cn(menuItemClass, 'w-full justify-between', d.read && 'opacity-50')}
+                onClick={() => {
+                  setOpen(false)
+                  requestProfileRead({ fileId: d.id, name: d.name })
+                  // The banner is above the route; on a long profile page it is
+                  // off screen, and a question nobody can see is not asked.
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+              >
+                <span className="min-w-0 truncate">{d.name}</span>
+                {d.read && <span className="ml-2 shrink-0 text-xs text-text-3">read</span>}
+              </button>
+            ))}
+          </>
+        )}
+      </PopoverContent>
+    </Popover>
   )
 }

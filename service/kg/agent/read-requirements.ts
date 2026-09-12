@@ -96,8 +96,24 @@ const SYSTEM = [
   '    -> true',
   '  Preferred, Desirable, Nice to have, Bonus, A plus, Advantageous',
   '    -> false',
+  'A sentence saying the candidate "must hold", "must have", "is required to"',
+  'or "is expected to" -> true. "Expected to" is how an academic posting',
+  'says required.',
   'If there is no heading and the sentence does not say, use false.',
   'Do not decide for yourself that something sounds important.',
+  '',
+  'What a posting says the candidate is "expected to show", "must hold" or',
+  '"will be expected to" do — a degree, teaching, mentoring, securing funding,',
+  'publishing — IS a requirement, phrased as an expectation. Academic postings',
+  'state most of their requirements this way. Keep every one of them.',
+  '',
+  'A research area or specialism the posting says it seeks IS a requirement,',
+  'one entry per area, in the posting\'s words: "security and privacy",',
+  '"computer graphics", "robotics". Preferred when the posting gives it',
+  'primary consideration or says other areas will also be considered;',
+  'required when it says only those areas will be considered. A posting',
+  'that names the areas it wants is telling a candidate in another area',
+  'the most important thing it has to say.',
   '',
   'What is NOT a requirement, and must be left out:',
   '  - what the job involves day to day, unless it names a skill to have',
@@ -169,11 +185,25 @@ export function readRequirements(reply: string): RequirementsRead {
   const seen = new Set<string>()
 
   for (const [index, entry] of raw.entries()) {
-    if (typeof entry !== 'object' || entry === null) {
+    /*
+     * A bare string is a requirement with no verdict on how firm it is.
+     *
+     * Asked to list the research areas a posting seeks, Gemma answered with
+     * `["security and privacy", "robotics", …]` — the right content in the
+     * wrong shape — and the whole read was refused as "nothing could be read".
+     * Taken as preferred, which is what the prompt says to fall back to when
+     * the text does not say: a string carries no `essential`, so it did not.
+     */
+    const row: Record<string, unknown> =
+      typeof entry === 'string'
+        ? { text: entry, essential: false }
+        : typeof entry === 'object' && entry !== null
+          ? (entry as Record<string, unknown>)
+          : {}
+    if (Object.keys(row).length === 0) {
       skipped.push(`entry ${String(index + 1)}: not an object`)
       continue
     }
-    const row = entry as Record<string, unknown>
 
     const value = row['text']
     const text = typeof value === 'string' ? value.trim() : ''
@@ -224,7 +254,9 @@ export function readRequirements(reply: string): RequirementsRead {
       // had the model listing sentences, and the score is drawn from twelve of
       // whatever it wrote first.
       if (index < raw.length - 1) {
-        skipped.push(`${String(raw.length - index - 1)} more were past the limit of ${String(MAX_REQUIREMENTS)}`)
+        skipped.push(
+          `${String(raw.length - index - 1)} more were past the limit of ${String(MAX_REQUIREMENTS)}`,
+        )
       }
       break
     }

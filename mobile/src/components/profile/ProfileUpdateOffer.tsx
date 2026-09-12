@@ -4,6 +4,7 @@ import { Feather } from '@react-native-vector-icons/feather/static'
 import { Button } from '@/components/ui/Button'
 import { Txt } from '@/components/ui/Text'
 import { newlyReadable, twinOfferCopy, twinState } from '@jojo/service/core/twin'
+import { clearProfileRead, useProfileReadRequest } from '@jojo/service/react/profile-read-request'
 import type { TwinGap } from '@jojo/service/core/twin'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { useRun } from '@jojo/service/react/use-tool'
@@ -94,8 +95,19 @@ export function ProfileUpdateOffer() {
     [graph, seen],
   )
 
-  const target = gaps[0]
-  const copy = useMemo(() => twinOfferCopy(gaps), [gaps])
+  /*
+   * Asked for by name — from the profile's background panel — and it wins over
+   * the strip's own choice, bypassing the memory of what was declined: the
+   * person is asking, not being asked. Web's banner does the same.
+   */
+  const requested = useProfileReadRequest()
+  const { target, offering } = useMemo(() => {
+    const chosen: TwinGap | undefined = requested
+      ? { kind: 'unread-document', subject: requested.name, id: requested.fileId, instruction: '' }
+      : gaps[0]
+    return { target: chosen, offering: requested && chosen ? [chosen] : gaps }
+  }, [requested, gaps])
+  const copy = useMemo(() => twinOfferCopy(offering), [offering])
 
   if (seen === null || !target || target.id === undefined) return null
   // A model has to be configured for "yes" to lead anywhere. An offer whose
@@ -119,7 +131,8 @@ export function ProfileUpdateOffer() {
     setError(null)
     // Every id on offer, not just the one named: the title says "and 2 more",
     // so declining it declines all three.
-    remember(gaps.map((g) => g.id).filter((id): id is string => id !== undefined))
+    remember(offering.map((g) => g.id).filter((id): id is string => id !== undefined))
+    clearProfileRead()
   }
 
   const accept = async () => {
@@ -139,9 +152,13 @@ export function ProfileUpdateOffer() {
     setStep(null)
 
     if (!outcome.ok) {
-      // Recorded as asked even though it failed, or the strip returns with the
-      // same document and the same failure waiting behind it.
-      remember([fileId])
+      /*
+       * Shown, and NOT yet recorded as asked. Recording it here made the strip
+       * unmount on the next render — the gap list recomputed without the
+       * document — with the error it had just set never drawn, so a failed
+       * read looked like nothing happening. The strip stays with the sentence
+       * in it; "Read it" tries again and "Not now" records the answer.
+       */
       setError(outcome.reason)
       return
     }
@@ -163,9 +180,7 @@ export function ProfileUpdateOffer() {
     // Original positions carried alongside, because `claim.add` refers to
     // entries by their position in the list the model saw and filtering
     // renumbers everything.
-    const keeping = drafts
-      .map((draft, at) => ({ draft, at }))
-      .filter(({ at }) => !dropped.has(at))
+    const keeping = drafts.map((draft, at) => ({ draft, at })).filter(({ at }) => !dropped.has(at))
     if (keeping.length === 0) return
 
     const result = run('profile.background.add', {
@@ -201,6 +216,7 @@ export function ProfileUpdateOffer() {
     remember([fileId])
     setDrafts(null)
     setLinks([])
+    clearProfileRead()
 
     toast({
       title: result.ok
@@ -283,7 +299,12 @@ export function ProfileUpdateOffer() {
                       return next
                     })
                   }
-                  style={{ flexDirection: 'row', alignItems: 'flex-start', gap: space[2], minHeight: 44 }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: space[2],
+                    minHeight: 44,
+                  }}
                 >
                   <Feather
                     name={dropped.has(i) ? 'square' : 'check-square'}
@@ -310,7 +331,14 @@ export function ProfileUpdateOffer() {
             </View>
           </ScrollView>
           {links.length > 0 && (
-            <View style={{ gap: space[1], borderTopWidth: 1, borderTopColor: c.hairline, paddingTop: space[2] }}>
+            <View
+              style={{
+                gap: space[1],
+                borderTopWidth: 1,
+                borderTopColor: c.hairline,
+                paddingTop: space[2],
+              }}
+            >
               <Txt size="sm" weight="medium">
                 {links.length === 1
                   ? '1 connection between them'

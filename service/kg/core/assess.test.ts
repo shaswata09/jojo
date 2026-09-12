@@ -12,7 +12,12 @@ import { assess, gapAdvice, type Evidence, type Requirement } from './assess'
 
 const need = (text: string, essential = true): Requirement => ({ text, essential })
 
-const cred = (id: string, kind: string, title: string, extra: Partial<Evidence> = {}): Evidence => ({
+const cred = (
+  id: string,
+  kind: string,
+  title: string,
+  extra: Partial<Evidence> = {},
+): Evidence => ({
   id,
   kind,
   title,
@@ -78,7 +83,9 @@ describe('matching evidence to a requirement', () => {
   it('lists at most three pieces of evidence per requirement', () => {
     // A screen showing nine is a screen nobody reads, and the fourth-best match
     // never persuades anybody.
-    const many = Array.from({ length: 9 }, (_, i) => cred(`x${String(i)}`, 'skill', 'distributed systems'))
+    const many = Array.from({ length: 9 }, (_, i) =>
+      cred(`x${String(i)}`, 'skill', 'distributed systems'),
+    )
     const out = assess([need('distributed systems')], many)
     expect(out.answered[0]?.evidence.length).toBeLessThanOrEqual(3)
   })
@@ -205,8 +212,14 @@ describe('wording the posting and the CV do not share', () => {
   it('scores a related word below the posting’s own word', () => {
     // A real answer and a weaker one. Ranked below an exact match so the lead
     // list still puts the entry that uses the employer's language first.
-    const near = assess([{ text: 'orchestration', essential: true }], [record('b1', 'skill', 'Kubernetes')])
-    const exact = assess([{ text: 'orchestration', essential: true }], [record('b2', 'skill', 'Orchestration')])
+    const near = assess(
+      [{ text: 'orchestration', essential: true }],
+      [record('b1', 'skill', 'Kubernetes')],
+    )
+    const exact = assess(
+      [{ text: 'orchestration', essential: true }],
+      [record('b2', 'skill', 'Orchestration')],
+    )
     expect(near.score!).toBeLessThan(exact.score!)
   })
 
@@ -266,5 +279,143 @@ describe('wording the posting and the CV do not share', () => {
     )
     expect(out.gaps).toEqual([])
     expect(out.answered[0]?.evidence[0]?.id).toBe('b1')
+  })
+})
+
+describe('requirements as postings actually word them', () => {
+  /*
+   * Every sentence below is a requirement three real models read off a real
+   * or realistic posting on 2026-09-12, and every record is what they filed
+   * from the CV that answers it. Before this the AI researcher scored 33–35,
+   * "a stretch", for the AI faculty post — her fellowship and her NeurIPS
+   * paper both filed as missing — because overlap divided by every word in
+   * the sentence and the record's kind counted as one more word.
+   */
+  const grant = cred('g1', 'grant', 'NSF Graduate Research Fellowship', {
+    where: 'National Science Foundation',
+    detail: '2019–2022, $138,000',
+  })
+  const paper = cred(
+    'p1',
+    'publication',
+    'Retrieval-augmented fine-tuning improves factual robustness',
+    {
+      where: 'NeurIPS 2023',
+    },
+  )
+  const course = cred('t1', 'teaching', 'Summer Machine Learning Bootcamp', {
+    where: 'University of Washington',
+    detail: 'Designed the 6-week curriculum; 45 students.',
+  })
+  const pytorch = cred('s1', 'skill', 'PyTorch')
+  const postdoc = cred('e1', 'employment', 'Postdoctoral Researcher', {
+    where: 'Allen Institute for AI',
+    highlights: ['Supervise two research interns and a masters student.'],
+  })
+
+  it('reads "evidence of potential to secure external research funding" as answered by a grant', () => {
+    const out = assess(
+      [need('Evidence of potential to secure external research funding.')],
+      [grant, paper],
+    )
+    expect(out.gaps).toEqual([])
+    expect(out.answered[0]?.evidence[0]?.id).toBe('g1')
+  })
+
+  it('reads a list of venues as answered by a paper at one of them', () => {
+    const out = assess(
+      [need('Publications in top-tier venues such as NeurIPS, ICML, ICLR, or ACL.', false)],
+      [paper, course],
+    )
+    expect(out.gaps).toEqual([])
+    expect(out.answered[0]?.evidence[0]?.id).toBe('p1')
+  })
+
+  it('reads "a record of research in AI or ML, demonstrated through publications" as the paper, not the bootcamp', () => {
+    // Both matched loosely before; the bootcamp led because its title says
+    // "machine learning" and the paper's title does not. Having publications
+    // IS the answer, so the paper is the record to lead with.
+    const out = assess(
+      [
+        need(
+          'A record of research in artificial intelligence or machine learning, demonstrated through publications.',
+        ),
+      ],
+      [course, paper],
+    )
+    expect(out.answered[0]?.evidence.map((e) => e.id)).toContain('p1')
+    expect(out.lead[0]?.id).toBe('p1')
+  })
+
+  it('reads "a commitment to teaching at the undergraduate and graduate levels" as answered by having taught', () => {
+    const out = assess(
+      [need('A commitment to teaching at the undergraduate and graduate levels.')],
+      [course, grant],
+    )
+    expect(out.gaps).toEqual([])
+    expect(out.answered[0]?.evidence[0]?.id).toBe('t1')
+  })
+
+  it('reads "deep familiarity with PyTorch" as answered by PyTorch on the skills line', () => {
+    // 1 of 3 terms — 0.33, one hundredth under the floor — because
+    // "familiarity" counted as content. It is what every posting says.
+    const out = assess([need('deep familiarity with PyTorch')], [pytorch])
+    expect(out.gaps).toEqual([])
+  })
+
+  it('reads "ability to effectively mentor undergraduate and graduate students" as answered by supervision under a job', () => {
+    const out = assess(
+      [need('ability to effectively mentor undergraduate and graduate students')],
+      [postdoc, grant],
+    )
+    expect(out.gaps).toEqual([])
+    expect(out.answered[0]?.evidence[0]?.id).toBe('e1')
+  })
+
+  it('answers on the kind alone when the posting’s words are in no record at all', () => {
+    // "classroom" is a teaching cue and in no word family: the only thing that
+    // links the requirement to the bootcamp is that the bootcamp is teaching.
+    // That has to clear the floor on its own, or the cue is decoration.
+    const out = assess([need('classroom experience')], [course, grant])
+    expect(out.gaps).toEqual([])
+    expect(out.answered[0]?.evidence[0]?.id).toBe('t1')
+  })
+
+  it('does not let the words a posting wraps a requirement in count against the record', () => {
+    // Every content word of "deep familiarity with PyTorch" is PyTorch; the
+    // other two are wrapping. A record that says PyTorch answers it in full.
+    const wrapped = assess([need('deep familiarity with PyTorch')], [pytorch])
+    expect(wrapped.answered[0]?.strength).toBe(1)
+    // "Evidence of potential to secure external" is wrapping too: the
+    // requirement is research funding, and a research fellowship answers it
+    // almost entirely — "funding" through its family, "research" outright.
+    const funding = assess(
+      [need('Evidence of potential to secure external research funding.')],
+      [grant],
+    )
+    expect(funding.answered[0]?.strength).toBeGreaterThan(0.85)
+  })
+
+  it('still calls a gap a gap: nothing here answers interdisciplinary collaboration', () => {
+    const out = assess(
+      [need('contribute to interdisciplinary collaboration')],
+      [grant, paper, course, pytorch, postdoc],
+    )
+    expect(out.gaps.map((g) => g.requirement.text)).toEqual([
+      'contribute to interdisciplinary collaboration',
+    ])
+  })
+
+  it('lets a paper at a venue the posting names lead over one at a venue it does not', () => {
+    // Both are publications, so both answer. Only one answers in the posting's
+    // own words, and that is the one to lead a cover letter with.
+    const elsewhere = cred('p3', 'publication', 'Prompt sensitivity in few-shot classification', {
+      where: 'Journal of Applied Text Mining',
+    })
+    const out = assess(
+      [need('Publications in top-tier venues such as NeurIPS, ICML, ICLR, or ACL.')],
+      [elsewhere, paper],
+    )
+    expect(out.answered[0]?.evidence.map((e) => e.id)).toEqual(['p1', 'p3'])
   })
 })

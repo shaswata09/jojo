@@ -27,6 +27,7 @@ import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
+import { pickedFiles } from '@/lib/file-input'
 
 /** The bucket a profile document belongs to, in the Vault's own vocabulary. */
 const DOCUMENTS_BUCKET = 'Applications' as const
@@ -153,7 +154,7 @@ export function Profile() {
    * raise the same toast, and two copies of that is how one of them quietly
    * stops storing the document.
    */
-  const takeFiles = async (list: FileList | null) => {
+  const takeFiles = async (list: Iterable<File> | null) => {
     const picked = Array.from(list ?? [])
     if (picked.length === 0) return
 
@@ -191,12 +192,10 @@ export function Profile() {
   }
 
   const onPicked = (event: ChangeEvent<HTMLInputElement>) => {
-    const { files } = event.target
-    // Cleared straight away, so re-picking the same file fires `change` again.
-    // Without it, correcting a mistake by choosing the same document twice
-    // looks like the second attempt did nothing.
-    event.target.value = ''
-    void takeFiles(files)
+    // Copied off the input BEFORE it is cleared — see `lib/file-input.ts`.
+    // This read `files` first, cleared, then filed: the list is live, the
+    // clear emptied it, and nothing was ever stored from this page.
+    void takeFiles(pickedFiles(event.target))
   }
 
   const drop = useFileDrop((list) => {

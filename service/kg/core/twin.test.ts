@@ -15,10 +15,11 @@ import { MutableSnapshot } from './snapshot'
 import type { StoredNode } from './model'
 import type { GraphSnapshot } from './snapshot'
 import {
+  OFFER_MEMORY_LIMIT,
   mergeOffered,
   newlyReadable,
-  OFFER_MEMORY_LIMIT,
   parseOffered,
+  readableDocuments,
   twinBriefing,
   twinOfferCopy,
   twinState,
@@ -104,7 +105,9 @@ describe('finding the document worth reading', () => {
      * the person's qualifications — and the resulting record looks exactly like
      * a real one.
      */
-    const state = twinState(graph([file('f1', 'Rice-job-posting.pdf'), file('f2', 'Offer-letter.pdf')]))
+    const state = twinState(
+      graph([file('f1', 'Rice-job-posting.pdf'), file('f2', 'Offer-letter.pdf')]),
+    )
     expect(state.unread).toBe(0)
   })
 
@@ -113,7 +116,18 @@ describe('finding the document worth reading', () => {
     // person's only incidentally, and a CV is what sits loose.
     const state = twinState(
       graph(
-        [file('f1', 'CV-tailored.pdf'), node('a1', 'application', { slug: 'a1', role: 'x', roleTag: 'Lecturer', stage: 'draft', note: '', lastAction: '', lastActionAt: AT })],
+        [
+          file('f1', 'CV-tailored.pdf'),
+          node('a1', 'application', {
+            slug: 'a1',
+            role: 'x',
+            roleTag: 'Lecturer',
+            stage: 'draft',
+            note: '',
+            lastAction: '',
+            lastActionAt: AT,
+          }),
+        ],
         [{ from: 'f1', rel: 'FILED_UNDER', to: 'a1' }],
       ),
     )
@@ -144,7 +158,10 @@ describe('connecting what is already known', () => {
 
   it('says nothing when the keyword already exists, whatever its case', () => {
     const state = twinState(
-      graph([fact('b1', 'skill', 'Rust', 'f1'), node('k1', 'keyword', { slug: 'k1', name: 'rust', tone: 'gray' })]),
+      graph([
+        fact('b1', 'skill', 'Rust', 'f1'),
+        node('k1', 'keyword', { slug: 'k1', name: 'rust', tone: 'gray' }),
+      ]),
     )
     expect(state.gaps.filter((g) => g.kind === 'skill-not-keyword')).toEqual([])
   })
@@ -179,7 +196,10 @@ describe('when there is nothing to do', () => {
      * this returns a sentence or an empty string and never a bare heading.
      */
     const state = twinState(
-      graph([fact('b1', 'skill', 'Rust', 'f1'), node('k1', 'keyword', { slug: 'k1', name: 'Rust', tone: 'gray' })]),
+      graph([
+        fact('b1', 'skill', 'Rust', 'f1'),
+        node('k1', 'keyword', { slug: 'k1', name: 'Rust', tone: 'gray' }),
+      ]),
     )
     expect(state.gaps).toEqual([])
     expect(twinBriefing(state)).toContain('nothing obvious is missing')
@@ -300,7 +320,9 @@ describe('deciding when to ask permission', () => {
   it('offers a second document even though the first was declined', () => {
     // The other half: declining once must not silence the question forever.
     // A CV added in March and a statement added in June are two decisions.
-    const state = twinState(graph([file('f1', 'CV-2026.pdf'), file('f2', 'research statement.pdf')]))
+    const state = twinState(
+      graph([file('f1', 'CV-2026.pdf'), file('f2', 'research statement.pdf')]),
+    )
     expect(newlyReadable(['f1'], state).map((g) => g.id)).toEqual(['f2'])
   })
 
@@ -465,6 +487,27 @@ describe('which documents count', () => {
     expect(state.gaps.map((g) => g.kind)).toEqual(['no-background'])
   })
 
+  it('believes the caller about bytes over the record, because the web writes no flag', () => {
+    /*
+     * Reported 2026-09-12. The browser keeps documents in a blob store keyed by
+     * record id and never writes `path` onto the node — so every CV dropped on
+     * the web Vault failed the bytes check, the offer never fired, and the
+     * profile stayed empty. This suite did not catch it because `file()` above
+     * sets the flag the app never sets.
+     */
+    const onWeb = empty('f1', 'CV.pdf')
+    const stored = new Set(['f1'])
+    const state = twinState(graph([onWeb]), 6, (f) => stored.has(f.id))
+    expect(state.unread).toBe(1)
+    expect(state.gaps[0]?.id).toBe('f1')
+  })
+
+  it('believes the caller when it says no, even over a record that claims bytes', () => {
+    // A restored backup carries `path` for documents this machine never held.
+    const restored = file('f1', 'CV.pdf')
+    expect(twinState(graph([restored]), 6, () => false).unread).toBe(0)
+  })
+
   it('accepts the phone’s way of holding bytes as well as the browser’s', () => {
     // `path` is web's flag and `uri` is the phone's. Both are checked in core
     // because "can this be opened at all" is the same question on both.
@@ -489,7 +532,10 @@ describe('the documents worth reading', () => {
      * asks for and the thing the graph had no way to hold.
      */
     const state = twinState(
-      graph([file('f1', 'Research-statement-v4.doc'), file('f2', 'Teaching philosophy.pdf', 'To read')]),
+      graph([
+        file('f1', 'Research-statement-v4.doc'),
+        file('f2', 'Teaching philosophy.pdf', 'To read'),
+      ]),
     )
     expect(state.gaps.map((g) => g.id).sort()).toEqual(['f1', 'f2'])
   })
@@ -507,5 +553,76 @@ describe('the documents worth reading', () => {
     // the person-document pattern must not undo that.
     const state = twinState(graph([file('f1', 'Offer letter — Rice.pdf')]))
     expect(state.gaps.filter((g) => g.kind === 'unread-document')).toEqual([])
+  })
+})
+
+describe('what a person may choose to read by hand', () => {
+  /*
+   * Wider than the offer, because a choice is not a guess: the offer has to
+   * decide whether "Shaswata.pdf" in `Documents` is a CV, and a person picking
+   * it from a list has already said so. What stays out is what could not be
+   * right whatever they say.
+   */
+  const stored = (...ids: string[]) => {
+    const set = new Set(ids)
+    return (f: { id: string }) => set.has(f.id)
+  }
+
+  it('lists any stored document that is not plainly an employer’s', () => {
+    const memory = graph([
+      empty('f1', 'Shaswata.pdf'),
+      node('f2', 'file', {
+        slug: 'f2',
+        name: 'notes.pdf',
+        kind: 'pdf',
+        bucket: 'Documents',
+        size: '1 KB',
+        savedOn: '2026-09-01',
+      }),
+    ])
+    expect(readableDocuments(memory, stored('f1', 'f2')).map((d) => d.id)).toEqual(['f1', 'f2'])
+  })
+
+  it('leaves out a posting, whichever drawer it is in, and anything with no bytes', () => {
+    const memory = graph([
+      empty('f1', 'Acme-job-posting.pdf'),
+      node('f2', 'file', {
+        slug: 'f2',
+        name: 'captured-page.html',
+        kind: 'page',
+        bucket: 'Job postings',
+        size: '1 KB',
+        savedOn: '2026-09-01',
+      }),
+      empty('f3', 'CV.pdf'),
+    ])
+    expect(readableDocuments(memory, stored('f1', 'f2')).map((d) => d.id)).toEqual([])
+  })
+
+  it('believes the record about bytes when the caller says nothing, which is the phone', () => {
+    const onPhone = node('f1', 'file', {
+      slug: 'f1',
+      name: 'CV.pdf',
+      kind: 'pdf',
+      bucket: 'Applications',
+      size: '1 KB',
+      savedOn: '2026-09-01',
+      uri: 'file:///documents/f1.pdf',
+    })
+    expect(
+      readableDocuments(graph([onPhone, empty('f2', 'Statement.pdf')])).map((d) => d.id),
+    ).toEqual(['f1'])
+  })
+
+  it('says which ones have already been read, rather than hiding them', () => {
+    const memory = graph([
+      empty('f1', 'CV.pdf'),
+      empty('f2', 'Statement.pdf'),
+      fact('b1', 'education', 'PhD', 'f1'),
+    ])
+    expect(readableDocuments(memory, stored('f1', 'f2'))).toEqual([
+      { id: 'f1', name: 'CV.pdf', read: true },
+      { id: 'f2', name: 'Statement.pdf', read: false },
+    ])
   })
 })

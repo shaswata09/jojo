@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { convertFile } from '@/lib/markitdown'
+import { readHere } from '@/lib/read-here'
 import type { ConvertResult } from '@jojo/service/agent/markitdown'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
@@ -27,19 +28,30 @@ export function useReadDocument(): (fileId: string) => Promise<ConvertResult> {
 
   return useCallback(
     async (fileId: string) => {
-      if (reader.trim() === '') {
-        return {
-          ok: false as const,
-          reason:
-            'No document reader is connected, so the inside of this file cannot be read. Settings is where its address goes.',
-        }
-      }
       const file = await blobs.get(fileId)
       if (!file) {
         return {
           ok: false as const,
           reason:
             'No copy of that document is stored in this browser, so there is nothing to read.',
+        }
+      }
+      /*
+       * This tab first, the reader second — the phone's order, and for the
+       * same reason. A saved posting is HTML; it was being sent to MarkItDown,
+       * which refused the extension's captures as too large, on the one screen
+       * built to read them. Only an `ok` answer is taken here: a document that
+       * read as empty falls through, because the reader has OCR.
+       */
+      const here = await readHere(file)
+      if (here?.ok) return here
+      if (reader.trim() === '') {
+        return {
+          ok: false as const,
+          reason:
+            here === null
+              ? 'No document reader is connected, so the inside of this file cannot be read. Settings is where its address goes.'
+              : `${here.reason} No document reader is connected to try harder — Settings is where its address goes.`,
         }
       }
       return convertFile(reader, file)

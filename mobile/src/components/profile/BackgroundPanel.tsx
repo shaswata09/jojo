@@ -11,7 +11,9 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { Sheet } from '@/components/ui/Sheet'
 import { BACKGROUND_LABEL, BACKGROUND_ORDER } from '@jojo/service/core/model'
 import type { Background, BackgroundKind } from '@jojo/service/core/model'
+import { readableDocuments } from '@jojo/service/core/twin'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
+import { requestProfileRead } from '@jojo/service/react/profile-read-request'
 import { useRun } from '@jojo/service/react/use-tool'
 import { useToast } from '@/lib/toast-context'
 import { useModelSettings } from '@/lib/model-settings-context'
@@ -143,8 +145,17 @@ export function BackgroundPanel() {
    * half the screen the moment the first field is focused.
    */
   const [adding, setAdding] = useState(false)
+  const [choosing, setChoosing] = useState(false)
+  // The phone's records carry `uri`, so the record itself answers "has bytes".
+  const documents = useMemo(() => readableDocuments(graph), [graph])
   const [kindOpen, setKindOpen] = useState(false)
-  const empty = { kind: 'employment' as BackgroundKind, title: '', where: '', period: '', detail: '' }
+  const empty = {
+    kind: 'employment' as BackgroundKind,
+    title: '',
+    where: '',
+    period: '',
+    detail: '',
+  }
   const [draft, setDraft] = useState(empty)
 
   const add = () => {
@@ -211,7 +222,22 @@ export function BackgroundPanel() {
         Your background
       </PanelTitle>
 
-      <View style={{ alignItems: 'flex-end', marginBottom: space[2] }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          gap: space[2],
+          marginBottom: space[2],
+        }}
+      >
+        <Button
+          label="Read a document"
+          icon="zap"
+          variant="outline"
+          size="sm"
+          disabled={!configured}
+          onPress={() => setChoosing(true)}
+        />
         <Button
           label="Add an entry"
           icon="plus"
@@ -220,6 +246,37 @@ export function BackgroundPanel() {
           onPress={() => setAdding(true)}
         />
       </View>
+
+      {/*
+       * The other direction from the offer strip: pick a document and have it
+       * read now, whatever was declined before. Web's `ReadDocumentMenu` says
+       * why — the fit panel told people to "say yes when it offers" about a CV
+       * the offer had already asked about once. Read ones are listed disabled
+       * rather than hidden, so nobody reads a CV twice and files it all again.
+       */}
+      <MenuSheet
+        open={choosing}
+        onClose={() => setChoosing(false)}
+        title="Read a document into your profile"
+        actions={
+          documents.length === 0
+            ? [
+                {
+                  id: 'none',
+                  label: 'Nothing in the Vault can be read yet',
+                  hint: 'Add your CV or a statement and it appears here.',
+                  disabled: true,
+                  onPress: () => {},
+                },
+              ]
+            : documents.map((d) => ({
+                id: d.id,
+                label: d.name,
+                ...(d.read ? { hint: 'Already read', disabled: true } : {}),
+                onPress: () => requestProfileRead({ fileId: d.id, name: d.name }),
+              }))
+        }
+      />
 
       {all.length === 0 ? (
         <EmptyState

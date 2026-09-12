@@ -117,11 +117,19 @@ export function usePipelines({
   convert,
   scan,
   onError,
+  hasDocument,
 }: {
   /** `null` when no model is configured — the whole feature is then paused. */
   llm: LlmTurnFn | null
   maxSteps?: number
   convert?: ToolHost['convert']
+  /**
+   * Whether a file record has a document behind it, where this platform keeps
+   * documents. The twin's briefing lists the unread documents, and on the web
+   * the record cannot say whether it has bytes — the blob store can. Absent
+   * means the record is believed, which is right on the phone.
+   */
+  hasDocument?: (fileId: string) => boolean
   /**
    * Where a round that threw goes, beyond the pipeline's own log.
    *
@@ -219,10 +227,11 @@ export function usePipelines({
         setActivity,
         ...(maxSteps === undefined ? {} : { maxSteps }),
         ...(onError === undefined ? {} : { onError }),
+        ...(hasDocument === undefined ? {} : { hasDocument }),
         agent: runAgent,
       })
     },
-    [host, llm, maxSteps, note, onError, runtime],
+    [hasDocument, host, llm, maxSteps, note, onError, runtime],
   )
 
   /* ------------------------------ the scheduler --------------------------- */
@@ -321,17 +330,15 @@ export function usePipelines({
   )
 
   const setAuto = useCallback(
-    (pipeline: Pipeline, auto: boolean) => void run('scout.pipeline.update', { id: pipeline.id, auto }),
+    (pipeline: Pipeline, auto: boolean) =>
+      void run('scout.pipeline.update', { id: pipeline.id, auto }),
     [run],
   )
 
-  const runNow = useCallback(
-    (pipelineId: string) => {
-      const pipeline = state.current.pipelines.find((p) => p.id === pipelineId)
-      if (pipeline) void runRoundRef.current(pipeline)
-    },
-    [],
-  )
+  const runNow = useCallback((pipelineId: string) => {
+    const pipeline = state.current.pipelines.find((p) => p.id === pipelineId)
+    if (pipeline) void runRoundRef.current(pipeline)
+  }, [])
 
   const pendingFor = useCallback(
     (pipelineId: string) =>
@@ -451,14 +458,28 @@ export type RoundDeps = {
    * does not. Same shape as `createAgentRuns`.
    */
   onError?: (thrown: unknown) => void
+  /** See `usePipelines`. The twin's briefing is built from what can be opened. */
+  hasDocument?: (fileId: string) => boolean
 }
 
 /**
  * One round, for one pipeline. Takes the lock, releases it whatever happens.
  */
 export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Promise<void> {
-  const { llm, host, runtime, note, busy, cancel, setRunning, setActivity, maxSteps, agent, onError } =
-    deps
+  const {
+    llm,
+    host,
+    runtime,
+    note,
+    busy,
+    cancel,
+    setRunning,
+    setActivity,
+    maxSteps,
+    agent,
+    onError,
+    hasDocument,
+  } = deps
   if (busy.current) return
   busy.current = true
   setRunning(pipeline.id)
@@ -516,7 +537,7 @@ export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Pro
       history: [],
       // Through `host`, not `repo`: it is the seam the agent itself reads
       // the store through, and it is what the hook already hands down.
-      prompt: promptFor(pipeline, kind, host.memory()),
+      prompt: promptFor(pipeline, kind, host.memory(), hasDocument),
       tools: toolsForKind(kind),
       ...(maxSteps === undefined ? {} : { maxSteps }),
       signal: stop satisfies Cancellation,
@@ -606,7 +627,12 @@ export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Pro
  * `source` are free text the user typed, which is why they arrive quoted and
  * described rather than interpolated as if they were commands.
  */
-function promptFor(pipeline: Pipeline, kind: PipelineKind, memory: GraphSnapshot): string {
+function promptFor(
+  pipeline: Pipeline,
+  kind: PipelineKind,
+  memory: GraphSnapshot,
+  hasDocument?: (fileId: string) => boolean,
+): string {
   const parts = [PIPELINE_PROMPTS[kind], `The saved search is called “${pipeline.name}”.`]
   if (pipeline.filter && pipeline.filter !== '—') {
     parts.push(`The person described what matters to them as: “${pipeline.filter}”.`)
@@ -623,7 +649,9 @@ function promptFor(pipeline: Pipeline, kind: PipelineKind, memory: GraphSnapshot
      * as a truncated instruction and models treat it as one. `twinBriefing`
      * returns '' rather than a heading for exactly that reason.
      */
-    const briefing = twinBriefing(twinState(memory))
+    const briefing = twinBriefing(
+      twinState(memory, 6, hasDocument === undefined ? undefined : (f) => hasDocument(f.id)),
+    )
     if (briefing) parts.push(briefing)
   }
 
