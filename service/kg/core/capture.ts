@@ -668,6 +668,111 @@ function workday(parsed: URL, host: string): string {
 }
 
 /**
+ * Query parameters put there by whatever the link was copied FROM, never by the
+ * posting.
+ *
+ * Which way to be wrong decides this list. Drop a parameter that IDENTIFIES a
+ * posting and every job on that board becomes the same job — the bug this list
+ * replaced. Keep a tracking parameter by mistake and one warning is missed,
+ * which is the direction a warning nobody asked for should fail in. So a name
+ * goes in only when it identifies nothing anywhere: `utm_*` and the click ids,
+ * the referral fields, and `gh_src`, which is the one a Greenhouse search
+ * result adds to a link the ad itself does not have.
+ */
+const TRACKING = new Set([
+  'gh_src',
+  'src',
+  'source',
+  'ref',
+  'referer',
+  'referrer',
+  'from',
+  'trk',
+  'trackingid',
+  'refid',
+  'tk',
+  'vjk',
+  'gclid',
+  'fbclid',
+  'msclkid',
+  'igshid',
+  'mc_cid',
+  'mc_eid',
+  'mkt_tok',
+  '_hsenc',
+  '_hsmi',
+])
+
+const isTracking = (name: string): boolean => {
+  const key = name.toLowerCase()
+  return key.startsWith('utm_') || TRACKING.has(key)
+}
+
+/**
+ * A URL reduced to what identifies the posting: host without `www.`, path
+ * without its trailing slash, and the query minus its tracking. Scheme and
+ * fragment go. `undefined` for anything that is not a usable address.
+ *
+ * THE ONE ANSWER to "are these the same posting", and it lives here because
+ * three places were answering it differently. The duplicate warning compared
+ * host and path; the capture filing (`web/src/lib/file-capture.ts`) compared
+ * origin and path; the posting lookup (`core/posting-source.ts`) compared the
+ * whole query, tracking included. So one board could warn about a job you had
+ * never saved, file its page under a different application, and then fail to
+ * find that page from the application it did belong to.
+ *
+ * THE QUERY IS KEPT, and that is the whole of this function's history. It used
+ * to be dropped, on the reasoning that a query is what a copied link picks up —
+ * true of `?utm_campaign=`, and false of the boards that put the job id there.
+ * Measured 2026-09-11: every HigherEdJobs posting is
+ * `/faculty/details.cfm?JobCode=…`, so all of them reduced to one key and the
+ * form warned "you already saved this posting" about every job on the site.
+ * Indeed (`/viewjob?jk=`), Taleo (`jobdetail.ftl?job=`) and a Greenhouse board
+ * embedded in a company's own page (`/jobs/search?gh_jid=`) all failed the same
+ * way. `core/posting-source.ts` had already learned this and says so.
+ *
+ * `canonicalPostingUrl` above runs first, so the boards with a known shape —
+ * LinkedIn, Greenhouse, Lever, Ashby, Workday — fold to one spelling before
+ * anything here compares them, and this is left with the boards nobody has
+ * taught it. A scheme is added to a bare `board.test/jobs/1`, because the field
+ * an application carries is one somebody typed.
+ */
+export function postingIdentity(raw: string): string | undefined {
+  const text = raw.trim()
+  if (!text) return undefined
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `https://${text}`
+  try {
+    const url = new URL(canonicalPostingUrl(withScheme))
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined
+    const host = url.hostname.toLowerCase().replace(/^www\./, '')
+    const path = url.pathname.replace(/\/+$/, '')
+    // Read off `search` rather than `searchParams`: this layer compiles for
+    // React Native, where its `URL` carries only `get` and `has` (D26's
+    // platform floor), and a key needs every parameter rather than named ones.
+    //
+    // Sorted, so the same posting reached with its parameters in another order
+    // is the same key. Names are folded and values are not: `JobCode` and
+    // `jobcode` are one parameter, and two different ids are two postings.
+    const identifying = url.search
+      .replace(/^\?/, '')
+      .split('&')
+      .filter((pair) => pair !== '')
+      .map((pair) => {
+        const at = pair.indexOf('=')
+        return at === -1
+          ? ([pair, ''] as const)
+          : ([pair.slice(0, at), pair.slice(at + 1)] as const)
+      })
+      .filter(([name]) => !isTracking(name))
+      .map(([name, value]) => `${name.toLowerCase()}=${value}`)
+      .sort()
+    return identifying.length === 0 ? `${host}${path}` : `${host}${path}?${identifying.join('&')}`
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * The note a captured file carries, in the user's words.
  *
  * Written here rather than in each app because it is the same sentence on both

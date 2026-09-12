@@ -380,18 +380,37 @@ export function OwedThisWeek() {
                   item turned a footnote into the tallest part of the panel. */}
               <ul className="flex flex-wrap gap-2">
                 {later.slice(0, LATER_SHOWN).map((e) => (
-                  <li key={e.id}>
+                  /*
+                   * `min-w-0 max-w-full` down the chain, and the title truncates.
+                   *
+                   * A `Chip` is `whitespace-nowrap` by design — it is a one-line
+                   * label — and nothing here capped its width, so a long title
+                   * made the chip wider than the panel. `flex-wrap` cannot save
+                   * that: wrapping moves an item to the next line, and an item
+                   * already wider than the line still overflows. Measured at
+                   * 1440px with a 113-character title: the chip's right edge was
+                   * 49px past the panel's, and the panel scrolled sideways.
+                   *
+                   * A flex item will not shrink below its content unless
+                   * `min-width` is lifted, which is what `min-w-0` is for; the
+                   * button is made `block` because an inline element ignores a
+                   * width cap. The date keeps `shrink-0` so the part that says
+                   * WHEN survives — truncating a date to "Sep 1…" would be
+                   * worse than truncating a title the button already carries in
+                   * full in its tooltip and to a screen reader.
+                   */
+                  <li key={e.id} className="min-w-0 max-w-full">
                     {/* A chip that opens the item, rather than one that names
                         something and leaves you to find it on the calendar. */}
                     <button
                       type="button"
                       onClick={() => edit(e)}
-                      className="cursor-pointer rounded-sm"
+                      className="block max-w-full cursor-pointer rounded-sm"
                       title={`Open ${e.title}`}
                     >
-                      <Chip tone="gray" className="gap-1.5 hover:border-accent-border">
-                        {e.title}
-                        <span className="text-text-3">· {shortDate(e.date)}</span>
+                      <Chip tone="gray" className="max-w-full gap-1.5 hover:border-accent-border">
+                        <span className="min-w-0 truncate">{e.title}</span>
+                        <span className="shrink-0 text-text-3">· {shortDate(e.date)}</span>
                       </Chip>
                     </button>
                   </li>

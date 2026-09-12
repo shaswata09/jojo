@@ -1,7 +1,7 @@
 import type { Ref } from 'react'
 import { Link } from 'react-router'
 import { useDraggable, type DraggableAttributes } from '@dnd-kit/core'
-import { Flag, GripVertical } from 'lucide-react'
+import { Flag } from 'lucide-react'
 import { openRail } from '@/components/applications/open-rail'
 import { StageMenu } from '@/components/applications/StageMenu'
 import { Chip } from '@/components/common/Chip'
@@ -45,8 +45,8 @@ export function BoardCardBody({
 }) {
   return (
     // `relative`, because the title's link stretches across the whole card.
-    // The left padding is the grip's gutter: the grip is positioned out of the
-    // flow so the title starts at the same x as the chips under it.
+    // The left padding is the drag rail's gutter: the rail is positioned out of
+    // the flow, so the title starts at the same x as the chips under it.
     <div
       ref={ref}
       className={cn(
@@ -65,15 +65,28 @@ export function BoardCardBody({
         tabIndex={handle ? undefined : -1}
         aria-hidden={handle ? undefined : true}
         className={cn(
-          // z-[1] lifts the grip over the stretched link. Without it the link
-          // covers the handle and a drag becomes a navigation — which is the
-          // click-versus-drag fight, settled by stacking order rather than by
-          // stopping propagation between two controls that now never overlap.
-          // `touch-target` is what gives this a 44px catch area under a finger.
-          // It is drawn at 18×18 and carries no size class, so neither branch of
-          // the coarse-pointer rule in `index.css` could reach it — the board's
-          // core gesture was the smallest target on the page.
-          'touch-target absolute top-1/2 left-0.5 z-[1] -translate-y-1/2 cursor-grab touch-none rounded-sm p-0.5 text-text-3 transition-opacity active:cursor-grabbing',
+          // A RAIL DOWN THE WHOLE LEFT EDGE, rather than a grip pinned at one
+          // point. It was an 18x18 icon centred vertically, which on a card of
+          // any height left six dots floating beside the middle of the text
+          // with nothing to say they belonged to the card rather than to the
+          // line they happened to sit next to. Full height makes the affordance
+          // the shape of the thing it moves, and gives a finger the card's own
+          // height to land on instead of 18px of it.
+          //
+          // z-[1] lifts it over the stretched link. Without it the link covers
+          // the handle and a drag becomes a navigation — the click-versus-drag
+          // fight, settled by stacking order rather than by stopping
+          // propagation between two controls that now never overlap.
+          //
+          // `touch-target` still earns its place at full height: the rail is
+          // 20px WIDE, under the 24px WCAG 2.5.8 minimum for any pointer, and
+          // the rule's centred pseudo-element widens the catch area without
+          // costing the layout a pixel.
+          //
+          // No background, deliberately. `openRail` marks the open record with
+          // a 3px accent bar at this same left edge, and anything painted here
+          // would cover it.
+          'touch-target absolute inset-y-0 left-0 z-[1] w-5 cursor-grab touch-none rounded-l-md py-1.5 text-text-3 transition-opacity active:cursor-grabbing',
           // It was `opacity-0` until hover: the board's core gesture had no
           // visible affordance at all, and on touch there is no hover to
           // reveal it with.
@@ -84,7 +97,16 @@ export function BoardCardBody({
         {...handle?.attributes}
         {...handle?.listeners}
       >
-        <GripVertical className="size-3.5" aria-hidden />
+        {/* Two columns of dots repeated down the rail, as a background rather
+            than a stack of icons: one paint step fits any card height, and the
+            4px grid is the spacing `GripVertical` drew at, so the texture is
+            the one this card always had — just continued to both ends.
+            `w-2` centred in the 20px rail leaves the leftmost few pixels to the
+            open-record accent bar. */}
+        <span
+          className="mx-auto block h-full w-2 bg-[radial-gradient(currentColor_1px,transparent_1.5px)] bg-[length:4px_4px]"
+          aria-hidden
+        />
       </button>
 
       <div className="flex items-start gap-2">

@@ -152,7 +152,7 @@ async function client(port: number, message: object) {
 }
 
 /** Waits for something the loop will get to, rather than sleeping a guessed amount. */
-async function until(check: () => boolean, ms = 3_000) {
+async function until(check: () => boolean, ms = 10_000) {
   const deadline = Date.now() + ms
   while (!check()) {
     if (Date.now() > deadline) throw new Error('timed out waiting')
@@ -253,6 +253,13 @@ describe('what the tab says about the link', () => {
     await until(() => statuses.some((s) => s.state === 'bad-token'))
   })
 
+  /*
+   * The generous timeout is not padding. This one waits on three real clocks in
+   * series — a poll to be answered, a socket close to be noticed, then the
+   * bridge's attach budget — and it failed once in a full-suite run while
+   * passing every time on its own. A time-sensitive test that is only reliable
+   * when the machine is idle reports load as a defect.
+   */
   it('stops when switched off, and the client is told jojo is not connected', async () => {
     const { port, statuses, controller, linked, bridge } = await world({ attachWaitMs: 300 })
     await until(() => statuses.some((s) => s.state === 'ready'))
@@ -268,5 +275,5 @@ describe('what the tab says about the link', () => {
     await until(() => !bridge.state().polling)
     const after = await client(port, { jsonrpc: '2.0', id: 9, method: 'tools/list' })
     expect(after.body?.error?.message).toContain('not connected')
-  })
+  }, 20_000)
 })

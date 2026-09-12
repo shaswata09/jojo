@@ -1096,8 +1096,29 @@ html[data-theme='dark'] {
    neighbours. This is for the controls too small for any size selector to
    reach, which is exactly what `.touch-target` marks.
    ------------------------------------------------------------ */
-.touch-target {
-  position: relative;
+/*
+ * LAYERED AND `:where()`d, both deliberately, and it takes the pair.
+ *
+ * This rule exists only to give the pseudo-element below a containing block. It
+ * must not decide the position of a control that has chosen its own — and for
+ * as long as it has existed, it did. Unlayered author CSS outranks anything in
+ * `@layer utilities` whatever the specificity, so `absolute` at a call site
+ * lost to this every time.
+ *
+ * The board's drag handle was the casualty, in plain sight: it asked to be a
+ * rail positioned down the card and was rendered static in the corner, which is
+ * exactly what somebody eventually reported — "the dots are in the top left".
+ *
+ * `:where()` alone would not have fixed it either, and the comment below used
+ * to say it would. Layers are consulted BEFORE specificity, so an unlayered
+ * zero-specificity rule still beats a layered one. It takes both: inside
+ * `utilities`, where Tailwind's `.absolute` lives, and at zero specificity so
+ * that `.absolute` outranks it there.
+ */
+@layer utilities {
+  :where(.touch-target) {
+    position: relative;
+  }
 }
 
 .touch-target::after {
@@ -1119,24 +1140,29 @@ html[data-theme='dark'] {
      centred pseudo-element is invisible, costs no layout, and is hit-tested as
      part of the button — which is the whole of what a tap target is.
 
-     `:where()` deliberately zeroes the specificity of `position: relative`, so
-     an icon button a call site has positioned absolutely keeps its own
-     positioning. Either value establishes a containing block, which is all the
-     pseudo-element needs.
+     `:where()` zeroes the specificity of `position: relative` and the layer
+     puts it among Tailwind's own utilities. Together they are what lets an icon
+     button a call site has positioned absolutely keep that positioning;
+     `:where()` by itself does not, because layers are consulted before
+     specificity and an unlayered rule wins however weak its selector. Either
+     value establishes a containing block, which is all the pseudo-element
+     needs.
 
      The honest cost: on a 28px button the catch area overhangs by 8px on each
      side, so a link whose text ends flush against one loses those 8px. That is
      what a 44px target means on a dense row, and it is why the rule below
      spaces adjacent icon buttons apart — two overlapping catch areas is the one
      case where the overhang takes a tap from something that also needed it. */
-  :where(
-    [data-slot='button'][data-size^='icon'],
-    :is(button, a[href], [role='button'])[class*='size-6'],
-    :is(button, a[href], [role='button'])[class*='size-7'],
-    :is(button, a[href], [role='button'])[class*='size-8'],
-    .touch-target
-  ) {
-    position: relative;
+  @layer utilities {
+    :where(
+      [data-slot='button'][data-size^='icon'],
+      :is(button, a[href], [role='button'])[class*='size-6'],
+      :is(button, a[href], [role='button'])[class*='size-7'],
+      :is(button, a[href], [role='button'])[class*='size-8'],
+      .touch-target
+    ) {
+      position: relative;
+    }
   }
 
   [data-slot='button'][data-size^='icon']::after,

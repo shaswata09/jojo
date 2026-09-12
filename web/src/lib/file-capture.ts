@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import type { CaptureEnvelope } from '@jojo/service/core/capture'
-import { captureFileName, captureNote } from '@jojo/service/core/capture'
+import { captureFileName, captureNote, postingIdentity } from '@jojo/service/core/capture'
 import { sizeLabel } from '@jojo/service/core/files'
 import type { Application } from '@/data/seed'
 import type { VaultFile } from '@/data/vault'
@@ -22,32 +22,73 @@ import { TODAY } from '@/lib/today'
  */
 
 /**
- * Whether two addresses are the same posting.
+ * The application a captured page most likely belongs to, or null.
  *
- * Origin plus path, with the query and fragment dropped. A posting URL picks up
- * `?gh_src=`, `?utm_campaign=`, a session id and a scroll anchor on the way from
- * a job board to a user's clipboard, and every one of those makes a string
- * compare say "different posting" about the same job. What is deliberately NOT
- * ignored is the path: on Workday and Greenhouse the job id lives there, so two
- * roles at one company differ only after the last slash.
+ * A SUGGESTION, and nothing more — see `useFileCapture`, which files every
+ * capture unassigned. This decides what to OFFER, never what to attach.
+ *
+ * `postingIdentity` decides, which is the same function the duplicate warning
+ * and the posting lookup use — so a page cannot be filed under an application
+ * that the form would not have called a duplicate.
+ *
+ * It used to compare origin and path here, with the query dropped. On a board
+ * that puts the job id in the query — HigherEdJobs's
+ * `/faculty/details.cfm?JobCode=…`, Indeed's `/viewjob?jk=` — every posting on
+ * the site had one address, so a captured page was filed under whichever
+ * application happened to be first: somebody else's job, scored against these
+ * requirements. Measured 2026-09-12.
+ *
+ * A miss files the capture unattached, which the Vault's own picker fixes in
+ * one click. The wrong application is worse than none, which is why this is
+ * equality on an identity rather than a resemblance.
  */
-function samePosting(a: string, b: string): boolean {
-  try {
-    const one = new URL(a)
-    const two = new URL(b)
-    return (
-      one.origin === two.origin &&
-      one.pathname.replace(/\/+$/, '') === two.pathname.replace(/\/+$/, '')
-    )
-  } catch {
-    return false
+export function applicationForCapture<T extends { id: string; url?: string | undefined }>(
+  applications: readonly T[],
+  url: string,
+): T | null {
+  const wanted = postingIdentity(url)
+  if (wanted === undefined) return null
+  return applications.find((a) => a.url !== undefined && postingIdentity(a.url) === wanted) ?? null
+}
+
+/**
+ * The vault record a capture becomes, before its bytes are written.
+ *
+ * Lifted out of the hook so a test can hold it, because the rule it carries is
+ * one line's ABSENCE: there is no `applicationIds`, so a capture is saved under
+ * no application at all. An absent field is exactly the kind of thing that
+ * comes back by accident — somebody re-adds the "helpful" match — and nothing
+ * else in the app would notice.
+ */
+export function captureFileRecord(capture: CaptureEnvelope, today: string, bytes: number) {
+  return {
+    name: captureFileName(capture.url, capture.title, today),
+    // 'page' is what the Vault's icon and both viewers key off.
+    kind: 'page' as const,
+    /*
+     * Its own drawer, not 'Applications'.
+     *
+     * 'Applications' holds the documents the USER wrote — the CV, the
+     * statements, the cover letters — and the Profile page shows that drawer as
+     * "your documents". Filing captures there put pages the user never uploaded
+     * among the ones they did, and grew every time they clipped a listing.
+     */
+    bucket: 'Job postings' as const,
+    size: sizeLabel(bytes),
+    sourceUrl: capture.url,
+    capturedAt: capture.capturedAt,
+    note: captureNote(capture),
   }
 }
 
 export type FiledCapture = {
   file: VaultFile
-  /** The application it attached itself to, when the URL matched one. */
-  application: Application | null
+  /**
+   * The application this page looks like it belongs to, or null.
+   *
+   * Offered, never applied. The file is saved with no application at all.
+   */
+  suggestion: Application | null
   /** Assets the capture could not keep. Reported, never hidden. */
   dropped: number
   /** False when the record was written but the bytes were not. */
@@ -62,52 +103,34 @@ export function useFileCapture(): (capture: CaptureEnvelope) => Promise<FiledCap
   return useCallback(
     async (capture: CaptureEnvelope): Promise<FiledCapture> => {
       /*
-       * Filed against the application it belongs to, when that can be known
-       * rather than guessed. The extension captures a tab and has no idea which
-       * of a dozen applications the user meant; the URL is the one fact both
-       * ends already hold, so matching on it is free and silent when it works.
-       * A miss files the capture unattached, which the Vault's own picker fixes
-       * in one click — the wrong application would be worse than none.
+       * NOTHING IS ATTACHED HERE. A capture is filed unassigned.
+       *
+       * This used to file the page under the application whose posting URL it
+       * matched. Even at its strictest — identity equality, which is already
+       * the fix that stopped a whole board sharing one address — that is the
+       * app deciding for the person: a page kept from a listing is not always
+       * about the application already tracking that listing, and a record that
+       * quietly joins itself to another is a link nobody chose and nobody sees
+       * being made. Keeping a page and filing it are two acts, and both are the
+       * user's.
+       *
+       * The match is still worked out, but only to SAY so: the toast can name
+       * the likely application, and the picker on the file's own row in the
+       * Vault does the filing in one click.
        */
-      const match = capture.url
-        ? (all.find((a) => a.url !== undefined && samePosting(a.url, capture.url)) ?? null)
-        : null
+      const suggestion = capture.url ? applicationForCapture(all, capture.url) : null
 
-      const name = captureFileName(capture.url, capture.title, TODAY)
       const bytes = new TextEncoder().encode(capture.html)
-
-      const file = addFile({
-        name,
-        kind: 'page',
-        /*
-         * Its own drawer, not 'Applications'.
-         *
-         * This said 'Applications' on the argument that a posting kept against a
-         * job is part of that application's paperwork. It is not: 'Applications'
-         * holds the documents the USER wrote — the CV, the statements, the cover
-         * letters — and the Profile page shows that drawer as "your documents".
-         * Filing captures there meant a page the user never uploaded appeared
-         * among the ones they did, and grew every time they clipped a listing.
-         *
-         * The link to the application is `applicationIds` below, which is what
-         * actually joins them; the bucket was never carrying that weight.
-         */
-        bucket: 'Job postings',
-        size: sizeLabel(bytes.byteLength),
-        sourceUrl: capture.url,
-        capturedAt: capture.capturedAt,
-        // A list of one: `FILED_UNDER` is many-to-many, and a capture knows
-        // about exactly the one application whose URL it matched.
-        ...(match === null ? {} : { applicationIds: [match.id] }),
-        note: captureNote(capture),
-      })
+      const record = captureFileRecord(capture, TODAY, bytes.byteLength)
+      const name = record.name
+      const file = addFile(record)
 
       // `type` is set explicitly because it is what the viewer's `srcdoc` read
       // and any later download depend on, and a Blob built from bytes has no
       // type unless it is given one.
       const stored = await blobs.put(file.id, new File([bytes], name, { type: 'text/html' }))
 
-      return { file, application: match, dropped: capture.dropped, stored }
+      return { file, suggestion, dropped: capture.dropped, stored }
     },
     [addFile, all, blobs],
   )

@@ -11,6 +11,7 @@ import {
   captureNote,
   hostOf,
   isCaptureSource,
+  postingIdentity,
   readCapture,
   remoteRefCount,
 } from './capture'
@@ -335,8 +336,7 @@ describe('canonicalising the four boards the scout reads', () => {
    * from a saved link read as two different jobs and the scout proposed it
    * twice. Every pair below is one job under two real spellings.
    */
-  const same = (a: string, b: string) =>
-    expect(canonicalPostingUrl(a)).toBe(canonicalPostingUrl(b))
+  const same = (a: string, b: string) => expect(canonicalPostingUrl(a)).toBe(canonicalPostingUrl(b))
 
   it('folds Greenhouse’s two live hostnames and its search tracking', () => {
     same(
@@ -387,9 +387,9 @@ describe('canonicalising the four boards the scout reads', () => {
   })
 
   it('keeps two tenants apart even at the same requisition number', () => {
-    expect(
-      canonicalPostingUrl('https://a.wd5.myworkdayjobs.com/en-US/S/job/L/E_JR1'),
-    ).not.toBe(canonicalPostingUrl('https://b.wd5.myworkdayjobs.com/en-US/S/job/L/E_JR1'))
+    expect(canonicalPostingUrl('https://a.wd5.myworkdayjobs.com/en-US/S/job/L/E_JR1')).not.toBe(
+      canonicalPostingUrl('https://b.wd5.myworkdayjobs.com/en-US/S/job/L/E_JR1'),
+    )
   })
 
   /*
@@ -430,7 +430,10 @@ describe('remoteRefCount, unquoted', () => {
     ['single-quoted', "<img src='https://evil.example/b.png'>"],
     ['unquoted', '<img src=https://evil.example/b.png>'],
     ['unquoted, protocol-relative', '<img src=//evil.example/b.png>'],
-    ['unquoted, broken out of a style block', '<style>a{}</style><img src=https://evil.example/b.png>'],
+    [
+      'unquoted, broken out of a style block',
+      '<style>a{}</style><img src=https://evil.example/b.png>',
+    ],
     ['unquoted href', '<a href=https://evil.example/x>x</a>'],
   ]
 
@@ -486,7 +489,9 @@ describe('remoteRefCount, past a `>` inside an earlier attribute', () => {
     // Widening the anchor must not start refusing clean captures: the scan and
     // the sweep have to agree, and a scan stricter than the sweep is a rejection
     // with no remedy.
-    expect(remoteRefCount('<p>To embed it write &lt;img src="https://x.test/a.png"&gt;</p>')).toBe(0)
+    expect(remoteRefCount('<p>To embed it write &lt;img src="https://x.test/a.png"&gt;</p>')).toBe(
+      0,
+    )
     expect(remoteRefCount(`<a ${CAPTURE_HREF_ATTR}="https://acme.test/apply">Apply</a>`)).toBe(0)
     expect(remoteRefCount('<img alt="a > b" src="data:image/png;base64,AAAA">')).toBe(0)
     // A `<` that is not a tag start. The tokeniser only opens a tag on a letter,
@@ -510,7 +515,9 @@ describe('remoteRefCount, image-set', () => {
       remoteRefCount('<style>.a{background-image:image-set("https://cdn.test/x.png" 1x)}</style>'),
     ).toBe(1)
     expect(
-      remoteRefCount("<style>.a{background:-webkit-image-set('https://cdn.test/x.png' 1x)}</style>"),
+      remoteRefCount(
+        "<style>.a{background:-webkit-image-set('https://cdn.test/x.png' 1x)}</style>",
+      ),
     ).toBe(1)
     expect(
       remoteRefCount('<div style=\'background:image-set("//cdn.test/x.png" 1x)\'></div>'),
@@ -539,5 +546,73 @@ describe('remoteRefCount, image-set', () => {
     // report a leak that is not there.
     const html = '<style>.a{background:image-set("x.png" 1x)}</style><p>see "https://x.test/a"</p>'
     expect(remoteRefCount(html)).toBe(0)
+  })
+})
+
+describe('postingIdentity', () => {
+  /**
+   * The one answer to "are these the same posting", shared by the duplicate
+   * warning, the capture filing and the posting lookup. Each of the three had
+   * its own answer before 2026-09-12 and all three were wrong differently.
+   */
+  const same = (a: string, b: string) => postingIdentity(a) === postingIdentity(b)
+
+  it('keeps what identifies a posting on the boards that key by query', () => {
+    const hej = 'https://www.higheredjobs.com/faculty/details.cfm?JobCode=179545452'
+    expect(same(hej, 'https://www.higheredjobs.com/faculty/details.cfm?JobCode=188000001')).toBe(
+      false,
+    )
+    expect(
+      same(
+        'https://www.indeed.com/viewjob?jk=1111111111',
+        'https://www.indeed.com/viewjob?jk=2222222222',
+      ),
+    ).toBe(false)
+    expect(same(hej, `${hej}&Title=Assistant%20Professor`)).toBe(false)
+  })
+
+  it('drops what a copied link picks up on the way', () => {
+    const hej = 'https://www.higheredjobs.com/faculty/details.cfm?JobCode=179545452'
+    for (const noise of [
+      '&utm_source=email&utm_campaign=weekly',
+      '&gh_src=abc',
+      '&src=digest&ref=mail',
+      '#apply',
+    ]) {
+      expect(same(hej, `${hej}${noise}`), noise).toBe(true)
+    }
+    expect(same('https://boards.test/j?a=1&b=2', 'https://boards.test/j?b=2&a=1')).toBe(true)
+    expect(same('https://www.boards.test/j/', 'http://boards.test/j')).toBe(true)
+  })
+
+  it('folds the boards `canonicalPostingUrl` knows before comparing', () => {
+    expect(
+      same(
+        'https://www.linkedin.com/jobs/view/senior-engineer-4012?trk=x',
+        'https://www.linkedin.com/jobs/view/4012/',
+      ),
+    ).toBe(true)
+    expect(
+      same(
+        'https://boards.greenhouse.io/acme/jobs/4',
+        'https://job-boards.greenhouse.io/acme/jobs/4?gh_src=abc',
+      ),
+    ).toBe(true)
+  })
+
+  it('is undefined for anything that is not an address, so nothing matches it', () => {
+    for (const text of ['', '   ', 'the careers page', 'not a url']) {
+      expect(postingIdentity(text), text).toBeUndefined()
+    }
+  })
+
+  it('is undefined for a scheme that is not the web, which would otherwise collide', () => {
+    // The identity is host and path, and those are the same either side of the
+    // scheme: without the http/https guard `ftp://acme.com/jobs/4` reads as the
+    // same posting as `https://acme.com/jobs/4`, and a `file:///…` page saved
+    // from disk gets one built on an empty host.
+    for (const text of ['ftp://acme.com/jobs/4', 'file:///Users/me/Downloads/posting.html']) {
+      expect(postingIdentity(text), text).toBeUndefined()
+    }
   })
 })

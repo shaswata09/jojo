@@ -83,7 +83,11 @@ export const SHAPE: DirRow[] = [
     // longer owns. Both movements are real; the count is simply current again.
     files: 120,
     tests: 58,
-    lines: 33105,
+    // No new file: `postingIdentity` moved into `core/capture.ts` from
+    // `core/duplicates.ts`, where it had been one of three answers to "is this
+    // the same posting" — the other two are now callers, and the tests for the
+    // rule came with it.
+    lines: 33402,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },
@@ -155,9 +159,11 @@ export const SHAPE: DirRow[] = [
     // `capture-save.test.ts` beside `capture-page` and `capture-shrink`.
     // And `link-params.ts` with `check-outside-router.test.ts`: the router hooks
     // moved out of `links.ts`, so a dialog can import a path without the router.
-    files: 121,
-    tests: 43,
-    lines: 18199,
+    // Then `file-capture.test.ts`: which application a captured page is filed
+    // under, after one saved posting turned up against two of them.
+    files: 122,
+    tests: 44,
+    lines: 18259,
     what: 'web-only adapters and URL state',
   },
   {
@@ -187,7 +193,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 76
+export const WEB_TEST_FILES = 77
 
 type TestGroup = { title: string; files: string; body: string }
 

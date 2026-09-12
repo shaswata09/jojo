@@ -60,7 +60,9 @@ export function CaptureInbox() {
        */
       await ack([...kept, ...refused.map((r) => r.id).filter((id) => id !== '')])
 
-      const attached = filed.filter((f) => f.application !== null)
+      // Suggested, not attached: a saved capture is filed under nothing until
+      // the person says otherwise. See `useFileCapture`.
+      const suggested = filed.map((f) => f.suggestion).filter((a) => a !== null)
       const unstored = filed.filter((f) => !f.stored)
       const dropped = filed.reduce((sum, f) => sum + f.dropped, 0)
 
@@ -71,13 +73,18 @@ export function CaptureInbox() {
               ? `${filed[0]?.file.name ?? 'Posting'} saved to your vault`
               : `${String(filed.length)} postings saved to your vault`,
           description: [
-            attached.length > 0
-              ? `${attached.length === filed.length ? 'Filed' : `${String(attached.length)} filed`} under ${
-                  attached.length === 1 && attached[0]?.application
-                    ? displayName(attached[0].application)
-                    : 'the matching applications'
-                }.`
-              : 'Not filed under any application — the addresses did not match one.',
+            /*
+             * Always says it is unfiled, because it always is. It used to
+             * announce what it had filed itself under; nothing does that now,
+             * and a capture that named an application it had joined was the
+             * only notice anybody got of a link they had not made.
+             *
+             * A single likely match is named — it saves hunting for it — but
+             * the file is still attached to nothing until the person picks.
+             */
+            filed.length === 1 && suggested.length === 1 && suggested[0]
+              ? `Not filed under any application. ${displayName(suggested[0])} looks like a match — file it from the row in your Vault.`
+              : 'Not filed under any application. File it from the row in your Vault whenever you want to.',
             dropped > 0
               ? `${String(dropped)} ${dropped === 1 ? 'asset' : 'assets'} could not be kept, so parts may look plain.`
               : null,

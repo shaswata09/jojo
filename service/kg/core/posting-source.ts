@@ -35,6 +35,7 @@
  * the listing is the failure that would otherwise be invisible.
  */
 
+import { postingIdentity } from './capture'
 import type { GraphSnapshot } from './snapshot'
 import type { NodeId, StoredNode } from './model'
 
@@ -48,30 +49,22 @@ export type PostingSource = {
 }
 
 /**
- * Comparable form of a URL.
+ * Comparable form of a URL: `postingIdentity`, which is where the rule lives.
  *
- * No fragment, no trailing slash. Host case needs no handling of its own:
- * `URL` lowercases it on parse, and a `toLowerCase()` here was dead code that
- * no mutation could kill. The query is KEPT — job
- * boards put the listing id there (`?gh_jid=4012`), so dropping it would make
- * every posting on Greenhouse look like the same page and hand an application
- * the requirements of whichever listing was captured first.
+ * The query is KEPT — job boards put the listing id there (`?gh_jid=4012`), so
+ * dropping it would make every posting on a board look like the same page and
+ * hand an application the requirements of whichever listing was captured first.
+ * What this file used to do on its own was keep the TRACKING too, so the same
+ * posting saved from a newsletter and typed in from the ad did not match; and
+ * it knew none of the boards `canonicalPostingUrl` folds.
  *
- * Returns null rather than throwing on something that is not a URL. Both fields
- * this compares are free text a user can type into, and a malformed one should
- * mean "no match" rather than take down the screen it is rendered on.
+ * Null rather than a throw on something that is not a URL. Both fields this
+ * compares are free text a user can type into, and a malformed one should mean
+ * "no match" rather than take down the screen it is rendered on.
  */
 function comparable(value: string | undefined): string | null {
-  if (value === undefined || value.trim() === '') return null
-  try {
-    const url = new URL(value.trim())
-    const path = url.pathname.endsWith('/') && url.pathname !== '/'
-      ? url.pathname.slice(0, -1)
-      : url.pathname
-    return `${url.protocol}//${url.host}${path}${url.search}`
-  } catch {
-    return null
-  }
+  if (value === undefined) return null
+  return postingIdentity(value) ?? null
 }
 
 /** A saved posting rather than something the user wrote. */
@@ -140,9 +133,7 @@ export function postingSourceFor(
    * first: somebody who attaches a second capture is correcting the first, and
    * ids are uuidv7 so id order is creation order.
    */
-  const filed = memory
-    .many(applicationId as NodeId, 'FILED_UNDER', 'in', 'file')
-    .filter(isPosting)
+  const filed = memory.many(applicationId as NodeId, 'FILED_UNDER', 'in', 'file').filter(isPosting)
   const newest = filed[filed.length - 1]
   if (newest) return asSource(newest, 'filed-under')
 

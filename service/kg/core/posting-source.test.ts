@@ -171,6 +171,40 @@ describe('matching on the address', () => {
     expect(postingSourceFor(g, 'a1')).toBeNull()
   })
 
+  it('tells two postings apart on a board that keys them by query', () => {
+    /*
+     * Reported 2026-09-12: one saved page was showing up against two different
+     * applications. `file-capture.ts` filed a capture by origin and path, and
+     * every HigherEdJobs posting is `/faculty/details.cfm?JobCode=…`, so a page
+     * landed on whichever job was first and the fit panel scored an application
+     * against somebody else's requirements. Both ends read `postingIdentity`
+     * now; this is that rule seen from here.
+     */
+    const g = graph([
+      app('a1', 'https://www.higheredjobs.com/faculty/details.cfm?JobCode=179545452'),
+      capture(
+        'f1',
+        'other-job.html',
+        'https://www.higheredjobs.com/faculty/details.cfm?JobCode=188000001',
+      ),
+    ])
+    expect(postingSourceFor(g, 'a1')).toBeNull()
+  })
+
+  it('joins the same posting across the tracking a copied link picks up', () => {
+    // The other way this was wrong: keeping the whole query meant the page
+    // saved from a newsletter never matched the address typed from the ad.
+    const g = graph([
+      app('a1', 'https://boards.example.com/jobs?gh_jid=4012'),
+      capture(
+        'f1',
+        'listing.html',
+        'https://boards.example.com/jobs?gh_jid=4012&utm_source=digest&gh_src=abc',
+      ),
+    ])
+    expect(postingSourceFor(g, 'a1')?.fileId).toBe('f1')
+  })
+
   it('does not match two records that both have no address', () => {
     // `undefined === undefined` is the bug this guards: without the null check
     // every hand-typed application would match every uncaptured page.
