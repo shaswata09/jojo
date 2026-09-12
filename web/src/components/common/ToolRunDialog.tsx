@@ -23,6 +23,8 @@ import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useRun } from '@jojo/service/react/use-tool'
 import type { ToolName } from '@jojo/service/tools/index'
 import { useToast } from '@/lib/toast-context'
+import { contentModal } from '@/components/ui/dialog-width'
+import { cn } from '@/lib/utils'
 
 /** Matches `SELECT_CLASS` in `graph/query/QueryFields.tsx` — the app's one select skin. */
 const SELECT_CLASS =
@@ -261,7 +263,7 @@ export function ToolRunDialog({
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto">
+      <DialogContent className={cn('max-h-[85vh] overflow-y-auto', contentModal)}>
         <DialogHeader>
           <DialogTitle>{plan.tool.title}</DialogTitle>
           <DialogDescription>{plan.tool.summary}</DialogDescription>

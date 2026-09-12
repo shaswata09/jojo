@@ -31,6 +31,7 @@ import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
 import type { TimelineDraft } from '@jojo/service/react/use-timeline'
 import { TODAY } from '@/lib/today'
+import { contentModal } from '@/components/ui/dialog-width'
 
 export type StageTransitionDialogProps = {
   open: boolean
@@ -97,7 +98,7 @@ export function StageTransitionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className={contentModal}>
         <DialogHeader>
           <DialogTitle>Move to {STAGE_LABEL[target]}</DialogTitle>
           <DialogDescription>

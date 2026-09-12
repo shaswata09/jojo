@@ -29,6 +29,7 @@ import { useVault } from '@jojo/service/react/use-vault'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /** How long the copied confirmation stays up — the same beat as SnippetsTool. */
 const COPIED_MS = 1600
@@ -104,7 +105,7 @@ export type DraftDialogProps = {
 export function DraftDialog({ open, onOpenChange, itemId, applicationId }: DraftDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)_auto] sm:max-w-3xl">
+      <DialogContent className={cn('max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)_auto]', contentModal)}>
         {/* The body is a child so it mounts with the dialog: the chosen snippet
             and the substituted text are seeded once, and a fresh open starts
             from the props rather than from a half-edited draft. */}

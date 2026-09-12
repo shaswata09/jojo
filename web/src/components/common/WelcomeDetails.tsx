@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { profilePath } from '@/lib/links'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /** Every `ProfileText` field, empty. The six this dialog does not ask about. */
 const BLANK_TEXT = {
@@ -134,7 +135,7 @@ export function WelcomeDetails({
         if (!next) dismiss()
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className={contentModal}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserRound className="size-4 text-accent" strokeWidth={1.8} aria-hidden />A little about

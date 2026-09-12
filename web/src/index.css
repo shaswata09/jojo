@@ -1096,6 +1096,45 @@ html[data-theme='dark'] {
    neighbours. This is for the controls too small for any size selector to
    reach, which is exactly what `.touch-target` marks.
    ------------------------------------------------------------ */
+/* ------------------------------------------------------------
+   How wide a modal is, measured against the page behind it.
+
+   A dialog is portalled to the body and centred on the viewport, so it knows
+   nothing about the column it is covering. Left to itself it picked a width off
+   Tailwind's scale — `max-w-xl`, `max-w-2xl` — and on a 1440px window the Edit
+   event dialog covered half the content it was editing and looked like a phone
+   dialog that had wandered onto a desktop.
+
+   So the centre column is written down here, once, and modals are measured
+   against it. TRANSCRIBED, not derived: the numbers are the shell's own
+   classes, and the two must move together.
+
+     `AppShell.tsx`  max-w-[1440px], p-3, sm:p-5, sm:gap-5, lg:flex-row
+     `Sidebar.tsx`   lg:w-[232px], and an off-canvas drawer below that
+
+   Below `lg` the sidebar is that drawer and takes no room, so the column is the
+   shell less its padding. From `lg` up it joins the row and costs its width
+   plus the gap.
+   ------------------------------------------------------------ */
+:root {
+  --page-content: calc(min(100vw, 1440px) - 1.5rem);
+  /* Three quarters of the column: wide enough to hold a form beside its own
+     labels, narrow enough that the page is still visibly behind it. */
+  --modal-width: calc(var(--page-content) * 0.75);
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --page-content: calc(min(100vw, 1440px) - 2.5rem);
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --page-content: calc(min(100vw, 1440px) - 2.5rem - 232px - 1.25rem);
+  }
+}
+
 /*
  * LAYERED AND `:where()`d, both deliberately, and it takes the pair.
  *

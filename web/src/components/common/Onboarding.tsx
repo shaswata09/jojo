@@ -27,6 +27,7 @@ import { markOffered, wasOffered } from '@/lib/onboarding'
 import type { OnboardingStage } from '@/lib/onboarding'
 import type { TourIntent } from '@/components/guide/GuidedTour'
 import { guidePath } from '@/lib/links'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /**
  * The first minute, as three questions in order.
@@ -190,7 +191,7 @@ export function Onboarding() {
           if (!next) finish('tour')
         }}
       >
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className={contentModal}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Compass className="size-4 text-accent" strokeWidth={1.8} aria-hidden />

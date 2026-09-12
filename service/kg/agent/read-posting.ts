@@ -32,6 +32,7 @@
  */
 
 import { ROLES, SOURCES } from '../core/model'
+import { foldName } from '../core/ref'
 import type { Application, RoleTag, Source } from '../core/model'
 import { firstJsonObject } from '../core/json-reply'
 import type { ChatMessage } from '../core/model-server'
@@ -60,6 +61,51 @@ export type PostingDraft = Partial<
  * long ones without spending a 32k context on boilerplate nobody reads.
  */
 export const POSTING_BUDGET = 12_000
+
+/**
+ * One of the person's own keywords, as the prompt and the matcher both see it.
+ *
+ * `used` is how many records already carry it. It decides nothing about a
+ * posting — it only orders the list when there are more keywords than fit in a
+ * prompt, on the reasoning that a vocabulary has a long tail and the words
+ * somebody actually files things under are the ones worth showing a model.
+ * Counted by the caller: this layer reads no graph (D26).
+ */
+export type KeywordOffer = { readonly id: string; readonly name: string; readonly used: number }
+
+/**
+ * How many keywords are named in the prompt.
+ *
+ * The store ships six (`service/data/labels.ts`) and the benchmark world holds
+ * four, so this cuts nothing for an ordinary user — it exists for the person
+ * who has been filing for a year. Twenty names at the schema's 40-character
+ * limit is about 1.5k characters once the block's own instructions and the
+ * '- ' on every line are counted — an eighth of the 12k page budget, and
+ * affordable on the 7B hardware this feature is for. Sixty would not be.
+ */
+export const MAX_KEYWORDS_OFFERED = 20
+
+/**
+ * How many keywords one posting may come back tagged with.
+ *
+ * Three, from the data rather than from taste: no record in the seeded store
+ * carries more than TWO keywords, and the whole shipped vocabulary is six. A
+ * model that says four of your six keywords apply has read the list, not the
+ * page — see `matchKeywords`, which treats that as an echo and keeps none of
+ * them rather than picking three of the six to tick.
+ */
+export const MAX_KEYWORDS_PICKED = 3
+
+/**
+ * The keywords worth putting in front of the model, most-used first.
+ *
+ * A stable sort, so keywords used equally often stay in the order the person
+ * defined them — the order their own chips are drawn in. Sorting a copy
+ * because the caller's array is React state.
+ */
+export function keywordRoster(keywords: readonly KeywordOffer[]): KeywordOffer[] {
+  return [...keywords].sort((a, b) => b.used - a.used).slice(0, MAX_KEYWORDS_OFFERED)
+}
 
 const ESCAPES: Record<string, string> = {
   '&': '&amp;',
@@ -240,6 +286,17 @@ export type PostingRead =
        * on the page" instead of leaving a blank the user has to notice.
        */
       missing: readonly string[]
+      /**
+       * The keywords the model picked, as IT spelled them — not ids, and not
+       * checked against anything that exists.
+       *
+       * Named for what it holds. The thing that reaches a record is a keyword
+       * ID, and `keyword.record.set` rejects the whole array if one entry is
+       * not one — saving the application with none of its keywords — so a name
+       * and an id sharing a field name is a bug waiting for a careless
+       * assignment. `matchKeywords` is the only crossing between them.
+       */
+      keywordNames: readonly string[]
     }
   | { ok: false; reason: string }
 
@@ -261,10 +318,60 @@ const SYSTEM = [
   '           and month but no year, work the year out from today — a deadline',
   '           is ahead, so "20 September" in December means next year.',
   `  source   one of: ${SOURCES.join(', ')}.`,
-  '',
+].join('\n')
+
+/**
+ * The escape hatch, split out so the keyword block can sit with the other keys.
+ *
+ * It has to come last. It is the only instruction that is about the page rather
+ * than about a field, and a model that meets it in the middle of a key list
+ * starts answering `notAPosting` for pages that are merely thin.
+ */
+const NOT_A_POSTING = [
   'If the text is not a job posting — an error page, a login wall, or a page',
   'that says JavaScript is required — return {"notAPosting": true} instead.',
 ].join('\n')
+
+/**
+ * The keyword key and the person's own vocabulary, or nothing at all.
+ *
+ * BUILT PER CALL, unlike everything above it, because the words belong to the
+ * store rather than to the program — and with no keywords the composed prompt
+ * is the one this file sent before keywords existed. What the test proves is
+ * that shape rather than a stored copy of the old string: the two prompts share
+ * a head and a whole tail, and differ only by an inserted block. Someone who has never made a keyword is not told about
+ * a feature they have not got, and is not asked to pick from an empty list.
+ *
+ * ONE NAME PER LINE. A keyword is 1–40 characters of the user's own text and
+ * nothing forbids a comma in it — 'Berlin, remote' is a legal name — so a
+ * comma-joined roster reads as two names, and the model copies back half a
+ * keyword that matches nothing.
+ *
+ * NAMES ONLY, never ids. An id is minted per store (`core/ref.ts`), so it is a
+ * token the model can only copy by luck or invent by mistake, and it would
+ * spend prompt on something the reply does not need to carry.
+ */
+function keywordLines(offered: readonly KeywordOffer[]): string[] {
+  if (offered.length === 0) return []
+  return [
+    '  keywords an ARRAY of names, copied EXACTLY from the list below and from',
+    '           nowhere else. Pick only the ones this job is plainly about — its',
+    `           field, its stack, its kind of work. At most ${String(MAX_KEYWORDS_PICKED)}, and most`,
+    '           postings match one.',
+    '           OMIT the key when none of them fit. That is the common answer,',
+    '           and a better one than a word that nearly fits.',
+    '           Some keywords describe how someone is getting on rather than any',
+    '           job — a keyword like "Waiting on them" is never what a posting',
+    '           is about. Skip any of theirs that read like that.',
+    '',
+    'Their keywords, and the only names you may return:',
+    // Whitespace collapsed, because a name is 1–40 characters of the user's own
+    // text with no character class behind it: a newline in one would split it
+    // across two lines and make one keyword read as two — the same failure the
+    // comma above is about, arriving by a different route.
+    ...offered.map((keyword) => `- ${keyword.name.replace(/\s+/g, ' ').trim()}`),
+  ]
+}
 
 /** The two messages, ready for `agentTurn`. The caller owns the transport. */
 /**
@@ -280,17 +387,33 @@ const SYSTEM = [
  * cannot quietly reintroduce it. Taken from the host's clock, never read here:
  * this layer has none (D26).
  */
-export function postingMessages(url: string, markdown: string, today: string): ChatMessage[] {
+export function postingMessages(
+  url: string,
+  markdown: string,
+  today: string,
+  /**
+   * The person's keywords, already cut to the roster by `keywordRoster`.
+   *
+   * Required, with no default. A default would mean "offer nothing", which is
+   * indistinguishable from a caller that forgot — and the second app would then
+   * go on shipping a prompt with no keywords in it, silently, past a green
+   * build. Made required, the compiler names every caller that has to be
+   * taught. The OFFERS are passed rather than their names so that this and
+   * `matchKeywords` cannot be handed two different lists; only the names are
+   * ever written into the prompt.
+   */
+  offered: readonly KeywordOffer[],
+): ChatMessage[] {
   const text = markdown.length > POSTING_BUDGET ? markdown.slice(0, POSTING_BUDGET) : markdown
+  const system = [SYSTEM, ...keywordLines(offered), '', NOT_A_POSTING].join('\n')
   return [
-    { role: 'system', content: `${SYSTEM} Today is ${today}.` },
+    { role: 'system', content: `${system} Today is ${today}.` },
     {
       role: 'user',
       content: [`Posting URL: ${url}`, '', 'Page text:', text].join('\n'),
     },
   ]
 }
-
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -367,8 +490,104 @@ export function readPosting(reply: string): PostingRead {
     }
   }
 
+  /*
+   * Shape-cleaned here, matched nowhere near here.
+   *
+   * `textOf` throws out the same non-answers it throws out of every other field
+   * — a number, a blank, 'N/A' — and the fold dedupes 'Research' against
+   * '  research ', which a model asked for an array will produce. What this
+   * deliberately does NOT do is check the names against the roster: that is the
+   * same fold-and-compare that has to run again to produce ids, and one rule
+   * written in two places is one rule that will disagree with itself. It runs
+   * once, in `matchKeywords`, which is also the only place that knows what the
+   * prompt offered.
+   *
+   * No cap here either. The cut that matters is against what exists, and a long
+   * list of invented names must not crowd out the real ones below it — which is
+   * exactly what a cap applied before matching would do.
+   */
+  const keywordNames: string[] = []
+  const answered: unknown = raw['keywords']
+  if (Array.isArray(answered)) {
+    const seen = new Set<string>()
+    for (const entry of answered) {
+      const bulleted = textOf(entry)
+      if (bulleted === undefined) continue
+      // The roster is written '- Research' and the instruction beside it says
+      // to copy the name EXACTLY, so a model that takes the instruction at its
+      // word hands the bullet back with it. Stripped here rather than matched
+      // around, because what came back is a name with a list marker on it, and
+      // no keyword begins with one.
+      const name = bulleted.replace(/^[-*•]\s+/, '').trim()
+      if (name === '') continue
+      const folded = foldName(name)
+      if (seen.has(folded)) continue
+      seen.add(folded)
+      keywordNames.push(name)
+    }
+  }
+
   const missing = FIELDS.filter((field) => draft[field] === undefined)
-  return { ok: true, draft, missing }
+  return { ok: true, draft, missing, keywordNames }
+}
+
+/**
+ * The names the model picked, as the ids of keywords that actually exist.
+ *
+ * FILTERS THE OFFER RATHER THAN MAPPING THE ANSWER, which is what makes the
+ * guarantees structural instead of careful: it cannot emit an id for a keyword
+ * that is not there, cannot emit one twice, and returns them IN THE ORDER THEY
+ * WERE OFFERED rather than the order a model happened to say them in. Offered
+ * order is `keywordRoster`'s — most-used first — and not the order the person's
+ * chips are drawn in, which is what this comment used to claim; the two agree
+ * only when every count is equal.
+ *
+ * Folded with `foldName` — the store's own notion of one keyword — rather than
+ * the exact match `roleTag` gets. A role tag is exact because the segmented
+ * control compares by value and a near miss shows nothing selected; a keyword
+ * has a real node behind it, and `keyword.create` has always treated 'UT
+ * Austin' and 'ut austin' as the same word. `foldName` is that same rule, so a
+ * name matched here names the keyword `keyword.create` would have returned.
+ *
+ * It is NOT the only fold in the repo: `twin.ts` compares keyword names with
+ * `fold` from `core/text`, which also strips accents, so 'Café' and 'Cafe' are
+ * one word there and two here. That disagreement is older than this function
+ * and belongs to whichever of them is wrong — following `keyword.create` is
+ * the defensible half, because it is what decides whether a second node gets
+ * minted.
+ *
+ * A NAME THAT MATCHES NOTHING IS DROPPED AND NOTHING IS CREATED. Reading a
+ * posting writes no records — the dialog this feeds says so in its own header —
+ * and minting a keyword from a page the user has not even decided to apply to
+ * would put words in their vocabulary that they never chose.
+ *
+ * MORE THAN `MAX_KEYWORDS_PICKED` MATCHES MEANS NONE, and the reason is not the
+ * size of the answer but what exceeding it says. The prompt states the number;
+ * a model that returns more has not applied the one countable instruction it
+ * was given, so its selection is a list rather than a judgement and there is no
+ * principled way to pick three of it. Keeping the first three would tick three
+ * chips with the confidence of three considered ones.
+ *
+ * It bites hardest where it is most often right: against the six keywords the
+ * app ships, four of which describe the person's own progress ('Read',
+ * 'Referral', 'Negotiating', 'Waiting on them'), "four of these apply" tags the
+ * job with where they are up to. It is worst for the rare person with twenty
+ * keywords and four honest matches, who gets none and ticks them by hand —
+ * which is what they did before this feature existed.
+ *
+ * And it cannot fire at all for someone with three keywords or fewer: `matched`
+ * is bounded by the offer. That is the right way round. A whole vocabulary of
+ * three is three chips to glance at, not a list being read back.
+ */
+export function matchKeywords(
+  offered: readonly KeywordOffer[],
+  names: readonly string[],
+): string[] {
+  if (names.length === 0) return []
+  const wanted = new Set(names.map(foldName))
+  const matched = offered.filter((keyword) => wanted.has(foldName(keyword.name)))
+  if (matched.length > MAX_KEYWORDS_PICKED) return []
+  return matched.map((keyword) => keyword.id)
 }
 
 /**

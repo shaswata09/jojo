@@ -37,8 +37,10 @@ import { space } from '@/theme/tokens'
 
 /**
  * `deadline` is not on `Application` — it is a timeline item this sheet mints.
- * `keywords` is not either: it lives in the label store, and only travels here
- * so a discarded draft can be handed back intact by the undo in its toast.
+ * `keywords` is not either: it lives in the label store, and travels here for
+ * two reasons — so a discarded draft can be handed back intact by the undo in
+ * its toast, and so a sheet opened from a posting can arrive with the keywords
+ * the model matched already ticked (`matchKeywords`, in agent/read-posting).
  */
 export type ApplicationInitial = Partial<Application> & {
   deadline?: string
@@ -154,6 +156,15 @@ export function ApplicationSheet({
 
   /** Guessed values need checking; typed ones do not. See `lib/draft-from.ts`. */
   const guessed = mode === 'create' && Boolean(initial?.org || initial?.role || initial?.url)
+
+  /**
+   * Whether the prefill also ticked keywords, which only a model read does.
+   *
+   * `guessed` is true for every prefilled create — the address-only route and
+   * the share target included — and neither reads a page or can produce a
+   * keyword. Web's dialog draws the same distinction for the same sentence.
+   */
+  const tagged = guessed && (initial?.keywords?.length ?? 0) > 0
 
   /**
    * Whether this job is already in the store.
@@ -401,7 +412,9 @@ export function ApplicationSheet({
         mode === 'edit'
           ? 'Changes replace the current details, and the deadline moves with them.'
           : guessed
-            ? 'Prefilled from what you pasted — check the employer and role before saving.'
+            ? tagged
+              ? 'Prefilled from what you pasted — check the employer, role and keywords before saving.'
+              : 'Prefilled from what you pasted — check the employer and role before saving.'
             : 'Track a job you are applying for. Starred fields are required.'
       }
       footer={

@@ -15,6 +15,7 @@ import {
 import { PIPELINE_SCHEDULES, scheduleOf } from '@jojo/service/core/proposal'
 import type { PipelineKind } from '@jojo/service/core/model'
 import type { Pipeline } from '@/data/scout'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /** What the form collects. Not `Omit<Pipeline, …>`: the run-state fields on a
  *  pipeline are written by the runner and have no business in a form. */
@@ -89,7 +90,7 @@ export function PipelineDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className={contentModal}>
         <DialogHeader>
           <DialogTitle>{initial ? 'Edit pipeline' : 'New pipeline'}</DialogTitle>
           <DialogDescription>

@@ -100,16 +100,36 @@ export function AddFromLinkSheet({
         close()
         openSheet('application', {
           mode: 'create',
-          initial: { ...outcome.draft, postingFileId: outcome.file.id },
+          initial: {
+            ...outcome.draft,
+            // Spread, not assigned: `keywordsOf` returns `initial.keywords`
+            // whenever it is truthy and `[]` is truthy — absence is the
+            // question, an empty array is an answer. Web's half says the same.
+            ...(outcome.keywords.length === 0 ? {} : { keywords: [...outcome.keywords] }),
+            postingFileId: outcome.file.id,
+          },
         })
 
         const gaps = outcome.missing.length
+        const tags = outcome.keywords.length
         toast({
           title: 'Posting saved and read',
-          description:
+          // Said in the same words web says them, and for the same reason: the
+          // sheet changes fields the person did not fill in, so it has to
+          // report which. The keyword line is omitted at zero — "0 keywords
+          // matched" is a sentence about the feature, not about this posting —
+          // and its noun stays plural because "N of your …" governs one.
+          description: [
+            `${outcome.file.name} is in the Vault, and is filed under the application when you save it.`,
             gaps === 0
-              ? `${outcome.file.name} is in the Vault, and is filed under the application when you save it.`
-              : `${outcome.file.name} is in the Vault, and is filed under the application when you save it. ${String(gaps)} field${gaps === 1 ? ' was' : 's were'} not on the page.`,
+              ? ''
+              : `${String(gaps)} field${gaps === 1 ? ' was' : 's were'} not on the page.`,
+            tags === 0
+              ? ''
+              : `${String(tags)} of your keywords ${tags === 1 ? 'is' : 'are'} ticked.`,
+          ]
+            .filter(Boolean)
+            .join(' '),
         })
       })()
         /*
@@ -155,7 +175,7 @@ export function AddFromLinkSheet({
       open={open}
       onClose={dismiss}
       title="Application from a link"
-      description="The model reads the posting and fills the form in. The page is kept in the Vault under Job postings, and nothing is saved as an application until you say so."
+      description="The model reads the posting and fills the form in, and ticks any of your own keywords the job is plainly about. The page is kept in the Vault under Job postings, and nothing is saved as an application until you say so."
       footer={
         <>
           {error && !busy ? (

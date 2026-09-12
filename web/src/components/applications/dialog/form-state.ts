@@ -3,8 +3,10 @@ import { refKey } from '@/lib/ids'
 
 /**
  * `deadline` is not on `Application` — it is a timeline item this dialog mints.
- * `keywords` is not either: it lives in the label store, and only travels here
- * so a discarded draft can be handed back intact by the undo in its toast.
+ * `keywords` is not either: it lives in the label store, and travels here for
+ * two reasons — so a discarded draft can be handed back intact by the undo in
+ * its toast, and so a form opened from a posting can arrive with the keywords
+ * the model matched already ticked (`matchKeywords`, in agent/read-posting).
  */
 export type ApplicationInitial = Partial<Application> & {
   deadline?: string

@@ -7,6 +7,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { TimelineItem } from '@/data/timeline'
+import { contentModal } from '@/components/ui/dialog-width'
+import { cn } from '@/lib/utils'
 
 /**
  * Write a reminder or a calendar entry. One dialog, because they are one record.
@@ -39,7 +41,7 @@ export function TimelineItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)] sm:max-w-xl">
+      <DialogContent className={cn('max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)]', contentModal)}>
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${noun}` : `New ${noun}`}</DialogTitle>
           {/* Identical in both modes on purpose: explaining that these are the

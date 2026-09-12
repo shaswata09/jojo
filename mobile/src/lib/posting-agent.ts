@@ -3,6 +3,8 @@ import {
   POSTING_BUDGET,
   postingDocument,
   askForPosting,
+  keywordRoster,
+  matchKeywords,
   postingMessages,
 } from '@jojo/service/agent/read-posting'
 import type { PostingDraft } from '@jojo/service/agent/read-posting'
@@ -13,6 +15,7 @@ import type { VaultFile } from '@jojo/service/data/vault'
 import { writeCapture } from '@/lib/capture'
 import { agentTurn } from '@/lib/llm'
 import type { ModelSettings } from '@/lib/llm'
+import { useLabels } from '@/lib/labels-context'
 import { convertUrl } from '@/lib/markitdown'
 import { byteLengthOf } from '@/lib/text'
 import { now, TODAY } from '@/lib/today'
@@ -42,7 +45,14 @@ import { now, TODAY } from '@/lib/today'
 export type PostingStep = 'reading' | 'asking' | 'saving'
 
 export type PostingOutcome =
-  | { ok: true; draft: PostingDraft; file: VaultFile; missing: readonly string[] }
+  | {
+      ok: true
+      draft: PostingDraft
+      file: VaultFile
+      missing: readonly string[]
+      /** Keyword IDS for the sheet's staged picker. Empty is the ordinary answer. */
+      keywords: readonly string[]
+    }
   | { ok: false; step: PostingStep; reason: string }
 
 export type ReadPostingOptions = {
@@ -73,6 +83,10 @@ function nameFor(draft: PostingDraft, url: string): string {
 
 export function useReadPosting(): (options: ReadPostingOptions) => Promise<PostingOutcome> {
   const { addFile, updateFile } = useVault()
+  // The person's own vocabulary, offered to the model and matched back to ids.
+  // Web's half reads the same two things and cuts the list the same way — see
+  // `lib/posting-agent.ts` there for why the cut happens once.
+  const { labels, countFor } = useLabels()
 
   return useCallback(
     async ({
@@ -83,6 +97,9 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       signal,
     }: ReadPostingOptions): Promise<PostingOutcome> => {
       const target = canonicalPostingUrl(url.trim())
+      const offered = keywordRoster(
+        labels.map((label) => ({ id: label.id, name: label.name, used: countFor(label.id) })),
+      )
 
       if (reader.trim() === '') {
         return {
@@ -125,7 +142,12 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
        */
       const refused: { reason?: string } = {}
       const read = await askForPosting(async () => {
-        const turn = await agentTurn(settings, postingMessages(target, page.markdown, TODAY), [], signal)
+        const turn = await agentTurn(
+          settings,
+          postingMessages(target, page.markdown, TODAY, offered),
+          [],
+          signal,
+        )
         if (!turn.ok) {
           refused.reason = turn.reason
           return null
@@ -178,9 +200,11 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         draft: { ...read.draft, url: target },
         file: { ...file, uri },
         missing: read.missing,
+        // Names in, ids out, and the crossing happens exactly here.
+        keywords: matchKeywords(offered, read.keywordNames),
       }
     },
-    [addFile, updateFile],
+    [addFile, updateFile, labels, countFor],
   )
 }
 

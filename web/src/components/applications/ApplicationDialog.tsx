@@ -31,6 +31,7 @@ import { useDialogs } from '@/lib/dialogs-context'
 import { appPath, hrefOutsideRouter } from '@/lib/links'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
+import { contentModal } from '@/components/ui/dialog-width'
 
 export type { ApplicationInitial } from '@/components/applications/dialog/form-state'
 
@@ -103,6 +104,16 @@ export function ApplicationDialog({
 
   /** Guessed values need checking; typed ones do not. See `draft-from.ts`. */
   const guessed = mode === 'create' && Boolean(initial?.org || initial?.role || initial?.url)
+
+  /**
+   * Whether the prefill also ticked keywords, which only a model read does.
+   *
+   * `guessed` is true for every prefilled create — the address-only route, the
+   * share target, a posting promoted by the scout — and none of those reads a
+   * page or can produce a keyword. Naming keywords in the sentence regardless
+   * pointed four routes at a picker nothing had written to.
+   */
+  const tagged = guessed && (initial?.keywords?.length ?? 0) > 0
 
   /**
    * Whether this job is already in the store.
@@ -246,7 +257,7 @@ export function ApplicationDialog({
         // only one laying two columns of fields out inside that width — at
         // `lg` the pair sat at about 240px each, which is narrower than the
         // dates and the compensation line want to be.
-        className="sm:max-w-2xl"
+        className={contentModal}
         onOpenAutoFocus={(event) => {
           if (!guessed) return
           // A prefill is a guess, so focus lands on the guessed value with it
@@ -264,7 +275,9 @@ export function ApplicationDialog({
             {mode === 'edit'
               ? 'Changes replace the current details, and the deadline moves with them.'
               : guessed
-                ? 'Prefilled from what you pasted — check the employer and role before saving.'
+                ? tagged
+                  ? 'Prefilled from what you pasted — check the employer, role and keywords before saving.'
+                  : 'Prefilled from what you pasted — check the employer and role before saving.'
                 : 'Track a job you are applying for. Starred fields are required.'}
           </DialogDescription>
         </DialogHeader>

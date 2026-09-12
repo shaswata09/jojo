@@ -19,6 +19,7 @@ import { ANALYTICS_CAPABILITY, analyticsEnabled, setAnalyticsEnabled } from '@/l
 import { SettingRow } from '@/components/common/Field'
 import { Switch } from '@/components/ui/switch'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /**
  * The three setup offers on a first run: a model, a document reader, an extension.
@@ -74,7 +75,7 @@ function Step({
         if (!next) onSkip()
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className={contentModal}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {icon}
@@ -233,7 +234,7 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         }
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className={contentModal}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bug className="size-4 text-accent" strokeWidth={1.8} aria-hidden />

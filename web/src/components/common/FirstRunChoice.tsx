@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { useBoot } from '@/lib/boot-context'
 import type { DataSetChoice } from '@/lib/data-set'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /**
  * The one decision jojo makes the user take, on the one launch where it is free.
@@ -107,7 +108,7 @@ export function FirstRunChoice() {
     <Dialog open>
       <DialogContent
         showCloseButton={false}
-        className="sm:max-w-xl"
+        className={contentModal}
         // Both halves of "no dismiss without choosing". Radix routes the
         // backdrop press, a press on the app behind it and a focus escape
         // through `onInteractOutside`; Escape has its own handler.

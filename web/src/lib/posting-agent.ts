@@ -3,6 +3,8 @@ import {
   POSTING_BUDGET,
   postingDocument,
   askForPosting,
+  keywordRoster,
+  matchKeywords,
   postingMessages,
   postingTextFromHtml,
 } from '@jojo/service/agent/read-posting'
@@ -14,6 +16,7 @@ import { useVault } from '@jojo/service/react/use-vault'
 import type { VaultFile } from '@jojo/service/data/vault'
 import { TODAY } from '@/lib/today'
 import { capturePage } from '@/lib/capture-bridge'
+import { useLabels } from '@/lib/labels-context'
 import { useFileCapture } from '@/lib/file-capture'
 import { agentTurn } from '@/lib/llm'
 import type { ModelSettings } from '@/lib/llm'
@@ -70,6 +73,15 @@ export type PostingOutcome =
       draft: PostingDraft
       file: VaultFile
       missing: readonly string[]
+      /**
+       * Keyword IDS, ready for the create form's picker to open with ticked.
+       *
+       * Ids and not names: `keywordsOf` hands this straight to the staged
+       * picker, and `application.create` takes `s.id('keyword')`. Empty is the
+       * ordinary answer — see `matchKeywords`, which would rather offer nothing
+       * than offer the vocabulary back.
+       */
+      keywords: readonly string[]
       via: PostingRoute
     }
   | { ok: false; step: PostingStep; reason: string }
@@ -138,6 +150,19 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
   const { addFile } = useVault()
   const blobs = useVaultBlobs()
   const fileCapture = useFileCapture()
+  /*
+   * The person's own vocabulary, so the model can pick from it rather than
+   * inventing words nobody files anything under.
+   *
+   * Read here and cut ONCE below, so the list the prompt offers and the list
+   * the reply is matched against are the same value rather than two calls that
+   * agree today. `labels` is a new identity on every graph write — including
+   * the `addFile` this very read performs — so the callback below is
+   * re-identified mid-run; that is benign because the one effect that starts it
+   * is guarded by a `started` ref (`AddFromLinkDialog`), and a read already in
+   * flight holds its own closure.
+   */
+  const { labels, countFor } = useLabels()
 
   return useCallback(
     async ({
@@ -148,6 +173,9 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       signal,
     }: ReadPostingOptions): Promise<PostingOutcome> => {
       const target = canonicalPostingUrl(url.trim())
+      const offered = keywordRoster(
+        labels.map((label) => ({ id: label.id, name: label.name, used: countFor(label.id) })),
+      )
 
       /* ------------------------------ 1. read ------------------------------ */
       onStep?.('reading')
@@ -184,7 +212,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       const read = await askForPosting(async () => {
         const turn = await agentTurn(
           settings,
-          postingMessages(target, page.text, TODAY),
+          postingMessages(target, page.text, TODAY, offered),
           [],
           signal,
         )
@@ -245,10 +273,12 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         draft: { ...read.draft, url: target },
         file,
         missing: read.missing,
+        // Names in, ids out, and the crossing happens exactly here.
+        keywords: matchKeywords(offered, read.keywordNames),
         via: page.via,
       }
     },
-    [addFile, blobs, fileCapture],
+    [addFile, blobs, fileCapture, labels, countFor],
   )
 }
 

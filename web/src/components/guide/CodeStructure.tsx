@@ -117,7 +117,9 @@ export const SHAPE: DirRow[] = [
     // writes a structured summary with a harness-built ledger of record ids,
     // and the endurance guard follows the app's history shape. No new files;
     // about 4,200 lines, most of them the tests that pin each measure.
-    lines: 39787,
+    // Re-measured when `read-posting.ts` learnt to offer the person's own
+    // keywords to the model and match the reply back onto the ones that exist.
+    lines: 40305,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -152,8 +154,9 @@ export const SHAPE: DirRow[] = [
     dir: 'web/src/components',
     // Re-measured when `common/CopyButton.tsx` was added, so the setup
     // commands in Settings could be copied rather than retyped; 285 with
-    // `settings/McpLinkPanel.tsx`, the switch and two commands for Claude Code.
-    files: 285,
+    // `settings/McpLinkPanel.tsx`, the switch and two commands for Claude Code;
+    // 286 with `ui/dialog-width.ts`, the one width every content modal takes.
+    files: 286,
     tests: 29,
     lines: 48069,
     what: 'every surface you can see',

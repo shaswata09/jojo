@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { useDialogs } from '@/lib/dialogs-context'
 import { cn } from '@/lib/utils'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /**
  * The guided tour.
@@ -228,7 +229,7 @@ export function TourLauncher({ className }: { className?: string }) {
              longest step here — six stage chips and three paragraphs — ran off
              both ends of a 390×700 phone, taking Next with it and leaving
              Escape as the only way out of a tutorial. */
-          className="max-h-[85dvh] overflow-y-auto sm:max-w-xl"
+          className={cn('max-h-[85dvh] overflow-y-auto', contentModal)}
           ref={contentRef}
           onKeyDown={onKeyDown}
           onCloseAutoFocus={(event) => {

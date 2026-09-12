@@ -17,6 +17,7 @@ import { useReadPosting } from '@/lib/posting-agent'
 import type { PostingStep } from '@/lib/posting-agent'
 import { useToast } from '@/lib/toast-context'
 import { cn } from '@/lib/utils'
+import { contentModal } from '@/components/ui/dialog-width'
 
 /**
  * Paste a posting URL and let the model fill the form in.
@@ -109,9 +110,19 @@ export function AddFromLinkDialog({
       close()
       openDialog('application', {
         mode: 'create',
-        initial: { ...outcome.draft, postingFileId: outcome.file.id },
+        initial: {
+          ...outcome.draft,
+          // Spread rather than assigned: `keywordsOf` returns `initial.keywords`
+          // whenever it is truthy, and `[]` is truthy — so an empty array would
+          // be a decision ("this record has no keywords") where absence is the
+          // question ("read them off the record"). It reads the same on a create
+          // form, and would be wrong the day this initial is reused on an edit.
+          ...(outcome.keywords.length === 0 ? {} : { keywords: [...outcome.keywords] }),
+          postingFileId: outcome.file.id,
+        },
       })
 
+      const tags = outcome.keywords.length
       const gaps = outcome.missing.length
       toast({
         title: 'Posting read and saved',
@@ -123,6 +134,14 @@ export function AddFromLinkDialog({
           gaps === 0
             ? ''
             : `${String(gaps)} field${gaps === 1 ? ' was' : 's were'} not on the page.`,
+          // Said only when there are some. "0 keywords matched" is a sentence
+          // about the feature rather than about this posting, and the picker
+          // below already shows the answer.
+          // The noun stays plural and only the verb agrees: "N of your …" is a
+          // partitive, so "1 of your keyword is ticked" is not English. The
+          // `gaps` line above gets away with switching the noun because nothing
+          // precedes it.
+          tags === 0 ? '' : `${String(tags)} of your keywords ${tags === 1 ? 'is' : 'are'} ticked.`,
           'Check the form before saving it.',
         ]
           .filter(Boolean)
@@ -172,13 +191,14 @@ export function AddFromLinkDialog({
         close()
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className={contentModal}>
         <DialogHeader>
           <DialogTitle>New application from a link</DialogTitle>
           <DialogDescription>
-            The model reads the posting and fills the form in. The page is kept in the Vault under
-            Job postings — saved by the jojo extension when it is installed — and filed under the
-            application once you save it. Nothing is saved as an application until you say so.
+            The model reads the posting and fills the form in, and ticks any of your own keywords
+            the job is plainly about. The page is kept in the Vault under Job postings — saved by
+            the jojo extension when it is installed — and filed under the application once you save
+            it. Nothing is saved as an application until you say so.
           </DialogDescription>
         </DialogHeader>
 
