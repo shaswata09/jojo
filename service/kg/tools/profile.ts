@@ -15,6 +15,7 @@ import { BACKGROUND_KINDS, DEFAULT_ROLES } from '../core/model'
  */
 
 import type { FileBucket, NodeId, ProfileText } from '../core/model'
+import { foldName } from '../core/ref'
 import type { GraphSnapshot } from '../core/snapshot'
 import { s } from '../core/schema'
 import { cleared } from './application-fields'
@@ -293,7 +294,9 @@ const backgroundFields = {
   kind: s.enum(BACKGROUND_KINDS, { label: 'Kind' }),
   title: s.string({ min: 1, label: 'Title' }),
   where: s.optional(s.string({ label: 'Where' })),
-  period: s.optional(s.string({ label: 'When', description: 'As written: “2021–2024”, “since 2024”.' })),
+  period: s.optional(
+    s.string({ label: 'When', description: 'As written: “2021–2024”, “since 2024”.' }),
+  ),
   year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
   detail: s.optional(s.string({ label: 'Detail', multiline: true })),
   highlights: s.optional(
@@ -302,7 +305,9 @@ const backgroundFields = {
       description: 'The bullet points under this entry — what was built, shipped, taught or found.',
     }),
   ),
-  source: s.optional(s.string({ label: 'Read from', description: 'The id of the document this came from.' })),
+  source: s.optional(
+    s.string({ label: 'Read from', description: 'The id of the document this came from.' }),
+  ),
 }
 
 export const profileBackgroundAdd = defineTool({
@@ -325,9 +330,73 @@ export const profileBackgroundAdd = defineTool({
     background: s.array(s.object(backgroundFields), { min: 1, label: 'Background' }),
   }),
 
+  /*
+   * AN UPSERT, since 2026-09-12. The question it answers: how does somebody
+   * update a profile that already exists?
+   *
+   * The commonest way is to file a newer CV. Every fact in it that was already
+   * recorded — and most are — used to be filed a second time, so a person who
+   * kept their CV current had two PhDs, two of each paper, and a fit panel
+   * leading with the same publication twice. Nothing deduped, and the review
+   * list could not tell a new fact from an old one.
+   *
+   * The identity of a fact is its kind, its title and where it happened,
+   * folded — `keyword.create`'s rule, for the same reason: what the person
+   * would call the same thing. A match is PATCHED with whatever the new
+   * reading says that the old one did not (a year that was missing, bullets
+   * that were not there, a corrected period), and the existing id is returned
+   * in its place, so the caller's positions still line up. A different `where`
+   * is a different fact: two posts titled "Research Intern" at two labs are
+   * two entries.
+   *
+   * `source` is kept from the first reading when both have one. Moving it to
+   * the newer document would leave the older one with no fact pointing at it,
+   * and `twinState` would then offer to read it again — forever, because each
+   * reading would move it back.
+   */
   run(ctx, input): NodeId[] {
+    /*
+     * `where` is compared as the institution, not the address: a CV says
+     * "Allen Institute for AI (AI2), Seattle" where the last reading said
+     * "Allen Institute for AI", and a rule that needed the whole string filed
+     * the same postdoc twice. Everything from the first comma or bracket on is
+     * a qualifier — a city, an acronym, a department — and the part before it
+     * is what the person would call the place.
+     */
+    const place = (where: string | undefined): string =>
+      foldName((where ?? '').split(/[,(]/)[0] ?? '')
+    const identity = (kind: string, title: string, where: string | undefined) =>
+      `${kind}|${foldName(title)}|${place(where)}`
+    const known = new Map<string, NodeId>()
+    for (const node of ctx.memory.ofType('background')) {
+      known.set(identity(node.props.kind, node.props.title, node.props.where), node.id)
+    }
+
     return input.background.map((draft) => {
+      const key = identity(draft.kind, draft.title.trim(), cleared(draft.where))
+      const existing = known.get(key)
+      if (existing !== undefined) {
+        const held = ctx.memory.node(existing, 'background')
+        if (held) {
+          const patch: Partial<typeof held.props> = {}
+          const period = cleared(draft.period)
+          const detail = cleared(draft.detail)
+          const source = cleared(draft.source)
+          if (period !== undefined && period !== held.props.period) patch.period = period
+          if (draft.year !== undefined && draft.year !== held.props.year) patch.year = draft.year
+          if (detail !== undefined && detail !== held.props.detail) patch.detail = detail
+          if (draft.highlights && draft.highlights.length > 0) {
+            const merged = [...new Set([...(held.props.highlights ?? []), ...draft.highlights])]
+            if (merged.length !== (held.props.highlights ?? []).length) patch.highlights = merged
+          }
+          if (source !== undefined && held.props.source === undefined) patch.source = source
+          if (Object.keys(patch).length > 0) ctx.tx.patch<'background'>(existing, patch)
+        }
+        return existing
+      }
+
       const id = ctx.newId('background')
+      known.set(key, id)
       ctx.tx.put({
         id,
         type: 'background',
@@ -356,13 +425,34 @@ export const profileBackgroundAdd = defineTool({
     })
   },
 
-  describe: (input, ids) => ({
-    title: ids.length === 1 ? 'Background recorded' : `${ids.length} facts recorded`,
-    description: input.background
-      .map((c) => c.title)
-      .slice(0, 3)
-      .join(', '),
-  }),
+  describe: (input, ids, memory) => {
+    /*
+     * "Recorded" and "already known" said apart, because approving thirty
+     * things and approving three is a different act, and a re-read of a CV
+     * that changed nothing should say so rather than announce thirty facts.
+     */
+    const fresh = ids.filter((id) => {
+      const node = memory.node(id, 'background')
+      return node !== undefined && node.createdAt === node.updatedAt
+    }).length
+    const known = ids.length - fresh
+    return {
+      title:
+        known === 0
+          ? ids.length === 1
+            ? 'Background recorded'
+            : `${ids.length} facts recorded`
+          : fresh === 0
+            ? ids.length === 1
+              ? 'Already on your profile'
+              : `All ${ids.length} were already on your profile`
+            : `${fresh} recorded, ${known} already known`,
+      description: input.background
+        .map((c) => c.title)
+        .slice(0, 3)
+        .join(', '),
+    }
+  },
 })
 
 export const profileBackgroundUpdate = defineTool({

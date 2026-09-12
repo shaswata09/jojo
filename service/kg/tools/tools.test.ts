@@ -1014,6 +1014,97 @@ describe('the composites', () => {
     ).toEqual(['education', 'publication', 'skill'])
   })
 
+  it('recognises a fact it already holds rather than filing it twice', () => {
+    /*
+     * The way a profile gets updated is a newer CV, and most of a newer CV is
+     * the older one. Filing every fact again gave a person two PhDs and a fit
+     * panel leading with the same paper twice.
+     */
+    const h = harness()
+    const first = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [{ kind: 'education', title: 'PhD, Computer Science', where: 'Illinois' }],
+      }),
+    )
+    const again = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [
+          { kind: 'education', title: 'phd, computer science', where: 'ILLINOIS', year: 2021 },
+          { kind: 'skill', title: 'Rust' },
+        ],
+      }),
+    )
+    expect(again[0]).toBe(first[0])
+    const m = h.repo.getSnapshot()
+    expect(m.ofType('background')).toHaveLength(2)
+    // What the new reading knew and the old did not is taken.
+    expect(m.node(first[0]!, 'background')?.props.year).toBe(2021)
+  })
+
+  it('reads the place as the institution, so a city or an acronym does not make a second fact', () => {
+    // Measured: a newer CV said "Allen Institute for AI (AI2), Seattle" where
+    // the last reading said "Allen Institute for AI", and the postdoc was
+    // filed twice.
+    const h = harness()
+    const [first] = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [
+          { kind: 'employment', title: 'Postdoctoral Researcher', where: 'Allen Institute for AI' },
+        ],
+      }),
+    )
+    const [again] = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [
+          {
+            kind: 'employment',
+            title: 'Postdoctoral Researcher',
+            where: 'Allen Institute for AI (AI2), Seattle',
+          },
+        ],
+      }),
+    )
+    expect(again).toBe(first)
+    expect(h.repo.getSnapshot().ofType('background')).toHaveLength(1)
+  })
+
+  it('treats the same title somewhere else as a different fact', () => {
+    // Two "Research Intern" posts at two labs are two entries.
+    const h = harness()
+    okOr(
+      h.runtime.run('profile.background.add', {
+        background: [{ kind: 'employment', title: 'Research Intern', where: 'Google DeepMind' }],
+      }),
+    )
+    okOr(
+      h.runtime.run('profile.background.add', {
+        background: [{ kind: 'employment', title: 'Research Intern', where: 'Amazon' }],
+      }),
+    )
+    expect(h.repo.getSnapshot().ofType('background')).toHaveLength(2)
+  })
+
+  it('keeps the first document a fact was read from, and fills it in when there was none', () => {
+    // Moving `source` to the newer CV would leave the older one with nothing
+    // pointing at it, and the twin would offer to read it again — forever.
+    const h = harness()
+    const [byHand] = okOr(
+      h.runtime.run('profile.background.add', { background: [{ kind: 'skill', title: 'Rust' }] }),
+    )
+    okOr(
+      h.runtime.run('profile.background.add', {
+        background: [{ kind: 'skill', title: 'Rust', source: 'file:cv-v1' }],
+      }),
+    )
+    expect(h.repo.getSnapshot().node(byHand!, 'background')?.props.source).toBe('file:cv-v1')
+    okOr(
+      h.runtime.run('profile.background.add', {
+        background: [{ kind: 'skill', title: 'Rust', source: 'file:cv-v2' }],
+      }),
+    )
+    expect(h.repo.getSnapshot().node(byHand!, 'background')?.props.source).toBe('file:cv-v1')
+  })
+
   it('keeps the period as written rather than inventing a date', () => {
     // A CV says "2021–2024", "Summer 2019" and "since 2024". Forcing those into
     // ISO means refusing most of them or inventing precision nobody wrote down.
