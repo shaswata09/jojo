@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Network, Plus, Shuffle } from 'lucide-react'
+import { Network, Plus, RotateCcw, Shuffle } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -47,6 +47,17 @@ export function Graph() {
   const [query, setQuery] = useState<GraphQuery | null>(null)
   /** Bumped by "Reset layout" — the canvas reshuffles when this changes. */
   const [layoutNonce, setLayoutNonce] = useState(0)
+  /**
+   * Which arrangement of the same records to draw. Bumped by "Reorganize".
+   *
+   * The layout is deterministic — the same records always settle the same way —
+   * which is what makes a graph worth reasoning about, and also what makes a
+   * tangle permanent: pressing "Reset layout" gives back the identical picture,
+   * because that is what resetting means. The seed is the way out: it changes
+   * where the nodes START, so the same forces find a different arrangement,
+   * while staying repeatable for any given seed. See `force.ts`.
+   */
+  const [layoutSeed, setLayoutSeed] = useState(0)
   const [showAllLabels, setShowAllLabels] = useState(false)
   const [hideLoners, setHideLoners] = useState(false)
 
@@ -181,10 +192,34 @@ export function Graph() {
           </>
         }
         actions={
-          <Button variant="outline" size="sm" onClick={() => setLayoutNonce((n) => n + 1)}>
-            <Shuffle className="size-3.5" strokeWidth={2} aria-hidden />
-            Reset layout
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLayoutSeed((seed) => seed + 1)}
+              title="Arrange the same records a different way"
+            >
+              <Shuffle className="size-3.5" strokeWidth={2} aria-hidden />
+              Reorganize
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                /*
+                 * The seed goes back to 0 with the nonce, or "Reset" would hand
+                 * back whatever "Reorganize" last produced — which is a reset to
+                 * nowhere in particular. Reset means the canonical arrangement.
+                 */
+                setLayoutSeed(0)
+                setLayoutNonce((n) => n + 1)
+              }}
+              title="Put the records back in their usual arrangement"
+            >
+              <RotateCcw className="size-3.5" strokeWidth={2} aria-hidden />
+              Reset layout
+            </Button>
+          </>
         }
       />
 
@@ -219,6 +254,7 @@ export function Graph() {
               onSelect={setSelectedId}
               result={result}
               layoutNonce={layoutNonce}
+              layoutSeed={layoutSeed}
             />
           </div>
 

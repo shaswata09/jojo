@@ -142,3 +142,79 @@ describe('waking a settled layout', () => {
     expect(sim.alpha).toBe(1)
   })
 })
+
+describe('arranging the same records again', () => {
+  /** Where every node STARTS, which is the only thing a seed decides. */
+  const startsOf = (seed: number, n = 40) => {
+    const { spec, links } = world(n)
+    return createSim(spec, links, 960, 620, undefined, seed).nodes.map(
+      (node) => `${node.x.toFixed(3)},${node.y.toFixed(3)}`,
+    )
+  }
+
+  it('leaves seed 0 exactly as every existing caller already had it', () => {
+    // The default argument is the compatibility promise: "Reset layout" and the
+    // first paint must produce the picture they produced before the seed
+    // existed, or this became a redesign rather than an addition.
+    const { spec, links } = world(40)
+    const canonical = createSim(spec, links, 960, 620)
+    expect(startsOf(0)).toEqual(
+      canonical.nodes.map((node) => `${node.x.toFixed(3)},${node.y.toFixed(3)}`),
+    )
+  })
+
+  it('gives a genuinely different arrangement for a different seed', () => {
+    /*
+     * The whole point of the button. The layout is deterministic, so pressing
+     * "Reset layout" on a tangle returns the same tangle; a different seed is
+     * the only way to ask the same forces for a different answer.
+     */
+    expect(startsOf(1)).not.toEqual(startsOf(0))
+    expect(startsOf(2)).not.toEqual(startsOf(1))
+    expect(startsOf(3)).not.toEqual(startsOf(1))
+  })
+
+  it('is repeatable — the same seed lays out identically', () => {
+    // Determinism is the property this file is built on. A seeded shuffle keeps
+    // it; `Math.random` would have thrown it away for the same visible effect.
+    expect(startsOf(7)).toEqual(startsOf(7))
+    expect(startsOf(7, 90)).toEqual(startsOf(7, 90))
+  })
+
+  it('keeps every node on the canvas, whatever the seed', () => {
+    for (const seed of [0, 1, 2, 3, 9, 41]) {
+      const { spec, links } = world(60)
+      for (const node of createSim(spec, links, 960, 620, undefined, seed).nodes) {
+        expect(node.x, `seed ${String(seed)}`).toBeGreaterThan(0)
+        expect(node.x, `seed ${String(seed)}`).toBeLessThan(960)
+        expect(node.y, `seed ${String(seed)}`).toBeGreaterThan(0)
+        expect(node.y, `seed ${String(seed)}`).toBeLessThan(620)
+      }
+    }
+  })
+
+  it('still settles, and in the same number of ticks', () => {
+    // A reorganised layout that never stops would leave the rAF loop running on
+    // a still picture — the failure this file's first test exists to prevent.
+    const { spec, links } = world(60)
+    const sim = createSim(spec, links, 960, 620, undefined, 3)
+    let ticks = 0
+    while (ticks < 2000 && step(sim)) ticks += 1
+    expect(ticks).toBeLessThan(220)
+  })
+
+  it('lets a remembered position beat the seed', () => {
+    // Hiding a legend row reuses positions so the world does not jump. That has
+    // to keep working after a reorganise, or every legend toggle would reshuffle.
+    const { spec, links } = world(10)
+    const sim = createSim(spec, links, 960, 620, new Map([['n3', { x: 111, y: 222 }]]), 5)
+    const kept = sim.nodes.find((node) => node.id === 'n3')
+    expect([kept?.x, kept?.y]).toEqual([111, 222])
+  })
+
+  it('does not fall over on a graph of one node, or none', () => {
+    expect(createSim([{ id: 'a', radius: 6, degree: 0 }], [], 960, 620, undefined, 4).nodes)
+      .toHaveLength(1)
+    expect(createSim([], [], 960, 620, undefined, 4).nodes).toHaveLength(0)
+  })
+})

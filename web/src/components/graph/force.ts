@@ -92,6 +92,45 @@ export type SimSpec = {
  */
 const GOLDEN_ANGLE = 2.399963229728653
 
+/**
+ * Which spiral slot each node starts in.
+ *
+ * Seed 0 is the canonical layout: slot `i` for node `i`, the phyllotaxis spiral
+ * taken in order, exactly as it has always been. That is what "Reset layout"
+ * restores, and it is why the default argument matters — every existing caller
+ * keeps the picture it had.
+ *
+ * Any other seed hands the same slots out in a different order, so the nodes
+ * begin somewhere else and the forces settle them into a DIFFERENT untangling.
+ * That is what "Reorganize" is: the same records, arranged again.
+ *
+ * Determinism survives, which is the promise this whole file is built on — the
+ * same records with the same seed lay out identically on any machine, so a
+ * layout can still be reasoned about and tested. `Math.random` would have made
+ * the picture unrepeatable and these tests unwritable, which is exactly why the
+ * shuffle is seeded rather than random.
+ */
+function slotOrder(count: number, seed: number): number[] {
+  const order: number[] = []
+  for (let i = 0; i < count; i += 1) order.push(i)
+  if (seed === 0 || count < 2) return order
+
+  // mulberry32, inline: four lines, no dependency, and its only job is to
+  // scatter indices repeatably.
+  let state = (seed * 0x9e3779b9) >>> 0
+  for (let i = count - 1; i > 0; i -= 1) {
+    state = (state + 0x6d2b79f5) >>> 0
+    let t = state
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    const j = Math.floor((((t ^ (t >>> 14)) >>> 0) / 4294967296) * (i + 1))
+    const held = order[i]!
+    order[i] = order[j]!
+    order[j] = held
+  }
+  return order
+}
+
 export function createSim(
   spec: readonly SimSpec[],
   links: readonly SimLink[],
@@ -99,15 +138,26 @@ export function createSim(
   height: number,
   /** Positions to reuse, so hiding a legend row does not reshuffle the world. */
   previous?: ReadonlyMap<string, { x: number; y: number }>,
+  /**
+   * Which arrangement to start from. 0 is the canonical one; see `slotOrder`.
+   *
+   * It only decides STARTING positions, so a node whose place is already known
+   * through `previous` ignores it — hiding a legend row still must not move the
+   * world, whatever the seed is.
+   */
+  seed = 0,
 ): Sim {
   const cx = width / 2
   const cy = height / 2
   const spread = Math.min(width, height) * 0.42
 
+  const slots = slotOrder(spec.length, seed)
+
   const nodes: SimNode[] = spec.map((s, i) => {
     const kept = previous?.get(s.id)
-    const angle = i * GOLDEN_ANGLE
-    const radius = spread * Math.sqrt((i + 0.5) / Math.max(spec.length, 1))
+    const slot = slots[i] ?? i
+    const angle = slot * GOLDEN_ANGLE
+    const radius = spread * Math.sqrt((slot + 0.5) / Math.max(spec.length, 1))
     return {
       id: s.id,
       x: kept ? kept.x : cx + Math.cos(angle) * radius,

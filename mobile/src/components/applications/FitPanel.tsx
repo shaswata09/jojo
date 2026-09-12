@@ -49,7 +49,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
   )
   const [step, setStep] = useState<FitStep | null>(null)
   const [error, setError] = useState<string | null>(null)
-  /** Bumped by Try again. See `fitRequestKey` — it is half the request's identity. */
+  /** Bumped by Try again and by Re-run. See `fitRequestKey` — half the request's identity. */
   const [attempt, setAttempt] = useState(0)
   const abort = useRef<AbortController | null>(null)
   /**
@@ -83,7 +83,6 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
     fileId,
     attempt,
     cached: fileId !== undefined && haveRequirements(fileId),
-    started: started.current,
   })
 
   /*
@@ -103,6 +102,15 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       return
     }
     if (startKey === null) return
+    /*
+     * Asked exactly once, and checked HERE rather than in the decision above.
+     *
+     * The decision is a dependency of this effect, so anything it says has to
+     * survive the request being recorded — see `fit-request.ts`. The ref does
+     * not: nothing renders when it changes, which is precisely why the guard
+     * belongs on this side of the dependency array.
+     */
+    if (started.current === startKey) return
 
     started.current = startKey
     const stop = new AbortController()
@@ -253,6 +261,32 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
               ))}
             </View>
           )}
+        </View>
+      )}
+
+      {/*
+        * Re-run: how a person disagrees with an answer they already have.
+        *
+        * The document has not changed, so every automatic path correctly
+        * concludes there is nothing to do — and the session cache holds the
+        * very verdict being rejected. Bumping `attempt` is what outranks it;
+        * see `fit-request.ts`.
+        *
+        * Hidden rather than disabled while a read runs: the step line above
+        * already says what is happening, and a disabled button here would owe
+        * the reader a reason it cannot give in the space.
+        */}
+      {ready && step === null && (
+        <View style={{ marginTop: space[3], alignItems: 'flex-start' }}>
+          <Button
+            size="sm"
+            variant="outline"
+            label="Re-run"
+            onPress={() => {
+              setError(null)
+              setAttempt((n) => n + 1)
+            }}
+          />
         </View>
       )}
     </Panel>

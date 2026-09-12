@@ -83,6 +83,13 @@ type Props = {
   /** Changing this reshuffles the layout from scratch. */
   layoutNonce?: number
   /**
+   * Which arrangement to draw — 0 is the canonical one.
+   *
+   * Changing it starts the nodes somewhere else, so the same records settle
+   * into a different picture. It is what "Reorganize" bumps; see `force.ts`.
+   */
+  layoutSeed?: number
+  /**
    * Forces a label onto every node, past the point where they start to collide.
    *
    * Left undefined the canvas decides for itself, labelling hubs and whatever
@@ -100,6 +107,7 @@ export function GraphCanvas({
   onSelect,
   result = null,
   layoutNonce = 0,
+  layoutSeed = 0,
   showAllLabels = false,
   className,
 }: Props) {
@@ -129,6 +137,7 @@ export function GraphCanvas({
   /** Measured once per distinct string, because measuring forces a layout. */
   const labelWidths = useRef(new Map<string, number>())
   const nonceRef = useRef(layoutNonce)
+  const seedRef = useRef(layoutSeed)
 
   /**
    * State the label pass reads, kept in refs rather than closed over.
@@ -259,11 +268,15 @@ export function GraphCanvas({
   useLayoutEffect(() => {
     const { spec, index, links } = structureRef.current
 
-    const reshuffle = nonceRef.current !== layoutNonce
+    // A new seed reshuffles for the same reason a new nonce does: the whole
+    // point is to start somewhere else, and reusing the old positions would
+    // hand the simulation the very arrangement it is being asked to leave.
+    const reshuffle = nonceRef.current !== layoutNonce || seedRef.current !== layoutSeed
     nonceRef.current = layoutNonce
+    seedRef.current = layoutSeed
     if (reshuffle) positionsRef.current = new Map()
 
-    const sim = createSim(spec, links, width, HEIGHT, positionsRef.current)
+    const sim = createSim(spec, links, width, HEIGHT, positionsRef.current, layoutSeed)
     simRef.current = sim
     indexRef.current = index
 
@@ -327,7 +340,7 @@ export function GraphCanvas({
       framesRef.current = 0
       positionsRef.current = positionsOf(sim)
     }
-  }, [structureKey, layoutNonce, reduced, width, paint, run])
+  }, [structureKey, layoutNonce, layoutSeed, reduced, width, paint, run])
 
   const drag = useNodeDrag({
     svgRef,

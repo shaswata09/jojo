@@ -19,6 +19,20 @@
  * deciding. A key over the document and the attempt is exactly that: it moves
  * when the user picks a different application or presses Try again, and at no
  * other time.
+ *
+ * ## Why `started` is not an input
+ *
+ * It was, and that put the bug back by another door. The panel keys its effect
+ * on this decision, and a decision that answered "nothing, that one is already
+ * running" CHANGED the moment the request was recorded — which is immediately,
+ * because `use-read-fit` reports its first step before its first await. The
+ * dependency array moved, React ran the cleanup, and the cleanup aborted the
+ * read that had just started. Same failure, one level up.
+ *
+ * So this names the request it wants and says so on every render, unchanged for
+ * as long as the same one is wanted. Asking exactly once is the CALLER's job,
+ * and belongs where it cannot be observed: a ref, compared inside the effect,
+ * after the dependency array has already been decided.
  */
 
 /**
@@ -53,25 +67,26 @@ export function nextFitAction(input: {
   ready: boolean
   /** The document to read. Absent means there is no posting behind this record. */
   fileId: string | undefined
-  /** Bumped by Try again, and by nothing else. */
+  /** Bumped by Try again and by Re-run, and by nothing else. */
   attempt: number
   /** Whether this document has already been read this session. */
   cached: boolean
-  /** The key of the request already made, or null. */
-  started: string | null
 }): FitAction {
-  const { ready, fileId, attempt, cached, started } = input
+  const { ready, fileId, attempt, cached } = input
   if (!ready || fileId === undefined) return { do: 'nothing' }
 
   /*
-   * Before the started check, not after. A document read for one application
-   * is read for every application pointing at the same posting — the cache is
-   * keyed on the document for exactly that reason — so a second record must
-   * show the answer rather than pay for it again, even though it has never
-   * started a request of its own.
+   * The cache answers for the FIRST attempt only.
+   *
+   * A document read for one application is read for every application pointing
+   * at the same posting — the cache is keyed on the document for exactly that
+   * reason — so a second record shows the answer rather than paying for it
+   * again. But Re-run is somebody saying "read it again" about a posting that
+   * has already been read: the capture was replaced, or the model was, or they
+   * simply do not believe it. The cache holds the very answer they are
+   * rejecting, so it has to yield to them.
    */
-  if (cached) return { do: 'use-cache' }
+  if (cached && attempt === 0) return { do: 'use-cache' }
 
-  const key = fitRequestKey(fileId, attempt)
-  return started === key ? { do: 'nothing' } : { do: 'start', key }
+  return { do: 'start', key: fitRequestKey(fileId, attempt) }
 }

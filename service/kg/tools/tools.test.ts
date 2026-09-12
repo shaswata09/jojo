@@ -1134,6 +1134,43 @@ describe('the composites', () => {
     expect(m.node(ids[1]!, 'background')?.props.title).toBe('Go')
   })
 
+  it('takes a field off when told null, and when told a blank', () => {
+    /*
+     * The edit form's one rule. `where` used to be a plain optional and a blank
+     * meant "leave it alone", so a wrong "Where" could not be removed from the
+     * page at all — the same shape `application.update` had already settled.
+     */
+    const h = harness()
+    const [id] = okOr(
+      h.runtime.run('profile.background.add', {
+        background: [
+          {
+            kind: 'employment',
+            title: 'Postdoc',
+            where: 'Wrong Lab',
+            period: '2024',
+            year: 2024,
+            detail: 'x',
+          },
+        ],
+      }),
+    )
+    okOr(h.runtime.run('profile.background.update', { id: id!, where: null, year: null }))
+    let props = h.repo.getSnapshot().node(id!, 'background')?.props
+    expect(props).not.toHaveProperty('where')
+    expect(props).not.toHaveProperty('year')
+    expect(props?.period).toBe('2024')
+    okOr(h.runtime.run('profile.background.update', { id: id!, period: '', detail: '  ' }))
+    props = h.repo.getSnapshot().node(id!, 'background')?.props
+    expect(props).not.toHaveProperty('period')
+    expect(props).not.toHaveProperty('detail')
+    // Absent still means untouched.
+    okOr(h.runtime.run('profile.background.update', { id: id!, title: 'Postdoctoral Researcher' }))
+    expect(h.repo.getSnapshot().node(id!, 'background')?.props.title).toBe(
+      'Postdoctoral Researcher',
+    )
+  })
+
   it('removes one that was read wrongly, and the removal can be taken back', () => {
     /*
      * Undo matters more here than for most deletes. These records are written

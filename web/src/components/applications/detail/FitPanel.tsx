@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Loader2, Target } from 'lucide-react'
+import { Loader2, RotateCw, Target } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { assess } from '@jojo/service/core/assess'
@@ -48,7 +48,14 @@ import { settingsPath, vaultPath } from '@/lib/links'
  *
  * The read is skipped while the graph holds no background, because there is
  * nothing to weigh the requirements against — spending somebody's GPU to
- * produce "not measured" is the one case where the button is right.
+ * produce "not measured" is the one case where waiting to be asked is right.
+ *
+ * There IS a button now, and it does not contradict that. Re-run is not how the
+ * first read happens; it is how a person disagrees with an answer they already
+ * have — after re-capturing the posting, after changing the model, or because
+ * they think it is wrong. Nothing else can express that, because the document
+ * has not changed and every automatic path correctly concludes there is nothing
+ * new to do.
  */
 
 const STEP_LABEL: Record<FitStep, string> = {
@@ -70,7 +77,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
   )
   const [step, setStep] = useState<FitStep | null>(null)
   const [error, setError] = useState<string | null>(null)
-  /** Bumped by Try again. See `fitRequestKey` — it is half the request's identity. */
+  /** Bumped by Try again and by Re-run. See `fitRequestKey` — half the request's identity. */
   const [attempt, setAttempt] = useState(0)
   const abort = useRef<AbortController | null>(null)
   /**
@@ -104,7 +111,6 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
     fileId,
     attempt,
     cached: fileId !== undefined && haveRequirements(fileId),
-    started: started.current,
   })
 
   /*
@@ -124,6 +130,15 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       return
     }
     if (startKey === null) return
+    /*
+     * Asked exactly once, and checked HERE rather than in the decision above.
+     *
+     * The decision is a dependency of this effect, so anything it says has to
+     * survive the request being recorded — see `fit-request.ts`. The ref does
+     * not: nothing renders when it changes, which is precisely why the guard
+     * belongs on this side of the dependency array.
+     */
+    if (started.current === startKey) return
 
     started.current = startKey
     const stop = new AbortController()
@@ -184,15 +199,44 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
           <Target aria-hidden className="size-4 text-muted-foreground" />
           How you fit
         </h2>
-        {source && (
-          <p className="text-xs text-muted-foreground">
-            Measured against{' '}
-            <Link className="underline underline-offset-2" to={vaultPath({ tool: 'files' })}>
-              {source.name}
-            </Link>{' '}
-            — {HOW_LABEL[source.how]}
-          </p>
-        )}
+        <div className="flex items-baseline gap-3">
+          {source && (
+            <p className="text-xs text-muted-foreground">
+              Measured against{' '}
+              <Link className="underline underline-offset-2" to={vaultPath({ tool: 'files' })}>
+                {source.name}
+              </Link>{' '}
+              — {HOW_LABEL[source.how]}
+            </p>
+          )}
+          {/*
+            * Offered whenever a read could happen, not only after one has.
+            *
+            * What it is for: the posting was captured again, the model was
+            * changed, or the person simply does not believe the verdict. All
+            * three leave the document unchanged, so the session cache holds the
+            * very answer they are rejecting — which is why this bumps `attempt`
+            * rather than clearing anything. The attempt is half the request's
+            * identity, and `nextFitAction` lets it outrank the cache.
+            *
+            * The last answer stays on screen while the new one is read. A card
+            * that blanked itself would spend the read saying less than it knew.
+            */}
+          {ready && step === null && (
+            <Button
+              size="sm"
+              variant="ghost"
+              title="Read the posting again and re-measure"
+              onClick={() => {
+                setError(null)
+                setAttempt((n) => n + 1)
+              }}
+            >
+              <RotateCw aria-hidden className="size-3.5" strokeWidth={1.8} />
+              Re-run
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* ------------------------- nothing to say ------------------------- */}

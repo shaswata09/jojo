@@ -468,14 +468,24 @@ export const profileBackgroundUpdate = defineTool({
    * `s.optional` can no longer be applied to it. Explicit is what the schema
    * builder is for.
    */
+  /*
+   * The optional fields are NULLABLE, and `null` or a blank clears one.
+   *
+   * They were plain optionals, and `cleared('')` turned a blank into "leave it
+   * alone" — so a person who opened an entry to remove a wrong "Where" could
+   * type nothing that removed it. `application.update` had the right shape all
+   * along: absent leaves a field alone, `null` (or, for the text fields, an
+   * emptied box) takes it off the record. That is what an edit form needs and
+   * what the profile's edit form now sends. See `core/background-form.ts`.
+   */
   input: s.object({
     id: s.id('background', { label: 'Entry' }),
     kind: s.optional(s.enum(BACKGROUND_KINDS, { label: 'Kind' })),
     title: s.optional(s.string({ min: 1, label: 'Title' })),
-    where: s.optional(s.string({ label: 'Where' })),
-    period: s.optional(s.string({ label: 'When' })),
-    year: s.optional(s.number({ min: 1900, max: 2100, label: 'Year' })),
-    detail: s.optional(s.string({ label: 'Detail', multiline: true })),
+    where: s.optional(s.nullable(s.string({ label: 'Where' }))),
+    period: s.optional(s.nullable(s.string({ label: 'When' }))),
+    year: s.optional(s.nullable(s.number({ min: 1900, max: 2100, label: 'Year' }))),
+    detail: s.optional(s.nullable(s.string({ label: 'Detail', multiline: true }))),
     highlights: s.optional(
       s.array(s.string({ min: 1 }), {
         label: 'Highlights',
@@ -486,13 +496,22 @@ export const profileBackgroundUpdate = defineTool({
 
   run(ctx, input) {
     ctx.require('background', input.id)
+    // `undefined` inside the patch DELETES the key — never store the null. See
+    // the same lines in `application.update` and the round-trip bug D21 names.
+    const text = (value: string | null | undefined) =>
+      value === undefined
+        ? {}
+        : { present: true, value: value === null ? undefined : cleared(value) }
+    const where = text(input.where)
+    const period = text(input.period)
+    const detail = text(input.detail)
     ctx.tx.patch<'background'>(input.id, {
       ...(input.kind === undefined ? {} : { kind: input.kind }),
       ...opt('title', input.title?.trim()),
-      ...opt('where', cleared(input.where)),
-      ...opt('period', cleared(input.period)),
-      ...(input.year === undefined ? {} : { year: input.year }),
-      ...opt('detail', cleared(input.detail)),
+      ...('present' in where ? { where: where.value } : {}),
+      ...('present' in period ? { period: period.value } : {}),
+      ...(input.year === undefined ? {} : { year: input.year ?? undefined }),
+      ...('present' in detail ? { detail: detail.value } : {}),
       // Replaces rather than appends, and an empty list is how a caller clears
       // them — the same shape every other optional field here has.
       ...(input.highlights === undefined ? {} : { highlights: input.highlights }),

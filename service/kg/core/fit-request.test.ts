@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest'
 import { fitRequestKey, nextFitAction } from './fit-request'
 
 const at = (over: Partial<Parameters<typeof nextFitAction>[0]> = {}) =>
-  nextFitAction({ ready: true, fileId: 'f1', attempt: 0, cached: false, started: null, ...over })
+  nextFitAction({ ready: true, fileId: 'f1', attempt: 0, cached: false, ...over })
 
 describe('when there is nothing to do', () => {
   it('does nothing without a posting behind the record', () => {
@@ -35,19 +35,16 @@ describe('asking once', () => {
     expect(at()).toEqual({ do: 'start', key: 'f1#0' })
   })
 
-  it('does not start again once it has', () => {
+  it('names the same request on every render while that request is in flight', () => {
     /*
-     * THE assertion. Every render after the request begins runs this again, and
-     * a second start is not a wasted call — it is a second AbortController, so
-     * the effect's cleanup cancels the request still in flight and the panel
-     * never loads.
+     * THE assertion, and it used to say the opposite: once the request was
+     * recorded this returned `nothing`, which is true of what the panel should
+     * DO and fatal as a dependency. The panel keys its effect here, so an
+     * answer that changes when the request starts re-runs the effect and its
+     * cleanup aborts the read. Asking exactly once is the caller's ref,
+     * compared inside the effect where nothing watches it.
      */
-    expect(at({ started: 'f1#0' })).toEqual({ do: 'nothing' })
-  })
-
-  it('keeps saying nothing however many times it is asked', () => {
-    const started = 'f1#0'
-    for (let i = 0; i < 5; i += 1) expect(at({ started })).toEqual({ do: 'nothing' })
+    for (let i = 0; i < 5; i += 1) expect(at()).toEqual({ do: 'start', key: 'f1#0' })
   })
 })
 
@@ -55,7 +52,7 @@ describe('when asking again is right', () => {
   it('asks again for a different document', () => {
     // Opening a second application is a different posting, and the answer held
     // for the first one is wrong rather than stale.
-    expect(at({ fileId: 'f2', started: 'f1#0' })).toEqual({ do: 'start', key: 'f2#0' })
+    expect(at({ fileId: 'f2' })).toEqual({ do: 'start', key: 'f2#0' })
   })
 
   it('asks again when the person presses Try again', () => {
@@ -65,7 +62,7 @@ describe('when asking again is right', () => {
      * already done — and the retry button does nothing, silently, which is the
      * worst way for a button to be broken.
      */
-    expect(at({ attempt: 1, started: 'f1#0' })).toEqual({ do: 'start', key: 'f1#1' })
+    expect(at({ attempt: 1 })).toEqual({ do: 'start', key: 'f1#1' })
   })
 })
 
@@ -81,7 +78,7 @@ describe('when the answer is already known', () => {
      * opened after the create form prewarmed it. The second must show the
      * answer, not buy it twice.
      */
-    expect(at({ cached: true, started: null })).toEqual({ do: 'use-cache' })
+    expect(at({ cached: true })).toEqual({ do: 'use-cache' })
   })
 
   it('still refuses when there is nothing to read', () => {
@@ -89,6 +86,30 @@ describe('when the answer is already known', () => {
     // would mean anything, and a cached answer from a previous session's
     // background does not change that.
     expect(at({ cached: true, ready: false })).toEqual({ do: 'nothing' })
+  })
+})
+
+describe('what the panel puts in a dependency array', () => {
+  /*
+   * REPRODUCTION of the bug this module was extracted to prevent, reintroduced
+   * through the action itself.
+   *
+   * The panel keys its effect on this decision. `use-read-fit` calls
+   * `onStep('reading')` synchronously, before its first await, so starting a
+   * read sets state and re-renders immediately — with the request now recorded.
+   * If the decision moves on that render, the dependency array moves, React
+   * runs the effect's cleanup, and the cleanup aborts the read that was just
+   * started. The panel then spins on "Opening the posting" for the rest of the
+   * session, which is indistinguishable from a slow model.
+   */
+  /*
+   * Re-run is a person saying "read it again" about a posting already read —
+   * the capture was replaced, or the model was. The cache answers the question
+   * the button is asking, so the button has to outrank it.
+   */
+  it('re-reads a cached posting when the person asks again', () => {
+    expect(at({ cached: true })).toEqual({ do: 'use-cache' })
+    expect(at({ cached: true, attempt: 1 })).toEqual({ do: 'start', key: 'f1#1' })
   })
 })
 

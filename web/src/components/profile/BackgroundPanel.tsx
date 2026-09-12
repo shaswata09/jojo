@@ -1,10 +1,20 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, FileText, Sparkles, Trash2 } from 'lucide-react'
+import type { FormEvent, KeyboardEvent } from 'react'
+import { ChevronDown, FileText, Pencil, Sparkles, Trash2 } from 'lucide-react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { EmptyState } from '@/components/common/EmptyState'
+import { Field, TextareaField } from '@/components/common/Field'
 import { menuItemClass } from '@/components/common/RowMenu'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  addEntryFrom,
+  draftOf,
+  draftProblems,
+  emptyDraft,
+  updateFrom,
+} from '@jojo/service/core/background-form'
+import type { BackgroundDraft } from '@jojo/service/core/background-form'
 import { BACKGROUND_LABEL, BACKGROUND_ORDER } from '@jojo/service/core/model'
 import type { Background, BackgroundKind } from '@jojo/service/core/model'
 import { readableDocuments } from '@jojo/service/core/twin'
@@ -46,7 +56,15 @@ import { cn } from '@/lib/utils'
  * are empty spends their attention on the eleven.
  */
 
-function Entry({ entry, onDelete }: { entry: Background; onDelete: () => void }) {
+function Entry({
+  entry,
+  onEdit,
+  onDelete,
+}: {
+  entry: Background
+  onEdit: () => void
+  onDelete: () => void
+}) {
   const [open, setOpen] = useState(false)
   const bullets = entry.highlights ?? []
 
@@ -98,17 +116,191 @@ function Entry({ entry, onDelete }: { entry: Background; onDelete: () => void })
           )}
         </div>
 
-        <Button
-          size="sm"
-          variant="ghost"
-          aria-label={`Remove ${entry.title}`}
-          className="opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
-          onClick={onDelete}
-        >
-          <Trash2 aria-hidden className="size-4" />
-        </Button>
+        {/* Edit and remove, revealed together. Correcting a wrong reading is
+            the commoner act of the two — a year, a misfiled kind, a "Where" that
+            named the department rather than the university — and it used to
+            take a delete and a retype. */}
+        <div className="flex shrink-0 items-start opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+          <Button size="sm" variant="ghost" aria-label={`Edit ${entry.title}`} onClick={onEdit}>
+            <Pencil aria-hidden className="size-4" />
+          </Button>
+          <Button size="sm" variant="ghost" aria-label={`Remove ${entry.title}`} onClick={onDelete}>
+            <Trash2 aria-hidden className="size-4" />
+          </Button>
+        </div>
       </div>
     </li>
+  )
+}
+
+/**
+ * One form for adding an entry and for editing one in place.
+ *
+ * The three decisions — what a blank box means, what changed, what to refuse
+ * before the tool sees it — are `core/background-form.ts`, shared with the
+ * phone; this draws the boxes. Editing shows every field the record has,
+ * including the bullets under a job as one line each and the year that the
+ * fit score sorts on, because a form that hid a field is a field nobody can
+ * correct.
+ *
+ * Nothing is written until Save, and Save is disabled until something has
+ * changed: a Save that wrote nothing would raise an undo toast for nothing.
+ * Escape backs out, as every inline editor here does, and ⌘/Ctrl+Enter
+ * submits from inside a textarea, where Enter has to mean a new line.
+ */
+function EntryForm({
+  initial,
+  onDone,
+}: {
+  /** Absent for a new entry. */
+  initial?: Background | undefined
+  onDone: () => void
+}) {
+  const run = useRun()
+  const { toast } = useToast()
+  const [draft, setDraft] = useState<BackgroundDraft>(() =>
+    initial === undefined ? emptyDraft() : draftOf(initial),
+  )
+  const [tried, setTried] = useState(false)
+  const problems = draftProblems(draft)
+  const patch = initial === undefined ? null : updateFrom(initial, draft)
+  const blocked = Object.keys(problems).length > 0 || (initial !== undefined && patch === null)
+  const set = (key: keyof BackgroundDraft) => (value: string) =>
+    setDraft((current) => ({ ...current, [key]: value }))
+
+  const submit = (event?: FormEvent) => {
+    event?.preventDefault()
+    setTried(true)
+    if (Object.keys(problems).length > 0) return
+
+    if (initial === undefined) {
+      const entry = addEntryFrom(draft)
+      const result = run('profile.background.add', { background: [entry] })
+      toast({
+        title: result.ok ? `${entry.title} added` : 'That did not save',
+        ...(result.ok
+          ? { action: result.undo ? { label: 'Undo', onClick: result.undo } : undefined }
+          : { description: result.errors[0]?.message, tone: 'danger' as const }),
+      })
+      if (result.ok) onDone()
+      return
+    }
+
+    if (patch === null) {
+      onDone()
+      return
+    }
+    const result = run('profile.background.update', { id: initial.id, ...patch })
+    toast({
+      title: result.ok ? `${draft.title.trim() || initial.title} updated` : 'That did not save',
+      ...(result.ok
+        ? { action: result.undo ? { label: 'Undo', onClick: result.undo } : undefined }
+        : { description: result.errors[0]?.message, tone: 'danger' as const }),
+    })
+    if (result.ok) onDone()
+  }
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      onDone()
+      return
+    }
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault()
+      submit()
+    }
+  }
+
+  const editing = initial !== undefined
+  return (
+    <form
+      className="space-y-2 rounded-lg border border-hairline p-3"
+      aria-label={editing ? `Edit ${initial.title}` : 'Add an entry'}
+      onSubmit={submit}
+      onKeyDown={onKeyDown}
+    >
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,11rem)_1fr]">
+        <label className="flex flex-col gap-1 text-xs text-text-2">
+          Kind
+          <select
+            className="bg-surface h-9 rounded-md border border-hairline px-2 text-sm text-text-1"
+            value={draft.kind}
+            onChange={(e) => set('kind')(e.target.value as BackgroundKind)}
+          >
+            {BACKGROUND_ORDER.map((kind) => (
+              <option key={kind} value={kind}>
+                {BACKGROUND_LABEL[kind]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Field
+          label="Title"
+          required
+          autoFocus
+          placeholder="What it was"
+          value={draft.title}
+          error={tried ? problems.title : undefined}
+          onChange={(e) => set('title')(e.target.value)}
+        />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-[1fr_1fr_6rem]">
+        <Field
+          label="Where"
+          placeholder="Optional"
+          value={draft.where}
+          onChange={(e) => set('where')(e.target.value)}
+        />
+        <Field
+          label="When"
+          placeholder="As written — “2021–2024”"
+          value={draft.period}
+          onChange={(e) => set('period')(e.target.value)}
+        />
+        <Field
+          label="Year"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="2024"
+          value={draft.year}
+          error={tried ? problems.year : undefined}
+          onChange={(e) => set('year')(e.target.value)}
+        />
+      </div>
+      <TextareaField
+        label="Detail"
+        rows={2}
+        placeholder="Anything worth weighing a posting against (optional)"
+        value={draft.detail}
+        onChange={(e) => set('detail')(e.target.value)}
+      />
+      <TextareaField
+        label="Highlights"
+        hint="One per line — what was built, shipped, taught or found."
+        rows={
+          editing && draft.highlights !== ''
+            ? Math.min(6, draft.highlights.split('\n').length + 1)
+            : 2
+        }
+        value={draft.highlights}
+        onChange={(e) => set('highlights')(e.target.value)}
+      />
+      <div className="flex items-center justify-end gap-2">
+        {editing && initial.source !== undefined && (
+          <p className="mr-auto flex items-center gap-1 text-xs text-text-3">
+            <FileText aria-hidden className="size-3" />
+            read from a document — your edit is kept over the reading
+          </p>
+        )}
+        <Button type="button" size="sm" variant="ghost" onClick={onDone}>
+          Cancel
+        </Button>
+        <Button type="submit" size="sm" disabled={blocked}>
+          {editing ? 'Save changes' : 'Add'}
+        </Button>
+      </div>
+    </form>
   )
 }
 
@@ -136,57 +328,21 @@ export function BackgroundPanel() {
   }, [all])
 
   /*
-   * Adding a fact by hand, which had no route at all.
+   * Adding a fact by hand, and now correcting one in place.
    *
    * The only writer was the CV reader, so somebody with no CV to hand — or with
    * a fact no document of theirs mentions, which is most volunteering, most
-   * outreach and every award announced in an email — could not record it. The
-   * panel offered a delete and no add, which reads as "this is a view of a
-   * document" rather than "this is your profile".
+   * outreach and every award announced in an email — could not record it. And
+   * a fact read WRONGLY — a year, a kind, a "Where" naming the department —
+   * could only be deleted and retyped, which for an entry with six bullets
+   * under it meant nobody did. `EntryForm` is both, and the row being edited
+   * becomes the form so the correction is made where the mistake is read.
    *
-   * The form asks for the two fields the tool requires and the three it does
-   * most with. Highlights and `source` are deliberately not here: highlights
-   * are what a CV's bullet points become and typing them one at a time is a
-   * worse way to spend a minute than pasting the CV, and `source` names a
-   * document this entry did NOT come from.
+   * One thing open at a time: an add and an edit, or two edits, on one page
+   * would be two half-typed forms racing for the same Save.
    */
-  const [adding, setAdding] = useState(false)
-  const [draft, setDraft] = useState({
-    kind: 'employment' as BackgroundKind,
-    title: '',
-    where: '',
-    period: '',
-    detail: '',
-  })
-  const reset = () => {
-    setDraft({ kind: 'employment', title: '', where: '', period: '', detail: '' })
-    setAdding(false)
-  }
-
-  const add = () => {
-    const title = draft.title.trim()
-    if (title === '') return
-    const result = run('profile.background.add', {
-      background: [
-        {
-          kind: draft.kind,
-          title,
-          // `exactOptionalPropertyTypes`: an empty box is an ABSENT field, not
-          // an empty string. Sending '' would put a blank "Where" on the row.
-          ...(draft.where.trim() === '' ? {} : { where: draft.where.trim() }),
-          ...(draft.period.trim() === '' ? {} : { period: draft.period.trim() }),
-          ...(draft.detail.trim() === '' ? {} : { detail: draft.detail.trim() }),
-        },
-      ],
-    })
-    toast({
-      title: result.ok ? `${title} added` : 'That did not save',
-      ...(result.ok
-        ? { action: result.undo ? { label: 'Undo', onClick: result.undo } : undefined }
-        : { description: result.errors[0]?.message, tone: 'danger' as const }),
-    })
-    if (result.ok) reset()
-  }
+  const [open, setOpen] = useState<'add' | { edit: string } | null>(null)
+  const editingId = open !== null && typeof open === 'object' ? open.edit : null
 
   const remove = (entry: Background) => {
     const result = run('profile.background.delete', { id: entry.id })
@@ -210,74 +366,14 @@ export function BackgroundPanel() {
         Your background
       </PanelTitle>
 
-      {adding ? (
-        <form
-          className="mb-4 space-y-2 rounded-lg border border-hairline p-3"
-          onSubmit={(event) => {
-            event.preventDefault()
-            add()
-          }}
-        >
-          <div className="flex gap-2">
-            <select
-              aria-label="Kind"
-              className="bg-surface rounded-md border border-hairline px-2 py-1.5 text-sm"
-              value={draft.kind}
-              onChange={(e) => setDraft({ ...draft, kind: e.target.value as BackgroundKind })}
-            >
-              {BACKGROUND_ORDER.map((kind) => (
-                <option key={kind} value={kind}>
-                  {BACKGROUND_LABEL[kind]}
-                </option>
-              ))}
-            </select>
-            <input
-              aria-label="Title"
-              required
-              autoFocus
-              placeholder="What it was"
-              className="bg-surface flex-1 rounded-md border border-hairline px-2 py-1.5 text-sm"
-              value={draft.title}
-              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-            />
-          </div>
-          <div className="flex gap-2">
-            <input
-              aria-label="Where"
-              placeholder="Where (optional)"
-              className="bg-surface flex-1 rounded-md border border-hairline px-2 py-1.5 text-sm"
-              value={draft.where}
-              onChange={(e) => setDraft({ ...draft, where: e.target.value })}
-            />
-            <input
-              aria-label="When"
-              placeholder="When — “2021–2024” (optional)"
-              className="bg-surface flex-1 rounded-md border border-hairline px-2 py-1.5 text-sm"
-              value={draft.period}
-              onChange={(e) => setDraft({ ...draft, period: e.target.value })}
-            />
-          </div>
-          <textarea
-            aria-label="Detail"
-            rows={2}
-            placeholder="Anything worth weighing a posting against (optional)"
-            className="bg-surface w-full rounded-md border border-hairline px-2 py-1.5 text-sm"
-            value={draft.detail}
-            onChange={(e) => setDraft({ ...draft, detail: e.target.value })}
-          />
-          <div className="flex justify-end gap-2">
-            <Button type="button" size="sm" variant="ghost" onClick={reset}>
-              Cancel
-            </Button>
-            <Button type="submit" size="sm" disabled={draft.title.trim() === ''}>
-              Add
-            </Button>
-          </div>
-        </form>
+      {open === 'add' ? (
+        <div className="mb-4">
+          <EntryForm onDone={() => setOpen(null)} />
+        </div>
       ) : (
         <div className="mb-3 flex justify-end gap-2">
           <ReadDocumentMenu configured={configured} />
-          <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
+          <Button size="sm" variant="outline" onClick={() => setOpen('add')}>
             Add an entry
           </Button>
         </div>
@@ -312,9 +408,20 @@ export function BackgroundPanel() {
                 {BACKGROUND_LABEL[kind]}
               </h3>
               <ul>
-                {rows.map((entry) => (
-                  <Entry key={entry.id} entry={entry} onDelete={() => remove(entry)} />
-                ))}
+                {rows.map((entry) =>
+                  entry.id === editingId ? (
+                    <li key={entry.id} className="border-t border-hairline py-2 first:border-t-0">
+                      <EntryForm initial={entry} onDone={() => setOpen(null)} />
+                    </li>
+                  ) : (
+                    <Entry
+                      key={entry.id}
+                      entry={entry}
+                      onEdit={() => setOpen({ edit: entry.id })}
+                      onDelete={() => remove(entry)}
+                    />
+                  ),
+                )}
               </ul>
             </section>
           ))}

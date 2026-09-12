@@ -81,13 +81,15 @@ export const SHAPE: DirRow[] = [
     // here explained 118/57: `core/folder.ts` and its test had been deleted,
     // 555 lines of File System Access folder rules for a folder the OS no
     // longer owns. Both movements are real; the count is simply current again.
-    files: 120,
-    tests: 58,
+    // `background-form.ts` and its test: the entry form's three decisions —
+    // what a blank box means, what changed, what to refuse — shared by both apps.
+    files: 122,
+    tests: 59,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
-    lines: 33402,
+    lines: 33668,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },

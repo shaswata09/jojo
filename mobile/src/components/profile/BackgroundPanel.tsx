@@ -9,6 +9,14 @@ import { Button } from '@/components/ui/Button'
 import { FormField, TextField } from '@/components/ui/Field'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Sheet } from '@/components/ui/Sheet'
+import {
+  addEntryFrom,
+  draftOf,
+  draftProblems,
+  emptyDraft,
+  updateFrom,
+} from '@jojo/service/core/background-form'
+import type { BackgroundDraft } from '@jojo/service/core/background-form'
 import { BACKGROUND_LABEL, BACKGROUND_ORDER } from '@jojo/service/core/model'
 import type { Background, BackgroundKind } from '@jojo/service/core/model'
 import { readableDocuments } from '@jojo/service/core/twin'
@@ -34,7 +42,15 @@ import { space } from '@/theme/tokens'
  * past on a phone. So this confirms and web does not.
  */
 
-function Entry({ entry, onDelete }: { entry: Background; onDelete: () => void }) {
+function Entry({
+  entry,
+  onEdit,
+  onDelete,
+}: {
+  entry: Background
+  onEdit: () => void
+  onDelete: () => void
+}) {
   const c = useColors()
   const [open, setOpen] = useState(false)
   const bullets = entry.highlights ?? []
@@ -92,16 +108,185 @@ function Entry({ entry, onDelete }: { entry: Background; onDelete: () => void })
           )}
         </View>
 
-        <Pressable
-          onPress={onDelete}
-          accessibilityRole="button"
-          accessibilityLabel={`Remove ${entry.title}`}
-          hitSlop={10}
-        >
-          <Feather name="trash-2" size={16} color={c.text3} />
-        </Pressable>
+        {/* Edit beside remove. Correcting a wrong reading is the commoner act,
+            and it used to be a delete and a retype — on a phone, of six bullets. */}
+        <View style={{ flexDirection: 'row', gap: space[3], paddingTop: 2 }}>
+          <Pressable
+            onPress={onEdit}
+            accessibilityRole="button"
+            accessibilityLabel={`Edit ${entry.title}`}
+            hitSlop={10}
+          >
+            <Feather name="edit-2" size={16} color={c.text3} />
+          </Pressable>
+          <Pressable
+            onPress={onDelete}
+            accessibilityRole="button"
+            accessibilityLabel={`Remove ${entry.title}`}
+            hitSlop={10}
+          >
+            <Feather name="trash-2" size={16} color={c.text3} />
+          </Pressable>
+        </View>
       </View>
     </View>
+  )
+}
+
+/**
+ * The sheet for adding an entry and for editing one — the same sheet, so the
+ * two cannot drift. The decisions in it (a blank box on an edit takes the
+ * field off; only what changed is sent; a bad year is refused with a sentence)
+ * are `core/background-form.ts`, shared with the web. Save is disabled until
+ * something changed, because a Save that wrote nothing would raise an Undo for
+ * nothing. Keyed by the caller so opening a different entry starts fresh.
+ */
+function EntrySheet({
+  initial,
+  open,
+  onClose,
+}: {
+  /** `null` for a new entry. */
+  initial: Background | null
+  open: boolean
+  onClose: () => void
+}) {
+  const run = useRun()
+  const { toast } = useToast()
+  const [draft, setDraft] = useState<BackgroundDraft>(() =>
+    initial === null ? emptyDraft() : draftOf(initial),
+  )
+  const [tried, setTried] = useState(false)
+  const [kindOpen, setKindOpen] = useState(false)
+  const problems = draftProblems(draft)
+  const patch = initial === null ? null : updateFrom(initial, draft)
+  const blocked = Object.keys(problems).length > 0 || (initial !== null && patch === null)
+  const editing = initial !== null
+
+  const save = () => {
+    setTried(true)
+    if (Object.keys(problems).length > 0) return
+    if (initial === null) {
+      const entry = addEntryFrom(draft)
+      const result = run('profile.background.add', { background: [entry] })
+      toast({
+        title: result.ok ? `${entry.title} added` : 'That did not save',
+        ...(result.ok
+          ? result.undo
+            ? { action: { label: 'Undo', onPress: result.undo } }
+            : {}
+          : { description: result.errors[0]?.message, tone: 'danger' as const }),
+      })
+      if (result.ok) onClose()
+      return
+    }
+    if (patch === null) {
+      onClose()
+      return
+    }
+    const result = run('profile.background.update', { id: initial.id, ...patch })
+    toast({
+      title: result.ok ? `${draft.title.trim() || initial.title} updated` : 'That did not save',
+      ...(result.ok
+        ? result.undo
+          ? { action: { label: 'Undo', onPress: result.undo } }
+          : {}
+        : { description: result.errors[0]?.message, tone: 'danger' as const }),
+    })
+    if (result.ok) onClose()
+  }
+
+  return (
+    <>
+      <Sheet
+        open={open}
+        onClose={onClose}
+        title={editing ? 'Edit this entry' : 'Add to your background'}
+        description={
+          editing
+            ? initial.source !== undefined
+              ? 'Read from a document. Your edit is kept over the reading.'
+              : 'Nothing is saved until you press Save.'
+            : 'Anything a posting should be weighed against. Nothing here is sent anywhere.'
+        }
+        footer={
+          <>
+            <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
+            <Button label={editing ? 'Save' : 'Add'} size="md" disabled={blocked} onPress={save} />
+          </>
+        }
+      >
+        <View style={{ gap: space[2], paddingBottom: space[2] }}>
+          {/* A menu rather than a picker wheel: sixteen kinds is a list to read,
+              and `MenuSheet` is what every other choice on this phone uses. */}
+          <FormField label="Kind">
+            <Button
+              label={BACKGROUND_LABEL[draft.kind]}
+              variant="outline"
+              size="md"
+              onPress={() => setKindOpen(true)}
+            />
+          </FormField>
+          <TextField
+            label="Title"
+            required
+            value={draft.title}
+            placeholder="What it was"
+            {...(tried && problems.title ? { error: problems.title } : {})}
+            onChangeText={(title) => setDraft({ ...draft, title })}
+          />
+          <TextField
+            label="Where"
+            value={draft.where}
+            placeholder="Optional"
+            onChangeText={(where) => setDraft({ ...draft, where })}
+          />
+          <TextField
+            label="When"
+            value={draft.period}
+            placeholder="As written — “2021–2024”"
+            onChangeText={(period) => setDraft({ ...draft, period })}
+          />
+          <TextField
+            label="Year"
+            value={draft.year}
+            placeholder="2024"
+            keyboardType="number-pad"
+            maxLength={4}
+            {...(tried && problems.year ? { error: problems.year } : {})}
+            onChangeText={(year) => setDraft({ ...draft, year })}
+          />
+          <TextField
+            label="Detail"
+            value={draft.detail}
+            multiline
+            placeholder="Optional"
+            onChangeText={(detail) => setDraft({ ...draft, detail })}
+          />
+          <TextField
+            label="Highlights"
+            hint="One per line — what was built, shipped, taught or found."
+            value={draft.highlights}
+            multiline
+            placeholder="Optional"
+            onChangeText={(highlights) => setDraft({ ...draft, highlights })}
+          />
+        </View>
+      </Sheet>
+
+      <MenuSheet
+        open={kindOpen}
+        onClose={() => setKindOpen(false)}
+        title="Kind"
+        description="Which part of your background this belongs to."
+        actions={BACKGROUND_ORDER.map((kind) => ({
+          id: kind,
+          label: BACKGROUND_LABEL[kind],
+          checked: kind === draft.kind,
+          onPress: () => setDraft({ ...draft, kind }),
+        }))}
+      />
+    </>
   )
 }
 
@@ -132,62 +317,19 @@ export function BackgroundPanel() {
   }, [all])
 
   /*
-   * Adding a fact by hand — the phone had no route either.
+   * Adding a fact by hand, and correcting one — the phone had no route to
+   * either. See web's `BackgroundPanel` for the argument. A sheet rather than
+   * an inline form, because that is what this app does with every multi-field
+   * edit on a phone, and because the keyboard covers half the screen the
+   * moment the first field is focused.
    *
-   * See web's `BackgroundPanel` for the argument: the CV reader was the only
-   * writer, so a fact no document of yours mentions (most volunteering, most
-   * outreach, an award announced in an email) could not be recorded at all, and
-   * a panel with a delete and no add reads as a view of a document rather than
-   * as your profile.
-   *
-   * A sheet rather than an inline form, because that is what this app does with
-   * every other multi-field edit on a phone, and because the keyboard covers
-   * half the screen the moment the first field is focused.
+   * `'new'` or the entry being edited; keyed into the sheet so that opening a
+   * different entry starts from that entry rather than from the last draft.
    */
-  const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState<Background | 'new' | null>(null)
   const [choosing, setChoosing] = useState(false)
   // The phone's records carry `uri`, so the record itself answers "has bytes".
   const documents = useMemo(() => readableDocuments(graph), [graph])
-  const [kindOpen, setKindOpen] = useState(false)
-  const empty = {
-    kind: 'employment' as BackgroundKind,
-    title: '',
-    where: '',
-    period: '',
-    detail: '',
-  }
-  const [draft, setDraft] = useState(empty)
-
-  const add = () => {
-    const title = draft.title.trim()
-    if (title === '') return
-    const result = run('profile.background.add', {
-      background: [
-        {
-          kind: draft.kind,
-          title,
-          // An empty box is an ABSENT field, not an empty string — the same
-          // `exactOptionalPropertyTypes` care web's copy takes. Sending '' puts
-          // a blank "Where" on the row.
-          ...(draft.where.trim() === '' ? {} : { where: draft.where.trim() }),
-          ...(draft.period.trim() === '' ? {} : { period: draft.period.trim() }),
-          ...(draft.detail.trim() === '' ? {} : { detail: draft.detail.trim() }),
-        },
-      ],
-    })
-    toast({
-      title: result.ok ? `${title} added` : 'That did not save',
-      ...(result.ok
-        ? result.undo
-          ? { action: { label: 'Undo', onPress: result.undo } }
-          : {}
-        : { description: result.errors[0]?.message, tone: 'danger' as const }),
-    })
-    if (result.ok) {
-      setDraft(empty)
-      setAdding(false)
-    }
-  }
 
   const remove = (entry: Background) => {
     const result = run('profile.background.delete', { id: entry.id })
@@ -243,7 +385,7 @@ export function BackgroundPanel() {
           icon="plus"
           variant="outline"
           size="sm"
-          onPress={() => setAdding(true)}
+          onPress={() => setEditing('new')}
         />
       </View>
 
@@ -296,7 +438,12 @@ export function BackgroundPanel() {
                 {BACKGROUND_LABEL[kind]}
               </Txt>
               {rows.map((entry) => (
-                <Entry key={entry.id} entry={entry} onDelete={() => setConfirming(entry)} />
+                <Entry
+                  key={entry.id}
+                  entry={entry}
+                  onEdit={() => setEditing(entry)}
+                  onDelete={() => setConfirming(entry)}
+                />
               ))}
             </View>
           ))}
@@ -315,69 +462,14 @@ export function BackgroundPanel() {
         }}
       />
 
-      <Sheet
-        open={adding}
-        onClose={() => setAdding(false)}
-        title="Add to your background"
-        description="Anything a posting should be weighed against. Nothing here is sent anywhere."
-        footer={
-          <>
-            <Button label="Cancel" variant="ghost" size="md" onPress={() => setAdding(false)} />
-            <Button label="Add" size="md" disabled={draft.title.trim() === ''} onPress={add} />
-          </>
-        }
-      >
-        <View style={{ gap: space[2], paddingBottom: space[2] }}>
-          {/* A menu rather than a picker wheel: sixteen kinds is a list to read,
-              and `MenuSheet` is what every other choice on this phone uses. */}
-          <FormField label="Kind">
-            <Button
-              label={BACKGROUND_LABEL[draft.kind]}
-              variant="outline"
-              size="md"
-              onPress={() => setKindOpen(true)}
-            />
-          </FormField>
-          <TextField
-            label="Title"
-            value={draft.title}
-            placeholder="What it was"
-            onChangeText={(title) => setDraft({ ...draft, title })}
-          />
-          <TextField
-            label="Where"
-            value={draft.where}
-            placeholder="Optional"
-            onChangeText={(where) => setDraft({ ...draft, where })}
-          />
-          <TextField
-            label="When"
-            value={draft.period}
-            placeholder="As written — “2021–2024”"
-            onChangeText={(period) => setDraft({ ...draft, period })}
-          />
-          <TextField
-            label="Detail"
-            value={draft.detail}
-            multiline
-            placeholder="Optional"
-            onChangeText={(detail) => setDraft({ ...draft, detail })}
-          />
-        </View>
-      </Sheet>
-
-      <MenuSheet
-        open={kindOpen}
-        onClose={() => setKindOpen(false)}
-        title="Kind"
-        description="Which part of your background this belongs to."
-        actions={BACKGROUND_ORDER.map((kind) => ({
-          id: kind,
-          label: BACKGROUND_LABEL[kind],
-          checked: kind === draft.kind,
-          onPress: () => setDraft({ ...draft, kind }),
-        }))}
-      />
+      {editing !== null && (
+        <EntrySheet
+          key={editing === 'new' ? 'new' : editing.id}
+          initial={editing === 'new' ? null : editing}
+          open
+          onClose={() => setEditing(null)}
+        />
+      )}
     </Panel>
   )
 }

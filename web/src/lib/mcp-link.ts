@@ -73,6 +73,19 @@ export const FIRST_RETRY_MS = 5_000
 export const MAX_RETRY_MS = 60_000
 
 /**
+ * The shortest gap between one poll and the next.
+ *
+ * The happy path has no timer in it on purpose: the bridge holds an empty poll
+ * open for twenty-five seconds, so the loop is paced by the far end rather than
+ * by a clock here. That is true of the bridge in this repository and of nothing
+ * else — anything that answers an empty poll immediately (an older copy, a
+ * proxy, something misconfigured) turns the same loop into a hot spin that
+ * saturates a core and floods the extension relay. Measured the hard way: a
+ * test whose fake transport answered instantly took the worker out with it.
+ */
+export const MIN_POLL_GAP_MS = 250
+
+/**
  * A plain `fetch` to the bridge — for a page served from this machine.
  *
  * Only the development server qualifies. A page served from the web is https,
@@ -182,6 +195,21 @@ export async function runLink({
 }): Promise<void> {
   const authorization = `Bearer ${token}`
   let delay = FIRST_RETRY_MS
+  /*
+   * Two strikes before naming a culprit.
+   *
+   * "The extension did not answer" and "the extension is not installed" are the
+   * same silence, and the first one happens on its own: an MV3 service worker
+   * is evicted when idle, and the poll that wakes it can miss. Reported at once,
+   * that put "Needs the extension" under a working link — which is exactly what
+   * somebody hit, with the extension installed and the bridge printing "jojo
+   * connected" in the next window.
+   *
+   * So a single miss is reported as the neutral state and a retry follows a
+   * moment later. Only a failure that repeats gets to name the extension, which
+   * is the case where naming it is true.
+   */
+  let strikes = 0
 
   const backOff = async () => {
     await wait(delay, signal)
@@ -191,6 +219,7 @@ export async function runLink({
   onStatus({ state: 'searching' })
 
   while (!signal.aborted) {
+    const askedAt = Date.now()
     const next = await transport(
       { url: `${address}/tab/next`, method: 'GET', headers: { authorization } },
       signal,
@@ -198,25 +227,33 @@ export async function runLink({
     if (signal.aborted) return
 
     if ('failed' in next) {
-      onStatus(
+      strikes += 1
+      const named =
         next.failed.kind === 'absent'
-          ? { state: 'no-extension' }
+          ? ({ state: 'no-extension' } as const)
           : next.failed.kind === 'stale'
-            ? { state: 'stale-extension' }
-            : { state: 'searching', reason: next.failed.reason },
+            ? ({ state: 'stale-extension' } as const)
+            : null
+      onStatus(
+        named !== null && strikes >= 2 ? named : { state: 'searching', reason: next.failed.reason },
       )
       await backOff()
       continue
     }
+    // Deterministic rather than transient: a token is wrong or it is not.
     if (next.status === 401) {
+      strikes = 0
       onStatus({ state: 'bad-token' })
       await backOff()
       continue
     }
     if (next.status === 204) {
-      // Idle, and attached. The next poll goes straight out.
+      // Idle, and attached. The next poll goes straight out — unless the answer
+      // came back too fast to have been held, in which case pace it here.
+      strikes = 0
       onStatus({ state: 'ready' })
       delay = FIRST_RETRY_MS
+      if (Date.now() - askedAt < MIN_POLL_GAP_MS) await wait(MIN_POLL_GAP_MS, signal)
       continue
     }
     if (next.status !== 200) {
@@ -226,6 +263,7 @@ export async function runLink({
     }
 
     delay = FIRST_RETRY_MS
+    strikes = 0
     onStatus({ state: 'ready' })
 
     let handed: { seq?: unknown; message?: unknown }

@@ -248,6 +248,54 @@ describe('what the tab says about the link', () => {
     expect(statuses.every((s) => s.state === 'searching')).toBe(true)
   })
 
+  it('does not accuse the extension of being missing over one dropped poll', async () => {
+    /*
+     * An MV3 service worker is evicted when idle and the poll that wakes it can
+     * miss. Reported at once, that showed "Needs the extension" on a page whose
+     * extension was working and whose bridge was printing "jojo connected" —
+     * which is how somebody came to debug a link that was already up.
+     */
+    const statuses: LinkStatus[] = []
+    const controller = new AbortController()
+    let calls = 0
+    const linked = runLink({
+      address: 'http://127.0.0.1:9',
+      token: TOKEN,
+      host: tabHost(),
+      signal: controller.signal,
+      onStatus: (status) => statuses.push(status),
+      wait: () => new Promise((resolve) => setTimeout(resolve, 5)),
+      transport: async () => {
+        calls += 1
+        // One miss, then the bridge answers as usual.
+        return calls === 1
+          ? { failed: { kind: 'absent' as const, reason: 'no answer' } }
+          : { ok: true, status: 204, text: '' }
+      },
+    })
+    await until(() => statuses.some((s) => s.state === 'ready'))
+    controller.abort()
+    await linked
+    expect(statuses.map((s) => s.state)).not.toContain('no-extension')
+  })
+
+  it('names the extension once the miss repeats', async () => {
+    const statuses: LinkStatus[] = []
+    const controller = new AbortController()
+    const linked = runLink({
+      address: 'http://127.0.0.1:9',
+      token: TOKEN,
+      host: tabHost(),
+      signal: controller.signal,
+      onStatus: (status) => statuses.push(status),
+      wait: () => new Promise((resolve) => setTimeout(resolve, 5)),
+      transport: async () => ({ failed: { kind: 'absent' as const, reason: 'no answer' } }),
+    })
+    await until(() => statuses.some((s) => s.state === 'no-extension'))
+    controller.abort()
+    await linked
+  })
+
   it('reports a token the bridge refuses', async () => {
     const { statuses } = await world({ token: 'x'.repeat(43) })
     await until(() => statuses.some((s) => s.state === 'bad-token'))
