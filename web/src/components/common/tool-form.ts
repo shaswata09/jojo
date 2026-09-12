@@ -24,6 +24,7 @@ import { displayName } from '@/data/seed'
 import type { NodeType, StoredNode } from '@jojo/service/core/model'
 import type { FieldMeta } from '@jojo/service/core/schema'
 import { labelOf } from '@jojo/service/core/ontology'
+import { isAnswerable } from '@jojo/service/core/proposal'
 import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import type { AnyTool } from '@jojo/service/tools/tool'
 
@@ -260,10 +261,35 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
 
 export type RecordOption = { id: string; label: string }
 
+/**
+ * The records a picker may offer for a type — which is not every record of it.
+ *
+ * `ofType` is the store's answer. This is the screen's, and for `proposal` the
+ * two part company: a suggestion is never deleted, because clearing the queue
+ * has to leave the row behind for the scout to dedupe against (`isAnswerable`
+ * in `core/proposal.ts` tells that story). Reported 2026-09-12: the Job scout
+ * showed an empty queue while the palette's "Approve suggestion" offered every
+ * suggestion ever raised, each one refused on click — and pressing Clear made
+ * no difference to the list, because clearing is what put those rows in it.
+ *
+ * One function rather than a filter at each call site: the count that decides
+ * whether a tool is offered at all and the list it then shows have to be the
+ * same set, or the palette offers a verb whose picker is empty.
+ */
+export function offerableRecords(memory: GraphSnapshot, type: NodeType): readonly StoredNode[] {
+  if (type !== 'proposal') return memory.ofType(type)
+  return memory.ofType('proposal').filter((node) => isAnswerable(node.props))
+}
+
+/** `CountOf` over exactly what the pickers will list. Pass it the live snapshot. */
+export const recordCountOf =
+  (memory: GraphSnapshot): CountOf =>
+  (type) =>
+    offerableRecords(memory, type).length
+
 /** Sorted by what is on screen, so the picker reads alphabetically. */
 export function recordOptions(memory: GraphSnapshot, type: NodeType): RecordOption[] {
-  return memory
-    .ofType(type)
+  return offerableRecords(memory, type)
     .map((node) => ({ id: node.id, label: recordLabel(memory, node) }))
     .sort((a, b) => a.label.localeCompare(b.label))
 }

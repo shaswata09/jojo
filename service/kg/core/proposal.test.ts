@@ -21,6 +21,7 @@ import {
   intervalMs,
   isDue,
   isKnownPosting,
+  isAnswerable,
   isSettled,
   scheduleOf,
   mayPropose,
@@ -162,6 +163,36 @@ describe('a settled proposal', () => {
   })
 })
 
+describe('a proposal that can still be answered', () => {
+  /*
+   * Reported 2026-09-12: the Job scout's queue was empty and the command
+   * palette's "Approve suggestion" listed every suggestion ever raised, each
+   * one refused on click — and pressing Clear made the list no shorter, because
+   * clearing is what put those rows in it. Two surfaces read `ofType` and one
+   * of them read it raw.
+   */
+  const at = (status: (typeof PROPOSAL_STATUSES)[number], swept?: boolean) =>
+    isAnswerable({ status, ...(swept === undefined ? {} : { swept }) })
+
+  it('is pending and not swept — which is not the opposite of settled', () => {
+    expect(at('pending')).toBe(true)
+    expect(at('pending', false)).toBe(true)
+    for (const status of PROPOSAL_STATUSES.filter((s) => s !== 'pending')) {
+      expect(at(status), status).toBe(false)
+    }
+  })
+
+  it('is false once the queue is cleared, though the row is still stored', () => {
+    // What `pipeline.proposal.clear` leaves: declined AND swept, kept so the
+    // scout goes on skipping jobs the person has already turned down.
+    expect(at('discarded', true)).toBe(false)
+    // And the case that separates this from `isSettled`: a swept row that was
+    // never answered cannot be answered now either.
+    expect(at('pending', true)).toBe(false)
+    expect(isSettled('pending')).toBe(false)
+  })
+})
+
 describe('when the next round is due', () => {
   const at = (ms: number) => new Date(Date.parse('2026-08-23T09:00:00.000Z') + ms).toISOString()
   const START = at(0)
@@ -226,9 +257,11 @@ describe('what a proposal would write', () => {
   })
 
   it('drops ids, which mean nothing to the person reading the card', () => {
-    expect(proposalDetail(JSON.stringify({ id: 'app:01a02da4-c3f4-76d0', record: 'kw:01a02da4-c3f4-76d0' }))).toBe(
-      null,
-    )
+    expect(
+      proposalDetail(
+        JSON.stringify({ id: 'app:01a02da4-c3f4-76d0', record: 'kw:01a02da4-c3f4-76d0' }),
+      ),
+    ).toBe(null)
   })
 
   it('survives a payload that is not an object, or not JSON', () => {

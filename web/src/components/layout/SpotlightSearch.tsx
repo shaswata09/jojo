@@ -25,7 +25,7 @@ import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { DIALOG_TOOLS, useCreateActions, useRunCreateAction } from '@/lib/create-actions'
 import { ToolRunDialog } from '@/components/common/ToolRunDialog'
-import { planToolForm } from '@/components/common/tool-form'
+import { planToolForm, recordCountOf } from '@/components/common/tool-form'
 import { GUIDE_PAGE_META } from '@/components/guide/pages'
 import type { FormPlan } from '@/components/common/tool-form'
 import {
@@ -40,7 +40,6 @@ import {
 } from '@/components/ui/command'
 import { displayName } from '@/data/seed'
 import { bucketOf, partsOf, shortDate } from '@/data/timeline'
-import type { NodeType } from '@jojo/service/core/model'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
@@ -218,11 +217,19 @@ export function SpotlightSearch({
    * link" with no links to delete is a row that can only disappoint.
    */
   const tools: ToolRow[] = useMemo(() => {
-    const countOf = (type: NodeType) => memory.ofType(type).length
+    const countOf = recordCountOf(memory)
     const rows: ToolRow[] = []
     for (const name of Object.keys(TOOLS) as ToolName[]) {
       if (DIALOG_TOOLS.has(name)) continue
       const tool: AnyTool = TOOLS[name]
+      /*
+       * Asked the same question `/graph` asks (`GraphDetail`), which this
+       * surface was not asking at all: a tool that would refuse the moment it
+       * ran is not a row. With no input to hand the answer is about the store —
+       * "there are no suggestions waiting for an answer" — which is precisely
+       * the state the palette used to paper over.
+       */
+      if (!(tool.available?.(memory, undefined) ?? { ok: true }).ok) continue
       const plan = planToolForm(tool, { countOf })
       if (!plan) continue
       rows.push({ name, plan, icon: EFFECT_ICON[tool.effect] ?? Wrench })

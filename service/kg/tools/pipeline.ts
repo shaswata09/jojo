@@ -55,7 +55,7 @@
  * `Tool`, which does not exist yet and is not worth inventing for this margin.
  */
 
-import { mayPropose } from '../core/proposal'
+import { isAnswerable, mayPropose } from '../core/proposal'
 import { s } from '../core/schema'
 import type { NodeId } from '../core/model'
 import { PIPELINE_KINDS } from '../core/model'
@@ -153,6 +153,35 @@ export const proposalApprove = defineTool({
   // this list cannot name it.
   touches: ['proposal'],
   input: s.object({ id: proposalId }),
+
+  /*
+   * Offered only where it can be taken.
+   *
+   * Without this the command palette listed every proposal ever raised —
+   * answered, failed, swept — because a picker counts rows in the store and the
+   * store keeps them all (see `isAnswerable`). Clicking any of them got the
+   * refusal below, while the Job scout page beside it showed an empty queue.
+   *
+   * With no input at all, which is how the palette and `forNode` ask, the
+   * answer is about the QUEUE rather than about one row: a verb nothing can be
+   * done to is a verb worth withholding. `run`'s own check stays either way —
+   * a card can be answered between the form opening and its submission.
+   */
+  available(m, input) {
+    const id = input?.id
+    if (id === undefined) {
+      return m.ofType('proposal').some((p) => isAnswerable(p.props))
+        ? { ok: true }
+        : { ok: false, reason: 'There are no suggestions waiting for an answer.' }
+    }
+    const proposal = m.node(id, 'proposal')
+    // Absent rather than answered is `run`'s to report: `ctx.require` names the
+    // record, and a picker cannot offer a row that is not there anyway.
+    return proposal === undefined || isAnswerable(proposal.props)
+      ? { ok: true }
+      : { ok: false, reason: 'That suggestion has already been answered.' }
+  },
+
   run(ctx, input): void {
     const proposal = ctx.require('proposal', input.id)
     const { status, kind, tool, input: payload } = proposal.props
@@ -198,6 +227,21 @@ export const proposalDiscard = defineTool({
   effect: 'update',
   touches: ['proposal'],
   input: s.object({ id: proposalId }),
+
+  /** The same gate as `pipeline.proposal.approve`, for the same reason. */
+  available(m, input) {
+    const id = input?.id
+    if (id === undefined) {
+      return m.ofType('proposal').some((p) => isAnswerable(p.props))
+        ? { ok: true }
+        : { ok: false, reason: 'There are no suggestions waiting for an answer.' }
+    }
+    const proposal = m.node(id, 'proposal')
+    return proposal === undefined || isAnswerable(proposal.props)
+      ? { ok: true }
+      : { ok: false, reason: 'That suggestion has already been answered.' }
+  },
+
   run(ctx, input): void {
     const proposal = ctx.require('proposal', input.id)
     if (proposal.props.status !== 'pending') {
@@ -273,6 +317,16 @@ export const proposalSweep = defineTool({
   effect: 'delete',
   touches: ['proposal'],
   input: s.object({ pipelineId: s.id('pipeline', { label: 'Pipeline' }) }),
+
+  /*
+   * No `available` gate, deliberately. Both housekeeping verbs are idempotent
+   * and `tools.test.ts` pins it — "a second press must report nothing left
+   * rather than counting the same rows again", because the number goes in the
+   * toast. Withholding them on an empty queue would turn that second press from
+   * a no-op into a refusal. The two verbs ABOVE are gated instead: those offer
+   * a picker, and a picker of rows the tool refuses is the bug this came from.
+   */
+
   run(ctx, input): number {
     ctx.require('pipeline', input.pipelineId)
     const settled = ctx.memory

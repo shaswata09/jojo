@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest'
+import { MutableSnapshot } from '@jojo/service/core/snapshot'
+import type { StoredNode } from '@jojo/service/core/model'
+import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import { TOOLS } from '@jojo/service/tools/index'
 import type { AnyTool } from '@jojo/service/tools/tool'
-import { buildInput, humanise, initialValues, optionLabel, planToolForm } from './tool-form'
+import {
+  buildInput,
+  humanise,
+  initialValues,
+  offerableRecords,
+  optionLabel,
+  planToolForm,
+  recordCountOf,
+  recordOptions,
+} from './tool-form'
 import type { CountOf, FormPlan } from './tool-form'
 
 /** Enough of everything, unless a test is about the empty case. */
@@ -186,5 +198,80 @@ describe('labels', () => {
     // screen in the app prints.
     expect(optionLabel('draft')).toBe('Draft')
     expect(optionLabel('Job board')).toBe('Job board')
+  })
+})
+
+describe('the records a picker offers', () => {
+  /*
+   * Reported 2026-09-12: the Job scout page showed an empty suggestion queue
+   * while the command palette's "Approve suggestion" listed every suggestion
+   * ever raised — and pressing its Clear button shortened the list by nothing,
+   * because clearing is what put those rows there. A proposal is marked swept,
+   * never deleted, so that the scout keeps skipping jobs already turned down.
+   *
+   * The picker and the COUNT that decides whether the verb appears at all both
+   * read `offerableRecords` for that reason: two expressions that happened to
+   * agree would drift into a verb whose picker is empty.
+   */
+  const AT = '2026-09-12T09:00:00.000Z'
+  const node = (id: string, type: string, props: Record<string, unknown>) =>
+    ({ id, type, props, createdAt: AT, updatedAt: AT }) as unknown as StoredNode
+
+  const proposal = (id: string, status: string, swept?: boolean) =>
+    node(id, 'proposal', {
+      slug: id,
+      kind: 'scout',
+      tool: 'scout.posting.save',
+      input: '{}',
+      title: `Suggestion ${id}`,
+      rationale: 'because',
+      status,
+      proposedAt: AT,
+      ...(swept === undefined ? {} : { swept }),
+    })
+
+  const graph = (nodes: StoredNode[]): GraphSnapshot => {
+    const m = new MutableSnapshot()
+    m.reset(nodes, [] as never)
+    return m as unknown as GraphSnapshot
+  }
+
+  it('lists the suggestions still waiting, and not the answered ones', () => {
+    const memory = graph([
+      proposal('p1', 'pending'),
+      proposal('p2', 'approved'),
+      proposal('p3', 'discarded', true),
+      proposal('p4', 'failed'),
+    ])
+    expect(recordOptions(memory, 'proposal').map((o) => o.label)).toEqual(['Suggestion p1'])
+    expect(recordCountOf(memory)('proposal')).toBe(1)
+  })
+
+  it('offers nothing at all once the queue has been cleared', () => {
+    // What `pipeline.proposal.clear` leaves behind: every row still stored,
+    // every one of them swept. This is the state the user reported.
+    const cleared = graph([
+      proposal('p1', 'discarded', true),
+      proposal('p2', 'approved', true),
+      proposal('p3', 'failed', true),
+    ])
+    expect(cleared.ofType('proposal')).toHaveLength(3)
+    expect(recordOptions(cleared, 'proposal')).toEqual([])
+    // And so the verb is withheld: its only field is a picker with no rows.
+    expect(
+      planToolForm(TOOLS['pipeline.proposal.approve'], { countOf: recordCountOf(cleared) }),
+    ).toBeNull()
+  })
+
+  it('leaves every other type as the store has it', () => {
+    // The filter is about `proposal` alone — an application in any state is a
+    // record a verb can be pointed at, and narrowing one by accident would take
+    // rows out of pickers all over the app.
+    const memory = graph([
+      node('a1', 'application', { slug: 'a1', role: 'Engineer', stage: 'closed' }),
+      node('a2', 'application', { slug: 'a2', role: 'Analyst', stage: 'applied' }),
+    ])
+    expect(offerableRecords(memory, 'application')).toHaveLength(2)
+    expect(recordCountOf(memory)('application')).toBe(2)
   })
 })

@@ -125,6 +125,24 @@ export function isSettled(status: ProposalStatus): boolean {
 }
 
 /**
+ * Still asking: the only proposals any surface may offer an answer to.
+ *
+ * Not the negation of `isSettled`, and the gap between them is `swept`. A
+ * proposal is never deleted — clearing the queue marks the row so the scout can
+ * go on deduping against jobs the person has already declined
+ * (`agent/pipelines.ts`, `knownPostings`) — so the store keeps every suggestion
+ * ever raised while the screen shows none of them.
+ *
+ * Reported 2026-09-12: the Job scout's queue was empty and the command
+ * palette's "Approve suggestion" listed the whole history, each row refused on
+ * click with "That suggestion has already been answered." Two surfaces, two
+ * readings of the same store. This is the one reading.
+ */
+export function isAnswerable(props: { status: ProposalStatus; swept?: boolean }): boolean {
+  return props.status === 'pending' && props.swept !== true
+}
+
+/**
  * The values a proposal would actually write, as one readable line.
  *
  * The card's title names the OPERATION — "Edit note · Baylor — CS" — which was

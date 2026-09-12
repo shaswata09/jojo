@@ -91,7 +91,15 @@ export const SHAPE: DirRow[] = [
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },
-  { dir: 'service/kg/tools', files: 27, tests: 7, lines: 8571, what: '82 named write operations' },
+  {
+    dir: 'service/kg/tools',
+    files: 27,
+    tests: 7,
+    // Re-measured when the two proposal verbs got an `available` gate, so a
+    // suggestion already answered stops being offered as one.
+    lines: 8872,
+    what: '82 named write operations',
+  },
   {
     dir: 'service/kg/agent',
     // Re-measured 2026-09-02, when the harness grew its weak-model layer:

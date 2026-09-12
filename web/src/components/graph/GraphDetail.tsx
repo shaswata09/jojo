@@ -3,10 +3,9 @@ import { ArrowUpRight, MousePointerClick } from 'lucide-react'
 import { Link } from 'react-router'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { ToolRunDialog } from '@/components/common/ToolRunDialog'
-import { planToolForm } from '@/components/common/tool-form'
+import { planToolForm, recordCountOf } from '@/components/common/tool-form'
 import type { FormPlan } from '@/components/common/tool-form'
 import { Button } from '@/components/ui/button'
-import type { NodeType } from '@jojo/service/core/model'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import type { ToolName } from '@jojo/service/tools/index'
 import { NODE_TYPE_LABEL, REL_LABEL } from '@/lib/graph/model'
@@ -60,7 +59,7 @@ export function GraphDetail({
     // one. The panel already says as much underneath.
     if (!stored) return []
 
-    const countOf = (type: NodeType) => memory.ofType(type).length
+    const countOf = recordCountOf(memory)
     const rows: Verb[] = []
 
     for (const tool of runtime.forNode(stored.id)) {

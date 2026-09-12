@@ -481,7 +481,9 @@ describe('the transaction', () => {
     )
     const [file] = okOr(
       h.runtime.run('vault.file.add', {
-        files: [{ name: 'CV.pdf', kind: 'pdf', bucket: 'To read', size: '1 KB', applicationIds: [app] }],
+        files: [
+          { name: 'CV.pdf', kind: 'pdf', bucket: 'To read', size: '1 KB', applicationIds: [app] },
+        ],
       }),
     )
     const undoBefore = h.repo.undoable.length
@@ -501,12 +503,27 @@ describe('the transaction', () => {
     // has to lose its edge.
     const h = harness()
     const mk = (org: string, role: string) =>
-      okOr(h.runtime.run('application.create', { org, role, roleTag: 'Research Scientist', stage: 'draft' }))
+      okOr(
+        h.runtime.run('application.create', {
+          org,
+          role,
+          roleTag: 'Research Scientist',
+          stage: 'draft',
+        }),
+      )
     const one = mk('Rice', 'A')
     const two = mk('Baylor', 'B')
     const [file] = okOr(
       h.runtime.run('vault.file.add', {
-        files: [{ name: 'CV.pdf', kind: 'pdf', bucket: 'To read', size: '1 KB', applicationIds: [one, two] }],
+        files: [
+          {
+            name: 'CV.pdf',
+            kind: 'pdf',
+            bucket: 'To read',
+            size: '1 KB',
+            applicationIds: [one, two],
+          },
+        ],
       }),
     )
     okOr(h.runtime.run('vault.file.update', { id: file!, applicationIds: [two] }))
@@ -989,11 +1006,12 @@ describe('the composites', () => {
     expect(ids).toHaveLength(3)
     const m = h.repo.getSnapshot()
     expect(m.ofType('background')).toHaveLength(3)
-    expect(m.ofType('background').map((n) => n.props.kind).sort()).toEqual([
-      'education',
-      'publication',
-      'skill',
-    ])
+    expect(
+      m
+        .ofType('background')
+        .map((n) => n.props.kind)
+        .sort(),
+    ).toEqual(['education', 'publication', 'skill'])
   })
 
   it('keeps the period as written rather than inventing a date', () => {
@@ -1005,9 +1023,7 @@ describe('the composites', () => {
         background: [{ kind: 'employment', title: 'Postdoc', period: 'Summer 2019 – present' }],
       }),
     )
-    expect(h.repo.getSnapshot().ofType('background')[0]?.props.period).toBe(
-      'Summer 2019 – present',
-    )
+    expect(h.repo.getSnapshot().ofType('background')[0]?.props.period).toBe('Summer 2019 – present')
   })
 
   it('corrects one fact without touching the rest', () => {
@@ -1663,6 +1679,78 @@ describe('the proposal queue', () => {
     expect(okOr(h.runtime.run('pipeline.proposal.sweep', { pipelineId: pipeline }))).toBe(0)
   })
 
+  /*
+   * The two questions every surface asks BEFORE drawing a verb, and the reason
+   * they are asked at all.
+   *
+   * Reported 2026-09-12: the command palette offered "Approve suggestion" with
+   * a picker holding every suggestion ever raised, each one refused on click
+   * with "That suggestion has already been answered" — while the Job scout page
+   * beside it showed an empty queue. A cleared proposal is marked, never
+   * deleted (`sweep`, above), so the store is a poor answer to "what is there
+   * to answer". `run`'s own checks stay: a card can be settled between the form
+   * opening and its submission.
+   */
+  const raised = (h: ReturnType<typeof harness>, pipeline: string, app: string) =>
+    okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'a' }),
+        title: 'Note a',
+        rationale: 'because',
+      }),
+    )
+
+  it('offers no answer to a suggestion that already has one', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = raised(h, pipeline, app)
+    expect(h.runtime.can('pipeline.proposal.approve', { id }).ok).toBe(true)
+
+    okOr(h.runtime.run('pipeline.proposal.discard', { id }))
+    expect(h.runtime.can('pipeline.proposal.approve', { id }).ok).toBe(false)
+    expect(h.runtime.can('pipeline.proposal.discard', { id }).ok).toBe(false)
+  })
+
+  it('leaves a record that is not there for `run` to report', () => {
+    /*
+     * Availability answers "has this been answered", not "does this exist". An
+     * id naming no proposal is a different failure with a better sentence of
+     * its own, and refusing it here would tell someone whose record is missing
+     * that it had already been answered.
+     */
+    const h = harness()
+    const notAProposal = anApplication(h)
+    expect(h.runtime.can('pipeline.proposal.approve', { id: notAProposal }).ok).toBe(true)
+
+    const result = h.runtime.run('pipeline.proposal.approve', { id: notAProposal })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.errors.map((e) => e.message).join('; ')).not.toContain('already been answered')
+    }
+  })
+
+  it('withholds both verbs when the queue holds nothing to answer', () => {
+    // Asked with no input, which is how the palette and `forNode` ask.
+    const h = harness()
+    expect(h.runtime.can('pipeline.proposal.approve').ok).toBe(false)
+
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    raised(h, pipeline, app)
+    expect(h.runtime.can('pipeline.proposal.approve').ok).toBe(true)
+    expect(h.runtime.can('pipeline.proposal.discard').ok).toBe(true)
+
+    okOr(h.runtime.run('pipeline.proposal.clear', {}))
+    // Still stored — that is the whole reason this needed a rule of its own.
+    expect(h.repo.getSnapshot().ofType('proposal')).toHaveLength(1)
+    expect(h.runtime.can('pipeline.proposal.approve').ok).toBe(false)
+    expect(h.runtime.can('pipeline.proposal.discard').ok).toBe(false)
+  })
+
   describe('clearing the whole queue', () => {
     /** The first queued id, or a loud failure. `?? ''` here would hide a broken fixture. */
     const first = (ids: readonly string[]): string => {
@@ -1963,9 +2051,7 @@ describe('acting without asking', () => {
 describe('emptying the store', () => {
   it('leaves nothing personal in the profile', () => {
     const h = harness()
-    okOr(
-      h.runtime.run('profile.text.set', { field: 'fullName', value: 'Dr A. Person' }),
-    )
+    okOr(h.runtime.run('profile.text.set', { field: 'fullName', value: 'Dr A. Person' }))
     okOr(h.runtime.run('profile.matchTerm.add', { term: 'distributed systems' }))
     okOr(h.runtime.run('profile.preference.set', { key: 'includeIndustry', value: false }))
 
@@ -2034,7 +2120,11 @@ describe('what a destructive announcement says', () => {
 
     // The announcement for the delete carries the record's name.
     const before = h.repo.getSnapshot()
-    const shown = TOOLS['assistant.thread.delete'].describe({ id: thread } as never, undefined as never, before)
+    const shown = TOOLS['assistant.thread.delete'].describe(
+      { id: thread } as never,
+      undefined as never,
+      before,
+    )
     expect(`${shown.title} ${shown.description ?? ''}`).toContain('Tidy up')
   })
 })
