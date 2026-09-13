@@ -86,18 +86,31 @@ export function FilePreviewDialog({
           showCloseButton={false}
           className={cn(
             /*
-             * A quarter wider than `contentModal`, and derived from it rather
-             * than typed as a number so it still tracks the shell's own
-             * measurements when those change.
+             * Measured against the WINDOW, and that is the whole reason this one
+             * modal does not take `contentModal`.
              *
              * The shared width is three quarters of the centre column, which is
-             * the right answer for the modals it was written for: a form is a
-             * column of fields, and past a point extra width only puts a label
-             * further from its input. A document is the opposite — it has a page
-             * width of its own, and every pixel this is narrower than that page
-             * is one the browser's viewer spends shrinking the text to fit.
+             * right for the modals it was written for: a form is a column of
+             * fields, and past a point extra width only puts a label further
+             * from its input. A document is the opposite — it has a page width
+             * of its own, and every pixel this is narrower than that page is one
+             * the browser's viewer spends shrinking the text to fit. Measured on
+             * the same PDF: 61% zoom at the shared width, 87% a quarter wider.
+             *
+             * And the shared width cannot grow past a 1440px screen, because the
+             * shell it is derived from stops there — `--page-content` starts
+             * from `min(100vw, 1440px)`. That cap is correct for the page and
+             * wrong for a document opened over it: on a 1920px monitor the modal
+             * stayed at 1076px with 844px of desk either side of it. A modal is
+             * not inside the centre column, so it has no reason to be bound by
+             * where the centre column stops.
+             *
+             * `88vw` rather than the whole window, and `1440px` rather than no
+             * ceiling, because Expand still has to mean something: full screen
+             * is this plus the last margin, and two surfaces the same size would
+             * make the button a no-op.
              */
-            'sm:max-w-[calc(var(--modal-width)*1.25)]',
+            'sm:max-w-[min(1440px,88vw)]',
             // One row that takes the whole box: a grid row defaults to `auto`,
             // which would size to the viewer's content and leave the frame flat.
             'grid-rows-[minmax(0,1fr)] overflow-hidden border-0 bg-transparent p-0 ring-0',

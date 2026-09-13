@@ -183,7 +183,8 @@ export const SHAPE: DirRow[] = [
     // application it is filed under rather than in the Vault.
     // `common/Marked.tsx` and `detail/TailoredPanel.tsx`: the marks drawn, and
     // the card that lists what a model tailored for one posting.
-    files: 289,
+    // `vault/SnippetPreviewDialog.tsx`: the words behind that card's Preview.
+    files: 290,
     tests: 29,
     lines: 49589,
     what: 'every surface you can see',
