@@ -6,6 +6,7 @@ import { FiledPanel } from '@/components/applications/detail/FiledPanel'
 import { DetailFacts } from '@/components/applications/detail/DetailFacts'
 import { DetailHeader } from '@/components/applications/detail/DetailHeader'
 import { FitPanel } from '@/components/applications/detail/FitPanel'
+import { TailoredPanel } from '@/components/applications/detail/TailoredPanel'
 import { NotePanel } from '@/components/applications/detail/NotePanel'
 import { plainStageMove, stageNeedsDetails } from '@jojo/service/core/stage-policy'
 import { OfferBlock } from '@/components/applications/OfferBlock'
@@ -313,6 +314,10 @@ function Detail({
           stops being the question the moment the application has been sent, so
           it sits under the record rather than over it. */}
       <FitPanel applicationId={a.id} />
+
+      {/* Directly under the verdict, because it is the verdict's next step: a
+          person who has just read what to lead with asks to have it led with. */}
+      <TailoredPanel applicationId={a.id} />
 
       <DatesPanel applicationId={a.id} items={items} onAddItem={onAddItem} />
 

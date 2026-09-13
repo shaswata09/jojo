@@ -83,7 +83,6 @@ function reportFailure(
   return failure
 }
 
-
 /**
  * Whether this address needs the extension to fetch it on the page's behalf.
  *
@@ -117,6 +116,8 @@ async function sendToModel(
    * and is why nothing downstream may assume a chunk ever arrives.
    */
   onChunk?: (text: string) => void,
+  /** For one long generation on a road that cannot stream — see `send`. */
+  timeoutMs?: number,
 ): Promise<Sent> {
   /*
    * Cloud providers, AND a private-network address an https page cannot reach.
@@ -142,7 +143,7 @@ async function sendToModel(
    * not pay a message hop for nothing.
    */
   if (!providerMeta(provider).cloud && !needsRelay(request.url)) {
-    return send(request, endpoint, signal)
+    return send(request, endpoint, signal, timeoutMs)
   }
 
   const relayed = await callModel(
@@ -161,7 +162,7 @@ async function sendToModel(
   const noExtension = /extension did not answer|too old/i.test(relayed.failed.reason)
   if (!noExtension)
     return { failed: { ok: false, kind: 'unreachable', reason: relayed.failed.reason } }
-  return send(request, endpoint, signal)
+  return send(request, endpoint, signal, timeoutMs)
 }
 import type { ChatMessage, ChatResult, ModelsResult, Turn } from '@jojo/service/core/model-server'
 
@@ -496,6 +497,11 @@ export async function agentTurn(
    * added without a second code path through the agent loop.
    */
   onDelta?: (delta: string) => void,
+  /**
+   * For one long generation. Only the non-streaming road reads it: a provider
+   * that streams re-arms an idle timeout on every chunk and needs no total.
+   */
+  options: { timeoutMs?: number } = {},
 ): Promise<Turn> {
   if (!isConfigured(settings)) return unconfigured()
   /*
@@ -553,7 +559,14 @@ export async function agentTurn(
   const relay = cloud || needsRelay(request.url)
 
   const response = !streaming
-    ? await sendToModel(request, endpointOf(settings), settings.provider, signal)
+    ? await sendToModel(
+        request,
+        endpointOf(settings),
+        settings.provider,
+        signal,
+        undefined,
+        options.timeoutMs,
+      )
     : relay
       ? await readRelayedStream(request, endpointOf(settings), settings.provider, onDelta, signal)
       : await readStream(request, endpointOf(settings), onDelta, signal)

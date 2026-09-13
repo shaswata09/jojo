@@ -58,11 +58,21 @@ const LOOPBACK = /^https?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?
  */
 const isPrivate = (target?: string): boolean => {
   if (target === undefined) return false
-  const host = target.replace(/^https?:\/\//i, '').split('/')[0]?.split(':')[0]?.toLowerCase() ?? ''
+  const host =
+    target
+      .replace(/^https?:\/\//i, '')
+      .split('/')[0]
+      ?.split(':')[0]
+      ?.toLowerCase() ?? ''
   if (host.endsWith('.local')) return true
   const o = host.split('.').map((p) => (/^\d{1,3}$/.test(p) ? Number(p) : -1))
   if (o.length !== 4 || o.some((n) => n < 0 || n > 255)) return false
-  return o[0] === 10 || (o[0] === 172 && o[1]! >= 16 && o[1]! <= 31) || (o[0] === 192 && o[1] === 168) || (o[0] === 169 && o[1] === 254)
+  return (
+    o[0] === 10 ||
+    (o[0] === 172 && o[1]! >= 16 && o[1]! <= 31) ||
+    (o[0] === 192 && o[1] === 168) ||
+    (o[0] === 169 && o[1] === 254)
+  )
 }
 
 const mixedContent = (target?: string) =>
@@ -105,6 +115,14 @@ const browserBlocked = (target?: string) => {
 }
 
 /**
+ * Read through a call, not a property, on purpose: TypeScript narrows
+ * `signal.aborted` after an early return and then flags the later comparison in
+ * the catch as impossible — but `aborted` flips while the request is in flight,
+ * which is the whole point of reading it twice.
+ */
+const isAborted = (signal?: AbortSignal): boolean => signal?.aborted === true
+
+/**
  * Sends a described request and reports what came back.
  *
  * Never throws. A thrown `fetch` is a fact about the network, and the callers
@@ -119,11 +137,28 @@ export async function send(
   request: ModelRequest,
   endpoint: string,
   signal?: AbortSignal,
+  /*
+   * A TOTAL budget, and the one place it can be raised. Sixty seconds is right
+   * for a tool call and wrong for a document on a provider that cannot stream
+   * (Ollama, Anthropic): tailoring a cover letter is ~2,000 tokens, and at the
+   * local box's pace that is well past the default and nowhere near stalled.
+   * The streamed road never comes here — its timeout is idle, not total.
+   */
+  timeoutMs: number = MODEL_TIMEOUT_MS,
 ): Promise<Sent> {
   const controller = new AbortController()
   const timer = setTimeout(() => {
     controller.abort()
-  }, MODEL_TIMEOUT_MS)
+  }, timeoutMs)
+  /*
+   * A signal that was aborted BEFORE it got here never fires `abort` again —
+   * `addEventListener` after the fact hears nothing, which `capture-bridge.ts`
+   * spells out and guards. Without this line a cancel pressed during the
+   * document read still sent the model request, and the reply landed minutes
+   * later on a card that had long since gone idle.
+   */
+  if (isAborted(signal))
+    return { failed: unreachable(endpoint, 'Stopped before it was sent.', true) }
   // The caller's cancel and our timeout both have to reach the same request.
   signal?.addEventListener('abort', () => {
     controller.abort()
@@ -232,6 +267,9 @@ export async function sendStream(
     if (timer !== undefined) clearTimeout(timer)
   }
   idle()
+  // See `send`: a signal aborted before it arrived never fires again.
+  if (isAborted(signal))
+    return { failed: unreachable(endpoint, 'Stopped before it was sent.', true) }
   signal?.addEventListener('abort', () => {
     controller.abort()
   })
@@ -293,7 +331,7 @@ export async function sendStream(
     // A stalled stream gets its own sentence — see `stalled` in core. The
     // caller's own abort is not a failure to report at all, but it arrives here
     // as the same `AbortError`, so the two are told apart by whose signal fired.
-    const mine = aborted && signal?.aborted !== true
+    const mine = aborted && !isAborted(signal)
     if (mine) return { failed: stalled(endpoint, sofar) }
     const failure = unreachable(
       endpoint,

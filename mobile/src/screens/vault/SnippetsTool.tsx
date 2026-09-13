@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { Marked } from '@/components/ui/Marked'
+import { stripMarks } from '@jojo/service/core/marks'
 import { StyleSheet, View } from 'react-native'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
 import {
@@ -210,7 +212,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                 icon={isCopied(snippet.id) ? 'check' : 'copy'}
                 label={`Copy ${snippet.title}`}
                 active={isCopied(snippet.id)}
-                onPress={() => copy(snippet.body, snippet.id)}
+                onPress={() => copy(snippet.tailored ? stripMarks(snippet.body) : snippet.body, snippet.id)}
               />
               <LabelPicker recordId={snippet.id} name={snippet.title} />
               <IconButton
@@ -219,9 +221,16 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                 onPress={() => setMenuFor(snippet)}
               />
             </View>
-            <Txt size="sm" tone="secondary" numberOfLines={6} style={{ marginTop: space[2] }}>
-              {snippet.body}
-            </Txt>
+            {/* A tailored body is drawn with its marks; see `core/marks.ts`. */}
+            {snippet.tailored ? (
+              <View style={{ marginTop: space[2], maxHeight: 132, overflow: 'hidden' }}>
+                <Marked body={snippet.body} />
+              </View>
+            ) : (
+              <Txt size="sm" tone="secondary" numberOfLines={6} style={{ marginTop: space[2] }}>
+                {snippet.body}
+              </Txt>
+            )}
           </Panel>
         ))
       )}

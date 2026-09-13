@@ -27,17 +27,17 @@
  * it decides, and `other` gets the general instructions rather than none.
  */
 
+import type { ProfileDocument } from './model'
 import { fold } from './text'
 
 /** The four documents people write about themselves, plus a default. */
-export const PROFILE_DOCUMENTS = [
-  'cv',
-  'research-statement',
-  'teaching-statement',
-  'cover-letter',
-  'other',
-] as const
-export type ProfileDocument = (typeof PROFILE_DOCUMENTS)[number]
+/*
+ * Re-exported rather than declared: the list moved to `core/model.ts` when a
+ * document's kind became a stored value (`TailoredFrom.kind`), and everything
+ * on disk is described there. This is still where readers look for it.
+ */
+export { PROFILE_DOCUMENTS } from './model'
+export type { ProfileDocument } from './model'
 
 /**
  * Filename patterns, most specific first.

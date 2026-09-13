@@ -69,6 +69,7 @@ import {
 } from './profile'
 import { claimAdd } from './claim'
 import { fitReadingClear, fitReadingSet } from './fit'
+import { tailorSnippetCreate } from './tailor'
 import {
   scoutMatchDismiss,
   scoutMatchPromote,
@@ -192,6 +193,7 @@ export const TOOLS = {
 
   'fit.reading.set': fitReadingSet,
   'fit.reading.clear': fitReadingClear,
+  'tailor.snippet.create': tailorSnippetCreate,
 
   'assistant.thread.create': threadCreate,
   'assistant.thread.set': threadSet,

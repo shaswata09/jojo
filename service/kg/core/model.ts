@@ -365,7 +365,7 @@ export type ApprovalMode = (typeof APPROVAL_MODES)[number]
  *
  * `SAID` names deletion explicitly rather than saying "dangerous", because the
  * line the app actually draws is `effect === 'delete' || effect === 'admin'` —
- * seventeen tools of ninety-five, counted 2026-09-12. Closing an application is a `move` and passes
+ * seventeen tools of ninety-six, counted 2026-09-13. Closing an application is a `move` and passes
  * without a prompt under `semi`, which is worth a person knowing before they
  * choose it.
  */
@@ -706,7 +706,22 @@ export type VaultFile = {
   capturedAt?: Instant
 }
 
-export const SNIPPET_TAG_VALUES = ['Cover letter', 'Application form', 'Email', 'Bio'] as const
+/*
+ * The last three name a DOCUMENT rather than a use, and they arrived together
+ * with tailoring (2026-09-13): a CV rewritten for one posting is a snippet —
+ * text to copy into the real document — but "Application form" would have been
+ * a lie about what it is. 'Cover letter' already sat on the list for the same
+ * reason, which is what made the line worth crossing.
+ */
+export const SNIPPET_TAG_VALUES = [
+  'Cover letter',
+  'Application form',
+  'Email',
+  'Bio',
+  'CV',
+  'Research statement',
+  'Teaching statement',
+] as const
 export type SnippetTag = (typeof SNIPPET_TAG_VALUES)[number]
 
 export type Snippet = {
@@ -725,6 +740,56 @@ export type Snippet = {
    * kind of nothing it is looking at.
    */
   applicationIds: string[]
+  /** Set when a model wrote this for one posting. See `TailoredFrom`. */
+  tailored?: TailoredFrom
+}
+
+/**
+ * The kinds of document a person applies with.
+ *
+ * Declared here rather than in `core/document-kind.ts`, which owned it, since
+ * the day a kind became a stored value — `TailoredFrom.kind` — and everything
+ * that goes on disk is described in this file. `document-kind.ts` re-exports
+ * it, so every reader of the classifier still finds it where it expects to.
+ *
+ * `other` is the open lane, for the same reason `BACKGROUND_KINDS` has one: a
+ * document that is none of the four is still a document, and a closed list
+ * would have to refuse it or lie about it.
+ */
+export const PROFILE_DOCUMENTS = [
+  'cv',
+  'research-statement',
+  'teaching-statement',
+  'cover-letter',
+  'other',
+] as const
+export type ProfileDocument = (typeof PROFILE_DOCUMENTS)[number]
+
+/**
+ * Where a tailored snippet came from, and enough about it to be doubted.
+ *
+ * A model wrote this body for one posting, out of one of the person's own
+ * documents. The four fields are what the card needs to say so: which document
+ * (`source`, a file id — a breadcrumb, not a foreign key, exactly as
+ * `BackgroundProps.source` is; the file may be gone and the snippet still
+ * stands), what kind it was, which model, and when.
+ *
+ * It describes ORIGIN, not current content. A person who edits the body in the
+ * Vault leaves this in place, as they would a "read from" line on a background
+ * fact — the snippet was tailored from that document, and editing it afterwards
+ * does not make that untrue. What it must never do is survive a copy: a
+ * duplicate the person made is not the model's output, and
+ * `vault.snippet.duplicate` drops it.
+ */
+export type TailoredFrom = {
+  /** The id of the `file` node the base document was. Not validated as one. */
+  source: string
+  /** What that document was, as `documentKindOf` classified it at the time. */
+  kind: ProfileDocument
+  /** The model that wrote it — 'gemma_4_31b'. Shown, never used to decide anything. */
+  model: string
+  /** When, from `ctx.now`. */
+  at: Instant
 }
 
 export type Pipeline = {
@@ -1202,7 +1267,17 @@ export type SnippetProps = {
   slug: string
   title: string
   tag: SnippetTag
+  /**
+   * Plain text — with one exception. A snippet a model TAILORED carries inline
+   * marks in the four spellings `core/marks.ts` reads (`**changed**`,
+   * `_reworded_`, `__moved up__`, `## heading`), so the person can see what was
+   * altered for the posting. Only a body whose record carries `tailored` is
+   * read that way; a hand-written snippet with an underscore in it stays what
+   * it is. Copy strips the marks.
+   */
   body: string
+  /** Set when a model wrote this for one posting. See `TailoredFrom`. */
+  tailored?: TailoredFrom
 }
 
 export type PostingProps = {

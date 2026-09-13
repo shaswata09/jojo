@@ -85,8 +85,10 @@ export const SHAPE: DirRow[] = [
     // what a blank box means, what changed, what to refuse — shared by both apps.
     // `fit-reading.ts` and its test: what a stored posting reading means — read,
     // cleared, or never taken — out of the two panels that each decided it.
-    files: 124,
-    tests: 60,
+    // `marks.ts` and `tailoring.ts`, each with a test: the four marks a
+    // tailored snippet carries, and which documents the tailoring card offers.
+    files: 128,
+    tests: 62,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -99,12 +101,13 @@ export const SHAPE: DirRow[] = [
     dir: 'service/kg/tools',
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
     // clearing it — the two halves of a reading that survives a reload.
-    files: 29,
-    tests: 8,
+    // `tailor.ts` and its test: the one write behind the tailoring card.
+    files: 31,
+    tests: 9,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one.
-    lines: 9572,
-    what: '85 named write operations',
+    lines: 9956,
+    what: '86 named write operations',
   },
   {
     dir: 'service/kg/agent',
@@ -116,8 +119,10 @@ export const SHAPE: DirRow[] = [
     // postings, so the chain can be measured end to end against real models.
     // `judge-duplicate.ts` and its guard: the model decides whether two records
     // are one vacancy, shown only the same employer's records.
-    files: 64,
-    tests: 31,
+    // `tailor-material.ts` and its test: the prompt that rewrites a document
+    // for one posting, and the reader that keeps, doubts or refuses the reply.
+    files: 66,
+    tests: 32,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -149,12 +154,14 @@ export const SHAPE: DirRow[] = [
     // record, after `postingId` was dropped on its way to the store.
     // `use-fit.ts`: the fit panel's state machine, which was 127 byte-identical
     // lines in each app with nothing comparing them.
-    files: 47,
+    // `use-tailor.ts` and `use-tailoring.ts`: the run and the card behind
+    // "Tailored materials", shared by both apps for the same reason.
+    files: 49,
     tests: 13,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 9710,
+    lines: 10296,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -174,7 +181,9 @@ export const SHAPE: DirRow[] = [
     // Re-measured 2026-09-12, having drifted past the 3% the test allows; 287
     // with `vault/FilePreviewDialog.tsx`, a filed document opening over the
     // application it is filed under rather than in the Vault.
-    files: 287,
+    // `common/Marked.tsx` and `detail/TailoredPanel.tsx`: the marks drawn, and
+    // the card that lists what a model tailored for one posting.
+    files: 289,
     tests: 29,
     lines: 49589,
     what: 'every surface you can see',
@@ -196,7 +205,8 @@ export const SHAPE: DirRow[] = [
     // And `read-here.ts`: a saved page is read in this tab, never sent to a
     // reader that refuses the extension's captures as too large.
     // `duplicate-agent.ts`: the check, wired to this app's transport.
-    files: 127,
+    // `tailor-agent.ts`: the seam that streams a tailored document.
+    files: 128,
     tests: 46,
     lines: 19123,
     what: 'web-only adapters and URL state',

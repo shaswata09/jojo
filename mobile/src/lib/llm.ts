@@ -117,6 +117,8 @@ export async function agentTurn(
   messages: readonly ChatMessage[],
   tools: readonly unknown[],
   signal?: AbortSignal,
+  /** For one long generation — see `send`. Absent means the ordinary budget. */
+  options: { timeoutMs?: number } = {},
 ): Promise<Turn> {
   if (!isConfigured(settings)) return unconfigured()
   /*
@@ -126,7 +128,7 @@ export async function agentTurn(
    * name; there is no origin to opt in for on a phone.
    */
   const request = chatRequest(settings, messages, tools, false)
-  const response = await send(request, endpointOf(settings), signal)
+  const response = await send(request, endpointOf(settings), signal, options.timeoutMs)
   if (failed(response)) return response.failed
 
   const turn = readTurnFor(settings, response)

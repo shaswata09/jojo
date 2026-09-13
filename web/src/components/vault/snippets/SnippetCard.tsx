@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Marked } from '@/components/common/Marked'
 import type { Ref } from 'react'
 import { CopyPlus, Pencil, Trash2 } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
@@ -128,8 +129,17 @@ export function SnippetCard({
         </RowMenu>
       </div>
 
-      {/* whitespace-pre-line so the email templates keep their breaks. */}
-      <p className="mt-2.5 line-clamp-4 text-xs whitespace-pre-line text-text-2">{s.body}</p>
+      {/* whitespace-pre-line so the email templates keep their breaks. A
+          tailored body is drawn with its marks instead — `**` on a card would
+          read as a typo, and only a record that says a model wrote it is
+          parsed at all (see `core/marks.ts`). */}
+      {s.tailored ? (
+        <div className="mt-2.5 line-clamp-4 text-xs">
+          <Marked body={s.body} className="text-xs" />
+        </div>
+      ) : (
+        <p className="mt-2.5 line-clamp-4 text-xs whitespace-pre-line text-text-2">{s.body}</p>
+      )}
     </li>
   )
 }

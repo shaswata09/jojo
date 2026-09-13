@@ -133,7 +133,7 @@ export async function callTool(
   if (!entry) {
     return {
       ok: false,
-      // Naming the shape rather than listing ninety-five tools: the list is
+      // Naming the shape rather than listing ninety-six tools: the list is
       // already in the model's context, and repeating it in an error is how a
       // recoverable mistake costs a thousand tokens.
       error: `No tool is called ${name}. Use one of the names given in the tool list, exactly as spelled.`,

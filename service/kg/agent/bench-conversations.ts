@@ -1946,7 +1946,8 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'long-recall-early-fact',
     group: 'endurance',
-    window: 27_000,
+    // 27,000 → 27,400 on 2026-09-13: `tailor.snippet.create` cost 411 tokens.
+    window: 27_400,
     why:
       'The whole point of compacting rather than dropping: a fact stated in turn one has to survive ' +
       'into turn eight, by which time the exchange that carried it has been replaced by a summary. ' +
@@ -1966,7 +1967,11 @@ export const CONVERSATIONS: readonly Conversation[] = [
       'ninety-five tools: the request at turn eight is 25,361 — 22,411 fixed plus 2,950 of history ' +
       'over 26 messages — so the ceiling of 22,904 is cleared by 493 rather than 1,214 and the ' +
       'request is 2,457 over it. The window still holds; what shrank is the room the fixed part ' +
-      'has, which is the edge that fails first and the reason this note keeps a running count.',
+      'has, which is the edge that fails first and the reason this note keeps a running count. ' +
+      'RE-MEASURED 2026-09-13 at ninety-six tools: `tailor.snippet.create` cost 411 tokens on its ' +
+      'own — a seven-field schema and a long summary — putting the fixed part at 22,822, 82 under ' +
+      'the old window\'s floor. At 27,400 the ceiling is 23,304: the fixed part fits by 482, the ' +
+      'request of 25,772 (2,950 of history over 26 messages) is 2,468 over it.',
     turns: [
       {
         say: 'I am focusing on systems roles this season — treat that as the theme for everything I ask next.',
@@ -2081,7 +2086,9 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'long-correction-after-drift',
     group: 'endurance',
-    window: 26_800,
+    // 26,800 → 27,300 on 2026-09-13: `tailor.snippet.create` cost 410 tokens
+    // and the fixed part went past the old window's floor.
+    window: 27_300,
     why:
       'A correction that arrives long after the thing it corrects. The `correction` group tests ' +
       'this one turn later, which any model handles; the failure is when the mistake is behind a ' +
@@ -2095,7 +2102,10 @@ export const CONVERSATIONS: readonly Conversation[] = [
       'RE-MEASURED 2026-09-12 at ninety-five tools: the request is 25,429 — 22,416 fixed plus ' +
       '3,013 of history over 25 messages — and against the 22,704 ceiling the fixed part fits by ' +
       '288 and the request is 2,725 over. 288 is the tightest margin in the group, so this is the ' +
-      'case that will need its window raised first.',
+      'case that will need its window raised first. ' +
+      'It did, on 2026-09-13: `tailor.snippet.create` took the fixed part to 22,826 and the floor ' +
+      'to 26,922, past the old 26,800. At 27,300 the ceiling is 23,204, the fixed part fits by 378, ' +
+      'and the request of 25,839 (3,013 of history over 25 messages) is 2,635 over it.',
     turns: [
       {
         say: 'Add a note to the Stripe application that I am waiting on the team match.',
@@ -2217,7 +2227,8 @@ export const CONVERSATIONS: readonly Conversation[] = [
     // fixed part at 22,406, and the floor — the fixed part plus the reply
     // reserve — is 26,502. The old window no longer left room for a reply, so
     // the case overflowed instead of compacting. See the re-measurement below.
-    window: 26_900,
+    // 26,900 → 27,300 on 2026-09-13, for the same tool; see the re-measurement.
+    window: 27_300,
     why:
       'A dependency that spans the compaction: something created early is referred to late by a ' +
       'name the model was only told once. Measured on 2026-09-05 with the minimum-call drive under ' +
@@ -2232,7 +2243,11 @@ export const CONVERSATIONS: readonly Conversation[] = [
       'the fixed part is 22,406, which with the 4,096 reply reserve puts the floor at 26,502 — ' +
       'above the old 26,200, so the window overflowed rather than compacting. At 26,900 the ' +
       'ceiling is 22,804: the fixed part fits by 398, the request of 25,005 (2,599 of history over ' +
-      '24 messages) is 2,201 over it, and the window sits 1,895 above the request.',
+      '24 messages) is 2,201 over it, and the window sits 1,895 above the request. ' +
+      'RE-MEASURED 2026-09-13 at ninety-six tools, and moved again: the fixed part is 22,817 and ' +
+      'the floor 26,913, over the 26,900 set the day before. At 27,300 the ceiling is 23,204, the ' +
+      'fixed part fits by 387, and the request of 25,416 (2,599 of history over 24 messages) is ' +
+      '2,212 over it.',
     turns: [
       {
         say: 'Make a keyword called “consensus” — I will use it to group things.',
@@ -6798,8 +6813,10 @@ export const CONVERSATIONS: readonly Conversation[] = [
     // Raised from 26,600 on 2026-09-12. Two tools took the fixed part to 22,404
     // and the floor to 26,500, leaving 100 tokens for history — not enough to
     // carry turn one out of the evicted prefix, which is what this case is for.
-    window: 27_000,
-    why: 'A RULE stated once, in turn one, and applied eight turns later — by which time it is the oldest thing in the conversation and the first candidate for compaction. The three existing endurance cases recall a theme, a note and a keyword; none of them recalls a threshold, and a threshold is the kind of fact a summariser rounds off ("the user has preferences about the feed"). The feed holds two matches, fit 88 and fit 41, so a model that still has the number dismisses exactly one; a model that lost it either guesses — dismissing both, or the wrong one — or asks what rule, which the turn does not accept. What is actually measured depends on the window, so the case carries its own. Measured on 2026-09-05 with the minimum-call drive under the full catalogue, the history fed back as the app feeds it: the request at turn eight is 24,807 tokens in `budget.ts`\'s view — 21,683 fixed plus 3,124 of history over 27 messages, the document read included. At 32,768 the ceiling is 28,672 and nothing was ever dropped, which made every published run of this case a distance-recall test across seven listings; at 16k under `full` the fixed part alone overflows and history is DROPPED, not summarised (`summarisable: false`). At 26,600 the ceiling was 22,504: the fixed part fit by 821, the request was 2,303 over it, and the rule was behind the summary when the feed was acted on. RE-MEASURED 2026-09-12 at ninety-five tools, and the window had to move: the fixed part is 22,404, so 26,600 left exactly 100 tokens for history — the trim reached turn one and then could not carry it, which is the same failure `long-vault-convention` records from 2026-08-26 and the reason both notes keep the margin in writing. At 27,000 the ceiling is 22,904: the fixed part fits by 500, the request of 25,528 (3,124 of history over 27 messages) is 2,624 over it, and the window sits 1,472 above the request. Under `narrowed` the retriever offers 11 specs and the same turn is well under half the window, so there it still never trips.',
+    // 27,000 → 27,400 on 2026-09-13: `tailor.snippet.create` left 89 tokens of
+    // room for history, the carry stops fitting below ~250.
+    window: 27_400,
+    why: 'A RULE stated once, in turn one, and applied eight turns later — by which time it is the oldest thing in the conversation and the first candidate for compaction. The three existing endurance cases recall a theme, a note and a keyword; none of them recalls a threshold, and a threshold is the kind of fact a summariser rounds off ("the user has preferences about the feed"). The feed holds two matches, fit 88 and fit 41, so a model that still has the number dismisses exactly one; a model that lost it either guesses — dismissing both, or the wrong one — or asks what rule, which the turn does not accept. What is actually measured depends on the window, so the case carries its own. Measured on 2026-09-05 with the minimum-call drive under the full catalogue, the history fed back as the app feeds it: the request at turn eight is 24,807 tokens in `budget.ts`\'s view — 21,683 fixed plus 3,124 of history over 27 messages, the document read included. At 32,768 the ceiling is 28,672 and nothing was ever dropped, which made every published run of this case a distance-recall test across seven listings; at 16k under `full` the fixed part alone overflows and history is DROPPED, not summarised (`summarisable: false`). At 26,600 the ceiling was 22,504: the fixed part fit by 821, the request was 2,303 over it, and the rule was behind the summary when the feed was acted on. RE-MEASURED 2026-09-12 at ninety-five tools, and the window had to move: the fixed part is 22,404, so 26,600 left exactly 100 tokens for history — the trim reached turn one and then could not carry it, which is the same failure `long-vault-convention` records from 2026-08-26 and the reason both notes keep the margin in writing. At 27,000 the ceiling is 22,904: the fixed part fits by 500, the request of 25,528 (3,124 of history over 27 messages) is 2,624 over it, and the window sits 1,472 above the request. RE-MEASURED 2026-09-13 at ninety-six tools: the fixed part is 22,815, so 27,000 left 89 tokens for history and the carry failed again. At 27,400 the ceiling is 23,304, the fixed part fits by 489, and the request of 25,939 (3,124 of history over 27 messages) is 2,635 over it. Under `narrowed` the retriever offers 11 specs and the same turn is well under half the window, so there it still never trips.',
     turns: [
       {
         say: 'Ground rule for this whole chat: anything in the scout feed with a fit below 60 is not worth my time — when I ask you to act on the feed later, that is what I mean.',
@@ -6942,8 +6959,9 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'long-vault-convention',
     group: 'endurance',
-    window: 27_000,
-    why: 'A convention for HOW to write, stated once and applied seven turns later: every link the assistant saves has to carry a fixed note. The existing endurance cases test WHICH record an early fact points at; this one tests a detail of a write that nothing in the request that triggers it repeats — the note text is in turn one and nowhere else, so a save with the right URL and the right category and no note is exactly what a model that has let go of turn one produces, and it looks like success on every other axis. Six read turns sit between the rule and the save, three of them document reads. Measured rather than assumed, on 2026-09-05, with the minimum-call drive under the full catalogue, the history fed back as the app feeds it: the request at turn eight is 23,706 tokens in `budget.ts`\'s view — 21,829 fixed plus 1,877 of history over 26 messages, the smallest in the group because the three documents total 1,174 characters. At 32,768 that never forced a compaction and the case measured whether a rule survives unrelated work with no summary in between. RE-MEASURED 2026-08-26, when `pipeline.proposal.clear` made the catalogue ninety-three tools and the fixed part grew 134 tokens. The previous window, 26,100, left 175 tokens for history where turn one needs rather more, so the trim reached turn one and then could not carry it — the exact failure the last version of this note predicted, in the words \'a catalogue one tool bigger would move the other edge, and the guard in `bench-fixtures` is what says so\'. It did. The band was then walked rather than derived: every window from 26,240 to 27,801 passes, the floor being where turn one stops fitting in what is left for history and the ceiling being the request plus the reply reserve, 27,802, above which nothing compacts at all. The window is 27,000, chosen in the middle rather than at either edge — ceiling 22,904, fixed part fitting by 1,075, request 802 over it, and 3,294 of window above the request. That left room for roughly eight more tools before the floor was a problem again, which is the headroom the 309 tokens of the last calibration did not have. RE-MEASURED 2026-09-12 at ninety-five tools: the fixed part is 22,416 and the request 24,293 (1,877 of history over 26 messages), so against the same 22,904 ceiling the fixed part fits by 488 and the request is 1,389 over it. Two tools cost 587 of that headroom — 294 each against the ~230 a tool the guard in `bench-fixtures.test.ts` predicts — because both carry long summaries, which is the second thing this note is for: the estimate is per tool and the real cost is per sentence. On 587 a pair, the 1,075 of headroom the last calibration bought is three or four more tools rather than eight. A real transcript is larger than the drive\'s, so the upper edge only moves outward. Under `narrowed` (14 specs) it never trips. Turn one is worded without any of the verify gate\'s WORK_VERBS (`save`, `link`, `file`, `put` all count), because a rule phrased with one reads to the gate as a request for work, and its nudge — \'make the tool call now\' — pushes the model to write on a read-only turn.',
+    // 27,000 → 27,400 on 2026-09-13; see the re-measurement in the note.
+    window: 27_400,
+    why: 'A convention for HOW to write, stated once and applied seven turns later: every link the assistant saves has to carry a fixed note. The existing endurance cases test WHICH record an early fact points at; this one tests a detail of a write that nothing in the request that triggers it repeats — the note text is in turn one and nowhere else, so a save with the right URL and the right category and no note is exactly what a model that has let go of turn one produces, and it looks like success on every other axis. Six read turns sit between the rule and the save, three of them document reads. Measured rather than assumed, on 2026-09-05, with the minimum-call drive under the full catalogue, the history fed back as the app feeds it: the request at turn eight is 23,706 tokens in `budget.ts`\'s view — 21,829 fixed plus 1,877 of history over 26 messages, the smallest in the group because the three documents total 1,174 characters. At 32,768 that never forced a compaction and the case measured whether a rule survives unrelated work with no summary in between. RE-MEASURED 2026-08-26, when `pipeline.proposal.clear` made the catalogue ninety-three tools and the fixed part grew 134 tokens. The previous window, 26,100, left 175 tokens for history where turn one needs rather more, so the trim reached turn one and then could not carry it — the exact failure the last version of this note predicted, in the words \'a catalogue one tool bigger would move the other edge, and the guard in `bench-fixtures` is what says so\'. It did. The band was then walked rather than derived: every window from 26,240 to 27,801 passes, the floor being where turn one stops fitting in what is left for history and the ceiling being the request plus the reply reserve, 27,802, above which nothing compacts at all. The window is 27,000, chosen in the middle rather than at either edge — ceiling 22,904, fixed part fitting by 1,075, request 802 over it, and 3,294 of window above the request. That left room for roughly eight more tools before the floor was a problem again, which is the headroom the 309 tokens of the last calibration did not have. RE-MEASURED 2026-09-12 at ninety-five tools: the fixed part is 22,416 and the request 24,293 (1,877 of history over 26 messages), so against the same 22,904 ceiling the fixed part fits by 488 and the request is 1,389 over it. Two tools cost 587 of that headroom — 294 each against the ~230 a tool the guard in `bench-fixtures.test.ts` predicts — because both carry long summaries, which is the second thing this note is for: the estimate is per tool and the real cost is per sentence. On 587 a pair, the 1,075 of headroom the last calibration bought is three or four more tools rather than eight. RE-MEASURED 2026-09-13 at ninety-six tools: one more, `tailor.snippet.create`, cost 410 on its own and left 78, so the window is 27,400 — ceiling 23,304, fixed part 22,826 fitting by 478, request 24,703 (1,877 of history over 26 messages) 1,399 over it, under the 28,799 above which nothing compacts. A real transcript is larger than the drive\'s, so the upper edge only moves outward. Under `narrowed` (14 specs) it never trips. Turn one is worded without any of the verify gate\'s WORK_VERBS (`save`, `link`, `file`, `put` all count), because a rule phrased with one reads to the gate as a request for work, and its nudge — \'make the tool call now\' — pushes the model to write on a read-only turn.',
     turns: [
       {
         say: 'House rule for this chat: every URL you store in the vault for me carries the note ‘found by assistant’, so I can tell yours from mine later.',
@@ -7103,8 +7121,9 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'long-profile-then-applications',
     group: 'endurance',
-    window: 27_000,
-    why: 'Two domains and one compaction. Turn one writes two background facts; six turns of application and document reads follow; then two writes that each depend on turn one — an UPDATE to one of those two entries, whose id the model was never shown and whose creation is behind the summary, and a note on an application that has to carry a name only turn one supplied. The `profile` group tests the update one turn later; the failure this catches is the add-instead-of-update a model makes when the entry it is correcting is no longer in its window. Measured on 2026-09-05 with the minimum-call drive under the full catalogue, the history fed back as the app feeds it: the request at turn eight is 25,499 tokens in `budget.ts`\'s view — 21,700 fixed plus 3,799 of history over 29 messages. At 27,000 the ceiling is 22,904: the fixed part fits by 1,204, the request is 2,595 over it — the window 1,501 above the request and under it plus the reply reserve — and the add is behind the summary when the update is asked for. Under `narrowed` the offline drive\'s retriever abstains on the recall turn and offers every spec there is — 92 when this was written, 95 since — which would make the request the same as the full one — but the live retriever is a model call and on the measured run (Gemma, 2026-09-05) it narrowed instead: 0 compactions, like the other five. Whether this case compacts under `narrowed` is the retriever\'s decision on the day, and the file records which. RE-MEASURED 2026-09-12 at ninety-five tools: the request at turn eight is 26,220 — 22,421 fixed plus 3,799 of history over 29 messages — so against the 22,904 ceiling the fixed part fits by 483 and the request is 3,316 over it, with the window only 780 above the request. This is the largest request in the group and therefore the one closest to the upper edge, where a window stops compacting at all.',
+    // 27,000 → 27,400 on 2026-09-13; see the re-measurement in the note.
+    window: 27_400,
+    why: 'Two domains and one compaction. Turn one writes two background facts; six turns of application and document reads follow; then two writes that each depend on turn one — an UPDATE to one of those two entries, whose id the model was never shown and whose creation is behind the summary, and a note on an application that has to carry a name only turn one supplied. The `profile` group tests the update one turn later; the failure this catches is the add-instead-of-update a model makes when the entry it is correcting is no longer in its window. Measured on 2026-09-05 with the minimum-call drive under the full catalogue, the history fed back as the app feeds it: the request at turn eight is 25,499 tokens in `budget.ts`\'s view — 21,700 fixed plus 3,799 of history over 29 messages. At 27,000 the ceiling is 22,904: the fixed part fits by 1,204, the request is 2,595 over it — the window 1,501 above the request and under it plus the reply reserve — and the add is behind the summary when the update is asked for. Under `narrowed` the offline drive\'s retriever abstains on the recall turn and offers every spec there is — 92 when this was written, 96 since — which would make the request the same as the full one — but the live retriever is a model call and on the measured run (Gemma, 2026-09-05) it narrowed instead: 0 compactions, like the other five. Whether this case compacts under `narrowed` is the retriever\'s decision on the day, and the file records which. RE-MEASURED 2026-09-12 at ninety-five tools: the request at turn eight is 26,220 — 22,421 fixed plus 3,799 of history over 29 messages — so against the 22,904 ceiling the fixed part fits by 483 and the request is 3,316 over it, with the window only 780 above the request. This is the largest request in the group and therefore the one closest to the upper edge, where a window stops compacting at all. RE-MEASURED 2026-09-13 at ninety-six tools: the fixed part is 22,833, so at 27,400 the ceiling is 23,304, the fixed part fits by 471, and the request of 26,632 (3,799 of history over 29 messages) is 3,328 over it — still the largest in the group.',
     turns: [
       {
         say: 'Record my background: a PhD in Computer Science from the University of Illinois at Urbana-Champaign, 2021, and my current post — Research Engineer at Cloudflare, since 2024.',
@@ -7701,7 +7720,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
         where: { prop: 'title', contains: 'rice follow-up' },
         prop: 'tag',
         is: 'Email',
-        why: 'And the tag came across with it. An enum from SNIPPET_TAG_VALUES (\'Cover letter\', \'Application form\', \'Email\', \'Bio\'), so exact; a create that guessed \'Cover letter\' for a Rice-specific variant fails here.',
+        why: 'And the tag came across with it. An enum from SNIPPET_TAG_VALUES (\'Cover letter\', \'Application form\', \'Email\', \'Bio\' — and, since tailoring, \'CV\', \'Research statement\', \'Teaching statement\'), so exact; a create that guessed \'Cover letter\' for a Rice-specific variant fails here.',
       },
       {
         kind: 'prop',

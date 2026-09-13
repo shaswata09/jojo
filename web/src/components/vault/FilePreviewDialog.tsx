@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { contentModal } from '@/components/ui/dialog-width'
 import { FileViewer } from '@/components/vault/FileViewer'
 import type { VaultFile } from '@/data/vault'
 import { useVaultBlobs } from '@/lib/vault-blobs'
@@ -86,7 +85,19 @@ export function FilePreviewDialog({
           // corner above it would read as closing something else.
           showCloseButton={false}
           className={cn(
-            contentModal,
+            /*
+             * A quarter wider than `contentModal`, and derived from it rather
+             * than typed as a number so it still tracks the shell's own
+             * measurements when those change.
+             *
+             * The shared width is three quarters of the centre column, which is
+             * the right answer for the modals it was written for: a form is a
+             * column of fields, and past a point extra width only puts a label
+             * further from its input. A document is the opposite — it has a page
+             * width of its own, and every pixel this is narrower than that page
+             * is one the browser's viewer spends shrinking the text to fit.
+             */
+            'sm:max-w-[calc(var(--modal-width)*1.25)]',
             // One row that takes the whole box: a grid row defaults to `auto`,
             // which would size to the viewer's content and leave the frame flat.
             'grid-rows-[minmax(0,1fr)] overflow-hidden border-0 bg-transparent p-0 ring-0',

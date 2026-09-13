@@ -14,6 +14,7 @@
  * record is a name, a size label and a bucket.
  */
 
+import { stripMarks } from '../core/marks'
 import {
   FILE_BUCKET_VALUES,
   FILE_KIND_VALUES,
@@ -675,7 +676,17 @@ export const vaultSnippetDuplicate = defineTool({
       // No `savedOn` to restamp — a snippet carries no date at all, so the id
       // minted just above is what puts the copy at the top of the list. See the
       // note on the link duplicate above for why that matters.
-      props: { ...source.props, slug: ctx.mintSlug('snippet', source.props.title) },
+      props: {
+        // Everything but `tailored`. A copy the person made is not the
+        // model's output, and a duplicate that kept the provenance would show
+        // up on the application's tailoring card claiming a model wrote it.
+        ...(({ tailored: _tailored, ...rest }) => rest)(source.props),
+        // And without the marks, for the same reason from the other side: a
+        // body is only ever READ as marked when its record says a model wrote
+        // it, so a copy that kept `**` and `##` would show them as typed.
+        ...(source.props.tailored === undefined ? {} : { body: stripMarks(source.props.body) }),
+        slug: ctx.mintSlug('snippet', source.props.title),
+      },
       createdAt: ctx.now,
       updatedAt: ctx.now,
     })

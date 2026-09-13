@@ -30,9 +30,26 @@ export async function send(
   request: ModelRequest,
   endpoint: string,
   signal?: AbortSignal,
+  /*
+   * A TOTAL budget, and the one place it can be raised. This app cannot
+   * stream — `chatRequest`'s note says why: a reader on a platform whose fetch
+   * does not give one — so a reply is cut at this many milliseconds however
+   * fast the server is going. Sixty seconds is right for a tool call and wrong
+   * for a document: tailoring a cover letter on the local box is ~2,000 tokens
+   * at ~14 a second, which is well past the default and nowhere near stalled.
+   * The caller that asks for a document says how long a document takes.
+   */
+  timeoutMs: number = MODEL_TIMEOUT_MS,
 ): Promise<Sent> {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), MODEL_TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  // A signal aborted BEFORE it got here never fires again — `addEventListener`
+  // after the fact hears nothing — so a cancel pressed during the document
+  // read would still send the model request. See the web twin.
+  if (signal?.aborted === true) {
+    clearTimeout(timer)
+    return { failed: unreachable(endpoint, 'Stopped before it was sent.', true) }
+  }
   // The caller's cancel and our timeout both have to reach the same request.
   signal?.addEventListener('abort', () => controller.abort())
   try {

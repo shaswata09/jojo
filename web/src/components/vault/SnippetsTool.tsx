@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { stripMarks } from '@jojo/service/core/marks'
 import { useApplications } from '@jojo/service/react/use-applications'
 import type { FormEvent } from 'react'
 import { Plus, Quote } from 'lucide-react'
@@ -451,7 +452,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                 copied={copiedId === s.id}
                 failed={failed}
                 onOpen={() => requestOpen(s)}
-                onCopy={() => copy(s.id, s.body)}
+                onCopy={() => copy(s.id, s.tailored ? stripMarks(s.body) : s.body)}
                 onDuplicate={onDuplicate}
                 onMove={onMove}
                 onDelete={onDelete}

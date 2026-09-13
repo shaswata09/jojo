@@ -286,7 +286,7 @@ export type AgentOptions = {
   /**
    * Which steps have to be approved. Defaults to `destructive`.
    *
-   * `destructive` is delete and admin — 13 of the 81 catalog entries, the ones
+   * `destructive` is delete and admin — 17 of the 96 catalog entries, the ones
    * whose catalog description already warns the model about them. `writes` is
    * every step that is not a read: 73 of them, which is what "ask me before it
    * changes anything" actually means.
@@ -1763,8 +1763,8 @@ async function performCall(
   /*
    * Three settings, and the middle one is where the interesting failure lives.
    *
-   *   writes       — every non-read step (85 of 95 tools)
-   *   destructive  — only `delete` and `admin` effects (15 of 92)
+   *   writes       — every non-read step (86 of 96 tools)
+   *   destructive  — only `delete` and `admin` effects (17 of 96)
    *   none         — nothing, and the person chose that explicitly
    *
    * `destructive` is not "the dangerous ones", it is "the ones that remove a

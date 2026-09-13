@@ -47,6 +47,7 @@ import {
   NODE_TYPES,
   OUTCOME_VALUES,
   PIPELINE_KINDS,
+  PROFILE_DOCUMENTS,
   PROPOSAL_STATUSES,
   RELS,
   SNIPPET_TAG_VALUES,
@@ -252,6 +253,20 @@ export const NODE_PROP_SCHEMAS = {
     title: s.string({ min: 1, label: 'Title' }),
     tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Tag' }),
     body: s.string({ label: 'Body', multiline: true }),
+    /*
+     * Where a model-tailored snippet came from. See `TailoredFrom`. Declared
+     * exactly, as `reading` is above; `source` is a string and not `s.id`, for
+     * the reason `background.source` gives — the file may have been deleted
+     * before a backup was taken, and the snippet is still the person's.
+     */
+    tailored: s.optional(
+      s.object({
+        source: s.string({ min: 1, label: 'Tailored from' }),
+        kind: s.enum(PROFILE_DOCUMENTS, { label: 'Document kind' }),
+        model: s.string({ min: 1, label: 'Written by' }),
+        at: s.instant({ label: 'Written' }),
+      }),
+    ),
   }),
   /**
    * Someone in the search. Only the name is required.
