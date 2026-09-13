@@ -48,6 +48,8 @@ import { guidanceFrom } from '../core/tailor'
 import type { Guidance } from '../core/tailor'
 import type { ToolResult } from '../tools/runtime'
 import { useGraph, useKg } from './kg-context'
+import { useJob, useJobs } from './jobs-context'
+import type { JobControl } from './jobs'
 import { undoableWith } from './undo'
 import type { RestoreOutcome } from './undo'
 import { useRun } from './use-tool'
@@ -118,19 +120,10 @@ export function useFit<S extends Cancellation>({
   applicationId,
   settings,
   readFit,
-  newSignal,
 }: {
   applicationId: string
   settings: ModelSettings
   readFit: (options: ReadFitOptions<S>) => Promise<FitOutcome>
-  /**
-   * A fresh cancellation, from the platform.
-   *
-   * `AbortController` is in both runtimes, but the signal type is what makes
-   * `useReadFit` generic (see `use-read-cv.ts`), and a hook that constructed one
-   * itself would have to name that type here and lose the seam.
-   */
-  newSignal: () => { signal: S; abort: () => void }
 }): FitView {
   const graph = useGraph()
   const { projections, today, repo } = useKg()
@@ -154,33 +147,14 @@ export function useFit<S extends Cancellation>({
   const file = fileId === undefined ? undefined : graph.node(fileId as NodeId, 'file')
   const reading = readingOn(file)
 
-  const [step, setStep] = useState<FitStep | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  /** Bumped by Try again and by Re-run. See `fitRequestKey` — half the request's identity. */
   const [attempt, setAttempt] = useState(0)
-  /**
-   * The request already made, as a ref rather than state.
-   *
-   * Deliberately: recording that a request began must not cause a render, or
-   * the decision changes as a consequence of having been taken. That is exactly
-   * the loop the panels had — the read reported its first step synchronously,
-   * the step was in the effect's dependency array, and the re-run's cleanup
-   * aborted the request it had just started.
-   */
-  const started = useRef<string | null>(null)
 
   const configured = settings.model.trim() !== ''
   const ready = fileId !== undefined && configured && background.length > 0
 
-  /*
-   * `readFit`, `settings` and `newSignal` are read through a ref so that none of
-   * them appears in the dependency array below. `readFit`'s identity changes
-   * when the blob store finishes opening, and a dependency that moves while a
-   * request is in flight makes the cleanup abort it. What the effect must react
-   * to is the DECISION changing, and that is what `action` is.
-   */
-  const latest = useRef({ readFit, settings, newSignal })
-  latest.current = { readFit, settings, newSignal }
+  const queue = useJobs()
+  const latest = useRef({ readFit, settings })
+  latest.current = { readFit, settings }
 
   const action = nextFitAction({
     ready,
@@ -191,100 +165,51 @@ export function useFit<S extends Cancellation>({
   })
 
   /*
-   * Hoisted out of the dependency array, because a ternary in there cannot be
-   * checked statically and this is the value the effect actually turns on.
-   * `null` covers both non-start actions, and neither needs to be distinguished
-   * from the other by an identity — `action.do` carries that.
+   * The request key IS the job's id, which is what replaced the `started` ref.
+   *
+   * That ref existed because the decision must not change as a consequence of
+   * having been taken — `fit-request.ts` says so at length — so the record of
+   * "already asked" had to live somewhere nothing renders on. A registry above
+   * the router is a better somewhere: it survives the panel, so a read is not
+   * asked for twice when the person comes back mid-read, and `enqueue` refuses
+   * a second copy of a live id without this file owning a ref at all.
    */
   const startKey = action.do === 'start' ? action.key : null
+  const job = useJob(startKey)
+  const step = job?.state === 'running' ? ((job.step ?? null) as FitStep | null) : null
+  const error = job?.state === 'failed' ? (job.error ?? null) : null
 
   useEffect(() => {
     if (startKey === null || fileId === undefined || name === undefined) return
-    /*
-     * Asked exactly once, and checked HERE rather than in the decision above.
-     *
-     * The decision is a dependency of this effect, so anything it says has to
-     * survive the request being recorded — see `fit-request.ts`. The ref does
-     * not: nothing renders when it changes, which is precisely why the guard
-     * belongs on this side of the dependency array.
-     */
-    if (started.current === startKey) return
-
-    started.current = startKey
-    const stop = latest.current.newSignal()
     const { readFit: read, settings: model } = latest.current
-
-    void read({
-      fileId,
-      name,
-      settings: model,
-      // Every start that gets here with an attempt on it is a person asking
-      // again. The stored reading is the answer they are rejecting, so it must
-      // not be handed back to them — which is what it was, silently, before
-      // `force` existed.
-      force: attempt > 0,
+    queue.start({
+      id: startKey,
+      kind: 'fit',
+      label: `How you fit — ${name}`,
+      about: applicationId,
       /*
-       * Not `setStep` directly: an aborted read goes on reporting.
-       *
-       * `use-read-fit` calls this at each stage, and the stages are `await`ed
-       * apart — so a read abandoned during "Opening the posting" still says
-       * "Reading what it asks for" a few seconds later, after the cleanup below
-       * has cleared the step and nothing is left to clear it again. Every
-       * control on both panels is gated on `step === null`, so the card kept a
-       * spinner and lost its menu for as long as it stayed mounted. Measured in
-       * the browser: a Re-run under StrictMode left the step line under the new
-       * verdict and the ⋯ menu gone.
+       * Quiet. This starts on its own the moment a record is opened, and a
+       * toast for every application somebody looks at is the app talking about
+       * its own housekeeping. The verdict appearing on the card is the news.
        */
-      onStep: (next) => {
-        if (!stop.signal.aborted) setStep(next)
+      run: async ({ signal, onStep }: JobControl<S>) => {
+        const outcome = await read({
+          fileId,
+          name,
+          settings: model,
+          // Every start that gets here with an attempt on it is a person asking
+          // again. The stored reading is the answer they are rejecting, so it
+          // must not be handed back to them.
+          force: attempt > 0,
+          onStep,
+          signal,
+        })
+        return outcome.ok ? { ok: true } : { ok: false, reason: outcome.reason }
       },
-      signal: stop.signal,
     })
-      .then((outcome) => {
-        if (stop.signal.aborted) return
-        setStep(null)
-        // Cleared on success as well as on failure. Without it a retry that
-        // worked left the red line from the attempt before it sitting under a
-        // fresh answer.
-        setError(outcome.ok ? null : outcome.reason)
-      })
-      /*
-       * Every layer under this reports failure as a value, so reaching here
-       * means something threw that none of them expected. Without the catch
-       * that is an unhandled rejection and a panel that spins on "Opening the
-       * posting" for the rest of the session — the failure mode a person cannot
-       * tell from a slow model.
-       */
-      .catch((thrown: unknown) => {
-        if (stop.signal.aborted) return
-        setStep(null)
-        setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
-      })
-
-    return () => {
-      stop.abort()
-      /*
-       * And the step goes with it.
-       *
-       * The `.then` above returns early when the signal is aborted — correctly,
-       * since it must not write state for a read nobody is waiting for — which
-       * left `step` on whatever the abort interrupted. Every control on both
-       * panels is gated on `step === null`, so the card kept a spinner and no
-       * menu for as long as it stayed mounted. StrictMode reproduces it on
-       * every dev mount: effect, cleanup, effect, and the second pass finds the
-       * request already made and starts nothing that would clear it.
-       *
-       * Safe against a read that is still wanted: React runs this cleanup
-       * immediately before the next effect body, which sets its own step in the
-       * same commit.
-       */
-      setStep(null)
-    }
-    // `startKey`, not `action` — the object is rebuilt on every render and would
-    // re-run this on every one of them. `attempt` is read rather than watched:
-    // it cannot change without `startKey` changing with it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startKey, fileId, name])
+    // No cleanup. A read abandoned when the person changed screens was a read
+    // paid for twice; the queue owns it now, and only `cancel` stops one.
+  }, [queue, startKey, fileId, name, applicationId, attempt])
 
   const guidance = useMemo(
     () =>
@@ -295,7 +220,6 @@ export function useFit<S extends Cancellation>({
   )
 
   const rerun = useCallback(() => {
-    setError(null)
     setAttempt((n) => n + 1)
   }, [])
 
@@ -309,19 +233,14 @@ export function useFit<S extends Cancellation>({
      * be on if they had never pressed anything, which is the state a clear puts
      * them back into.
      */
-    setAttempt(0)
-    setError(null)
     /*
-     * And the ref goes with it, or the way back is a dead button.
-     *
-     * `started` remembers the request key it last made. Re-run at attempt 1
-     * makes `f#1`; a clear puts the counter back to 0; pressing "Measure this
-     * posting" makes `f#1` AGAIN — and the effect, finding it has already asked
-     * for that exact request, does nothing at all. The panel then cannot be
-     * measured again for as long as it stays mounted, with no error and no
-     * spinner to say why.
+     * The counter goes back to zero, and nothing else needs resetting: the job
+     * for `f#1` has settled by the time there is a reading to clear, and
+     * `enqueue` replaces a settled job with the same id. That is what makes
+     * "Measure this posting" work after a Re-run — the dead button this hook
+     * had when the record of "already asked" was a ref it never reset.
      */
-    started.current = null
+    setAttempt(0)
     const { value, restore } = undoableWith(repo, () =>
       run('fit.reading.clear', { fileId: fileId as NodeId }),
     )

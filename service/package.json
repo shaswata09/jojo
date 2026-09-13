@@ -6,7 +6,7 @@
   "type": "module",
   "description": "The shared layer: the knowledge graph, its tools, the agent that drives them, and the React binding. Imported by web and mobile, owned by neither.",
   "//exports": [
-    "Nine entries: six layer stars whose TARGET names the extension, and three exact keys — `./react/kg`, `./react/status` and `./log`. This line used to read \"Seven entries, one per layer, each a star\", which was wrong in both halves and contradicted the two paragraphs below it that describe the exact keys correctly. A count in prose beside the thing it counts is worth having only if it is the count.",
+    "Ten entries: six layer stars whose TARGET names the extension, and four exact keys — `./react/kg`, `./react/status`, `./react/agent-runs-provider` and `./react/jobs-provider` — plus `./log`. This line used to read \"Seven entries, one per layer, each a star\", which was wrong in both halves and contradicted the two paragraphs below it that describe the exact keys correctly. A count in prose beside the thing it counts is worth having only if it is the count.",
     "",
     "That last detail is the whole reason a map is viable at all, and it cost two",
     "probes to find. Metro does not extension-probe THROUGH an exports star, so",
@@ -42,6 +42,7 @@
     "./react/kg": "./kg/react/kg.tsx",
     "./react/status": "./kg/react/status.tsx",
     "./react/agent-runs-provider": "./kg/react/agent-runs-provider.tsx",
+    "./react/jobs-provider": "./kg/react/jobs-provider.tsx",
     "./react/*": "./kg/react/*.ts",
     "./data/*": "./data/*.ts",
     "./log": "./kg/log.ts",

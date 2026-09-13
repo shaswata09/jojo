@@ -4,9 +4,10 @@
  * The panel's state machine is `@jojo/service/react/use-fit`, shared with the
  * phone — it used to be 127 byte-identical lines in both panel files with
  * nothing comparing them. What stays here is what cannot be shared: the two
- * `@/`-aliased platform functions (see `cv-agent.ts`), and an `AbortController`,
- * which `kg/react` may not name because `AbortSignal` is a DOM global the
- * portable layers deliberately do not have.
+ * `@/`-aliased platform functions (see `cv-agent.ts`). Cancellation is not among
+ * them any more: the job registry above the router owns it, because a panel
+ * holding its own controller aborted its own work on unmount — see
+ * `kg/react/jobs.ts`.
  */
 import { useFit as usePortableFit } from '@jojo/service/react/use-fit'
 import type { FitView } from '@jojo/service/react/use-fit'
@@ -20,17 +21,6 @@ import { useReadDocument } from '@/lib/read-document'
 export type ReadFitOptions = PortableOptions<AbortSignal>
 export type { FitOutcome, FitStep, FitView }
 
-/** A fresh controller, in the two-field shape the hook takes. */
-const newSignal = () => {
-  const stop = new AbortController()
-  return {
-    signal: stop.signal,
-    abort: () => {
-      stop.abort()
-    },
-  }
-}
-
 /** The read alone. The create form uses it to warm a posting it has just saved. */
 export function useReadFit(): (options: ReadFitOptions) => Promise<FitOutcome> {
   const readDocument = useReadDocument()
@@ -40,5 +30,5 @@ export function useReadFit(): (options: ReadFitOptions) => Promise<FitOutcome> {
 export function useFit(applicationId: string): FitView {
   const { settings } = useModelSettings()
   const readFit = useReadFit()
-  return usePortableFit<AbortSignal>({ applicationId, settings, readFit, newSignal })
+  return usePortableFit<AbortSignal>({ applicationId, settings, readFit })
 }

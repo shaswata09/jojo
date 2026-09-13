@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { reportError } from '@/lib/report-error'
 import { startOffline } from '@/lib/offline'
 import { AgentRunsProvider } from '@jojo/service/react/agent-runs-provider'
+import { AppJobsProvider } from '@/lib/jobs'
 import { ApprovalHost } from '@/components/assistant/ApprovalHost'
 import { DialogHost, DialogsProvider } from '@/lib/dialogs'
 import { LabelsProvider } from '@/lib/labels'
@@ -75,26 +76,28 @@ createRoot(container).render(
                           reached after the user walked away has to be
                           answerable from wherever they are, or the run waits
                           forever and the exchange is never saved. */}
-                      <AgentRunsProvider
-                        onError={(e) => {
-                          reportError('agent', e)
-                        }}
-                      >
-                        {/* Above the router too, and for the same reason: a
+                      <AppJobsProvider>
+                        <AgentRunsProvider
+                          onError={(e) => {
+                            reportError('agent', e)
+                          }}
+                        >
+                          {/* Above the router too, and for the same reason: a
                             pipeline that stopped when you left Job Scout was a
                             pipeline that did not do what its own caption said. */}
-                        <PipelinesProvider>
-                          {/* Up here with the pipelines, for the same reason:
+                          <PipelinesProvider>
+                            {/* Up here with the pipelines, for the same reason:
                               a link that lived on the Settings page would stop
                               answering Claude Code the moment you went to look
                               at what it had just changed. */}
-                          <McpLinkProvider>
-                            <App />
-                            <DialogHost />
-                            <ApprovalHost />
-                          </McpLinkProvider>
-                        </PipelinesProvider>
-                      </AgentRunsProvider>
+                            <McpLinkProvider>
+                              <App />
+                              <DialogHost />
+                              <ApprovalHost />
+                            </McpLinkProvider>
+                          </PipelinesProvider>
+                        </AgentRunsProvider>
+                      </AppJobsProvider>
                     </MascotProvider>
                   </DialogsProvider>
                 </ModelSettingsProvider>

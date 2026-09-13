@@ -8,7 +8,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { SnippetPreviewDialog } from '@/components/vault/SnippetPreviewDialog'
 import type { PreviewSnippet } from '@/components/vault/SnippetPreviewDialog'
 import { supersededToast } from '@jojo/service/react/undo'
-import { TAILOR_STEP_LABEL } from '@jojo/service/react/use-tailor'
 import type { TailorCandidate } from '@jojo/service/core/tailoring'
 import { useTailoring } from '@/lib/tailor-agent'
 import type { TailoredSnippet } from '@/lib/tailor-agent'
@@ -73,31 +72,18 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
   const [previewing, setPreviewing] = useState<string | null>(null)
   const preview = t.tailored.find((s) => s.id === previewing) ?? null
 
-  const begin = async (candidate: TailorCandidate) => {
+  /*
+   * Queued, not awaited. The work belongs to the registry above the router —
+   * see `kg/react/jobs.ts` — so this returns at once and the card becomes a
+   * view of a job that outlives it. What used to be a toast here is raised by
+   * the provider when the job settles, wherever the person has got to by then.
+   */
+  const begin = (candidate: TailorCandidate) => {
     setChoosing(false)
-    const outcome = await t.start(candidate)
-    if (!outcome.ok) return
-    toast({
-      title: `${outcome.title} saved`,
-      description:
-        outcome.notes.length > 0
-          ? outcome.notes.join(' ')
-          : 'Filed under this application, with the changes marked. Copy strips the marks.',
-      ...(outcome.restore
-        ? {
-            action: {
-              label: 'Undo',
-              onClick: () => {
-                const done = outcome.restore?.()
-                if (done && done.superseded.length > 0) toast(supersededToast(done))
-              },
-            },
-          }
-        : {}),
-    })
+    t.start(candidate)
   }
 
-  const busy = t.step !== null
+  const busy = t.running !== null
 
   return (
     <Panel aria-labelledby={`tailored-${applicationId}`}>
@@ -127,7 +113,9 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
                   key={c.id}
                   type="button"
                   className={cn(menuItemClass, 'flex-col items-start gap-0')}
-                  onClick={() => void begin(c)}
+                  onClick={() => {
+                    begin(c)
+                  }}
                 >
                   <span className="text-text-1">
                     {c.label.charAt(0).toUpperCase() + c.label.slice(1)}
@@ -172,17 +160,13 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
       {busy && (
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 aria-hidden className="size-3.5 animate-spin" />
-          {t.step === null ? '' : TAILOR_STEP_LABEL[t.step]}
-          {t.target && <span className="truncate">· {t.target}</span>}
-          {/* The count, not the text. Writing a document takes a minute on a
-              local model, and a card that said only "Writing" for sixty
-              seconds is indistinguishable from one that has hung — but the
-              prose belongs behind Preview like everything else here, so what
-              moves is a number. Zero until the first chunk, and absent on a
-              transport that cannot stream. */}
-          {t.draft !== '' && (
-            <span className="tabular">· {t.draft.trim().split(/\s+/).length} words</span>
-          )}
+          {/* The job's own step, so this line is the same on every screen the
+              person can be looking at — and still here when they come back.
+              'Queued' rather than a spinner with no words for a job waiting
+              behind another: one model answers one question at a time. */}
+          <span className="truncate">
+            {t.running?.state === 'queued' ? 'Queued' : (t.running?.step ?? 'Working')}
+          </span>
           <Button size="sm" variant="ghost" className="ml-auto" onClick={t.cancel}>
             Cancel
           </Button>

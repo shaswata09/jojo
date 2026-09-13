@@ -27,17 +27,6 @@ export type { TailorOutcome, TailorStep, TailoringView, TailoredSnippet }
 /** How long one tailored document may take on a transport that cannot stream. */
 const DOCUMENT_TIMEOUT_MS = 240_000
 
-/** A fresh controller, in the two-field shape the hook takes. */
-const newSignal = () => {
-  const stop = new AbortController()
-  return {
-    signal: stop.signal,
-    abort: () => {
-      stop.abort()
-    },
-  }
-}
-
 /** One long generation, whole. No tools: the reply is the document. */
 const turn = (settings: ModelSettings, messages: readonly ChatMessage[], signal?: AbortSignal) =>
   agentTurn(settings, messages, [], signal, { timeoutMs: DOCUMENT_TIMEOUT_MS })
@@ -46,5 +35,5 @@ export function useTailoring(applicationId: string): TailoringView {
   const { settings } = useModelSettings()
   const readDocument = useReadDocument()
   const tailor = usePortableTailor<AbortSignal>({ turn, readDocument })
-  return usePortableTailoring<AbortSignal>({ applicationId, settings, tailor, newSignal })
+  return usePortableTailoring<AbortSignal>({ applicationId, settings, tailor })
 }

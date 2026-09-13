@@ -10,6 +10,7 @@ import { RolesProvider } from '@/lib/roles'
 import { SheetsProvider } from '@/lib/sheets'
 import { ModelSettingsProvider } from '@/lib/model-settings'
 import { AgentRunsProvider } from '@jojo/service/react/agent-runs-provider'
+import { AppJobsProvider } from '@/lib/jobs'
 import { ApprovalSheet } from '@/components/assistant/ApprovalSheet'
 import { PipelinesProvider } from '@/lib/pipelines'
 import { StoreProvider } from '@/lib/store'
@@ -72,18 +73,20 @@ export default function App() {
                             conversation's run has to outlive the screen that
                             started it, and every exit from the Assistant screen
                             pops it — it is always the leaf of the stack. */}
-                        <AgentRunsProvider
-                          onError={(e) => {
-                            reportError('agent', e)
-                          }}
-                        >
-                          {/* Above the navigator too: a pipeline that stopped
+                        <AppJobsProvider>
+                          <AgentRunsProvider
+                            onError={(e) => {
+                              reportError('agent', e)
+                            }}
+                          >
+                            {/* Above the navigator too: a pipeline that stopped
                               when you left Job Scout was a pipeline that did not
                               do what its own footer said. */}
-                          <PipelinesProvider>
-                            <Themed />
-                          </PipelinesProvider>
-                        </AgentRunsProvider>
+                            <PipelinesProvider>
+                              <Themed />
+                            </PipelinesProvider>
+                          </AgentRunsProvider>
+                        </AppJobsProvider>
                       </SheetsProvider>
                     </LabelsProvider>
                   </StoreProvider>

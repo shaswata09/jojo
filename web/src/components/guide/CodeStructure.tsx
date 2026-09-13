@@ -87,8 +87,10 @@ export const SHAPE: DirRow[] = [
     // cleared, or never taken — out of the two panels that each decided it.
     // `marks.ts` and `tailoring.ts`, each with a test: the four marks a
     // tailored snippet carries, and which documents the tailoring card offers.
-    files: 128,
-    tests: 62,
+    // `jobs.ts` and its test: what state a piece of background work is in, and
+    // what may start next — the queue behind every agent job.
+    files: 130,
+    tests: 63,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -156,12 +158,15 @@ export const SHAPE: DirRow[] = [
     // lines in each app with nothing comparing them.
     // `use-tailor.ts` and `use-tailoring.ts`: the run and the card behind
     // "Tailored materials", shared by both apps for the same reason.
-    files: 49,
-    tests: 13,
+    // `jobs.ts`, its test, `jobs-context.ts` and `jobs-provider.tsx`: the
+    // registry above the router that makes a job outlive the screen that
+    // asked for it — `agent-runs.ts`'s argument, generalised.
+    files: 53,
+    tests: 14,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 10296,
+    lines: 10958,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -206,8 +211,9 @@ export const SHAPE: DirRow[] = [
     // And `read-here.ts`: a saved page is read in this tab, never sent to a
     // reader that refuses the extension's captures as too large.
     // `duplicate-agent.ts`: the check, wired to this app's transport.
-    // `tailor-agent.ts`: the seam that streams a tailored document.
-    files: 128,
+    // `tailor-agent.ts`: the seam that streams a tailored document, and
+    // `jobs.tsx`: the queue wired to this app's clock, cancel and toast.
+    files: 129,
     tests: 46,
     lines: 19123,
     what: 'web-only adapters and URL state',

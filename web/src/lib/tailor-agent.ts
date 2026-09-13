@@ -25,17 +25,6 @@ import { useVaultBlobs } from '@/lib/vault-blobs'
 
 export type { TailorOutcome, TailorStep, TailoringView, TailoredSnippet }
 
-/** A fresh controller, in the two-field shape the hook takes. */
-const newSignal = () => {
-  const stop = new AbortController()
-  return {
-    signal: stop.signal,
-    abort: () => {
-      stop.abort()
-    },
-  }
-}
-
 /** How long one tailored document may take on a provider that cannot stream. */
 const DOCUMENT_TIMEOUT_MS = 240_000
 
@@ -62,7 +51,6 @@ export function useTailoring(applicationId: string): TailoringView {
     applicationId,
     settings,
     tailor,
-    newSignal,
     hasBytes,
     documentsReady: blobs.ready,
   })

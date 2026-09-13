@@ -11,7 +11,6 @@ import { Txt } from '@/components/ui/Text'
 import { SnippetPreviewSheet } from '@/components/vault/SnippetPreviewSheet'
 import type { TailorCandidate } from '@jojo/service/core/tailoring'
 import { supersededToast } from '@jojo/service/react/undo'
-import { TAILOR_STEP_LABEL } from '@jojo/service/react/use-tailor'
 import { useTailoring } from '@/lib/tailor-agent'
 import type { TailoredSnippet } from '@/lib/tailor-agent'
 import { useToast } from '@/lib/toast-context'
@@ -49,37 +48,17 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
   const [previewing, setPreviewing] = useState<string | null>(null)
   const preview = t.tailored.find((x) => x.id === previewing) ?? null
 
-  const begin = async (candidate: TailorCandidate) => {
-    const outcome = await t.start(candidate)
-    if (!outcome.ok) return
-    toast({
-      title: `${outcome.title} saved`,
-      description:
-        outcome.notes.length > 0
-          ? outcome.notes.join(' ')
-          : 'Filed under this application, with the changes marked. Copy strips the marks.',
-      ...(outcome.restore
-        ? {
-            action: {
-              label: 'Undo',
-              onPress: () => {
-                const done = outcome.restore?.()
-                if (done && done.superseded.length > 0) {
-                  const said = supersededToast(done)
-                  toast({
-                    title: said.title,
-                    ...(said.description === undefined ? {} : { description: said.description }),
-                    tone: 'danger',
-                  })
-                }
-              },
-            },
-          }
-        : {}),
-    })
+  /*
+   * Queued, not awaited. The work belongs to the registry above the navigator —
+   * see `kg/react/jobs.ts` — so this returns at once and the card becomes a
+   * view of a job that outlives it. The toast when it finishes is raised by the
+   * provider, wherever the person has got to by then.
+   */
+  const begin = (candidate: TailorCandidate) => {
+    t.start(candidate)
   }
 
-  const busy = t.step !== null
+  const busy = t.running !== null
 
   const chooser: MenuAction[] = t.candidates.map((cand) => ({
     id: cand.id,
@@ -135,9 +114,10 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
 
       {busy && (
         <View style={{ gap: space[2] }}>
+          {/* The job's own step, so this line reads the same on every screen —
+              and is still here when the person comes back to the record. */}
           <Txt size="sm" tone="secondary">
-            {t.step === null ? '' : TAILOR_STEP_LABEL[t.step]}
-            {t.target ? ` · ${t.target}` : ''}…
+            {t.running?.state === 'queued' ? 'Queued' : (t.running?.step ?? 'Working')}…
           </Txt>
           <View style={{ alignItems: 'flex-start' }}>
             <Button size="sm" variant="ghost" label="Cancel" onPress={t.cancel} />

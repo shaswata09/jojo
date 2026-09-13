@@ -12,29 +12,46 @@
  * because a verdict is cheap and nobody has to review it. A tailored document
  * is minutes of a model's time and a thing the person will paste into an
  * application, so it happens when they choose a document and press — and the
- * choosing is half the card. There is therefore no `nextFitAction` here and no
- * started-ref; what there is instead is the same abort discipline, because a
- * navigation away mid-write must not leave a spinner behind or write a
- * snippet under a record nobody is looking at.
+ * choosing is half the card.
+ *
+ * ## The work is not this hook's
+ *
+ * It belongs to `react/jobs.ts`, mounted above the router, and this hook only
+ * queues it and reads it back. The first version held the promise and the
+ * `AbortController` here and aborted them from an unmount cleanup, which was
+ * reported the day it shipped: "if I click tailor material and then while the
+ * agent is writing the snippet I go to other tabs, this job gets cancelled".
+ * It did, and a minute of a local model was thrown away by a click on a tab.
+ *
+ * So there is no promise in this file, no signal and no abort. `start` queues a
+ * job whose id is what the work is ABOUT — the application and the document —
+ * so pressing twice, remounting under StrictMode, or opening the same record in
+ * a second place cannot start it twice; `cancel` asks the registry to stop one,
+ * which is now the ONLY thing that stops one.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { agoLabel } from '../core/dates'
+import { isLive } from '../core/jobs'
+import type { Job } from '../core/jobs'
 import type { NodeId, ProfileDocument, SnippetTag } from '../core/model'
 import { postingSourceFor } from '../core/posting-source'
 import type { PostingSource } from '../core/posting-source'
 import { dayOf } from '../core/project'
 import type { ModelSettings } from '../core/provider'
-import { candidatesFor, tailoredFor } from '../core/tailoring'
+import { TAILOR_STEP_LABEL } from './use-tailor'
+import { candidatesFor, tailoredFor, titleFor } from '../core/tailoring'
 import type { TailorCandidate } from '../core/tailoring'
 import type { HasBytes } from '../core/twin'
 import type { ToolResult } from '../tools/runtime'
 import type { Cancellation } from '../agent/loop'
 import { useGraph, useKg } from './kg-context'
+import { useJobs, useJobsAbout } from './jobs-context'
+import type { JobControl } from './jobs'
 import { undoableWith } from './undo'
 import type { RestoreOutcome } from './undo'
 import { useRun } from './use-tool'
-import type { TailorOptions, TailorOutcome, TailorStep } from './use-tailor'
+import type { TailorOptions, TailorOutcome } from './use-tailor'
 
 /** One tailored document, as the card lists it. */
 export type TailoredSnippet = {
@@ -71,16 +88,19 @@ export type TailoringView = {
   blocked: TailoringBlocked | null
   candidates: readonly TailorCandidate[]
   tailored: readonly TailoredSnippet[]
-  /** The step a run is on, or null when nothing is running. */
-  step: TailorStep | null
-  /** The name of the document being tailored, while one is. */
-  target: string | null
-  /** The reply so far, on a transport that streams. Empty otherwise. */
-  draft: string
+  /**
+   * The tailoring job for this record that is still going, or null.
+   *
+   * From the registry above the router, so it is the same job whether the
+   * person is looking at this record, another one, or the Vault. `step` on it
+   * is what the card prints while it runs.
+   */
+  running: Job | null
+  /** What the last job for this record failed with, until another is started. */
   error: string | null
-  /** Tailor this document now. Resolves when it is saved or has failed. */
-  start: (candidate: TailorCandidate) => Promise<TailorOutcome>
-  /** Stop a run. The card's "Cancel". */
+  /** Queue this document. Returns at once — the work is not this screen's. */
+  start: (candidate: TailorCandidate) => void
+  /** Stop the running job. The card's "Cancel". */
   cancel: () => void
   /**
    * Delete a tailored snippet, guarded the same way the fit card's Clear is —
@@ -91,18 +111,19 @@ export type TailoringView = {
   ) => { result: ToolResult<void>; restore: (() => RestoreOutcome) | null } | null
 }
 
+/** The job family this card owns. One string, so nothing spells it twice. */
+export const KIND = 'tailor'
+
 export function useTailoring<S extends Cancellation>({
   applicationId,
   settings,
   tailor,
-  newSignal,
   hasBytes,
   documentsReady = true,
 }: {
   applicationId: string
   settings: ModelSettings
   tailor: (options: TailorOptions<S>) => Promise<TailorOutcome>
-  newSignal: () => { signal: S; abort: () => void }
   /** The web's blob store answers this; the phone's file records answer it themselves. */
   hasBytes?: HasBytes
   /**
@@ -115,8 +136,15 @@ export function useTailoring<S extends Cancellation>({
   documentsReady?: boolean
 }): TailoringView {
   const graph = useGraph()
-  const { repo, today } = useKg()
+  const { repo, today, projections } = useKg()
   const run = useRun()
+
+  /*
+   * The employer, for the job's label. A toast that fires while the person is
+   * three screens away has to name WHICH application finished, and "Tailored
+   * CV is ready" about one of five open applications is not an answer.
+   */
+  const org = projections.application(graph, applicationId)?.org ?? ''
 
   const source = useMemo(() => postingSourceFor(graph, applicationId), [graph, applicationId])
   const candidates = useMemo(
@@ -143,80 +171,61 @@ export function useTailoring<S extends Cancellation>({
     [graph, applicationId, today],
   )
 
-  const [step, setStep] = useState<TailorStep | null>(null)
-  const [target, setTarget] = useState<string | null>(null)
-  const [draft, setDraft] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const running = useRef<{ abort: () => void } | null>(null)
-
-  const latest = useRef({ tailor, settings, newSignal })
-  latest.current = { tailor, settings, newSignal }
-
-  // A navigation away mid-write stops the write. The snippet, had it landed,
-  // would have been filed under a record nobody was looking at.
-  useEffect(
-    () => () => {
-      running.current?.abort()
-      running.current = null
-    },
-    [],
-  )
+  const queue = useJobs()
+  const mine = useJobsAbout(applicationId).filter((j) => j.kind === KIND)
+  const running = mine.find(isLive) ?? null
+  /*
+   * The newest failure, and only while nothing is going. A card that kept the
+   * last error under a job it had just started would be describing something
+   * the person has already moved past.
+   */
+  const lastFailure = [...mine].reverse().find((j) => j.state === 'failed')
+  const error = running === null && lastFailure !== undefined ? (lastFailure.error ?? null) : null
 
   const cancel = useCallback(() => {
-    running.current?.abort()
-    running.current = null
-    setStep(null)
-    setTarget(null)
-    setDraft('')
-  }, [])
+    if (running !== null) queue.cancel(running.id)
+  }, [queue, running])
 
   const start = useCallback(
-    async (candidate: TailorCandidate): Promise<TailorOutcome> => {
-      running.current?.abort()
-      const stop = latest.current.newSignal()
-      running.current = stop
-      setError(null)
-      setDraft('')
-      setTarget(candidate.name)
-      setStep('posting')
-
-      const { tailor: run_, settings: model } = latest.current
-      let outcome: TailorOutcome
-      try {
-        outcome = await run_({
-          applicationId,
-          fileId: candidate.id,
-          name: candidate.name,
-          settings: model,
-          signal: stop.signal,
-          // Guarded, as the fit hook's is: an abandoned run must not go on
-          // reporting into a card that has moved on.
-          onStep: (next) => {
-            if (!stop.signal.aborted) setStep(next)
-          },
-          onDelta: (soFar) => {
-            if (!stop.signal.aborted) setDraft(soFar)
-          },
-        })
-      } catch (thrown: unknown) {
-        outcome = {
-          ok: false,
-          step: 'writing',
-          reason: thrown instanceof Error ? thrown.message : 'Tailoring the document failed.',
-        }
-      }
-
-      if (stop.signal.aborted) {
-        return { ok: false, step: 'writing', reason: 'Stopped.' }
-      }
-      running.current = null
-      setStep(null)
-      setTarget(null)
-      setDraft('')
-      setError(outcome.ok ? null : outcome.reason)
-      return outcome
+    (candidate: TailorCandidate): void => {
+      /*
+       * The id is what the work is about, not when it was asked for, so the
+       * registry can refuse a second copy of it. A document already tailored
+       * for this record and asked for again is a NEW job with the same name —
+       * `enqueue` replaces a settled one, which is exactly "do it again".
+       */
+      queue.start({
+        id: `${KIND}:${applicationId}:${candidate.id}`,
+        kind: KIND,
+        label: titleFor(candidate.kind, org),
+        about: applicationId,
+        /*
+         * The point of the queue, from the person's side: they asked for this
+         * and then went to another screen, so finishing has to announce itself.
+         */
+        notify: true,
+        /*
+         * Typed as this app's signal rather than the structural `Cancellation`
+         * the registry names: `newSignal` on the provider is the app's, so the
+         * signal a job is handed IS an `AbortSignal` on both platforms, and
+         * `tailor` passes it to a transport that requires one.
+         */
+        run: async ({ signal, onStep }: JobControl<S>) => {
+          const outcome = await tailor({
+            applicationId,
+            fileId: candidate.id,
+            name: candidate.name,
+            settings,
+            signal,
+            onStep: (next) => {
+              onStep(`${TAILOR_STEP_LABEL[next]} · ${candidate.name}`)
+            },
+          })
+          return outcome.ok ? { ok: true } : { ok: false, reason: outcome.reason }
+        },
+      })
     },
-    [applicationId],
+    [queue, applicationId, tailor, settings, org],
   )
 
   const remove = useCallback(
@@ -246,9 +255,7 @@ export function useTailoring<S extends Cancellation>({
             : null,
     candidates,
     tailored,
-    step,
-    target,
-    draft,
+    running,
     error,
     start,
     cancel,
