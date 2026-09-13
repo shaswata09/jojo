@@ -523,6 +523,7 @@ export type Application = {
   location?: string
   comp?: string
   url?: string
+  postingId?: string
   /** All 'YYYY-MM-DD'. Optional because the mock rows predate them. */
   appliedOn?: string
   submittedOn?: string
@@ -882,6 +883,8 @@ export type ApplicationProps = {
   location?: string
   comp?: string
   url?: string
+  /** The posting's own reference, when it states one. See `core/duplicates.ts`. */
+  postingId?: string
   appliedOn?: ISODate
   submittedOn?: ISODate
   firstReplyOn?: ISODate

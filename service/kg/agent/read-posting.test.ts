@@ -655,3 +655,25 @@ describe('matching names onto the keywords that exist', () => {
     ])
   })
 })
+
+describe('the posting’s own reference', () => {
+  it('is asked for, and taken as written', () => {
+    const [system] = postingMessages('https://boards.test/j', 'x', '2026-09-14', [])
+    expect(system?.content).toContain('postingId')
+    const read = readPosting(reply({ org: 'UTK', postingId: 'JobCode 179545452' }))
+    if (read.ok) expect(read.draft.postingId).toBe('JobCode 179545452')
+  })
+
+  it('refuses a sentence, or a "reference" with no number in it', () => {
+    // A model asked for an ID copies the line it found it on, or answers with
+    // the role. Neither is a reference two records could be matched on.
+    const sentence = readPosting(
+      reply({ org: 'UTK', postingId: 'The requisition number is listed on the university portal' }),
+    )
+    if (sentence.ok) expect(sentence.draft.postingId).toBeUndefined()
+    const words = readPosting(reply({ org: 'UTK', postingId: 'Assistant Professor' }))
+    if (words.ok) expect(words.draft.postingId).toBeUndefined()
+    const none = readPosting(reply({ org: 'UTK', postingId: 'N/A' }))
+    if (none.ok) expect(none.draft.postingId).toBeUndefined()
+  })
+})

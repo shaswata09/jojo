@@ -446,3 +446,51 @@ export function useTitle(title: string | null) {
  * was promising.
  */
 export const BASE_TITLE = 'jojo — agentic job-search assistant'
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The PAGE a path belongs to — the identity that survives opening a record.
+ *
+ * `AppShell` asks this twice, and both answers were wrong when the pathname
+ * stood in for them:
+ *
+ *   - It is the key on the route's ErrorBoundary. A key change makes React
+ *     discard the subtree and build a new one, which is what made the recovery
+ *     real — and it also meant that opening an application from the board threw
+ *     the board away and rebuilt it. Measured: tag the six column scrollers,
+ *     click a card, and every tag is gone, with the new columns at scrollTop 0
+ *     and identical heights. That is the bug somebody reported as "the board
+ *     goes back to the top when I close a record" — it went back on OPEN, and
+ *     the sheet covered the evidence until they closed it.
+ *   - It decides whether to scroll the new page to the top.
+ *
+ * `/applications/:key` is therefore the same page as `/applications`: the route
+ * table already says so — the detail is a child "so the board or table stays
+ * mounted beside it" — and this is what makes that true rather than intended.
+ *
+ * The guide is the counter-example and stays whole. `/guide/licence` and
+ * `/guide/tools` are genuinely different pages reached from a pager, nothing is
+ * meant to stay mounted between them, and arriving at one halfway down is the
+ * thing the scroll reset exists to prevent. So is `/employers/:key`, a sibling
+ * route rather than a child.
+ *
+ * ## What keying by page costs
+ *
+ * A throw inside an open record no longer clears itself when the record closes.
+ * `RouteFailure` never offered that: it says "going somewhere else and coming
+ * back will reload it" and links to the dashboard, and going somewhere else is
+ * exactly a page change. The sidebar is up the whole time, because this
+ * boundary is inside the shell.
+ */
+export function pageKey(pathname: string): string {
+  const clean = pathname.replace(/\/+$/, '') || '/'
+  return /^\/applications(\/.+)?$/.test(clean) ? '/applications' : clean
+}
+
+/**
+ * Whether moving between these two paths stays on the same page.
+ *
+ * A pure function so it can be tested, because `AppShell` cannot be (D20).
+ */
+export const isSamePage = (from: string, to: string): boolean => pageKey(from) === pageKey(to)

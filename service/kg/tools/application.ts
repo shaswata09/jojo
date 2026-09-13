@@ -132,6 +132,7 @@ export const applicationCreate = defineTool({
         ...opt('location', cleared(input.location)),
         ...opt('comp', cleared(input.comp)),
         ...opt('url', cleared(input.url)),
+        ...opt('postingId', cleared(input.postingId)),
         ...opt('flagged', input.flagged || undefined),
         ...opt('appliedOn', input.appliedOn),
         ...opt('submittedOn', input.submittedOn),
@@ -218,6 +219,7 @@ export const applicationUpdate = defineTool({
       ...(input.location === undefined ? {} : { location: cleared(input.location) }),
       ...(input.comp === undefined ? {} : { comp: cleared(input.comp) }),
       ...(input.url === undefined ? {} : { url: cleared(input.url) }),
+      ...(input.postingId === undefined ? {} : { postingId: cleared(input.postingId) }),
       // `?? undefined` on a nullable field DELETES the key rather than storing
       // the null — the round-trip bug D21 names, where a stored `{ offer: null }`
       // survives structured clone as a present key and every `in` check that

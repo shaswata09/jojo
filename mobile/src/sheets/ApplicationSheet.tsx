@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { useDuplicateCheck } from '@/lib/duplicate-agent'
+import type { DuplicateFound } from '@/lib/duplicate-agent'
 import { TODAY } from '@/lib/today'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { DateField } from '@/components/common/DateField'
@@ -58,6 +60,8 @@ type FormState = {
   /** `Source` is optional on the model, and a segment has no empty state. */
   source: Source | 'none'
   url: string
+  /** The posting's own reference, when it states one. See `core/duplicates.ts`. */
+  postingId: string
   location: string
   comp: string
   deadline: string
@@ -81,6 +85,7 @@ function formFrom(initial?: ApplicationInitial): FormState {
     stage: initial?.stage ?? 'draft',
     source: initial?.source ?? 'none',
     url: initial?.url ?? '',
+    postingId: initial?.postingId ?? '',
     location: initial?.location ?? '',
     comp: initial?.comp ?? '',
     deadline: initial?.deadline ?? '',
@@ -177,9 +182,16 @@ export function ApplicationSheet({
    */
   const duplicate = findDuplicate(
     applications.all,
-    { org: form.org, role: form.role, url: form.url },
+    { org: form.org, role: form.role, url: form.url, postingId: form.postingId },
     mode === 'edit' ? id : undefined,
   )
+  const checkDuplicate = useDuplicateCheck()
+  // The duplicate found at Save, held until the person answers. See web's
+  // `DuplicateConfirm`: the sheet shows the original beside what is being
+  // added, and nothing has been written.
+  const [confirm, setConfirm] = useState<DuplicateFound<Application> | null>(null)
+  const [checking, setChecking] = useState(false)
+  const checkAbort = useRef<AbortController | null>(null)
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -216,6 +228,7 @@ export function ApplicationSheet({
    * hands the sheet back with every field, keywords included, as it was.
    */
   const onDismiss = () => {
+    checkAbort.current?.abort()
     onOpenChange(false)
     if (!dirty) return
 
@@ -243,6 +256,7 @@ export function ApplicationSheet({
     location: form.location.trim() || undefined,
     comp: form.comp.trim() || undefined,
     url: form.url.trim() || undefined,
+    postingId: form.postingId.trim() || undefined,
   })
 
   function mintDeadline(application: Application, date: string) {
@@ -329,41 +343,85 @@ export function ApplicationSheet({
     void readFit({ fileId: source.fileId, name: source.name, settings }).catch(() => {})
   }
 
+  /** The write itself, once the check has had its say. */
+  const createNow = () => {
+    const fields = shared()
+    const created = applications.add({
+      ...fields,
+      // The store's own default reads 'Draft created', which is a lie for
+      // anything logged at a later stage — people add an interview they are
+      // already booked for.
+      lastAction: fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
+    })
+    setRecord(refKey('app', created.id), keywords)
+    // Filed under what it became; added to any filing it already has, since
+    // `applicationIds` is a set. Web does this inside its undo; see there.
+    if (posting) {
+      vault.updateFile(posting.id, {
+        applicationIds: [...new Set([...posting.applicationIds, created.id])],
+      })
+    }
+    if (form.deadline) mintDeadline(created, form.deadline)
+    prewarmFit()
+
+    toast({
+      title: `${displayName(created)} added`,
+      description: [
+        form.deadline
+          ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
+          : 'No deadline yet — add one and it shows up in the week ahead.',
+        posting ? 'The posting is filed under it.' : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+    })
+    onOpenChange(false)
+  }
+
+  /**
+   * The check between Save and the write — arithmetic first, the model second
+   * and only when there is something at the same employer to compare with.
+   * Nothing is written until the person has seen the original. Web's dialog
+   * does the same in `confirmThenCreate`.
+   */
+  const confirmThenCreate = async () => {
+    const stop = new AbortController()
+    checkAbort.current = stop
+    setChecking(true)
+    let found: DuplicateFound<Application> | null = null
+    try {
+      found = await checkDuplicate({
+        existing: applications.all,
+        candidate: {
+          org: form.org,
+          role: form.role,
+          url: form.url,
+          postingId: form.postingId,
+          location: form.location,
+        },
+        settings,
+        signal: stop.signal,
+      })
+    } catch {
+      found = null
+    }
+    checkAbort.current = null
+    setChecking(false)
+    if (stop.signal.aborted) return
+    if (found) {
+      setConfirm(found)
+      return
+    }
+    createNow()
+  }
+
   const onSave = () => {
     setAttempted(true)
     if (Object.keys(validate(form)).length > 0 || blocker) return
 
     if (mode === 'create') {
-      const fields = shared()
-      const created = applications.add({
-        ...fields,
-        // The store's own default reads 'Draft created', which is a lie for
-        // anything logged at a later stage — people add an interview they are
-        // already booked for.
-        lastAction: fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
-      })
-      setRecord(refKey('app', created.id), keywords)
-      // Filed under what it became; added to any filing it already has, since
-      // `applicationIds` is a set. Web does this inside its undo; see there.
-      if (posting) {
-        vault.updateFile(posting.id, {
-          applicationIds: [...new Set([...posting.applicationIds, created.id])],
-        })
-      }
-      if (form.deadline) mintDeadline(created, form.deadline)
-      prewarmFit()
-
-      toast({
-        title: `${displayName(created)} added`,
-        description: [
-          form.deadline
-            ? `Deadline ${shortDate(form.deadline)} is on the calendar.`
-            : 'No deadline yet — add one and it shows up in the week ahead.',
-          posting ? 'The posting is filed under it.' : '',
-        ]
-          .filter(Boolean)
-          .join(' '),
-      })
+      void confirmThenCreate()
+      return
     } else if (record) {
       const fields = shared()
       const moved = record.stage !== fields.stage
@@ -418,21 +476,52 @@ export function ApplicationSheet({
             : 'Track a job you are applying for. Starred fields are required.'
       }
       footer={
-        <>
-          <Button label="Cancel" variant="ghost" size="md" onPress={onDismiss} />
-          {/* Never disabled for invalid input: a dead button next to an empty
-              form explains nothing, where a tap that surfaces the errors says
-              exactly what is missing. */}
-          <Button
-            label={mode === 'create' ? 'Add application' : 'Save changes'}
-            size="md"
-            blocker={blocker}
-            onPress={onSave}
-          />
-        </>
+        confirm ? (
+          <>
+            <Button
+              label="Edit instead"
+              variant="ghost"
+              size="md"
+              onPress={() => setConfirm(null)}
+            />
+            <Button label="Discard" variant="outline" size="md" onPress={onDismiss} />
+            <Button label="Add anyway" size="md" onPress={createNow} />
+          </>
+        ) : (
+          <>
+            <Button label="Cancel" variant="ghost" size="md" onPress={onDismiss} />
+            {/* Never disabled for invalid input: a dead button next to an empty
+                form explains nothing, where a tap that surfaces the errors says
+                exactly what is missing. */}
+            <Button
+              label={
+                checking
+                  ? 'Checking for a duplicate…'
+                  : mode === 'create'
+                    ? 'Add application'
+                    : 'Save changes'
+              }
+              size="md"
+              blocker={blocker}
+              disabled={checking}
+              onPress={onSave}
+            />
+          </>
+        )
       }
     >
+      {confirm ? (
+        <DuplicateConfirm
+          found={confirm}
+          adding={{ org: form.org, role: form.role, location: form.location }}
+          onOpen={() => {
+            onDismiss()
+            fromOverlay((nav) => nav.navigate('ApplicationDetail', { id: confirm.record.id }))
+          }}
+        />
+      ) : null}
       <ScrollView
+        style={confirm ? { display: 'none' } : undefined}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ gap: space[3.5], paddingBottom: space[2] }}
       >
@@ -540,6 +629,15 @@ export function ApplicationSheet({
           onChangeText={(v) => set('url', v)}
         />
         <TextField
+          label="Posting ID"
+          hint="The job or requisition number, if the posting states one."
+          value={form.postingId}
+          mono
+          autoCapitalize="none"
+          placeholder="e.g. R-2024-0312"
+          onChangeText={(v) => set('postingId', v)}
+        />
+        <TextField
           label="Note"
           value={form.note}
           multiline
@@ -606,3 +704,101 @@ const styles = StyleSheet.create({
     paddingVertical: space[2.5],
   },
 })
+
+/** "today", "yesterday", "12 days ago" — the projection counts the days. */
+const sinceDays = (days: number): string =>
+  days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${String(days)} days ago`
+
+/**
+ * The original beside what is about to be added. The phone's half of web's
+ * `DuplicateConfirm`: inside the same sheet, because two sheets at once means
+ * the second is invisible, and the form stays mounted underneath so "Edit
+ * instead" returns to it with everything still typed.
+ */
+function DuplicateConfirm({
+  found,
+  adding,
+  onOpen,
+}: {
+  found: DuplicateFound<Application>
+  adding: { org: string; role: string; location: string }
+  onOpen: () => void
+}) {
+  const c = useColors()
+  const original = found.record
+  const why =
+    found.how === 'model'
+      ? (found.because ?? 'The model read them as the same vacancy.')
+      : duplicateMessage(found.reason, displayName(original))
+  const card = {
+    borderWidth: 1,
+    borderColor: c.hairline,
+    borderRadius: 10,
+    padding: space[3],
+    gap: space[1],
+  } as const
+  return (
+    <View style={{ gap: space[3] }}>
+      <View
+        style={[styles.duplicate, { backgroundColor: c.warningSoft, borderColor: c.warningBorder }]}
+      >
+        <Txt size="sm" weight="medium" style={{ color: c.warning }}>
+          This looks like a job you already have
+        </Txt>
+        <Txt size="xs" style={{ color: c.warning }}>
+          {why}
+          {found.how === 'model' ? ' — the model’s reading; check it below.' : ''}
+        </Txt>
+      </View>
+
+      <View style={card}>
+        <Txt size="xs" tone="muted" uppercase>
+          What you already have
+        </Txt>
+        <Txt size="sm" weight="medium">
+          {displayName(original)}
+        </Txt>
+        <Txt size="sm" tone="secondary">
+          {STAGE_LABEL[original.stage]} · {original.lastAction} {sinceDays(original.daysAgo)}
+        </Txt>
+        {original.location !== undefined && (
+          <Txt size="sm" tone="secondary">
+            {original.location}
+          </Txt>
+        )}
+        {original.postingId !== undefined && (
+          <Txt size="xs" tone="muted">
+            Posting ID {original.postingId}
+          </Txt>
+        )}
+        {original.url !== undefined && (
+          <Txt size="xs" tone="muted" numberOfLines={1}>
+            {original.url}
+          </Txt>
+        )}
+        {original.note !== '' && (
+          <Txt size="xs" tone="secondary" numberOfLines={3}>
+            {original.note}
+          </Txt>
+        )}
+        <View style={{ alignItems: 'flex-start', marginTop: space[1] }}>
+          <Button label="Open the one you have" variant="outline" size="sm" onPress={onOpen} />
+        </View>
+      </View>
+
+      <View style={card}>
+        <Txt size="xs" tone="muted" uppercase>
+          What you are adding
+        </Txt>
+        <Txt size="sm" weight="medium">
+          {[adding.org.trim(), adding.role.trim()].filter(Boolean).join(' — ') || 'Untitled'}
+        </Txt>
+        {adding.location.trim() !== '' && (
+          <Txt size="sm" tone="secondary">
+            {adding.location}
+          </Txt>
+        )}
+      </View>
+    </View>
+  )
+}

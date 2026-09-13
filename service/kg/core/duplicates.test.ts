@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { duplicateMessage, findDuplicate } from './duplicates'
+import { duplicateMessage, findDuplicate, postingIdKey } from './duplicates'
 
 /**
  * The duplicate warning, and mostly the cases where it must stay quiet.
@@ -203,5 +203,43 @@ describe('duplicateMessage', () => {
     expect(duplicateMessage('name', 'Rice — Statistics')).toBe(
       'You already have Rice — Statistics.',
     )
+  })
+})
+
+describe('the posting’s own ID', () => {
+  const rows = [
+    { id: 'a1', org: 'UTK', role: 'Assistant Professor', postingId: 'JobCode 179545452' },
+    { id: 'a2', org: 'Acme', role: 'Engineer', url: 'https://acme.test/jobs/7' },
+  ]
+
+  it('is the strongest match: the same number is the same job whatever else differs', () => {
+    const hit = findDuplicate(rows, {
+      org: 'University of Tennessee',
+      role: 'Faculty',
+      postingId: '179545452',
+    })
+    expect(hit?.record.id).toBe('a1')
+    expect(hit?.reason).toBe('id')
+  })
+
+  it('reads the number past the label a page puts in front of it', () => {
+    for (const spelled of [
+      'Job ID: 179545452',
+      'Req # 179545452',
+      'posting number 179545452',
+      '179545452',
+    ]) {
+      expect(postingIdKey(spelled), spelled).toBe('179545452')
+    }
+    expect(postingIdKey('R-2024-0312')).toBe('r-2024-0312')
+  })
+
+  it('is no reference at all without a digit', () => {
+    expect(postingIdKey('Assistant Professor')).toBeUndefined()
+    expect(findDuplicate(rows, { postingId: 'Faculty' })).toBeUndefined()
+  })
+
+  it('has its own sentence', () => {
+    expect(duplicateMessage('id', 'UTK — Assistant Professor')).toContain('ID is already on')
   })
 })

@@ -18,7 +18,7 @@ import { resolveAddress } from '@jojo/service/core/address'
 import type { Instant } from '@jojo/service/core/model'
 import { createProjections } from '@jojo/service/react/projections'
 import { bootInMemory } from '@jojo/service/repo/boot'
-import { appPath, BASE_TITLE, calendarDate } from '@/lib/links'
+import { appPath, BASE_TITLE, calendarDate, isSamePage, pageKey } from '@/lib/links'
 // `?raw` rather than `node:fs`: the app project's `types` is `["vite/client"]`,
 // so `node:fs` does not typecheck here, and vite/client is what declares this.
 import indexHtml from '../../index.html?raw'
@@ -217,5 +217,60 @@ describe('calendarDate', () => {
 
   it('reads a leap February as 29 rather than 28', () => {
     expect(calendarDate(new URLSearchParams('y=2028&m=2'), onThe31st).d).toBe(29)
+  })
+})
+
+describe('what counts as arriving at a new page', () => {
+  /*
+   * `AppShell` keys the route's ErrorBoundary on this and resets the scroll on
+   * it. The pathname was standing in for both, so opening an application threw
+   * away the board and built a new one — six new column scrollers, each at the
+   * top — and the sheet hid that until the record was closed.
+   */
+  it('gives the list and an open record the same key, so nothing is rebuilt', () => {
+    // A React key: same string, same subtree. This is the assertion the board's
+    // scroll position depends on.
+    expect(pageKey('/applications/rice')).toBe(pageKey('/applications'))
+    expect(pageKey('/applications')).toBe('/applications')
+  })
+
+  it('gives every other path its own key', () => {
+    expect(pageKey('/statistics')).toBe('/statistics')
+    expect(pageKey('/guide/licence')).toBe('/guide/licence')
+    expect(pageKey('/employers/rice')).toBe('/employers/rice')
+    expect(pageKey('/')).toBe('/')
+  })
+
+  it('keeps the page when a record opens over the list, and when it closes', () => {
+    expect(isSamePage('/applications', '/applications/rice')).toBe(true)
+    expect(isSamePage('/applications/rice', '/applications')).toBe(true)
+  })
+
+  it('keeps the page when one record is swapped for another', () => {
+    // The board never moved; only the panel beside it changed.
+    expect(isSamePage('/applications/rice', '/applications/baylor')).toBe(true)
+  })
+
+  it('counts a different section as a new page', () => {
+    expect(isSamePage('/applications', '/statistics')).toBe(false)
+    expect(isSamePage('/applications/rice', '/calendar')).toBe(false)
+    expect(isSamePage('/', '/applications')).toBe(false)
+  })
+
+  it('counts the guide’s pages as pages, because that is what they are', () => {
+    // Reached from a pager, one after another; arriving halfway down one is
+    // exactly what the reset is for.
+    expect(isSamePage('/guide/tools', '/guide/licence')).toBe(false)
+    expect(isSamePage('/guide', '/guide/overview')).toBe(false)
+  })
+
+  it('counts one employer as a different page from another', () => {
+    // A sibling route, not a child: nothing stays mounted between them.
+    expect(isSamePage('/employers/rice', '/employers/baylor')).toBe(false)
+  })
+
+  it('is not fooled by a trailing slash', () => {
+    expect(isSamePage('/applications/', '/applications/rice')).toBe(true)
+    expect(isSamePage('/calendar/', '/calendar')).toBe(true)
   })
 })

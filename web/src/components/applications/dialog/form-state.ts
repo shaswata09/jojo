@@ -29,6 +29,8 @@ export type FormState = {
   /** `Source` is optional on the model, and a segment has no empty state. */
   source: Source | 'none'
   url: string
+  /** The posting's own reference, when it states one. See `core/duplicates.ts`. */
+  postingId: string
   location: string
   comp: string
   deadline: string
@@ -51,6 +53,7 @@ export function formFrom(initial?: ApplicationInitial): FormState {
     stage: initial?.stage ?? 'draft',
     source: initial?.source ?? 'none',
     url: initial?.url ?? '',
+    postingId: initial?.postingId ?? '',
     location: initial?.location ?? '',
     comp: initial?.comp ?? '',
     deadline: initial?.deadline ?? '',

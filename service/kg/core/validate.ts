@@ -141,6 +141,7 @@ export const NODE_PROP_SCHEMAS = {
     lastAction: s.string({ label: 'Last action' }),
     lastActionAt: s.instant({ label: 'Last action at' }),
     source: s.optional(s.enum(SOURCES, { label: 'Source' })),
+    postingId: s.optional(s.string({ label: 'Posting ID' })),
     location: s.optional(s.string({ label: 'Location' })),
     comp: s.optional(s.string({ label: 'Compensation' })),
     url: s.optional(s.string({ label: 'Posting link' })),

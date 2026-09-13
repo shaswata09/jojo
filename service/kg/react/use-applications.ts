@@ -41,6 +41,72 @@ export type ApplicationDraft = Omit<Application, 'id' | 'slug' | 'lastAction' | 
 const agoOf = (today: string, days: number) =>
   new Date(Date.parse(`${today}T12:00:00`) - days * 86_400_000).toISOString()
 
+/**
+ * The `application.create` input for a draft.
+ *
+ * Written out by hand, field by field, because the tool's schema and the read
+ * type are not the same shape — `daysAgo` is derived and `slug` is minted. A
+ * mapping like this drops a field the day someone adds one to the record and
+ * forgets this file: `postingId` reached the form, the writer and the tool and
+ * never the store, and the duplicate check's ID rule had nothing to compare
+ * (2026-09-12). `use-profile.ts` lost `roles` the same way. So it is a
+ * module-level function rather than a body inside the `useCallback`, and
+ * `use-applications.test.ts` holds it to a compiler-complete draft.
+ */
+export function applicationCreateInput(draft: ApplicationDraft) {
+  return {
+    org: draft.org,
+    role: draft.role,
+    roleTag: draft.roleTag,
+    stage: draft.stage,
+    note: draft.note,
+    ...present('lastAction', draft.lastAction),
+    ...present('source', draft.source),
+    ...present('location', draft.location),
+    ...present('comp', draft.comp),
+    ...present('url', draft.url),
+    ...present('postingId', draft.postingId),
+    ...present('flagged', draft.flagged),
+    ...present('appliedOn', draft.appliedOn),
+    ...present('submittedOn', draft.submittedOn),
+    ...present('firstReplyOn', draft.firstReplyOn),
+    ...present('outcome', draft.outcome),
+    ...present('offer', draft.offer),
+  }
+}
+
+/**
+ * The `application.update` input for a patch. Same reasoning as above.
+ *
+ * `daysAgo` is derived and cannot be written, but a card restoring a
+ * before-image hands one back — so it is turned into the instant it describes.
+ * Dropping it would have made every undo of a stage move leave the row claiming
+ * it was touched today.
+ */
+export function applicationUpdateInput(id: string, patch: Partial<Application>, today: string) {
+  return {
+    id,
+    ...(typeof patch.daysAgo === 'number' ? { lastActionAt: agoOf(today, patch.daysAgo) } : {}),
+    ...present('org', patch.org),
+    ...asText('role', patch, 'role'),
+    ...asText('note', patch, 'note'),
+    ...present('roleTag', patch.roleTag),
+    ...present('stage', patch.stage),
+    ...present('lastAction', patch.lastAction),
+    ...asText('location', patch, 'location'),
+    ...asText('comp', patch, 'comp'),
+    ...asText('url', patch, 'url'),
+    ...asText('postingId', patch, 'postingId'),
+    ...asNull('source', patch, 'source'),
+    ...asNull('flagged', patch, 'flagged'),
+    ...asNull('appliedOn', patch, 'appliedOn'),
+    ...asNull('submittedOn', patch, 'submittedOn'),
+    ...asNull('firstReplyOn', patch, 'firstReplyOn'),
+    ...asNull('outcome', patch, 'outcome'),
+    ...asNull('offer', patch, 'offer'),
+  }
+}
+
 export function useApplications() {
   const graph = useGraph()
   const { repo, projections, today } = useKg()
@@ -82,24 +148,7 @@ export function useApplications() {
 
   const add = useCallback(
     (draft: ApplicationDraft): Application => {
-      const result = run('application.create', {
-        org: draft.org,
-        role: draft.role,
-        roleTag: draft.roleTag,
-        stage: draft.stage,
-        note: draft.note,
-        ...present('lastAction', draft.lastAction),
-        ...present('source', draft.source),
-        ...present('location', draft.location),
-        ...present('comp', draft.comp),
-        ...present('url', draft.url),
-        ...present('flagged', draft.flagged),
-        ...present('appliedOn', draft.appliedOn),
-        ...present('submittedOn', draft.submittedOn),
-        ...present('firstReplyOn', draft.firstReplyOn),
-        ...present('outcome', draft.outcome),
-        ...present('offer', draft.offer),
-      })
+      const result = run('application.create', applicationCreateInput(draft))
       // Throwing rather than returning undefined: the signature says an
       // Application comes back and two call sites navigate to it. A refusal here
       // is a schema the form disagrees with, which is a bug, not a user error.
@@ -128,30 +177,7 @@ export function useApplications() {
    */
   const update = useCallback(
     (id: string, patch: Partial<Application>) => {
-      run('application.update', {
-        id,
-        // `daysAgo` is derived and cannot be written, but a card restoring a
-        // before-image hands one back — so it is turned into the instant it
-        // describes. Dropping it would have made every undo of a stage move
-        // leave the row claiming it was touched today.
-        ...(typeof patch.daysAgo === 'number' ? { lastActionAt: agoOf(today, patch.daysAgo) } : {}),
-        ...present('org', patch.org),
-        ...asText('role', patch, 'role'),
-        ...asText('note', patch, 'note'),
-        ...present('roleTag', patch.roleTag),
-        ...present('stage', patch.stage),
-        ...present('lastAction', patch.lastAction),
-        ...asText('location', patch, 'location'),
-        ...asText('comp', patch, 'comp'),
-        ...asText('url', patch, 'url'),
-        ...asNull('source', patch, 'source'),
-        ...asNull('flagged', patch, 'flagged'),
-        ...asNull('appliedOn', patch, 'appliedOn'),
-        ...asNull('submittedOn', patch, 'submittedOn'),
-        ...asNull('firstReplyOn', patch, 'firstReplyOn'),
-        ...asNull('outcome', patch, 'outcome'),
-        ...asNull('offer', patch, 'offer'),
-      })
+      run('application.update', applicationUpdateInput(id, patch, today))
     },
     [run, today],
   )

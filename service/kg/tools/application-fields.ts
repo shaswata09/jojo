@@ -39,6 +39,12 @@ export const fields = {
   location: s.optional(s.string({ label: 'Location' })),
   comp: s.optional(s.string({ label: 'Compensation' })),
   url: s.optional(s.string({ label: 'Posting link' })),
+  /**
+   * The posting's own reference — a job or requisition number the page states.
+   * The surest identity a vacancy has: `core/duplicates.ts` checks it before
+   * the address or the name, and `read-posting.ts` copies it off the page.
+   */
+  postingId: s.optional(s.string({ label: 'Posting ID' })),
 }
 
 export const offerShape = s.object({

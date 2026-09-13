@@ -8,6 +8,7 @@ import { Topbar } from './Topbar'
 import { StorageBanner } from '@/components/layout/StorageBanner'
 import { ProfileUpdateOffer } from '@/components/profile/ProfileUpdateOffer'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
+import { isSamePage, pageKey } from '@/lib/links'
 import { report } from '@/lib/analytics'
 import { screenForPath } from '@jojo/service/core/analytics'
 
@@ -19,8 +20,14 @@ export function AppShell() {
   const { pathname } = useLocation()
   /** First render is a page load, where the browser already owns focus. */
   const landed = useRef(false)
-  /** Its twin for the scroll below — separate, because they skip for different reasons. */
-  const scrolled = useRef(false)
+  /**
+   * The path the last render was on, for the scroll below — `null` until there
+   * has been one. A path, not a flag, because the reset now turns on WHICH page
+   * was left rather than only on whether any was; and the whole path rather
+   * than its page, so that "nothing navigated" stays distinguishable from "the
+   * record closed".
+   */
+  const lastPath = useRef<string | null>(null)
 
   /** Closes and returns focus to the trigger — for Escape, backdrop and the X. */
   const closeNav = useCallback(() => {
@@ -99,16 +106,41 @@ export function AppShell() {
    * is a page load, where the browser restores its own scroll position on a
    * reload and a deep link has not asked for the top of anything.
    *
+   * Skipped again when the PAGE has not changed, which is the part the pathname
+   * could not tell us. Opening an application is a navigation —
+   * '/applications' to '/applications/rice' — and closing it is the way back,
+   * so both fired this, and a board read down to its last card was put back at
+   * the top by the act of looking at one. `pageKey` is the rule; the boundary
+   * below is keyed on the same one, and for the same reason.
+   *
    * Nothing here touches scrolling itself — content still slides under the
    * topbar and dissolves into the scrim exactly as before.
    */
   useLayoutEffect(() => {
-    if (!scrolled.current) {
-      scrolled.current = true
-      return
-    }
+    const from = lastPath.current
+    lastPath.current = pathname
+    // The first render is a page load, per the paragraph above.
+    if (from === null) return
+    /*
+     * Nothing navigated. `isDesktop` is in the dependency array below because
+     * the decision reads it, so dragging a window across `lg` re-runs this —
+     * and a resize is not an arrival at anything.
+     */
+    if (from === pathname) return
+    /*
+     * Opening a record over the list, or closing it: the page did not change,
+     * and the position in it is the user's. See `pageKey`.
+     *
+     * `isDesktop` is the other half of that, and leaving it out would be a
+     * regression rather than a missed nicety. Below `lg` the record does not
+     * sit OVER the list — it replaces it, which is what `inlineDetail` in
+     * Applications.tsx does — so the two paths that mean "a panel opened" on a
+     * laptop mean "a different screen" on a phone. Without this, tapping a card
+     * from halfway down a long list opened the record halfway down itself.
+     */
+    if (isDesktop && isSamePage(from, pathname)) return
     window.scrollTo(0, 0)
-  }, [pathname])
+  }, [pathname, isDesktop])
 
   // Escape to dismiss, and lock background scroll while the drawer covers it.
   useEffect(() => {
@@ -221,12 +253,24 @@ export function AppShell() {
              * a NaN reaching a chart) trapped the user with nothing to press
              * and no way out but editing the URL.
              *
-             * `key={pathname}` is what makes recovery real: React discards a
-             * boundary's error state when its key changes, so navigating
-             * somewhere else clears it. The sidebar stays up, which means there
-             * is somewhere else to navigate TO.
+             * A key is what makes recovery real: React discards a boundary's
+             * error state when its key changes, so navigating somewhere else
+             * clears it. The sidebar stays up, which means there is somewhere
+             * else to navigate TO.
+             *
+             * `pageKey(pathname)` rather than `pathname`, because React
+             * discards the whole SUBTREE on a key change, not just the error —
+             * and '/applications/rice' is not a different page from
+             * '/applications', it is the same board with a record open over it.
+             * Keyed on the raw path, opening a card rebuilt the board: six new
+             * column scrollers, every one of them at the top, which is what was
+             * reported as the board jumping back when a record was closed. It
+             * had jumped on open, behind the sheet. What recovery loses is a
+             * throw clearing itself when a record closes, which `RouteFailure`
+             * never offered — it says go somewhere else and come back, and that
+             * is a page change.
              */}
-            <ErrorBoundary key={pathname} fallback={<RouteFailure />}>
+            <ErrorBoundary key={pageKey(pathname)} fallback={<RouteFailure />}>
               <Outlet />
             </ErrorBoundary>
           </main>

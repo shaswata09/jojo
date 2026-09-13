@@ -237,6 +237,15 @@ export function ApplicationFields({
         onChange={(e) => set('url', e.target.value)}
         onBlur={revalidate}
       />
+      <Field
+        label="Posting ID"
+        hint="The job or requisition number, if the posting states one — the surest way to spot the same vacancy twice."
+        autoComplete="off"
+        placeholder="e.g. R-2024-0312"
+        className="sm:col-span-2"
+        value={form.postingId}
+        onChange={(e) => set('postingId', e.target.value)}
+      />
 
       <TextareaField
         label="Note"

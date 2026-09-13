@@ -110,8 +110,10 @@ export const SHAPE: DirRow[] = [
     // check), with a test file each. Six files and about 5,500 lines.
     // `fit-fixtures.ts` and its guard: a second invented person and three
     // postings, so the chain can be measured end to end against real models.
-    files: 62,
-    tests: 30,
+    // `judge-duplicate.ts` and its guard: the model decides whether two records
+    // are one vacancy, shown only the same employer's records.
+    files: 64,
+    tests: 31,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -123,7 +125,7 @@ export const SHAPE: DirRow[] = [
     // about 4,200 lines, most of them the tests that pin each measure.
     // Re-measured when `read-posting.ts` learnt to offer the person's own
     // keywords to the model and match the reply back onto the ones that exist.
-    lines: 40859,
+    lines: 41168,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -138,12 +140,15 @@ export const SHAPE: DirRow[] = [
     // 42 with `use-tool-host.ts`: the host the assistant and the MCP link both
     // run tools against, so a capability added to one cannot be missing from
     // the other.
-    files: 44,
-    tests: 12,
+    // `use-duplicate-check.ts`: arithmetic first, the model second, at Save.
+    // `use-applications.test.ts`: the create/update mappings held to the whole
+    // record, after `postingId` was dropped on its way to the store.
+    files: 46,
+    tests: 13,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 9087,
+    lines: 9157,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -160,9 +165,10 @@ export const SHAPE: DirRow[] = [
     // commands in Settings could be copied rather than retyped; 285 with
     // `settings/McpLinkPanel.tsx`, the switch and two commands for Claude Code;
     // 286 with `ui/dialog-width.ts`, the one width every content modal takes.
+    // Re-measured 2026-09-12, having drifted past the 3% the test allows.
     files: 286,
     tests: 29,
-    lines: 48069,
+    lines: 49589,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 15, tests: 0, lines: 4795, what: 'fifteen pages' },
@@ -181,9 +187,10 @@ export const SHAPE: DirRow[] = [
     // it existed.
     // And `read-here.ts`: a saved page is read in this tab, never sent to a
     // reader that refuses the extension's captures as too large.
-    files: 126,
+    // `duplicate-agent.ts`: the check, wired to this app's transport.
+    files: 127,
     tests: 46,
-    lines: 19107,
+    lines: 19123,
     what: 'web-only adapters and URL state',
   },
   {

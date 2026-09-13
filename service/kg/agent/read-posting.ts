@@ -48,7 +48,10 @@ import type { ChatMessage } from '../core/model-server'
  * having to know anything about the form.
  */
 export type PostingDraft = Partial<
-  Pick<Application, 'org' | 'role' | 'roleTag' | 'location' | 'comp' | 'source' | 'url'>
+  Pick<
+    Application,
+    'org' | 'role' | 'roleTag' | 'location' | 'comp' | 'source' | 'url' | 'postingId'
+  >
 > & { deadline?: string }
 
 /**
@@ -318,6 +321,10 @@ const SYSTEM = [
   '           and month but no year, work the year out from today — a deadline',
   '           is ahead, so "20 September" in December means next year.',
   `  source   one of: ${SOURCES.join(', ')}.`,
+  "  postingId the posting's own reference, when the page states one: a job",
+  '           number, requisition ID, posting number or job code, copied',
+  '           exactly ("R-2024-0312", "JobCode 179545452", "REQ12345"). Omit',
+  '           if the page gives none. Never invent one.',
 ].join('\n')
 
 /**
@@ -481,6 +488,18 @@ export function readPosting(reply: string): PostingRead {
   const source = textOf(raw['source'])
   if (source !== undefined && (SOURCES as readonly string[]).includes(source)) {
     draft.source = source as Source
+  }
+
+  /*
+   * The posting's own reference, and the strongest identity a posting has:
+   * two applications carrying the same requisition number are the same job
+   * whatever the title or the address say. Bounded, because a model asked for
+   * an ID sometimes copies a sentence — anything longer than a reference could
+   * be is not one.
+   */
+  const postingId = textOf(raw['postingId'])
+  if (postingId !== undefined && postingId.length <= 40 && /\d/.test(postingId)) {
+    draft.postingId = postingId
   }
 
   if (draft.org === undefined && draft.role === undefined) {

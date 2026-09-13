@@ -1,4 +1,9 @@
 import { useRef, useState } from 'react'
+import { useDuplicateCheck } from '@/lib/duplicate-agent'
+import type { DuplicateFound } from '@/lib/duplicate-agent'
+import { useModelSettings } from '@/lib/model-settings-context'
+import { STAGE_LABEL } from '@jojo/service/data/seed'
+import type { Application } from '@jojo/service/data/seed'
 import type { FormEvent } from 'react'
 import { ApplicationFields } from '@/components/applications/dialog/ApplicationFields'
 import {
@@ -71,6 +76,16 @@ export function ApplicationDialog({
   })
 
   const { create, save } = useApplicationWrites({ form, keywords, initial })
+  const { settings } = useModelSettings()
+  const checkDuplicate = useDuplicateCheck()
+  /*
+   * The duplicate found at Save, held until the person answers. While it is
+   * held the dialog shows the ORIGINAL beside what is being added, and the
+   * three things they can do about it; nothing has been written.
+   */
+  const [confirm, setConfirm] = useState<DuplicateFound<Application> | null>(null)
+  const [checking, setChecking] = useState(false)
+  const checkAbort = useRef<AbortController | null>(null)
 
   const orgRef = useRef<HTMLInputElement>(null)
   const roleRef = useRef<HTMLInputElement>(null)
@@ -126,7 +141,7 @@ export function ApplicationDialog({
    */
   const duplicate = findDuplicate(
     applications.all,
-    { org: form.org, role: form.role, url: form.url },
+    { org: form.org, role: form.role, url: form.url, postingId: form.postingId },
     mode === 'edit' ? id : undefined,
   )
 
@@ -232,10 +247,61 @@ export function ApplicationDialog({
     // `onSaved?.(create())` skips its own arguments when the callback is
     // undefined, so the dialog closed and nothing was saved, for every caller.
     // The prop is gone; the write is a statement.
-    if (mode === 'create') create()
-    else if (record) save(record)
-    else return
+    if (mode === 'create') {
+      void confirmThenCreate()
+      return
+    }
+    if (!record) return
+    save(record)
+    onOpenChange(false)
+  }
 
+  /**
+   * The check between Save and the write.
+   *
+   * Arithmetic first — the same posting ID, address, or employer and role —
+   * and the model second, only when there is something at the same employer
+   * to compare with (`use-duplicate-check`). Either way nothing is written
+   * until the person has seen the original and said "add anyway". The check
+   * runs at Save and not while typing, because a model call per keystroke is
+   * a model call per keystroke; the yellow notice above the form is the
+   * instant half and this is the deliberate one.
+   */
+  async function confirmThenCreate() {
+    const stop = new AbortController()
+    checkAbort.current = stop
+    setChecking(true)
+    let found: DuplicateFound<Application> | null = null
+    try {
+      found = await checkDuplicate({
+        existing: applications.all,
+        candidate: {
+          org: form.org,
+          role: form.role,
+          url: form.url,
+          postingId: form.postingId,
+          location: form.location,
+        },
+        settings,
+        signal: stop.signal,
+      })
+    } catch {
+      // A check that threw is not a duplicate. The save must not hang on it.
+      found = null
+    }
+    checkAbort.current = null
+    setChecking(false)
+    if (stop.signal.aborted) return
+    if (found) {
+      setConfirm(found)
+      return
+    }
+    create()
+    onOpenChange(false)
+  }
+
+  const addAnyway = () => {
+    create()
     onOpenChange(false)
   }
 
@@ -249,7 +315,10 @@ export function ApplicationDialog({
       open={open}
       onOpenChange={(next) => {
         if (next) onOpenChange(true)
-        else onDismiss()
+        else {
+          checkAbort.current?.abort()
+          onDismiss()
+        }
       }}
     >
       <DialogContent
@@ -272,17 +341,22 @@ export function ApplicationDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {mode === 'edit'
-              ? 'Changes replace the current details, and the deadline moves with them.'
-              : guessed
-                ? tagged
-                  ? 'Prefilled from what you pasted — check the employer, role and keywords before saving.'
-                  : 'Prefilled from what you pasted — check the employer and role before saving.'
-                : 'Track a job you are applying for. Starred fields are required.'}
+            {confirm
+              ? 'Nothing is saved yet. Compare the two, then decide.'
+              : mode === 'edit'
+                ? 'Changes replace the current details, and the deadline moves with them.'
+                : guessed
+                  ? tagged
+                    ? 'Prefilled from what you pasted — check the employer, role and keywords before saving.'
+                    : 'Prefilled from what you pasted — check the employer and role before saving.'
+                  : 'Track a job you are applying for. Starred fields are required.'}
           </DialogDescription>
         </DialogHeader>
 
-        {duplicate ? (
+        {/* The live warning belongs to the form, and goes with it: while the
+            confirm stage is up it would say the same sentence twice, once
+            here and once in the box below (seen 2026-09-12). */}
+        {duplicate && confirm === null ? (
           <div className="rounded-lg border border-warning-border bg-warning-soft px-3 py-2 text-xs text-warning">
             {duplicateMessage(duplicate.reason, displayName(duplicate.record))}{' '}
             {/* An anchor, not a `<Link>`: `DialogHost` mounts this outside the
@@ -298,9 +372,19 @@ export function ApplicationDialog({
           </div>
         ) : null}
 
+        {confirm ? (
+          <DuplicateConfirm
+            found={confirm}
+            adding={{ org: form.org, role: form.role, location: form.location }}
+            onBack={() => setConfirm(null)}
+            onDiscard={() => onOpenChange(false)}
+            onAddAnyway={addAnyway}
+          />
+        ) : null}
+
         {/* Native validation is off: it fires its own bubble before the submit
             handler runs, which would pre-empt the errors written below. */}
-        <form onSubmit={onSubmit} noValidate>
+        <form onSubmit={onSubmit} noValidate hidden={confirm !== null}>
           <ApplicationFields
             form={form}
             errors={errors}
@@ -325,12 +409,124 @@ export function ApplicationDialog({
             {/* Never disabled for invalid input: a dead button next to an empty
                 form explains nothing, where a click that surfaces the errors
                 says exactly what is missing. */}
-            <Button type="submit" disabled={Boolean(blocker)} title={blocker || undefined}>
-              {mode === 'create' ? 'Add application' : 'Save changes'}
+            <Button
+              type="submit"
+              disabled={Boolean(blocker) || checking}
+              title={blocker || undefined}
+            >
+              {checking
+                ? 'Checking for a duplicate…'
+                : mode === 'create'
+                  ? 'Add application'
+                  : 'Save changes'}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** "today", "yesterday", "12 days ago" — the projection counts the days. */
+const sinceDays = (days: number): string =>
+  days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${String(days)} days ago`
+
+/**
+ * The original, beside what is about to be added, and what to do about it.
+ *
+ * Shown INSIDE the same dialog rather than as a second one: `DialogHost`
+ * mounts exactly one and opening another replaces this form, half typed. The
+ * form stays mounted underneath, hidden, so "Edit instead" returns to it with
+ * everything still there.
+ *
+ * Both records are shown because the decision is a comparison. A sentence
+ * saying "this looks like a duplicate" asks the person to trust it; the two
+ * records side by side let them see for themselves — which is the whole
+ * argument `assess.ts` makes about verdicts, applied to this one.
+ */
+function DuplicateConfirm({
+  found,
+  adding,
+  onBack,
+  onDiscard,
+  onAddAnyway,
+}: {
+  found: DuplicateFound<Application>
+  adding: { org: string; role: string; location: string }
+  onBack: () => void
+  onDiscard: () => void
+  onAddAnyway: () => void
+}) {
+  const original = found.record
+  const why =
+    found.how === 'model'
+      ? (found.because ?? 'The model read them as the same vacancy.')
+      : duplicateMessage(found.reason, displayName(original))
+  return (
+    <div className="space-y-4" role="alertdialog" aria-labelledby="duplicate-title">
+      <div className="rounded-lg border border-warning-border bg-warning-soft px-3 py-2 text-sm text-warning">
+        <p id="duplicate-title" className="font-medium">
+          This looks like a job you already have
+        </p>
+        <p className="mt-0.5 text-xs">
+          {why}
+          {found.how === 'model' ? ' — the model’s reading; check it below.' : ''}
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <section className="rounded-lg border border-hairline p-3 text-sm">
+          <h3 className="text-xs font-medium tracking-wide text-text-3 uppercase">
+            What you already have
+          </h3>
+          <p className="mt-1 font-medium">{displayName(original)}</p>
+          <p className="text-text-2">
+            {STAGE_LABEL[original.stage]}
+            {' · '}
+            {original.lastAction} {sinceDays(original.daysAgo)}
+          </p>
+          {original.location !== undefined && <p className="text-text-2">{original.location}</p>}
+          {original.comp !== undefined && <p className="text-text-2">{original.comp}</p>}
+          {original.postingId !== undefined && (
+            <p className="text-xs text-text-3">Posting ID {original.postingId}</p>
+          )}
+          {original.url !== undefined && (
+            <p className="truncate text-xs text-text-3" title={original.url}>
+              {original.url}
+            </p>
+          )}
+          {original.note !== '' && (
+            <p className="mt-1 line-clamp-3 text-xs text-text-2">{original.note}</p>
+          )}
+        </section>
+        <section className="rounded-lg border border-hairline p-3 text-sm">
+          <h3 className="text-xs font-medium tracking-wide text-text-3 uppercase">
+            What you are adding
+          </h3>
+          <p className="mt-1 font-medium">
+            {[adding.org.trim(), adding.role.trim()].filter(Boolean).join(' — ') || 'Untitled'}
+          </p>
+          {adding.location.trim() !== '' && <p className="text-text-2">{adding.location}</p>}
+        </section>
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="ghost" className="sm:mr-auto" onClick={onBack}>
+          Edit instead
+        </Button>
+        {/* An anchor, not a `<Link>`: this dialog is mounted outside the router. */}
+        <Button type="button" variant="outline" asChild>
+          <a href={hrefOutsideRouter(appPath(original))} onClick={onDiscard}>
+            Open the one you have
+          </a>
+        </Button>
+        <Button type="button" variant="outline" onClick={onDiscard}>
+          Discard this one
+        </Button>
+        <Button type="button" onClick={onAddAnyway}>
+          Add anyway
+        </Button>
+      </DialogFooter>
+    </div>
   )
 }
