@@ -255,47 +255,49 @@ function TailoredCard({
         borderRadius: 12,
         paddingVertical: space[2],
         paddingHorizontal: space[3],
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: space[2],
       }}
     >
-      {/* The whole card opens it. On a touch screen the row IS the target, and
-          a 44pt press area beats a second small button beside the menu. */}
+      {/*
+       * TWO ROWS, and the second one is the whole card wide. They were one,
+       * and the provenance shared its column with the ⋯ button: the button is
+       * a fixed width and the words are not, so on a phone the words were the
+       * half that disappeared. See the web twin.
+       *
+       * The whole card opens it — on a touch screen the card IS the target,
+       * and the menu is a nested pressable, which wins the touch over it.
+       */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Preview ${s.title}`}
         onPress={onPreview}
-        style={{
-          flex: 1,
-          minWidth: 0,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: space[2],
-          minHeight: 44,
-        }}
+        style={{ gap: 2 }}
       >
-        <Feather name="file-text" size={16} color={c.text3} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Txt size="sm" weight="medium" numberOfLines={1}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: space[2],
+            minHeight: 44,
+          }}
+        >
+          <Feather name="file-text" size={16} color={c.text3} />
+          <Txt size="sm" weight="medium" numberOfLines={1} style={{ flex: 1, minWidth: 0 }}>
             {s.title}
           </Txt>
-          <Txt size="xs" tone="muted" numberOfLines={1}>
-            {s.tag} · from {s.from}
-          </Txt>
-          <Txt size="xs" tone="muted" numberOfLines={1}>
-            {s.model}
-            {s.when ? ` · ${s.when}` : ''}
-          </Txt>
+          <IconButton
+            icon="more-horizontal"
+            label={`More actions for ${s.title}`}
+            onPress={() => {
+              setMenu(true)
+            }}
+          />
         </View>
+        {/* One line, because it reads as one sentence and now has the room. */}
+        <Txt size="xs" tone="muted" numberOfLines={1}>
+          {s.tag} · from {s.from} · {s.model}
+          {s.when ? ` · ${s.when}` : ''}
+        </Txt>
       </Pressable>
-      <IconButton
-        icon="more-horizontal"
-        label={`More actions for ${s.title}`}
-        onPress={() => {
-          setMenu(true)
-        }}
-      />
 
       <MenuSheet
         open={menu}

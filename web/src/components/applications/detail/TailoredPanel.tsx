@@ -192,7 +192,15 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
         )}
 
       {t.tailored.length > 0 && (
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        /*
+         * ONE CARD PER ROW, measured rather than chosen. Two to a row put the
+         * cards at 209px inside the detail column, and a text Preview button
+         * and a ⋯ menu are about 150 of those — so the title had 48px and read
+         * "CV …". Full width gives the title ~270 and the line under it the
+         * whole card, which is the only arrangement where both are readable at
+         * the width this panel actually gets.
+         */
+        <ul className="mt-3 grid gap-2">
           {t.tailored.map((s) => (
             <TailoredCard
               key={s.id}
@@ -258,44 +266,58 @@ function TailoredCard({
   onDelete: () => void
 }) {
   return (
-    <li className="flex min-w-0 items-start gap-2 rounded-lg border border-hairline p-3">
-      <FileText aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-      <div className="min-w-0 flex-1">
-        {/* The card is the button. A title that only looked clickable was the
+    /*
+     * TWO ROWS, and the second one is the whole card wide.
+     *
+     * They were one: the title and its two lines of provenance shared a column
+     * with Preview and the ⋯ menu beside them, and since the cards sit two to a
+     * row, that column was about a third of a half — "Applic…", "gemm…". The
+     * buttons are a fixed width and the words are not, so the words are what
+     * moved. Everything that has to be read now has the card's own width, and
+     * the row above it holds only the title and the two controls.
+     */
+    <li className="min-w-0 rounded-lg border border-hairline p-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <FileText aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+        {/* The title is the button. A title that only looked clickable was the
             defect `FileRow` records against its own name field, and Preview is
             what somebody wants from every part of this card. */}
         <button
           type="button"
           onClick={onPreview}
-          className="block max-w-full cursor-pointer truncate text-left font-medium text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
+          // Named in a tooltip as well: a long title still truncates on a
+          // narrow window, and the tooltip is the only way to read the rest.
+          title={s.title}
+          className="min-w-0 flex-1 cursor-pointer truncate text-left font-medium text-text-1 underline-offset-2 transition-colors hover:text-accent hover:underline"
         >
           {s.title}
         </button>
-        <p className="truncate text-xs text-text-3">
-          {s.tag} · from {s.from}
-        </p>
-        <p className="truncate text-xs text-text-3">
-          {s.model}
-          {s.when && ` · ${s.when}`}
-        </p>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={onPreview} aria-label={`Preview ${s.title}`}>
+            Preview
+          </Button>
+          <RowMenu name={s.title}>
+            <Link
+              to={vaultPath({ tool: 'snippets', focus: s.id })}
+              className={menuItemClass}
+              role="menuitem"
+            >
+              Open in the Vault
+            </Link>
+            <MenuItem icon={Trash2} danger onSelect={onDelete}>
+              Delete
+            </MenuItem>
+          </RowMenu>
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-1">
-        <Button variant="ghost" size="sm" onClick={onPreview} aria-label={`Preview ${s.title}`}>
-          Preview
-        </Button>
-        <RowMenu name={s.title}>
-          <Link
-            to={vaultPath({ tool: 'snippets', focus: s.id })}
-            className={menuItemClass}
-            role="menuitem"
-          >
-            Open in the Vault
-          </Link>
-          <MenuItem icon={Trash2} danger onSelect={onDelete}>
-            Delete
-          </MenuItem>
-        </RowMenu>
-      </div>
+      {/* One line, because it reads as one sentence and now has the room for
+          it — the document it came from, then what wrote it and when. It still
+          truncates rather than wrapping: a card whose height depends on the
+          length of a filename makes a grid of them ragged. */}
+      <p className="mt-1 truncate text-xs text-text-3">
+        {s.tag} · from {s.from} · {s.model}
+        {s.when && ` · ${s.when}`}
+      </p>
     </li>
   )
 }
