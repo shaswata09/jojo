@@ -148,7 +148,7 @@ export async function handleMcp(
       return ok(id, {})
 
     case 'tools/list':
-      // No cursor: ninety-three tools is one page, and paginating a list that
+      // No cursor: ninety-five tools is one page, and paginating a list that
       // never grows past a screen is a second code path with no second caller.
       // The count is pinned in `catalog.test.ts`, so this line is told when it
       // stops being true rather than quietly becoming a different claim.
@@ -198,7 +198,7 @@ export async function handleMcp(
  * The manifest a client would fetch, as a value.
  *
  * Exported separately because it is useful without the protocol: a settings
- * screen that wants to show "ninety-three tools are exposed" should not have to
+ * screen that wants to show "ninety-five tools are exposed" should not have to
  * hand-roll a JSON-RPC request to find out.
  */
 export const mcpManifest = () => ({

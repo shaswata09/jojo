@@ -42,14 +42,19 @@
  * from "read this", and a boolean cannot express that: after a failure the
  * document is unchanged, so any key built from the document alone says the work
  * is already done and Try again does nothing.
+ *
+ * It carries more weight since the reading was persisted. The key used to be
+ * session-scoped by accident — a reload emptied the cache and every question
+ * was asked fresh — and now the only thing that distinguishes "show me the
+ * stored answer" from "go and read it again" is this counter.
  */
 export const fitRequestKey = (fileId: string, attempt: number): string =>
   `${fileId}#${String(attempt)}`
 
 export type FitAction =
-  /** Nothing to ask about, or nothing to ask with. */
+  /** Nothing to ask about, nothing to ask with, or an answer already refused. */
   | { do: 'nothing' }
-  /** Already read this session. Show it; do not spend a round trip. */
+  /** Already read. Show what is stored; do not spend a round trip. */
   | { do: 'use-cache' }
   /** Ask. The caller records the key so it never asks twice. */
   | { do: 'start'; key: string }
@@ -69,11 +74,33 @@ export function nextFitAction(input: {
   fileId: string | undefined
   /** Bumped by Try again and by Re-run, and by nothing else. */
   attempt: number
-  /** Whether this document has already been read this session. */
+  /** Whether a reading of this document is stored. See `core/fit-reading.ts`. */
   cached: boolean
+  /** Whether the person threw the stored reading away. */
+  cleared: boolean
 }): FitAction {
-  const { ready, fileId, attempt, cached } = input
+  const { ready, fileId, attempt, cached, cleared } = input
   if (!ready || fileId === undefined) return { do: 'nothing' }
+
+  /*
+   * A discarded reading is an answer, and the answer was no.
+   *
+   * Before the reading was stored, the panel could not be asked this: a delete
+   * lost the list and the next mount read the posting again, which was invisible
+   * because the next mount was usually the next session. Stored, it is the whole
+   * behaviour of the button — somebody presses Clear, the card empties, and
+   * without this line the effect starts a model call on the very next render and
+   * the verdict they just discarded comes straight back.
+   *
+   * ABOVE the cache check rather than folded into it, because the two say
+   * different things to a reader: `cached` is "there is an answer", this is
+   * "there is a person who does not want one". And below `ready`, because a
+   * cleared reading on a record with no model connected is still nothing to do.
+   *
+   * Attempt zero only. Re-run is somebody asking, and asking outranks having
+   * declined — the same reason it outranks the cache below, spelled out there.
+   */
+  if (cleared && attempt === 0) return { do: 'nothing' }
 
   /*
    * The cache answers for the FIRST attempt only.

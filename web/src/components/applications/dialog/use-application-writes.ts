@@ -151,6 +151,11 @@ export function useApplicationWrites({
    * Nothing is awaited and nothing is shown. A failure here costs the
    * prewarming and nothing else: the panel runs the same read itself, reports
    * the same reason in place, and offers a retry.
+   *
+   * What it warms is no longer a module-level cache that dies with the tab —
+   * the reading is stored on the posting — so a form filled in on Monday is
+   * still warm on Tuesday, and the head start this buys is the whole first
+   * visit rather than the first few minutes of one.
    */
   function prewarmFit(): void {
     // The page this form was started from, when there is one: then the join is
@@ -222,8 +227,14 @@ export function useApplicationWrites({
 
     // After the transaction closes, not inside it. `undoableWith` measures the
     // journal either side of the write to decide what an Undo covers, and a
-    // network call has no business inside that boundary even though it writes
-    // nothing — the closure is a statement about which records moved.
+    // network call has no business inside that boundary — the closure is a
+    // statement about which records moved.
+    //
+    // It DOES write now: the reading it fetches is stored on the posting, which
+    // is the whole point of prewarming it. That write cannot land inside the
+    // boundary whatever this line did — it arrives seconds later, long after the
+    // journal has been measured — and it is a `system` tool, so it stays off the
+    // undo ring by its own declaration rather than by where it was called.
     prewarmFit()
 
     toast({

@@ -37,10 +37,13 @@ import {
   APPROVAL_MODES,
   BACKGROUND_KINDS,
   EDGE_SCHEMA,
+  edgeIsWellTyped,
   FILE_BUCKET_VALUES,
   FILE_KIND_VALUES,
   LABEL_TONE_VALUES,
   LINK_CATEGORY_VALUES,
+  MAX_REQUIREMENT_TEXT,
+  MAX_REQUIREMENTS,
   NODE_TYPES,
   OUTCOME_VALUES,
   PIPELINE_KINDS,
@@ -51,7 +54,6 @@ import {
   STAGE_VALUES,
   TIMELINE_KIND_VALUES,
   URGENCY_VALUES,
-  edgeIsWellTyped,
 } from './model'
 import { edgeId, parseNodeId, typeOfId } from './ref'
 import type { Schema } from './schema'
@@ -212,6 +214,38 @@ export const NODE_PROP_SCHEMAS = {
     // along with its address.
     sourceUrl: s.optional(s.string({ label: 'Captured from' })),
     capturedAt: s.optional(s.instant({ label: 'Captured' })),
+    /*
+     * What a model read off this posting. See `PostingReading`.
+     *
+     * Declared exactly, not passed through, and bounded on both axes: a list
+     * longer than `MAX_REQUIREMENTS` or a phrase longer than a sentence did not
+     * come from the reader, and the bound is what keeps a prop that arrived
+     * from a backup file from becoming the 40k of prose D27 exists to keep out
+     * of `getAll('nodes')`.
+     *
+     * IN `SALVAGEABLE_FILE_PROPS`, for the reason the list itself gives: a node
+     * that fails validation is dropped WHOLE, taking its name, its note and
+     * every edge incident to it — so a malformed reading in a restored backup
+     * would cost the person the document record and its filing under a job, to
+     * protect them from a stale requirement list. Stripping it costs one model
+     * call. The first draft of this comment argued the opposite and was wrong
+     * about which side of the trade the user is on.
+     */
+    reading: s.optional(
+      s.object({
+        requirements: s.array(
+          s.object({
+            text: s.string({ min: 1, max: MAX_REQUIREMENT_TEXT, label: 'Requirement' }),
+            essential: s.boolean({ label: 'Required' }),
+          }),
+          { max: MAX_REQUIREMENTS, label: 'What it asks for' },
+        ),
+        model: s.string({ label: 'Read by' }),
+        readAt: s.instant({ label: 'Read' }),
+        skipped: s.optional(s.number({ min: 0, int: true, label: 'Lines skipped' })),
+        clearedAt: s.optional(s.instant({ label: 'Cleared' })),
+      }),
+    ),
   }),
   snippet: s.object({
     slug,
@@ -558,7 +592,12 @@ export type ValidatedRows = {
  * in a backup a user restores months later. A stale `uri` costs an Open button;
  * dropping the whole application it was filed under costs the record.
  */
-const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash', 'uri'] as const
+/*
+ * `reading` is the sixth, and the only one that is not a link to bytes. It
+ * earns its place on the same arithmetic: what it costs to strip is one model
+ * call, and what it costs to keep is the whole file record.
+ */
+const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash', 'uri', 'reading'] as const
 
 export type ValidateOptions = {
   /**

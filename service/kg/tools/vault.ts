@@ -481,7 +481,7 @@ export const vaultFileUpdate = defineTool({
 
   run(ctx, input) {
     ctx.require('file', input.id)
-    ctx.tx.patch<'file'>(input.id, {
+    const patch = {
       ...(input.name === undefined ? {} : { name: input.name.trim() }),
       ...(input.kind === undefined ? {} : { kind: input.kind }),
       ...(input.bucket === undefined ? {} : { bucket: input.bucket }),
@@ -489,7 +489,26 @@ export const vaultFileUpdate = defineTool({
       ...(input.size === undefined ? {} : { size: input.size }),
       ...(input.uri === undefined ? {} : { uri: input.uri }),
       ...(input.savedOn === undefined ? {} : { savedOn: input.savedOn }),
-    })
+    }
+    /*
+     * Only when there is something to patch.
+     *
+     * Filing a document under a job changes no property of the document — it is
+     * an edge — but this used to run `tx.patch` with an empty object anyway,
+     * which stamps `updatedAt` and puts a NODE delta on the journal entry
+     * describing a record that did not change.
+     *
+     * That delta is not free. `movedOn` in `react/undo.ts` compares a record
+     * against the image an entry left behind, and refuses to revert anything it
+     * finds has moved since — so any later write to the same file made the
+     * create form's "Undo" report "you have changed those records since" about a
+     * record the person had not touched. Measured when the fit panel started
+     * storing its reading on the posting: creating an application from a link
+     * files the page here, the read finishes a few seconds later, and pressing
+     * Undo on the toast that is still up accused the user of an edit a
+     * background read had made.
+     */
+    if (Object.keys(patch).length > 0) ctx.tx.patch<'file'>(input.id, patch)
     fileUnder(ctx, input.id, input.applicationIds)
   },
 

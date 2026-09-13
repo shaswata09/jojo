@@ -1,17 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { Loader2, RotateCw, Target } from 'lucide-react'
+import { Loader2, RotateCw, Target, Trash2 } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
+import { MenuItem, RowMenu } from '@/components/common/RowMenu'
 import { Button } from '@/components/ui/button'
-import { assess } from '@jojo/service/core/assess'
-import type { Requirement } from '@jojo/service/core/assess'
-import { HOW_LABEL, postingSourceFor } from '@jojo/service/core/posting-source'
-import { guidanceFrom, VERDICT_LABEL } from '@jojo/service/core/tailor'
-import { nextFitAction } from '@jojo/service/core/fit-request'
-import { useGraph, useKg } from '@jojo/service/react/kg-context'
-import { cachedRequirements, haveRequirements, useReadFit } from '@/lib/fit-agent'
+import { supersededToast } from '@jojo/service/react/undo'
+import { HOW_LABEL } from '@jojo/service/core/posting-source'
+import { STALE_NOTE } from '@jojo/service/core/fit-reading'
+import { VERDICT_LABEL } from '@jojo/service/core/tailor'
+import { useFit } from '@/lib/fit-agent'
 import type { FitStep } from '@/lib/fit-agent'
-import { useModelSettings } from '@/lib/model-settings-context'
+import { useToast } from '@/lib/toast-context'
 import { settingsPath, vaultPath } from '@/lib/links'
 
 /**
@@ -22,6 +20,13 @@ import { settingsPath, vaultPath } from '@/lib/links'
  * be ready to be asked. `core/tailor.ts` computes all three and argues at
  * length that none of them may be a model's prose — every line here names a
  * record or a requirement, and a person can disagree with any of them.
+ *
+ * ## This file is the drawing, and only the drawing
+ *
+ * Everything above it — when to read, what a stored reading means, what is
+ * worth doubting — is `kg/react/use-fit.ts` and the pure modules under it. It
+ * used to be 127 lines of state machine here and the same 127 lines in the
+ * phone's copy, with nothing comparing them; see that file for what that cost.
  *
  * ## The four ways this has nothing to say, and why each is said differently
  *
@@ -38,24 +43,22 @@ import { settingsPath, vaultPath } from '@/lib/links'
  *     one that resolves itself the moment somebody reads their CV in.
  *   - The posting was read and states nothing measurable. Rare, and honest.
  *
- * ## Why it runs on its own
+ * A fifth now: the person cleared the reading. That one is not a gap to be
+ * filled, it is an answer, and the card says so rather than offering to fix it.
  *
- * The ask was that assessing happen when an application is created rather than
- * on a button. It does: opening an application that has a posting behind it
- * starts the read, once, and `fit-agent.ts` caches the result on the DOCUMENT
- * so returning to the record is free and adding a publication moves the score
- * without paying again.
+ * ## Why it runs on its own, and why it stops running
  *
- * The read is skipped while the graph holds no background, because there is
- * nothing to weigh the requirements against — spending somebody's GPU to
- * produce "not measured" is the one case where waiting to be asked is right.
+ * Opening an application that has a posting behind it starts the read, once —
+ * and the answer is kept on the document, so the next visit, the next reload
+ * and the next device show it without paying for it again. That is the whole
+ * change: it used to re-read on every refresh, which is what a module-level
+ * cache means the moment a tab is closed.
  *
- * There IS a button now, and it does not contradict that. Re-run is not how the
- * first read happens; it is how a person disagrees with an answer they already
- * have — after re-capturing the posting, after changing the model, or because
- * they think it is wrong. Nothing else can express that, because the document
- * has not changed and every automatic path correctly concludes there is nothing
- * new to do.
+ * Re-run is how a person disagrees with an answer they already have, after
+ * re-capturing the posting or changing the model. Clear is how they say they do
+ * not want one — and because it is remembered, the panel stops offering to
+ * measure this posting until they ask. Both live in the ⋯ menu, destructive
+ * last, which is what the Delete law requires of anything that removes a thing.
  */
 
 const STEP_LABEL: Record<FitStep, string> = {
@@ -64,133 +67,9 @@ const STEP_LABEL: Record<FitStep, string> = {
 }
 
 export function FitPanel({ applicationId }: { applicationId: string }) {
-  const graph = useGraph()
-  const { projections } = useKg()
-  const { settings } = useModelSettings()
-  const readFit = useReadFit()
-
-  const source = useMemo(() => postingSourceFor(graph, applicationId), [graph, applicationId])
-  const background = projections.background(graph)
-
-  const [requirements, setRequirements] = useState<readonly Requirement[] | null>(
-    () => cachedRequirements(source?.fileId ?? '') ?? null,
-  )
-  const [step, setStep] = useState<FitStep | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  /** Bumped by Try again and by Re-run. See `fitRequestKey` — half the request's identity. */
-  const [attempt, setAttempt] = useState(0)
-  const abort = useRef<AbortController | null>(null)
-  /**
-   * The request already made, as a ref rather than state.
-   *
-   * Deliberately: recording that a request began must not cause a render, or
-   * the decision changes as a consequence of having been taken. That is exactly
-   * the loop this panel had — the read reported its first step synchronously,
-   * the step was in the effect's dependency array, and the re-run's cleanup
-   * aborted the request it had just started.
-   */
-  const started = useRef<string | null>(null)
-
-  const fileId = source?.fileId
-  const name = source?.name
-  const configured = settings.model.trim() !== ''
-  const ready = fileId !== undefined && configured && background.length > 0
-
-  /*
-   * `readFit` and `settings` are read through refs so that neither appears in
-   * the dependency array below. `readFit`'s identity changes when the blob
-   * store finishes opening, and a dependency that moves while a request is in
-   * flight makes the cleanup abort it. What the effect must react to is the
-   * DECISION changing, and that is what `action` is.
-   */
-  const latest = useRef({ readFit, settings })
-  latest.current = { readFit, settings }
-
-  const action = nextFitAction({
-    ready,
-    fileId,
-    attempt,
-    cached: fileId !== undefined && haveRequirements(fileId),
-  })
-
-  /*
-   * Hoisted out of the dependency array, because a ternary in there cannot be
-   * checked statically and this is the value the effect actually turns on.
-   * `null` covers both non-start actions, and neither needs to be distinguished
-   * from the other by an identity — `action.do` carries that.
-   */
-  const startKey = action.do === 'start' ? action.key : null
-
-  useEffect(() => {
-    if (action.do === 'nothing') return
-    if (fileId === undefined || name === undefined) return
-
-    if (action.do === 'use-cache') {
-      setRequirements(cachedRequirements(fileId) ?? null)
-      return
-    }
-    if (startKey === null) return
-    /*
-     * Asked exactly once, and checked HERE rather than in the decision above.
-     *
-     * The decision is a dependency of this effect, so anything it says has to
-     * survive the request being recorded — see `fit-request.ts`. The ref does
-     * not: nothing renders when it changes, which is precisely why the guard
-     * belongs on this side of the dependency array.
-     */
-    if (started.current === startKey) return
-
-    started.current = startKey
-    const stop = new AbortController()
-    abort.current = stop
-    const { readFit: read, settings: model } = latest.current
-
-    void read({ fileId, name, settings: model, onStep: setStep, signal: stop.signal })
-      .then((outcome) => {
-        if (stop.signal.aborted) return
-        abort.current = null
-        setStep(null)
-        if (outcome.ok) setRequirements(outcome.requirements)
-        else setError(outcome.reason)
-      })
-      /*
-       * Every layer under this reports failure as a value, so reaching here
-       * means something threw that none of them expected. Without the catch
-       * that is an unhandled rejection and a panel that spins on "Opening the
-       * posting" for the rest of the session — the failure mode a person cannot
-       * tell from a slow model.
-       */
-      .catch((thrown: unknown) => {
-        if (stop.signal.aborted) return
-        abort.current = null
-        setStep(null)
-        setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
-      })
-    return () => {
-      stop.abort()
-      abort.current = null
-    }
-    // `action.do` and `startKey`, not `action` — the object is rebuilt on every
-    // render and would re-run this on every one of them.
-  }, [action.do, startKey, fileId, name])
-
-  /*
-   * A different application means a different posting, so anything held about
-   * the last one is wrong rather than stale — and the attempt counter goes back
-   * to zero with it, or a retry on one record would look like a fresh request
-   * on the next.
-   */
-  useEffect(() => {
-    setRequirements(fileId === undefined ? null : (cachedRequirements(fileId) ?? null))
-    setError(null)
-    setStep(null)
-    setAttempt(0)
-  }, [fileId])
-
-  const guidance = useMemo(
-    () => (requirements === null ? null : guidanceFrom(assess(requirements, background))),
-    [requirements, background],
-  )
+  const fit = useFit(applicationId)
+  const { toast } = useToast()
+  const { source, guidance } = fit
 
   return (
     <Panel aria-labelledby={`fit-${applicationId}`}>
@@ -210,45 +89,81 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
             </p>
           )}
           {/*
-            * Offered whenever a read could happen, not only after one has.
-            *
-            * What it is for: the posting was captured again, the model was
-            * changed, or the person simply does not believe the verdict. All
-            * three leave the document unchanged, so the session cache holds the
-            * very answer they are rejecting — which is why this bumps `attempt`
-            * rather than clearing anything. The attempt is half the request's
-            * identity, and `nextFitAction` lets it outrank the cache.
-            *
-            * The last answer stays on screen while the new one is read. A card
-            * that blanked itself would spend the read saying less than it knew.
-            */}
-          {ready && step === null && (
-            <Button
-              size="sm"
-              variant="ghost"
-              title="Read the posting again and re-measure"
-              onClick={() => {
-                setError(null)
-                setAttempt((n) => n + 1)
-              }}
-            >
-              <RotateCw aria-hidden className="size-3.5" strokeWidth={1.8} />
-              Re-run
-            </Button>
+           * What Re-run is for: the posting was captured again, the model was
+           * changed, or the person simply does not believe the verdict. All
+           * three leave the document unchanged, so the stored reading holds the
+           * very answer they are rejecting — which is why this bumps an attempt
+           * rather than clearing anything, and why the read is forced past what
+           * is kept. The last answer stays on screen while the new one is read:
+           * a card that blanked itself would spend the read saying less than it
+           * knew.
+           *
+           * The MENU is offered whenever there is anything in it, which is not
+           * the same as `ready`. `ready` alone would take it away exactly when a
+           * reading is stored and the model has since been disconnected, leaving
+           * a verdict on screen with no way to be rid of it. Re-run is the item
+           * that needs a model; Clear does not.
+           */}
+          {(fit.ready || fit.reading !== undefined) && fit.step === null && (
+            <RowMenu name="this fit reading" className="-my-1">
+              {fit.ready && (
+                <MenuItem icon={RotateCw} onSelect={fit.rerun}>
+                  {fit.cleared ? 'Measure this posting' : 'Re-run'}
+                </MenuItem>
+              )}
+              {fit.reading && !fit.cleared && (
+                <MenuItem
+                  icon={Trash2}
+                  danger
+                  onSelect={() => {
+                    const cleared = fit.clear()
+                    if (!cleared) return
+                    const { result, restore } = cleared
+                    toast({
+                      // The title branches, because a refusal that announces
+                      // "Fit reading cleared" and then explains why it did not
+                      // is a toast arguing with itself.
+                      title: result.ok ? 'Fit reading cleared' : 'That did not clear',
+                      description: result.ok
+                        ? 'jojo will not read this posting again unless you ask it to.'
+                        : (result.errors[0]?.message ?? ''),
+                      ...(result.ok
+                        ? restore
+                          ? {
+                              action: {
+                                label: 'Undo',
+                                onClick: () => {
+                                  const outcome = restore()
+                                  // `undoableWith` declines to put a before-image
+                                  // back over a record touched since, and says so
+                                  // rather than looking like it worked.
+                                  if (outcome.superseded.length > 0) toast(supersededToast(outcome))
+                                },
+                              },
+                            }
+                          : {}
+                        : { tone: 'danger' as const }),
+                    })
+                  }}
+                >
+                  Clear this reading
+                </MenuItem>
+              )}
+            </RowMenu>
           )}
         </div>
       </div>
 
       {/* ------------------------- nothing to say ------------------------- */}
-      {!source && (
+      {fit.blocked === 'no-posting' && (
         <p className="mt-3 text-sm text-muted-foreground">
           There is no saved posting behind this application, so there is nothing to weigh you
-          against. Capture the listing with the extension, or add the application from its link,
-          and this fills in.
+          against. Capture the listing with the extension, or add the application from its link, and
+          this fills in.
         </p>
       )}
 
-      {source && !configured && (
+      {fit.blocked === 'no-model' && (
         <p className="mt-3 text-sm text-muted-foreground">
           Reading what a posting asks for needs a model.{' '}
           <Link className="underline underline-offset-2" to={settingsPath()}>
@@ -258,33 +173,34 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
         </p>
       )}
 
-      {source && configured && background.length === 0 && (
+      {fit.blocked === 'no-background' && (
         <p className="mt-3 text-sm text-muted-foreground">
           jojo has not read anything about your background yet, so it cannot weigh this posting
           against it. Put your CV in the Vault and say yes when it offers to read it.
         </p>
       )}
 
-      {/* ---------------------------- working ----------------------------- */}
-      {step !== null && (
-        <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 aria-hidden className="size-3.5 animate-spin" />
-          {STEP_LABEL[step]}…
+      {/* An answer, not a gap. Nothing here offers to fill it in — the menu
+          above turns back into "Measure this posting", which is the one way
+          back and the only one the person asked for. */}
+      {fit.blocked === null && fit.cleared && fit.step === null && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          You cleared this reading, so jojo is leaving this posting alone.
         </p>
       )}
 
-      {error !== null && (
+      {/* ---------------------------- working ----------------------------- */}
+      {fit.step !== null && (
+        <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 aria-hidden className="size-3.5 animate-spin" />
+          {STEP_LABEL[fit.step]}…
+        </p>
+      )}
+
+      {fit.error !== null && (
         <div className="mt-3 text-sm">
-          <p className="text-danger">{error}</p>
-          <Button
-            className="mt-2"
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              setError(null)
-              setAttempt((n) => n + 1)
-            }}
-          >
+          <p className="text-danger">{fit.error}</p>
+          <Button className="mt-2" size="sm" variant="ghost" onClick={fit.rerun}>
             Try again
           </Button>
         </div>
@@ -300,7 +216,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
 
           {guidance.tailor.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Lead with
               </h3>
               <ul className="mt-1.5 space-y-1.5">
@@ -310,9 +226,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                     {note.evidence.where !== undefined && (
                       <span className="text-muted-foreground"> · {note.evidence.where}</span>
                     )}
-                    <span className="block text-muted-foreground">
-                      answers “{note.answers}”
-                    </span>
+                    <span className="block text-muted-foreground">answers “{note.answers}”</span>
                   </li>
                 ))}
               </ul>
@@ -321,7 +235,7 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
 
           {guidance.prepare.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Be ready for
               </h3>
               <ul className="mt-1.5 space-y-1.5">
@@ -340,6 +254,25 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
                 ))}
               </ul>
             </div>
+          )}
+
+          {/*
+           * Where the answer came from, under it rather than over it.
+           *
+           * This is the price of keeping a verdict past the session that
+           * produced it: a reload used to throw away anything old, and now
+           * nothing does, so the card has to be able to say how old it is and
+           * what read it. `staleOf` adds a sentence only when the connected
+           * model is not the one that read this — never when there is no model
+           * connected, which is a different problem with its own line above.
+           */}
+          {fit.readNote && (
+            <p className="text-xs text-muted-foreground">
+              {fit.readNote}
+              {fit.reading?.skipped !== undefined &&
+                ` · ${String(fit.reading.skipped)} line${fit.reading.skipped === 1 ? '' : 's'} skipped`}
+              {fit.stale && <span className="block text-warning">{STALE_NOTE[fit.stale]}</span>}
+            </p>
           )}
         </div>
       )}

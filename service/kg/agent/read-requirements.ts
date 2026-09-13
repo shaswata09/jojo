@@ -36,6 +36,7 @@
 
 import { salvageJsonObject } from '../core/json-reply'
 import type { Requirement } from '../core/assess'
+import { MAX_REQUIREMENTS, MAX_REQUIREMENT_TEXT } from '../core/model'
 import type { ChatMessage } from '../core/model-server'
 
 /**
@@ -51,14 +52,12 @@ import type { ChatMessage } from '../core/model-server'
 export const REQUIREMENTS_BUDGET = 12_000
 
 /**
- * How many requirements are worth having.
- *
- * A posting that yields forty is one where the model has started listing
- * sentences, and `assess` would then divide a real score across thirty pieces
- * of boilerplate. Twelve is more than any posting genuinely asks for and few
- * enough that the gap list stays readable.
+ * How many requirements are worth having, and how long one may be. Both are
+ * declared in `core/model.ts`, which is where the schema that enforces them on
+ * disk can reach them; re-exported here because this is the file that applies
+ * them and where readers look for them.
  */
-export const MAX_REQUIREMENTS = 12
+export { MAX_REQUIREMENTS, MAX_REQUIREMENT_TEXT } from '../core/model'
 
 export type RequirementsRead =
   | {
@@ -209,6 +208,28 @@ export function readRequirements(reply: string): RequirementsRead {
     const text = typeof value === 'string' ? value.trim() : ''
     if (text === '') {
       skipped.push(`entry ${String(index + 1)}: no text`)
+      continue
+    }
+
+    /*
+     * A phrase longer than this is a sentence, and the store will not take one.
+     *
+     * `NODE_PROP_SCHEMAS` caps a requirement at `MAX_REQUIREMENT_TEXT`, and a
+     * schema refusal is all-or-nothing: one over-long entry would have thrown
+     * away the whole reading, leaving a panel that had just spent a model call
+     * showing nothing at all and re-reading on the next visit. Skipping the
+     * entry here keeps the other eleven and says so in `skipped`, which is the
+     * same trade every other rule in this loop makes.
+     *
+     * It is also a real signal about the reply rather than a storage detail: a
+     * model that answers with a 300-character "requirement" has started
+     * paraphrasing the posting, and `assess` would weigh that paragraph exactly
+     * as heavily as "PhD in computer science".
+     */
+    if (text.length > MAX_REQUIREMENT_TEXT) {
+      skipped.push(
+        `entry ${String(index + 1)}: ${String(text.length)} characters is a sentence, not a requirement`,
+      )
       continue
     }
 

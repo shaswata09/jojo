@@ -186,8 +186,17 @@ const KNOWN_TWINS = [
   },
   {
     file: 'lib/fit-agent.ts',
-    why: 'the same seam for kg/react/use-read-fit',
-    maxLines: 25,
+    // Argued up from 25 on 2026-09-12, which is what the failure message above
+    // asks for rather than a quiet edit. The seam grew for one reason: the fit
+    // panel's state machine moved into `kg/react/use-fit.ts` — it was 127
+    // byte-identical lines in two panel files that nothing compared — and that
+    // hook cannot construct its own cancellation, because `kg/react` may not
+    // name `AbortSignal` (see `Cancellation` in `agent/loop.ts`). So the seam
+    // now wires two hooks and hands over one `AbortController`. Still wiring:
+    // there is no rule in it — every line is an import, an export, a call, or
+    // the nine that build a controller and hand back its two fields.
+    why: 'the same seam for kg/react/use-read-fit, plus the AbortController kg/react may not name',
+    maxLines: 45,
   },
 ]
 

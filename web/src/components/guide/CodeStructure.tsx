@@ -83,24 +83,28 @@ export const SHAPE: DirRow[] = [
     // longer owns. Both movements are real; the count is simply current again.
     // `background-form.ts` and its test: the entry form's three decisions —
     // what a blank box means, what changed, what to refuse — shared by both apps.
-    files: 122,
-    tests: 59,
+    // `fit-reading.ts` and its test: what a stored posting reading means — read,
+    // cleared, or never taken — out of the two panels that each decided it.
+    files: 124,
+    tests: 60,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
-    lines: 33668,
+    lines: 34908,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },
   {
     dir: 'service/kg/tools',
-    files: 27,
-    tests: 7,
+    // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
+    // clearing it — the two halves of a reading that survives a reload.
+    files: 29,
+    tests: 8,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one.
-    lines: 8872,
-    what: '82 named write operations',
+    lines: 9572,
+    what: '85 named write operations',
   },
   {
     dir: 'service/kg/agent',
@@ -143,12 +147,14 @@ export const SHAPE: DirRow[] = [
     // `use-duplicate-check.ts`: arithmetic first, the model second, at Save.
     // `use-applications.test.ts`: the create/update mappings held to the whole
     // record, after `postingId` was dropped on its way to the store.
-    files: 46,
+    // `use-fit.ts`: the fit panel's state machine, which was 127 byte-identical
+    // lines in each app with nothing comparing them.
+    files: 47,
     tests: 13,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 9157,
+    lines: 9710,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -165,8 +171,10 @@ export const SHAPE: DirRow[] = [
     // commands in Settings could be copied rather than retyped; 285 with
     // `settings/McpLinkPanel.tsx`, the switch and two commands for Claude Code;
     // 286 with `ui/dialog-width.ts`, the one width every content modal takes.
-    // Re-measured 2026-09-12, having drifted past the 3% the test allows.
-    files: 286,
+    // Re-measured 2026-09-12, having drifted past the 3% the test allows; 287
+    // with `vault/FilePreviewDialog.tsx`, a filed document opening over the
+    // application it is filed under rather than in the Vault.
+    files: 287,
     tests: 29,
     lines: 49589,
     what: 'every surface you can see',

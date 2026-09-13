@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest'
 import { fitRequestKey, nextFitAction } from './fit-request'
 
 const at = (over: Partial<Parameters<typeof nextFitAction>[0]> = {}) =>
-  nextFitAction({ ready: true, fileId: 'f1', attempt: 0, cached: false, ...over })
+  nextFitAction({ ready: true, fileId: 'f1', attempt: 0, cached: false, cleared: false, ...over })
 
 describe('when there is nothing to do', () => {
   it('does nothing without a posting behind the record', () => {
@@ -110,6 +110,48 @@ describe('what the panel puts in a dependency array', () => {
   it('re-reads a cached posting when the person asks again', () => {
     expect(at({ cached: true })).toEqual({ do: 'use-cache' })
     expect(at({ cached: true, attempt: 1 })).toEqual({ do: 'start', key: 'f1#1' })
+  })
+})
+
+describe('when the person has thrown the answer away', () => {
+  /*
+   * These four are the whole behaviour of the Clear button, and none of them
+   * could be asserted before a reading was stored: until then a discard lost
+   * the list, the next mount read the posting again, and the only thing hiding
+   * that was that the next mount was usually the next session.
+   */
+  it('does not read a posting somebody has cleared', () => {
+    // The failure this prevents is immediate and looks like a broken button:
+    // Clear empties the card, the effect sees no stored reading, and the model
+    // call starts on the very next render.
+    expect(at({ cleared: true })).toEqual({ do: 'nothing' })
+  })
+
+  it('does not read it again even though there is now nothing stored', () => {
+    // `cached` is false after a clear — the answer really is gone — so this is
+    // the case that says the two flags mean different things. One is "there is
+    // an answer", the other is "there is a person who does not want one".
+    expect(at({ cleared: true, cached: false })).toEqual({ do: 'nothing' })
+  })
+
+  it('reads it again when the person asks', () => {
+    // Re-run outranks a clear for the same reason it outranks the cache: the
+    // person is asking rather than being asked. Without this, clearing a
+    // reading would make the panel permanently unable to measure that posting.
+    expect(at({ cleared: true, attempt: 1 })).toEqual({ do: 'start', key: 'f1#1' })
+  })
+
+  it('still does nothing when there is nothing to read with', () => {
+    // `ready` outranks both, which is the order the two checks are written in.
+    expect(at({ cleared: true, attempt: 1, ready: false })).toEqual({ do: 'nothing' })
+  })
+
+  it('names the same request on every render while a re-read is in flight', () => {
+    // The dependency-array rule, restated for the path that goes through a
+    // tombstone: the decision must not move because the request was recorded.
+    for (let i = 0; i < 5; i += 1) {
+      expect(at({ cleared: true, attempt: 1 })).toEqual({ do: 'start', key: 'f1#1' })
+    }
   })
 })
 

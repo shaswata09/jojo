@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
-import { Archive, FileText, Link2, MessageSquare, Scissors, UserRound } from 'lucide-react'
+import { Archive, Eye, FileText, Link2, MessageSquare, Scissors, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { Button } from '@/components/ui/button'
+import { FilePreviewDialog } from '@/components/vault/FilePreviewDialog'
+import type { VaultFile } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useThreads } from '@jojo/service/react/use-threads'
 import { assistantPath, vaultPath } from '@/lib/links'
@@ -29,6 +33,14 @@ import { assistantPath, vaultPath } from '@/lib/links'
  * Every row lands on the record in its own tool, with `focus` set so the Vault
  * scrolls to it and highlights it. That is the same arrival the calendar and the
  * reminders list already use, so the highlight means one thing everywhere.
+ *
+ * A file also gets Preview, and that is the difference between reading a record
+ * and leaving it. Going to the Vault is the right answer for renaming a
+ * document, filing it elsewhere or deleting it — and the wrong one for "what
+ * did I actually send them", which was the only question this panel could not
+ * answer without unloading the record the person was reading. Preview opens the
+ * Vault's own viewer over the record instead; the name beside it still goes to
+ * the Vault, so nothing that used to be one click away is now two.
  */
 
 const SECTIONS = [
@@ -61,6 +73,16 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
    * make the filing look like it had not worked.
    */
   const conversations = threads.filter((t) => t.applicationId === applicationId)
+
+  /**
+   * The document being previewed, or `null`.
+   *
+   * One piece of state for the whole panel rather than one per row: only one
+   * document can be on screen at a time, and a flag per row would let two
+   * dialogs open at once the moment a second Preview was pressed while the
+   * first was still animating out.
+   */
+  const [preview, setPreview] = useState<VaultFile | null>(null)
 
   const total =
     filed.files.length +
@@ -117,10 +139,16 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                 </h3>
                 <ul className="space-y-0.5">
                   {rows.map((row) => (
-                    <li key={row.id}>
+                    // The row is the flex container now, with the link inside
+                    // it, because Preview is a BUTTON and a button nested in an
+                    // anchor is neither valid markup nor reliably clickable.
+                    <li
+                      key={row.id}
+                      className="flex items-baseline gap-1 rounded-sm px-1 transition-colors hover:bg-row-hover"
+                    >
                       <Link
                         to={vaultPath({ tool: section.tool, focus: row.id })}
-                        className="flex items-baseline gap-2 rounded-sm px-1 py-1 transition-colors hover:bg-row-hover"
+                        className="flex min-w-0 flex-1 items-baseline gap-2 py-1"
                       >
                         <span
                           className={`min-w-0 flex-1 truncate text-sm text-text-1 ${
@@ -146,6 +174,37 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                                 : row.role}
                         </span>
                       </Link>
+                      {/* `'bucket' in row` is both the question and the answer:
+                          only a file has one, so it says this row is a file and
+                          it is what narrows the type to hand to the viewer.
+                          `section.key === 'files'` reads better and narrows
+                          nothing — `rows` is a union of four arrays, and the
+                          section it came from is not a fact TypeScript can
+                          carry into the row.
+
+                          Offered on every file, including the kinds that cannot
+                          be drawn. The viewer is the one place that knows what
+                          it can render and says so in the right words for each
+                          case — a .docx, a page captured on another device, a
+                          demo row with no bytes — and second-guessing it here
+                          would mean keeping a copy of that list in step. */}
+                      {'bucket' in row ? (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          className="shrink-0 self-center text-text-3"
+                          // Named with the document, because a panel with three
+                          // files otherwise offers three buttons all called
+                          // "Preview". It opens with the visible word, so the
+                          // spoken name still contains the one on screen.
+                          aria-label={`Preview ${row.name}`}
+                          title={`Preview ${row.name}`}
+                          onClick={() => setPreview(row)}
+                        >
+                          <Eye aria-hidden strokeWidth={1.9} />
+                          Preview
+                        </Button>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
@@ -154,6 +213,13 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
           })}
         </div>
       )}
+
+      {/* Mounted only when this record has documents, because the viewer's hook
+          opens the blob store: a record with nothing filed under it should not
+          pay for a preview it cannot offer. */}
+      {filed.files.length > 0 ? (
+        <FilePreviewDialog file={preview} onClose={() => setPreview(null)} />
+      ) : null}
     </Panel>
   )
 }

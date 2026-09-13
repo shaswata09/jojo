@@ -39,20 +39,18 @@
  * cannot, and it does not pretend to.
  */
 
+import type { Requirement } from './model'
 import { fold } from './text'
 
-/** One thing a posting asks for, as a reader would state it. */
-export type Requirement = {
-  /** The phrase from the posting: 'distributed systems', 'PhD in CS'. */
-  readonly text: string
-  /**
-   * Whether the posting states this as required or preferred.
-   *
-   * Weighted differently below, because missing a "must have" and missing a
-   * "nice to have" are not the same news.
-   */
-  readonly essential: boolean
-}
+/**
+ * One thing a posting asks for, as a reader would state it.
+ *
+ * Re-exported rather than declared: it moved to `core/model.ts` when a reading
+ * started being stored on the file it was read from, and everything that goes
+ * on disk is described there. This line is what keeps `from './assess'` — which
+ * is where every scorer, panel and fixture looks for it — telling the truth.
+ */
+export type { Requirement } from './model'
 
 /** A background entry, in the shape this file needs. Kept structural on purpose. */
 export type Evidence = {

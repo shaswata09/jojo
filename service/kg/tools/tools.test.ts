@@ -498,6 +498,46 @@ describe('the transaction', () => {
     expect(h.repo.getSnapshot().out(file!, 'FILED_UNDER')).toHaveLength(1)
   })
 
+  it('leaves the document itself untouched when only the filing changed', () => {
+    /*
+     * Filing is an edge, so the record must not be stamped — and the reason is
+     * two screens away. `movedOn` in `react/undo.ts` refuses to revert an entry
+     * whose records have moved since, comparing the whole node image; a node
+     * delta here that says only "updatedAt is later" means any later write to
+     * the same file makes the create form's Undo report "you have changed those
+     * records since" about a record the person never touched.
+     *
+     * Measured when the fit panel began storing its reading on the posting: the
+     * create form files the captured page, the read lands a few seconds later,
+     * and the toast still on screen accused the user of a background write.
+     */
+    const h = harness()
+    const app = okOr(
+      h.runtime.run('application.create', {
+        org: 'Rice',
+        role: 'Assistant professor',
+        roleTag: 'Research Scientist',
+        stage: 'draft',
+      }),
+    )
+    const [file] = okOr(
+      h.runtime.run('vault.file.add', {
+        files: [{ name: 'Posting.html', kind: 'page', bucket: 'Job postings', size: '1 KB' }],
+      }),
+    )
+    const before = h.repo.getSnapshot().node(file!, 'file')
+
+    okOr(h.runtime.run('vault.file.update', { id: file!, applicationIds: [app] }))
+
+    const after = h.repo.getSnapshot().node(file!, 'file')
+    // The edge is written; the record is not rewritten around it.
+    expect(h.repo.getSnapshot().out(file!, 'FILED_UNDER')).toHaveLength(1)
+    expect(after?.props).toEqual(before?.props)
+    expect(after?.updatedAt).toBe(before?.updatedAt)
+    // And the entry carries no node delta to compare a later write against.
+    expect(h.repo.undoable[0]?.nodes ?? []).toEqual([])
+  })
+
   it('still unfiles what the save removed', () => {
     // Differential must not mean inert: an application dropped from the list
     // has to lose its edge.

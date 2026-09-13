@@ -10,6 +10,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   MAX_REQUIREMENTS,
+  MAX_REQUIREMENT_TEXT,
   REQUIREMENTS_BUDGET,
   readRequirements,
   requirementMessages,
@@ -141,6 +142,38 @@ describe('what it will not let through', () => {
     const out = readRequirements(reply({ requirements: many }))
     expect(out.ok && out.requirements).toHaveLength(MAX_REQUIREMENTS)
     expect(out.ok && out.skipped.join(' ')).toMatch(/5 more were past the limit/)
+  })
+
+  it('drops a phrase too long for the store, and keeps the rest', () => {
+    /*
+     * A schema refusal is all-or-nothing. `NODE_PROP_SCHEMAS` caps a stored
+     * requirement at `MAX_REQUIREMENT_TEXT`, so one paragraph-length entry would
+     * have made `fit.reading.set` refuse the WHOLE reading — the panel would
+     * have spent a model call and shown nothing, then read the same page again
+     * on the next visit. Dropping the one entry keeps the other two and says so.
+     */
+    const out = readRequirements(
+      reply({
+        requirements: [
+          { text: 'PhD in computer science', essential: true },
+          { text: `x${'y'.repeat(MAX_REQUIREMENT_TEXT)}`, essential: true },
+          { text: 'distributed systems', essential: false },
+        ],
+      }),
+    )
+    expect(out.ok && out.requirements.map((r) => r.text)).toEqual([
+      'PhD in computer science',
+      'distributed systems',
+    ])
+    expect(out.ok && out.skipped.join(' ')).toMatch(/characters is a sentence/)
+  })
+
+  it('keeps a phrase of exactly the length the store takes', () => {
+    // The off-by-one: the cap is what the schema accepts, not one less.
+    const exact = 'z'.repeat(MAX_REQUIREMENT_TEXT)
+    const out = readRequirements(reply({ requirements: [{ text: exact, essential: true }] }))
+    expect(out.ok && out.requirements.map((r) => r.text)).toEqual([exact])
+    expect(out.ok && out.skipped).toEqual([])
   })
 
   it('says nothing about a limit when the list fits', () => {

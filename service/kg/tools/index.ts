@@ -68,6 +68,7 @@ import {
   profileTextSet,
 } from './profile'
 import { claimAdd } from './claim'
+import { fitReadingClear, fitReadingSet } from './fit'
 import {
   scoutMatchDismiss,
   scoutMatchPromote,
@@ -188,6 +189,9 @@ export const TOOLS = {
   'claim.add': claimAdd,
   'profile.background.update': profileBackgroundUpdate,
   'profile.background.delete': profileBackgroundDelete,
+
+  'fit.reading.set': fitReadingSet,
+  'fit.reading.clear': fitReadingClear,
 
   'assistant.thread.create': threadCreate,
   'assistant.thread.set': threadSet,

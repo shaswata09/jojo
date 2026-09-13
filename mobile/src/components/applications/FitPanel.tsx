@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 import { View } from 'react-native'
-import { Button } from '@/components/ui/Button'
+import { Button, IconButton } from '@/components/ui/Button'
+import { MenuSheet } from '@/components/ui/Menu'
+import type { MenuAction } from '@/components/ui/Menu'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { assess } from '@jojo/service/core/assess'
-import type { Requirement } from '@jojo/service/core/assess'
-import { HOW_LABEL, postingSourceFor } from '@jojo/service/core/posting-source'
-import { guidanceFrom, VERDICT_LABEL } from '@jojo/service/core/tailor'
-import { nextFitAction } from '@jojo/service/core/fit-request'
-import { useGraph, useKg } from '@jojo/service/react/kg-context'
-import { cachedRequirements, haveRequirements, useReadFit } from '@/lib/fit-agent'
+import { HOW_LABEL } from '@jojo/service/core/posting-source'
+import { STALE_NOTE } from '@jojo/service/core/fit-reading'
+import { supersededToast } from '@jojo/service/react/undo'
+import { VERDICT_LABEL } from '@jojo/service/core/tailor'
+import { useFit } from '@/lib/fit-agent'
 import type { FitStep } from '@/lib/fit-agent'
-import { useModelSettings } from '@/lib/model-settings-context'
+import { useToast } from '@/lib/toast-context'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
 
@@ -27,6 +27,16 @@ import { space } from '@/theme/tokens'
  * said differently there for the reason it gives: they are genuinely different
  * situations with different fixes, and one card reading "not enough
  * information" for all of them is a card people stop reading.
+ *
+ * The state machine is NOT here any more. It was 127 lines copied from the web
+ * panel with nothing comparing the two, and it lives in
+ * `@jojo/service/react/use-fit` — which is also what makes both apps agree
+ * about a reading that is now stored rather than held in memory for a session.
+ *
+ * Re-run and Clear are in a menu off the title rather than a button under the
+ * card, which is where Re-run used to sit while web's was in the header. A
+ * destructive action has to cost a menu on both platforms, and putting the pair
+ * together is what makes the two screens describe the same feature.
  */
 
 const STEP_LABEL: Record<FitStep, string> = {
@@ -36,180 +46,146 @@ const STEP_LABEL: Record<FitStep, string> = {
 
 export function FitPanel({ applicationId }: { applicationId: string }) {
   const c = useColors()
-  const graph = useGraph()
-  const { projections } = useKg()
-  const { settings } = useModelSettings()
-  const readFit = useReadFit()
+  const fit = useFit(applicationId)
+  const { toast } = useToast()
+  const [menu, setMenu] = useState(false)
+  const { source, guidance } = fit
 
-  const source = useMemo(() => postingSourceFor(graph, applicationId), [graph, applicationId])
-  const background = projections.background(graph)
-
-  const [requirements, setRequirements] = useState<readonly Requirement[] | null>(
-    () => cachedRequirements(source?.fileId ?? '') ?? null,
-  )
-  const [step, setStep] = useState<FitStep | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  /** Bumped by Try again and by Re-run. See `fitRequestKey` — half the request's identity. */
-  const [attempt, setAttempt] = useState(0)
-  const abort = useRef<AbortController | null>(null)
-  /**
-   * The request already made, as a ref rather than state.
-   *
-   * Deliberately: recording that a request began must not cause a render, or
-   * the decision changes as a consequence of having been taken. That is exactly
-   * the loop this panel had — the read reported its first step synchronously,
-   * the step was in the effect's dependency array, and the re-run's cleanup
-   * aborted the request it had just started.
-   */
-  const started = useRef<string | null>(null)
-
-  const fileId = source?.fileId
-  const name = source?.name
-  const configured = settings.model.trim() !== ''
-  const ready = fileId !== undefined && configured && background.length > 0
-
-  /*
-   * `readFit` and `settings` are read through refs so that neither appears in
-   * the dependency array below. `readFit`'s identity changes when the blob
-   * store finishes opening, and a dependency that moves while a request is in
-   * flight makes the cleanup abort it. What the effect must react to is the
-   * DECISION changing, and that is what `action` is.
-   */
-  const latest = useRef({ readFit, settings })
-  latest.current = { readFit, settings }
-
-  const action = nextFitAction({
-    ready,
-    fileId,
-    attempt,
-    cached: fileId !== undefined && haveRequirements(fileId),
-  })
-
-  /*
-   * Hoisted out of the dependency array, because a ternary in there cannot be
-   * checked statically and this is the value the effect actually turns on.
-   * `null` covers both non-start actions, and neither needs to be distinguished
-   * from the other by an identity — `action.do` carries that.
-   */
-  const startKey = action.do === 'start' ? action.key : null
-
-  useEffect(() => {
-    if (action.do === 'nothing') return
-    if (fileId === undefined || name === undefined) return
-
-    if (action.do === 'use-cache') {
-      setRequirements(cachedRequirements(fileId) ?? null)
-      return
-    }
-    if (startKey === null) return
-    /*
-     * Asked exactly once, and checked HERE rather than in the decision above.
-     *
-     * The decision is a dependency of this effect, so anything it says has to
-     * survive the request being recorded — see `fit-request.ts`. The ref does
-     * not: nothing renders when it changes, which is precisely why the guard
-     * belongs on this side of the dependency array.
-     */
-    if (started.current === startKey) return
-
-    started.current = startKey
-    const stop = new AbortController()
-    abort.current = stop
-    const { readFit: read, settings: model } = latest.current
-
-    void read({ fileId, name, settings: model, onStep: setStep, signal: stop.signal })
-      .then((outcome) => {
-        if (stop.signal.aborted) return
-        abort.current = null
-        setStep(null)
-        if (outcome.ok) setRequirements(outcome.requirements)
-        else setError(outcome.reason)
-      })
-      /*
-       * Every layer under this reports failure as a value, so reaching here
-       * means something threw that none of them expected. Without the catch
-       * that is an unhandled rejection and a panel that spins on "Opening the
-       * posting" for the rest of the session — the failure mode a person cannot
-       * tell from a slow model.
-       */
-      .catch((thrown: unknown) => {
-        if (stop.signal.aborted) return
-        abort.current = null
-        setStep(null)
-        setError(thrown instanceof Error ? thrown.message : 'Reading the posting failed.')
-      })
-    return () => {
-      stop.abort()
-      abort.current = null
-    }
-    // `action.do` and `startKey`, not `action` — the object is rebuilt on every
-    // render and would re-run this on every one of them.
-  }, [action.do, startKey, fileId, name])
-
-  /*
-   * A different application means a different posting, so anything held about
-   * the last one is wrong rather than stale — and the attempt counter goes back
-   * to zero with it, or a retry on one record would look like a fresh request
-   * on the next.
-   */
-  useEffect(() => {
-    setRequirements(fileId === undefined ? null : (cachedRequirements(fileId) ?? null))
-    setError(null)
-    setStep(null)
-    setAttempt(0)
-  }, [fileId])
-
-  const guidance = useMemo(
-    () => (requirements === null ? null : guidanceFrom(assess(requirements, background))),
-    [requirements, background],
-  )
+  const actions: MenuAction[] = [
+    // Re-run is the item that needs a model; Clear does not, which is why the
+    // menu itself is offered on `ready || reading` and this item on `ready`.
+    ...(fit.ready
+      ? [
+          {
+            id: 'rerun',
+            label: fit.cleared ? 'Measure this posting' : 'Re-run',
+            hint: 'Read the posting again and re-measure',
+            icon: 'refresh-cw' as const,
+            onPress: fit.rerun,
+          },
+        ]
+      : []),
+    ...(fit.reading && !fit.cleared
+      ? [
+          {
+            id: 'clear',
+            label: 'Clear this reading',
+            hint: 'jojo stops measuring this posting until you ask',
+            icon: 'trash-2' as const,
+            tone: 'danger' as const,
+            onPress: () => {
+              const cleared = fit.clear()
+              if (!cleared) return
+              const { result, restore } = cleared
+              toast({
+                // The title branches: a refusal that announces "Fit reading
+                // cleared" and then explains why it did not is a toast arguing
+                // with itself.
+                title: result.ok ? 'Fit reading cleared' : 'That did not clear',
+                description: result.ok
+                  ? 'jojo will not read this posting again unless you ask it to.'
+                  : (result.errors[0]?.message ?? ''),
+                // Hand-wired, because the service toast port types its action as
+                // `onClick` and this app's as `onPress`. Dropping it is what made
+                // a mis-tap on somebody's own record unrecoverable once already.
+                ...(result.ok
+                  ? restore
+                    ? {
+                        action: {
+                          label: 'Undo',
+                          onPress: () => {
+                            const outcome = restore()
+                            // `undoableWith` declines to put a before-image back
+                            // over a record touched since, and says so. Taken
+                            // apart rather than passed through: the shared copy
+                            // is typed against the service's toast port, whose
+                            // action is an `onClick` this provider cannot take —
+                            // and this one carries no action at all.
+                            if (outcome.superseded.length > 0) {
+                              const said = supersededToast(outcome)
+                              toast({
+                                title: said.title,
+                                ...(said.description === undefined
+                                  ? {}
+                                  : { description: said.description }),
+                                tone: 'danger',
+                              })
+                            }
+                          },
+                        },
+                      }
+                    : {}
+                  : { tone: 'danger' as const }),
+              })
+            },
+          },
+        ]
+      : []),
+  ]
 
   return (
     <Panel>
-      <PanelTitle hint={source ? `${source.name} — ${HOW_LABEL[source.how]}` : undefined}>
+      <PanelTitle
+        hint={source ? `${source.name} — ${HOW_LABEL[source.how]}` : undefined}
+        right={
+          (fit.ready || fit.reading !== undefined) && fit.step === null ? (
+            <IconButton
+              icon="more-horizontal"
+              // `IconButton`, which is what every other overflow on this app
+              // uses — a 40pt target carrying its accessible name, rather than
+              // the labelled pill an earlier draft of this file put here on the
+              // false belief that no icon-only control existed.
+              label="Fit options"
+              onPress={() => {
+                setMenu(true)
+              }}
+            />
+          ) : undefined
+        }
+      >
         How you fit
       </PanelTitle>
 
-      {!source && (
+      {fit.blocked === 'no-posting' && (
         <Txt size="sm" tone="secondary">
           There is no saved posting behind this application, so there is nothing to weigh you
           against. Capture the listing, or add the application from its link, and this fills in.
         </Txt>
       )}
 
-      {source && !configured && (
+      {fit.blocked === 'no-model' && (
         <Txt size="sm" tone="secondary">
           Reading what a posting asks for needs a model. Connect one under More → Settings.
         </Txt>
       )}
 
-      {source && configured && background.length === 0 && (
+      {fit.blocked === 'no-background' && (
         <Txt size="sm" tone="secondary">
           jojo has not read anything about your background yet, so it cannot weigh this posting
           against it. Put your CV in the Vault and say yes when it offers to read it.
         </Txt>
       )}
 
-      {step !== null && (
+      {/* An answer, not a gap: nothing here offers to fill it in. The menu
+          turns back into "Measure this posting", which is the one way back. */}
+      {fit.blocked === null && fit.cleared && fit.step === null && (
         <Txt size="sm" tone="secondary">
-          {STEP_LABEL[step]}…
+          You cleared this reading, so jojo is leaving this posting alone.
         </Txt>
       )}
 
-      {error !== null && (
+      {fit.step !== null && (
+        <Txt size="sm" tone="secondary">
+          {STEP_LABEL[fit.step]}…
+        </Txt>
+      )}
+
+      {fit.error !== null && (
         <View style={{ gap: space[2] }}>
           <Txt size="sm" color={c.danger}>
-            {error}
+            {fit.error}
           </Txt>
-          <Button
-            size="sm"
-            variant="ghost"
-            label="Try again"
-            onPress={() => {
-              setError(null)
-              setAttempt((n) => n + 1)
-            }}
-          />
+          <Button size="sm" variant="ghost" label="Try again" onPress={fit.rerun} />
         </View>
       )}
 
@@ -261,34 +237,37 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
               ))}
             </View>
           )}
+
+          {/* Where the answer came from, and how old it is. The price of
+              keeping a verdict past the session that produced it: a reload used
+              to throw away anything stale and now nothing does. */}
+          {fit.readNote && (
+            <View>
+              <Txt size="xs" tone="muted">
+                {fit.readNote}
+                {fit.reading?.skipped === undefined
+                  ? ''
+                  : ` · ${String(fit.reading.skipped)} line${fit.reading.skipped === 1 ? '' : 's'} skipped`}
+              </Txt>
+              {fit.stale && (
+                <Txt size="xs" color={c.warning}>
+                  {STALE_NOTE[fit.stale]}
+                </Txt>
+              )}
+            </View>
+          )}
         </View>
       )}
 
-      {/*
-        * Re-run: how a person disagrees with an answer they already have.
-        *
-        * The document has not changed, so every automatic path correctly
-        * concludes there is nothing to do — and the session cache holds the
-        * very verdict being rejected. Bumping `attempt` is what outranks it;
-        * see `fit-request.ts`.
-        *
-        * Hidden rather than disabled while a read runs: the step line above
-        * already says what is happening, and a disabled button here would owe
-        * the reader a reason it cannot give in the space.
-        */}
-      {ready && step === null && (
-        <View style={{ marginTop: space[3], alignItems: 'flex-start' }}>
-          <Button
-            size="sm"
-            variant="outline"
-            label="Re-run"
-            onPress={() => {
-              setError(null)
-              setAttempt((n) => n + 1)
-            }}
-          />
-        </View>
-      )}
+      <MenuSheet
+        open={menu}
+        onClose={() => {
+          setMenu(false)
+        }}
+        title="How you fit"
+        description={source?.name}
+        actions={actions}
+      />
     </Panel>
   )
 }

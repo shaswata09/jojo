@@ -365,7 +365,7 @@ export type ApprovalMode = (typeof APPROVAL_MODES)[number]
  *
  * `SAID` names deletion explicitly rather than saying "dangerous", because the
  * line the app actually draws is `effect === 'delete' || effect === 'admin'` —
- * fifteen tools of ninety-two. Closing an application is a `move` and passes
+ * seventeen tools of ninety-five, counted 2026-09-12. Closing an application is a `move` and passes
  * without a prompt under `semi`, which is worth a person knowing before they
  * choose it.
  */
@@ -1043,6 +1043,159 @@ export type FileProps = {
    * same posting sorts against the first.
    */
   capturedAt?: Instant
+
+  /**
+   * What a model read off this posting, kept so it is not read again.
+   *
+   * ## Why this is stored at all
+   *
+   * `use-read-fit.ts` held it in a module Map and said, in writing, that it
+   * must not survive a reload. That was wrong in the way a person notices: the
+   * fit panel re-read the posting on every refresh, so opening the same
+   * application twice in a morning spent two model calls and fifteen seconds to
+   * arrive back at the answer it already had. A cache whose only invalidation
+   * is losing the tab is not an invalidation strategy; it is an outage every
+   * time the tab is closed.
+   *
+   * ## Why it is not a derived value
+   *
+   * The rule above this file's props says no derived value goes on disk, and a
+   * derived value is one `project.ts` could recompute from what is stored.
+   * Nothing can recompute this: it took a non-deterministic model call over
+   * bytes the graph deliberately does not hold. It is an OBSERVATION — the
+   * same category as `background` (a model's reading of a CV), `claim`, and
+   * `ThreadProps.context` (a model's summary, stored on the thread it
+   * summarises beside its own watermark). What stays derived is the SCORE:
+   * `assess` and `guidanceFrom` still run on every render, so recording a new
+   * publication moves the verdict without asking a model anything.
+   *
+   * ## Why it lives on the file rather than on the application
+   *
+   * Because it is a fact about the posting, not about the job hunt. Two
+   * applications to the same listing weigh themselves against one reading, and
+   * the panel already says which document it measured against. Storing it here
+   * also means it is deleted when the document is — `tx.del` takes the props
+   * with it — and that re-capturing a posting mints a NEW file id, so a stored
+   * reading can never silently describe a page it was not read from: the id
+   * the panel asks about has moved on, and the old reading is simply not found.
+   */
+  reading?: PostingReading
+}
+
+/**
+ * One thing a posting asks for, as a reader would state it.
+ *
+ * Declared here rather than in `core/assess.ts`, which owned it until it became
+ * a stored shape — everything that goes on disk is described in this file, and
+ * a type that is half in the scorer and half in the store is one nobody can
+ * check against `NODE_PROP_SCHEMAS`. `assess.ts` re-exports it, so every reader
+ * of the scorer still finds it where it expects to.
+ */
+export type Requirement = {
+  /** The phrase from the posting: 'distributed systems', 'PhD in CS'. */
+  readonly text: string
+  /**
+   * Whether the posting states this as required or preferred.
+   *
+   * Weighted differently by `assess`, because missing a "must have" and missing
+   * a "nice to have" are not the same news.
+   */
+  readonly essential: boolean
+}
+
+/**
+ * How many requirements are worth having.
+ *
+ * A posting that yields forty is one where the model has started listing
+ * sentences, and `assess` would then divide a real score across thirty pieces
+ * of boilerplate. Twelve is more than any posting genuinely asks for and few
+ * enough that the gap list stays readable.
+ *
+ * Here rather than in `agent/read-requirements.ts`, which owned it: it stopped
+ * being only the reader's ceiling the day a reading went on disk, and the trust
+ * boundary that has to enforce it — `NODE_PROP_SCHEMAS` in `core/validate.ts` —
+ * may not import from `agent`. The reader re-exports it.
+ */
+export const MAX_REQUIREMENTS = 12
+
+/**
+ * The longest a requirement phrase may be.
+ *
+ * A cap on the STORE, and `read-requirements.ts` applies the same one so a
+ * reply can never produce a reading the store refuses — a schema refusal is
+ * all-or-nothing, so one 300-character entry would throw away the other eleven
+ * and the model call that found them. Two hundred characters is longer than any
+ * real requirement and shorter than the paragraph a model writes when it has
+ * started paraphrasing.
+ */
+export const MAX_REQUIREMENT_TEXT = 200
+
+/**
+ * One model's reading of one posting, and enough about it to be doubted.
+ *
+ * Every field beside `requirements` is here so the panel can say where the
+ * answer came from rather than presenting it as a fact of nature. That is the
+ * price of persisting it: a reading that outlives its session has to carry the
+ * means of noticing it is old, because a reload is no longer doing that job.
+ *
+ * There is no fingerprint of the document beside them, and that is deliberate
+ * rather than an omission. A re-captured posting mints a NEW file id, so the
+ * common way a page changes takes the reading out of reach on its own. What is
+ * left is one narrow path — bytes evicted from the blob store, then refilled
+ * from a different file with the same name — and nothing in the graph can see
+ * it: `FileProps.hash` is declared and written by nobody, and a check against a
+ * field nothing writes is a check that never fires, which is the failure the
+ * never-written `FROM` edge on `match` already recorded. When the folder port
+ * starts writing hashes, `staleOf` in `core/fit-reading.ts` is where the
+ * comparison goes.
+ *
+ * `clearedAt` is the tombstone, and it is why this is not simply deleted when
+ * somebody discards it. `pipeline.proposal.sweep` learned this the hard way —
+ * deleting the row was amnesia, and the queue refilled with what the person had
+ * just turned down. Here the amnesia is worse than a refill: the panel reads a
+ * posting automatically when it finds no reading, so a delete that left nothing
+ * behind would start a fresh model call on the very next render, and the button
+ * would look broken. Cleared keeps the row, empties it, and tells the panel a
+ * person has already answered this question.
+ */
+export type PostingReading = {
+  /**
+   * What the posting asks for. Capped at `MAX_REQUIREMENTS` by the reader, so
+   * this is a dozen short phrases and not the page — D27 is intact, and the
+   * argument in `posting-source.ts` against storing the posting TEXT (40k of
+   * somebody else's prose in every `getAll('nodes')`) does not reach a list
+   * this size.
+   *
+   * Empty when `clearedAt` is set: discarding the answer discards the answer.
+   */
+  requirements: Requirement[]
+  /**
+   * The model that read it — 'gemma_4_31b'. Shown, never used to decide
+   * anything on its own.
+   *
+   * The name only. Not the endpoint, which is a fact about a machine rather
+   * than about this reading, and never the key: `core/provider.ts` says where
+   * that must not go, and the graph is the first place it names.
+   */
+  model: string
+  /** When it was read, from `ctx.now`. */
+  readAt: Instant
+  /**
+   * How many lines the reader could not use, when any.
+   *
+   * `readRequirements` has always returned this and every caller threw it away.
+   * "Four of sixteen were skipped" is exactly the kind of thing a person wants
+   * when a verdict reads lower than they expected, and it costs one number.
+   */
+  skipped?: number
+  /**
+   * Set when the person discarded the reading. See the note above on why the
+   * row survives being deleted.
+   *
+   * Optional, so every file written before this field existed reads back as a
+   * document nobody has cleared — which is what it was.
+   */
+  clearedAt?: Instant
 }
 
 export type SnippetProps = {
