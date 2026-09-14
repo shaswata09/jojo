@@ -17,6 +17,8 @@ interface SplineSceneProps {
    * names the folder; see SplineRobot.
    */
   wasmPath?: string
+  /** Route pointer events from the whole page, not just the canvas. */
+  globalEvents?: boolean
   /** Handed the loaded Application so callers can drive scene objects. */
   onLoad?: (app: Application) => void
   fallback?: ReactNode
@@ -26,6 +28,7 @@ export function SplineScene({
   scene,
   className,
   wasmPath,
+  globalEvents = false,
   onLoad,
   fallback,
 }: SplineSceneProps) {
@@ -35,7 +38,10 @@ export function SplineScene({
         scene={scene}
         className={className}
         {...(wasmPath === undefined ? {} : { wasmPath })}
-        onLoad={onLoad}
+        onLoad={(app: Application) => {
+          if (globalEvents) app.setGlobalEvents(true)
+          onLoad?.(app)
+        }}
       />
     </Suspense>
   )

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Application } from '@splinetool/runtime'
 import { RobotMascot } from '@/components/brand/RobotMascot'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { SplineScene } from '@/components/ui/splite'
-import { POSE_MS, useMascot } from '@/lib/mascot-context'
+import { useMascot } from '@/lib/mascot-context'
 import { createSplineRig, type SplineRig } from '@/lib/spline-rig'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { publicUrl } from '@/lib/public-url'
@@ -70,15 +70,6 @@ const WASM = publicUrl('spline')
 const INTRO_SETTLE_MS = 1700
 
 /**
- * Grace past a gesture's own length before the scene may sleep again.
- *
- * The rig starts its curve a commit after the pose is published and lands the
- * last frame on the animation frame after that, so stopping at exactly
- * `POSE_MS` would freeze the closing frames of every gesture mid-move.
- */
-const GESTURE_TAIL_MS = 400
-
-/**
  * Loading states, both deliberately late.
  *
  * The 2D mascot used to mount at full opacity the moment this component did, so
@@ -133,71 +124,6 @@ export function SplineRobot({ className }: { className?: string }) {
   const greeting = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)')
 
-  /**
-   * Why the scene spends most of its life stopped.
-   *
-   * The sidebar is mounted on every route, and this scene never settles on its
-   * own. With the pointer parked and nothing asked of it, the arm assemblies
-   * run a looping idle — measured 4.4 radians of total variation over six
-   * seconds: a roughly 3s cycle that changes up to 4.7% of the card's pixels
-   * per 250ms, holds still for a beat, then starts again. That pulse at the
-   * edge of vision is what a left panel "vibrating weirdly" actually was.
-   *
-   * `globalEvents` was the other half, and it is gone from the scene below. It
-   * routed every pointer move on the PAGE into the runtime, so reading a list
-   * on the right swung the body 1.007rad (57.7°) and the head 0.628rad (36°) —
-   * a lurch in the corner of the eye answering to something the user was not
-   * doing. Dropping it costs nothing: the scene tracks the cursor from its own
-   * canvas events just as well, measured at an identical 0.112rad of yaw across
-   * the card with the flag on and with it off. An earlier note here claimed
-   * tracking died without it; that reading was taken through a full-screen
-   * onboarding overlay the pointer never got past, and is simply wrong.
-   *
-   * `stop()` reaches the idle loop, and nothing else does — it is authored into
-   * the scene, not into this app. It holds the last frame rather than clearing
-   * the canvas: measured the same lit-pixel count and mean luminance as the
-   * live scene, with zero of 107 objects moving. The robot is still there,
-   * still lit, still 3D; it just stops fidgeting.
-   *
-   * So the scene renders only while there is something to see — the pointer is
-   * on the card, or an animation is still owed — and is stopped the rest of the
-   * time.
-   */
-  const scene = useRef<Application | null>(null)
-  /** The pointer is over the card. */
-  const near = useRef(false)
-  /** `performance.now()` past which no animation is still owed. */
-  const owed = useRef(0)
-  const bedtime = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  /**
-   * Makes the runtime agree with the two reasons above. Idempotent, cheap, and
-   * safe to call from anywhere — everything that changes either reason calls
-   * it, and nothing else decides whether the scene runs.
-   */
-  const settle = useCallback(() => {
-    clearTimeout(bedtime.current)
-    const app = scene.current
-    if (app === null) return
-    const left = owed.current - performance.now()
-    if (near.current || left > 0) {
-      if (app.isStopped) app.play()
-      // A gesture ending calls nothing back, so the check has to be booked.
-      if (!near.current) bedtime.current = setTimeout(settle, left)
-      return
-    }
-    if (!app.isStopped) app.stop()
-  }, [])
-
-  /** Hold the scene awake for `ms` longer — a gesture, or the intro. */
-  const hold = useCallback(
-    (ms: number) => {
-      owed.current = Math.max(owed.current, performance.now() + ms)
-      settle()
-    },
-    [settle],
-  )
-
   /** The 3D robot is on screen — loaded, and still alive. */
   const live = ready && !failed
 
@@ -221,17 +147,13 @@ export function SplineRobot({ className }: { className?: string }) {
 
   useEffect(() => {
     if (reduced) return
-    // Woken first: the rig drives the joints from its own frame loop, and a
-    // stopped runtime paints none of what it writes.
-    if (pose !== 'idle') hold(POSE_MS[pose] + GESTURE_TAIL_MS)
     rig.current?.play(pose)
-  }, [pose, seq, reduced, hold])
+  }, [pose, seq, reduced])
 
   useEffect(
     () => () => {
       rig.current?.dispose()
       clearTimeout(greeting.current)
-      clearTimeout(bedtime.current)
     },
     [],
   )
@@ -253,13 +175,7 @@ export function SplineRobot({ className }: { className?: string }) {
     // build mounts once and looks perfect.
     rig.current?.dispose()
     clearTimeout(greeting.current)
-    // The discarded load's Application is still rendering — react-spline never
-    // cancels it, and nothing else will ever hold a reference to stop it. That
-    // is an invisible canvas asking for a frame forever, which is the whole
-    // problem this file just finished solving.
-    scene.current?.stop()
 
-    scene.current = app
     rig.current = createSplineRig(app)
     setReady(true)
     if (reduced) return
@@ -271,19 +187,8 @@ export function SplineRobot({ className }: { className?: string }) {
     // keeps writing these joints for roughly a second and a half after load.
     // Greeting inside that window plays the gesture and has it overwritten
     // frame by frame — measured, not guessed.
-    //
-    // Held awake across the whole arrival either way: the scene's own intro is
-    // still writing these joints, and it is the one animation here that is
-    // neither a gesture nor a hover.
-    if (pending.current.pose !== 'idle') {
-      // Whichever outlasts the other: `dance` is 2600ms against the intro's
-      // 1700, and sleeping on the intro's clock would freeze it mid-move.
-      hold(Math.max(INTRO_SETTLE_MS, POSE_MS[pending.current.pose] + GESTURE_TAIL_MS))
-      rig.current.play(pending.current.pose)
-    } else {
-      hold(INTRO_SETTLE_MS + POSE_MS.bow + GESTURE_TAIL_MS)
-      greeting.current = setTimeout(() => play('bow'), INTRO_SETTLE_MS)
-    }
+    if (pending.current.pose !== 'idle') rig.current.play(pending.current.pose)
+    else greeting.current = setTimeout(() => play('bow'), INTRO_SETTLE_MS)
   }
 
   /**
@@ -295,18 +200,19 @@ export function SplineRobot({ className }: { className?: string }) {
    * Measured under `prefers-reduced-motion: reduce`: 38% of the card's pixels
    * still changing between two samples a second apart, the robot still turning
    * its whole body to follow the pointer, still moving eleven seconds after
-   * load — the scene's own looping idle, and at the time a `globalEvents` flag
-   * that routed the whole page's pointer into it.
+   * load. `globalEvents` routes every pointer move on the page into the scene,
+   * so the tracking followed the user everywhere, and the runtime's own `start`
+   * animation answers to nothing this file can reach.
    *
-   * There is still no version of this that keeps the scene. The runtime can be
-   * stopped, and is, for everyone else — but only once `onLoad` has fired, and
-   * the scene's `start` intro has been animating since before then. A
-   * preference for less motion cannot be honoured by something that moves first
-   * and asks afterwards, so it is honoured the only way left: by rendering the
-   * 2D mascot instead, the same character at the same size in the same box, and
-   * genuinely still (0.00% of pixels changed, idle or under a pointer sweep).
+   * There is no partial answer available: the runtime exposes no way to hold
+   * its own animations while keeping the render. So the preference is honoured
+   * the only way it can be — by rendering the 2D mascot instead, which is the
+   * same character at the same size in the same box and is genuinely still
+   * (0.00% of pixels changed, idle or under a pointer sweep).
    *
-   * It also keeps the whole WebGL render loop off these users' machines.
+   * It also ends the scene's render loop for these users, which is the one
+   * place this file can do anything about a runtime that requests animation
+   * frames forever on every route.
    */
   if (reduced) {
     return (
@@ -319,25 +225,7 @@ export function SplineRobot({ className }: { className?: string }) {
   }
 
   return (
-    <div
-      className={className}
-      onPointerEnter={() => {
-        near.current = true
-        settle()
-      }}
-      onPointerLeave={() => {
-        near.current = false
-        settle()
-      }}
-      onPointerMove={() => {
-        // A pointer already resting on the card when the scene finishes loading
-        // fires no enter event; this is the only thing that notices it. Guarded
-        // so the common case is one comparison per move and nothing else.
-        if (near.current) return
-        near.current = true
-        settle()
-      }}
-    >
+    <div className={className}>
       {/* Guarded on its own. Spline throws "Error creating WebGL context" on
           any machine without a usable GPU — no software fallback, no onError
           prop — and unguarded that propagated to the app boundary and replaced
@@ -351,10 +239,8 @@ export function SplineRobot({ className }: { className?: string }) {
           // out; disposed here so a gesture cannot reach a dead scene.
           rig.current?.dispose()
           rig.current = null
-          scene.current = null
-          // Nothing left to greet with, and nothing left to put to sleep.
+          // Nothing left to greet with.
           clearTimeout(greeting.current)
-          clearTimeout(bedtime.current)
           setFailed(true)
           setWaiting('fallback')
         }}
@@ -363,6 +249,7 @@ export function SplineRobot({ className }: { className?: string }) {
           scene={SCENE}
           wasmPath={WASM}
           className="h-full w-full"
+          globalEvents
           onLoad={onLoad}
         />
       </ErrorBoundary>
@@ -381,19 +268,7 @@ export function SplineRobot({ className }: { className?: string }) {
         {waiting === 'fallback' ? (
           <RobotMascot pose={pose} seq={seq} paused={live} className="h-[76%] w-auto" />
         ) : (
-          <span
-            className={cn(
-              'size-5 rounded-full border-2 border-white/20 border-t-white/70',
-              // Spun only while it is actually on screen. Held at `opacity-0`
-              // it used to keep turning for the life of the tab — measured as
-              // the one animation still running in the sidebar after the scene
-              // went to sleep, on every route. Stopped rather than unmounted
-              // because the wrapper is still fading out around it, and pulling
-              // the child would pop where the fade is the whole point;
-              // `RobotMascot` is held the same way by `paused`.
-              waiting === 'spinner' && !live ? 'animate-spin' : '',
-            )}
-          />
+          <span className="size-5 animate-spin rounded-full border-2 border-white/20 border-t-white/70" />
         )}
       </div>
     </div>

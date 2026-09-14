@@ -99,11 +99,8 @@ export function RobotMascot({
       frame ||= requestAnimationFrame(apply)
     }
 
-    // On `window`, not the card, so the gaze follows the cursor anywhere on the
-    // page. The 3D scene deliberately does NOT do this any more — page-wide
-    // tracking there swung the whole body 57.7° and made the sidebar look like
-    // it was vibrating. What moves here is a pupil and a fractional head lean,
-    // both a few pixels inside a 200px card, with no idle loop underneath.
+    // On `window`, not the card — the robot should follow the cursor anywhere on
+    // the page, which is what the 3D scene did via its globalEvents flag.
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => {
       window.removeEventListener('pointermove', onMove)
@@ -166,12 +163,7 @@ export function RobotMascot({
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label="jojo"
-      // `still` has to reach the CSS as well as the effects above: the idle bob
-      // is a keyframe animation, which no JS guard here can hold. Without this,
-      // a mascot mounted as the slow-load fallback and then handed `paused` by
-      // the arriving 3D robot went on breathing at opacity 0 for the life of
-      // the tab — measured as the last animation still running in the sidebar.
-      className={cn('jojo-mascot', still && 'jojo-mascot-still', className)}
+      className={cn('jojo-mascot', className)}
       data-pose={pose}
       // Drives animation-duration, so the keyframes below hold shape only and
       // POSE_MS stays the one place a gesture's length is written down.
