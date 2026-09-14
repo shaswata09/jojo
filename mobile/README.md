@@ -535,7 +535,17 @@ Four journeys the web app had and this did not, now closed:
 | **Ask the graph a question** | Only the fixed examples. Now a pattern builder — kind, has/missing, which link, other end — the same four parts the web builder has.        |
 | **The guide is four pages**  | One screen against the web's overview / screens / graph / built-with. Now the same four, behind a segmented control rather than a nav rail. |
 
-One the web app has that this does not:
+Two the web app has that this does not:
+
+- **The PDF editor.** Under the web Vault's Tools tab, beside the calculator:
+  merging documents, reordering and turning pages, highlighting text and pinning
+  comments. It is web-only because of what it is built on — `pdf.js` draws a
+  page into a `<canvas>` and lays selectable DOM text over it, and React Native
+  has neither. The operations themselves (`web/src/lib/pdf/`) are ordinary
+  TypeScript and would port; the renderer is the whole of the difference, and
+  replacing it means a native PDF view per platform rather than a shared one.
+  Not a gap anybody has asked to close: the phone is where a posting is read,
+  and the desktop is where the application is assembled.
 
 - **Storage diagnostics.** They report on _browser_ storage — quota, what was
   recovered from a failed open, what was pruned. This app persists too, into

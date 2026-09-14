@@ -189,9 +189,12 @@ export const SHAPE: DirRow[] = [
     // `common/Marked.tsx` and `detail/TailoredPanel.tsx`: the marks drawn, and
     // the card that lists what a model tailored for one posting.
     // `vault/SnippetPreviewDialog.tsx`: the words behind that card's Preview.
-    files: 290,
+    // The PDF editor added ten: the three operation panels, the page view and
+    // its thumbnail, the source picker, the shared save bar, the shell, the
+    // storage hook, and the Tools tab that now picks between two instruments.
+    files: 300,
     tests: 29,
-    lines: 50605,
+    lines: 52081,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 15, tests: 0, lines: 4840, what: 'fifteen pages' },
@@ -215,9 +218,13 @@ export const SHAPE: DirRow[] = [
     // `jobs.tsx`: the queue wired to this app's clock, cancel and toast.
     // `mascot-cues.ts` with its test: which gesture the robot plays when an
     // application moves up a board column, and which moves draw none.
-    files: 131,
-    tests: 47,
-    lines: 19651,
+    // Then `pdf/`: the PDF editor's operations — page ranges, the page plan,
+    // the two coordinate systems, the annotation model, output naming, and the
+    // `pdf-lib` write path, which is tested against real documents because the
+    // library needs no browser.
+    files: 145,
+    tests: 53,
+    lines: 21535,
     what: 'web-only adapters and URL state',
   },
   {
@@ -247,7 +254,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 81
+export const WEB_TEST_FILES = 87
 
 type TestGroup = { title: string; files: string; body: string }
 

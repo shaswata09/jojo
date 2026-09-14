@@ -1316,3 +1316,68 @@ html[data-theme='dark'] {
     background-color: var(--accent-soft);
   }
 }
+
+/* pdf.js's text layer, which the PDF editor puts over each rendered page.
+   
+   These rules are a CONTRACT, not styling: `TextLayer` positions every span by
+   setting `--font-height`, `--scale-x` and `--rotate` on it and expects the
+   selectors below to turn those into a transform. Without them every character
+   stacks at the page's top-left corner and selection is meaningless.
+
+   Copied from `pdfjs-dist/web/pdf_viewer.css` rather than imported, because
+   that file is a whole viewer — toolbars, sidebars, its own dark mode — and it
+   restyles elements this app already owns. Only the `.textLayer` block is
+   needed, and it is reproduced here with its own name so nothing else can pick
+   it up by accident. `--total-scale-factor` is set by `PdfPageView`.
+
+   Upstream reference: pdf.js `web/text_layer_builder.css`. */
+.pdf-text-layer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  opacity: 1;
+  line-height: 1;
+  text-align: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
+  z-index: 0;
+
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+
+.pdf-text-layer :is(span, br) {
+  /* Transparent, not hidden: the words have to be selectable, and the picture
+     of them is the canvas underneath. */
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text;
+}
+
+.pdf-text-layer > :not(.markedContent),
+.pdf-text-layer .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  --scale-x: 1;
+  --rotate: 0deg;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+.pdf-text-layer .markedContent {
+  display: contents;
+}
+
+/* The browser's own selection over the layer. Visible, because a highlight is
+   made by selecting and a selection nobody can see cannot be aimed. */
+.pdf-text-layer ::selection {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+}

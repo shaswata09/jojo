@@ -3,7 +3,7 @@ import { LabelFilter } from '@/components/common/LabelFilter'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Segment } from '@/components/common/Segment'
 import { Switch } from '@/components/ui/switch'
-import { Calculator } from '@/components/vault/Calculator'
+import { InstrumentsTool } from '@/components/vault/InstrumentsTool'
 import { FilesTool } from '@/components/vault/FilesTool'
 import { LinksTool } from '@/components/vault/LinksTool'
 import { RemindersTool } from '@/components/vault/RemindersTool'
@@ -190,7 +190,7 @@ export function Vault() {
       {tool === 'files' ? <FilesTool focus={focus} /> : null}
       {tool === 'snippets' ? <SnippetsTool focus={focus} /> : null}
       {tool === 'people' ? <PeopleTool focus={focus} /> : null}
-      {tool === 'tools' ? <Calculator /> : null}
+      {tool === 'tools' ? <InstrumentsTool /> : null}
     </>
   )
 }

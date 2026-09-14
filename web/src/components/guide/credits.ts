@@ -90,6 +90,22 @@ export const RUNTIME: readonly Credit[] = [
     where: 'src/lib/spline-rig.ts, src/components/brand/SplineRobot.tsx',
   },
   {
+    name: 'pdf-lib',
+    version: '1.17.1',
+    licence: 'MIT',
+    holder: '2019 Andrew Dillon',
+    what: 'Writes every PDF the editor produces: merging documents, keeping and turning pages, and the highlight and comment annotation dictionaries. It has no DOM and no Node dependency, which is why that whole path is covered by ordinary tests rather than by driving a browser.',
+    where: 'src/lib/pdf/document.ts',
+  },
+  {
+    name: 'pdfjs-dist',
+    version: '6.3.289',
+    licence: 'Apache-2.0',
+    holder: 'Mozilla Foundation',
+    what: 'Draws a page in the PDF editor and lays selectable text over it, which is what lets a highlight follow the words. The legacy build, not the default one: the modern build is compiled to syntax no Safari before 18.2 can parse. It only ever reads — nothing it does reaches the file that is saved.',
+    where: 'src/lib/pdf/render.ts',
+  },
+  {
     name: '@fontsource-variable/inter',
     version: '5.3.0',
     licence: 'OFL-1.1',
@@ -488,4 +504,3 @@ export const APACHE_CLAUSES: readonly { heading: string; text: string }[] = [
     text: 'Unless required by applicable law or agreed to in writing, Licensor provides the Work … on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied … In no event and under no legal theory … shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work.',
   },
 ]
-
