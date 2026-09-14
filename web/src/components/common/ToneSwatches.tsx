@@ -4,16 +4,16 @@ import type { LabelTone } from '@/data/labels'
 import { cn } from '@/lib/utils'
 
 /**
- * The five tones, as pickable discs.
+ * The palette, as pickable discs.
  *
  * The tick is the selection cue rather than a ring, because a ring drawn with
  * `outline` would fight the app's global focus ring and one drawn with a border
  * shrinks the disc as you click through them. It is painted `text-panel`, which
  * is white on the light theme's dark fills and near-black on the dark theme's
- * bright ones — the one token that stays legible on all five in both themes.
+ * bright ones — the one token that stays legible on all eight in both themes.
  *
  * The disc and the button are two elements rather than one because they answer
- * two different questions. The disc is 16px because five of them have to sit in
+ * two different questions. The disc is 16px because a row of them has to sit in
  * a 240px popover and still read as a swatch row; the button used to be 16px
  * too, and measured on a phone that was a 16x16 tap target with 22px between
  * centres — failing WCAG 2.5.8 on the size rule AND on the spacing exception,
@@ -37,7 +37,15 @@ export function ToneSwatches({
     <div
       role="group"
       aria-label={`Colour for ${label}`}
-      className={cn('flex items-center gap-1.5', className)}
+      /*
+       * Wraps, and that is what made room for the palette. Eight 24px targets
+       * with 6px between them is 234px of a 240px popover before its padding,
+       * so a single row either overflowed or shrank the targets back below the
+       * 24px WCAG 2.5.8 asks for — which is the exact regression the note above
+       * records fixing. Two rows of four fit with room to spare and stay a
+       * swatch row rather than becoming a grid the eye has to scan.
+       */
+      className={cn('flex max-w-[7.5rem] flex-wrap items-center gap-1.5', className)}
     >
       {TONE_ORDER.map((tone) => (
         <button

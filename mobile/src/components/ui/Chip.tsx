@@ -43,6 +43,11 @@ export function Chip({
     amber: { bg: c.warningSoft, border: c.warningBorder, fg: c.warning },
     red: { bg: c.dangerSoft, border: c.dangerBorder, fg: c.danger },
     green: { bg: c.successSoft, border: c.successBorder, fg: c.success },
+    // The three a keyword can take that no status owns. Same hexes as the web
+    // app's `--kw-*` tokens; `theme/tokens.ts` is where they are transcribed.
+    cyan: { bg: c.kwCyanSoft, border: c.kwCyanBorder, fg: c.kwCyan },
+    pink: { bg: c.kwPinkSoft, border: c.kwPinkBorder, fg: c.kwPink },
+    violet: { bg: c.kwVioletSoft, border: c.kwVioletBorder, fg: c.kwViolet },
   }
 
   const skin = tones[tone]

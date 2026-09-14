@@ -53,6 +53,20 @@ export type Palette = {
   successSoft: string
   successBorder: string
 
+  /* Keyword palette — the three colours a keyword can take that no status
+     owns. The other five it borrows from the tokens above. Transcribed from
+     `web/src/index.css`, where the contrast figures are recorded: the pairing
+     measured is the text on its own soft fill, 5.15:1 at worst. */
+  kwCyan: string
+  kwCyanSoft: string
+  kwCyanBorder: string
+  kwPink: string
+  kwPinkSoft: string
+  kwPinkBorder: string
+  kwViolet: string
+  kwVioletSoft: string
+  kwVioletBorder: string
+
   /* Chart series — a separate namespace from status, so a red segment is
      never ambiguous between "overdue" and "series 4". */
   series: [string, string, string, string, string]
@@ -107,6 +121,16 @@ export const LIGHT: Palette = {
   successSoft: '#f0fdf4',
   successBorder: '#bbf7d0',
 
+  kwCyan: '#0e7490',
+  kwCyanSoft: '#ecfeff',
+  kwCyanBorder: '#a5f3fc',
+  kwPink: '#be185d',
+  kwPinkSoft: '#fdf2f8',
+  kwPinkBorder: '#fbcfe8',
+  kwViolet: '#6d28d9',
+  kwVioletSoft: '#f5f3ff',
+  kwVioletBorder: '#ddd6fe',
+
   series: ['#4f9dc9', '#c96b64', '#cea441', '#449970', '#8a6bbf'],
   ramp: ['#2f6f97', '#4f9dc9', '#86bcdb', '#c2dcec'],
 
@@ -153,6 +177,16 @@ export const DARK: Palette = {
   success: '#4ade80',
   successSoft: '#12241a',
   successBorder: '#1e4030',
+
+  kwCyan: '#22d3ee',
+  kwCyanSoft: '#0f2a30',
+  kwCyanBorder: '#17414a',
+  kwPink: '#f472b6',
+  kwPinkSoft: '#2b1723',
+  kwPinkBorder: '#4a2038',
+  kwViolet: '#a78bfa',
+  kwVioletSoft: '#1e1a33',
+  kwVioletBorder: '#33294d',
 
   series: ['#3e96c6', '#cf6a62', '#b18d39', '#45a075', '#9d84d4'],
   ramp: ['#8ec4e2', '#4f9dc9', '#3a7ba3', '#2a5975'],

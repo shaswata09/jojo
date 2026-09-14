@@ -19,6 +19,9 @@ import { MenuSheet } from '@/components/ui/Menu'
 import { Screen } from '@/components/ui/Screen'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
+import { NoteText } from '@/components/ui/NoteText'
+import { useGraph } from '@jojo/service/react/kg-context'
+import type { NodeId } from '@jojo/service/core/model'
 import { STAGE_LABEL, displayName, offerDaysLeft, respondByLabel } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
 import {
@@ -86,13 +89,20 @@ function Detail({ application: a }: { application: Application }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { toast } = useToast()
   const { open: openSheet } = useSheets()
-  const { update, remove, duplicate } = useApplications()
+  const { update, remove, duplicate, setNote: setNoteField } = useApplications()
+  const graph = useGraph()
   const { forApplication, add: addItem, remove: removeItem } = useTimeline()
   const { links, files, snippets } = useVault()
   const { postings, matches } = useScout()
 
   const [note, setNote] = useState(a.note)
   const [noteSaved, setNoteSaved] = useState(false)
+  const [editingNote, setEditingNote] = useState(false)
+  /*
+   * Off the node, not off the projection: `applicationFrom` drops the spans so
+   * twenty of them do not ride into every board card and list row.
+   */
+  const noteFormat = graph.node(a.id as NodeId, 'application')?.props.noteFormat
   const [menuOpen, setMenuOpen] = useState(false)
   const [target, setTarget] = useState<Stage | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -133,18 +143,27 @@ function Detail({ application: a }: { application: Application }) {
   )
 
   /**
-   * The note is stored as plain text, and the field has to be one too.
+   * The note's TEXT is plain, and the field here is too. Its formatting lives
+   * in a sibling prop of offsets, which this screen renders and does not edit.
    *
-   * Six surfaces read this string and every one prints it straight out.
    * Committed on blur rather than on every keystroke: a dispatch behind each
    * character would reset `daysAgo` while you typed.
+   *
+   * Through `setNote` with NO format argument, which is the whole reason the
+   * phone is not second-class here: the tool then moves the existing spans onto
+   * the new text rather than clearing them, so fixing a typo costs the
+   * formatting on that word and nothing else.
    */
   const commitNote = () => {
     const next = note.trim()
-    if (next === a.note) return
+    if (next === a.note) {
+      setEditingNote(false)
+      return
+    }
     setNote(next)
-    update(a.id, { note: next, lastAction: 'Note edited' })
+    setNoteField(a.id, next)
     setNoteSaved(true)
+    setEditingNote(false)
   }
 
   /**
@@ -433,23 +452,54 @@ function Detail({ application: a }: { application: Application }) {
       </Panel>
 
       <Panel>
-        <PanelTitle hint="Saves when you tap away">Note</PanelTitle>
-        <TextInput
-          multiline
-          value={note}
-          onChangeText={(v) => {
-            setNote(v)
-            setNoteSaved(false)
-          }}
-          onBlur={commitNote}
-          placeholder="What is still outstanding, who you spoke to, what to ask next"
-          placeholderTextColor={c.text3}
-          accessibilityLabel={`Note on ${displayName(a)}`}
-          style={[
-            styles.note,
-            { color: c.text1, backgroundColor: c.well, borderColor: c.hairline },
-          ]}
-        />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
+          <PanelTitle style={{ flex: 1 }} hint={editingNote ? 'Saves when you tap away' : undefined}>
+            Note
+          </PanelTitle>
+          {!editingNote && a.note !== '' ? (
+            <IconButton
+              icon="edit-2"
+              label="Edit this note"
+              onPress={() => {
+                setEditingNote(true)
+              }}
+            />
+          ) : null}
+        </View>
+
+        {/* Read first, edit on request. The phone cannot draw a toolbar over a
+            TextInput, so formatting is SHOWN here and changed on the web — and
+            editing the words keeps the formatting on every word untouched,
+            because the tool moves the spans rather than clearing them. */}
+        {editingNote || a.note === '' ? (
+          <>
+            <TextInput
+              multiline
+              autoFocus={editingNote}
+              value={note}
+              onChangeText={(v) => {
+                setNote(v)
+                setNoteSaved(false)
+              }}
+              onBlur={commitNote}
+              placeholder="What is still outstanding, who you spoke to, what to ask next"
+              placeholderTextColor={c.text3}
+              accessibilityLabel={`Note on ${displayName(a)}`}
+              style={[
+                styles.note,
+                { color: c.text1, backgroundColor: c.well, borderColor: c.hairline },
+              ]}
+            />
+            {noteFormat !== undefined ? (
+              <Txt size="xs" tone="muted" style={{ marginTop: space[1.5] }}>
+                Formatting is kept on the words you don’t change.
+              </Txt>
+            ) : null}
+          </>
+        ) : (
+          <NoteText note={a.note} format={noteFormat} />
+        )}
+
         {noteSaved ? (
           <Txt size="xs" tone="muted" style={{ marginTop: space[1.5] }}>
             Note saved

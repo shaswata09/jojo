@@ -10,6 +10,7 @@
 
 import { s } from '../core/schema'
 import type { NodeId } from '../core/model'
+import { decodeFormat, normaliseFormat, retextFormat } from '../core/note-format'
 import { appId } from './application-fields'
 import { displayOf, opt, touch } from './support'
 import { defineTool } from './tool'
@@ -67,6 +68,11 @@ export const applicationDuplicate = defineTool({
         slug: ctx.mintSlug('application', org?.props.name ?? source.props.slug),
         role: source.props.role,
         note: source.props.note,
+        // The formatting goes with the text it belongs to. This copy lists
+        // props key by key on purpose — the comment above says why — and the
+        // mirror hazard is that it silently LOSES one: without this line the
+        // duplicate keeps the words and drops the colours, and no test fails.
+        ...opt('noteFormat', source.props.noteFormat),
         roleTag: source.props.roleTag,
         stage: 'draft',
         lastAction: 'Duplicated',
@@ -101,11 +107,50 @@ export const applicationNoteSet = defineTool({
   summary: "Replaces the application's note.",
   effect: 'update',
   touches: ['application'],
-  input: s.object({ id: appId, note: s.string({ label: 'Note', multiline: true }) }),
+  /*
+   * The ONLY tool that may write formatting, and that narrowness is the design.
+   *
+   * `application.update` and `application.create` take the note's text and
+   * nothing else, so three of the four places that could have forgotten to
+   * carry spans cannot express them at all. What is left is here, where the
+   * note editor sends them, and the remap below for everybody else.
+   */
+  input: s.object({
+    id: appId,
+    note: s.string({ label: 'Note', multiline: true }),
+    /*
+     * ONE STRING, not an array of objects, and the reason is measured: the
+     * same spans as a JSON-Schema array cost about 1,100 characters that every
+     * model request carries forever — more than two average tools — for a
+     * parameter no model should ever produce. See `encodeFormat`.
+     */
+    format: s.optional(
+      s.string({
+        label: 'Note formatting',
+        description: "Written by the note editor. Leave this out; the note's existing formatting is kept.",
+      }),
+    ),
+  }),
 
   run(ctx, input) {
-    ctx.require('application', input.id)
-    ctx.tx.patch<'application'>(input.id, { note: input.note.trim() })
+    const current = ctx.require('application', input.id)
+    const note = input.note.trim()
+    /*
+     * Given spans, they are canonicalised against the text that is being saved
+     * with them. Given none — the phone's plain editor, the edit dialog, the
+     * assistant — the existing spans are moved onto the new text instead, so
+     * fixing a typo costs the formatting on that word rather than on the note.
+     *
+     * `tx.patch` deletes a key on `undefined`, so clearing formatting leaves a
+     * record byte-identical to one that never had any.
+     */
+    ctx.tx.patch<'application'>(input.id, {
+      note,
+      noteFormat:
+        input.format === undefined
+          ? retextFormat(current.props.note, note, current.props.noteFormat)
+          : normaliseFormat(note, decodeFormat(input.format)),
+    })
     touch(ctx, input.id, 'Note edited')
   },
 

@@ -210,6 +210,29 @@ html[data-theme='light'] {
   --info-soft: #eff4fc;
   --info-border: #cbdcf3;
 
+  /* Keyword palette — the three colours that are ONLY ever a keyword's.
+     The other five a keyword can take are the status tokens above, which it
+     borrows: blue is --info, green --success, amber --warning, red --danger and
+     grey --text-3. These three have no status meaning to borrow, so they are
+     declared here and nowhere else claims them — a keyword painted violet is
+     the user's word about their own job search, and this app has no violet
+     state.
+
+     Measured as the pairing that is actually drawn: the text colour on its own
+     --*-soft fill, which is what a chip is. The weakest here is 5.15:1, one
+     step better than --info's 4.51:1 on its own soft.
+     `kw` rather than the bare hue name so the token can never be confused with
+     a Tailwind palette step of the same name. */
+  --kw-cyan: #0e7490; /* 5.15:1 on its soft */
+  --kw-cyan-soft: #ecfeff;
+  --kw-cyan-border: #a5f3fc;
+  --kw-pink: #be185d; /* 5.53:1 on its soft */
+  --kw-pink-soft: #fdf2f8;
+  --kw-pink-border: #fbcfe8;
+  --kw-violet: #6d28d9; /* 6.48:1 on its soft */
+  --kw-violet-soft: #f5f3ff;
+  --kw-violet-border: #ddd6fe;
+
   /* Soft sky + soft coral, hues taken from the reference chart (sky 236°,
      coral 26°) and nudged only until they clear the chroma floor — anything
      paler than this literally "reads gray" to the validator.
@@ -327,6 +350,19 @@ html[data-theme='dark'] {
   --info: #7ba5e8; /* 7.31:1 on panel */
   --info-soft: #16202e;
   --info-border: #2a3c55;
+
+  /* Keyword palette, dark. Separately chosen rather than reused: the light
+     steps are 700-level and vanish on #1f1f1f. Same measurement — the text on
+     its own soft fill — and the same reading order as the light block. */
+  --kw-cyan: #22d3ee; /* 8.33:1 on its soft */
+  --kw-cyan-soft: #0f2a30;
+  --kw-cyan-border: #17414a;
+  --kw-pink: #f472b6; /* 6.35:1 on its soft */
+  --kw-pink-soft: #2b1723;
+  --kw-pink-border: #4a2038;
+  --kw-violet: #a78bfa; /* 6.17:1 on its soft */
+  --kw-violet-soft: #1e1a33;
+  --kw-violet-border: #33294d;
 
   /* Separately validated for the dark surface — the light steps sit outside
      the dark lightness band (0.48–0.67). ALL CHECKS PASS on #171717. */

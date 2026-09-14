@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { toneClass } from '@/components/common/label-display'
 import { STAGE_DOT, type Stage } from '@/data/seed'
 import { cn } from '@/lib/utils'
 import type { ComponentProps } from 'react'
@@ -18,15 +19,18 @@ const chipVariants = cva(
   'inline-flex items-center gap-1 border px-1.5 py-0.5 text-xs font-medium whitespace-nowrap',
   {
     variants: {
-      tone: {
-        // Was the monochrome accent, which made this identical to `gray` —
-        // Academia and Industry chips became indistinguishable.
-        teal: 'border-info-border bg-info-soft text-info',
-        amber: 'border-warning-border bg-warning-soft text-warning',
-        red: 'border-danger-border bg-danger-soft text-danger',
-        green: 'border-success-border bg-success-soft text-success',
-        gray: 'border-hairline bg-well text-text-2',
-      },
+      /*
+       * The palette, spread in rather than restated.
+       *
+       * These were the same five strings as `toneClass` in `label-display.ts`,
+       * written out again here — so a keyword's chip and a keyword's swatch
+       * were two places to remember, and a palette that grew in one of them
+       * grew in one of them. `teal` also used to be the monochrome accent here,
+       * which made it identical to `gray`: Academia and Industry chips were
+       * indistinguishable, which is the version of this bug that already
+       * happened.
+       */
+      tone: { ...toneClass },
       size: {
         sm: 'px-1 py-0 text-xs',
         md: '',

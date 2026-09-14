@@ -298,7 +298,14 @@ export function applicationFrom(
    * whenever somebody ticked a box. The panel reads it off the node instead,
    * exactly as the fit card reads `reading` off its file.
    */
-  const { lastActionAt, checklist: _checklist, ...rest } = n.props
+  /*
+   * `noteFormat` goes the same way as `checklist`, and for a sharper reason:
+   * `Application` is hand-written and would not gain the field, but `...rest`
+   * spreads it anyway — so without this line an array of spans rides into every
+   * board card, table row and dashboard entry that never draws one. Only the
+   * note panel reads it, and it reads it off the node.
+   */
+  const { lastActionAt, checklist: _checklist, noteFormat: _noteFormat, ...rest } = n.props
   return {
     ...rest,
     id: n.id,

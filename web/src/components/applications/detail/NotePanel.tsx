@@ -1,86 +1,116 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, PanelTitle } from '@/components/common/Panel'
-import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor } from '@/components/common/RichTextEditor'
 import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { encodeFormat } from '@jojo/service/core/note-format'
+import type { NodeId } from '@jojo/service/core/model'
+import { useGraph } from '@jojo/service/react/kg-context'
+import { htmlFromNote, noteFromRuns } from '@/lib/note-html'
+import { rawRunsFromHtml } from '@/lib/note-runs'
+import { useToast } from '@/lib/toast-context'
 
 /**
- * The free-text note on the record.
+ * The free-text note on the record, with its formatting.
  *
  * Mounted under the record's `key`, so the draft below belongs to one
  * application — without that, navigating between two of them would carry the
  * first one's unsaved note across.
+ *
+ * ## The note's TEXT is still plain, and that is what makes this cheap
+ *
+ * `ApplicationProps.note` is the same string it always was. Six surfaces print
+ * it straight out — the applications table, the ⌘K result, the list's search
+ * haystack, the edit dialog's own Note box, the duplicate preview, and the
+ * organisation page's unclamped line — and not one of them changed. The
+ * formatting is a sibling prop of offsets over that text, so bolding a word
+ * cannot put markup in a table cell, which is exactly what the rich-text box
+ * tried here before this one did.
+ *
+ * ## Inline only
+ *
+ * No lists and no table: the store holds spans over one string, and a table has
+ * nowhere to go. Offering the button and dissolving the table on save would be
+ * worse than not offering it. A person who wants bullets types `- `, which is
+ * text and survives every reader.
+ *
+ * ## The commit must not read the DOM
+ *
+ * It fires from the unmount cleanup as well as from blur — that is the Escape
+ * path the panel has always had — and by then the `contentEditable` may be
+ * detached, where reading `innerHTML` yields ''. `RichTextEditor` calls
+ * `onChange` on every input, so the draft is already in state and the cleanup
+ * needs no element at all.
  */
 export function NotePanel({ application: a }: { application: Application }) {
-  const { update } = useApplications()
-  const [note, setNote] = useState(a.note)
-  const [noteSaved, setNoteSaved] = useState(false)
+  const { setNote } = useApplications()
+  const graph = useGraph()
+  const { toast } = useToast()
 
-  /**
-   * The note is stored as plain text, and the field has to be one too.
-   *
-   * Five surfaces read this string — the table row, the ⌘K result, the edit
-   * dialog's own Note box, the list's search haystack and the seed — and every
-   * one of them prints it straight out. A rich-text box here wrote its
-   * `innerHTML` into the field, so bolding a word left literal
-   * `<span style="font-weight: bold;">` sitting in the table.
-   *
-   * It was six. The board card printed it too, unclamped, which made a card as
-   * tall as whatever was typed here — see `board/BoardCard.tsx`. Every surface
-   * left clamps it to a line or has the room for all of it.
-   *
-   * Trimmed on the way in, and the field follows, so whitespace alone is not a
-   * note and blurring twice does not write twice.
-   */
-  const commitNote = () => {
-    const next = note.trim()
-    if (next === a.note) return
-    setNote(next)
-    update(a.id, { note: next, lastAction: 'Note edited' })
-    setNoteSaved(true)
+  // Off the node, not off the projection: `applicationFrom` drops the spans on
+  // purpose so twenty of them do not ride into sixty card props.
+  const stored = graph.node(a.id as NodeId, 'application')?.props.noteFormat
+
+  const [html, setHtml] = useState(() => htmlFromNote(a.note, stored))
+  const [saved, setSaved] = useState(false)
+
+  const commit = () => {
+    const { text, format, dropped } = noteFromRuns(rawRunsFromHtml(html))
+    // Nothing changed — a blur straight after an unmount, or a click away from
+    // a note nobody touched. Writing anyway would stamp `lastActionAt` and take
+    // the top of the undo stack.
+    if (text === a.note && encodeFormat(format) === encodeFormat(stored)) return
+    setNote(a.id, text, encodeFormat(format) ?? '')
+    setSaved(true)
+
+    /*
+     * Said in a toast rather than on the panel, because this also fires from
+     * the unmount cleanup — by which point there is no panel left to print on.
+     */
+    if (dropped.colour > 0 || dropped.size > 0 || dropped.overflow > 0) {
+      toast({
+        title: 'Note saved, with some formatting dropped',
+        description:
+          dropped.overflow > 0
+            ? 'This note carries more formatting than jojo stores; the rest was kept as plain text.'
+            : 'Colours and sizes jojo does not have were kept as plain text.',
+      })
+    }
   }
 
   /*
    * The same commit, on the way out.
    *
    * `onBlur` alone lost the edit whenever the drawer closed WITHOUT the field
-   * blurring first — which is what Escape does, and Escape is the documented way
-   * to dismiss it. Type a note, press Escape, reopen: gone, with no warning and
-   * no unsaved marker. Clicking away inside the drawer saved correctly, so the
-   * loss was unpredictable rather than obvious, which is worse.
-   *
-   * Through a ref because the cleanup must not re-run on every keystroke: the
-   * effect stays mounted for the life of the panel and reads the latest draft
-   * when it finally tears down. `commitNote` is idempotent — it returns early
-   * when nothing changed — so a blur immediately followed by an unmount writes
+   * blurring first — which is what Escape does, and Escape is the documented
+   * way to dismiss it. Through a ref so the cleanup does not re-run on every
+   * keystroke; `commit` is idempotent, so a blur followed by an unmount writes
    * once.
    */
-  const latest = useRef(commitNote)
-  latest.current = commitNote
+  const latest = useRef(commit)
+  latest.current = commit
   useEffect(() => () => latest.current(), [])
+
+  const label = useMemo(() => `Note on ${displayName(a)}`, [a])
 
   return (
     <Panel className="min-w-0">
       <PanelTitle hint="Saves when you click away">Note</PanelTitle>
-      {/* Commits on blur rather than on every keystroke: a dispatch behind
-          each character would reset `daysAgo` while you typed. The box starts
-          at ~120px and grows with what is typed — `field-sizing-content` on
-          the shared Textarea — because the note is empty on ten of twelve
-          records and a permanent tall box for it would be all promise. */}
-      <Textarea
-        value={note}
-        onChange={(event) => {
-          setNote(event.target.value)
-          setNoteSaved(false)
+      <RichTextEditor
+        value={html}
+        onChange={(next) => {
+          setHtml(next)
+          setSaved(false)
         }}
-        onBlur={commitNote}
+        onBlur={commit}
+        inlineOnly
         placeholder="What is still outstanding, who you spoke to, what to ask next"
-        aria-label={`Note on ${displayName(a)}`}
+        ariaLabel={label}
         className="min-h-[7.5rem]"
       />
       <p role="status" className="mt-1.5 text-xs text-text-3">
-        {noteSaved ? 'Note saved' : null}
+        {saved ? 'Note saved' : null}
       </p>
     </Panel>
   )

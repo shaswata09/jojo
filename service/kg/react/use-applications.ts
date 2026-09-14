@@ -195,6 +195,25 @@ export function useApplications() {
     [run, today],
   )
 
+  /**
+   * The note, with its formatting.
+   *
+   * Separate from `update` on purpose. `applicationUpdateInput` is an explicit
+   * field list and `application.update`'s schema takes the note's TEXT and
+   * nothing else, so neither can carry spans and neither can forget to — the
+   * tool moves the existing formatting onto the new text by itself. Only this
+   * path, used by the note editor, may replace the formatting outright.
+   *
+   * `format` omitted means "keep what is there, moved"; `format` given replaces
+   * it; an empty string clears it.
+   */
+  const setNote = useCallback(
+    (id: string, note: string, format?: string) => {
+      run('application.note.set', { id, note, ...(format === undefined ? {} : { format }) })
+    },
+    [run],
+  )
+
   /** Returns a true undo — the record, its position, and every edge it had. */
   const remove = useCallback(
     (id: string) => {
@@ -284,6 +303,7 @@ export function useApplications() {
       get,
       add,
       update,
+      setNote,
       remove,
       setStage,
       duplicate,
@@ -298,6 +318,7 @@ export function useApplications() {
       get,
       add,
       update,
+      setNote,
       remove,
       setStage,
       duplicate,

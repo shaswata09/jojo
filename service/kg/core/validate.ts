@@ -44,6 +44,7 @@ import {
   LINK_CATEGORY_VALUES,
   MAX_CHECKLIST_ITEMS,
   MAX_CHECKLIST_TEXT,
+  MAX_NOTE_SPANS,
   MAX_REQUIREMENT_TEXT,
   MAX_REQUIREMENTS,
   NODE_TYPES,
@@ -59,6 +60,7 @@ import {
   URGENCY_VALUES,
 } from './model'
 import { edgeId, parseNodeId, typeOfId } from './ref'
+import { noteSpanShape } from './note-format'
 import { stageDatesShape } from './stage-dates'
 import type { Schema } from './schema'
 import { formatIssues, s } from './schema'
@@ -166,6 +168,25 @@ export const NODE_PROP_SCHEMAS = {
      * restored backup must not take the application with it.
      */
     stageDates: s.optional(stageDatesShape),
+    /*
+     * The formatting over `note`. See `NoteSpan`.
+     *
+     * Every value here is an integer, `true`, or a member of a closed enum —
+     * there is deliberately no hex, no CSS and no URL anywhere in it, so a
+     * restored span carrying `colour: 'red;background:url(x)'` fails this
+     * schema and never reaches a renderer. That is the whole reason the store
+     * holds a tone NAME rather than what the toolbar emits.
+     *
+     * What this cannot check, and it is a fact about the DSL rather than a
+     * choice: `s.object` sees no siblings, so "end is inside the note" and
+     * "these do not overlap" are unsayable here. They are canonicalisation
+     * rather than validity — `normaliseFormat` establishes them at every write
+     * and `runsOf` applies them again at render, so an inconsistent restore
+     * reads correctly with less formatting rather than wrongly.
+     */
+    noteFormat: s.optional(
+      s.array(noteSpanShape, { max: MAX_NOTE_SPANS, label: 'Note formatting' }),
+    ),
     outcome: s.optional(s.enum(OUTCOME_VALUES, { label: 'Outcome' })),
     offer: s.optional(offerSchema),
     /*
@@ -675,13 +696,13 @@ const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash', 'uri', 'readin
  */
 const SALVAGEABLE_PROPS: Partial<Record<NodeType, readonly string[]>> = {
   file: SALVAGEABLE_FILE_PROPS,
-  application: ['checklist', 'stageDates'],
+  application: ['checklist', 'stageDates', 'noteFormat'],
 }
 
 /** What the restore summary says about each, in the person's terms. */
 const SALVAGE_NOTE: Partial<Record<NodeType, string>> = {
   file: 'Came back without its document link.',
-  application: 'Came back without its checklist or its stage dates.',
+  application: 'Came back without its checklist, its stage dates or its note formatting.',
 }
 
 export type ValidateOptions = {

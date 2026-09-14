@@ -36,8 +36,7 @@ import { Segment } from '@/components/ui/Segment'
 import { Sheet } from '@/components/ui/Sheet'
 import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
-import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
-import type { LabelTone } from '@jojo/service/data/labels'
+import { LABEL_TONE_VALUES, TONE_LABEL } from '@jojo/service/core/model'
 import { useLabels } from '@/lib/labels-context'
 import { useStoreAdmin, useVault } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
@@ -1063,13 +1062,15 @@ function SavedServers({
 
 /* ----------------------------- keyword manager ---------------------------- */
 
-const TONE_LABEL: Record<LabelTone, string> = {
-  teal: 'Teal',
-  amber: 'Amber',
-  red: 'Red',
-  green: 'Green',
-  gray: 'Grey',
-}
+/*
+ * The names come from the model now, not from here.
+ *
+ * This file said `teal: 'Teal'` and the web app said `teal: 'Blue'` — the same
+ * stored colour with a different name on each screen, which is the kind of
+ * disagreement nobody notices until they are looking at both. `TONE_LABEL` in
+ * `core/model.ts` is beside the union it names, so the palette is described
+ * once and spoken the same way in both apps.
+ */
 
 /**
  * The keyword list itself — rename, recolour, delete.

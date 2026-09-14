@@ -1,8 +1,17 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import { useReducedMotion } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
+import { readStored, writeStored } from '@/lib/storage'
+import {
+  MIN_SHEET_WIDTH,
+  SHEET_WIDTH_KEY,
+  canResizeAt,
+  clampSheetWidth,
+  parseStoredWidth,
+} from '@/lib/sheet-width'
+import { SheetResizer } from './SheetResizer'
 
 /**
  * The open record, over the board rather than beside it.
@@ -40,6 +49,44 @@ export function DetailSheet({
   children: ReactNode
 }) {
   const reducedMotion = useReducedMotion()
+  const [width, setWidth] = useState(MIN_SHEET_WIDTH)
+  const [resizable, setResizable] = useState(false)
+
+  /*
+   * The stored width is read AFTER mount, not during render.
+   *
+   * `window.innerWidth` is the clamp's other half, and reading it while
+   * rendering is a value the server — or a prerender — cannot have. Starting at
+   * the minimum and widening on the first effect also means the sheet's
+   * entrance animation plays at the width it has always used, so a restored
+   * preference does not turn the slide-in into a stretch.
+   */
+  useEffect(() => {
+    const apply = () => {
+      const viewport = window.innerWidth
+      setResizable(canResizeAt(viewport))
+      setWidth((current) => {
+        const wanted = parseStoredWidth(readStored(SHEET_WIDTH_KEY)) ?? current
+        return clampSheetWidth(wanted, viewport)
+      })
+    }
+    apply()
+    // A window narrowed while the sheet is open must not leave it hanging off
+    // the screen — the CSS `max-w` would hide the overflow, but `aria-valuenow`
+    // and the stored preference would both still claim the old number.
+    window.addEventListener('resize', apply)
+    return () => window.removeEventListener('resize', apply)
+  }, [])
+
+  const onWidth = useCallback((next: number) => {
+    setWidth(next)
+    // Written on every change rather than on drop: a drag that ends by the
+    // window losing focus never fires `pointerup`, and the preference would be
+    // lost exactly when someone dragged and immediately switched away.
+    writeStored(SHEET_WIDTH_KEY, String(next))
+  }, [])
+
+  const onReset = useCallback(() => onWidth(MIN_SHEET_WIDTH), [onWidth])
 
   const setRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -88,13 +135,26 @@ export function DetailSheet({
           // record opens into a portal, would otherwise dismiss the record the
           // user is working in.
           onFocusOutside={(event) => event.preventDefault()}
+          /*
+           * Width as an inline style, with `max-w` kept in the class list. The
+           * class is the safety net: between a window resize and the effect
+           * that answers it, the inline number is stale for a frame, and
+           * `calc(100vw - 3rem)` is what stops the sheet hanging off the screen
+           * in that frame.
+           */
+          style={{ width }}
           className={cn(
-            'fixed top-0 right-0 bottom-0 z-40 flex w-[520px] max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-l border-hairline bg-page px-4 pb-5 shadow-[var(--shadow-raised)] outline-none sm:px-5',
+            'fixed top-0 right-0 bottom-0 z-40 flex max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-l border-hairline bg-page px-4 pb-5 shadow-[var(--shadow-raised)] outline-none sm:px-5',
             !reducedMotion &&
               'duration-[260ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-open:animate-in data-open:slide-in-from-right-16 data-closed:animate-out data-closed:duration-150 data-closed:slide-out-to-right-16',
           )}
         >
           <DialogPrimitive.Title className="sr-only">{name}</DialogPrimitive.Title>
+
+          {/* Hidden where it could do nothing: on a phone the sheet is already
+              at the only width it may have, and a handle that cannot move is
+              worse than none — it is a control that looks broken. */}
+          {resizable ? <SheetResizer width={width} onWidth={onWidth} onReset={onReset} /> : null}
 
           {/* No close button here. The record's own header ends in one, and it
               already hands back through `onClose`, so the sheet adding a second

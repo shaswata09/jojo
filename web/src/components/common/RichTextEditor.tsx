@@ -10,6 +10,8 @@ import {
   Underline,
 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { LABEL_TONE_VALUES, TONE_LABEL } from '@jojo/service/core/model'
+import type { LabelTone } from '@jojo/service/core/model'
 import { cn } from '@/lib/utils'
 
 /**
@@ -25,23 +27,38 @@ const SIZES = [
 ]
 
 /**
- * Mid-tone swatches, so a colour picked in one theme is still legible in the
- * other. The editor's own background flips with the theme but the colour set
- * here does not, and pale-on-white or dark-on-black would be unreadable half
- * the time. These are the pipeline stage colours, already measured at 3:1 or
- * better against both surfaces.
+ * The app's palette, as the literal hexes this toolbar has to have.
+ *
+ * Keyed by `LabelTone`, so the editor offers the same colours under the same
+ * names as the keyword swatches — one palette, asked for in two places — and so
+ * that adding a ninth colour is a compile error here until somebody picks its
+ * ink, rather than a colour that quietly exists in one of the two pickers.
+ *
+ * The VALUES are not the `--kw-*` tokens and cannot be. `execCommand` takes a
+ * colour rather than a class and writes it into the markup, where it stays put
+ * while the theme flips underneath it — so each of these is a mid-tone measured
+ * at 3:1 or better against BOTH panels and the well. The keyword tokens are
+ * free of that constraint because they come in a light pair and a dark pair and
+ * the stylesheet swaps them; these have to survive either. Cyan and Pink were
+ * measured into the same band as the six that were already here (3.08–5.48:1).
  */
+const TONE_INK: Record<LabelTone, string> = {
+  gray: '#737373',
+  teal: '#3c92c3',
+  cyan: '#2f9bb0',
+  green: '#449970',
+  amber: '#aa842c',
+  red: '#c96b64',
+  pink: '#c77098',
+  violet: '#8a6bbf',
+}
+
 const COLORS = [
   // Not "default colour": `execCommand` cannot undo one property, so the reset
   // swatch runs `removeFormat` and takes bold and italic with it. Labelled for
   // what it does rather than for where it sits.
   { name: 'Clear formatting', value: '' },
-  { name: 'Grey', value: '#737373' },
-  { name: 'Blue', value: '#3c92c3' },
-  { name: 'Gold', value: '#aa842c' },
-  { name: 'Violet', value: '#8a6bbf' },
-  { name: 'Green', value: '#449970' },
-  { name: 'Red', value: '#c96b64' },
+  ...LABEL_TONE_VALUES.map((tone) => ({ name: TONE_LABEL[tone], value: TONE_INK[tone] })),
 ]
 
 /** Marks whose on/off state the toolbar reflects. */
@@ -93,11 +110,31 @@ export function RichTextEditor({
   onChange,
   placeholder,
   ariaLabel = 'Snippet text',
+  inlineOnly = false,
+  onBlur,
   className,
 }: {
   value: string
   onChange: (html: string) => void
   placeholder?: string
+  /**
+   * Hide the two list buttons and the table button.
+   *
+   * For a field that stores INLINE formatting only. The application note keeps
+   * bold, italic, underline, strikethrough, size and colour, and has nowhere to
+   * put a table — so offering one and dissolving it on save would be the worst
+   * of the three options. Default `false`, so the snippet editor, the file note
+   * and the message draft are byte-identical to what they were.
+   */
+  inlineOnly?: boolean
+  /**
+   * Called when focus leaves the editing surface.
+   *
+   * For a field that saves when you click away rather than on a button. It
+   * fires on the surface only — the toolbar buttons sit outside it, so pressing
+   * Bold does not read as leaving.
+   */
+  onBlur?: () => void
   /**
    * What this field is, out loud. It was hardcoded to "Snippet text", so the
    * file note and the message draft both announced themselves as a snippet —
@@ -194,9 +231,10 @@ export function RichTextEditor({
           </button>
         ))}
 
-        <span aria-hidden className="mx-0.5 h-5 w-px bg-hairline" />
+        {!inlineOnly && <span aria-hidden className="mx-0.5 h-5 w-px bg-hairline" />}
 
-        {LISTS.map(({ cmd, icon: Icon, label }) => (
+        {!inlineOnly &&
+          LISTS.map(({ cmd, icon: Icon, label }) => (
           <button
             key={cmd}
             type="button"
@@ -206,19 +244,21 @@ export function RichTextEditor({
             onClick={() => exec(cmd)}
             className={cn(btn, active[cmd] && btnOn)}
           >
-            <Icon className="size-3.5" strokeWidth={2} aria-hidden />
-          </button>
-        ))}
+              <Icon className="size-3.5" strokeWidth={2} aria-hidden />
+            </button>
+          ))}
 
-        <button
-          type="button"
-          title="Insert table"
-          aria-label="Insert table"
-          onClick={() => exec('insertHTML', TABLE_HTML)}
-          className={btn}
-        >
-          <Table className="size-3.5" strokeWidth={2} aria-hidden />
-        </button>
+        {!inlineOnly && (
+          <button
+            type="button"
+            title="Insert table"
+            aria-label="Insert table"
+            onClick={() => exec('insertHTML', TABLE_HTML)}
+            className={btn}
+          >
+            <Table className="size-3.5" strokeWidth={2} aria-hidden />
+          </button>
+        )}
 
         <Popover>
           <PopoverTrigger title="Text colour" aria-label="Text colour" className={btn}>
@@ -255,6 +295,7 @@ export function RichTextEditor({
         aria-label={ariaLabel}
         data-placeholder={placeholder}
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
+        onBlur={onBlur}
         onKeyUp={refresh}
         onMouseUp={refresh}
         className="rte min-h-[14rem] flex-1 overflow-y-auto rounded-b-md border border-t-0 border-hairline bg-panel px-3 py-2.5 text-sm outline-none focus-visible:border-accent-border"

@@ -894,8 +894,64 @@ export type SavedPosting = {
   applicationId?: string
 }
 
-export const LABEL_TONE_VALUES = ['teal', 'amber', 'red', 'green', 'gray'] as const
+/**
+ * The palette a keyword can be painted in — and the only set of colours this
+ * app ever asks a person to choose from.
+ *
+ * Eight, and picked as hues rather than as meanings. The first five are the
+ * originals and their ids are kept exactly as they were, because they are the
+ * wire format: they are stored on every keyword, validated by `s.enum` against
+ * this array, and written into backups. `teal` is the id of the blue — a
+ * misnomer from the first five minutes of this feature that is now not worth a
+ * migration, which is why `TONE_LABEL` below exists to say what each one is
+ * actually called.
+ *
+ * Why a fixed palette rather than a colour wheel: every colour here is drawn as
+ * text on its own tinted background in two themes, and each of the eight was
+ * measured at 5.1:1 or better against both (`index.css` records the figures).
+ * A hex a person types cannot be measured, and the ones people reach for first
+ * — a bright yellow, a mid grey — are exactly the ones that disappear against
+ * one theme or the other. Sixteen tokens with known contrast beats infinite
+ * choice with none.
+ *
+ * Separation, measured in CIELAB: the closest pair by eye is Grey/Cyan at
+ * dE 28. Simulated for deuteranopia the closest is Amber/Red at dE 5.6, which
+ * is a pair this palette inherited rather than introduced — the three colours
+ * added alongside sit at dE 12 or more from their nearest neighbour. Every
+ * swatch carries its name as its accessible name for that reason.
+ */
+export const LABEL_TONE_VALUES = [
+  'teal',
+  'cyan',
+  'green',
+  'amber',
+  'red',
+  'pink',
+  'violet',
+  'gray',
+] as const
 export type LabelTone = (typeof LABEL_TONE_VALUES)[number]
+
+/**
+ * What each colour is called out loud — in the swatch's label, its tooltip and
+ * the phone's radio.
+ *
+ * Here rather than once per app, which is where it was: the web called `teal`
+ * "Blue" and the phone called it "Teal", so the same keyword had two different
+ * colours depending on which screen you asked. A `Record<LabelTone, string>`
+ * annotation is also the only spelling in which adding a colour and forgetting
+ * to name it is a compile error.
+ */
+export const TONE_LABEL: Record<LabelTone, string> = {
+  teal: 'Blue',
+  cyan: 'Cyan',
+  green: 'Green',
+  amber: 'Amber',
+  red: 'Red',
+  pink: 'Pink',
+  violet: 'Violet',
+  gray: 'Grey',
+}
 
 export type Label = {
   id: string
@@ -1032,6 +1088,32 @@ export type ApplicationProps = {
    * projection so twenty items do not ride into sixty card props.
    */
   checklist?: ChecklistItem[]
+  /**
+   * Formatting over `note`. Absent when the note is plain — never `[]`.
+   *
+   * The text lives in `note` and ONLY in `note`; this says which stretches of
+   * it are bold, coloured or larger. Neither can be computed from the other —
+   * spans carry no characters, and nothing in the text says "bold" — so this is
+   * not the derived-value-in-props D25 forbids, where a stored copy goes stale
+   * against the thing it was copied from. Every character exists exactly once,
+   * and the two can never disagree about what the note SAYS.
+   *
+   * What they CAN disagree about is where the formatting sits, and that is this
+   * design's whole liability. It is paid down by there being exactly one place
+   * that moves spans when the text changes — `retextFormat`, called inside the
+   * two tools that can write `note`, never by a caller — and by `runsOf`
+   * clamping at render, so the worst inconsistent restore reads correctly with
+   * less formatting rather than wrongly or not at all.
+   *
+   * The residual, named rather than papered over: `core/schema.ts` passes
+   * unknown keys through on purpose, so a BUILD OLDER THAN THIS ONE can rewrite
+   * `note` and leave these spans behind, pointing at text that has moved. The
+   * only defences are a stored fingerprint of the text — which is the derived
+   * value D25 refuses — or a schema version bump, which is heavier than the
+   * failure deserves. Clamping means it degrades to formatting in the wrong
+   * place, never to a wrong note.
+   */
+  noteFormat?: NoteSpan[]
 }
 
 export type OrganisationProps = {
@@ -1323,6 +1405,57 @@ export const MAX_CHECKLIST_TEXT = 200
 
 /** What one drafting run may add. Below the cap, so the person keeps room. */
 export const DRAFT_CHECKLIST_ITEMS = 10
+
+/* ----------------------------- note formatting ---------------------------- */
+
+/**
+ * The sizes a note may be written in. Normal is the ABSENCE of a size.
+ *
+ * Names rather than the 1–7 scale `execCommand('fontSize')` speaks, because the
+ * scale is an implementation detail of one browser API and this is stored on
+ * somebody's record for years. The editor's four buttons map onto these three
+ * plus normal.
+ */
+export const NOTE_SIZES = ['small', 'large', 'huge'] as const
+export type NoteSize = (typeof NOTE_SIZES)[number]
+
+/**
+ * One formatted stretch of an application's note.
+ *
+ * Half-open `[start, end)` over the UTF-16 code units of `note`, which is the
+ * unit JavaScript slices in — so a boundary is snapped outward past a surrogate
+ * pair rather than splitting an emoji in half.
+ *
+ * The flags are `?: true` and never `boolean`, so formatting that is equal has
+ * exactly ONE spelling on disk. D12 compares whole records, and `{ bold: false }`
+ * beside `{}` would be two bytes for one meaning and an undo that looked like a
+ * change.
+ *
+ * `colour` is a `LabelTone` NAME, never a hex. That is the single most
+ * important line here: nothing about a note's formatting is ever a string a
+ * renderer could be talked into interpreting. A restored `colour` outside the
+ * enum fails validation and never reaches a screen, which is why the editor's
+ * swatches and this vocabulary are the same eight.
+ */
+export type NoteSpan = {
+  readonly start: number
+  readonly end: number
+  readonly bold?: true
+  readonly italic?: true
+  readonly underline?: true
+  readonly strike?: true
+  readonly colour?: LabelTone
+  readonly size?: NoteSize
+}
+
+/**
+ * How much formatting one note may carry.
+ *
+ * Judgement rather than measurement. Two hundred runs is far past what anybody
+ * writes by hand and is the point at which a pasted web page is being stored as
+ * formatting rather than as a note.
+ */
+export const MAX_NOTE_SPANS = 200
 
 /**
  * One model's reading of one posting, and enough about it to be doubted.

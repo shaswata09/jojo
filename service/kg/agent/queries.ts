@@ -157,12 +157,29 @@ export function labelOf(node: StoredNode, memory: GraphSnapshot): string {
  */
 export type AgentRecord = { id: NodeId; type: NodeType; label: string } & Record<string, unknown>
 
-export const render = (node: StoredNode, memory: GraphSnapshot): AgentRecord => ({
-  id: node.id,
-  type: node.type,
-  label: labelOf(node, memory),
-  ...(node.props as Record<string, unknown>),
-})
+/**
+ * Props a model is not shown, by the type that carries them.
+ *
+ * The agent-side twin of `applicationFrom` dropping the same key. An
+ * application's `noteFormat` is a list of offsets over its note: it costs
+ * tokens on every read, it is meaningless to a model, and a model that tried to
+ * reason about it would be reasoning about character positions in a string it
+ * cannot see the formatting of. The note's TEXT is right there beside it.
+ */
+const HIDDEN_PROPS: Partial<Record<NodeType, readonly string[]>> = {
+  application: ['noteFormat'],
+}
+
+export const render = (node: StoredNode, memory: GraphSnapshot): AgentRecord => {
+  const props = { ...(node.props as Record<string, unknown>) }
+  for (const key of HIDDEN_PROPS[node.type] ?? []) delete props[key]
+  return {
+    id: node.id,
+    type: node.type,
+    label: labelOf(node, memory),
+    ...props,
+  }
+}
 
 /** Everything joined to a record, in both directions, because a person would. */
 function relatedTo(id: NodeId, memory: GraphSnapshot, rel?: Rel) {

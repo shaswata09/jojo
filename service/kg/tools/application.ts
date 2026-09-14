@@ -23,6 +23,7 @@
 
 import { shortDate } from '../core/dates'
 import { OUTCOME_VALUES, SOURCES, STAGE_VALUES } from '../core/model'
+import { retextFormat } from '../core/note-format'
 import type { NodeId } from '../core/model'
 import { foldName } from '../core/ref'
 import { s } from '../core/schema'
@@ -237,7 +238,25 @@ export const applicationUpdate = defineTool({
       ...(input.role === undefined ? {} : { role: input.role.trim() }),
       ...(input.roleTag === undefined ? {} : { roleTag: input.roleTag }),
       ...(input.stage === undefined ? {} : { stage: input.stage }),
-      ...(input.note === undefined ? {} : { note: input.note.trim() }),
+      /*
+       * The spans move with the text, here rather than in the caller.
+       *
+       * This is the second of exactly two places that may write `note`, and
+       * the remap lives INSIDE both so no caller can forget it — including the
+       * edit dialog, which sends `note` on every save even when it did not
+       * change, where `retextFormat` is a provable no-op. Against the TRIMMED
+       * value, because trimming shifts every offset.
+       */
+      ...(input.note === undefined
+        ? {}
+        : {
+            note: input.note.trim(),
+            noteFormat: retextFormat(
+              current.props.note,
+              input.note.trim(),
+              current.props.noteFormat,
+            ),
+          }),
       ...(input.source === undefined ? {} : { source: input.source ?? undefined }),
       ...(input.location === undefined ? {} : { location: cleared(input.location) }),
       ...(input.comp === undefined ? {} : { comp: cleared(input.comp) }),
