@@ -1,4 +1,3 @@
-import { Link } from 'react-router'
 import { BrandCard } from '@/components/brand/BrandCard'
 import { SidebarNav } from '@/components/layout/SidebarNav'
 import { SidebarRuntime } from '@/components/layout/SidebarRuntime'
@@ -104,21 +103,15 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           real in Settings → Appearance, beside the mascot it drives. `mt-auto`
           moved onto the runtime block, which is what should be pinned to the
           foot of the column. */}
-      <SidebarRuntime tabIndex={tabIndex} />
+      {/* The runtime block is the foot of the column.
 
-      {/* Under the runtime block, at the foot of every page.
-          A notice only on the Licence page is a notice most people never read;
-          this is the one place that is on screen whatever they are doing. It is
-          a link rather than a paragraph because the sidebar has no room to make
-          the argument — it says the one word that matters and points at the
-          page that explains it. */}
-      <Link
-        to="/guide/licence"
-        tabIndex={tabIndex}
-        className="mt-2 block rounded-md px-2 py-1 text-[11px] leading-snug text-text-3 transition-colors hover:text-text-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-      >
-        <span className="text-warning">Research preview</span> — a work in progress. No warranty.
-      </Link>
+          The research-preview notice used to sit under it, and it is gone from
+          here: a text link at the very bottom of a column that scrolls is the
+          one piece of content whose height can land within a pixel of the
+          container's, and the sidebar was reported as visibly vibrating. The
+          notice itself is not lost — it is the Licence page's own subject, and
+          `STATUS_HEADLINE` still leads that page and the mobile More screen. */}
+      <SidebarRuntime tabIndex={tabIndex} />
     </aside>
   )
 }
