@@ -148,7 +148,7 @@ export function DetailSheet({
            */
           style={{ width }}
           className={cn(
-            'fixed top-0 right-0 bottom-0 z-40 flex max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-l border-hairline bg-page px-4 pb-5 shadow-[var(--shadow-raised)] outline-none sm:px-5',
+            'fixed top-0 right-0 bottom-0 z-40 flex max-w-[calc(100vw-3rem)] flex-col overflow-y-auto border-l border-hairline bg-page px-4 pt-4 pb-5 shadow-[var(--shadow-raised)] outline-none sm:px-5 sm:pt-5',
             !reducedMotion &&
               'duration-[260ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-open:animate-in data-open:slide-in-from-right-16 data-closed:animate-out data-closed:duration-150 data-closed:slide-out-to-right-16',
           )}
