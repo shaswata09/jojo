@@ -226,8 +226,6 @@ export const SHAPE: DirRow[] = [
     // `duplicate-agent.ts`: the check, wired to this app's transport.
     // `tailor-agent.ts`: the seam that streams a tailored document, and
     // `jobs.tsx`: the queue wired to this app's clock, cancel and toast.
-    // `mascot-cues.ts` with its test: which gesture the robot plays when an
-    // application moves up a board column, and which moves draw none.
     // Then `pdf/`: the PDF editor's operations — page ranges, the page plan,
     // the two coordinate systems, the annotation model, output naming, and the
     // `pdf-lib` write path, which is tested against real documents because the
@@ -236,9 +234,10 @@ export const SHAPE: DirRow[] = [
     // has been picked up.
     // 154 with `rich-text.ts` deleted: it flattened a body's formatting away on
     // save, and every editor reads spans now, so the module had no callers and
-    // no reason to be findable.
-    files: 154,
-    tests: 57,
+    // no reason to be findable. 152 with `mascot-cues.ts` and its test gone
+    // too: the robot no longer gestures when an application moves up a column.
+    files: 152,
+    tests: 56,
     lines: 22798,
     what: 'web-only adapters and URL state',
   },
@@ -269,7 +268,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 93
+export const WEB_TEST_FILES = 92
 
 type TestGroup = { title: string; files: string; body: string }
 

@@ -620,6 +620,12 @@ html[data-theme='dark'] {
   animation: jojo-mascot-bob 4.2s ease-in-out infinite;
 }
 
+/* The one part of "stop moving" the component cannot say in JS. See the
+   `jojo-mascot-still` comment in RobotMascot.tsx. */
+.jojo-mascot-still .jojo-mascot-root {
+  animation: none;
+}
+
 .jojo-mascot-head {
   transform-origin: 256px 232px; /* the neck joint */
 }
