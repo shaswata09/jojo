@@ -213,9 +213,11 @@ export const SHAPE: DirRow[] = [
     // `duplicate-agent.ts`: the check, wired to this app's transport.
     // `tailor-agent.ts`: the seam that streams a tailored document, and
     // `jobs.tsx`: the queue wired to this app's clock, cancel and toast.
-    files: 129,
-    tests: 46,
-    lines: 19509,
+    // `mascot-cues.ts` with its test: which gesture the robot plays when an
+    // application moves up a board column, and which moves draw none.
+    files: 131,
+    tests: 47,
+    lines: 19651,
     what: 'web-only adapters and URL state',
   },
   {
@@ -245,7 +247,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 80
+export const WEB_TEST_FILES = 81
 
 type TestGroup = { title: string; files: string; body: string }
 

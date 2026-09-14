@@ -20,11 +20,15 @@ export function NotePanel({ application: a }: { application: Application }) {
   /**
    * The note is stored as plain text, and the field has to be one too.
    *
-   * Six surfaces read this string — the board card, the table row, the ⌘K
-   * result, the edit dialog's own Note box, the list's search haystack and the
-   * seed — and every one of them prints it straight out. A rich-text box here
-   * wrote its `innerHTML` into the field, so bolding a word left literal
-   * `<span style="font-weight: bold;">` sitting on the board.
+   * Five surfaces read this string — the table row, the ⌘K result, the edit
+   * dialog's own Note box, the list's search haystack and the seed — and every
+   * one of them prints it straight out. A rich-text box here wrote its
+   * `innerHTML` into the field, so bolding a word left literal
+   * `<span style="font-weight: bold;">` sitting in the table.
+   *
+   * It was six. The board card printed it too, unclamped, which made a card as
+   * tall as whatever was typed here — see `board/BoardCard.tsx`. Every surface
+   * left clamps it to a line or has the room for all of it.
    *
    * Trimmed on the way in, and the field follows, so whitespace alone is not a
    * note and blurring twice does not write twice.

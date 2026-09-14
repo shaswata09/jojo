@@ -177,7 +177,11 @@ export function Applications() {
             <>
               <PageOption
                 label="Show notes"
-                hint="The second line under each position"
+                // Says "table" because that is now the only view with a note
+                // line to show: a board card carries none at any setting, since
+                // one long note made one card six lines tall and pushed its
+                // whole column off the screen.
+                hint="The second line under each position in the table"
                 control={
                   <Switch
                     checked={showNotes}

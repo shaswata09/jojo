@@ -128,7 +128,26 @@ export function BoardCardBody({
           ) : (
             <div className="truncate text-sm font-semibold">{displayName(app)}</div>
           )}
-          <div className="mt-0.5 text-xs text-text-3">{app.note}</div>
+          {/*
+            * No note here, and that is a size decision rather than a tidiness
+            * one.
+            *
+            * It was printed unclamped, so a card was as tall as whatever
+            * somebody had typed into the record — a paragraph about a phone
+            * screen turned one card into six lines and pushed the rest of its
+            * column off the screen. A board is a shape you read at a glance:
+            * every card the same height, and how many are in each stage
+            * legible without scrolling. One long note costs that for the whole
+            * column.
+            *
+            * Clamping it to a line was the other option and is what the table
+            * does. On a 224px card a line of a note is about four words, which
+            * is not a note — it is a ragged grey strip that makes every card
+            * taller to say nothing. The table has the room for it and the
+            * switch to turn it off; the record itself has all of it; search
+            * reads it either way (`list-query.ts`). Nothing here is lost, and
+            * the cards go back to one height.
+            */}
         </div>
         {/* Amber, not red: red is this app's word for past due, so a flag the
             user set themselves read as a missed date, and the icon fought the

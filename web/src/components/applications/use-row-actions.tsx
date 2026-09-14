@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useToast } from '@/lib/toast-context'
 import { report } from '@/lib/analytics'
+import { advanceGesture, isAdvance, type AdvanceGesture } from '@/lib/mascot-cues'
+import { useMascot } from '@/lib/mascot-context'
 
 /**
  * Everything a row or card can do to its record, in one place.
@@ -20,7 +22,10 @@ export function useRowActions() {
   const { open } = useDialogs()
   const { update, remove, duplicate, setStage } = useApplications()
   const { toast } = useToast()
+  const { play } = useMascot()
   const [pendingDelete, setPendingDelete] = useState<Application | null>(null)
+  /** What the mascot did on the last advance, so it does not do it twice over. */
+  const lastGesture = useRef<AdvanceGesture | null>(null)
 
   const onEdit = (a: Application) => open('application', { mode: 'edit', id: a.id })
 
@@ -59,13 +64,29 @@ export function useRowActions() {
        * and a correction back to draft is not an answer to it.
        */
       if (stage !== 'draft') report('application_advanced', { to: stage })
+      /*
+       * The mascot reacts to a move up the board: a nod, a spin or a dance, and
+       * not the same one twice running. Here rather than in the board's drop
+       * handler because the board pill and the table's stage menu do the same
+       * thing by a different gesture, and a robot that only answered the drag
+       * would read as the other two not having landed.
+       *
+       * Nothing to guard. A page with no `MascotProvider` gets a no-op `play` by
+       * design, and both renderers drop the animation themselves under
+       * `prefers-reduced-motion`.
+       */
+      if (isAdvance(before.stage, stage)) {
+        const gesture = advanceGesture(Math.random(), lastGesture.current)
+        lastGesture.current = gesture
+        play(gesture)
+      }
       toast({
         title: `${displayName(a)} moved to ${STAGE_LABEL[stage]}`,
         description: `It was in ${STAGE_LABEL[before.stage]}. The dashboard pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,
         action: { label: 'Undo', onClick: () => update(a.id, before) },
       })
     },
-    [setStage, update, toast],
+    [setStage, update, toast, play],
   )
 
   const onDelete = () => {
