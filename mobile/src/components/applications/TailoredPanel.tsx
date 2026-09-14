@@ -105,10 +105,14 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           Tailoring a document needs a model. Connect one under More → Settings.
         </Txt>
       )}
+      {/* The bucket is named: only profile documents are offered here, so a CV
+          filed under To read would leave this line saying the same thing after
+          the person had done what it asked. */}
       {t.blocked === 'no-documents' && (
         <Txt size="sm" tone="secondary">
-          Nothing to tailor yet. Put your CV, statements or a cover letter in the Vault and they
-          appear here.
+          Nothing to tailor yet. Tailoring rewrites the documents you send with an application —
+          add your CV, statements or a cover letter under More → My profile, or file them in the
+          Vault under Applications, and they appear here.
         </Txt>
       )}
 

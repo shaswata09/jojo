@@ -97,7 +97,7 @@ export const SHAPE: DirRow[] = [
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
-    lines: 36945,
+    lines: 37339,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7502, what: 'transactions, journal, boot' },
@@ -110,7 +110,7 @@ export const SHAPE: DirRow[] = [
     tests: 10,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one.
-    lines: 10576,
+    lines: 10736,
     what: '86 named write operations',
   },
   {
@@ -168,7 +168,7 @@ export const SHAPE: DirRow[] = [
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 11602,
+    lines: 11627,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -196,12 +196,15 @@ export const SHAPE: DirRow[] = [
     // The PDF editor added ten: the three operation panels, the page view and
     // its thumbnail, the source picker, the shared save bar, the shell, the
     // storage hook, and the Tools tab that now picks between two instruments.
-    files: 304,
-    tests: 29,
-    lines: 52645,
+    // Then the merge row with its grip, the drop hook, and the Files list's
+    // "Unfiled" chip beside the filter composition it reads — with a test on
+    // `empty-state.tsx`, which four tools share and which grew a rung.
+    files: 308,
+    tests: 31,
+    lines: 53281,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4852, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4860, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -260,7 +263,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 89
+export const WEB_TEST_FILES = 91
 
 type TestGroup = { title: string; files: string; body: string }
 

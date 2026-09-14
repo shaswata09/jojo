@@ -79,7 +79,12 @@ export type TailoringBlocked =
   | 'no-posting'
   /** Settings. */
   | 'no-model'
-  /** Nothing in the Vault with bytes behind it that is not a posting. */
+  /**
+   * No PROFILE documents — no file in the Vault's `Applications` bucket with
+   * bytes behind it. Narrower than "nothing in the Vault", deliberately: see
+   * `core/tailoring.ts` on why only the documents a person sends with an
+   * application are worth rewriting for a posting.
+   */
   | 'no-documents'
 
 export type TailoringView = {

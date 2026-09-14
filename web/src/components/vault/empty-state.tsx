@@ -45,6 +45,16 @@ export type VaultEmptyCopy = {
    * own keyword control is not forced to lie about where the switch is.
    */
   keywords: { title: string; description?: string }
+  /**
+   * A filter only one tool has, and only the Files list passes.
+   *
+   * Optional, and the branches below cannot fire without it: the other three
+   * tools never set `filteredByUnfiled`, so their ladder is exactly the five
+   * steps it was. `alone` is the message when it is the only thing on — which
+   * is usually not a failure at all but the answer "everything is filed", and
+   * saying "nothing here" to that would be misleading.
+   */
+  unfiled?: { alone: { title: string; description: string }; withOthers: string }
 }
 
 /** Where the keyword filter lives, said once. */
@@ -55,9 +65,11 @@ export function emptyStateFor({
   query,
   filteredByBucket,
   filteredByKeyword,
+  filteredByUnfiled = false,
   onClearQuery,
   onClearBucket,
   onClearKeywords,
+  onClearUnfiled,
   copy,
 }: {
   /** How many records exist at all, before any filter. */
@@ -65,9 +77,12 @@ export function emptyStateFor({
   query: string
   filteredByBucket: boolean
   filteredByKeyword: boolean
+  /** The Files list's "Unfiled" chip. Absent everywhere else. */
+  filteredByUnfiled?: boolean
   onClearQuery: () => void
   onClearBucket: () => void
   onClearKeywords: () => void
+  onClearUnfiled?: () => void
   copy: VaultEmptyCopy
 }): VaultEmptyState {
   if (total === 0) return { icon: copy.zero.icon ?? copy.icon, ...copy.zero }
@@ -84,6 +99,41 @@ export function emptyStateFor({
         </Button>
       ),
     }
+  }
+
+  /*
+   * Unfiled goes above the bucket and keyword branches because it is the most
+   * specific thing on: a person who has just asked for loose documents and been
+   * shown nothing is asking "are there none?", and the answer is about filing
+   * rather than about whichever chip is also set.
+   */
+  if (filteredByUnfiled && copy.unfiled) {
+    const alsoOthers = filteredByBucket || filteredByKeyword
+    const clearAll = () => {
+      onClearUnfiled?.()
+      if (filteredByBucket) onClearBucket()
+      if (filteredByKeyword) onClearKeywords()
+    }
+    return alsoOthers
+      ? {
+          icon: copy.icon,
+          title: 'Nothing matches those filters',
+          description: copy.unfiled.withOthers,
+          action: (
+            <Button variant="outline" size="sm" onClick={clearAll}>
+              Clear filters
+            </Button>
+          ),
+        }
+      : {
+          icon: copy.icon,
+          ...copy.unfiled.alone,
+          action: (
+            <Button variant="outline" size="sm" onClick={() => onClearUnfiled?.()}>
+              Show filed files too
+            </Button>
+          ),
+        }
   }
 
   if (filteredByBucket && filteredByKeyword) {

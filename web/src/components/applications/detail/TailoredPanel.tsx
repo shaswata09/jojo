@@ -11,7 +11,7 @@ import { supersededToast } from '@jojo/service/react/undo'
 import type { TailorCandidate } from '@jojo/service/core/tailoring'
 import { useTailoring } from '@/lib/tailor-agent'
 import type { TailoredSnippet } from '@/lib/tailor-agent'
-import { settingsPath, vaultPath } from '@/lib/links'
+import { profilePath, settingsPath, vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { cn } from '@/lib/utils'
 
@@ -54,7 +54,11 @@ import { cn } from '@/lib/utils'
  *
  *   - No posting behind the record. Nothing to tailor FOR.
  *   - No model connected. Settings.
- *   - No documents in the Vault with bytes behind them. The Vault.
+ *   - No PROFILE documents — nothing in the Vault's Applications bucket with
+ *     bytes behind it. That bucket IS the profile page's document list, and it
+ *     is the person's own statement of what they send with an application;
+ *     `core/tailoring.ts` argues why a talk and a reading list do not belong on
+ *     this chooser. The profile page and the Vault.
  *
  * None of them hides what has already been written: a tailored letter is
  * readable with no model connected, which is the point of having saved it.
@@ -146,13 +150,23 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           .
         </p>
       )}
+      {/* The bucket is NAMED, because "put it in the Vault" is no longer
+          enough: only the person's profile documents are offered here, and a
+          CV filed under To read would leave this panel saying the same thing
+          after they had done what it asked. Both doors are given — the profile
+          page is the one that files it in the right place by itself. */}
       {t.blocked === 'no-documents' && (
         <p className="mt-3 text-sm text-muted-foreground">
-          Nothing to tailor yet. Put your CV, statements or a cover letter in{' '}
+          Nothing to tailor yet. Tailoring rewrites the documents you send with an application —
+          add your CV, statements or a cover letter on{' '}
+          <Link className="underline underline-offset-2" to={profilePath()}>
+            your profile
+          </Link>
+          , or file them in{' '}
           <Link className="underline underline-offset-2" to={vaultPath({ tool: 'files' })}>
             the Vault
           </Link>{' '}
-          and they appear here.
+          under Applications, and they appear here.
         </p>
       )}
 

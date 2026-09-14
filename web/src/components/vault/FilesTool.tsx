@@ -15,6 +15,8 @@ import { useVaultBlobs } from '@/lib/vault-blobs'
 import { FileRow } from '@/components/vault/files/FileRow'
 import type { EditableField } from '@/components/vault/files/FileRow'
 import { sortDrop } from '@/components/vault/files/intake'
+import { UnfiledChip } from '@/components/vault/files/UnfiledChip'
+import { unfiledCount, visibleFiles } from '@/components/vault/files/filters'
 import { useFileDelete } from '@/lib/use-file-delete'
 import { useFileDrop } from '@/components/vault/files/use-file-drop'
 import { FILE_BUCKETS } from '@/data/vault'
@@ -51,6 +53,8 @@ import { useModelSettings } from '@/lib/model-settings-context'
  */
 export function FilesTool({ focus }: { focus?: string }) {
   const [bucket, setBucket] = useState<FileBucket | 'all'>('all')
+  /** The "Unfiled" chip: only files not filed under any application. */
+  const [unfiledOnly, setUnfiledOnly] = useState(false)
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [editing, setEditing] = useState<{ id: string; field: EditableField } | null>(null)
@@ -126,14 +130,16 @@ export function FilesTool({ focus }: { focus?: string }) {
     return map
   }, [files])
 
-  const visible = files.filter(
-    (f) =>
-      (bucket === 'all' || f.bucket === bucket) &&
-      matches(f.id) &&
-      // The application's name too, matching the links tool: a document you can
-      // file under a job is one you will look for by that job's name.
-      matchesQuery(query, f.name, f.note, f.bucket, ...f.applicationIds.map(nameOf)),
-  )
+  const loose = useMemo(() => unfiledCount(files), [files])
+
+  const visible = visibleFiles(files, {
+    bucket,
+    unfiledOnly,
+    keywords: matches,
+    // The application's name too, matching the links tool: a document you can
+    // file under a job is one you will look for by that job's name.
+    search: (f) => matchesQuery(query, f.name, f.note, f.bucket, ...f.applicationIds.map(nameOf)),
+  })
   const open = visible.find((f) => f.id === openId) ?? null
 
   // Where a drop lands: the bucket being looked at, so adding while filtered
@@ -382,9 +388,11 @@ export function FilesTool({ focus }: { focus?: string }) {
     query,
     filteredByBucket: bucket !== 'all',
     filteredByKeyword: selectedLabels.size > 0,
+    filteredByUnfiled: unfiledOnly,
     onClearQuery: () => setQuery(''),
     onClearBucket: () => setBucket('all'),
     onClearKeywords: clearSelected,
+    onClearUnfiled: () => setUnfiledOnly(false),
     copy: {
       zero: {
         title: 'No files yet',
@@ -399,6 +407,15 @@ export function FilesTool({ focus }: { focus?: string }) {
         clearLabel: 'Show all buckets',
       },
       keywords: { title: 'No files carry those keywords' },
+      unfiled: {
+        // Not a failure. Every file being filed is the state this list is for
+        // getting to, and "no files" over a full vault would read as a bug.
+        alone: {
+          title: 'Every file is filed under an application',
+          description: `All ${files.length} of them. Nothing is sitting loose.`,
+        },
+        withOthers: `No unfiled file is in ${bucket === 'all' ? 'the selected keywords' : bucket}.`,
+      },
     },
   })
 
@@ -437,14 +454,19 @@ export function FilesTool({ focus }: { focus?: string }) {
         {files.length > 0 ? (
           <VaultToolbar
             filter={
-              <BucketFilter
-                label="Filter files by bucket"
-                options={FILE_BUCKETS}
-                counts={counts}
-                value={bucket}
-                onChange={setBucket}
-                total={files.length}
-              />
+              /* One wrapping row, so the toggle joins the chips rather than
+                 taking a line of its own — and wraps with them when narrow. */
+              <div className="flex flex-wrap items-center gap-1.5">
+                <BucketFilter
+                  label="Filter files by bucket"
+                  options={FILE_BUCKETS}
+                  counts={counts}
+                  value={bucket}
+                  onChange={setBucket}
+                  total={files.length}
+                />
+                <UnfiledChip on={unfiledOnly} count={loose} onChange={setUnfiledOnly} />
+              </div>
             }
             search={
               <VaultSearch

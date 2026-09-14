@@ -97,6 +97,40 @@ describe('the documents on offer', () => {
     expect(candidatesFor(m, 'application:a')).toEqual([])
   })
 
+  it('offers only the person’s profile documents — the Applications bucket', () => {
+    /*
+     * The two names are one set: the profile page's document panel IS
+     * `files.filter((f) => f.bucket === 'Applications')`, and
+     * `profile.document.add` is `vault.file.add` with that bucket fixed. So
+     * this is the person's own statement of what they send with an
+     * application, and it is the only thing worth rewriting for a posting.
+     *
+     * Before this filter the chooser offered every readable file they owned. A
+     * conference talk, a reading-list PDF and a scanned visa letter all
+     * qualified, and none of them is a thing anybody tailors — they only made
+     * the list longer and the CV harder to find.
+     */
+    const m = graph([
+      file('file:cv', 'CV.pdf'),
+      file('file:talk', 'JSM 2026 talk.pdf', 'Talks'),
+      file('file:read', 'Reading list.pdf', 'To read'),
+      file('file:admin', 'Visa letter.pdf', 'Admin'),
+      app('application:a'),
+    ])
+    expect(candidatesFor(m, 'application:a').map((c) => c.name)).toEqual(['CV.pdf'])
+  })
+
+  it('still offers nothing when every document is filed somewhere else', () => {
+    // The empty state has to be reachable, and it is what the card's
+    // "no-documents" copy is written for.
+    const m = graph([
+      file('file:talk', 'JSM 2026 talk.pdf', 'Talks'),
+      file('file:read', 'Reading list.pdf', 'To read'),
+      app('application:a'),
+    ])
+    expect(candidatesFor(m, 'application:a')).toEqual([])
+  })
+
   it('skips a record with no bytes behind it', () => {
     // A restored backup on a machine that never held the file: a name and no
     // document. Offering it would spend a click to be told there is nothing.
