@@ -7,12 +7,12 @@
  * which colours exist, how offsets survive the whitespace cleanup and what is
  * dropped all live in `note-html.ts`, where a test can reach them.
  *
- * It is a second walker rather than a change to `rich-text.ts`. Three shipped
- * features depend on `textFromHtml`'s exact output, its DOM half is equally
- * untestable, and the failure mode of getting it wrong is a snippet coming back
- * with its paragraph breaks somewhere else. The two never have to agree on
- * anything — nothing outside the note reads spans, nothing inside it reads
- * `textFromHtml` — and the cleanup they share is pinned by a test.
+ * It began as a second walker beside `rich-text.ts`'s, which flattened
+ * formatting away on save. Every editor in the app reads spans now, that file
+ * has gone, and this is the only walker — so the paragraph breaks it produces
+ * are the ones every stored body has. `BLOCKS` below is that file's set,
+ * unchanged, and the whitespace cleanup they shared is still pinned by a test:
+ * between them those two decide where a saved line breaks.
  */
 
 import type { RawRun } from '@/lib/note-html'

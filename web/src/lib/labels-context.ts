@@ -36,7 +36,12 @@ export type LabelsContextValue = {
    */
   removeLabel: (id: string) => { restore: () => void }
   /** Recolours a keyword. Purely cosmetic, and instant — no confirmation. */
-  setTone: (id: string, tone: LabelTone) => void
+  /**
+   * `ink` is a hex for a colour off the spectrum, or `null` to go back to the
+   * named one — never omitted by a caller that is CHANGING the colour, or a
+   * custom colour it meant to replace would silently survive the preset.
+   */
+  setTone: (id: string, tone: LabelTone, ink?: string | null) => void
   /** The labels on one record, in the order they were defined. */
   labelsOf: (recordId: string) => Label[]
   /** Adds or removes a keyword from a record. */

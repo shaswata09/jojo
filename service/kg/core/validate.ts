@@ -241,6 +241,23 @@ export const NODE_PROP_SCHEMAS = {
     slug,
     name: s.string({ min: 1, label: 'Name' }),
     tone: s.enum(LABEL_TONE_VALUES, { label: 'Colour' }),
+    /*
+     * A colour off the spectrum, when none of the eight named ones was it.
+     *
+     * `s.hexColor` is the whole guarantee, and it is why this can be a free
+     * value where `NoteSpan.colour` deliberately cannot be a string at all: it
+     * parses '#rgb' and '#rrggbb' and refuses everything else, so what reaches
+     * a renderer is one of sixteen million inert values and never a string that
+     * could be interpreted. Anything else — a colour name, a `url(...)`, a
+     * half-written hex — fails here, on the way in and on the way back from a
+     * backup.
+     *
+     * IN `SALVAGEABLE_PROPS`: a node that fails validation is dropped WHOLE, so
+     * a malformed colour must not take the keyword with it — its name, and
+     * every record tagged with it. Stripped, the keyword comes back in its
+     * `tone`, which is why that field stayed required beside this one.
+     */
+    ink: s.optional(s.hexColor({ label: 'Custom colour' })),
   }),
   link: s.object({
     slug,
@@ -258,6 +275,14 @@ export const NODE_PROP_SCHEMAS = {
     size: s.string({ label: 'Size' }),
     savedOn: s.isoDate({ label: 'Saved on' }),
     note: s.optional(s.string({ label: 'Note', multiline: true })),
+    /*
+     * The formatting over that note. Same shape, same bound and same salvage
+     * rule as an application's — one module decides what a span is, and one
+     * bound decides how much formatting a field may carry.
+     */
+    noteFormat: s.optional(
+      s.array(noteSpanShape, { max: MAX_NOTE_SPANS, label: 'Note formatting' }),
+    ),
     // Declared rather than left to unknown-key passthrough, so a wrong value is
     // caught at the trust boundary instead of reaching `sizeLabel`. The cost is
     // that a bad value fails the whole node — which is why the restore path,
@@ -320,6 +345,10 @@ export const NODE_PROP_SCHEMAS = {
     title: s.string({ min: 1, label: 'Title' }),
     tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Tag' }),
     body: s.string({ label: 'Body', multiline: true }),
+    /* The formatting over that body. See the application's, which it mirrors. */
+    bodyFormat: s.optional(
+      s.array(noteSpanShape, { max: MAX_NOTE_SPANS, label: 'Body formatting' }),
+    ),
     /*
      * Where a model-tailored snippet came from. See `TailoredFrom`. Declared
      * exactly, as `reading` is above; `source` is a string and not `s.id`, for
@@ -695,14 +724,19 @@ const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash', 'uri', 'readin
  * still what it always was: a database saying something impossible.
  */
 const SALVAGEABLE_PROPS: Partial<Record<NodeType, readonly string[]>> = {
-  file: SALVAGEABLE_FILE_PROPS,
+  file: [...SALVAGEABLE_FILE_PROPS, 'noteFormat'],
   application: ['checklist', 'stageDates', 'noteFormat'],
+  keyword: ['ink'],
+  // The text is the record; the formatting over it is not worth losing the
+  // record for. Same trade as the application's note, one type up.
+  snippet: ['bodyFormat'],
 }
 
 /** What the restore summary says about each, in the person's terms. */
 const SALVAGE_NOTE: Partial<Record<NodeType, string>> = {
-  file: 'Came back without its document link.',
+  file: 'Came back without its document link or its note formatting.',
   application: 'Came back without its checklist, its stage dates or its note formatting.',
+  keyword: 'Came back in one of the eight named colours rather than its own.',
 }
 
 export type ValidateOptions = {

@@ -22,6 +22,8 @@
  * what was measured to earn it.
  */
 
+import { normaliseHex } from './ink'
+
 import type { NodeType } from './model'
 import { isNodeId, TYPE_PREFIX } from './ref'
 
@@ -39,6 +41,9 @@ export type FieldKind =
   | 'id'
   | 'date'
   | 'instant'
+  /* A colour. Its own kind rather than a string, because a generated form can
+     offer a picker for it and cannot for '#7c3aed' typed into a text box. */
+  | 'color'
   | 'unknown'
 
 /**
@@ -206,6 +211,27 @@ function isoDate(o: TextOptions = {}): Schema<string> {
     const at = new Date(Date.UTC(y, m - 1, d))
     const same = at.getUTCFullYear() === y && at.getUTCMonth() === m - 1 && at.getUTCDate() === d
     return same ? good(input) : bad(path, 'That day does not exist.')
+  })
+}
+
+/**
+ * A colour, as '#rgb' or '#rrggbb', normalised to the long lower-case form.
+ *
+ * Normalising IN THE SCHEMA rather than at each call site, which is the same
+ * decision `isoDate` makes about what a date is: one spelling reaches storage,
+ * so '#ABC' and '#aabbcc' cannot both be sitting in the store meaning the same
+ * colour and comparing unequal.
+ *
+ * The rule itself is `core/ink.ts`, which is also what derives a readable chip
+ * from the value. A second regex here would be a second definition of what this
+ * app accepts as a colour, and the two would part company the first time either
+ * grew a case.
+ */
+function hexColor(o: TextOptions = {}): Schema<string> {
+  return define(metaOf('color', o), (input, path) => {
+    if (typeof input !== 'string') return bad(path, 'Needs to be a colour.')
+    const normal = normaliseHex(input)
+    return normal === null ? bad(path, 'Needs to be a colour like #7c3aed.') : good(normal)
   })
 }
 
@@ -475,6 +501,7 @@ export const s = {
   literal,
   isoDate,
   instant,
+  hexColor,
   id,
   unknown: unknownValue,
   optional,

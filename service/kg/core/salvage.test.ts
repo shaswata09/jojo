@@ -111,7 +111,12 @@ describe('salvage', () => {
   it('reports the salvage rather than doing it silently', () => {
     const out = validateRows([fileRow({ bytes: 'banana' })], [], { salvage: true })
     expect(out.skipped).toHaveLength(1)
-    expect(out.skipped[0]?.message).toBe('Came back without its document link.')
+    // Names both of the file's salvageable groups, because a person reading a
+    // restore summary is being told what they lost — and the note's formatting
+    // joined the document link in that list when notes gained formatting.
+    expect(out.skipped[0]?.message).toBe(
+      'Came back without its document link or its note formatting.',
+    )
     expect(out.skipped[0]?.id).toBe('file:0199aaaa-0000-7000-8000-000000000001')
   })
 

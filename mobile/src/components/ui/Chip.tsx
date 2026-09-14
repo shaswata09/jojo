@@ -5,7 +5,8 @@ import { Txt } from '@/components/ui/Text'
 import type { LabelTone } from '@jojo/service/data/labels'
 import type { Stage } from '@jojo/service/data/seed'
 import { s } from '@/theme/styles'
-import { useColors } from '@/theme/theme-context'
+import { inkOf } from '@jojo/service/core/ink'
+import { useColors, useTheme } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 
 export type ChipTone = LabelTone | 'neutral'
@@ -21,6 +22,7 @@ export type ChipTone = LabelTone | 'neutral'
 export function Chip({
   children,
   tone = 'neutral',
+  ink,
   stage,
   shape = 'squared',
   size = 'md',
@@ -28,6 +30,16 @@ export function Chip({
 }: {
   children: ReactNode
   tone?: ChipTone
+  /**
+   * A colour off the spectrum, chosen on whichever device chose it.
+   *
+   * The phone offers the eight and not the spectrum — there is no OS colour
+   * panel to borrow here the way the web borrows one — but it has to DRAW a
+   * custom colour correctly, or a keyword recoloured on a laptop would come
+   * back as something else in your pocket. `inkOf` derives the same three
+   * values the web derives, for whichever theme is on screen.
+   */
+  ink?: string
   /** Paints the chip in a pipeline stage's own colour, dot included. */
   stage?: Stage
   shape?: 'squared' | 'capsule'
@@ -35,6 +47,8 @@ export function Chip({
   style?: StyleProp<ViewStyle>
 }) {
   const c = useColors()
+  const { theme } = useTheme()
+  const custom = ink === undefined || stage ? null : inkOf(ink, theme)
 
   const tones: Record<ChipTone, { bg: string; border: string; fg: string }> = {
     neutral: { bg: c.well, border: c.hairline, fg: c.text2 },
@@ -50,7 +64,10 @@ export function Chip({
     violet: { bg: c.kwVioletSoft, border: c.kwVioletBorder, fg: c.kwViolet },
   }
 
-  const skin = tones[tone]
+  const named = tones[tone]
+  // A hex that does not parse yields nothing and the chip wears its tone —
+  // the fallback that field exists to be.
+  const skin = custom === null ? named : { bg: custom.soft, border: custom.border, fg: custom.fg }
   const stageColor = stage ? c.stage[stage] : undefined
 
   return (

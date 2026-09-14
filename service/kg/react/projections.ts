@@ -201,9 +201,16 @@ export function createProjections(today: ISODate): Projections {
       compareNewestFirst,
     ),
 
+    /*
+     * `noteFormat` and `bodyFormat` are dropped here, the same way
+     * `applicationFrom` drops an application's spans and for the same reason:
+     * they are a list per record that exactly one drawer draws, and every other
+     * reader — the row, the search index, the model prompt — wants the string.
+     * The editors read them off the node, as `NotePanel` does.
+     */
     files: sortedBy(
       createProjection('file', (n, g): VaultFile => {
-        const { slug: _slug, ...rest } = n.props
+        const { slug: _slug, noteFormat: _format, ...rest } = n.props
         return { ...rest, id: n.id, ...filedUnder(g, n.id) }
       }),
       compareNewestFirst,
@@ -211,7 +218,7 @@ export function createProjections(today: ISODate): Projections {
 
     snippets: sortedBy(
       createProjection('snippet', (n, g): Snippet => {
-        const { slug: _slug, ...rest } = n.props
+        const { slug: _slug, bodyFormat: _format, ...rest } = n.props
         return { ...rest, id: n.id, ...filedUnder(g, n.id) }
       }),
       compareNewestById,

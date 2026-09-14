@@ -256,3 +256,74 @@ describe('the wire form the note editor sends', () => {
     expect(decodeFormat('0-6:bxq::')).toEqual([{ start: 0, end: 6, bold: true }])
   })
 })
+
+describe('a colour off the spectrum, on a note', () => {
+  /*
+   * The pair works as `Label.tone`/`Label.ink` does: the name is the fallback
+   * and the hex wins. What matters here is that the hex goes through the same
+   * parser on the way BACK as it did on the way in — this function runs on
+   * restored data, where the schema's guarantee is one process old.
+   */
+  it('keeps a colour that parses, in one spelling', () => {
+    const spans = normaliseFormat('hello there', [{ start: 0, end: 5, ink: '#7C3AED' }])
+    expect(spans).toEqual([{ start: 0, end: 5, ink: '#7c3aed' }])
+  })
+
+  it('drops one that does not, and keeps the rest of the span', () => {
+    // A tone alongside is what the run falls back to, which is the whole
+    // reason both fields exist.
+    const spans = normaliseFormat('hello there', [
+      { start: 0, end: 5, colour: 'teal', ink: 'url(evil)', bold: true },
+    ])
+    expect(spans).toEqual([{ start: 0, end: 5, colour: 'teal', bold: true }])
+  })
+
+  it('drops a span whose only style was a bad colour', () => {
+    // Nothing left to say about those characters, so no span at all — the same
+    // rule an empty style has always had here.
+    expect(normaliseFormat('hello', [{ start: 0, end: 5, ink: 'red' }])).toBeUndefined()
+  })
+
+  it('does not merge two runs that differ only by their custom colour', () => {
+    const spans = normaliseFormat('abcdef', [
+      { start: 0, end: 3, ink: '#111111' },
+      { start: 3, end: 6, ink: '#222222' },
+    ])
+    expect(spans).toHaveLength(2)
+  })
+})
+
+describe('a custom colour on the wire', () => {
+  /*
+   * The editor hands spans to `application.note.set` as a string, so this is
+   * the narrowest point the colour has to pass through — and the one where it
+   * was being lost: the field held a tone name, and a hex fell out of it
+   * silently on the way to the store.
+   */
+  it('round-trips a hex through the one colour slot', () => {
+    const spans = [{ start: 0, end: 5, ink: '#e11d48' }]
+    const wire = encodeFormat(spans)
+    expect(wire).toBe('0-5::#e11d48:')
+    expect(decodeFormat(wire)).toEqual(spans)
+  })
+
+  it('still round-trips a named colour, and prefers the name', () => {
+    expect(encodeFormat([{ start: 0, end: 5, colour: 'teal' }])).toBe('0-5::teal:')
+    expect(decodeFormat('0-5::teal:')).toEqual([{ start: 0, end: 5, colour: 'teal' }])
+    // Both on one span is the fallback pair; the hex is what is drawn, so the
+    // hex is what travels.
+    expect(encodeFormat([{ start: 0, end: 5, colour: 'teal', ink: '#e11d48' }])).toBe('0-5::#e11d48:')
+  })
+
+  it('drops a colour slot that is neither', () => {
+    expect(decodeFormat('0-5::rebeccapurple:')).toEqual([{ start: 0, end: 5 }])
+    expect(decodeFormat('0-5:b:url(evil):')).toEqual([{ start: 0, end: 5, bold: true }])
+  })
+
+  it('survives the round trip the editor actually makes', () => {
+    // encode → decode → normalise, which is what a save and a reopen do.
+    const text = 'Chase the search chair on Friday'
+    const spans = normaliseFormat(text, [{ start: 10, end: 22, ink: '#E11D48', bold: true }])
+    expect(normaliseFormat(text, decodeFormat(encodeFormat(spans)))).toEqual(spans)
+  })
+})

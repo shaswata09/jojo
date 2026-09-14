@@ -15,6 +15,7 @@
  */
 
 import { stripMarks } from '../core/marks'
+import { decodeFormat, normaliseFormat, retextFormat } from '../core/note-format'
 import {
   FILE_BUCKET_VALUES,
   FILE_KIND_VALUES,
@@ -462,6 +463,18 @@ export const vaultFileUpdate = defineTool({
     kind: s.optional(s.enum(FILE_KIND_VALUES, { label: 'Kind' })),
     bucket: s.optional(s.enum(FILE_BUCKET_VALUES, { label: 'Bucket' })),
     note: s.optional(s.string({ label: 'Note' })),
+    /*
+     * ONE STRING, for the reason `application.note.set` sets out at length: the
+     * same spans as a JSON-Schema array cost about 1,100 characters on every
+     * model request, for a parameter no model should ever produce. The notes
+     * drawer writes it; everything else leaves it out and keeps what is there.
+     */
+    noteFormat: s.optional(
+      s.string({
+        label: 'Note formatting',
+        description: "Written by the file's notes drawer. Leave this out; the existing formatting is kept.",
+      }),
+    ),
     size: s.optional(s.string({ label: 'Size' })),
     /*
      * Writable AFTER the record exists, which is the only order a capture can
@@ -481,12 +494,29 @@ export const vaultFileUpdate = defineTool({
   }),
 
   run(ctx, input) {
-    ctx.require('file', input.id)
+    const current = ctx.require('file', input.id)
+    const note = input.note === undefined ? undefined : cleared(input.note)
     const patch = {
       ...(input.name === undefined ? {} : { name: input.name.trim() }),
       ...(input.kind === undefined ? {} : { kind: input.kind }),
       ...(input.bucket === undefined ? {} : { bucket: input.bucket }),
-      ...(input.note === undefined ? {} : { note: cleared(input.note) }),
+      ...(input.note === undefined ? {} : { note }),
+      /*
+       * The formatting follows the text, exactly as an application's note does.
+       *
+       * Given spans, they are canonicalised against the text being saved with
+       * them. Given none while the TEXT changes — the phone, a rename, an agent
+       * — the existing spans are moved onto the new text, so fixing a typo
+       * costs the formatting on that word rather than on the whole note. Given
+       * neither, nothing is written at all.
+       */
+      ...(input.noteFormat !== undefined
+        ? { noteFormat: normaliseFormat(note ?? '', decodeFormat(input.noteFormat)) }
+        : input.note === undefined
+          ? {}
+          : {
+              noteFormat: retextFormat(current.props.note ?? '', note ?? '', current.props.noteFormat),
+            }),
       ...(input.size === undefined ? {} : { size: input.size }),
       ...(input.uri === undefined ? {} : { uri: input.uri }),
       ...(input.savedOn === undefined ? {} : { savedOn: input.savedOn }),
@@ -585,6 +615,13 @@ export const vaultSnippetCreate = defineTool({
     title: s.string({ min: 1, label: 'Title' }),
     tag: s.enum(SNIPPET_TAG_VALUES, { label: 'Used for' }),
     body: s.string({ label: 'Text', multiline: true }),
+    /** Written by the snippet editor. See `vault.file.update`'s, which it mirrors. */
+    format: s.optional(
+      s.string({
+        label: 'Text formatting',
+        description: 'Written by the snippet editor. Leave this out; the text is stored plain.',
+      }),
+    ),
     applicationIds,
   }),
 
@@ -598,6 +635,9 @@ export const vaultSnippetCreate = defineTool({
         title: input.title.trim(),
         tag: input.tag,
         body: input.body,
+        // `opt`, so a snippet saved without formatting is byte-identical to one
+        // that never had any — the rule `normaliseFormat` keeps for `[]`.
+        ...opt('bodyFormat', normaliseFormat(input.body, decodeFormat(input.format))),
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,
@@ -620,15 +660,37 @@ export const vaultSnippetUpdate = defineTool({
     title: s.optional(s.string({ min: 1, label: 'Title' })),
     tag: s.optional(s.enum(SNIPPET_TAG_VALUES, { label: 'Used for' })),
     body: s.optional(s.string({ label: 'Text', multiline: true })),
+    /** Written by the snippet editor. See `vault.file.update`'s, which it mirrors. */
+    format: s.optional(
+      s.string({
+        label: 'Text formatting',
+        description: 'Written by the snippet editor. Leave this out; the existing formatting is kept.',
+      }),
+    ),
     applicationIds,
   }),
 
   run(ctx, input) {
-    ctx.require('snippet', input.id)
+    const current = ctx.require('snippet', input.id)
     ctx.tx.patch<'snippet'>(input.id, {
       ...(input.title === undefined ? {} : { title: input.title.trim() }),
       ...(input.tag === undefined ? {} : { tag: input.tag }),
       ...(input.body === undefined ? {} : { body: input.body }),
+      // The same three cases as the file note above: given spans, canonicalise;
+      // given only new text, move what is there onto it; given neither, write
+      // nothing.
+      ...(input.format !== undefined
+        ? {
+            bodyFormat: normaliseFormat(
+              input.body ?? current.props.body,
+              decodeFormat(input.format),
+            ),
+          }
+        : input.body === undefined
+          ? {}
+          : {
+              bodyFormat: retextFormat(current.props.body, input.body, current.props.bodyFormat),
+            }),
     })
     fileUnder(ctx, input.id, input.applicationIds)
   },

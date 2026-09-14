@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { stripMarks } from '@jojo/service/core/marks'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { useGraph } from '@jojo/service/react/kg-context'
+import type { NodeId } from '@jojo/service/core/model'
 import type { FormEvent } from 'react'
 import { Plus, Quote } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
@@ -19,7 +21,9 @@ import { SNIPPET_TAGS } from '@/data/vault'
 import type { Snippet, SnippetTag } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
-import { htmlFromText, textFromHtml } from '@/lib/rich-text'
+import { htmlFromNote, noteFromRuns } from '@/lib/note-html'
+import { rawRunsFromHtml } from '@/lib/note-runs'
+import { encodeFormat } from '@jojo/service/core/note-format'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
@@ -36,6 +40,7 @@ const COPIED_MS = 1600
  * discarded by the button that closed the panel.
  */
 export function SnippetsTool({ focus }: { focus?: string }) {
+  const graph = useGraph()
   const [tagFilter, setTagFilter] = useState<SnippetTag | 'all'>('all')
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<Draft | null>(null)
@@ -104,8 +109,24 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     else removeRecord(id)
   }
 
-  /** What Save would write. Also what the dirty check compares. */
-  const body = useMemo(() => (editing ? textFromHtml(editing.html) : ''), [editing])
+  /**
+   * What Save would write: the text, and the formatting over it.
+   *
+   * One conversion for both, because they have to agree — the offsets are into
+   * this exact string, and computing them from a second parse of the same HTML
+   * is how the two drift. `noteFromRuns` is the note editor's own converter;
+   * a snippet is the same problem and gets the same answer rather than a second
+   * one.
+   */
+  const saving = useMemo(
+    () =>
+      editing
+        ? noteFromRuns(rawRunsFromHtml(editing.html))
+        : { text: '', format: undefined, dropped: { colour: 0, size: 0, overflow: 0 } },
+    [editing],
+  )
+  const body = saving.text
+  const format = encodeFormat(saving.format)
 
   /**
    * Compared on the stored text, not on the editor's HTML.
@@ -149,7 +170,9 @@ export function SnippetsTool({ focus }: { focus?: string }) {
           id: s.id,
           title: s.title,
           tag: s.tag,
-          html: htmlFromText(s.body),
+          // Off the node, not the projection: the spans are dropped there on
+          // purpose, the same way an application's are.
+          html: htmlFromNote(s.body, graph.node(s.id as NodeId, 'snippet')?.props.bodyFormat),
           applicationIds: s.applicationIds,
           keywords: labelIdsOf(s.id),
         }
@@ -170,7 +193,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     setClean({
       title: draft.title,
       tag: draft.tag,
-      body: textFromHtml(draft.html),
+      body: noteFromRuns(rawRunsFromHtml(draft.html)).text,
       keywords: keywordKey(draft.keywords),
       applicationIds: draft.applicationIds,
     })
@@ -212,7 +235,13 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       const before = snippets.find((s) => s.id === id)
       const beforeKeywords = labelIdsOf(id)
 
-      updateSnippet(id, { title, tag: editing.tag, body, applicationIds: editing.applicationIds })
+      updateSnippet(
+        id,
+        { title, tag: editing.tag, body, applicationIds: editing.applicationIds },
+        // '' rather than omitted when there is none: absent means "keep what is
+        // stored", and clearing every mark off a snippet has to be savable.
+        format ?? '',
+      )
       commitKeywords(id, chosen)
       // The draft takes the trimmed title too, or the dirty check compares
       // 'Short bio ' against the 'Short bio' that was stored and the panel keeps
@@ -242,7 +271,10 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                     ...prev,
                     title: before.title,
                     tag: before.tag,
-                    html: htmlFromText(before.body),
+                    html: htmlFromNote(
+                      before.body,
+                      graph.node(id as NodeId, 'snippet')?.props.bodyFormat,
+                    ),
                     keywords: beforeKeywords,
                   }
                 : prev,
@@ -268,6 +300,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       title,
       tag: editing.tag,
       body,
+      ...(format === undefined ? {} : { format }),
       applicationIds: editing.applicationIds,
     })
     commitKeywords(record.id, chosen)

@@ -60,7 +60,7 @@ export function KeywordPicker({
         <span className="text-xs text-text-3">None yet</span>
       ) : (
         chosen.map((l) => (
-          <Chip key={l.id} tone={l.tone} shape="capsule">
+          <Chip key={l.id} tone={l.tone} ink={l.ink} shape="capsule">
             {l.name}
           </Chip>
         ))

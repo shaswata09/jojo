@@ -24,7 +24,7 @@ export function LabelChips({ recordId }: { recordId: string }) {
   return (
     <View style={styles.chips}>
       {labels.map((l) => (
-        <Chip key={l.id} tone={l.tone} shape="capsule" size="sm">
+        <Chip key={l.id} tone={l.tone} ink={l.ink} shape="capsule" size="sm">
           {l.name}
         </Chip>
       ))}

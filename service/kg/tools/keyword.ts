@@ -20,7 +20,7 @@
 import type { LabelTone, NodeId, Taggable } from '../core/model'
 import { LABEL_TONE_VALUES, TAGGABLE } from '../core/model'
 import { s } from '../core/schema'
-import { nameOf } from './support'
+import { nameOf, opt } from './support'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 
@@ -63,6 +63,8 @@ export const keywordCreate = defineTool({
   input: s.object({
     name: s.string({ min: 1, max: 40, label: 'Name' }),
     tone: s.optional(s.enum(LABEL_TONE_VALUES, { label: 'Colour' })),
+    /** Any colour, when none of the eight named ones is the one. See `core/ink.ts`. */
+    ink: s.optional(s.hexColor({ label: 'Custom colour' })),
   }),
 
   run(ctx, input): NodeId {
@@ -82,6 +84,9 @@ export const keywordCreate = defineTool({
         slug: ctx.mintSlug('keyword', name),
         name,
         tone: input.tone ?? NEW_KEYWORD_TONES[taken % NEW_KEYWORD_TONES.length] ?? 'teal',
+        // Absent unless asked for, never `undefined` present: D21 again, and
+        // `opt` is the helper that cannot get it wrong.
+        ...opt('ink', input.ink),
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,
@@ -145,11 +150,30 @@ export const keywordToneSet = defineTool({
   summary: 'Changes the keyword’s chip colour.',
   effect: 'update',
   touches: ['keyword'],
-  input: s.object({ id: keywordId, tone: s.enum(LABEL_TONE_VALUES, { label: 'Colour' }) }),
+  input: s.object({
+    id: keywordId,
+    tone: s.enum(LABEL_TONE_VALUES, { label: 'Colour' }),
+    /**
+     * A colour off the spectrum, or `null` to go back to the named one.
+     *
+     * `tone` stays required alongside, and that is not redundancy: it is what
+     * the chip falls back to if the hex is ever dropped — by a restore that
+     * salvaged it, or by this tool being called with `ink: null`. The picker
+     * sends the nearest of the eight with a custom colour, so the fallback is
+     * one somebody would recognise rather than whatever happened to be there.
+     */
+    ink: s.optional(s.nullable(s.hexColor({ label: 'Custom colour' }))),
+  }),
 
   run(ctx, input) {
     ctx.require('keyword', input.id)
-    ctx.tx.patch<'keyword'>(input.id, { tone: input.tone })
+    ctx.tx.patch<'keyword'>(input.id, {
+      tone: input.tone,
+      // `?? undefined` DELETES the key rather than storing a null — D21, where
+      // a stored null survives structured clone as a present key and every
+      // `in` check that guards it answers the wrong way.
+      ...(input.ink === undefined ? {} : { ink: input.ink ?? undefined }),
+    })
   },
 
   describe: (input, _output, m) => ({

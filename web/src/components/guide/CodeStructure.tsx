@@ -91,8 +91,11 @@ export const SHAPE: DirRow[] = [
     // what may start next — the queue behind every agent job.
     // `stage-dates.ts` and its test: when an application entered each stage,
     // where each of those dates is kept, and why one of them is kept elsewhere.
-    files: 136,
-    tests: 66,
+    // `ink.ts` and its test: turning one colour a person picked off the
+    // spectrum into a chip that can be read, in either theme — the maths the
+    // eight named colours never needed because they were measured by hand.
+    files: 138,
+    tests: 67,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -199,9 +202,9 @@ export const SHAPE: DirRow[] = [
     // Then the merge row with its grip, the drop hook, and the Files list's
     // "Unfiled" chip beside the filter composition it reads — with a test on
     // `empty-state.tsx`, which four tools share and which grew a rung.
-    files: 309,
+    files: 310,
     tests: 31,
-    lines: 53594,
+    lines: 53850,
     what: 'every surface you can see',
   },
   { dir: 'web/src/routes', files: 15, tests: 0, lines: 4860, what: 'fifteen pages' },
@@ -231,9 +234,12 @@ export const SHAPE: DirRow[] = [
     // library needs no browser. Then the two the drop brought: what a
     // dragged-in file actually is, and how far one arrow press moves a row that
     // has been picked up.
-    files: 155,
+    // 154 with `rich-text.ts` deleted: it flattened a body's formatting away on
+    // save, and every editor reads spans now, so the module had no callers and
+    // no reason to be findable.
+    files: 154,
     tests: 57,
-    lines: 22771,
+    lines: 22798,
     what: 'web-only adapters and URL state',
   },
   {

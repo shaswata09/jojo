@@ -26,17 +26,41 @@ export const MIN_SHEET_WIDTH = 520
 export const MAX_SHEET_WIDTH = 1100
 
 /**
- * Room left for the page behind it — the `calc(100vw - 3rem)` the sheet already
- * carried, kept as a number so the clamp and the stylesheet cannot disagree.
+ * Room left for the page behind it — the `calc(100vw - 3rem)` the sheet carries
+ * in CSS, kept as a number so the clamp and the stylesheet cannot disagree.
+ *
+ * No longer what decides the maximum; see `MAX_SHARE`. Still exported because
+ * the stylesheet's cap is the safety net between a window resize and the effect
+ * that answers it.
  */
 export const VIEWPORT_GUTTER = 48
+
+/**
+ * The most of the window the sheet may ever take.
+ *
+ * A share rather than `viewport - 48`, and the reason is the sidebar. It is
+ * `position: sticky`, 232px wide, and `z-50` — one layer ABOVE the sheet — so a
+ * sheet allowed to grow to `viewport - 48` slides underneath it. Measured in a
+ * 1150px window: the sheet's left edge landed at 50px, the sidebar's right edge
+ * is 252px, and `elementFromPoint` over the grip returned the sidebar. The
+ * handle was not merely hard to hit, it was unreachable, and the left 200px of
+ * the record was behind the navigation.
+ *
+ * Three tenths of the window is always more than the sidebar needs: it only
+ * appears at Tailwind's `lg` (1024px), where 30% is 307px against its 252px
+ * footprint, and the gap only widens from there. So this holds without this
+ * module having to know the sidebar's measurements — which is the point, since
+ * it cannot be told when they change.
+ */
+export const MAX_SHARE = 0.7
 
 /** The widest this particular screen allows, which may be less than the max. */
 export function maxWidthFor(viewport: number): number {
   // Never below the minimum: on a narrow screen the sheet is already capped by
   // its own `max-w`, and returning something smaller here would make every
   // clamp below snap it to a width the CSS then overrides anyway.
-  return Math.max(MIN_SHEET_WIDTH, Math.min(MAX_SHEET_WIDTH, viewport - VIEWPORT_GUTTER))
+  if (!Number.isFinite(viewport)) return MIN_SHEET_WIDTH
+  return Math.max(MIN_SHEET_WIDTH, Math.min(MAX_SHEET_WIDTH, Math.floor(viewport * MAX_SHARE)))
 }
 
 /** A width forced inside what this screen allows. */

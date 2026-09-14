@@ -56,7 +56,12 @@ type LinkDraft = Omit<VaultLink, 'id' | 'savedOn' | 'applicationIds'> & {
 type FileDraft = Omit<VaultFile, 'id' | 'savedOn' | 'applicationIds'> & {
   savedOn?: string
 } & Filing
-type SnippetDraft = Omit<Snippet, 'id' | 'applicationIds'> & Filing
+/**
+ * `format` is the ENCODED spans — `encodeFormat`'s string, not the spans
+ * themselves. The editor is the only caller that has any, and a draft type that
+ * could express them would invite every other writer to try.
+ */
+type SnippetDraft = Omit<Snippet, 'id' | 'applicationIds'> & Filing & { format?: string }
 type PersonDraft = Omit<Person, 'id' | 'applicationIds'> & Filing
 
 export function useVault() {
@@ -175,8 +180,13 @@ export function useVault() {
     [run, readBack, projections],
   )
 
+  /**
+   * `noteFormat` is the ENCODED spans, and a separate parameter for the same
+   * reason the snippet's is: absent means "keep what is stored", which is what
+   * every writer but the notes drawer wants.
+   */
   const updateFile = useCallback(
-    (id: string, patch: Partial<VaultFile>) => {
+    (id: string, patch: Partial<VaultFile>, noteFormat?: string) => {
       run('vault.file.update', {
         id,
         ...present('name', patch.name),
@@ -190,6 +200,7 @@ export function useVault() {
         ...present('uri', patch.uri),
         ...present('savedOn', patch.savedOn),
         ...asText('note', patch, 'note'),
+        ...present('noteFormat', noteFormat),
         ...asNull('applicationIds', patch, 'applicationIds'),
       })
     },
@@ -210,6 +221,7 @@ export function useVault() {
         title: draft.title,
         tag: draft.tag,
         body: draft.body,
+        ...present('format', draft.format),
         ...present('applicationIds', draft.applicationIds),
       })
       if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not save the snippet.')
@@ -242,12 +254,19 @@ export function useVault() {
   )
 
   const updateSnippet = useCallback(
-    (id: string, patch: Partial<Snippet>) => {
+    (id: string, patch: Partial<Snippet>, format?: string) => {
       run('vault.snippet.update', {
         id,
         ...present('title', patch.title),
         ...present('tag', patch.tag),
         ...present('body', patch.body),
+        /*
+         * The ENCODED spans, and only from a caller that has them. Absent means
+         * "keep what is stored", which is what every writer other than the
+         * editor wants — a rename, a filing, an agent — and is why this is not
+         * derived from `patch`.
+         */
+        ...present('format', format),
         ...asNull('applicationIds', patch, 'applicationIds'),
       })
     },

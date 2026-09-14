@@ -1130,7 +1130,7 @@ function KeywordManager() {
         <View key={l.id}>
           {i > 0 ? <Divider /> : null}
           <View style={styles.keywordRow}>
-            <Chip tone={l.tone} shape="capsule">
+            <Chip tone={l.tone} ink={l.ink} shape="capsule">
               {l.name}
             </Chip>
             <Txt size="xs" tone="muted" style={{ flex: 1 }}>

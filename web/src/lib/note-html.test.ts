@@ -75,12 +75,41 @@ describe('runs from the editor into what is stored', () => {
     expect(different.format).toHaveLength(2)
   })
 
-  it('drops one unnameable property and keeps the rest of the run', () => {
-    // Bold survives a colour this app cannot name; the person is told, not
-    // silently given a different colour.
+  /*
+   * This used to assert that a colour with no name was DROPPED, and it was
+   * right for as long as a stored colour had to be one of eight names. The
+   * spectrum picker changed the rule rather than the reasoning: a colour that
+   * parses is kept as a hex on the span, and only a colour that is not a colour
+   * at all is dropped. What survives from the old test is the half that still
+   * matters — the rest of the run is never lost with it, and the person is told
+   * when something was.
+   */
+  it('keeps a colour it has no name for, as the colour it is', () => {
     const out = noteFromRuns([{ text: 'careful', bold: true, colour: '#ff00ff' }])
+    expect(out.format).toEqual([{ start: 0, end: 7, bold: true, ink: '#ff00ff' }])
+    expect(out.dropped.colour).toBe(0)
+  })
+
+  it('keeps it through the spelling the DOM hands back', () => {
+    // The browser rewrites a hex into `rgb()` the moment it lands in a style
+    // attribute, so this is what is actually read back off a coloured note.
+    const out = noteFromRuns([{ text: 'careful', colour: 'rgb(255, 0, 255)' }])
+    expect(out.format).toEqual([{ start: 0, end: 7, ink: '#ff00ff' }])
+  })
+
+  it('still drops one that is not a colour, and keeps the rest of the run', () => {
+    // A CSS keyword, a `var()`, a translucent colour: nothing this app can
+    // guarantee a contrast for. Bold survives it; the person is told.
+    const out = noteFromRuns([{ text: 'careful', bold: true, colour: 'rebeccapurple' }])
     expect(out.format).toEqual([{ start: 0, end: 7, bold: true }])
     expect(out.dropped.colour).toBe(1)
+  })
+
+  it('prefers the name when the colour IS one of the eight', () => {
+    // Otherwise every note written in Blue would store a hex that nothing else
+    // in jojo can refer to, and recolouring the palette would stop moving them.
+    const out = noteFromRuns([{ text: 'careful', colour: 'rgb(60, 146, 195)' }])
+    expect(out.format).toEqual([{ start: 0, end: 7, colour: 'teal' }])
   })
 
   it('keeps offsets right across the whitespace cleanup', () => {

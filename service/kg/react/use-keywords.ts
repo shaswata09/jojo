@@ -114,9 +114,17 @@ export function useKeywords() {
     [run],
   )
 
+  /**
+   * The chip's colour: one of the eight, and optionally a custom one over it.
+   *
+   * `ink` is `null` to go back to the named colour rather than `undefined`,
+   * because the two mean different things to the tool — absent leaves whatever
+   * is stored alone, and a caller that wanted to CLEAR a custom colour by
+   * omitting it would silently leave it on.
+   */
   const setTone = useCallback(
-    (id: string, tone: LabelTone) => {
-      run('keyword.tone.set', { id, tone })
+    (id: string, tone: LabelTone, ink: string | null = null) => {
+      run('keyword.tone.set', { id, tone, ink })
     },
     [run],
   )

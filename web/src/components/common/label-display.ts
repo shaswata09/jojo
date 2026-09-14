@@ -1,3 +1,5 @@
+import { inkOf } from '@jojo/service/core/ink'
+import type { Theme } from '@jojo/service/core/ink'
 import { TONE_LABEL } from '@jojo/service/core/model'
 import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
 import type { LabelTone } from '@/data/labels'
@@ -72,3 +74,31 @@ export const TONE_ORDER = LABEL_TONE_VALUES
 export function usage(n: number) {
   return n === 1 ? '1 record' : `${n} records`
 }
+
+/**
+ * A keyword's chip, when its colour is one off the spectrum rather than one of
+ * the eight.
+ *
+ * Inline styles, and they have to be: the eight are class names because their
+ * values are tokens the stylesheet swaps per theme, and a colour nobody
+ * anticipated has no token to swap. `inkOf` does that swapping instead — it is
+ * handed the theme on screen and returns the three values for it, which is why
+ * every caller of this reads `useTheme()` rather than assuming one.
+ *
+ * `null` when the hex does not parse, and the caller falls back to the named
+ * `tone` — which is exactly why a keyword keeps one alongside its custom
+ * colour.
+ */
+export function inkStyle(
+  ink: string | undefined,
+  theme: Theme,
+): { color: string; backgroundColor: string; borderColor: string } | undefined {
+  if (ink === undefined) return undefined
+  const derived = inkOf(ink, theme)
+  return derived === null
+    ? undefined
+    : { color: derived.fg, backgroundColor: derived.soft, borderColor: derived.border }
+}
+
+/** The solid disc for a custom colour: the ink itself, at swatch size. */
+export const inkFill = (ink: string, theme: Theme): string => inkOf(ink, theme)?.fg ?? ink

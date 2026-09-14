@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Check, Tag } from 'lucide-react'
-import { toneClass } from '@/components/common/label-display'
+import { inkStyle, toneClass } from '@/components/common/label-display'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useLabels } from '@/lib/labels-context'
+import { useTheme } from '@/lib/theme-context'
 import { cn } from '@/lib/utils'
 
 /**
@@ -120,22 +121,30 @@ export function LabelPicker({
 /** The keywords on one record, shown inline. Read-only. */
 export function LabelChips({ recordId, className }: { recordId: string; className?: string }) {
   const { labelsOf } = useLabels()
+  const { theme } = useTheme()
   const mine = labelsOf(recordId)
   if (mine.length === 0) return null
 
   return (
     <span className={cn('flex flex-wrap items-center gap-1', className)}>
-      {mine.map((l) => (
-        <span
-          key={l.id}
-          className={cn(
-            'rounded-full border px-1.5 py-px text-xs whitespace-nowrap',
-            toneClass[l.tone],
-          )}
-        >
-          {l.name}
-        </span>
-      ))}
+      {mine.map((l) => {
+        // The keyword's own colour, when it has one. This is the surface it
+        // matters most on: these are the chips on a card, a row and a file,
+        // which is where somebody sees the colour they chose.
+        const custom = inkStyle(l.ink, theme)
+        return (
+          <span
+            key={l.id}
+            className={cn(
+              'rounded-full border px-1.5 py-px text-xs whitespace-nowrap',
+              custom ? 'border-transparent' : toneClass[l.tone],
+            )}
+            style={custom}
+          >
+            {l.name}
+          </span>
+        )
+      })}
     </span>
   )
 }

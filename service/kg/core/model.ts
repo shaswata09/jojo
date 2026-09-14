@@ -920,6 +920,9 @@ export type SavedPosting = {
  * added alongside sit at dE 12 or more from their nearest neighbour. Every
  * swatch carries its name as its accessible name for that reason.
  */
+export type { Hex } from './ink'
+import type { Hex } from './ink'
+
 export const LABEL_TONE_VALUES = [
   'teal',
   'cyan',
@@ -957,6 +960,27 @@ export type Label = {
   id: string
   name: string
   tone: LabelTone
+  /**
+   * A colour off the spectrum, when one of the eight was not the one.
+   *
+   * ADDITIVE, and `tone` stays required beside it rather than being replaced by
+   * it. Three reasons, in the order they bite:
+   *
+   *   - `tone` is the wire format. It is on every keyword ever stored, in every
+   *     backup, and validated by `s.enum`. Widening that field to "a name or a
+   *     hex" would make every `Record<LabelTone, …>` in both apps a lie.
+   *   - It is the fallback. `ink` is in `SALVAGEABLE_PROPS`, so a keyword whose
+   *     custom colour fails validation comes back in the colour it had before —
+   *     rather than the whole keyword being dropped, which is what happens to a
+   *     node that fails whole.
+   *   - A surface that cannot compute a colour can still draw the preset. There
+   *     are fewer of those than there were, but "the chip is blue instead of
+   *     the plum you chose" is a better failure than a chip with no colour.
+   *
+   * Stored as '#rrggbb' — `core/ink.ts` normalises on the way in and derives
+   * the three values a chip actually needs, per theme, on the way out.
+   */
+  ink?: Hex
 }
 
 /** Every free-text field on the profile page, in one record. */
@@ -1168,6 +1192,8 @@ export type KeywordProps = {
   slug: string
   name: string
   tone: LabelTone
+  /** A colour off the spectrum. See `Label.ink`, which this is projected into. */
+  ink?: Hex
 }
 
 export type LinkProps = {
@@ -1188,6 +1214,17 @@ export type FileProps = {
   size: string
   savedOn: ISODate
   note?: string
+  /**
+   * The formatting over `note`. See `ApplicationProps.noteFormat`, whose rules
+   * this shares exactly — one module owns what a span is, for all three fields
+   * that carry them.
+   *
+   * The vault's list still prints `note` as plain text, and that is the point
+   * of keeping formatting beside the text rather than inside it: the row, the
+   * search index and anything a model is shown read the string, and only the
+   * drawer that drew the formatting reads the spans.
+   */
+  noteFormat?: NoteSpan[]
 
   /*
    * The four link fields. All optional, and their absence is a valid, complete
@@ -1431,11 +1468,19 @@ export type NoteSize = (typeof NOTE_SIZES)[number]
  * beside `{}` would be two bytes for one meaning and an undo that looked like a
  * change.
  *
- * `colour` is a `LabelTone` NAME, never a hex. That is the single most
- * important line here: nothing about a note's formatting is ever a string a
- * renderer could be talked into interpreting. A restored `colour` outside the
- * enum fails validation and never reaches a screen, which is why the editor's
- * swatches and this vocabulary are the same eight.
+ * `colour` is a `LabelTone` NAME. `ink` is the same field for a colour off the
+ * spectrum, and the pair works exactly as `Label.tone`/`Label.ink` does: the
+ * name is the fallback, the hex wins when it is there.
+ *
+ * This comment used to end "never a hex", and the reasoning behind that line
+ * is kept because it is right: nothing about a note's formatting may be a
+ * string a renderer could be talked into interpreting. What changed is how
+ * that is enforced. An enum is one way to guarantee a value is inert; a parser
+ * that accepts '#rgb' and '#rrggbb' and refuses every other string is another,
+ * and it is the one `s.hexColor` implements — at the tool boundary and again
+ * on the way back from a backup, where a bad value is stripped rather than
+ * rendered. Sixteen million possible values, all of them six hex digits, none
+ * of them `url(...)`.
  */
 export type NoteSpan = {
   readonly start: number
@@ -1445,6 +1490,8 @@ export type NoteSpan = {
   readonly underline?: true
   readonly strike?: true
   readonly colour?: LabelTone
+  /** A colour off the spectrum. Wins over `colour` when both are there. */
+  readonly ink?: Hex
   readonly size?: NoteSize
 }
 
@@ -1538,6 +1585,20 @@ export type SnippetProps = {
    * it is. Copy strips the marks.
    */
   body: string
+  /**
+   * The formatting over `body`, as offsets into it. Same shape and same rules
+   * as an application's `noteFormat` — `core/note-format.ts` is the only thing
+   * that decides what a well-formed list of spans is, for every field carrying
+   * them.
+   *
+   * Offsets into the STORED string, marks and all. A tailored body carries
+   * `**changed**` as characters, and the spans are measured over the text as it
+   * is stored rather than as `core/marks.ts` displays it — so neither mechanism
+   * has to know about the other. What that costs, said plainly: formatting
+   * applied across a `**` pair is measured against characters that Copy strips,
+   * and Copy takes plain text anyway.
+   */
+  bodyFormat?: NoteSpan[]
   /** Set when a model wrote this for one posting. See `TailoredFrom`. */
   tailored?: TailoredFrom
 }

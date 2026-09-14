@@ -2,6 +2,8 @@ import { useId, useState } from 'react'
 import { ChevronDown, Trash2 } from 'lucide-react'
 import { toneClass, usage } from '@/components/common/label-display'
 import { ToneSwatches } from '@/components/common/ToneSwatches'
+import { inkStyle } from '@/components/common/label-display'
+import { useTheme } from '@/lib/theme-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -81,7 +83,8 @@ function KeywordMenu({
         <ToneSwatches
           label={label.name}
           value={label.tone}
-          onChange={(tone) => setTone(label.id, tone)}
+          {...(label.ink === undefined ? {} : { ink: label.ink })}
+          onChange={(tone, ink) => setTone(label.id, tone, ink)}
         />
       </div>
 
@@ -125,6 +128,11 @@ export function KeywordChip({
   onRequestDelete: (id: string) => void
 }) {
   const [open, setOpen] = useState(false)
+  const { theme } = useTheme()
+  // Only while the filter is ON: an unselected chip is deliberately neutral, so
+  // a custom colour there would make every keyword in the row shout equally and
+  // the one being filtered by would stop standing out.
+  const custom = on ? inkStyle(label.ink, theme) : undefined
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -139,9 +147,12 @@ export function KeywordChip({
         className={cn(
           'flex items-center rounded-full border text-xs transition-colors',
           on
-            ? toneClass[label.tone]
+            ? custom
+              ? 'border-transparent bg-transparent'
+              : toneClass[label.tone]
             : 'border-hairline bg-well text-text-3 hover:border-hairline-strong hover:text-text-2',
         )}
+        style={custom}
       >
         <button
           type="button"

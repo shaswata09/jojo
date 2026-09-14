@@ -16,9 +16,13 @@ import { agoLabel } from '@/data/timeline'
 import { dayOf } from '@jojo/service/core/project'
 import type { VaultFile } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
+import { useGraph } from '@jojo/service/react/kg-context'
+import type { NodeId } from '@jojo/service/core/model'
 import { hostOf, isCaptureSource } from '@jojo/service/core/capture'
 import { pdfObjectUrl, placeholderPdf } from '@/lib/placeholder-pdf'
-import { htmlFromText, textFromHtml } from '@/lib/rich-text'
+import { htmlFromNote, noteFromRuns } from '@/lib/note-html'
+import { rawRunsFromHtml } from '@/lib/note-runs'
+import { encodeFormat } from '@jojo/service/core/note-format'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
@@ -57,24 +61,42 @@ export function FileViewer({
   const [notesOpen, setNotesOpen] = useState(true)
   const [noteSaved, setNoteSaved] = useState(false)
   const { updateFile } = useVault()
+  const graph = useGraph()
   const { toast } = useToast()
   const undoable = useUndoable()
 
   /**
-   * The stored note is one line of plain text; the editor speaks HTML.
+   * The stored note is text plus the formatting over it; the editor speaks HTML.
+   *
+   * The spans come off the NODE rather than the projection, which drops them —
+   * the same arrangement `NotePanel` has, and for the same reason: they are a
+   * list that one drawer draws and every other reader of this file wants the
+   * plain string.
    *
    * Keyed on the file so switching documents in the viewer loads that
    * document's note rather than carrying the last one across.
    */
-  const storedHtml = useMemo(() => htmlFromText(file.note ?? ''), [file.note])
+  const storedFormat = graph.node(file.id as NodeId, 'file')?.props.noteFormat
+  const storedHtml = useMemo(
+    () => htmlFromNote(file.note ?? '', storedFormat),
+    [file.note, storedFormat],
+  )
   const [noteHtml, setNoteHtml] = useState(storedHtml)
   useEffect(() => {
     setNoteHtml(storedHtml)
     setNoteSaved(false)
   }, [storedHtml])
 
-  const noteText = textFromHtml(noteHtml)
-  const noteDirty = noteText !== (file.note ?? '')
+  /*
+   * One conversion for the text and the spans, because the offsets are into
+   * this exact string — computing them from a second parse of the same HTML is
+   * how a note ends up with its formatting a few characters off.
+   */
+  const saving = useMemo(() => noteFromRuns(rawRunsFromHtml(noteHtml)), [noteHtml])
+  const noteText = saving.text
+  const noteFormat = encodeFormat(saving.format)
+  const noteDirty =
+    noteText !== (file.note ?? '') || (noteFormat ?? '') !== (encodeFormat(storedFormat) ?? '')
 
   /**
    * Saving a note clears the editor's dirty state, so the text that was
@@ -83,7 +105,11 @@ export function FileViewer({
    * now, off the journal's before-image rather than a copy captured here.
    */
   const saveNote = () => {
-    const { restore } = undoable(() => updateFile(file.id, { note: noteText || undefined }))
+    const { restore } = undoable(() =>
+      // '' rather than omitted: absent means "keep the formatting that is
+      // stored", and clearing every mark off a note has to be savable.
+      updateFile(file.id, { note: noteText || undefined }, noteFormat ?? ''),
+    )
     setNoteSaved(true)
     toast({
       title: `Note saved on ${file.name}`,

@@ -60,7 +60,12 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
     // somebody click back into the box between two steps is the whole cost of
     // using it.
     if (result.ok) setDraft('')
-    else toast({ title: 'That step was not added', description: result.errors[0]?.message ?? '', tone: 'danger' })
+    else
+      toast({
+        title: 'That step was not added',
+        description: result.errors[0]?.message ?? '',
+        tone: 'danger',
+      })
   }
 
   const onDelete = (item: ChecklistItem) => {
@@ -118,7 +123,10 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
       {c.items.length > 0 ? (
         <ul className="mt-3 flex flex-col">
           {c.items.map((item) => (
-            <li key={item.id} className="group flex min-w-0 items-start gap-2 border-b border-hairline py-1.5 last:border-b-0">
+            <li
+              key={item.id}
+              className="group flex min-w-0 items-start gap-2 border-b border-hairline py-1.5 last:border-b-0"
+            >
               <button
                 type="button"
                 role="checkbox"

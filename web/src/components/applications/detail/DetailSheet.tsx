@@ -9,6 +9,7 @@ import {
   SHEET_WIDTH_KEY,
   canResizeAt,
   clampSheetWidth,
+  maxWidthFor,
   parseStoredWidth,
 } from '@/lib/sheet-width'
 import { SheetResizer } from './SheetResizer'
@@ -51,6 +52,8 @@ export function DetailSheet({
   const reducedMotion = useReducedMotion()
   const [width, setWidth] = useState(MIN_SHEET_WIDTH)
   const [resizable, setResizable] = useState(false)
+  /** What this window allows right now — the handle announces it. */
+  const [max, setMax] = useState(MIN_SHEET_WIDTH)
 
   /*
    * The stored width is read AFTER mount, not during render.
@@ -65,6 +68,7 @@ export function DetailSheet({
     const apply = () => {
       const viewport = window.innerWidth
       setResizable(canResizeAt(viewport))
+      setMax(maxWidthFor(viewport))
       setWidth((current) => {
         const wanted = parseStoredWidth(readStored(SHEET_WIDTH_KEY)) ?? current
         return clampSheetWidth(wanted, viewport)
@@ -151,11 +155,6 @@ export function DetailSheet({
         >
           <DialogPrimitive.Title className="sr-only">{name}</DialogPrimitive.Title>
 
-          {/* Hidden where it could do nothing: on a phone the sheet is already
-              at the only width it may have, and a handle that cannot move is
-              worse than none — it is a control that looks broken. */}
-          {resizable ? <SheetResizer width={width} onWidth={onWidth} onReset={onReset} /> : null}
-
           {/* No close button here. The record's own header ends in one, and it
               already hands back through `onClose`, so the sheet adding a second
               put two dismissals sixty pixels apart — which reads as two
@@ -164,6 +163,28 @@ export function DetailSheet({
               backdrop; the visible control belongs in the record's own cluster,
               beside the flag and the overflow it shares a job with. */}
           {children}
+
+          {/*
+           * LAST in the DOM, and that is not cosmetic.
+           *
+           * Radix moves focus to the first focusable element inside the content
+           * when the sheet opens. First in the tree, this handle took it:
+           * opening a record put the caret on a resize grip instead of on the
+           * record, the arrow keys resized the panel instead of moving through
+           * it, and the grip sat permanently in its focus-visible state.
+           * Measured, not guessed — `matches(':focus-visible')` was true on a
+           * fresh load. Last in the tree, the record keeps the focus it always
+           * had and the handle is reached by Tab, at the end, like any other
+           * trailing control. It is `fixed`, so where it sits in the tree
+           * changes nothing about where it is drawn.
+           *
+           * Hidden where it could do nothing: on a narrow window the sheet is
+           * already at the only width it may have, and a handle that cannot
+           * move is worse than none — it is a control that looks broken.
+           */}
+          {resizable ? (
+            <SheetResizer width={width} max={max} onWidth={onWidth} onReset={onReset} />
+          ) : null}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

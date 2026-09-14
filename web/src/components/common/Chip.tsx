@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import { toneClass } from '@/components/common/label-display'
+import { inkStyle, toneClass } from '@/components/common/label-display'
+import { useTheme } from '@/lib/theme-context'
 import { STAGE_DOT, type Stage } from '@/data/seed'
 import { cn } from '@/lib/utils'
 import type { ComponentProps } from 'react'
@@ -47,6 +48,7 @@ const chipVariants = cva(
 export function Chip({
   className,
   tone,
+  ink,
   size,
   shape,
   stage,
@@ -71,10 +73,36 @@ export function Chip({
      * own keywords.
      */
     stage?: Stage
+    /**
+     * A colour off the spectrum, for a keyword whose owner wanted one the eight
+     * did not have.
+     *
+     * Inline, where every other colour here is a class, and it has to be: the
+     * eight are tokens the stylesheet swaps per theme and this one has no token
+     * to swap — `inkStyle` does that swapping instead, for the theme on screen.
+     * A hex that does not parse yields nothing and the chip wears its `tone`,
+     * which is the fallback that field exists to be.
+     *
+     * Never with `stage`: a stage chip is jojo's own word about a record and
+     * colour law keeps the loud colours for the user's.
+     */
+    ink?: string
   }) {
+  const { theme } = useTheme()
+  const custom = stage ? undefined : inkStyle(ink, theme)
+
   return (
     <span
-      className={cn(chipVariants({ tone: stage ? 'gray' : tone, size, shape }), className)}
+      className={cn(
+        chipVariants({ tone: stage ? 'gray' : tone, size, shape }),
+        // The tone's own colours are dropped when a custom one is painted over
+        // them: `bg-info-soft` and an inline `backgroundColor` would otherwise
+        // both apply, and which wins is a question about specificity nobody
+        // reading this file should have to answer.
+        custom && 'border-transparent bg-transparent text-inherit',
+        className,
+      )}
+      style={custom ? { ...custom, ...props.style } : props.style}
       {...props}
     >
       {stage ? (

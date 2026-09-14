@@ -157,8 +157,8 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
           page is the one that files it in the right place by itself. */}
       {t.blocked === 'no-documents' && (
         <p className="mt-3 text-sm text-muted-foreground">
-          Nothing to tailor yet. Tailoring rewrites the documents you send with an application —
-          add your CV, statements or a cover letter on{' '}
+          Nothing to tailor yet. Tailoring rewrites the documents you send with an application — add
+          your CV, statements or a cover letter on{' '}
           <Link className="underline underline-offset-2" to={profilePath()}>
             your profile
           </Link>

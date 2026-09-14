@@ -94,7 +94,7 @@ function KeywordRow({
             ) : null}
           </div>
         ) : (
-          <Chip tone={label.tone} shape="capsule">
+          <Chip tone={label.tone} ink={label.ink} shape="capsule">
             {label.name}
           </Chip>
         )
@@ -105,7 +105,8 @@ function KeywordRow({
           <ToneSwatches
             label={label.name}
             value={label.tone}
-            onChange={(tone) => setTone(label.id, tone)}
+            {...(label.ink === undefined ? {} : { ink: label.ink })}
+            onChange={(tone, ink) => setTone(label.id, tone, ink)}
             className="mr-1"
           />
           {/* Rendered in both states rather than swapped out: SettingRow's

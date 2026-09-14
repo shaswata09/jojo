@@ -10,6 +10,7 @@ import {
   Underline,
 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { SpectrumSwatch } from '@/components/common/SpectrumSwatch'
 import { LABEL_TONE_VALUES, TONE_LABEL } from '@jojo/service/core/model'
 import type { LabelTone } from '@jojo/service/core/model'
 import { cn } from '@/lib/utils'
@@ -164,12 +165,30 @@ export function RichTextEditor({
     setActive(next)
   }, [])
 
+  /**
+   * The last selection made INSIDE this editor, kept for `exec` to put back.
+   *
+   * `el.focus()` restores a selection on its own when focus merely moved to a
+   * toolbar button, which is why the marks have always worked. The colour
+   * picker is not that: `<input type="color">` opens the operating system's own
+   * panel, the page can lose focus entirely while it is up, and `change` may
+   * not fire until it is dismissed — by which time the selection can be gone
+   * and the colour would land on nothing, or on the caret, silently.
+   *
+   * A Range rather than offsets: the DOM under it does not change while a
+   * colour is being chosen, and a live Range needs no arithmetic to be right.
+   */
+  const lastRange = useRef<Range | null>(null)
+
   useEffect(() => {
     const onSelect = () => {
       // Only when the caret is actually inside this editor, or the toolbar
       // would light up for selections elsewhere on the page.
       const sel = document.getSelection()
-      if (sel && ref.current?.contains(sel.anchorNode)) refresh()
+      if (sel && ref.current?.contains(sel.anchorNode)) {
+        if (sel.rangeCount > 0) lastRange.current = sel.getRangeAt(0).cloneRange()
+        refresh()
+      }
     }
     document.addEventListener('selectionchange', onSelect)
     return () => document.removeEventListener('selectionchange', onSelect)
@@ -182,6 +201,18 @@ export function RichTextEditor({
       // The command applies to the current selection, which is lost if the
       // toolbar button takes focus first.
       el.focus()
+      /*
+       * Put the selection back when focus came from somewhere that lost it.
+       * Guarded on the range still being inside this editor: the value is only
+       * ever written while it was, but the document may have been replaced
+       * underneath it by a save in between.
+       */
+      const sel = document.getSelection()
+      const range = lastRange.current
+      if (sel && range && !el.contains(sel.anchorNode) && el.contains(range.commonAncestorContainer)) {
+        sel.removeAllRanges()
+        sel.addRange(range)
+      }
       // Produces inline styles rather than <font> tags, which survive round
       // trips and respect the surrounding CSS.
       document.execCommand('styleWithCSS', false, 'true')
@@ -281,6 +312,23 @@ export function RichTextEditor({
                   {c.value ? null : <span className="text-xs text-text-3">—</span>}
                 </button>
               ))}
+
+              {/*
+                * The ninth swatch: any colour at all.
+                *
+                * It persists, which is the part worth knowing. The eight are
+                * matched back to their names when the note is saved; anything
+                * else is kept as a hex on the span (`noteFromRuns` →
+                * `NoteSpan.ink`), so a colour lifted off a logo with the
+                * eyedropper is still there after a reload. What it is NOT is a
+                * colour with a name — nothing else in jojo can refer to it.
+                */}
+              <SpectrumSwatch
+                value={undefined}
+                label="Any colour"
+                className="size-7"
+                onPick={(hex) => exec('foreColor', hex)}
+              />
             </div>
           </PopoverContent>
         </Popover>

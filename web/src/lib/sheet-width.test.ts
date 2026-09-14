@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   COARSE_STEP,
+  MAX_SHARE,
   MAX_SHEET_WIDTH,
   MIN_SHEET_WIDTH,
   STEP,
-  VIEWPORT_GUTTER,
   canResizeAt,
   clampSheetWidth,
   maxWidthFor,
@@ -22,8 +22,28 @@ describe('the widest this screen allows', () => {
     expect(maxWidthFor(WIDE)).toBe(MAX_SHEET_WIDTH)
   })
 
-  it('is the screen minus the gutter when that is smaller', () => {
-    expect(maxWidthFor(NARROW)).toBe(NARROW - VIEWPORT_GUTTER)
+  it('is a share of the screen when that is smaller than the hard cap', () => {
+    expect(maxWidthFor(NARROW)).toBe(Math.floor(NARROW * MAX_SHARE))
+  })
+
+  it('always leaves room for the sidebar, which paints ABOVE the sheet', () => {
+    /*
+     * The bug this rule exists for, measured in a 1150px window before it: the
+     * sheet's left edge landed at 50px against a sidebar whose right edge is
+     * 252px, and `elementFromPoint` over the grip returned the sidebar — the
+     * handle was unreachable and the record's left edge was behind the nav.
+     *
+     * The sidebar is 232px wide plus a 12px inset and only appears at Tailwind's
+     * `lg`. So the property to hold is: from 1024px up, whatever is left of the
+     * sheet clears it.
+     */
+    const SIDEBAR_FOOTPRINT = 252
+    for (const viewport of [1024, 1100, 1150, 1280, 1440, 1600, 1920, 2560]) {
+      const leftOver = viewport - maxWidthFor(viewport)
+      expect(leftOver, `at ${viewport}px the sheet would reach ${leftOver}px`).toBeGreaterThan(
+        SIDEBAR_FOOTPRINT,
+      )
+    }
   })
 
   it('never drops below the minimum, however small the screen', () => {
@@ -50,7 +70,7 @@ describe('clamping a width', () => {
 
   it('pulls a wide one down to what the screen allows', () => {
     expect(clampSheetWidth(5000, WIDE)).toBe(MAX_SHEET_WIDTH)
-    expect(clampSheetWidth(5000, NARROW)).toBe(NARROW - VIEWPORT_GUTTER)
+    expect(clampSheetWidth(5000, NARROW)).toBe(Math.floor(NARROW * MAX_SHARE))
   })
 
   it('returns whole pixels', () => {
@@ -112,7 +132,7 @@ describe('a keyboard nudge', () => {
   })
 
   it('respects a screen narrower than the hard maximum', () => {
-    const cap = NARROW - VIEWPORT_GUTTER
+    const cap = maxWidthFor(NARROW)
     expect(nudgeWidth(cap, -1, NARROW)).toBe(cap)
   })
 })
@@ -127,7 +147,7 @@ describe('whether to offer the drag at all', () => {
     // A phone: the min and the max are the same number, so a handle would be a
     // control that cannot do anything.
     expect(canResizeAt(390)).toBe(false)
-    expect(canResizeAt(MIN_SHEET_WIDTH + VIEWPORT_GUTTER)).toBe(false)
+    expect(canResizeAt(Math.floor(MIN_SHEET_WIDTH / MAX_SHARE))).toBe(false)
   })
 })
 

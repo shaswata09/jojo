@@ -86,7 +86,9 @@ export function StageDatesPanel({ application: a }: { application: Application }
 
   return (
     <Panel className="min-w-0">
-      <PanelTitle hint={`${String(rows.filter((s) => stageDateOf(a, s) !== undefined).length)} of ${String(rows.length)} dated`}>
+      <PanelTitle
+        hint={`${String(rows.filter((s) => stageDateOf(a, s) !== undefined).length)} of ${String(rows.length)} dated`}
+      >
         Stage dates
       </PanelTitle>
 
@@ -100,7 +102,12 @@ export function StageDatesPanel({ application: a }: { application: Application }
                 className={cn('size-1.5 shrink-0 rounded-full', STAGE_DOT[stage])}
                 aria-hidden
               />
-              <span className={cn('min-w-0 flex-1 truncate text-sm', here ? 'font-medium' : 'text-text-2')}>
+              <span
+                className={cn(
+                  'min-w-0 flex-1 truncate text-sm',
+                  here ? 'font-medium' : 'text-text-2',
+                )}
+              >
                 {STAGE_LABEL[stage]}
                 {/* Where it is now, said once. The stage is on the header chip
                     too, and a second badge here would be decoration; this is

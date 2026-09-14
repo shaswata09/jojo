@@ -24,7 +24,8 @@
  */
 
 import { LABEL_TONE_VALUES, NOTE_SIZES } from './model'
-import type { LabelTone, NoteSize, NoteSpan } from './model'
+import type { Hex, LabelTone, NoteSize, NoteSpan } from './model'
+import { normaliseHex } from './ink'
 import { s } from './schema'
 
 /**
@@ -32,8 +33,10 @@ import { s } from './schema'
  *
  * Declared once for the reason `stageDatesShape` is: two spellings of the same
  * record drift the first time either is extended, and this one decides what a
- * renderer is allowed to be handed. Note what is NOT here — no hex, no CSS, no
- * URL. A colour is a name from a closed set or it is refused.
+ * renderer is allowed to be handed. Note what is still NOT here — no CSS, no
+ * URL, no free string of any kind. A colour is a name from a closed set, or six
+ * hex digits that `s.hexColor` has already parsed and rewritten; anything else
+ * is refused at this boundary rather than being made safe at each renderer.
  */
 export const noteSpanShape = s.object({
   start: s.number({ min: 0, int: true, label: 'From' }),
@@ -43,6 +46,7 @@ export const noteSpanShape = s.object({
   underline: s.optional(s.literal(true, { label: 'Underline' })),
   strike: s.optional(s.literal(true, { label: 'Strikethrough' })),
   colour: s.optional(s.enum(LABEL_TONE_VALUES, { label: 'Colour' })),
+  ink: s.optional(s.hexColor({ label: 'Custom colour' })),
   size: s.optional(s.enum(NOTE_SIZES, { label: 'Size' })),
 })
 
@@ -54,6 +58,7 @@ export type NoteRun = {
   readonly underline?: true
   readonly strike?: true
   readonly colour?: LabelTone
+  readonly ink?: Hex
   readonly size?: NoteSize
 }
 
@@ -70,6 +75,16 @@ const styleOf = (span: NoteSpan): Style => ({
   ...(span.underline === true ? { underline: true } : {}),
   ...(span.strike === true ? { strike: true } : {}),
   ...(span.colour !== undefined && TONES.has(span.colour) ? { colour: span.colour } : {}),
+  /*
+   * Re-parsed rather than trusted, exactly as the tone is re-checked against
+   * the set beside it. This function runs on data coming back from a restore,
+   * where the schema's guarantee is one process old; `normaliseHex` is the same
+   * parser `s.hexColor` uses, so a value that would not validate cannot survive
+   * a round trip through here either.
+   */
+  ...(span.ink !== undefined && normaliseHex(span.ink) !== null
+    ? { ink: normaliseHex(span.ink)! }
+    : {}),
   ...(span.size !== undefined && SIZES.has(span.size) ? { size: span.size } : {}),
 })
 
@@ -81,6 +96,7 @@ const sameStyle = (a: Style, b: Style): boolean =>
   a.underline === b.underline &&
   a.strike === b.strike &&
   a.colour === b.colour &&
+  a.ink === b.ink &&
   a.size === b.size
 
 /**
@@ -265,6 +281,13 @@ export function runsOf(text: string, spans: readonly NoteSpan[] | undefined): No
  *   0-6:b::            bold over the first six characters
  *   11-16::red:        red, nothing else
  *   20-25:bi::large    bold and italic, larger
+ *   30-35::#e11d48:    a colour off the spectrum
+ *
+ * ONE slot for the colour, holding either a name from the palette or a hex —
+ * rather than a fifth field that is empty in every note anybody writes in the
+ * eight. `decodeFormat` tells them apart by asking the palette first, which is
+ * also the precedence the span itself has: a name is a colour this app can
+ * refer to elsewhere, and a hex is one only this note knows about.
  *
  * `decodeFormat` is TOTAL: anything it cannot read is dropped rather than
  * thrown, because it runs on input and the worst honest outcome is a note that
@@ -283,7 +306,11 @@ export function encodeFormat(spans: readonly NoteSpan[] | undefined): string | u
     const flags = (['b', 'i', 'u', 's'] as const)
       .filter((f) => span[FLAG_OF[f] as 'bold'] === true)
       .join('')
-    return `${String(span.start)}-${String(span.end)}:${flags}:${span.colour ?? ''}:${span.size ?? ''}`
+    // The hex wins, matching the span's own precedence. Neither value can
+    // contain a ':' or a ';' — a tone is an enum and a hex is six digits — so
+    // the segments cannot be broken by what goes in them.
+    const colour = span.ink ?? span.colour ?? ''
+    return `${String(span.start)}-${String(span.end)}:${flags}:${colour}:${span.size ?? ''}`
   })
   return out.join(';')
 }
@@ -305,7 +332,19 @@ export function decodeFormat(wire: string | undefined): NoteSpan[] | undefined {
       const key = FLAG_OF[ch]
       if (key !== undefined) style[key] = true
     }
-    if (colour !== '' && TONES.has(colour)) style['colour'] = colour
+    /*
+     * The palette first, then the spectrum. A value that is neither is dropped
+     * — this runs on input, and the worst honest outcome is a note that comes
+     * back with less formatting than it had rather than one that comes back
+     * carrying a string nobody parsed.
+     */
+    if (colour !== '') {
+      if (TONES.has(colour)) style['colour'] = colour
+      else {
+        const hex = normaliseHex(colour)
+        if (hex !== null) style['ink'] = hex
+      }
+    }
     if (size !== '' && SIZES.has(size)) style['size'] = size
     spans.push({ start, end, ...style } as NoteSpan)
   }

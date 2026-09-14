@@ -8,13 +8,17 @@
  * what a size means, which colours exist, how offsets survive the whitespace
  * cleanup, what is dropped — lives here where a test can reach it.
  *
- * `rich-text.ts` is deliberately untouched. Three shipped features depend on
- * `textFromHtml`'s exact output, the DOM half of it cannot be tested, and a
- * change there would show up as a snippet coming back with its paragraph breaks
- * somewhere else. Two walkers that never have to agree on anything is the
- * cheaper risk, and `cleanupText` below is pinned to the same three rewrites.
+ * It began as a second walker beside `rich-text.ts`, kept apart because three
+ * shipped features depended on that file's exact output and its DOM half could
+ * not be tested. Those three — the snippet editor, the file-notes drawer and
+ * the note panel — all read spans now, so `rich-text.ts` had no callers left
+ * and is gone. What it did was flatten formatting away on save, which is the
+ * behaviour this replaced; leaving the module behind would have been leaving
+ * the shortcut back to it. `cleanupText` below is still pinned to its three
+ * rewrites by a test, because those rewrites decide where a saved line breaks.
  */
 
+import { hexFromCss } from '@jojo/service/core/ink'
 import { LABEL_TONE_VALUES } from '@jojo/service/core/model'
 import type { LabelTone, NoteSize, NoteSpan } from '@jojo/service/core/model'
 import { MAX_NOTE_SPANS } from '@jojo/service/core/model'
@@ -163,7 +167,19 @@ export function noteFromRuns(runs: readonly RawRun[]): {
   const styles: (Omit<NoteSpan, 'start' | 'end'> | null)[] = []
   for (const run of runs) {
     const colour = toneOf(run.colour)
-    if (run.colour !== undefined && colour === undefined) dropped.colour += 1
+    /*
+     * A colour with no name is kept as a hex now, not dropped.
+     *
+     * `toneOf` is exact and stays exact — there is no nearest-neighbour
+     * snapping, for the reason its own comment gives. What changed is what
+     * happens when it answers "no name for that": the colour goes into `ink`
+     * instead of into the bin, so a note coloured off the spectrum comes back
+     * the colour it was written in. `dropped.colour` now counts only what
+     * neither route could keep — a CSS keyword, a `var()`, a translucent
+     * colour — which is what the toast was always trying to say.
+     */
+    const ink = colour === undefined ? hexFromCss(run.colour ?? '') : null
+    if (run.colour !== undefined && colour === undefined && ink === null) dropped.colour += 1
     const size = sizeOf(run.size)
     if (run.size !== undefined && size === undefined && run.size.trim() !== '3') dropped.size += 1
     const style = {
@@ -172,6 +188,7 @@ export function noteFromRuns(runs: readonly RawRun[]): {
       ...(run.underline === true ? { underline: true as const } : {}),
       ...(run.strike === true ? { strike: true as const } : {}),
       ...(colour === undefined ? {} : { colour }),
+      ...(ink === null ? {} : { ink }),
       ...(size === undefined ? {} : { size }),
     }
     const has = Object.keys(style).length > 0
@@ -273,7 +290,15 @@ export function htmlFromNote(text: string, format: readonly NoteSpan[] | undefin
         run.underline === true || run.strike === true
           ? `text-decoration: ${[run.underline === true ? 'underline' : '', run.strike === true ? 'line-through' : ''].filter(Boolean).join(' ')}`
           : '',
-        run.colour === undefined ? '' : `color: ${TONE_INK[run.colour]}`,
+        // `ink` first: a custom colour wins over the named one, which is on the
+        // span beside it as the fallback. Both are values this app minted —
+        // `TONE_INK` is a table here and `ink` has been through `s.hexColor` —
+        // so neither can carry anything but a colour into the style attribute.
+        run.ink !== undefined
+          ? `color: ${run.ink}`
+          : run.colour === undefined
+            ? ''
+            : `color: ${TONE_INK[run.colour]}`,
         run.size === undefined ? '' : `font-size: ${FONT_SIZE[run.size]}`,
       ]
         .filter(Boolean)
