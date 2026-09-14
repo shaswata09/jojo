@@ -146,7 +146,20 @@ jobs:
       # Installs the command-line tools and accepts the SDK licences. Gradle
       # then downloads compileSdk 36, build-tools 36.0.0 and NDK 27 itself,
       # which the New Architecture needs because it compiles C++ from source.
+      #
+      # `packages` is set rather than left alone, and the default is the reason
+      # this job started failing without anything in this repo changing. The
+      # action defaults to `tools platform-tools`, and `tools` — the original
+      # SDK Tools bundle — was superseded by `cmdline-tools` and WITHDRAWN from
+      # Google's package repository: `repository2-3.xml` publishes
+      # `platform-tools` and twenty-odd `cmdline-tools;NN.N`, and no bare
+      # `tools` at all. So sdkmanager answers "Failed to find package 'tools'"
+      # and exits 1 on every run, on any image new enough to have dropped a
+      # cached copy. `platform-tools` is the half of that default that still
+      # exists and is what it was there for — adb; the rest Gradle fetches.
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       # Decode the key and build, in ONE step and with no `if:` on it.
       #
