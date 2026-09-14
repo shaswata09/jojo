@@ -254,3 +254,65 @@ describe('entries that are only a string', () => {
     }
   })
 })
+
+describe('how many were actually lost', () => {
+  /*
+   * `dropped` exists because `skipped.length` was being printed to a person as
+   * "N lines could not be read", and it is not that number in either
+   * direction. These two tests are the two directions.
+   */
+
+  it('does not count an entry it reported on and then kept', () => {
+    // The note is worth making — the flag was guessed — but nothing was lost,
+    // and the panel used to say one line could not be read.
+    const read = readRequirements(
+      reply({
+        requirements: [
+          { text: 'PhD in Computer Science', essential: 'true' },
+          { text: 'Rust', essential: false },
+        ],
+      }),
+    )
+    expect(read.ok).toBe(true)
+    if (!read.ok) return
+    expect(read.requirements).toHaveLength(2)
+    expect(read.skipped).toHaveLength(1)
+    expect(read.dropped).toBe(0)
+  })
+
+  it('counts every entry behind a single note about the limit', () => {
+    // One note, nine entries. The panel used to say one.
+    const over = MAX_REQUIREMENTS + 9
+    const read = readRequirements(
+      reply({
+        requirements: Array.from({ length: over }, (_, i) => ({
+          text: `requirement number ${String(i + 1)}`,
+          essential: false,
+        })),
+      }),
+    )
+    expect(read.ok).toBe(true)
+    if (!read.ok) return
+    expect(read.requirements).toHaveLength(MAX_REQUIREMENTS)
+    expect(read.skipped).toHaveLength(1)
+    expect(read.dropped).toBe(9)
+  })
+
+  it('counts each entry it really could not use', () => {
+    const read = readRequirements(
+      reply({
+        requirements: [
+          { text: 'PhD in Computer Science', essential: true },
+          { text: '   ' },
+          { text: 'PhD in computer science', essential: false },
+          7,
+        ],
+      }),
+    )
+    expect(read.ok).toBe(true)
+    if (!read.ok) return
+    expect(read.requirements).toHaveLength(1)
+    expect(read.dropped).toBe(3)
+    expect(read.dropped).toBe(read.skipped.length)
+  })
+})

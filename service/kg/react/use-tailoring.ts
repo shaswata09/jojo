@@ -32,7 +32,7 @@
 
 import { useCallback, useMemo } from 'react'
 import { agoLabel } from '../core/dates'
-import { isLive } from '../core/jobs'
+import { isOver, workState } from '../core/jobs'
 import type { Job } from '../core/jobs'
 import type { NodeId, ProfileDocument, SnippetTag } from '../core/model'
 import { postingSourceFor } from '../core/posting-source'
@@ -96,6 +96,15 @@ export type TailoringView = {
    * is what the card prints while it runs.
    */
   running: Job | null
+  /**
+   * Doubts the newest finished job raised about what it produced.
+   *
+   * Not an error: the document was written and saved. `readTailored` raises
+   * these when a reply came back with nothing marked, or much shorter than the
+   * source — things the person should know before they paste it into an
+   * application, and which used to be computed and then dropped on the floor.
+   */
+  notes: readonly string[]
   /** What the last job for this record failed with, until another is started. */
   error: string | null
   /** Queue this document. Returns at once — the work is not this screen's. */
@@ -172,15 +181,16 @@ export function useTailoring<S extends Cancellation>({
   )
 
   const queue = useJobs()
-  const mine = useJobsAbout(applicationId).filter((j) => j.kind === KIND)
-  const running = mine.find(isLive) ?? null
+  const all = useJobsAbout(applicationId)
   /*
-   * The newest failure, and only while nothing is going. A card that kept the
-   * last error under a job it had just started would be describing something
-   * the person has already moved past.
+   * The rule lives in `core/jobs.ts` so it can be asserted without a tree.
+   *
+   * It used to be three lines here, and it was wrong in a way nothing could
+   * catch: the failure was hidden only while SOMETHING was live, so a failure
+   * from an earlier document came back the moment a different one succeeded.
    */
-  const lastFailure = [...mine].reverse().find((j) => j.state === 'failed')
-  const error = running === null && lastFailure !== undefined ? (lastFailure.error ?? null) : null
+  const { running, error, notes } = workState(all, KIND)
+  const mine = all.filter((j) => j.kind === KIND)
 
   const cancel = useCallback(() => {
     if (running !== null) queue.cancel(running.id)
@@ -211,6 +221,19 @@ export function useTailoring<S extends Cancellation>({
          * `tailor` passes it to a transport that requires one.
          */
         run: async ({ signal, onStep }: JobControl<S>) => {
+          /*
+           * `onDelta` is what selects the STREAMED road, and dropping it in the
+           * move to the queue quietly turned streaming off for web tailoring.
+           * That is not cosmetic: a timeout is TOTAL on the batched road and
+           * IDLE on the streamed one. Web tailoring passes its own
+           * `DOCUMENT_TIMEOUT_MS` (four minutes), so the batched road gives a
+           * long CV four minutes end to end however steadily it is arriving,
+           * where the streamed road re-arms on every chunk and only gives up on
+           * a model that has actually stopped.
+           * It also puts the progress back on the card, which is the only sign
+           * a person has that a minute of silence is work.
+           */
+          let said = 0
           const outcome = await tailor({
             applicationId,
             fileId: candidate.id,
@@ -220,8 +243,20 @@ export function useTailoring<S extends Cancellation>({
             onStep: (next) => {
               onStep(`${TAILOR_STEP_LABEL[next]} · ${candidate.name}`)
             },
+            onDelta: (soFar) => {
+              // Every chunk notifies the whole registry, so the card is told in
+              // steps of twenty words rather than on each token.
+              const words = soFar.trim() === '' ? 0 : soFar.trim().split(/\s+/).length
+              if (words < said + 20) return
+              said = words
+              onStep(`Writing · ${candidate.name} · ${String(words)} words`)
+            },
           })
-          return outcome.ok ? { ok: true } : { ok: false, reason: outcome.reason }
+          return outcome.ok
+            ? // The doubts travel with the job, because the person who asked
+              // for this may be on another screen by the time it lands.
+              { ok: true, ...(outcome.notes.length === 0 ? {} : { notes: outcome.notes }) }
+            : { ok: false, reason: outcome.reason }
         },
       })
     },
@@ -234,9 +269,22 @@ export function useTailoring<S extends Cancellation>({
       const { value, restore } = undoableWith(repo, () =>
         run('vault.snippet.delete', { id: snippetId as NodeId }),
       )
+      /*
+       * And the job that produced it is forgotten, so its doubts go with it.
+       *
+       * `workState` reports the notes of the newest finished job, and nothing
+       * but a new job cleared them — so deleting the tailored document left its
+       * "nothing in the reply was marked" sitting under a card with no document
+       * on it, describing something that no longer exists.
+       */
+      if (value.ok) {
+        for (const j of mine) {
+          if (isOver(j) && (j.notes?.length ?? 0) > 0) queue.forget(j.id)
+        }
+      }
       return { result: value, restore }
     },
-    [graph, repo, run],
+    [graph, repo, run, mine, queue],
   )
 
   const configured = settings.model.trim() !== ''
@@ -256,6 +304,7 @@ export function useTailoring<S extends Cancellation>({
     candidates,
     tailored,
     running,
+    notes,
     error,
     start,
     cancel,

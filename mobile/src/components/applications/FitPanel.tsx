@@ -54,7 +54,12 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
   const actions: MenuAction[] = [
     // Re-run is the item that needs a model; Clear does not, which is why the
     // menu itself is offered on `ready || reading` and this item on `ready`.
-    ...(fit.ready
+    //
+    // And withheld while a read is QUEUED, because pressing it then stacked a
+    // second read behind the first. The menu itself stays open in that window:
+    // Clear is what stops a queued read landing on a reading the person has
+    // just discarded, so it is the one control that must work during it.
+    ...(fit.ready && !fit.queued
       ? [
           {
             id: 'rerun',
@@ -168,9 +173,17 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
 
       {/* An answer, not a gap: nothing here offers to fill it in. The menu
           turns back into "Measure this posting", which is the one way back. */}
-      {fit.blocked === null && fit.cleared && fit.step === null && (
+      {fit.blocked === null && fit.cleared && fit.step === null && !fit.queued && (
         <Txt size="sm" tone="secondary">
           You cleared this reading, so jojo is leaving this posting alone.
+        </Txt>
+      )}
+
+      {/* Queued is not idle: one job runs at a time and tailoring shares the
+          queue, so a read can wait a whole minute before it starts. */}
+      {fit.queued && (
+        <Txt size="sm" tone="secondary">
+          Queued…
         </Txt>
       )}
 

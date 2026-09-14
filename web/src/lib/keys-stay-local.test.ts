@@ -17,13 +17,59 @@ import { describe, expect, it } from 'vitest'
 import { NODE_TYPES } from '@jojo/service/core/model'
 import { SERVERS_KEY, STORAGE_KEY } from '@/lib/model-settings-context'
 
-const sources = import.meta.glob('/src/**/*.{ts,tsx}', {
+/*
+ * ALL THREE workspaces, not just this app.
+ *
+ * The source-text checks below used to glob `/src/**` — this app alone — while
+ * the mistake they describe ("somebody adds 'remember my key' as a tool so the
+ * agent can set it") would land in `service/kg/tools/`, which is exactly where
+ * the ninety-six tools live and exactly what was never read. The phone has its
+ * own settings store and could make the same mistake independently.
+ *
+ * Reached by FILE-relative globs, the way `code-structure.test.ts` reaches the
+ * service: Vite resolves them like an import, so this needs no `node:fs` and no
+ * new tsconfig grant. `check-no-copies` allows a relative reach into the
+ * package when it is `query: '?raw'`, because that yields the file's TEXT and
+ * instantiates nothing — the guard reads the option to tell the two apart.
+ */
+const globbed = import.meta.glob('/src/**/*.{ts,tsx}', {
   query: '?raw',
   import: 'default',
   eager: true,
 }) as Record<string, string>
 
+const elsewhere = {
+  ...(import.meta.glob('../../../service/{kg,data}/**/*.ts', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>),
+  ...(import.meta.glob('../../../mobile/src/**/*.{ts,tsx}', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>),
+}
+
+const sources: Record<string, string> = { ...globbed, ...elsewhere }
+
 const SELF = '/src/lib/keys-stay-local.test.ts'
+
+describe('what this actually reads', () => {
+  it('reaches all three workspaces, so the checks below are not vacuous', () => {
+    /*
+     * The failure this exists to catch is silent: a glob that matches nothing
+     * makes every source-text assertion in this file pass forever, and a guard
+     * that cannot fail is worse than no guard because it is believed. The
+     * service half of `code-structure.test.ts` drifted for months behind
+     * exactly this.
+     */
+    const paths = Object.keys(sources)
+    expect(paths.some((p) => p.includes('/service/kg/tools/'))).toBe(true)
+    expect(paths.some((p) => p.includes('/mobile/src/'))).toBe(true)
+    expect(paths.filter((p) => p.startsWith('/src/')).length).toBeGreaterThan(100)
+  })
+})
 
 describe('where a key is allowed to live', () => {
   it('is not a node type, so a backup cannot serialise one', () => {

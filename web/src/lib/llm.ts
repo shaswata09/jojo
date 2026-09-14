@@ -153,7 +153,13 @@ async function sendToModel(
       headers: request.headers,
       ...(request.body === undefined ? {} : { body: request.body }),
     },
-    ...(onChunk ? ([onChunk] as const) : ([] as const)),
+    /*
+     * `onChunk` may be absent and `signal` present, so these are passed
+     * positionally rather than spread from a conditional tuple: Stop has to
+     * reach the relay whether or not this request is streamed.
+     */
+    onChunk,
+    signal,
   )
   if (!('failed' in relayed)) return relayed
 
@@ -360,6 +366,17 @@ async function readStream(
     signal,
   )
   if (failed(out)) return out
+  /*
+   * A non-2xx is NOT a `failed` — `failed` means the fetch never happened at
+   * all. `sendStream` hands a 401, a 429 or a 500 back in the ordinary shape,
+   * with the provider's own error document in `text`, exactly as the batched
+   * road does. Without this the reader ran on an error body, assembled nothing,
+   * and the person was told "the model returned an empty turn" — so an expired
+   * API key, a rate limit and a provider outage all produced the one sentence
+   * that describes none of them, and the `retry-after` a 429 carries was
+   * dropped with it.
+   */
+  if (!out.ok) return out
   // A body that never produced a `[DONE]`; `end` returns what did arrive.
   if (assembled === null) drain(reader.end())
 
@@ -453,6 +470,10 @@ async function readRelayedStream(
     drain(reader.push(chunk))
   })
   if (failed(out)) return out
+  // The same non-2xx case as `readStream`: the relay hands back the provider's
+  // status and error document, and pushing that through the reader would turn
+  // "Invalid API key" into "the model returned an empty turn".
+  if (!out.ok) return out
 
   /*
    * The whole body, pushed through the SAME reader, when nothing arrived in

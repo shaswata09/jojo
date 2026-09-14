@@ -39,6 +39,7 @@ import { agoLabel } from '../core/dates'
 import { answered, isCleared, readingOn, staleOf } from '../core/fit-reading'
 import type { Stale } from '../core/fit-reading'
 import { nextFitAction } from '../core/fit-request'
+import { isLive, isOver } from '../core/jobs'
 import type { NodeId, PostingReading } from '../core/model'
 import { postingSourceFor } from '../core/posting-source'
 import type { PostingSource } from '../core/posting-source'
@@ -91,6 +92,15 @@ export type FitView = {
   readNote: string | null
   /** The step a read is on, or null when nothing is running. */
   step: FitStep | null
+  /**
+   * Waiting for a slot rather than reading.
+   *
+   * `LIMIT` is one and the queue is shared with tailoring, so a read asked for
+   * while something else is working sits here — and a card that showed only
+   * `step` reported that as nothing happening at all: empty panel, Re-run still
+   * offered, and pressing it stacked a second read behind the first.
+   */
+  queued: boolean
   error: string | null
   /**
    * Whether a read could happen — what Re-run is offered on.
@@ -177,10 +187,30 @@ export function useFit<S extends Cancellation>({
   const startKey = action.do === 'start' ? action.key : null
   const job = useJob(startKey)
   const step = job?.state === 'running' ? ((job.step ?? null) as FitStep | null) : null
+  const queued = job?.state === 'queued'
   const error = job?.state === 'failed' ? (job.error ?? null) : null
 
   useEffect(() => {
     if (startKey === null || fileId === undefined || name === undefined) return
+    /*
+     * The AUTOMATIC read is asked once per key; a person asking is never refused.
+     *
+     * A read that FAILS writes nothing — no reading and no tombstone — so the
+     * decision that sent it is the same on the next mount, and `enqueue`
+     * replaces a settled job rather than refusing it. A posting that cannot be
+     * read (a search-results page, a login shell) therefore went back to the
+     * model on every single visit to the record, for as long as it was filed,
+     * with no way for the person to stop it.
+     *
+     * `attempt === 0` is what makes this the automatic read rather than a
+     * request, and the qualifier is load-bearing. Without it this re-created a
+     * bug this hook has had before and fixed before: Re-run (attempt 1), then
+     * Clear — which puts `attempt` back to 0 and cancels that job — then
+     * "Measure this posting", which is attempt 1 again and therefore the SAME
+     * key, now holding a settled job. The button did nothing, for ever, with no
+     * error and nothing to press. A person asking always gets a request.
+     */
+    if (attempt === 0 && job !== undefined && isOver(job)) return
     const { readFit: read, settings: model } = latest.current
     queue.start({
       id: startKey,
@@ -209,6 +239,11 @@ export function useFit<S extends Cancellation>({
     })
     // No cleanup. A read abandoned when the person changed screens was a read
     // paid for twice; the queue owns it now, and only `cancel` stops one.
+    // `job` is read, not depended on: it changes as the run reports steps, and
+    // re-running this effect on every step would re-enqueue mid-read. What it
+    // is consulted for — "has this key already settled" — is decided when the
+    // key changes, which is in the list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queue, startKey, fileId, name, applicationId, attempt])
 
   const guidance = useMemo(
@@ -233,19 +268,37 @@ export function useFit<S extends Cancellation>({
      * be on if they had never pressed anything, which is the state a clear puts
      * them back into.
      */
-    /*
-     * The counter goes back to zero, and nothing else needs resetting: the job
-     * for `f#1` has settled by the time there is a reading to clear, and
-     * `enqueue` replaces a settled job with the same id. That is what makes
-     * "Measure this posting" work after a Re-run — the dead button this hook
-     * had when the record of "already asked" was a ref it never reset.
-     */
     setAttempt(0)
+    /*
+     * And the read in flight is stopped, which the counter alone cannot do.
+     *
+     * This hook used to assume the job had always settled by the time there was
+     * a reading to clear. That is true of the FIRST read and false of a Re-run:
+     * pressing Re-run while the stored reading is still on screen
+     * queues `f#1` behind whatever the queue is doing — the limit is one and
+     * tailoring shares it — and clearing during that window wrote the tombstone
+     * first and let the read overwrite it a minute later. The verdict the
+     * person threw away then came back on its own.
+     */
+    /*
+     * Every live read of this DOCUMENT, not just the one this mount started.
+     *
+     * `attempt` is component state and dies with the panel, so `startKey` is
+     * null on a fresh mount — and the flow the queue exists for is exactly the
+     * one that loses it: press Re-run, go and look at something else, come
+     * back, clear. The read was still queued under the attempt that mount no
+     * longer remembers, so the tombstone went down and the read wrote over it a
+     * minute later. Job ids for a fit read are `<fileId>#<attempt>`, which is
+     * what makes them findable without remembering the number.
+     */
+    for (const j of queue.all()) {
+      if (j.kind === 'fit' && isLive(j) && j.id.startsWith(`${fileId}#`)) queue.cancel(j.id)
+    }
     const { value, restore } = undoableWith(repo, () =>
       run('fit.reading.clear', { fileId: fileId as NodeId }),
     )
     return { result: value, restore }
-  }, [run, repo, fileId, reading])
+  }, [run, repo, fileId, reading, queue])
 
   /*
    * `dayOf`, not `readAt.slice(0, 10)`.
@@ -290,6 +343,7 @@ export function useFit<S extends Cancellation>({
     stale: staleOf(reading, settings.model),
     readNote,
     step,
+    queued,
     error,
     ready,
     rerun,

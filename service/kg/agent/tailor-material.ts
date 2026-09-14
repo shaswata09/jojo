@@ -236,8 +236,30 @@ const PREAMBLE =
  * the parser read as three real changes each saying "text". Rule 3 no longer
  * shows a copyable word, and this strips the echo if one comes back anyway,
  * so a degenerate mark is neither shown as a change nor counted as one.
+ *
+ * ANCHORED TO THE START OF A LINE, which is the shape the echo actually has —
+ * a marker standing in front of a passage. Unanchored, this matched anywhere
+ * and deleted the words themselves: a researcher's `Builds **text** retrieval
+ * systems for low-resource languages` lost `**text**` outright, so the saved
+ * snippet read "Builds retrieval systems" and the loss was invisible, because
+ * the document it is compared against is the model's reply and not the source.
+ * `**words**`, `**word**` and `_passage_` are all real things to write in a CV.
+ *
+ * PAST A LIST MARKER, because a CV's changed unit is a bullet and `plainSource`
+ * rewrites every bullet to `- `. Anchored at column zero alone, the echo went
+ * straight through on every line that mattered — and a surviving echo is worse
+ * than a cosmetic mark, because `hasMarks` then reads the reply as tailored and
+ * the unchanged-document guard below never fires. The marker is CAPTURED and
+ * put back, so stripping an echo does not also flatten the list.
+ *
+ * The bullet has to be followed by whitespace, or `[-*+]?` would eat the first
+ * star of a `**text**` that has no bullet at all and strand the second.
+ *
+ * The inner gaps are spaces and tabs rather than `\s`, so a stripped echo
+ * cannot swallow the newline after it and weld two lines together.
  */
-const PLACEHOLDER = /(\*\*|__|_|\*)\s*(?:text|…|\.\.\.|passage|words?)\s*\1\s*/gi
+const PLACEHOLDER =
+  /^([ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?)(\*\*|__|_|\*)[ \t]*(?:text|…|\.\.\.|passage|words?)[ \t]*\2[ \t]*/gim
 
 /** Not a document at all: the model declined, or explained itself instead. */
 const REFUSAL =
@@ -261,7 +283,7 @@ export function readTailored(reply: string, brief: TailorBrief): TailoredRead {
   let text = reply.trim().replace(PREAMBLE, '').trim()
   const fenced = FENCE.exec(text)
   if (fenced) text = (fenced[1] ?? '').trim()
-  text = text.replace(PREAMBLE, '').replace(PLACEHOLDER, '').trim()
+  text = text.replace(PREAMBLE, '').replace(PLACEHOLDER, '$1').trim()
 
   if (text.length < TOO_SHORT[modeFor(brief.base.length)]) {
     return {

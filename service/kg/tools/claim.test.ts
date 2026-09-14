@@ -42,7 +42,7 @@ function world() {
   const background = (kind: string, title: string) => {
     const out = runtime.run('profile.background.add', { background: [{ kind, title }] } as never)
     if (!out.ok) throw new Error('fixture failed')
-    return (out.output as NodeId[])[0]!
+    return (out.output as { ids: NodeId[] }).ids[0]!
   }
 
   const paper = background('publication', 'Consistency without coordination')

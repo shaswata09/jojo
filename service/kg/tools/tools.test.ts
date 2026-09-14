@@ -1041,7 +1041,7 @@ describe('the composites', () => {
           { kind: 'skill', title: 'Rust' },
         ],
       }),
-    ) as string[]
+    ).ids as string[]
 
     expect(ids).toHaveLength(3)
     const m = h.repo.getSnapshot()
@@ -1052,6 +1052,57 @@ describe('the composites', () => {
         .map((n) => n.props.kind)
         .sort(),
     ).toEqual(['education', 'publication', 'skill'])
+  })
+
+  it('says nothing was recorded when a re-read of the same CV wrote nothing', () => {
+    /*
+     * The way a profile gets updated is a newer CV, and most of a newer CV is
+     * the older one — so "nothing changed" is the COMMON outcome, not the edge
+     * case. `describe` used to read freshness off the stored timestamps
+     * (`createdAt === updatedAt`), which is true of a node minted in this call
+     * AND of any node minted months ago and never edited since. Re-filing a CV
+     * whose facts were all already known therefore wrote nothing and announced
+     * every one of them as recorded — in the toast, in the permanent journal
+     * label, and on the twin pipeline's approval card.
+     */
+    const h = harness()
+    // A function, so each call gets its own mutable array: the tool's input
+    // type is not readonly, and `as const` would make it one.
+    const facts = () => ({
+      background: [
+        { kind: 'education' as const, title: 'PhD, Computer Science', where: 'Illinois' },
+        { kind: 'skill' as const, title: 'Rust' },
+      ],
+    })
+    const first = h.runtime.run('profile.background.add', facts())
+    expect(first.ok).toBe(true)
+    if (first.ok) expect(first.announcement.title).toBe('2 facts recorded')
+
+    const again = h.runtime.run('profile.background.add', facts())
+    expect(again.ok).toBe(true)
+    if (again.ok) {
+      expect(again.output.created).toEqual([])
+      expect(again.announcement.title).toBe('All 2 were already on your profile')
+    }
+    expect(h.repo.getSnapshot().ofType('background')).toHaveLength(2)
+  })
+
+  it('counts the new ones apart from the known ones when a CV has grown', () => {
+    const h = harness()
+    h.runtime.run('profile.background.add', {
+      background: [{ kind: 'education', title: 'PhD, Computer Science', where: 'Illinois' }],
+    })
+    const grown = h.runtime.run('profile.background.add', {
+      background: [
+        { kind: 'education', title: 'PhD, Computer Science', where: 'Illinois' },
+        { kind: 'skill', title: 'Rust' },
+      ],
+    })
+    expect(grown.ok).toBe(true)
+    if (grown.ok) {
+      expect(grown.output.created).toHaveLength(1)
+      expect(grown.announcement.title).toBe('1 recorded, 1 already known')
+    }
   })
 
   it('recognises a fact it already holds rather than filing it twice', () => {
@@ -1065,7 +1116,7 @@ describe('the composites', () => {
       h.runtime.run('profile.background.add', {
         background: [{ kind: 'education', title: 'PhD, Computer Science', where: 'Illinois' }],
       }),
-    )
+    ).ids
     const again = okOr(
       h.runtime.run('profile.background.add', {
         background: [
@@ -1073,7 +1124,7 @@ describe('the composites', () => {
           { kind: 'skill', title: 'Rust' },
         ],
       }),
-    )
+    ).ids
     expect(again[0]).toBe(first[0])
     const m = h.repo.getSnapshot()
     expect(m.ofType('background')).toHaveLength(2)
@@ -1092,7 +1143,7 @@ describe('the composites', () => {
           { kind: 'employment', title: 'Postdoctoral Researcher', where: 'Allen Institute for AI' },
         ],
       }),
-    )
+    ).ids
     const [again] = okOr(
       h.runtime.run('profile.background.add', {
         background: [
@@ -1103,7 +1154,7 @@ describe('the composites', () => {
           },
         ],
       }),
-    )
+    ).ids
     expect(again).toBe(first)
     expect(h.repo.getSnapshot().ofType('background')).toHaveLength(1)
   })
@@ -1130,7 +1181,7 @@ describe('the composites', () => {
     const h = harness()
     const [byHand] = okOr(
       h.runtime.run('profile.background.add', { background: [{ kind: 'skill', title: 'Rust' }] }),
-    )
+    ).ids
     okOr(
       h.runtime.run('profile.background.add', {
         background: [{ kind: 'skill', title: 'Rust', source: 'file:cv-v1' }],
@@ -1166,7 +1217,7 @@ describe('the composites', () => {
           { kind: 'skill', title: 'Go' },
         ],
       }),
-    ) as string[]
+    ).ids as string[]
 
     okOr(h.runtime.run('profile.background.update', { id: ids[0]!, title: 'Rust (async)' }))
     const m = h.repo.getSnapshot()
@@ -1194,7 +1245,7 @@ describe('the composites', () => {
           },
         ],
       }),
-    )
+    ).ids
     okOr(h.runtime.run('profile.background.update', { id: id!, where: null, year: null }))
     let props = h.repo.getSnapshot().node(id!, 'background')?.props
     expect(props).not.toHaveProperty('where')
@@ -1222,7 +1273,7 @@ describe('the composites', () => {
       h.runtime.run('profile.background.add', {
         background: [{ kind: 'award', title: 'A prize that was misread' }],
       }),
-    ) as string[]
+    ).ids as string[]
 
     okOr(h.runtime.run('profile.background.delete', { id: ids[0]! }))
     expect(h.repo.getSnapshot().ofType('background')).toHaveLength(0)

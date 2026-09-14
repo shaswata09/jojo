@@ -644,6 +644,16 @@ export async function callModel(
    * chunks, then the full text" as an ordinary outcome rather than a failure.
    */
   onChunk?: (text: string) => void,
+  /**
+   * Stops waiting for the relay when the person presses Stop.
+   *
+   * `ask` has always honoured a signal; this parameter is the piece that was
+   * missing between it and the transport, and without it Stop did nothing at
+   * all on every cloud provider — the request went through the extension, the
+   * signal stayed in the caller, and the model kept writing and kept being
+   * billed while the app said it had stopped.
+   */
+  signal?: AbortSignal,
 ): Promise<{ ok: boolean; status: number; text: string } | { failed: { reason: string } }> {
   /*
    * Asked first, and cheaply, whether there is an extension at all.
@@ -667,7 +677,11 @@ export async function callModel(
     }
   }
 
-  const reply = await ask({ model: request, ...(onChunk ? { stream: true, onChunk } : {}) })
+  const reply = await ask({
+    model: request,
+    ...(onChunk ? { stream: true, onChunk } : {}),
+    ...(signal ? { signal } : {}),
+  })
 
   if (reply === null) {
     return {

@@ -69,6 +69,17 @@ export type Job = {
   /** Why it failed, in the user's words. Only on `failed`. */
   readonly error?: string
   /**
+   * Doubts the work raised about its own result. Only on `done`.
+   *
+   * Not an error — the thing was produced and saved. A tailored document whose
+   * model marked nothing, or answered in the wrong language, is still the
+   * person's document, and they are the ones who decide what to do about it.
+   * Kept on the job because the run that knows these is over by the time
+   * anybody is looking at the card, and because the person may be on another
+   * screen when it finishes.
+   */
+  readonly notes?: readonly string[]
+  /**
    * Whether finishing is worth telling the person about.
    *
    * True for work somebody asked for and then walked away from — that is the
@@ -178,6 +189,50 @@ export const live = (jobs: readonly Job[]): readonly Job[] => jobs.filter(isLive
 /** One record's jobs, newest last. What a panel renders. */
 export const about = (jobs: readonly Job[], recordId: string): readonly Job[] =>
   jobs.filter((j) => j.about === recordId)
+
+/** What a card says about one family of work: what is going, and what went wrong. */
+export type WorkState = {
+  /** The live job, or null. Queued counts — waiting is not idle. */
+  readonly running: Job | null
+  /** The failure worth showing, or null. */
+  readonly error: string | null
+  /** Doubts the newest finished job raised. Empty when there are none. */
+  readonly notes: readonly string[]
+}
+
+/**
+ * The rule a card follows, decided here rather than inside a hook.
+ *
+ * It was inside one, which under D20 meant nothing could assert it: dropping
+ * the guard changed what a person saw and no test moved.
+ *
+ * The rule it replaces was "the newest FAILED job, whenever nothing of this
+ * kind is live". That hides a failure only while something is running, so once
+ * a later document finished successfully the older failure came back — a red
+ * error under a card whose last two jobs both worked, naming a document the
+ * person had moved on from.
+ *
+ * What this says instead: a failure is shown only when it is the NEWEST thing
+ * to have finished. Anything else is describing the past.
+ *
+ * A CANCELLED job is transparent here, neither reported nor allowed to mask.
+ * Somebody stopping something is not an outcome — a person who cancels a cover
+ * letter has not thereby fixed the CV that failed before it, and hiding that
+ * error would be the card quietly forgetting a thing that is still true.
+ */
+export function workState(jobs: readonly Job[], kind: string): WorkState {
+  const mine = jobs.filter((j) => j.kind === kind)
+  const running = mine.find(isLive) ?? null
+  // Insertion order is the order they were asked for, so the last settled one
+  // is the newest.
+  const newest = [...mine].reverse().find((j) => j.state === 'done' || j.state === 'failed')
+  return {
+    running,
+    error:
+      running === null && newest?.state === 'failed' ? (newest.error ?? 'That did not finish.') : null,
+    notes: running === null && newest?.state === 'done' ? (newest.notes ?? []) : [],
+  }
+}
 
 /**
  * Drop the oldest settled jobs past `REMEMBERED`.

@@ -206,3 +206,60 @@ describe('what marks digits as money', () => {
     })
   }
 })
+
+describe('which period word labels the amount', () => {
+  /*
+   * `PERIODS` is declared shortest-first, and the period used to be "the first
+   * ENTRY whose pattern appears anywhere in the text". So any shorter period
+   * word anywhere in a package beat the real one, always upward: an annual
+   * salary read as an hourly rate is out by a factor of about two thousand,
+   * and `periodStated` said it was certain rather than guessed.
+   */
+  it('takes the word attached to the number, not the first one in the text', () => {
+    expect(parseComp('£55,000 per annum, 35 hour week')?.period).toBe('year')
+    expect(parseComp('$120,000/year (approx $57.69/hour)')?.period).toBe('year')
+    expect(parseComp('$95,000/yr, 4 day week')?.period).toBe('year')
+  })
+
+  it('still reads a rate that really is one', () => {
+    expect(parseComp('$60/hr')?.period).toBe('hour')
+    expect(parseComp('$45,000 per month')?.period).toBe('month')
+  })
+
+  it('ignores a period word that labels a different number', () => {
+    /*
+     * "£55,000 - £65,000, 35 hour week" is the commonest UK salary format, and
+     * the nearest period word in it belongs to the WORKING WEEK. Taking it read
+     * the salary as an hourly rate and marked it stated — the original defect,
+     * with a range left in. Nothing here states the pay period, so the honest
+     * answer is a year, and marked as the guess it is.
+     */
+    for (const text of [
+      '£55,000 - £65,000, 35 hour week',
+      '£55,000–£65,000, 35 hour week',
+      '$95,000 to $110,000, 4 day week',
+    ]) {
+      const read = parseComp(text)
+      expect(read?.period, text).toBe('year')
+      expect(read?.periodStated, text).toBe(false)
+    }
+  })
+
+  it('falls back to the nearest period word when none touches the amount', () => {
+    const read = parseComp('£55,000, reviewed annually')
+    expect(read?.period).toBe('year')
+    expect(read?.periodStated).toBe(true)
+  })
+
+  it('still reads a period stated in prose beside the money', () => {
+    const paid = parseComp('$60, paid hourly')
+    expect(paid?.period).toBe('hour')
+    expect(paid?.periodStated).toBe(true)
+  })
+
+  it('still assumes a year, and says so, when nothing states one', () => {
+    const read = parseComp('$112k base')
+    expect(read?.period).toBe('year')
+    expect(read?.periodStated).toBe(false)
+  })
+})

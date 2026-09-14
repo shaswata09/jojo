@@ -840,8 +840,12 @@ describe('the cross-tab channel', () => {
       { kind: 'put', store: 'nodes', key: 'app:1', value: node('app:1', 'rice', 'One') },
       {
         kind: 'put',
+        // `key: null`, which is how the repository actually appends a journal
+        // row — it lets the store mint the number. The fixture used to name a
+        // key, which only housekeeping does, and that is now the thing that
+        // tells a real write apart from the boot-time audit prune.
         store: 'ops',
-        key: 1,
+        key: null,
         value: { id: 'entry-7', at: '2026-10-12T13:00:00.000Z', tool: 't', label: 'l' },
       },
     ])

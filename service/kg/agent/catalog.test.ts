@@ -53,11 +53,40 @@ describe('the name problem', () => {
 })
 
 describe('destructiveness', () => {
-  it('marks delete and admin, and nothing else', () => {
+  it('marks delete and admin, plus the tools that ask to be', () => {
+    /*
+     * The rule used to be "delete or admin, and nothing else", and it was the
+     * assertion as much as the derivation: two tools that had to be confirmed
+     * could not say so. `application.offer.clear` drops a whole offer package
+     * and had always returned `tone: 'danger'` from its own `describe`, and
+     * `assistant.thread.auto.set` raises the agent's own permission. Both are
+     * honestly an `update` to one record. See `Tool.destructive`.
+     */
     const destructive = CATALOG.filter((e) => e.destructive)
-    expect(destructive.every((e) => e.effect === 'delete' || e.effect === 'admin')).toBe(true)
+    expect(
+      destructive.every(
+        (e) =>
+          e.effect === 'delete' ||
+          e.effect === 'admin' ||
+          ['application.offer.clear', 'assistant.thread.auto.set'].includes(e.name),
+      ),
+    ).toBe(true)
     expect(destructive.some((e) => e.name === 'application.delete')).toBe(true)
     expect(CATALOG.find((e) => e.name === 'application.create')?.destructive).toBe(false)
+  })
+
+  it('counts nineteen, which is a number three comments quote', () => {
+    /*
+     * Pinned because nothing pinned it, and the neighbouring counts hid that:
+     * flipping any tool's `effect` from 'delete' to 'update' left CATALOG at
+     * 96, non-read at 86 and NODE_TYPES at 16, so every existing assertion
+     * passed while a tool quietly stopped being confirmed.
+     *
+     * If this fails, update it here AND in:
+     *   kg/agent/loop.ts   — the `GATE_FOR` comment and the three-settings one
+     *   core/model.ts      — the `APPROVAL_LABEL` paragraph
+     */
+    expect(CATALOG.filter((e) => e.destructive)).toHaveLength(19)
   })
 
   it('singles out the operations that both destroy and cannot be undone', () => {

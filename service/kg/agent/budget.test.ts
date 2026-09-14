@@ -18,6 +18,7 @@ import {
   fitHistory,
   fitsWindow,
   stubFor,
+  stubToFit,
   trimNote,
 } from './budget'
 import { MIN_SUMMARY_CHARS } from './compact'
@@ -1270,5 +1271,61 @@ describe('the turn-one fact, twenty thousand tokens later', () => {
     expect(out.stubbed).toBeGreaterThan(0)
     expect(wellFormed(out.history)).toBe(true)
     expect(tokensOf(out.history)).toBeLessThanOrEqual(Math.round(26_600 * COMPACT_TARGET))
+  })
+})
+
+describe('a request that grows during one run', () => {
+  /*
+   * `fitHistory` is asked once, before the first round. Everything after it
+   * only grows — an assistant turn and one `tool` message per call each round,
+   * each up to the result cap — so a run could hand the server a request well
+   * past the window it was measured against, and a server over its window cuts
+   * from the FRONT: the system prompt and the person's question.
+   */
+  const assistant = (id: string): ChatMessage => ({
+    role: 'assistant',
+    content: '',
+    tool_calls: [{ id, type: 'function', function: { name: 'vault.file.read', arguments: '{}' } }],
+  })
+  const result = (id: string, size: number): ChatMessage => ({
+    role: 'tool',
+    tool_call_id: id,
+    content: 'x'.repeat(size),
+  })
+
+  const run = (rounds: number): ChatMessage[] => [
+    { role: 'system', content: 'the rules' },
+    { role: 'user', content: 'read my CV and file it' },
+    ...Array.from({ length: rounds }, (_, i) => [assistant(`c${String(i)}`), result(`c${String(i)}`, 6000)]).flat(),
+  ]
+
+  it('leaves a request that already fits completely alone', () => {
+    const messages = run(1)
+    const out = stubToFit(messages, [], 128_000)
+    expect(out.stubbed).toBe(0)
+    expect(out.messages).toEqual(messages)
+  })
+
+  it('shortens the oldest results until it fits, and no further', () => {
+    const messages = run(8)
+    const out = stubToFit(messages, [], 8192)
+    expect(out.stubbed).toBeGreaterThan(0)
+    expect(out.stubbed).toBeLessThan(8)
+    // Oldest first: the last result is the one the model still needs.
+    expect(out.messages.at(-1)?.content).toBe('x'.repeat(6000))
+  })
+
+  it('never drops a message, so no tool result is orphaned from its call', () => {
+    const messages = run(8)
+    const out = stubToFit(messages, [], 1024)
+    expect(out.messages).toHaveLength(messages.length)
+    const calls = out.messages.flatMap((m) =>
+      m.role === 'assistant' ? (m.tool_calls ?? []).map((c) => c.id) : [],
+    )
+    const answered = out.messages.flatMap((m) => (m.role === 'tool' ? [m.tool_call_id] : []))
+    expect(answered.sort()).toEqual(calls.sort())
+    // And the two that must survive are still at the front.
+    expect(out.messages[0]?.role).toBe('system')
+    expect(out.messages[1]?.role).toBe('user')
   })
 })

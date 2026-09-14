@@ -569,6 +569,22 @@ export function captureFileName(url: string, title: string, day: string): string
 }
 
 /**
+ * Whether a host IS a board's domain, or sits under it.
+ *
+ * A bare `endsWith` is not that test, and the difference is a real
+ * host rather than a hypothetical one: `careers.unilever.co` ends with
+ * `lever.co`, `jobs.clever.co` does too, and `evergreenhouse.io` ends with
+ * `greenhouse.io`. Any of them with a path shaped like the board's was read as
+ * that board — canonicalised onto the board's own URL shape, deduplicated
+ * against real postings there, and filed under the wrong employer.
+ *
+ * The dot is the whole fix: a domain matches itself, or something one label
+ * below it, and nothing that merely ends with the same letters.
+ */
+export const onBoard = (host: string, domain: string): boolean =>
+  host === domain || host.endsWith(`.${domain}`)
+
+/**
  * The address of a posting, rewritten to the one that opens without a login.
  *
  * Measured against LinkedIn: `/jobs/view/<id>` and `/jobs/view/<slug>-<id>` both
@@ -600,11 +616,11 @@ export function canonicalPostingUrl(url: string): string {
     const parsed = new URL(url)
     const host = parsed.hostname.toLowerCase()
 
-    if (host.endsWith('linkedin.com')) return linkedIn(parsed)
-    if (host.endsWith('greenhouse.io')) return greenhouse(parsed)
-    if (host.endsWith('lever.co')) return lever(parsed)
-    if (host.endsWith('ashbyhq.com')) return ashby(parsed)
-    if (host.endsWith('myworkdayjobs.com')) return workday(parsed, host)
+    if (onBoard(host, 'linkedin.com')) return linkedIn(parsed)
+    if (onBoard(host, 'greenhouse.io')) return greenhouse(parsed)
+    if (onBoard(host, 'lever.co')) return lever(parsed)
+    if (onBoard(host, 'ashbyhq.com')) return ashby(parsed)
+    if (onBoard(host, 'myworkdayjobs.com')) return workday(parsed, host)
 
     return url
   } catch {

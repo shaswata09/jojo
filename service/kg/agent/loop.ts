@@ -63,7 +63,7 @@ import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
 import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor, select } from './retrieve'
-import { fitHistory, fitsWindow, summarisedNote, trimNote } from './budget'
+import { fitHistory, fitsWindow, stubToFit, stubbedNote, summarisedNote, trimNote } from './budget'
 import type { Trimmed } from './budget'
 import { pickTools, type ChooserDeps } from './retrieve-llm'
 import { asMessage, compact } from './compact'
@@ -286,10 +286,11 @@ export type AgentOptions = {
   /**
    * Which steps have to be approved. Defaults to `destructive`.
    *
-   * `destructive` is delete and admin — 17 of the 96 catalog entries, the ones
-   * whose catalog description already warns the model about them. `writes` is
-   * every step that is not a read: 73 of them, which is what "ask me before it
-   * changes anything" actually means.
+   * `destructive` is delete and admin, plus the tools that declare themselves
+   * so — 19 of the 96 catalog entries, the ones whose catalog description
+   * already warns the model about them. `writes` is every step that is not a
+   * read: 86 of them, which is what "ask me before it changes anything"
+   * actually means.
    *
    * The policy is the CALLER'S, which is why it is here rather than widening
    * `destructive` in `catalog.ts`. That flag is load-bearing elsewhere — it
@@ -1171,6 +1172,27 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
     if (signal?.aborted) return finish('aborted')
 
     /*
+     * Re-fitted before EVERY round, not only before the first.
+     *
+     * `fitHistory` above runs once, and everything after it only grows: each
+     * round pushes an assistant turn and one `tool` message per call, each up
+     * to the result cap. A run of several rounds could therefore send a request
+     * well past the window it was measured against, and a server over its
+     * window truncates from the FRONT — taking the system prompt and the
+     * person's own question, the two parts that must survive.
+     *
+     * `stubToFit` only shortens old tool results to their stubs, so nothing is
+     * orphaned and nothing is lost that the store cannot give back.
+     */
+    if (options.window !== undefined) {
+      const refit = stubToFit(messages, [tools], options.window)
+      if (refit.stubbed > 0) {
+        messages.splice(0, messages.length, ...refit.messages)
+        onEvent({ type: 'note', app: true, text: stubbedNote(refit.stubbed) })
+      }
+    }
+
+    /*
      * The delta sink, rebuilt per round so a fragment can never be attributed to
      * the round before it. `onDelta` is optional on the port: a caller that does
      * not stream simply never calls it.
@@ -1764,11 +1786,12 @@ async function performCall(
    * Three settings, and the middle one is where the interesting failure lives.
    *
    *   writes       — every non-read step (86 of 96 tools)
-   *   destructive  — only `delete` and `admin` effects (17 of 96)
+   *   destructive  — `delete` and `admin`, plus the tools that ask (19 of 96)
    *   none         — nothing, and the person chose that explicitly
    *
-   * `destructive` is not "the dangerous ones", it is "the ones that remove a
-   * record". Closing an application is a `move`, so it passes here — which is
+   * `destructive` USED to be exactly "the ones that remove a record", and is
+   * now that plus the few tools that declare themselves so — an offer package
+   * being cleared, and the agent's own permission being raised. Closing an application is a `move`, so it passes here — which is
    * the measured gap this exists to be honest about, not a bug in this line.
    */
   const mode = options.gate ?? 'destructive'

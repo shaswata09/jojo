@@ -103,6 +103,63 @@ const AMOUNT_SCAN = new RegExp(AMOUNT.source, 'gi')
 const PERIOD_AFTER = PERIODS.map((p) => new RegExp(`^\\s*(?:${p.pattern.source})`, 'i'))
 
 /**
+ * The period word closest to the amount, when none of them touches it.
+ *
+ * The fallback for a package written as prose — "£55,000, reviewed annually",
+ * "$60, paid hourly" — where the word that labels the pay is near the money but
+ * not against it.
+ *
+ * A period word that labels a DIFFERENT NUMBER is skipped, and that is the
+ * whole difficulty. "£55,000 - £65,000, 35 hour week" is the commonest UK
+ * salary format, and the nearest period word in it is the `hour` belonging to
+ * the working week: taking it read a £55,000 salary as an hourly rate and
+ * marked it STATED, which is the original defect with the range left in. A
+ * period word preceded by digits is that number's own label, and the word after
+ * one — the `week` in "35 hour week" — is part of the same phrase. Neither says
+ * anything about the pay, so when both are skipped nothing is left and the
+ * answer is an honest "a year, assumed".
+ */
+function nearestPeriod(
+  source: string,
+  at: number,
+): { pattern: RegExp; period: CompPeriod } | undefined {
+  type Hit = { entry: { pattern: RegExp; period: CompPeriod }; from: number; to: number }
+  const hits: Hit[] = []
+  for (const entry of PERIODS) {
+    // A fresh global copy: `lastIndex` on a shared regex would make this depend
+    // on what was scanned before it.
+    for (const m of source.matchAll(new RegExp(entry.pattern.source, 'gi'))) {
+      hits.push({ entry, from: m.index, to: m.index + m[0].length })
+    }
+  }
+  hits.sort((a, b) => a.from - b.from)
+
+  /** Somebody else's label: "35 hour", "4 day", "40 hrs". */
+  const labelsANumber = (h: Hit) => /\d[\s-]*$/.test(source.slice(Math.max(0, h.from - 6), h.from))
+
+  const usable: Hit[] = []
+  let lastSkipped = -1
+  for (const h of hits) {
+    // Part of a phrase whose first word was somebody else's label — the `week`
+    // in "35 hour week". Whitespace and a hyphen only; a comma or a full stop
+    // ends the phrase.
+    const trailing = lastSkipped >= 0 && /^[\s-]*$/.test(source.slice(lastSkipped, h.from))
+    if (labelsANumber(h) || trailing) {
+      lastSkipped = h.to
+      continue
+    }
+    usable.push(h)
+  }
+
+  let best: { entry: Hit['entry']; distance: number } | undefined
+  for (const h of usable) {
+    const distance = Math.abs(h.from - at)
+    if (best === undefined || distance < best.distance) best = { entry: h.entry, distance }
+  }
+  return best?.entry
+}
+
+/**
  * One candidate, and whether anything about it says the digits are MONEY.
  *
  * Every money signal in `AMOUNT` is optional — currency, code, multiplier and
@@ -169,7 +226,23 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
     separated ||
     PERIOD_AFTER.some((p) => p.test(after))
 
-  const stated = PERIODS.find((p) => p.pattern.test(source))
+  /*
+   * The period that TOUCHES the amount wins, and only then the nearest one.
+   *
+   * This used to be `PERIODS.find(p => p.pattern.test(source))` — the first
+   * ENTRY whose pattern appears anywhere in the text. `PERIODS` is declared
+   * hour → day → week → month → year, so any shorter period word anywhere in
+   * the package beat the real one, and always upward: `£55,000 per annum,
+   * 35 hour week` read as £55,000 an HOUR, `$120,000/year (approx $57.69/hour)`
+   * the same, and `$95,000/yr, 4 day week` as a daily rate. On the comparison
+   * screen an annual salary then stood against its hourly reading — off by a
+   * factor of two thousand — and `periodStated` said it was certain.
+   *
+   * `PERIOD_AFTER` is the same set anchored to the start of what follows the
+   * digits, which is exactly "the word attached to this number".
+   */
+  const touching = PERIOD_AFTER.findIndex((p) => p.test(after))
+  const stated = touching === -1 ? nearestPeriod(source, hit.index) : PERIODS[touching]
 
   return {
     signalled,

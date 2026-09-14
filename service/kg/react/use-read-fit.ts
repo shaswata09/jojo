@@ -171,7 +171,9 @@ export function useReadFit<S extends Cancellation>({
         fileId: fileId as NodeId,
         requirements: read.requirements.map((r) => ({ text: r.text, essential: r.essential })),
         model: settings.model,
-        ...(read.skipped.length === 0 ? {} : { skipped: read.skipped.length }),
+        // `dropped`, not `skipped.length`: the notes are prose and one of them
+        // can stand for nine entries or for none. See `RequirementsRead`.
+        ...(read.dropped === 0 ? {} : { skipped: read.dropped }),
       })
       if (!kept.ok) {
         return {

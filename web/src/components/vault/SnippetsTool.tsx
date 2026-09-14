@@ -65,7 +65,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     setRecord,
     removeRecord,
   } = useLabels()
-  const { snippets, addSnippet, updateSnippet, removeSnippet } = useVault()
+  const { snippets, addSnippet, duplicateSnippet, updateSnippet, removeSnippet } = useVault()
   // Named for the card's link; the editor's picker reads the list itself.
   const { byId } = useApplications()
   const { toast } = useToast()
@@ -311,7 +311,10 @@ export function SnippetsTool({ focus }: { focus?: string }) {
   }
 
   const onDuplicate = (s: Snippet) => {
-    const copy = addSnippet({ title: `${s.title} (copy)`, tag: s.tag, body: s.body })
+    // Through the tool, and in ONE write: a hand-made copy of a tailored
+    // document must not keep the model's provenance nor its marks as literal
+    // characters, and one press must be one thing to undo.
+    const copy = duplicateSnippet(s.id, `${s.title} (copy)`)
     const keywords = labelIdsOf(s.id)
     if (keywords.length > 0) setRecord(copy.id, keywords)
     toast({

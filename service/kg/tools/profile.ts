@@ -354,7 +354,7 @@ export const profileBackgroundAdd = defineTool({
    * and `twinState` would then offer to read it again — forever, because each
    * reading would move it back.
    */
-  run(ctx, input): NodeId[] {
+  run(ctx, input): { ids: NodeId[]; created: NodeId[] } {
     /*
      * `where` is compared as the institution, not the address: a CV says
      * "Allen Institute for AI (AI2), Seattle" where the last reading said
@@ -372,7 +372,21 @@ export const profileBackgroundAdd = defineTool({
       known.set(identity(node.props.kind, node.props.title, node.props.where), node.id)
     }
 
-    return input.background.map((draft) => {
+    /*
+     * The ids this call MINTS, recorded as it goes.
+     *
+     * `describe` used to work freshness out from the stored timestamps —
+     * `createdAt === updatedAt` — which is true of a node created here AND of
+     * any node created in an earlier transaction that has not been edited
+     * since. So re-filing a CV whose facts were all already on the profile
+     * wrote nothing and announced "31 facts recorded" — in the permanent
+     * journal label, which is what `describe` produces, and in the import
+     * toast, which counts the entries it OFFERED. Only the transaction knows
+     * what it created, so the transaction says.
+     */
+    const created = new Set<NodeId>()
+
+    const ids = input.background.map((draft) => {
       const key = identity(draft.kind, draft.title.trim(), cleared(draft.where))
       const existing = known.get(key)
       if (existing !== undefined) {
@@ -397,6 +411,7 @@ export const profileBackgroundAdd = defineTool({
 
       const id = ctx.newId('background')
       known.set(key, id)
+      created.add(id)
       ctx.tx.put({
         id,
         type: 'background',
@@ -423,18 +438,18 @@ export const profileBackgroundAdd = defineTool({
       })
       return id
     })
+
+    return { ids, created: [...created] }
   },
 
-  describe: (input, ids, memory) => {
+  describe: (input, output, _memory) => {
     /*
      * "Recorded" and "already known" said apart, because approving thirty
      * things and approving three is a different act, and a re-read of a CV
      * that changed nothing should say so rather than announce thirty facts.
      */
-    const fresh = ids.filter((id) => {
-      const node = memory.node(id, 'background')
-      return node !== undefined && node.createdAt === node.updatedAt
-    }).length
+    const ids = output.ids
+    const fresh = output.created.length
     const known = ids.length - fresh
     return {
       title:

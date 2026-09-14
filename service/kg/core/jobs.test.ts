@@ -18,6 +18,7 @@ import {
   isLive,
   isOver,
   live,
+  workState,
   LIMIT,
   mark,
   nextToStart,
@@ -171,5 +172,75 @@ describe('not growing forever', () => {
       jobs = mark(enqueue(jobs, job(`j${String(i)}`)), `j${String(i)}`, { state: 'failed' })
     }
     expect(jobs.length).toBeLessThanOrEqual(REMEMBERED)
+  })
+})
+
+describe('what a card is told', () => {
+  /*
+   * This rule lived inside `use-tailoring` where, under D20, nothing could
+   * assert it. It was also wrong: a failure was hidden only while SOMETHING
+   * was live, so an error from one document reappeared under a different one
+   * that had just succeeded.
+   */
+  const at = (id: string, state: Job['state'], over: Partial<Job> = {}) =>
+    job(id, { state, ...over })
+
+  it('says nothing went wrong when the newest finished job succeeded', () => {
+    // THE defect: the CV failed on Monday, the cover letter succeeded after.
+    const jobs = [
+      at('tailor:a:cv', 'failed', { error: 'The model answered with nothing.' }),
+      at('tailor:a:letter', 'done'),
+    ]
+    expect(workState(jobs, 'tailor').error).toBeNull()
+  })
+
+  it('shows the failure when it is the newest thing to have finished', () => {
+    const jobs = [at('tailor:a:letter', 'done'), at('tailor:a:cv', 'failed', { error: 'boom' })]
+    expect(workState(jobs, 'tailor').error).toBe('boom')
+  })
+
+  it('hides a failure while anything is still going, including a queued one', () => {
+    const failed = at('tailor:a:cv', 'failed', { error: 'boom' })
+    expect(workState([failed, at('tailor:a:letter', 'running')], 'tailor').error).toBeNull()
+    expect(workState([failed, at('tailor:a:letter', 'queued')], 'tailor').error).toBeNull()
+    expect(workState([failed, at('tailor:a:letter', 'queued')], 'tailor').running?.id).toBe(
+      'tailor:a:letter',
+    )
+  })
+
+  it('never reports another family of work as this card’s', () => {
+    const jobs = [at('fit:a:0', 'failed', { error: 'boom', kind: 'fit' }), at('tailor:a:cv', 'done')]
+    const tailor = workState(jobs, 'tailor')
+    expect(tailor.error).toBeNull()
+    expect(tailor.running).toBeNull()
+    expect(workState(jobs, 'fit').error).toBe('boom')
+  })
+
+  it('carries the doubts of the newest finished job, and drops them once work restarts', () => {
+    const done = at('tailor:a:cv', 'done', { notes: ['Nothing in the reply was marked.'] })
+    expect(workState([done], 'tailor').notes).toEqual(['Nothing in the reply was marked.'])
+    expect(workState([done, at('tailor:a:letter', 'running')], 'tailor').notes).toEqual([])
+  })
+
+  it('does not let a cancellation bury a failure that is still true', () => {
+    /*
+     * Somebody stopping something is not an outcome. A person who cancels a
+     * cover letter has not thereby fixed the CV that failed before it, and
+     * treating the cancel as "the newest thing to finish" made that error
+     * vanish with no explanation.
+     */
+    const jobs = [
+      at('tailor:a:cv', 'failed', { error: 'The model answered with nothing.' }),
+      at('tailor:a:letter', 'cancelled'),
+    ]
+    expect(workState(jobs, 'tailor').error).toMatch(/nothing/)
+  })
+
+  it('never reports a cancellation as a failure', () => {
+    expect(workState([at('tailor:a:cv', 'cancelled')], 'tailor').error).toBeNull()
+  })
+
+  it('gives a failed job a sentence even when nothing set one', () => {
+    expect(workState([at('a', 'failed')], 'tailor').error).toBe('That did not finish.')
   })
 })

@@ -229,3 +229,48 @@ describe('reading the reply', () => {
     expect(CUT_OFF).toMatch(/output limit/)
   })
 })
+
+describe('the placeholder echo, and the words it is not', () => {
+  /*
+   * PLACEHOLDER strips a model that echoed the prompt's own example marker.
+   * Unanchored it also deleted the WORDS — and "text", "word" and "passage"
+   * are ordinary things to emphasise in a CV, so a researcher's own sentence
+   * came back with a hole in it and nothing said so.
+   */
+  const base = 'x'.repeat(400)
+
+  it('keeps a marked word that happens to be the placeholder word', () => {
+    const body = `Builds **text** retrieval systems for low-resource languages. ${base}`
+    const read = readTailored(body, { ...BRIEF, base })
+    expect(read.ok).toBe(true)
+    if (read.ok) expect(read.body).toContain('**text** retrieval systems')
+  })
+
+  it('strips the echo on a bullet, which is where a CV changes', () => {
+    /*
+     * `plainSource` rewrites every bullet to `- `, so the model's own changed
+     * lines start with one and an echo lands AFTER it. Anchored at column zero
+     * alone the echo went straight through — and a surviving echo is worse than
+     * a stray mark, because `hasMarks` then reads the reply as tailored and the
+     * unchanged-document guard never fires.
+     */
+    const body = `- **text** Rebuilt the ingest path for low-latency reads.\n${base}`
+    const read = readTailored(body, { ...BRIEF, base })
+    expect(read.ok).toBe(true)
+    if (read.ok) {
+      expect(read.body).not.toContain('**text**')
+      // The bullet survives: stripping an echo must not flatten the list.
+      expect(read.body.startsWith('- Rebuilt the ingest path')).toBe(true)
+    }
+  })
+
+  it('still strips a marker standing in front of a passage', () => {
+    const body = `**text** The candidate rebuilt the inference pipeline. ${base}`
+    const read = readTailored(body, { ...BRIEF, base })
+    expect(read.ok).toBe(true)
+    if (read.ok) {
+      expect(read.body.startsWith('The candidate rebuilt')).toBe(true)
+      expect(read.body).not.toContain('**text**')
+    }
+  })
+})

@@ -1049,3 +1049,118 @@ describe('replaceAll, raced', () => {
     expect(rows.ok ? rows.value.nodes : ['<read failed>']).toEqual([])
   })
 })
+
+describe('holding this tab’s writes while the store is re-read', () => {
+  /*
+   * `commit` is synchronous and a cross-tab re-read is not, so a write of our
+   * own can land between `readAll` being asked and answering. The rows that
+   * come back do not contain it, and `rehydrate` resets the snapshot to those
+   * rows — so the write stayed in the queue, reached the disk, and vanished
+   * from the screen. Screen and disk then disagreed until the next reload,
+   * which is the one failure the cross-tab path exists to prevent.
+   */
+
+  it('catches a commit that lands during the read, and still sends it to disk', async () => {
+    const { driver, repo } = setup()
+    const release = repo.holdWrites()
+    repo.commit(draft({ nodes: [{ id: 'app:rice', before: null, after: application('rice') }] }))
+
+    // Held: nothing has been queued yet, so a `flush` now writes nothing.
+    await repo.flush()
+    const during = await driver.readAll()
+    expect(during.ok && during.value.nodes).toHaveLength(0)
+
+    const held = release()
+    expect(held.length).toBeGreaterThan(0)
+
+    // Released: the write is real and still has to land.
+    await repo.flush()
+    const after = await driver.readAll()
+    expect(after.ok && after.value.nodes.map((r) => r['id'])).toEqual(['app:rice'])
+  })
+
+  it('is safe to release twice, and hands back the same ops', () => {
+    const { repo } = setup()
+    const release = repo.holdWrites()
+    repo.commit(draft({ nodes: [{ id: 'app:rice', before: null, after: application('rice') }] }))
+    const once = release()
+    const twice = release()
+    expect(twice).toBe(once)
+  })
+
+  it('holds nothing when nothing was written, so the ordinary path is untouched', async () => {
+    const { driver, repo } = setup()
+    const release = repo.holdWrites()
+    expect(release()).toEqual([])
+    repo.commit(draft({ nodes: [{ id: 'app:rice', before: null, after: application('rice') }] }))
+    await repo.flush()
+    const after = await driver.readAll()
+    expect(after.ok && after.value.nodes).toHaveLength(1)
+  })
+})
+
+describe('two holds that overlap', () => {
+  /*
+   * They really can: a cross-tab adopt is fired with `void onRemoteCommit(...)`
+   * and never awaited, so a second remote commit opens a second hold while the
+   * first is still reading. They then release in the order their READS finish,
+   * which is not the order they were taken.
+   *
+   * The first attempt at this saved the displaced hold and restored it, which
+   * is only correct for LIFO. Out of order it restored a pointer to an array
+   * nobody would drain again, and every write for the rest of the session went
+   * into it and nowhere else — total, silent loss of persistence.
+   */
+
+  it('loses nothing when the inner hold is released first', async () => {
+    const { driver, repo } = setup()
+    const outer = repo.holdWrites()
+    const inner = repo.holdWrites()
+    repo.commit(draft({ nodes: [{ id: 'app:a', before: null, after: application('a') }] }))
+    inner()
+    repo.commit(draft({ nodes: [{ id: 'app:b', before: null, after: application('b') }] }))
+    outer()
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.nodes.map((r) => r['id']).sort()).toEqual(['app:a', 'app:b'])
+  })
+
+  it('loses nothing when the OUTER hold is released first', async () => {
+    // The order a single slot could not survive.
+    const { driver, repo } = setup()
+    const outer = repo.holdWrites()
+    const inner = repo.holdWrites()
+    repo.commit(draft({ nodes: [{ id: 'app:a', before: null, after: application('a') }] }))
+    outer()
+    repo.commit(draft({ nodes: [{ id: 'app:b', before: null, after: application('b') }] }))
+    inner()
+
+    // And the registry is usable afterwards: a later write still reaches disk.
+    repo.commit(draft({ nodes: [{ id: 'app:c', before: null, after: application('c') }] }))
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.nodes.map((r) => r['id']).sort()).toEqual([
+      'app:a',
+      'app:b',
+      'app:c',
+    ])
+  })
+
+  it('keeps a hold opened inside a replace under the replace’s decision', async () => {
+    /*
+     * A replace makes the rows it is holding stop existing, so on success it
+     * discards them. A hold opened inside that window must therefore hand its
+     * ops OUTWARD rather than to the queue, or an adopt would put a record the
+     * user just emptied back on the disk.
+     */
+    const { driver, repo } = setup()
+    const replacing = repo.replaceAll({ nodes: [], edges: [] }, freshMeta(AT, 'user'))
+    const inner = repo.holdWrites()
+    repo.commit(draft({ nodes: [{ id: 'app:doomed', before: null, after: application('doomed') }] }))
+    inner()
+    await replacing
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.nodes).toHaveLength(0)
+  })
+})

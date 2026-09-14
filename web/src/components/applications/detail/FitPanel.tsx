@@ -106,7 +106,13 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
            */}
           {(fit.ready || fit.reading !== undefined) && fit.step === null && (
             <RowMenu name="this fit reading" className="-my-1">
-              {fit.ready && (
+              {/* Re-run alone is withheld while a read waits for a slot —
+                  pressing it then stacked a second read behind the first. The
+                  MENU stays, because Clear is the one control that has to work
+                  during exactly that window: it is what stops a queued read
+                  from landing on a reading the person has discarded. Hiding
+                  the whole menu took that away. */}
+              {fit.ready && !fit.queued && (
                 <MenuItem icon={RotateCw} onSelect={fit.rerun}>
                   {fit.cleared ? 'Measure this posting' : 'Re-run'}
                 </MenuItem>
@@ -183,13 +189,24 @@ export function FitPanel({ applicationId }: { applicationId: string }) {
       {/* An answer, not a gap. Nothing here offers to fill it in — the menu
           above turns back into "Measure this posting", which is the one way
           back and the only one the person asked for. */}
-      {fit.blocked === null && fit.cleared && fit.step === null && (
+      {fit.blocked === null && fit.cleared && fit.step === null && !fit.queued && (
         <p className="mt-3 text-sm text-muted-foreground">
           You cleared this reading, so jojo is leaving this posting alone.
         </p>
       )}
 
       {/* ---------------------------- working ----------------------------- */}
+      {/* Queued is not idle. One job runs at a time and tailoring shares the
+          queue, so a read asked for while something else is working waits —
+          and a card that printed only `step` showed nothing at all for that
+          whole minute, with Re-run still offered beside it. */}
+      {fit.queued && (
+        <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 aria-hidden className="size-3.5 animate-spin" />
+          Queued…
+        </p>
+      )}
+
       {fit.step !== null && (
         <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 aria-hidden className="size-3.5 animate-spin" />

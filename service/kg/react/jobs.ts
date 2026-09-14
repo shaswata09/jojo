@@ -41,7 +41,8 @@ export type JobControl<S extends Cancellation> = {
 }
 
 export type JobOutcome =
-  | { ok: true }
+  /** `notes` are doubts about a result that was still produced. See `Job.notes`. */
+  | { ok: true; notes?: readonly string[] }
   /** `reason` is shown to the person, so it is written for them. */
   | { ok: false; reason: string }
 
@@ -95,12 +96,24 @@ export function createJobs<S extends Cancellation>({
   onError,
 }: JobsOptions<S>): Jobs {
   let jobs: readonly Job[] = []
-  /** What each live job needs to be stopped, and what to run when its turn comes. */
-  const pending = new Map<
-    string,
-    { run: (control: JobControl<S>) => Promise<JobOutcome>; stop?: () => void }
-  >()
+  /**
+   * What each live job needs to be stopped, and what to run when its turn comes.
+   *
+   * The ENTRY OBJECT is also the run's identity. A job's id is reused on purpose
+   * — that is what makes asking twice harmless and what makes Re-run the same
+   * card rather than a second one — so "the job at this id" and "the run that
+   * just resolved" are not the same thing, and only an identity the id cannot
+   * collide with can tell them apart. See `settle`.
+   */
+  type Pending = {
+    run: (control: JobControl<S>) => Promise<JobOutcome>
+    stop?: () => void
+  }
+  const pending = new Map<string, Pending>()
   const listeners = new Set<() => void>()
+
+  /** True while `stopAll` is draining. Read by `pump`. */
+  let stopping = false
 
   let liveSnapshot: readonly Job[] = []
   const aboutSnapshots = new Map<string, readonly Job[]>()
@@ -132,23 +145,52 @@ export function createJobs<S extends Cancellation>({
     notify()
   }
 
-  const settle = (id: string, state: JobState, error?: string): void => {
+  /**
+   * Record how a job ended. The ONE place that decides it.
+   *
+   * `from` is the pending entry of the run REPORTING the outcome, and is
+   * omitted when a person is the one deciding — `cancel` and `stopAll` mean
+   * whatever is live right now, whichever run that is.
+   *
+   * Two races meet here, and they need different answers.
+   *
+   * The first is ordinary: a person presses Cancel, the fetch unwinds a moment
+   * later, and the run resolves with whatever it had. `isLive` settles that —
+   * the first answer stands, so a job somebody stopped never announces itself
+   * as finished.
+   *
+   * The second is what `isLive` alone got WRONG, because it asks about the id
+   * rather than the run. Cancel a tailored CV and press Re-run: the replacement
+   * is live at the same id, so the abandoned fetch's late outcome passed the
+   * `isLive` test and settled the REPLACEMENT — marking a run that was still
+   * going "failed", with the reason belonging to the run the person threw away.
+   * The card then read "did not finish" and the toast said so out loud, while
+   * the work it described ran on and saved. Comparing the entry identity is
+   * what makes the answer about the run instead of about the name.
+   */
+  const settle = (
+    id: string,
+    state: JobState,
+    error?: string,
+    from?: Pending,
+    notes?: readonly string[],
+  ): void => {
     const job = jobs.find((j) => j.id === id)
-    /*
-     * Already settled, so the first answer stands. This is the ONE place that
-     * decides it, and the race it decides is ordinary rather than a fault: a
-     * person presses Cancel, the fetch unwinds a moment later, and the run
-     * resolves with whatever it had. Without this the job would settle twice —
-     * and, because settling is what raises the toast, a job somebody stopped
-     * would announce itself as finished.
-     */
     if (job === undefined || !isLive(job)) return
+    if (from !== undefined && pending.get(id) !== from) return
     pending.delete(id)
     set(
       mark(
         jobs,
         id,
-        { state, endedAt: now(), ...(error === undefined ? {} : { error }) },
+        {
+          state,
+          endedAt: now(),
+          ...(error === undefined ? {} : { error }),
+          // D21: a key is added or it is absent; `{ notes: undefined }` is not
+          // assignable and would survive as a present key anyway.
+          ...(notes === undefined || notes.length === 0 ? {} : { notes }),
+        },
         // The step goes with it: a card that kept "Writing the tailored
         // version" under a finished job would be describing the past.
         ['step'],
@@ -168,6 +210,11 @@ export function createJobs<S extends Cancellation>({
    * queued jobs at once frees three slots.
    */
   function pump(): void {
+    // Nothing may start while the store is going away. Without this, `stopAll`
+    // cancelling the running job frees a slot, and the next QUEUED job is
+    // started — its `run` invoked, its model request actually sent — a line
+    // before the same loop aborts it.
+    if (stopping) return
     for (;;) {
       const next = nextToStart(jobs, limit)
       if (next === undefined) return
@@ -180,31 +227,37 @@ export function createJobs<S extends Cancellation>({
       }
 
       const stop = newSignal()
-      pending.set(next.id, { ...entry, stop: stop.abort })
+      // A fresh entry per RUN rather than a patch of the old one: this object is
+      // the identity `settle` compares against. See `Pending`.
+      const mine: Pending = { run: entry.run, stop: stop.abort }
+      pending.set(next.id, mine)
       const id = next.id
       set(mark(jobs, id, { state: 'running', startedAt: now() }))
 
-      void entry
+      void mine
         .run({
           signal: stop.signal,
           onStep: (step) => {
-            // A step reported after the job settled is a straggler from an
-            // aborted run; it must not put a finished card back to work.
+            // A step reported after this run is over is a straggler — from an
+            // abort, or from a run a Re-run has already replaced at the same
+            // id. It must neither put a finished card back to work nor label
+            // the run that replaced it.
+            if (pending.get(id) !== mine) return
             const held = jobs.find((j) => j.id === id)
             if (held !== undefined && held.state === 'running') set(mark(jobs, id, { step }))
           },
         })
         .then((outcome) => {
           /*
-           * No check for the signal here, and that is deliberate rather than an
-           * omission: a cancelled job was settled by `cancel` or `stopAll` the
-           * moment the person asked, and `settle` refuses to move a job that is
-           * already over. A second check in this branch would be a second place
-           * to be wrong about what "stopped" means — and, measured by mutation,
-           * a branch no test could reach past the guard that follows it.
+           * Still no check for the signal here, and still deliberate: a
+           * cancelled job was settled by `cancel` or `stopAll` the moment the
+           * person asked, and a second reading of "stopped" in this branch
+           * would be a second place to be wrong about it. What this DOES pass
+           * is `mine`, so the outcome lands on the run that produced it and
+           * never on whatever happens to hold the id by the time it arrives.
            */
-          if (outcome.ok) settle(id, 'done')
-          else settle(id, 'failed', outcome.reason)
+          if (outcome.ok) settle(id, 'done', undefined, mine, outcome.notes)
+          else settle(id, 'failed', outcome.reason, mine)
         })
         .catch((thrown: unknown) => {
           /*
@@ -214,7 +267,12 @@ export function createJobs<S extends Cancellation>({
            */
           onError?.(thrown)
           kgError('job threw', thrown)
-          settle(id, 'failed', thrown instanceof Error ? thrown.message : 'That did not finish.')
+          settle(
+            id,
+            'failed',
+            thrown instanceof Error ? thrown.message : 'That did not finish.',
+            mine,
+          )
         })
     }
   }
@@ -283,9 +341,17 @@ export function createJobs<S extends Cancellation>({
     },
 
     stopAll(): void {
-      for (const job of live(jobs)) {
-        pending.get(job.id)?.stop?.()
-        settle(job.id, 'cancelled')
+      stopping = true
+      try {
+        for (const job of live(jobs)) {
+          pending.get(job.id)?.stop?.()
+          settle(job.id, 'cancelled')
+        }
+      } finally {
+        // Cleared rather than latched: a provider may replace its registry
+        // rather than drop it, and a registry that could never start again
+        // would be a worse failure than the one this prevents.
+        stopping = false
       }
     },
   }

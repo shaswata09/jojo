@@ -22,6 +22,21 @@ export function commitEvent(ops: readonly DurableOp[]): StoreEvent | null {
   for (let i = ops.length - 1; i >= 0; i -= 1) {
     const op = ops[i]
     if (op === undefined || op.kind !== 'put' || op.store !== 'ops') continue
+    /*
+     * A NEW journal entry, not a rewrite of one already on disk.
+     *
+     * `key === null` is what "new" means here: the repository appends with
+     * `key: null` and lets the store mint the number (`repository.ts:224`),
+     * while the only writers that name a key are housekeeping — the boot-time
+     * audit prune rewrites every kept row at its own index.
+     *
+     * Without this, that prune announced itself to every other tab as somebody
+     * having written something. The other tab re-read the store and cleared its
+     * undo and redo stacks, and told the person their records had been
+     * reloaded. Opening a second tab therefore threw away whatever the first
+     * one could still take back, on a boot where nothing had changed at all.
+     */
+    if (op.key !== null) continue
     const id = op.value['id']
     const at = op.value['at']
     if (typeof id === 'string' && typeof at === 'string') return { kind: 'commit', at, entryId: id }

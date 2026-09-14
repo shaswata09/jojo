@@ -11,6 +11,7 @@ import {
   captureNote,
   hostOf,
   isCaptureSource,
+  onBoard,
   postingIdentity,
   readCapture,
   remoteRefCount,
@@ -614,5 +615,42 @@ describe('postingIdentity', () => {
     for (const text of ['ftp://acme.com/jobs/4', 'file:///Users/me/Downloads/posting.html']) {
       expect(postingIdentity(text), text).toBeUndefined()
     }
+  })
+})
+
+describe('a host that merely ends with a board’s domain', () => {
+  /*
+   * `host.endsWith('lever.co')` is true of `careers.unilever.co`, and these
+   * are real registrable domains rather than invented ones. A posting on one
+   * of them, with a path shaped like the board's, was canonicalised onto the
+   * BOARD's URL — so it deduplicated against real postings there and was filed
+   * under the wrong employer. The dot is the fix.
+   */
+  it('does not rewrite a lookalike onto the board it resembles', () => {
+    for (const url of [
+      'https://careers.unilever.co/acme/0123456789abcdef01234567',
+      'https://jobs.clever.co/team/0123456789abcdef01234567',
+      'https://evergreenhouse.io/acme/jobs/12345',
+      'https://notlinkedin.com/jobs/view/12345',
+      'https://myworkdayjobs.com.example.net/x/_R12345',
+    ]) {
+      expect(canonicalPostingUrl(url), url).toBe(url)
+    }
+  })
+
+  it('still canonicalises the boards themselves, and their subdomains', () => {
+    expect(canonicalPostingUrl('https://boards.greenhouse.io/acme/jobs/12345')).toContain(
+      'greenhouse.io/acme/jobs/12345',
+    )
+    expect(canonicalPostingUrl('https://www.linkedin.com/jobs/view/4012345678')).toContain(
+      'linkedin.com/jobs/view/4012345678',
+    )
+  })
+
+  it('matches a bare domain as well as a subdomain', () => {
+    expect(onBoard('lever.co', 'lever.co')).toBe(true)
+    expect(onBoard('jobs.lever.co', 'lever.co')).toBe(true)
+    expect(onBoard('unilever.co', 'lever.co')).toBe(false)
+    expect(onBoard('careers.unilever.co', 'lever.co')).toBe(false)
   })
 })

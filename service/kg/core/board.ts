@@ -23,7 +23,7 @@
  * every board would be the search page it had just read, filed as a job.
  */
 
-import { canonicalPostingUrl } from './capture'
+import { canonicalPostingUrl, onBoard } from './capture'
 
 /** One row of a search-results page, after this module has vetted it. */
 export type BoardListing = {
@@ -101,22 +101,22 @@ export function isJobPostingUrl(url: string): boolean {
   const host = parsed.hostname.toLowerCase()
   const segments = parsed.pathname.split('/').filter(Boolean)
 
-  if (host.endsWith('linkedin.com')) {
+  if (onBoard(host, 'linkedin.com')) {
     const fromQuery = parsed.searchParams.get('currentJobId')
     if (fromQuery !== null && /^\d+$/.test(fromQuery)) return true
     return /\/jobs\/view\/(?:[^/?#]*?-)?\d+/.test(parsed.pathname)
   }
-  if (host.endsWith('greenhouse.io')) {
+  if (onBoard(host, 'greenhouse.io')) {
     return /\/[^/]+\/jobs\/\d+/.test(parsed.pathname)
   }
-  if (host.endsWith('lever.co') || host.endsWith('ashbyhq.com')) {
+  if (onBoard(host, 'lever.co') || onBoard(host, 'ashbyhq.com')) {
     // `/<tenant>/<uuid>`. The tenant alone is the board's index page.
     return segments.length >= 2 && UUID.test(segments[1]!)
   }
-  if (host.endsWith('myworkdayjobs.com')) {
+  if (onBoard(host, 'myworkdayjobs.com')) {
     return /_(?:R|JR|REQ)[-_]?\d{3,}/i.test(parsed.pathname)
   }
-  if (host.endsWith('indeed.com')) {
+  if (onBoard(host, 'indeed.com')) {
     return parsed.searchParams.has('jk') || /\/viewjob/.test(parsed.pathname)
   }
 

@@ -71,6 +71,19 @@ export type RequirementsRead =
        * looks lower than they expected.
        */
       skipped: readonly string[]
+      /**
+       * HOW MANY entries were actually lost. Not `skipped.length`.
+       *
+       * The two disagree in both directions, which is why this is counted
+       * separately rather than derived. `skipped` is prose for a person, so one
+       * note can stand for many entries — "9 more were past the limit" is a
+       * single string covering nine — and one note can stand for NONE, because
+       * an `essential` that came back as `"true"` is reported and then kept.
+       * A panel that printed `skipped.length` said "1 line could not be read"
+       * when twelve were kept and nine dropped, and said it again when nothing
+       * had been dropped at all.
+       */
+      dropped: number
     }
   | { ok: false; reason: string }
 
@@ -175,6 +188,8 @@ export function readRequirements(reply: string): RequirementsRead {
 
   const requirements: Requirement[] = []
   const skipped: string[] = []
+  /** Counted at each real loss. See `RequirementsRead.dropped`. */
+  let dropped = 0
   /*
    * Folded, because a posting that lists "Rust" under both Required and
    * Preferred — which real ones do — would otherwise become two requirements
@@ -201,6 +216,7 @@ export function readRequirements(reply: string): RequirementsRead {
           : {}
     if (Object.keys(row).length === 0) {
       skipped.push(`entry ${String(index + 1)}: not an object`)
+      dropped += 1
       continue
     }
 
@@ -208,6 +224,7 @@ export function readRequirements(reply: string): RequirementsRead {
     const text = typeof value === 'string' ? value.trim() : ''
     if (text === '') {
       skipped.push(`entry ${String(index + 1)}: no text`)
+      dropped += 1
       continue
     }
 
@@ -230,12 +247,14 @@ export function readRequirements(reply: string): RequirementsRead {
       skipped.push(
         `entry ${String(index + 1)}: ${String(text.length)} characters is a sentence, not a requirement`,
       )
+      dropped += 1
       continue
     }
 
     const key = text.toLowerCase()
     if (seen.has(key)) {
       skipped.push(`entry ${String(index + 1)}: “${text}” was already listed`)
+      dropped += 1
       continue
     }
     seen.add(key)
@@ -275,6 +294,8 @@ export function readRequirements(reply: string): RequirementsRead {
       // had the model listing sentences, and the score is drawn from twelve of
       // whatever it wrote first.
       if (index < raw.length - 1) {
+        // One NOTE, but many entries. Counted as the number it names.
+        dropped += raw.length - index - 1
         skipped.push(
           `${String(raw.length - index - 1)} more were past the limit of ${String(MAX_REQUIREMENTS)}`,
         )
@@ -293,7 +314,7 @@ export function readRequirements(reply: string): RequirementsRead {
     }
   }
 
-  return { ok: true, requirements, skipped }
+  return { ok: true, requirements, skipped, dropped }
 }
 
 /**

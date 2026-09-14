@@ -47,7 +47,7 @@ const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record
 export function SnippetsTool({ focus }: { focus?: string }) {
   // Only the arrival highlight needs the palette here.
   const c = useColors()
-  const { snippets, addSnippet, updateSnippet, removeSnippet } = useVault()
+  const { snippets, addSnippet, duplicateSnippet, updateSnippet, removeSnippet } = useVault()
   // Named for the filing toast; the picker sheet reads the list itself.
   const { byId } = useApplications()
   const { matches, selected, clearSelected } = useLabels()
@@ -89,11 +89,13 @@ export function SnippetsTool({ focus }: { focus?: string }) {
   }
 
   const onDuplicate = (snippet: Snippet) => {
-    const { id: _id, ...rest } = snippet
-    const made = addSnippet({ ...rest, title: `${snippet.title} (copy)` })
+    // Through the tool, for the reason `duplicateSnippet` gives: spreading the
+    // record carried `tailored` and the raw marks into a copy the person made.
+    // One write, so one Undo puts it back.
+    const made = duplicateSnippet(snippet.id, `${snippet.title} (copy)`)
     toast({
       title: 'Snippet duplicated',
-      description: made.title,
+      description: `${snippet.title} (copy)`,
       action: { label: 'Undo', onPress: () => removeSnippet(made.id) },
     })
   }

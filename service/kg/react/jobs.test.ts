@@ -260,6 +260,88 @@ describe('cancelling', () => {
     expect([jobs.get('a')?.state, jobs.get('b')?.state]).toEqual(['cancelled', 'cancelled'])
     expect(first.seen.signal?.aborted).toBe(true)
   })
+
+  it('never starts what it is cancelling when the store is torn down', () => {
+    /*
+     * `settle` pumps, so cancelling the running job frees a slot. Without a
+     * guard the next QUEUED job was then started — its `run` invoked and its
+     * model request actually sent — one line before the same loop aborted it.
+     * Tearing down with three queued jobs fired two requests that existed only
+     * to be thrown away.
+     */
+    const { jobs } = harness()
+    const started: string[] = []
+    const never = (id: string) =>
+      spec(id, () => {
+        started.push(id)
+        return new Promise<JobOutcome>(() => {})
+      })
+
+    jobs.start(never('a'))
+    jobs.start(never('b'))
+    jobs.start(never('c'))
+    expect(started).toEqual(['a'])
+
+    jobs.stopAll()
+    expect(started).toEqual(['a'])
+    expect([jobs.get('a'), jobs.get('b'), jobs.get('c')].map((j) => j?.state)).toEqual([
+      'cancelled',
+      'cancelled',
+      'cancelled',
+    ])
+  })
+})
+
+describe('the same id, twice over', () => {
+  /*
+   * A job's id is deliberately reused: it is what makes pressing the button
+   * twice harmless, and what makes Re-run the same card rather than a second
+   * one. The cost is that "the job at this id" is not the same thing as "the
+   * run that just resolved", and everything below is that difference.
+   */
+
+  it('never lets a cancelled run settle the Re-run that replaced it', async () => {
+    /*
+     * THE defect, in the order a person produces it: Cancel, then Re-run, then
+     * the abandoned fetch unwinds a moment later carrying the outcome of the
+     * run they threw away. It used to land on the replacement — so the card
+     * read "did not finish" and the toast said so out loud, while the work it
+     * described was still going and went on to save.
+     */
+    const { jobs, settled } = harness()
+    const first = deferred()
+    jobs.start(spec('tailor:a:cv', first.run))
+    jobs.cancel('tailor:a:cv')
+
+    const again = deferred()
+    jobs.start(spec('tailor:a:cv', again.run))
+    expect(jobs.get('tailor:a:cv')?.state).toBe('running')
+
+    first.finish({ ok: false, reason: 'aborted' })
+    await sleep()
+    expect(jobs.get('tailor:a:cv')?.state).toBe('running')
+    expect(jobs.get('tailor:a:cv')?.error).toBeUndefined()
+
+    again.finish({ ok: true })
+    await vi.waitFor(() => expect(jobs.get('tailor:a:cv')?.state).toBe('done'))
+    expect(settled.map((j) => j.state)).toEqual(['cancelled', 'done'])
+  })
+
+  it('never lets a step from an abandoned run label its replacement', async () => {
+    // The same mistake one field over: a straggling `onStep` describing work
+    // nobody is waiting for, printed under the run that replaced it.
+    const { jobs } = harness()
+    const first = deferred()
+    jobs.start(spec('a', first.run))
+    jobs.cancel('a')
+
+    const again = deferred()
+    jobs.start(spec('a', again.run))
+    expect(jobs.get('a')?.step).toBe('started')
+
+    first.seen.onStep?.('Reading the posting')
+    expect(jobs.get('a')?.step).toBe('started')
+  })
 })
 
 describe('what a screen sees', () => {

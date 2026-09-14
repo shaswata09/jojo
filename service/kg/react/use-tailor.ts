@@ -13,7 +13,6 @@ import type { TailorBrief } from '../agent/tailor-material'
 import type { Cancellation } from '../agent/loop'
 import { useKg } from './kg-context'
 import { undoableWith } from './undo'
-import type { RestoreOutcome } from './undo'
 import type { ReadDocumentFn } from './use-read-cv'
 
 /**
@@ -68,8 +67,22 @@ export type TailorOutcome =
       marked: boolean
       /** Doubts the reader raised. Shown, never a reason to have refused it. */
       notes: readonly string[]
-      /** The guarded Undo for the toast. Null when nothing was committed. */
-      restore: (() => RestoreOutcome) | null
+      /*
+       * There is deliberately no `restore` here, and it is worth saying why
+       * rather than leaving the absence to be read as an oversight.
+       *
+       * This used to hand back a guarded revert for the toast, and nothing ever
+       * took it: the run now belongs to the queue, so the toast that announces
+       * it is raised by the jobs provider — generically, for every kind of
+       * work, very possibly on a different screen a minute later. A closure
+       * cannot travel that route, and a revert offered minutes after the fact
+       * is the case `undoableWith` refuses anyway, because the person has been
+       * working since.
+       *
+       * Taking a tailored document back is the card's own Delete, which is
+       * journalled and undoable like any other, and which is in front of them
+       * at the moment they decide they do not want it.
+       */
     }
   | { ok: false; step: TailorStep; reason: string }
 
@@ -214,7 +227,7 @@ export function useTailor<S extends Cancellation>({
       /* ----------------------------- 4. keep ----------------------------- */
       onStep?.('saving')
       const title = titleFor(kind, application.org)
-      const { value, restore } = undoableWith(repo, () =>
+      const { value } = undoableWith(repo, () =>
         runtime.run('tailor.snippet.create', {
           applicationId: applicationId as NodeId,
           source: fileId,
@@ -239,7 +252,6 @@ export function useTailor<S extends Cancellation>({
         title,
         marked: read.marked,
         notes: read.notes,
-        restore,
       }
     },
     [turn, readDocument, repo, runtime, projections],

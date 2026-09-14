@@ -391,6 +391,50 @@ const usersIn = (messages: readonly ChatMessage[], end: number): ChatMessage[] =
  * request smaller by dropping conversation, and should say so rather than send
  * something that will be truncated at the front.
  */
+/**
+ * Keep a request that is growing DURING one run under the window.
+ *
+ * `fitHistory` is asked once, before the first round, and that was the whole
+ * budget check for the whole run. Every round afterwards pushed an assistant
+ * turn and one `tool` message per call — each up to the 6,000-character result
+ * cap, and a run may take eight rounds — so a request that started comfortably
+ * inside the window could be well past it by the time it was sent, and the
+ * server truncated it from the front: the system prompt and the person's own
+ * question, which are the two parts that must never go.
+ *
+ * This is `fitHistory`'s stage one and nothing else. It only ever SHORTENS a
+ * tool result to its stub, which is safe in a way dropping is not: the message
+ * stays where it is, so no `tool_call_id` is orphaned from the assistant turn
+ * that made it, and the record is still in the store to be read again. Nothing
+ * is summarised, because a run in progress is not a conversation to compact.
+ *
+ * Oldest first — a result the model has already acted on is the one it needs
+ * least.
+ */
+export function stubToFit(
+  messages: readonly ChatMessage[],
+  fixed: readonly unknown[],
+  window: number,
+): { messages: ChatMessage[]; stubbed: number } {
+  const ceiling = window - RESERVED_FOR_REPLY
+  const working: ChatMessage[] = [...messages]
+  const fits = () => sizeOf([...fixed, ...working]) <= ceiling
+  if (fits()) return { messages: working, stubbed: 0 }
+
+  const names = callNames(messages)
+  let stubbed = 0
+  for (let i = 0; i < working.length; i += 1) {
+    const m = working[i]
+    if (m === undefined || m.role !== 'tool') continue
+    const content = stubFor(names.get(m.tool_call_id) ?? 'the tool', m.content)
+    if (content.length >= m.content.length) continue
+    working[i] = { role: 'tool', tool_call_id: m.tool_call_id, content }
+    stubbed += 1
+    if (fits()) break
+  }
+  return { messages: working, stubbed }
+}
+
 export function fitHistory(
   history: readonly ChatMessage[],
   fixed: readonly unknown[],
@@ -633,6 +677,19 @@ export const summarisedNote = (dropped: number): string =>
   `This conversation grew past what the model can hold, so the earliest ${String(dropped)} message${dropped === 1 ? '' : 's'} ${dropped === 1 ? 'was' : 'were'} replaced with a short summary. The assistant still knows what happened; it no longer has the exact wording.`
 
 /** What to tell the person when earlier turns had to go. */
+/**
+ * Said when a run had to shorten its own tool results to keep going.
+ *
+ * Deliberately not `trimNote`: nothing was dropped and no message left the
+ * request, so telling the person their conversation was cut would be wrong.
+ * What happened is recoverable and worth naming plainly — the model can read
+ * any of it again.
+ */
+export const stubbedNote = (stubbed: number): string =>
+  `This turn grew past what the model can hold, so ${String(stubbed)} earlier tool result${
+    stubbed === 1 ? ' was' : 's were'
+  } shortened to a summary line. Nothing was lost — the records are still in your store and can be read again.`
+
 export const trimNote = (dropped: number): string =>
   `This conversation grew past what the model can hold, so the earliest ${String(dropped)} message${dropped === 1 ? '' : 's'} ${dropped === 1 ? 'was' : 'were'} left out of this request. Your records are untouched — start a new conversation to give it a clean slate.`
 

@@ -11,7 +11,7 @@
 import { validateRows } from '../core/validate'
 import type { Diagnostic } from '../core/validate'
 import { kgWarn } from '../log'
-import type { Driver, Rows, StoreEvent } from '../storage/driver'
+import type { Driver, DurableOp, Rows, StoreEvent } from '../storage/driver'
 import type { DurableBootOptions, Session } from './boot'
 import { readJournalRows } from './journal'
 import { readMeta } from './meta'
@@ -27,6 +27,15 @@ import type { Repository } from './repository'
  * the cost of the rehydrate, and the rehydrate is here.
  */
 const REMOTE_DEBOUNCE_MS = 50
+
+/**
+ * How many times an adopt re-reads because this tab wrote during the last one.
+ *
+ * Three is enough for the realistic case — one write landing in one read
+ * window — and small enough that a tab writing continuously stops rather than
+ * spinning against the disk.
+ */
+const ADOPT_ATTEMPTS = 3
 
 /**
  * Coalesces a burst of remote commits into one rehydrate.
@@ -155,8 +164,56 @@ export function live(
    * wrote, so the toast is always right. A resume means we are catching up
    * blind, and most catch-ups find nothing.
    */
-  const adopt = async (announce: boolean): Promise<boolean> => {
-    const again = await driver.readAll()
+  const adopt = async (announce: boolean, attempt = 0): Promise<boolean> => {
+    /*
+     * Our own writes are held for the length of the read.
+     *
+     * `repo.commit` is synchronous and `readAll` is not, so a write of this
+     * tab's could land between asking and answering — and the rows that come
+     * back would not contain it. `rehydrate` below resets the snapshot to those
+     * rows, so the write stayed queued, reached the disk, and disappeared from
+     * the screen: screen and disk disagreeing until the next reload, which is
+     * the one failure this whole path exists to prevent.
+     */
+    const release = repo.holdWrites()
+    /*
+     * Released even if the read THROWS, and that is not defensive padding.
+     * `Driver` promises never to throw, and `replaceAll` in `repository.ts`
+     * still catches for exactly this — a driver that breaks the promise. A hold
+     * that is never released is worse than the bug it prevents: it is not one
+     * lost write, it is EVERY write from that moment on, held in memory, queued
+     * nowhere, until the tab closes.
+     */
+    let again: Awaited<ReturnType<Driver['readAll']>>
+    let held: readonly DurableOp[]
+    try {
+      again = await driver.readAll()
+    } finally {
+      held = release()
+    }
+
+    if (held.length > 0) {
+      /*
+       * Something of ours landed mid-read. Rather than adopt rows that predate
+       * it — which would take it off the screen — flush it and read again, so
+       * the rows we adopt include both tabs' work.
+       *
+       * Bounded, because a tab writing continuously would otherwise never
+       * finish catching up. Giving up leaves OUR reading in place, which is
+       * stale and fixed by a reload, rather than one that is missing a write
+       * the person just made. That is the same trade the unreadable-meta branch
+       * below already makes.
+       */
+      if (attempt >= ADOPT_ATTEMPTS) {
+        kgWarn('gave up catching up with another tab while this one kept writing', {
+          detail: `${String(held.length)} op(s) held on attempt ${String(attempt)}`,
+        })
+        return false
+      }
+      await repo.flush()
+      return adopt(announce, attempt + 1)
+    }
+
     if (!again.ok) {
       kgWarn('a remote change arrived but the store could not be re-read', {
         detail: again.error.message,

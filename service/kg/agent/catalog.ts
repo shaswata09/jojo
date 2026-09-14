@@ -53,6 +53,15 @@ export type CatalogEntry = {
    * undo. That is the line this flag draws, and it is why it is computed from
    * the same facts rather than hand-listed.
    */
+  /**
+   * Whether this step has to be confirmed. Not a synonym for `delete`.
+   *
+   * Derived from the effect — `delete` and `admin` — and then WIDENED by any
+   * tool that declares itself destructive (see `Tool.destructive`). Two do:
+   * clearing an offer package, and raising the agent's own permission. Both are
+   * honestly an `update` to one record and both have to be asked about, which
+   * is why this is no longer computed from the effect alone.
+   */
   readonly destructive: boolean
   /** False for the admin pair; every other write can be taken back. */
   readonly undoable: boolean
@@ -80,7 +89,15 @@ export const toWireName = (name: string) => name.replaceAll('.', '_')
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildEntry(tool: AnyTool | ReadTool<any>, effect: Effect): CatalogEntry {
-  const destructive = effect === 'delete' || effect === 'admin'
+  /*
+   * Derived, and then widened by the tool if it asks.
+   *
+   * The derivation is right for almost everything and cannot state the case
+   * where an `update` destroys something or hands out a permission; see
+   * `Tool.destructive`. A tool may only ever ADD itself here.
+   */
+  const destructive =
+    effect === 'delete' || effect === 'admin' || (tool as AnyTool).destructive === true
   return {
     name: tool.name,
     wireName: toWireName(tool.name),
@@ -148,10 +165,24 @@ export function describeEntry(entry: CatalogEntry): string {
   const title = /[.!?:—-]$/u.test(entry.title.trim()) ? entry.title.trim() : `${entry.title.trim()}.`
   const parts = [title, entry.summary]
   if (entry.destructive) {
+    /*
+     * Three sentences, not two, because `destructive` stopped being a synonym
+     * for `delete`.
+     *
+     * It used to be derived from the effect alone, so "this removes a record"
+     * was always true of anything carrying the flag. Two tools now DECLARE
+     * themselves destructive while honestly being an `update` — clearing an
+     * offer package, and raising the agent's own permission — and telling the
+     * model those remove a record is a false description of the one step it is
+     * most important to be exact about. The middle sentence says what is
+     * actually true of them: it cannot be taken back casually, so ask first.
+     */
     parts.push(
-      entry.undoable
-        ? 'Destructive: this removes a record. Confirm with the user before calling it.'
-        : 'Destructive and NOT undoable: this replaces or empties the whole store. Never call it unless the user has asked for exactly this in the current turn.',
+      !entry.undoable
+        ? 'Destructive and NOT undoable: this replaces or empties the whole store. Never call it unless the user has asked for exactly this in the current turn.'
+        : entry.effect === 'delete' || entry.effect === 'admin'
+          ? 'Destructive: this removes a record. Confirm with the user before calling it.'
+          : 'Destructive: this discards something the user cannot easily get back. Confirm with the user before calling it.',
     )
   }
   return parts.join(' ')

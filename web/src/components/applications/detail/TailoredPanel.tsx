@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { FileText, Loader2, Trash2, Wand2 } from 'lucide-react'
+import { FileText, Info, Loader2, Trash2, Wand2 } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
 import { MenuItem, RowMenu, menuItemClass } from '@/components/common/RowMenu'
 import { Button } from '@/components/ui/button'
@@ -177,6 +177,21 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
         <p className="mt-3 text-sm text-danger" role="alert">
           {t.error}
         </p>
+      )}
+
+      {/* Doubts, not failures: the document was written and saved, and these
+          are the things worth knowing before it is pasted into an application.
+          They were computed and then dropped for as long as the run reported
+          only ok-or-why, so a reply that marked nothing said nothing. */}
+      {t.notes.length > 0 && !busy && (
+        <ul className="mt-3 space-y-1">
+          {t.notes.map((note) => (
+            <li key={note} className="flex items-start gap-2 text-sm text-text-3">
+              <Info aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+              <span>{note}</span>
+            </li>
+          ))}
+        </ul>
       )}
 
       {/* --------------------------- the results --------------------------- */}

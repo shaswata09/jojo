@@ -195,6 +195,10 @@ export const applicationOfferClear = defineTool({
   title: 'Clear offer details',
   summary: 'Drops the offer package from an application that has moved on.',
   effect: 'update',
+  // An `update` that destroys: the terms, the respond-by date and the note all
+  // go at once, and `describe` below has always returned `tone: 'danger'`. The
+  // gate could not see that until a tool could say it. See `Tool.destructive`.
+  destructive: true,
   touches: ['application'],
   input: s.object({ id: appId }),
 

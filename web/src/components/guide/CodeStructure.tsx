@@ -95,10 +95,10 @@ export const SHAPE: DirRow[] = [
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
-    lines: 34908,
+    lines: 36314,
     what: 'model, ids, schema, algebra, dates',
   },
-  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7264, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7502, what: 'transactions, journal, boot' },
   {
     dir: 'service/kg/tools',
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
@@ -108,7 +108,7 @@ export const SHAPE: DirRow[] = [
     tests: 9,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one.
-    lines: 9956,
+    lines: 10066,
     what: '86 named write operations',
   },
   {
@@ -136,7 +136,7 @@ export const SHAPE: DirRow[] = [
     // about 4,200 lines, most of them the tests that pin each measure.
     // Re-measured when `read-posting.ts` learnt to offer the person's own
     // keywords to the model and match the reply back onto the ones that exist.
-    lines: 41168,
+    lines: 42590,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -166,15 +166,15 @@ export const SHAPE: DirRow[] = [
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 10958,
+    lines: 11199,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
   {
     dir: 'web/src/kg/storage',
-    files: 11,
-    tests: 3,
-    lines: 2649,
+    files: 12,
+    tests: 4,
+    lines: 2756,
     what: 'the IndexedDB adapter, and the folder one',
   },
   {
@@ -191,10 +191,10 @@ export const SHAPE: DirRow[] = [
     // `vault/SnippetPreviewDialog.tsx`: the words behind that card's Preview.
     files: 290,
     tests: 29,
-    lines: 49589,
+    lines: 50605,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4795, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4840, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -215,7 +215,7 @@ export const SHAPE: DirRow[] = [
     // `jobs.tsx`: the queue wired to this app's clock, cancel and toast.
     files: 129,
     tests: 46,
-    lines: 19123,
+    lines: 19509,
     what: 'web-only adapters and URL state',
   },
   {
@@ -245,7 +245,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 79
+export const WEB_TEST_FILES = 80
 
 type TestGroup = { title: string; files: string; body: string }
 

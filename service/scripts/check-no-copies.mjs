@@ -103,6 +103,12 @@ const APP_KG_ALLOWED = {
     'storage/idb-conformance.test.ts',
     'storage/idb-batch.ts',
     'storage/idb-events.ts',
+    // Beside the module it tests, and browser-only for the same reason: what a
+    // committed batch means to OTHER TABS is a question only this driver's
+    // `DurableOp` shapes can answer. It is also the one place the boot-time
+    // audit prune is told apart from a real write, which is what stopped a
+    // second tab wiping the first one's undo stack.
+    'storage/idb-events.test.ts',
     'storage/idb-handles.ts',
     'storage/idb-migrate.ts',
     'storage/channel.ts',

@@ -191,6 +191,51 @@ function matchesQuery(value: string, search: string, keywords?: string[]) {
     ? 1
     : 0
 }
+/**
+ * One group of palette rows.
+ *
+ * At MODULE scope, and that is the point rather than tidiness: declared inside
+ * `SpotlightSearch` it was a new function — a new element TYPE — on every
+ * render, so React unmounted and remounted every group and every row beneath
+ * it. `SpotlightSearch` subscribes to the store, so any write anywhere in the
+ * app re-rendered it and threw the palette's rows away mid-search.
+ *
+ * `go` arrives as a prop because a component cannot close over the hook state
+ * of a component it no longer lives inside.
+ */
+function Section({
+  heading,
+  items,
+  go,
+}: {
+  heading: string
+  items: Result[]
+  go: (to: string) => void
+}) {
+  return (
+    <CommandGroup heading={heading}>
+      {items.map((r) => (
+        <CommandItem
+          key={r.id}
+          // cmdk matches on `value`, so everything searchable goes in here
+          // while the row still renders a clean label.
+          value={`${r.label} ${r.detail ?? ''} ${r.keywords ?? ''}`}
+          onSelect={() => go(r.to)}
+          className="gap-2.5"
+        >
+          <r.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate">{r.label}</span>
+            {r.detail ? (
+              <span className="block truncate text-xs text-text-3">{r.detail}</span>
+            ) : null}
+          </span>
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  )
+}
+
 export function SpotlightSearch({
   open,
   onOpenChange,
@@ -294,28 +339,6 @@ export function SpotlightSearch({
     navigate(to)
   }
 
-  const Section = ({ heading, items }: { heading: string; items: Result[] }) => (
-    <CommandGroup heading={heading}>
-      {items.map((r) => (
-        <CommandItem
-          key={r.id}
-          // cmdk matches on `value`, so everything searchable goes in here
-          // while the row still renders a clean label.
-          value={`${r.label} ${r.detail ?? ''} ${r.keywords ?? ''}`}
-          onSelect={() => go(r.to)}
-          className="gap-2.5"
-        >
-          <r.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate">{r.label}</span>
-            {r.detail ? (
-              <span className="block truncate text-xs text-text-3">{r.detail}</span>
-            ) : null}
-          </span>
-        </CommandItem>
-      ))}
-    </CommandGroup>
-  )
 
   return (
     <>
@@ -378,11 +401,11 @@ export function SpotlightSearch({
             </CommandGroup>
             <CommandSeparator />
 
-            <Section heading="Applications" items={apps} />
+            <Section heading="Applications" items={apps} go={go} />
             <CommandSeparator />
-            <Section heading="Reminders" items={rems} />
+            <Section heading="Reminders" items={rems} go={go} />
             <CommandSeparator />
-            <Section heading="Calendar" items={events} />
+            <Section heading="Calendar" items={events} go={go} />
             <CommandSeparator />
 
             {/* Below the records, above the pages. A palette is asked for a
@@ -419,7 +442,7 @@ export function SpotlightSearch({
             </CommandGroup>
             <CommandSeparator />
 
-            <Section heading="Go to" items={PAGES} />
+            <Section heading="Go to" items={PAGES} go={go} />
           </CommandList>
 
           <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">

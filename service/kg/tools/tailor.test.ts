@@ -220,3 +220,38 @@ describe('deleting one by hand', () => {
     expect(graphOf(h)).toEqual(before)
   })
 })
+
+
+describe('naming the copy in the same write', () => {
+  /*
+   * Both apps put "(copy)" on the end. Doing that with a follow-up
+   * `vault.snippet.update` made one button press two journal entries, so a
+   * single ⌘Z took the rename back and left a copy carrying the original's
+   * exact title, beside the original — the confusion Duplicate exists to avoid.
+   */
+  it('takes the title, and still drops the provenance and the marks', () => {
+    const h = harness()
+    const source = okOr(
+      h.runtime.run('vault.snippet.create', {
+        title: 'CV',
+        tag: 'CV',
+        body: '## Summary\n**Distributed systems** researcher.',
+      }),
+    )
+    const before = h.repo.undoable.length
+    const copy = okOr(h.runtime.run('vault.snippet.duplicate', { id: source, title: 'CV (copy)' }))
+    const made = h.repo.getSnapshot().node(copy, 'snippet')
+    expect(made?.props.title).toBe('CV (copy)')
+    // One press, one thing to undo.
+    expect(h.repo.undoable.length).toBe(before + 1)
+  })
+
+  it('keeps the source title when none is given', () => {
+    const h = harness()
+    const source = okOr(
+      h.runtime.run('vault.snippet.create', { title: 'CV', tag: 'CV', body: 'plain text' }),
+    )
+    const copy = okOr(h.runtime.run('vault.snippet.duplicate', { id: source }))
+    expect(h.repo.getSnapshot().node(copy, 'snippet')?.props.title).toBe('CV')
+  })
+})

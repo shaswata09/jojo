@@ -665,7 +665,16 @@ export const vaultSnippetDuplicate = defineTool({
   summary: 'Copies the snippet so a variant can be written without losing the original.',
   effect: 'create',
   touches: ['snippet'],
-  input: s.object({ id: snippetId }),
+  /**
+   * `title` so the copy can be named in the SAME write.
+   *
+   * Both apps put "(copy)" on the end, and doing that with a follow-up
+   * `vault.snippet.update` made one button press two journal entries: a single
+   * ⌘Z then took the rename back and left a copy carrying the original's exact
+   * title, beside the original, which is the confusion Duplicate exists to
+   * avoid. Optional, because the agent has no reason to rename what it copies.
+   */
+  input: s.object({ id: snippetId, title: s.optional(s.string({ min: 1, label: 'Title' })) }),
 
   run(ctx, input): NodeId {
     const source = ctx.require('snippet', input.id)
@@ -685,7 +694,8 @@ export const vaultSnippetDuplicate = defineTool({
         // body is only ever READ as marked when its record says a model wrote
         // it, so a copy that kept `**` and `##` would show them as typed.
         ...(source.props.tailored === undefined ? {} : { body: stripMarks(source.props.body) }),
-        slug: ctx.mintSlug('snippet', source.props.title),
+        ...(input.title === undefined ? {} : { title: input.title }),
+        slug: ctx.mintSlug('snippet', input.title ?? source.props.title),
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,

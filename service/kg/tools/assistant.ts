@@ -185,6 +185,14 @@ export const threadAutoSet = defineTool({
   title: 'Act without asking',
   summary: 'Lets the assistant make changes in this conversation without asking first.',
   effect: 'update',
+  /*
+   * Always confirmed, because this is the tool that decides what gets
+   * confirmed. Under Semi-auto the gate asks only about destructive steps, and
+   * this was not one — so the model could answer "asking only before deletions"
+   * by setting the conversation to Auto, unprompted, and delete freely from the
+   * next step on. A permission raise must be gated at the level it raises from.
+   */
+  destructive: true,
   touches: ['thread'],
   input: s.object({
     id: threadId,

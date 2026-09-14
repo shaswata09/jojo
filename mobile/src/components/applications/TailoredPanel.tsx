@@ -131,6 +131,17 @@ export function TailoredPanel({ applicationId }: { applicationId: string }) {
         </Txt>
       )}
 
+      {/* Doubts, not failures: the document was written and saved. These were
+          computed and then dropped for as long as a run reported only
+          ok-or-why, so a reply that marked nothing said nothing. */}
+      {t.notes.length > 0 &&
+        !busy &&
+        t.notes.map((note) => (
+          <Txt key={note} size="sm" tone="secondary">
+            {note}
+          </Txt>
+        ))}
+
       {t.tailored.length === 0 &&
         t.blocked === null &&
         t.candidates.length > 0 &&

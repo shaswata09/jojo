@@ -53,9 +53,51 @@ export const MARK_LEGEND = {
 
 const isWordChar = (ch: string | undefined): boolean => ch !== undefined && /[\p{L}\p{N}]/u.test(ch)
 
+/**
+ * The last index on the line at which a single `_` or `*` could CLOSE a run.
+ *
+ * An opener with nothing to close it is not emphasis, and treating it as one
+ * cost a real thing. A publications block carries the line that DEFINES its
+ * footnote — `*Corresponding author.` — and that star satisfies every other
+ * test: not inside a word, followed by a letter. So it opened a run that ran to
+ * the end of the line, and `stripMarks` then removed the star, deleting the
+ * definition from the text the person copied out. `*Equal contribution.` and a
+ * `_Note:` prefix are the same shape.
+ *
+ * Computed ONCE per line rather than scanned per opener, and the difference is
+ * not academic: scanning ahead from each candidate is quadratic, and a single
+ * line of twenty thousand lone stars — which is model output, so not something
+ * this layer gets to rule out — took four and a half seconds and froze the
+ * preview that renders it. One pass, then every question is a comparison.
+ *
+ * A closer is judged by the rule the closer itself uses (preceded by a
+ * non-space) so this agrees with the loop below rather than approximating it,
+ * and a doubled marker is skipped because `**` and `__` belong to the
+ * two-character branches.
+ */
+function lastClosers(line: string): { readonly '*': number; readonly _: number } {
+  let star = -1
+  let underscore = -1
+  for (let j = 0; j < line.length; j += 1) {
+    const ch = line[j]
+    if (ch !== '*' && ch !== '_') continue
+    if (line[j + 1] === ch) {
+      j += 1
+      continue
+    }
+    const before = line[j - 1]
+    if (before === undefined || /\s/.test(before)) continue
+    if (ch === '*') star = j
+    else underscore = j
+  }
+  return { '*': star, _: underscore }
+}
+
 /** One line's inline marks. State starts closed on every line. */
 export function parseInline(line: string): Run[] {
   const runs: Run[] = []
+  /** See `lastClosers`: an opener past this has nothing to close it. */
+  const closes = lastClosers(line)
   let bold = false
   let italic = false
   let underline = false
@@ -88,14 +130,34 @@ export function parseInline(line: string): Run[] {
       const after = line[i + 1]
       /*
        * Inside a word on both sides it is text: `snake_case`, `CS*101`. And a
-       * toggle has to FLANK something — an opening one is followed by a
-       * non-space, a closing one is preceded by one. That is what keeps a
-       * Markdown bullet (`* item`), a footnote star (`Nature*`) and a lone
-       * asterisk from opening an italic run that swallows the rest of the line
-       * and then loses the star when the marks are stripped.
+       * toggle has to FLANK something — an opening one is followed by a WORD
+       * character, a closing one merely by a non-space.
+       *
+       * The asymmetry is the point, and it was learned from a publications
+       * line. `canOpen` used to be "followed by a non-space", which a star
+       * before punctuation satisfies: the corresponding-author mark in
+       * `Mitra, S.*, Rao, P. — OSDI 2024` opened an italic run that swallowed
+       * the rest of the line, told the reader through `MARK_LEGEND` that the
+       * model had emphasised their co-authors, and — because stripping marks
+       * removes the star — dropped the authorship mark entirely from the text
+       * the person copied out. `Nature*.` and a star before a slash are the
+       * same shape. Requiring a letter or digit after an opener keeps `_reworded_` and
+       * `*softer*` working and leaves a star that trails a word as text.
+       *
+       * A closer stays at "non-space" so a run that ends on punctuation still
+       * closes — `_C++_`, `*Rust*,` — because tightening that side would strand
+       * an open run and italicise the rest of the line, which is the failure
+       * this is fixing rather than a second copy of it.
+       *
+       * What the opener gives up, said plainly: emphasis that STARTS on
+       * punctuation no longer opens, so `*(2024)*` and `*"quoted"*` render as
+       * text. That is a mark not shown, which costs a reader nothing they
+       * cannot see — `stripMarks` keeps every character either way — and it is
+       * the right side of the trade against a star that silently disappeared
+       * from an authorship line.
        */
       const inWord = isWordChar(before) && isWordChar(after)
-      const canOpen = after !== undefined && !/\s/.test(after)
+      const canOpen = isWordChar(after) && i < closes[one === '*' ? '*' : '_']
       const canClose = before !== undefined && !/\s/.test(before)
       if (!inWord && (italic ? canClose : canOpen)) {
         flush()

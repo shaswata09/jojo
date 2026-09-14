@@ -218,6 +218,29 @@ export function useVault() {
     [run, readBack, projections],
   )
 
+  /**
+   * Copy a snippet through the tool that knows what a copy is.
+   *
+   * NOT `addSnippet` with the body read out of the record, which is what both
+   * apps' Duplicate buttons did. `vault.snippet.duplicate` drops `tailored` and
+   * strips the marks, and its own comment says why each matters: a copy that
+   * kept the provenance turns up on an application's tailoring card claiming a
+   * model wrote it, and a body is only ever READ as marked when the record says
+   * so — so a copy that kept `**` and `##` shows them to the person as typed
+   * characters. Duplicating a tailored CV did both at once.
+   */
+  const duplicateSnippet = useCallback(
+    (id: string, title?: string): Snippet => {
+      // `title` goes into the SAME write. Renaming afterwards made one button
+      // press two journal entries, so a single ⌘Z took the rename back and left
+      // a copy carrying the original's exact title next to the original.
+      const result = run('vault.snippet.duplicate', { id, ...present('title', title) })
+      if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not copy the snippet.')
+      return readBack(projections.snippets, result.output)
+    },
+    [run, readBack, projections],
+  )
+
   const updateSnippet = useCallback(
     (id: string, patch: Partial<Snippet>) => {
       run('vault.snippet.update', {
@@ -293,6 +316,7 @@ export function useVault() {
       removeFile,
       snippets,
       addSnippet,
+      duplicateSnippet,
       updateSnippet,
       removeSnippet,
       people,
@@ -312,6 +336,7 @@ export function useVault() {
       removeFile,
       snippets,
       addSnippet,
+      duplicateSnippet,
       updateSnippet,
       removeSnippet,
       people,

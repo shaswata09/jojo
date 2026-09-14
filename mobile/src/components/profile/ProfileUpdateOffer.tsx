@@ -197,7 +197,16 @@ export function ProfileUpdateOffer() {
      * model to copy uuids. `claim.add` refuses any the graph already holds
      * under another name, which is the feature working rather than an error.
      */
-    const ids = result.ok ? (result.output as string[]) : []
+    // `output.ids`, in the order the entries were given. The tool also reports
+    // `created` — which of them it actually minted — and that is what its own
+    // announcement counts; the positions below only need the ids.
+    const out = result.ok ? (result.output as { ids: string[]; created: string[] }) : null
+    // `ids` in the order the entries were given; `created` is the subset this
+    // call actually minted. Most of a newer CV is the older one, so "how many
+    // were added" and "how many were offered" are different numbers — and the
+    // toast used to print the second while the journal row printed the first.
+    const ids = out?.ids ?? []
+    const added = out?.created.length ?? 0
     // Original position -> the id it was written under, so a relation naming a
     // dropped entry is skipped rather than pointing at whichever one shifted up.
     const idAt = new Map(keeping.map(({ at }, i) => [at, ids[i]]))
@@ -220,10 +229,12 @@ export function ProfileUpdateOffer() {
 
     toast({
       title: result.ok
-        ? `${String(keeping.length)} added to your profile`
+        ? added === 0
+          ? 'Already on your profile'
+          : `${String(added)} added to your profile`
         : 'Nothing could be added',
       description: result.ok
-        ? `Read from ${target.subject}.${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} recorded.` : ''}`
+        ? `Read from ${target.subject}.${added < keeping.length ? ` ${String(keeping.length - added)} of ${String(keeping.length)} were already known.` : ''}${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} recorded.` : ''}`
         : (result.errors[0]?.message ?? 'The entries were refused.'),
       ...(result.ok ? {} : { tone: 'danger' as const }),
     })

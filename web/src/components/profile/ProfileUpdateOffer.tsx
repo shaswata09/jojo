@@ -244,7 +244,16 @@ export function ProfileUpdateOffer() {
      * under another name. A refusal here is the feature working, not an error,
      * so nothing is reported for it.
      */
-    const ids = result.ok ? (result.output as string[]) : []
+    // `output.ids`, in the order the entries were given. The tool also reports
+    // `created` — which of them it actually minted — and that is what its own
+    // announcement counts; the positions below only need the ids.
+    const out = result.ok ? (result.output as { ids: string[]; created: string[] }) : null
+    // `ids` in the order the entries were given; `created` is the subset this
+    // call actually minted. Most of a newer CV is the older one, so "how many
+    // were added" and "how many were offered" are different numbers — and the
+    // toast used to print the second while the journal row printed the first.
+    const ids = out?.ids ?? []
+    const added = out?.created.length ?? 0
     /*
      * Original position -> the id it was actually written under. Built from
      * `keeping`, so a relation naming an entry the person dropped resolves to
@@ -276,10 +285,12 @@ export function ProfileUpdateOffer() {
 
     toast({
       title: result.ok
-        ? `${String(keeping.length)} added to your profile`
+        ? added === 0
+          ? `Already on your profile`
+          : `${String(added)} added to your profile`
         : 'Nothing could be added',
       description: result.ok
-        ? `Read from ${target.subject}.${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} between them recorded.` : ''} jojo can now weigh a posting against what you have done.`
+        ? `Read from ${target.subject}.${added < keeping.length ? ` ${String(keeping.length - added)} of ${String(keeping.length)} were already known.` : ''}${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} between them recorded.` : ''} jojo can now weigh a posting against what you have done.`
         : (result.errors[0]?.message ?? 'The entries were refused.'),
       ...(result.ok ? {} : { tone: 'danger' as const }),
     })

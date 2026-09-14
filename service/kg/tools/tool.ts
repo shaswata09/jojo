@@ -138,6 +138,27 @@ export type Tool<I, O = void> = {
   /** One line; the palette, the inspector, and one day a manifest. */
   readonly summary: string
   readonly effect: 'create' | 'update' | 'delete' | 'move' | 'admin'
+  /**
+   * Needs confirming even though `effect` does not say so.
+   *
+   * `destructive` is normally DERIVED — `effect === 'delete' || 'admin'` — and
+   * for almost every tool that is exactly right. It cannot express the two
+   * cases that broke it, because both are honestly an `update` to one record
+   * and are still things a person must be asked about:
+   *
+   *   - `application.offer.clear` drops the whole offer package — the terms,
+   *     the respond-by date, the note — out of an application. Its own
+   *     `describe` already returns `tone: 'danger'`, so the tool was telling
+   *     the UI it was dangerous and the gate it is not.
+   *   - `assistant.thread.auto.set` raises the agent's OWN permission. Under
+   *     Semi-auto — "asking only before deletions" — the model could set the
+   *     conversation to Auto without being asked, and every deletion after
+   *     that went through unprompted. A permission raise has to be gated at
+   *     the level it is raising from, or the level means nothing.
+   *
+   * Only ever widens: a tool can ask to be confirmed, never to skip it.
+   */
+  readonly destructive?: true
   readonly touches: readonly NodeType[]
   /** Hidden from the palette and the inspector: `org.ensure` and friends. */
   readonly internal?: boolean

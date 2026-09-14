@@ -364,10 +364,11 @@ export type ApprovalMode = (typeof APPROVAL_MODES)[number]
  * between them.
  *
  * `SAID` names deletion explicitly rather than saying "dangerous", because the
- * line the app actually draws is `effect === 'delete' || effect === 'admin'` —
- * seventeen tools of ninety-six, counted 2026-09-13. Closing an application is a `move` and passes
- * without a prompt under `semi`, which is worth a person knowing before they
- * choose it.
+ * line the app actually draws is `delete` and `admin`, plus the handful of
+ * tools that ask to be confirmed themselves — nineteen of ninety-six, counted
+ * 2026-09-13 and pinned in `catalog.test.ts`. Closing an application is a
+ * `move` and passes without a prompt under `semi`, which is worth a person
+ * knowing before they choose it.
  */
 export const APPROVAL_LABEL: { readonly [M in ApprovalMode]: string } = {
   manual: 'Manual',

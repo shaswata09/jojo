@@ -89,6 +89,24 @@ export interface Repository {
   /** Awaited by export, by Settings' three data ops, and by pagehide. */
   flush(): Promise<void>
   /**
+   * Hold this tab's writes while the store is being re-read, and hand back
+   * whatever landed. The returned release re-queues them; call it exactly once.
+   *
+   * `commit` is synchronous and a re-read is not, so a write of our own can
+   * land between `readAll` being asked and answering. The rows that come back
+   * do not contain it, and `rehydrate` resets the snapshot to those rows — so
+   * the write stayed in the queue, reached the disk, and vanished from the
+   * screen. Screen and disk then disagreed until the next reload.
+   *
+   * This is the same window `replaceAll` opens for itself and for the same
+   * reason; what differs is what the held ops MEAN afterwards. A replace makes
+   * their rows stop existing, so it discards them on success. A cross-tab
+   * adopt does not: the other tab's write does not invalidate ours, and
+   * last-write-wins is already the rule between them — so these are re-queued
+   * either way, and the caller decides what to do about the screen.
+   */
+  holdWrites(): () => readonly DurableOp[]
+  /**
    * Wholesale replace in one driver transaction: demo / empty / import.
    *
    * Refuses, without writing anything, when the write queue could not be
@@ -310,7 +328,25 @@ export function createRepository(options: RepositoryOptions): Repository {
    * A list rather than a boolean, because whether they should be kept is not
    * known until the replace finishes. See `land` and `replaceAll`.
    */
-  let deferred: DurableOp[] | null = null
+  /**
+   * The holds currently open, innermost last. `null` is the ordinary case.
+   *
+   * A LIST rather than one slot, because two holds really can overlap: a
+   * cross-tab adopt is fired with `void onRemoteCommit(...)` and never awaited,
+   * so a second remote commit starts a second adopt while the first is still
+   * reading. With a single slot, each hold saved the value it displaced and
+   * restored it on release — which is only correct if they release in the
+   * reverse of the order they were taken. They do not: they release in the
+   * order their READS finish. Out of order, the second release restored a
+   * pointer to the first hold's array, which nobody would ever drain again, and
+   * every write for the rest of the session went into it and nowhere else.
+   *
+   * A write goes to the innermost hold, and on release its ops move outward to
+   * whichever hold is still open — so nothing is enqueued while anyone is still
+   * holding, and nothing is lost when they finish in any order.
+   */
+  let holds: DurableOp[][] = []
+  const innermost = (): DurableOp[] | null => holds[holds.length - 1] ?? null
 
   function land(stamped: JournalEntry): JournalEntry {
     const entry = withDisplacedEdges(snapshot, stamped)
@@ -353,8 +389,9 @@ export function createRepository(options: RepositoryOptions): Repository {
      * So the decision waits for the outcome. `replaceAll` discards these on
      * success and enqueues them on failure.
      */
-    if (deferred === null) queue.enqueue(ops)
-    else deferred.push(...ops)
+    const hold = innermost()
+    if (hold === null) queue.enqueue(ops)
+    else hold.push(...ops)
     notify()
     return entry
   }
@@ -365,7 +402,7 @@ export function createRepository(options: RepositoryOptions): Repository {
       meta = next
       const row = metaRow(meta)
       /*
-       * Through the `deferred` hold, exactly as `land` above goes through it.
+       * Through the innermost hold, exactly as `land` above goes through it.
        *
        * This called `queue.enqueue` unconditionally, and it is the one writer
        * that did — so a meta write landing inside the `replaceAll` window went
@@ -380,8 +417,9 @@ export function createRepository(options: RepositoryOptions): Repository {
        * a store 'user' that still holds the demo fixtures.
        */
       const ops: DurableOp[] = [{ kind: 'put', store: 'meta', key: row.key, value: row }]
-      if (deferred === null) queue.enqueue(ops)
-      else deferred.push(...ops)
+      const hold = innermost()
+      if (hold === null) queue.enqueue(ops)
+      else hold.push(...ops)
       notify()
     },
 
@@ -493,6 +531,32 @@ export function createRepository(options: RepositoryOptions): Repository {
 
     flush: () => queue.flush(),
 
+    holdWrites() {
+      const held: DurableOp[] = []
+      holds.push(held)
+      let released = false
+      return () => {
+        if (released) return held
+        released = true
+        holds = holds.filter((h) => h !== held)
+        /*
+         * Outward, not straight to the queue.
+         *
+         * If another hold is still open — a `replaceAll` window this adopt
+         * opened inside — these writes are still held, and enqueuing them here
+         * would put rows on the disk queue that the replace is about to make
+         * stop existing. The outer hold owns them and decides; that is the same
+         * rule `land` follows. Only when nothing is holding do they go to the
+         * queue, because then there is nothing left to decide.
+         */
+        const outer = innermost()
+        if (held.length === 0) return held
+        if (outer === null) queue.enqueue(held)
+        else outer.push(...held)
+        return held
+      }
+    },
+
     async replaceAll(graph, nextMeta) {
       /*
        * The window opens HERE, not at the driver call.
@@ -504,7 +568,7 @@ export function createRepository(options: RepositoryOptions): Repository {
        * the record still reached the disk.
        */
       const held: DurableOp[] = []
-      deferred = held
+      holds.push(held)
       try {
         const outcome = await replaceNow()
         /*
@@ -522,7 +586,7 @@ export function createRepository(options: RepositoryOptions): Repository {
          * A driver that THROWS rather than returning a `DriverResult`.
          *
          * `finally` alone was not enough and the gap was silent. It cleared
-         * `deferred` and let the exception through, so the ops held in the
+         * the hold and let the exception through, so the ops held in the
          * window were dropped on the floor: present in memory, never on disk,
          * and no failure Result for the caller to report. Reproduced with a
          * `replace` that throws — `replaceAll` propagated the error and the
@@ -541,7 +605,9 @@ export function createRepository(options: RepositoryOptions): Repository {
           cause,
         })
       } finally {
-        deferred = null
+        // Removed by identity, not by truncation: another hold may have opened
+        // inside this window and may outlive it.
+        holds = holds.filter((h) => h !== held)
       }
 
       async function replaceNow(): Promise<Result<void>> {

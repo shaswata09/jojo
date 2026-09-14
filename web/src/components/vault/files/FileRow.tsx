@@ -105,8 +105,17 @@ export function FileRow({
       <Icon aria-hidden strokeWidth={1.7} className="size-3.5 shrink-0 self-start text-text-3" />
 
       <div className="min-w-0 flex-1">
+        {/* `key` on both, and it is load-bearing rather than a lint habit.
+            These are two elements of the SAME component type in the same child
+            position, and `FilesTool` switches `editing.field` straight from one
+            to the other with no null in between — so React updated the mounted
+            editor instead of replacing it, and `InlineEdit` seeds its draft
+            from `value` only on mount. Picking Rename and then Add note on the
+            same row therefore opened the note box holding the FILE NAME, and
+            pressing Save wrote the filename over the note. */}
         {editingField === 'name' ? (
           <InlineEdit
+            key="name"
             label="File name"
             value={f.name}
             mono
@@ -116,6 +125,7 @@ export function FileRow({
           />
         ) : editingField === 'note' ? (
           <InlineEdit
+            key="note"
             label="Note"
             value={f.note ?? ''}
             onCancel={onCancelEdit}
