@@ -26,6 +26,7 @@ import { OUTCOME_VALUES, SOURCES, STAGE_VALUES } from '../core/model'
 import type { NodeId } from '../core/model'
 import { foldName } from '../core/ref'
 import { s } from '../core/schema'
+import { enteredStage, stageDatesShape } from '../core/stage-dates'
 import {
   appId,
   cleared,
@@ -34,7 +35,7 @@ import {
   syncDeadline,
   syncKeywords,
 } from './application-fields'
-import { STAGE_LABEL, displayOf, opt, touch } from './support'
+import { STAGE_LABEL, dayOf, displayOf, opt, touch } from './support'
 import { defineTool } from './tool'
 
 /* ------------------------------- org.ensure ------------------------------- */
@@ -198,6 +199,18 @@ export const applicationUpdate = defineTool({
     appliedOn: s.optional(s.nullable(s.isoDate({ label: 'Applied on' }))),
     submittedOn: s.optional(s.nullable(s.isoDate({ label: 'Submitted on' }))),
     firstReplyOn: s.optional(s.nullable(s.isoDate({ label: 'First reply' }))),
+    /**
+     * When each stage was entered, as a whole map.
+     *
+     * Whole rather than one stage at a time, because props are stored whole: a
+     * patch naming `interview` alone would drop the other four dates. Callers
+     * build it with `setStageDate` in `core/stage-dates.ts`, which is also what
+     * knows that `submitted` is not in here — that date is `submittedOn`.
+     *
+     * Passing it is a CORRECTION and it overwrites. The dates a person never
+     * types are stamped below, by the move itself.
+     */
+    stageDates: s.optional(s.nullable(stageDatesShape)),
     outcome: s.optional(s.nullable(s.enum(OUTCOME_VALUES, { label: 'Outcome' }))),
     offer: s.optional(s.nullable(offerShape)),
   }),
@@ -205,6 +218,16 @@ export const applicationUpdate = defineTool({
   run(ctx, input) {
     const current = ctx.require('application', input.id)
     const moved = input.stage !== undefined && input.stage !== current.props.stage
+    /**
+     * The record's dates AS THIS CALL LEAVES THEM — what the stamp below has to
+     * read. Both fields, because `stage-dates.ts` keeps the submitted date in
+     * one and the rest in the other.
+     */
+    const dated = {
+      ...current.props,
+      ...(input.submittedOn === undefined ? {} : { submittedOn: input.submittedOn ?? undefined }),
+      ...(input.stageDates === undefined ? {} : { stageDates: input.stageDates ?? undefined }),
+    }
 
     if (input.org !== undefined) {
       ctx.tx.link(input.id, 'AT', ctx.call('org.ensure', { name: input.org }))
@@ -230,6 +253,27 @@ export const applicationUpdate = defineTool({
       ...(input.firstReplyOn === undefined
         ? {}
         : { firstReplyOn: input.firstReplyOn ?? undefined }),
+      ...(input.stageDates === undefined ? {} : { stageDates: input.stageDates ?? undefined }),
+      /*
+       * The date the move happened, filled only where that stage has none.
+       *
+       * Here rather than in the caller because this is the tool every path goes
+       * through — the board's drag, the stage pill on a card, the table's chip,
+       * the transition dialog, an agent, the phone. A stamp in the UI would be
+       * a stamp on the paths that UI owns, and the rest would move without a
+       * date and nobody would notice until they went looking for one.
+       *
+       * Against `dated`, NOT against the stored props, and that distinction is
+       * the whole of it: this spread lands last, so a stamp that read only what
+       * was on disk would overwrite the date arriving in the same call. The
+       * transition dialog collects the day you actually submitted and sends it
+       * as `submittedOn` with the move — measured before the fix, the record
+       * kept today instead, and the field the form exists to fill was the one
+       * it could not set.
+       */
+      ...(moved && input.stage !== undefined
+        ? enteredStage(dated, input.stage, dayOf(ctx.now))
+        : {}),
       ...(input.outcome === undefined ? {} : { outcome: input.outcome ?? undefined }),
       ...(input.offer === undefined ? {} : { offer: input.offer ?? undefined }),
     })

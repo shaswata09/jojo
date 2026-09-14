@@ -62,7 +62,16 @@ export function DetailFacts({ application: a }: { application: Application }) {
       ) : undefined,
     },
     { label: 'Applied on', value: a.appliedOn ? shortDate(a.appliedOn) : undefined },
-    { label: 'Submitted on', value: a.submittedOn ? shortDate(a.submittedOn) : undefined },
+    /*
+     * No 'Submitted on' row. It is the Submitted row in `StageDatesPanel`
+     * directly below, where it can be corrected — and two copies of one date on
+     * one page invite the question of which is the real one, with the read-only
+     * copy the likelier answer because it is the one that is further up.
+     *
+     * 'Applied on' stays: it is a different fact, not a stage. The day you
+     * first applied for this job survives being re-submitted, and the stage
+     * panel has no row for it.
+     */
   ]
 
   return (

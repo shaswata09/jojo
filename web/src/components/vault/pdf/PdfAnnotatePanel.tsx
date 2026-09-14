@@ -17,9 +17,10 @@ import {
 import { derivedName } from '@/lib/pdf/output-name'
 import { openPdf, type OpenPdf } from '@/lib/pdf/render'
 import { PdfSourceAdd } from './PdfSourceAdd'
+import { useDroppedPdfs, type PdfDelivery } from './use-dropped-pdfs'
 import { PdfSaveBar } from './PdfSaveBar'
 import { PdfPageView } from './PdfPageView'
-import { usePdfFiles, type PdfChoice } from './use-pdf-files'
+import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
 import type { Quad } from '@/lib/pdf/geometry'
 import type { FileBucket } from '@/data/vault'
 
@@ -39,7 +40,7 @@ const ZOOMS = [0.75, 1, 1.25, 1.5, 2]
  * written until Save — until then a mark lives only in this component, which is
  * what makes removing one a matter of forgetting it.
  */
-export function PdfAnnotatePanel() {
+export function PdfAnnotatePanel({ dropped }: { dropped?: PdfDelivery | null }) {
   const { available, bytesOf, saveResult, download } = usePdfFiles()
   const { toast } = useToast()
   const [choice, setChoice] = useState<PdfChoice | null>(null)
@@ -73,6 +74,20 @@ export function PdfAnnotatePanel() {
   )
 
   useEffect(() => () => document_?.close(), [document_])
+
+  // One at a time: this panel works on a single document, and `useDroppedPdfs`
+  // says so out loud rather than silently taking the first of five.
+  useDroppedPdfs(
+    dropped,
+    1,
+    useCallback(
+      (files: readonly File[]) => {
+        const first = files[0]
+        if (first) void open(asChoice(first))
+      },
+      [open],
+    ),
+  )
 
   const addHighlight = useCallback(
     (quads: Quad[], text: string) => {

@@ -14,9 +14,10 @@ import {
 import { derivedName } from '@/lib/pdf/output-name'
 import { openPdf, type OpenPdf } from '@/lib/pdf/render'
 import { PdfSourceAdd } from './PdfSourceAdd'
+import { useDroppedPdfs, type PdfDelivery } from './use-dropped-pdfs'
 import { PdfSaveBar } from './PdfSaveBar'
 import { PdfThumb } from './PdfThumb'
-import { usePdfFiles, type PdfChoice } from './use-pdf-files'
+import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
 import type { FileBucket } from '@/data/vault'
 
 /**
@@ -26,7 +27,7 @@ import type { FileBucket } from '@/data/vault'
  * why — so the whole sequence is one save at the end, and Undo is free because
  * nothing has been written yet.
  */
-export function PdfPagesPanel() {
+export function PdfPagesPanel({ dropped }: { dropped?: PdfDelivery | null }) {
   const { available, bytesOf, saveResult, download } = usePdfFiles()
   const { toast } = useToast()
   const [choice, setChoice] = useState<PdfChoice | null>(null)
@@ -56,6 +57,20 @@ export function PdfPagesPanel() {
 
   // The worker behind an open document is not garbage: it has to be told.
   useEffect(() => () => document_?.close(), [document_])
+
+  // One at a time: this panel works on a single document, and `useDroppedPdfs`
+  // says so out loud rather than silently taking the first of five.
+  useDroppedPdfs(
+    dropped,
+    1,
+    useCallback(
+      (files: readonly File[]) => {
+        const first = files[0]
+        if (first) void open(asChoice(first))
+      },
+      [open],
+    ),
+  )
 
   const dirty = document_ !== null && planChanged(plan, document_.pageCount)
   const suggested = choice ? derivedName(choice.name, `${plan.length} pages`) : 'pages.pdf'
@@ -132,7 +147,7 @@ export function PdfPagesPanel() {
                     {at + 1}
                     <span className="text-text-3/70"> · was {page.source + 1}</span>
                   </span>
-                  <span className="text-xs tabular-nums text-text-3">
+                  <span className="text-xs text-text-3 tabular-nums">
                     {page.rotation === 0 ? '' : `${page.rotation}°`}
                   </span>
                 </div>

@@ -875,6 +875,89 @@ describe('the composites', () => {
     expect(after.node(theirs, 'timelineItem')).toBeDefined()
   })
 
+  /*
+   * The two writes a stage move makes, and the order they compose in.
+   *
+   * The stamp is spread into the same patch as the dates the caller gave, and
+   * it is spread LAST — so a stamp that did not know what the caller had
+   * already said would overwrite it. That is the whole failure: the transition
+   * dialog collects the day you actually submitted, and the record would have
+   * kept the day you told it.
+   */
+  describe('the date a stage change stamps', () => {
+    const draftAt = (h: ReturnType<typeof harness>, stage: 'draft' | 'submitted') =>
+      okOr(
+        h.runtime.run('application.create', {
+          org: 'Rice',
+          role: 'Statistics',
+          roleTag: 'Assistant Professor',
+          stage,
+        }),
+      )
+
+    it('dates the stage it moved to with the day of the move', () => {
+      const h = harness()
+      const app = draftAt(h, 'draft')
+      okOr(h.runtime.run('application.update', { id: app, stage: 'interview' }))
+      expect(h.repo.getSnapshot().node(app, 'application')?.props.stageDates?.interview).toBe(
+        dayOf(new Date(START).toISOString()),
+      )
+    })
+
+    it('yields to a date the caller supplied for that same stage', () => {
+      const h = harness()
+      const app = draftAt(h, 'draft')
+      okOr(
+        h.runtime.run('application.update', {
+          id: app,
+          stage: 'submitted',
+          submittedOn: '2026-08-03',
+        }),
+      )
+      // Not today. The person said the third of August.
+      expect(h.repo.getSnapshot().node(app, 'application')?.props.submittedOn).toBe('2026-08-03')
+    })
+
+    it('yields to a supplied date in the map too', () => {
+      const h = harness()
+      const app = draftAt(h, 'draft')
+      okOr(
+        h.runtime.run('application.update', {
+          id: app,
+          stage: 'interview',
+          stageDates: { interview: '2026-08-20' },
+        }),
+      )
+      expect(h.repo.getSnapshot().node(app, 'application')?.props.stageDates?.interview).toBe(
+        '2026-08-20',
+      )
+    })
+
+    it('leaves a date it already has, however many times it is moved back', () => {
+      const h = harness()
+      const app = draftAt(h, 'draft')
+      okOr(
+        h.runtime.run('application.update', {
+          id: app,
+          stage: 'interview',
+          stageDates: { interview: '2026-08-20' },
+        }),
+      )
+      okOr(h.runtime.run('application.update', { id: app, stage: 'submitted' }))
+      okOr(h.runtime.run('application.update', { id: app, stage: 'interview' }))
+      expect(h.repo.getSnapshot().node(app, 'application')?.props.stageDates?.interview).toBe(
+        '2026-08-20',
+      )
+    })
+
+    it('does not stamp when the stage did not change', () => {
+      const h = harness()
+      const app = draftAt(h, 'submitted')
+      okOr(h.runtime.run('application.update', { id: app, stage: 'submitted', note: 'edited' }))
+      expect(h.repo.getSnapshot().node(app, 'application')?.props.submittedOn).toBeUndefined()
+    })
+  })
+
   it('does not touch the deadline when the field was not in the input', () => {
     const h = harness()
     const app = okOr(

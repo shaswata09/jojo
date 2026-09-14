@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { FolderOpen, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { pickedFiles } from '@/lib/file-input'
-import { choiceOf, type PdfChoice } from './use-pdf-files'
+import { asChoice, choiceOf, type PdfChoice } from './use-pdf-files'
 import type { VaultFile } from '@/data/vault'
 
 export const SELECT_CLASS =
@@ -69,22 +69,15 @@ export function PdfSourceAdd({
           // Read before the input is cleared — `input.files` is live, and
           // clearing it first empties the list. See `pickedFiles`.
           const picked = pickedFiles(event.target)
-          onAdd(
-            picked.map((file, at) => ({
-              kind: 'device' as const,
-              id: `device:${file.name}:${file.lastModified}:${at}:${Date.now()}`,
-              name: file.name,
-              file,
-            })),
-          )
+          onAdd(picked.map((file, at) => asChoice(file, at)))
         }}
       />
-      {available.length === 0 ? (
-        <span className="inline-flex items-center gap-1.5 text-xs text-text-3">
-          <FolderOpen className="size-3.5" aria-hidden />
-          Files you save here will show up in this list.
-        </span>
-      ) : null}
+      <span className="inline-flex items-center gap-1.5 text-xs text-text-3">
+        <FolderOpen className="size-3.5" aria-hidden />
+        {available.length === 0
+          ? 'Or drop a PDF anywhere on this card. Files you save here show up in this list.'
+          : 'Or drop a PDF anywhere on this card.'}
+      </span>
     </div>
   )
 }

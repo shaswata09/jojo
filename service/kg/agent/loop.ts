@@ -289,7 +289,7 @@ export type AgentOptions = {
    * `destructive` is delete and admin, plus the tools that declare themselves
    * so — 19 of the 96 catalog entries, the ones whose catalog description
    * already warns the model about them. `writes` is every step that is not a
-   * read: 86 of them, which is what "ask me before it changes anything"
+   * read: 90 of them, which is what "ask me before it changes anything"
    * actually means.
    *
    * The policy is the CALLER'S, which is why it is here rather than widening
@@ -1785,8 +1785,8 @@ async function performCall(
   /*
    * Three settings, and the middle one is where the interesting failure lives.
    *
-   *   writes       — every non-read step (86 of 96 tools)
-   *   destructive  — `delete` and `admin`, plus the tools that ask (19 of 96)
+   *   writes       — every non-read step (90 of 100 tools)
+   *   destructive  — `delete` and `admin`, plus the tools that ask (20 of 100)
    *   none         — nothing, and the person chose that explicitly
    *
    * `destructive` USED to be exactly "the ones that remove a record", and is

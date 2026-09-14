@@ -23,7 +23,7 @@ import { SERVERS_KEY, STORAGE_KEY } from '@/lib/model-settings-context'
  * The source-text checks below used to glob `/src/**` — this app alone — while
  * the mistake they describe ("somebody adds 'remember my key' as a tool so the
  * agent can set it") would land in `service/kg/tools/`, which is exactly where
- * the ninety-six tools live and exactly what was never read. The phone has its
+ * the hundred tools live and exactly what was never read. The phone has its
  * own settings store and could make the same mistake independently.
  *
  * Reached by FILE-relative globs, the way `code-structure.test.ts` reaches the

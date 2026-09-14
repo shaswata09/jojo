@@ -5,7 +5,9 @@ import { DatesPanel } from '@/components/applications/detail/DatesPanel'
 import { FiledPanel } from '@/components/applications/detail/FiledPanel'
 import { DetailFacts } from '@/components/applications/detail/DetailFacts'
 import { DetailHeader } from '@/components/applications/detail/DetailHeader'
+import { StageDatesPanel } from '@/components/applications/detail/StageDatesPanel'
 import { FitPanel } from '@/components/applications/detail/FitPanel'
+import { ChecklistPanel } from '@/components/applications/detail/ChecklistPanel'
 import { TailoredPanel } from '@/components/applications/detail/TailoredPanel'
 import { NotePanel } from '@/components/applications/detail/NotePanel'
 import { plainStageMove, stageNeedsDetails } from '@jojo/service/core/stage-policy'
@@ -309,6 +311,13 @@ function Detail({
 
       <DetailFacts application={a} />
 
+      {/* Directly under the facts, because it is one: where the application
+          got to and when. Above the fit card for the same reason the offer is
+          above the facts — the stage a record is in is the first thing anybody
+          opening it is checking, and the dates are the half of that the board
+          cannot show. */}
+      <StageDatesPanel application={a} />
+
       {/* Above the dates and below the facts: it is the question somebody
           opens a draft to answer — should I spend an evening on this — and it
           stops being the question the moment the application has been sent, so
@@ -318,6 +327,13 @@ function Detail({
       {/* Directly under the verdict, because it is the verdict's next step: a
           person who has just read what to lead with asks to have it led with. */}
       <TailoredPanel applicationId={a.id} />
+
+      {/* Under the two cards it reads from, and above the dates it feeds.
+          The page becomes decide → write → DO → when → note → filed: the fit
+          verdict says whether to bother, the tailored materials are what you
+          send, and this is what you have to go and get before you can send
+          them. A step that turns out to need a date is one panel away. */}
+      <ChecklistPanel applicationId={a.id} />
 
       <DatesPanel applicationId={a.id} items={items} onAddItem={onAddItem} />
 

@@ -42,6 +42,8 @@ import {
   FILE_KIND_VALUES,
   LABEL_TONE_VALUES,
   LINK_CATEGORY_VALUES,
+  MAX_CHECKLIST_ITEMS,
+  MAX_CHECKLIST_TEXT,
   MAX_REQUIREMENT_TEXT,
   MAX_REQUIREMENTS,
   NODE_TYPES,
@@ -57,6 +59,7 @@ import {
   URGENCY_VALUES,
 } from './model'
 import { edgeId, parseNodeId, typeOfId } from './ref'
+import { stageDatesShape } from './stage-dates'
 import type { Schema } from './schema'
 import { formatIssues, s } from './schema'
 
@@ -151,8 +154,51 @@ export const NODE_PROP_SCHEMAS = {
     appliedOn: s.optional(s.isoDate({ label: 'Applied on' })),
     submittedOn: s.optional(s.isoDate({ label: 'Submitted on' })),
     firstReplyOn: s.optional(s.isoDate({ label: 'First reply on' })),
+    /*
+     * When each stage was entered. See `core/stage-dates.ts`.
+     *
+     * The shape is `stageDatesShape`, shared with the tool that writes it, and
+     * it has no `submitted` key on purpose: that date is `submittedOn`, two
+     * lines up. The module named above is the only thing that has to know.
+     *
+     * IN `SALVAGEABLE_PROPS`, for the reason `checklist` gives below: a node
+     * that fails validation is dropped WHOLE, and a malformed date map in a
+     * restored backup must not take the application with it.
+     */
+    stageDates: s.optional(stageDatesShape),
     outcome: s.optional(s.enum(OUTCOME_VALUES, { label: 'Outcome' })),
     offer: s.optional(offerSchema),
+    /*
+     * What is still to be done. See `ChecklistItem`.
+     *
+     * Declared exactly rather than passed through, and bounded on both axes for
+     * the reason the `reading` note gives one type up: a list longer than
+     * `MAX_CHECKLIST_ITEMS` or a line longer than a phrase did not come from
+     * this app, and the bound is what stops a prop that arrived from a backup
+     * file becoming the 40k of prose D27 exists to keep out of `getAll`.
+     *
+     * IN `SALVAGEABLE_PROPS`, and that matters more here than it does for a
+     * file: a node that fails validation is dropped WHOLE, so a malformed
+     * checklist in a restored backup would take the application with it — its
+     * stage, its dates, its offer, and every edge to it — to protect the person
+     * from a bad to-do list. The trade is not close.
+     */
+    checklist: s.optional(
+      s.array(
+        s.object({
+          id: s.string({ min: 1, label: 'Item' }),
+          text: s.string({ min: 1, max: MAX_CHECKLIST_TEXT, label: 'Step' }),
+          doneOn: s.optional(s.isoDate({ label: 'Done on' })),
+          by: s.optional(
+            s.object({
+              model: s.string({ min: 1, label: 'Model' }),
+              at: s.instant({ label: 'Drafted at' }),
+            }),
+          ),
+        }),
+        { max: MAX_CHECKLIST_ITEMS, label: 'Checklist' },
+      ),
+    ),
   }),
   organisation: s.object({ slug, name: s.string({ min: 1, label: 'Name' }) }),
   timelineItem: s.object({
@@ -614,6 +660,30 @@ export type ValidatedRows = {
  */
 const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash', 'uri', 'reading'] as const
 
+/**
+ * Props that may be dropped to keep the record, by the type that carries them.
+ *
+ * Was a single list for `file`, because `file` was the only type with one. An
+ * application's `checklist` is the second, and it is the reason this generalised
+ * rather than growing a second branch: the arithmetic is identical — what
+ * stripping costs is a to-do list the person can ask for again, and what
+ * keeping it costs is the application, its stage, its dates, its offer and
+ * every edge pointing at it.
+ *
+ * A type absent from here has nothing droppable, and a malformed prop on one is
+ * still what it always was: a database saying something impossible.
+ */
+const SALVAGEABLE_PROPS: Partial<Record<NodeType, readonly string[]>> = {
+  file: SALVAGEABLE_FILE_PROPS,
+  application: ['checklist', 'stageDates'],
+}
+
+/** What the restore summary says about each, in the person's terms. */
+const SALVAGE_NOTE: Partial<Record<NodeType, string>> = {
+  file: 'Came back without its document link.',
+  application: 'Came back without its checklist or its stage dates.',
+}
+
 export type ValidateOptions = {
   /**
    * Retry a failed node with the file-link props removed, and keep it if that
@@ -623,16 +693,22 @@ export type ValidateOptions = {
   salvage?: boolean
 }
 
-/** Strips the five location props. Returns `null` when there was nothing to strip. */
-function withoutFileLink(row: unknown): unknown | null {
+/**
+ * Strips whatever this row's type is allowed to lose. `null` when there is
+ * nothing to strip, which is also the answer for a row whose type is unreadable.
+ */
+function withoutSalvageable(row: unknown): { row: unknown; type: NodeType } | null {
   if (!isRow(row)) return null
   const props = row['props']
-  if (!isRow(props)) return null
-  const present = SALVAGEABLE_FILE_PROPS.filter((k) => k in props)
+  const type = row['type']
+  if (!isRow(props) || typeof type !== 'string') return null
+  const droppable = SALVAGEABLE_PROPS[type as NodeType]
+  if (droppable === undefined) return null
+  const present = droppable.filter((k) => k in props)
   if (present.length === 0) return null
   const nextProps: Record<string, unknown> = { ...props }
   for (const k of present) delete nextProps[k]
-  return { ...row, props: nextProps }
+  return { row: { ...row, props: nextProps }, type: type as NodeType }
 }
 
 export function validateRows(
@@ -648,14 +724,20 @@ export function validateRows(
   for (const row of nodeRows) {
     let parsed = validateNode(row)
     if (!parsed.ok && options.salvage === true) {
-      const stripped = withoutFileLink(row)
+      const stripped = withoutSalvageable(row)
       if (stripped !== null) {
-        const retry = validateNode(stripped)
+        const retry = validateNode(stripped.row)
         if (retry.ok) {
-          // Reported, not silent. It IS a loss — the record no longer knows
-          // where its document is — and the restore summary says so in its own
-          // sentence rather than folding it in with records that were dropped.
-          skipped.push(diagnostic('nodes', retry.value.id, 'Came back without its document link.'))
+          // Reported, not silent. It IS a loss, and the restore summary names
+          // WHAT was lost in its own sentence rather than folding it in with
+          // records that were dropped altogether.
+          skipped.push(
+            diagnostic(
+              'nodes',
+              retry.value.id,
+              SALVAGE_NOTE[stripped.type] ?? 'Came back with part of it missing.',
+            ),
+          )
           parsed = retry
         }
       }

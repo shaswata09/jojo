@@ -1,19 +1,55 @@
-import { useState } from 'react'
-import { ArrowDown, ArrowUp, Combine, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useCallback, useState } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+  type KeyboardCoordinateGetter,
+} from '@dnd-kit/core'
+import { Combine } from 'lucide-react'
 import { useToast } from '@/lib/toast-context'
 import { mergePdfs, pageCount } from '@/lib/pdf/document'
 import { moveItem } from '@/lib/pdf/page-plan'
+import { rowStep } from '@/lib/pdf/keyboard-move'
 import { mergedName } from '@/lib/pdf/output-name'
 import { parsePageRange } from '@/lib/pdf/page-range'
 import { PdfSourceAdd } from './PdfSourceAdd'
 import { PdfSaveBar } from './PdfSaveBar'
-import { usePdfFiles, type PdfChoice } from './use-pdf-files'
+import { PdfMergeRow, PdfMergeRowGhost, type MergeRow } from './PdfMergeRow'
+import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
+import { useDroppedPdfs, type PdfDelivery } from './use-dropped-pdfs'
 import type { FileBucket } from '@/data/vault'
 
-/** One document in the merge, and which of its pages to take. */
-type Row = { readonly key: string; readonly choice: PdfChoice; readonly range: string }
+/**
+ * One arrow press, one position.
+ *
+ * dnd-kit's default keyboard handling moves the dragged row a flat 25px, and
+ * these rows are 50 tall: reordering by keyboard took four presses to travel
+ * one place, announcing nothing along the way. Measured in Chrome 151 before
+ * this existed. The arithmetic is `rowStep`, which is tested; this is the part
+ * that has to read dnd-kit's live measurements, which a test cannot hold.
+ */
+const byRow: KeyboardCoordinateGetter = (event, { active, currentCoordinates, context }) => {
+  const direction = event.code === 'ArrowDown' ? 1 : event.code === 'ArrowUp' ? -1 : 0
+  if (direction === 0) return undefined
+  event.preventDefault()
+  const rows = [...context.droppableRects.entries()].map(([id, rect]) => ({
+    id: String(id),
+    top: rect.top,
+  }))
+  // Where the row IS, which after the first press is not where it started:
+  // `over` is the row currently under it, and only falls back to the dragged
+  // row's own id while it has not yet left home.
+  const from = String(context.over?.id ?? active)
+  const step = rowStep(rows, from, direction)
+  if (step === null) return undefined
+  return { x: currentCoordinates.x, y: currentCoordinates.y + step }
+}
 
 /**
  * Joins several PDFs into one, in an order the person sets.
@@ -23,19 +59,19 @@ type Row = { readonly key: string; readonly choice: PdfChoice; readonly range: s
  * then pages 1-2 of the CV, then the references page". Blank means the whole
  * document, so the simple case needs nothing typed.
  */
-export function PdfMergePanel() {
+export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
   const { available, bytesOf, saveResult, download } = usePdfFiles()
   const { toast } = useToast()
-  const [rows, setRows] = useState<readonly Row[]>([])
+  const [rows, setRows] = useState<readonly MergeRow[]>([])
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const suggested = mergedName(rows.map((row) => row.choice.name))
-  const edit = (key: string, patch: Partial<Row>) =>
+  const edit = (key: string, patch: Partial<MergeRow>) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, ...patch } : row)))
 
-  const add = (choices: readonly PdfChoice[]) => {
+  const add = useCallback((choices: readonly PdfChoice[]) => {
     setError(null)
     setRows((current) => [
       ...current,
@@ -48,7 +84,40 @@ export function PdfMergePanel() {
         range: '',
       })),
     ])
+  }, [])
+
+  /** The row in the pointer's hand, drawn in the overlay. */
+  const [dragging, setDragging] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    // The board's activation distance, for the board's reason: without it a
+    // click on the grip is read as a drag of zero length.
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    // What replaces the up/down buttons this row used to carry. Space or Enter
+    // on the grip picks the row up, the arrows move it, Space drops it.
+    useSensor(KeyboardSensor, { coordinateGetter: byRow }),
+  )
+
+  const onDragEnd = (event: DragEndEvent) => {
+    setDragging(null)
+    const over = event.over
+    if (!over) return
+    setRows((current) => {
+      const from = current.findIndex((row) => row.key === String(event.active.id))
+      const to = current.findIndex((row) => row.key === String(over.id))
+      // The same clamped move the page organiser uses, so a list and a page
+      // cannot disagree about what reordering means.
+      return from < 0 || to < 0 ? current : moveItem(current, from, to)
+    })
   }
+
+  // Merging is the one panel with no ceiling: joining eight documents is the
+  // job, not an edge case.
+  useDroppedPdfs(
+    dropped,
+    Number.POSITIVE_INFINITY,
+    useCallback((files: readonly File[]) => add(files.map(asChoice)), [add]),
+  )
 
   async function merge(then: 'save' | 'download') {
     setBusy(true)
@@ -88,63 +157,43 @@ export function PdfMergePanel() {
 
       {rows.length === 0 ? (
         <p className="text-sm text-text-3">
-          Add two or more PDFs. They are joined top to bottom, and the originals are left as they
-          are.
+          Add two or more PDFs, or drop them onto this card. They are joined top to bottom — drag a
+          row by its left edge to change the order — and the originals are left as they are.
         </p>
       ) : (
-        <ol className="flex flex-col gap-2">
-          {rows.map((row, at) => (
-            <li
-              key={row.key}
-              className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border border-hairline bg-well px-2 py-2"
-            >
-              <span className="w-5 shrink-0 text-center text-xs tabular-nums text-text-3">
-                {at + 1}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-sm" title={row.choice.name}>
-                {row.choice.name}
-                {row.choice.kind === 'device' ? (
-                  <span className="ml-1.5 text-xs text-text-3">· from this device</span>
-                ) : null}
-              </span>
-              <Input
-                className="h-8 w-32 shrink-0"
-                value={row.range}
-                placeholder="All pages"
-                aria-label={`Pages to take from ${row.choice.name}`}
-                onChange={(event) => edit(row.key, { range: event.target.value })}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={(event: DragStartEvent) => setDragging(String(event.active.id))}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => setDragging(null)}
+        >
+          <ol className="flex flex-col gap-2">
+            {rows.map((row, at) => (
+              <PdfMergeRow
+                key={row.key}
+                row={row}
+                position={at + 1}
+                total={rows.length}
+                onRange={(range) => edit(row.key, { range })}
+                onRemove={() =>
+                  setRows((current) => current.filter((item) => item.key !== row.key))
+                }
               />
-              <div className="flex shrink-0 items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={`Move ${row.choice.name} earlier`}
-                  disabled={at === 0}
-                  onClick={() => setRows((current) => moveItem(current, at, at - 1))}
-                >
-                  <ArrowUp aria-hidden />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={`Move ${row.choice.name} later`}
-                  disabled={at === rows.length - 1}
-                  onClick={() => setRows((current) => moveItem(current, at, at + 1))}
-                >
-                  <ArrowDown aria-hidden />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  aria-label={`Take ${row.choice.name} out of the merge`}
-                  onClick={() => setRows((current) => current.filter((item) => item.key !== row.key))}
-                >
-                  <X aria-hidden />
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ol>
+            ))}
+          </ol>
+          {/* Outside the list, so nothing clips it as it travels. */}
+          {/* Looked up rather than asserted: a row can leave the list while it
+              is in the air — the drop handler removes one — and the overlay
+              would then be indexing an array that no longer has a first row. */}
+          <DragOverlay dropAnimation={null}>
+            {(() => {
+              const at = rows.findIndex((row) => row.key === dragging)
+              const held = rows[at]
+              return held ? <PdfMergeRowGhost row={held} position={at + 1} /> : null
+            })()}
+          </DragOverlay>
+        </DndContext>
       )}
 
       <PdfSaveBar

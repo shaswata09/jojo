@@ -17,7 +17,12 @@ import type { FileBucket, VaultFile } from '@/data/vault'
 
 /** A PDF the editor can open: one already filed, or one just picked. */
 export type PdfChoice =
-  | { readonly kind: 'vault'; readonly id: string; readonly name: string; readonly bucket: FileBucket }
+  | {
+      readonly kind: 'vault'
+      readonly id: string
+      readonly name: string
+      readonly bucket: FileBucket
+    }
   | { readonly kind: 'device'; readonly id: string; readonly name: string; readonly file: File }
 
 export const choiceOf = (file: VaultFile): PdfChoice => ({
@@ -25,6 +30,22 @@ export const choiceOf = (file: VaultFile): PdfChoice => ({
   id: file.id,
   name: file.name,
   bucket: file.bucket,
+})
+
+/**
+ * A file picked or dropped, as something the panels can hold.
+ *
+ * The id has to be unique per ARRIVAL, not per file: the same document dropped
+ * twice is two rows in a merge — a cover sheet used front and back is a real
+ * request — and an id built from the name alone would make React treat the
+ * second as the first and drop it. Name, modified time, position and clock, so
+ * two drops of one file a moment apart still differ.
+ */
+export const asChoice = (file: File, at = 0): PdfChoice => ({
+  kind: 'device',
+  id: `device:${file.name}:${file.lastModified}:${at}:${Date.now()}`,
+  name: file.name,
+  file,
 })
 
 export function usePdfFiles() {

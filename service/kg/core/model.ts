@@ -365,7 +365,7 @@ export type ApprovalMode = (typeof APPROVAL_MODES)[number]
  *
  * `SAID` names deletion explicitly rather than saying "dangerous", because the
  * line the app actually draws is `delete` and `admin`, plus the handful of
- * tools that ask to be confirmed themselves — nineteen of ninety-six, counted
+ * tools that ask to be confirmed themselves — twenty of a hundred, counted
  * 2026-09-13 and pinned in `catalog.test.ts`. Closing an application is a
  * `move` and passes without a prompt under `semi`, which is worth a person
  * knowing before they choose it.
@@ -411,6 +411,25 @@ export const STAGE_VALUES = [
   'closed',
 ] as const
 export type Stage = (typeof STAGE_VALUES)[number]
+
+/**
+ * When the application entered each stage — the journey, not the schedule.
+ *
+ * One date per stage rather than a log of every move, because that is the
+ * question being answered: "when did I submit this, when did they interview
+ * me". A log would answer it too, and would then have to say which of three
+ * entries for `interview` the panel means, and which one a person is editing
+ * when they correct it.
+ *
+ * `submitted` IS NOT STORED HERE. The submitted date has lived in
+ * `submittedOn` since before stages carried dates, and five things read it —
+ * the funnel's reach, the response-time chart, `frequency.sentOn`,
+ * `recommend.ts` and the seed. Writing it in two places would be two copies of
+ * one fact, and the copy nothing reads is the one that goes stale. Everything
+ * that reads or writes a stage date goes through `core/stage-dates.ts`, which
+ * is where that hole is filled in — and the only place that has to know.
+ */
+export type StageDates = { readonly [S in Stage]?: ISODate }
 
 /**
  * What each stage is called. Prose, and free to change; the ID is the wire
@@ -529,10 +548,33 @@ export type Application = {
   appliedOn?: string
   submittedOn?: string
   firstReplyOn?: string
+  /**
+   * When each stage was entered. Passed through from props, unlike `checklist`
+   * beside it: six short dates are not the twenty lines of prose that argument
+   * is about, and the panel that draws them is opened from a board card whose
+   * props these already are.
+   */
+  stageDates?: StageDates
   outcome?: Outcome
   /** Present only while stage === 'offer'. */
   offer?: Offer
 }
+
+/**
+ * A patch over an application in which an explicit `undefined` means CLEAR.
+ *
+ * `Partial<Application>` cannot say that under `exactOptionalPropertyTypes`,
+ * which this package compiles with — so `{ offer: undefined }`, the whole
+ * mechanism by which leaving the offer stage drops the offer, was a type error
+ * behind a looser setting, and `{ submittedOn: undefined }` is how a person
+ * empties a date they typed wrongly. `react/patch.ts` is built on exactly this
+ * distinction and tests it with `Object.hasOwn`; the signature can now say what
+ * those helpers have always done.
+ *
+ * Every `Partial<Application>` is assignable to this, so widening a parameter
+ * to it costs no caller anything.
+ */
+export type ApplicationPatch = { [K in keyof Application]?: Application[K] | undefined }
 
 /** An application known to carry offer details, so consumers need no `!`. */
 export type OfferApplication = Application & { offer: NonNullable<Application['offer']> }
@@ -954,8 +996,42 @@ export type ApplicationProps = {
   appliedOn?: ISODate
   submittedOn?: ISODate
   firstReplyOn?: ISODate
+  /**
+   * When each stage was entered. See `StageDates`, and `core/stage-dates.ts`
+   * for every rule about it.
+   *
+   * In props rather than as records of its own, for the reason `checklist`
+   * gives below: a date the application reached Interview has no life outside
+   * that application, and D15 says a delete unlinks rather than cascades — so
+   * as nodes these would outlive the record they describe.
+   */
+  stageDates?: StageDates
   outcome?: Outcome
   offer?: Offer
+  /**
+   * What is still to be done before this application is finished.
+   *
+   * Absent until there is one, and absent again when the last item goes — never
+   * `[]`. An application that never had a checklist and one whose items have
+   * all been deleted are the same application, and they have to be the same
+   * bytes on disk or a backup taken either side of that would differ.
+   *
+   * Here rather than as records of its own, and the reason is D15. Deleting a
+   * record UNLINKS, it never cascades — which is right for a CV that is filed
+   * under three jobs and wrong for a step that has no life outside this one.
+   * As nodes, deleting the application would strand every item: still
+   * validating, still counted in Settings, still in every export, and no longer
+   * reachable by anything that could draw or delete them. In props they go with
+   * the record they belong to, because they ARE part of it.
+   *
+   * The cost, stated rather than discovered later: the list is rewritten whole
+   * on every tick, so two tabs ticking two items inside one debounce window
+   * lose one — the same exposure `note` and `offer` already carry — and an
+   * Undo offered on a delete can be refused as superseded once something else
+   * on the card has been written since. `project.ts` keeps it out of the
+   * projection so twenty items do not ride into sixty card props.
+   */
+  checklist?: ChecklistItem[]
 }
 
 export type OrganisationProps = {
@@ -1195,6 +1271,58 @@ export const MAX_REQUIREMENTS = 12
  * started paraphrasing.
  */
 export const MAX_REQUIREMENT_TEXT = 200
+
+/* ------------------------------- checklist -------------------------------- */
+
+/**
+ * One thing still to do before an application is finished.
+ *
+ * Drafted by a model off the posting, or typed by the person; the two are the
+ * same shape and only `by` tells them apart, because once it is on the list it
+ * is theirs either way.
+ */
+export type ChecklistItem = {
+  /**
+   * Unique within one application's list, and a BARE uuidv7 — deliberately not
+   * a `NodeId`.
+   *
+   * `parseNodeId` rejects it and `isNodeId` answers false, which is the point:
+   * this addresses a row inside one record's props, and an id wearing a type
+   * prefix would claim to be a record somebody could `memory.get`.
+   */
+  readonly id: string
+  readonly text: string
+  /**
+   * The day it was ticked. Absent while it is open.
+   *
+   * Absent, never `null` and never `undefined` as a present key: a stored
+   * `undefined` survives the round trip through IndexedDB as a key that is
+   * there (D21), and every read path asks `'doneOn' in item`.
+   *
+   * A DAY and not an instant, matching `TimelineItemProps.completedOn`: "done"
+   * is something a person did on a day, and the extra precision would only
+   * ever be shown as that day anyway.
+   */
+  readonly doneOn?: ISODate
+  /** Set when a model drafted this line; absent when the person typed it. */
+  readonly by?: { readonly model: string; readonly at: Instant }
+}
+
+/**
+ * How long one list may get, and how long one line may be.
+ *
+ * Judgement rather than measurement, unlike `MAX_REQUIREMENTS`. Twenty steps is
+ * already more than anybody works through for one job, and the cap is here to
+ * stop a model padding rather than to ration the person. The text bound is the
+ * same 200 as `MAX_REQUIREMENT_TEXT` on purpose: it is the same kind of thing,
+ * an imperative phrase rather than a sentence, and a third number for it would
+ * need a third argument.
+ */
+export const MAX_CHECKLIST_ITEMS = 20
+export const MAX_CHECKLIST_TEXT = 200
+
+/** What one drafting run may add. Below the cap, so the person keeps room. */
+export const DRAFT_CHECKLIST_ITEMS = 10
 
 /**
  * One model's reading of one posting, and enough about it to be doubted.

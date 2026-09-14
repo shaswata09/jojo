@@ -289,7 +289,16 @@ export function applicationFrom(
    * died on reload. It is a STORED prop, not a derived one, so passing it
    * through is not the thing D25 forbids.
    */
-  const { lastActionAt, ...rest } = n.props
+  /*
+   * `checklist` is dropped, and it is the one prop here that is deliberately
+   * NOT passed through. It is up to twenty lines of text that only one panel
+   * ever draws, and an `Application` is handed to every board card, table row
+   * and dashboard entry — so passing it through would put a list nobody on
+   * those screens reads into sixty sets of props, and re-render all of them
+   * whenever somebody ticked a box. The panel reads it off the node instead,
+   * exactly as the fit card reads `reading` off its file.
+   */
+  const { lastActionAt, checklist: _checklist, ...rest } = n.props
   return {
     ...rest,
     id: n.id,

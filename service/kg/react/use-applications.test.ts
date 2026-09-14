@@ -54,11 +54,18 @@ const FULL_DRAFT: Required<ApplicationDraft> = {
   offer: { respondBy: '2026-10-01', comp: '$120k base', note: 'Verbal so far.' },
 }
 
-/** The same record as the store would read it back. */
+/**
+ * The same record as the store would read it back.
+ *
+ * `stageDates` is here and not in the draft above: a record being created has
+ * no history, and the dates are stamped as it moves. `update` still has to
+ * carry them, because correcting one is an update.
+ */
 const FULL_APP: Required<Application> = {
   ...FULL_DRAFT,
   id: 'app:0192-rice',
   slug: 'rice',
+  stageDates: { screen: '2026-09-14', interview: '2026-09-20' },
 }
 
 /**

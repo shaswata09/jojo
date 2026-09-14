@@ -207,6 +207,66 @@ const aPosting = (h: H) =>
     h.runtime.run('scout.posting.save', { title: 'ML engineer', url: 'https://stripe.com/jobs/1' }),
   )
 
+/* ------------------------------ the checklist ------------------------------ */
+
+describe('an application checklist', () => {
+  it('drafts, adds, ticks, rewords and deletes, each undoably', () => {
+    /*
+     * The undo half carries more weight here than anywhere else in this file.
+     * `tx.patch` shallow-copies props, so the array staged as the before-image
+     * IS the array staged as the after-image — and a mutation anywhere in
+     * `core/checklist.ts` makes `before` already equal `after`, which this
+     * harness catches on its FIRST assertion rather than its last.
+     */
+    const h = harness()
+    const id = anApplication(h)
+
+    roundTrip(h, 'application.checklist.draft.add', {
+      id,
+      items: [{ text: 'Order an official transcript' }, { text: 'Ask Dr. Rao for a letter' }],
+      model: 'gemma_4_31b',
+    }, (added: number) => {
+      expect(added).toBe(2)
+      const list = h.repo.getSnapshot().node(id, 'application')?.props.checklist ?? []
+      expect(list.map((i) => i.text)).toEqual([
+        'Order an official transcript',
+        'Ask Dr. Rao for a letter',
+      ])
+      expect(list[0]?.by?.model).toBe('gemma_4_31b')
+    })
+
+    roundTrip(h, 'application.checklist.item.add', { id, text: 'Register for the portal' }, () => {
+      const list = h.repo.getSnapshot().node(id, 'application')?.props.checklist ?? []
+      expect(list).toHaveLength(1)
+      // A step the person typed carries no provenance, and the card reads that
+      // to decide whether to say jojo suggested it.
+      expect(Object.hasOwn(list[0] ?? {}, 'by')).toBe(false)
+    })
+
+    // The remaining three need something on the list to act on, and the
+    // round-trip above put the graph back — so seed one and take its id.
+    okOr(h.runtime.run('application.checklist.item.add', { id, text: 'Order a transcript' }))
+    const itemId = (h.repo.getSnapshot().node(id, 'application')?.props.checklist ?? [])[0]?.id
+    if (itemId === undefined) throw new Error('the fixture did not add a step')
+
+    roundTrip(h, 'application.checklist.item.set', { id, itemId, done: true }, () => {
+      const list = h.repo.getSnapshot().node(id, 'application')?.props.checklist ?? []
+      expect(list[0]?.doneOn).toBeDefined()
+    })
+    roundTrip(h, 'application.checklist.item.set', { id, itemId, text: 'Order two transcripts' }, () => {
+      const list = h.repo.getSnapshot().node(id, 'application')?.props.checklist ?? []
+      expect(list[0]).toMatchObject({ id: itemId, text: 'Order two transcripts' })
+    })
+    roundTrip(h, 'application.checklist.item.remove', { id, itemId }, () => {
+      const application = h.repo.getSnapshot().node(id, 'application')
+      // The KEY leaves the props, not an empty array: an application that never
+      // had a checklist and one whose last step was deleted have to be the same
+      // bytes on disk.
+      expect(Object.hasOwn(application?.props ?? {}, 'checklist')).toBe(false)
+    })
+  })
+})
+
 /* ------------------------------- the vault -------------------------------- */
 
 describe('vault links', () => {

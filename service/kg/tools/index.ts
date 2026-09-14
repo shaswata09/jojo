@@ -68,6 +68,12 @@ import {
   profileTextSet,
 } from './profile'
 import { claimAdd } from './claim'
+import {
+  checklistDraftAdd,
+  checklistItemAdd,
+  checklistItemRemove,
+  checklistItemSet,
+} from './checklist'
 import { fitReadingClear, fitReadingSet } from './fit'
 import { tailorSnippetCreate } from './tailor'
 import {
@@ -194,6 +200,10 @@ export const TOOLS = {
   'fit.reading.set': fitReadingSet,
   'fit.reading.clear': fitReadingClear,
   'tailor.snippet.create': tailorSnippetCreate,
+  'application.checklist.draft.add': checklistDraftAdd,
+  'application.checklist.item.add': checklistItemAdd,
+  'application.checklist.item.set': checklistItemSet,
+  'application.checklist.item.remove': checklistItemRemove,
 
   'assistant.thread.create': threadCreate,
   'assistant.thread.set': threadSet,

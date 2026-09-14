@@ -20,7 +20,7 @@
 
 import { useCallback, useMemo } from 'react'
 import { resolveAddress } from '../core/address'
-import type { Application, OfferApplication, Stage } from '../core/model'
+import type { Application, ApplicationPatch, OfferApplication, Stage } from '../core/model'
 import { SOURCES, STAGE_LABEL, STAGE_VALUES } from '../core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
@@ -33,8 +33,18 @@ import { asNull, asText, nothingToRestore, present } from './patch'
  * `application.create`, through `uniqueSlug` against the slugs already taken, so
  * a draft carrying one would be a suggestion the tool silently ignores — and the
  * URL it implied would point at nothing.
+ *
+ * `stageDates` is omitted for a different reason: a record being created has no
+ * history to record. They are stamped as the application MOVES (see
+ * `core/stage-dates.ts`), which is the same stance `duplicate` takes when it
+ * drops the offer, the outcome and the dates — those belong to the attempt that
+ * earned them. A record created straight into a late stage can have its dates
+ * filled in on the record itself.
  */
-export type ApplicationDraft = Omit<Application, 'id' | 'slug' | 'lastAction' | 'daysAgo'> &
+export type ApplicationDraft = Omit<
+  Application,
+  'id' | 'slug' | 'lastAction' | 'daysAgo' | 'stageDates'
+> &
   Partial<Pick<Application, 'lastAction' | 'daysAgo'>>
 
 /** The instant that reads as `days` ago from `today`, at the same local noon. */
@@ -83,7 +93,7 @@ export function applicationCreateInput(draft: ApplicationDraft) {
  * Dropping it would have made every undo of a stage move leave the row claiming
  * it was touched today.
  */
-export function applicationUpdateInput(id: string, patch: Partial<Application>, today: string) {
+export function applicationUpdateInput(id: string, patch: ApplicationPatch, today: string) {
   return {
     id,
     ...(typeof patch.daysAgo === 'number' ? { lastActionAt: agoOf(today, patch.daysAgo) } : {}),
@@ -102,6 +112,9 @@ export function applicationUpdateInput(id: string, patch: Partial<Application>, 
     ...asNull('appliedOn', patch, 'appliedOn'),
     ...asNull('submittedOn', patch, 'submittedOn'),
     ...asNull('firstReplyOn', patch, 'firstReplyOn'),
+    // The whole map, the way `offer` goes through: props are stored whole, and
+    // the patch a caller hands in came from `setStageDate`, which merged it.
+    ...asNull('stageDates', patch, 'stageDates'),
     ...asNull('outcome', patch, 'outcome'),
     ...asNull('offer', patch, 'offer'),
   }
@@ -176,7 +189,7 @@ export function useApplications() {
    * quietly wipe the dates the stage change had filled in.
    */
   const update = useCallback(
-    (id: string, patch: Partial<Application>) => {
+    (id: string, patch: ApplicationPatch) => {
       run('application.update', applicationUpdateInput(id, patch, today))
     },
     [run, today],

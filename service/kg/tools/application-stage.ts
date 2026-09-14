@@ -9,10 +9,11 @@
  */
 
 import { shortDate } from '../core/dates'
+import { enteredStage } from '../core/stage-dates'
 import { OUTCOME_VALUES, STAGE_VALUES, TIMELINE_KIND_VALUES, URGENCY_VALUES } from '../core/model'
 import { s } from '../core/schema'
 import { appId, cleared, offerShape } from './application-fields'
-import { STAGE_LABEL, displayOf, touch } from './support'
+import { STAGE_LABEL, dayOf, displayOf, touch } from './support'
 import { defineTool } from './tool'
 
 export const applicationStageSet = defineTool({
@@ -24,8 +25,15 @@ export const applicationStageSet = defineTool({
   input: s.object({ id: appId, stage: s.enum(STAGE_VALUES, { label: 'Stage' }) }),
 
   run(ctx, input) {
-    ctx.require('application', input.id)
-    ctx.tx.patch<'application'>(input.id, { stage: input.stage })
+    const current = ctx.require('application', input.id)
+    ctx.tx.patch<'application'>(input.id, {
+      stage: input.stage,
+      // "With nothing attached" does not include the day it happened: the date
+      // IS the move, and a board that recorded the column but not the day would
+      // be the thing this stamp was added to fix. Never overwrites — see
+      // `core/stage-dates.ts`.
+      ...enteredStage(current.props, input.stage, dayOf(ctx.now)),
+    })
     touch(ctx, input.id, `Moved to ${STAGE_LABEL[input.stage]}`)
   },
 
@@ -91,6 +99,24 @@ export const applicationStageAdvance = defineTool({
       ...(input.outcome === undefined ? {} : { outcome: input.outcome }),
       ...(input.offer === undefined ? {} : { offer: input.offer }),
       ...(input.clearOffer ? { offer: undefined } : {}),
+      /*
+       * The day of the move, for the stage being moved to.
+       *
+       * `submittedOn` above is the one date this tool is given, and it is the
+       * submitted stage's — so on that path this adds nothing, by construction:
+       * `enteredStage` reads the record it is handed, and the patch it returns
+       * for an already-dated stage is empty. Every other destination gets
+       * today, which is what the dialog never collected and the record never
+       * had.
+       */
+      ...enteredStage(
+        {
+          ...current.props,
+          ...(input.submittedOn === undefined ? {} : { submittedOn: input.submittedOn }),
+        },
+        input.stage,
+        dayOf(ctx.now),
+      ),
     })
 
     touch(ctx, input.id, input.lastAction ?? `Moved to ${STAGE_LABEL[input.stage]}`)
@@ -176,10 +202,17 @@ export const applicationOfferDecide = defineTool({
   },
 
   run(ctx, input) {
-    ctx.require('application', input.id)
+    const app = ctx.require('application', input.id)
     // The offer details stay. Turning a job down does not un-happen the offer,
     // and the record is the only place the package was ever written down.
-    ctx.tx.patch<'application'>(input.id, { stage: 'closed', outcome: input.outcome })
+    ctx.tx.patch<'application'>(input.id, {
+      stage: 'closed',
+      outcome: input.outcome,
+      // Deciding an offer closes the application, so it dates the close like
+      // any other arrival at that stage. Left out, the one move a person is
+      // most likely to look up afterwards would be the one with no date.
+      ...enteredStage(app.props, 'closed', dayOf(ctx.now)),
+    })
     touch(ctx, input.id, OUTCOME_ACTION[input.outcome])
   },
 

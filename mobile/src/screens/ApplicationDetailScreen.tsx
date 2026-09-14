@@ -8,6 +8,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { LabelChips, LabelPicker } from '@/components/common/Labels'
 import { FiledPanel } from '@/components/common/FiledPanel'
 import { FitPanel } from '@/components/applications/FitPanel'
+import { ChecklistPanel } from '@/components/applications/ChecklistPanel'
 import { TailoredPanel } from '@/components/applications/TailoredPanel'
 import { StagePicker } from '@/components/common/StagePicker'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -462,6 +463,11 @@ function Detail({ application: a }: { application: Application }) {
 
       {/* Directly under the verdict, because it is the verdict's next step. */}
       <TailoredPanel applicationId={a.id} />
+
+      {/* Under the two cards it reads from: the verdict says whether to
+          bother, the tailored materials are what you send, and this is what
+          you have to go and get before you can send them. */}
+      <ChecklistPanel applicationId={a.id} />
 
       <FiledPanel applicationId={a.id} />
 

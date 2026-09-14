@@ -89,13 +89,15 @@ export const SHAPE: DirRow[] = [
     // tailored snippet carries, and which documents the tailoring card offers.
     // `jobs.ts` and its test: what state a piece of background work is in, and
     // what may start next — the queue behind every agent job.
-    files: 130,
-    tests: 63,
+    // `stage-dates.ts` and its test: when an application entered each stage,
+    // where each of those dates is kept, and why one of them is kept elsewhere.
+    files: 134,
+    tests: 65,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
-    lines: 36314,
+    lines: 36945,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7502, what: 'transactions, journal, boot' },
@@ -104,11 +106,11 @@ export const SHAPE: DirRow[] = [
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
     // clearing it — the two halves of a reading that survives a reload.
     // `tailor.ts` and its test: the one write behind the tailoring card.
-    files: 31,
-    tests: 9,
+    files: 33,
+    tests: 10,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one.
-    lines: 10066,
+    lines: 10576,
     what: '86 named write operations',
   },
   {
@@ -123,8 +125,8 @@ export const SHAPE: DirRow[] = [
     // are one vacancy, shown only the same employer's records.
     // `tailor-material.ts` and its test: the prompt that rewrites a document
     // for one posting, and the reader that keeps, doubts or refuses the reply.
-    files: 66,
-    tests: 32,
+    files: 68,
+    tests: 33,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -136,7 +138,7 @@ export const SHAPE: DirRow[] = [
     // about 4,200 lines, most of them the tests that pin each measure.
     // Re-measured when `read-posting.ts` learnt to offer the person's own
     // keywords to the model and match the reply back onto the ones that exist.
-    lines: 42590,
+    lines: 43108,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -161,12 +163,12 @@ export const SHAPE: DirRow[] = [
     // `jobs.ts`, its test, `jobs-context.ts` and `jobs-provider.tsx`: the
     // registry above the router that makes a job outlive the screen that
     // asked for it — `agent-runs.ts`'s argument, generalised.
-    files: 53,
+    files: 55,
     tests: 14,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 11199,
+    lines: 11602,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -189,15 +191,17 @@ export const SHAPE: DirRow[] = [
     // `common/Marked.tsx` and `detail/TailoredPanel.tsx`: the marks drawn, and
     // the card that lists what a model tailored for one posting.
     // `vault/SnippetPreviewDialog.tsx`: the words behind that card's Preview.
+    // `detail/StageDatesPanel.tsx`: when the record reached each stage, and the
+    // six inputs that correct a stamp the board got wrong.
     // The PDF editor added ten: the three operation panels, the page view and
     // its thumbnail, the source picker, the shared save bar, the shell, the
     // storage hook, and the Tools tab that now picks between two instruments.
-    files: 300,
+    files: 304,
     tests: 29,
-    lines: 52081,
+    lines: 52645,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4840, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4852, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -221,10 +225,12 @@ export const SHAPE: DirRow[] = [
     // Then `pdf/`: the PDF editor's operations — page ranges, the page plan,
     // the two coordinate systems, the annotation model, output naming, and the
     // `pdf-lib` write path, which is tested against real documents because the
-    // library needs no browser.
-    files: 145,
-    tests: 53,
-    lines: 21535,
+    // library needs no browser. Then the two the drop brought: what a
+    // dragged-in file actually is, and how far one arrow press moves a row that
+    // has been picked up.
+    files: 150,
+    tests: 55,
+    lines: 21969,
     what: 'web-only adapters and URL state',
   },
   {
@@ -254,7 +260,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 87
+export const WEB_TEST_FILES = 89
 
 type TestGroup = { title: string; files: string; body: string }
 

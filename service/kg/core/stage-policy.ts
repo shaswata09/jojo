@@ -37,7 +37,7 @@ import { FORMAT_LABEL, OUTCOME_ACTION, OUTCOME_LABEL } from './transition-option
 import type { Format } from './transition-options'
 import { addDays, shortDate } from './dates'
 import { STAGE_LABEL, displayName } from './model'
-import type { Application, Outcome, Stage, TimelineDraft } from './model'
+import type { Application, ApplicationPatch, Outcome, Stage, TimelineDraft } from './model'
 
 /** The four stages that carry a field block. Draft and Screen collect nothing. */
 const BLOCKED_STAGES: readonly Stage[] = ['submitted', 'interview', 'offer', 'closed']
@@ -108,15 +108,12 @@ export function stageBlocker(target: Stage, draft: StageTransitionDraft): string
 }
 
 /**
- * A patch in which an explicit `undefined` means CLEAR, not "leave alone".
- *
- * `Partial<Application>` cannot say that under `exactOptionalPropertyTypes`,
- * which this package compiles with and the web app did not — so `offer:
- * undefined`, the whole mechanism by which leaving the offer stage drops the
- * offer, was a type error waiting behind a looser setting. Spelling it out here
- * makes the distinction the callers already rely on part of the signature.
+ * Re-exported, not declared. It moved to `core/model.ts` when `update()` took
+ * it as its parameter type — a patch that can spell a clear is a fact about the
+ * record, not about stage changes — and it is still named here because the two
+ * `buildStagePatch` callers import it from this file.
  */
-export type ApplicationPatch = { [K in keyof Application]?: Application[K] | undefined }
+export type { ApplicationPatch }
 
 export function buildStagePatch(
   application: Application,
