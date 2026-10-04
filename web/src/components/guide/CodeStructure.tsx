@@ -114,9 +114,10 @@ export const SHAPE: DirRow[] = [
     files: 33,
     tests: 10,
     // Re-measured when the two proposal verbs got an `available` gate, so a
-    // suggestion already answered stops being offered as one.
-    lines: 10800,
-    what: '86 named write operations',
+    // suggestion already answered stops being offered as one — and again when
+    // `vault.ts` grew the two verbs that name one person on one job.
+    lines: 11284,
+    what: '92 named write operations',
   },
   {
     dir: 'service/kg/agent',
@@ -206,7 +207,9 @@ export const SHAPE: DirRow[] = [
     // `empty-state.tsx`, which four tools share and which grew a rung.
     // `vault/RefereePackDialog.tsx`: a referee's applications, with what each
     // letter should highlight, downloaded as a sheet and their materials.
-    files: 311,
+    // `detail/PeoplePanel.tsx`: who is on an application, as recommender or
+    // point of contact, added and changed from the application itself.
+    files: 312,
     tests: 31,
     lines: 53850,
     what: 'every surface you can see',

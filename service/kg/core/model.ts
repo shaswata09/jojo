@@ -258,6 +258,9 @@ export const EDGE_SCHEMA: { readonly [R in Rel]: EdgeSpec } = {
     // A person files under an application exactly as a CV does, and for exactly
     // the reason the cardinality note below gives: one referee goes to every job
     // you name them on.
+    // A person's edge may carry `{ role }` — recommender or point of contact on
+    // THAT job (`ContactRole`). The only edge attribute in the graph so far, and
+    // the reason `fileUnder` in `tools/vault.ts` keeps props across a refiling.
     from: ['link', 'file', 'snippet', 'thread', 'person'],
     to: ['application'],
     // Many. One CV goes to every application you send it to, and filing it under
@@ -2139,12 +2142,16 @@ export type ClaimProps = {
  * professor would be wrong in both senses. Highlights are written FOR the
  * recommender, so they are their own field.
  *
- * WHY ON THE PERSON, keyed by application, rather than on the edge. An edge is
- * `${from}|${rel}|${to}` with no props, by design (see `EDGE_SCHEMA`), and the
- * reified relation that does carry data — a `claim` — cannot be deleted, which
- * a note somebody wrote and changed their mind about must be. A list on the
- * person is the shape the checklist already uses on an application, and it
- * rides undo, the journal and Transfer with the record.
+ * WHY ON THE PERSON, keyed by application, rather than on the edge. An edge
+ * CAN carry props (`StoredEdge.props`), and the one attribute of the
+ * relationship itself — what the person IS on that job — does live there (see
+ * `ContactRole`). A brief is different in kind: it is a piece of writing
+ * addressed to the person, edited as one set for them in one dialog and
+ * exported per person, so it sits with the person the way the checklist sits
+ * with an application, and rides undo, the journal and Transfer with the
+ * record. The reified relation that also carries data — a `claim` — would not
+ * do: it cannot be deleted, and a note somebody changed their mind about must
+ * be.
  *
  * `applicationId` is a pointer in props, which this file usually refuses. It is
  * accepted here for the reason `postingId` is: the brief is ABOUT that record,
@@ -2159,6 +2166,37 @@ export type RefereeBrief = {
   highlights?: string[]
   /** Anything else they should know about this application. */
   note?: string
+}
+
+/**
+ * What a person is on one application: the referee writing for it, or the
+ * person you deal with there.
+ *
+ * STORED ON THE EDGE — the `FILED_UNDER` edge from the person to the
+ * application carries `{ role }` — because it is an attribute of that pairing
+ * and nothing else: Anita can recommend you for Rice and be your point of
+ * contact at Texas Tech, and neither is true of Anita in general. Her own
+ * `role` prop ("Referee") is how you would describe her, not what she is on a
+ * given job.
+ *
+ * Optional. Every filing made before roles existed, and every one made from the
+ * Vault's "Named on" picker, has none, and the honest reading of "none" is
+ * "not said" — so nothing infers one from her title.
+ */
+export const CONTACT_ROLE_VALUES = ['recommender', 'contact'] as const
+export type ContactRole = (typeof CONTACT_ROLE_VALUES)[number]
+
+export const CONTACT_ROLE_LABEL: Record<ContactRole, string> = {
+  recommender: 'Recommender',
+  contact: 'Point of contact',
+}
+
+/** An edge's `role`, if it holds one this version knows. Edge props are untyped storage. */
+export const contactRoleOf = (props: Props | undefined): ContactRole | undefined => {
+  const role = props?.['role']
+  return typeof role === 'string' && (CONTACT_ROLE_VALUES as readonly string[]).includes(role)
+    ? (role as ContactRole)
+    : undefined
 }
 
 /** Bounds on a brief, enforced by `vault.person.update` and the editor alike. */
@@ -2230,6 +2268,8 @@ export type Person = {
    * they are no longer filed under is kept in storage and never shown.
    */
   briefs?: RefereeBrief[]
+  /** What they are on each application, by application id, where it was said. See `ContactRole`. */
+  roles?: Record<string, ContactRole>
 }
 
 export type NodePropsByType = {

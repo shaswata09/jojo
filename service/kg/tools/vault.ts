@@ -17,6 +17,7 @@
 import { stripMarks } from '../core/marks'
 import { decodeFormat, normaliseFormat, retextFormat } from '../core/note-format'
 import {
+  CONTACT_ROLE_VALUES,
   FILE_BUCKET_VALUES,
   FILE_KIND_VALUES,
   LINK_CATEGORY_VALUES,
@@ -77,10 +78,16 @@ function fileUnder(ctx: ToolContext, id: NodeId, appIds: readonly NodeId[] | nul
    * relinked edge looked like a change: a save over an untouched form took the
    * top of the undo ring and cleared the redo stack. That is fixed in
    * `repo/journal.ts`, where the cause was.
+   *
+   * An edge that survives the rewrite keeps its props. A person's edge carries
+   * their role on that job (`ContactRole`), and `link` mints a fresh `{}` edge,
+   * so without this every save of the Vault's person form — which sends the
+   * whole filing back — would quietly forget who was a recommender where.
    */
+  const kept = new Map(ctx.memory.out(id, 'FILED_UNDER').map((e) => [e.to, e.props]))
   ctx.tx.unlinkAll(id, { rel: 'FILED_UNDER' })
   if (appIds === null) return
-  for (const appId of appIds) ctx.tx.link(id, 'FILED_UNDER', appId)
+  for (const appId of appIds) ctx.tx.link(id, 'FILED_UNDER', appId, kept.get(appId) ?? {})
 }
 
 /* --------------------------------- people --------------------------------- */
@@ -122,11 +129,13 @@ const briefs = s.optional(
           label: 'Highlights',
         }),
       ),
-      note: s.optional(s.string({ max: MAX_BRIEF_NOTE_TEXT, label: 'Note for them', multiline: true })),
+      note: s.optional(s.string({ max: MAX_BRIEF_NOTE_TEXT, label: 'Note', multiline: true })),
     }),
-    { max: MAX_BRIEFS, label: 'Referee briefs' },
+    { max: MAX_BRIEFS, label: 'Briefs' },
   ),
 )
+
+const contactRole = s.enum(CONTACT_ROLE_VALUES, { label: 'Role' })
 
 export const vaultPersonCreate = defineTool({
   name: 'vault.person.create',
@@ -138,6 +147,17 @@ export const vaultPersonCreate = defineTool({
     name: s.string({ min: 1, label: 'Name' }),
     ...personDetails,
     applicationIds,
+    /*
+     * What they are on each of those jobs, so adding somebody from an
+     * application's own page is ONE write — and one undo — rather than a create
+     * followed by a role. Only for applications in `applicationIds`.
+     */
+    roles: s.optional(
+      s.array(s.object({ applicationId: s.id('application', { label: 'Application' }), role: contactRole }), {
+        max: MAX_BRIEFS,
+        label: 'Roles',
+      }),
+    ),
   }),
 
   run(ctx, input): NodeId {
@@ -168,6 +188,12 @@ export const vaultPersonCreate = defineTool({
       updatedAt: ctx.now,
     })
     fileUnder(ctx, id, input.applicationIds)
+    const filed = new Set<string>(input.applicationIds ?? [])
+    for (const { applicationId, role } of input.roles ?? []) {
+      if (!filed.has(applicationId)) continue
+      ctx.tx.unlink(id, 'FILED_UNDER', applicationId)
+      ctx.tx.link(id, 'FILED_UNDER', applicationId, { role })
+    }
     return id
   },
 
@@ -177,8 +203,7 @@ export const vaultPersonCreate = defineTool({
 export const vaultPersonUpdate = defineTool({
   name: 'vault.person.update',
   title: 'Edit person',
-  summary:
-    'Saves what you know about them, which jobs they are named on, and what you want them to highlight for each.',
+  summary: 'Saves what you know about them, which jobs they are named on, and their briefs.',
   effect: 'update',
   touches: ['person'],
   input: s.object({
@@ -249,6 +274,87 @@ export const vaultPersonDelete = defineTool({
     title: 'Person removed',
     description: m.node(input.id, 'person')?.props.name ?? '',
     tone: 'danger',
+  }),
+})
+
+/**
+ * Name one person on one application, as its recommender or point of contact.
+ *
+ * WHY A TOOL OF ITS OWN when `vault.person.update` already files people. That
+ * one takes the WHOLE filing, which is right for the Vault's form and wrong for
+ * an application's page — and dangerous for a model, which asked to add Anita
+ * to the Rice job would have to restate every other job she is on or unfile her
+ * from them. This touches one pairing and nothing else.
+ *
+ * `role` absent keeps whatever role the pairing had (or none, for a new one);
+ * `null` clears it. Changing it relinks the edge, because `link` never rewrites
+ * the props of an edge that is already there — and inside one transaction the
+ * journal still records the original edge as the "before", so undo restores it
+ * exactly.
+ */
+export const vaultPersonFile = defineTool({
+  name: 'vault.person.file',
+  title: 'Name person on application',
+  summary: 'Names a person on one application, as recommender or point of contact.',
+  effect: 'update',
+  touches: ['person'],
+  input: s.object({
+    id: personId,
+    applicationId: s.id('application', { label: 'Application' }),
+    role: s.optional(s.nullable(contactRole)),
+  }),
+
+  run(ctx, input) {
+    ctx.require('person', input.id)
+    ctx.require('application', input.applicationId)
+    const edge = ctx.memory.out(input.id, 'FILED_UNDER').find((e) => e.to === input.applicationId)
+    if (edge !== undefined && input.role === undefined) return
+    const props = input.role === undefined || input.role === null ? {} : { role: input.role }
+    if (edge !== undefined) ctx.tx.unlink(input.id, 'FILED_UNDER', input.applicationId)
+    ctx.tx.link(input.id, 'FILED_UNDER', input.applicationId, props)
+  },
+
+  describe: (input, _output, m) => ({
+    title: 'Person named on application',
+    description: m.node(input.id, 'person')?.props.name ?? '',
+  }),
+})
+
+/**
+ * Take one person off one application. The person and the application both
+ * stay (D15); so do their other jobs. Their brief for this job goes too, as it
+ * does when `vault.person.update` unfiles them — a brief nobody can see is not
+ * worth keeping.
+ */
+export const vaultPersonUnfile = defineTool({
+  name: 'vault.person.unfile',
+  title: 'Take person off application',
+  summary: 'Takes a person off one application; their other jobs stay.',
+  effect: 'update',
+  touches: ['person'],
+  input: s.object({
+    id: personId,
+    applicationId: s.id('application', { label: 'Application' }),
+  }),
+
+  run(ctx, input) {
+    const person = ctx.require('person', input.id)
+    ctx.tx.unlink(input.id, 'FILED_UNDER', input.applicationId)
+    const filed = new Set<string>(
+      ctx.memory
+        .many(input.id, 'FILED_UNDER', 'out', 'application')
+        .map((a) => a.id)
+        .filter((id) => id !== input.applicationId),
+    )
+    if (person.props.briefs?.some((b) => b.applicationId === input.applicationId)) {
+      const left = briefsWithin(person.props.briefs, filed)
+      ctx.tx.patch<'person'>(input.id, { briefs: left.length === 0 ? undefined : left })
+    }
+  },
+
+  describe: (input, _output, m) => ({
+    title: 'Person taken off application',
+    description: m.node(input.id, 'person')?.props.name ?? '',
   }),
 })
 

@@ -1785,7 +1785,7 @@ async function performCall(
   /*
    * Three settings, and the middle one is where the interesting failure lives.
    *
-   *   writes       — every non-read step (90 of 100 tools)
+   *   writes       — every non-read step (92 of 102 tools)
    *   destructive  — `delete` and `admin`, plus the tools that ask (20 of 100)
    *   none         — nothing, and the person chose that explicitly
    *

@@ -188,20 +188,20 @@ describe('what a model reads about a tool', () => {
 describe('the counts the comments quote', () => {
   it('matches what queries.ts, mcp.ts and execute.ts say out loud', () => {
     // If this fails, the number changed. Update it here AND in:
-    //   kg/agent/queries.ts   — "a hundred entries", "a hundred and eleven names"
-    //   kg/agent/mcp.ts       — "a hundred tools is one page" (twice)
-    //   kg/agent/execute.ts   — "listing a hundred tools"
-    //   kg/agent/loop.ts      — "every non-read step (90 of 100 tools)"
-    //   web/src/lib/keys-stay-local.test.ts — "the hundred tools live"
+    //   kg/agent/queries.ts   — "a hundred and two entries", "a hundred and thirteen names"
+    //   kg/agent/mcp.ts       — "a hundred and two tools is one page" (twice)
+    //   kg/agent/execute.ts   — "listing a hundred and two tools"
+    //   kg/agent/loop.ts      — "every non-read step (92 of 102 tools)"
+    //   web/src/lib/keys-stay-local.test.ts — "the hundred and two tools live"
     //   core/model.ts         — the destructive count on `APPROVAL_LABEL`
     //   web guide CodeStructure.tsx — "N named write operations"
-    expect(CATALOG.length).toBe(100)
+    expect(CATALOG.length).toBe(102)
   })
 
   it('matches the write/read split queries.ts quotes', () => {
-    // "ninety write tools already" — the number the generic-readers
+    // "ninety-two write tools already" — the number the generic-readers
     // argument is measured against.
-    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(90)
+    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(92)
   })
 
   it('matches the sixteen node types that paragraph counts', () => {

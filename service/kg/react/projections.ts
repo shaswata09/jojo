@@ -29,6 +29,7 @@
 import { compareItems } from '../core/dates'
 import { emptyProfile } from '../core/profile'
 import { briefsWithin } from '../core/referee-brief'
+import { contactRoleOf, type ContactRole } from '../core/model'
 import type {
   Application,
   ISODate,
@@ -239,7 +240,19 @@ export function createProjections(today: ISODate): Projections {
         // Only briefs about a job they are still named on — see `RefereeBrief`
         // for why a stale one is kept in storage but never shown.
         const briefs = briefsWithin(stored, new Set(applicationIds))
-        return { ...rest, id: n.id, applicationIds, ...(briefs.length === 0 ? {} : { briefs }) }
+        // Read off the edges — the role belongs to the pairing, see `ContactRole`.
+        const roles: Record<string, ContactRole> = {}
+        for (const edge of g.out(n.id, 'FILED_UNDER')) {
+          const role = contactRoleOf(edge.props)
+          if (role !== undefined) roles[edge.to] = role
+        }
+        return {
+          ...rest,
+          id: n.id,
+          applicationIds,
+          ...(briefs.length === 0 ? {} : { briefs }),
+          ...(Object.keys(roles).length === 0 ? {} : { roles }),
+        }
       }),
       compareNewestById,
     ),

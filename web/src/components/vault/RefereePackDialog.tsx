@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react'
 import { Check, Download, ExternalLink } from 'lucide-react'
 import { stripMarks } from '@jojo/service/core/marks'
 import {
+  CONTACT_ROLE_LABEL,
   MAX_BRIEF_NOTE_TEXT,
   STAGE_LABEL,
   type Application,
+  type ContactRole,
   type Person,
   type RefereeBrief,
 } from '@jojo/service/core/model'
@@ -73,10 +75,17 @@ type Draft = { include: boolean; highlights: string; note: string }
 
 type Format = 'xlsx' | 'csv'
 
-const draftFor = (application: Application, brief: RefereeBrief | undefined): Draft => ({
-  // A closed application is history, not something to write for. Still listed,
-  // so it can be ticked back on, but not sent by default.
-  include: application.stage !== 'closed',
+const draftFor = (
+  application: Application,
+  brief: RefereeBrief | undefined,
+  role: ContactRole | undefined,
+): Draft => ({
+  // A closed application is history, not something to write for, and a job
+  // where this person is your point of contact is not one they are writing
+  // for. Both are still listed, so they can be ticked back on, but neither is
+  // sent by default. No role at all — every filing from before roles existed —
+  // counts as writing for it, which is what being named on a job meant then.
+  include: application.stage !== 'closed' && role !== 'contact',
   highlights: highlightsText(brief?.highlights),
   note: brief?.note ?? '',
 })
@@ -118,7 +127,9 @@ export function RefereePackDialog({
    * from another tab while it is open does not wipe what is being typed here.
    */
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() =>
-    Object.fromEntries(applications.map((a) => [a.id, draftFor(a, briefFor(person.briefs, a.id))])),
+    Object.fromEntries(
+      applications.map((a) => [a.id, draftFor(a, briefFor(person.briefs, a.id), person.roles?.[a.id])]),
+    ),
   )
   const [format, setFormat] = useState<Format>('xlsx')
   const [withMaterials, setWithMaterials] = useState(true)
@@ -253,6 +264,7 @@ export function RefereePackDialog({
             const m = materialsOf(a.id)
             const count = m.files.length + m.snippets.length
             const date = appliedDate(a)
+            const role = person.roles?.[a.id]
             return (
               <li key={a.id} className="border-b border-hairline py-3 last:border-b-0">
                 <div className="flex items-start gap-2.5">
@@ -271,6 +283,7 @@ export function RefereePackDialog({
                       {a.org} <span className="text-text-3">·</span> {a.role}
                     </div>
                     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-text-3">
+                      {role ? <span className="text-text-2">{CONTACT_ROLE_LABEL[role]}</span> : null}
                       <span>{STAGE_LABEL[a.stage]}</span>
                       {date ? <span>Applied {date}</span> : null}
                       <span>

@@ -9,9 +9,9 @@
  * separate surface that happens to be offered to the same caller.
  *
  * WHY A FEW GENERIC TOOLS AND NOT ONE PER NODE TYPE. There are sixteen node
- * types and ninety write tools already; the catalog is a hundred entries.
- * A model choosing from a hundred and eleven names picks worse than one choosing
- * from a hundred, and this app points at whatever the user is running at home
+ * types and ninety-two write tools already; the catalog is a hundred and two
+ * entries. A model choosing from a hundred and thirteen names picks worse than
+ * one choosing from a hundred and two, and this app points at whatever the user is running at home
  * — frequently a 7B, where the tool list is a real part of the context budget.
  * Generic also means a seventeenth node type is readable the day it is added
  * rather than the day someone remembers to write its reader.

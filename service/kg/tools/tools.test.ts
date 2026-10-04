@@ -374,6 +374,117 @@ describe('duplicating a record filed under several applications', () => {
    * application. Stored on the person, keyed by application, and only ever for
    * an application the person is filed under.
    */
+  /**
+   * A person's role on one application — recommender or point of contact —
+   * lives on their FILED_UNDER edge, so every way of refiling them has to keep
+   * it, and the two focused tools have to touch only the pairing they name.
+   */
+  describe('roles on an application', () => {
+    const roleOn = (h: ReturnType<typeof harness>, person: string, app: string) =>
+      h.repo
+        .getSnapshot()
+        .out(person as never, 'FILED_UNDER')
+        .find((e) => e.to === app)?.props['role']
+    const isFiled = (h: ReturnType<typeof harness>, person: string, app: string) =>
+      h.repo
+        .getSnapshot()
+        .out(person as never, 'FILED_UNDER')
+        .some((e) => e.to === app)
+
+    it('names a person on one job with a role, leaving their other jobs alone', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'A', applicationIds: apps.slice(0, 1) }))
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[1]!, role: 'recommender' }))
+      expect(roleOn(h, person, apps[1]!)).toBe('recommender')
+      expect(isFiled(h, person, apps[0]!)).toBe(true)
+      expect(roleOn(h, person, apps[0]!)).toBeUndefined()
+    })
+
+    it('changes a role, keeps it when none is given, and clears it on null', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'B' }))
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'recommender' }))
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'contact' }))
+      expect(roleOn(h, person, apps[0]!)).toBe('contact')
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]! }))
+      expect(roleOn(h, person, apps[0]!)).toBe('contact')
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: null }))
+      expect(isFiled(h, person, apps[0]!)).toBe(true)
+      expect(roleOn(h, person, apps[0]!)).toBeUndefined()
+    })
+
+    it('keeps every role through a save of the Vault form, which resends the whole filing', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'C', applicationIds: apps }))
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'recommender' }))
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[1]!, role: 'contact' }))
+      okOr(h.runtime.run('vault.person.update', { id: person, role: 'Referee', applicationIds: apps }))
+      expect(roleOn(h, person, apps[0]!)).toBe('recommender')
+      expect(roleOn(h, person, apps[1]!)).toBe('contact')
+      // Dropping one job from the form drops that role and keeps the other.
+      okOr(h.runtime.run('vault.person.update', { id: person, applicationIds: apps.slice(1) }))
+      expect(isFiled(h, person, apps[0]!)).toBe(false)
+      expect(roleOn(h, person, apps[1]!)).toBe('contact')
+    })
+
+    it('creates a person already named on a job with a role, in one write', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(
+        h.runtime.run('vault.person.create', {
+          name: 'D',
+          applicationIds: apps.slice(0, 1),
+          roles: [
+            { applicationId: apps[0]!, role: 'contact' },
+            { applicationId: apps[1]!, role: 'recommender' },
+          ],
+        }),
+      )
+      expect(roleOn(h, person, apps[0]!)).toBe('contact')
+      // A role for a job not in `applicationIds` files nothing.
+      expect(isFiled(h, person, apps[1]!)).toBe(false)
+    })
+
+    it('takes a person off one job, with its brief, and nothing else', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'E', applicationIds: apps }))
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [
+            { applicationId: apps[0]!, note: 'gone with the job' },
+            { applicationId: apps[1]!, note: 'stays' },
+          ],
+        }),
+      )
+      okOr(h.runtime.run('vault.person.unfile', { id: person, applicationId: apps[0]! }))
+      expect(isFiled(h, person, apps[0]!)).toBe(false)
+      expect(isFiled(h, person, apps[1]!)).toBe(true)
+      expect(h.repo.getSnapshot().node(person as never, 'person')?.props.briefs).toEqual([
+        { applicationId: apps[1], note: 'stays' },
+      ])
+      for (const app of apps) expect(h.repo.getSnapshot().node(app)).toBeDefined()
+    })
+
+    it('round-trips a role change and an unfiling through undo byte for byte', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'F', applicationIds: apps }))
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'recommender' }))
+      const before = graphOf(h.repo)
+      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'contact' }))
+      h.runtime.undo()
+      expect(graphOf(h.repo)).toEqual(before)
+      okOr(h.runtime.run('vault.person.unfile', { id: person, applicationId: apps[0]! }))
+      h.runtime.undo()
+      expect(graphOf(h.repo)).toEqual(before)
+    })
+  })
+
   describe('referee briefs', () => {
     const briefsOf = (h: ReturnType<typeof harness>, id: string) =>
       h.repo.getSnapshot().node(id as never, 'person')?.props.briefs

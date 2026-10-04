@@ -57,6 +57,23 @@ export function PeopleTool({ focus }: { focus?: string }) {
     [people, query],
   )
 
+  /** A person's jobs, grouped by what they are on each. */
+  const namedOn = (person: Person) => {
+    const groups: { lead: string; names: string[] }[] = [
+      { lead: 'Recommender for', names: [] },
+      { lead: 'Point of contact at', names: [] },
+      { lead: 'Named on', names: [] },
+    ]
+    for (const id of person.applicationIds) {
+      const application = byId.get(id)
+      if (!application) continue
+      const role = person.roles?.[id]
+      const group = groups[role === 'recommender' ? 0 : role === 'contact' ? 1 : 2]
+      group?.names.push(displayName(application))
+    }
+    return groups.filter((g) => g.names.length > 0)
+  }
+
   const onDelete = (person: Person) => {
     const { restore } = removePerson(person.id)
     toast({
@@ -165,17 +182,14 @@ export function PeopleTool({ focus }: { focus?: string }) {
                 {p.note ? <div className="mt-1 text-xs text-text-2">{p.note}</div> : null}
 
                 {/* Named on, not filed under — the wording matters because it is
-                    what a reader checks against their own memory. */}
+                    what a reader checks against their own memory. Split by what
+                    they are on each job (`ContactRole`), set from the job's own
+                    People panel; a filing with no role stays "Named on". */}
                 {p.applicationIds.length > 0 ? (
                   <div className="mt-1 text-xs text-text-3">
-                    Named on{' '}
-                    {p.applicationIds
-                      .map((id) => {
-                        const application = byId.get(id)
-                        return application ? displayName(application) : null
-                      })
-                      .filter(Boolean)
-                      .join(', ')}
+                    {namedOn(p)
+                      .map(({ lead, names }) => `${lead} ${names.join(', ')}`)
+                      .join(' · ')}
                   </div>
                 ) : null}
               </div>

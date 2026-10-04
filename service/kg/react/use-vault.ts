@@ -17,7 +17,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import type { Person, Snippet, VaultFile, VaultLink } from '../core/model'
+import type { ContactRole, Person, Snippet, VaultFile, VaultLink } from '../core/model'
 import { useGraph, useKg } from './kg-context'
 import { useReadBack } from './read-back'
 import { useRun } from './use-tool'
@@ -291,6 +291,12 @@ export function useVault() {
         ...present('phone', draft.phone),
         ...present('note', draft.note),
         ...present('applicationIds', draft.applicationIds),
+        ...present(
+          'roles',
+          draft.roles === undefined
+            ? undefined
+            : Object.entries(draft.roles).map(([applicationId, role]) => ({ applicationId, role })),
+        ),
       })
       if (!result.ok) throw new Error(result.errors[0]?.message ?? 'Could not save the person.')
       return readBack(projections.people, result.output)
@@ -325,6 +331,31 @@ export function useVault() {
     [run],
   )
 
+  /**
+   * Name one person on one application, or change what they are on it, without
+   * touching their other jobs. `role: null` clears it; leaving it out keeps it.
+   */
+  const filePerson = useCallback(
+    (id: string, applicationId: string, role?: ContactRole | null) => {
+      const result = run('vault.person.file', {
+        id,
+        applicationId,
+        ...(role === undefined ? {} : { role }),
+      })
+      return { ok: result.ok, restore: (result.ok && result.undo) || nothingToRestore }
+    },
+    [run],
+  )
+
+  /** Take one person off one application. They stay in the Vault and on their other jobs. */
+  const unfilePerson = useCallback(
+    (id: string, applicationId: string) => {
+      const result = run('vault.person.unfile', { id, applicationId })
+      return { restore: (result.ok && result.undo) || nothingToRestore }
+    },
+    [run],
+  )
+
   return useMemo(
     () => ({
       links,
@@ -345,6 +376,8 @@ export function useVault() {
       addPerson,
       updatePerson,
       removePerson,
+      filePerson,
+      unfilePerson,
     }),
     [
       links,
@@ -365,6 +398,8 @@ export function useVault() {
       addPerson,
       updatePerson,
       removePerson,
+      filePerson,
+      unfilePerson,
     ],
   )
 }

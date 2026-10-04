@@ -8,6 +8,7 @@ import { DetailHeader } from '@/components/applications/detail/DetailHeader'
 import { StageDatesPanel } from '@/components/applications/detail/StageDatesPanel'
 import { FitPanel } from '@/components/applications/detail/FitPanel'
 import { ChecklistPanel } from '@/components/applications/detail/ChecklistPanel'
+import { PeoplePanel } from '@/components/applications/detail/PeoplePanel'
 import { TailoredPanel } from '@/components/applications/detail/TailoredPanel'
 import { NotePanel } from '@/components/applications/detail/NotePanel'
 import { plainStageMove, stageNeedsDetails } from '@jojo/service/core/stage-policy'
@@ -334,6 +335,10 @@ function Detail({
           send, and this is what you have to go and get before you can send
           them. A step that turns out to need a date is one panel away. */}
       <ChecklistPanel applicationId={a.id} />
+
+      {/* Who, beside what has to be done: the referee whose letter is a
+          checklist step is named here, as recommender or point of contact. */}
+      <PeoplePanel applicationId={a.id} />
 
       <DatesPanel applicationId={a.id} items={items} onAddItem={onAddItem} />
 
