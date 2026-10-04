@@ -2125,6 +2125,49 @@ export type ClaimProps = {
   source?: string
 }
 
+/**
+ * What you want one referee to say about one application.
+ *
+ * WHY IT EXISTS. A recommender writes for several of your applications, and the
+ * letter each one needs is different — the teaching post wants the seminar you
+ * ran, the research post wants the grant. Telling them that used to be an email
+ * written from memory. This is that email's content, kept beside the person and
+ * exported to them as a sheet (see `web/src/lib/referee-sheet.ts`).
+ *
+ * WHY NOT THE KEYWORDS. The keyword chips on an application are the user's own
+ * filing labels — "Waiting on them", "Negotiating" — and sending those to a
+ * professor would be wrong in both senses. Highlights are written FOR the
+ * recommender, so they are their own field.
+ *
+ * WHY ON THE PERSON, keyed by application, rather than on the edge. An edge is
+ * `${from}|${rel}|${to}` with no props, by design (see `EDGE_SCHEMA`), and the
+ * reified relation that does carry data — a `claim` — cannot be deleted, which
+ * a note somebody wrote and changed their mind about must be. A list on the
+ * person is the shape the checklist already uses on an application, and it
+ * rides undo, the journal and Transfer with the record.
+ *
+ * `applicationId` is a pointer in props, which this file usually refuses. It is
+ * accepted here for the reason `postingId` is: the brief is ABOUT that record,
+ * and the projection only ever shows briefs for applications the person is
+ * still filed under, so a deleted or unfiled application leaves a brief that is
+ * never read rather than one that is wrong. `vault.person.update` drops it the
+ * next time the person's filing changes.
+ */
+export type RefereeBrief = {
+  applicationId: string
+  /** The aspects to highlight, in the order you listed them. */
+  highlights?: string[]
+  /** Anything else they should know about this application. */
+  note?: string
+}
+
+/** Bounds on a brief, enforced by `vault.person.update` and the editor alike. */
+export const MAX_BRIEF_HIGHLIGHTS = 12
+export const MAX_BRIEF_HIGHLIGHT_TEXT = 80
+export const MAX_BRIEF_NOTE_TEXT = 4_000
+/** One per application a person can be filed under, with room to spare. */
+export const MAX_BRIEFS = 500
+
 export type PersonProps = {
   slug: string
   name: string
@@ -2133,6 +2176,8 @@ export type PersonProps = {
   email?: string
   phone?: string
   note?: string
+  /** One per application, only where something was written. See `RefereeBrief`. */
+  briefs?: RefereeBrief[]
 }
 
 /**
@@ -2180,6 +2225,11 @@ export type Person = {
   note?: string
   /** Every application this person is named on, newest edge last. */
   applicationIds: string[]
+  /**
+   * Briefs for the applications in `applicationIds` only — a brief for one
+   * they are no longer filed under is kept in storage and never shown.
+   */
+  briefs?: RefereeBrief[]
 }
 
 export type NodePropsByType = {

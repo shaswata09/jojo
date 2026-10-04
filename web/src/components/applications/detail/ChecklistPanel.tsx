@@ -135,7 +135,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
                 /* `.touch-target` is load-bearing: an 18px box matches none of
                    index.css's size selectors, so without it this is an 18×18
                    target on a phone — on the one control the card exists for. */
-                className="touch-target mt-0.5 grid size-[18px] shrink-0 cursor-pointer place-items-center rounded border border-hairline text-transparent transition-colors hover:border-accent aria-checked:border-accent aria-checked:bg-accent aria-checked:text-white"
+                className="touch-target mt-0.5 grid size-[18px] shrink-0 cursor-pointer place-items-center rounded border border-hairline text-transparent transition-colors hover:border-accent aria-checked:border-accent aria-checked:bg-accent aria-checked:text-primary-foreground"
               >
                 <Check className="size-3" strokeWidth={3} aria-hidden />
               </button>

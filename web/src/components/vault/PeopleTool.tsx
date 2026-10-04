@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Mail, Pencil, Phone, Plus, Trash2, UserRound } from 'lucide-react'
+import { FileSpreadsheet, Mail, Pencil, Phone, Plus, Trash2, UserRound } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Field, FormField, TextareaField } from '@/components/common/Field'
 import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
 import { Panel, Row, RowList } from '@/components/common/Panel'
 import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
+import { RefereePackDialog } from '@/components/vault/RefereePackDialog'
 import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
 import { matchesQuery } from '@/components/vault/search'
 import { Button } from '@/components/ui/button'
@@ -47,6 +48,9 @@ export function PeopleTool({ focus }: { focus?: string }) {
   const [query, setQuery] = useState('')
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<Person | null>(null)
+  /** Whose list is open. Held by id, so the dialog sees the person's latest briefs. */
+  const [packingId, setPackingId] = useState<string | null>(null)
+  const packing = packingId === null ? undefined : people.find((p) => p.id === packingId)
 
   const shown = useMemo(
     () => people.filter((p) => matchesQuery(query, p.name, p.role, p.affiliation, p.email, p.note)),
@@ -177,7 +181,22 @@ export function PeopleTool({ focus }: { focus?: string }) {
               </div>
 
               <div className="flex shrink-0 items-center gap-1">
+                {/* On the row, not only in the menu: sending a referee their list
+                    is the reason most people are in here at all. Only for
+                    someone named on at least one job — for anyone else the list
+                    would be empty. */}
+                {p.applicationIds.length > 0 ? (
+                  <Button variant="ghost" size="sm" onClick={() => setPackingId(p.id)}>
+                    <FileSpreadsheet className="size-3.5" strokeWidth={1.8} aria-hidden />
+                    Applications list
+                  </Button>
+                ) : null}
                 <RowMenu name={p.name}>
+                  {p.applicationIds.length > 0 ? (
+                    <MenuItem icon={FileSpreadsheet} onSelect={() => setPackingId(p.id)}>
+                      Applications list
+                    </MenuItem>
+                  ) : null}
                   <MenuItem
                     icon={Pencil}
                     onSelect={() => {
@@ -198,6 +217,16 @@ export function PeopleTool({ focus }: { focus?: string }) {
           ))}
         </RowList>
       )}
+
+      {packing ? (
+        <RefereePackDialog
+          person={packing}
+          open
+          onOpenChange={(open) => {
+            if (!open) setPackingId(null)
+          }}
+        />
+      ) : null}
     </Panel>
   )
 }

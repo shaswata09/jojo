@@ -309,6 +309,9 @@ export function useVault() {
         ...present('phone', patch.phone),
         ...present('note', patch.note),
         ...asNull('applicationIds', patch, 'applicationIds'),
+        // The whole list or nothing, like `applicationIds`: an empty list is
+        // "every brief cleared", which is a real edit and has to reach the tool.
+        ...present('briefs', patch.briefs),
       })
     },
     [run],

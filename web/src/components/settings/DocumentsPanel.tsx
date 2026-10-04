@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { readStorageUsage } from '@/components/settings/storage-usage'
 import { archiveName, buildArchive, uniqueEntryNames } from '@/lib/document-archive'
 import { reportError } from '@/lib/report-error'
+import { saveFile } from '@/lib/save-file'
 import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 
@@ -70,7 +71,6 @@ export function DocumentsPanel() {
    */
   const downloadAll = async () => {
     setBusy(true)
-    let href: string | null = null
     try {
       const list = await blobs.all()
       const files = (await Promise.all(list.map((item) => blobs.get(item.id)))).filter(
@@ -93,15 +93,7 @@ export function DocumentsPanel() {
         })),
       )
       const name = archiveName(dayOf(new Date().toISOString()))
-      href = URL.createObjectURL(new Blob([buildArchive(entries)], { type: 'application/zip' }))
-      const anchor = document.createElement('a')
-      anchor.href = href
-      anchor.download = name
-      anchor.click()
-      // Revoked on the next task, not synchronously: a synchronous revoke races
-      // the download the click just started, and the archive arrives empty.
-      const url = href
-      setTimeout(() => URL.revokeObjectURL(url), 0)
+      saveFile(buildArchive(entries), name, 'application/zip')
 
       const missing = list.length - files.length
       const noun = (n: number) => `${n} document${n === 1 ? '' : 's'}`
@@ -114,8 +106,6 @@ export function DocumentsPanel() {
         ...(missing === 0 ? {} : { tone: 'danger' as const }),
       })
     } catch (error) {
-      // Only on the throwing path, where no download was started to race.
-      if (href !== null) URL.revokeObjectURL(href)
       reportError('backup', error)
       toast({
         title: 'Could not build the download',

@@ -20,9 +20,14 @@ import {
   FILE_BUCKET_VALUES,
   FILE_KIND_VALUES,
   LINK_CATEGORY_VALUES,
+  MAX_BRIEF_HIGHLIGHTS,
+  MAX_BRIEF_HIGHLIGHT_TEXT,
+  MAX_BRIEF_NOTE_TEXT,
+  MAX_BRIEFS,
   SNIPPET_TAG_VALUES,
 } from '../core/model'
 import type { NodeId } from '../core/model'
+import { briefsWithin, normaliseBriefs } from '../core/referee-brief'
 import { s } from '../core/schema'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
@@ -98,6 +103,31 @@ const personDetails = {
   note: s.optional(s.string({ label: 'Note', multiline: true })),
 }
 
+/**
+ * What you want this referee to say about each application. See `RefereeBrief`.
+ *
+ * The whole list, every time, like `applicationIds`: the editor holds every
+ * brief for the person at once, and an absolute list cannot half-apply.
+ * Briefs for applications the person is not filed under are dropped rather
+ * than refused, because the list and the filing can arrive in one save and an
+ * unfiled application's brief has nowhere to be shown.
+ */
+const briefs = s.optional(
+  s.array(
+    s.object({
+      applicationId: s.id('application', { label: 'Application' }),
+      highlights: s.optional(
+        s.array(s.string({ max: MAX_BRIEF_HIGHLIGHT_TEXT, label: 'Highlight' }), {
+          max: MAX_BRIEF_HIGHLIGHTS,
+          label: 'Highlights',
+        }),
+      ),
+      note: s.optional(s.string({ max: MAX_BRIEF_NOTE_TEXT, label: 'Note for them', multiline: true })),
+    }),
+    { max: MAX_BRIEFS, label: 'Referee briefs' },
+  ),
+)
+
 export const vaultPersonCreate = defineTool({
   name: 'vault.person.create',
   title: 'Add person',
@@ -147,7 +177,8 @@ export const vaultPersonCreate = defineTool({
 export const vaultPersonUpdate = defineTool({
   name: 'vault.person.update',
   title: 'Edit person',
-  summary: 'Saves what you know about them, and which jobs they are named on.',
+  summary:
+    'Saves what you know about them, which jobs they are named on, and what you want them to highlight for each.',
   effect: 'update',
   touches: ['person'],
   input: s.object({
@@ -155,10 +186,33 @@ export const vaultPersonUpdate = defineTool({
     name: s.optional(s.string({ min: 1, label: 'Name' })),
     ...personDetails,
     applicationIds,
+    briefs,
   }),
 
   run(ctx, input) {
-    ctx.require('person', input.id)
+    const person = ctx.require('person', input.id)
+    /*
+     * The filing this save leaves behind, read from the INPUT when it carries
+     * one rather than from `memory` after `fileUnder` — so the answer does not
+     * depend on whether a snapshot sees writes made earlier in the same
+     * transaction.
+     */
+    const filed = new Set<string>(
+      input.applicationIds === undefined
+        ? ctx.memory.many(input.id, 'FILED_UNDER', 'out', 'application').map((a) => a.id)
+        : (input.applicationIds ?? []),
+    )
+    /*
+     * Briefs are rewritten when they are given, and pruned when only the filing
+     * changed — so unfiling a person from a job also lets go of what they were
+     * asked to say about it, instead of keeping it out of sight indefinitely.
+     */
+    const nextBriefs =
+      input.briefs !== undefined
+        ? normaliseBriefs(input.briefs, filed)
+        : input.applicationIds !== undefined
+          ? briefsWithin(person.props.briefs, filed)
+          : undefined
     ctx.tx.patch<'person'>(input.id, {
       ...(input.name === undefined ? {} : { name: input.name.trim() }),
       ...(input.role === undefined ? {} : { role: cleared(input.role) }),
@@ -166,6 +220,8 @@ export const vaultPersonUpdate = defineTool({
       ...(input.email === undefined ? {} : { email: cleared(input.email) }),
       ...(input.phone === undefined ? {} : { phone: cleared(input.phone) }),
       ...(input.note === undefined ? {} : { note: cleared(input.note) }),
+      // `undefined` deletes the key: an empty list is stored as no list.
+      ...(nextBriefs === undefined ? {} : { briefs: nextBriefs.length === 0 ? undefined : nextBriefs }),
     })
     fileUnder(ctx, input.id, input.applicationIds)
   },

@@ -369,6 +369,127 @@ describe('duplicating a record filed under several applications', () => {
     for (const app of apps) expect(h.repo.getSnapshot().node(app)).toBeDefined()
   })
 
+  /**
+   * Referee briefs — what the user wants a recommender to highlight for each
+   * application. Stored on the person, keyed by application, and only ever for
+   * an application the person is filed under.
+   */
+  describe('referee briefs', () => {
+    const briefsOf = (h: ReturnType<typeof harness>, id: string) =>
+      h.repo.getSnapshot().node(id as never, 'person')?.props.briefs
+
+    it('stores a cleaned brief per application', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'A. Mehta', applicationIds: apps }))
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [{ applicationId: apps[0]!, highlights: [' teaching ', 'Teaching', 'grants'], note: '  lab  ' }],
+        }),
+      )
+      expect(briefsOf(h, person)).toEqual([
+        { applicationId: apps[0], highlights: ['teaching', 'grants'], note: 'lab' },
+      ])
+    })
+
+    it('drops a brief for an application they are not filed under', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'D. Chen', applicationIds: apps.slice(0, 1) }),
+      )
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [
+            { applicationId: apps[0]!, note: 'kept' },
+            { applicationId: apps[1]!, note: 'not filed' },
+          ],
+        }),
+      )
+      expect(briefsOf(h, person)).toEqual([{ applicationId: apps[0], note: 'kept' }])
+    })
+
+    it('reads the filing from the same save, when both arrive together', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'E. Ruiz' }))
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          applicationIds: apps.slice(1),
+          briefs: [{ applicationId: apps[1]!, note: 'filed in this save' }],
+        }),
+      )
+      expect(briefsOf(h, person)).toEqual([{ applicationId: apps[1], note: 'filed in this save' }])
+    })
+
+    it('lets go of a brief when the person is unfiled from that job', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'F. Okafor', applicationIds: apps }))
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [
+            { applicationId: apps[0]!, note: 'one' },
+            { applicationId: apps[1]!, note: 'two' },
+          ],
+        }),
+      )
+      okOr(h.runtime.run('vault.person.update', { id: person, applicationIds: apps.slice(1) }))
+      expect(briefsOf(h, person)).toEqual([{ applicationId: apps[1], note: 'two' }])
+    })
+
+    it('leaves briefs alone on a save that touches neither briefs nor filing', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'G. Ito', applicationIds: apps }))
+      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: 'x' }] }))
+      okOr(h.runtime.run('vault.person.update', { id: person, role: 'Referee' }))
+      expect(briefsOf(h, person)).toEqual([{ applicationId: apps[0], note: 'x' }])
+    })
+
+    it('stores no list at all once every brief is cleared', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'H. Park', applicationIds: apps }))
+      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: 'x' }] }))
+      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: '  ' }] }))
+      expect(h.repo.getSnapshot().node(person as never, 'person')?.props).not.toHaveProperty('briefs')
+    })
+
+    it('refuses a brief past the limits rather than storing it', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'I. Sato', applicationIds: apps }))
+      const result = h.runtime.run('vault.person.update', {
+        id: person,
+        briefs: [{ applicationId: apps[0]!, note: 'n'.repeat(5_000) }],
+      })
+      expect(result.ok).toBe(false)
+      expect(briefsOf(h, person)).toBeUndefined()
+    })
+
+    it('round-trips through undo byte for byte', () => {
+      const h = harness()
+      const apps = two(h)
+      const person = okOr(h.runtime.run('vault.person.create', { name: 'J. Kim', applicationIds: apps }))
+      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: 'v1' }] }))
+      const before = graphOf(h.repo)
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          applicationIds: apps.slice(1),
+          briefs: [{ applicationId: apps[1]!, highlights: ['grants'] }],
+        }),
+      )
+      h.runtime.undo()
+      expect(graphOf(h.repo)).toEqual(before)
+    })
+  })
+
   it('keeps every application on a duplicated timeline item', () => {
     const h = harness()
     const apps = two(h)

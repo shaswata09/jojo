@@ -94,8 +94,10 @@ export const SHAPE: DirRow[] = [
     // `ink.ts` and its test: turning one colour a person picked off the
     // spectrum into a chip that can be read, in either theme — the maths the
     // eight named colours never needed because they were measured by hand.
-    files: 138,
-    tests: 67,
+    // `referee-brief.ts` and its test: what a recommender is asked to highlight
+    // for each application, and the one rule for when a brief counts as empty.
+    files: 140,
+    tests: 68,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -202,7 +204,9 @@ export const SHAPE: DirRow[] = [
     // Then the merge row with its grip, the drop hook, and the Files list's
     // "Unfiled" chip beside the filter composition it reads — with a test on
     // `empty-state.tsx`, which four tools share and which grew a rung.
-    files: 310,
+    // `vault/RefereePackDialog.tsx`: a referee's applications, with what each
+    // letter should highlight, downloaded as a sheet and their materials.
+    files: 311,
     tests: 31,
     lines: 53850,
     what: 'every surface you can see',
@@ -239,9 +243,12 @@ export const SHAPE: DirRow[] = [
     // no reason to be findable. 156 with `document-archive.ts` and its test:
     // every stored document packed into one ZIP, the names inside it made safe
     // and unique so two `CV.pdf`s cannot overwrite each other.
-    files: 156,
-    tests: 58,
-    lines: 22798,
+    // 161 with the recommender list: `spreadsheet.ts` (a table to XLSX or CSV,
+    // links clickable and formulas defused), `referee-pack.ts` (the rows and
+    // folders a referee is sent), each with a test, and `save-file.ts`.
+    files: 161,
+    tests: 60,
+    lines: 23880,
     what: 'web-only adapters and URL state',
   },
   {
@@ -271,7 +278,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 94
+export const WEB_TEST_FILES = 96
 
 type TestGroup = { title: string; files: string; body: string }
 

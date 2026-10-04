@@ -64,7 +64,29 @@ export function LabelFilter({
   }
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-1.5', className)}>
+    /*
+     * ONE wrapping row, and it is the group.
+     *
+     * The chips used to sit in a box of their own inside this row, and from out
+     * here that box was a single item. Once the chips wrapped it took the full
+     * width, so everything beside it was pushed onto lines of its own: with
+     * eleven keywords on Applications the tag icon sat alone on the first line
+     * and the New keyword button alone under the last chip, with most of that
+     * line empty. As direct items of one row, the icon leads the first line and
+     * the button follows the last chip, wrapping only when it does not fit.
+     *
+     * The group label moved out with them rather than being dropped, and it
+     * now covers the New keyword and Clear buttons too — both of which are
+     * about filtering by keyword, which is what the label says. Not
+     * `display: contents` on the old box: that has taken an element's role out
+     * of the accessibility tree in shipped browsers, and the label is the one
+     * thing here a screen reader needs.
+     */
+    <div
+      role="group"
+      aria-label="Filter by keyword"
+      className={cn('flex flex-wrap items-center gap-1.5', className)}
+    >
       <Tag aria-hidden strokeWidth={1.8} className="size-3.5 shrink-0 text-text-3" />
 
       {/* Deleting the last keyword is reachable from the chip menu, and left
@@ -74,18 +96,16 @@ export function LabelFilter({
         <span className="text-xs text-text-3">No keywords yet — add one to filter by it.</span>
       ) : null}
 
-      <div role="group" aria-label="Filter by keyword" className="flex flex-wrap gap-1.5">
-        {labels.map((l) => (
-          <KeywordChip
-            key={l.id}
-            label={l}
-            on={selected.has(l.id)}
-            count={counts ? (counts.get(l.id) ?? 0) : countFor(l.id)}
-            onToggle={() => toggleSelected(l.id)}
-            onRequestDelete={setPendingDelete}
-          />
-        ))}
-      </div>
+      {labels.map((l) => (
+        <KeywordChip
+          key={l.id}
+          label={l}
+          on={selected.has(l.id)}
+          count={counts ? (counts.get(l.id) ?? 0) : countFor(l.id)}
+          onToggle={() => toggleSelected(l.id)}
+          onRequestDelete={setPendingDelete}
+        />
+      ))}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger

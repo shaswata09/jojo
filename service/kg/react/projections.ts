@@ -28,6 +28,7 @@
 
 import { compareItems } from '../core/dates'
 import { emptyProfile } from '../core/profile'
+import { briefsWithin } from '../core/referee-brief'
 import type {
   Application,
   ISODate,
@@ -233,8 +234,12 @@ export function createProjections(today: ISODate): Projections {
      */
     people: sortedBy(
       createProjection('person', (n, g): Person => {
-        const { slug: _slug, ...rest } = n.props
-        return { ...rest, id: n.id, ...filedUnder(g, n.id) }
+        const { slug: _slug, briefs: stored, ...rest } = n.props
+        const { applicationIds } = filedUnder(g, n.id)
+        // Only briefs about a job they are still named on — see `RefereeBrief`
+        // for why a stale one is kept in storage but never shown.
+        const briefs = briefsWithin(stored, new Set(applicationIds))
+        return { ...rest, id: n.id, applicationIds, ...(briefs.length === 0 ? {} : { briefs }) }
       }),
       compareNewestById,
     ),
