@@ -18,7 +18,15 @@ import { resolveAddress } from '@jojo/service/core/address'
 import type { Instant } from '@jojo/service/core/model'
 import { createProjections } from '@jojo/service/react/projections'
 import { bootInMemory } from '@jojo/service/repo/boot'
-import { appPath, BASE_TITLE, calendarDate, isSamePage, pageKey } from '@/lib/links'
+import {
+  BASE_TITLE,
+  appPath,
+  calendarDate,
+  isPlainLeftClick,
+  isSamePage,
+  listStateOf,
+  pageKey,
+} from '@/lib/links'
 // `?raw` rather than `node:fs`: the app project's `types` is `["vite/client"]`,
 // so `node:fs` does not typecheck here, and vite/client is what declares this.
 import indexHtml from '../../index.html?raw'
@@ -272,5 +280,66 @@ describe('what counts as arriving at a new page', () => {
   it('is not fooled by a trailing slash', () => {
     expect(isSamePage('/applications/', '/applications/rice')).toBe(true)
     expect(isSamePage('/calendar/', '/calendar')).toBe(true)
+  })
+})
+
+describe('the list state a record link carries', () => {
+  /*
+   * Opening a row is a navigation to a child of the list, and the list reads
+   * its filters from the URL — so a link without them resets the list behind
+   * the sheet. Measured before this: '/applications?view=table&q=a' opened a
+   * row at '/applications/smu', and the table became the default board.
+   */
+  it('keeps every filter the list reads', () => {
+    expect(listStateOf('?view=table&stage=interview&q=rice&sort=-org')).toBe(
+      '?view=table&stage=interview&q=rice&sort=-org',
+    )
+  })
+
+  it('drops a one-shot arrival, so it cannot fire again on close', () => {
+    expect(listStateOf('?view=table&focus=app%3A123')).toBe('?view=table')
+  })
+
+  it('drops anything that is not the list’s own', () => {
+    expect(listStateOf('?m=10&y=2026')).toBe('')
+  })
+
+  it('is empty when there is nothing to keep', () => {
+    // An empty string rather than a bare '?', so the URL reads '/applications/rice'.
+    expect(listStateOf('')).toBe('')
+    expect(listStateOf('?')).toBe('')
+  })
+})
+
+describe('which clicks on a dialog link the app handles itself', () => {
+  const plain = {
+    button: 0,
+    metaKey: false,
+    ctrlKey: false,
+    shiftKey: false,
+    altKey: false,
+  }
+
+  it('takes a plain left click, so it can navigate without reloading', () => {
+    expect(isPlainLeftClick(plain)).toBe(true)
+  })
+
+  it('leaves every modifier to the browser, which opens a tab or a window', () => {
+    // Swallowing these would make the record impossible to open in the
+    // background — the commonest thing done with a link to come back to.
+    expect(isPlainLeftClick({ ...plain, metaKey: true })).toBe(false)
+    expect(isPlainLeftClick({ ...plain, ctrlKey: true })).toBe(false)
+    expect(isPlainLeftClick({ ...plain, shiftKey: true })).toBe(false)
+    expect(isPlainLeftClick({ ...plain, altKey: true })).toBe(false)
+  })
+
+  it('leaves a middle or right click alone', () => {
+    expect(isPlainLeftClick({ ...plain, button: 1 })).toBe(false)
+    expect(isPlainLeftClick({ ...plain, button: 2 })).toBe(false)
+  })
+
+  it('respects a click something earlier already claimed', () => {
+    expect(isPlainLeftClick({ ...plain, defaultPrevented: true })).toBe(false)
+    expect(isPlainLeftClick({ ...plain, defaultPrevented: false })).toBe(true)
   })
 })

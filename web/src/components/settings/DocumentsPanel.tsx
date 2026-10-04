@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Download, HardDrive, TriangleAlert } from 'lucide-react'
+import { dayOf } from '@jojo/service/core/project'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { readStorageUsage } from '@/components/settings/storage-usage'
+import { archiveName, buildArchive, uniqueEntryNames } from '@/lib/document-archive'
+import { reportError } from '@/lib/report-error'
 import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 
@@ -55,25 +58,69 @@ export function DocumentsPanel() {
     }
   }, [blobs])
 
+  /**
+   * Every document, as one ZIP — see `lib/document-archive.ts` for why one
+   * archive replaced a download per file.
+   *
+   * Everything that can throw is inside the `try`: a quota read, a document
+   * whose bytes will not come back, `zipSync` itself, `createObjectURL` on an
+   * exhausted blob store. The caller `void`s this, so a throw outside it would
+   * have been no file and no toast — a button that does nothing, on the one
+   * path a person uses to keep their CVs.
+   */
   const downloadAll = async () => {
     setBusy(true)
+    let href: string | null = null
     try {
       const list = await blobs.all()
-      let saved = 0
-      for (const item of list) {
-        // Sequential, with a gap. A browser that sees a burst of programmatic
-        // downloads blocks all but the first, and the user is left believing
-        // they saved everything.
-        if (await blobs.download(item.id)) saved += 1
-        await new Promise((r) => setTimeout(r, 250))
+      const files = (await Promise.all(list.map((item) => blobs.get(item.id)))).filter(
+        (file): file is File => file !== null,
+      )
+      if (files.length === 0) {
+        toast({
+          title: 'No documents could be read',
+          description: 'This browser no longer holds the bytes for any of them.',
+          tone: 'danger',
+        })
+        return
       }
+      const names = uniqueEntryNames(files.map((file) => file.name))
+      const entries = await Promise.all(
+        files.map(async (file, i) => ({
+          name: names[i] ?? file.name,
+          bytes: new Uint8Array(await file.arrayBuffer()),
+          modified: file.lastModified,
+        })),
+      )
+      const name = archiveName(dayOf(new Date().toISOString()))
+      href = URL.createObjectURL(new Blob([buildArchive(entries)], { type: 'application/zip' }))
+      const anchor = document.createElement('a')
+      anchor.href = href
+      anchor.download = name
+      anchor.click()
+      // Revoked on the next task, not synchronously: a synchronous revoke races
+      // the download the click just started, and the archive arrives empty.
+      const url = href
+      setTimeout(() => URL.revokeObjectURL(url), 0)
+
+      const missing = list.length - files.length
+      const noun = (n: number) => `${n} document${n === 1 ? '' : 's'}`
       toast({
-        title: saved === list.length ? `${saved} documents saved` : `${saved} of ${list.length} saved`,
+        title: missing === 0 ? `${noun(files.length)} saved` : `${files.length} of ${list.length} saved`,
         description:
-          saved === list.length
-            ? 'Check your downloads folder. These are the originals, not copies of the records.'
-            : 'Your browser may have blocked some. Downloading fewer at a time will work.',
-        ...(saved === list.length ? {} : { tone: 'danger' as const }),
+          missing === 0
+            ? `One file, ${name}, in your downloads folder. These are the originals, not copies of the records.`
+            : `${name} is in your downloads folder, without ${noun(missing)} this browser could no longer read.`,
+        ...(missing === 0 ? {} : { tone: 'danger' as const }),
+      })
+    } catch (error) {
+      // Only on the throwing path, where no download was started to race.
+      if (href !== null) URL.revokeObjectURL(href)
+      reportError('backup', error)
+      toast({
+        title: 'Could not build the download',
+        description: 'Nothing was saved. Try again, or open a document and download it on its own.',
+        tone: 'danger',
       })
     } finally {
       setBusy(false)

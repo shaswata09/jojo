@@ -20,8 +20,10 @@ import { isArchive, readableHere, textFrom } from '@jojo/service/agent/documents
  *
  * Only the kinds that are text already: a saved page, `.txt`, `.md`. The
  * archive kinds — DOCX, ODT, a deck — need a ZIP opened first, which the phone
- * does with `fflate`; that dependency is not declared for the web yet, and a
- * CV in DOCX went through the reader before this file existed and still does.
+ * does with `fflate`. The web declares `fflate` too now, but only to WRITE one
+ * (`document-archive.ts`, for "Download every document"); nothing here opens
+ * one yet, so a CV in DOCX went through the reader before this file existed
+ * and still does.
  */
 export async function readHere(file: File): Promise<ConvertResult | null> {
   const kind = readableHere(file.name)

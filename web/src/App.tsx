@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { Loader } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -136,6 +136,39 @@ function ApplicationDetailRoute() {
  */
 const BASENAME = import.meta.env.BASE_URL
 
+/**
+ * Carries out the navigation a dialog asked for with `closeAndGo`.
+ *
+ * Here because this is inside the router and the dialogs are not: `DialogHost`
+ * mounts beside `<App />`, where `useNavigate` throws, so a dialog that needs
+ * to go somewhere asks and this component goes. That is the "close and let the
+ * route navigate" exit `DialogHost` documents, made available to every dialog
+ * instead of only to whichever page happened to open it.
+ *
+ * `navigate()` rather than a document load, which is the point — a reload
+ * would kill any agent run still working.
+ */
+function DialogNavigation() {
+  const { pendingNavigation, settleNavigation } = useDialogs()
+  const navigate = useNavigate()
+  /*
+   * The request this already acted on, by reference. React runs effects twice
+   * in development, and without this the second run navigates again — two
+   * history entries, so Back takes two presses to leave the record. A fresh
+   * request is a fresh object, so a second ask for the same path still goes.
+   */
+  const handled = useRef<typeof pendingNavigation>(null)
+
+  useEffect(() => {
+    if (pendingNavigation === null || handled.current === pendingNavigation) return
+    handled.current = pendingNavigation
+    navigate(pendingNavigation.path)
+    settleNavigation(pendingNavigation)
+  }, [navigate, pendingNavigation, settleNavigation])
+
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter basename={BASENAME}>
@@ -211,6 +244,7 @@ export default function App() {
           />
         </Route>
       </Routes>
+      <DialogNavigation />
     </BrowserRouter>
   )
 }

@@ -136,7 +136,17 @@ export function DetailHeader({
           </div>
 
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            <LabelChips recordId={labelKey} />
+            {/*
+              `contents`, so the capsules are items of THIS row rather than one
+              box inside it. `LabelChips` wraps its capsules in a flex box of
+              its own, and from out here that box is a single item: once its
+              capsules wrapped, it took the full width and the tag button
+              dropped beneath it — measured with seven keywords, the last
+              capsule had 372px of room after it and the button sat on a third
+              line. With the box dissolved, the button is simply the next item
+              and wraps only when it genuinely does not fit.
+            */}
+            <LabelChips recordId={labelKey} className="contents" />
             <LabelPicker recordId={labelKey} />
           </div>
         </div>

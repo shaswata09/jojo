@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { Check, ChevronsUpDown, X } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronsUpDown, X } from 'lucide-react'
 import { FormField } from '@/components/common/Field'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
+import { appPath, hrefOutsideRouter, isPlainLeftClick } from '@/lib/links'
 
 /**
  * The applications this record is about, picked from a searchable list.
@@ -31,12 +32,18 @@ export function ApplicationLinkField({
   selectedApps,
   onToggle,
   onClear,
+  filedUnder = [],
+  onOpen,
 }: {
   applications: readonly Application[]
   applicationIds: readonly string[]
   selectedApps: readonly Application[]
   onToggle: (id: string) => void
   onClear: () => void
+  /** The applications the record is saved under — each gets an "Open" link. */
+  filedUnder?: readonly Application[]
+  /** Closes the dialog and goes to a router path. See `closeAndGo`. */
+  onOpen?: (path: string) => void
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const appId = useId()
@@ -118,6 +125,40 @@ export function ApplicationLinkField({
           </Button>
         ) : null}
       </div>
+
+      {/*
+       * The way back to the application, which the hint above has always
+       * promised ("this leads back to any of them") and nothing delivered.
+       *
+       * A real anchor with a real href, so a middle or modified click opens the
+       * record in a new tab and the address can be copied. A plain click is
+       * intercepted and handed to the router instead: following the href would
+       * reload the document, and a reload kills any agent run still working.
+       * `hrefOutsideRouter` rather than `<Link>` because this renders outside
+       * the router, where `<Link>` throws.
+       */}
+      {onOpen && filedUnder.length > 0 ? (
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          {filedUnder.map((app) => {
+            const path = appPath(app)
+            return (
+              <a
+                key={app.id}
+                href={hrefOutsideRouter(path)}
+                onClick={(event) => {
+                  if (!isPlainLeftClick(event)) return
+                  event.preventDefault()
+                  onOpen(path)
+                }}
+                className="inline-flex max-w-full min-w-0 items-center gap-1 text-text-2 underline underline-offset-2 hover:text-text-1"
+              >
+                <ArrowUpRight aria-hidden className="size-3.5 shrink-0" />
+                <span className="truncate">Open {displayName(app)}</span>
+              </a>
+            )
+          })}
+        </div>
+      ) : null}
     </FormField>
   )
 }

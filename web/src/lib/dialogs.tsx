@@ -12,6 +12,7 @@ import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { NO_MOUNT, mountKey, nextMount } from '@/lib/dialog-mount'
 import { DialogsContext, useDialogs, useTriggerOriginTracking } from '@/lib/dialogs-context'
+import type { NavigationRequest } from '@/lib/dialogs-context'
 import type { DialogName, OpenDialog } from '@/lib/dialogs-context'
 
 /**
@@ -32,6 +33,7 @@ import type { DialogName, OpenDialog } from '@/lib/dialogs-context'
  */
 export function DialogsProvider({ children }: { children: ReactNode }) {
   const [current, setCurrent] = useState<OpenDialog | null>(null)
+  const [pendingNavigation, setPendingNavigation] = useState<NavigationRequest | null>(null)
 
   // Remembers the control a dialog was summoned from, so the panel can grow out
   // of it instead of out of the middle of the screen. Owned here rather than by
@@ -46,7 +48,21 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
 
   const close = useCallback(() => setCurrent(null), [])
 
-  const value = useMemo(() => ({ open, close, current }), [open, close, current])
+  const closeAndGo = useCallback((path: string) => {
+    setCurrent(null)
+    setPendingNavigation({ path })
+  }, [])
+
+  // Clears only the request it was handed: a second ask that arrived while the
+  // first was being acted on must not be wiped out by the first's settling.
+  const settleNavigation = useCallback((request: NavigationRequest) => {
+    setPendingNavigation((now) => (now === request ? null : now))
+  }, [])
+
+  const value = useMemo(
+    () => ({ open, close, current, closeAndGo, pendingNavigation, settleNavigation }),
+    [open, close, current, closeAndGo, pendingNavigation, settleNavigation],
+  )
 
   return <DialogsContext value={value}>{children}</DialogsContext>
 }

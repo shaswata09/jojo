@@ -106,6 +106,14 @@ export const RUNTIME: readonly Credit[] = [
     where: 'src/lib/pdf/render.ts',
   },
   {
+    name: 'fflate',
+    version: '0.8.3',
+    licence: 'MIT',
+    holder: '2026 Arjun Barrett',
+    what: 'Packs every stored document into one ZIP for "Download every document", so getting your CVs out is one download rather than a burst the browser blocks. Already compressed kinds — PDF, Office files, images — are stored rather than deflated a second time. The phone uses the same library to open DOCX and other archive formats.',
+    where: 'src/lib/document-archive.ts',
+  },
+  {
     name: '@fontsource-variable/inter',
     version: '5.3.0',
     licence: 'OFL-1.1',

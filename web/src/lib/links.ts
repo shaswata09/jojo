@@ -216,6 +216,38 @@ export function appPath(a: Addressable) {
 }
 
 /**
+ * The list's own state out of a query string — and nothing else from it.
+ *
+ * For the link that opens a record FROM the list. `appPath` carries no query,
+ * so opening a row at '/applications?view=table&q=rice' went to
+ * '/applications/rice' — and because the detail is a child of the list, the
+ * list behind the sheet read the now-empty query and became the default board
+ * with no search. Measured: the table, filtered to 11 rows and scrolled to the
+ * bottom, was a board with nothing in the search box the moment the record
+ * opened, and closing it — which carries the query faithfully — carried an
+ * empty one back. It reset on open; the sheet hid that until it closed.
+ *
+ * Only the list's keys, read off `APPLICATIONS_DEFAULTS` so a fifth filter is
+ * carried the day it is added. Not `focus`: that is a one-shot arrival — a row
+ * highlighted because somebody came from the calendar — and carried into the
+ * record it would come back on close and highlight the row a second time.
+ *
+ * NOT folded into `appPath`. Every other caller is on another page, whose query
+ * belongs to that page: a link from '/calendar?m=10' must not drag the month
+ * into the applications list.
+ */
+export function listStateOf(search: string): string {
+  const from = new URLSearchParams(search)
+  const kept = new URLSearchParams()
+  for (const key of Object.keys(APPLICATIONS_DEFAULTS)) {
+    const value = from.get(key)
+    if (value !== null) kept.set(key, value)
+  }
+  const out = kept.toString()
+  return out === '' ? '' : `?${out}`
+}
+
+/**
  * One employer's page.
  *
  * Takes the SLUG rather than the name, for the reason `appPath` does: the name
@@ -238,6 +270,40 @@ export function appPath(a: Addressable) {
  */
 export function hrefOutsideRouter(path: string) {
   return `${import.meta.env.BASE_URL.replace(/\/$/, '')}${path}`
+}
+
+/**
+ * Whether a click on a link is one the app should handle itself.
+ *
+ * For the links a dialog draws with `hrefOutsideRouter`: following the href
+ * reloads the document — which kills any agent run still working — so a plain
+ * click is intercepted and handed to the router instead (see `closeAndGo` in
+ * `dialogs-context.ts`). But only a PLAIN one. A modifier or a middle click is a
+ * person asking the browser for a new tab or window, which is the commonest
+ * thing anyone does with a link to a record they mean to come back to; a link
+ * that swallowed those would be a link that cannot be opened in the background.
+ * The real href is what makes those work, and this is what leaves them alone.
+ *
+ * `defaultPrevented` too: something earlier in the tree already decided this
+ * click is not navigation, and overriding that would be a second opinion
+ * nobody asked for.
+ */
+export function isPlainLeftClick(event: {
+  readonly button: number
+  readonly metaKey: boolean
+  readonly ctrlKey: boolean
+  readonly shiftKey: boolean
+  readonly altKey: boolean
+  readonly defaultPrevented?: boolean
+}): boolean {
+  return (
+    event.button === 0 &&
+    !event.metaKey &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    event.defaultPrevented !== true
+  )
 }
 
 export function orgPath(slug: string) {

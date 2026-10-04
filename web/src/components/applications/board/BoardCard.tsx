@@ -1,5 +1,5 @@
 import type { Ref } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { useDraggable, type DraggableAttributes } from '@dnd-kit/core'
 import { Flag } from 'lucide-react'
 import { openRail } from '@/components/applications/open-rail'
@@ -8,7 +8,7 @@ import { Chip } from '@/components/common/Chip'
 import { LabelChips } from '@/components/common/LabelPicker'
 import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
 import { refKey } from '@/lib/ids'
-import { appPath } from '@/lib/links'
+import { appPath, listStateOf } from '@/lib/links'
 import { cn } from '@/lib/utils'
 
 /**
@@ -43,6 +43,7 @@ export function BoardCardBody({
   className?: string
   ref?: Ref<HTMLDivElement>
 }) {
+  const keep = listStateOf(useLocation().search)
   return (
     // `relative`, because the title's link stretches across the whole card.
     // The left padding is the drag rail's gutter: the rail is positioned out of
@@ -118,7 +119,9 @@ export function BoardCardBody({
               a link: it is a picture of the card being carried. */}
           {handle ? (
             <Link
-              to={appPath(app)}
+              // The board's search and stage filter ride along — the same reset
+              // the table had, and for the same reason. See `listStateOf`.
+              to={{ pathname: appPath(app), search: keep }}
               draggable={false}
               aria-current={open ? 'page' : undefined}
               className="block truncate text-sm font-semibold after:absolute after:inset-0 after:content-[''] hover:text-accent"

@@ -143,7 +143,9 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
       >
         <div className="flex min-h-6 flex-wrap items-center gap-1.5">
           <LabelPicker recordId={link.id} />
-          <LabelChips recordId={link.id} />
+          {/* `contents` for the reason DetailHeader gives: as one box the
+              capsules wrapped as a block and left the button alone on a line. */}
+          <LabelChips recordId={link.id} className="contents" />
         </div>
       </FormField>
 

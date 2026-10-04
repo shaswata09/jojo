@@ -25,12 +25,40 @@ export type OpenDialog = {
   props: Record<string, unknown>
 }
 
+/**
+ * A place a dialog asked to go, waiting for the router to take it there.
+ *
+ * An object rather than the bare path so each request has its own identity:
+ * two asks for the same record, in two separate opens, are two navigations,
+ * and React running an effect twice in development is one. `DialogNavigation`
+ * tells them apart by reference.
+ */
+export type NavigationRequest = { readonly path: string }
+
 export type DialogsContextValue = {
   /** Opens a dialog, replacing whatever was open. */
   open: (name: DialogName, props?: Record<string, unknown>) => void
   close: () => void
   /** The one dialog currently open, or null. */
   current: OpenDialog | null
+  /**
+   * Closes the dialog and has the ROUTER go to `path` — a router path such as
+   * `appPath(record)`, without the basename.
+   *
+   * The way out of a dialog that needs to go somewhere. Everything this
+   * registry mounts lives outside the router, where `<Link>` and `useNavigate`
+   * throw, so the dialog cannot navigate itself. `hrefOutsideRouter` was the
+   * only other exit and it reloads the document — which kills any agent run
+   * still working, the cost `internal-links.test.ts` records and says not to
+   * pay for a link people follow often. This pays nothing: the dialog asks,
+   * and `DialogNavigation`, mounted inside the router in `App.tsx`, does the
+   * `navigate()`.
+   */
+  closeAndGo: (path: string) => void
+  /** The request `closeAndGo` left, until the router has acted on it. */
+  pendingNavigation: NavigationRequest | null
+  /** Called by `DialogNavigation` once it has navigated. */
+  settleNavigation: (request: NavigationRequest) => void
 }
 
 export const DialogsContext = createContext<DialogsContextValue | null>(null)

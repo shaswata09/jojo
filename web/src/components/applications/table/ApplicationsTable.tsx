@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { openRail } from '@/components/applications/open-rail'
 import { StageMenu } from '@/components/applications/StageMenu'
@@ -13,7 +13,7 @@ import { addDays, agoLabel, compareItems, daysBetween, shortDate, whenLabel } fr
 import type { TimelineItem } from '@/data/timeline'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { refKey } from '@/lib/ids'
-import { appPath, type ApplicationsSortKey } from '@/lib/links'
+import { appPath, listStateOf, type ApplicationsSortKey } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 
@@ -88,6 +88,7 @@ export function ApplicationsTable({
   compact: boolean
   actions: RowActions
 }) {
+  const keep = listStateOf(useLocation().search)
   const { all: timelineItems } = useTimeline()
 
   /**
@@ -193,7 +194,10 @@ export function ApplicationsTable({
                   )}
                 >
                   <Link
-                    to={appPath(a)}
+                    // The list's filters ride along, or the table behind the
+                    // sheet reads an empty query and resets itself the moment
+                    // the record opens. See `listStateOf`.
+                    to={{ pathname: appPath(a), search: keep }}
                     aria-current={isOpen ? 'page' : undefined}
                     className="block truncate hover:text-accent hover:underline"
                   >

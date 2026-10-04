@@ -236,9 +236,11 @@ export const SHAPE: DirRow[] = [
     // has been picked up.
     // 154 with `rich-text.ts` deleted: it flattened a body's formatting away on
     // save, and every editor reads spans now, so the module had no callers and
-    // no reason to be findable.
-    files: 154,
-    tests: 57,
+    // no reason to be findable. 156 with `document-archive.ts` and its test:
+    // every stored document packed into one ZIP, the names inside it made safe
+    // and unique so two `CV.pdf`s cannot overwrite each other.
+    files: 156,
+    tests: 58,
     lines: 22798,
     what: 'web-only adapters and URL state',
   },
@@ -269,7 +271,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 93
+export const WEB_TEST_FILES = 94
 
 type TestGroup = { title: string; files: string; body: string }
 

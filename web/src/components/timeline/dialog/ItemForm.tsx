@@ -20,6 +20,7 @@ import { shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineItem, TimelineKind } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
+import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
@@ -84,6 +85,22 @@ export function ItemForm({
     submitted && !date ? 'Pick a date — an undated item has nowhere to appear.' : undefined
 
   const selectedApps = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
+
+  const { closeAndGo } = useDialogs()
+  /**
+   * The applications this record is SAVED under, for the "Open" links — read
+   * from the store, not from the picker above.
+   *
+   * Two reasons it is not `selectedApps`. A link that followed the picker would
+   * offer to open an application the record is not actually filed under yet,
+   * and following it closes the dialog, so the unsaved change that made the
+   * offer would be the thing thrown away. And a NEW record has nothing saved,
+   * so it offers nothing — opening an application halfway through writing a
+   * reminder for it would discard the reminder.
+   */
+  const filedUnder = (stored?.applicationIds ?? [])
+    .map((id) => byId.get(id))
+    .filter((a) => a !== undefined)
 
   /**
    * Linking an application is the strongest hint the dialog ever gets about what
@@ -247,6 +264,8 @@ export function ItemForm({
       selectedApps={selectedApps}
       onToggle={linkApplication}
       onClear={() => setApplicationIds([])}
+      filedUnder={filedUnder}
+      onOpen={closeAndGo}
     />
   )
 
