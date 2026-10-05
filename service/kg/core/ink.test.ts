@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { hexFromCss, inkOf, isHex, normaliseHex, rgbOf } from './ink'
+import { hexFromCss, hexOfHsv, hsvOf, inkOf, isHex, normaliseHex, rgbOf } from './ink'
 import type { Theme } from './ink'
 
 /** WCAG 2.x relative luminance, written out so the assertion owes nothing. */
@@ -147,5 +147,31 @@ describe('a colour coming back from the DOM', () => {
     // nobody can make.
     expect(hexFromCss('rgba(124, 58, 237, 0.5)')).toBeNull()
     expect(hexFromCss('rgba(124, 58, 237, 50%)')).toBeNull()
+  })
+})
+
+describe('where the picker puts its handles', () => {
+  it('round-trips a colour through the two controls', () => {
+    // A hex opened in the picker and committed without moving anything has to
+    // come back as the same hex, or opening the picker would recolour things.
+    for (const hex of ['#7c3aed', '#ff6600', '#0ea5e9', '#000000', '#ffffff', '#737373', '#e11d48']) {
+      expect(hexOfHsv(hsvOf(hex)!), hex).toBe(hex)
+    }
+  })
+
+  it('reads the corners the way the square is drawn', () => {
+    expect(hexOfHsv({ h: 0, s: 1, v: 1 })).toBe('#ff0000') // top right
+    expect(hexOfHsv({ h: 0, s: 0, v: 1 })).toBe('#ffffff') // top left
+    expect(hexOfHsv({ h: 120, s: 1, v: 0 })).toBe('#000000') // anywhere at the bottom
+    expect(hexOfHsv({ h: 240, s: 1, v: 1 })).toBe('#0000ff')
+  })
+
+  it('clamps a drag past the edge to the edge', () => {
+    expect(hexOfHsv({ h: 360, s: 1.4, v: 1.2 })).toBe('#ff0000')
+    expect(hexOfHsv({ h: -10, s: -1, v: -1 })).toBe('#000000')
+  })
+
+  it('says nothing for a value that is not a colour', () => {
+    expect(hsvOf('red')).toBeNull()
   })
 })

@@ -195,3 +195,58 @@ export function inkOf(hex: string, theme: Theme): Ink | null {
     border: atLightness(rgb, band.border, theme === 'light' ? 0.35 : 0.6),
   }
 }
+
+/* ----------------------------- picker geometry ---------------------------- */
+
+/**
+ * A colour as the picker's two controls hold it: hue round the wheel, and how
+ * colourful and how bright it is.
+ *
+ * HSV rather than the OKLCH the derivation above uses, because this is the
+ * shape of the CONTROL rather than of the maths: a square whose x is saturation
+ * and whose y is brightness, beside a strip of hues, is the picker every person
+ * has used, and it maps onto HSV exactly. What gets stored is still a hex, and
+ * what gets drawn is still `inkOf` — this only answers "where is the handle".
+ */
+export type Hsv = { readonly h: number; readonly s: number; readonly v: number }
+
+/** Hue 0-360, saturation and value 0-1. `null` for a value that is not a colour. */
+export function hsvOf(hex: string): Hsv | null {
+  const rgb = rgbOf(hex)
+  if (rgb === null) return null
+  const [r, g, b] = rgb
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const d = max - min
+  let h = 0
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6
+    else if (max === g) h = (b - r) / d + 2
+    else h = (r - g) / d + 4
+    h *= 60
+    if (h < 0) h += 360
+  }
+  return { h, s: max === 0 ? 0 : d / max, v: max }
+}
+
+/** The hex at a point on the picker. Inputs are clamped, so a drag past an edge is that edge. */
+export function hexOfHsv({ h, s, v }: Hsv): Hex {
+  const hue = ((h % 360) + 360) % 360
+  const sat = clamp01(s)
+  const val = clamp01(v)
+  const c = val * sat
+  const x = c * (1 - Math.abs(((hue / 60) % 2) - 1))
+  const m = val - c
+  const seg = Math.floor(hue / 60) % 6
+  const [r, g, b] = (
+    [
+      [c, x, 0],
+      [x, c, 0],
+      [0, c, x],
+      [0, x, c],
+      [x, 0, c],
+      [c, 0, x],
+    ] as const
+  )[seg]!
+  return hexOf([r + m, g + m, b + m])
+}

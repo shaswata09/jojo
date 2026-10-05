@@ -95,7 +95,8 @@ export function ToneSwatches({
           panel belongs after them rather than in front. Picking a preset
           passes `null` and drops whatever custom colour was there. */}
       <SpectrumSwatch
-        value={ink === undefined ? undefined : inkFill(ink, theme)}
+        value={ink}
+        {...(ink === undefined ? {} : { fill: inkFill(ink, theme) })}
         selected={ink !== undefined}
         label={`Any colour for ${label}`}
         onPick={(hex) => onChange(value, hex)}

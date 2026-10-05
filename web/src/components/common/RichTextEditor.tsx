@@ -10,7 +10,7 @@ import {
   Underline,
 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { SpectrumSwatch } from '@/components/common/SpectrumSwatch'
+import { SpectrumPicker } from '@/components/common/SpectrumSwatch'
 import { LABEL_TONE_VALUES, TONE_LABEL } from '@jojo/service/core/model'
 import type { LabelTone } from '@jojo/service/core/model'
 import { cn } from '@/lib/utils'
@@ -180,6 +180,9 @@ export function RichTextEditor({
    */
   const lastRange = useRef<Range | null>(null)
 
+  /** The colour popover, held here so a preset can close it and a commit can leave it open. */
+  const [colourOpen, setColourOpen] = useState(false)
+
   useEffect(() => {
     const onSelect = () => {
       // Only when the caret is actually inside this editor, or the toolbar
@@ -200,16 +203,33 @@ export function RichTextEditor({
       if (!el) return
       // The command applies to the current selection, which is lost if the
       // toolbar button takes focus first.
+      // Asked BEFORE focusing, because focusing is what destroys the evidence.
+      const active = document.activeElement
+      const hadFocus = active === el || el.contains(active)
       el.focus()
       /*
-       * Put the selection back when focus came from somewhere that lost it.
-       * Guarded on the range still being inside this editor: the value is only
-       * ever written while it was, but the document may have been replaced
+       * Put the selection back whenever focus was somewhere else.
+       *
+       * It used to restore only when the selection had ended up OUTSIDE the
+       * editor, and that missed the case that matters most: a control that
+       * takes focus — the hex field, the size menu — then `el.focus()`, which
+       * puts a collapsed caret back INSIDE the editor. The check saw a
+       * selection in the editor and left it, so the colour was applied to a
+       * caret and nothing changed. Measured: typing #ff6600 and pressing Enter
+       * left the selected word the colour it was.
+       *
+       * Guarded on the range still being inside this editor: it is only ever
+       * written while it is, but the document may have been replaced
        * underneath it by a save in between.
        */
       const sel = document.getSelection()
       const range = lastRange.current
-      if (sel && range && !el.contains(sel.anchorNode) && el.contains(range.commonAncestorContainer)) {
+      if (
+        sel &&
+        range &&
+        (!hadFocus || !el.contains(sel.anchorNode)) &&
+        el.contains(range.commonAncestorContainer)
+      ) {
         sel.removeAllRanges()
         sel.addRange(range)
       }
@@ -291,20 +311,42 @@ export function RichTextEditor({
           </button>
         )}
 
-        <Popover>
+        <Popover open={colourOpen} onOpenChange={setColourOpen}>
           <PopoverTrigger title="Text colour" aria-label="Text colour" className={btn}>
             <Palette className="size-3.5" strokeWidth={2} aria-hidden />
           </PopoverTrigger>
-          <PopoverContent align="start" className="w-44">
+          <PopoverContent
+            align="start"
+            className="w-56"
+            /*
+             * Focus leaving the popover does NOT close it, and that is the fix
+             * for the palette vanishing. Applying a colour has to put focus back
+             * in the editor — `execCommand` acts on the editor's selection — and
+             * the editor is outside this popover, so by default the act of
+             * applying a colour dismissed the thing you were choosing it in.
+             * Escape, the trigger, and a click anywhere outside still close it.
+             */
+            onFocusOutside={(event) => event.preventDefault()}
+          >
             <div className="px-0.5 text-xs tracking-wide text-text-3 uppercase">Text colour</div>
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="grid grid-cols-5 gap-1.5">
               {COLORS.map((c) => (
                 <button
                   key={c.name}
                   type="button"
                   title={c.name}
                   aria-label={c.name}
-                  onClick={() => (c.value ? exec('foreColor', c.value) : exec('removeFormat'))}
+                  // Mouse-down is swallowed so the click cannot move focus or
+                  // collapse the selection the colour is about to land on.
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    if (c.value) exec('foreColor', c.value)
+                    else exec('removeFormat')
+                    // A preset is a one-click answer, so it closes the popover
+                    // as it always did — now on purpose rather than as a side
+                    // effect of focus moving.
+                    setColourOpen(false)
+                  }}
                   className="grid size-7 cursor-pointer place-items-center rounded-full border border-hairline transition-transform hover:scale-110"
                   style={c.value ? { background: c.value } : undefined}
                 >
@@ -312,23 +354,22 @@ export function RichTextEditor({
                   {c.value ? null : <span className="text-xs text-text-3">—</span>}
                 </button>
               ))}
+            </div>
 
-              {/*
-                * The ninth swatch: any colour at all.
-                *
-                * It persists, which is the part worth knowing. The eight are
-                * matched back to their names when the note is saved; anything
-                * else is kept as a hex on the span (`noteFromRuns` →
-                * `NoteSpan.ink`), so a colour lifted off a logo with the
-                * eyedropper is still there after a reload. What it is NOT is a
-                * colour with a name — nothing else in jojo can refer to it.
-                */}
-              <SpectrumSwatch
-                value={undefined}
-                label="Any colour"
-                className="size-7"
-                onPick={(hex) => exec('foreColor', hex)}
-              />
+            {/*
+              * Any colour at all, under the presets rather than behind a ninth
+              * swatch: a picker in a popover in a popover is two clicks for the
+              * one thing somebody opened this to do.
+              *
+              * It STAYS OPEN across commits, so a colour can be dragged, looked
+              * at on the text, and dragged again. Each release applies once.
+              * And it persists — a colour none of the eight is kept as a hex on
+              * the span (`noteFromRuns` → `NoteSpan.ink`), so it is still there
+              * after a reload.
+              */}
+            <div className="border-t border-hairline pt-2">
+              <div className="mb-1.5 px-0.5 text-xs tracking-wide text-text-3 uppercase">Any colour</div>
+              <SpectrumPicker value={undefined} onCommit={(hex) => exec('foreColor', hex)} />
             </div>
           </PopoverContent>
         </Popover>
