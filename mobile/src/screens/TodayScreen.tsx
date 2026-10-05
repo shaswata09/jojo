@@ -360,7 +360,7 @@ function PriorityActions() {
         <EmptyState
           icon="check-circle"
           title="Nothing needs deciding today"
-          description="Offers, the next hard deadline and your next interview surface here. None of them is outstanding."
+          description="Offers, applications that are overdue, the next hard deadline and your next interview surface here. None of them is outstanding."
           action={
             <Button
               label="Open applications"

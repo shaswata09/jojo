@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from 'vitest'
 import type { Application, TimelineItem } from '../core/model'
-import { nextInterviewOn } from './use-priority'
+import { chronological, nextInterviewOn, overdueApplicationsOn, type PriorityAction } from './use-priority'
 
 const TODAY = '2026-08-28'
 
@@ -198,5 +198,113 @@ describe('nextInterviewOn', () => {
 
     expect(nextInterviewOn(TODAY, [submitted], items)).toBeUndefined()
     expect(nextInterviewOn(TODAY, [], items)).toBeUndefined()
+  })
+})
+
+describe('overdueApplicationsOn', () => {
+  const item = (id: string, date: string, applicationIds: string[], extra: Partial<TimelineItem> = {}) =>
+    interview(id, date, applicationIds, { kind: 'deadline', title: 'Application deadline', ...extra })
+
+  it('finds an application whose deadline passed — the card the deck never had', () => {
+    const rice = app('app:rice', 'Rice', 'draft')
+    const out = overdueApplicationsOn(TODAY, [rice], [item('d1', '2026-08-25', ['app:rice'])])
+    expect(out.map((o) => [o.application.org, o.item.id])).toEqual([['Rice', 'd1']])
+  })
+
+  it('does not count today, the future, or anything already done', () => {
+    const a = app('app:a', 'A', 'draft')
+    const out = overdueApplicationsOn(TODAY, [a], [
+      item('today', TODAY, ['app:a']),
+      item('later', '2026-09-10', ['app:a']),
+      item('done', '2026-08-01', ['app:a'], { completedOn: '2026-08-02' }),
+    ])
+    expect(out).toEqual([])
+  })
+
+  it('leaves follow-ups to the panel that already lists them', () => {
+    const a = app('app:a', 'A', 'submitted')
+    const out = overdueApplicationsOn(TODAY, [a], [item('f', '2026-08-20', ['app:a'], { kind: 'follow-up' })])
+    expect(out).toEqual([])
+  })
+
+  it('leaves closed applications out', () => {
+    const a = app('app:a', 'A', 'closed')
+    expect(overdueApplicationsOn(TODAY, [a], [item('d', '2026-08-20', ['app:a'])])).toEqual([])
+  })
+
+  it('gives one card per application, about its oldest late item', () => {
+    const a = app('app:a', 'A', 'interview')
+    const out = overdueApplicationsOn(TODAY, [a], [
+      item('call', '2026-08-26', ['app:a'], { kind: 'call' }),
+      item('deadline', '2026-08-10', ['app:a']),
+    ])
+    expect(out.map((o) => o.item.id)).toEqual(['deadline'])
+  })
+
+  it('orders the most late first, keeping the applications\' order on a tie', () => {
+    const [a, b, c] = [app('app:a', 'A', 'draft'), app('app:b', 'B', 'draft'), app('app:c', 'C', 'draft')]
+    const out = overdueApplicationsOn(TODAY, [a, b, c], [
+      item('ia', '2026-08-20', ['app:a']),
+      item('ib', '2026-08-01', ['app:b']),
+      item('ic', '2026-08-20', ['app:c']),
+    ])
+    expect(out.map((o) => o.application.org)).toEqual(['B', 'A', 'C'])
+  })
+
+  it('lets one late item make every application it is about overdue', () => {
+    const [a, b] = [app('app:a', 'A', 'draft'), app('app:b', 'B', 'draft')]
+    const out = overdueApplicationsOn(TODAY, [a, b], [item('shared', '2026-08-20', ['app:a', 'app:b'])])
+    expect(out.map((o) => o.application.org)).toEqual(['A', 'B'])
+  })
+
+  it('skips what another card already claims, falling back to the next late item', () => {
+    const offered = app('app:o', 'Offered', 'offer')
+    const a = app('app:a', 'A', 'interview')
+    const out = overdueApplicationsOn(
+      TODAY,
+      [offered, a],
+      [
+        item('od', '2026-08-01', ['app:o']),
+        item('past-interview', '2026-08-15', ['app:a'], { kind: 'interview' }),
+        item('older-prep', '2026-08-20', ['app:a'], { kind: 'prep' }),
+      ],
+      { applicationIds: new Set(['app:o']), itemIds: new Set(['past-interview']) },
+    )
+    expect(out.map((o) => [o.application.org, o.item.id])).toEqual([['A', 'older-prep']])
+  })
+})
+
+describe('chronological', () => {
+  const card = (id: string, date?: string): PriorityAction => ({
+    id,
+    kindLabel: 'X',
+    headline: id,
+    context: '',
+    timing: '',
+    urgency: 'none',
+    ...(date === undefined ? {} : { date }),
+    actions: [],
+  })
+  const ids = (cards: PriorityAction[]) => cards.map((c) => c.id)
+
+  it('lays the deck out along time, the latest last', () => {
+    // The hook's own order: offer, overdue, deadline, interview.
+    const deck = [card('offer', '2026-11-07'), card('overdue', '2026-09-28'), card('deadline', '2026-10-07'), card('interview', '2026-10-22')]
+    expect(ids(chronological(deck))).toEqual(['overdue', 'deadline', 'interview', 'offer'])
+  })
+
+  it('puts an undated card after every dated one', () => {
+    expect(ids(chronological([card('undated'), card('a', '2026-10-01'), card('b', '2026-09-01')]))).toEqual(['b', 'a', 'undated'])
+  })
+
+  it('keeps the hook order on equal dates and among undated cards', () => {
+    expect(ids(chronological([card('offer', '2026-10-01'), card('deadline', '2026-10-01')]))).toEqual(['offer', 'deadline'])
+    expect(ids(chronological([card('u1'), card('u2')]))).toEqual(['u1', 'u2'])
+  })
+
+  it('does not reorder the array it was given', () => {
+    const deck = [card('late', '2026-12-01'), card('early', '2026-01-01')]
+    chronological(deck)
+    expect(ids(deck)).toEqual(['late', 'early'])
   })
 })

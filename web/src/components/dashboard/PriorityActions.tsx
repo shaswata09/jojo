@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { CalendarClock, Check, CircleCheckBig } from 'lucide-react'
+import { CalendarClock, Check, ChevronLeft, ChevronRight, CircleCheckBig } from 'lucide-react'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -14,11 +14,12 @@ import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath } from '@/lib/links'
-import { usePriorityActions, type PriorityAction } from '@/lib/priority'
+import { chronological, usePriorityActions, type PriorityAction } from '@/lib/priority'
 import { MARK_TEXT } from '@/lib/timeline-visuals'
 import type { DateMark } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
+import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 
 /**
@@ -126,29 +127,33 @@ function ActionButton({ action }: { action: PriorityAction['actions'][number] })
 }
 
 /**
- * The first card, at full size.
+ * One decision, as a card on the timeline.
  *
- * Inverted from what it was: the headline is the instruction ("Reply to
- * Baylor"), the date is stated once at 11px, and the thing that actually moves
- * the decision along — Draft a reply — is the filled button. Previously the
- * loudest element was a 28px countdown and the primary action was a ghost.
+ * The headline is the instruction ("Reply to Baylor"), the date is stated once,
+ * and the thing that moves the decision along is the filled button. No
+ * background of its own — a second surface inside a panel reads as a hole —
+ * so the border carries the deck's one permitted colour: red past due, amber
+ * inside 48 hours, neutral beyond.
  *
- * No background of its own. A second surface inside a panel reads as a hole;
- * the border is enough to say "card", and it is the border that carries the
- * one permitted colour.
+ * Every card has the same shape now. The deck used to give its first card the
+ * full treatment and the rest one line each, which was right for a list read
+ * top-down by importance and wrong for one laid out along time, where no card
+ * is "first" except by date.
  */
-function HeroCard({ action }: { action: PriorityAction }) {
+function DecisionCard({ action }: { action: PriorityAction }) {
   return (
-    <div className={cn('rounded-md border px-3.5 py-3', URGENCY_BORDER[action.urgency])}>
-      <Chip tone="gray" size="sm">
+    <div className={cn('flex h-full flex-col rounded-md border px-3.5 py-3', URGENCY_BORDER[action.urgency])}>
+      <Chip tone="gray" size="sm" className="self-start">
         {action.kindLabel}
       </Chip>
 
-      <h3 className="mt-2 text-xl font-semibold">{action.headline}</h3>
-      <p className="mt-1 line-clamp-1 text-sm text-text-2">{action.context}</p>
+      <h3 className="mt-2 line-clamp-2 text-base font-semibold">{action.headline}</h3>
+      <p className="mt-1 line-clamp-2 text-sm text-text-2">{action.context}</p>
       <p className={cn('mt-1.5 text-xs', MARK_TEXT[action.urgency])}>{action.timing}</p>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      {/* Pinned to the bottom, so cards of different lengths line their
+          buttons up along the track. */}
+      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3">
         {action.actions.map((a) => (
           <ActionButton key={a.label} action={a} />
         ))}
@@ -160,39 +165,132 @@ function HeroCard({ action }: { action: PriorityAction }) {
   )
 }
 
+/** How much of the track a step moves when there is no card to measure. */
+const FALLBACK_STEP = 0.8
+
 /**
- * Everything after the first card, one line each.
+ * The deck as a timeline: earliest on the left, the furthest out on the right.
  *
- * This replaces a scroll-snap carousel. Three decisions were reachable only by
- * pressing an arrow, the off-screen ones stayed in the tab order, and the track
- * was an `aria-live` region that re-announced a full card on every scroll tick.
- * All of it is visible at once now and none of it announces anything.
+ * A carousel was tried here once and taken out, and the three reasons are
+ * written down so this one does not repeat them:
+ *
+ * - Cards were reachable only by pressing an arrow. This track is a native
+ *   horizontal scroller — swipe, trackpad, Shift-wheel and the keyboard all
+ *   move it — and the arrows are a shortcut on top, not the only way in.
+ * - Off-screen cards stayed in the tab order. They still do, deliberately,
+ *   because every card is a real decision; what changed is that focusing one
+ *   scrolls it into view (the browser does that for a focused control inside
+ *   a scroller), so focus never lands somewhere invisible.
+ * - The track was an `aria-live` region that re-announced a whole card on
+ *   every scroll tick. Nothing here announces anything: it is a labelled list
+ *   in date order, read like any other list.
+ *
+ * Opens scrolled to the start, which is the oldest card — so whatever is most
+ * overdue is what you see first, and the later ones are a swipe away.
  */
-function ActionRow({ action }: { action: PriorityAction }) {
+function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: string }) {
+  const track = useRef<HTMLUListElement>(null)
+  const reduced = useMediaQuery('(prefers-reduced-motion: reduce)')
+  /** Whether there is more to scroll to on each side. */
+  const [more, setMore] = useState({ before: false, after: false })
+
+  const measure = useCallback(() => {
+    const el = track.current
+    if (!el) return
+    // A pixel of slack: subpixel layouts stop a pixel short of the end.
+    setMore({
+      before: el.scrollLeft > 1,
+      after: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+    })
+  }, [])
+
+  useEffect(() => {
+    measure()
+    const el = track.current
+    if (!el) return
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [measure, actions.length])
+
+  /** One card's width per press, so a step always lands on a card edge. */
+  const step = (direction: -1 | 1) => {
+    const el = track.current
+    if (!el) return
+    const first = el.firstElementChild
+    const gap = Number.parseFloat(getComputedStyle(el).columnGap) || 0
+    const by = first ? first.getBoundingClientRect().width + gap : el.clientWidth * FALLBACK_STEP
+    el.scrollBy({ left: direction * by, behavior: reduced ? 'auto' : 'smooth' })
+  }
+
+  const overflows = more.before || more.after
+  // A soft fade on whichever side has more, so a cut-off card reads as "keeps
+  // going" rather than as a layout bug. Masked rather than overlaid, so nothing
+  // sits on top of the cards' buttons.
+  const fade = 'transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%'
+  const mask =
+    more.before && more.after
+      ? `linear-gradient(to right, ${fade})`
+      : more.after
+        ? 'linear-gradient(to right, black calc(100% - 1.5rem), transparent 100%)'
+        : more.before
+          ? 'linear-gradient(to left, black calc(100% - 1.5rem), transparent 100%)'
+          : undefined
+
   return (
-    <li className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5">
-      <Chip tone="gray" size="sm" className="shrink-0">
-        {action.kindLabel}
-      </Chip>
+    <>
+      <PanelTitle
+        hint={hint}
+        right={
+          overflows ? (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label="Show earlier decisions"
+                title="Earlier"
+                disabled={!more.before}
+                onClick={() => step(-1)}
+              >
+                <ChevronLeft className="size-4" strokeWidth={1.8} aria-hidden />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label="Show later decisions"
+                title="Later"
+                disabled={!more.after}
+                onClick={() => step(1)}
+              >
+                <ChevronRight className="size-4" strokeWidth={1.8} aria-hidden />
+              </Button>
+            </div>
+          ) : undefined
+        }
+      >
+        Needs a decision
+      </PanelTitle>
 
-      <span className="min-w-0 flex-1 basis-40 truncate text-sm font-medium">
-        {action.headline}
-      </span>
-
-      <span className={cn('shrink-0 text-xs whitespace-nowrap', MARK_TEXT[action.urgency])}>
-        {action.timing}
-      </span>
-
-      <div className="flex shrink-0 items-center gap-1">
-        {action.itemId ? (
-          <ItemControls itemId={action.itemId} size="xs" />
-        ) : (
-          // A row with nothing dated behind it still has to be pressable, so it
-          // falls back to whatever the card itself calls primary.
-          <ActionButton action={action.actions.find((a) => a.primary) ?? action.actions[0]} />
-        )}
-      </div>
-    </li>
+      <ul
+        ref={track}
+        aria-label="Decisions, earliest first"
+        onScroll={measure}
+        // `px-1` keeps focus rings from being clipped by the scroller, and
+        // `scroll-px-1` makes snapping count that padding — without it the
+        // first card snapped 4px in, so the track opened "scrolled", with the
+        // Earlier arrow lit and the first card's edge faded.
+        className="-mx-1 flex snap-x snap-mandatory scroll-px-1 gap-3 overflow-x-auto overscroll-x-contain px-1 pb-2"
+        style={mask === undefined ? undefined : { maskImage: mask, WebkitMaskImage: mask }}
+      >
+        {actions.map((action) => (
+          <li key={action.id} className="w-[min(20rem,85%)] shrink-0 snap-start">
+            <DecisionCard action={action} />
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }
 
@@ -389,7 +487,7 @@ export function PriorityActions() {
         <EmptyState
           icon={CircleCheckBig}
           title="Nothing needs deciding today"
-          description="Offers, the next hard deadline and your next interview surface here. None of them is outstanding."
+          description="Offers, applications that are overdue, the next hard deadline and your next interview surface here. None of them is outstanding."
           action={
             <Button variant="outline" size="sm" asChild>
               <Link to={applicationsPath()}>Open the board</Link>
@@ -400,23 +498,12 @@ export function PriorityActions() {
     )
   }
 
-  const [first, ...rest] = actions
-
   return (
     <Panel className="min-w-0">
-      <PanelTitle hint={actions.length === 1 ? '1 open' : `${actions.length} open`}>
-        Needs a decision
-      </PanelTitle>
-
-      <HeroCard action={first} />
-
-      {rest.length > 0 ? (
-        <ul className="mt-1 divide-y divide-hairline">
-          {rest.map((action) => (
-            <ActionRow key={action.id} action={action} />
-          ))}
-        </ul>
-      ) : null}
+      <DecisionTimeline
+        actions={chronological(actions)}
+        hint={actions.length === 1 ? '1 open' : `${actions.length} open`}
+      />
     </Panel>
   )
 }

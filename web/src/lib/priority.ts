@@ -24,6 +24,8 @@ import {
   relativeLabelOn,
   usePriorityActions as usePriorityDeck,
 } from '@jojo/service/react/use-priority'
+
+export { chronological } from '@jojo/service/react/use-priority'
 import { appPath } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 

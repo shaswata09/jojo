@@ -26,8 +26,8 @@ export function TodayScreen() {
     <Screen id={S.dashboard} title="Today" where="sidebar, first row" to={dashboardPath()}>
       <p className="text-sm text-text-2">
         What the day owes you, and nothing else. Five panels, all counted from your records as they
-        stand: <span className="text-text-1">Needs a decision</span> — the offer, deadline or
-        interview with a clock on it — beside a month strip and a set of counters, then{' '}
+        stand: <span className="text-text-1">Needs a decision</span> — an offer, an application that
+        is overdue, the next deadline or interview with a clock on it — beside a month strip and a set of counters, then{' '}
         <span className="text-text-1">Owed this week</span>,{' '}
         <span className="text-text-1">Recent applications</span> and the{' '}
         <span className="text-text-1">Pipeline</span> breakdown.

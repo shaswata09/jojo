@@ -31,11 +31,11 @@ import { useMemo } from 'react'
 import { offerDaysLeft } from '../core/dates'
 import { daysBetween, shortDate } from '../core/dates'
 import type { Addressable } from '../core/address'
-import type { Application, TimelineItem } from '../core/model'
+import { STAGE_LABEL, type Application, type TimelineItem } from '../core/model'
 import { useApplications } from './use-applications'
 import { useTimeline } from './use-timeline'
 import { useKg } from './kg-context'
-import { dateMarkOn } from '../core/timeline-view'
+import { dateMarkOn, KIND_LABEL } from '../core/timeline-view'
 import type { DateMark } from '../core/timeline-view'
 
 export type PriorityAction = {
@@ -59,6 +59,12 @@ export type PriorityAction = {
    * field allowed.
    */
   urgency: DateMark
+  /**
+   * The ISO date the card is about — respond-by, due, or the appointment —
+   * absent only for an interview with nothing dated against it. What
+   * `chronological` orders by, so the deck can be laid out along time.
+   */
+  date?: string
   /**
    * The dated item this card is about, when there is one.
    *
@@ -184,6 +190,98 @@ export function nextInterviewOn(
 }
 
 /**
+ * The open applications that are late on something, most late first, each
+ * with the dated item it is late on.
+ *
+ * WHAT "OVERDUE" MEANS HERE is what the applications table already paints red:
+ * an unfinished dated item about the application whose day has passed. The
+ * deck never showed one. Its deadline card reads `thisWeek`, which starts at
+ * today, so a deadline the day after it passed fell off "Needs a decision" —
+ * the one panel whose job it was — while the table went on calling it overdue.
+ *
+ * WHAT IS LEFT OUT, and why each:
+ * - follow-ups — "Follow-ups due" already lists every one that is owed, and the
+ *   note on `usePriorityActions` records what happened when the deck repeated
+ *   that panel's rows;
+ * - closed applications — nothing is owed on a finished search;
+ * - anything the caller says is claimed — an offer has its own card, and the
+ *   interview card can already be about a past interview.
+ *
+ * One card per application, about its OLDEST late item: an application three
+ * weeks late on its deadline and two days late on a call is one thing to decide
+ * about, and the deadline is the part that has been waiting longest. Most late
+ * first, as the Vault's overdue list orders, so the top card is the thing you
+ * have been putting off longest. Ties keep the order the applications came in.
+ */
+export function overdueApplicationsOn(
+  today: string,
+  applications: readonly Application[],
+  items: readonly TimelineItem[],
+  claimed: { applicationIds?: ReadonlySet<string>; itemIds?: ReadonlySet<string> } = {},
+): { application: Application; item: TimelineItem }[] {
+  const late = new Map<string, TimelineItem>()
+  for (const item of items) {
+    if (item.completedOn || item.kind === 'follow-up' || item.date >= today) continue
+    if (claimed.itemIds?.has(item.id)) continue
+    for (const id of item.applicationIds) {
+      const held = late.get(id)
+      if (held === undefined || item.date < held.date) late.set(id, item)
+    }
+  }
+  const out: { application: Application; item: TimelineItem }[] = []
+  for (const application of applications) {
+    if (application.stage === 'closed' || claimed.applicationIds?.has(application.id)) continue
+    const item = late.get(application.id)
+    if (item !== undefined) out.push({ application, item })
+  }
+  // A stable sort, so equal dates keep the applications' own order.
+  return out.sort((a, b) => (a.item.date < b.item.date ? -1 : a.item.date > b.item.date ? 1 : 0))
+}
+
+/**
+ * What to say on an overdue card: the instruction depends on what was missed.
+ * A deadline that passed on a draft is the one that is a real decision — send
+ * it late or let it go — so it says so; an appointment that passed is asked to
+ * be recorded; anything else is a catch-up.
+ */
+function overdueHeadline(application: Application, item: TimelineItem): string {
+  if (item.kind === 'deadline' && application.stage === 'draft') return `Submit to ${application.org} or let it go`
+  if (item.kind === 'interview' || item.kind === 'visit' || item.kind === 'call') {
+    return `Record the ${application.org} ${KIND_LABEL[item.kind].toLowerCase()}`
+  }
+  return `Catch up on ${application.org}`
+}
+
+/**
+ * The deck along time: earliest date first, the latest last.
+ *
+ * The hook returns the deck most-irreversible-first, which is the order the
+ * phone's Today list reads in. The dashboard lays the same cards out as a
+ * timeline instead — oldest on the left, the furthest out on the right — and
+ * this is that order, kept here so it is a tested rule rather than a sort
+ * inside a component nothing can render under test (D20).
+ *
+ * A card with no date (an interview nothing is dated against) goes after every
+ * dated one: it has no place on the line, and putting it first would make it
+ * read as the most overdue thing on the deck. Equal dates keep the hook's own
+ * order, so an offer still precedes a deadline on the same day.
+ */
+export function chronological(actions: readonly PriorityAction[]): PriorityAction[] {
+  return actions
+    .map((action, index) => ({ action, index }))
+    .sort((a, b) => {
+      const x = a.action.date
+      const y = b.action.date
+      if (x === undefined || y === undefined) {
+        if (x === y) return a.index - b.index
+        return x === undefined ? 1 : -1
+      }
+      return x < y ? -1 : x > y ? 1 : a.index - b.index
+    })
+    .map(({ action }) => action)
+}
+
+/**
  * A hook rather than the module-scope array it once was: every date here is read
  * off the store, so ticking a follow-up off in the Vault or moving a card on the
  * board has to be able to empty a card — computed once at import it would go
@@ -192,8 +290,9 @@ export function nextInterviewOn(
  * The overdue-follow-ups summary that used to sit here is gone. It claimed the
  * same three rows the sidebar badge, the glance counter and the "Owed this week"
  * panel already claim, so one screen reported them four times. What is left is
- * only what has no panel of its own: the offer, the next hard deadline, and the
- * next interview.
+ * only what has no panel of its own: the offer, any application that is overdue
+ * on something other than a follow-up (`overdueApplicationsOn`), the next hard
+ * deadline, and the next interview.
  */
 export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction[] {
   const { today } = useKg()
@@ -218,6 +317,10 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
     const orgOf = (applicationIds: readonly string[]) =>
       appOf(applicationIds[0])?.org ?? 'Unknown'
     const deadlineApp = appOf(nextDeadline?.applicationIds[0])
+    const overdue = overdueApplicationsOn(today, all, items, {
+      applicationIds: new Set(offers.map((a) => a.id)),
+      itemIds: new Set(interviewEvent === undefined ? [] : [interviewEvent.id]),
+    })
 
     return [
       ...offers.map((a): PriorityAction => {
@@ -229,6 +332,7 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
           context: sentence(a.role, a.offer.comp, a.offer.note),
           timing: `Respond by ${shortDate(a.offer.respondBy)} · ${relativeLabelOn(today, a.offer.respondBy)}`,
           urgency: dateMarkOn(today, a.offer.respondBy),
+          date: a.offer.respondBy,
           actions: [
             { label: 'Draft a reply', primary: true, draft: { applicationId: a.id } },
             {
@@ -239,6 +343,27 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
         }
       }),
 
+      // Late, so ahead of everything still to come; after the offers, which end
+      // every other application and so stay the most irreversible thing here.
+      ...overdue.map(
+        ({ application: a, item }): PriorityAction => ({
+          id: `overdue-${a.id}`,
+          kindLabel: 'Overdue',
+          headline: overdueHeadline(a, item),
+          context: sentence(item.title, a.role, STAGE_LABEL[a.stage]),
+          timing: `Was due ${shortDate(item.date)} · ${relativeLabelOn(today, item.date)}`,
+          urgency: dateMarkOn(today, item.date),
+          date: item.date,
+          // Done and Snooze both answer it: done means it happened, snooze means
+          // it moved. The item is what makes either possible.
+          itemId: item.id,
+          actions: [
+            { label: 'Open application', primary: true, to: appHref(a) },
+            { label: 'Draft a message', draft: { applicationId: a.id, itemId: item.id } },
+          ],
+        }),
+      ),
+
       ...(nextDeadline
         ? [
             {
@@ -248,6 +373,7 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
               context: sentence(nextDeadline.title, nextDeadline.detail ?? nextDeadline.note),
               timing: `Due ${shortDate(nextDeadline.date)} · ${relativeLabelOn(today, nextDeadline.date)}`,
               urgency: dateMarkOn(today, nextDeadline.date),
+              date: nextDeadline.date,
               itemId: nextDeadline.id,
               actions: [
                 { label: 'Draft a message', primary: true, draft: { itemId: nextDeadline.id } },
@@ -285,7 +411,7 @@ export function usePriorityActions({ appHref }: PriorityOptions): PriorityAction
               // distinction is load-bearing below the seam — a structured clone
               // preserves the key, so a Done button would come back on the
               // second launch for a card with nothing to write to.
-              ...(interviewEvent === undefined ? {} : { itemId: interviewEvent.id }),
+              ...(interviewEvent === undefined ? {} : { itemId: interviewEvent.id, date: interviewEvent.date }),
               actions: interviewEvent
                 ? [
                     {
