@@ -47,6 +47,7 @@ const FULL_DRAFT: Required<ApplicationDraft> = {
   comp: '$120k',
   url: 'https://jobs.rice.edu/postings/4012',
   postingId: 'JobCode 179545452',
+  confirmationRef: 'APP-2026-0042',
   appliedOn: '2026-09-01',
   submittedOn: '2026-09-02',
   firstReplyOn: '2026-09-05',

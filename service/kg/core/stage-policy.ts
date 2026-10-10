@@ -130,10 +130,12 @@ export function buildStagePatch(
       // day you got round to recording the submission.
       patch.appliedOn = application.appliedOn ?? draft.date
       if (draft.portalUrl.trim()) patch.url = draft.portalUrl.trim()
-      // Application has no field for a confirmation reference, so it rides in
-      // `lastAction` where the activity feed shows it. Worth knowing: the next
-      // stage change overwrites that line, so the reference is not permanent
-      // until the record grows a home for it.
+      // The reference has a home of its own now — `confirmationRef`, shown in
+      // the record's Details. It also still names itself in `lastAction`, the
+      // activity line, which the next stage change overwrites; that copy was
+      // once the ONLY one, so a reference typed on submission was gone by the
+      // first interview. A blank field leaves an earlier reference alone.
+      if (draft.reference.trim()) patch.confirmationRef = draft.reference.trim()
       patch.lastAction = draft.reference.trim()
         ? `Submitted · ref ${draft.reference.trim()}`
         : 'Application submitted'
@@ -228,7 +230,7 @@ export function stageConsequences(
   const lines: string[] = []
 
   if (target === 'submitted' && draft.reference.trim()) {
-    lines.push(`Reference ${draft.reference.trim()} saved to the activity line.`)
+    lines.push(`Reference ${draft.reference.trim()} saved to the record.`)
   }
   if (target === 'offer') lines.push(`Respond by ${shortDate(draft.respondBy)} recorded.`)
   if (target === 'closed') {

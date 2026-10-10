@@ -45,6 +45,8 @@ export const fields = {
    * the address or the name, and `read-posting.ts` copies it off the page.
    */
   postingId: s.optional(s.string({ label: 'Posting ID' })),
+  /** What the portal gave back on submission. See `ApplicationProps.confirmationRef`. */
+  confirmationRef: s.optional(s.string({ label: 'Confirmation reference' })),
 }
 
 export const offerShape = s.object({

@@ -73,6 +73,7 @@ export function useApplicationWrites({
     comp: form.comp.trim() || undefined,
     url: form.url.trim() || undefined,
     postingId: form.postingId.trim() || undefined,
+    confirmationRef: form.confirmationRef.trim() || undefined,
   })
 
   function mintDeadline(application: Application) {

@@ -82,6 +82,13 @@ describe('buildStagePatch', () => {
     expect(buildStagePatch(a, 'submitted', draftFor(a)).lastAction).toBe('Application submitted')
   })
 
+  it('keeps the confirmation reference on the record, where the next stage move cannot overwrite it', () => {
+    const a = app()
+    expect(buildStagePatch(a, 'submitted', draftFor(a, { reference: ' AB-9 ' })).confirmationRef).toBe('AB-9')
+    // A blank reference writes nothing, so it cannot clear one recorded earlier.
+    expect(buildStagePatch(a, 'submitted', draftFor(a))).not.toHaveProperty('confirmationRef')
+  })
+
   it('writes a portal URL only when one was typed', () => {
     const a = app()
     expect('url' in buildStagePatch(a, 'submitted', draftFor(a, { portalUrl: '   ' }))).toBe(false)

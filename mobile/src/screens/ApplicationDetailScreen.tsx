@@ -22,6 +22,7 @@ import { Txt } from '@/components/ui/Text'
 import { NoteText } from '@/components/ui/NoteText'
 import { useGraph } from '@jojo/service/react/kg-context'
 import type { NodeId } from '@jojo/service/core/model'
+import { OUTCOME_LABEL } from '@jojo/service/core/transition-options'
 import { STAGE_LABEL, displayName, offerDaysLeft, respondByLabel } from '@jojo/service/data/seed'
 import type { Application, Outcome, Stage } from '@jojo/service/data/seed'
 import {
@@ -283,8 +284,18 @@ function Detail({ application: a }: { application: Application }) {
     // landed in.
     { label: 'Compensation', value: a.comp ?? a.offer?.comp },
     { label: 'Posting', value: a.url ? hostOf(a.url) : undefined, url: a.url },
+    // The same three the web record gained, for the same reason: each is typed
+    // into a form and was stored without being shown anywhere.
+    { label: 'Posting ID', value: a.postingId },
     { label: 'Applied on', value: a.appliedOn ? shortDate(a.appliedOn) : undefined },
     { label: 'Submitted on', value: a.submittedOn ? shortDate(a.submittedOn) : undefined },
+    ...(a.confirmationRef !== undefined || a.stage !== 'draft'
+      ? [{ label: 'Confirmation reference', value: a.confirmationRef }]
+      : []),
+    // An offer states its own outcome in the offer block; this is for the rest.
+    ...(a.outcome !== undefined && a.offer === undefined
+      ? [{ label: 'Outcome', value: OUTCOME_LABEL[a.outcome] }]
+      : []),
   ]
 
   return (

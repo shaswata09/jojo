@@ -174,3 +174,39 @@ describe('salvage', () => {
     expect(validateRows(rows, [edge], { salvage: true }).edges).toHaveLength(1)
   })
 })
+
+/**
+ * A person's referee briefs and an application's confirmation reference —
+ * both declared, so a backup cannot hand the UI a shape it never wrote.
+ */
+describe('briefs and the confirmation reference', () => {
+  const personRow = (props: Record<string, unknown>) => ({
+    id: 'person:0199aaaa-0000-7000-8000-000000000009',
+    type: 'person',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    props: { slug: 'ngozi-okafor', name: 'Prof. Ngozi Okafor', ...props },
+  })
+
+  it('accepts well-formed briefs', () => {
+    const briefs = [{ applicationId: 'application:1', highlights: ['teaching'], note: 'Due 15 Oct' }]
+    const out = validateRows([personRow({ briefs })], [])
+    expect(out.skipped).toEqual([])
+    expect(out.nodes[0]?.props).toMatchObject({ briefs })
+  })
+
+  it('drops malformed briefs on restore and keeps the person', () => {
+    const out = validateRows([personRow({ briefs: [{ applicationId: 'application:1', highlights: 'teaching' }] })], [], {
+      salvage: true,
+    })
+    expect(out.nodes).toHaveLength(1)
+    expect(out.nodes[0]?.props).toMatchObject({ name: 'Prof. Ngozi Okafor' })
+    expect(out.nodes[0]?.props).not.toHaveProperty('briefs')
+    expect(out.skipped[0]?.message).toBe('Came back without the highlights and notes kept for their applications.')
+  })
+
+  it('refuses a brief past the bounds the tool enforces', () => {
+    const out = validateRows([personRow({ briefs: [{ applicationId: 'application:1', note: 'n'.repeat(5_000) }] })], [])
+    expect(out.nodes).toEqual([])
+  })
+})

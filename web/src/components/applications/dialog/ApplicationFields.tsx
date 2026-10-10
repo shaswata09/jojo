@@ -246,6 +246,18 @@ export function ApplicationFields({
         value={form.postingId}
         onChange={(e) => set('postingId', e.target.value)}
       />
+      {/* Usually filled by the stage move to Submitted, which asks for it; here
+          so a reference typed wrong there — or one that arrived by email later
+          — can be corrected. */}
+      <Field
+        label="Confirmation reference"
+        hint="The reference the employer's portal gave you when you submitted."
+        autoComplete="off"
+        placeholder="e.g. APP-2026-0042"
+        className="sm:col-span-2"
+        value={form.confirmationRef}
+        onChange={(e) => set('confirmationRef', e.target.value)}
+      />
 
       <TextareaField
         label="Note"

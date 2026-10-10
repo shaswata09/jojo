@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { ExternalLink } from 'lucide-react'
 import { Link } from 'react-router'
+import { OUTCOME_LABEL } from '@jojo/service/core/transition-options'
 import { useOrganisations } from '@jojo/service/react/use-organisations'
 import { orgPath } from '@/lib/links'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -61,6 +62,13 @@ export function DetailFacts({ application: a }: { application: Application }) {
         </a>
       ) : undefined,
     },
+    /*
+     * Every field the edit form takes is shown somewhere on the record, and
+     * these two had nowhere: the Posting ID was saved — the duplicate check
+     * reads it first — and never displayed, so a person who typed one could not
+     * see it again without reopening the form.
+     */
+    { label: 'Posting ID', value: a.postingId },
     { label: 'Applied on', value: a.appliedOn ? shortDate(a.appliedOn) : undefined },
     /*
      * No 'Submitted on' row. It is the Submitted row in `StageDatesPanel`
@@ -72,6 +80,23 @@ export function DetailFacts({ application: a }: { application: Application }) {
      * first applied for this job survives being re-submitted, and the stage
      * panel has no row for it.
      */
+    /*
+     * Shown once it can exist: a draft has not been submitted, so a dash for
+     * its confirmation reference would be noise rather than information.
+     */
+    ...(a.confirmationRef !== undefined || a.stage !== 'draft'
+      ? [{ label: 'Confirmation reference', value: a.confirmationRef }]
+      : []),
+    /*
+     * How it ended, for a record that ended without an offer. One that had an
+     * offer states its outcome in the offer block above, and saying it twice is
+     * the two-copies problem the Submitted note describes. Without this, the
+     * outcome the stage move REQUIRES you to pick — rejected, ghosted,
+     * withdrawn — was stored and shown nowhere.
+     */
+    ...(a.outcome !== undefined && a.offer === undefined
+      ? [{ label: 'Outcome', value: OUTCOME_LABEL[a.outcome] }]
+      : []),
   ]
 
   return (

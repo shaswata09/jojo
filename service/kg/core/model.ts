@@ -547,6 +547,8 @@ export type Application = {
   comp?: string
   url?: string
   postingId?: string
+  /** The reference the employer's portal gave on submission. See `ApplicationProps`. */
+  confirmationRef?: string
   /** All 'YYYY-MM-DD'. Optional because the mock rows predate them. */
   appliedOn?: string
   submittedOn?: string
@@ -1076,6 +1078,13 @@ export type ApplicationProps = {
   url?: string
   /** The posting's own reference, when it states one. See `core/duplicates.ts`. */
   postingId?: string
+  /**
+   * The reference the employer's portal gave back when you submitted —
+   * typed into the Submitted step of a stage move. It used to ride in
+   * `lastAction`, which the next stage change overwrites, so a reference
+   * recorded on Monday was gone by the first interview.
+   */
+  confirmationRef?: string
   appliedOn?: ISODate
   submittedOn?: ISODate
   firstReplyOn?: ISODate

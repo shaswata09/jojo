@@ -42,6 +42,10 @@ import {
   FILE_KIND_VALUES,
   LABEL_TONE_VALUES,
   LINK_CATEGORY_VALUES,
+  MAX_BRIEF_HIGHLIGHTS,
+  MAX_BRIEF_HIGHLIGHT_TEXT,
+  MAX_BRIEF_NOTE_TEXT,
+  MAX_BRIEFS,
   MAX_CHECKLIST_ITEMS,
   MAX_CHECKLIST_TEXT,
   MAX_NOTE_SPANS,
@@ -150,6 +154,7 @@ export const NODE_PROP_SCHEMAS = {
     lastActionAt: s.instant({ label: 'Last action at' }),
     source: s.optional(s.enum(SOURCES, { label: 'Source' })),
     postingId: s.optional(s.string({ label: 'Posting ID' })),
+    confirmationRef: s.optional(s.string({ label: 'Confirmation reference' })),
     location: s.optional(s.string({ label: 'Location' })),
     comp: s.optional(s.string({ label: 'Compensation' })),
     url: s.optional(s.string({ label: 'Posting link' })),
@@ -424,6 +429,29 @@ export const NODE_PROP_SCHEMAS = {
     email: s.optional(s.string({ label: 'Email' })),
     phone: s.optional(s.string({ label: 'Phone' })),
     note: s.optional(s.string({ label: 'Note', multiline: true })),
+    /*
+     * What the person is asked to highlight for each application. See
+     * `RefereeBrief`. Declared rather than passed through, with the bounds
+     * `vault.person.update` enforces, because it reaches a spreadsheet sent to
+     * somebody else and a hand-edited backup is the one writer that skips the
+     * tool. IN `SALVAGEABLE_PROPS`: a malformed brief costs the briefs, not the
+     * person and every job they are filed under.
+     */
+    briefs: s.optional(
+      s.array(
+        s.object({
+          applicationId: s.string({ min: 1, label: 'Application' }),
+          highlights: s.optional(
+            s.array(s.string({ max: MAX_BRIEF_HIGHLIGHT_TEXT, label: 'Highlight' }), {
+              max: MAX_BRIEF_HIGHLIGHTS,
+              label: 'Highlights',
+            }),
+          ),
+          note: s.optional(s.string({ max: MAX_BRIEF_NOTE_TEXT, label: 'Note', multiline: true })),
+        }),
+        { max: MAX_BRIEFS, label: 'Briefs' },
+      ),
+    ),
   }),
   /**
    * A conversation, validated loosely on purpose.
@@ -730,6 +758,7 @@ const SALVAGEABLE_PROPS: Partial<Record<NodeType, readonly string[]>> = {
   // The text is the record; the formatting over it is not worth losing the
   // record for. Same trade as the application's note, one type up.
   snippet: ['bodyFormat'],
+  person: ['briefs'],
 }
 
 /** What the restore summary says about each, in the person's terms. */
@@ -737,6 +766,7 @@ const SALVAGE_NOTE: Partial<Record<NodeType, string>> = {
   file: 'Came back without its document link or its note formatting.',
   application: 'Came back without its checklist, its stage dates or its note formatting.',
   keyword: 'Came back in one of the eight named colours rather than its own.',
+  person: 'Came back without the highlights and notes kept for their applications.',
 }
 
 export type ValidateOptions = {

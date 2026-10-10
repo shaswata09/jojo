@@ -31,6 +31,7 @@ export type FormState = {
   url: string
   /** The posting's own reference, when it states one. See `core/duplicates.ts`. */
   postingId: string
+  confirmationRef: string
   location: string
   comp: string
   deadline: string
@@ -54,6 +55,7 @@ export function formFrom(initial?: ApplicationInitial): FormState {
     source: initial?.source ?? 'none',
     url: initial?.url ?? '',
     postingId: initial?.postingId ?? '',
+    confirmationRef: initial?.confirmationRef ?? '',
     location: initial?.location ?? '',
     comp: initial?.comp ?? '',
     deadline: initial?.deadline ?? '',
