@@ -125,6 +125,12 @@ export type UseAgentOptions = {
      * tools that remove a record. `auto` stops nothing.
      */
     approval?: ApprovalMode
+    /**
+     * The record this conversation is about, as `focusLine` words it. The
+     * screen decides — the filed application, or the one open when a new
+     * conversation was started — and the loop only carries it.
+     */
+    focus?: string
   }
   /**
    * Mints a conversation for a first question, and returns its id.
@@ -235,6 +241,7 @@ export function useAgent({
          */
         gate: GATE_FOR[thread.approval ?? 'manual'],
         ...(thread.context === undefined ? {} : { context: thread.context }),
+        ...(thread.focus === undefined ? {} : { focus: thread.focus }),
         ...(onCompacted === undefined ? {} : { onCompacted }),
         ...(onSettled ? { onSettled } : {}),
       })
@@ -256,6 +263,7 @@ export function useAgent({
       summariser,
       onCompacted,
       thread.context,
+      thread.focus,
     ],
   )
 

@@ -131,8 +131,10 @@ export const SHAPE: DirRow[] = [
     // are one vacancy, shown only the same employer's records.
     // `tailor-material.ts` and its test: the prompt that rewrites a document
     // for one posting, and the reader that keeps, doubts or refuses the reply.
-    files: 68,
-    tests: 33,
+    // `focus.ts` and its test: the one line that tells the model which
+    // application a conversation is about, so "this one" has a referent.
+    files: 70,
+    tests: 34,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -209,12 +211,17 @@ export const SHAPE: DirRow[] = [
     // letter should highlight, downloaded as a sheet and their materials.
     // `detail/PeoplePanel.tsx`: who is on an application, as recommender or
     // point of contact, added and changed from the application itself.
-    files: 312,
+    // The chat dock: `chat-dock/ChatDock.tsx` and `ChatWindow.tsx`, and the two
+    // pieces it shares with the Assistant page, `assistant/Transcript.tsx` and
+    // `assistant/Composer.tsx`.
+    files: 316,
     tests: 31,
-    lines: 53850,
+    lines: 56446,
     what: 'every surface you can see',
   },
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4860, what: 'fifteen pages' },
+  // Shorter since the Assistant's transcript, composer and wiring moved into
+  // shared pieces the chat dock draws too.
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4524, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -249,8 +256,11 @@ export const SHAPE: DirRow[] = [
     // 161 with the recommender list: `spreadsheet.ts` (a table to XLSX or CSV,
     // links clickable and formulas defused), `referee-pack.ts` (the rows and
     // folders a referee is sent), each with a test, and `save-file.ts`.
-    files: 161,
-    tests: 60,
+    // 165 with the chat dock: `chat-dock.ts` and its test (windows, layout,
+    // persistence), `use-conversation.ts` (one conversation's wiring, shared
+    // with the Assistant) and `sheet-presence.ts` (where the open record is).
+    files: 165,
+    tests: 61,
     lines: 23880,
     what: 'web-only adapters and URL state',
   },
@@ -281,7 +291,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 96
+export const WEB_TEST_FILES = 97
 
 type TestGroup = { title: string; files: string; body: string }
 

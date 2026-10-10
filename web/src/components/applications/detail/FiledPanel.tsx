@@ -85,10 +85,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
   const [preview, setPreview] = useState<VaultFile | null>(null)
 
   const total =
-    filed.files.length +
-    filed.links.length +
-    filed.snippets.length +
-    conversations.length
+    filed.files.length + filed.links.length + filed.snippets.length + conversations.length
 
   return (
     <Panel>
@@ -112,7 +109,7 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                 {conversations.map((t) => (
                   <li key={t.id}>
                     <Link
-                      to={assistantPath()}
+                      to={assistantPath({ thread: t.id })}
                       className="pressable block truncate rounded-md border border-hairline bg-well px-2.5 py-1.5 text-sm text-text-1 transition-colors hover:border-hairline-strong"
                     >
                       {t.title}
@@ -161,7 +158,11 @@ export function FiledPanel({ applicationId }: { applicationId: string }) {
                             on the three shapes, which is why it is read here
                             rather than declared in SECTIONS. */}
                         <span className="shrink-0 text-xs text-text-3">
-                          {'bucket' in row ? row.bucket : 'category' in row ? row.category : row.tag}
+                          {'bucket' in row
+                            ? row.bucket
+                            : 'category' in row
+                              ? row.category
+                              : row.tag}
                         </span>
                       </Link>
                       {/* `'bucket' in row` is both the question and the answer:

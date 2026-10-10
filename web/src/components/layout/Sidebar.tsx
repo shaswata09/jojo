@@ -48,6 +48,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
   return (
     <aside
+      // Read by the chat dock, which stays clear of this column — see `chat-dock.ts`.
+      data-app-sidebar=""
       ref={asideRef}
       // Hidden from assistive tech when closed on mobile, so its links are not
       // reachable by screen reader while off-screen.

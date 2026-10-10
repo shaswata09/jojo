@@ -39,7 +39,7 @@ export function ApprovalHost() {
      * which matters even though the composer is disabled mid-run, because the
      * openers sit there too and the overlap read as a rendering fault.
      */
-    <div className="pointer-events-none fixed right-0 bottom-0 z-50 flex flex-col items-end gap-2 p-4">
+    <div className="pointer-events-none fixed right-0 bottom-[var(--dock-clearance,0px)] z-50 flex flex-col items-end gap-2 p-4">
       {waiting.map((run) => {
         const step = run.pending?.step
         if (!step) return null

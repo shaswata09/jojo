@@ -1,5 +1,3 @@
-import { StepRow, Thinking } from '@/components/assistant/AgentTrace'
-import { Mark } from '@/components/assistant/Mark'
 import { ThreadBar } from '@/components/assistant/ThreadBar'
 import { ThreadList } from '@/components/assistant/ThreadList'
 import { RobotIcon } from '@/components/brand/RobotIcon'
@@ -14,34 +12,25 @@ import { fromReactKey, shouldSend } from '@/lib/composer-keys'
 import { Label } from '@/components/ui/label'
 import type { SnippetTag } from '@/data/vault'
 import { useTitle, vaultPath } from '@/lib/links'
-import { agentTurn, isConfigured } from '@/lib/llm'
-import type { ChatMessage } from '@jojo/service/core/model-server'
-import { contextOf } from '@jojo/service/core/provider'
+import { isConfigured } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { useFillViewport } from '@/lib/use-fill-viewport'
 import { atBottom } from '@/lib/scroll-stick'
 import { CATALOG } from '@jojo/service/agent/catalog'
-import type { AgentStep } from '@jojo/service/agent/loop'
 import type { NodeId } from '@jojo/service/core/model'
-import type { RunSignal } from '@jojo/service/react/agent-runs'
-import type { AgentEntry } from '@jojo/service/react/use-agent'
-import { useAgent } from '@jojo/service/react/use-agent'
 import { report } from '@/lib/analytics'
-import { useReadDocument } from '@/lib/read-document'
+import { useConversation } from '@/lib/use-conversation'
+import { Composer } from '@/components/assistant/Composer'
+import { Transcript } from '@/components/assistant/Transcript'
 import { useApplications } from '@jojo/service/react/use-applications'
-import {
-  historyFor,
-  toAgentEntries,
-  toThreadEntries,
-  useThreads,
-} from '@jojo/service/react/use-threads'
+import { useThreads } from '@jojo/service/react/use-threads'
 import { useVault } from '@jojo/service/react/use-vault'
 import type { LucideIcon } from 'lucide-react'
 import { ArrowUp, Quote, TriangleAlert } from 'lucide-react'
 import type { FormEvent, KeyboardEvent } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 
 /**
  * A worked example, and the prompt that produces it.
@@ -205,12 +194,10 @@ export function Assistant() {
  * one that can be computed wrongly.
  */
 function AgentPanel() {
-  const { settings, reader } = useModelSettings()
-  const { addSnippet } = useVault()
+  const { settings } = useModelSettings()
   const { all: applications, byId } = useApplications()
-  const { threads, create, save, rename, file, remove, setApproval, setContext } = useThreads()
+  const { threads, rename, file, remove, setApproval } = useThreads()
   const { toast } = useToast()
-  const navigate = useNavigate()
 
   /**
    * Whether the newest turn should be brought into view, or the reader left
@@ -242,15 +229,17 @@ function AgentPanel() {
    * conversation's answer lands in another.
    */
   const [activeId, setActiveId] = useState<NodeId | null>(null)
-  const openThread = (id: NodeId | null) => {
+  const openThread = useCallback((id: NodeId | null) => {
     // Opening a conversation pins the transcript to its end. The scroller is
     // the same DOM node across a switch, so it keeps the offset it had in the
     // conversation being left — which in a new one is a position in the middle
     // of somebody else's answer. See `stick` above.
     stick.current = true
     setActiveId(id)
-  }
-  const active = threads.find((t) => t.id === activeId) ?? null
+  }, [])
+  /** `?thread=` — the chat dock's "open in the full page" names its conversation. */
+  const [params] = useSearchParams()
+  const asked = params.get('thread')
 
   /**
    * Reopen the most recent conversation on arrival, once.
@@ -268,14 +257,10 @@ function AgentPanel() {
   useEffect(() => {
     if (opened.current || threads.length === 0) return
     opened.current = true
-    openThread(threads[0]?.id ?? null)
-  }, [threads])
+    const named = asked === null ? undefined : threads.find((t) => t.id === asked)
+    openThread(named?.id ?? threads[0]?.id ?? null)
+  }, [threads, asked, openThread])
   const [prompt, setPrompt] = useState('')
-
-  const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [copyFailed, setCopyFailed] = useState(false)
-  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  useEffect(() => () => clearTimeout(copyTimer.current), [])
 
   /*
    * The approval question is NOT held here any more.
@@ -288,151 +273,16 @@ function AgentPanel() {
    * here. One control, one place, on every page.
    */
 
-  /**
-   * Built per RUN, so Stop can cancel the request rather than only the loop.
-   *
-   * `agentTurn` has always taken a signal and no caller ever passed one, so
-   * stopping left the socket open until the sixty-second timeout while the UI
-   * already said the run had stopped — and the cancelled turn then arrived as a
-   * red error blaming the model. The controller lives here because
-   * `AbortController` is a platform global the shared layer may not name.
-   */
-  const llm = useCallback(
-    (run: RunSignal) => {
-      const controller = new AbortController()
-      run.onAbort(() => {
-        controller.abort()
-      })
-      // The loop hands `onDelta` down; passing it straight through is what makes
-      // the answer appear as it is generated rather than in one piece at the end.
-      return (
-        messages: Parameters<typeof agentTurn>[1],
-        tools: Parameters<typeof agentTurn>[2],
-        onDelta?: (text: string) => void,
-      ) => agentTurn(settings, messages, tools, controller.signal, onDelta)
-    },
-    [settings],
-  )
-
-  /**
-   * Saves an exchange, creating the conversation if this was the first one.
-   *
-   * Created at the SETTLE rather than at the send, and that ordering is the
-   * whole reason this works. Creating it up front would change the loaded
-   * thread's key mid-exchange, and the reload that follows would replace the
-   * live turns with the empty ones just written — the user's question vanishing
-   * as they watch. By the time this runs there is something to store, and the
-   * stored entries and the live ones are the same list.
-   */
-  /**
-   * Mints the conversation for a first question, before the run starts.
-   *
-   * At send rather than at settle, which is the ordering that lets a run be
-   * keyed by the conversation it belongs to. It also means the question is in
-   * the store from the moment it is asked — an interrupted run now leaves the
-   * question behind rather than nothing at all.
-   */
-  const startThread = useCallback(
-    (asked: string) => {
-      const made = create({ title: asked, entries: [{ kind: 'you', text: asked }] })
-      if (!made.ok) return null
-      openThread(made.output)
-      return made.output
-    },
-    [create],
-  )
-
-  const onSettled = useCallback(
-    (threadId: NodeId, settled: readonly AgentEntry[]) => {
-      // The conversation this run was FOR, handed back by the registry. Reading
-      // "which is open now" is what used to write one conversation's answer
-      // into another the moment thread switching became possible.
-      save(threadId, toThreadEntries(settled))
-    },
-    // `create` is not read here. A dependency the body never touches rebuilds
-    // this callback whenever it changes, for nothing.
-    [save],
-  )
-
-  /**
-   * Reading a document, if a reader is configured.
-   *
-   * `undefined` below when it is not, which is what makes `vault.file.read`
-   * refuse with an explanation rather than fail — the tool checks for exactly
-   * this, and the hook's own no-reader arm never gets to speak here.
-   *
-   * The body moved to `lib/read-document.ts` when the CV reader and the fit
-   * assessment needed the same two lookups. It was written here first and the
-   * two failures it distinguishes — no bytes in this browser, no reader to open
-   * them with — are not worth re-deriving twice more.
-   */
-  const convert = useReadDocument()
-
   /*
-   * Two more agents, each with its own model call and each allowed to fail.
-   *
-   * `chooser` reads the request and says which tools it needs — a name and a
-   * line each is ~2,600 tokens against ~16,000 for the schemas, so choosing
-   * costs about a sixth of what it saves and saves it on every round. It never
-   * sees the conversation, which is what keeps it cheap as the chat grows.
-   *
-   * `summariser` runs only when the conversation no longer fits, and replaces
-   * what a trim would have thrown away with a short note — so a long chat loses
-   * detail rather than memory.
-   *
-   * Both take the same transport as the main loop here. They do not have to:
-   * choosing from a list and summarising are far easier than doing the work,
-   * and an app that wanted to point them at a smaller model would change only
-   * these two lines.
+   * The conversation's wiring — the per-run abort, the chooser and summariser,
+   * the reader, which conversation a settled run saves into, when a first
+   * question mints the conversation, and what the conversation is ABOUT — is
+   * shared with the chat dock's windows, in `lib/use-conversation.ts`. Two
+   * surfaces showing the same conversation must not run it differently.
    */
-  const chooser = useMemo(
-    () => ({ ask: (messages: readonly ChatMessage[]) => agentTurn(settings, messages, []) }),
-    [settings],
-  )
-
-  const { entries, busy, send, stop, clear } = useAgent({
-    llm,
-    chooser,
-    summariser: chooser,
-    onSettled,
-    startThread,
-    /*
-     * The person's own context window, or the provider's default.
-     *
-     * This is the surface where it matters most: the Assistant is the only one
-     * that keeps a conversation, and measured over ten ordinary follow-ups the
-     * request grew 8,227 → 21,062 tokens with nothing bounding it. Without this
-     * the loop cannot trim, and the SERVER truncates instead — from the front,
-     * where the system prompt is.
-     */
-    window: contextOf(settings),
-    ...(reader ? { convert } : {}),
-    /*
-     * Persist a summary the loop writes, so the next turn sends it instead of
-     * summarising the same exchanges again. Rare: only a conversation that has
-     * outgrown the model's window ever reaches this.
-     */
-    onCompacted: setContext,
-    thread: {
-      id: activeId,
-      entries: active ? toAgentEntries(active.entries) : [],
-      /*
-       * The part the stored summary does NOT cover — and, ahead of it, the
-       * person's own turns from the part it does.
-       *
-       * `contextThrough` is where a previous compaction reached; sending those
-       * entries again alongside the summary would defeat the compaction and
-       * make the conversation grow faster than before it happened. But the
-       * summary holds no user words by design (the summariser never sees a
-       * user turn), so the loop carries them verbatim instead — and a boundary
-       * advanced past them lost them on the very next turn. `historyFor` does
-       * the replay and the slice as one reading, so this screen and the other
-       * cannot disagree about it; see `use-threads.ts`.
-       */
-      history: active ? historyFor(active.entries, active.contextThrough).history : [],
-      ...(active?.context === undefined ? {} : { context: active.context }),
-      approval: active?.approval ?? 'manual',
-    },
+  const { entries, busy, send, stop, clear } = useConversation({
+    threadId: activeId,
+    onStarted: openThread,
   })
 
   /**
@@ -494,11 +344,7 @@ function AgentPanel() {
     void send(text)
   }
 
-  const onSubmit = (event: FormEvent) => {
-    event.preventDefault()
-    const clean = prompt.trim()
-    if (!clean || busy) return
-    setPrompt('')
+  const onSend = (clean: string) => {
     /*
      * That a question was asked, and NOTHING about the question.
      *
@@ -513,70 +359,6 @@ function AgentPanel() {
       has_model: settings.model.trim().length > 0,
     })
     ask(clean)
-  }
-
-  /*
-   * Enter sends; Shift+Enter is left to the textarea, which puts in the newline
-   * itself. `shouldSend` also refuses an Enter that an input method is using to
-   * pick a candidate — see `lib/composer-keys.ts`, where the rule is tested.
-   */
-  const onComposerKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (!shouldSend(fromReactKey(event))) return
-    event.preventDefault()
-    onSubmit(event)
-  }
-
-  const copy = async (id: string, text: string) => {
-    clearTimeout(copyTimer.current)
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopyFailed(false)
-    } catch {
-      setCopyFailed(true)
-    }
-    setCopiedId(id)
-    copyTimer.current = setTimeout(() => setCopiedId(null), COPIED_MS)
-  }
-
-  /**
-   * Undoing one step of the agent's work.
-   *
-   * Goes through the same `undo` the toast on a button press would have called,
-   * because it IS that undo — `runtime.run` handed it back and the step kept it.
-   * The row stays on screen afterwards: the trace is a record of what happened,
-   * and a step vanishing when it is reverted would make the record wrong.
-   */
-  const undoStep = (step: AgentStep) => {
-    step.undo?.()
-    toast({
-      title: 'Undone',
-      description: step.announcement?.title ?? step.title,
-      tone: 'danger',
-    })
-  }
-
-  const saveAnswer = (text: string, asked: string) => {
-    const snippet = addSnippet({
-      // Titled with the question, because an agent answer has no script behind
-      // it to take a title from and "Assistant reply 3" helps nobody find it.
-      title: asked.length > 60 ? `${asked.slice(0, 57)}…` : asked,
-      tag: 'Email',
-      body: text,
-    })
-    toast({
-      title: 'Saved to snippets',
-      description: `${snippet.title} · filed under ${snippet.tag}`,
-      action: { label: 'Open vault', onClick: () => navigate(vaultPath({ tool: 'snippets' })) },
-    })
-  }
-
-  /** The question that produced a given answer, for the snippet's title. */
-  const askedBefore = (index: number) => {
-    for (let i = index - 1; i >= 0; i--) {
-      const e = entries[i]
-      if (e?.kind === 'you') return e.text
-    }
-    return 'Assistant'
   }
 
   return (
@@ -696,99 +478,9 @@ function AgentPanel() {
                 description="Ask it to find something, add an application, or move one along. Each tool it runs appears below as it happens, with what it sent and what came back."
               />
             ) : (
-              /* `aria-busy` while the run is going, and it is not a nicety.
-                 The whole transcript is one polite live region, and the answer
-                 is streamed: `agent-runs.ts` rewrites the draft entry once per
-                 delta, so a reader announced a fresh overlapping half-sentence
-                 for every few tokens, for the length of every answer — and the
-                 tool rows interleaved between them were never reachable through
-                 the noise. Busy means "hold, this is mid-update"; clearing it
-                 when the run settles is what makes the finished answer, and the
-                 rows around it, announce once. The live region itself stays:
-                 removing it is what the mobile fix put it there to prevent. */
-              <ul aria-busy={busy} aria-live="polite" className="space-y-3">
-                {entries.map((entry, index) => {
-                  if (entry.kind === 'you') {
-                    return (
-                      <li key={entry.id} className="flex justify-end">
-                        <p className="well max-w-[36rem] rounded-lg px-3 py-2 text-sm wrap-anywhere whitespace-pre-line text-text-1">
-                          <Mark text={entry.text} query={search} />
-                        </p>
-                      </li>
-                    )
-                  }
-                  if (entry.kind === 'step') {
-                    return <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
-                  }
-                  if (entry.kind === 'note') {
-                    // Narration while it is still working. Quieter than an answer on
-                    // purpose: it is not the reply, and styling it like one makes a
-                    // run look finished when it is not.
-                    return (
-                      <li key={entry.id} className="px-1 text-sm wrap-anywhere text-text-3 italic">
-                        <Mark text={entry.text} query={search} />
-                      </li>
-                    )
-                  }
-                  if (entry.kind === 'error') {
-                    return (
-                      <li
-                        key={entry.id}
-                        className="rounded-lg border border-danger-border bg-danger-soft px-3 py-2 text-sm wrap-anywhere text-danger"
-                      >
-                        {entry.text}
-                      </li>
-                    )
-                  }
-                  return (
-                    <li key={entry.id} className="rounded-lg border border-hairline p-3">
-                      <div className="mb-2 flex items-center gap-2">
-                        <RobotIcon className="size-4 shrink-0" aria-hidden />
-                      </div>
-                      <p className="text-sm wrap-anywhere whitespace-pre-line text-text-1">
-                        <Mark text={entry.text} query={search} />
-                      </p>
-                      <div className="mt-2.5 flex flex-wrap gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copy(entry.id, entry.text)}
-                        >
-                          <CopyFeedback copied={copiedId === entry.id} failed={copyFailed} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            saveAnswer(entry.text, askedBefore(index))
-                          }}
-                        >
-                          <Quote className="size-3.5" strokeWidth={1.8} aria-hidden />
-                          Save to snippets
-                        </Button>
-                      </div>
-                    </li>
-                  )
-                })}
-                {/* Only while nothing else is moving. A spinner under a step that is
-                already spinning says the same thing twice. */}
-                {busy && entries.at(-1)?.kind !== 'step' ? (
-                  <Thinking model={settings.model} />
-                ) : null}
-              </ul>
+              <Transcript entries={entries} busy={busy} model={settings.model} query={search} />
             )}
           </PanelScroll>
-
-          {/* Outside the scroller, deliberately. This is an announcement rather
-            than part of the conversation, and `sr-only` is `position:absolute`
-            — inside the transcript its static position sat below a thousand
-            pixels of turns, which extended the page rather than the box. It is
-            also simply the wrong place for it: nothing in a live region belongs
-            in a list a reader scrolls. `PanelScroll` is now a containing block
-            so this cannot recur, and this one no longer relies on that. */}
-          <p aria-live="polite" className="sr-only">
-            {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
-          </p>
 
           {/* Openers, and ONLY while the thread is empty.
             They are what a person reads when they do not know what to ask —
@@ -816,52 +508,18 @@ function AgentPanel() {
             </ul>
           ) : null}
 
-          <form onSubmit={onSubmit} className="mt-2 flex gap-2">
-            <div className="min-w-0 flex-1">
-              <Label htmlFor="assistant-prompt" className="sr-only">
-                Ask the assistant
-              </Label>
-              <Textarea
-                id="assistant-prompt"
-                value={prompt}
-                rows={2}
-                /*
-                 * A FIXED box: no drag handle, and no growing as you type.
-                 *
-                 * `resize-none` removes the corner grip. `field-sizing-fixed`
-                 * cancels the primitive's `field-sizing-content`, which sizes a
-                 * textarea to its own text — between them those were two
-                 * separate ways for the composer to grow into the transcript.
-                 * `h-16` pins it at the doubled height and `overflow-y-auto`
-                 * scrolls a long message inside the box rather than expanding it.
-                 */
-                className="h-16 resize-none overflow-y-auto field-sizing-fixed" 
-                autoComplete="off"
-                disabled={busy}
-                placeholder="Find my UT Austin application, or add one, or move it to interview…"
-                onChange={(event) => setPrompt(event.target.value)}
-                onKeyDown={onComposerKey}
-              />
-            </div>
-            {busy ? (
-              // Stop rather than a disabled send: a run that has gone wrong is
-              // exactly when a person most needs a control, and the loop checks
-              // the flag between every round.
-              <Button type="button" variant="outline" onClick={stop} title="Stop the agent">
-                Stop
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                size="icon"
-                aria-label="Send"
-                disabled={!prompt.trim()}
-                title={prompt.trim() ? 'Send' : 'Type a message first'}
-              >
-                <ArrowUp className="size-4" strokeWidth={2} aria-hidden />
-              </Button>
-            )}
-          </form>
+          <div className="mt-2">
+            <Composer
+              id="assistant-prompt"
+              label="Ask the assistant"
+              value={prompt}
+              onChange={setPrompt}
+              onSend={onSend}
+              busy={busy}
+              onStop={stop}
+              placeholder="Find my UT Austin application, or add one, or move it to interview…"
+            />
+          </div>
         </Panel>
       </div>
     </>
@@ -1111,7 +769,7 @@ function ScriptedPanel() {
               value={prompt}
               rows={2}
               // Fixed, for the reasons set out on the connected composer above.
-              className="h-16 resize-none overflow-y-auto field-sizing-fixed" 
+              className="field-sizing-fixed h-16 resize-none overflow-y-auto"
               autoComplete="off"
               placeholder="Ask about a cover letter, a follow-up email, an interview…"
               onChange={(event) => setPrompt(event.target.value)}

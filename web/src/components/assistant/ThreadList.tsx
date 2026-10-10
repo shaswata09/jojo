@@ -59,7 +59,14 @@ export function ThreadList({
   onNew,
   query,
   onQuery,
+  bare = false,
 }: {
+  /**
+   * Just the search and the list, filling their container — for the chat
+   * dock, which has its own header and its own "new" button. The page keeps
+   * the panel, its title and the New conversation button around them.
+   */
+  bare?: boolean
   threads: readonly Thread[]
   activeId: NodeId | null
   byId: ReadonlyMap<string, Application>
@@ -118,20 +125,8 @@ export function ThreadList({
 
   const busyThreads = useBusyThreads()
 
-  return (
-    <Panel className="min-w-0">
-      <PanelTitle hint={threads.length > 0 ? `${threads.length} kept here` : undefined}>
-        Conversations
-      </PanelTitle>
-
-      {/* Not disabled while something is running. Starting a second
-          conversation while the first works is the thing this panel exists for;
-          each run is keyed by its own conversation now, so they do not collide. */}
-      <Button variant="outline" size="sm" className="w-full" onClick={onNew}>
-        <MessageSquarePlus className="size-3.5" strokeWidth={1.8} aria-hidden />
-        New conversation
-      </Button>
-
+  const body = (
+    <>
       {threads.length > 0 ? (
         <div className="mt-2">
           <div className="relative">
@@ -194,7 +189,13 @@ export function ThreadList({
         // Capped in height rather than growing without limit: the conversation
         // beside it is the thing being read, and a list of thirty must not push
         // it off the screen.
-        <ul className="mt-3 max-h-[26rem] space-y-3 overflow-y-auto">
+        <ul
+          className={
+            bare
+              ? 'mt-3 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1'
+              : 'mt-3 max-h-[26rem] space-y-3 overflow-y-auto'
+          }
+        >
           {groups.map((group) => (
             <li key={group.label}>
               <h3 className="mb-1 flex items-center gap-1.5 px-0.5 text-xs font-medium text-text-3">
@@ -285,6 +286,26 @@ export function ThreadList({
           ))}
         </ul>
       )}
+    </>
+  )
+
+  if (bare) return <div className="flex min-h-0 min-w-0 flex-1 flex-col">{body}</div>
+
+  return (
+    <Panel className="min-w-0">
+      <PanelTitle hint={threads.length > 0 ? `${threads.length} kept here` : undefined}>
+        Conversations
+      </PanelTitle>
+
+      {/* Not disabled while something is running. Starting a second
+          conversation while the first works is the thing this panel exists for;
+          each run is keyed by its own conversation now, so they do not collide. */}
+      <Button variant="outline" size="sm" className="w-full" onClick={onNew}>
+        <MessageSquarePlus className="size-3.5" strokeWidth={1.8} aria-hidden />
+        New conversation
+      </Button>
+
+      {body}
     </Panel>
   )
 }

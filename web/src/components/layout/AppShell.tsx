@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
+import { assistantPath } from '@/lib/links'
+import { ChatDock } from '@/components/chat-dock/ChatDock'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Onboarding } from '@/components/common/Onboarding'
 import { RouteFailure } from '@/components/common/RouteFailure'
@@ -283,6 +285,12 @@ export function AppShell() {
           served from a subpath, and reloads the document, which kills any agent
           run still working. It renders nothing until there is something to ask. */}
       <Onboarding />
+
+      {/* The floating chat, on every page but the Assistant's own — where the
+          full conversation is already the page, and a second copy of it in the
+          corner would be the same thing twice. Inside the router for the same
+          reason as the line above: it links to the Assistant and to Settings. */}
+      {pathname.startsWith(assistantPath()) ? null : <ChatDock />}
     </>
   )
 }

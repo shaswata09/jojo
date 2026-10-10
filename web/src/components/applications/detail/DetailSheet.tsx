@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import { useReducedMotion } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 import { readStored, writeStored } from '@/lib/storage'
+import { clearSheet, publishSheet } from '@/lib/sheet-presence'
+import { isInChatDock } from '@/lib/chat-dock'
 import {
   MIN_SHEET_WIDTH,
   SHEET_WIDTH_KEY,
@@ -41,11 +43,18 @@ import { SheetResizer } from './SheetResizer'
  */
 export function DetailSheet({
   name,
+  applicationId,
   onClose,
   children,
 }: {
   /** The record's own name — the sheet's accessible name. */
   name: string
+  /**
+   * The record on screen, published with the sheet's width for the chat dock:
+   * it docks beside the sheet instead of over it, and a conversation started
+   * while it is open is about this record. See `lib/sheet-presence.ts`.
+   */
+  applicationId?: string | undefined
   onClose: () => void
   children: ReactNode
 }) {
@@ -92,17 +101,55 @@ export function DetailSheet({
 
   const onReset = useCallback(() => onWidth(MIN_SHEET_WIDTH), [onWidth])
 
+  /*
+   * The width the sheet ACTUALLY takes, published for the chat dock.
+   *
+   * Measured rather than taken from `width`, because the class list caps the
+   * sheet at the viewport less a gutter and the dock needs the space taken,
+   * not the space wanted. A ResizeObserver catches every way that changes —
+   * a drag, a window resize, the cap — with one listener.
+   */
+  const node = useRef<HTMLDivElement | null>(null)
+  const recordId = useRef(applicationId)
+  recordId.current = applicationId
+  const observer = useRef<ResizeObserver | null>(null)
+  const publish = useCallback(() => {
+    const el = node.current
+    if (el)
+      publishSheet({
+        applicationId: recordId.current ?? null,
+        width: Math.round(el.getBoundingClientRect().width),
+      })
+  }, [])
+  useEffect(() => {
+    publish()
+  }, [applicationId, publish])
+  useEffect(
+    () => () => {
+      observer.current?.disconnect()
+      clearSheet()
+    },
+    [],
+  )
+
   const setRef = useCallback(
-    (node: HTMLDivElement | null) => {
+    (el: HTMLDivElement | null) => {
+      node.current = el
+      observer.current?.disconnect()
+      if (el) {
+        observer.current = new ResizeObserver(publish)
+        observer.current.observe(el)
+        publish()
+      }
       // index.css flattens every CSS animation and transition to 0.01ms under
       // this preference, so a CSS cross-fade would be no motion at all here.
       // A script animation is the one thing that reset cannot reach — the same
       // trick, for the same reason, as ui/dialog.tsx.
-      if (node && reducedMotion) {
-        node.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 120, easing: 'ease-out' })
+      if (el && reducedMotion) {
+        el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 120, easing: 'ease-out' })
       }
     },
-    [reducedMotion],
+    [reducedMotion, publish],
   )
 
   return (
@@ -139,6 +186,19 @@ export function DetailSheet({
           // record opens into a portal, would otherwise dismiss the record the
           // user is working in.
           onFocusOutside={(event) => event.preventDefault()}
+          /*
+           * The chat dock is outside the sheet and must not dismiss it. Radix
+           * closes a layer on any pointer-down outside it and on Escape from
+           * anywhere, so clicking into a conversation — or pressing Escape in
+           * its composer — closed the record you were asking about, which is
+           * the exact thing the dock exists to avoid.
+           */
+          onPointerDownOutside={(event) => {
+            if (isInChatDock(event.target)) event.preventDefault()
+          }}
+          onEscapeKeyDown={(event) => {
+            if (isInChatDock(event.target)) event.preventDefault()
+          }}
           /*
            * Width as an inline style, with `max-w` kept in the class list. The
            * class is the safety net: between a window resize and the effect

@@ -317,6 +317,7 @@ export function Applications() {
       {detail && isDesktop ? (
         <DetailSheet
           name={openId ? (all.find((a) => a.id === openId)?.org ?? 'Application') : 'Application'}
+          applicationId={openId ?? undefined}
           onClose={closeDetail}
         >
           <Outlet />

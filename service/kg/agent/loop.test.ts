@@ -174,6 +174,27 @@ describe('the transcript it builds', () => {
     expect(run.messages.map((m) => m.role)).toEqual(['system', 'user', 'user', 'assistant'])
   })
 
+  it('tells the model which record a conversation is about, only when asked to', async () => {
+    const focus =
+      'This conversation is about the application "Rice — Statistics" (id application:1).'
+    const withFocus = scripted([says('ok')])
+    await runAgent({
+      host: host(),
+      llm: withFocus,
+      history: [],
+      prompt: 'draft a follow-up for this one',
+      focus,
+      onEvent: () => {},
+    })
+    expect(withFocus.seen[0]?.[0]?.content).toContain(focus)
+
+    // Without it the system message is exactly what it always was.
+    const without = scripted([says('ok')])
+    await runAgent({ host: host(), llm: without, history: [], prompt: 'x', onEvent: () => {} })
+    expect(without.seen[0]?.[0]?.content).not.toContain('This conversation is about')
+    expect(without.seen[0]?.[0]?.content).toMatch(/Today is \d{4}-\d{2}-\d{2}\.$/)
+  })
+
   it('replies to every call, including the ones that failed', async () => {
     // A model left waiting on a result it never receives re-issues the same call
     // forever.
@@ -340,7 +361,12 @@ describe('the stops', () => {
     })
     expect(run.stopped).toBe('aborted')
     expect(run.steps).toHaveLength(1)
-    expect(h.memory().nodes().filter((n) => n.type === 'keyword')).toHaveLength(1)
+    expect(
+      h
+        .memory()
+        .nodes()
+        .filter((n) => n.type === 'keyword'),
+    ).toHaveLength(1)
   })
 })
 
@@ -829,7 +855,9 @@ describe('a model whose server has no tool template', () => {
      * quotes the shape. Requiring an `arguments` key alongside the name is what
      * separates a description from an attempt.
      */
-    const { run } = await errorsFrom('The tool is called {"name": "application_create"} internally.')
+    const { run } = await errorsFrom(
+      'The tool is called {"name": "application_create"} internally.',
+    )
     expect(run.stopped).toBe('answered')
   })
 
@@ -889,7 +917,12 @@ describe('a reply the model cut off', () => {
     const run = await runAgent({
       host: host(),
       llm: scripted([
-        { ok: true, text: 'Your applications are Rice, UT Aus', toolCalls: [], finishReason: 'length' },
+        {
+          ok: true,
+          text: 'Your applications are Rice, UT Aus',
+          toolCalls: [],
+          finishReason: 'length',
+        },
       ]),
       history: [],
       prompt: 'list my applications',
@@ -956,7 +989,10 @@ describe('a reply the model cut off', () => {
     const errors: string[] = []
     const run = await runAgent({
       host: host(),
-      llm: scripted([calls('memory_overview', {}), { ok: true, text: '', toolCalls: [], finishReason: 'stop' }]),
+      llm: scripted([
+        calls('memory_overview', {}),
+        { ok: true, text: '', toolCalls: [], finishReason: 'stop' },
+      ]),
       history: [],
       prompt: 'what is in my store',
       tools: ['memory.overview'],
@@ -1036,9 +1072,9 @@ describe('a model going in circles', () => {
      * to it as confirmation.
      */
     const { sent } = await looping()
-    expect(sent.some((t) => /called memory\.overview with exactly these arguments 3 times/.test(t))).toBe(
-      true,
-    )
+    expect(
+      sent.some((t) => /called memory\.overview with exactly these arguments 3 times/.test(t)),
+    ).toBe(true)
   })
 
   /*
@@ -1061,10 +1097,19 @@ describe('a model going in circles', () => {
         text: null,
         finishReason: 'tool_calls',
         // The same call every round. Only the formatting moves.
-        toolCalls: [{ id: `c${String(n)}`, name: 'memory_overview', args: {}, raw: `{${' '.repeat(n)}}` }],
+        toolCalls: [
+          { id: `c${String(n)}`, name: 'memory_overview', args: {}, raw: `{${' '.repeat(n)}}` },
+        ],
       } as Turn)
     })
-    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'x',
+      onEvent,
+      maxSteps: 8,
+    })
     expect(run.stopped).toBe('stuck')
     expect(llm.mock.calls.length).toBe(5)
   })
@@ -1084,10 +1129,21 @@ describe('a model going in circles', () => {
     const llm = vi.fn(() => {
       n += 1
       return Promise.resolve(
-        calls('memory_list', { type: 'application', limit: n % 2 === 0 ? 5 : '5' }, `c${String(n)}`),
+        calls(
+          'memory_list',
+          { type: 'application', limit: n % 2 === 0 ? 5 : '5' },
+          `c${String(n)}`,
+        ),
       )
     })
-    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'x',
+      onEvent,
+      maxSteps: 8,
+    })
     expect(run.stopped).toBe('stuck')
     expect(llm.mock.calls.length).toBe(5)
   })
@@ -1110,7 +1166,14 @@ describe('a model going in circles', () => {
         calls('application_stage_set', { id: 'app:nope', stage: 'interview' }, `c${String(n)}`),
       )
     })
-    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'x',
+      onEvent,
+      maxSteps: 8,
+    })
     expect(run.steps.every((s) => s.status === 'failed')).toBe(true)
     expect(run.stopped).toBe('stuck')
     // Four, against the five an identical SUCCEEDING call gets.
@@ -1126,7 +1189,14 @@ describe('a model going in circles', () => {
       n += 1
       return Promise.resolve(calls('memory_list', { type: 'application', limit: n }))
     })
-    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 4 })
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'x',
+      onEvent,
+      maxSteps: 4,
+    })
     expect(run.stopped).toBe('cap')
     expect(run.steps).toHaveLength(4)
   })
@@ -1204,7 +1274,10 @@ describe('the long-conversation harness', () => {
     Array.from({ length: 12 }, (_, i) =>
       i % 2 === 0
         ? ({ role: 'user', content: `question ${String(i)} ${'x'.repeat(2000)}` } as ChatMessage)
-        : ({ role: 'assistant', content: `answer ${String(i)} ${'y'.repeat(2000)}` } as ChatMessage),
+        : ({
+            role: 'assistant',
+            content: `answer ${String(i)} ${'y'.repeat(2000)}`,
+          } as ChatMessage),
     )
 
   it('never drops the system message, however small the window', async () => {
@@ -1362,7 +1435,12 @@ describe('the long-conversation harness', () => {
       chooser: {
         ask: async () => {
           asked += 1
-          return { ok: true, text: '{"tools":["memory.list"]}', toolCalls: [], finishReason: 'stop' }
+          return {
+            ok: true,
+            text: '{"tools":["memory.list"]}',
+            toolCalls: [],
+            finishReason: 'stop',
+          }
         },
       },
     })
@@ -1412,7 +1490,12 @@ describe('the long-conversation harness', () => {
       chooser: {
         ask: async () => {
           asked += 1
-          return { ok: true, text: '{"tools":["memory.list"]}', toolCalls: [], finishReason: 'stop' }
+          return {
+            ok: true,
+            text: '{"tools":["memory.list"]}',
+            toolCalls: [],
+            finishReason: 'stop',
+          }
         },
       },
     })
@@ -1455,7 +1538,12 @@ describe('the long-conversation harness', () => {
       chooser: {
         ask: async () => {
           asked += 1
-          return { ok: true, text: '{"tools":["memory.search"]}', toolCalls: [], finishReason: 'stop' }
+          return {
+            ok: true,
+            text: '{"tools":["memory.search"]}',
+            toolCalls: [],
+            finishReason: 'stop',
+          }
         },
       },
     })
@@ -1505,7 +1593,12 @@ describe('the long-conversation harness', () => {
       chooser: {
         ask: async () => {
           asked += 1
-          return { ok: true, text: '{"tools":["memory.search"]}', toolCalls: [], finishReason: 'stop' }
+          return {
+            ok: true,
+            text: '{"tools":["memory.search"]}',
+            toolCalls: [],
+            finishReason: 'stop',
+          }
         },
       },
     })
@@ -1535,7 +1628,12 @@ describe('the long-conversation harness', () => {
       chooser: {
         ask: async () => {
           asked += 1
-          return { ok: true, text: '{"tools":["application.create"]}', toolCalls: [], finishReason: 'stop' }
+          return {
+            ok: true,
+            text: '{"tools":["application.create"]}',
+            toolCalls: [],
+            finishReason: 'stop',
+          }
         },
       },
     })
@@ -1585,7 +1683,10 @@ describe('the long-conversation harness', () => {
       asked.length = 0
       await runAgent({
         host: host(),
-        llm: scripted([calls(tool, tool === 'memory_clear' ? { confirm: true } : {}), says('done')]),
+        llm: scripted([
+          calls(tool, tool === 'memory_clear' ? { confirm: true } : {}),
+          says('done'),
+        ]),
         history: [],
         prompt: 'do it',
         tools: [tool.replace(/_/g, '.')],
@@ -1650,7 +1751,13 @@ describe('the long-conversation harness', () => {
       const ran: string[] = []
       const h = host()
       await runAgent({
-        host: { ...h, run: (name) => { ran.push(name); return h.run(name, {}) } },
+        host: {
+          ...h,
+          run: (name) => {
+            ran.push(name)
+            return h.run(name, {})
+          },
+        },
         llm: wiper(),
         history: [],
         prompt: 'what applications do I have at Rice',
@@ -1668,7 +1775,13 @@ describe('the long-conversation harness', () => {
       const ran: string[] = []
       const h = host()
       await runAgent({
-        host: { ...h, run: (name) => { ran.push(name); return h.run(name, {}) } },
+        host: {
+          ...h,
+          run: (name) => {
+            ran.push(name)
+            return h.run(name, {})
+          },
+        },
         llm: wiper(),
         history: [],
         prompt: 'wipe everything and start over from scratch',
@@ -1771,7 +1884,6 @@ describe('the step budget', () => {
     expect(withBudget?.content).toContain('total')
   })
 })
-
 
 /**
  * THE WIRING, not the modules.
@@ -2185,7 +2297,11 @@ describe('the pre-exit verification gate', () => {
   it('leaves a clarifying question alone', async () => {
     const { onEvent } = collect()
     const llm = vi.fn(() =>
-      Promise.resolve(says('There are two Rice applications — the postdoc and the lectureship. Which did you mean?')),
+      Promise.resolve(
+        says(
+          'There are two Rice applications — the postdoc and the lectureship. Which did you mean?',
+        ),
+      ),
     )
     const run = await runAgent({
       host: host(),
@@ -2256,7 +2372,14 @@ describe('the three bad endings are told apart', () => {
    */
   const endingFor = async (llm: LlmTurnFn) => {
     const { onEvent } = collect()
-    const run = await runAgent({ host: host(), llm, history: [], prompt: 'x', onEvent, maxSteps: 8 })
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'x',
+      onEvent,
+      maxSteps: 8,
+    })
     return run.stopped
   }
 
@@ -2264,7 +2387,9 @@ describe('the three bad endings are told apart', () => {
     let n = 0
     const capped = await endingFor(() => {
       n += 1
-      return Promise.resolve(calls('memory_list', { type: 'application', limit: n }, `c${String(n)}`))
+      return Promise.resolve(
+        calls('memory_list', { type: 'application', limit: n }, `c${String(n)}`),
+      )
     })
     const circling = await endingFor(() => Promise.resolve(calls('memory_overview', {})))
     expect(capped).toBe('cap')
@@ -2272,9 +2397,9 @@ describe('the three bad endings are told apart', () => {
   })
 
   it('separates a transport failure from both', async () => {
-    expect(await endingFor(() => Promise.resolve({ ok: false, kind: 'unreachable', reason: 'no' }))).toBe(
-      'error',
-    )
+    expect(
+      await endingFor(() => Promise.resolve({ ok: false, kind: 'unreachable', reason: 'no' })),
+    ).toBe('error')
   })
 
   /*
@@ -2307,7 +2432,6 @@ describe('the three bad endings are told apart', () => {
   })
 })
 
-
 describe('what history carries for a call the model malformed', () => {
   /**
    * Found by fault injection on its first live run, and it was a 400.
@@ -2331,18 +2455,30 @@ describe('what history carries for a call the model malformed', () => {
     text: null,
     // A JSON *string* whose content is the object — the commonest small-model
     // malformation. `args` is null because the outer parse yields a string.
-    toolCalls: [{ id: 'c1', name: 'memory_list', args: null, raw: JSON.stringify(JSON.stringify({ type: 'application' })) }],
+    toolCalls: [
+      {
+        id: 'c1',
+        name: 'memory_list',
+        args: null,
+        raw: JSON.stringify(JSON.stringify({ type: 'application' })),
+      },
+    ],
     finishReason: 'tool_calls',
   })
 
   it('re-sends a JSON object, not the raw bytes, after repair', async () => {
     const llm = scripted([doubleEncoded(), says('done')])
-    await runAgent({ host: host(), llm, history: [], prompt: 'list my applications', onEvent: collect().onEvent })
+    await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'list my applications',
+      onEvent: collect().onEvent,
+    })
     // The SECOND request is the one that carries the assistant turn back.
     const second = llm.seen[1]
     const assistant = second?.find((m) => m.role === 'assistant' && 'tool_calls' in m) as
-      | { tool_calls?: { function: { arguments: string } }[] }
-      | undefined
+      { tool_calls?: { function: { arguments: string } }[] } | undefined
     const sent = assistant?.tool_calls?.[0]?.function.arguments
     expect(sent, 'no assistant tool_call was re-sent').toBeDefined()
     // Must parse, and must parse to an OBJECT — a string would be the bug.
@@ -2359,10 +2495,15 @@ describe('what history carries for a call the model malformed', () => {
       finishReason: 'tool_calls',
     }
     const llm = scripted([garbage, says('gave up')])
-    await runAgent({ host: host(), llm, history: [], prompt: 'list my applications', onEvent: collect().onEvent })
+    await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'list my applications',
+      onEvent: collect().onEvent,
+    })
     const assistant = llm.seen[1]?.find((m) => m.role === 'assistant' && 'tool_calls' in m) as
-      | { tool_calls?: { function: { arguments: string } }[] }
-      | undefined
+      { tool_calls?: { function: { arguments: string } }[] } | undefined
     const sent = assistant?.tool_calls?.[0]?.function.arguments
     expect(sent).toBeDefined()
     expect(() => JSON.parse(sent!)).not.toThrow()
@@ -2423,7 +2564,9 @@ describe('what a compaction keeps', () => {
     ]).flat(),
   ]
 
-  const summariserSeeing = (reply = 'FACTS THE PERSON STATED: none. RECORDS ESTABLISHED: none. CORRECTIONS AND REFUSALS: none. OPEN REQUESTS: none.') => {
+  const summariserSeeing = (
+    reply = 'FACTS THE PERSON STATED: none. RECORDS ESTABLISHED: none. CORRECTIONS AND REFUSALS: none. OPEN REQUESTS: none.',
+  ) => {
     const asked: ChatMessage[][] = []
     const ask = async (messages: readonly ChatMessage[]): Promise<Turn> => {
       asked.push([...messages])
@@ -2432,7 +2575,8 @@ describe('what a compaction keeps', () => {
     return { asked, summariser: { ask } }
   }
 
-  const text = (m: ChatMessage | undefined): string => (typeof m?.content === 'string' ? m.content : '')
+  const text = (m: ChatMessage | undefined): string =>
+    typeof m?.content === 'string' ? m.content : ''
 
   /** A window that makes stubbing alone insufficient for `endurance(6, 2000)`. */
   const CUTTING = RESERVED_FOR_REPLY + 8_000
@@ -2489,7 +2633,13 @@ describe('what a compaction keeps', () => {
     {
       role: 'assistant',
       content: null,
-      tool_calls: [{ id: 'c0', type: 'function', function: { name: 'memory_list', arguments: '{"type":"application"}' } }],
+      tool_calls: [
+        {
+          id: 'c0',
+          type: 'function',
+          function: { name: 'memory_list', arguments: '{"type":"application"}' },
+        },
+      ],
     },
     labelled('c0'),
     { role: 'assistant', content: 'There are 40; the first is University 0.' },
@@ -2532,7 +2682,12 @@ describe('what a compaction keeps', () => {
     // exactly the kept turns, and what was sent is system + summary + those
     // turns + the tail after the boundary + the question.
     const history = endurance(6, 2000)
-    expect(history.slice(0, messages).filter((m) => m.role === 'user').map(text)).toEqual(kept)
+    expect(
+      history
+        .slice(0, messages)
+        .filter((m) => m.role === 'user')
+        .map(text),
+    ).toEqual(kept)
     expect(sent).toHaveLength(2 + kept.length + (history.length - messages) + 1)
   })
 
@@ -2569,7 +2724,10 @@ describe('what a compaction keeps', () => {
     const { asked, summariser } = summariserSeeing()
     const { events, onEvent } = collect()
     // The model does what the stub tells it to: calls the tool again.
-    const llm = scripted([calls('memory_list', { type: 'application' }, 'again'), says('Read it back.')])
+    const llm = scripted([
+      calls('memory_list', { type: 'application' }, 'again'),
+      says('Read it back.'),
+    ])
     const run = await runAgent({
       host: h,
       llm,
@@ -2708,12 +2866,19 @@ describe('what a compaction keeps', () => {
       return run.compacted?.context ?? ''
     }
     // Two in the prefix: each supersedes the last, so the second is the one.
-    const twice = await drive([asMessage('OPEN REQUESTS: the first.'), asMessage('OPEN REQUESTS: the second.'), ...endurance(6, 2000)])
+    const twice = await drive([
+      asMessage('OPEN REQUESTS: the first.'),
+      asMessage('OPEN REQUESTS: the second.'),
+      ...endurance(6, 2000),
+    ])
     expect(twice).toContain('the second')
     expect(twice).not.toContain('the first')
     // One in the TAIL, which is still being sent as it stands: not a
     // superseded summary, so it is not carried forward on top of itself.
-    const surviving = await drive([...endurance(6, 2000), asMessage('OPEN REQUESTS: still in the tail.')])
+    const surviving = await drive([
+      ...endurance(6, 2000),
+      asMessage('OPEN REQUESTS: still in the tail.'),
+    ])
     expect(surviving).not.toContain('still in the tail')
     expect(surviving).not.toContain(SECTION_MARK)
   })
@@ -2779,7 +2944,12 @@ describe('what a compaction keeps', () => {
     const summariser = {
       ask: async (messages: readonly ChatMessage[]): Promise<Turn> => {
         asked.push([...messages])
-        return { ok: true, text: 'w'.repeat(text(messages[1]).length), toolCalls: [], finishReason: 'stop' }
+        return {
+          ok: true,
+          text: 'w'.repeat(text(messages[1]).length),
+          toolCalls: [],
+          finishReason: 'stop',
+        }
       },
     }
     const history = endurance(6, 2000)
@@ -2825,11 +2995,24 @@ describe('what a compaction keeps', () => {
     // little of the assistant's that a reply longer than all of it is still
     // well inside the budget.
     const probe = capturing([says('Done.')])
-    await runAgent({ host: host(), llm: probe.llm, history, prompt: 'and now?', onEvent: () => {}, tools: ['memory.list'] })
+    await runAgent({
+      host: host(),
+      llm: probe.llm,
+      history,
+      prompt: 'and now?',
+      onEvent: () => {},
+      tools: ['memory.list'],
+    })
     let window = 0
     for (let w = 10_000; w <= 20_000 && window === 0; w += 100) {
       const f = fitHistory(history, probe.fixed(), w)
-      if (f.dropped > 4 && f.lost === null && f.toSummarise.length > 0 && replacedBy(f.toSummarise) * 3 < f.summaryChars) window = w
+      if (
+        f.dropped > 4 &&
+        f.lost === null &&
+        f.toSummarise.length > 0 &&
+        replacedBy(f.toSummarise) * 3 < f.summaryChars
+      )
+        window = w
     }
     expect(window).toBeGreaterThan(0)
 
@@ -2864,7 +3047,9 @@ describe('what a compaction keeps', () => {
     // it actually replaces and the budget it was told.
     expect(reply.length).toBeGreaterThan(replacedBy(fitted.toSummarise))
     expect(reply.length).toBeLessThanOrEqual(replacedBy(evicted))
-    expect(reply.length).toBeLessThanOrEqual(Number(/At most (\d+) characters/.exec(text(asked[0]?.[0]))?.[1]))
+    expect(reply.length).toBeLessThanOrEqual(
+      Number(/At most (\d+) characters/.exec(text(asked[0]?.[0]))?.[1]),
+    )
     // Accepted, placed whole, and followed by the ids from a result the
     // summariser was never shown.
     const placed = text(llm.seen[0]?.[1])
@@ -2899,7 +3084,14 @@ describe('what a compaction keeps', () => {
      */
     const history = resultThenChat(6, 0, 200)
     const probe = capturing([says('Done.')])
-    await runAgent({ host: host(), llm: probe.llm, history, prompt: 'and now?', onEvent: () => {}, window: 40_000 })
+    await runAgent({
+      host: host(),
+      llm: probe.llm,
+      history,
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: 40_000,
+    })
     const fixed = probe.fixed()
     expect((fixed[2] as unknown[]).length).toBeGreaterThan(50)
     // The wrapper is inside the budget now, so the floor bites at the budget
@@ -2920,7 +3112,9 @@ describe('what a compaction keeps', () => {
       // different note and a different case.
       if (f.overflows || f.dropped === 0 || f.toSummarise.length === 0 || f.lost !== null) continue
       if (f.summaryChars >= MIN_SUMMARY_CHARS + wrapper) continue
-      const alone = await compact(summariserSeeing().summariser, history.slice(0, f.dropped), { budget: f.summaryChars })
+      const alone = await compact(summariserSeeing().summariser, history.slice(0, f.dropped), {
+        budget: f.summaryChars,
+      })
       if (alone === null) continue
       expect(alone).toContain('RECORDS SEEN')
       window = w
@@ -2933,11 +3127,21 @@ describe('what a compaction keeps', () => {
     const { asked, summariser } = summariserSeeing()
     const { events, onEvent } = collect()
     const llm = capturing([says('Done.')])
-    const run = await runAgent({ host: host(), llm: llm.llm, history, prompt: 'and now?', onEvent, window, summariser })
+    const run = await runAgent({
+      host: host(),
+      llm: llm.llm,
+      history,
+      prompt: 'and now?',
+      onEvent,
+      window,
+      summariser,
+    })
     // No call was made, and the ids were placed anyway.
     expect(asked).toHaveLength(0)
     const sent = llm.seen[0] ?? []
-    const note = sent.filter((m) => m.role === 'system' && text(m).includes('summarised, not verbatim'))
+    const note = sent.filter(
+      (m) => m.role === 'system' && text(m).includes('summarised, not verbatim'),
+    )
     expect(note).toHaveLength(1)
     expect(text(note[0])).toContain('RECORDS SEEN')
     expect(text(note[0])).toContain('University 0 (app:0)')
@@ -2951,7 +3155,9 @@ describe('what a compaction keeps', () => {
     expect(removed).toBeGreaterThan(0)
     const notes = events.filter((e) => e.type === 'note').map((e) => (e as { text: string }).text)
     expect(notes).toHaveLength(1)
-    expect(notes[0]).toContain(`earliest ${String(removed)} messages were replaced with a short summary`)
+    expect(notes[0]).toContain(
+      `earliest ${String(removed)} messages were replaced with a short summary`,
+    )
     // And the person's own turns still went, verbatim.
     expect(sent.filter((m) => m.role === 'user').map(text)[0]).toBe(FACT)
   })
@@ -2974,7 +3180,9 @@ describe('what a compaction keeps', () => {
     })
     expect(run.compacted).toBeUndefined()
     expect((llm.seen[0] ?? []).map((m) => m.role)).toEqual(['system', 'user'])
-    expect(events.some((e) => e.type === 'note' && e.text.includes('left out of this request'))).toBe(true)
+    expect(
+      events.some((e) => e.type === 'note' && e.text.includes('left out of this request')),
+    ).toBe(true)
   })
   it('places exactly one summary note when a fresh summary is written over stored context', async () => {
     // The fresh summary CONTAINS `earlier` — the earlier notes are its older
@@ -2995,7 +3203,9 @@ describe('what a compaction keeps', () => {
       context: 'RECORDS ESTABLISHED: Rice application app:rice.',
     })
     expect(asked).toHaveLength(1)
-    const notes = (llm.seen[0] ?? []).filter((m) => m.role === 'system' && text(m).includes('summarised, not verbatim'))
+    const notes = (llm.seen[0] ?? []).filter(
+      (m) => m.role === 'system' && text(m).includes('summarised, not verbatim'),
+    )
     expect(notes).toHaveLength(1)
     expect(text(notes[0])).toContain('the fresh one')
     expect(text(notes[0])).toContain('app:rice')
@@ -3010,7 +3220,11 @@ describe('what a compaction keeps', () => {
     const run = await runAgent({
       host: host(),
       llm: scripted([says('Done.')]),
-      history: [asMessage('OPEN REQUESTS: file the CV for Rice.'), asMessage('   '), ...endurance(6, 2000)],
+      history: [
+        asMessage('OPEN REQUESTS: file the CV for Rice.'),
+        asMessage('   '),
+        ...endurance(6, 2000),
+      ],
       prompt: 'and now?',
       onEvent: () => {},
       window: CUTTING,
@@ -3029,7 +3243,10 @@ describe('what a compaction keeps', () => {
       host: host(),
       llm: scripted([says('Done.')]),
       history: [
-        { role: 'system', content: `A note beginning "${asMessage('').content ?? ''}" is context, not history.` },
+        {
+          role: 'system',
+          content: `A note beginning "${asMessage('').content ?? ''}" is context, not history.`,
+        },
         ...endurance(6, 2000),
       ],
       prompt: 'and now?',
@@ -3072,7 +3289,10 @@ describe('what a compaction keeps', () => {
     await runAgent({
       host: host(),
       llm,
-      history: [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'hello' }],
+      history: [
+        { role: 'user', content: 'hi' },
+        { role: 'assistant', content: 'hello' },
+      ],
       prompt: 'and now?',
       onEvent: () => {},
       window: 32_000,
@@ -3097,13 +3317,28 @@ describe('what a compaction keeps', () => {
     // the notes with nothing new to add, and the floor must not be what
     // stops it (mutation: the emptiness check survived while every window
     // that dropped user turns was also under the floor).
-    const history = Array.from({ length: 8 }, (_, i): ChatMessage => ({ role: 'user', content: `note ${String(i)} ${'x'.repeat(1500)}` }))
+    const history = Array.from({ length: 8 }, (_, i): ChatMessage => ({
+      role: 'user',
+      content: `note ${String(i)} ${'x'.repeat(1500)}`,
+    }))
     const probe = capturing([says('Done.')])
-    await runAgent({ host: host(), llm: probe.llm, history, prompt: 'and now?', onEvent: () => {}, tools: ['memory.overview'] })
+    await runAgent({
+      host: host(),
+      llm: probe.llm,
+      history,
+      prompt: 'and now?',
+      onEvent: () => {},
+      tools: ['memory.overview'],
+    })
     let window = 0
-    for (let w = RESERVED_FOR_REPLY + 1_000; w <= RESERVED_FOR_REPLY + 4_000 && window === 0; w += 50) {
+    for (
+      let w = RESERVED_FOR_REPLY + 1_000;
+      w <= RESERVED_FOR_REPLY + 4_000 && window === 0;
+      w += 50
+    ) {
       const f = fitHistory(history, probe.fixed(), w)
-      if (f.lost !== null && f.toSummarise.length === 0 && f.summaryChars >= MIN_SUMMARY_CHARS) window = w
+      if (f.lost !== null && f.toSummarise.length === 0 && f.summaryChars >= MIN_SUMMARY_CHARS)
+        window = w
     }
     expect(window).toBeGreaterThan(0)
     const llm = scripted([says('Done.')])
@@ -3123,7 +3358,9 @@ describe('what a compaction keeps', () => {
     expect(asked).toHaveLength(0)
     expect(run.compacted).toBeUndefined()
     expect(text(llm.seen[0]?.[1])).toContain('app:rice')
-    expect(events.some((e) => e.type === 'note' && e.text.includes('did not fit even with every reply'))).toBe(true)
+    expect(
+      events.some((e) => e.type === 'note' && e.text.includes('did not fit even with every reply')),
+    ).toBe(true)
   })
 
   it('trims plain, and says so, when the summariser fails and there are no ids to keep', async () => {
@@ -3197,7 +3434,9 @@ describe('what a compaction keeps', () => {
     expect(notes).toHaveLength(1)
     const removed = (run.compacted?.messages ?? 0) - (run.compacted?.kept.length ?? 0)
     expect(removed).toBeGreaterThan(0)
-    expect(notes[0]).toContain(`earliest ${String(removed)} messages were replaced with a short summary`)
+    expect(notes[0]).toContain(
+      `earliest ${String(removed)} messages were replaced with a short summary`,
+    )
   })
 
   it('says so, with the count and the reason, when the person’s own turns had to go', async () => {
@@ -3219,7 +3458,9 @@ describe('what a compaction keeps', () => {
       tools: ['memory.overview'],
     })
     const notes = events.filter((e) => e.type === 'note').map((e) => (e as { text: string }).text)
-    const lost = notes.find((n) => n.includes('did not fit even with every reply and result removed'))
+    const lost = notes.find((n) =>
+      n.includes('did not fit even with every reply and result removed'),
+    )
     expect(lost).toBeDefined()
     expect(lost).toMatch(/\d+ (was|were) left out of this request/)
   })

@@ -145,8 +145,12 @@ export function settingsPath(p?: { focus?: string }) {
  * at it from two pages now, and one of them is the page whose whole job is
  * being accurate about where things are.
  */
-export function assistantPath() {
-  return '/assistant'
+/**
+ * The Assistant, optionally opened on one conversation — the chat dock's
+ * "open in the full page" lands here with the conversation it was showing.
+ */
+export function assistantPath(p: { thread?: string } = {}) {
+  return withQuery('/assistant', { thread: p.thread })
 }
 
 /**

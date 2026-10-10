@@ -84,7 +84,9 @@ export function ToastViewport({
         aria-atomic="false"
         // The container spans the corner even when empty, so it has to let
         // clicks through to whatever is underneath it.
-        className="pointer-events-none fixed right-0 bottom-0 z-[100] flex w-full flex-col gap-2 p-3 sm:max-w-sm sm:p-4"
+        // `--dock-clearance` lifts the stack above the chat dock's bar, which
+        // owns the bottom-right corner on every page but the Assistant's.
+        className="pointer-events-none fixed right-0 bottom-[var(--dock-clearance,0px)] z-[100] flex w-full flex-col gap-2 p-3 sm:max-w-sm sm:p-4"
       >
         {toasts.map((toast) => (
           <ToastItem

@@ -178,6 +178,8 @@ export type StartOptions = {
   summariser?: AgentOptions['summariser']
   /** A previous compaction's summary, and where to report a new one. */
   context?: string
+  /** The record the conversation is about, as the loop's one-line note. See `AgentOptions.focus`. */
+  focus?: string
   onCompacted?: (threadId: NodeId, context: string, throughMessages: number) => void
   /**
    * Called once, with the thread this run was FOR.
@@ -484,6 +486,7 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
            * than guessing; the bench passes nothing here and gets no line.
            */
           ...(options.context === undefined ? {} : { context: options.context }),
+          ...(options.focus === undefined ? {} : { focus: options.focus }),
           thread: { id: threadId },
           /*
            * The retriever, on for the Assistant and nothing else.

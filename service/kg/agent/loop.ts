@@ -300,6 +300,14 @@ export type AgentOptions = {
    */
   gate?: 'destructive' | 'writes' | 'none'
   /**
+   * One line naming the record this conversation is about — `focusLine` in
+   * `focus.ts` — appended to the system message so "this application" has a
+   * referent. Absent for a conversation about nothing in particular, which is
+   * every caller but the two chat surfaces, and the benchmark among them: a
+   * run without it sends exactly the system message it always did.
+   */
+  focus?: string
+  /**
    * The model's context window, in tokens.
    *
    * Absent means "do not trim", which is what every caller did implicitly
@@ -446,7 +454,11 @@ export type AgentRun = {
    * the next compaction's summariser as "earlier notes", which is the exact
    * path this design closed.
    */
-  compacted?: { readonly context: string; readonly messages: number; readonly kept: readonly string[] }
+  compacted?: {
+    readonly context: string
+    readonly messages: number
+    readonly kept: readonly string[]
+  }
 }
 
 /**
@@ -602,14 +614,17 @@ const priorSummaryIn = (
 ): string | undefined => {
   // `asMessage` returns the message union; a system message's content is a
   // string, which is what is read here.
-  const wrapped = (options: Pick<CompactOptions, 'thread'>): string => String(asMessage('', options).content ?? '')
+  const wrapped = (options: Pick<CompactOptions, 'thread'>): string =>
+    String(asMessage('', options).content ?? '')
   const prefix = wrapped({})
   const suffix = thread === undefined ? '' : wrapped({ thread }).slice(prefix.length)
   for (let i = evicted.length - 1; i >= 0; i -= 1) {
     const m = evicted[i]
     if (m?.role !== 'system' || !m.content.startsWith(prefix)) continue
     const body = m.content.slice(prefix.length)
-    const raw = (suffix !== '' && body.endsWith(suffix) ? body.slice(0, -suffix.length) : body).trim()
+    const raw = (
+      suffix !== '' && body.endsWith(suffix) ? body.slice(0, -suffix.length) : body
+    ).trim()
     // A wrapper with nothing inside supersedes nothing: an older one may still
     // be the notes, so the search goes on rather than ending on it.
     if (raw === '') continue
@@ -872,7 +887,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    */
   const system: ChatMessage = {
     role: 'system',
-    content: `${SYSTEM_PROMPT} Today is ${options.host.today()}.`,
+    content: `${SYSTEM_PROMPT} Today is ${options.host.today()}.${options.focus ? ` ${options.focus}` : ''}`,
   }
   const question: ChatMessage = { role: 'user', content: options.prompt }
 
@@ -896,19 +911,20 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    * is a floor on the damage rather than a guarantee, and `guardTruncation`
    * still runs afterwards for the case where the guess was too generous.
    */
-  const fitted: Trimmed = options.window === undefined
-    ? {
-        history: options.history,
-        dropped: 0,
-        stubbed: 0,
-        kept: [],
-        toSummarise: [],
-        lost: null,
-        summaryChars: 0,
-        summarisable: true,
-        overflows: false,
-      }
-    : fitHistory(options.history, [system, question, tools], options.window)
+  const fitted: Trimmed =
+    options.window === undefined
+      ? {
+          history: options.history,
+          dropped: 0,
+          stubbed: 0,
+          kept: [],
+          toSummarise: [],
+          lost: null,
+          summaryChars: 0,
+          summarisable: true,
+          overflows: false,
+        }
+      : fitHistory(options.history, [system, question, tools], options.window)
 
   /*
    * What was dropped, summarised back in — so a long chat loses DETAIL rather

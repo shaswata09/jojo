@@ -1157,6 +1157,10 @@ html[data-theme='dark'] {
   /* Three quarters of the column: wide enough to hold a form beside its own
      labels, narrow enough that the page is still visibly behind it. */
   --modal-width: calc(var(--page-content) * 0.75);
+  /* How far toasts and approval prompts sit above the bottom edge: zero here,
+     and the chat dock's bar height while the dock is on the page — it owns
+     the bottom-right corner everywhere but the Assistant. Set by ChatDock. */
+  --dock-clearance: 0px;
 }
 
 @media (min-width: 40rem) {
