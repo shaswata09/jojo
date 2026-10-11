@@ -259,9 +259,17 @@ export function OwedThisWeek() {
               edges so the scrollbar rides the edge rather than floating a
               padding's width inside it — the same treatment `PanelScroll`
               applies everywhere else. The padding is added straight back on the
-              inside, so the rows keep their inset and only the scrollbar moves. */}
+              inside, so the rows keep their inset and only the scrollbar moves.
+
+              From `lg` the box goes `absolute` to fill the column, and that
+              override used to reset the bleed to zero (`lg:inset-0 lg:mx-0`)
+              while keeping the re-added padding — so on exactly the screens
+              this panel is laid out for, the scrollbar stood 20px in from the
+              edge (measured) and the rows sat 20px deeper than the title and
+              the "Later" heading below them. `-inset-x-5` is the same bleed in
+              the absolute layout, matched to the panel's 20px padding there. */}
           <div className="relative lg:min-h-0 lg:flex-1">
-            <div className="-mx-4 -mb-4 max-h-[30rem] overflow-x-hidden overflow-y-auto px-4 pb-4 sm:-mx-5 sm:-mb-5 sm:px-5 sm:pb-5 lg:absolute lg:inset-0 lg:mx-0 lg:mb-0 lg:max-h-none lg:px-4 lg:pb-4 xl:px-5 xl:pb-5">
+            <div className="-mx-4 -mb-4 max-h-[30rem] overflow-x-hidden overflow-y-auto px-4 pb-4 sm:-mx-5 sm:-mb-5 sm:px-5 sm:pb-5 lg:absolute lg:-inset-x-5 lg:inset-y-0 lg:mx-0 lg:mb-0 lg:max-h-none lg:px-5 lg:pb-4 xl:pb-5">
               {groups.map((group) => {
                 // Today is the only group that renders empty. It is the question
                 // the page exists to answer, and "clear" is an answer.
@@ -399,7 +407,7 @@ export function OwedThisWeek() {
                    * worse than truncating a title the button already carries in
                    * full in its tooltip and to a screen reader.
                    */
-                  <li key={e.id} className="min-w-0 max-w-full">
+                  <li key={e.id} className="max-w-full min-w-0">
                     {/* A chip that opens the item, rather than one that names
                         something and leaves you to find it on the calendar. */}
                     <button

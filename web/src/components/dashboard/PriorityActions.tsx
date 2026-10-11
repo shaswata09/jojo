@@ -142,7 +142,12 @@ function ActionButton({ action }: { action: PriorityAction['actions'][number] })
  */
 function DecisionCard({ action }: { action: PriorityAction }) {
   return (
-    <div className={cn('flex h-full flex-col rounded-md border px-3.5 py-3', URGENCY_BORDER[action.urgency])}>
+    <div
+      className={cn(
+        'flex h-full flex-col rounded-md border px-3.5 py-3',
+        URGENCY_BORDER[action.urgency],
+      )}
+    >
       <Chip tone="gray" size="sm" className="self-start">
         {action.kindLabel}
       </Chip>
@@ -277,11 +282,26 @@ function DecisionTimeline({ actions, hint }: { actions: PriorityAction[]; hint: 
         ref={track}
         aria-label="Decisions, earliest first"
         onScroll={measure}
-        // `px-1` keeps focus rings from being clipped by the scroller, and
-        // `scroll-px-1` makes snapping count that padding — without it the
-        // first card snapped 4px in, so the track opened "scrolled", with the
-        // Earlier arrow lit and the first card's edge faded.
-        className="-mx-1 flex snap-x snap-mandatory scroll-px-1 gap-3 overflow-x-auto overscroll-x-contain px-1 pb-2"
+        /*
+         * Bled out to the panel's edges, `PanelScroll`'s treatment: the negative
+         * margins cancel the panel's padding and the same padding goes straight
+         * back on the inside, so the cards stay where they were and only the
+         * scrollbar moves — onto the panel's bottom edge instead of floating
+         * above it. It used to bleed 4px sideways and not at all downwards.
+         *
+         * `flex-1` (the panel is a flex column) because the dashboard grid
+         * stretches this panel to match "At a glance" beside it — 434px against
+         * ~260px of content at 1100px wide, measured — so cancelling the padding
+         * alone left the bar 117px short of the bottom. Filling the panel puts
+         * it on the edge at every width. The cards stretch with it, which is
+         * what `DecisionCard` is built for: `h-full`, actions pinned `mt-auto`.
+         *
+         * `scroll-px-*` matches the padding so snapping counts it — without it
+         * the first card snapped in by the padding, the track opened
+         * "scrolled", with the Earlier arrow lit and the first card's edge
+         * faded. The padding also keeps focus rings from being clipped.
+         */
+        className="-mx-4 -mb-4 flex min-h-0 flex-1 snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-4 sm:-mx-5 sm:-mb-5 sm:scroll-px-5 sm:px-5 sm:pb-5"
         style={mask === undefined ? undefined : { maskImage: mask, WebkitMaskImage: mask }}
       >
         {actions.map((action) => (
@@ -499,7 +519,9 @@ export function PriorityActions() {
   }
 
   return (
-    <Panel className="min-w-0">
+    // A flex column so the carousel can fill the height the grid stretches
+    // this panel to. See the track's own note.
+    <Panel className="flex min-w-0 flex-col">
       <DecisionTimeline
         actions={chronological(actions)}
         hint={actions.length === 1 ? '1 open' : `${actions.length} open`}
