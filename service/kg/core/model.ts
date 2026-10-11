@@ -894,6 +894,8 @@ export type SavedPosting = {
   /** ISO date the snapshot was taken. Rendered through `agoLabel`. */
   savedOn: string
   size: string
+  /** One or two sentences on what the job is, written by the scout from what the board showed. */
+  summary?: string
   /** Derived: whether a BECAME edge exists. Never stored — see project.ts. */
   linked: boolean
   applicationId?: string
@@ -1615,12 +1617,20 @@ export type SnippetProps = {
   tailored?: TailoredFrom
 }
 
+/**
+ * The longest a posting's summary may be. Two sentences, not the advert: it is
+ * there so a person can tell from the queue whether a link is worth opening,
+ * and anything longer is a reason to open it.
+ */
+export const MAX_POSTING_SUMMARY = 300
+
 export type PostingProps = {
   slug: string
   title: string
   url: string
   savedOn: ISODate
   size: string
+  summary?: string
 }
 
 export type MatchProps = {

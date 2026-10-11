@@ -147,3 +147,45 @@ describe('promoting a match a second time', () => {
     expect(runtime.can('scout.match.promote', { id: match }).ok).toBe(true)
   })
 })
+
+/*
+ * The summary is what lets a person judge a queued posting without opening it,
+ * and it outlives the queue: approving the suggestion must carry it onto the
+ * saved posting, where the Postings panel shows it.
+ */
+describe('a posting saved with a summary', () => {
+  it('keeps the summary, tidied, on the saved posting', () => {
+    const { runtime, repo, okOr } = world()
+    const posting = okOr(
+      runtime.run('scout.posting.save', {
+        url: 'https://jobs.rice.edu/postings/ml-engineer',
+        summary: '  Tenure-track ML post at Rice,\n Houston. ',
+      }),
+    ) as NodeId
+    expect(repo.getSnapshot().node(posting, 'posting')?.props.summary).toBe(
+      'Tenure-track ML post at Rice, Houston.',
+    )
+  })
+
+  it('stores no summary field at all when none was given or it was blank', () => {
+    const { runtime, repo, okOr } = world()
+    const bare = okOr(
+      runtime.run('scout.posting.save', { url: 'https://jobs.rice.edu/postings/a' }),
+    ) as NodeId
+    const blank = okOr(
+      runtime.run('scout.posting.save', { url: 'https://jobs.rice.edu/postings/b', summary: '   ' }),
+    ) as NodeId
+    const m = repo.getSnapshot()
+    expect(m.node(bare, 'posting')?.props).not.toHaveProperty('summary')
+    expect(m.node(blank, 'posting')?.props).not.toHaveProperty('summary')
+  })
+
+  it('refuses a summary that is the whole advert rather than two sentences', () => {
+    const { runtime } = world()
+    const out = runtime.run('scout.posting.save', {
+      url: 'https://jobs.rice.edu/postings/ml-engineer',
+      summary: 'x'.repeat(301),
+    })
+    expect(out.ok).toBe(false)
+  })
+})

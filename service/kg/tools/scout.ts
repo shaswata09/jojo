@@ -19,7 +19,7 @@
 
 import type { NodeId } from '../core/model'
 import { draftFromText, draftFromUrl, roleFromTitle } from '../core/parse-posting'
-import { PIPELINE_KINDS } from '../core/model'
+import { MAX_POSTING_SUMMARY, PIPELINE_KINDS } from '../core/model'
 import { AUTO_CAPABLE } from '../core/proposal'
 import { s } from '../core/schema'
 import { defineTool } from './tool'
@@ -41,6 +41,13 @@ export const scoutPostingSave = defineTool({
   input: s.object({
     url: s.string({ min: 1, label: 'Posting link' }),
     title: s.optional(s.string({ label: 'Title' })),
+    summary: s.optional(
+      s.string({
+        max: MAX_POSTING_SUMMARY,
+        label: 'Summary',
+        description: 'One or two plain sentences on what the job is, from what the board showed.',
+      }),
+    ),
     size: s.optional(s.string()),
     savedOn: s.optional(s.isoDate()),
     pipelineId: s.optional(s.id('pipeline')),
@@ -48,6 +55,7 @@ export const scoutPostingSave = defineTool({
 
   run(ctx, input): NodeId {
     const url = input.url.trim()
+    const summary = input.summary?.trim().replace(/\s+/g, ' ')
     const guess = draftFromUrl(url)
     // The title is a guess made from the URL, offered so the row is readable —
     // the record says what it is, which is a link you kept.
@@ -63,6 +71,9 @@ export const scoutPostingSave = defineTool({
         url,
         savedOn: input.savedOn ?? dayOf(ctx.now),
         size: input.size ?? '—',
+        // Absent rather than empty, so a posting saved without one is stored
+        // exactly as it was before the field existed.
+        ...(summary ? { summary } : {}),
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,

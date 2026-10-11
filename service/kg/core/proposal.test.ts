@@ -26,6 +26,7 @@ import {
   scheduleOf,
   mayPropose,
   postingKey,
+  postingPreview,
   proposalDetail,
   shouldOfferShutdown,
 } from './proposal'
@@ -338,5 +339,52 @@ describe('a bulk proposal shows what it would write', () => {
     // Rather than an empty string, which renders as a blank line under a title
     // and reads as a value that failed to load.
     expect(detail({ keywords: ['kw_01H8', 'kw_01H9'] })).toBeNull()
+  })
+})
+
+describe('a queued posting, read for its card', () => {
+  const save = (input: Record<string, unknown>) =>
+    postingPreview('scout.posting.save', JSON.stringify(input))
+
+  it('gives the summary, the title and an address that opens', () => {
+    expect(
+      save({
+        url: 'https://www.jobs.rice.edu/postings/29411/',
+        title: 'Rice — Assistant Professor',
+        summary: 'Tenure-track post in machine learning.',
+      }),
+    ).toEqual({
+      href: 'https://www.jobs.rice.edu/postings/29411/',
+      label: 'jobs.rice.edu/postings/29411',
+      title: 'Rice — Assistant Professor',
+      summary: 'Tenure-track post in machine learning.',
+    })
+  })
+
+  // How the seeded postings and many pasted links are written; the Postings
+  // panel already opens these as https, and the queue must not be stricter.
+  it('opens a bare address as https', () => {
+    expect(save({ url: 'jobs.rice.edu/postings/29411' })?.href).toBe(
+      'https://jobs.rice.edu/postings/29411',
+    )
+  })
+
+  // The address came from a model reading a web page.
+  it('never makes anything but a web page clickable', () => {
+    for (const url of ['javascript:alert(1)', 'file:///etc/passwd', 'data:text/html,hi']) {
+      const preview = save({ url })
+      expect(preview?.href).toBeNull()
+      expect(preview?.label).toBe(url)
+    }
+  })
+
+  it('reports a missing summary as missing, not as an empty line', () => {
+    expect(save({ url: 'https://a.example/job', summary: '  ' })?.summary).toBeNull()
+  })
+
+  it('is only for posting proposals, and only for a payload it can read', () => {
+    expect(postingPreview('application.update', '{"url":"https://a.example"}')).toBeNull()
+    expect(postingPreview('scout.posting.save', 'not json')).toBeNull()
+    expect(postingPreview('scout.posting.save', '{"title":"no link"}')).toBeNull()
   })
 })

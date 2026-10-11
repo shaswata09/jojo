@@ -1,11 +1,20 @@
-import { Check, Inbox, ListChecks, Sparkles, Trash2, TriangleAlert, X } from 'lucide-react'
+import {
+  Check,
+  ExternalLink,
+  Inbox,
+  ListChecks,
+  Sparkles,
+  Trash2,
+  TriangleAlert,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Chip } from '@/components/common/Chip'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { proposalDetail } from '@jojo/service/core/proposal'
+import { postingPreview, proposalDetail } from '@jojo/service/core/proposal'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
 
 /**
@@ -158,7 +167,8 @@ function ProposalCard({
 }) {
   const settled = p.status !== 'pending'
   const status = settled ? STATUS[p.status as Exclude<Proposal['status'], 'pending'>] : null
-  const detail = proposalDetail(p.input)
+  const posting = postingPreview(p.tool, p.input)
+  const detail = posting ? null : proposalDetail(p.input)
 
   return (
     <li
@@ -168,21 +178,63 @@ function ProposalCard({
           : 'rounded-lg border border-hairline bg-panel px-3.5 py-3'
       }
     >
-      <div className="flex items-start gap-3">
+      {/* Wraps, so on a narrow screen the buttons drop under the text rather
+          than squeezing the summary — the thing being judged — to one word a line. */}
+      <div className="flex flex-wrap items-start gap-3">
         <Sparkles
           aria-hidden
           strokeWidth={1.7}
-          className={settled ? 'mt-0.5 size-4 shrink-0 text-text-3' : 'mt-0.5 size-4 shrink-0 text-accent'}
+          className={
+            settled ? 'mt-0.5 size-4 shrink-0 text-text-3' : 'mt-0.5 size-4 shrink-0 text-accent'
+          }
         />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-48 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className={settled ? 'text-sm text-text-2' : 'text-sm text-text-1'}>{p.title}</span>
+            <span className={settled ? 'text-sm text-text-2' : 'text-sm text-text-1'}>
+              {p.title}
+            </span>
             {status ? (
               <Chip tone={status.tone} size="sm">
                 {status.label}
               </Chip>
             ) : null}
           </div>
+
+          {/* A posting, shown as something to judge rather than as a payload:
+              what the job is, in the scout's two sentences, and the link as a
+              link. The bare URL in the detail line below could be neither read
+              nor clicked, and "is this worth opening?" is the whole decision. */}
+          {posting ? (
+            <div className="mt-1 space-y-1">
+              {posting.summary ? (
+                <p className="line-clamp-2 text-xs leading-relaxed text-text-1">
+                  {posting.summary}
+                </p>
+              ) : (
+                <p className="text-xs text-text-3 italic">
+                  No summary came with this one — open the posting to see what it is.
+                </p>
+              )}
+              {posting.href ? (
+                <a
+                  href={posting.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={posting.href}
+                  className="block truncate text-xs text-accent underline-offset-2 hover:underline"
+                >
+                  {posting.label}
+                </a>
+              ) : (
+                <p
+                  className="truncate text-xs text-text-3"
+                  title="Not a web address, so it is not offered as a link"
+                >
+                  {posting.label}
+                </p>
+              )}
+            </div>
+          ) : null}
 
           {/* What it would actually write.
               The card used to show the operation and the reason and never the
@@ -216,23 +268,40 @@ function ProposalCard({
           </p>
         </div>
 
-        {settled ? null : (
-          <div className="flex shrink-0 items-center gap-1.5">
-            <Button size="sm" onClick={onApprove}>
-              <Check className="size-3.5" strokeWidth={2} aria-hidden />
-              Approve
-            </Button>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              title="Discard this suggestion"
-              aria-label={`Discard: ${p.title}`}
-              onClick={onDiscard}
-            >
-              <X className="size-3.5" strokeWidth={1.8} aria-hidden />
-            </Button>
+        {posting?.href || !settled ? (
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            {posting?.href ? (
+              <Button size="sm" variant="outline" asChild>
+                <a
+                  href={posting.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open posting in a new tab: ${posting.title ?? posting.label}`}
+                >
+                  <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
+                  Open posting
+                </a>
+              </Button>
+            ) : null}
+            {settled ? null : (
+              <>
+                <Button size="sm" onClick={onApprove}>
+                  <Check className="size-3.5" strokeWidth={2} aria-hidden />
+                  Approve
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  title="Discard this suggestion"
+                  aria-label={`Discard: ${p.title}`}
+                  onClick={onDiscard}
+                >
+                  <X className="size-3.5" strokeWidth={1.8} aria-hidden />
+                </Button>
+              </>
+            )}
           </div>
-        )}
+        ) : null}
       </div>
     </li>
   )

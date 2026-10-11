@@ -94,6 +94,7 @@ const SCOUT_PROMPT = [
   'If no board can be read, work from what is in the records instead: the postings and matches already saved, the profile’s roles, regions and terms, and the applications they have made.',
   'Never propose a posting that is already saved or already an application, under any spelling of its link.',
   'For each one, say in the rationale what makes it a fit and what they would need to tailor from what they already have.',
+  'Give every posting you save a summary: one or two plain sentences on what the job is — the role, the employer, the place — taken from what the board showed. The person decides from it whether the link is worth opening, so write only what the board said.',
   'If there is nothing new worth showing, say so and stop.',
 ].join(' ')
 

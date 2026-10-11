@@ -49,6 +49,7 @@ import {
   MAX_CHECKLIST_ITEMS,
   MAX_CHECKLIST_TEXT,
   MAX_NOTE_SPANS,
+  MAX_POSTING_SUMMARY,
   MAX_REQUIREMENT_TEXT,
   MAX_REQUIREMENTS,
   NODE_TYPES,
@@ -493,6 +494,7 @@ export const NODE_PROP_SCHEMAS = {
     url: s.string({ label: 'Link' }),
     savedOn: s.isoDate({ label: 'Saved on' }),
     size: s.string({ label: 'Size' }),
+    summary: s.optional(s.string({ max: MAX_POSTING_SUMMARY, label: 'Summary' })),
   }),
   match: s.object({
     slug,

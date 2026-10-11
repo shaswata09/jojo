@@ -132,6 +132,14 @@ export function PostingsPanel({
                         {hostOf(p.url) ?? p.url} · saved {agoLabel(p.savedOn, TODAY)}
                       </span>
                     </a>
+                    {/* What the scout read on the board, kept once the posting
+                        is saved, so the row says what the job is after the
+                        suggestion card that first said it has gone. */}
+                    {p.summary ? (
+                      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-text-2">
+                        {p.summary}
+                      </p>
+                    ) : null}
                     {application ? (
                       <div className="mt-1 text-xs text-text-3">
                         In applications as{' '}

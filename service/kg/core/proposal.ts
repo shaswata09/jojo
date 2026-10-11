@@ -206,6 +206,70 @@ export function proposalDetail(inputJson: string): string | null {
   return line.length > DETAIL_MAX ? `${line.slice(0, DETAIL_MAX - 1)}…` : line
 }
 
+/** What a proposed posting is, read for the card that asks about it. */
+export type PostingPreview = {
+  /** The posting's address, only when it is a web page a browser can safely open. */
+  href: string | null
+  /** The address as written, shortened for reading: host and path, no scheme. */
+  label: string
+  title: string | null
+  summary: string | null
+}
+
+/**
+ * A scout proposal's posting, laid out for the person deciding on it.
+ *
+ * Reported 2026-10-10: a queued posting showed its link as plain text inside
+ * `proposalDetail`'s line — a URL that could not be clicked, and that could
+ * not tell anyone whether the job was worth their time either. So a posting
+ * gets its own reading: the summary the scout wrote from the board, and the
+ * link as something to open.
+ *
+ * `href` is null for anything but http and https. The address came from a model
+ * reading a web page, and a `javascript:` link made clickable in the queue is
+ * a click the person never meant to make.
+ */
+export function postingPreview(tool: string, inputJson: string): PostingPreview | null {
+  if (tool !== 'scout.posting.save') return null
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(inputJson)
+  } catch {
+    return null
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null
+  const input = parsed as Record<string, unknown>
+  const text = (key: string) => {
+    const value = input[key]
+    const clean = typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : ''
+    return clean === '' ? null : clean
+  }
+  const url = text('url')
+  if (url === null) return null
+  return {
+    href: webAddress(url),
+    label: url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, ''),
+    title: text('title'),
+    summary: text('summary'),
+  }
+}
+
+/**
+ * Bare addresses — 'jobs.rice.edu/postings/29411', which is how the seeded
+ * postings and plenty of pasted links are written — are read as https, the
+ * Postings panel's rule. Anything that names another scheme keeps it, and is
+ * refused unless it is http or https.
+ */
+function webAddress(url: string): string | null {
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : `https://${url}`
+  try {
+    const parsed = new URL(withScheme)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null
+  } catch {
+    return null
+  }
+}
+
 /**
  * One row of a bulk payload, in as few words as identify it.
  *

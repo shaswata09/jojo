@@ -150,11 +150,19 @@
 /* ---------- LIGHT — shadcn/ui neutral ---------- */
 :root,
 html[data-theme='light'] {
-  --page: #f5f5f5; /* shadcn --muted, so panels read against the page */
-  --panel: #ffffff; /* --card / --background */
-  --well: #f5f5f5; /* --secondary / --muted */
-  --raised: #ffffff; /* --popover */
-  --hairline: #e5e5e5; /* --border */
+  /* DIMMED, 2026-10-10: pure white was too bright to read for long. Every
+     surface moved down together — panel #ffffff → #f7f7f7, 7% less light —
+     and every step BETWEEN them was kept at the ratio it had, so nothing that
+     separated before separates less now. The colours drawn ON these surfaces
+     (meta text, input borders, the status inks, the stage fills) were then
+     darkened by the minimum each needed to clear its bar again; the figures
+     beside each token are re-measured against the new surfaces, not carried
+     over. Chart series and the soft chip fills are unchanged. */
+  --page: #ededed; /* 1.09:1 under panel — the step it always had */
+  --panel: #f7f7f7; /* --card / --background · was #ffffff */
+  --well: #ededed; /* --secondary / --muted · recessed 1.09:1 under panel */
+  --raised: #f7f7f7; /* --popover · tracks --panel, as it does in dark */
+  --hairline: #dddddd; /* --border · 1.26:1 on panel, as before */
   /* The EDGE of a container — `.surface` — as distinct from the divider lines
      inside one, which stay `--hairline`.
 
@@ -166,16 +174,17 @@ html[data-theme='light'] {
      white sheet.
 
      The page was not darkened, though that is the obvious move, because it
-     collides with the selected-state fill: `--accent-soft` (#ebebeb) is what a
-     pressed or active control on the PAGE paints, and against #f0f0f0 it is
-     1.05:1, against #ececec 1.01:1 — the role filter, the view toggle and the
-     options button would lose their selected state to fix the panels. So the
-     edge carries it: 1.48:1 on the panel and 1.36:1 on the page, in the same
-     band as dark's 1.30 / 1.57.
+     collides with the selected-state fill: `--accent-soft` is what a pressed
+     or active control on the PAGE paints, and it sits only 1.09:1 below the
+     page — measured when this was written, a page 1.05:1 darker took that to
+     1.01:1 and the role filter, the view toggle and the options button lost
+     their selected state. So the edge carries it: 1.48:1 on the panel and
+     1.36:1 on the page, in the same band as dark's 1.30 / 1.57. (When the whole
+     palette was dimmed below, every one of these ratios was kept.)
 
      Dividers inside panels stay on `--hairline`. At 1.26:1 they already match
      dark's 1.30, and darkening them too would turn every list into a grid. */
-  --panel-border: #d4d4d4; /* 1.48:1 on panel · 1.36:1 on page */
+  --panel-border: #cdcdcd; /* 1.48:1 on panel · 1.36:1 on page */
   /* The border on every input, the reminder checkbox and the board's dashed
      "Add here" slot. Those are UI COMPONENTS, not decoration, and a text input
      here is `bg-transparent` — so this stroke is the only thing that says where
@@ -187,23 +196,23 @@ html[data-theme='light'] {
      losing to a requirement. Measured against the LIGHTEST surface this ever
      lands on, which is the well rather than the panel — a field inside a well
      is the case that was failing worst. */
-  --hairline-strong: #8a8a8a; /* 3.45:1 on panel, 3.17:1 on well */
+  --hairline-strong: #888888; /* 3.31:1 on panel, 3.03:1 on well */
   /* Was #f5f5f5, byte-identical to --well — so `hover:bg-row-hover` on a
      control already sitting on a well painted nothing at all. */
-  --row-hover: #f0f0f0; /* 1.14:1 on panel */
+  --row-hover: #e8e8e8; /* 1.14:1 on panel */
 
-  --text-1: #0a0a0a; /* --foreground      · 19.80:1 on panel */
-  --text-2: #525252; /*                     7.81:1 on panel */
+  --text-1: #0a0a0a; /* --foreground      · 18.48:1 on panel */
+  --text-2: #525252; /*                     7.29:1 on panel · 6.09:1 accent-soft */
   /* Was #737373: 4.74:1 on panel but only 4.35:1 on the page and the well,
      and the well is where most meta text actually lives. Measured on every
      surface it lands on now — panel, page/well, row hover, and the selected
      fill below, which is the tightest of the four. */
-  --text-3: #696969; /* 5.49:1 panel · 5.04:1 well · 4.82:1 row-hover · 4.61:1 accent-soft */
+  --text-3: #656565; /* 5.44:1 panel · 4.98:1 well · 4.76:1 row-hover · 4.54:1 accent-soft */
 
   /* shadcn's primary is monochrome — near-black in light, near-white in dark.
      It doubles as the focus ring, which is why the ring passes easily here:
      shadcn's own --ring (#a1a1a1) is 2.58:1 and fails WCAG 1.4.11's 3:1. */
-  --accent: #171717; /* 17.93:1 on panel */
+  --accent: #171717; /* 16.74:1 on panel */
   --accent-fg: #fafafa;
   /* The selected/hovered/drop fill. It was #f5f5f5 — the same bytes as --well
      and --page — so eight interaction states across the app resolved to the
@@ -212,22 +221,22 @@ html[data-theme='light'] {
      the role filter, the StageMenu trigger, the PageHeader options button, the
      editor's active toolbar button. It has to be a real step below --well, not
      an alias of it. */
-  --accent-soft: #ebebeb; /* 1.19:1 on panel · 1.09:1 on well */
-  --accent-border: #a3a3a3; /* 2.52:1 on panel — a clear step past hairline-strong */
+  --accent-soft: #e3e3e3; /* 1.19:1 on panel · 1.09:1 on well */
+  --accent-border: #9d9d9d; /* 2.53:1 on panel — a clear step past hairline-strong */
 
-  --danger: #c81e1e; /* 5.74:1 */
+  --danger: #c81e1e; /* 5.36:1 panel · 4.90:1 well */
   --danger-soft: #fef2f2;
   --danger-border: #fecaca;
-  --warning: #a16207; /* 4.92:1 */
+  --warning: #9a5e07; /* 4.93:1 panel · 4.51:1 well */
   --warning-soft: #fefce8;
   --warning-border: #fde68a;
-  --success: #15803d; /* 5.02:1 */
+  --success: #147c3b; /* 4.93:1 panel · 4.51:1 well */
   --success-soft: #f0fdf4;
   --success-border: #bbf7d0;
 
   /* Info — a soft brand colour for data that is not a status. The primary is
      monochrome, so using it as a fill rendered chips and bars near-black. */
-  --info: #3b6fbf; /* 5.34:1 on panel */
+  --info: #396bb9; /* 4.93:1 panel · 4.51:1 well */
   --info-soft: #eff4fc;
   --info-border: #cbdcf3;
 
@@ -276,12 +285,12 @@ html[data-theme='light'] {
      clears 3:1 against the --well track it sits on.
      Sky and mustard are deepened from their chart-series equivalents, which
      were tuned against white and read too faint on #f5f5f5. */
-  --stage-draft: #737373; /* 4.35:1 on well — neutral: nothing has happened yet */
-  --stage-submitted: #3c92c3; /* 3.16:1 */
-  --stage-screen: #aa842c; /* 3.19:1 */
-  --stage-interview: #8a6bbf; /* 3.90:1 */
-  --stage-offer: #449970; /* 3.19:1 — green, the one convention worth keeping */
-  --stage-closed: #c96b64; /* 3.34:1 */
+  --stage-draft: #737373; /* 4.05:1 on well — neutral: nothing has happened yet */
+  --stage-submitted: #3b90c1; /* 3.02:1 on well */
+  --stage-screen: #a9832c; /* 3.00:1 on well */
+  --stage-interview: #8a6bbf; /* 3.63:1 on well */
+  --stage-offer: #44986f; /* 3.01:1 on well — green, the one convention worth keeping */
+  --stage-closed: #c96b64; /* 3.11:1 on well */
 
   /* Sequential ramp for part-to-whole (the donut). One hue, light to dark:
      four soft hues could not be separated in the dark band, and a ramp is the
