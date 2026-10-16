@@ -1,6 +1,17 @@
+import type { ReactNode } from 'react'
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router'
-import { CalendarCheck, CalendarClock, Check, Mail, Plus } from 'lucide-react'
+import { Link, useNavigate } from 'react-router'
+import {
+  Briefcase,
+  CalendarCheck,
+  CalendarClock,
+  Check,
+  Mail,
+  PencilLine,
+  Plus,
+} from 'lucide-react'
+import { displayName } from '@jojo/service/core/model'
+import { useApplications } from '@jojo/service/react/use-applications'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -13,7 +24,7 @@ import { addDays, partsOf, shortDate, timeLabel, whenLabel } from '@/data/timeli
 import type { TimelineItem } from '@/data/timeline'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
-import { calendarPath } from '@/lib/links'
+import { appPath, calendarPath } from '@/lib/links'
 import { KIND_ICON, MARK_DOT, MARK_TEXT, dateMark } from '@/lib/timeline-visuals'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
@@ -63,6 +74,96 @@ function SnoozeMenu({ item, onPush }: { item: TimelineItem; onPush: (by: number)
             onPush(days)
           }}
         />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+/**
+ * What opening an owed item means, asked rather than assumed.
+ *
+ * The title used to open the edit dialog and nothing else. But a reminder to
+ * chase Rice is mostly a way back INTO the Rice application — the place the
+ * email thread, the documents and the contacts are — and correcting the
+ * reminder itself is the rarer of the two. So an item filed under an
+ * application offers both, one press each; an item filed under nothing has
+ * only one thing to open and opens it straight away, because a menu with one
+ * entry is a click that asks nothing.
+ *
+ * One entry per application: a reference deadline can cover three.
+ */
+function OpenItemMenu({
+  item,
+  onEdit,
+  className,
+  title,
+  children,
+}: {
+  item: TimelineItem
+  onEdit: () => void
+  className: string
+  title?: string
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const { byId } = useApplications()
+  // Ids a deleted application left behind are skipped — D15 unlinks, but a
+  // stale render can still hold one for a moment.
+  const applications = item.applicationIds.flatMap((id) => {
+    const a = byId.get(id)
+    return a ? [a] : []
+  })
+
+  if (applications.length === 0) {
+    return (
+      <button type="button" onClick={onEdit} className={className} title={title}>
+        {children}
+      </button>
+    )
+  }
+
+  const noun = item.remind ? 'reminder' : 'event'
+  const option =
+    'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-text-1 transition-colors hover:bg-well focus-visible:bg-well focus-visible:outline-none'
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        className={className}
+        title={title}
+        aria-label={`Open ${item.title}: edit the ${noun} or go to its application`}
+      >
+        {children}
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-72 gap-0.5 p-1.5">
+        <button
+          type="button"
+          className={option}
+          onClick={() => {
+            setOpen(false)
+            onEdit()
+          }}
+        >
+          <PencilLine className="size-3.5 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
+          Edit {noun}
+        </button>
+        {applications.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            className={option}
+            onClick={() => {
+              setOpen(false)
+              void navigate(appPath(a))
+            }}
+          >
+            <Briefcase className="size-3.5 shrink-0 text-text-3" strokeWidth={1.8} aria-hidden />
+            <span className="min-w-0 truncate">
+              Open <span className="text-text-2">{displayName(a)}</span>
+            </span>
+          </button>
+        ))}
       </PopoverContent>
     </Popover>
   )
@@ -321,22 +422,24 @@ export function OwedThisWeek() {
                               />
 
                               <div className="min-w-0 flex-1">
-                                {/* The title opens the item. A row you can tick
-                                  but not correct is where every wrong date on a
+                                {/* The title opens the item — or, when it is
+                                  filed under an application, asks which to
+                                  open (`OpenItemMenu`). A row you can tick but
+                                  not correct is where every wrong date on a
                                   dashboard starts. */}
-                                <button
-                                  type="button"
-                                  onClick={() => edit(e)}
+                                <OpenItemMenu
+                                  item={e}
+                                  onEdit={() => edit(e)}
                                   /* `hover:underline` as well as the colour:
                                      in dark, --accent and --text-1 are the
                                      same #fafafa (see index.css), so the title
                                      of an owed item gave no sign it opened
                                      anything. The tick beside it survived on
                                      its border change. */
-                                  className="block max-w-full cursor-pointer truncate text-left text-sm underline-offset-2 transition-colors hover:text-accent hover:underline"
+                                  className="block max-w-full cursor-pointer truncate text-left text-sm underline-offset-2 transition-colors hover:text-accent hover:underline data-[state=open]:text-accent data-[state=open]:underline"
                                 >
                                   {e.title}
-                                </button>
+                                </OpenItemMenu>
                                 <div className="mt-0.5 truncate text-xs text-text-3">
                                   {timeLabel(e) ? `${timeLabel(e)} · ` : ''}
                                   {e.detail ?? e.note}
@@ -410,9 +513,9 @@ export function OwedThisWeek() {
                   <li key={e.id} className="max-w-full min-w-0">
                     {/* A chip that opens the item, rather than one that names
                         something and leaves you to find it on the calendar. */}
-                    <button
-                      type="button"
-                      onClick={() => edit(e)}
+                    <OpenItemMenu
+                      item={e}
+                      onEdit={() => edit(e)}
                       className="block max-w-full cursor-pointer rounded-sm"
                       title={`Open ${e.title}`}
                     >
@@ -420,7 +523,7 @@ export function OwedThisWeek() {
                         <span className="min-w-0 truncate">{e.title}</span>
                         <span className="shrink-0 text-text-3">· {shortDate(e.date)}</span>
                       </Chip>
-                    </button>
+                    </OpenItemMenu>
                   </li>
                 ))}
                 {later.length > LATER_SHOWN ? (
