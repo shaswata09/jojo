@@ -8,12 +8,12 @@
  * `Tx`, they open no transaction and they write no journal row. They are a
  * separate surface that happens to be offered to the same caller.
  *
- * WHY A FEW GENERIC TOOLS AND NOT ONE PER NODE TYPE. There are sixteen node
- * types and ninety-two write tools already; the catalog is a hundred and two
- * entries. A model choosing from a hundred and thirteen names picks worse than
- * one choosing from a hundred and two, and this app points at whatever the user is running at home
+ * WHY A FEW GENERIC TOOLS AND NOT ONE PER NODE TYPE. There are seventeen node
+ * types and ninety-five write tools already; the catalog is a hundred and five
+ * entries. A model choosing from a hundred and seventeen names picks worse than
+ * one choosing from a hundred and five, and this app points at whatever the user is running at home
  * — frequently a 7B, where the tool list is a real part of the context budget.
- * Generic also means a seventeenth node type is readable the day it is added
+ * Generic also means an eighteenth node type is readable the day it is added
  * rather than the day someone remembers to write its reader.
  *
  * (Those numbers said eleven types and sixty-four tools until the counts were

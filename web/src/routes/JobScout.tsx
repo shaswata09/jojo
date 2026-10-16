@@ -24,6 +24,8 @@ import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { report } from '@/lib/analytics'
 import { kindOf } from '@jojo/service/react/use-pipelines'
+import { approvedLabel, jobFromApproval } from '@jojo/service/core/proposal'
+import type { ApprovedJob } from '@jojo/service/core/proposal'
 
 export function JobScout() {
   useTitle('Job scout')
@@ -178,6 +180,31 @@ export function JobScout() {
     navigate(appPath(application))
   }
 
+  const onPromoteJob = (job: ApprovedJob) =>
+    job.kind === 'match' ? onPromote(job.id) : onPromotePosting(job.id)
+
+  /**
+   * Approving a scout suggestion files the job and stops: the application is
+   * the reader's second decision, not a side effect of the first. The toast is
+   * where that second step is offered, because "approved" next to an unchanged
+   * applications table read as the scout silently failing.
+   */
+  const onApproveProposal = (id: string) => {
+    const tool = engine.proposals.find((p) => p.id === id)?.tool
+    const made = engine.approve(id)
+    report('scout_proposal_decided', { decision: 'approved' })
+    if (!made || (tool !== 'scout.match.save' && tool !== 'scout.posting.save')) return
+    const kind = tool === 'scout.match.save' ? 'match' : 'posting'
+    toast({
+      title: approvedLabel(tool),
+      description: 'Not in your applications yet — add it when you want to track it.',
+      action: {
+        label: 'Add to applications',
+        onClick: () => onPromoteJob({ kind, id: made }),
+      },
+    })
+  }
+
   /** A URL and a title, retyped in seconds — undo toast, no confirmation. */
   const onRemovePosting = (id: string, title: string) => {
     const { restore } = removePosting(id)
@@ -264,10 +291,7 @@ export function JobScout() {
       <ProposalQueue
         proposals={engine.proposals}
         pipelines={engine.pipelines}
-        onApprove={(id) => {
-          engine.approve(id)
-          report('scout_proposal_decided', { decision: 'approved' })
-        }}
+        onApprove={onApproveProposal}
         onDiscard={(id) => {
           engine.discard(id)
           report('scout_proposal_decided', { decision: 'declined' })
@@ -275,6 +299,8 @@ export function JobScout() {
         onApproveAll={engine.approveAll}
         onSweep={engine.sweep}
         onClearAll={engine.clearAll}
+        jobFor={(p) => jobFromApproval(p, matches, postings)}
+        onPromote={onPromoteJob}
       />
 
       <MatchesPanel

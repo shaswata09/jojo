@@ -18,11 +18,13 @@ import {
   SCOUT_TOOLS,
   TWIN_TOOLS,
   WORKING_GAP_MS,
+  approvedLabel,
   intervalMs,
   isDue,
   isKnownPosting,
   isAnswerable,
   isSettled,
+  jobFromApproval,
   scheduleOf,
   mayPropose,
   postingKey,
@@ -386,5 +388,113 @@ describe('a queued posting, read for its card', () => {
     expect(postingPreview('application.update', '{"url":"https://a.example"}')).toBeNull()
     expect(postingPreview('scout.posting.save', 'not json')).toBeNull()
     expect(postingPreview('scout.posting.save', '{"title":"no link"}')).toBeNull()
+  })
+})
+
+describe('what an approved card says it did', () => {
+  it('names where a scout suggestion went, never "applied"', () => {
+    /*
+     * The reported bug. "Applied" in a job tracker means "I applied for this
+     * job"; a scout approval only files the job into a list on the same page.
+     */
+    expect(approvedLabel('scout.match.save')).toBe('Saved to Matches')
+    expect(approvedLabel('scout.posting.save')).toBe('Saved to Postings')
+    for (const tool of SCOUT_TOOLS) expect(approvedLabel(tool)).not.toMatch(/appl/i)
+  })
+
+  it('keeps "applied" for a twin change, where it is the truth', () => {
+    expect(approvedLabel('application.note.set')).toBe('applied')
+    expect(approvedLabel('timeline.item.create')).toBe('applied')
+  })
+})
+
+describe('finding the job an approved scout suggestion saved', () => {
+  const matchSave = (role: string, status: 'approved' | 'pending' = 'approved') => ({
+    tool: 'scout.match.save',
+    input: JSON.stringify({ role, detail: 'x', fit: 70 }),
+    status,
+  })
+  const postingSave = (url: string) => ({
+    tool: 'scout.posting.save',
+    input: JSON.stringify({ url }),
+    status: 'approved' as const,
+  })
+  const matches = [
+    { id: 'm1', role: 'UTSA — Assistant professor, data science' },
+    { id: 'm2', role: 'Rice — Statistics' },
+  ]
+
+  it('finds a match by the role it saved', () => {
+    expect(jobFromApproval(matchSave('Rice — Statistics'), matches, [])).toEqual({
+      kind: 'match',
+      id: 'm2',
+    })
+  })
+
+  it('tolerates the whitespace the save tool trims away', () => {
+    expect(jobFromApproval(matchSave('  Rice — Statistics  '), matches, [])?.id).toBe('m2')
+  })
+
+  it('reports a job that has already been added to the applications', () => {
+    const promoted = [{ id: 'm2', role: 'Rice — Statistics', applicationId: 'a9' }]
+    expect(jobFromApproval(matchSave('Rice — Statistics'), promoted, [])).toEqual({
+      kind: 'match',
+      id: 'm2',
+      applicationId: 'a9',
+    })
+  })
+
+  it('prefers the copy already tracked when the same job was saved twice', () => {
+    // The same job is the same job: "already in your applications" is the answer.
+    const twice = [
+      { id: 'm1', role: 'Rice — Statistics' },
+      { id: 'm2', role: 'Rice — Statistics', applicationId: 'a9' },
+    ]
+    expect(jobFromApproval(matchSave('Rice — Statistics'), twice, [])?.applicationId).toBe('a9')
+  })
+
+  it('finds a posting by its address, exact or canonical', () => {
+    const postings = [{ id: 'p1', url: 'https://boards.greenhouse.io/acme/jobs/123' }]
+    expect(
+      jobFromApproval(postingSave('https://boards.greenhouse.io/acme/jobs/123'), [], postings),
+    ).toEqual({ kind: 'posting', id: 'p1' })
+    // Tracking parameters do not make it a different job.
+    expect(
+      jobFromApproval(
+        postingSave('https://boards.greenhouse.io/acme/jobs/123?gh_src=abc'),
+        [],
+        postings,
+      )?.id,
+    ).toBe('p1')
+  })
+
+  it('finds nothing for a card that was not approved', () => {
+    expect(jobFromApproval(matchSave('Rice — Statistics', 'pending'), matches, [])).toBeNull()
+  })
+
+  it('finds nothing once the saved row has gone', () => {
+    expect(jobFromApproval(matchSave('Deleted — Role'), matches, [])).toBeNull()
+  })
+
+  it('finds nothing for a twin change, which saved no job', () => {
+    const twin = {
+      tool: 'application.note.set',
+      input: JSON.stringify({ id: 'a1', note: 'x' }),
+      status: 'approved' as const,
+    }
+    expect(jobFromApproval(twin, matches, [])).toBeNull()
+  })
+
+  it('survives a payload that is not JSON, or not an object', () => {
+    for (const input of ['{not json', '"a string"', 'null', '42']) {
+      expect(
+        jobFromApproval({ tool: 'scout.match.save', input, status: 'approved' }, matches, []),
+      ).toBeNull()
+    }
+  })
+
+  it('does not match an empty role or address to anything', () => {
+    expect(jobFromApproval(matchSave('   '), [{ id: 'm9', role: '' }], [])).toBeNull()
+    expect(jobFromApproval(postingSave(''), [], [{ id: 'p9', url: '' }])).toBeNull()
   })
 })

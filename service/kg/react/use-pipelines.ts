@@ -93,7 +93,11 @@ export type PipelinesState = {
   shutdownOffer: Pipeline | null
   /** True when no model is reachable, so nothing can run. */
   paused: boolean
-  approve: (id: string) => void
+  /**
+   * Answers yes. Returns the id of the record the approval created — the match
+   * or posting a scout suggestion saved — or null when it made none or failed.
+   */
+  approve: (id: string) => string | null
   discard: (id: string) => void
   approveAll: (pipelineId: string) => void
   sweep: (pipelineId: string) => void
@@ -283,7 +287,9 @@ export function usePipelines({
           id,
           error: result.errors.map((e) => e.message).join('; '),
         })
+        return null
       }
+      return result.output
     },
     [run, runtime],
   )

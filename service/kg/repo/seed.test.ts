@@ -226,6 +226,9 @@ describe('seedToGraph', () => {
        * invented facts.
        */
       claim: 0,
+      // Zero: a sticky is a note to self, and the demo has no self to write
+      // one. An empty board is also the clearest way to show what it is for.
+      stickyNote: 0,
     })
   })
 })

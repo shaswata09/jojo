@@ -111,13 +111,13 @@ export const SHAPE: DirRow[] = [
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
     // clearing it — the two halves of a reading that survives a reload.
     // `tailor.ts` and its test: the one write behind the tailoring card.
-    files: 33,
+    files: 34,
     tests: 10,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one — and again when
     // `vault.ts` grew the two verbs that name one person on one job.
-    lines: 11284,
-    what: '92 named write operations',
+    lines: 11440,
+    what: '95 named write operations',
   },
   {
     dir: 'service/kg/agent',
@@ -146,7 +146,7 @@ export const SHAPE: DirRow[] = [
     // about 4,200 lines, most of them the tests that pin each measure.
     // Re-measured when `read-posting.ts` learnt to offer the person's own
     // keywords to the model and match the reply back onto the ones that exist.
-    lines: 43125,
+    lines: 43459,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -171,12 +171,12 @@ export const SHAPE: DirRow[] = [
     // `jobs.ts`, its test, `jobs-context.ts` and `jobs-provider.tsx`: the
     // registry above the router that makes a job outlive the screen that
     // asked for it — `agent-runs.ts`'s argument, generalised.
-    files: 55,
+    files: 56,
     tests: 14,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 11648,
+    lines: 12038,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -214,9 +214,9 @@ export const SHAPE: DirRow[] = [
     // The chat dock: `chat-dock/ChatDock.tsx` and `ChatWindow.tsx`, and the two
     // pieces it shares with the Assistant page, `assistant/Transcript.tsx` and
     // `assistant/Composer.tsx`.
-    files: 316,
+    files: 317,
     tests: 31,
-    lines: 56446,
+    lines: 57213,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -259,9 +259,9 @@ export const SHAPE: DirRow[] = [
     // 165 with the chat dock: `chat-dock.ts` and its test (windows, layout,
     // persistence), `use-conversation.ts` (one conversation's wiring, shared
     // with the Assistant) and `sheet-presence.ts` (where the open record is).
-    files: 165,
-    tests: 61,
-    lines: 23880,
+    files: 167,
+    tests: 62,
+    lines: 24706,
     what: 'web-only adapters and URL state',
   },
   {
@@ -291,7 +291,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 97
+export const WEB_TEST_FILES = 98
 
 type TestGroup = { title: string; files: string; body: string }
 

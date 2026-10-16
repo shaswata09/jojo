@@ -50,6 +50,7 @@ import {
   MAX_CHECKLIST_TEXT,
   MAX_NOTE_SPANS,
   MAX_POSTING_SUMMARY,
+  MAX_STICKY_TEXT,
   MAX_REQUIREMENT_TEXT,
   MAX_REQUIREMENTS,
   NODE_TYPES,
@@ -495,6 +496,11 @@ export const NODE_PROP_SCHEMAS = {
     savedOn: s.isoDate({ label: 'Saved on' }),
     size: s.string({ label: 'Size' }),
     summary: s.optional(s.string({ max: MAX_POSTING_SUMMARY, label: 'Summary' })),
+  }),
+  stickyNote: s.object({
+    slug,
+    text: s.string({ min: 1, max: MAX_STICKY_TEXT, label: 'Note', multiline: true }),
+    tone: s.enum(LABEL_TONE_VALUES, { label: 'Colour' }),
   }),
   match: s.object({
     slug,

@@ -201,6 +201,77 @@ export function dockLayout(
   return { mode: 'compact', right, width: Math.max(0, Math.min(usable, WINDOW_WIDTH)) }
 }
 
+/* ------------------------------ where it sits ----------------------------- */
+
+/**
+ * Where along the bottom edge the person has moved the dock, and how far it
+ * may go.
+ *
+ * The dock owns the bottom-right corner, and whatever is under it is under it:
+ * the last row of a table, the bottom of a long note, a button in the corner of
+ * a panel. So it can be dragged sideways — by its bar or by a conversation's
+ * header — to anywhere between where `dockLayout` puts it and the sidebar.
+ *
+ * Stored as a FRACTION of that travel rather than as pixels. "Moved to the
+ * middle" should still be the middle after the window is resized, a record is
+ * opened beside it (which moves its anchor), or a conversation opens and makes
+ * it wider (which shortens the travel). A pixel offset would be right for one
+ * of those and wrong for the other two; a fraction is right for all three, and
+ * cannot carry the dock under the sidebar or over the record however the room
+ * changes, because the travel it multiplies already excludes them.
+ */
+export const POSITION_KEY = 'jojo.chatDock.position'
+
+/** How far a press has to move before it is a drag rather than a click on the bar. */
+export const DRAG_THRESHOLD = 4
+
+/**
+ * Within this fraction of either end, a drag lands ON the end.
+ *
+ * So "back in the corner" is a flick rather than a hunt for the exact pixel —
+ * and a dock left 2% off its corner is a dock that looks slightly broken.
+ */
+export const SNAP = 0.04
+
+/**
+ * How far left of its anchor the dock can travel, in pixels.
+ *
+ * Its own left edge stops an `EDGE` short of the sidebar, measured with the
+ * width it has NOW — a dock with two conversations open is wider and travels
+ * less. Zero when it already fills the room, including when `dockLayout` let
+ * a compact panel run over the sidebar because there was nowhere else.
+ */
+export function dockTravel(
+  viewport: number,
+  right: number,
+  dockWidth: number,
+  leftBound = 0,
+): number {
+  return Math.max(0, Math.floor(viewport - right - dockWidth - Math.max(0, leftBound) - EDGE))
+}
+
+const clamp01 = (n: number) => Math.min(1, Math.max(0, n))
+
+/** The stored position, or the corner for anything that is not a number in range. */
+export function parsePosition(raw: string | null): number {
+  if (raw === null) return 0
+  const n = Number(raw)
+  return Number.isFinite(n) ? clamp01(n) : 0
+}
+
+/** The position after dragging `leftward` pixels from `start`, snapped at the ends. */
+export function dragPosition(start: number, leftward: number, travel: number): number {
+  if (travel <= 0) return start
+  const next = clamp01(start + leftward / travel)
+  if (next < SNAP) return 0
+  if (next > 1 - SNAP) return 1
+  return next
+}
+
+/** Pixels left of the anchor, for a position. */
+export const dockOffset = (position: number, travel: number): number =>
+  Math.round(clamp01(position) * Math.max(0, travel))
+
 /* ------------------------------- persistence ------------------------------ */
 
 /** What survives a reload: open conversations and the list's state. Drafts do not. */

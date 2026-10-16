@@ -53,6 +53,7 @@ const TYPE_LABEL: Record<NodeType, string> = {
   file: 'Files',
   snippet: 'Snippets',
   person: 'People',
+  stickyNote: 'Sticky notes',
   posting: 'Saved postings',
   match: 'Scout matches',
   pipeline: 'Scout pipelines',

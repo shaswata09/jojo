@@ -101,6 +101,7 @@ import {
   timelineItemSnooze,
   timelineItemUpdate,
 } from './timeline'
+import { stickyNoteCreate, stickyNoteDelete, stickyNoteUpdate } from './sticky'
 import type { AnyTool, Tool } from './tool'
 import {
   vaultFileAdd,
@@ -168,6 +169,10 @@ export const TOOLS = {
   'vault.snippet.delete': vaultSnippetDelete,
   'vault.snippet.duplicate': vaultSnippetDuplicate,
   'vault.snippet.retag': vaultSnippetRetag,
+
+  'sticky.note.create': stickyNoteCreate,
+  'sticky.note.update': stickyNoteUpdate,
+  'sticky.note.delete': stickyNoteDelete,
 
   'keyword.create': keywordCreate,
   'keyword.rename': keywordRename,

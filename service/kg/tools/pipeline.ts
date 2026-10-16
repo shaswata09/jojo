@@ -182,7 +182,13 @@ export const proposalApprove = defineTool({
       : { ok: false, reason: 'That suggestion has already been answered.' }
   },
 
-  run(ctx, input): void {
+  /*
+   * Returns what the inner tool returned when that is a record id — the match
+   * or posting a scout suggestion saved — so the page can offer the next step
+   * on the spot ("Add to applications") without hunting for the new row.
+   * Nothing else reads this output; a twin change returns no id and gets null.
+   */
+  run(ctx, input): string | null {
     const proposal = ctx.require('proposal', input.id)
     const { status, kind, tool, input: payload } = proposal.props
 
@@ -207,9 +213,10 @@ export const proposalApprove = defineTool({
     // which looks the name up and fails if it is not a registered tool, then
     // parses `parsed` with that tool's own schema and fails if it does not fit.
     // Both failures roll this transaction back.
-    ctx.call(tool as ToolName, parsed as never)
+    const made: unknown = ctx.call(tool as ToolName, parsed as never)
 
     ctx.tx.patch<'proposal'>(input.id, { status: 'approved', decidedAt: ctx.now })
+    return typeof made === 'string' ? made : null
   },
   describe: (input, _output, memory) => {
     // Spread rather than assigned: `exactOptionalPropertyTypes` distinguishes

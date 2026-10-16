@@ -253,6 +253,11 @@ export function recordLabel(memory: GraphSnapshot, node: StoredNode): string {
       return node.props.name
     case 'proposal':
       return node.props.title
+    case 'stickyNote': {
+      // A sticky has no title; its first line is what someone would call it.
+      const line = node.props.text.trim().split('\n')[0] ?? ''
+      return line.length > 60 ? `${line.slice(0, 59)}…` : line
+    }
     case 'profile':
       // Singleton, and the only node whose props hold no name of its own.
       return 'Your profile'

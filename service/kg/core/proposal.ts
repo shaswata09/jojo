@@ -22,7 +22,7 @@
  */
 
 import { canonicalPostingUrl } from './capture'
-import type { Instant, PipelineKind, ProposalStatus } from './model'
+import type { Instant, Match, PipelineKind, Proposal, ProposalStatus, SavedPosting } from './model'
 
 /* ------------------------------- the two kinds ---------------------------- */
 
@@ -248,7 +248,10 @@ export function postingPreview(tool: string, inputJson: string): PostingPreview 
   if (url === null) return null
   return {
     href: webAddress(url),
-    label: url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, ''),
+    label: url
+      .replace(/^https?:\/\//i, '')
+      .replace(/^www\./i, '')
+      .replace(/\/$/, ''),
     title: text('title'),
     summary: text('summary'),
   }
@@ -447,4 +450,99 @@ export function isDue(
   if (Number.isNaN(last) || Number.isNaN(at)) return true
   const wait = idleRounds >= IDLE_ROUNDS_BEFORE_SHUTDOWN ? intervalMs(stored) : WORKING_GAP_MS
   return at - last >= wait
+}
+
+/* --------------------------- what an approval left -------------------------- */
+
+/**
+ * The badge an approved card wears — named after where the thing WENT.
+ *
+ * It used to say "applied" for every proposal. For a twin pipeline's note or
+ * reminder that is accurate: the change was applied to a record. For a scout
+ * suggestion it is the one word guaranteed to mislead, because in a job tracker
+ * "applied" means "I applied for this job". Approving a scout suggestion files
+ * the job into the Matches or Postings list on the same page and creates NO
+ * application — by design, see `SCOUT_TOOLS` — so a person who read "applied"
+ * went to their applications, found nothing, and reported the scout broken.
+ * The agent benchmark had already met the same trap ("Approve is one reading
+ * away from apply"); this is the human half of it.
+ */
+export function approvedLabel(tool: string): string {
+  if (tool === 'scout.match.save') return 'Saved to Matches'
+  if (tool === 'scout.posting.save') return 'Saved to Postings'
+  return 'applied'
+}
+
+/** The job an approved scout suggestion saved — the thing its card can promote. */
+export type ApprovedJob = {
+  readonly kind: 'match' | 'posting'
+  readonly id: string
+  /** Set once the job has been added to the applications. */
+  readonly applicationId?: string
+}
+
+/**
+ * Finds the match or posting an approved scout suggestion created, by what it
+ * saved: the role for a match, the address for a posting.
+ *
+ * Read back from the suggestion's own stored input rather than from an id kept
+ * on the proposal, because the proposal does not keep one — and adding a field
+ * to the record is a schema change for the sake of a button. The input is the
+ * exact payload the save ran with, so the role or URL it names is the one the
+ * new row carries. Trimmed on both sides, since the save tools trim.
+ *
+ * When several rows match — the same job saved twice by two runs — one already
+ * added to the applications wins: it is the same job, and "already tracked" is
+ * the answer the card owes. A posting address that differs only by tracking
+ * parameters still matches, through the same canonical form the duplicate
+ * check uses.
+ */
+export function jobFromApproval(
+  proposal: Pick<Proposal, 'tool' | 'input' | 'status'>,
+  matches: readonly Pick<Match, 'id' | 'role' | 'applicationId'>[],
+  postings: readonly Pick<SavedPosting, 'id' | 'url' | 'applicationId'>[],
+): ApprovedJob | null {
+  if (proposal.status !== 'approved') return null
+  let input: Record<string, unknown>
+  try {
+    const parsed: unknown = JSON.parse(proposal.input)
+    if (typeof parsed !== 'object' || parsed === null) return null
+    input = parsed as Record<string, unknown>
+  } catch {
+    return null
+  }
+
+  const pick = <T extends { id: string; applicationId?: string }>(
+    candidates: readonly T[],
+    kind: ApprovedJob['kind'],
+  ): ApprovedJob | null => {
+    const chosen = candidates.find((c) => c.applicationId) ?? candidates[0]
+    if (!chosen) return null
+    return chosen.applicationId
+      ? { kind, id: chosen.id, applicationId: chosen.applicationId }
+      : { kind, id: chosen.id }
+  }
+
+  if (proposal.tool === 'scout.match.save') {
+    const role = typeof input['role'] === 'string' ? input['role'].trim() : ''
+    if (!role) return null
+    return pick(
+      matches.filter((m) => m.role.trim() === role),
+      'match',
+    )
+  }
+
+  if (proposal.tool === 'scout.posting.save') {
+    const url = typeof input['url'] === 'string' ? input['url'].trim() : ''
+    if (!url) return null
+    const exact = postings.filter((p) => p.url.trim() === url)
+    if (exact.length > 0) return pick(exact, 'posting')
+    const canonical = canonicalPostingUrl(url)
+    return pick(
+      postings.filter((p) => canonicalPostingUrl(p.url.trim()) === canonical),
+      'posting',
+    )
+  }
+
+  return null
 }

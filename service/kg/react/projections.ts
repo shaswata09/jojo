@@ -44,6 +44,7 @@ import type {
   Proposal,
   SavedPosting,
   Snippet,
+  StickyNote,
   StoredNode,
   TimelineItem,
   VaultFile,
@@ -63,6 +64,7 @@ export type Projections = {
   links: List<VaultLink>
   files: List<VaultFile>
   snippets: List<Snippet>
+  stickyNotes: List<StickyNote>
   people: List<Person>
   background: List<Background>
   organisations: List<Organisation>
@@ -223,6 +225,17 @@ export function createProjections(today: ISODate): Projections {
         const { slug: _slug, bodyFormat: _format, ...rest } = n.props
         return { ...rest, id: n.id, ...filedUnder(g, n.id) }
       }),
+      compareNewestById,
+    ),
+    /* Newest first: the note just written is the one being looked for. */
+    stickyNotes: sortedBy(
+      createProjection('stickyNote', (n): StickyNote => ({
+        id: n.id,
+        text: n.props.text,
+        tone: n.props.tone,
+        createdAt: n.createdAt,
+        updatedAt: n.updatedAt,
+      })),
       compareNewestById,
     ),
     /*

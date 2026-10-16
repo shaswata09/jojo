@@ -66,6 +66,7 @@ export const TYPE_PREFIX: { readonly [T in NodeType]: string } = {
   pipeline: 'pipeline',
   profile: 'profile',
   person: 'person',
+  stickyNote: 'sticky',
   background: 'cred',
   thread: 'thread',
   proposal: 'proposal',

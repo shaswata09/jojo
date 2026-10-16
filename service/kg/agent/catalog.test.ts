@@ -75,7 +75,7 @@ describe('destructiveness', () => {
     expect(CATALOG.find((e) => e.name === 'application.create')?.destructive).toBe(false)
   })
 
-  it('counts twenty, which is a number three comments quote', () => {
+  it('counts twenty-one, which is a number three comments quote', () => {
     /*
      * Pinned because nothing pinned it, and the neighbouring counts hid that:
      * flipping any tool's `effect` from 'delete' to 'update' left CATALOG at
@@ -86,7 +86,7 @@ describe('destructiveness', () => {
      *   kg/agent/loop.ts   — the `GATE_FOR` comment and the three-settings one
      *   core/model.ts      — the `APPROVAL_LABEL` paragraph
      */
-    expect(CATALOG.filter((e) => e.destructive)).toHaveLength(20)
+    expect(CATALOG.filter((e) => e.destructive)).toHaveLength(21)
   })
 
   it('singles out the operations that both destroy and cannot be undone', () => {
@@ -188,23 +188,23 @@ describe('what a model reads about a tool', () => {
 describe('the counts the comments quote', () => {
   it('matches what queries.ts, mcp.ts and execute.ts say out loud', () => {
     // If this fails, the number changed. Update it here AND in:
-    //   kg/agent/queries.ts   — "a hundred and two entries", "a hundred and thirteen names"
-    //   kg/agent/mcp.ts       — "a hundred and two tools is one page" (twice)
-    //   kg/agent/execute.ts   — "listing a hundred and two tools"
-    //   kg/agent/loop.ts      — "every non-read step (92 of 102 tools)"
-    //   web/src/lib/keys-stay-local.test.ts — "the hundred and two tools live"
+    //   kg/agent/queries.ts   — "a hundred and five entries", "a hundred and seventeen names"
+    //   kg/agent/mcp.ts       — "a hundred and five tools is one page" (twice)
+    //   kg/agent/execute.ts   — "listing a hundred and five tools"
+    //   kg/agent/loop.ts      — "every non-read step (95 of 105 tools)"
+    //   web/src/lib/keys-stay-local.test.ts — "the hundred and five tools live"
     //   core/model.ts         — the destructive count on `APPROVAL_LABEL`
     //   web guide CodeStructure.tsx — "N named write operations"
-    expect(CATALOG.length).toBe(102)
+    expect(CATALOG.length).toBe(105)
   })
 
   it('matches the write/read split queries.ts quotes', () => {
-    // "ninety-two write tools already" — the number the generic-readers
+    // "ninety-five write tools already" — the number the generic-readers
     // argument is measured against.
-    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(92)
+    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(95)
   })
 
-  it('matches the sixteen node types that paragraph counts', () => {
-    expect(NODE_TYPES).toHaveLength(16)
+  it('matches the seventeen node types that paragraph counts', () => {
+    expect(NODE_TYPES).toHaveLength(17)
   })
 })

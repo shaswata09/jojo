@@ -106,6 +106,18 @@ export const NODE_TYPES = [
    */
   'person',
   /*
+   * A sticky note on the dashboard's board: something the person wants in
+   * front of them for a while — "ask Maria about the visa letter", a phone
+   * number, a half-formed thought — and not yet anything more structured.
+   *
+   * Its own type rather than a snippet with a special tag, because a snippet is
+   * reusable text for forms and a sticky is the opposite: short-lived, owned by
+   * nobody else, and thrown away when done. Filed under nothing; when one turns
+   * out to have a date, it becomes a reminder, which is the structured shape
+   * for that.
+   */
+  'stickyNote',
+  /*
    * A conversation with the assistant.
    *
    * It earns a node by the rule at the top of this file — the user can rename it
@@ -2291,6 +2303,28 @@ export type Person = {
   roles?: Record<string, ContactRole>
 }
 
+/** The longest a sticky note may be: a note, not a document. */
+export const MAX_STICKY_TEXT = 500
+
+/** The colour a new sticky takes when none is picked: the colour of a paper sticky. */
+export const DEFAULT_STICKY_TONE: LabelTone = 'amber'
+
+export type StickyNoteProps = {
+  slug: string
+  text: string
+  /** From the keyword palette — the one set of colours this app offers. */
+  tone: LabelTone
+}
+
+/** A sticky note, as the board shows it. */
+export type StickyNote = {
+  id: string
+  text: string
+  tone: LabelTone
+  createdAt: string
+  updatedAt: string
+}
+
 export type NodePropsByType = {
   application: ApplicationProps
   organisation: OrganisationProps
@@ -2304,6 +2338,7 @@ export type NodePropsByType = {
   pipeline: PipelineProps
   profile: ProfileProps
   person: PersonProps
+  stickyNote: StickyNoteProps
   background: BackgroundProps
   claim: ClaimProps
   thread: ThreadProps

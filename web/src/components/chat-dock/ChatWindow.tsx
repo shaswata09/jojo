@@ -16,6 +16,7 @@ import { atBottom } from '@/lib/scroll-stick'
 import { useToast } from '@/lib/toast-context'
 import { useConversation } from '@/lib/use-conversation'
 import { cn } from '@/lib/utils'
+import type { DockDrag } from '@/components/chat-dock/ChatDock'
 
 /** Openers for a conversation about one application — the questions people ask beside a record. */
 const ABOUT_PROMPTS = [
@@ -45,6 +46,7 @@ export function ChatWindow({
   onDetach,
   onBack,
   fullScreen = false,
+  drag,
 }: {
   win: DockWindow
   width: number | undefined
@@ -57,6 +59,8 @@ export function ChatWindow({
   /** Back to the list, when the dock shows one panel at a time. */
   onBack?: (() => void) | undefined
   fullScreen?: boolean
+  /** Moving the whole dock by this header. Absent full screen, where there is nowhere to move it. */
+  drag?: DockDrag | undefined
 }) {
   const { file } = useThreads()
   const { toast } = useToast()
@@ -125,10 +129,23 @@ export function ChatWindow({
       <div
         className={cn(
           'flex h-12 shrink-0 items-center gap-1.5 border-b border-hairline px-2',
-          !fullScreen && 'cursor-pointer',
+          !fullScreen && 'cursor-pointer touch-none select-none',
+          drag && !fullScreen && 'pl-1',
         )}
-        onClick={fullScreen ? undefined : () => onToggle(win.key)}
+        // The header moves the whole dock, the same as the bar does — an open
+        // conversation is the biggest thing the dock puts over the page, so it
+        // is the one most worth being able to push aside.
+        onPointerDown={fullScreen ? undefined : drag?.onPointerDown}
+        onClick={
+          fullScreen
+            ? undefined
+            : () => {
+                if (drag?.swallowClick()) return
+                onToggle(win.key)
+              }
+        }
       >
+        {drag && !fullScreen ? drag.grip : null}
         {onBack ? (
           <Button
             variant="ghost"

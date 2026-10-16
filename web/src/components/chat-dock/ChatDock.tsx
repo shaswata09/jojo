@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, MessageSquarePlus } from 'lucide-react'
+import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
+import { ChevronDown, ChevronUp, GripVertical, MessageSquarePlus } from 'lucide-react'
 import type { NodeId } from '@jojo/service/core/model'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useThreads } from '@jojo/service/react/use-threads'
@@ -16,6 +17,12 @@ import {
   DOCK_BAR_HEIGHT,
   DOCK_KEY,
   dockLayout,
+  dockOffset,
+  dockTravel,
+  DRAG_THRESHOLD,
+  dragPosition,
+  parsePosition,
+  POSITION_KEY,
   dropMissing,
   focusWindow,
   GAP,
@@ -45,7 +52,15 @@ function useDockBounds() {
     const rect = document.querySelector('[data-app-sidebar]')?.getBoundingClientRect()
     const leftBound =
       rect && rect.width > 0 && rect.left >= 0 && rect.right > 0 ? Math.round(rect.right) : 0
-    return { viewport: window.innerWidth, leftBound }
+    /*
+     * The LAYOUT width, not `innerWidth`. A `position: fixed` element's `right`
+     * is measured from inside the scrollbar, and `innerWidth` includes it — so
+     * on a page that scrolled, every width here was 11px too generous and the
+     * dock dragged to the far left stopped 5px from the sidebar instead of the
+     * 16 it is meant to keep. `clientWidth` on the root is the width `right` is
+     * measured against.
+     */
+    return { viewport: document.documentElement.clientWidth || window.innerWidth, leftBound }
   }
   const [bounds, setBounds] = useState(() =>
     typeof window === 'undefined' ? { viewport: 1280, leftBound: 0 } : read(),
@@ -60,6 +75,9 @@ function useDockBounds() {
     window.addEventListener('resize', update)
     const aside = document.querySelector('[data-app-sidebar]')
     const observer = new ResizeObserver(update)
+    // A scrollbar appearing or going — moving to a page that is taller or
+    // shorter than the window — changes the layout width without any resize.
+    observer.observe(document.documentElement)
     if (aside) {
       observer.observe(aside)
       // The phone drawer slides by transform, which no observer reports.
@@ -72,6 +90,128 @@ function useDockBounds() {
     }
   }, [])
   return bounds
+}
+
+/** What a header needs to move the dock: the press, the click it must swallow, the handle. */
+export type DockDrag = {
+  onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void
+  /** True once, for the click that ends a drag — so a drag never also opens or minimises. */
+  swallowClick: () => boolean
+  grip: ReactNode
+}
+
+/**
+ * Sliding the dock along the bottom edge, so whatever it covers can be read.
+ *
+ * Any press on a header moves the whole dock once it has travelled
+ * `DRAG_THRESHOLD` pixels — so the bar and a conversation's header stay the
+ * click targets they always were, and only a press that MOVES becomes a drag.
+ * The click that ends a drag is swallowed, or letting go would also open the
+ * list or minimise the window under the pointer.
+ *
+ * Presses that start on a control in the header (a button, a link) are left to
+ * that control, apart from the grip, which exists to be dragged. The grip is
+ * also the keyboard's way to move it: the arrow keys slide it a tenth of the way
+ * at a time, Home and End go to either end, and a double-click puts it back in
+ * the corner.
+ *
+ * The position itself is a fraction of the travel — see `dockTravel` — and is
+ * remembered, because a person who moved it out of the way once wants it out of
+ * the way on every page.
+ */
+function useDockPosition(travel: number) {
+  const [position, setPosition] = useState(() => parsePosition(readStored(POSITION_KEY)))
+  const [dragging, setDragging] = useState(false)
+  useEffect(() => {
+    writeStored(POSITION_KEY, String(position))
+  }, [position])
+
+  // Read through refs inside the listeners, which outlive the render that made them.
+  const travelRef = useRef(travel)
+  travelRef.current = travel
+  const positionRef = useRef(position)
+  positionRef.current = position
+  const swallow = useRef(false)
+
+  const onPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    if (event.button !== 0) return
+    const target = event.target as HTMLElement
+    if (target.closest('a, button:not([data-dock-grip])')) return
+    // A new press clears any swallow left over from a drag whose click never came.
+    swallow.current = false
+    const el = event.currentTarget
+    const startX = event.clientX
+    const start = positionRef.current
+    let moved = false
+    el.setPointerCapture(event.pointerId)
+
+    const move = (e: PointerEvent) => {
+      const leftward = startX - e.clientX
+      if (!moved && Math.abs(leftward) < DRAG_THRESHOLD) return
+      if (!moved) {
+        moved = true
+        setDragging(true)
+      }
+      setPosition(dragPosition(start, leftward, travelRef.current))
+    }
+    const end = () => {
+      el.removeEventListener('pointermove', move)
+      el.removeEventListener('pointerup', end)
+      el.removeEventListener('pointercancel', end)
+      if (moved) swallow.current = true
+      setDragging(false)
+    }
+    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerup', end)
+    el.addEventListener('pointercancel', end)
+  }, [])
+
+  const swallowClick = useCallback(() => {
+    if (!swallow.current) return false
+    swallow.current = false
+    return true
+  }, [])
+
+  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const step = 0.1
+    const next =
+      event.key === 'ArrowLeft'
+        ? positionRef.current + step
+        : event.key === 'ArrowRight'
+          ? positionRef.current - step
+          : event.key === 'Home'
+            ? 1
+            : event.key === 'End'
+              ? 0
+              : null
+    if (next === null) return
+    event.preventDefault()
+    event.stopPropagation()
+    setPosition(Math.min(1, Math.max(0, next)))
+  }
+
+  const where =
+    position === 0 ? 'in the corner' : position === 1 ? 'at the far left' : `${String(Math.round(position * 100))}% of the way left`
+  const grip = (
+    <button
+      type="button"
+      data-dock-grip=""
+      aria-label={`Move chat sideways — ${where}. Arrow keys move it; double-click returns it to the corner.`}
+      title="Drag to move the chat out of the way · double-click to return it to the corner"
+      onClick={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        setPosition(0)
+      }}
+      onKeyDown={onKeyDown}
+      className="grid h-8 w-4 shrink-0 cursor-grab touch-none place-items-center rounded-sm text-text-3 hover:text-text-1 active:cursor-grabbing"
+    >
+      <GripVertical className="size-3.5" strokeWidth={1.8} aria-hidden />
+    </button>
+  )
+
+  const drag: DockDrag = { onPointerDown, swallowClick, grip }
+  return { offset: dockOffset(position, travel), dragging, drag }
 }
 
 /**
@@ -160,6 +300,27 @@ export function ChatDock() {
   const layout = dockLayout(viewport, sheet.width, state.windows.length, leftBound)
   const front = state.windows.find((w) => !w.minimized)
 
+  /*
+   * The dock's own width, measured, because that is what decides how far it
+   * can travel: a bar alone can cross most of the screen, a bar with two
+   * conversations beside it much less. A callback ref, so the observer follows
+   * the element when the layout swaps one container for another.
+   */
+  const [dockWidth, setDockWidth] = useState(0)
+  const observer = useRef<ResizeObserver | null>(null)
+  const measure = useCallback((el: HTMLDivElement | null) => {
+    observer.current?.disconnect()
+    if (!el) return
+    setDockWidth(el.getBoundingClientRect().width)
+    observer.current = new ResizeObserver(() => setDockWidth(el.getBoundingClientRect().width))
+    observer.current.observe(el)
+  }, [])
+  useEffect(() => () => observer.current?.disconnect(), [])
+
+  const travel =
+    layout.mode === 'phone' ? 0 : dockTravel(viewport, layout.right, dockWidth, leftBound)
+  const { offset, dragging, drag } = useDockPosition(travel)
+
   const list = (
     <ThreadList
       bare
@@ -176,10 +337,15 @@ export function ChatDock() {
   /** The bar every layout starts from: robot, "Chat", new, and the chevron. */
   const bar = (opts: { open: boolean; onToggle: () => void; width?: number | undefined }) => (
     <div
-      className="flex h-12 shrink-0 cursor-pointer items-center gap-2 px-3"
+      className="flex h-12 shrink-0 cursor-pointer touch-none items-center gap-2 px-3 pl-1.5 select-none"
       style={opts.width === undefined ? undefined : { width: opts.width }}
-      onClick={opts.onToggle}
+      onPointerDown={layout.mode === 'phone' ? undefined : drag.onPointerDown}
+      onClick={() => {
+        if (drag.swallowClick()) return
+        opts.onToggle()
+      }}
     >
+      {layout.mode === 'phone' ? null : drag.grip}
       <RobotIcon className="size-5 shrink-0" aria-hidden />
       <span className="min-w-0 flex-1 truncate text-sm font-medium">Chat with jojo</span>
       <Button
@@ -227,7 +393,7 @@ export function ChatDock() {
    */
   const panel =
     'flex flex-col overflow-hidden border border-hairline bg-page shadow-[var(--shadow-raised)]'
-  const slide = reducedMotion ? '' : 'transition-[right] duration-200 ease-out'
+  const slide = reducedMotion || dragging ? '' : 'transition-[right] duration-200 ease-out'
 
   /* ------------------------------ phone layout ----------------------------- */
   if (layout.mode === 'phone') {
@@ -283,13 +449,15 @@ export function ChatDock() {
     return (
       <div
         {...dockAttr}
+        ref={measure}
         className={cn('fixed bottom-0 z-50 flex flex-col items-end', slide)}
-        style={{ right: layout.right, width: layout.width }}
+        style={{ right: layout.right + offset, width: layout.width }}
       >
         {showWindow ? (
           <ChatWindow
             win={front}
             width={layout.width}
+            drag={drag}
             onAdopt={onAdopt}
             onToggle={onToggle}
             onClose={onClose}
@@ -329,8 +497,9 @@ export function ChatDock() {
   return (
     <div
       {...dockAttr}
+      ref={measure}
       className={cn('fixed bottom-0 z-50 flex flex-row-reverse items-end', slide)}
-      style={{ right: layout.right, gap: GAP }}
+      style={{ right: layout.right + offset, gap: GAP }}
     >
       <div
         className={cn(
@@ -353,6 +522,7 @@ export function ChatDock() {
           key={w.key}
           win={w}
           width={layout.windowWidth}
+          drag={drag}
           onAdopt={onAdopt}
           onToggle={onToggle}
           onClose={onClose}

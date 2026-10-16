@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useProfile } from '@jojo/service/react/use-profile'
 import { useScout } from '@jojo/service/react/use-scout'
+import { useStickyNotes } from '@jojo/service/react/use-sticky-notes'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useLabels } from '@/lib/labels-context'
@@ -64,6 +65,7 @@ export function Transfer() {
   const { all: items, reminders } = useTimeline()
   const { links, files, snippets } = useVault()
   const { pipelines, postings, matches } = useScout()
+  const { notes: stickyNotes } = useStickyNotes()
   const { isBlank: profileIsBlank } = useProfile()
   const { labels } = useLabels()
 
@@ -159,6 +161,13 @@ export function Transfer() {
         count: pipelines.length + postings.length + matches.length,
       },
       {
+        id: 'notes',
+        label: 'Sticky notes',
+        unit: 'sticky notes',
+        hint: 'The notes to self on your dashboard board',
+        count: stickyNotes.length,
+      },
+      {
         id: 'profile',
         label: 'Profile',
         unit: 'profile',
@@ -180,6 +189,7 @@ export function Transfer() {
       pipelines.length,
       postings.length,
       matches.length,
+      stickyNotes.length,
       profileIsBlank,
     ],
   )

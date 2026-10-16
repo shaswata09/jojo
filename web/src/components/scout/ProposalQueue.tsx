@@ -1,6 +1,7 @@
 import {
   Check,
   ExternalLink,
+  FilePlus2,
   Inbox,
   ListChecks,
   Sparkles,
@@ -14,7 +15,8 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
-import { postingPreview, proposalDetail } from '@jojo/service/core/proposal'
+import { approvedLabel, postingPreview, proposalDetail } from '@jojo/service/core/proposal'
+import type { ApprovedJob } from '@jojo/service/core/proposal'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
 
 /**
@@ -29,6 +31,11 @@ import type { Pipeline, Proposal } from '@jojo/service/core/model'
  *
  * Answered cards stay until swept, so the Undo in the toast has something to
  * point at. See `pipeline.proposal.sweep`.
+ *
+ * An approved SCOUT card keeps one more button: Add to applications. Approving
+ * files the job into Matches or Postings and deliberately stops there, and the
+ * card used to say "applied" over that — so people approved a job, looked in
+ * their applications table, and reasonably concluded the scout was broken.
  */
 export function ProposalQueue({
   proposals,
@@ -38,6 +45,8 @@ export function ProposalQueue({
   onApproveAll,
   onSweep,
   onClearAll,
+  jobFor,
+  onPromote,
 }: {
   /** Every proposal, in creation order. This component splits them. */
   proposals: readonly Proposal[]
@@ -47,6 +56,10 @@ export function ProposalQueue({
   onApproveAll: (pipelineId: string) => void
   onSweep: (pipelineId: string) => void
   onClearAll: () => void
+  /** The match or posting an approved scout card saved, or null for anything else. */
+  jobFor: (proposal: Proposal) => ApprovedJob | null
+  /** The second step: turn that saved job into a draft application. */
+  onPromote: (job: ApprovedJob) => void
 }) {
   const [confirming, setConfirming] = useState(false)
   const pending = proposals.filter((p) => p.status === 'pending')
@@ -117,6 +130,8 @@ export function ProposalQueue({
               pipelineName={nameOf(p.pipelineId)}
               onApprove={() => onApprove(p.id)}
               onDiscard={() => onDiscard(p.id)}
+              job={p.status === 'approved' ? jobFor(p) : null}
+              onPromote={onPromote}
             />
           ))}
         </ul>
@@ -149,6 +164,7 @@ const STATUS: Record<
   Exclude<Proposal['status'], 'pending'>,
   { label: string; tone: 'green' | 'gray' | 'red' }
 > = {
+  // The approved label depends on the tool — see `approvedLabel`.
   approved: { label: 'applied', tone: 'green' },
   discarded: { label: 'discarded', tone: 'gray' },
   failed: { label: 'could not apply', tone: 'red' },
@@ -159,14 +175,20 @@ function ProposalCard({
   pipelineName,
   onApprove,
   onDiscard,
+  job,
+  onPromote,
 }: {
   proposal: Proposal
   pipelineName: string
   onApprove: () => void
   onDiscard: () => void
+  job: ApprovedJob | null
+  onPromote: (job: ApprovedJob) => void
 }) {
   const settled = p.status !== 'pending'
-  const status = settled ? STATUS[p.status as Exclude<Proposal['status'], 'pending'>] : null
+  const base = settled ? STATUS[p.status as Exclude<Proposal['status'], 'pending'>] : null
+  const status =
+    base && p.status === 'approved' ? { ...base, label: approvedLabel(p.tool) } : base
   const posting = postingPreview(p.tool, p.input)
   const detail = posting ? null : proposalDetail(p.input)
 
@@ -268,7 +290,7 @@ function ProposalCard({
           </p>
         </div>
 
-        {posting?.href || !settled ? (
+        {posting?.href || !settled || job ? (
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
             {posting?.href ? (
               <Button size="sm" variant="outline" asChild>
@@ -281,6 +303,18 @@ function ProposalCard({
                   <ExternalLink className="size-3.5" strokeWidth={1.8} aria-hidden />
                   Open posting
                 </a>
+              </Button>
+            ) : null}
+            {/* The second step, where the first one left the reader. Once taken
+                it says so instead, the same way the Matches row does. */}
+            {job?.applicationId ? (
+              <Chip tone="teal" size="sm">
+                In applications
+              </Chip>
+            ) : job ? (
+              <Button size="sm" onClick={() => onPromote(job)}>
+                <FilePlus2 className="size-3.5" strokeWidth={1.8} aria-hidden />
+                Add to applications
               </Button>
             ) : null}
             {settled ? null : (

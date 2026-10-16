@@ -52,6 +52,8 @@ export type GroupId =
    * to see these counted.
    */
   | 'background'
+  /** The dashboard's sticky notes — `useStickyNotes().notes`. */
+  | 'notes'
 
 /**
  * Which group carries each kind of record, or null where nothing does.
@@ -77,6 +79,7 @@ export const GROUP_OF: Record<NodeType, GroupId | null> = {
   snippet: 'vault',
   file: 'files',
   person: 'people',
+  stickyNote: 'notes',
   keyword: 'keywords',
   pipeline: 'scout',
   posting: 'scout',

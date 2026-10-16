@@ -1,25 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  adoptThread,
-  closeWindow,
-  detachApplication,
-  dockLayout,
-  dropMissing,
-  EDGE,
-  EMPTY_DOCK,
-  focusWindow,
-  isInChatDock,
-  LIST_WIDTH,
-  MAX_WINDOWS,
-  openDraft,
-  openThread,
-  parseDock,
-  serializeDock,
-  setListOpen,
-  toggleMinimized,
-  WINDOW_WIDTH,
-  type DockState,
-} from './chat-dock'
+import { EDGE, EMPTY_DOCK, LIST_WIDTH, MAX_WINDOWS, WINDOW_WIDTH, adoptThread, closeWindow, detachApplication, dockLayout, dockOffset, dockTravel, dragPosition, dropMissing, focusWindow, isInChatDock, openDraft, openThread, parseDock, parsePosition, serializeDock, setListOpen, toggleMinimized, type DockState } from './chat-dock'
 
 const keys = (s: DockState) => s.windows.map((w) => w.key)
 const threads = (s: DockState) => s.windows.map((w) => w.threadId)
@@ -211,5 +191,56 @@ describe('isInChatDock', () => {
   it('is false for a target that is not an element', () => {
     expect(isInChatDock(null)).toBe(false)
     expect(isInChatDock({} as EventTarget)).toBe(false)
+  })
+})
+
+describe('moving the dock sideways', () => {
+  /*
+   * The dock can be dragged off its corner so whatever it covers can be read.
+   * Its position is a FRACTION of the room it can travel through, so it means
+   * the same place when that room changes — a resize, a record opening beside
+   * it, a conversation making it wider.
+   */
+  it('travels from its anchor to just short of the sidebar', () => {
+    // 1440 wide, anchored 16 from the right, a 288px bar, sidebar ending at 252.
+    expect(dockTravel(1440, 16, 288, 252)).toBe(1440 - 16 - 288 - 252 - 16)
+  })
+
+  it('travels less when it is wider, and not at all when it fills the room', () => {
+    expect(dockTravel(1440, 16, 900, 252)).toBeLessThan(dockTravel(1440, 16, 288, 252))
+    expect(dockTravel(900, 16, 900, 252)).toBe(0)
+  })
+
+  it('keeps a position meaning the same place when the room changes', () => {
+    // The middle of a long run and the middle of a short one are both the middle.
+    expect(dockOffset(0.5, 800)).toBe(400)
+    expect(dockOffset(0.5, 300)).toBe(150)
+    // Which is why it cannot overshoot: the travel already stops at the sidebar.
+    expect(dockOffset(1, 300)).toBe(300)
+  })
+
+  it('maps a drag to a position, leftward being further from the corner', () => {
+    expect(dragPosition(0, 400, 800)).toBe(0.5)
+    expect(dragPosition(0.5, -200, 800)).toBe(0.25)
+  })
+
+  it('snaps onto either end when it is dropped close to it', () => {
+    // So the corner is a flick, not a hunt for the exact pixel.
+    expect(dragPosition(0.1, -70, 800)).toBe(0)
+    expect(dragPosition(0.9, 70, 800)).toBe(1)
+  })
+
+  it('clamps a drag past either end, and ignores one with nowhere to go', () => {
+    expect(dragPosition(0.5, 5000, 800)).toBe(1)
+    expect(dragPosition(0.5, -5000, 800)).toBe(0)
+    expect(dragPosition(0.3, 200, 0)).toBe(0.3)
+  })
+
+  it('reads back only a stored number in range, and the corner otherwise', () => {
+    expect(parsePosition('0.6')).toBe(0.6)
+    expect(parsePosition('7')).toBe(1)
+    expect(parsePosition('-1')).toBe(0)
+    expect(parsePosition('left')).toBe(0)
+    expect(parsePosition(null)).toBe(0)
   })
 })

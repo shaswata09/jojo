@@ -338,6 +338,35 @@ describe('vault snippets', () => {
   })
 })
 
+/* ------------------------------ sticky notes ------------------------------ */
+
+describe('sticky notes', () => {
+  it('writes, edits and removes one, each undoably', () => {
+    const h = harness()
+    roundTrip<string>(h, 'sticky.note.create', { text: '  Ask Maria about the visa letter ' }, (id) => {
+      const stored = h.repo.getSnapshot().node(id as never, 'stickyNote')
+      expect(stored?.props.text).toBe('Ask Maria about the visa letter')
+      // The colour of a paper sticky when none was picked.
+      expect(stored?.props.tone).toBe('amber')
+    })
+
+    const note = okOr(h.runtime.run('sticky.note.create', { text: 'Call the registrar', tone: 'pink' })) as never
+    roundTrip(h, 'sticky.note.update', { id: note, text: 'Call the registrar before 4', tone: 'green' }, () => {
+      const stored = h.repo.getSnapshot().node(note, 'stickyNote')
+      expect(stored?.props).toMatchObject({ text: 'Call the registrar before 4', tone: 'green' })
+    })
+    roundTrip(h, 'sticky.note.delete', { id: note }, () => {
+      expect(h.repo.getSnapshot().node(note)).toBeUndefined()
+    })
+  })
+
+  it('refuses an empty note and one that is a document rather than a note', () => {
+    const h = harness()
+    expect(h.runtime.run('sticky.note.create', { text: '' }).ok).toBe(false)
+    expect(h.runtime.run('sticky.note.create', { text: 'x'.repeat(501) }).ok).toBe(false)
+  })
+})
+
 /* ------------------------------- the scout -------------------------------- */
 
 describe('scout pipelines', () => {

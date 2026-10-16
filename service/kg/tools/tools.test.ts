@@ -394,8 +394,16 @@ describe('duplicating a record filed under several applications', () => {
     it('names a person on one job with a role, leaving their other jobs alone', () => {
       const h = harness()
       const apps = two(h)
-      const person = okOr(h.runtime.run('vault.person.create', { name: 'A', applicationIds: apps.slice(0, 1) }))
-      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[1]!, role: 'recommender' }))
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'A', applicationIds: apps.slice(0, 1) }),
+      )
+      okOr(
+        h.runtime.run('vault.person.file', {
+          id: person,
+          applicationId: apps[1]!,
+          role: 'recommender',
+        }),
+      )
       expect(roleOn(h, person, apps[1]!)).toBe('recommender')
       expect(isFiled(h, person, apps[0]!)).toBe(true)
       expect(roleOn(h, person, apps[0]!)).toBeUndefined()
@@ -405,8 +413,20 @@ describe('duplicating a record filed under several applications', () => {
       const h = harness()
       const apps = two(h)
       const person = okOr(h.runtime.run('vault.person.create', { name: 'B' }))
-      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'recommender' }))
-      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'contact' }))
+      okOr(
+        h.runtime.run('vault.person.file', {
+          id: person,
+          applicationId: apps[0]!,
+          role: 'recommender',
+        }),
+      )
+      okOr(
+        h.runtime.run('vault.person.file', {
+          id: person,
+          applicationId: apps[0]!,
+          role: 'contact',
+        }),
+      )
       expect(roleOn(h, person, apps[0]!)).toBe('contact')
       okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]! }))
       expect(roleOn(h, person, apps[0]!)).toBe('contact')
@@ -419,9 +439,23 @@ describe('duplicating a record filed under several applications', () => {
       const h = harness()
       const apps = two(h)
       const person = okOr(h.runtime.run('vault.person.create', { name: 'C', applicationIds: apps }))
-      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'recommender' }))
-      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[1]!, role: 'contact' }))
-      okOr(h.runtime.run('vault.person.update', { id: person, role: 'Referee', applicationIds: apps }))
+      okOr(
+        h.runtime.run('vault.person.file', {
+          id: person,
+          applicationId: apps[0]!,
+          role: 'recommender',
+        }),
+      )
+      okOr(
+        h.runtime.run('vault.person.file', {
+          id: person,
+          applicationId: apps[1]!,
+          role: 'contact',
+        }),
+      )
+      okOr(
+        h.runtime.run('vault.person.update', { id: person, role: 'Referee', applicationIds: apps }),
+      )
       expect(roleOn(h, person, apps[0]!)).toBe('recommender')
       expect(roleOn(h, person, apps[1]!)).toBe('contact')
       // Dropping one job from the form drops that role and keeps the other.
@@ -474,9 +508,21 @@ describe('duplicating a record filed under several applications', () => {
       const h = harness()
       const apps = two(h)
       const person = okOr(h.runtime.run('vault.person.create', { name: 'F', applicationIds: apps }))
-      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'recommender' }))
+      okOr(
+        h.runtime.run('vault.person.file', {
+          id: person,
+          applicationId: apps[0]!,
+          role: 'recommender',
+        }),
+      )
       const before = graphOf(h.repo)
-      okOr(h.runtime.run('vault.person.file', { id: person, applicationId: apps[0]!, role: 'contact' }))
+      okOr(
+        h.runtime.run('vault.person.file', {
+          id: person,
+          applicationId: apps[0]!,
+          role: 'contact',
+        }),
+      )
       h.runtime.undo()
       expect(graphOf(h.repo)).toEqual(before)
       okOr(h.runtime.run('vault.person.unfile', { id: person, applicationId: apps[0]! }))
@@ -492,11 +538,19 @@ describe('duplicating a record filed under several applications', () => {
     it('stores a cleaned brief per application', () => {
       const h = harness()
       const apps = two(h)
-      const person = okOr(h.runtime.run('vault.person.create', { name: 'A. Mehta', applicationIds: apps }))
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'A. Mehta', applicationIds: apps }),
+      )
       okOr(
         h.runtime.run('vault.person.update', {
           id: person,
-          briefs: [{ applicationId: apps[0]!, highlights: [' teaching ', 'Teaching', 'grants'], note: '  lab  ' }],
+          briefs: [
+            {
+              applicationId: apps[0]!,
+              highlights: [' teaching ', 'Teaching', 'grants'],
+              note: '  lab  ',
+            },
+          ],
         }),
       )
       expect(briefsOf(h, person)).toEqual([
@@ -539,7 +593,9 @@ describe('duplicating a record filed under several applications', () => {
     it('lets go of a brief when the person is unfiled from that job', () => {
       const h = harness()
       const apps = two(h)
-      const person = okOr(h.runtime.run('vault.person.create', { name: 'F. Okafor', applicationIds: apps }))
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'F. Okafor', applicationIds: apps }),
+      )
       okOr(
         h.runtime.run('vault.person.update', {
           id: person,
@@ -556,8 +612,15 @@ describe('duplicating a record filed under several applications', () => {
     it('leaves briefs alone on a save that touches neither briefs nor filing', () => {
       const h = harness()
       const apps = two(h)
-      const person = okOr(h.runtime.run('vault.person.create', { name: 'G. Ito', applicationIds: apps }))
-      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: 'x' }] }))
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'G. Ito', applicationIds: apps }),
+      )
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [{ applicationId: apps[0]!, note: 'x' }],
+        }),
+      )
       okOr(h.runtime.run('vault.person.update', { id: person, role: 'Referee' }))
       expect(briefsOf(h, person)).toEqual([{ applicationId: apps[0], note: 'x' }])
     })
@@ -565,16 +628,32 @@ describe('duplicating a record filed under several applications', () => {
     it('stores no list at all once every brief is cleared', () => {
       const h = harness()
       const apps = two(h)
-      const person = okOr(h.runtime.run('vault.person.create', { name: 'H. Park', applicationIds: apps }))
-      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: 'x' }] }))
-      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: '  ' }] }))
-      expect(h.repo.getSnapshot().node(person as never, 'person')?.props).not.toHaveProperty('briefs')
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'H. Park', applicationIds: apps }),
+      )
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [{ applicationId: apps[0]!, note: 'x' }],
+        }),
+      )
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [{ applicationId: apps[0]!, note: '  ' }],
+        }),
+      )
+      expect(h.repo.getSnapshot().node(person as never, 'person')?.props).not.toHaveProperty(
+        'briefs',
+      )
     })
 
     it('refuses a brief past the limits rather than storing it', () => {
       const h = harness()
       const apps = two(h)
-      const person = okOr(h.runtime.run('vault.person.create', { name: 'I. Sato', applicationIds: apps }))
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'I. Sato', applicationIds: apps }),
+      )
       const result = h.runtime.run('vault.person.update', {
         id: person,
         briefs: [{ applicationId: apps[0]!, note: 'n'.repeat(5_000) }],
@@ -586,8 +665,15 @@ describe('duplicating a record filed under several applications', () => {
     it('round-trips through undo byte for byte', () => {
       const h = harness()
       const apps = two(h)
-      const person = okOr(h.runtime.run('vault.person.create', { name: 'J. Kim', applicationIds: apps }))
-      okOr(h.runtime.run('vault.person.update', { id: person, briefs: [{ applicationId: apps[0]!, note: 'v1' }] }))
+      const person = okOr(
+        h.runtime.run('vault.person.create', { name: 'J. Kim', applicationIds: apps }),
+      )
+      okOr(
+        h.runtime.run('vault.person.update', {
+          id: person,
+          briefs: [{ applicationId: apps[0]!, note: 'v1' }],
+        }),
+      )
       const before = graphOf(h.repo)
       okOr(
         h.runtime.run('vault.person.update', {
@@ -2063,6 +2149,71 @@ describe('the proposal queue', () => {
 
     h.runtime.undo()
     expect(graphOf(h.repo)).toEqual(before)
+  })
+
+  /*
+   * The scout half, which nothing tested — and which a person reported as
+   * broken: "I approve an application in Job Scout and it never reaches my
+   * applications." It is not supposed to. A scout approval files the job into
+   * an inbox on the Job Scout page and creates no application; promoting it is
+   * a second button the person presses. This pins both halves of that, plus
+   * the id the page needs to offer that second button on the spot.
+   */
+  it('files an approved scout suggestion into its inbox and creates no application', () => {
+    for (const [tool, input, type] of [
+      [
+        'scout.match.save',
+        { role: 'UTSA — Assistant professor, data science', detail: 'ML', fit: 72 },
+        'match',
+      ],
+      ['scout.posting.save', { url: 'https://jobs.example.edu/123' }, 'posting'],
+    ] as const) {
+      const h = harness()
+      const pipeline = aPipeline(h, 'scout')
+      const id = okOr(
+        h.runtime.run('pipeline.proposal.raise', {
+          pipelineId: pipeline,
+          kind: 'scout',
+          tool,
+          input: JSON.stringify(input),
+          title: 'Keep this one',
+          rationale: 'because',
+        }),
+      )
+      const before = h.repo.getSnapshot()
+      const applicationsBefore = before.ofType('application').length
+      const savedBefore = before.ofType(type).length
+
+      const result = h.runtime.run('pipeline.proposal.approve', { id })
+
+      expect(result.ok).toBe(true)
+      const after = h.repo.getSnapshot()
+      expect(after.node(id, 'proposal')?.props.status).toBe('approved')
+      expect(after.ofType(type).length).toBe(savedBefore + 1)
+      expect(after.ofType('application').length).toBe(applicationsBefore)
+      // The new row's id comes back, so the card can offer "Add to applications".
+      const made = result.ok ? result.output : null
+      expect(made).toBeTruthy()
+      expect(after.node(made as NodeId, type)).toBeDefined()
+    }
+  })
+
+  it('returns no id for an approved change that created no record', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const app = anApplication(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'twin',
+        tool: 'application.note.set',
+        input: JSON.stringify({ id: app, note: 'x' }),
+        title: 'Note',
+        rationale: 'because',
+      }),
+    )
+    const result = h.runtime.run('pipeline.proposal.approve', { id })
+    expect(result.ok && result.output).toBeNull()
   })
 
   it('will not answer the same proposal twice', () => {
