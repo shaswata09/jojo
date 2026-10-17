@@ -12,7 +12,12 @@ import { describe, expect, it } from 'vitest'
 import { MutableSnapshot } from './snapshot'
 import type { StoredNode } from './model'
 import type { GraphSnapshot } from './snapshot'
-import { HOW_LABEL, postingSourceFor, postingSourceForUrl } from './posting-source'
+import {
+  HOW_LABEL,
+  applicationForPostingUrl,
+  postingSourceFor,
+  postingSourceForUrl,
+} from './posting-source'
 
 const AT = '2026-09-14T09:00:00.000Z'
 
@@ -280,5 +285,24 @@ describe('asking before the application exists', () => {
       capture('f2', 'listing-reposted.html', 'https://boards.example.com/jobs/1'),
     ])
     expect(postingSourceForUrl(g, 'https://boards.example.com/jobs/1')?.fileId).toBe('f2')
+  })
+})
+
+describe('the application a posting at this address became', () => {
+  const postings = [
+    { url: 'https://jobs.rice.edu/postings/ml-engineer', applicationId: 'a1' },
+    { url: 'https://jobs.rice.edu/postings/data-scientist' },
+  ]
+
+  it('names it, however the address is written', () => {
+    expect(applicationForPostingUrl(postings, 'https://jobs.rice.edu/postings/ml-engineer')).toBe('a1')
+    expect(applicationForPostingUrl(postings, 'https://www.jobs.rice.edu/postings/ml-engineer/')).toBe('a1')
+  })
+
+  it('is nothing for a posting not promoted yet, or one never saved', () => {
+    // Filing a page under the wrong job is worse than filing it under none.
+    expect(applicationForPostingUrl(postings, 'https://jobs.rice.edu/postings/data-scientist')).toBeUndefined()
+    expect(applicationForPostingUrl(postings, 'https://jobs.rice.edu/postings/other')).toBeUndefined()
+    expect(applicationForPostingUrl(postings, '')).toBeUndefined()
   })
 })

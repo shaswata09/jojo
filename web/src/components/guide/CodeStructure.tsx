@@ -221,7 +221,7 @@ export const SHAPE: DirRow[] = [
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
   // shared pieces the chat dock draws too.
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4524, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4674, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a

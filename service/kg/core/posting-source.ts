@@ -167,6 +167,28 @@ export function postingSourceFor(
   return null
 }
 
+/**
+ * The application a saved posting at this address became, if one has.
+ *
+ * For a page that finishes saving AFTER its posting was promoted. Capturing a
+ * page takes seconds — the extension opens it in a background tab and waits for
+ * it to render — and "Add to applications" is one click away the whole time, so
+ * the promote can run first and find no page to file. Whichever of the two
+ * finishes last does the filing; this is how the page's side asks.
+ *
+ * Same comparison as the rest of this file, so a page is filed under exactly the
+ * application `postingSourceFor` would later find it for.
+ */
+export function applicationForPostingUrl(
+  postings: readonly { readonly url: string; readonly applicationId?: string | undefined }[],
+  url: string,
+): string | undefined {
+  const wanted = comparable(url)
+  if (wanted === null) return undefined
+  return postings.find((p) => p.applicationId !== undefined && comparable(p.url) === wanted)
+    ?.applicationId
+}
+
 /** What the screen calls each way of finding it. Short, and honest about doubt. */
 export const HOW_LABEL: Readonly<Record<PostingSource['how'], string>> = {
   'filed-under': 'filed under this application',

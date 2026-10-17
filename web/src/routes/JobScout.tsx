@@ -10,21 +10,30 @@ import { PipelinesPanel } from '@/components/scout/PipelinesPanel'
 import { PostingsPanel } from '@/components/scout/PostingsPanel'
 import { ProposalQueue } from '@/components/scout/ProposalQueue'
 import { ShutdownDialog } from '@/components/scout/ShutdownDialog'
+import { FilePreviewDialog } from '@/components/vault/FilePreviewDialog'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import type { Pipeline } from '@/data/scout'
+import type { Pipeline, SavedPosting } from '@/data/scout'
+import type { VaultFile } from '@/data/vault'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useProfile } from '@jojo/service/react/use-profile'
+import { useGraph } from '@jojo/service/react/kg-context'
+import { useVault } from '@jojo/service/react/use-vault'
 import { useScout } from '@jojo/service/react/use-scout'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
 import { appPath, scoutPath, useTitle } from '@/lib/links'
 import { useScoutParams } from '@/lib/link-params'
 import { useToast } from '@/lib/toast-context'
+import { useModelSettings } from '@/lib/model-settings-context'
+import { useKeepPostingPage } from '@/lib/posting-agent'
+import type { KeptPage } from '@/lib/posting-agent'
 import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { report } from '@/lib/analytics'
 import { kindOf } from '@jojo/service/react/use-pipelines'
-import { approvedLabel, jobFromApproval } from '@jojo/service/core/proposal'
+import { approvedLabel, jobFromApproval, postingPreview } from '@jojo/service/core/proposal'
+import { postingIdentity } from '@jojo/service/core/capture'
+import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
 
 export function JobScout() {
@@ -81,6 +90,60 @@ export function JobScout() {
   const { toast } = useToast()
   const undoable = useUndoable()
   const [url, setUrl] = useState('')
+
+  /*
+   * The page behind each posting, kept the way "From link" keeps one.
+   *
+   * A saved posting used to be a URL and a date: the scout found the job, the
+   * person approved it, and the page itself — the requirements, the deadline,
+   * the thing the listing coming down takes with it — was never kept, though
+   * the button to open it sat disabled on every row. See `useKeepPostingPage`.
+   */
+  const keepPage = useKeepPostingPage()
+  const { reader } = useModelSettings()
+  const graph = useGraph()
+  const { files } = useVault()
+  /** Postings whose page is being kept right now, by identity. */
+  const [keeping, setKeeping] = useState<ReadonlySet<string>>(() => new Set())
+  const [snapshot, setSnapshot] = useState<VaultFile | null>(null)
+  const keyOf = (postingUrl: string) => postingIdentity(postingUrl) ?? postingUrl
+
+  const pageFor = (posting: SavedPosting): VaultFile | null => {
+    const source = postingSourceForUrl(graph, posting.url)
+    return source ? (files.find((f) => f.id === source.fileId) ?? null) : null
+  }
+
+  /** Says how keeping one page went. Quiet when it was already in the Vault. */
+  const reportKept = (kept: KeptPage, title: string) => {
+    if (!kept.ok) {
+      toast({ title: 'The posting’s page was not saved', description: kept.reason, tone: 'danger' })
+      return
+    }
+    if (kept.via === 'already') return
+    toast({
+      title: 'Posting page saved',
+      description: kept.filedUnder
+        ? `${title} — filed under its application.`
+        : `${title} — in the Vault under Job postings.`,
+    })
+  }
+
+  const keepPostingPage = async (postingUrl: string, title: string): Promise<KeptPage> => {
+    const key = keyOf(postingUrl)
+    setKeeping((now) => new Set(now).add(key))
+    try {
+      return await keepPage({ url: postingUrl, title, reader })
+    } finally {
+      setKeeping((now) => {
+        const next = new Set(now)
+        next.delete(key)
+        return next
+      })
+    }
+  }
+
+  const keepAndReport = (postingUrl: string, title: string) =>
+    void keepPostingPage(postingUrl, title).then((kept) => reportKept(kept, title))
 
   const savePipeline = (draft: PipelineDraft) => {
     if (editing && editing !== 'new') {
@@ -156,14 +219,20 @@ export function JobScout() {
     addPosting({ title, url: text, size: '—' })
     setUrl('')
     toast({ title: 'Posting saved', description: title })
+    keepAndReport(text, title)
   }
 
   /** The second way in, and the one the panel copy promises. Same shape as the
    *  match promotion above: the posting stays filed, now linked, and the Undo
    *  reverts the write and brings the reader back off the detail route. */
   const onPromotePosting = (postingId: string) => {
+    const posting = postings.find((p) => p.id === postingId)
     const { value: application, restore } = undoable(() => promotePosting(postingId))
     if (!application) return
+    // A page already kept was filed under the application by the promote
+    // itself. One that is not kept yet is kept now and filed when it lands —
+    // or, when it is already on its way, filed by the capture in flight.
+    if (posting && !pageFor(posting)) keepAndReport(posting.url, posting.title)
     toast({
       title: `${application.org} added as a draft`,
       description: 'The posting stays saved here, now linked to the application.',
@@ -195,6 +264,11 @@ export function JobScout() {
     report('scout_proposal_decided', { decision: 'approved' })
     if (!made || (tool !== 'scout.match.save' && tool !== 'scout.posting.save')) return
     const kind = tool === 'scout.match.save' ? 'match' : 'posting'
+    if (kind === 'posting') {
+      const proposal = engine.proposals.find((p) => p.id === id)
+      const seen = proposal ? postingPreview(proposal.tool, proposal.input) : null
+      if (seen?.href) keepAndReport(seen.href, seen.title ?? seen.label)
+    }
     toast({
       title: approvedLabel(tool),
       description: 'Not in your applications yet — add it when you want to track it.',
@@ -203,6 +277,34 @@ export function JobScout() {
         onClick: () => onPromoteJob({ kind, id: made }),
       },
     })
+  }
+
+  /**
+   * Approve all, and keep every approved posting's page — one at a time, since
+   * each opens a tab, and reported once at the end rather than a toast apiece.
+   */
+  const onApproveAll = (pipelineId: string) => {
+    const pages = engine.proposals
+      .filter((p) => p.pipelineId === pipelineId && p.status === 'pending')
+      .map((p) => postingPreview(p.tool, p.input))
+      .flatMap((seen) => (seen?.href ? [{ url: seen.href, title: seen.title ?? seen.label }] : []))
+    engine.approveAll(pipelineId)
+    if (pages.length === 0) return
+    void (async () => {
+      let saved = 0
+      let reason: string | undefined
+      for (const page of pages) {
+        const kept = await keepPostingPage(page.url, page.title)
+        if (kept.ok) saved += 1
+        else reason ??= kept.reason
+      }
+      const of = `${String(saved)} of ${String(pages.length)}`
+      toast(
+        reason === undefined
+          ? { title: saved === 1 ? 'Posting page saved' : 'Posting pages saved', description: `${of} kept in the Vault under Job postings.` }
+          : { title: `${of} posting pages saved`, description: reason, tone: saved === 0 ? 'danger' : undefined },
+      )
+    })()
   }
 
   /** A URL and a title, retyped in seconds — undo toast, no confirmation. */
@@ -296,7 +398,7 @@ export function JobScout() {
           engine.discard(id)
           report('scout_proposal_decided', { decision: 'declined' })
         }}
-        onApproveAll={engine.approveAll}
+        onApproveAll={onApproveAll}
         onSweep={engine.sweep}
         onClearAll={engine.clearAll}
         jobFor={(p) => jobFromApproval(p, matches, postings)}
@@ -322,6 +424,18 @@ export function JobScout() {
         onSave={onSavePosting}
         onPromote={onPromotePosting}
         onRemove={onRemovePosting}
+        pageFor={pageFor}
+        isKeeping={(p) => keeping.has(keyOf(p.url))}
+        onOpenPage={setSnapshot}
+        onKeepPage={(p) => keepAndReport(p.url, p.title)}
+      />
+
+      <FilePreviewDialog
+        file={snapshot}
+        onClose={() => setSnapshot(null)}
+        description={(name) =>
+          `The page kept for this posting, ${name}. Press Escape to go back to Job scout.`
+        }
       />
 
       <p className="flex items-center gap-2 text-xs text-text-3">

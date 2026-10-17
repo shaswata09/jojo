@@ -189,3 +189,64 @@ describe('a posting saved with a summary', () => {
     expect(out.ok).toBe(false)
   })
 })
+
+/*
+ * The page kept for a posting goes with it.
+ *
+ * The web app saves a scout posting's page to the Vault with the posting's URL
+ * as its source, the way "From link" does. Before this, promoting left the page
+ * — when there was one — unfiled, so the application had no posting under it
+ * and the Vault had a page about a job nothing pointed at.
+ */
+describe('promoting a posting whose page was kept', () => {
+  const keepPage = (
+    runtime: ReturnType<typeof world>['runtime'],
+    okOr: ReturnType<typeof world>['okOr'],
+    sourceUrl: string,
+  ) => {
+    const ids = okOr(
+      runtime.run('vault.file.add', {
+        files: [{ name: 'Rice — ML engineer.html', kind: 'page', bucket: 'Job postings', size: '84 KB', sourceUrl }],
+      }),
+    )
+    const id = ids[0]
+    if (id === undefined) throw new Error('vault.file.add returned no id.')
+    return id
+  }
+
+  it('files the page under the new application', () => {
+    const { runtime, repo, okOr } = world()
+    const page = keepPage(runtime, okOr, 'https://jobs.rice.edu/postings/ml-engineer')
+    const posting = okOr(
+      runtime.run('scout.posting.save', { url: 'https://jobs.rice.edu/postings/ml-engineer' }),
+    ) as NodeId
+    const application = okOr(runtime.run('scout.posting.promote', { id: posting }))
+
+    const filed = repo.getSnapshot().many(page, 'FILED_UNDER', 'out', 'application').map((a) => a.id)
+    expect(filed).toEqual([application])
+  })
+
+  it('finds it through the same address written differently', () => {
+    // A trailing slash and a `www.` are the same posting — the comparison is
+    // `postingIdentity`, the one the duplicate check uses.
+    const { runtime, repo, okOr } = world()
+    const page = keepPage(runtime, okOr, 'https://www.jobs.rice.edu/postings/ml-engineer/')
+    const posting = okOr(
+      runtime.run('scout.posting.save', { url: 'https://jobs.rice.edu/postings/ml-engineer' }),
+    ) as NodeId
+    const application = okOr(runtime.run('scout.posting.promote', { id: posting }))
+    expect(repo.getSnapshot().many(page, 'FILED_UNDER', 'out', 'application').map((a) => a.id)).toEqual([application])
+  })
+
+  it('leaves another posting’s page alone, and promotes fine with no page at all', () => {
+    const { runtime, repo, okOr } = world()
+    const other = keepPage(runtime, okOr, 'https://jobs.rice.edu/postings/data-scientist')
+    const posting = okOr(
+      runtime.run('scout.posting.save', { url: 'https://jobs.rice.edu/postings/ml-engineer' }),
+    ) as NodeId
+    const application = okOr(runtime.run('scout.posting.promote', { id: posting }))
+    const m = repo.getSnapshot()
+    expect(m.node(application as NodeId, 'application')).toBeDefined()
+    expect(m.many(other, 'FILED_UNDER', 'out', 'application')).toEqual([])
+  })
+})

@@ -32,10 +32,17 @@ import { cn } from '@/lib/utils'
 export function FilePreviewDialog({
   file,
   onClose,
+  description,
 }: {
   /** The document to show, or `null` for "nothing is being previewed". */
   file: VaultFile | null
   onClose: () => void
+  /**
+   * What a screen reader hears on opening, when the record sentence is wrong.
+   * The default speaks of an application, which is where this opened first;
+   * Job Scout opens a posting's page, which belongs to no record yet.
+   */
+  description?: (name: string) => string
 }) {
   const blobs = useVaultBlobs()
   const [blob, setBlob] = useState<File | null>(null)
@@ -121,8 +128,9 @@ export function FilePreviewDialog({
               and Radix logs a warning for a dialog with no title at all. */}
           <DialogTitle className="sr-only">{shown.name}</DialogTitle>
           <DialogDescription className="sr-only">
-            A preview of {shown.name}, filed under this application. Press Escape to go back to the
-            record.
+            {description
+              ? description(shown.name)
+              : `A preview of ${shown.name}, filed under this application. Press Escape to go back to the record.`}
           </DialogDescription>
           <FileViewer file={shown} blob={blob ?? undefined} onClose={onClose} />
         </DialogContent>

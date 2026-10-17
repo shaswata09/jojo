@@ -326,6 +326,11 @@ html[data-theme='light'] {
      dark lifting the panel's own fill. */
   --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.05);
   --shadow-raised: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  /* A sticky note's: a tight contact shadow plus a short soft one, both inset by
+     a negative spread so they hug the rounded corners instead of blooming past
+     them — and small enough that the board's scroll box can hold all of it
+     (the raised shadow reaches ~30px and was clipped there into a square). */
+  --shadow-sticky: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 10px -3px rgba(0, 0, 0, 0.14);
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
@@ -436,6 +441,7 @@ html[data-theme='dark'] {
 
   --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-raised: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-sticky: 0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 10px -3px rgba(0, 0, 0, 0.6);
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 

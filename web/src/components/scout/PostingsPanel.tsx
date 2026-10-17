@@ -1,5 +1,5 @@
 import type { Ref } from 'react'
-import { ExternalLink, Trash2 } from 'lucide-react'
+import { ExternalLink, FileText, LoaderCircle, Trash2 } from 'lucide-react'
 import { Link } from 'react-router'
 import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import type { SavedPosting } from '@/data/scout'
 import { displayName } from '@/data/seed'
 import type { Application } from '@/data/seed'
+import type { VaultFile } from '@/data/vault'
 import { agoLabel } from '@/data/timeline'
 import { appPath } from '@/lib/links'
 import type { ScoutFocus } from '@/lib/links'
@@ -37,6 +38,10 @@ export function PostingsPanel({
   onSave,
   onPromote,
   onRemove,
+  pageFor,
+  isKeeping,
+  onOpenPage,
+  onKeepPage,
 }: {
   postings: readonly SavedPosting[]
   getApplication: (id: string) => Application | undefined
@@ -48,13 +53,21 @@ export function PostingsPanel({
   onSave: () => void
   onPromote: (postingId: string) => void
   onRemove: (id: string, title: string) => void
+  /** The page kept for this posting, when there is one. */
+  pageFor: (posting: SavedPosting) => VaultFile | null
+  /** Whether its page is being kept right now. */
+  isKeeping: (posting: SavedPosting) => boolean
+  onOpenPage: (page: VaultFile) => void
+  /** Keep the page now — for a posting saved before pages were kept, or one that failed. */
+  onKeepPage: (posting: SavedPosting) => void
 }) {
   return (
     <Panel>
       <PanelTitle hint="works without a model">Save a posting</PanelTitle>
       <p className="mb-3 text-sm text-text-2">
-        Nothing here fetches the page, so what is kept is the URL, the employer guessed from it, and
-        the day you saved it — enough to find the ad again, and to apply from.
+        Saving keeps the page too, in the Vault under Job postings — opened through the jojo
+        extension the way you would see it, or fetched by the document reader. Without either, what
+        is kept is the URL, the employer guessed from it, and the day you saved it.
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -96,6 +109,8 @@ export function PostingsPanel({
               // posting can carry an id whose record has just gone.
               const application = p.applicationId ? getApplication(p.applicationId) : undefined
               const lit = focus?.kind === 'posting' && focus.id === p.id
+              const page = pageFor(p)
+              const keeping = !page && isKeeping(p)
               return (
                 <Row
                   key={p.id}
@@ -125,9 +140,9 @@ export function PostingsPanel({
                         />
                       </span>
                       {/* The seed carries a page size for pages that were
-                          never fetched. Printing it here would restate exactly
-                          the claim the disabled button below denies, so only
-                          the URL and the date — both real — are shown. */}
+                          never fetched, so the stored `size` is not shown —
+                          only the URL and the date, both real. Whether a page
+                          was kept is the snapshot button's to say. */}
                       <span className="mt-0.5 block truncate font-mono text-xs text-text-3">
                         {hostOf(p.url) ?? p.url} · saved {agoLabel(p.savedOn, TODAY)}
                       </span>
@@ -155,14 +170,30 @@ export function PostingsPanel({
                   <Chip tone={p.linked ? 'teal' : 'gray'}>
                     {p.linked ? 'linked to application' : 'unscored'}
                   </Chip>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled
-                    title="No page was ever fetched, so there is no snapshot to open — showing one would claim a copy jojo does not have"
-                  >
-                    Open snapshot
-                  </Button>
+                  {/* Three states, each saying what is true: the page is kept,
+                      it is being kept, or it is not — and then the button that
+                      keeps it, rather than one that claims a copy jojo does not
+                      have. */}
+                  {page ? (
+                    <Button variant="ghost" size="sm" onClick={() => onOpenPage(page)}>
+                      <FileText className="size-3.5" strokeWidth={1.8} aria-hidden />
+                      Open snapshot
+                    </Button>
+                  ) : keeping ? (
+                    <Button variant="ghost" size="sm" disabled>
+                      <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" strokeWidth={1.8} aria-hidden />
+                      Saving page…
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title="Open the posting and keep a copy in the Vault"
+                      onClick={() => onKeepPage(p)}
+                    >
+                      Save page
+                    </Button>
+                  )}
                   {/* The way out of the panel, and the thing its copy
                       promises. Absent on a row that already went, the way a
                       promoted match reads 'added' rather than offering the

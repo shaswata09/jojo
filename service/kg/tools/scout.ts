@@ -19,6 +19,7 @@
 
 import type { NodeId } from '../core/model'
 import { draftFromText, draftFromUrl, roleFromTitle } from '../core/parse-posting'
+import { postingSourceForUrl } from '../core/posting-source'
 import { MAX_POSTING_SUMMARY, PIPELINE_KINDS } from '../core/model'
 import { AUTO_CAPABLE } from '../core/proposal'
 import { s } from '../core/schema'
@@ -128,6 +129,12 @@ export const scoutPostingDelete = defineTool({
  * job title sitting unread in the row the user had just pressed. `roleFromTitle`
  * drops the employer out of the title and keeps the rest, so the title seeds the
  * role whichever way round it is written.
+ *
+ * The page kept for the posting goes with it: filed under the new application,
+ * the way the "From link" form files the page it read. Found by address, which
+ * is how the page was kept — the web app saves a posting's page with the
+ * posting's own URL as its source. No page is no error: a posting saved where
+ * nothing could open it still becomes an application, with nothing filed.
  */
 export const scoutPostingPromote = defineTool({
   name: 'scout.posting.promote',
@@ -190,6 +197,8 @@ export const scoutPostingPromote = defineTool({
     })
 
     ctx.tx.link(input.id, 'BECAME', application)
+    const page = postingSourceForUrl(ctx.memory, posting.props.url)
+    if (page) ctx.tx.link(page.fileId as NodeId, 'FILED_UNDER', application)
     return application
   },
 

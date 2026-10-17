@@ -426,6 +426,30 @@ export async function scanBoard(
  */
 const CAPTURES_BY_ADDRESS = 8
 
+/**
+ * The worker's sentence, or a readable one where Chrome wrote it instead.
+ *
+ * The worker hands back its own refusals in words, but a page that never
+ * loaded — a dead host, no network, a typo in the link — fails inside
+ * `chrome.scripting`, and that message is Chrome's: "Frame with ID 0 is showing
+ * error page". Shown as is, it says nothing a person can act on. Translated
+ * here rather than in the worker, so the copy already installed in someone's
+ * browser says it too.
+ */
+function workerReason(error: string | null | undefined, url: string): string {
+  if (error === undefined || error === null) return 'That page could not be saved.'
+  if (/showing error page|ERR_[A-Z_]+/.test(error)) {
+    let host = url
+    try {
+      host = new URL(url).host
+    } catch {
+      // Keep the address as given.
+    }
+    return `${host} did not load — the link may be wrong, the site may be down, or you may be offline. Open it in a tab to see what it says.`
+  }
+  return error
+}
+
 /** What `capturePage` comes back with. */
 export type PageCapture =
   | { ok: true; capture: CaptureEnvelope }
@@ -491,7 +515,7 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
     }
   }
   if (reply.ok !== true) {
-    return { ok: false, absent: false, reason: reply.error ?? 'That page could not be saved.' }
+    return { ok: false, absent: false, reason: workerReason(reply.error, url) }
   }
   const read = readCapture(reply.capture)
   if (typeof read === 'string') {

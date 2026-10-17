@@ -86,9 +86,13 @@ export function StickyBoard() {
           a reminder once it has a date.
         </p>
       ) : (
+        /* Padded out to the full reach of `--shadow-sticky` (7px a side, 11px
+           below) and pulled back by the same amount: a scroll box clips
+           whatever overflows it, and a shadow cut off at the box's edge is a
+           square-cornered smudge under a rounded note. */
         <ul
           aria-label="Sticky notes"
-          className="-mx-1 grid max-h-[26rem] grid-cols-1 gap-2 overflow-y-auto px-1 pb-1 min-[420px]:grid-cols-2"
+          className="-mx-2.5 -mt-1 -mb-3 grid max-h-[26rem] grid-cols-1 gap-2.5 overflow-y-auto px-2.5 pt-1 pb-3 min-[420px]:grid-cols-2"
         >
           {notes.map((note) => (
             <StickyCard
@@ -154,7 +158,7 @@ function StickyCard({
   return (
     <li
       className={cn(
-        'flex min-h-[6.5rem] flex-col rounded-md border p-2.5 shadow-[var(--shadow-raised)]',
+        'flex min-h-[6.5rem] flex-col rounded-md border p-2.5 shadow-[var(--shadow-sticky)]',
         toneClass[note.tone],
         'text-text-1',
       )}

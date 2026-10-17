@@ -249,6 +249,18 @@ describe('capturing a page by its address', () => {
     await expect(read).resolves.toEqual({ ok: false, absent: false, reason: why })
   })
 
+  it('says a page that never loaded did not load, instead of Chrome’s own words', async () => {
+    // What `chrome.scripting` throws for a dead host, measured 2026-10-16 with
+    // a posting at an address nothing was listening on.
+    const read = capturePage(url)
+    reply({ protocol: 8 })
+    await settle()
+    reply({ protocol: 8, ok: false, error: 'Frame with ID 0 is showing error page' })
+    const out = await read
+    expect(out.ok === false && out.reason).toContain('job-boards.greenhouse.io did not load')
+    expect(out.ok === false && out.reason).not.toContain('Frame with ID')
+  })
+
   it('stops waiting when the caller cancels, and blames nobody else for it', async () => {
     const stop = new AbortController()
     const read = capturePage(url, stop.signal)
