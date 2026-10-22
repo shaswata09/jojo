@@ -730,7 +730,22 @@ export function select(message: string): Set<string> | null {
     .filter(([, score]) => score >= SEED_FLOOR)
     .sort((a, b) => b[1] - a[1] || catalogIndex(a[0]) - catalogIndex(b[0]))
 
-  const seed = new Set(ranked.slice(0, SEED_LIMIT).map(([tool]) => tool))
+  /*
+   * The five places are for tools that would otherwise be MISSING.
+   *
+   * A resident read is offered whatever its rank, so a place spent on one is a
+   * place taken from a write that is not — the `NEVER_IMPLICIT` argument above,
+   * from the other side. It started to matter on 2026-10-22, when `memory.list`
+   * learned to filter and sort and its summary began naming the fields it
+   * reads: "clear the deadline on the Rice application" ranked it first at 7
+   * and `graph.query` at 5, and `application.update`, the one tool that can do
+   * it, fell to ninth and was cut. The reads still seed when they rank — their
+   * closure is unchanged — they just do not count against the limit.
+   */
+  const seedable = ranked.filter(([tool]) => !RESIDENT.includes(tool))
+  const seed = new Set(
+    [...ranked.slice(0, SEED_LIMIT), ...seedable.slice(0, SEED_LIMIT)].map(([tool]) => tool),
+  )
 
   /*
    * Every term that matched anything keeps its best tool, whatever the rank.

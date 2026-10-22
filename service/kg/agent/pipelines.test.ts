@@ -260,7 +260,7 @@ describe('refusing a job the person has already seen', () => {
 
   /*
    * REPRODUCTION of the pile-up. A proposal the person has already answered is
-   * not `pending`, so neither `knownPostings` nor `knownRoles` counts it — and
+   * not `pending`, so neither `knownPostingUrls` nor `knownRoles` counts it — and
    * the very next round proposes the identical job again.
    */
   it.each(['discarded', 'failed', 'approved'] as const)(

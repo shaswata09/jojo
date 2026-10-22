@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from 'vitest'
 import type { TimelineItem } from './model'
-import { bucketOf, remindersOf } from './dates'
+import { bucketOf, remindersOf, urgencyOf } from './dates'
 
 const TODAY = '2026-08-18'
 
@@ -161,5 +161,25 @@ describe('remindersOf', () => {
 
   it('is empty for a timeline with no reminders in it', () => {
     expect(remindersOf([item({ remind: false })])).toEqual([])
+  })
+})
+
+describe('urgencyOf', () => {
+  const today = '2026-10-22'
+
+  it('is overdue from the day after, and only then', () => {
+    expect(urgencyOf({ date: '2026-10-21' }, today)).toBe('overdue')
+    expect(urgencyOf({ date: '2026-09-01' }, today)).toBe('overdue')
+  })
+
+  it('is soon for today and tomorrow — the next 48 hours', () => {
+    expect(urgencyOf({ date: '2026-10-22' }, today)).toBe('soon')
+    expect(urgencyOf({ date: '2026-10-23' }, today)).toBe('soon')
+    expect(urgencyOf({ date: '2026-10-24' }, today)).toBe('later')
+  })
+
+  it('is done once ticked off, even when the date has passed', () => {
+    // A deadline met last week is not a missed one.
+    expect(urgencyOf({ date: '2026-10-01', completedOn: '2026-09-30' }, today)).toBe('done')
   })
 })

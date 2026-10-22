@@ -62,6 +62,7 @@
   --color-text-1: var(--text-1);
   --color-text-2: var(--text-2);
   --color-text-3: var(--text-3);
+  --color-text-placeholder: var(--text-placeholder);
 
   /* Accent — monochrome, per shadcn: near-black light, near-white dark */
   --color-accent: var(--accent);
@@ -208,6 +209,18 @@ html[data-theme='light'] {
      surface it lands on now — panel, page/well, row hover, and the selected
      fill below, which is the tightest of the four. */
   --text-3: #656565; /* 5.44:1 panel · 4.98:1 well · 4.76:1 row-hover · 4.54:1 accent-soft */
+  /* An empty field's example text, and deliberately FAINTER than --text-3.
+     At --text-3 the examples ("e.g. Alex Rivera", "https://github.com/you")
+     read as answers someone had already typed, and people skipped fields they
+     had never filled in. Pitched between the two jobs it has: far enough under
+     a typed value that the two cannot be confused, and still above 3:1 so the
+     example stays readable. Set in italic too (see the base rule), so the
+     difference is not carried by colour alone.
+     Measured on the FIELD, not the panel: an input is `--input` at 30% over
+     the panel, which composites to about #d6d6d6 — the darkest ground this
+     lands on. #868686 was tried first and read 3.40:1 on the panel but only
+     2.51:1 on the field it actually sits in. */
+  --text-placeholder: #737373; /* 3.26:1 field · 4.43:1 panel — a typed value is 13.62:1 on the field */
 
   /* shadcn's primary is monochrome — near-black in light, near-white in dark.
      It doubles as the focus ring, which is why the ring passes easily here:
@@ -359,6 +372,7 @@ html[data-theme='dark'] {
   --text-1: #fafafa; /* --foreground      · 15.79:1 on panel */
   --text-2: #d4d4d4; /*                    11.12:1 on panel */
   --text-3: #a1a1a1; /* --muted-foreground · 6.38:1 panel · 6.94:1 well · 5.11:1 accent-soft */
+  --text-placeholder: #858585; /* 3.27:1 field (~#363636) · 4.47:1 panel — value 11.58:1; see the light block */
 
   /* Byte-identical to --text-1 above, and deliberately so: shadcn's primary is
      monochrome and inverts to near-white here. The consequence is that
@@ -448,6 +462,16 @@ html[data-theme='dark'] {
 @layer base {
   * {
     @apply border-hairline;
+  }
+
+  /* Every empty field, including the raw <input>s that never went through
+     `ui/input`. Faint and italic so an example can never be mistaken for an
+     answer — see `--text-placeholder`. `opacity: 1` because Firefox dims
+     placeholders on its own, which would stack on top of the colour. */
+  ::placeholder {
+    color: var(--text-placeholder);
+    font-style: italic;
+    opacity: 1;
   }
 
   html {
@@ -933,7 +957,8 @@ html[data-theme='dark'] {
    nothing leaks into the rest of the app. */
 .rte:empty::before {
   content: attr(data-placeholder);
-  color: var(--text-3);
+  color: var(--text-placeholder);
+  font-style: italic;
 }
 
 .rte ul,

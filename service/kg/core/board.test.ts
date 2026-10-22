@@ -8,7 +8,16 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { BOARD_MAX_RESULTS, isJobPostingUrl, parseSources, readListings } from './board'
+import {
+  BOARD_MAX_RESULTS,
+  crawlBoard,
+  isJobPostingUrl,
+  onOneOf,
+  pageLinks,
+  parseSources,
+  readListings,
+} from './board'
+import type { BoardScan } from './board'
 
 describe('telling a posting from a list of them', () => {
   it('recognises one posting on each board it knows', () => {
@@ -203,5 +212,217 @@ describe('vetting what a scan returned', () => {
       from,
     )
     expect(rows[0]!.title.length).toBeLessThanOrEqual(160)
+  })
+})
+
+/*
+ * The academic boards, by the link shapes measured on them 2026-10-22. Every
+ * HigherEdJobs posting was refused before the query rule existed — its jobs
+ * live at `details.cfm?JobCode=…`, a path that names no job at all.
+ */
+describe('the academic boards', () => {
+  it('keeps their postings', () => {
+    for (const url of [
+      'https://www.higheredjobs.com/faculty/details.cfm?JobCode=179575091&Title=Director%20of%20Institutional%20Research',
+      'https://academicjobsonline.org/ajo/jobs/32236',
+      'https://academiccareers.com/job/182527/canada-impact-emerging-leader/',
+      'https://careercenter.cra.org/jobs/21587304/assistant-professor-computer-science',
+    ]) {
+      expect(isJobPostingUrl(url), url).toBe(true)
+    }
+  })
+
+  it('refuses their search pages', () => {
+    for (const url of [
+      'https://www.higheredjobs.com/faculty/search.cfm?JobCat=31&Page=2',
+      'https://www.higheredjobs.com/search/results.cfm?JobCode=179575091',
+      'https://academiccareers.com/jobs/',
+      'https://example.edu/news.php?id=12345',
+    ]) {
+      expect(isJobPostingUrl(url), url).toBe(false)
+    }
+  })
+})
+
+describe('one job, however a board spells its link', () => {
+  it('folds AcademicJobsOnline’s Apply link into the posting it sits beside', () => {
+    const out = readListings(
+      [
+        { url: '/ajo/jobs/32236', title: 'IOPF2026' },
+        { url: 'https://academicjobsonline.org/ajo/jobs/32236/apply', title: 'Apply' },
+      ],
+      'https://academicjobsonline.org/ajo/jobs',
+    )
+    expect(out).toEqual([{ url: 'https://academicjobsonline.org/ajo/jobs/32236', title: 'IOPF2026' }])
+  })
+
+  it('reads a HigherEdJobs posting by its code, whatever its title parameter says', () => {
+    const [a, b] = readListings(
+      [
+        { url: 'details.cfm?JobCode=179575091&Title=Director', title: 'Director' },
+        { url: 'details.cfm?JobCode=179575091&Title=Director%20of%20IR', title: 'Director of IR' },
+      ],
+      'https://www.higheredjobs.com/faculty/search.cfm?JobCat=31',
+    )
+    expect(a?.url).toBe('https://www.higheredjobs.com/faculty/details.cfm?JobCode=179575091')
+    expect(b).toBeUndefined()
+  })
+})
+
+describe('which hosts are the board a person named', () => {
+  it('admits the www spelling and the board’s own subdomains', () => {
+    expect(onOneOf('https://careercenter.cra.org/jobs/', ['https://cra.org/ads'])).toBe(true)
+    expect(onOneOf('https://www.higheredjobs.com/faculty/', ['https://higheredjobs.com/'])).toBe(true)
+    expect(onOneOf('https://higheredjobs.com/faculty/', ['https://www.higheredjobs.com/'])).toBe(true)
+  })
+
+  it('still refuses look-alikes and the rest of a parent domain', () => {
+    expect(onOneOf('https://cra.org.attacker.net/ads', ['https://cra.org/ads'])).toBe(false)
+    expect(onOneOf('https://evil-cra.org/ads', ['https://cra.org/ads'])).toBe(false)
+    expect(onOneOf('https://acme.com/admin', ['https://jobs.acme.com/'])).toBe(false)
+  })
+})
+
+describe('finding the next pages of a board', () => {
+  const HEJ = 'https://www.higheredjobs.com/faculty/search.cfm?JobCat=31'
+
+  it('reads HigherEdJobs’ pager: next first, then the numbers, never page one or back', () => {
+    const rows = [
+      { url: '/faculty/search.cfm?JobCat=31&Page=1', title: '<', rel: 'prev' },
+      { url: '/faculty/search.cfm?JobCat=31&Page=1', title: '1' },
+      { url: '/faculty/search.cfm?JobCat=31&Page=3', title: '3' },
+      { url: '/faculty/search.cfm?JobCat=31&Page=2', title: '2' },
+      { url: '/faculty/search.cfm?JobCat=31&Page=2', title: '>', rel: 'next' },
+      { url: 'details.cfm?JobCode=179575091', title: 'Director of Institutional Research' },
+    ]
+    expect(pageLinks(rows, HEJ)).toEqual([
+      'https://www.higheredjobs.com/faculty/search.cfm?JobCat=31&Page=2',
+      'https://www.higheredjobs.com/faculty/search.cfm?JobCat=31&Page=3',
+    ])
+  })
+
+  it('trusts a link that says Next even when it leaves the path', () => {
+    // AcademicJobsOnline's, verbatim.
+    expect(
+      pageLinks([{ url: '/ajo?joblst-0-0-0-0--40-40---', title: 'next...' }], 'https://academicjobsonline.org/ajo/jobs'),
+    ).toEqual(['https://academicjobsonline.org/ajo?joblst-0-0-0-0--40-40---'])
+  })
+
+  it('follows WordPress-style /page/N and ignores numbers that are not pages', () => {
+    const rows = [
+      { url: 'https://cra.org/ads/page/2/', title: '2' },
+      { url: 'https://cra.org/events/2026/10/', title: '22' },
+      { url: 'https://cra.org/ads/#top', title: '1' },
+      { url: 'https://elsewhere.org/ads/page/3/', title: 'Next »' },
+    ]
+    expect(pageLinks(rows, 'https://cra.org/ads/')).toEqual(['https://cra.org/ads/page/2/'])
+  })
+
+  it('takes an icon-only next link by its accessible name', () => {
+    // The harvest falls back to aria-label when a link has no text.
+    expect(pageLinks([{ url: '?page=2', title: 'Next page' }], 'https://jobs.example.edu/search')).toEqual([
+      'https://jobs.example.edu/search?page=2',
+    ])
+  })
+})
+
+describe('reading a board page by page', () => {
+  /** A board of `pages` pages, `per` jobs each, linked by Next. */
+  const board = (pages: number, per: number): { scan: BoardScan; opened: string[] } => {
+    const opened: string[] = []
+    const scan: BoardScan = async (url) => {
+      opened.push(url)
+      const n = Number(new URL(url).searchParams.get('page') ?? '1')
+      const rows: unknown[] = Array.from({ length: per }, (_, i) => ({
+        url: `/jobs/${String(n * 1000 + i)}`,
+        title: `Job ${String(n)}.${String(i)}`,
+      }))
+      // Page two links back to page one under another spelling, as boards do.
+      rows.push({ url: '/search?page=1', title: '1' })
+      if (n < pages) rows.push({ url: `/search?page=${String(n + 1)}`, title: 'Next' })
+      return { ok: true, rows }
+    }
+    return { scan, opened }
+  }
+  const everywhere = () => true
+  const nothingKnown = () => false
+
+  it('reads every page, once each', async () => {
+    const { scan, opened } = board(4, 5)
+    const out = await crawlBoard({ start: 'https://a.test/search', scan, allowed: everywhere, known: nothingKnown })
+    expect(out.ok && out.pages.length).toBe(4)
+    expect(out.ok && out.listings.length).toBe(20)
+    expect(out.ok && out.next).toBeUndefined()
+    // Page one was not read twice under its `?page=1` spelling.
+    expect(opened).toHaveLength(4)
+  })
+
+  /*
+   * The bug, as a test: a first page full of jobs already seen used to be the
+   * whole answer, and an empty answer twice running offers to switch off.
+   */
+  it('finds the new jobs behind a first page the person has already seen', async () => {
+    const { scan } = board(3, 5)
+    const out = await crawlBoard({
+      start: 'https://a.test/search',
+      scan,
+      allowed: everywhere,
+      known: (url) => /\/jobs\/1\d{3}$/.test(url),
+    })
+    expect(out.ok && out.alreadySeen).toBe(5)
+    expect(out.ok && out.listings.map((l) => l.title)[0]).toBe('Job 2.0')
+    expect(out.ok && out.listings.length).toBe(10)
+  })
+
+  it('stops when the answer is full, and says where to carry on', async () => {
+    const { scan } = board(10, 30)
+    const out = await crawlBoard({ start: 'https://a.test/search', scan, allowed: everywhere, known: nothingKnown })
+    expect(out.ok && out.listings.length).toBe(BOARD_MAX_RESULTS)
+    expect(out.ok && out.pages.length).toBe(2)
+    expect(out.ok && out.next).toBe('https://a.test/search?page=3')
+  })
+
+  it('stops at the page budget', async () => {
+    const { scan } = board(50, 1)
+    const out = await crawlBoard({ start: 'https://a.test/search', scan, allowed: everywhere, known: nothingKnown, maxPages: 3 })
+    expect(out.ok && out.pages.length).toBe(3)
+    expect(out.ok && out.next).toBe('https://a.test/search?page=4')
+  })
+
+  it('opens no page the guard refuses', async () => {
+    const { scan, opened } = board(3, 1)
+    await crawlBoard({
+      start: 'https://a.test/search',
+      scan,
+      allowed: (url) => !url.includes('page=2'),
+      known: nothingKnown,
+    })
+    expect(opened).toEqual(['https://a.test/search'])
+  })
+
+  it('keeps the pages it read when a later one fails', async () => {
+    const { scan: good } = board(3, 2)
+    const scan: BoardScan = async (url) =>
+      url.includes('page=3') ? { ok: false, reason: 'That board took too long to load.' } : good(url)
+    const out = await crawlBoard({ start: 'https://a.test/search', scan, allowed: everywhere, known: nothingKnown })
+    expect(out.ok && out.listings.length).toBe(4)
+    expect(out.ok && out.stopped).toBe('That board took too long to load.')
+    expect(out.ok && out.next).toBe('https://a.test/search?page=3')
+  })
+
+  it('reports the board failing when the first page does', async () => {
+    const scan: BoardScan = async () => ({ ok: false, reason: 'That board wants a sign-in.' })
+    const out = await crawlBoard({ start: 'https://a.test/search', scan, allowed: everywhere, known: nothingKnown })
+    expect(out).toEqual({ ok: false, reason: 'That board wants a sign-in.' })
+  })
+
+  it('resolves rows against where a redirected board landed', async () => {
+    const scan: BoardScan = async () => ({
+      ok: true,
+      landed: 'https://careercenter.cra.org/jobs/',
+      rows: [{ url: '21587304/assistant-professor', title: 'Assistant Professor' }],
+    })
+    const out = await crawlBoard({ start: 'https://cra.org/ads/', scan, allowed: everywhere, known: nothingKnown })
+    expect(out.ok && out.listings[0]?.url).toBe('https://careercenter.cra.org/jobs/21587304/assistant-professor')
   })
 })

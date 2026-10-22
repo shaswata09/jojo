@@ -621,6 +621,8 @@ export function canonicalPostingUrl(url: string): string {
     if (onBoard(host, 'lever.co')) return lever(parsed)
     if (onBoard(host, 'ashbyhq.com')) return ashby(parsed)
     if (onBoard(host, 'myworkdayjobs.com')) return workday(parsed, host)
+    if (onBoard(host, 'academicjobsonline.org')) return academicJobsOnline(parsed)
+    if (onBoard(host, 'higheredjobs.com')) return higherEdJobs(parsed, host)
 
     return url
   } catch {
@@ -681,6 +683,29 @@ function workday(parsed: URL, host: string): string {
   const match = /_((?:R|JR|REQ)[-_]?\d{3,})(?:\/|$)/i.exec(parsed.pathname)
   if (match === null) return parsed.href
   return `https://${host}/${match[1]!.toUpperCase()}`
+}
+
+/**
+ * AcademicJobsOnline lists an "Apply" link beside every posting —
+ * `/ajo/jobs/32236/apply` — and the scout reads both off one results page. The
+ * number is the job; anything after it is the same job with a form open.
+ */
+function academicJobsOnline(parsed: URL): string {
+  const match = /^\/ajo\/jobs\/(\d+)/.exec(parsed.pathname)
+  if (match === null) return parsed.href
+  return `https://academicjobsonline.org/ajo/jobs/${match[1]!}`
+}
+
+/**
+ * HigherEdJobs names a job by `JobCode` and repeats its title in a `Title`
+ * parameter that changes whenever the employer edits the advert. The code is
+ * the identity; the section in the path (`/faculty/`, `/admin/`) is kept, since
+ * that is the address the board itself serves.
+ */
+function higherEdJobs(parsed: URL, host: string): string {
+  const code = parsed.searchParams.get('JobCode')
+  if (code === null || !/^\d+$/.test(code) || !/details\.cfm$/i.test(parsed.pathname)) return parsed.href
+  return `https://${host}${parsed.pathname}?JobCode=${code}`
 }
 
 /**

@@ -682,6 +682,49 @@ describe('reading a job board', () => {
   it('is offered to the model as a read, so it never counts as work done', () => {
     expect(board.effect).toBe('read')
   })
+
+  /*
+   * Reported 2026-10-22: the scout read page one and stopped, so a board whose
+   * first page was all saved already looked empty and the pipeline offered to
+   * switch itself off. The read now follows the pages and takes out the jobs
+   * the person has already been shown.
+   */
+  it('follows the pages and leaves out jobs already saved', async () => {
+    const h = harness()
+    h.runtime.runOrThrow('scout.posting.save', { url: 'https://a.test/jobs/1001' })
+    const opened: string[] = []
+    const scan = async (url: string) => {
+      opened.push(url)
+      const n = url.endsWith('page=2') ? 2 : 1
+      return {
+        ok: true as const,
+        rows: [
+          { url: `/jobs/${String(n * 1000 + 1)}`, title: `Job ${String(n)}` },
+          ...(n === 1 ? [{ url: '/jobs?page=2', title: 'Next' }] : []),
+        ],
+      }
+    }
+    const out = (await board.read(h.memory(), { url: 'https://a.test/jobs' }, {
+      today: TODAY,
+      scan,
+      boards: ['https://a.test/jobs'],
+    })) as { ok: boolean; pagesRead: number; count: number; alreadySeen: number; postings: { title: string }[] }
+
+    expect(opened).toEqual(['https://a.test/jobs', 'https://a.test/jobs?page=2'])
+    expect(out.pagesRead).toBe(2)
+    expect(out.alreadySeen).toBe(1)
+    expect(out.postings.map((p) => p.title)).toEqual(['Job 2'])
+  })
+
+  it('says a board is done for now when everything on it has been seen', async () => {
+    const h = harness()
+    h.runtime.runOrThrow('scout.posting.save', { url: 'https://a.test/jobs/1001' })
+    const out = (await board.read(h.memory(), { url: 'https://a.test/jobs' }, {
+      ...scanning([{ url: '/jobs/1001', title: 'Job 1' }]),
+    })) as { count: number; hint: string }
+    expect(out.count).toBe(0)
+    expect(out.hint).toContain('already been shown')
+  })
 })
 
 describe('working out a number', () => {

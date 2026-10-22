@@ -305,7 +305,7 @@ export const proposalFail = defineTool({
  *
  * MARKS, DOES NOT DELETE, and the difference is the whole point. This called
  * `ctx.tx.del` until the scout started deduping against every proposal rather
- * than only the pending ones (`agent/pipelines.ts`, `knownPostings`). From that
+ * than only the pending ones (`knownPostingUrls`). From that
  * moment a delete here was amnesia: clearing the list forgot which jobs the
  * person had already declined, and the next round proposed them straight back.
  * Setting `swept` keeps the row where the dedupe can read it and takes the card

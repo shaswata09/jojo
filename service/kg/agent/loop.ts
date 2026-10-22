@@ -63,7 +63,7 @@ import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
 import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor, select } from './retrieve'
-import { fitHistory, fitsWindow, stubToFit, stubbedNote, summarisedNote, trimNote } from './budget'
+import { fitHistory, fitsWindow, resultBudget, stubToFit, stubbedNote, summarisedNote, trimNote } from './budget'
 import type { Trimmed } from './budget'
 import { pickTools, type ChooserDeps } from './retrieve-llm'
 import { asMessage, compact } from './compact'
@@ -1468,7 +1468,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
     }
     messages.push(assistantTurn)
 
-    for (const call of turn.toolCalls) {
+    for (const [at, call] of turn.toolCalls.entries()) {
       /*
        * Checked per CALL, not once per round.
        *
@@ -1487,6 +1487,11 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
         offered,
         enforced,
         turn.finishReason === 'length',
+        // Measured against the request as it stands, with this round's earlier
+        // results in it, and shared among the calls still to run.
+        options.window === undefined
+          ? undefined
+          : resultBudget(messages, [tools], options.window, turn.toolCalls.length - at),
       )
       steps.push(step)
       /*
@@ -1616,6 +1621,8 @@ async function performCall(
    * send the same oversized call again.
    */
   truncated = false,
+  /** Characters this result may have; `renderOutcome`'s own default without a window. */
+  resultChars?: number,
 ): Promise<AgentStep> {
   const { host, onEvent, approve } = options
   const entry = CATALOG.find((e) => e.wireName === call.name || e.name === call.name)
@@ -1834,7 +1841,7 @@ async function performCall(
   // gate was just shown. One value, so what was approved and what runs cannot
   // differ.
   const outcome = await callTool(host, call.name, args)
-  const detail = renderOutcome(outcome)
+  const detail = renderOutcome(outcome, resultChars)
   if (!outcome.ok) return settle({ ...base, status: 'failed', detail })
   // Spread conditionally: under `exactOptionalPropertyTypes` an explicit
   // `undefined` is not the same as an absent key, and `AgentStep` declares both

@@ -278,7 +278,9 @@ describe('the executor', () => {
     const out = await callTool(h, 'memory.list', { type: 'application', limit: 200 })
     const text = renderOutcome(out, 500)
     expect(text).toContain('Truncated')
-    expect(text).toContain('Narrow the search')
+    // The knobs `memory.list` actually has, not "lower the limit", which
+    // could only ever show it less.
+    expect(text).toContain('page on (offset)')
   })
 
   it('never rejects, whatever it is handed', async () => {

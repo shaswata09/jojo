@@ -25,6 +25,8 @@
  * worst a sloppy match can do is be thrown away.
  */
 
+import type { BoardScan } from '@jojo/service/core/board'
+
 const TIMEOUT_MS = 20000
 
 /**
@@ -54,9 +56,7 @@ function textOf(html: string): string {
     .trim()
 }
 
-export async function scanBoard(
-  url: string,
-): Promise<{ ok: true; rows: unknown } | { ok: false; reason: string }> {
+export async function scanBoard(url: string): ReturnType<BoardScan> {
   let host = ''
   try {
     host = new URL(url).hostname
@@ -105,14 +105,43 @@ export async function scanBoard(
   }
 
   const body = await response.text()
-  const rows: { url: string; title: string }[] = []
+  const rows: { url: string; title: string; rel?: string }[] = []
   for (const match of body.matchAll(ANCHOR)) {
     if (rows.length >= HARVEST_LIMIT) break
-    const href = match[2] ?? match[3] ?? ''
-    const title = textOf(match[4] ?? '')
+    // An attribute value is HTML too: HigherEdJobs writes its page links as
+    // `search.cfm?JobCat=31&amp;Page=2`, and left encoded that is a different
+    // address — every page past the first would be read as page one.
+    const href = decodeAttribute(match[2] ?? match[3] ?? '')
+    const tag = /^<a\b[^>]*>/i.exec(match[0])?.[0] ?? ''
+    // An icon-only pager link has no text; its accessible name is the title.
+    const title = textOf(match[4] ?? '') || decodeAttribute(attribute(tag, 'aria-label') ?? '')
     if (!href || !title) continue
-    rows.push({ url: href, title: title.slice(0, 300) })
+    const rel = attribute(tag, 'rel')
+    rows.push({ url: href, title: title.slice(0, 300), ...(rel ? { rel: rel.slice(0, 40) } : {}) })
   }
 
-  return { ok: true, rows }
+  // The page's own `<link rel="next">`, where the pager is not an anchor at all.
+  const declared = /<link\b[^>]*\brel\s*=\s*["'][^"']*\bnext\b[^"']*["'][^>]*>/i.exec(body)?.[0]
+  const next = declared ? attribute(declared, 'href') : undefined
+  if (next) rows.push({ url: decodeAttribute(next), title: 'Next', rel: 'next' })
+
+  // Where the fetch ended up after redirects, so relative links resolve there.
+  // `response.url` is empty on some React Native builds; then it is left out.
+  const landed = typeof response.url === 'string' && /^https?:/i.test(response.url) ? response.url : undefined
+  return { ok: true, rows, ...(landed ? { landed } : {}) }
+}
+
+/** One attribute's raw value off an opening tag, or undefined. */
+function attribute(tag: string, name: string): string | undefined {
+  const match = new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i').exec(tag)
+  return match ? (match[1] ?? match[2] ?? '') : undefined
+}
+
+function decodeAttribute(value: string): string {
+  return value
+    .replace(/&amp;/gi, '&')
+    .replace(/&#38;/g, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .trim()
 }

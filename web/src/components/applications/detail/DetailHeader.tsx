@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import {
   ArrowLeft,
   ArrowRightLeft,
+  CalendarClock,
   Copy,
   Flag,
   MoreHorizontal,
@@ -20,6 +21,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { menuItemClass } from '@/components/common/RowMenu'
 import { displayName } from '@/data/seed'
 import type { Application, Stage } from '@/data/seed'
+import { shortDate, whenLabel } from '@/data/timeline'
+import type { TimelineItem } from '@/data/timeline'
+import { urgencyOf } from '@jojo/service/core/dates'
+import type { Urgency } from '@jojo/service/core/dates'
+import { TODAY } from '@/lib/today'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { refKey } from '@/lib/ids'
 import { applicationsPath } from '@/lib/links'
@@ -50,6 +56,14 @@ const menuItem = cn(
  */
 const DETAIL_TITLE_ID = 'application-detail-title'
 
+/** The colour law, as chip tones: red only once past, amber only for the next 48 hours. */
+const URGENCY_TONE: Record<Urgency, 'red' | 'amber' | 'gray'> = {
+  overdue: 'red',
+  soon: 'amber',
+  later: 'gray',
+  done: 'gray',
+}
+
 /**
  * Who the record is, and everything you can do to it as a whole.
  *
@@ -59,6 +73,7 @@ const DETAIL_TITLE_ID = 'application-detail-title'
  */
 export function DetailHeader({
   application: a,
+  deadline,
   onPickStage,
   onEdit,
   onDraft,
@@ -67,6 +82,12 @@ export function DetailHeader({
   onClose,
 }: {
   application: Application
+  /**
+   * The deadline the application form set, when it has one — the item the
+   * calendar shows as "Application deadline". Not the next date of any kind:
+   * an interview next week is not what "when is this due?" is asking.
+   */
+  deadline?: TimelineItem | undefined
   onPickStage: (stage: Stage) => void
   /** Opens the application dialog in edit mode. Absent, the item disables itself. */
   onEdit?: (applicationId: string) => void
@@ -94,7 +115,11 @@ export function DetailHeader({
   return (
     <Panel className="min-w-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
+        {/* `flex-1` from a zero basis, so this column shrinks and its chips
+            wrap INSIDE it. Sized to its content, a chip row as wide as the
+            deadline's pushed the flag, ⋯ and close buttons onto a line of their
+            own under the card — measured at the sheet's 520px. */}
+        <div className="min-w-0 flex-1 basis-0">
           {/* Only where there is no sheet to close. On a wide screen the X in
               the corner and escape are the way out, and a back link there
               would point at the list already on screen behind this. */}
@@ -133,6 +158,23 @@ export function DetailHeader({
                 if (!open) handingOff.current = false
               }}
             />
+            {/* Beside the stage, because "when is this due?" is the other
+                question this card is opened to answer — and it was only
+                answered three panels down, in Dates and reminders. The date
+                AND the gap, so it reads without arithmetic; the colour only
+                repeats what the words already say. */}
+            {deadline ? (
+              <Chip
+                tone={URGENCY_TONE[urgencyOf(deadline, TODAY)]}
+                title={`Application deadline: ${shortDate(deadline.date)}`}
+              >
+                <CalendarClock className="size-3 shrink-0" strokeWidth={1.9} aria-hidden />
+                <span>
+                  <span className="sr-only">Application </span>Deadline {shortDate(deadline.date)} ·{' '}
+                  {whenLabel(deadline, TODAY).toLowerCase()}
+                </span>
+              </Chip>
+            ) : null}
           </div>
 
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">

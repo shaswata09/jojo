@@ -23,6 +23,7 @@
 
 import { canonicalPostingUrl } from './capture'
 import type { Instant, Match, PipelineKind, Proposal, ProposalStatus, SavedPosting } from './model'
+import type { GraphSnapshot } from './snapshot'
 
 /* ------------------------------- the two kinds ---------------------------- */
 
@@ -130,7 +131,7 @@ export function isSettled(status: ProposalStatus): boolean {
  * Not the negation of `isSettled`, and the gap between them is `swept`. A
  * proposal is never deleted — clearing the queue marks the row so the scout can
  * go on deduping against jobs the person has already declined
- * (`agent/pipelines.ts`, `knownPostings`) — so the store keeps every suggestion
+ * (`knownPostingUrls`) — so the store keeps every suggestion
  * ever raised while the screen shows none of them.
  *
  * Reported 2026-09-12: the Job scout's queue was empty and the command
@@ -345,6 +346,58 @@ export function isKnownPosting(known: Iterable<string>, url: string): boolean {
     if (postingKey(candidate) === key) return true
   }
   return false
+}
+
+/**
+ * Every spelling of every job this person already knows about.
+ *
+ * Three sources, and all three are needed. Saved postings are the obvious one.
+ * Applications carry a `url` too, and a scout that re-proposed a job the user
+ * has already APPLIED to would be the most annoying version of this bug.
+ * Proposals are the third and least obvious: two rounds in the same session
+ * would otherwise each propose the same posting, because the first one's
+ * suggestion has not been accepted yet and so is not a posting.
+ *
+ * ## Every proposal counts, whatever became of it
+ *
+ * This filtered on `status === 'pending'`, and that one word was the pile-up.
+ * A proposal stops being pending the moment the person answers it — so the
+ * round after somebody pressed Discard, the job was invisible to this function
+ * and came straight back. Dismissing it again produced another discarded
+ * proposal, which was equally invisible, and the queue refilled with the same
+ * few jobs forever. The harder somebody tidied, the more there was to tidy.
+ *
+ * Read the four statuses as one question — has this person been shown this job
+ * before? — and the answer is yes for all of them. `discarded` is an explicit
+ * no from the user and the strongest reason of the four not to ask again.
+ * `approved` is normally caught by the posting it created, but not once that
+ * posting is deleted, which is the same "I have dealt with this" gesture
+ * wearing different clothes. `failed` means the write broke, and re-proposing
+ * it would queue a card that breaks the same way.
+ *
+ * Lives here rather than beside the scout's proposing host because two readers
+ * need it: that host refuses a duplicate proposal, and `board.search` takes
+ * the known jobs out of a board before the model ever sees them.
+ */
+export function knownPostingUrls(memory: GraphSnapshot): string[] {
+  const urls: string[] = []
+  for (const node of memory.ofType('posting')) urls.push(node.props.url)
+  for (const node of memory.ofType('application')) {
+    if (node.props.url) urls.push(node.props.url)
+  }
+  for (const node of memory.ofType('proposal')) {
+    // Any status. See above: filtering to `pending` is what let a discarded
+    // suggestion come back on the next round.
+    if (node.props.tool !== 'scout.posting.save') continue
+    try {
+      const parsed = JSON.parse(node.props.input) as { url?: unknown }
+      if (typeof parsed.url === 'string') urls.push(parsed.url)
+    } catch {
+      // A payload that will not parse cannot name a duplicate. It is refused at
+      // approval by the tool's own schema, which is where that belongs.
+    }
+  }
+  return urls
 }
 
 /* --------------------------------- idling --------------------------------- */

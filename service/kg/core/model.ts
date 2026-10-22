@@ -1760,7 +1760,7 @@ export type ProposalProps = {
    *
    * So sweeping marks instead. The card goes — `use-pipelines` filters these
    * out and no screen ever sees one — and the record stays where
-   * `knownPostings` can still read it. A discarded suggestion is the strongest
+   * `knownPostingUrls` can still read it. A discarded suggestion is the strongest
    * evidence there is that a job should not be offered again, and it was the
    * one piece of evidence being thrown away.
    *

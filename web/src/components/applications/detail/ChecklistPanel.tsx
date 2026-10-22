@@ -213,7 +213,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
           onChange={(e) => setDraft(e.currentTarget.value)}
           placeholder="Add a step"
           aria-label="Add a step"
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-text-3"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-text-placeholder placeholder:italic"
           onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
             if (e.key === 'Enter') commit()
             if (e.key === 'Escape') {

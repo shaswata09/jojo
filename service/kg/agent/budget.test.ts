@@ -10,6 +10,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { functionSpecs } from './catalog'
+import { RESULT_CEILING, RESULT_FLOOR, resultBudget } from './budget'
 import {
   COMPACT_TARGET,
   RESERVED_FOR_REPLY,
@@ -1327,5 +1328,36 @@ describe('a request that grows during one run', () => {
     // And the two that must survive are still at the front.
     expect(out.messages[0]?.role).toBe('system')
     expect(out.messages[1]?.role).toBe('user')
+  })
+})
+
+describe('how much one tool result may carry', () => {
+  const user = (content: string): ChatMessage => ({ role: 'user', content })
+
+  it('follows the room left in the window, between a floor and a ceiling', () => {
+    // A 32k window with a small request has far more than 6,000 characters
+    // spare; that constant was the cut on every read whatever the model.
+    const roomy = resultBudget([user('hello')], [], 32_768)
+    expect(roomy).toBeGreaterThan(RESULT_FLOOR)
+    expect(roomy).toBeLessThanOrEqual(RESULT_CEILING)
+    expect(resultBudget([user('hello')], [], 1_000_000)).toBe(RESULT_CEILING)
+  })
+
+  it('never goes below what every result used to get', () => {
+    // A window already full leans on `stubToFit`, as it did before.
+    expect(resultBudget([user('x'.repeat(200_000))], [], 32_768)).toBe(RESULT_FLOOR)
+  })
+
+  it('is shared among the calls still to run in the round', () => {
+    const one = resultBudget([user('hello')], [], 32_768, 1)
+    const three = resultBudget([user('hello')], [], 32_768, 3)
+    expect(three).toBeLessThan(one)
+    expect(three).toBeGreaterThanOrEqual(RESULT_FLOOR)
+  })
+
+  it('leaves the full catalogue where it was, because there is no room to give', () => {
+    // Under `full` the fixed part is ~26k of a 32k window: half of what is
+    // left is under the old cap, so the floor holds and nothing changes.
+    expect(resultBudget([user('hello')], [functionSpecs()], 32_768)).toBe(RESULT_FLOOR)
   })
 })

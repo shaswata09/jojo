@@ -24,7 +24,7 @@
  * remaining steps verifying them.
  */
 
-import { PIPELINE_TOOLS, isKnownPosting, mayPropose } from '../core/proposal'
+import { PIPELINE_TOOLS, isKnownPosting, knownPostingUrls, mayPropose } from '../core/proposal'
 import type { NodeId, PipelineKind } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import { entryFor } from './catalog'
@@ -91,6 +91,7 @@ const SCOUT_PROMPT = [
   COMMON,
   'Your job is to find job postings worth this person’s attention, using their profile and the searches they have saved.',
   'Start by reading the boards you were given with board.search, one address at a time. Use the addresses in the prompt; do not invent one, and do not try to read a page that is not a job board.',
+  'board.search follows a board’s pages by itself and leaves out jobs this person has already been shown. When it returns `next`, the board has more pages: propose from what you have, then call it again with that address.',
   'If no board can be read, work from what is in the records instead: the postings and matches already saved, the profile’s roles, regions and terms, and the applications they have made.',
   'Never propose a posting that is already saved or already an application, under any spelling of its link.',
   'For each one, say in the rationale what makes it a fit and what they would need to tailor from what they already have.',
@@ -203,61 +204,13 @@ export type ProposalSink = {
  * anything else comes back as a sentence the model can act on, which is how
  * `callTool` reports every other mistake.
  */
-/**
- * Every spelling of every job this person already knows about.
- *
- * Three sources, and all three are needed. Saved postings are the obvious one.
- * Applications carry a `url` too, and a scout that re-proposed a job the user
- * has already APPLIED to would be the most annoying version of this bug.
- * Proposals are the third and least obvious: two rounds in the same session
- * would otherwise each propose the same posting, because the first one's
- * suggestion has not been accepted yet and so is not a posting.
- *
- * ## Every proposal counts, whatever became of it
- *
- * This filtered on `status === 'pending'`, and that one word was the pile-up.
- * A proposal stops being pending the moment the person answers it — so the
- * round after somebody pressed Discard, the job was invisible to this function
- * and came straight back. Dismissing it again produced another discarded
- * proposal, which was equally invisible, and the queue refilled with the same
- * few jobs forever. The harder somebody tidied, the more there was to tidy.
- *
- * Read the four statuses as one question — has this person been shown this job
- * before? — and the answer is yes for all of them. `discarded` is an explicit
- * no from the user and the strongest reason of the four not to ask again.
- * `approved` is normally caught by the posting it created, but not once that
- * posting is deleted, which is the same "I have dealt with this" gesture
- * wearing different clothes. `failed` means the write broke, and re-proposing
- * it would queue a card that breaks the same way.
- */
-function knownPostings(memory: GraphSnapshot): string[] {
-  const urls: string[] = []
-  for (const node of memory.ofType('posting')) urls.push(node.props.url)
-  for (const node of memory.ofType('application')) {
-    if (node.props.url) urls.push(node.props.url)
-  }
-  for (const node of memory.ofType('proposal')) {
-    // Any status. See above: filtering to `pending` is what let a discarded
-    // suggestion come back on the next round.
-    if (node.props.tool !== 'scout.posting.save') continue
-    try {
-      const parsed = JSON.parse(node.props.input) as { url?: unknown }
-      if (typeof parsed.url === 'string') urls.push(parsed.url)
-    } catch {
-      // A payload that will not parse cannot name a duplicate. It is refused at
-      // approval by the tool's own schema, which is where that belongs.
-    }
-  }
-  return urls
-}
-
 /** The same question for a match, which has no URL — so, its role. */
 function knownRoles(memory: GraphSnapshot): Set<string> {
   const roles = new Set<string>()
   const fold = (text: string) => text.trim().toLowerCase().replace(/\s+/g, ' ')
   for (const node of memory.ofType('match')) roles.add(fold(node.props.role))
   for (const node of memory.ofType('proposal')) {
-    // Any status, for the reason `knownPostings` sets out at length.
+    // Any status, for the reason `knownPostingUrls` (core/proposal.ts) sets out at length.
     if (node.props.tool !== 'scout.match.save') continue
     try {
       const parsed = JSON.parse(node.props.input) as { role?: unknown }
@@ -289,7 +242,7 @@ function duplicateOf(memory: GraphSnapshot, tool: string, input: unknown): strin
   if (tool === 'scout.posting.save') {
     const url = fields['url']
     if (typeof url !== 'string') return null
-    return isKnownPosting(knownPostings(memory), url)
+    return isKnownPosting(knownPostingUrls(memory), url)
       ? 'That job is already saved or already an application. Do not propose it again; find a different one.'
       : null
   }

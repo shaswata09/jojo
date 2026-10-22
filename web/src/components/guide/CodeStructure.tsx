@@ -133,8 +133,10 @@ export const SHAPE: DirRow[] = [
     // for one posting, and the reader that keeps, doubts or refuses the reply.
     // `focus.ts` and its test: the one line that tells the model which
     // application a conversation is about, so "this one" has a referent.
-    files: 70,
-    tests: 34,
+    // `record-query.ts` and its test: filter, sort, group and add up over a
+    // record's stored and derived fields, for `memory.list`.
+    files: 72,
+    tests: 35,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -146,7 +148,9 @@ export const SHAPE: DirRow[] = [
     // about 4,200 lines, most of them the tests that pin each measure.
     // Re-measured when `read-posting.ts` learnt to offer the person's own
     // keywords to the model and match the reply back onto the ones that exist.
-    lines: 43459,
+    // Re-measured 2026-10-22, when `memory.list` became a query tool:
+    // `record-query.ts` and its test, and the window-sized result cap.
+    lines: 45048,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {

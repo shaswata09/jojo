@@ -21,6 +21,7 @@
  */
 
 import { formatIssues } from '../core/schema'
+import type { BoardScan } from '../core/board'
 import type { ISODate } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import type { ToolName } from '../tools/index'
@@ -75,9 +76,7 @@ export type ToolHost = {
    * Returns rows UNVETTED. `core/board.ts` decides what is a job, so the rule
    * has one owner and the extension never has to carry a copy of it.
    */
-  scan?: (
-    url: string,
-  ) => Promise<{ ok: true; rows: unknown } | { ok: false; reason: string }>
+  scan?: BoardScan
   /*
    * The boards this run is allowed to open, already parsed into absolute URLs.
    *
@@ -208,7 +207,13 @@ export function renderOutcome(outcome: CallOutcome, budget = 6000): string {
   const json = JSON.stringify(outcome.result)
   const cap = SELF_PAGED.has(outcome.entry.name) ? Math.max(budget, PAGED_CEILING) : budget
   if (json.length <= cap) return json
-  return `${json.slice(0, cap)}${TRUNCATION_MARK}${String(cap)} characters. Narrow the search or lower the limit to see the rest.]`
+  // The sentence names the knobs the tool has: `memory.list` can project and
+  // page, and "lower the limit" alone would only ever show it less.
+  const next =
+    outcome.entry.name === 'memory.list'
+      ? 'Ask for fewer fields (fields), filter (where), or page on (offset) to see the rest.'
+      : 'Narrow the search or lower the limit to see the rest.'
+  return `${json.slice(0, cap)}${TRUNCATION_MARK}${String(cap)} characters. ${next}]`
 }
 
 /**

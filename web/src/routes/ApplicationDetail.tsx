@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, OfferApplication, Stage } from '@/data/seed'
 import { compareItems } from '@/data/timeline'
+import { applicationDeadlineOf } from '@/components/applications/deadline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useScout } from '@jojo/service/react/use-scout'
 import type { TimelineDraft } from '@jojo/service/react/use-timeline'
@@ -289,6 +290,7 @@ function Detail({
     <div className="@container flex min-w-0 flex-col gap-4">
       <DetailHeader
         application={a}
+        deadline={applicationDeadlineOf(items)}
         onPickStage={onPickStage}
         onEdit={onEdit}
         onDraft={onDraft}

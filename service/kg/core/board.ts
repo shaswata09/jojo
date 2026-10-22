@@ -71,6 +71,32 @@ const NOT_AN_ID = new Set([
   'results',
 ])
 
+/** A query parameter that names one job: `JobCode`, `jobId`, `job_id`, `postingId`, `jid`… */
+const JOB_PARAM = /^(?:jid|(?:job|posting|vacancy|position|opening|req|requisition)[-_]?(?:code|id|no|num|number)?)$/i
+
+/**
+ * The name/value pairs of a query string, decoded.
+ *
+ * By hand rather than through `searchParams.entries()`: the portable URL type
+ * declares only `get` and `has` (see `types/portable-globals.d.ts`), and this
+ * needs to ask about parameters whose names it does not know in advance.
+ */
+function queryPairs(search: string): [string, string][] {
+  const out: [string, string][] = []
+  for (const piece of search.replace(/^\?/, '').split('&')) {
+    if (piece === '') continue
+    const at = piece.indexOf('=')
+    const name = at === -1 ? piece : piece.slice(0, at)
+    const value = at === -1 ? '' : piece.slice(at + 1)
+    try {
+      out.push([decodeURIComponent(name), decodeURIComponent(value.replace(/\+/g, ' '))])
+    } catch {
+      // A malformed escape names nothing this needs.
+    }
+  }
+  return out
+}
+
 /** A segment that reads as an identifier: digits, a uuid, or a slug ending in one. */
 const looksLikeAnId = (segment: string): boolean => {
   if (NOT_AN_ID.has(segment.toLowerCase())) return false
@@ -118,6 +144,24 @@ export function isJobPostingUrl(url: string): boolean {
   }
   if (onBoard(host, 'indeed.com')) {
     return parsed.searchParams.has('jk') || /\/viewjob/.test(parsed.pathname)
+  }
+
+  /*
+   * A posting named by its QUERY rather than its path — HigherEdJobs'
+   * `/faculty/details.cfm?JobCode=179575091`, and the many older boards built
+   * the same way. Read before the path rule, which looks for a job in the path
+   * and finds none: until this existed every HigherEdJobs posting was thrown
+   * away and a scan of that board reported an empty page.
+   *
+   * A parameter whose NAME says job and whose value reads as an identifier.
+   * `?id=` alone is not enough — it is on every page of every CMS — and a search
+   * page is refused even when it carries a job code, because a results page
+   * filtered to one job is still a results page.
+   */
+  if (!/(?:^|[/_-])(?:search|results?|list)(?:[._-]|$)/i.test(segments.at(-1) ?? '')) {
+    for (const [name, value] of queryPairs(parsed.search)) {
+      if (JOB_PARAM.test(name) && (/^\d{3,}$/.test(value) || UUID.test(value))) return true
+    }
   }
 
   /*
@@ -179,34 +223,55 @@ export function parseSources(source: string): string[] {
 }
 
 /**
- * Is `url` on the same host as one of `allowed`?
+ * Is `url` on one of the boards in `allowed`?
  *
  * Host-only, because a board paginates: a person who typed `cra.org/ads` means
  * that board, including `cra.org/ads?page=2` and `cra.org/ads/senior`. Matching
  * the full URL would refuse the second page of the only thing the pipeline is
  * for.
  *
- * Exact host, though — no suffix matching. `evil-cra.org` does not end up
- * allowed by `cra.org`, and neither does `cra.org.attacker.net`, which is what
- * a careless `endsWith` would admit. A subdomain the user did not name is a
- * different server and is refused; if that turns out to bite, the fix is for
- * them to name it, not for this to guess.
+ * The named host or a subdomain of it — see `sameSite` for what that admits
+ * and why. It used to be the exact host, and that did bite: the board itself
+ * sends a reader to `careercenter.cra.org` or `www.higheredjobs.com`.
  *
  * Both sides go through `parseSources` first, so both are absolute URLs by the
  * time they arrive and `new URL` cannot throw. It is still wrapped, because a
  * refusal is the right answer to a string this cannot parse.
  */
 export function onOneOf(url: string, allowed: readonly string[]): boolean {
-  const hostOf = (value: string): string | null => {
-    try {
-      return new URL(value).hostname.toLowerCase()
-    } catch {
-      return null
-    }
-  }
   const host = hostOf(url)
   if (host === null) return false
-  return allowed.some((entry) => hostOf(entry) === host)
+  return allowed.some((entry) => {
+    const named = hostOf(entry)
+    return named !== null && sameSite(host, named)
+  })
+}
+
+const hostOf = (value: string): string | null => {
+  try {
+    return new URL(value).hostname.toLowerCase()
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Is `host` the board `named`, or a part of it?
+ *
+ * The named host itself, the same host with or without `www.`, or a subdomain
+ * of it. Measured on the real boards before this was loosened: `cra.org/ads`
+ * now redirects to `careercenter.cra.org`, and `higheredjobs.com` serves every
+ * page and every next-page link from `www.higheredjobs.com` — so the exact
+ * match this used to be refused the second page of both, and CRA's first.
+ *
+ * Still not a suffix match on the text. A subdomain has to end in `.` plus the
+ * whole named host, so `cra.org.attacker.net` and `evil-cra.org` stay refused;
+ * and a PARENT of the named host is not admitted, because a person who typed
+ * `jobs.acme.com` did not name the rest of acme.com.
+ */
+export function sameSite(host: string, named: string): boolean {
+  const bare = (h: string) => h.replace(/^www\./, '')
+  return bare(host) === bare(named) || host.endsWith(`.${bare(named)}`)
 }
 
 /* ------------------------------ the trust boundary ------------------------ */
@@ -273,4 +338,213 @@ function text(value: unknown, key: 'org' | 'location'): Record<string, string> {
   const clean = value.trim().replace(/\s+/g, ' ')
   if (clean.length === 0) return {}
   return { [key]: clean.length > FIELD_MAX ? `${clean.slice(0, FIELD_MAX - 1)}…` : clean }
+}
+
+/* ---------------------------------- pages --------------------------------- */
+
+/**
+ * What reading one page of a board returns, from whichever scanner the platform
+ * has. `landed` is where the page actually ended up, when the scanner knows —
+ * a board that redirects (`cra.org/ads` → `careercenter.cra.org`) links its
+ * rows relative to where it landed, not to where it was asked for.
+ */
+export type BoardScan = (
+  url: string,
+) => Promise<{ ok: true; rows: unknown; landed?: string } | { ok: false; reason: string }>
+
+/** How many pages of one board a single read follows before handing back a `next`. */
+export const BOARD_MAX_PAGES = 10
+
+/** "Next", "Next page", "Next »", "›", "»", "→", "More results", AJO's "next...". */
+const NEXT_TEXT =
+  /^(?:(?:next(?:\s+(?:page|\d+))?|more\s+(?:results|jobs|listings)|older(?:\s+(?:posts|jobs|entries))?)\s*(?:[›»>→]|\.{2,3}|…)?|[›»>→]{1,2})$/i
+const PREVIOUS_TEXT = /^(?:[‹«<←]|prev(?:ious)?\b.*|newer\b.*|first\b.*|last\b.*)$/i
+
+/** A page's identity for "have I read this one": host, path and query; never the fragment. */
+export function pageKey(url: string): string {
+  try {
+    const parsed = new URL(url.split('#')[0] ?? url)
+    return `${parsed.hostname.toLowerCase().replace(/^www\./, '')}${parsed.pathname.replace(/\/+$/, '')}${parsed.search}`
+  } catch {
+    return url
+  }
+}
+
+/** The listing a page belongs to: its path with a trailing `/page/3` or `/3` taken off. */
+const listingOf = (pathname: string) =>
+  pathname.replace(/\/(?:page\/)?\d{1,4}\/?$/i, '').replace(/\/+$/, '')
+
+/**
+ * The further pages of a board, read off the links a scan collected.
+ *
+ * In the order worth reading them: a link that DECLARES itself the next page
+ * (`rel="next"`, or text that says "Next") first, then numbered pages lowest
+ * first. Page 1 is never offered — it is the page being read, under another
+ * spelling — and nor is anything that says "previous".
+ *
+ * A numbered link is only a page of THIS listing when it is the same listing:
+ * the same path, or the same path with a page number on the end (`/ads/` and
+ * `/ads/page/2/`). A "2" anywhere else on the page is a calendar, a carousel or
+ * a footnote. A "Next" link is trusted wherever it points on the same site —
+ * AcademicJobsOnline's goes from `/ajo/jobs` to `/ajo?joblst-…` — because the
+ * word is the board saying what the link is.
+ *
+ * Same site only, by `sameSite`: a page of a board is on that board.
+ */
+export function pageLinks(raw: unknown, from: string): string[] {
+  if (!Array.isArray(raw)) return []
+  let here: URL
+  try {
+    here = new URL(from)
+  } catch {
+    return []
+  }
+  const host = here.hostname.toLowerCase()
+  const listing = listingOf(here.pathname)
+  const self = pageKey(from)
+
+  const declared: string[] = []
+  const numbered: { n: number; url: string }[] = []
+
+  for (const row of raw) {
+    if (typeof row !== 'object' || row === null) continue
+    const fields = row as Record<string, unknown>
+    const href = fields['url']
+    if (typeof href !== 'string') continue
+    const text = typeof fields['title'] === 'string' ? fields['title'].trim().replace(/\s+/g, ' ') : ''
+    const rel = typeof fields['rel'] === 'string' ? fields['rel'].toLowerCase() : ''
+
+    let target: URL
+    try {
+      target = new URL(href, from)
+    } catch {
+      continue
+    }
+    if (target.protocol !== 'https:' && target.protocol !== 'http:') continue
+    if (!sameSite(target.hostname.toLowerCase(), host) && !sameSite(host, target.hostname.toLowerCase())) continue
+    const url = target.href.split('#')[0] ?? target.href
+    if (pageKey(url) === self) continue
+    if (isJobPostingUrl(url)) continue
+    if (/\bprev\b/.test(rel) || PREVIOUS_TEXT.test(text)) continue
+
+    if (/\bnext\b/.test(rel) || (text.length <= 24 && NEXT_TEXT.test(text))) {
+      declared.push(url)
+      continue
+    }
+    if (/^\d{1,4}$/.test(text)) {
+      const n = Number(text)
+      if (n >= 2 && listingOf(target.pathname) === listing) numbered.push({ n, url })
+    }
+  }
+
+  const out: string[] = []
+  const seen = new Set<string>()
+  for (const url of [...declared, ...numbered.sort((a, b) => a.n - b.n).map((p) => p.url)]) {
+    const key = pageKey(url)
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(url)
+  }
+  return out
+}
+
+/** What following a board's pages found. */
+export type BoardCrawl =
+  | {
+      ok: true
+      /** The pages actually read, in order. */
+      pages: string[]
+      /** New to this person — not saved, not an application, not suggested before. */
+      listings: BoardListing[]
+      /** Postings on those pages that they have already been shown. */
+      alreadySeen: number
+      /** The first page not read yet, when the read stopped before the board ran out. */
+      next?: string
+      /** Why a later page could not be read, when one could not. The pages before it still count. */
+      stopped?: string
+    }
+  | { ok: false; reason: string }
+
+/**
+ * Reads a board page by page until it runs out of pages, of budget, or of
+ * room for more results.
+ *
+ * Reported 2026-10-22: the scout read the first page of a board and nothing
+ * else — HigherEdJobs' ten pages, CRA's and the rest — so a board whose first
+ * page had all been seen before looked empty, two empty rounds followed, and
+ * the pipeline offered to switch itself off while hundreds of postings sat on
+ * pages two to ten.
+ *
+ * Two things fix that together. The pages are followed (`pageLinks`), and the
+ * postings the person has already been shown are taken out HERE rather than
+ * left for the model to recognise: forty rows of jobs it has already proposed
+ * would fill the read and teach the model that the board has nothing new,
+ * which is the same mistake one level down.
+ *
+ * `want` is the room in one answer (`BOARD_MAX_RESULTS`); once it is full the
+ * read stops and names the next unread page, so the model can come back for
+ * more after proposing from these. `allowed` is the same guard `board.search`
+ * puts on the model's own address — every page followed is one more tab opened
+ * in the person's browser, and a "next" link is text somebody else wrote.
+ */
+export async function crawlBoard(options: {
+  start: string
+  scan: BoardScan
+  allowed: (url: string) => boolean
+  known: (url: string) => boolean
+  maxPages?: number
+  want?: number
+}): Promise<BoardCrawl> {
+  const { start, scan, allowed, known } = options
+  const maxPages = options.maxPages ?? BOARD_MAX_PAGES
+  const want = options.want ?? BOARD_MAX_RESULTS
+
+  const queue = [start]
+  const queued = new Set([pageKey(start)])
+  const pages: string[] = []
+  const listings: BoardListing[] = []
+  const counted = new Set<string>()
+  let alreadySeen = 0
+  let stopped: string | undefined
+
+  while (queue.length > 0 && pages.length < maxPages && listings.length < want) {
+    const page = queue.shift()!
+    const out = await scan(page)
+    if (!out.ok) {
+      // The first page failing is the board failing; a later one is a board
+      // that stopped answering partway, and the pages before it still stand.
+      if (pages.length === 0) return { ok: false, reason: out.reason }
+      stopped = out.reason
+      queue.unshift(page)
+      break
+    }
+    pages.push(page)
+    // Rows resolve against where the page LANDED, when that is still this board.
+    const base = out.landed !== undefined && onOneOf(out.landed, [page]) ? out.landed : page
+    queued.add(pageKey(base))
+
+    for (const listing of readListings(out.rows, base)) {
+      if (counted.has(listing.url)) continue
+      counted.add(listing.url)
+      if (known(listing.url)) alreadySeen += 1
+      else if (listings.length < want) listings.push(listing)
+    }
+
+    for (const next of pageLinks(out.rows, base)) {
+      const key = pageKey(next)
+      if (queued.has(key) || !allowed(next)) continue
+      queued.add(key)
+      queue.push(next)
+    }
+  }
+
+  const next = queue[0]
+  return {
+    ok: true,
+    pages,
+    listings,
+    alreadySeen,
+    ...(next === undefined ? {} : { next }),
+    ...(stopped === undefined ? {} : { stopped }),
+  }
 }

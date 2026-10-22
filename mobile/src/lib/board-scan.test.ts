@@ -50,6 +50,28 @@ describe('what the phone can read', () => {
     expect((out as { rows: { title: string }[] }).rows[0]?.title).toBe('Senior Engineer')
   })
 
+  /*
+   * HigherEdJobs' pager, as served. Left encoded, `&amp;Page=2` is a different
+   * address and every "next page" would be page one again.
+   */
+  it('decodes the links themselves, and says which one is next', async () => {
+    stubFetch({
+      ...html(
+        '<a href="/faculty/search.cfm?JobCat=31&amp;Page=2" rel="next">&gt;</a>' +
+          '<a href="?page=3" aria-label="Next page"><svg></svg></a>',
+      ),
+      url: 'https://www.higheredjobs.com/faculty/search.cfm?JobCat=31',
+    })
+    const out = await scanBoard('https://higheredjobs.com/faculty/search.cfm?JobCat=31')
+    if (!out.ok) throw new Error(out.reason)
+    expect(out.rows).toEqual([
+      { url: '/faculty/search.cfm?JobCat=31&Page=2', title: '>', rel: 'next' },
+      { url: '?page=3', title: 'Next page' },
+    ])
+    // Where the redirect landed, so the relative links above resolve there.
+    expect(out.landed).toBe('https://www.higheredjobs.com/faculty/search.cfm?JobCat=31')
+  })
+
   it('turns the entities a board writes back into characters', async () => {
     stubFetch(html('<a href="/jobs/1234567">R&amp;D&nbsp;Engineer</a>'))
     const out = await scanBoard('https://acme.test/jobs')

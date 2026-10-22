@@ -30,6 +30,7 @@
  */
 
 import { NODE_TYPES, RELS } from '../core/model'
+import { NODE_PROP_SCHEMAS } from '../core/validate'
 import type { ISODate, NodeId, NodeType, Rel, StoredNode } from '../core/model'
 import { applicationFrom } from '../core/project'
 import { statsFor } from '../core/statistics'
@@ -37,8 +38,12 @@ import { comparisonsFor, rangeLabel } from '../core/segments'
 import { recommendationsFor } from '../core/recommend'
 import type { GraphSnapshot } from '../core/snapshot'
 import { pageNote, pageOf } from './paging'
+import { AGGREGATES, OPS, derivedFields, fieldOf, fieldsOf, runRecordQuery } from './record-query'
+import type { Condition, RecordQuery, RelatedTest, Row } from './record-query'
 import { s } from '../core/schema'
-import { onOneOf, parseSources, readListings } from '../core/board'
+import { crawlBoard, onOneOf, parseSources } from '../core/board'
+import type { BoardScan } from '../core/board'
+import { knownPostingUrls, postingKey } from '../core/proposal'
 import { CONSTANT_NAMES, FUNCTION_NAMES, evaluate } from '../core/expression'
 import { format } from '../core/calculator'
 import type { Infer, Schema } from '../core/schema'
@@ -91,9 +96,7 @@ export type ReadContext = {
    * means running the page's own JavaScript, and a portable layer has no DOM to
    * run it in. See `ToolHost.scan`.
    */
-  readonly scan?: (
-    url: string,
-  ) => Promise<{ ok: true; rows: unknown } | { ok: false; reason: string }>
+  readonly scan?: BoardScan
   /**
    * A stored document, as Markdown. Absent when no reader is configured.
    *
@@ -170,7 +173,13 @@ const HIDDEN_PROPS: Partial<Record<NodeType, readonly string[]>> = {
   application: ['noteFormat'],
 }
 
-export const render = (node: StoredNode, memory: GraphSnapshot): AgentRecord => {
+/**
+ * With `today`, the record also carries its derived fields — its deadline, its
+ * employer, how many of its dates are overdue — the facts a person asks about
+ * that live on OTHER records. See `record-query.ts`. Without it, props only:
+ * `graph.query` renders rows for the canvas, which has no use for them.
+ */
+export const render = (node: StoredNode, memory: GraphSnapshot, today?: ISODate): AgentRecord => {
   const props = { ...(node.props as Record<string, unknown>) }
   for (const key of HIDDEN_PROPS[node.type] ?? []) delete props[key]
   return {
@@ -178,6 +187,7 @@ export const render = (node: StoredNode, memory: GraphSnapshot): AgentRecord => 
     type: node.type,
     label: labelOf(node, memory),
     ...props,
+    ...(today === undefined ? {} : derivedFields(node, memory, today)),
   }
 }
 
@@ -325,25 +335,237 @@ export const memoryOverview = defineRead({
   },
 })
 
+/**
+ * One test on a field, for `memory.list`'s `where`.
+ *
+ * `value` is untyped on purpose: a date, a number, a stage, a list for `in` —
+ * the field decides, and `record-query.ts` compares each kind as itself.
+ */
+const condition = s.object({
+  field: s.string({ label: 'Field', description: 'e.g. stage, deadline, date.month, offer.respondBy.', min: 1 }),
+  op: s.enum(OPS, { label: 'Test' }),
+  value: s.optional(s.unknown({ label: 'Value', description: '"today", "today+7" work for dates; a list for "in".' })),
+})
+
+/**
+ * A test on the records joined to each one — see `RelatedTest`.
+ *
+ * Its own `where` is plain conditions, one level deep and no further: a model
+ * fills this in, and a recursive schema is one a small model cannot finish.
+ *
+ * Cut to the bone because every byte of it is in every request. The first
+ * version spelled the seventeen record kinds out again, offered `rel` with its
+ * nine relationships, and repeated the long field note in a third copy of the
+ * condition: `memory.list` came to 1,425 tokens and the request grew by ~900.
+ * The kind is text checked on read (a refusal lists the real ones), `rel` is
+ * left to the engine — the linked kind already says which link is meant — and
+ * the field note is said once, in the summary.
+ */
+const relatedTest = s.object({
+  type: s.string({ label: 'Linked kind', description: 'e.g. timelineItem.', min: 1 }),
+  where: s.optional(s.array(condition, { label: 'Where' })),
+  atLeast: s.optional(s.number({ label: 'At least', description: 'Default 1.', min: 0 })),
+  atMost: s.optional(s.number({ label: 'At most', description: '0 means none.', min: 0 })),
+})
+
+type ListInput = {
+  type: NodeType
+  limit?: number
+  offset?: number
+  fields?: readonly string[]
+  match?: 'all' | 'any'
+  where?: RecordQuery['where']
+  related?: readonly (Omit<RelatedTest, 'type'> & { type: string })[]
+} & Omit<RecordQuery, 'where' | 'any' | 'related'>
+
+/**
+ * A related test written flat — `{type, field, op, value}` — read as the one
+ * condition it plainly is.
+ *
+ * Measured: Gemma wrote exactly that for "an interview in November", twice.
+ * The schema lets unknown keys through (stored records need it to), so the
+ * condition was silently dropped and the test became "has any timeline item",
+ * which every application with a date passes.
+ */
+function liftCondition(t: Omit<RelatedTest, 'type'> & { type: string }): RelatedTest {
+  const flat = t as typeof t & { field?: unknown; op?: unknown; value?: unknown }
+  const lifted =
+    t.where === undefined && typeof flat.field === 'string' && (OPS as readonly unknown[]).includes(flat.op)
+      ? [{ field: flat.field, op: flat.op as Condition['op'], ...(flat.value === undefined ? {} : { value: flat.value }) }]
+      : t.where
+  return {
+    type: t.type as NodeType,
+    ...(t.rel === undefined ? {} : { rel: t.rel }),
+    ...(lifted === undefined ? {} : { where: lifted }),
+    ...(t.atLeast === undefined ? {} : { atLeast: t.atLeast }),
+    ...(t.atMost === undefined ? {} : { atMost: t.atMost }),
+  }
+}
+
+/** Every prop a kind of record declares, and one level into the objects among them. */
+const declaredFields = (type: NodeType): readonly string[] => {
+  const fields = NODE_PROP_SCHEMAS[type].meta.fields ?? {}
+  return Object.entries(fields).flatMap(([key, meta]) => [
+    key,
+    ...Object.keys(meta.fields ?? {}).map((sub) => `${key}.${sub}`),
+  ])
+}
+
+/**
+ * Condition values that are record ids, read as those records' names.
+ *
+ * Measured: Gemma found the keyword with `memory.search`, then filtered on
+ * `keywords contains "kw:01a1…"` — the id it had just been handed — against a
+ * field that holds keyword NAMES, and matched nothing. Ids are what every
+ * other tool takes, so a model carrying one into a filter is doing the
+ * expected thing. Left alone where the field really holds that id (`id`
+ * itself), so an id filter still means the id.
+ */
+function byName<R>(q: RecordQuery, rows: readonly Row<R>[], memory: GraphSnapshot): RecordQuery {
+  const named = (c: Condition): Condition => {
+    const one = (v: unknown): unknown => {
+      if (typeof v !== 'string') return v
+      const node = memory.node(v as NodeId)
+      if (!node) return v
+      const held = rows.some((r) => {
+        const have = fieldOf(r.bag, c.field)
+        return Array.isArray(have) ? have.includes(v) : have === v
+      })
+      return held ? v : labelOf(node, memory)
+    }
+    if (c.value === undefined) return c
+    return { ...c, value: Array.isArray(c.value) ? c.value.map(one) : one(c.value) }
+  }
+  return {
+    ...q,
+    ...(q.where === undefined ? {} : { where: q.where.map(named) }),
+    ...(q.any === undefined ? {} : { any: q.any.map(named) }),
+  }
+}
+
+/** Always kept by `fields`, because a record a model cannot name or act on is no answer. */
+const ALWAYS_SHOWN = ['id', 'type', 'label'] as const
+
+/**
+ * Listing, filtering, sorting, counting and adding up — one tool, not five.
+ *
+ * ## Why here and not a new tool
+ *
+ * Every schema in the catalogue is paid for in every request. A separate
+ * `records.query` would repeat `type` and `limit` and still need this tool
+ * beside it; the extra fields here are optional, so a plain listing is the
+ * call it always was. And `memory.list` is where a model already goes for
+ * these questions — measured, it is the FIRST call both Gemma and GPT-OSS
+ * made for "which deadline is furthest away" — so the capability is where
+ * the attempt is, rather than in a tool it would have to discover.
+ *
+ * Records here always carry their derived fields (`render` with `today`), so
+ * even the unfiltered list shows each application's deadline.
+ */
 export const memoryList = defineRead({
   name: 'memory.list',
   title: 'List records',
   summary:
-    'Every record of one kind, newest first. Use it to find the id of something before acting on it.',
+    'Records of one kind, newest first — or filtered (where), filtered by linked records (related), sorted (orderBy), counted per value (groupBy), or summed up (aggregate). Any field may be a date part (submittedOn.month, .year, .week, .weekday) or days(a, b), the days between two date fields. Applications also show: deadline, employer, keywords, upcoming, overdue, daysToReply. Timeline items: application, employer, done, overdue, daysAway.',
   effect: 'read',
   input: s.object({
     type: nodeType('Kind', 'Which kind of record to list.'),
+    where: s.optional(s.array(condition, { label: 'Where', description: 'Keep records passing these tests.' })),
+    match: s.optional(s.enum(['all', 'any'] as const, { label: 'Match', description: 'all tests (default) or any one.' })),
+    related: s.optional(
+      s.array(relatedTest, {
+        label: 'Related',
+        description: 'Keep records by their linked records, e.g. applications with an interview in November, or none.',
+      }),
+    ),
+    orderBy: s.optional(s.string({ label: 'Order by', description: 'A field to sort on. Records without it go last.' })),
+    order: s.optional(s.enum(['asc', 'desc'] as const, { label: 'Order', description: 'asc (earliest, smallest first; the default) or desc.' })),
+    groupBy: s.optional(s.string({ label: 'Group by', description: 'Count records per value of this field instead of listing them.' })),
+    aggregate: s.optional(s.enum(AGGREGATES, { label: 'Aggregate', description: 'Figures over the records (per group, with groupBy).' })),
+    of: s.optional(s.string({ label: 'Of', description: 'The field the aggregate works over.' })),
+    fields: s.optional(s.array(s.string({ min: 1 }), { label: 'Fields', description: 'Show only these fields, to fit more records.' })),
+    offset: s.optional(s.number({ label: 'Offset', description: 'Skip this many, to page on.', min: 0 })),
     limit,
   }),
-  read: (memory, input: { type: NodeType; limit?: number }) =>
-    matched(
-      [...memory.ofType(input.type)]
-        // Newest first: a person asking "what did I add" means the recent end,
-        // and a truncated list should keep the half they meant.
-        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-        .map((n) => render(n, memory)),
-      input.limit,
-    ),
+  read: (memory, input: ListInput, ctx) => {
+    /*
+     * Rendered once per record per call, whoever asks: a record reached as a
+     * row and again as a linked record of twenty others is one render, not
+     * twenty-one — derived fields cross edges, so they are not free.
+     */
+    const rendered = new Map<NodeId, AgentRecord>()
+    const view = (n: StoredNode): AgentRecord => {
+      const hit = rendered.get(n.id)
+      if (hit) return hit
+      const r = render(n, memory, ctx.today)
+      rendered.set(n.id, r)
+      return r
+    }
+    const linkedTo = (id: NodeId) => (type: NodeType, rel?: Rel) =>
+      memory
+        .incident(id, rel)
+        .map((e) => memory.node(e.from === id ? e.to : e.from))
+        .filter((n): n is StoredNode => n !== undefined && n.type === type)
+        .map(view)
+
+    const rows = [...memory.ofType(input.type)]
+      // Newest first: a person asking "what did I add" means the recent end,
+      // and a truncated list should keep the half they meant. `orderBy` sorts
+      // stably over this, so ties keep it too.
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      .map((n) => {
+        const r = view(n)
+        return { bag: r, shown: r, linked: linkedTo(n.id) }
+      })
+
+    const fields = input.fields ?? []
+    if (fields.length > 0 && rows.length > 0) {
+      const known = new Set([...fieldsOf(rows.map((r) => r.bag)), ...declaredFields(input.type)])
+      const bad = fields.filter((f) => !known.has(f) && !known.has(f.split('.')[0] ?? f))
+      if (bad.length > 0) {
+        return {
+          ok: false,
+          hint: `No ${input.type} has ${bad.map((f) => `"${f}"`).join(' or ')}. The fields it has are: ${[...known].join(', ')}.`,
+        }
+      }
+    }
+
+    const strange = (input.related ?? []).map((t) => t.type).filter((t) => !(NODE_TYPES as readonly string[]).includes(t))
+    if (strange.length > 0) {
+      return { ok: false, hint: `"${strange.join('", "')}" is not a kind of record. The kinds are: ${NODE_TYPES.join(', ')}.` }
+    }
+    // `match: any` turns the one list into an OR; the engine keeps both lists,
+    // so AND and OR together stay possible to anyone calling it directly.
+    const { where, match, related, ...rest } = input
+    const query: RecordQuery = {
+      ...rest,
+      ...(where === undefined ? {} : match === 'any' ? { any: where } : { where }),
+      ...(related === undefined ? {} : { related: related.map(liftCondition) }),
+    }
+    const answer = runRecordQuery(rows, byName(query, rows, memory), ctx.today, input.type, declaredFields)
+    if (answer.kind === 'refused') return { ok: false, hint: answer.hint }
+    if (answer.kind === 'groups') return { total: answer.groups.length, groups: answer.groups }
+    if (answer.kind === 'value') return answer.value
+
+    const offset = Math.max(0, Math.floor(input.offset ?? 0))
+    const picked =
+      fields.length === 0
+        ? answer.rows
+        : answer.rows.map((r) =>
+            Object.fromEntries(
+              [...ALWAYS_SHOWN, ...fields].filter((k) => r[k] !== undefined).map((k) => [k, r[k]]),
+            ),
+          )
+    const page = matched(picked.slice(offset), input.limit)
+    return {
+      // `total` is every match, not what is left after the offset: "12 of 40,
+      // starting at 20" is what a model paging through needs to know.
+      ...page,
+      total: answer.rows.length,
+      ...(offset > 0 ? { offset } : {}),
+      ...(answer.hint === undefined ? {} : { hint: answer.hint }),
+    }
+  },
 })
 
 export const memoryGet = defineRead({
@@ -357,13 +579,13 @@ export const memoryGet = defineRead({
     // scoping it to one would make the tool useless for the other ten.
     id: s.id(undefined, { label: 'Record', description: 'The id of the record to read.' }),
   }),
-  read: (memory, input: { id: NodeId }) => {
+  read: (memory, input: { id: NodeId }, ctx) => {
     const node = memory.node(input.id)
     // Not a throw. A missing id is the commonest thing a model gets wrong, and
     // it recovers from a sentence telling it so far better than from an
     // exception that ends the turn.
     if (!node) return { found: false, id: input.id, hint: 'No record has that id.' }
-    return { found: true, record: render(node, memory), related: relatedTo(node.id, memory) }
+    return { found: true, record: render(node, memory, ctx.today), related: relatedTo(node.id, memory) }
   },
 })
 
@@ -389,13 +611,13 @@ export const memorySearch = defineRead({
     ),
     limit,
   }),
-  read: (memory, input: { query: string; type?: NodeType | 'any'; limit?: number }) => {
+  read: (memory, input: { query: string; type?: NodeType | 'any'; limit?: number }, ctx) => {
     const needle = input.query.trim().toLowerCase()
     // `'any'` is the same request as omitting it — see `nodeTypeOrAny`.
     const pool =
       input.type !== undefined && input.type !== ANY ? memory.ofType(input.type) : memory.nodes()
     return matched(
-      pool.filter((n) => haystack(n, memory).includes(needle)).map((n) => render(n, memory)),
+      pool.filter((n) => haystack(n, memory).includes(needle)).map((n) => render(n, memory, ctx.today)),
       input.limit,
     )
   },
@@ -437,11 +659,11 @@ export const graphQuery = defineRead({
   name: 'graph.query',
   title: 'Ask the graph',
   summary:
-    'Find records by how they are connected: those that HAVE a relationship, those MISSING one, those with several, or the path between two named records. Use it for questions about gaps — applications with no follow-up, files filed under nothing.',
+    'Find records by how they are connected: those that HAVE a relationship, those MISSING one, those with several, or the path between two named records. Use it for questions about gaps — applications with no follow-up, files filed under nothing. For dates, counts, order or totals — the furthest deadline, how many are upcoming — use memory.list.',
   effect: 'read',
   input: GRAPH_QUERY_SCHEMA,
-  read: (memory, input: Infer<typeof GRAPH_QUERY_SCHEMA>) =>
-    runGraphQuery(memory, input as unknown as GraphQuery),
+  read: (memory, input: Infer<typeof GRAPH_QUERY_SCHEMA>, ctx) =>
+    runGraphQuery(memory, input as unknown as GraphQuery, ctx.today),
 })
 
 /**
@@ -552,6 +774,15 @@ export const vaultFileRead = defineRead({
  * `cra.org/ads` in the field has to allow `cra.org/ads?page=2`. That is the
  * looser half of the check and it is where a future problem would live; it is
  * still the difference between "somewhere the user named" and "anywhere".
+ *
+ * ## It reads the whole board, not its first page
+ *
+ * One read follows the board's own next-page links (`crawlBoard`), up to
+ * `BOARD_MAX_PAGES`, and takes out every posting the person has already been
+ * shown. Until 2026-10-22 it read one page and returned it raw, so a board
+ * whose first page was all known looked empty and the pipeline offered to
+ * switch itself off. Every page followed passes the same host check as the
+ * address the model gave, because a "next" link is text somebody else wrote.
  */
 export const boardSearch = defineRead({
   name: 'board.search',
@@ -566,7 +797,7 @@ export const boardSearch = defineRead({
       description: 'The address of the board or search page to read.',
     }),
   }),
-  read: async (_memory, input: { url: string }, ctx) => {
+  read: async (memory, input: { url: string }, ctx) => {
     if (!ctx.scan) {
       return {
         ok: false,
@@ -592,25 +823,60 @@ export const boardSearch = defineRead({
       }
     }
 
-    const out = await ctx.scan(target)
-    if (!out.ok) return { ok: false, url: target, hint: out.reason }
+    // Read once per call rather than per page: nothing this read does adds a
+    // posting, so the answer cannot change partway through. Folded to keys up
+    // front because ten pages is a few hundred rows to check against it.
+    const known = new Set(knownPostingUrls(memory).map(postingKey))
+    const crawl = await crawlBoard({
+      start: target,
+      scan: ctx.scan,
+      allowed: (url) => onOneOf(url, allowed),
+      known: (url) => known.has(postingKey(url)),
+    })
+    if (!crawl.ok) return { ok: false, url: target, hint: crawl.reason }
 
-    const listings = readListings(out.rows, target)
+    const count = crawl.listings.length
     return {
       ok: true,
       url: target,
-      count: listings.length,
-      // Said out loud rather than left to be inferred from an empty list: a
-      // board that renders its results in a way this cannot read looks
-      // identical to a board with no jobs on it, and the two want different
-      // next moves from the model.
-      ...(listings.length === 0
-        ? { hint: 'That page listed no postings this could read. It may need a sign-in, or it may render its results in a way nothing here can follow.' }
-        : {}),
-      postings: listings,
+      pagesRead: crawl.pages.length,
+      count,
+      ...(crawl.alreadySeen > 0 ? { alreadySeen: crawl.alreadySeen } : {}),
+      ...(crawl.next === undefined ? {} : { next: crawl.next }),
+      // Said out loud rather than left to be inferred. Each case wants a
+      // different next move: nothing readable means try another board; nothing
+      // NEW means this board is done for now; more pages means come back.
+      ...hintFor(count, crawl),
+      postings: crawl.listings,
     }
   },
 })
+
+function hintFor(
+  count: number,
+  crawl: { pages: string[]; alreadySeen: number; next?: string; stopped?: string },
+): { hint?: string } {
+  const pages = crawl.pages.length === 1 ? 'the page' : `the ${String(crawl.pages.length)} pages`
+  const parts: string[] = []
+  if (count === 0 && crawl.alreadySeen === 0) {
+    parts.push(
+      'That page listed no postings this could read. It may need a sign-in, or it may render its results in a way nothing here can follow.',
+    )
+  } else if (count === 0) {
+    parts.push(
+      `Every posting on ${pages} read is one the person has already been shown — saved, applied to, or suggested before. Nothing here is new.`,
+    )
+  }
+  if (crawl.next !== undefined) {
+    parts.push(
+      count > 0
+        ? 'The board has more pages. Propose from these first, then call board.search with `next` to keep reading.'
+        : 'The board has more pages; call board.search with `next` to keep reading.',
+    )
+  }
+  if (crawl.stopped !== undefined) parts.push(`A later page could not be read: ${crawl.stopped}`)
+  return parts.length === 0 ? {} : { hint: parts.join(' ') }
+}
 
 /** Keyed by name so the catalog and MCP both look them up the same way. */
 /**

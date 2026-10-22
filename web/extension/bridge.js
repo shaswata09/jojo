@@ -67,8 +67,9 @@ const REPLY = 'jojo:capture-reply'
  *   7 — + link (the tab's side of the MCP link to jojo-bridge; loopback only)
  *   8 — capture by address shrinks an oversized page to fit, as Capture does (the page asks
  *       for 8 so a worker that would refuse it outright is named stale instead)
+ *   9 — a scan says where the board LANDED, and follows a same-site redirect and "Load more"
  */
-const BRIDGE_PROTOCOL = 8
+const BRIDGE_PROTOCOL = 9
 
 /** Must match `background.js`. A mismatch is a silent no-op, not an error. */
 const MODEL_STREAM_PORT = 'jojo:model-stream'
@@ -256,6 +257,8 @@ window.addEventListener('message', (event) => {
           // count. Both shapes ride the one reply, because the page correlates on
           // `id` and already knows which question it asked.
           rows: failed ? null : (response?.rows ?? null),
+          // Where a scanned board ended up after any redirect. Absent before 9.
+          landed: failed ? null : (response?.landed ?? null),
           // A page captured by address: the whole envelope, which the app passes
           // through `readCapture` before it files anything.
           capture: failed ? null : (response?.capture ?? null),

@@ -392,6 +392,50 @@ const usersIn = (messages: readonly ChatMessage[], end: number): ChatMessage[] =
  * something that will be truncated at the front.
  */
 /**
+ * The fewest characters one tool result is ever given — the fixed cap every
+ * result had before the cap followed the window, kept as the floor so no
+ * model is shown less than it was.
+ */
+export const RESULT_FLOOR = 6000
+
+/** The most, however large the window: one read should not be the whole turn. */
+export const RESULT_CEILING = 48_000
+
+/** The share of the room still left in the request that one round's results may take. */
+export const RESULT_SHARE = 0.5
+
+/**
+ * How many characters the next tool result may have.
+ *
+ * ## Why not a constant
+ *
+ * It was 6,000 characters for every model on every request, and that was the
+ * binding limit on what a read could answer. Both lab servers report a
+ * 32,768-token window (`max_model_len`, measured 2026-10-22), and under the
+ * narrowed catalogue a request is a few thousand tokens of it — so a list of
+ * twelve applications, 5,929 characters with their derived fields, sat at the
+ * edge of the cut while twenty thousand tokens of window stood empty. The same
+ * constant is also too LARGE where room is short: under the full catalogue the
+ * fixed part is ~26k of the 32k, and three 6,000-character results in one
+ * round are past the window before `stubToFit` reaches them.
+ *
+ * So the cap is half of what the request has left, after the reply reserve,
+ * divided among the calls still to run this round — floored at the old 6,000
+ * (a tight window then leans on `stubToFit`, exactly as before) and capped so
+ * one read cannot fill a 128k window by itself.
+ */
+export function resultBudget(
+  messages: readonly ChatMessage[],
+  fixed: readonly unknown[],
+  window: number,
+  calls = 1,
+): number {
+  const room = window - RESERVED_FOR_REPLY - sizeOf([...fixed, ...messages])
+  const chars = charsFor((Math.max(0, room) * RESULT_SHARE) / Math.max(1, calls))
+  return Math.min(RESULT_CEILING, Math.max(RESULT_FLOOR, chars))
+}
+
+/**
  * Keep a request that is growing DURING one run under the window.
  *
  * `fitHistory` is asked once, before the first round, and that was the whole

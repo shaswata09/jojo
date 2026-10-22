@@ -569,7 +569,12 @@ describe('postingIdentity', () => {
         'https://www.indeed.com/viewjob?jk=2222222222',
       ),
     ).toBe(false)
-    expect(same(hej, `${hej}&Title=Assistant%20Professor`)).toBe(false)
+    // `Title` is the one HigherEdJobs parameter that identifies nothing — it
+    // repeats the advert's title and changes when the employer edits it — so
+    // that board's own rule folds it. Any other board keeps an unknown
+    // parameter, which is the safe way to be wrong.
+    expect(same(hej, `${hej}&Title=Assistant%20Professor`)).toBe(true)
+    expect(same('https://boards.test/details.cfm?JobCode=1', 'https://boards.test/details.cfm?JobCode=1&Title=X')).toBe(false)
   })
 
   it('drops what a copied link picks up on the way', () => {

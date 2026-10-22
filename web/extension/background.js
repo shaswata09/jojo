@@ -13,7 +13,7 @@
  * `chrome.storage.local` on their own machine until jojo collects it.
  */
 
-import { harvest } from './harvest.js'
+import { expandListing, harvest } from './harvest.js'
 import { serialise } from './serialise.js'
 import { shrinkToFit } from './shrink.js'
 import {
@@ -412,6 +412,17 @@ function waitForLoad(tabId) {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
+ * "Load more": at most this many presses, each waiting up to `MORE_WAIT_MS` for
+ * the list to grow, all of it inside `MORE_BUDGET_MS`. Ten seconds on top of
+ * the settle keeps a scan inside the page's 40s budget even after a slow 25s
+ * load, and on AcademicCareers (≈1.2s a press, 20 jobs each) it is five more
+ * screenfuls than the one a person sees on arrival.
+ */
+const MORE_ROUNDS = 6
+const MORE_WAIT_MS = 3500
+const MORE_BUDGET_MS = 10000
+
+/**
  * Opens a board in a background tab, reads it, and closes it again.
  *
  * A TAB rather than a fetch from the worker, and the two reasons are both
@@ -446,22 +457,35 @@ async function scanBoard(url) {
      * themselves constantly (locale prefixes, canonical slugs), and only leaving
      * the site means what this is looking for.
      */
+    /*
+     * A move within the same site is the board, not a wall: `cra.org/ads` now
+     * lives at `careercenter.cra.org`, and refusing every change of host made
+     * that board unreadable. Leaving the site, or landing on something that
+     * looks like a sign-in, is still refused.
+     */
     const landed = await chrome.tabs.get(tabId)
-    if (typeof landed.url === 'string' && landed.url.length > 0) {
-      if (hostOf(landed.url) !== hostOf(url)) {
-        return {
-          ok: false,
-          reason: `That board sent us to ${hostOf(landed.url)}, which usually means it wants a sign-in. Open it in a tab and sign in, then try again.`,
-        }
+    const at = typeof landed.url === 'string' && landed.url.length > 0 ? landed.url : url
+    if (!sameSite(hostOf(at), hostOf(url)) || looksLikeSignIn(url, at)) {
+      return {
+        ok: false,
+        reason: `That board sent us to ${hostOf(at)}, which usually means it wants a sign-in. Open it in a tab and sign in, then try again.`,
       }
     }
+
+    // Best effort: a board with nothing to press, or a press that throws,
+    // still gets read as it stands.
+    await chrome.scripting
+      .executeScript({ target: { tabId }, func: expandListing, args: [MORE_ROUNDS, MORE_WAIT_MS, MORE_BUDGET_MS] })
+      .catch(() => undefined)
 
     const [run] = await chrome.scripting.executeScript({
       target: { tabId },
       func: harvest,
       args: [HARVEST_LIMIT],
     })
-    return { ok: true, rows: Array.isArray(run?.result) ? run.result : [] }
+    // Where it landed, so relative rows and next-page links resolve against the
+    // page they were read on rather than the address that redirected there.
+    return { ok: true, rows: Array.isArray(run?.result) ? run.result : [], landed: at }
   } catch (error) {
     return { ok: false, reason: error instanceof Error ? error.message : String(error) }
   } finally {
@@ -475,6 +499,18 @@ function hostOf(url) {
   } catch {
     return ''
   }
+}
+
+/**
+ * The same board, give or take `www.` and its own subdomains — in either
+ * direction, since a board may redirect up (`www.` dropped) as well as down.
+ * The package's `sameSite` (`core/board.ts`) is the one rule; this is the
+ * worker's copy of it, kept to the same three cases.
+ */
+function sameSite(a, b) {
+  if (!a || !b) return false
+  const bare = (h) => h.replace(/^www\./, '')
+  return bare(a) === bare(b) || a.endsWith(`.${bare(b)}`) || b.endsWith(`.${bare(a)}`)
 }
 
 /**

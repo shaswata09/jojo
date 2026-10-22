@@ -158,6 +158,24 @@ export function whenLabel(item: TimelineItem, today: string): string {
   return `in ${gap} days`
 }
 
+/**
+ * How loudly a date should read, by the app's colour law: red is past due and
+ * nothing else, amber is the next 48 hours and nothing else, and everything
+ * further out — or already done — is quiet, however important it is.
+ *
+ * The same thresholds the Applications table's date column paints with, named
+ * here so a chip and a cell cannot disagree about one deadline.
+ */
+export type Urgency = 'overdue' | 'soon' | 'later' | 'done'
+
+export function urgencyOf(item: Pick<TimelineItem, 'date' | 'completedOn'>, today: string): Urgency {
+  if (item.completedOn) return 'done'
+  const gap = daysBetween(today, item.date)
+  if (gap < 0) return 'overdue'
+  if (gap <= 1) return 'soon'
+  return 'later'
+}
+
 /** '09:30 – 10:15', or null for an all-day item. */
 export function timeLabel(item: TimelineItem): string | null {
   if (item.allDay || item.startMins === undefined) return null

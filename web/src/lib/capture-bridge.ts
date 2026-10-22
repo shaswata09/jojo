@@ -5,6 +5,7 @@ import {
   type CaptureEnvelope,
   type CaptureRejection,
 } from '@jojo/service/core/capture'
+import type { BoardScan } from '@jojo/service/core/board'
 
 /**
  * The app's end of the conversation with the capture extension.
@@ -150,6 +151,8 @@ type Reply = {
   captures?: unknown[]
   count?: number
   rows?: unknown
+  /** Where a scanned board landed after redirects. Protocol 9 and later. */
+  landed?: string | null
   ok?: boolean
   /** A relayed reader answer. See `readDocument`. */
   status?: number
@@ -366,6 +369,12 @@ function ask(request: Ask): Promise<Reply | null> {
   })
 }
 
+/** The bridge revision that follows a same-site redirect and presses "Load more". See `bridge.js`. */
+const FOLLOWS_BOARDS = 9
+
+const OLD_SCANNER =
+  '(The jojo extension in this browser is an older version that cannot follow a board to its own subdomain or press “Load more”. Press Reload on jojo in your browser’s extensions page.)'
+
 /**
  * Reads a job board through the extension, for the scout pipeline.
  *
@@ -383,7 +392,7 @@ function ask(request: Ask): Promise<Reply | null> {
  */
 export async function scanBoard(
   url: string,
-): Promise<{ ok: true; rows: unknown } | { ok: false; reason: string }> {
+): ReturnType<BoardScan> {
   const reply = await ask({ scan: url })
 
   if (reply === null) {
@@ -410,9 +419,22 @@ export async function scanBoard(
    */
   if ((reply.protocol ?? 0) < 2) return { ok: false, reason: STALE }
   if (reply.ok !== true) {
-    return { ok: false, reason: reply.error ?? 'That board could not be read.' }
+    const reason = reply.error ?? 'That board could not be read.'
+    /*
+     * A worker before revision 9 refuses every change of host, so a board that
+     * moved within its own site (`cra.org/ads` → `careercenter.cra.org`) reads
+     * as a sign-in wall. Its sentence is kept and the fix is named after it,
+     * because nothing else will ever update an unpacked extension.
+     */
+    return (reply.protocol ?? 0) < FOLLOWS_BOARDS
+      ? { ok: false, reason: `${reason} ${OLD_SCANNER}` }
+      : { ok: false, reason }
   }
-  return { ok: true, rows: reply.rows }
+  return {
+    ok: true,
+    rows: reply.rows,
+    ...(typeof reply.landed === 'string' && reply.landed.length > 0 ? { landed: reply.landed } : {}),
+  }
 }
 
 /**

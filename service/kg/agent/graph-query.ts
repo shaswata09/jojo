@@ -27,7 +27,7 @@
  */
 
 import { NODE_TYPES, RELS, TIMELINE_KIND_VALUES } from '../core/model'
-import type { NodeId, NodeType, Rel, StoredNode } from '../core/model'
+import type { ISODate, NodeId, NodeType, Rel, StoredNode } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import { s } from '../core/schema'
 import { labelOf, render } from './queries'
@@ -229,11 +229,19 @@ function shortestPath(memory: GraphSnapshot, from: NodeId, to: NodeId) {
 
 /* --------------------------------- the run -------------------------------- */
 
-export function runGraphQuery(memory: GraphSnapshot, query: GraphQuery): GraphQueryResult {
-  return query.kind === 'path' ? runPath(memory, query) : runPattern(memory, query)
+/**
+ * `today` puts the derived fields on pattern rows — an application's
+ * `upcoming`, a timeline item's `done` and `overdue` — because a model asking
+ * "which have two or more upcoming events" reaches for `atLeast` here, and a
+ * count of every joined item, met or not, is not that answer. Measured: Gemma
+ * did exactly this and dropped the one application whose two events were both
+ * still ahead. With the figure on the row it can read the answer off.
+ */
+export function runGraphQuery(memory: GraphSnapshot, query: GraphQuery, today?: ISODate): GraphQueryResult {
+  return query.kind === 'path' ? runPath(memory, query) : runPattern(memory, query, today)
 }
 
-function runPattern(memory: GraphSnapshot, q: PatternQuery): GraphQueryResult {
+function runPattern(memory: GraphSnapshot, q: PatternQuery, today?: ISODate): GraphQueryResult {
   const quantifier = q.quantifier ?? 'has'
 
   /*
@@ -275,9 +283,14 @@ function runPattern(memory: GraphSnapshot, q: PatternQuery): GraphQueryResult {
           : count > 0
     if (!keep) continue
     rows.push({
-      record: render(node, memory),
+      record: render(node, memory, today),
       // A `missing` row has nothing to show, and that IS the finding.
-      matched: quantifier === 'missing' ? [] : matched.map((n) => render(n, memory)),
+      // Joined records as a name and the few fields that say what they are,
+      // not in full. In full, twelve applications and their timeline items were
+      // 9,253 characters — past the result cap — and the rows the cut fell on
+      // were simply missing from Gemma's answer. The row is the answer; these
+      // are its evidence, and `memory.get` has the rest.
+      matched: quantifier === 'missing' ? [] : matched.map((n) => brief(n, memory)),
       count,
     })
   }
@@ -287,6 +300,16 @@ function runPattern(memory: GraphSnapshot, q: PatternQuery): GraphQueryResult {
     ...r.matched.map((m) => m.id),
   ]) as NodeId[]
   return { summary: describePattern(q, quantifier, rows.length), rows, highlight }
+}
+
+/** The fields that say what a joined record is: its kind of thing, its date, whether it is done. */
+const BRIEF_KEYS = ['kind', 'date', 'completedOn', 'stage'] as const
+
+function brief(node: StoredNode, memory: GraphSnapshot): AgentRecord {
+  const props = node.props as Record<string, unknown>
+  const out: AgentRecord = { id: node.id, type: node.type, label: labelOf(node, memory) }
+  for (const key of BRIEF_KEYS) if (props[key] !== undefined) out[key] = props[key]
+  return out
 }
 
 const hasKeywordNamed = (memory: GraphSnapshot, name: string) => {
