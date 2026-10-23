@@ -537,6 +537,20 @@ export type Thinking = (typeof THINKING_MODES)[number]
  */
 export const DEFAULT_THINKING: Thinking = 'on'
 
+/**
+ * The thinking mode for the HELPER calls — the tool chooser and the summariser
+ * that compacts a long conversation — given the mode the person chose.
+ *
+ * Off whenever the person's mode would send anything. Measured 2026-10-22 on
+ * Gemma 4 with reasoning on: one summariser call took 1 minute 45 seconds to
+ * return 208 characters, because it reasoned at length over a mechanical job,
+ * and the endurance conversations compact on nearly every turn. Choosing tools
+ * and summarising are far easier than the work itself; the reasoning belongs
+ * on the agent's own turns. `server-default` stays as it is: that mode means
+ * "send nothing", and this must not start sending something.
+ */
+export const helperThinking = (mode: Thinking): Thinking => (mode === 'server-default' ? mode : 'off')
+
 /** What else a caller may say about a chat request. */
 export type ChatOptions = {
   /** Defaults to `DEFAULT_THINKING`. See `thinkingFields` for what is sent. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  helperThinking,
   DEFAULT_THINKING,
   EMPTY_RETRY_BASE_MS,
   EMPTY_TURN_ATTEMPTS,
@@ -1530,5 +1531,15 @@ describe('reading what the model thought', () => {
   it('reports no thought where there was none', () => {
     const turn = reply({ content: 'ok', reasoning: '   ' })
     expect(turn.ok && 'reasoning' in turn).toBe(false)
+  })
+})
+
+describe('how much the helper calls reason', () => {
+  // Measured: one reasoning summariser call took 1m45s to return 208 characters.
+  it('reasons minimally whatever the person chose, and sends nothing where they asked for nothing', () => {
+    expect(helperThinking('on')).toBe('off')
+    expect(helperThinking('low')).toBe('off')
+    expect(helperThinking('off')).toBe('off')
+    expect(helperThinking('server-default')).toBe('server-default')
   })
 })

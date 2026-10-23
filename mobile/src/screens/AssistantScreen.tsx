@@ -4,6 +4,7 @@ import { contextOf } from '@jojo/service/core/provider'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { agentTurn, isConfigured } from '@/lib/llm'
 import type { ChatMessage } from '@jojo/service/core/model-server'
+import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
 import { useAgent } from '@jojo/service/react/use-agent'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
@@ -342,10 +343,11 @@ function AgentScreen() {
    * and an app that wanted to point them at a smaller model would change only
    * these two lines.
    */
-  const chooser = useMemo(
-    () => ({ ask: (messages: readonly ChatMessage[]) => agentTurn(settings, messages, []) }),
-    [settings],
-  )
+  const chooser = useMemo(() => {
+    // Minimal reasoning for the helpers — see `helperThinking`.
+    const helper = { ...settings, thinking: helperThinking(settings.thinking ?? DEFAULT_THINKING) }
+    return { ask: (messages: readonly ChatMessage[]) => agentTurn(helper, messages, []) }
+  }, [settings])
 
   const { entries, busy, send, stop, clear } = useAgent({
     llm,

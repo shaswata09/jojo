@@ -43,6 +43,7 @@ import { CATALOG } from '../kg/agent/catalog'
 import type { AgentEvent, AgentRun, AgentStep, runAgent as runAgentType } from '../kg/agent/loop'
 import {
   DEFAULT_THINKING,
+  helperThinking,
   THINKING_MODES,
   chatRequest,
   guardTruncation,
@@ -857,7 +858,9 @@ async function dialectTurn(messages: readonly ChatMessage[], tools: readonly unk
     },
     {
       delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-      thinking: THINKING,
+      // The chooser and summariser are the calls with no tools; they reason
+      // minimally, as both apps' helpers do. See `helperThinking`.
+      thinking: tools.length === 0 ? helperThinking(THINKING) : THINKING,
       provider: SETTINGS.provider,
     },
   )

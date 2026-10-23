@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { focusLine } from '@jojo/service/agent/focus'
 import type { Application, NodeId } from '@jojo/service/core/model'
 import type { ChatMessage } from '@jojo/service/core/model-server'
+import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
 import { contextOf } from '@jojo/service/core/provider'
 import type { RunSignal } from '@jojo/service/react/agent-runs'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
@@ -83,10 +84,12 @@ export function useConversation({
   )
 
   /** The tool chooser and the summariser: the same transport, much easier work. */
-  const chooser = useMemo(
-    () => ({ ask: (messages: readonly ChatMessage[]) => agentTurn(settings, messages, []) }),
-    [settings],
-  )
+  const chooser = useMemo(() => {
+    // Minimal reasoning: picking tools and summarising are mechanical, and a
+    // reasoning summariser spent close to two minutes on one compaction.
+    const helper = { ...settings, thinking: helperThinking(settings.thinking ?? DEFAULT_THINKING) }
+    return { ask: (messages: readonly ChatMessage[]) => agentTurn(helper, messages, []) }
+  }, [settings])
 
   const convert = useReadDocument()
 
