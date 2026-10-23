@@ -22,8 +22,11 @@ import {
   DOCUMENTS_NOT_READY,
   DOCUMENTS_UNREADABLE,
   collectDocuments,
+  streamDocuments,
   type BackupBlobs,
 } from '@/lib/backup'
+import { readBackup } from '@jojo/service/core/backup'
+import { BACKUP_TAIL, backupHead } from '@jojo/service/core/backup-stream'
 // `?raw`, the same way `handoff-send.test.ts` reads its own source: the wiring
 // is the claim, and the wiring is only visible in the source.
 import backupSource from './backup.ts?raw'
@@ -116,41 +119,119 @@ describe('gathering the documents a backup is supposed to contain', () => {
   })
 })
 
+/** What a sink was handed, joined back into the file text. */
+async function streamed(source: BackupBlobs): Promise<{ text: string; parts: number }> {
+  const parts: string[] = [backupHead({ exportedAt: '2026-10-22T10:00:00.000Z', nodes: [], edges: [] })]
+  await streamDocuments(source, async (part) => {
+    parts.push(typeof part === 'string' ? part : new TextDecoder().decode(part))
+  })
+  parts.push(BACKUP_TAIL)
+  return { text: parts.join(''), parts: parts.length }
+}
+
+describe('streaming the documents into a backup', () => {
+  it('writes a file the reader restores, with every byte of every document', async () => {
+    const { text } = await streamed(
+      blobs(
+        [
+          { id: 'file:a', name: 'CV.pdf' },
+          { id: 'file:b', name: 'Letter.pdf' },
+        ],
+        { 'file:a': 'CV.pdf', 'file:b': 'Letter.pdf' },
+      ),
+    )
+    const read = readBackup(text)
+    expect(read.ok).toBe(true)
+    if (!read.ok) return
+    expect(read.value.documents).toEqual([
+      { path: 'Documents/file:a__CV.pdf', data: new Uint8Array([1, 2, 3, 4]) },
+      { path: 'Documents/file:b__Letter.pdf', data: new Uint8Array([1, 2, 3, 4]) },
+    ])
+  })
+
+  it('refuses while the index is loading BEFORE writing a single piece', async () => {
+    // Refused up front, so a download never opens a file it then has to abort.
+    const sink = vi.fn(async () => undefined)
+    await expect(streamDocuments(blobs([], {}, false), sink)).rejects.toThrow(DOCUMENTS_NOT_READY)
+    expect(sink).not.toHaveBeenCalled()
+  })
+
+  it('refuses when everything listed will not read', async () => {
+    const two = [
+      { id: 'a', name: 'CV.pdf' },
+      { id: 'b', name: 'Letter.pdf' },
+    ]
+    await expect(streamDocuments(blobs(two, {}), async () => undefined)).rejects.toThrow(DOCUMENTS_UNREADABLE)
+  })
+
+  it('keeps a partial backup, and says how much of it is missing', async () => {
+    const { text } = await streamed(
+      blobs(
+        [
+          { id: 'a', name: 'CV.pdf' },
+          { id: 'b', name: 'Letter.pdf' },
+        ],
+        { b: 'Letter.pdf' },
+      ),
+    )
+    // The skipped first document must not leave a leading comma behind.
+    expect(readBackup(text)).toMatchObject({ ok: true, value: { documents: [{ path: 'Documents/b__Letter.pdf' }] } })
+    expect(reported).toHaveBeenCalledTimes(1)
+    expect((reported.mock.calls[0] as [string, Error])[1].message).toContain('1 of 2')
+  })
+
+  it('reads a large document in slices rather than whole', async () => {
+    // 7 MiB: three slices. Each is read with `slice`, never `arrayBuffer` on the whole file.
+    const big = new File([new Uint8Array(7 * 1024 * 1024).fill(9)], 'big.bin')
+    const whole = vi.spyOn(big, 'arrayBuffer')
+    const { text } = await streamed({ ready: true, all: async () => [{ id: 'x', name: 'big.bin' }], get: async () => big })
+    expect(whole).not.toHaveBeenCalled()
+    const read = readBackup(text)
+    expect(read.ok && read.value.documents[0]?.data.byteLength).toBe(7 * 1024 * 1024)
+  })
+})
+
 /**
  * The wiring, which is the other half of the fix.
  *
- * `collectDocuments` is a dozen lines and holds none of the hook's logic —
- * exercising it says nothing about whether `build` calls it. The defect was
- * `build` doing the gathering itself and swallowing the result, so what is
- * asserted here is that it no longer does.
+ * `streamDocuments` holds none of the hook's logic — exercising it says
+ * nothing about whether the hook calls it. The defect was the hook doing the
+ * gathering itself and swallowing the result, so what is asserted here is that
+ * it no longer does.
  */
 describe('the hook is wired to it', () => {
   /** Comments stripped, so an assertion cannot pass on prose describing the fix. */
   const code = backupSource.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
-  const build = code.slice(code.indexOf('const build = useCallback('))
+  const write = code.slice(code.indexOf('const write = useCallback('))
 
-  it('gathers through collectDocuments rather than in the hook', () => {
-    expect(build).toContain('await collectDocuments(blobs)')
-    // The old inline loop spelled the path format out a second time. One
-    // spelling, in `blob-path.ts`, is what makes a restore on another device
-    // parse what this wrote.
+  it('gathers through streamDocuments rather than in the hook', () => {
+    expect(write).toContain('await streamDocuments(blobs, sink, onProgress)')
+    // One spelling of the path format, in `blob-path.ts`, is what makes a
+    // restore on another device parse what this wrote.
     expect(code).not.toContain('`Documents/')
+    // And never the whole store as one string again.
+    expect(code).not.toContain('JSON.stringify(backup')
   })
 
-  it('records the backup only after the bytes exist', () => {
+  it('records the backup only after the file exists, on both paths', () => {
     /*
      * Order, not presence. `writeLastBackup` is what tells the user they are
-     * safe and what `changed` counts from, so a stamp that ran before or
-     * regardless of `build()` would put the app's own reassurance in front of
-     * the file it is about.
+     * safe and what `changed` counts from, so a stamp that ran before the file
+     * was complete would put the app's own reassurance in front of it.
      */
     const download = code.slice(code.indexOf('const download = useCallback('))
-    const built = download.indexOf('await build()')
-    const stamped = download.indexOf('writeLastBackup(')
-    expect(built).toBeGreaterThan(-1)
-    expect(stamped).toBeGreaterThan(built)
-    // And inside the try, so a refusal becomes `false` rather than an unhandled
+    const closed = download.indexOf('await file.close()')
+    const firstStamp = download.indexOf('writeLastBackup(')
+    expect(closed).toBeGreaterThan(-1)
+    expect(firstStamp).toBeGreaterThan(closed)
+
+    const assembled = download.indexOf('await blob({}, onProgress)')
+    const clicked = download.indexOf('anchor.click()')
+    const lastStamp = download.lastIndexOf('writeLastBackup(')
+    expect(assembled).toBeGreaterThan(-1)
+    expect(lastStamp).toBeGreaterThan(clicked)
+    // Inside a try, so a refusal becomes `failed` rather than an unhandled
     // rejection out of `void download(...)`.
-    expect(download.indexOf('try {')).toBeLessThan(built)
+    expect(download.lastIndexOf('try {', assembled)).toBeGreaterThan(-1)
   })
 })

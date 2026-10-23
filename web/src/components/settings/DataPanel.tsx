@@ -26,7 +26,7 @@ import { useStoreAdmin } from '@jojo/service/react/use-admin'
 import { useBoot } from '@/lib/boot-context'
 import { transferPath } from '@/lib/links'
 import { clearSiteData } from '@/lib/storage'
-import { useBackup } from '@/lib/backup'
+import { useBackup, type BackupProgress, type DownloadOutcome } from '@/lib/backup'
 import { restoreBackup } from '@jojo/service/repo/restore'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { describeBackup } from '@jojo/service/core/backup'
@@ -193,20 +193,35 @@ export function DataPanel() {
    * The readable half is still in there, under `readable`, so the file opens
    * into something recognisable.
    */
+  /*
+   * Where a backup in progress has got to, or null when none is running.
+   *
+   * A large store takes real time now that the backup streams rather than
+   * freezing the tab — measured in seconds per hundred megabytes — and a
+   * button that looks idle while it works invites a second click and a
+   * second backup racing the first. So the button says what it is doing and
+   * refuses another press until it is done.
+   */
+  const [exporting, setExporting] = useState<BackupProgress | null>(null)
+
   const onExport = () => {
+    if (exporting !== null) return
     const name = exportFilename(new Date())
-    // `.catch` as well as `.then`. `download` now catches its own failures and
-    // resolves `false`, so this should never fire — which is exactly why it is
+    setExporting({ done: 0, total: 0 })
+    // `.catch` as well as `.then`. `download` catches its own failures and
+    // resolves `failed`, so this should never fire — which is exactly why it is
     // here: without it, one unguarded throw inside that promise went nowhere at
     // all, and the user pressed Export and watched nothing happen.
     void backup
-      .download(name)
-      .catch((error: unknown) => {
+      .download(name, setExporting)
+      .catch((error: unknown): DownloadOutcome => {
         reportError('backup', error)
-        return false
+        return 'failed'
       })
-      .then((started) => {
-        if (!started) {
+      .then((outcome) => {
+        setExporting(null)
+        if (outcome === 'cancelled') return
+        if (outcome === 'failed') {
           toast({
             title: 'The backup could not be written',
             description:
@@ -215,13 +230,21 @@ export function DataPanel() {
           })
           return
         }
-        toast({
-          title: 'Backup started',
-          // Named, not asserted. The click is the last thing this page can
-          // observe — the browser's decision after it fires no event — so what is
-          // said is what to look for rather than that it arrived.
-          description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
-        })
+        toast(
+          outcome === 'saved'
+            ? {
+                // Asserted, because it is known: the file handle closed on disk.
+                title: 'Backup saved',
+                description: `${name} holds your records and every document you have attached.`,
+              }
+            : {
+                title: 'Backup started',
+                // Named, not asserted. The click is the last thing this page can
+                // observe — the browser's decision after it fires no event — so what is
+                // said is what to look for rather than that it arrived.
+                description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
+              },
+        )
       })
   }
 
@@ -354,9 +377,13 @@ export function DataPanel() {
       <Panel>
         <PanelTitle>Your data</PanelTitle>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={onExport}>
+          <Button variant="outline" size="sm" onClick={onExport} disabled={exporting !== null} aria-live="polite">
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
-            Download a backup
+            {exporting === null
+              ? 'Download a backup'
+              : exporting.total > 0
+                ? `Preparing backup… ${String(exporting.done)} of ${String(exporting.total)} documents`
+                : 'Preparing backup…'}
           </Button>
           <Button variant="outline" size="sm" onClick={() => importRef.current?.click()}>
             <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />

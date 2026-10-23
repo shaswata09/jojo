@@ -1361,3 +1361,44 @@ describe('how much one tool result may carry', () => {
     expect(resultBudget([user('hello')], [functionSpecs()], 32_768)).toBe(RESULT_FLOOR)
   })
 })
+
+/*
+ * The loop measured 2026-10-22: in a nearly full window the newest result was
+ * stubbed too, the stub said "re-read if needed by calling memory.list again",
+ * and Gemma did — eight rounds, no answer.
+ */
+describe('a result the model has not read yet', () => {
+  const big = (n: number) => JSON.stringify({ total: n, matches: Array.from({ length: n }, (_, i) => ({ id: `app:${String(i)}`, org: `Org ${String(i)}`, stage: 'submitted' })) })
+  const turn = (id: string): ChatMessage => ({
+    role: 'assistant',
+    content: null,
+    tool_calls: [{ id, type: 'function', function: { name: 'memory_list', arguments: '{}' } }],
+  })
+  const messages: ChatMessage[] = [
+    { role: 'system', content: 'sys' },
+    { role: 'user', content: 'What applications do I have?' },
+    turn('old'),
+    { role: 'tool', tool_call_id: 'old', content: big(60) },
+    turn('new'),
+    { role: 'tool', tool_call_id: 'new', content: big(60) },
+  ]
+
+  it('is never replaced by a stub telling the model to fetch it again', () => {
+    for (const window of [8192, 6000, 5000, 4500]) {
+      const out = stubToFit(messages, [], window)
+      const fresh = out.messages.at(-1) as { content: string }
+      expect(fresh.content, String(window)).not.toMatch(/withheld to save room/)
+      // Still the data, from its opening.
+      expect(fresh.content.startsWith('{"total":60')).toBe(true)
+    }
+  })
+
+  it('goes old results first, and cuts the new one only when that is not enough', () => {
+    const roomy = stubToFit(messages, [], 6000)
+    expect((roomy.messages[3] as { content: string }).content).toMatch(/withheld to save room/)
+    expect((roomy.messages[5] as { content: string }).content).toBe(big(60))
+
+    const tight = stubToFit(messages, [], 5000)
+    expect((tight.messages[5] as { content: string }).content).toMatch(/cut to fit the space left/)
+  })
+})

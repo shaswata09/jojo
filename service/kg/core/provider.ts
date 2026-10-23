@@ -36,6 +36,8 @@
  * work, which is the half that can be wrong in an interesting way.
  */
 
+import type { Thinking } from './model-server'
+
 /** The providers this app knows how to talk to. */
 export const PROVIDER_IDS = [
   'openai-compatible',
@@ -361,6 +363,11 @@ export type ModelSettings = {
   readonly apiKey?: string
   /** What the user says their deployment can hold. See `contextOf`. */
   readonly contextWindow?: number
+  /**
+   * Whether the model should reason before it answers. Absent means
+   * `DEFAULT_THINKING`; see `thinkingFields` for what each mode sends.
+   */
+  readonly thinking?: Thinking
 }
 
 /** The window to plan against — the user's number, or the provider's default. */

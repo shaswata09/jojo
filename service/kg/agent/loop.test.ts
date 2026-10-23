@@ -18,7 +18,7 @@ import { CATALOG } from './catalog'
 import { fitHistory, RESERVED_FOR_REPLY, SUMMARY_SHARE } from './budget'
 import { SECTION_MARK, asMessage, compact, MIN_SUMMARY_CHARS, replacedBy } from './compact'
 import { estimateTokens } from '../core/model-server'
-import { runAgent, SYSTEM_PROMPT } from './loop'
+import { CONTINUE_PROMPT, CUT_CALL_PROMPT, runAgent, SYSTEM_PROMPT } from './loop'
 import type { AgentEvent, LlmTurnFn } from './loop'
 
 const START = Date.parse('2026-08-22T09:00:00.000Z')
@@ -2065,9 +2065,10 @@ describe('malformed arguments are repaired, and then face every existing check',
    * FEWER items" is the only remedy that works, because the model cannot see its
    * own output limit.
    */
-  const cutOff = async (raw: string) => {
+  const cutOff = async (raw: string, maxSteps?: number) => {
     const { onEvent } = collect()
     const run = await runAgent({
+      ...(maxSteps === undefined ? {} : { maxSteps }),
       host: host(),
       llm: scripted([
         {
@@ -2085,8 +2086,21 @@ describe('malformed arguments are repaired, and then face every existing check',
     return run
   }
 
-  it('does not repair a reply that stopped at the model output limit', async () => {
+  /*
+   * Since 2026-10-22 a cut-off call is not run at all while the turn has rounds
+   * and continuations to spend: the model is asked to send it again in full
+   * (`CUT_CALL_PROMPT`), and its broken arguments never enter history.
+   */
+  it('does not run a call that stopped at the output limit, and asks for it again', async () => {
     const run = await cutOff('{"query":"ric')
+    expect(run.steps).toHaveLength(0)
+    expect(run.messages.some((m) => m.role === 'user' && m.content === CUT_CALL_PROMPT)).toBe(true)
+    expect(run.answer).toBe('sorry')
+  })
+
+  // With no round left to ask in, the old path stands: run, refuse, and say why.
+  it('does not repair a reply that stopped at the output limit on the last round', async () => {
+    const run = await cutOff('{"query":"ric', 1)
     expect(run.steps[0]?.status).toBe('failed')
     expect(run.steps[0]?.detail).toContain('FEWER items')
   })
@@ -2111,10 +2125,14 @@ describe('malformed arguments are repaired, and then face every existing check',
   it('does not recover the first of two calls from a reply that was cut off', async () => {
     const run = await cutOff(
       '{"query":"rice"} </tool_call><tool_call>{"name":"memory_search","argum',
+      1,
     )
     expect(run.steps[0]?.status).toBe('failed')
     expect(run.steps[0]?.repairs).toBeUndefined()
     expect(run.steps[0]?.detail).toContain('FEWER items')
+    // And with rounds to spend, nothing from that reply runs at all.
+    const asked = await cutOff('{"query":"rice"} </tool_call><tool_call>{"name":"memory_search","argum')
+    expect(asked.steps).toHaveLength(0)
   })
 
   /*
@@ -3463,5 +3481,118 @@ describe('what a compaction keeps', () => {
     )
     expect(lost).toBeDefined()
     expect(lost).toMatch(/\d+ (was|were) left out of this request/)
+  })
+})
+
+/*
+ * Reported 2026-10-22: "LLMs get stuck sometimes with an incomplete response —
+ * make sure the harness continues until the response is complete." These are
+ * the four ways a turn used to end unfinished, each now carried on.
+ */
+describe('carrying a reply on until it is complete', () => {
+  const cut = (text: string): Turn => ({ ok: true, text, toolCalls: [], finishReason: 'length' })
+  const empty: Turn = {
+    ok: false,
+    kind: 'malformed',
+    why: 'empty',
+    reason: 'The model returned an empty turn — no answer and no tool call.',
+  }
+
+  it('continues an answer cut off at the output limit, and joins the halves', async () => {
+    const { events, onEvent } = collect()
+    const llm = scripted([cut('Follow up after a '), cut('week, then again '), says('after two.')])
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'When should I follow up?', onEvent })
+
+    expect(run.stopped).toBe('answered')
+    expect(run.answer).toBe('Follow up after a week, then again after two.')
+    // The model was asked to continue, with what it had written in front of it.
+    expect(llm.seen[1]?.at(-1)).toEqual({ role: 'user', content: CONTINUE_PROMPT })
+    expect(llm.seen[1]?.at(-2)).toEqual({ role: 'assistant', content: 'Follow up after a ' })
+    // The scaffolding is gone from what the turn hands on: one joined answer.
+    expect(run.messages.filter((m) => m.content === CONTINUE_PROMPT)).toHaveLength(0)
+    expect(run.messages.at(-1)).toEqual({ role: 'assistant', content: run.answer })
+    // And no "cut off" note, because it was not left cut off.
+    expect(events.some((e) => e.type === 'note' && /output limit/.test(e.text))).toBe(false)
+  })
+
+  it('stops continuing after its budget, and says the reply may be incomplete', async () => {
+    const { events, onEvent } = collect()
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([cut('a'), cut('b'), cut('c'), cut('d'), cut('e')]),
+      history: [],
+      prompt: 'Tell me everything',
+      onEvent,
+    })
+    // Three continuations, then the fourth cut is accepted with the note.
+    expect(run.answer).toBe('abcd')
+    expect(events.some((e) => e.type === 'note' && /output limit/.test(e.text))).toBe(true)
+  })
+
+  it('asks again when the model returns nothing, rather than failing at once', async () => {
+    const llm = scripted([empty, empty, says('Here you go.')])
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'hi', onEvent: () => {} })
+    expect(run.stopped).toBe('answered')
+    expect(run.answer).toBe('Here you go.')
+    // Retried with the conversation unchanged — nothing was said to add.
+    expect(llm.seen[2]).toEqual(llm.seen[0])
+  })
+
+  it('still reports an empty reply that never recovers', async () => {
+    const run = await runAgent({ host: host(), llm: scripted([empty]), history: [], prompt: 'hi', onEvent: () => {} })
+    expect(run.stopped).toBe('error')
+  })
+
+  it('sends back an answer that stops on its own next step', async () => {
+    const llm = scripted([
+      calls('application_create', NEW_APP),
+      says('Added UT Austin. Next, I’ll update the Baylor one:'),
+      says('Both are done.'),
+    ])
+    const { events, onEvent } = collect()
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'Add UT Austin and update Baylor', onEvent })
+    expect(run.answer).toBe('Both are done.')
+    expect(events.some((e) => e.type === 'note' && /stopped partway/.test(e.text))).toBe(true)
+  })
+
+  it('does not mistake a closing courtesy for an unfinished step', async () => {
+    const run = await runAgent({
+      host: host(),
+      llm: scripted([calls('application_create', NEW_APP), says('Added UT Austin. Let me know if you want anything else.')]),
+      history: [],
+      prompt: 'Add UT Austin',
+      onEvent: () => {},
+    })
+    expect(run.answer).toBe('Added UT Austin. Let me know if you want anything else.')
+  })
+})
+
+describe('what the model thought', () => {
+  it('is reported before the answer, and never sent back to the model', async () => {
+    const { events, onEvent } = collect()
+    const llm = scripted([
+      { ok: true, text: 'Interviews: Baylor.', toolCalls: [], finishReason: 'stop', reasoning: 'The user wants interviews.' },
+      says('ok'),
+    ])
+    const run = await runAgent({ host: host(), llm, history: [], prompt: 'Which are at interview?', onEvent })
+    const kinds = events.map((e) => e.type)
+    expect(kinds.indexOf('thought')).toBeGreaterThanOrEqual(0)
+    expect(kinds.indexOf('thought')).toBeLessThan(kinds.indexOf('answer'))
+    expect(events.find((e) => e.type === 'thought')).toEqual({ type: 'thought', text: 'The user wants interviews.' })
+    expect(JSON.stringify(run.messages)).not.toContain('The user wants interviews.')
+  })
+
+  it('streams through the reasoning callback as it arrives', async () => {
+    const { events, onEvent } = collect()
+    const llm: LlmTurnFn = async (_m, _t, _onDelta, onReasoning) => {
+      onReasoning?.('Thinking ')
+      onReasoning?.('hard.')
+      return { ok: true, text: 'Done.', toolCalls: [], finishReason: 'stop', reasoning: 'Thinking hard.' }
+    }
+    await runAgent({ host: host(), llm, history: [], prompt: 'hi', onEvent })
+    expect(events.filter((e) => e.type === 'thinking').map((e) => (e as { text: string }).text)).toEqual([
+      'Thinking ',
+      'hard.',
+    ])
   })
 })

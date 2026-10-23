@@ -83,6 +83,8 @@ export type AgentEntry =
   | { kind: 'step'; id: string; step: AgentStep }
   | { kind: 'answer'; id: string; text: string }
   | { kind: 'error'; id: string; text: string }
+  /** What the model thought before answering. Shown, never sent back to it. */
+  | { kind: 'thought'; id: string; text: string }
 
 /**
  * A destructive call waiting on a person.
@@ -459,6 +461,8 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
      * further down exists to prevent in the settle path.
      */
     let draft: { id: string; text: string } | null = null
+    /** The thinking currently streaming, kept apart from the prose draft. */
+    let thinking: { id: string; text: string } | null = null
 
     void (async () => {
       try {
@@ -579,6 +583,25 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
              * the difference between an answer that resolves and one that shows
              * up twice.
              */
+            /*
+             * Thinking, handled before anything that settles the prose draft.
+             * It is its own entry with its own draft, so a thought arriving
+             * never splits an answer in two, and the settled `thought` reuses
+             * the streamed entry's id the way `answer` reuses the draft's.
+             */
+            if (event.type === 'thinking') {
+              if (thinking === null) thinking = { id: nextId(), text: '' }
+              thinking.text += event.text
+              record(threadId, { kind: 'thought', id: thinking.id, text: thinking.text })
+              return
+            }
+            if (event.type === 'thought') {
+              const id = thinking?.id ?? nextId()
+              thinking = null
+              record(threadId, { kind: 'thought', id, text: event.text })
+              return
+            }
+
             if (event.type === 'delta') {
               if (draft === null) draft = { id: nextId(), text: '' }
               draft.text += event.text

@@ -60,6 +60,7 @@ export function ThreadList({
   query,
   onQuery,
   bare = false,
+  fill = false,
 }: {
   /**
    * Just the search and the list, filling their container — for the chat
@@ -67,6 +68,17 @@ export function ThreadList({
    * the panel, its title and the New conversation button around them.
    */
   bare?: boolean
+  /**
+   * The panel takes the height its parent gives it and the list scrolls
+   * inside, instead of the list capping itself at 26rem.
+   *
+   * For the Assistant page on a wide screen, where this sits beside the
+   * conversation in one grid row. With its own fixed cap the list decided the
+   * ROW's height — six conversations made it taller than the conversation
+   * panel, which is capped at the window, and the conversation ended short
+   * with empty space beneath it. Filled, both panels end at the same line.
+   */
+  fill?: boolean
   threads: readonly Thread[]
   activeId: NodeId | null
   byId: ReadonlyMap<string, Application>
@@ -191,7 +203,7 @@ export function ThreadList({
         // it off the screen.
         <ul
           className={
-            bare
+            bare || fill
               ? 'mt-3 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1'
               : 'mt-3 max-h-[26rem] space-y-3 overflow-y-auto'
           }
@@ -292,7 +304,7 @@ export function ThreadList({
   if (bare) return <div className="flex min-h-0 min-w-0 flex-1 flex-col">{body}</div>
 
   return (
-    <Panel className="min-w-0">
+    <Panel className={fill ? 'flex min-h-0 min-w-0 flex-col' : 'min-w-0'}>
       <PanelTitle hint={threads.length > 0 ? `${threads.length} kept here` : undefined}>
         Conversations
       </PanelTitle>

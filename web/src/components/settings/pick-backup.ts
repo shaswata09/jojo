@@ -25,7 +25,34 @@
  */
 
 import { readBackup } from '@jojo/service/core/backup'
-import type { RestorePlan } from '@jojo/service/core/backup'
+import type { BackupRead, RestorePlan } from '@jojo/service/core/backup'
+import { createBackupReader } from '@jojo/service/core/backup-stream'
+import { pacer } from '@/lib/backup'
+
+/**
+ * The file read as a stream of text, parsed as it arrives.
+ *
+ * `file.text()` makes the whole backup one string, and a backup of a large
+ * store is more characters than V8 lets one string hold (~536 million) — so a
+ * file the streaming writer can now produce could not be read back the old
+ * way, and a backup that cannot be restored is not one. Here the largest
+ * string is one chunk of the stream, and each document's base64 is decoded as
+ * it passes.
+ *
+ * Paced like the writer, so the page answers while a long file is read.
+ */
+async function readStreamed(file: File): Promise<BackupRead> {
+  const reader = createBackupReader()
+  const text = file.stream().pipeThrough(new TextDecoderStream()).getReader()
+  const pace = pacer()
+  for (;;) {
+    const { done, value } = await text.read()
+    if (done) break
+    reader.push(value)
+    await pace()
+  }
+  return reader.end()
+}
 
 export type PickedBackup =
   /** The picker was cancelled. There is nothing to say about it. */
@@ -55,9 +82,11 @@ export async function readPickedBackup(list: FileList | null): Promise<PickedBac
   const file = list?.[0]
   if (!file) return { kind: 'none' }
 
-  let text: string
+  let read: BackupRead
   try {
-    text = await file.text()
+    // Streamed wherever the browser can; `text()` is kept for anything that
+    // offers only that — an older engine, or a test's stand-in for a File.
+    read = typeof file.stream === 'function' ? await readStreamed(file) : readBackup(await file.text())
   } catch (thrown) {
     return {
       kind: 'unreadable',
@@ -68,7 +97,6 @@ export async function readPickedBackup(list: FileList | null): Promise<PickedBac
     }
   }
 
-  const read = readBackup(text)
   if (!read.ok) {
     return {
       kind: 'refused',

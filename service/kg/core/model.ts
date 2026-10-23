@@ -1786,6 +1786,9 @@ export type ProfileProps = Profile
  * survive a reload — the journal is what takes an agent's writes back after the
  * conversation has been closed, and it already does.
  */
+/** The most of one thought a saved conversation keeps. The rest is a long monologue. */
+export const MAX_THOUGHT_STORED = 8000
+
 export type ThreadEntry =
   | { kind: 'you'; text: string }
   /**
@@ -1804,6 +1807,13 @@ export type ThreadEntry =
   | { kind: 'note'; text: string; app?: true }
   | { kind: 'answer'; text: string }
   | { kind: 'error'; text: string }
+  /**
+   * What the model thought before answering, kept so a reopened conversation
+   * still shows it. Never replayed to the model (`toTranscript` skips it): a
+   * model reading its own old reasoning as context reasons from it, and pays
+   * for the tokens. Capped at `MAX_THOUGHT_STORED` characters when saved.
+   */
+  | { kind: 'thought'; text: string }
   | {
       kind: 'step'
       /** The registry name, `graph.query`. */

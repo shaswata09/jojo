@@ -193,8 +193,10 @@ describe('the protocol, as data', () => {
       stream: false,
       // The default, and the reason it is asserted in the EXACT-body test rather
       // than only in its own: this is what every local request now carries, and
-      // a change to it should have to be made here on purpose.
-      chat_template_kwargs: { enable_thinking: false },
+      // a change to it should have to be made here on purpose. Reasoning ON
+      // since 2026-10-22 — see `DEFAULT_THINKING`.
+      reasoning_effort: 'medium',
+      chat_template_kwargs: { enable_thinking: true },
     })
   })
 
@@ -1155,15 +1157,32 @@ describe('thinking control', () => {
    * and the one the loop's empty-reply guard already blames by name — could not
    * be expressed by this app in any provider.
    */
-  it('asks a local OpenAI-compatible server not to think, by default', () => {
-    expect(bodyOf(local())['chat_template_kwargs']).toEqual({ enable_thinking: false })
+  /*
+   * Both families at once, measured on vLLM: Gemma 4 and Qwen3 switch thinking
+   * through the template, gpt-oss reads its effort from the top level and
+   * ignores it inside `chat_template_kwargs`.
+   */
+  it('asks a local OpenAI-compatible server to reason, by default', () => {
+    expect(bodyOf(local())['chat_template_kwargs']).toEqual({ enable_thinking: true })
+    expect(bodyOf(local())['reasoning_effort']).toBe('medium')
     // The default is the setting's value, not a second opinion about it.
     expect(bodyOf(local(), DEFAULT_THINKING)).toEqual(bodyOf(local()))
   })
 
+  it('takes the mode from the person’s setting, and a caller’s own mode over that', () => {
+    expect(bodyOf(local({ thinking: 'off' }))['chat_template_kwargs']).toEqual({ enable_thinking: false })
+    expect(bodyOf(local({ thinking: 'off' }))['reasoning_effort']).toBeUndefined()
+    expect(bodyOf(local({ thinking: 'off' }), 'on')['reasoning_effort']).toBe('medium')
+  })
+
+  it('still asks a local server not to think when told off', () => {
+    expect(bodyOf(local(), 'off')['chat_template_kwargs']).toEqual({ enable_thinking: false })
+  })
+
   it('spells the same thing Ollama-native way, and disturbs nothing else', () => {
     const body = bodyOf(local({ provider: 'ollama', endpoint: 'http://localhost:11434' }))
-    expect(body['think']).toBe(false)
+    expect(body['think']).toBe(true)
+    expect(bodyOf(local({ provider: 'ollama', endpoint: 'http://localhost:11434' }), 'off')['think']).toBe(false)
     /*
      * The hard-won fields, asserted here because this test is the one that
      * changed the Ollama body. `shift:false` is what makes a too-large prompt a
@@ -1183,10 +1202,11 @@ describe('thinking control', () => {
   })
 
   it('asks for LESS thinking where it cannot ask for none — gpt-oss', () => {
-    // gpt-oss always reasons; `enable_thinking:false` is not a thing its template
-    // reads, and `reasoning_effort` is. HIGH is what the gpt-oss report says
-    // "frequently exceeded the 128k context", so the only useful ask is low.
-    expect(bodyOf(local(), 'low')['chat_template_kwargs']).toEqual({ reasoning_effort: 'low' })
+    // gpt-oss always reasons, and reads its effort from the TOP LEVEL: inside
+    // `chat_template_kwargs` — where this used to put it — low, medium and high
+    // all produced the same reasoning on vLLM (measured 2026-10-22).
+    expect(bodyOf(local(), 'low')['reasoning_effort']).toBe('low')
+    expect(bodyOf(local(), 'low')['chat_template_kwargs']).toEqual({ enable_thinking: true })
     expect(bodyOf(local({ provider: 'ollama' }), 'low')['think']).toBe('low')
   })
 
@@ -1207,7 +1227,7 @@ describe('thinking control', () => {
    */
   it('sends nothing to a hosted provider, whatever the mode', () => {
     for (const provider of ['openai', 'groq', 'openrouter', 'nvidia'] as const) {
-      for (const mode of ['off', 'low'] as const) {
+      for (const mode of ['on', 'off', 'low'] as const) {
         expect(thinkingFields(provider, mode)).toEqual({})
         const body = bodyOf(local({ provider, model: 'gpt-4o', apiKey: 'k' }), mode)
         expect(body['chat_template_kwargs']).toBeUndefined()
@@ -1380,8 +1400,8 @@ describe('retrying a turn that said nothing', () => {
      * WHY THIS EXISTS AT ALL. Some Ollama builds refuse `think` on a model with
      * no thinking capability — Gemma 3 is exactly such a model and is one of the
      * three jojo is built for — and no client can know a model's capabilities
-     * before it asks. Without this recovery a default of `off` would break the
-     * commonest local setup there is.
+     * before it asks. Without this recovery a default that sends a thinking
+     * field would break the commonest local setup there is.
      */
     const { waits, delay } = recorder()
     const asked: Thinking[] = []
@@ -1396,7 +1416,7 @@ describe('retrying a turn that said nothing', () => {
       },
       { delay, provider: 'ollama' },
     )
-    expect(asked).toEqual(['off', 'server-default'])
+    expect(asked).toEqual(['on', 'server-default'])
     // No pause: the server answered at once and the fix is deterministic.
     expect(waits).toEqual([])
     expect(turn.ok).toBe(true)
@@ -1411,12 +1431,12 @@ describe('retrying a turn that said nothing', () => {
       ({ thinking }) => {
         asked.push(thinking)
         return Promise.resolve(
-          thinking === 'off' ? refusedTurn(400, 'unknown field think') : emptyFromWire(),
+          thinking === 'on' ? refusedTurn(400, 'unknown field think') : emptyFromWire(),
         )
       },
       { delay, provider: 'ollama' },
     )
-    expect(asked).toEqual(['off', 'server-default', 'server-default', 'server-default'])
+    expect(asked).toEqual(['on', 'server-default', 'server-default', 'server-default'])
   })
 
   it('downgrades once and then gives up, rather than looping', async () => {
@@ -1481,3 +1501,34 @@ function refusedTurn(status: number, body: string): Turn {
   const response: ModelResponse = { ok: false, status, text: body }
   return readTurn(response)
 }
+
+describe('reading what the model thought', () => {
+  const reply = (message: Record<string, unknown>) =>
+    readTurn({ ok: true, status: 200, text: JSON.stringify({ choices: [{ message, finish_reason: 'tool_calls' }] }) })
+
+  // vLLM's shape for Gemma 4 and gpt-oss, as measured 2026-10-22.
+  it('keeps vLLM’s reasoning beside the answer, never in it', () => {
+    const turn = reply({
+      content: '',
+      reasoning: 'The user wants interviews.',
+      tool_calls: [{ id: 'c1', type: 'function', function: { name: 'application_list', arguments: '{}' } }],
+    })
+    expect(turn.ok && turn.reasoning).toBe('The user wants interviews.')
+    expect(turn.ok && turn.text).toBeNull()
+  })
+
+  it('reads the older reasoning_content spelling, and Ollama’s thinking', () => {
+    expect(reply({ content: 'ok', reasoning_content: 'Hmm.' })).toMatchObject({ reasoning: 'Hmm.' })
+    const ollama = readOllamaTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({ message: { content: 'ok', thinking: 'Considering.' }, done_reason: 'stop' }),
+    })
+    expect(ollama.ok && ollama.reasoning).toBe('Considering.')
+  })
+
+  it('reports no thought where there was none', () => {
+    const turn = reply({ content: 'ok', reasoning: '   ' })
+    expect(turn.ok && 'reasoning' in turn).toBe(false)
+  })
+})

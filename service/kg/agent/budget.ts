@@ -454,6 +454,22 @@ export function resultBudget(
  *
  * Oldest first — a result the model has already acted on is the one it needs
  * least.
+ *
+ * ## Never the results it has not read yet
+ *
+ * Measured 2026-10-22 on `long-recall-early-fact` against Gemma 4 with
+ * reasoning on: in a window whose fixed part leaves ~1,700 tokens of room, this
+ * stubbed every result INCLUDING the one just returned — so the model's
+ * `memory.list` came back as "withheld to save room — re-read if needed by
+ * calling memory.list again", it did exactly that, and the turn ran all eight
+ * rounds re-reading one list and ended with no answer. Twelve minutes per
+ * conversation, with every request finishing in seconds.
+ *
+ * So the results of the LATEST assistant turn — the ones the model is about to
+ * read for the first time — are never stubbed. If stubbing everything older
+ * still does not fit, those fresh results are cut to their opening part
+ * instead, with a note to narrow the query: some of the answer beats an
+ * instruction to fetch it again into the same full window.
  */
 export function stubToFit(
   messages: readonly ChatMessage[],
@@ -465,9 +481,19 @@ export function stubToFit(
   const fits = () => sizeOf([...fixed, ...working]) <= ceiling
   if (fits()) return { messages: working, stubbed: 0 }
 
+  // Everything after the last assistant turn is what it has not seen yet.
+  let lastAssistant = -1
+  for (let i = working.length - 1; i >= 0; i -= 1) {
+    if (working[i]?.role === 'assistant') {
+      lastAssistant = i
+      break
+    }
+  }
+
   const names = callNames(messages)
   let stubbed = 0
   for (let i = 0; i < working.length; i += 1) {
+    if (i > lastAssistant) break
     const m = working[i]
     if (m === undefined || m.role !== 'tool') continue
     const content = stubFor(names.get(m.tool_call_id) ?? 'the tool', m.content)
@@ -476,8 +502,30 @@ export function stubToFit(
     stubbed += 1
     if (fits()) break
   }
+
+  // Still over: cut the fresh results, largest first, to their opening part.
+  for (let pass = 0; pass < 12 && !fits(); pass += 1) {
+    let largest = -1
+    for (let i = lastAssistant + 1; i < working.length; i += 1) {
+      const m = working[i]
+      if (m?.role !== 'tool') continue
+      if (largest === -1 || m.content.length > (working[largest] as { content: string }).content.length) largest = i
+    }
+    const m = largest === -1 ? undefined : working[largest]
+    if (m === undefined || m.role !== 'tool' || m.content.length <= FRESH_FLOOR) break
+    const keep = Math.max(FRESH_FLOOR, Math.floor(m.content.length * 0.6))
+    working[largest] = {
+      role: 'tool',
+      tool_call_id: m.tool_call_id,
+      content: `${m.content.slice(0, keep)}\n[…cut to fit the space left — answer from what is above, or ask for fewer fields or a narrower query]`,
+    }
+    stubbed += 1
+  }
   return { messages: working, stubbed }
 }
+
+/** The least of a fresh result kept when it has to be cut: enough to answer from. */
+const FRESH_FLOOR = 600
 
 export function fitHistory(
   history: readonly ChatMessage[],

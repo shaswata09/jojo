@@ -60,6 +60,7 @@
  */
 
 import type { ChatMessage, ToolCall, Turn } from '../core/model-server'
+import { isEmptyTurn } from '../core/model-server'
 import type { Announcement } from '../tools/tool'
 import { CATALOG, functionSpecs } from './catalog'
 import { EVERYTHING_SAFE, NEVER_IMPLICIT, inCatalogOrder, offeredFor, select } from './retrieve'
@@ -164,6 +165,16 @@ export type AgentEvent =
   | { type: 'step'; step: AgentStep }
   | { type: 'answer'; text: string }
   | { type: 'error'; reason: string }
+  /**
+   * A fragment of what the model is thinking before it answers, as it streams.
+   * Same contract as `delta`: an optimisation, with `thought` as the truth.
+   */
+  | { type: 'thinking'; text: string }
+  /**
+   * Everything the model thought in one round, once the round has settled.
+   * For the person to read; it is never replayed to the model.
+   */
+  | { type: 'thought'; text: string }
 
 /* ---------------------------------- prompt -------------------------------- */
 
@@ -245,6 +256,8 @@ export type LlmTurnFn = (
    * identical either way.
    */
   onDelta?: (text: string) => void,
+  /** The same for the model's thinking, where the server separates it. */
+  onReasoning?: (text: string) => void,
 ) => Promise<Turn>
 
 /**
@@ -536,6 +549,34 @@ function toolCallInText(text: string, offered: Set<string> | null): string | nul
 const DEFAULT_MAX_STEPS = 8
 
 /**
+ * How many times one user turn may be carried on past an incomplete reply — a
+ * reply cut off at the model's output limit, or a tool call cut off before its
+ * arguments closed.
+ *
+ * Three: a long answer needs one continuation far more often than two, and a
+ * model still being cut off on its fourth attempt is at the edge of its window,
+ * where a fifth will not fit either. Each one also spends a round of
+ * `maxSteps`, which is the bound that cannot be argued with.
+ */
+export const MAX_CONTINUATIONS_PER_TURN = 3
+
+/**
+ * How many times an EMPTY reply — no answer, no call — is asked again before it
+ * is reported. Two retries, three sends: `EMPTY_TURN_ATTEMPTS`' number, which
+ * the benchmark's transport has applied all along and neither app did. The
+ * second send is the one that usually works.
+ */
+export const EMPTY_TURN_RETRIES = 2
+
+/** Sent when a reply stopped at the output limit mid-answer. */
+export const CONTINUE_PROMPT =
+  'Your reply was cut off by the output limit. Continue exactly where it stopped — do not repeat anything already written, and do not start over.'
+
+/** Sent when a tool call stopped at the output limit before its arguments were complete. */
+export const CUT_CALL_PROMPT =
+  'Your tool call was cut off by the output limit before its arguments were complete, so nothing was run. Send the call again in full, keeping any long text in it shorter.'
+
+/**
  * What the PERSON is told when the verification gate sends an answer back.
  *
  * One sentence per reason, because the reasons are not interchangeable and a
@@ -559,6 +600,8 @@ const VERIFY_NOTE: Record<VerifyReason, string> = {
     'The assistant named a record it did not read this turn. It has been asked to look it up before answering, rather than answering from memory.',
   'bare-acknowledgement':
     'The assistant agreed to do the work without doing it, so nothing has happened yet. It has been asked to make the call.',
+  'stopped-mid-task':
+    'The assistant stopped partway, saying what it would do next without doing it. It has been asked to carry on.',
 }
 
 /**
@@ -1157,6 +1200,18 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
   let verifyNudges = 0
 
   /**
+   * Carrying a reply past the point where it was cut off. `continuations`
+   * counts against `MAX_CONTINUATIONS_PER_TURN`; `partial` is the answer so far,
+   * joined to whatever the next round says; `continuedFrom` is where in
+   * `messages` the scaffolding began, so the finished answer replaces it with
+   * one assistant message rather than leaving the partial and the "continue"
+   * request in history.
+   */
+  let continuations = 0
+  let partial = ''
+  let continuedFrom: number | null = null
+
+  /**
    * The conversation as it stood BEFORE this turn, as plain text.
    *
    * Built once, here, and deliberately not from `messages` at the point of use.
@@ -1213,9 +1268,27 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
      * the round before it. `onDelta` is optional on the port: a caller that does
      * not stream simply never calls it.
      */
-    const turn = await llm(messages, tools, (text) => {
-      onEvent({ type: 'delta', text })
-    })
+    const ask = () =>
+      llm(
+        messages,
+        tools,
+        (text) => {
+          onEvent({ type: 'delta', text })
+        },
+        (text) => {
+          onEvent({ type: 'thinking', text })
+        },
+      )
+    let turn = await ask()
+    /*
+     * An empty reply — no answer, no call — asked again, quietly, before it is
+     * reported. The apps had no retry at all: one blank turn ended the run with
+     * an error, where the benchmark's transport (`sendTurn`) always re-asked.
+     * Not a round: nothing was said, so nothing is added to the conversation.
+     */
+    for (let retry = 0; retry < EMPTY_TURN_RETRIES && isEmptyTurn(turn) && !signal?.aborted; retry++) {
+      turn = await ask()
+    }
     /*
      * Abort is checked BEFORE `!turn.ok`, and the order is the whole point.
      *
@@ -1229,6 +1302,9 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
       onEvent({ type: 'error', reason: turn.reason })
       return finish('error')
     }
+
+    // What it thought, before what it did — the order it happened in.
+    if (turn.reasoning !== undefined) onEvent({ type: 'thought', text: turn.reasoning })
 
     /*
      * Cut off at the completion cap, and said out loud.
@@ -1246,7 +1322,46 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
      * "the reply was cut off" is something they can act on and a half-sentence
      * is not.
      */
-    if (turn.finishReason === 'length') {
+    /*
+     * CARRIED ON, while there is budget to — reported 2026-10-22: models
+     * "often get stuck with an incomplete response", and this branch used to
+     * show a note and accept the half-sentence as the answer.
+     *
+     * A cut-off ANSWER is continued: the partial goes into the conversation,
+     * the model is asked to pick up where it stopped, and the two halves are
+     * joined into one answer. A cut-off TOOL CALL is never run — arguments that
+     * stop mid-string are not the call the model meant — and the whole turn is
+     * asked for again, without its broken arguments ever entering history
+     * (`repair.ts` records what a malformed call in history does to vLLM).
+     *
+     * Not on the last round, for the reason the verification gate gives: a
+     * continuation spends a round, and spending the last one throws away the
+     * part that was written.
+     */
+    const cutOff = turn.finishReason === 'length'
+    if (cutOff && continuations < MAX_CONTINUATIONS_PER_TURN && round < maxSteps - 1) {
+      if (turn.toolCalls.length > 0) {
+        continuations += 1
+        onEvent({
+          type: 'note',
+          app: true,
+          text: 'The model’s tool call was cut off by its output limit before it was complete, so it was not run. It has been asked to send it again.',
+        })
+        messages.push({ role: 'user', content: CUT_CALL_PROMPT })
+        continue
+      }
+      if (turn.text) {
+        continuations += 1
+        if (continuedFrom === null) continuedFrom = messages.length
+        partial += turn.text
+        // No event: the streamed draft simply keeps growing into the next
+        // round's fragments, so the person sees one answer being written.
+        messages.push({ role: 'assistant', content: turn.text })
+        messages.push({ role: 'user', content: CONTINUE_PROMPT })
+        continue
+      }
+    }
+    if (cutOff) {
       onEvent({
         type: 'note',
         app: true,
@@ -1254,9 +1369,18 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
       })
     }
 
+    /** Drop the continuation scaffolding; the joined answer stands in for it. */
+    const settleContinuation = () => {
+      if (continuedFrom !== null) messages.splice(continuedFrom)
+      continuedFrom = null
+      partial = ''
+    }
+
     // No calls: the model is done talking and this is the answer.
     if (turn.toolCalls.length === 0) {
-      const answer = turn.text ?? ''
+      // Joined to whatever earlier rounds wrote before being cut off.
+      const answer = partial + (turn.text ?? '')
+      settleContinuation()
 
       /*
        * Unless it IS a tool call, written as prose.
@@ -1312,7 +1436,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
           type: 'error',
           reason:
             turn.finishReason === 'length'
-              ? 'The model used its whole reply budget without answering or calling anything. Models that reason before they speak — Qwen3, GPT-OSS, DeepSeek-R1 — do this when the server’s reply limit is small: raise it, or run the model with thinking turned off. Nothing was changed.'
+              ? 'The model used its whole reply budget without answering or calling anything. Models that reason before they speak — Qwen3, GPT-OSS, DeepSeek-R1 — do this when the server’s reply limit is small: raise it, or set Reasoning to Off in Settings → Model. Nothing was changed.'
               : 'The model returned an empty reply and did not call anything, so nothing was changed. Asking again, more specifically, usually works.',
         })
         return finish('error')
@@ -1428,7 +1552,14 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
     // Narration alongside calls. Emitted as a note rather than an answer: the
     // model is still working, and showing "let me look that up" as the reply
     // would make the run look finished when it is not.
-    if (turn.text) onEvent({ type: 'note', text: turn.text })
+    // A cut-off answer the model then followed with calls was narration after
+    // all: it goes out as a note, joined, and its scaffolding is dropped.
+    const narration = partial + (turn.text ?? '')
+    if (partial !== '') {
+      settleContinuation()
+      messages.push({ role: 'assistant', content: narration })
+    }
+    if (narration) onEvent({ type: 'note', text: narration })
 
     // The assistant's own turn goes in BEFORE the results. OpenAI-compatible
     // servers reject a `tool` message whose `tool_call_id` has no preceding

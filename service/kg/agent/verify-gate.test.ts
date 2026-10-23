@@ -541,3 +541,41 @@ describe('the shape the loop will hand it', () => {
     expect(v.accept).toBe(true)
   })
 })
+
+describe('an answer that stops on its own next step', () => {
+  const done = write('done')
+  const ask = (answer: string) =>
+    verifyBeforeExit(gate({ request: 'Add UT Austin and update Baylor', answer, steps: [done] }))
+
+  it('sends back a promise of the next action, even after work landed', () => {
+    for (const answer of [
+      'Added UT Austin. Next, I’ll update the Baylor one:',
+      'Added UT Austin. Now I will check the Baylor record.',
+      'Added UT Austin. Let me look up Baylor next.',
+      "Added UT Austin. I'll now move Baylor to interview.",
+      'Here are the remaining ones:',
+    ]) {
+      const v = ask(answer)
+      expect(v.accept, answer).toBe(false)
+      if (!v.accept) expect(v.reason).toBe('stopped-mid-task')
+    }
+  })
+
+  it('leaves closings, questions and finished summaries alone', () => {
+    for (const answer of [
+      'Added UT Austin and updated Baylor. Let me know if you want anything else.',
+      'Added UT Austin. Should I update Baylor too?',
+      'Added UT Austin and moved Baylor to interview.',
+      'Both are done. I’ll remind you on Friday.',
+    ]) {
+      expect(ask(answer).accept, answer).toBe(true)
+    }
+  })
+
+  it('spends the same single nudge as every other rule', () => {
+    const v = verifyBeforeExit(
+      gate({ answer: 'Now I will check Baylor.', steps: [done], nudgesUsed: MAX_VERIFY_NUDGES_PER_TURN }),
+    )
+    expect(v.accept).toBe(true)
+  })
+})

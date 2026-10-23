@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { buildBackup } from '@jojo/service/core/backup'
 import { readPickedBackup } from './pick-backup'
 
@@ -32,6 +32,28 @@ describe('reading a chosen backup', () => {
     expect(picked.kind).toBe('plan')
     if (picked.kind !== 'plan') return
     expect(picked.plan.exportedAt).toBe('2026-08-22T10:00:00.000Z')
+  })
+
+  it('streams a real File rather than reading it as one string', async () => {
+    // The path a large backup takes: `file.text()` cannot hold a file past
+    // V8's string limit, so a real File is read through `stream()`.
+    const file = new File(
+      [
+        JSON.stringify(
+          buildBackup({
+            exportedAt: '2026-08-22T10:00:00.000Z',
+            nodes: [],
+            edges: [],
+            documents: [{ path: 'Documents/file:a__CV.pdf', data: new Uint8Array([1, 2, 3]) }],
+          }),
+        ),
+      ],
+      'backup.json',
+    )
+    const text = vi.spyOn(file, 'text')
+    const picked = await readPickedBackup([file] as unknown as FileList)
+    expect(text).not.toHaveBeenCalled()
+    expect(picked).toMatchObject({ kind: 'plan', plan: { documents: [{ data: new Uint8Array([1, 2, 3]) }] } })
   })
 
   it('says nothing when the picker was cancelled', async () => {

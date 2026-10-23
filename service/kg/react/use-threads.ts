@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import type { ChatMessage } from '../core/model-server'
 import type { ApprovalMode, NodeId, StoredNode, ThreadEntry } from '../core/model'
-import { approvalOf } from '../core/model'
+import { MAX_THOUGHT_STORED, approvalOf } from '../core/model'
 import { toWireName } from '../agent/catalog'
 import type { AgentEntry } from './use-agent'
 import { useGraph, useKg } from './kg-context'
@@ -50,7 +50,7 @@ export type Thread = {
  * other half of that bargain — the reader is where junk stops, and it stops by
  * being left out rather than by throwing.
  */
-const KINDS = new Set(['you', 'note', 'answer', 'error', 'step'])
+const KINDS = new Set(['you', 'note', 'answer', 'error', 'step', 'thought'])
 
 const entriesOf = (node: StoredNode<'thread'>): ThreadEntry[] =>
   node.props.entries.filter(
@@ -203,7 +203,15 @@ export const toThreadEntries = (entries: readonly AgentEntry[]): ThreadEntry[] =
           // from `kind` and `text` alone is what made the flag survive exactly
           // until the conversation was saved — which is to say, never.
           { kind: 'note', text: e.text, ...(e.app === true ? { app: true as const } : {}) }
-        : { kind: e.kind, text: e.text },
+        : e.kind === 'thought'
+          ? {
+              kind: 'thought',
+              text:
+                e.text.length > MAX_THOUGHT_STORED
+                  ? `${e.text.slice(0, MAX_THOUGHT_STORED - 1)}…`
+                  : e.text,
+            }
+          : { kind: e.kind, text: e.text },
   )
 
 /**
@@ -228,6 +236,11 @@ export function toTranscript(entries: readonly ThreadEntry[]): ChatMessage[] {
     if (!entry) break
     if (entry.kind === 'you') {
       out.push({ role: 'user', content: entry.text })
+      i += 1
+      continue
+    }
+    // Shown to the person, never to the model. See `ThreadEntry`.
+    if (entry.kind === 'thought') {
       i += 1
       continue
     }

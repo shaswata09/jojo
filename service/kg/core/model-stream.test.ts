@@ -19,7 +19,7 @@ describe('reading a text stream', () => {
     expect(r.push(frame({ content: 'Hel' }))).toEqual([{ type: 'text', delta: 'Hel' }])
     expect(r.push(frame({ content: 'lo' }))).toEqual([{ type: 'text', delta: 'lo' }])
     const done = r.push('data: [DONE]\n\n')
-    expect(done).toEqual([{ type: 'done', text: 'Hello', calls: [], finish: null , usage: null}])
+    expect(done).toEqual([{ type: 'done', text: 'Hello', reasoning: '', calls: [], finish: null, usage: null }])
   })
 
   it('survives a frame split across two chunks', () => {
@@ -53,7 +53,7 @@ describe('reading a text stream', () => {
     r.push(frame({ content: 'good' }))
     expect(r.push('data: {not json\n\n')).toEqual([])
     expect(r.push(frame({ content: ' more' }))).toEqual([{ type: 'text', delta: ' more' }])
-    expect(r.end()).toEqual([{ type: 'done', text: 'good more', calls: [], finish: null , usage: null}])
+    expect(r.end()).toEqual([{ type: 'done', text: 'good more', reasoning: '', calls: [], finish: null, usage: null }])
   })
 
   it('skips a null frame rather than throwing the answer away', () => {
@@ -68,7 +68,7 @@ describe('reading a text stream', () => {
     r.push(frame({ content: 'good' }))
     expect(r.push('data: null\n\n')).toEqual([])
     expect(r.push(frame({ content: ' more' }))).toEqual([{ type: 'text', delta: ' more' }])
-    expect(r.end()).toEqual([{ type: 'done', text: 'good more', calls: [], finish: null , usage: null}])
+    expect(r.end()).toEqual([{ type: 'done', text: 'good more', reasoning: '', calls: [], finish: null, usage: null }])
   })
 
   it('skips a null tool-call fragment and keeps the ones around it', () => {
@@ -101,6 +101,7 @@ describe('assembling a tool call from fragments', () => {
     expect(done).toEqual({
       type: 'done',
       text: '',
+      reasoning: '',
       finish: null,
       calls: [
         {
@@ -160,7 +161,7 @@ describe('the ways a stream ends', () => {
   it('carries the finish reason through', () => {
     const r = createStreamReader()
     r.push(frame({ content: 'hi' }, 'tool_calls'))
-    expect(r.end()).toEqual([{ type: 'done', text: 'hi', calls: [], finish: 'tool_calls' , usage: null}])
+    expect(r.end()).toEqual([{ type: 'done', text: 'hi', reasoning: '', calls: [], finish: 'tool_calls', usage: null }])
   })
 
   it('keeps what arrived when the server closes without [DONE]', () => {
@@ -172,7 +173,7 @@ describe('the ways a stream ends', () => {
     const r = createStreamReader()
     r.push(frame({ content: 'most of an answer' }))
     expect(r.end()).toEqual([
-      { type: 'done', text: 'most of an answer', calls: [], finish: null , usage: null},
+      { type: 'done', text: 'most of an answer', reasoning: '', calls: [], finish: null, usage: null },
     ])
   })
 
@@ -279,7 +280,7 @@ describe('the same body, arriving in one piece or in many', () => {
     for (const push of pushes) {
       for (const event of reader.push(push)) {
         if (event.type === 'text') text += event.delta
-        else done = { text: event.text, calls: event.calls, finish: event.finish }
+        else if (event.type === 'done') done = { text: event.text, calls: event.calls, finish: event.finish }
       }
     }
     return { deltas: text, done }
@@ -322,5 +323,31 @@ describe('the same body, arriving in one piece or in many', () => {
     const byChar = run([...all])
     expect(byChar.done).toEqual(run(FRAMES).done)
     expect(byChar.deltas).toBe('Reading your applications')
+  })
+})
+
+describe('a model that thinks before it answers', () => {
+  // vLLM's frames, as measured against Gemma 4 and gpt-oss on 2026-10-22: the
+  // thinking arrives in `reasoning`, the answer in `content`, never mixed.
+  it('keeps the thinking out of the answer, and hands it back on its own', () => {
+    const reader = createStreamReader()
+    const frame = (delta: Record<string, unknown>) =>
+      `data: ${JSON.stringify({ choices: [{ delta }] })}\n\n`
+    const events = [
+      ...reader.push(frame({ reasoning: 'The user wants ' }) + frame({ reasoning: 'a short answer.' })),
+      ...reader.push(frame({ reasoning_content: ' Older spelling.' })),
+      ...reader.push(frame({ content: 'Follow up after a week.' }) + 'data: [DONE]\n\n'),
+    ]
+    expect(events.filter((e) => e.type === 'reasoning').map((e) => (e as { delta: string }).delta)).toEqual([
+      'The user wants ',
+      'a short answer.',
+      ' Older spelling.',
+    ])
+    expect(events.filter((e) => e.type === 'text').map((e) => (e as { delta: string }).delta)).toEqual([
+      'Follow up after a week.',
+    ])
+    const done = events.find((e) => e.type === 'done') as { text: string; reasoning: string }
+    expect(done.text).toBe('Follow up after a week.')
+    expect(done.reasoning).toBe('The user wants a short answer. Older spelling.')
   })
 })

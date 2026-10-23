@@ -307,6 +307,8 @@ export async function complete(
  */
 type Assembled = {
   text: string
+  /** The model's thinking, carried onto the rebuilt reply as `reasoning`. */
+  reasoning: string
   calls: readonly WireToolCall[]
   finish: string | null
   usage: StreamUsage | null
@@ -340,6 +342,7 @@ async function readStream(
   endpoint: string,
   onDelta: (delta: string) => void,
   signal?: AbortSignal,
+  onReasoning?: (delta: string) => void,
 ): Promise<Sent> {
   const reader = createStreamReader()
   let assembled: Assembled | null = null
@@ -347,9 +350,11 @@ async function readStream(
   const drain = (events: ReturnType<typeof reader.push>) => {
     for (const event of events) {
       if (event.type === 'text') onDelta(event.delta)
+      else if (event.type === 'reasoning') onReasoning?.(event.delta)
       else
         assembled = {
           text: event.text,
+          reasoning: event.reasoning,
           calls: event.calls,
           finish: event.finish,
           usage: event.usage,
@@ -380,7 +385,7 @@ async function readStream(
   // A body that never produced a `[DONE]`; `end` returns what did arrive.
   if (assembled === null) drain(reader.end())
 
-  const done = assembled ?? { text: '', calls: [], finish: null, usage: null }
+  const done = assembled ?? { text: '', reasoning: '', calls: [], finish: null, usage: null }
   /*
    * Shaped as one `choices[0]` completion, which is what the non-streaming
    * readers expect. `tool_calls` is omitted rather than sent empty: an empty
@@ -396,6 +401,7 @@ async function readStream(
           message: {
             role: 'assistant',
             content: done.text,
+            ...(done.reasoning === '' ? {} : { reasoning: done.reasoning }),
             ...(done.calls.length > 0 ? { tool_calls: done.calls } : {}),
           },
           finish_reason: done.finish,
@@ -445,6 +451,7 @@ async function readRelayedStream(
   provider: string,
   onDelta: (delta: string) => void,
   signal?: AbortSignal,
+  onReasoning?: (delta: string) => void,
 ): Promise<Sent> {
   const reader = createStreamReader()
   let assembled: Assembled | null = null
@@ -453,11 +460,13 @@ async function readRelayedStream(
   const drain = (events: ReturnType<typeof reader.push>) => {
     for (const event of events) {
       if (event.type === 'text') onDelta(event.delta)
+      else if (event.type === 'reasoning') onReasoning?.(event.delta)
       // `usage` included, for the reason set out on `Assembled`: without it the
       // truncation guard is silently switched off for this road too.
       else
         assembled = {
           text: event.text,
+          reasoning: event.reasoning,
           calls: event.calls,
           finish: event.finish,
           usage: event.usage,
@@ -484,7 +493,7 @@ async function readRelayedStream(
   if (!streamed) drain(reader.push(out.text))
   if (assembled === null) drain(reader.end())
 
-  const done = assembled ?? { text: '', calls: [], finish: null, usage: null }
+  const done = assembled ?? { text: '', reasoning: '', calls: [], finish: null, usage: null }
   return {
     ok: true,
     status: out.status,
@@ -494,6 +503,7 @@ async function readRelayedStream(
           message: {
             role: 'assistant',
             content: done.text,
+            ...(done.reasoning === '' ? {} : { reasoning: done.reasoning }),
             ...(done.calls.length > 0 ? { tool_calls: done.calls } : {}),
           },
           finish_reason: done.finish,
@@ -522,7 +532,11 @@ export async function agentTurn(
    * For one long generation. Only the non-streaming road reads it: a provider
    * that streams re-arms an idle timeout on every chunk and needs no total.
    */
-  options: { timeoutMs?: number } = {},
+  options: {
+    timeoutMs?: number
+    /** Each fragment of the model's thinking, when it streams and the server separates it. */
+    onReasoning?: (text: string) => void
+  } = {},
 ): Promise<Turn> {
   if (!isConfigured(settings)) return unconfigured()
   /*
@@ -589,8 +603,15 @@ export async function agentTurn(
         options.timeoutMs,
       )
     : relay
-      ? await readRelayedStream(request, endpointOf(settings), settings.provider, onDelta, signal)
-      : await readStream(request, endpointOf(settings), onDelta, signal)
+      ? await readRelayedStream(
+          request,
+          endpointOf(settings),
+          settings.provider,
+          onDelta,
+          signal,
+          options.onReasoning,
+        )
+      : await readStream(request, endpointOf(settings), onDelta, signal, options.onReasoning)
   if (failed(response)) return reportFailure(response.failed, settings.provider, 'chat')
 
   const turn = readTurnFor(settings, response)

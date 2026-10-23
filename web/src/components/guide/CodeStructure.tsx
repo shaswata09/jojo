@@ -96,13 +96,16 @@ export const SHAPE: DirRow[] = [
     // eight named colours never needed because they were measured by hand.
     // `referee-brief.ts` and its test: what a recommender is asked to highlight
     // for each application, and the one rule for when a brief counts as empty.
-    files: 140,
-    tests: 68,
+    // `backup-stream.ts` and its test: the backup written and read in pieces,
+    // because a 500 MB store is more base64 than one string can hold.
+    files: 142,
+    tests: 69,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
-    lines: 39282,
+    // Re-measured 2026-10-22 with `backup-stream.ts`.
+    lines: 40997,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7502, what: 'transactions, journal, boot' },

@@ -239,6 +239,26 @@ export function readBackup(text: string): BackupRead {
   } catch (e) {
     return fail('backup/unreadable', e instanceof Error ? e.message : 'not JSON')
   }
+  return validateBackup(parsed, (data) => {
+    if (typeof data !== 'string') return 'missing'
+    return fromBase64(data) ?? 'bad'
+  })
+}
+
+/**
+ * The checks every reader applies, whatever it parsed the file with.
+ *
+ * Split out of `readBackup` when `backup-stream.ts` gained a second parser —
+ * one that decodes each document's base64 while the file streams in, because a
+ * file of hundreds of megabytes cannot be one string. `decode` is the only
+ * difference between the two: this reader is handed base64 text, that one
+ * bytes it has already decoded. Everything that decides whether a file is a
+ * whole backup lives here once, so the two readers cannot come to disagree.
+ */
+export function validateBackup(
+  parsed: unknown,
+  decode: (data: unknown) => Uint8Array | 'missing' | 'bad',
+): BackupRead {
   if (typeof parsed !== 'object' || parsed === null) {
     return fail('backup/not-a-backup', 'not an object')
   }
@@ -271,12 +291,12 @@ export function readBackup(text: string): BackupRead {
 
   const documents: { path: string; data: Uint8Array }[] = []
   for (const entry of file.documents) {
-    const doc = entry as Partial<BackupDocument>
-    if (typeof doc.path !== 'string' || typeof doc.data !== 'string') {
+    const doc = (entry ?? {}) as { path?: unknown; bytes?: unknown; data?: unknown }
+    const data = typeof doc.path === 'string' ? decode(doc.data) : 'missing'
+    if (data === 'missing' || typeof doc.path !== 'string') {
       return fail('backup/corrupt', 'a document entry is missing its path or its bytes')
     }
-    const data = fromBase64(doc.data)
-    if (data === null) {
+    if (data === 'bad') {
       return fail('backup/corrupt', `the bytes of ${doc.path} are not readable`)
     }
     // The length is checked, not trusted. A file truncated by a failed download

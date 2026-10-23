@@ -3,8 +3,14 @@ import { useModelSettings } from '@/lib/model-settings-context'
 import { listModels } from '@/lib/llm'
 import { testReader } from '@/lib/markitdown'
 import { MARKITDOWN } from '@jojo/service/agent/markitdown'
-import { normaliseEndpoint, serverAt, serversFor } from '@jojo/service/core/model-server'
-import type { ModelServer } from '@jojo/service/core/model-server'
+import {
+  DEFAULT_THINKING,
+  normaliseEndpoint,
+  sendsThinking,
+  serverAt,
+  serversFor,
+} from '@jojo/service/core/model-server'
+import type { ModelServer, Thinking } from '@jojo/service/core/model-server'
 import { cloudTerms } from '@jojo/service/core/cloud-terms'
 import {
   PROVIDERS,
@@ -59,6 +65,16 @@ const DATA_SETS = [
 
 /** Which destructive data action is waiting on a confirmation. */
 type PendingData = 'demo' | 'empty' | 'reset'
+
+/**
+ * The reasoning choices offered, the web form's three. `server-default` is the
+ * benchmark's escape hatch and not a choice a person can make here.
+ */
+const REASONING = [
+  { value: 'on', label: 'On' },
+  { value: 'low', label: 'Light' },
+  { value: 'off', label: 'Off' },
+] as const satisfies readonly { value: Thinking; label: string }[]
 
 export function SettingsScreen() {
   const c = useColors()
@@ -566,6 +582,29 @@ export function SettingsScreen() {
                 save({ ...rest, ...(keep === undefined ? {} : { contextWindow: keep }) })
               }}
             />
+            {/* Reasoning, as on the web form — and only where a mode puts
+                something on the wire. See `REASONING`. */}
+            {sendsThinking(provider.id, 'on') ? (
+              <>
+                <SettingRow
+                  label="Reasoning"
+                  description="Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model."
+                  control={null}
+                />
+                <Segment
+                  label="Reasoning"
+                  options={REASONING}
+                  value={
+                    settings.thinking === undefined || settings.thinking === 'server-default'
+                      ? DEFAULT_THINKING
+                      : settings.thinking
+                  }
+                  onChange={(next) => {
+                    save({ ...settings, thinking: next })
+                  }}
+                />
+              </>
+            ) : null}
             {/*
               The three address chips that used to sit here are gone. They
               existed to save somebody remembering whether Ollama is 11434 or

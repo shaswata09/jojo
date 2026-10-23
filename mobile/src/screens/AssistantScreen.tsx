@@ -536,6 +536,15 @@ function AgentScreen() {
               if (entry.kind === 'step') {
                 return <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
               }
+              if (entry.kind === 'thought') {
+                return (
+                  <ThoughtRow
+                    key={entry.id}
+                    text={entry.text}
+                    live={busy && index === entries.length - 1}
+                  />
+                )
+              }
               if (entry.kind === 'note') {
                 // Narration while it is still working. Quieter than an answer on
                 // purpose: it is not the reply, and styling it like one makes a
@@ -582,7 +591,9 @@ function AgentScreen() {
             })}
             {/* Only while nothing else is moving. A spinner under a step that is
                 already spinning says the same thing twice. */}
-            {busy && entries.at(-1)?.kind !== 'step' ? <Thinking model={settings.model} /> : null}
+            {busy && entries.at(-1)?.kind !== 'step' && entries.at(-1)?.kind !== 'thought' ? (
+              <Thinking model={settings.model} />
+            ) : null}
           </View>
         )}
 
@@ -921,3 +932,38 @@ const styles = StyleSheet.create({
   },
   prompts: { gap: space[2], alignItems: 'flex-start' },
 })
+
+/**
+ * What the model thought before answering, folded away — the web transcript's
+ * `ThoughtRow`, for the phone. Closed by default; while it is still being
+ * written it says "Thinking…" and shows its latest line.
+ */
+function ThoughtRow({ text, live }: { text: string; live: boolean }) {
+  const [open, setOpen] = useState(false)
+  const latest = text.trim().split('\n').filter(Boolean).at(-1) ?? ''
+  return (
+    <View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={live ? 'Thinking. Show what the model is thinking' : 'Show what the model thought'}
+        onPress={() => setOpen((was) => !was)}
+        hitSlop={8}
+      >
+        <Txt size="xs" tone="muted">
+          {open ? '▾ ' : '▸ '}
+          {live ? 'Thinking…' : 'Thought'}
+        </Txt>
+      </Pressable>
+      {open ? (
+        <Txt size="xs" tone="muted" style={{ marginTop: space[1], paddingLeft: space[3] }}>
+          {text}
+        </Txt>
+      ) : live && latest ? (
+        <Txt size="xs" tone="muted" numberOfLines={1} style={{ marginTop: space[1], fontStyle: 'italic' }}>
+          {latest}
+        </Txt>
+      ) : null}
+    </View>
+  )
+}

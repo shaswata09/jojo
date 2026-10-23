@@ -16,6 +16,7 @@ import { isConfigured } from '@/lib/llm'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { useFillViewport } from '@/lib/use-fill-viewport'
+import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { atBottom } from '@/lib/scroll-stick'
 import { CATALOG } from '@jojo/service/agent/catalog'
 import type { NodeId } from '@jojo/service/core/model'
@@ -318,6 +319,7 @@ function AgentPanel() {
   const [search, setSearch] = useState('')
 
   const fill = useFillViewport(20, 420)
+  const isDesktop = useMediaQuery(DESKTOP_QUERY)
   const transcriptRef = useRef<HTMLDivElement>(null)
 
   // Where the reader is, recorded as they move rather than measured when the
@@ -395,8 +397,18 @@ function AgentPanel() {
       {/* `min-h-0 flex-1` is the seam AppShell documents: it hands a page the
           height left over, so the conversation can own it instead of the card
           sitting in the top third of an empty screen. */}
-      <div className="grid min-h-0 min-w-0 flex-1 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+      {/* Side by side, the ROW is what is capped, and both panels fill it.
+          Capping only the conversation let the list beside it set the row's
+          height: six threads made the list taller than the cap, and the
+          conversation ended short with empty space under it. Stacked, the
+          panels are not in one row, so the conversation keeps its own cap. */}
+      <div
+        ref={isDesktop ? fill.ref : undefined}
+        style={isDesktop ? { maxHeight: fill.maxHeight } : undefined}
+        className="grid min-h-0 min-w-0 flex-1 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]"
+      >
         <ThreadList
+          fill={isDesktop}
           threads={threads}
           activeId={activeId}
           byId={byId}
@@ -418,8 +430,8 @@ function AgentPanel() {
             the exact failure `useFillViewport` was written for, and the
             applications table is the precedent. */}
         <Panel
-          ref={fill.ref}
-          style={{ maxHeight: fill.maxHeight }}
+          ref={isDesktop ? undefined : fill.ref}
+          style={isDesktop ? undefined : { maxHeight: fill.maxHeight }}
           className="flex min-h-0 min-w-0 flex-col"
         >
           <ThreadBar

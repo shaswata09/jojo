@@ -3,10 +3,17 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { KeyRound, Link2, Trash2 } from 'lucide-react'
 import { cloudTerms } from '@jojo/service/core/cloud-terms'
-import { normaliseEndpoint, serverAt, serversFor } from '@jojo/service/core/model-server'
-import type { ModelFailure, ModelServer } from '@jojo/service/core/model-server'
+import {
+  DEFAULT_THINKING,
+  normaliseEndpoint,
+  sendsThinking,
+  serverAt,
+  serversFor,
+} from '@jojo/service/core/model-server'
+import type { ModelFailure, ModelServer, Thinking } from '@jojo/service/core/model-server'
 import { Chip } from '@/components/common/Chip'
-import { Field } from '@/components/common/Field'
+import { Field, SettingRow } from '@/components/common/Field'
+import { Segment } from '@/components/common/Segment'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { listModels } from '@/lib/llm'
@@ -27,6 +34,17 @@ import {
   type ProviderId,
   type ProviderMeta,
 } from '@jojo/service/core/provider'
+
+/**
+ * The reasoning choices a person is offered. `server-default` is left out on
+ * purpose: it is the benchmark's escape hatch, and "whatever the server was
+ * started with" is not a choice anyone can make from this form.
+ */
+const REASONING = [
+  { value: 'on', label: 'On' },
+  { value: 'low', label: 'Light' },
+  { value: 'off', label: 'Off' },
+] as const satisfies readonly { value: Thinking; label: string }[]
 
 /**
  * Where the user's documents are, and the one thing jojo can talk to outside
@@ -553,6 +571,34 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
             save({ ...rest, ...(keep === undefined ? {} : { contextWindow: keep }) })
           }}
         />
+        {/*
+         * Reasoning, which had no control at all: `thinkingFields` has always
+         * taken a mode and nothing in either app passed one, so every request
+         * went out with the default. Only shown where a mode puts something on
+         * the wire — a hosted provider gets no thinking field whatever is
+         * chosen (see `thinkingFields`), and a switch that does nothing there
+         * would be a lie.
+         */}
+        {sendsThinking(provider.id, 'on') ? (
+          <SettingRow
+            label="Reasoning"
+            description="Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model."
+            control={
+              <Segment
+                label="Reasoning"
+                options={REASONING}
+                value={
+                  settings.thinking === undefined || settings.thinking === 'server-default'
+                    ? DEFAULT_THINKING
+                    : settings.thinking
+                }
+                onChange={(next) => {
+                  save({ ...settings, thinking: next })
+                }}
+              />
+            }
+          />
+        ) : null}
         {/*
           The three address chips that used to sit here are gone. They existed
           to save somebody remembering whether Ollama is 11434 or 11343 — and

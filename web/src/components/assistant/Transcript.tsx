@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Quote } from 'lucide-react'
+import { Brain, ChevronRight, Quote } from 'lucide-react'
 import type { AgentStep } from '@jojo/service/agent/loop'
 import type { AgentEntry } from '@jojo/service/react/use-agent'
 import { useVault } from '@jojo/service/react/use-vault'
@@ -134,6 +134,17 @@ export function Transcript({
           if (entry.kind === 'step') {
             return <StepRow key={entry.id} step={entry.step} onUndo={undoStep} />
           }
+          if (entry.kind === 'thought') {
+            return (
+              <ThoughtRow
+                key={entry.id}
+                text={entry.text}
+                // Still being written: the run is going and nothing has come after it.
+                live={busy && index === entries.length - 1}
+                compact={compact}
+              />
+            )
+          }
           if (entry.kind === 'note') {
             // Narration while it is still working. Quieter than an answer on
             // purpose: it is not the reply, and styling it like one makes a run
@@ -192,7 +203,9 @@ export function Transcript({
         })}
         {/* Only while nothing else is moving. A spinner under a step that is
             already spinning says the same thing twice. */}
-        {busy && entries.at(-1)?.kind !== 'step' ? <Thinking model={model} /> : null}
+        {busy && entries.at(-1)?.kind !== 'step' && entries.at(-1)?.kind !== 'thought' ? (
+          <Thinking model={model} />
+        ) : null}
       </ul>
 
       {/* Outside the list: an announcement, not part of the conversation. */}
@@ -200,5 +213,53 @@ export function Transcript({
         {copiedId ? (copyFailed ? 'Copy was blocked by the browser' : 'Reply copied') : ''}
       </p>
     </>
+  )
+}
+
+/**
+ * What the model thought before it answered, folded away.
+ *
+ * Closed by default: the answer is what the person came for, and a reasoning
+ * model's monologue runs to hundreds of words. While it is still being written
+ * the row says "Thinking…" and shows its latest line, so a long pause before an
+ * answer reads as work rather than a hang; opening it shows the whole thing.
+ * Quieter than narration on purpose — it is the model talking to itself.
+ */
+function ThoughtRow({ text, live, compact }: { text: string; live: boolean; compact: boolean }) {
+  const [open, setOpen] = useState(false)
+  const latest = text.trim().split('\n').filter(Boolean).at(-1) ?? ''
+  return (
+    <li className="px-1">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((was) => !was)}
+        className="flex cursor-pointer items-center gap-1.5 rounded-sm text-xs text-text-3 transition-colors hover:text-text-1"
+      >
+        <Brain
+          className={cn('size-3.5 shrink-0', live && 'animate-pulse motion-reduce:animate-none')}
+          strokeWidth={1.8}
+          aria-hidden
+        />
+        {live ? 'Thinking…' : 'Thought'}
+        <ChevronRight
+          className={cn('size-3 shrink-0 transition-transform', open && 'rotate-90')}
+          strokeWidth={2}
+          aria-hidden
+        />
+      </button>
+      {open ? (
+        <p
+          className={cn(
+            'mt-1.5 overflow-y-auto border-l-2 border-hairline pl-3 text-xs leading-relaxed wrap-anywhere whitespace-pre-wrap text-text-3',
+            compact ? 'max-h-48' : 'max-h-72',
+          )}
+        >
+          {text}
+        </p>
+      ) : live && latest ? (
+        <p className="mt-1 truncate pl-5 text-xs text-text-3 italic">{latest}</p>
+      ) : null}
+    </li>
   )
 }

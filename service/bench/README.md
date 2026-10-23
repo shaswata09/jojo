@@ -36,7 +36,7 @@ that is by construction, and it is the point of recording all of this.
 | `BENCH_WINDOW` | tokens | `32768` | `window` |
 | `BENCH_MAX_TOKENS` | completion cap; `0` sends none, as production does | `0` | `maxTokens` (only when set) |
 | `BENCH_TRANSPORT` | `dialect` \| `raw` | `dialect` | `transport` |
-| `BENCH_THINKING` | `off` \| `low` \| `server-default` | `off` — `DEFAULT_THINKING` | `thinking` |
+| `BENCH_THINKING` | `on` \| `low` \| `off` \| `server-default` | `on` — `DEFAULT_THINKING` (was `off` before 2026-10-22; older published rows were measured with it off) | `thinking` |
 | `BENCH_REPAIR` | `0` to take argument repair out of the loop | on | `repair` |
 | `BENCH_STUCK` | `0` to take stuck detection out of the loop | on | `stuck` |
 | `BENCH_VERIFY` | `0` to take the pre-exit verify gate out of the loop | on | `verify` |

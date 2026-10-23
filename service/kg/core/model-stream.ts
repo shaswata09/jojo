@@ -42,10 +42,17 @@ import { providerMeta } from './provider'
 export type StreamEvent =
   /** More of the assistant's prose. Append it. */
   | { type: 'text'; delta: string }
+  /**
+   * More of what the model is thinking before it answers — vLLM's `reasoning`
+   * (or the older `reasoning_content`). Shown to the person, never the answer.
+   */
+  | { type: 'reasoning'; delta: string }
   /** The model has finished. `calls` is whatever it assembled, possibly empty. */
   | {
       type: 'done'
       text: string
+      /** Everything the model thought this turn; empty when it did not. */
+      reasoning: string
       calls: readonly WireToolCall[]
       finish: string | null
       /**
@@ -141,6 +148,7 @@ type Building = { id: string; name: string; args: string }
 export function createStreamReader() {
   let buffer = ''
   let text = ''
+  let reasoning = ''
   const building = new Map<number, Building>()
   let finish: string | null = null
   /*
@@ -185,7 +193,7 @@ export function createStreamReader() {
         const payload = line.slice(5).trim()
         if (payload === '[DONE]') {
           ended = true
-          out.push({ type: 'done', text, calls: calls(), finish, usage })
+          out.push({ type: 'done', text, reasoning, calls: calls(), finish, usage })
           return out
         }
 
@@ -233,6 +241,14 @@ export function createStreamReader() {
           out.push({ type: 'text', delta: delta['content'] })
         }
 
+        // Two spellings in the wild: vLLM's current `reasoning`, and the
+        // `reasoning_content` that it and DeepSeek-style servers used before.
+        const thought = delta['reasoning'] ?? delta['reasoning_content']
+        if (typeof thought === 'string' && thought !== '') {
+          reasoning += thought
+          out.push({ type: 'reasoning', delta: thought })
+        }
+
         const fragments = delta['tool_calls']
         if (Array.isArray(fragments)) {
           for (const fragment of fragments as unknown[]) {
@@ -268,7 +284,7 @@ export function createStreamReader() {
     end(): StreamEvent[] {
       if (ended) return []
       ended = true
-      return [{ type: 'done', text, calls: calls(), finish, usage }]
+      return [{ type: 'done', text, reasoning, calls: calls(), finish, usage }]
     },
 
     /** What has arrived so far, for a caller that wants to show it. */

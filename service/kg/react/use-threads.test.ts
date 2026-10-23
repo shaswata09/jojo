@@ -378,3 +378,31 @@ describe('historyFor', () => {
     expect(historyFor([], 4)).toEqual({ history: [], replayed: 0 })
   })
 })
+
+describe('what the model thought, in a saved conversation', () => {
+  const thread: ThreadEntry[] = [
+    { kind: 'you', text: 'Which are at interview?' },
+    { kind: 'thought', text: 'The user wants the interview stage.' },
+    { kind: 'answer', text: 'Baylor.' },
+  ]
+
+  it('is kept for the person and never replayed to the model', () => {
+    expect(toTranscript(thread)).toEqual([
+      { role: 'user', content: 'Which are at interview?' },
+      { role: 'assistant', content: 'Baylor.' },
+    ])
+    expect(toAgentEntries(thread)[1]).toEqual({ kind: 'thought', id: 't1', text: 'The user wants the interview stage.' })
+  })
+
+  it('counts as no message when a compaction measures the thread', () => {
+    // Two messages come from three entries; the thought produces none.
+    expect(entriesForMessages(thread, 2)).toBe(3)
+  })
+
+  it('is stored capped, so one long monologue cannot swell the thread', () => {
+    const long: AgentEntry = { kind: 'thought', id: 'x', text: 'y'.repeat(20000) }
+    const [stored] = toThreadEntries([long])
+    expect(stored?.kind).toBe('thought')
+    expect((stored as { text: string }).text.length).toBe(8000)
+  })
+})

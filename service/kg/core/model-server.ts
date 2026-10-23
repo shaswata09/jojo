@@ -505,29 +505,37 @@ export const modelsRequest = (settings: ModelSettings): ModelRequest => {
  * DeepSeek-R1 — do this when the server's reply limit is small"), and it is the
  * failure `sendTurn` below retries.
  *
- * ## The three modes
+ * ## The four modes
  *
- * `off` asks the server not to think. `low` is for the models that cannot be
- * asked to stop — gpt-oss always reasons, and the only thing a client can do is
- * ask for less of it. `server-default` sends nothing at all and is the honest
- * escape hatch: whatever the deployment was configured with stands.
+ * `on` asks every model that can reason to do so: a template switch for the
+ * models that have one (Gemma 4, Qwen3) and a medium effort for gpt-oss. `low`
+ * asks for as little as a model will do while still reasoning. `off` asks the
+ * server not to think — which gpt-oss cannot honour; it always reasons.
+ * `server-default` sends nothing at all and is the honest escape hatch:
+ * whatever the deployment was configured with stands.
  */
-export const THINKING_MODES = ['off', 'low', 'server-default'] as const
+export const THINKING_MODES = ['on', 'low', 'off', 'server-default'] as const
 
 export type Thinking = (typeof THINKING_MODES)[number]
 
 /**
- * Off, because the measurements above all point the same way and because the
- * failure of the other choice is the worst kind: a blank reply that reads as a
- * stupid assistant rather than as a setting.
+ * On, since 2026-10-22, and the reasons above for `off` were measured on a
+ * different setup from the one this app now runs on.
  *
- * A DEFAULT AND NOT A HARDCODE. Somebody running a reasoning model on a server
- * with a generous reply limit is entitled to the reasoning — it is exactly the
- * setup the mode exists for — so the value travels as a parameter and this is
- * only what is used when nobody said. The one thing that would be wrong is
- * having no way to say.
+ * They were Qwen3 14B behind a small reply limit, where thinking spent the
+ * budget before the answer. The deployments in use now are Gemma 4 31B and
+ * gpt-oss 120B on vLLM with a 32k window and no reply cap — measured against
+ * both: with reasoning on, Gemma thinks ~70–400 tokens before the same tool call
+ * it made without, in under two seconds; gpt-oss was ALREADY reasoning at medium
+ * effort, because `off` was only ever a template switch it does not read. So
+ * the old default turned reasoning off for exactly one of the two models, and it
+ * was the one that could use it.
+ *
+ * The blank-reply failure is still real for a small model behind a small limit,
+ * which is why this stays a setting: Settings → Model → Reasoning, stored on
+ * `ModelSettings.thinking`, and the empty-reply error names it.
  */
-export const DEFAULT_THINKING: Thinking = 'off'
+export const DEFAULT_THINKING: Thinking = 'on'
 
 /** What else a caller may say about a chat request. */
 export type ChatOptions = {
@@ -585,13 +593,29 @@ export function thinkingFields(
      * without the field, so the cost of being wrong here is one round trip
      * rather than a provider that cannot be used.
      */
-    return { think: thinking === 'off' ? false : 'low' }
+    return { think: thinking === 'off' ? false : thinking === 'on' ? true : 'low' }
   }
 
   if (meta.dialect === 'openai' && !meta.cloud) {
+    /*
+     * Two fields, because the two model families listen in different places —
+     * measured on vLLM 2026-10-22:
+     *
+     *   - Gemma 4 and Qwen3 switch thinking with `enable_thinking`, which only
+     *     reaches them through `chat_template_kwargs`.
+     *   - gpt-oss reads `reasoning_effort` from the TOP LEVEL. Put inside
+     *     `chat_template_kwargs` it is ignored: low, medium and high all gave
+     *     the same ~400 characters of reasoning there, so the `low` this used to
+     *     send did nothing at all. At the top level, high was three times
+     *     medium.
+     *
+     * Each family ignores the other's field — Gemma answered 200 to a top-level
+     * `reasoning_effort` — so both go on every request.
+     */
+    if (thinking === 'off') return { chat_template_kwargs: { enable_thinking: false } }
     return {
-      chat_template_kwargs:
-        thinking === 'off' ? { enable_thinking: false } : { reasoning_effort: 'low' },
+      reasoning_effort: thinking === 'on' ? 'medium' : 'low',
+      chat_template_kwargs: { enable_thinking: true },
     }
   }
 
@@ -647,7 +671,8 @@ export const chatRequest = (
   const meta = providerMeta(settings.provider)
   const endpoint = endpointOf(settings)
   const key = (settings.apiKey ?? '').trim()
-  const thinking = options.thinking ?? DEFAULT_THINKING
+  // The call's own say first (the benchmark's), then the person's setting.
+  const thinking = options.thinking ?? settings.thinking ?? DEFAULT_THINKING
 
   if (meta.dialect === 'anthropic') {
     /*
@@ -1022,6 +1047,13 @@ export type Turn =
        * turn; only a turn that CLAIMS a small prompt count is evidence.
        */
       usage?: Usage | null
+      /**
+       * What the model thought before answering, when the server separates it
+       * (vLLM's `reasoning`, Ollama's `thinking`). Absent when it did not think
+       * or the server does not say. For the person to read — never sent back to
+       * the model, and never part of the answer.
+       */
+      reasoning?: string
     }
   | ModelFailure
 
@@ -1066,6 +1098,7 @@ export function readOllamaTurn(response: ModelResponse): Turn {
   }
 
   const content = readContent(message)
+  const thinking = readReasoning(message, 'thinking')
   const raw = (message as { tool_calls?: unknown }).tool_calls
   const toolCalls: ToolCall[] = []
   if (Array.isArray(raw)) {
@@ -1121,7 +1154,21 @@ export function readOllamaTurn(response: ModelResponse): Turn {
       num(prompt) === null && num(completion) === null
         ? null
         : { promptTokens: num(prompt), completionTokens: num(completion) },
+    ...(thinking === null ? {} : { reasoning: thinking }),
   }
+}
+
+/**
+ * The model's thinking off a reply message, under whichever name this server
+ * uses. `null` when there is none — an empty string is not a thought.
+ */
+function readReasoning(message: unknown, ...names: string[]): string | null {
+  if (typeof message !== 'object' || message === null) return null
+  for (const name of names) {
+    const value = (message as Record<string, unknown>)[name]
+    if (typeof value === 'string' && value.trim() !== '') return value
+  }
+  return null
 }
 
 export function readTurn(response: ModelResponse): Turn {
@@ -1142,12 +1189,14 @@ export function readTurn(response: ModelResponse): Turn {
     return emptyTurn()
   }
   const finish = (choice as { finish_reason?: unknown }).finish_reason
+  const reasoning = readReasoning(message, 'reasoning', 'reasoning_content')
   return {
     ok: true,
     text: content,
     toolCalls,
     finishReason: typeof finish === 'string' ? finish : null,
     usage: readUsage(payload),
+    ...(reasoning === null ? {} : { reasoning }),
   }
 }
 

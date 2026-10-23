@@ -123,6 +123,8 @@ export type VerifyReason =
   | 'named-unread-record'
   /** The request asked for work; the answer acknowledges or promises it instead. */
   | 'bare-acknowledgement'
+  /** The answer ENDS on its own next step — "Now I'll update the second one:" — and stops. */
+  | 'stopped-mid-task'
 
 export type VerifyVerdict =
   | { readonly accept: true }
@@ -594,7 +596,7 @@ export function verifyBeforeExit(input: VerifyGateInput): VerifyVerdict {
           : 'Stop: you said you changed something, but every write you attempted this turn failed, so nothing in the store has changed. Read the failure above, fix the arguments and call again, or tell the person what is blocking you.',
       }
     }
-    return accept
+    return stoppedMidTask(said) ?? accept
   }
 
   /* -- 2. The three answers that must always pass. ------------------------- */
@@ -702,7 +704,60 @@ export function verifyBeforeExit(input: VerifyGateInput): VerifyVerdict {
     }
   }
 
-  return accept
+  return stoppedMidTask(said) ?? accept
+}
+
+
+/**
+ * 5. It stopped partway, announcing the next step instead of taking it.
+ *
+ * Checked on every exit that would otherwise accept — including rule 1's, where
+ * a claim that DID land ("Added UT Austin.") used to end the check before the
+ * last sentence ("Next, I'll update the Baylor one:") was ever read.
+ */
+function stoppedMidTask(said: string): VerifyVerdict | null {
+  /*
+   * Reported 2026-10-22 as models "getting stuck with an incomplete response":
+   * a run that has done some of the work ends its turn on "Next, I'll update
+   * the Baylor one:" and calls nothing. Rule 4 cannot see it — it only fires
+   * when nothing was written — and its own comment calls a promise mid-run
+   * fine, which it is, until the promise is the LAST thing said.
+   *
+   * So this reads only the final sentence, and only a first-person promise of
+   * an ACTION: "Let me know if…" is a closing courtesy and is excluded, a
+   * question is the model asking rather than stopping, and a trailing colon is
+   * the commonest shape of a list or a call that never came.
+   */
+  const last = lastSentence(said)
+  if (last !== '' && !last.endsWith('?')) {
+    const announces = NEXT_STEP.test(last) && !/\blet(?:['’]s| me) know\b/i.test(last)
+    if (announces || /:\s*$/.test(said)) {
+      return {
+        accept: false,
+        reason: 'stopped-mid-task',
+        nudge:
+          'You stopped partway: your reply ends by saying what you will do next, and you did not do it. Do it now with a tool call — or, if the task is finished, say plainly what was done.',
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * "Now I'll check…", "Next, let me update…", "I will now read…", "Let's look…".
+ * A promise of an action, at the START of the closing sentence.
+ */
+const NEXT_STEP =
+  /^(?:(?:now|next|then|ok(?:ay)?|alright|first),?\s+)?(?:i(?:['’]ll|\s+will|\s+am going to|\s+shall)\s+(?:now\s+)?(?:check|look|search|find|read|open|fetch|get|update|change|set|move|add|create|make|write|draft|file|save|mark|schedule|remove|delete|proceed|continue|go|start|do|run|call|compare|review|list)|let(?:['’]s| me)\s+(?:now\s+)?\w+)\b/i
+
+/** The final sentence of an answer, trimmed — what a reader is left on. */
+function lastSentence(text: string): string {
+  const parts = text
+    .split(/(?<=[.!?:])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+  return parts.at(-1) ?? ''
 }
 
 /*

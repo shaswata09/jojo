@@ -528,17 +528,20 @@ async function proveSwitches(run: RunAgent): Promise<void> {
  * Through `llm` and a swapped transport, not through `cutOff` alone: the
  * one-shot lives in the conversation context and the wiring in `llm`, and a
  * probe that called `cutOff` directly would pass with the wiring deleted.
- * Three things have to come out right — the first call is refused with the
- * loop's "FEWER items" sentence (which is the branch that needs BOTH
- * `finish_reason: 'length'` and unparseable arguments), the model's retry on
- * the next round runs untouched, and a context that did not ask sees the same
- * script run clean on the first call.
+ * Three things have to come out right — the cut-off first call is NOT run and
+ * the model is asked for it again (since 2026-10-22 the loop re-asks with
+ * `CUT_CALL_PROMPT` while it has rounds to spend; the old "FEWER items" refusal
+ * is now the last-round path only), the model's retry on the next round runs
+ * untouched, and a context that did not ask sees the same script run clean on
+ * the first call.
  */
 async function proveTruncation(run: RunAgent): Promise<void> {
   const real = transport
   const settled: AgentStep[] = []
+  const notes: string[] = []
   const drive = async (truncateFirstCall: boolean) => {
     settled.length = 0
+    notes.length = 0
     let n = 0
     transport = async () => {
       n += 1
@@ -555,6 +558,7 @@ async function proveTruncation(run: RunAgent): Promise<void> {
         history: [],
         onEvent: (e) => {
           if (e.type === 'step' && e.step.status !== 'running') settled.push(e.step)
+          if (e.type === 'note') notes.push(e.text)
         },
         llm,
         prompt: 'What do I have on Stripe?',
@@ -567,12 +571,12 @@ async function proveTruncation(run: RunAgent): Promise<void> {
   }
 
   const forced = await drive(true)
-  const first = forced[0]
-  if (first === undefined || first.status !== 'failed' || !first.detail.startsWith("Error: your reply hit the model's output limit")) {
-    throw new Error(`truncateFirstCall did not reach the loop's FEWER-items path: ${JSON.stringify(forced)}`)
+  // Nothing from the cut-off reply ran, and the loop said why.
+  if (forced.length !== 1 || !notes.some((n) => /cut off by its output limit/.test(n))) {
+    throw new Error(`truncateFirstCall did not reach the loop's re-ask path: ${JSON.stringify({ forced, notes })}`)
   }
-  if (forced[1]?.status !== 'done') {
-    throw new Error(`the forced truncation is not a one-shot — the retry was ${JSON.stringify(forced[1])}`)
+  if (forced[0]?.status !== 'done') {
+    throw new Error(`the forced truncation is not a one-shot — the retry was ${JSON.stringify(forced[0])}`)
   }
   if (ctx.truncate !== 'done') throw new Error(`truncation fired but the context says '${ctx.truncate}'`)
 
@@ -1637,8 +1641,8 @@ type Score = Awaited<ReturnType<typeof runOne>>
  *     layer on, and none does with it off — which is the difference between
  *     `summarise.repairs` reading `{ total: 0, byKind: {} }` and `null`;
  *   - `run.window` is the CASE's window, not the run's;
- *   - `run.truncated` is `true` and the first call is the refused one, when
- *     the case asked for the cut; absent when it did not.
+ *   - `run.truncated` is `true` and the first call is refused or dropped and
+ *     asked for again, when the case asked for the cut; absent when it did not.
  *
  * After `MAX_STEPS`, because `runOne` reads it.
  */
@@ -1676,7 +1680,12 @@ async function proveRecords(run: RunAgent): Promise<void> {
   if (cut.run.truncated !== true || firstCall?.truncated !== true) {
     throw new Error(`truncateFirstCall did not reach the file: run=${JSON.stringify(cut.run)} turn0=${JSON.stringify(firstCall)}`)
   }
-  if (cut.trajectory.refused < 1) throw new Error('truncateFirstCall fired but no call was refused; the loop did not see the cut')
+  // Either path proves the loop saw the cut: on its last round it refuses the
+  // call ("FEWER items"), and with rounds to spend it drops the call unrun and
+  // asks again — one call fewer than the same script run without the cut.
+  if (cut.trajectory.refused < 1 && cut.trajectory.calls >= plain.trajectory.calls) {
+    throw new Error('truncateFirstCall fired but the cut call was neither refused nor dropped; the loop did not see the cut')
+  }
 }
 
 /**
