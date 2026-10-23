@@ -58,6 +58,7 @@ import {
   type Turn,
 } from '../kg/core/model-server'
 import type { ModelSettings } from '../kg/core/provider'
+import { providerMeta } from '../kg/core/provider'
 import { CONVERSATIONS } from '../kg/agent/bench-conversations'
 import { WORLD, BENCH_NOW, BENCH_TODAY, readDocument } from '../kg/agent/bench-world'
 import {
@@ -102,7 +103,7 @@ const MAX_TOKENS = Number(process.env['BENCH_MAX_TOKENS'] ?? 0) || 0
  * un-publishable next to a baseline by construction, which is correct.
  */
 const HARNESS = process.env['BENCH_HARNESS'] !== '0'
-const WINDOW = Number(process.env['BENCH_WINDOW'] ?? 0) || 32_768
+const WINDOW = Number(process.env['BENCH_WINDOW'] ?? 0) || providerMeta('openai-compatible').defaultContext
 
 /**
  * A conversation, plus the two knobs a case may set on this runner.
@@ -1172,7 +1173,9 @@ type BenchTelemetry = RunTelemetry & {
  * `BENCH_HARNESS=0` turns it off, for isolating the model from the scaffolding
  * deliberately rather than by accident.
  *
- * The window default is 32,768 because that is what BOTH local providers
+ * The window default is the local server's `defaultContext` (131,072 since
+ * 2026-10-22; it was 32,768, and every number published before then was
+ * measured there). The paragraph below describes the 32,768 era: that is what BOTH local providers
  * declare as `defaultContext` — the number a person running Ollama or
  * llama.cpp actually gets. 16k is worth running too and says something
  * different: there the whole catalog does not fit and the retriever is what

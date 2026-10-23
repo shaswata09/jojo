@@ -205,7 +205,20 @@ export const PROVIDERS = [
     modelLooksLike: '',
     keyLooksLike: '',
     keyUrl: '',
-    defaultContext: 32768,
+    /*
+     * 128k, from 32k on 2026-10-22. The deployments this app is used against
+     * now serve 128k (gpt-oss 120B) and 256k (Gemma 4 31B), and at 32k the
+     * 105-tool catalogue alone took ~22,600 tokens: what was left for the
+     * conversation was ~3,400, so results were shortened on nearly every round
+     * while the server had room to spare. A server started smaller is told by
+     * typing its number in Settings → Context window; jojo then plans against
+     * that instead, larger or smaller.
+     *
+     * Ollama keeps 32k: it runs at its own size unless jojo sends `num_ctx`,
+     * which it only does for a number the person typed, so a larger planning
+     * default there would stop jojo trimming long before Ollama does.
+     */
+    defaultContext: 131072,
     canSetContext: false,
   },
   {

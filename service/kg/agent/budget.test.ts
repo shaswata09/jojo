@@ -364,8 +364,9 @@ describe('what fits what, on the catalog as it actually is', () => {
   })
 
   it('fits a retriever-sized selection in the window every local provider declares', () => {
-    // `defaultContext` is 32,768 for both local providers, and a typical
-    // narrowed selection is ~24 tools. That pair is what keeps the chooser off.
+    // 32,768 is Ollama's `defaultContext` and the smallest window a local
+    // server is commonly started with; a typical narrowed selection is ~24
+    // tools. That pair is what keeps the chooser off.
     const some = functionSpecs().slice(0, 24)
     expect(fitsWindow(some, 32_000)).toBe(true)
     expect(fitsWindow(some, 16_000)).toBe(false)

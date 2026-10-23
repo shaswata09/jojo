@@ -949,8 +949,9 @@ export async function runAgent(options: AgentOptions): Promise<AgentRun> {
    * about what today is. Nothing reports it and the reply reads normally.
    *
    * `window` is the person's own number when they gave one, and the provider's
-   * default otherwise. Both local defaults claim 32,768, which is optimistic
-   * for Ollama specifically (its `num_ctx` is 4,096 unless changed) — so this
+   * default otherwise: 131,072 for a local OpenAI-compatible server and 32,768
+   * for Ollama, which is optimistic for Ollama specifically (its `num_ctx` is
+   * 4,096 unless changed) — so this
    * is a floor on the damage rather than a guarantee, and `guardTruncation`
    * still runs afterwards for the case where the guess was too generous.
    */

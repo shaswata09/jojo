@@ -33,7 +33,7 @@ that is by construction, and it is the point of recording all of this.
 | Variable | Values | Default | Recorded as |
 | --- | --- | --- | --- |
 | `BENCH_HARNESS` | `0` to turn the window, chooser and summariser off | on | `harness`, `window` |
-| `BENCH_WINDOW` | tokens | `32768` | `window` |
+| `BENCH_WINDOW` | tokens | the local server's `defaultContext` — `131072` since 2026-10-22 (was `32768`; earlier published rows used it) | `window` |
 | `BENCH_MAX_TOKENS` | completion cap; `0` sends none, as production does | `0` | `maxTokens` (only when set) |
 | `BENCH_TRANSPORT` | `dialect` \| `raw` | `dialect` | `transport` |
 | `BENCH_THINKING` | `on` \| `low` \| `off` \| `server-default` | `on` — `DEFAULT_THINKING` (was `off` before 2026-10-22; older published rows were measured with it off) | `thinking` |
