@@ -221,9 +221,9 @@ export const SHAPE: DirRow[] = [
     // The chat dock: `chat-dock/ChatDock.tsx` and `ChatWindow.tsx`, and the two
     // pieces it shares with the Assistant page, `assistant/Transcript.tsx` and
     // `assistant/Composer.tsx`.
-    files: 317,
+    files: 319,
     tests: 31,
-    lines: 57213,
+    lines: 57823,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into

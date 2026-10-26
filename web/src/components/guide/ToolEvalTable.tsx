@@ -82,9 +82,7 @@ export function ToolEvalTable() {
                     </td>
                     <td className="py-1.5 pr-3 text-text-2">
                       {s.condition === 'full' ? 'all of them' : 'narrowed'}
-                      <span className="tabular ml-1.5 text-xs text-text-3">
-                        {s.meanTools} avg
-                      </span>
+                      <span className="tabular ml-1.5 text-xs text-text-3">{s.meanTools} avg</span>
                     </td>
                     <td className="tabular py-1.5 pr-3">
                       <span className={s.passed === s.total ? 'text-text-1' : 'text-warning'}>
@@ -129,8 +127,8 @@ export function ToolEvalTable() {
       )}
 
       <p className="mt-4 text-xs text-text-3">
-        Run on {ran.toLocaleDateString()} against three vLLM servers. Re-running the evaluation is
-        what updates this table — the numbers are generated, not typed.
+        Run on {ran.toLocaleDateString()} against {String(models.length)} vLLM servers. Re-running
+        the evaluation is what updates this table — the numbers are generated, not typed.
       </p>
     </div>
   )

@@ -166,9 +166,7 @@ const groupTotals = (() => {
       rows.set(g.group, row)
     }
   }
-  return [...rows.values()].sort(
-    (a, b) => a.clean / a.conversations - b.clean / b.conversations,
-  )
+  return [...rows.values()].sort((a, b) => a.clean / a.conversations - b.clean / b.conversations)
 })()
 
 const PLAIN: Record<string, string> = {
@@ -219,13 +217,22 @@ export function ToolBenchTable() {
               <th className="py-1.5 pr-3 font-medium">Clean</th>
               <th className="py-1.5 pr-3 font-medium">Turns</th>
               <th className="py-1.5 pr-3 font-medium">State</th>
-              <th className="py-1.5 pr-3 font-medium" title="F1 against the gold workflow's tool calls, macro-averaged">
+              <th
+                className="py-1.5 pr-3 font-medium"
+                title="F1 against the gold workflow's tool calls, macro-averaged"
+              >
                 Graph
               </th>
-              <th className="py-1.5 pr-3 font-medium" title="F1 on the orderings the gold graph constrains">
+              <th
+                className="py-1.5 pr-3 font-medium"
+                title="F1 on the orderings the gold graph constrains"
+              >
                 Order
               </th>
-              <th className="py-1.5 pr-3 font-medium" title="Malformed tool arguments the loop repaired rather than refused — a small-model failure channel that used to end the call">
+              <th
+                className="py-1.5 pr-3 font-medium"
+                title="Malformed tool arguments the loop repaired rather than refused — a small-model failure channel that used to end the call"
+              >
                 Repaired
               </th>
               <th className="py-1.5 pr-3 font-medium">Looked first</th>
@@ -280,9 +287,7 @@ export function ToolBenchTable() {
                     <td className="tabular py-1.5 pr-3 text-text-2">
                       {r.stateChecksPassed}/{r.stateChecks}
                     </td>
-                    <td className="tabular py-1.5 pr-3 text-text-2">
-                      {rate(r.graph?.nodeF1)}
-                    </td>
+                    <td className="tabular py-1.5 pr-3 text-text-2">{rate(r.graph?.nodeF1)}</td>
                     <td
                       className="tabular py-1.5 pr-3 text-text-2"
                       title={
@@ -297,7 +302,9 @@ export function ToolBenchTable() {
                       className="tabular py-1.5 pr-3 text-text-2"
                       title={
                         r.repairs
-                          ? Object.entries(r.repairs.byKind).map(([k, n]) => `${k} ×${String(n)}`).join(', ') || 'nothing needed repairing'
+                          ? Object.entries(r.repairs.byKind)
+                              .map(([k, n]) => `${k} ×${String(n)}`)
+                              .join(', ') || 'nothing needed repairing'
                           : 'repair layer off, or a run from before it existed'
                       }
                     >
@@ -314,15 +321,17 @@ export function ToolBenchTable() {
                       const t = rowTelemetry(r.model, r.condition)
                       return (
                         <>
-                          <td className="tabular whitespace-nowrap py-1.5 pr-3 text-text-2">{costText(t.cost)}</td>
+                          <td className="tabular py-1.5 pr-3 whitespace-nowrap text-text-2">
+                            {costText(t.cost)}
+                          </td>
                           {SHOW_NOISE ? (
-                            <td className="tabular whitespace-nowrap py-1.5 pr-3 text-text-2">
+                            <td className="tabular py-1.5 pr-3 whitespace-nowrap text-text-2">
                               {noiseText(t.noise)}
                             </td>
                           ) : null}
                           <td
                             className={cn(
-                              'tabular whitespace-nowrap py-1.5',
+                              'tabular py-1.5 whitespace-nowrap',
                               t.stops !== null && t.stops.maxSteps + t.stops.stuck > 0
                                 ? 'text-warning'
                                 : 'text-text-3',
@@ -348,7 +357,7 @@ export function ToolBenchTable() {
       */}
       <h3 className="mt-5 text-sm font-medium">By kind of work</h3>
       <p className="mt-1 text-xs text-text-3">
-        Conversations with nothing wrong in them, summed across all six runs.
+        Conversations with nothing wrong in them, summed across all {String(runs.length)} runs.
       </p>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[30rem] border-collapse text-sm">
@@ -375,7 +384,10 @@ export function ToolBenchTable() {
                         denominators is not comparable by eye. */}
                     <span className="block h-1.5 w-full overflow-hidden rounded-full bg-well">
                       <span
-                        className={cn('block h-full rounded-full', rate === 1 ? 'bg-text-3' : 'bg-warn')}
+                        className={cn(
+                          'block h-full rounded-full',
+                          rate === 1 ? 'bg-text-3' : 'bg-warn',
+                        )}
                         style={{ width: `${String(Math.round(rate * 100))}%` }}
                       />
                     </span>
@@ -389,8 +401,9 @@ export function ToolBenchTable() {
 
       <h3 className="mt-5 text-sm font-medium">Which conversations went wrong, and how</h3>
       <p className="mt-1 text-xs text-text-3">
-        Out of six runs each — three models, with the tool list narrowed and not. Ordered by how
-        often the conversation failed, because that is the part worth publishing.
+        Out of {String(runs.length)} runs each — {String(models.length)} models, with the tool list
+        narrowed and not. Ordered by how often the conversation failed, because that is the part
+        worth publishing.
       </p>
       <ul className="mt-2 space-y-1.5">
         {byConversation
@@ -412,8 +425,8 @@ export function ToolBenchTable() {
 
       <p className="mt-4 text-xs text-text-3">
         Run on {ran.toLocaleDateString()} against three vLLM servers,{' '}
-        {RUNS === null || RUNS === 1 ? 'one pass each' : `${String(RUNS)} passes each`}, {setupSaid}.
-        Re-running the benchmark is what updates this — the numbers are generated, not typed.
+        {RUNS === null || RUNS === 1 ? 'one pass each' : `${String(RUNS)} passes each`}, {setupSaid}
+        . Re-running the benchmark is what updates this — the numbers are generated, not typed.
       </p>
     </div>
   )

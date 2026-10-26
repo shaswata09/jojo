@@ -9,6 +9,7 @@ import { ToolBenchTable } from '@/components/guide/ToolBenchTable'
 import { BenchAxesDiagram } from '@/components/guide/diagrams/BenchAxesDiagram'
 import { BenchAmbiguityDiagram } from '@/components/guide/diagrams/BenchAmbiguityDiagram'
 import { BenchExplorer } from '@/components/guide/BenchExplorer'
+import { ReasoningTables } from '@/components/guide/ReasoningTables'
 import {
   CONVERSATIONS as BENCH_CONVERSATIONS,
   GROUPS as BENCH_GROUPS,
@@ -62,7 +63,9 @@ export function GuideTools() {
       {/* --------------------------- what exists --------------------------- */}
 
       <Panel>
-        <PanelTitle hint={`${String(CATALOG.length)} in total`}>What the assistant can do</PanelTitle>
+        <PanelTitle hint={`${String(CATALOG.length)} in total`}>
+          What the assistant can do
+        </PanelTitle>
         <p className="text-sm text-text-2">
           The <Go to={assistantPath()}>Assistant</Go> does not type into your screens. It calls the
           same {String(CATALOG.length)} operations the buttons call — the identical code path, with
@@ -99,7 +102,9 @@ export function GuideTools() {
       {/* ---------------------------- the gates ---------------------------- */}
 
       <Panel>
-        <PanelTitle hint="the part that actually holds">What stops the wrong one running</PanelTitle>
+        <PanelTitle hint="the part that actually holds">
+          What stops the wrong one running
+        </PanelTitle>
         <p className="text-sm text-text-2">
           A language model can ask for anything. It can name a tool it was never shown, or invent
           one that does not exist — smaller models do this regularly, and it is not a sign that
@@ -137,9 +142,9 @@ export function GuideTools() {
         </p>
         <p className="mt-3 text-sm text-text-2">
           So a job like that is declared as <strong>steps with edges between them</strong>. Each
-          step says how many times it is worth retrying and whether the job can carry on without
-          it; the route from one step to the next is decided by what happened, never by asking the
-          model where to go. A step that fails is named in the result rather than disappearing into
+          step says how many times it is worth retrying and whether the job can carry on without it;
+          the route from one step to the next is decided by what happened, never by asking the model
+          where to go. A step that fails is named in the result rather than disappearing into
           &ldquo;reading your CV failed&rdquo;.
         </p>
         <p className="mt-3 text-sm text-text-2">
@@ -173,10 +178,10 @@ export function GuideTools() {
         </p>
         <p className="mt-3 text-sm text-text-2">
           The same care applies to searching. Asked to &ldquo;move my Rice application to
-          interview&rdquo; when there are two, a model that searched for one match and got one
-          would have no way to know there was a second &mdash; so it would move the wrong record
-          confidently. Every search reports how many matched as well as what it is showing, which
-          is what lets the assistant come back and ask you which you meant.
+          interview&rdquo; when there are two, a model that searched for one match and got one would
+          have no way to know there was a second &mdash; so it would move the wrong record
+          confidently. Every search reports how many matched as well as what it is showing, which is
+          what lets the assistant come back and ask you which you meant.
         </p>
       </Panel>
 
@@ -186,9 +191,9 @@ export function GuideTools() {
         <PanelTitle hint="so a request never stops halfway">How it picks the right one</PanelTitle>
         <p className="text-sm text-text-2">
           Showing a model all {String(CATALOG.length)} tools at once costs well over fifteen
-          thousand words of the space it has to think in — before you have typed anything. On a small model
-          running on your own machine, that can be more space than it has. So jojo narrows the list
-          to what your words point at.
+          thousand words of the space it has to think in — before you have typed anything. On a
+          small model running on your own machine, that can be more space than it has. So jojo
+          narrows the list to what your words point at.
         </p>
         <p className="mt-3 text-sm text-text-2">
           Narrowing carelessly is worse than not narrowing. Most operations need something to act
@@ -204,9 +209,9 @@ export function GuideTools() {
         <h3 className="mt-5 text-sm font-medium">When it is not sure, it does not narrow</h3>
         <p className="mt-1.5 text-sm text-text-2">
           &ldquo;Remind me about Baylor on Thursday&rdquo; is clear, and jojo offers about a fifth
-          of the catalog. &ldquo;Actually, that was the other one&rdquo; is not clear about
-          anything — so it offers everything, exactly as it would have before any of this existed.
-          Being unsure costs a little speed. Guessing would cost you your answer.
+          of the catalog. &ldquo;Actually, that was the other one&rdquo; is not clear about anything
+          — so it offers everything, exactly as it would have before any of this existed. Being
+          unsure costs a little speed. Guessing would cost you your answer.
         </p>
         <h3 className="mt-5 text-sm font-medium">A second assistant does the choosing</h3>
         <p className="mt-1.5 text-sm text-text-2">
@@ -296,8 +301,8 @@ export function GuideTools() {
           So there is a second benchmark. It builds a real store — six applications, a calendar, a
           vault, keywords — hands the assistant a script of {String(BENCH_CONVERSATIONS.length)}{' '}
           conversations across {String(BENCH_GROUPS.length)} kinds of work, and lets the tool calls
-          actually run. Then it looks at what is in the store afterwards. Four things are
-          scored separately, because a model can pass one and fail another:
+          actually run. Then it looks at what is in the store afterwards. Four things are scored
+          separately, because a model can pass one and fail another:
         </p>
         <ul className="mt-3 space-y-1.5 text-sm text-text-2">
           <li>
@@ -333,6 +338,52 @@ export function GuideTools() {
         <div className="mt-5">
           <ToolBenchTable />
         </div>
+      </Panel>
+
+      {/* ------------------------------ reasoning ---------------------------- */}
+
+      <Panel>
+        <PanelTitle hint="measured, with what it costs in time">Does reasoning help?</PanelTitle>
+        <p className="text-sm text-text-2">
+          A model can be asked to think before it answers — the Reasoning setting in{' '}
+          <Go to={settingsPath()}>Settings</Go>. Whether that makes it better at jojo&rsquo;s work
+          is a question about the model, so the conversation benchmark above was run twice with
+          reasoning on and twice with it off, on the same servers and the same code.
+        </p>
+
+        <div className="mt-4">
+          <ReasoningTables />
+        </div>
+
+        <h3 className="mt-5 text-sm font-medium">What the numbers say</h3>
+        <p className="mt-1.5 text-sm text-text-2">
+          <span className="text-text-1">On Gemma, reasoning costs accuracy and a lot of time.</span>{' '}
+          It scored two to three conversations lower on average, and the median conversation took
+          about three times as long. The slowness is the thinking itself: Gemma generates about 31
+          tokens a second and thinks for a few hundred tokens before a reply, so a round takes
+          around six seconds longer on average and a long one fifteen or more. Across both passes it
+          reliably fixed three conversations and reliably broke three to four — among the broken,
+          filing a new document and declining a suggestion, which it gets right every time with
+          reasoning off.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          <span className="text-text-1">On GPT-OSS, the setting changes nothing</span> — and that is
+          expected rather than a finding. GPT-OSS always reasons; &ldquo;off&rdquo; can only ask it
+          for less, and both settings ran at its usual effort. It also generates about seven times
+          faster than Gemma, so its thinking costs under a second per reply.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          If replies feel slow on a model like Gemma, turn reasoning off: on this benchmark you lose
+          nothing for it. Either way, the two helpers — the one that picks which tools a turn may
+          use and the one that summarises a long conversation — never reason, because neither job is
+          improved by it and one summary once took nearly two minutes when they did.
+        </p>
+        <p className="mt-3 text-sm text-text-2">
+          The first-token column is most of the wait on a long conversation: a reply cannot start
+          until the server has read everything it was sent. A prompt that repeats is far cheaper,
+          because the server keeps the start of it from last time — which is why the second turn of
+          a conversation usually answers faster than the first.
+        </p>
       </Panel>
 
       {/* --------------------------- the previewer ------------------------- */}
@@ -435,7 +486,10 @@ function Stat({ n, label, hint }: { n: number; label: string; hint: string }) {
 
 function Go({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="text-accent underline decoration-1 underline-offset-4 hover:decoration-2">
+    <Link
+      to={to}
+      className="text-accent underline decoration-1 underline-offset-4 hover:decoration-2"
+    >
       {children}
     </Link>
   )

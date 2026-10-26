@@ -14,7 +14,7 @@
  * rows already on disk, and none of those carried the runner's telemetry, so
  * every new roll-up would have been "tested" by a loop over nothing.
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 
 const LABEL = {
@@ -314,11 +314,22 @@ const publish = () => {
   const noise = {}
 
   const report = []
+  const skipped = []
   for (const [model, file] of Object.entries({
     gemma_4_31b: '/tmp/bench-gemma.json',
     qwen3_14b: '/tmp/bench-qwen.json',
     gpt_oss_120b: '/tmp/bench-gptoss.json',
   })) {
+    /*
+     * A model with no run is left out and said to be, not refused. The Qwen3
+     * 14B server was retired in October 2026; the table then shows the models
+     * that were measured rather than holding the other two back, and the console
+     * line names what is missing so nobody mistakes two rows for three.
+     */
+    if (!existsSync(file)) {
+      skipped.push(LABEL[model])
+      continue
+    }
     const raw = JSON.parse(readFileSync(file, 'utf8'))
     if (!raw.setup) {
       throw new Error(
@@ -366,6 +377,7 @@ const publish = () => {
       2,
     )}\n`,
   )
+  if (skipped.length > 0) console.log(`no run for ${skipped.join(', ')} — left out of the table`)
   if (patched.length > 0) console.log(`spliced ${patched.length} re-run row(s): ${patched.join(', ')}`)
   console.log(
     `${out}: ${report.length} rows, ${report.map((r) => `${r.label}/${r.condition} ${r.conversationsClean}/${r.conversations}`).join('  ')}`,

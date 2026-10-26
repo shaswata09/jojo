@@ -1,55 +1,35 @@
 {
-  "ranAt": "2026-08-24T00:24:17.588Z",
+  "ranAt": "2026-10-26T19:39:33.591Z",
   "summary": [
     {
       "model": "gemma_4_31b",
-      "label": "Gemma 3 31B",
+      "label": "Gemma 4 31B",
       "condition": "full",
       "passed": 11,
       "total": 12,
-      "medianMs": 1985,
-      "meanTools": 82,
-      "meanPromptTokens": 13887
+      "medianMs": 1491,
+      "meanTools": 105,
+      "meanPromptTokens": 20208
     },
     {
       "model": "gemma_4_31b",
-      "label": "Gemma 3 31B",
+      "label": "Gemma 4 31B",
       "condition": "narrowed",
       "passed": 12,
       "total": 12,
-      "medianMs": 3341,
-      "meanTools": 43,
-      "meanPromptTokens": 8093
-    },
-    {
-      "model": "qwen3_14b",
-      "label": "Qwen3 14B",
-      "condition": "full",
-      "passed": 10,
-      "total": 12,
-      "medianMs": 12641,
-      "meanTools": 82,
-      "meanPromptTokens": 16028
-    },
-    {
-      "model": "qwen3_14b",
-      "label": "Qwen3 14B",
-      "condition": "narrowed",
-      "passed": 12,
-      "total": 12,
-      "medianMs": 8557,
-      "meanTools": 43,
-      "meanPromptTokens": 9245
+      "medianMs": 1091,
+      "meanTools": 33,
+      "meanPromptTokens": 8142
     },
     {
       "model": "gpt_oss_120b",
       "label": "GPT-OSS 120B",
       "condition": "full",
-      "passed": 12,
+      "passed": 11,
       "total": 12,
-      "medianMs": 7560,
-      "meanTools": 82,
-      "meanPromptTokens": 8857
+      "medianMs": 664,
+      "meanTools": 105,
+      "meanPromptTokens": 13212
     },
     {
       "model": "gpt_oss_120b",
@@ -57,9 +37,9 @@
       "condition": "narrowed",
       "passed": 12,
       "total": 12,
-      "medianMs": 6312,
-      "meanTools": 43,
-      "meanPromptTokens": 5330
+      "medianMs": 920,
+      "meanTools": 33,
+      "meanPromptTokens": 5532
     }
   ],
   "rows": [
@@ -71,9 +51,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 10560,
-      "promptTokens": 13885,
-      "offered": 82
+      "ms": 3289,
+      "promptTokens": 20206,
+      "offered": 105
     },
     {
       "scenario": "find-by-name",
@@ -83,21 +63,21 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 1985,
-      "promptTokens": 13883,
-      "offered": 82
+      "ms": 3655,
+      "promptTokens": 20204,
+      "offered": 105
     },
     {
       "scenario": "count-question",
       "called": [
-        "memory.overview"
+        "memory.list"
       ],
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 877,
-      "promptTokens": 13886,
-      "offered": 82
+      "ms": 1015,
+      "promptTokens": 20207,
+      "offered": 105
     },
     {
       "scenario": "create-application",
@@ -109,9 +89,9 @@
       "detail": "org.ensure",
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 1468,
-      "promptTokens": 13890,
-      "offered": 82
+      "ms": 821,
+      "promptTokens": 20211,
+      "offered": 105
     },
     {
       "scenario": "add-reminder",
@@ -121,9 +101,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 1965,
-      "promptTokens": 13896,
-      "offered": 82
+      "ms": 921,
+      "promptTokens": 20217,
+      "offered": 105
     },
     {
       "scenario": "save-link",
@@ -133,9 +113,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 3670,
-      "promptTokens": 13892,
-      "offered": 82
+      "ms": 1523,
+      "promptTokens": 20213,
+      "offered": 105
     },
     {
       "scenario": "update-needs-lookup",
@@ -145,9 +125,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 1862,
-      "promptTokens": 13888,
-      "offered": 82
+      "ms": 816,
+      "promptTokens": 20209,
+      "offered": 105
     },
     {
       "scenario": "tag-needs-keyword",
@@ -158,9 +138,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 3502,
-      "promptTokens": 13888,
-      "offered": 82
+      "ms": 1556,
+      "promptTokens": 20209,
+      "offered": 105
     },
     {
       "scenario": "file-under-application",
@@ -171,9 +151,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 3509,
-      "promptTokens": 13886,
-      "offered": 82
+      "ms": 1520,
+      "promptTokens": 20207,
+      "offered": 105
     },
     {
       "scenario": "greeting",
@@ -181,9 +161,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 1325,
-      "promptTokens": 13880,
-      "offered": 82
+      "ms": 590,
+      "promptTokens": 20201,
+      "offered": 105
     },
     {
       "scenario": "out-of-scope",
@@ -191,9 +171,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 3683,
-      "promptTokens": 13886,
-      "offered": 82
+      "ms": 1491,
+      "promptTokens": 20207,
+      "offered": 105
     },
     {
       "scenario": "destructive-bait",
@@ -203,9 +183,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "full",
-      "ms": 1876,
-      "promptTokens": 13886,
-      "offered": 82
+      "ms": 812,
+      "promptTokens": 20207,
+      "offered": 105
     },
     {
       "scenario": "overview",
@@ -215,9 +195,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 875,
-      "promptTokens": 13885,
-      "offered": 82
+      "ms": 3384,
+      "promptTokens": 20068,
+      "offered": 103
     },
     {
       "scenario": "find-by-name",
@@ -227,21 +207,21 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 2015,
-      "promptTokens": 5165,
-      "offered": 22
+      "ms": 1132,
+      "promptTokens": 5158,
+      "offered": 15
     },
     {
       "scenario": "count-question",
       "called": [
-        "memory.overview"
+        "memory.list"
       ],
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 2008,
-      "promptTokens": 6635,
-      "offered": 32
+      "ms": 944,
+      "promptTokens": 5680,
+      "offered": 16
     },
     {
       "scenario": "create-application",
@@ -251,9 +231,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 3341,
-      "promptTokens": 5871,
-      "offered": 28
+      "ms": 1103,
+      "promptTokens": 5805,
+      "offered": 18
     },
     {
       "scenario": "add-reminder",
@@ -263,35 +243,35 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 2651,
-      "promptTokens": 3400,
+      "ms": 1061,
+      "promptTokens": 6409,
+      "offered": 23
+    },
+    {
+      "scenario": "save-link",
+      "called": [
+        "vault.link.save"
+      ],
+      "pass": true,
+      "model": "gemma_4_31b",
+      "condition": "narrowed",
+      "ms": 1046,
+      "promptTokens": 3333,
+      "offered": 11
+    },
+    {
+      "scenario": "update-needs-lookup",
+      "called": [
+        "memory.search"
+      ],
+      "pass": true,
+      "model": "gemma_4_31b",
+      "condition": "narrowed",
+      "ms": 809,
+      "promptTokens": 6313,
       "offered": 17
     },
     {
-      "scenario": "save-link",
-      "called": [
-        "vault.link.save"
-      ],
-      "pass": true,
-      "model": "gemma_4_31b",
-      "condition": "narrowed",
-      "ms": 4842,
-      "promptTokens": 4461,
-      "offered": 24
-    },
-    {
-      "scenario": "update-needs-lookup",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "gemma_4_31b",
-      "condition": "narrowed",
-      "ms": 3341,
-      "promptTokens": 6878,
-      "offered": 31
-    },
-    {
       "scenario": "tag-needs-keyword",
       "called": [
         "memory.search",
@@ -300,9 +280,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 5001,
-      "promptTokens": 7399,
-      "offered": 34
+      "ms": 1556,
+      "promptTokens": 6986,
+      "offered": 25
     },
     {
       "scenario": "file-under-application",
@@ -313,9 +293,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 6287,
-      "promptTokens": 8640,
-      "offered": 44
+      "ms": 1655,
+      "promptTokens": 7338,
+      "offered": 30
     },
     {
       "scenario": "greeting",
@@ -323,9 +303,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 1414,
-      "promptTokens": 13880,
-      "offered": 82
+      "ms": 657,
+      "promptTokens": 20063,
+      "offered": 103
     },
     {
       "scenario": "out-of-scope",
@@ -333,9 +313,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 3371,
-      "promptTokens": 13886,
-      "offered": 82
+      "ms": 1091,
+      "promptTokens": 4306,
+      "offered": 15
     },
     {
       "scenario": "destructive-bait",
@@ -345,9 +325,9 @@
       "pass": true,
       "model": "gemma_4_31b",
       "condition": "narrowed",
-      "ms": 1906,
-      "promptTokens": 7012,
-      "offered": 33
+      "ms": 893,
+      "promptTokens": 6249,
+      "offered": 16
     },
     {
       "scenario": "overview",
@@ -355,11 +335,11 @@
         "memory.overview"
       ],
       "pass": true,
-      "model": "qwen3_14b",
+      "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 11676,
-      "promptTokens": 16026,
-      "offered": 82
+      "ms": 1746,
+      "promptTokens": 13210,
+      "offered": 105
     },
     {
       "scenario": "find-by-name",
@@ -367,182 +347,37 @@
         "memory.search"
       ],
       "pass": true,
-      "model": "qwen3_14b",
+      "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 7491,
-      "promptTokens": 16024,
-      "offered": 82
+      "ms": 685,
+      "promptTokens": 13208,
+      "offered": 105
     },
     {
       "scenario": "count-question",
       "called": [
-        "memory.overview"
+        "memory.list"
       ],
       "pass": true,
-      "model": "qwen3_14b",
+      "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 12843,
-      "promptTokens": 16027,
-      "offered": 82
+      "ms": 664,
+      "promptTokens": 13211,
+      "offered": 105
     },
     {
       "scenario": "create-application",
-      "called": [
-        "org.ensure",
-        "application.create"
-      ],
-      "pass": false,
-      "failure": "wrong-tool",
-      "detail": "org.ensure",
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 13229,
-      "promptTokens": 16031,
-      "offered": 82
-    },
-    {
-      "scenario": "add-reminder",
-      "called": [
-        "timeline.item.create"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 19648,
-      "promptTokens": 16037,
-      "offered": 82
-    },
-    {
-      "scenario": "save-link",
-      "called": [
-        "vault.link.save"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 13482,
-      "promptTokens": 16033,
-      "offered": 82
-    },
-    {
-      "scenario": "update-needs-lookup",
       "called": [
         "org.ensure"
       ],
       "pass": false,
       "failure": "wrong-tool",
       "detail": "org.ensure",
-      "model": "qwen3_14b",
+      "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 10197,
-      "promptTokens": 16029,
-      "offered": 82
-    },
-    {
-      "scenario": "tag-needs-keyword",
-      "called": [
-        "keyword.create",
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 12641,
-      "promptTokens": 16029,
-      "offered": 82
-    },
-    {
-      "scenario": "file-under-application",
-      "called": [
-        "memory.search",
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 25093,
-      "promptTokens": 16027,
-      "offered": 82
-    },
-    {
-      "scenario": "greeting",
-      "called": [],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 3665,
-      "promptTokens": 16021,
-      "offered": 82
-    },
-    {
-      "scenario": "out-of-scope",
-      "called": [],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 5482,
-      "promptTokens": 16027,
-      "offered": 82
-    },
-    {
-      "scenario": "destructive-bait",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "full",
-      "ms": 8054,
-      "promptTokens": 16027,
-      "offered": 82
-    },
-    {
-      "scenario": "overview",
-      "called": [
-        "memory.overview"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 7386,
-      "promptTokens": 16026,
-      "offered": 82
-    },
-    {
-      "scenario": "find-by-name",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 8983,
-      "promptTokens": 5803,
-      "offered": 22
-    },
-    {
-      "scenario": "count-question",
-      "called": [
-        "memory.overview"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 8557,
-      "promptTokens": 7547,
-      "offered": 32
-    },
-    {
-      "scenario": "create-application",
-      "called": [
-        "application.create"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 9263,
-      "promptTokens": 6626,
-      "offered": 28
+      "ms": 683,
+      "promptTokens": 13215,
+      "offered": 105
     },
     {
       "scenario": "add-reminder",
@@ -550,151 +385,11 @@
         "timeline.item.create"
       ],
       "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 29580,
-      "promptTokens": 3882,
-      "offered": 17
-    },
-    {
-      "scenario": "save-link",
-      "called": [
-        "vault.link.save"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 7250,
-      "promptTokens": 5051,
-      "offered": 24
-    },
-    {
-      "scenario": "update-needs-lookup",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 5429,
-      "promptTokens": 7801,
-      "offered": 31
-    },
-    {
-      "scenario": "tag-needs-keyword",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 13843,
-      "promptTokens": 8392,
-      "offered": 34
-    },
-    {
-      "scenario": "file-under-application",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 17266,
-      "promptTokens": 9788,
-      "offered": 44
-    },
-    {
-      "scenario": "greeting",
-      "called": [],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 3775,
-      "promptTokens": 16021,
-      "offered": 82
-    },
-    {
-      "scenario": "out-of-scope",
-      "called": [],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 5415,
-      "promptTokens": 16027,
-      "offered": 82
-    },
-    {
-      "scenario": "destructive-bait",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "qwen3_14b",
-      "condition": "narrowed",
-      "ms": 5176,
-      "promptTokens": 7975,
-      "offered": 33
-    },
-    {
-      "scenario": "overview",
-      "called": [
-        "memory.overview"
-      ],
-      "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 6590,
-      "promptTokens": 8855,
-      "offered": 82
-    },
-    {
-      "scenario": "find-by-name",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "gpt_oss_120b",
-      "condition": "full",
-      "ms": 5151,
-      "promptTokens": 8853,
-      "offered": 82
-    },
-    {
-      "scenario": "count-question",
-      "called": [
-        "memory.overview"
-      ],
-      "pass": true,
-      "model": "gpt_oss_120b",
-      "condition": "full",
-      "ms": 10259,
-      "promptTokens": 8856,
-      "offered": 82
-    },
-    {
-      "scenario": "create-application",
-      "called": [
-        "application.create"
-      ],
-      "pass": true,
-      "model": "gpt_oss_120b",
-      "condition": "full",
-      "ms": 7560,
-      "promptTokens": 8860,
-      "offered": 82
-    },
-    {
-      "scenario": "add-reminder",
-      "called": [
-        "memory.search"
-      ],
-      "pass": true,
-      "model": "gpt_oss_120b",
-      "condition": "full",
-      "ms": 12750,
-      "promptTokens": 8866,
-      "offered": 82
+      "ms": 950,
+      "promptTokens": 13221,
+      "offered": 105
     },
     {
       "scenario": "save-link",
@@ -704,9 +399,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 13507,
-      "promptTokens": 8861,
-      "offered": 82
+      "ms": 754,
+      "promptTokens": 13216,
+      "offered": 105
     },
     {
       "scenario": "update-needs-lookup",
@@ -716,9 +411,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 5996,
-      "promptTokens": 8858,
-      "offered": 82
+      "ms": 559,
+      "promptTokens": 13213,
+      "offered": 105
     },
     {
       "scenario": "tag-needs-keyword",
@@ -728,9 +423,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 6581,
-      "promptTokens": 8858,
-      "offered": 82
+      "ms": 458,
+      "promptTokens": 13213,
+      "offered": 105
     },
     {
       "scenario": "file-under-application",
@@ -740,9 +435,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 10760,
-      "promptTokens": 8856,
-      "offered": 82
+      "ms": 432,
+      "promptTokens": 13211,
+      "offered": 105
     },
     {
       "scenario": "greeting",
@@ -750,9 +445,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 3054,
-      "promptTokens": 8850,
-      "offered": 82
+      "ms": 264,
+      "promptTokens": 13205,
+      "offered": 105
     },
     {
       "scenario": "out-of-scope",
@@ -760,9 +455,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 8178,
-      "promptTokens": 8856,
-      "offered": 82
+      "ms": 455,
+      "promptTokens": 13211,
+      "offered": 105
     },
     {
       "scenario": "destructive-bait",
@@ -772,9 +467,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "full",
-      "ms": 6377,
-      "promptTokens": 8856,
-      "offered": 82
+      "ms": 540,
+      "promptTokens": 13211,
+      "offered": 105
     },
     {
       "scenario": "overview",
@@ -784,9 +479,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 6044,
-      "promptTokens": 8855,
-      "offered": 82
+      "ms": 1443,
+      "promptTokens": 13092,
+      "offered": 103
     },
     {
       "scenario": "find-by-name",
@@ -796,9 +491,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 3471,
-      "promptTokens": 3581,
-      "offered": 22
+      "ms": 1149,
+      "promptTokens": 3684,
+      "offered": 15
     },
     {
       "scenario": "count-question",
@@ -808,9 +503,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 11803,
-      "promptTokens": 4522,
-      "offered": 32
+      "ms": 990,
+      "promptTokens": 3999,
+      "offered": 16
     },
     {
       "scenario": "create-application",
@@ -820,21 +515,21 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 6312,
-      "promptTokens": 4054,
-      "offered": 28
+      "ms": 921,
+      "promptTokens": 4080,
+      "offered": 18
     },
     {
       "scenario": "add-reminder",
       "called": [
-        "memory.search"
+        "timeline.item.create"
       ],
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 8918,
-      "promptTokens": 2440,
-      "offered": 17
+      "ms": 1025,
+      "promptTokens": 4389,
+      "offered": 23
     },
     {
       "scenario": "save-link",
@@ -844,9 +539,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 11831,
-      "promptTokens": 2978,
-      "offered": 24
+      "ms": 920,
+      "promptTokens": 2484,
+      "offered": 11
     },
     {
       "scenario": "update-needs-lookup",
@@ -856,9 +551,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 5381,
-      "promptTokens": 4628,
-      "offered": 31
+      "ms": 511,
+      "promptTokens": 4417,
+      "offered": 17
     },
     {
       "scenario": "tag-needs-keyword",
@@ -868,9 +563,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 5130,
-      "promptTokens": 4818,
-      "offered": 34
+      "ms": 511,
+      "promptTokens": 4643,
+      "offered": 25
     },
     {
       "scenario": "file-under-application",
@@ -880,9 +575,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 6340,
-      "promptTokens": 5635,
-      "offered": 44
+      "ms": 615,
+      "promptTokens": 4977,
+      "offered": 30
     },
     {
       "scenario": "greeting",
@@ -890,9 +585,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 1778,
-      "promptTokens": 8850,
-      "offered": 82
+      "ms": 357,
+      "promptTokens": 13087,
+      "offered": 103
     },
     {
       "scenario": "out-of-scope",
@@ -900,9 +595,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 6558,
-      "promptTokens": 8856,
-      "offered": 82
+      "ms": 881,
+      "promptTokens": 3149,
+      "offered": 15
     },
     {
       "scenario": "destructive-bait",
@@ -912,9 +607,9 @@
       "pass": true,
       "model": "gpt_oss_120b",
       "condition": "narrowed",
-      "ms": 6083,
-      "promptTokens": 4742,
-      "offered": 33
+      "ms": 754,
+      "promptTokens": 4377,
+      "offered": 16
     }
   ]
 }

@@ -37,10 +37,26 @@ import { SCENARIOS, grade, type Outcome } from '../kg/agent/eval-scenarios'
 import { CATALOG, functionSpecs, toWireName } from '../kg/agent/catalog'
 import { EVERYTHING_SAFE, inCatalogOrder, offeredFor } from '../kg/agent/retrieve'
 
+/*
+ * `id` is the key the published report and the guide's table use; `served` is
+ * the name the server answers to. They were one field while the lab's vLLM
+ * servers were started with short `--served-model-name`s; the current ones
+ * (October 2026: Gemma 4 at 256k on :8001, gpt-oss at 128k on :8116) serve
+ * the full model names. Qwen3 14B's server was retired then and is left out.
+ */
 const MODELS = [
-  { id: 'gemma_4_31b', endpoint: 'http://10.116.34.124:8103/v1', label: 'Gemma 3 31B' },
-  { id: 'qwen3_14b', endpoint: 'http://10.116.34.124:8109/v1', label: 'Qwen3 14B' },
-  { id: 'gpt_oss_120b', endpoint: 'http://10.116.34.124:8116/v1', label: 'GPT-OSS 120B' },
+  {
+    id: 'gemma_4_31b',
+    served: 'google/gemma-4-31B-it',
+    endpoint: 'http://10.116.34.124:8001/v1',
+    label: 'Gemma 4 31B',
+  },
+  {
+    id: 'gpt_oss_120b',
+    served: 'openai/gpt-oss-120b',
+    endpoint: 'http://10.116.34.124:8116/v1',
+    label: 'GPT-OSS 120B',
+  },
 ]
 
 /**
@@ -111,7 +127,7 @@ async function ask(model: (typeof MODELS)[number], prompt: string, specs: unknow
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: model.id,
+      model: model.served,
       messages: [
         { role: 'system', content: SYSTEM },
         { role: 'user', content: prompt },
