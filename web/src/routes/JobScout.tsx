@@ -25,13 +25,15 @@ import { appPath, scoutPath, useTitle } from '@/lib/links'
 import { useScoutParams } from '@/lib/link-params'
 import { useToast } from '@/lib/toast-context'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { useFillFromPosting } from '@/lib/fill-from-posting'
+import { isConfigured } from '@/lib/llm'
 import { useKeepPostingPage } from '@/lib/posting-agent'
 import type { KeptPage } from '@/lib/posting-agent'
 import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { report } from '@/lib/analytics'
 import { kindOf } from '@jojo/service/react/use-pipelines'
-import { approvedLabel, jobFromApproval, postingPreview } from '@jojo/service/core/proposal'
+import { jobFromApproval, postingPreview } from '@jojo/service/core/proposal'
 import { postingIdentity } from '@jojo/service/core/capture'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
@@ -100,7 +102,8 @@ export function JobScout() {
    * the button to open it sat disabled on every row. See `useKeepPostingPage`.
    */
   const keepPage = useKeepPostingPage()
-  const { reader } = useModelSettings()
+  const { reader, settings } = useModelSettings()
+  const fillFromPosting = useFillFromPosting()
   const graph = useGraph()
   const { files } = useVault()
   /** Postings whose page is being kept right now, by identity. */
@@ -253,57 +256,138 @@ export function JobScout() {
     job.kind === 'match' ? onPromote(job.id) : onPromotePosting(job.id)
 
   /**
-   * Approving a scout suggestion files the job and stops: the application is
-   * the reader's second decision, not a side effect of the first. The toast is
-   * where that second step is offered, because "approved" next to an unchanged
-   * applications table read as the scout silently failing.
+   * The draft an approved job becomes, and — for a posting — the page read into it.
+   *
+   * Reported 2026-10-27: approving a scouted job filed it and stopped, so the
+   * person had to press "Add to applications" for every job they had already
+   * said yes to, and the draft that made was named off the address alone —
+   * "CRA — Assistant professor manhattan kansas" for a Kansas State posting on
+   * CRA's board. Approval now makes the draft itself, and the posting is read
+   * the way "From link" reads one: the page is opened, the model is asked for
+   * the employer, role, location, pay, deadline and posting ID, the page is
+   * kept in the Vault and filed under the draft, and the draft is filled from
+   * what the page said.
+   *
+   * The draft exists before the read finishes, from the address — so a read
+   * that fails (no extension, no model, a sign-in wall) still leaves the job in
+   * the applications, and says why the details are thin. Without a model there
+   * is nothing to ask, and the page is only kept, as approval did before.
    */
-  const onApproveProposal = (id: string) => {
-    const tool = engine.proposals.find((p) => p.id === id)?.tool
-    const made = engine.approve(id)
-    report('scout_proposal_decided', { decision: 'approved' })
-    if (!made || (tool !== 'scout.match.save' && tool !== 'scout.posting.save')) return
-    const kind = tool === 'scout.match.save' ? 'match' : 'posting'
-    if (kind === 'posting') {
-      const proposal = engine.proposals.find((p) => p.id === id)
-      const seen = proposal ? postingPreview(proposal.tool, proposal.input) : null
-      if (seen?.href) keepAndReport(seen.href, seen.title ?? seen.label)
+  const draftFrom = (kind: ApprovedJob['kind'], id: string) =>
+    kind === 'match' ? promoteToApplication(id) : promotePosting(id)
+
+  const fillDraft = async (
+    application: { id: string; org: string },
+    postingUrl: string,
+    title: string,
+  ) => {
+    if (!isConfigured(settings)) {
+      keepAndReport(postingUrl, title)
+      return
     }
+    const key = keyOf(postingUrl)
+    setKeeping((now) => new Set(now).add(key))
+    try {
+      const out = await fillFromPosting({
+        applicationId: application.id,
+        url: postingUrl,
+        settings,
+        reader,
+      })
+      if (!out.ok) {
+        toast({
+          title: `${application.org}: the posting could not be read`,
+          description: `${out.reason} The draft keeps what its link says — open it to fill in the rest.`,
+          tone: 'danger',
+        })
+        return
+      }
+      const name = out.name
+      toast({
+        title: out.filled.length > 0 ? `${name} filled from the posting` : `${name}: posting read`,
+        description: [
+          out.filled.length > 0
+            ? `Filled in: ${out.filled.join(', ')}.`
+            : 'The draft already had what the page says.',
+          out.missing.length > 0 ? `Not on the page: ${out.missing.join(', ')}.` : '',
+          'The page is filed under it.',
+        ]
+          .filter(Boolean)
+          .join(' '),
+        action: { label: 'Open', onClick: () => navigate(appPath({ id: out.application })) },
+      })
+    } finally {
+      setKeeping((now) => {
+        const next = new Set(now)
+        next.delete(key)
+        return next
+      })
+    }
+  }
+
+  /** One approval: the job filed, its draft made, and the page read into it. Returns the draft. */
+  const approveOne = (id: string) => {
+    const proposal = engine.proposals.find((p) => p.id === id)
+    const made = engine.approve(id)
+    if (
+      !made ||
+      !proposal ||
+      (proposal.tool !== 'scout.match.save' && proposal.tool !== 'scout.posting.save')
+    ) {
+      return null
+    }
+    const kind = proposal.tool === 'scout.match.save' ? 'match' : 'posting'
+    const application = draftFrom(kind, made)
+    if (!application) return null
+    const seen = kind === 'posting' ? postingPreview(proposal.tool, proposal.input) : null
+    return {
+      application,
+      page: seen?.href ? { url: seen.href, title: seen.title ?? seen.label } : null,
+    }
+  }
+
+  const onApproveProposal = (id: string) => {
+    const done = approveOne(id)
+    report('scout_proposal_decided', { decision: 'approved' })
+    if (!done) return
+    const { application, page } = done
     toast({
-      title: approvedLabel(tool),
-      description: 'Not in your applications yet — add it when you want to track it.',
-      action: {
-        label: 'Add to applications',
-        onClick: () => onPromoteJob({ kind, id: made }),
-      },
+      title: `${application.org} added to your applications as a draft`,
+      description: page
+        ? isConfigured(settings)
+          ? 'Reading the posting to fill in its details — the draft updates when it is done.'
+          : 'Filled from its link. Connect a model in Settings to have the posting itself read in.'
+        : 'Open it to fill in the rest.',
+      action: { label: 'Open', onClick: () => navigate(appPath(application)) },
     })
+    if (page) void fillDraft(application, page.url, page.title)
   }
 
   /**
-   * Approve all, and keep every approved posting's page — one at a time, since
-   * each opens a tab, and reported once at the end rather than a toast apiece.
+   * Approve all: each job its own approval and its own draft, then the pages
+   * read one at a time — each opens a tab and asks the model, and a dozen at
+   * once would be a dozen tabs.
    */
   const onApproveAll = (pipelineId: string) => {
-    const pages = engine.proposals
+    const ids = engine.proposals
       .filter((p) => p.pipelineId === pipelineId && p.status === 'pending')
-      .map((p) => postingPreview(p.tool, p.input))
-      .flatMap((seen) => (seen?.href ? [{ url: seen.href, title: seen.title ?? seen.label }] : []))
-    engine.approveAll(pipelineId)
-    if (pages.length === 0) return
+      .map((p) => p.id)
+    const done = ids.flatMap((id) => {
+      const one = approveOne(id)
+      return one ? [one] : []
+    })
+    report('scout_proposal_decided', { decision: 'approved' })
+    if (done.length === 0) return
+    toast({
+      title: `${String(done.length)} added to your applications as drafts`,
+      description: isConfigured(settings)
+        ? 'Reading each posting in turn to fill in its details.'
+        : 'Filled from their links. Connect a model in Settings to have the postings themselves read in.',
+    })
     void (async () => {
-      let saved = 0
-      let reason: string | undefined
-      for (const page of pages) {
-        const kept = await keepPostingPage(page.url, page.title)
-        if (kept.ok) saved += 1
-        else reason ??= kept.reason
+      for (const { application, page } of done) {
+        if (page) await fillDraft(application, page.url, page.title)
       }
-      const of = `${String(saved)} of ${String(pages.length)}`
-      toast(
-        reason === undefined
-          ? { title: saved === 1 ? 'Posting page saved' : 'Posting pages saved', description: `${of} kept in the Vault under Job postings.` }
-          : { title: `${of} posting pages saved`, description: reason, tone: saved === 0 ? 'danger' : undefined },
-      )
     })()
   }
 

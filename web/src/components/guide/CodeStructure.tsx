@@ -266,9 +266,9 @@ export const SHAPE: DirRow[] = [
     // 165 with the chat dock: `chat-dock.ts` and its test (windows, layout,
     // persistence), `use-conversation.ts` (one conversation's wiring, shared
     // with the Assistant) and `sheet-presence.ts` (where the open record is).
-    files: 167,
-    tests: 62,
-    lines: 24706,
+    files: 169,
+    tests: 63,
+    lines: 25452,
     what: 'web-only adapters and URL state',
   },
   {
@@ -298,7 +298,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 98
+export const WEB_TEST_FILES = 99
 
 type TestGroup = { title: string; files: string; body: string }
 

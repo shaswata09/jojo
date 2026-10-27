@@ -96,6 +96,12 @@ export type ReadPostingOptions = {
   reader: string
   onStep?: (step: PostingStep) => void
   signal?: AbortSignal
+  /**
+   * A copy of this page the Vault already holds. The page is still opened —
+   * the model reads the live text — but not saved a second time; the outcome
+   * carries this file instead.
+   */
+  reuseFile?: VaultFile
 }
 
 /** The page, read one way or the other, with the text the model is shown. */
@@ -227,6 +233,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       reader,
       onStep,
       signal,
+      reuseFile,
     }: ReadPostingOptions): Promise<PostingOutcome> => {
       const target = canonicalPostingUrl(url.trim())
       const offered = keywordRoster(
@@ -281,11 +288,13 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
 
       /* ------------------------------ 3. save ------------------------------ */
       onStep?.('saving')
-      const file = await savePage(
-        page,
-        target,
-        [read.draft.org, read.draft.role].filter(Boolean).join(' — '),
-      )
+      const file =
+        reuseFile ??
+        (await savePage(
+          page,
+          target,
+          [read.draft.org, read.draft.role].filter(Boolean).join(' — '),
+        ))
 
       return {
         ok: true,
@@ -365,9 +374,12 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
       // Postings are stored the way they were typed, and the seeded ones carry
       // no scheme — a tab cannot open 'jobs.rice.edu/postings/29411'.
       const raw = options.url.trim()
-      const target = canonicalPostingUrl(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`)
+      const target = canonicalPostingUrl(
+        /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`,
+      )
       const kept = postingSourceForUrl(repo.getSnapshot(), target)
-      if (kept) return Promise.resolve({ ok: true, fileId: kept.fileId, name: kept.name, via: 'already' })
+      if (kept)
+        return Promise.resolve({ ok: true, fileId: kept.fileId, name: kept.name, via: 'already' })
 
       const key = postingIdentity(target) ?? target
       const running = inFlight.get(key)
@@ -398,10 +410,19 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
 
         const graph = repo.getSnapshot()
         const application = applicationForPostingUrl(projections.postings(graph), target)
-        if (application === undefined) return { ok: true, fileId: file.id, name: file.name, via: page.via }
-        const filed = graph.many(file.id as NodeId, 'FILED_UNDER', 'out', 'application').map((a) => a.id)
+        if (application === undefined)
+          return { ok: true, fileId: file.id, name: file.name, via: page.via }
+        const filed = graph
+          .many(file.id as NodeId, 'FILED_UNDER', 'out', 'application')
+          .map((a) => a.id)
         updateFile(file.id, { applicationIds: [...new Set([...filed, application])] })
-        return { ok: true, fileId: file.id, name: file.name, via: page.via, filedUnder: application }
+        return {
+          ok: true,
+          fileId: file.id,
+          name: file.name,
+          via: page.via,
+          filedUnder: application,
+        }
       })().finally(() => inFlight.delete(key))
       inFlight.set(key, run)
       return run
