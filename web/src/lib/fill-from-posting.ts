@@ -26,11 +26,35 @@ const SPOKEN: Record<Fillable | 'deadline' | 'keywords', string> = {
   keywords: 'keywords',
 }
 
+/**
+ * A board's capitals, put back into ordinary case: "KANSAS STATE UNIVERSITY"
+ * → "Kansas State University", "MANHATTAN, Kansas" → "Manhattan, Kansas".
+ *
+ * Boards set the employer and city in capitals for display, and a model copies
+ * what it reads — measured on CRA's board, where Gemma 4 returned the
+ * capitals on one read and ordinary case on the next. Only words of five
+ * letters or more are touched, so the acronyms an employer or place is
+ * actually spelled with (MIT, UCLA, NYU, KS, USA) stay as they are.
+ */
+export function unshout(text: string): string {
+  return text.replace(
+    /\b[A-Z][A-Z'’-]{4,}\b/g,
+    (word) => word.charAt(0) + word.slice(1).toLowerCase(),
+  )
+}
+
+/** The fields whose capitals are the board's styling rather than their spelling. */
+const UNSHOUT: ReadonlySet<Fillable> = new Set(['org', 'location'])
+
 export type FillPatch = {
   /** `application.update` input, less the id. Empty when there is nothing to write. */
   patch: Partial<Record<Fillable, string>> & { deadline?: string; keywords?: string[] }
   /** The fields written, in the person's words: "employer", "location". */
   filled: string[]
+  /** Fields the draft already had, that the page agrees with. */
+  confirmed: string[]
+  /** Fields the person changed while the page was read, where the page says otherwise. Left as they are. */
+  keptYours: string[]
 }
 
 /**
@@ -56,11 +80,22 @@ export function fillPatch(
 ): FillPatch {
   const patch: FillPatch['patch'] = {}
   const filled: string[] = []
+  const confirmed: string[] = []
+  const keptYours: string[] = []
+  const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
   for (const field of FILLABLE) {
-    const value = draft[field]?.trim()
-    if (!value) continue
-    if ((now[field] ?? '') !== (before[field] ?? '')) continue
-    if (value === (now[field] ?? '')) continue
+    const raw = draft[field]?.trim()
+    if (!raw) continue
+    const value = UNSHOUT.has(field) ? unshout(raw) : raw
+    const current = now[field] ?? ''
+    if (same(value, current)) {
+      confirmed.push(SPOKEN[field])
+      continue
+    }
+    if (current !== (before[field] ?? '')) {
+      keptYours.push(SPOKEN[field])
+      continue
+    }
     patch[field] = value
     filled.push(SPOKEN[field])
   }
@@ -74,7 +109,7 @@ export function fillPatch(
     patch.keywords = [...keywords]
     filled.push(SPOKEN.keywords)
   }
-  return { patch, filled }
+  return { patch, filled, confirmed, keptYours }
 }
 
 export type FillOutcome =
@@ -84,6 +119,8 @@ export type FillOutcome =
       /** The draft's name as it reads after the fill: "Kansas State University — Assistant Professor". */
       name: string
       filled: readonly string[]
+      confirmed: readonly string[]
+      keptYours: readonly string[]
       /** Fields the page did not answer. */
       missing: readonly string[]
       via: PostingRoute
@@ -146,7 +183,7 @@ export function useFillFromPosting(): (options: {
         .timeline(graph)
         .some((item) => item.kind === 'deadline' && item.applicationIds.includes(id))
       const nowKeywords = graph.many(id, 'TAGS', 'in', 'keyword').map((k) => k.id)
-      const { patch, filled } = fillPatch(
+      const { patch, filled, confirmed, keptYours } = fillPatch(
         before,
         { ...now, keywords: nowKeywords },
         read.draft,
@@ -174,7 +211,16 @@ export function useFillFromPosting(): (options: {
 
       const after = projections.application(repo.getSnapshot(), id) ?? now
       const name = after.role ? `${after.org} — ${after.role}` : after.org
-      return { ok: true, application: id, name, filled, missing: read.missing, via: read.via }
+      return {
+        ok: true,
+        application: id,
+        name,
+        filled,
+        confirmed,
+        keptYours,
+        missing: read.missing,
+        via: read.via,
+      }
     },
     [readPosting, run, repo, projections, files, updateFile],
   )

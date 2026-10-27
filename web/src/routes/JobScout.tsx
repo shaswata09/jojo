@@ -232,13 +232,21 @@ export function JobScout() {
     const posting = postings.find((p) => p.id === postingId)
     const { value: application, restore } = undoable(() => promotePosting(postingId))
     if (!application) return
-    // A page already kept was filed under the application by the promote
-    // itself. One that is not kept yet is kept now and filed when it lands —
-    // or, when it is already on its way, filed by the capture in flight.
-    if (posting && !pageFor(posting)) keepAndReport(posting.url, posting.title)
+    /*
+     * With a model connected, the posting is read into the draft — the same
+     * check approval makes (`fillDraft`): the page opened, the employer, role,
+     * location, pay, deadline and posting ID read off it, and the draft filled
+     * where the address alone had guessed. Without one, the page is only kept
+     * — and filed under the application by the promote when it already was.
+     */
+    const reading = Boolean(posting) && isConfigured(settings)
+    if (posting && reading) void fillDraft(application, posting.url, posting.title)
+    else if (posting && !pageFor(posting)) keepAndReport(posting.url, posting.title)
     toast({
       title: `${application.org} added as a draft`,
-      description: 'The posting stays saved here, now linked to the application.',
+      description: reading
+        ? 'Reading the posting to check and fill in its details — the draft updates when it is done.'
+        : 'The posting stays saved here, now linked to the application.',
       action: restore
         ? {
             label: 'Undo',
@@ -278,9 +286,13 @@ export function JobScout() {
 
   const fillDraft = async (
     application: { id: string; org: string },
-    postingUrl: string,
+    typed: string,
     title: string,
   ) => {
+    // Seeded and pasted postings are often stored without a scheme ('jobs.rice.edu/…').
+    const postingUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(typed.trim())
+      ? typed.trim()
+      : `https://${typed.trim()}`
     if (!isConfigured(settings)) {
       keepAndReport(postingUrl, title)
       return
@@ -304,11 +316,17 @@ export function JobScout() {
       }
       const name = out.name
       toast({
-        title: out.filled.length > 0 ? `${name} filled from the posting` : `${name}: posting read`,
-        description: [
+        title:
           out.filled.length > 0
-            ? `Filled in: ${out.filled.join(', ')}.`
-            : 'The draft already had what the page says.',
+            ? `${name} filled from the posting`
+            : `${name} checked against the posting`,
+        description: [
+          out.filled.length > 0 ? `Filled in: ${out.filled.join(', ')}.` : '',
+          out.confirmed.length > 0 ? `Checked against the page: ${out.confirmed.join(', ')}.` : '',
+          out.keptYours.length > 0 ? `Kept your edits to: ${out.keptYours.join(', ')}.` : '',
+          out.filled.length === 0 && out.confirmed.length === 0
+            ? 'The page added nothing the draft did not have.'
+            : '',
           out.missing.length > 0 ? `Not on the page: ${out.missing.join(', ')}.` : '',
           'The page is filed under it.',
         ]
