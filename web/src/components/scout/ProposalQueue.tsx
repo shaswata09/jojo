@@ -15,6 +15,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { approvedLabel, postingPreview, proposalDetail } from '@jojo/service/core/proposal'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
@@ -122,7 +123,17 @@ export function ProposalQueue({
           description="When a pipeline is running, anything it wants to change shows up here first. It will not touch your records until you approve it."
         />
       ) : (
-        <ul className="grid gap-2.5">
+        /*
+         * `grid-cols-1`, not a bare `grid`. A bare grid's one column is `auto`,
+         * which grows to the widest thing any card cannot wrap — and a card's
+         * posting link is single-line by design (it ends in "…"), so one long
+         * Workday or LinkedIn address made every card in the list wider than
+         * the panel. Measured 2026-10-27: a 190-character link pushed all three
+         * cards 450px past the panel's edge at 1200px, and the page scrolled
+         * sideways. `grid-cols-1` is `minmax(0, 1fr)`: the column is the
+         * panel's width, and the link is what gives way.
+         */
+        <ul className="grid grid-cols-1 gap-2.5">
           {[...pending, ...answered].map((p) => (
             <ProposalCard
               key={p.id}
@@ -187,8 +198,7 @@ function ProposalCard({
 }) {
   const settled = p.status !== 'pending'
   const base = settled ? STATUS[p.status as Exclude<Proposal['status'], 'pending'>] : null
-  const status =
-    base && p.status === 'approved' ? { ...base, label: approvedLabel(p.tool) } : base
+  const status = base && p.status === 'approved' ? { ...base, label: approvedLabel(p.tool) } : base
   const posting = postingPreview(p.tool, p.input)
   const detail = posting ? null : proposalDetail(p.input)
 
@@ -196,8 +206,8 @@ function ProposalCard({
     <li
       className={
         settled
-          ? 'rounded-lg border border-hairline bg-well/40 px-3.5 py-3'
-          : 'rounded-lg border border-hairline bg-panel px-3.5 py-3'
+          ? 'min-w-0 rounded-lg border border-hairline bg-well/40 px-3.5 py-3'
+          : 'min-w-0 rounded-lg border border-hairline bg-panel px-3.5 py-3'
       }
     >
       {/* Wraps, so on a narrow screen the buttons drop under the text rather
@@ -212,7 +222,12 @@ function ProposalCard({
         />
         <div className="min-w-48 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className={settled ? 'text-sm text-text-2' : 'text-sm text-text-1'}>
+            <span
+              className={cn(
+                'min-w-0 text-sm wrap-anywhere',
+                settled ? 'text-text-2' : 'text-text-1',
+              )}
+            >
               {p.title}
             </span>
             {status ? (
@@ -229,7 +244,7 @@ function ProposalCard({
           {posting ? (
             <div className="mt-1 space-y-1">
               {posting.summary ? (
-                <p className="line-clamp-2 text-xs leading-relaxed text-text-1">
+                <p className="line-clamp-2 text-xs leading-relaxed wrap-anywhere text-text-1">
                   {posting.summary}
                 </p>
               ) : (
@@ -263,7 +278,7 @@ function ProposalCard({
               VALUE — so someone was being asked to approve a note without being
               shown the note. Found by running the page; see `proposalDetail`. */}
           {detail ? (
-            <p className="mt-1 rounded border border-hairline bg-well px-2 py-1 text-xs leading-relaxed text-text-1">
+            <p className="mt-1 rounded border border-hairline bg-well px-2 py-1 text-xs leading-relaxed wrap-anywhere text-text-1">
               {detail}
             </p>
           ) : null}
@@ -271,11 +286,13 @@ function ProposalCard({
           {/* The reason, in the model's own words. The thing actually being
               judged, so it is never behind a disclosure. */}
           {p.rationale ? (
-            <p className="mt-1.5 text-xs leading-relaxed text-text-2">{p.rationale}</p>
+            <p className="mt-1.5 text-xs leading-relaxed wrap-anywhere text-text-2">
+              {p.rationale}
+            </p>
           ) : null}
 
           {p.status === 'failed' && p.error ? (
-            <p className="mt-1.5 flex items-start gap-1.5 text-xs text-danger">
+            <p className="mt-1.5 flex items-start gap-1.5 text-xs wrap-anywhere text-danger">
               <TriangleAlert className="mt-0.5 size-3 shrink-0" strokeWidth={1.8} aria-hidden />
               {p.error}
             </p>
