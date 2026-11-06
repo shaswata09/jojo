@@ -49,6 +49,8 @@ export const scoutPostingSave = defineTool({
         description: 'One or two plain sentences on what the job is, from what the board showed.',
       }),
     ),
+    org: s.optional(s.string({ label: 'Employer', description: 'The employer the listing names — not the job board.' })),
+    location: s.optional(s.string({ label: 'Location', description: 'The city and region the listing names.' })),
     size: s.optional(s.string()),
     savedOn: s.optional(s.isoDate()),
     pipelineId: s.optional(s.id('pipeline')),
@@ -57,6 +59,8 @@ export const scoutPostingSave = defineTool({
   run(ctx, input): NodeId {
     const url = input.url.trim()
     const summary = input.summary?.trim().replace(/\s+/g, ' ')
+    const org = input.org?.trim()
+    const location = input.location?.trim()
     const guess = draftFromUrl(url)
     // The title is a guess made from the URL, offered so the row is readable —
     // the record says what it is, which is a link you kept.
@@ -75,6 +79,8 @@ export const scoutPostingSave = defineTool({
         // Absent rather than empty, so a posting saved without one is stored
         // exactly as it was before the field existed.
         ...(summary ? { summary } : {}),
+        ...(org ? { org } : {}),
+        ...(location ? { location } : {}),
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,
@@ -176,10 +182,16 @@ export const scoutPostingPromote = defineTool({
     const posting = ctx.require('posting', input.id)
     const guess = draftFromUrl(posting.props.url)
     const named = guess.org ? guess : { ...guess, ...draftFromText(posting.props.title) }
-    const org = named.org || posting.props.title
+    // The employer the listing named beats one read off the address, which on
+    // a job board is the board: a CRA posting used to become "CRA — …".
+    const org = posting.props.org || named.org || posting.props.title
     // The URL's reading wins when it has one — it is the more structured
     // source, and a slug is the job spelled the way the employer files it.
-    const role = named.role || roleFromTitle(posting.props.title, org)
+    // Unless the listing named the employer: then the slug was the BOARD's
+    // ("assistant-professor-manhattan-kansas") and the listing's title is the role.
+    const role = posting.props.org
+      ? roleFromTitle(posting.props.title, org) || named.role || ''
+      : named.role || roleFromTitle(posting.props.title, org)
 
     const application = ctx.call('application.create', {
       org,
@@ -193,6 +205,7 @@ export const scoutPostingPromote = defineTool({
       // takes. 'Job scout' is reserved for what a pipeline found by itself.
       ...(named.source === undefined ? {} : { source: named.source }),
       url: named.url ?? posting.props.url,
+      ...(posting.props.location ? { location: posting.props.location } : {}),
       lastAction: 'Added from a saved posting',
     })
 

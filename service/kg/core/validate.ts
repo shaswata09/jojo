@@ -496,6 +496,8 @@ export const NODE_PROP_SCHEMAS = {
     savedOn: s.isoDate({ label: 'Saved on' }),
     size: s.string({ label: 'Size' }),
     summary: s.optional(s.string({ max: MAX_POSTING_SUMMARY, label: 'Summary' })),
+    org: s.optional(s.string({ label: 'Employer' })),
+    location: s.optional(s.string({ label: 'Location' })),
   }),
   stickyNote: s.object({
     slug,

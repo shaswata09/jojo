@@ -292,6 +292,68 @@ describe('refusing a job the person has already seen', () => {
     },
   )
 
+  /*
+   * Reported 2026-11-06: one Kansas State opening is listed on HigherEdJobs,
+   * CRA and AcademicCareers, each under its own address, and the address check
+   * let all three through. The listing's employer, role and place are what
+   * recognise it.
+   */
+  describe('the same job on another board', () => {
+    const cra = {
+      url: 'https://careercenter.cra.org/job/assistant-professor-manhattan-kansas-2507',
+      title: 'Assistant Professor',
+      org: 'Kansas State University',
+      location: 'Manhattan, Kansas',
+    }
+    const hej = {
+      url: 'https://www.higheredjobs.com/faculty/details.cfm?JobCode=179593001',
+      title: 'Tenure-Track Assistant Professor--Computer Science',
+      org: 'Kansas State University',
+      location: 'Manhattan, KS',
+    }
+    const proposalOf = (input: object, status: 'pending' | 'approved' = 'pending') => {
+      const m = new MutableSnapshot()
+      m.putNode({
+        id: 'proposal:9' as never,
+        type: 'proposal',
+        props: { slug: 'z', kind: 'scout', tool: 'scout.posting.save', input: JSON.stringify(input), title: 'Save posting', rationale: '', status, proposedAt: at },
+        createdAt: at,
+        updatedAt: at,
+      })
+      return m
+    }
+
+    it('is refused when another board’s listing of it was already suggested', () => {
+      const { wrapped, calls } = scoutOn(proposalOf(cra))
+      const result = wrapped.run('scout.posting.save' as never, hej)
+      expect(result.ok).toBe(false)
+      expect(calls).toHaveLength(0)
+      if (!result.ok) expect(result.errors[0]?.message).toContain('already suggested from another board')
+    })
+
+    it('is refused when it is already an application', () => {
+      const m = new MutableSnapshot()
+      m.putNode({ id: 'org:1' as never, type: 'organisation', props: { slug: 'ksu', name: 'Kansas State University' }, createdAt: at, updatedAt: at })
+      m.putNode({
+        id: 'app:1' as never,
+        type: 'application',
+        props: { slug: 'ksu', role: 'Assistant Professor', roleTag: 'Assistant Professor', stage: 'draft', note: '', lastAction: '', lastActionAt: at, location: 'Manhattan, Kansas' } as never,
+        createdAt: at,
+        updatedAt: at,
+      })
+      m.putEdge({ id: edgeId('app:1' as never, 'AT', 'org:1' as never), from: 'app:1' as never, rel: 'AT', to: 'org:1' as never, createdAt: at } as never)
+      const { wrapped } = scoutOn(m)
+      const result = wrapped.run('scout.posting.save' as never, hej)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.errors[0]?.message).toContain('already an application')
+    })
+
+    it('still proposes a different search at the same employer', () => {
+      const { wrapped } = scoutOn(proposalOf(cra))
+      expect(wrapped.run('scout.posting.save' as never, { ...hej, title: 'Associate Professor of Statistics' }).ok).toBe(true)
+    })
+  })
+
   it.each(['discarded', 'failed', 'approved'] as const)(
     'does not re-propose a match whose suggestion is already %s',
     (status) => {

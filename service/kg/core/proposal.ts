@@ -24,6 +24,7 @@
 import { canonicalPostingUrl } from './capture'
 import type { Instant, Match, PipelineKind, Proposal, ProposalStatus, SavedPosting } from './model'
 import type { GraphSnapshot } from './snapshot'
+import type { JobIdentity } from './same-job'
 
 /* ------------------------------- the two kinds ---------------------------- */
 
@@ -398,6 +399,62 @@ export function knownPostingUrls(memory: GraphSnapshot): string[] {
     }
   }
   return urls
+}
+
+/** A job this person already knows about, with what to call it in a refusal. */
+export type KnownJob = JobIdentity & { label: string; kind: 'application' | 'posting' | 'suggestion' }
+
+/**
+ * Every job already in front of this person, from every source — for
+ * recognising the same job reposted on another board.
+ *
+ * The same three sources as `knownPostingUrls`, for the same reasons, read for
+ * WHAT the job is rather than where it lives: an application's employer, role
+ * and place; a saved posting's listing; and every scout suggestion ever made,
+ * whatever became of it.
+ */
+export function knownJobs(memory: GraphSnapshot): KnownJob[] {
+  const out: KnownJob[] = []
+  for (const node of memory.ofType('application')) {
+    const org = memory.one(node.id, 'AT', 'organisation')?.props.name
+    out.push({
+      kind: 'application',
+      label: [org, node.props.role].filter(Boolean).join(' — '),
+      org,
+      role: node.props.role,
+      location: node.props.location,
+      url: node.props.url,
+      postingId: node.props.postingId,
+    })
+  }
+  for (const node of memory.ofType('posting')) {
+    out.push({
+      kind: 'posting',
+      label: node.props.title,
+      org: node.props.org,
+      role: node.props.title,
+      location: node.props.location,
+      url: node.props.url,
+    })
+  }
+  for (const node of memory.ofType('proposal')) {
+    if (node.props.tool !== 'scout.posting.save') continue
+    try {
+      const input = JSON.parse(node.props.input) as Record<string, unknown>
+      const text = (key: string) => (typeof input[key] === 'string' ? (input[key] as string) : undefined)
+      out.push({
+        kind: 'suggestion',
+        label: text('title') ?? text('url') ?? 'an earlier suggestion',
+        org: text('org'),
+        role: text('title'),
+        location: text('location'),
+        url: text('url'),
+      })
+    } catch {
+      // See `knownPostingUrls`: a payload that will not parse names nothing.
+    }
+  }
+  return out
 }
 
 /* --------------------------------- idling --------------------------------- */

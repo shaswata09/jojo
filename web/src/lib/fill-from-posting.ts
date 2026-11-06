@@ -2,6 +2,10 @@ import { useCallback } from 'react'
 import type { PostingDraft } from '@jojo/service/agent/read-posting'
 import type { Application, NodeId } from '@jojo/service/core/model'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
+import { postingIdentity } from '@jojo/service/core/capture'
+import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
+import { useDuplicateCheck } from '@/lib/duplicate-agent'
+import { useUndoable } from '@/lib/undo'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useRun } from '@jojo/service/react/use-tool'
 import { useVault } from '@jojo/service/react/use-vault'
@@ -112,6 +116,13 @@ export function fillPatch(
   return { patch, filled, confirmed, keptYours }
 }
 
+/** Why the static rule called it a duplicate, in a sentence. */
+const DUPLICATE_WHY = {
+  id: 'Both postings carry the same posting ID.',
+  url: 'Both are the same posting address.',
+  name: 'Same employer and role.',
+} as const
+
 export type FillOutcome =
   | {
       ok: true
@@ -124,6 +135,13 @@ export type FillOutcome =
       /** Fields the page did not answer. */
       missing: readonly string[]
       via: PostingRoute
+      /**
+       * Set when the page turned out to be a job already in the applications —
+       * the same posting reposted on another board. The draft has been removed
+       * and the posting and its page are filed under the one that was there.
+       * `restore` puts the draft back ("Keep both").
+       */
+      duplicate?: { id: string; name: string; why: string; restore: () => void }
     }
   | { ok: false; step: PostingStep | 'filling'; reason: string }
 
@@ -148,6 +166,8 @@ export function useFillFromPosting(): (options: {
   const run = useRun()
   const { repo, projections } = useKg()
   const { files, updateFile } = useVault()
+  const checkDuplicate = useDuplicateCheck()
+  const undoable = useUndoable()
 
   return useCallback(
     async ({ applicationId, url, settings, reader }) => {
@@ -178,6 +198,65 @@ export function useFillFromPosting(): (options: {
           step: 'filling',
           reason: 'The draft was deleted while its posting was being read.',
         }
+
+      /*
+       * The same job, already an application — checked on what the PAGE says,
+       * which is the strongest evidence there is: its posting ID, its address,
+       * its employer and role, then the model as judge (`use-duplicate-check`,
+       * the same check the New application form runs). The scout's own check
+       * runs on a listing's few words and lets through what only the page can
+       * settle, like a CRA listing titled "Assistant Professor" for the
+       * HigherEdJobs one titled "…--Computer Science".
+       */
+      const merged = {
+        org: read.draft.org ?? now.org,
+        role: read.draft.role ?? now.role,
+        location: read.draft.location ?? now.location,
+        url: now.url ?? url,
+        postingId: read.draft.postingId ?? now.postingId,
+      }
+      const found = await checkDuplicate({
+        existing: projections.applications(graph),
+        candidate: merged,
+        skipId: id,
+        settings: { ...settings, thinking: helperThinking(settings.thinking ?? DEFAULT_THINKING) },
+      }).catch(() => null)
+      if (found) {
+        const existing = found.record
+        const posting = projections
+          .postings(graph)
+          .find((p) => p.applicationId === id || postingIdentity(p.url) === postingIdentity(url))
+        const pageFiled = graph
+          .many(read.file.id as NodeId, 'FILED_UNDER', 'out', 'application')
+          .map((a) => a.id)
+          .filter((a) => a !== id)
+        const { restore } = undoable(() => {
+          run('application.delete', { id })
+          if (posting)
+            run('scout.posting.update', {
+              id: posting.id as NodeId,
+              applicationId: existing.id as NodeId,
+            })
+          updateFile(read.file.id, { applicationIds: [...new Set([...pageFiled, existing.id])] })
+        })
+        const existingName = existing.role ? `${existing.org} — ${existing.role}` : existing.org
+        return {
+          ok: true,
+          application: existing.id,
+          name: existingName,
+          filled: [],
+          confirmed: [],
+          keptYours: [],
+          missing: read.missing,
+          via: read.via,
+          duplicate: {
+            id: existing.id,
+            name: existingName,
+            why: found.because ?? DUPLICATE_WHY[found.reason],
+            restore: restore ?? (() => {}),
+          },
+        }
+      }
 
       const hasDeadline = projections
         .timeline(graph)
@@ -222,6 +301,6 @@ export function useFillFromPosting(): (options: {
         via: read.via,
       }
     },
-    [readPosting, run, repo, projections, files, updateFile],
+    [readPosting, run, repo, projections, files, updateFile, checkDuplicate, undoable],
   )
 }

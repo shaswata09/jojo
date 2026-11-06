@@ -908,6 +908,9 @@ export type SavedPosting = {
   size: string
   /** One or two sentences on what the job is, written by the scout from what the board showed. */
   summary?: string
+  /** The employer and place the listing named. See `PostingProps`. */
+  org?: string
+  location?: string
   /** Derived: whether a BECAME edge exists. Never stored — see project.ts. */
   linked: boolean
   applicationId?: string
@@ -1643,6 +1646,14 @@ export type PostingProps = {
   savedOn: ISODate
   size: string
   summary?: string
+  /**
+   * The employer and place as the listing named them. The address names the
+   * BOARD ("cra.org") and not the employer, so these are what recognise the
+   * same job reposted elsewhere (`core/same-job.ts`) and what a draft made
+   * from the posting is named after.
+   */
+  org?: string
+  location?: string
 }
 
 export type MatchProps = {

@@ -17,7 +17,7 @@ import type { Pipeline, SavedPosting } from '@/data/scout'
 import type { VaultFile } from '@/data/vault'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useProfile } from '@jojo/service/react/use-profile'
-import { useGraph } from '@jojo/service/react/kg-context'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useScout } from '@jojo/service/react/use-scout'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
@@ -35,6 +35,8 @@ import { report } from '@/lib/analytics'
 import { kindOf } from '@jojo/service/react/use-pipelines'
 import { jobFromApproval, postingPreview } from '@jojo/service/core/proposal'
 import { postingIdentity } from '@jojo/service/core/capture'
+import { findSameJob } from '@jojo/service/core/same-job'
+import type { JobIdentity } from '@jojo/service/core/same-job'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
 
@@ -60,6 +62,7 @@ export function JobScout() {
     postings,
     addPosting,
     removePosting,
+    updatePosting,
     promoteToApplication,
     promotePosting,
     pipelines,
@@ -68,6 +71,41 @@ export function JobScout() {
     removePipeline,
   } = useScout()
   const { get } = useApplications()
+  const kg = useKg()
+
+  /**
+   * The application this job already is, if any — the same job under another
+   * board's address (`core/same-job.ts`). Read from the store itself, not this
+   * render's list: Approve all makes several drafts in one handler, and the
+   * second must see the first.
+   */
+  const alreadyHave = (job: JobIdentity) => {
+    const apps = kg.projections.applications(kg.repo.getSnapshot())
+    return findSameJob(apps, job)?.record ?? null
+  }
+
+  /** What a scout suggestion says the job is. */
+  const identityOf = (input: string): JobIdentity => {
+    try {
+      const raw = JSON.parse(input) as Record<string, unknown>
+      const text = (key: string) =>
+        typeof raw[key] === 'string' ? (raw[key] as string) : undefined
+      return { org: text('org'), role: text('title'), location: text('location'), url: text('url') }
+    } catch {
+      return {}
+    }
+  }
+
+  /** Said once a job turned out to be one already in the applications. */
+  const sayAlreadyHave = (
+    existing: { org: string; role: string },
+    target: Parameters<typeof appPath>[0],
+  ) =>
+    toast({
+      title: `Already in your applications — not added again`,
+      description: `This is ${existing.role ? `${existing.org} — ${existing.role}` : existing.org}, reposted on another board. The posting is linked to it, and its page is filed under it.`,
+      action: { label: 'Open', onClick: () => navigate(appPath(target)) },
+    })
   // The matches are scored against this rather than shipped with a number.
   const { profile } = useProfile()
 
@@ -230,6 +268,20 @@ export function JobScout() {
    *  reverts the write and brings the reader back off the detail route. */
   const onPromotePosting = (postingId: string) => {
     const posting = postings.find((p) => p.id === postingId)
+    const existing = posting
+      ? alreadyHave({
+          org: posting.org,
+          role: posting.title,
+          location: posting.location,
+          url: posting.url,
+        })
+      : null
+    if (posting && existing) {
+      updatePosting(postingId, { applicationId: existing.id })
+      if (!pageFor(posting)) keepAndReport(posting.url, posting.title)
+      sayAlreadyHave(existing, existing)
+      return
+    }
     const { value: application, restore } = undoable(() => promotePosting(postingId))
     if (!application) return
     /*
@@ -314,6 +366,19 @@ export function JobScout() {
         })
         return
       }
+      if (out.duplicate) {
+        const { duplicate } = out
+        // The draft is gone; a reader sitting on its page is moved to the one kept.
+        if (window.location.pathname === appPath(application as Parameters<typeof appPath>[0])) {
+          navigate(appPath({ id: duplicate.id }))
+        }
+        toast({
+          title: `Already in your applications — not added again`,
+          description: `The posting is ${duplicate.name}, which you already have. ${duplicate.why} Its page is filed under that one.`,
+          action: { label: 'Keep both', onClick: duplicate.restore },
+        })
+        return
+      }
       const name = out.name
       toast({
         title:
@@ -355,19 +420,29 @@ export function JobScout() {
       return null
     }
     const kind = proposal.tool === 'scout.match.save' ? 'match' : 'posting'
+    const seen = kind === 'posting' ? postingPreview(proposal.tool, proposal.input) : null
+    const page = seen?.href ? { url: seen.href, title: seen.title ?? seen.label } : null
+    // Already an application under another board's address: the posting is
+    // filed against that one instead of becoming a second.
+    const existing = kind === 'posting' ? alreadyHave(identityOf(proposal.input)) : null
+    if (existing) {
+      updatePosting(made, { applicationId: existing.id })
+      return { repeat: true as const, existing, page }
+    }
     const application = draftFrom(kind, made)
     if (!application) return null
-    const seen = kind === 'posting' ? postingPreview(proposal.tool, proposal.input) : null
-    return {
-      application,
-      page: seen?.href ? { url: seen.href, title: seen.title ?? seen.label } : null,
-    }
+    return { repeat: false as const, application, page }
   }
 
   const onApproveProposal = (id: string) => {
     const done = approveOne(id)
     report('scout_proposal_decided', { decision: 'approved' })
     if (!done) return
+    if (done.repeat) {
+      if (done.page) keepAndReport(done.page.url, done.page.title)
+      sayAlreadyHave(done.existing, done.existing)
+      return
+    }
     const { application, page } = done
     toast({
       title: `${application.org} added to your applications as a draft`,
@@ -390,14 +465,24 @@ export function JobScout() {
     const ids = engine.proposals
       .filter((p) => p.pipelineId === pipelineId && p.status === 'pending')
       .map((p) => p.id)
-    const done = ids.flatMap((id) => {
+    const results = ids.flatMap((id) => {
       const one = approveOne(id)
       return one ? [one] : []
     })
+    const done = results.flatMap((r) => (r.repeat ? [] : [r]))
+    const repeats = results.flatMap((r) => (r.repeat ? [r] : []))
+    for (const r of repeats) if (r.page) keepAndReport(r.page.url, r.page.title)
     report('scout_proposal_decided', { decision: 'approved' })
+    if (done.length === 0 && repeats.length > 0) {
+      toast({
+        title: `Already in your applications — nothing new added`,
+        description: `${String(repeats.length)} ${repeats.length === 1 ? 'is a job' : 'are jobs'} you already have, reposted on another board. ${repeats.length === 1 ? 'It is' : 'They are'} linked to the application${repeats.length === 1 ? '' : 's'} you have.`,
+      })
+      return
+    }
     if (done.length === 0) return
     toast({
-      title: `${String(done.length)} added to your applications as drafts`,
+      title: `${String(done.length)} added to your applications as drafts${repeats.length > 0 ? ` · ${String(repeats.length)} already there` : ''}`,
       description: isConfigured(settings)
         ? 'Reading each posting in turn to fill in its details.'
         : 'Filled from their links. Connect a model in Settings to have the postings themselves read in.',

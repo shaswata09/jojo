@@ -98,14 +98,14 @@ export const SHAPE: DirRow[] = [
     // for each application, and the one rule for when a brief counts as empty.
     // `backup-stream.ts` and its test: the backup written and read in pieces,
     // because a 500 MB store is more base64 than one string can hold.
-    files: 142,
-    tests: 69,
+    files: 144,
+    tests: 70,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
     // Re-measured 2026-10-22 with `backup-stream.ts`.
-    lines: 40997,
+    lines: 41538,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7502, what: 'transactions, journal, boot' },
@@ -119,7 +119,7 @@ export const SHAPE: DirRow[] = [
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one — and again when
     // `vault.ts` grew the two verbs that name one person on one job.
-    lines: 11440,
+    lines: 11681,
     what: '95 named write operations',
   },
   {
@@ -153,7 +153,7 @@ export const SHAPE: DirRow[] = [
     // keywords to the model and match the reply back onto the ones that exist.
     // Re-measured 2026-10-22, when `memory.list` became a query tool:
     // `record-query.ts` and its test, and the window-sized result cap.
-    lines: 45048,
+    lines: 45577,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -228,7 +228,7 @@ export const SHAPE: DirRow[] = [
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
   // shared pieces the chat dock draws too.
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4674, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4875, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -268,7 +268,7 @@ export const SHAPE: DirRow[] = [
     // with the Assistant) and `sheet-presence.ts` (where the open record is).
     files: 169,
     tests: 63,
-    lines: 25452,
+    lines: 25622,
     what: 'web-only adapters and URL state',
   },
   {
