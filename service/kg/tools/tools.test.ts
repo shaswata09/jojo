@@ -16,6 +16,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import { noteText } from './application-fields'
 import { MutableSnapshot } from '../core/snapshot'
 import {
   FILE_BUCKET_VALUES,
@@ -2811,5 +2812,19 @@ describe('what a destructive announcement says', () => {
       before,
     )
     expect(`${shown.title} ${shown.description ?? ''}`).toContain('Tidy up')
+  })
+})
+
+/*
+ * Measured 2026-11-11: asked to delete a note, Gemma 4 called
+ * `application.update { note: "null" }` and the note read "null".
+ */
+describe('a note a model meant to delete', () => {
+  it('is empty, from either tool that writes a note', () => {
+    expect(noteText('null')).toBe('')
+    expect(noteText('  None ')).toBe('')
+    expect(noteText('undefined')).toBe('')
+    expect(noteText('Null pointer bug in the take-home')).toBe('Null pointer bug in the take-home')
+    expect(noteText('  Ask about lab space ')).toBe('Ask about lab space')
   })
 })

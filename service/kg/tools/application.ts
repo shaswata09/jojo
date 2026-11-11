@@ -32,6 +32,7 @@ import {
   appId,
   cleared,
   fields,
+  noteText,
   offerShape,
   syncDeadline,
   syncKeywords,
@@ -251,12 +252,8 @@ export const applicationUpdate = defineTool({
       ...(input.note === undefined
         ? {}
         : {
-            note: input.note.trim(),
-            noteFormat: retextFormat(
-              current.props.note,
-              input.note.trim(),
-              current.props.noteFormat,
-            ),
+            note: noteText(input.note),
+            noteFormat: retextFormat(current.props.note, noteText(input.note), current.props.noteFormat),
           }),
       ...(input.source === undefined ? {} : { source: input.source ?? undefined }),
       ...(input.location === undefined ? {} : { location: cleared(input.location) }),

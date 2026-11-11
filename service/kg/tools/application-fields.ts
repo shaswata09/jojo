@@ -34,7 +34,9 @@ export const fields = {
   role: s.optional(s.string({ label: 'Role' })),
   roleTag: s.optional(s.string({ min: 1, label: 'Role type' })),
   stage: s.optional(s.enum(STAGE_VALUES, { label: 'Stage' })),
-  note: s.optional(s.string({ label: 'Note', multiline: true })),
+  note: s.optional(
+    s.string({ label: 'Note', multiline: true, description: 'The whole note. An empty string deletes it.' }),
+  ),
   source: s.optional(s.enum(SOURCES, { label: 'Where it came from' })),
   location: s.optional(s.string({ label: 'Location' })),
   comp: s.optional(s.string({ label: 'Compensation' })),
@@ -123,4 +125,18 @@ export function syncKeywords(
 ) {
   if (keywords === undefined) return
   ctx.call('keyword.record.set', { record: id, keywords: [...keywords] })
+}
+
+/**
+ * A note as written, with the one word a model writes when it means "none".
+ *
+ * Measured 2026-11-11: asked to delete a note, Gemma 4 called
+ * `application.update` with `note: "null"` — the field cannot be null, so the
+ * null arrived as text — and the application's note read "null". Nobody
+ * writes a note that is only that word, so it is read as the empty note it was
+ * meant to be. Shared by both tools that may write a note.
+ */
+export function noteText(value: string): string {
+  const note = value.trim()
+  return /^(null|none|undefined)$/i.test(note) ? '' : note
 }

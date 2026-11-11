@@ -11,7 +11,7 @@
 import { s } from '../core/schema'
 import type { NodeId } from '../core/model'
 import { decodeFormat, normaliseFormat, retextFormat } from '../core/note-format'
-import { appId } from './application-fields'
+import { appId, noteText } from './application-fields'
 import { displayOf, opt, touch } from './support'
 import { defineTool } from './tool'
 
@@ -104,7 +104,8 @@ export const applicationDuplicate = defineTool({
 export const applicationNoteSet = defineTool({
   name: 'application.note.set',
   title: 'Edit note',
-  summary: "Replaces the application's note.",
+  summary:
+    "Sets the application's note — its whole text. To add to it, read the note first and send the old text with the new; an empty note deletes it.",
   effect: 'update',
   touches: ['application'],
   /*
@@ -134,7 +135,7 @@ export const applicationNoteSet = defineTool({
 
   run(ctx, input) {
     const current = ctx.require('application', input.id)
-    const note = input.note.trim()
+    const note = noteText(input.note)
     /*
      * Given spans, they are canonicalised against the text that is being saved
      * with them. Given none — the phone's plain editor, the edit dialog, the

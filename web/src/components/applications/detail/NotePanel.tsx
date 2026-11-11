@@ -55,13 +55,47 @@ export function NotePanel({ application: a }: { application: Application }) {
   const [html, setHtml] = useState(() => htmlFromNote(a.note, stored))
   const [saved, setSaved] = useState(false)
 
+  /*
+   * The note this editor was loaded from, and whether the person has typed
+   * since.
+   *
+   * Reported 2026-11-11: "add a note" in chat did nothing. It did — the
+   * journal showed the chat's `application.note.set`, and 127 ms later this
+   * panel's own write putting the old text back. The editor loaded the note
+   * once, never noticed the chat change it, and on closing compared its stale
+   * copy with the NEW stored note, found them different, and saved the stale
+   * one. Every note written from chat, another tab or a sync while the record
+   * was open was reverted this way.
+   *
+   * So a write needs an edit: `dirty` is set only by typing, and the comparison
+   * is against what was loaded, not against whatever the store says now. And
+   * a change from elsewhere is loaded into the editor, unless the person is
+   * mid-edit — then their words win, and the next save is theirs.
+   */
+  const baseline = useRef({ note: a.note, format: encodeFormat(stored) })
+  const dirty = useRef(false)
+
+  const storedFormat = encodeFormat(stored)
+  useEffect(() => {
+    if (dirty.current) return
+    if (baseline.current.note === a.note && baseline.current.format === storedFormat) return
+    baseline.current = { note: a.note, format: storedFormat }
+    setHtml(htmlFromNote(a.note, stored))
+    // `stored` is the array the store handed back; its encoding is the dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [a.note, storedFormat])
+
   const commit = () => {
+    // Nothing typed — a blur straight after an unmount, or a click away from a
+    // note nobody touched. Writing would stamp `lastActionAt`, take the top of
+    // the undo stack, and — when the note changed elsewhere — undo that change.
+    if (!dirty.current) return
     const { text, format, dropped } = noteFromRuns(rawRunsFromHtml(html))
-    // Nothing changed — a blur straight after an unmount, or a click away from
-    // a note nobody touched. Writing anyway would stamp `lastActionAt` and take
-    // the top of the undo stack.
-    if (text === a.note && encodeFormat(format) === encodeFormat(stored)) return
-    setNote(a.id, text, encodeFormat(format) ?? '')
+    dirty.current = false
+    const encoded = encodeFormat(format)
+    if (text === baseline.current.note && encoded === baseline.current.format) return
+    baseline.current = { note: text, format: encoded }
+    setNote(a.id, text, encoded ?? '')
     setSaved(true)
 
     /*
@@ -100,6 +134,12 @@ export function NotePanel({ application: a }: { application: Application }) {
       <RichTextEditor
         value={html}
         onChange={(next) => {
+          // The editor also reports the value it was just handed. Only text
+          // that differs from what was loaded is an edit.
+          const { text, format } = noteFromRuns(rawRunsFromHtml(next))
+          if (text !== baseline.current.note || encodeFormat(format) !== baseline.current.format) {
+            dirty.current = true
+          }
           setHtml(next)
           setSaved(false)
         }}

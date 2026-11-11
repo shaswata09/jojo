@@ -1041,3 +1041,41 @@ describe('the reads that are earned rather than resident', () => {
     expect(offered('work out the average for me')!.has('stats.report')).toBe(true)
   })
 })
+
+/*
+ * Reported 2026-11-11 as "notes and such tools do not work from chat". A tool
+ * that merely MENTIONS a word (`application.update` has a `keywords` field)
+ * used to take that word's place from the tools named after it.
+ */
+describe('a word keeps the tools named after it', () => {
+  const offers = (message: string, tool: string) => {
+    const offered = offeredFor(message, null)
+    return offered === null || new Set(offered).has(tool)
+  }
+
+  it('offers a keyword tool when the request also names an application', () => {
+    expect(offers('add a keyword "Visa" to my Rice application', 'keyword.create')).toBe(true)
+    expect(offers('add keyword for my Rice application', 'keyword.create')).toBe(true)
+  })
+
+  it('offers every write tool when asked for it by its own title', () => {
+    for (const entry of CATALOG) {
+      if (entry.effect === 'read' || NEVER_IMPLICIT.includes(entry.name)) continue
+      for (const asked of [entry.title, `${entry.title.toLowerCase()} for my Rice application`]) {
+        expect(offers(asked, entry.name), `${entry.name} for ${JSON.stringify(asked)}`).toBe(true)
+      }
+    }
+  })
+
+  it('offers the note tools for adding, editing and deleting a note', () => {
+    for (const asked of [
+      'Add a note to my Rice application: ask about lab space',
+      'Edit the note on my Stripe application',
+      'Delete the note on Baylor',
+    ]) {
+      expect(offers(asked, 'application.note.set'), asked).toBe(true)
+    }
+    expect(offers('add a sticky note: call the registrar', 'sticky.note.create')).toBe(true)
+    expect(offers('delete my sticky note about the registrar', 'sticky.note.delete')).toBe(true)
+  })
+})

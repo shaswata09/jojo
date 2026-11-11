@@ -764,18 +764,35 @@ export function select(message: string): Set<string> | null {
    * worth six gold nodes of recall at K=3 (100/116 to 106/116) and one in the
    * configuration that shipped (115/116 to 116/116), for 0.3 tools a turn.
    */
+  /*
+   * "Best" for a TERM means the tool that term most names, and only then the
+   * one that scored highest overall.
+   *
+   * Ranked by total score alone, a tool that merely MENTIONS the word took the
+   * term's slot from the tools named after it. Measured 2026-11-11: "add a
+   * keyword Visa to my Rice application" — `application.update` carries a
+   * `keywords` field (weight 2) and the word "application" (3), so it won the
+   * "keyword" slot at 5 over every `keyword.*` tool at 3, and the turn was
+   * offered no keyword tool at all; "add keyword Visa to Rice", with no
+   * "application" in it, was offered all seven. The term's own weight ranks
+   * first — a name word (3) beats a field or title word (2) beats prose (1).
+   */
   for (const term of wanted) {
     const row = INDEX.get(term)
     if (row === undefined) continue
     let bestTool: string | null = null
+    let bestWeight = 0
     let bestScore = 0
-    for (const tool of row.keys()) {
+    for (const [tool, weight] of row) {
       const score = scores.get(tool) ?? 0
       if (score < SEED_FLOOR) continue
-      if (
-        score > bestScore ||
-        (score === bestScore && bestTool !== null && catalogIndex(tool) < catalogIndex(bestTool))
-      ) {
+      const better =
+        weight > bestWeight ||
+        (weight === bestWeight &&
+          (score > bestScore ||
+            (score === bestScore && bestTool !== null && catalogIndex(tool) < catalogIndex(bestTool))))
+      if (better) {
+        bestWeight = weight
         bestScore = score
         bestTool = tool
       }
