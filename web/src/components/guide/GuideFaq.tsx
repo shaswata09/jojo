@@ -63,7 +63,7 @@ export function GuideFaq() {
 
       <Panel id="faq-stack" className="scroll-mt-4">
         <PanelTitle hint="model and rules in the service, views in the apps">The stack</PanelTitle>
-        <p className="mb-4 max-w-prose text-sm text-text-2">
+        <p className="mb-4 text-sm text-text-2">
           The apps are views. The domain — what a record is, what may change it, how it is stored —
           lives once, in <Path>service/</Path>, in six layers that may only depend downward. The
           web app and the phone app each add their own screens and platform wiring on top, and the
@@ -83,7 +83,7 @@ export function GuideFaq() {
                 </h3>
                 <Path>{layer.path}</Path>
               </div>
-              <p className="mt-1 max-w-prose text-sm text-text-2">{layer.does}</p>
+              <p className="mt-1 text-sm text-text-2">{layer.does}</p>
               <p className="mt-1 text-xs text-text-3">May import: {layer.mayImport}</p>
               <dl className="mt-2.5 grid gap-x-4 gap-y-1.5 sm:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
                 {layer.modules.map((m) => (
@@ -102,7 +102,7 @@ export function GuideFaq() {
 
       <Panel id="faq-flows" className="scroll-mt-4">
         <PanelTitle hint="file by file">How a request travels</PanelTitle>
-        <p className="mb-4 max-w-prose text-sm text-text-2">
+        <p className="mb-4 text-sm text-text-2">
           Six things people do, traced through the files that do them. Read the one closest to what
           you are changing before you change it — the step you are about to touch is rarely the only
           one that has to agree.
@@ -157,7 +157,7 @@ export function GuideFaq() {
           {FAQ_PLACEMENT.map((item) => (
             <div key={item.q} className="py-3 first:pt-0 last:pb-0">
               <dt className="text-sm text-text-1">{item.q}</dt>
-              <dd className="mt-1 max-w-prose text-sm text-text-2">{item.a}</dd>
+              <dd className="mt-1 text-sm text-text-2">{item.a}</dd>
             </div>
           ))}
         </dl>
