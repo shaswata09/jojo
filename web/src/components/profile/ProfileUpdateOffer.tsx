@@ -218,64 +218,51 @@ export function ProfileUpdateOffer() {
 
     /*
      * Only what survived the review, and the ORIGINAL positions are kept
-     * alongside so the relations can still be resolved: `claim.add` refers to
+     * alongside so the relations can still be resolved: a relation refers to
      * entries by their position in the list the model was shown, and filtering
      * renumbers everything.
      */
     const keeping = drafts.map((draft, at) => ({ draft, at })).filter(({ at }) => !dropped.has(at))
     if (keeping.length === 0) return
 
-    const result = run('profile.background.add', {
-      // `source` on every entry, and this is the line that closes the loop:
-      // `twinState` counts a document as read when a fact points back at it, so
-      // an import that omitted it would leave the document eternally unread and
-      // this banner would offer it again tomorrow.
-      background: keeping.map(({ draft }) => ({ ...draft, source: fileId })),
+    /*
+     * One tool, one commit, one Undo: `profile.background.import` files the
+     * entries and then the relations between them inside a single transaction.
+     * This used to be `profile.background.add` and then a `claim.add` per
+     * relation from here — a dozen journal rows for one click, nothing that
+     * could take the import back, and a failure part way left facts without
+     * their relations.
+     *
+     * Relations name entries by their position in the list the MODEL was
+     * shown; the tool takes positions in the list it is GIVEN. So each end is
+     * moved from its original position to its place in `keeping`, and a
+     * relation naming an entry the person dropped is left out rather than
+     * pointed at whichever entry shifted into that slot.
+     *
+     * `source` on every entry is what closes the loop: `twinState` counts a
+     * document as read when a fact points back at it, so an import without it
+     * would leave the document eternally unread and this banner would offer it
+     * again tomorrow. The tool applies it.
+     */
+    const position = new Map(keeping.map(({ at }, i) => [at, i]))
+    const relations = links.flatMap((link) => {
+      const subject = position.get(link.subject)
+      const object = position.get(link.object)
+      return subject === undefined || object === undefined
+        ? []
+        : [{ subject, predicate: link.predicate, object }]
     })
-
-    /*
-     * The relations, once the entries have ids to point at.
-     *
-     * `profile.background.add` returns the ids in the order it was given the
-     * entries, which is what makes a position resolvable at all — and why the
-     * reader returns positions rather than asking a model to copy uuids.
-     *
-     * Each is offered to `claim.add`, which refuses any the graph already holds
-     * under another name. A refusal here is the feature working, not an error,
-     * so nothing is reported for it.
-     */
-    // `output.ids`, in the order the entries were given. The tool also reports
-    // `created` — which of them it actually minted — and that is what its own
-    // announcement counts; the positions below only need the ids.
-    const out = result.ok ? (result.output as { ids: string[]; created: string[] }) : null
-    // `ids` in the order the entries were given; `created` is the subset this
-    // call actually minted. Most of a newer CV is the older one, so "how many
-    // were added" and "how many were offered" are different numbers — and the
-    // toast used to print the second while the journal row printed the first.
-    const ids = out?.ids ?? []
-    const added = out?.created.length ?? 0
-    /*
-     * Original position -> the id it was actually written under. Built from
-     * `keeping`, so a relation naming an entry the person dropped resolves to
-     * nothing and is skipped rather than silently pointing at whichever entry
-     * shifted into that slot.
-     */
-    const idAt = new Map(keeping.map(({ at }, i) => [at, ids[i]]))
-    let related = 0
-    if (result.ok) {
-      for (const link of links) {
-        const subject = idAt.get(link.subject)
-        const object = idAt.get(link.object)
-        if (subject === undefined || object === undefined) continue
-        const out = run('claim.add', {
-          subject,
-          predicate: link.predicate,
-          object,
-          source: fileId,
-        })
-        if (out.ok) related += 1
-      }
-    }
+    const result = run('profile.background.import', {
+      background: keeping.map(({ draft }) => draft),
+      relations,
+      source: fileId,
+    })
+    // `created` is the subset this call actually minted. Most of a newer CV is
+    // the older one, so "how many were added" and "how many were offered" are
+    // different numbers.
+    const added = result.ok ? result.output.created.length : 0
+    const related = result.ok ? result.output.related.length : 0
+    const undo = result.ok ? result.undo : null
 
     markOffered([fileId])
     setSeen((current) => [...current, fileId])
@@ -293,6 +280,10 @@ export function ProfileUpdateOffer() {
         ? `Read from ${target.subject}.${added < keeping.length ? ` ${String(keeping.length - added)} of ${String(keeping.length)} were already known.` : ''}${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} between them recorded.` : ''} jojo can now weigh a posting against what you have done.`
         : (result.errors[0]?.message ?? 'The entries were refused.'),
       ...(result.ok ? {} : { tone: 'danger' as const }),
+      // The import is one journal entry, so one Undo takes back the facts and
+      // their relations together. The document stays marked as asked: undoing
+      // the import is not asking to be offered it again.
+      ...(undo ? { action: { label: 'Undo', onClick: undo } } : {}),
     })
   }
 

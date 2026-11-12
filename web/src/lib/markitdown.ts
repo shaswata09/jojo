@@ -136,7 +136,12 @@ async function base64Of(file: Blob): Promise<string> {
   return btoa(binary)
 }
 
-export async function convertFile(endpoint: string, file: File): Promise<ConvertResult> {
+export async function convertFile(
+  endpoint: string,
+  file: File,
+  /** The assistant's Stop: a document conversion can take most of a minute. */
+  signal?: AbortSignal,
+): Promise<ConvertResult> {
   if (file.size > MAX_BYTES) {
     return {
       ok: false,
@@ -145,7 +150,7 @@ export async function convertFile(endpoint: string, file: File): Promise<Convert
       reason: `That document is ${String(Math.round(file.size / 1024 / 1024))} MB and the reader takes up to ${String(MAX_BYTES / 1024 / 1024)} MB.`,
     }
   }
-  const ready = await handshake(endpoint)
+  const ready = await handshake(endpoint, signal)
   if (!ready.ok) return ready
 
   let base64: string
@@ -155,7 +160,11 @@ export async function convertFile(endpoint: string, file: File): Promise<Convert
     return { ok: false, reason: error instanceof Error ? error.message : String(error) }
   }
 
-  const answer = await sendToReader(convertRequest(endpoint, dataUri(file.type, base64)), endpoint)
+  const answer = await sendToReader(
+    convertRequest(endpoint, dataUri(file.type, base64)),
+    endpoint,
+    signal,
+  )
   if (failed(answer)) {
     // The handshake is per-connection; a dropped one has to be redone rather
     // than remembered as good.

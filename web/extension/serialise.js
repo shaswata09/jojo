@@ -39,7 +39,7 @@
  * the clone's are element-for-element aligned. The live page is never mutated.
  */
 
-export function serialise(policy) {
+export function serialise(policy, nonce) {
   const {
     CAPTURE_STRIP_TAGS,
     CAPTURE_STRIP_ATTRS,
@@ -49,6 +49,17 @@ export function serialise(policy) {
     CAPTURE_LAZY_ATTRS,
     CAPTURE_UNCLAMP_ATTR,
   } = policy
+
+  /*
+   * Every token this capture mints carries the worker's per-capture nonce. A
+   * constant prefix was a token the PAGE could write too — see `captureNonce`
+   * in `background.js` for what that let a page put into the saved file. No
+   * nonce, no capture: a token anybody can forge is worse than none.
+   */
+  if (typeof nonce !== 'string' || !/^[0-9a-f]{16,}$/.test(nonce)) {
+    throw new Error('The capture was started without a token nonce.')
+  }
+  const TOKEN = `__JOJO_ASSET_${nonce}_`
 
   const doc = document.documentElement.cloneNode(true)
   const assets = []
@@ -70,8 +81,40 @@ export function serialise(policy) {
   const token = (href, kind) => {
     const index = assets.length
     assets.push({ href, kind })
-    return `__JOJO_ASSET_${String(index)}__`
+    return `${TOKEN}${String(index)}__`
   }
+
+  // ---- the CSS tokeniser ----------------------------------------------------
+
+  /** A CSS string's escapes decoded, so the URL resolved is the URL the parser reads. */
+  function cssUnescape(text) {
+    return text
+      .replace(/\\([0-9a-fA-F]{1,6})[ \t\r\n\f]?/g, (_w, hex) => {
+        const code = parseInt(hex, 16)
+        return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : '�'
+      })
+      .replace(/\\\r\n|\\[\n\r\f]/g, '')
+      .replace(/\\([\s\S])/g, '$1')
+  }
+
+  /*
+   * A quoted CSS string with its escapes — so the OTHER quote and a `)` may sit
+   * inside it. The patterns used `([^'")]+)`, which stopped at the first `)` or
+   * quote of either kind: `url("https://x/a)b.png")` did not match at all, was
+   * never tokenised, and loaded on view. The CSSOM writes exactly these escapes
+   * (`url("a\"b")`) when it round-trips a sheet, so the tokeniser has to read
+   * them.
+   */
+  const DQ = String.raw`"((?:[^"\\\n]|\\[\s\S])*)"`
+  const SQ = String.raw`'((?:[^'\\\n]|\\[\s\S])*)'`
+  const BARE = String.raw`((?:[^'"()\\\s]|\\[\s\S])*)`
+  const CSS_IMPORT = new RegExp(String.raw`@import\s*(?:url\(\s*(?:${DQ}|${SQ}|${BARE})\s*\)|${DQ}|${SQ})[^;]*;?`, 'gi')
+  const CSS_URL = new RegExp(String.raw`url\(\s*(?:${DQ}|${SQ}|${BARE})\s*\)`, 'gi')
+  const CSS_IMAGE_SET = new RegExp(
+    String.raw`(image-set\()((?:[^()"']|"(?:[^"\\\n]|\\[\s\S])*"|'(?:[^'\\\n]|\\[\s\S])*'|\([^()]*\))*)\)`,
+    'gi',
+  )
+  const CSS_IMAGE_SET_PIECE = new RegExp(String.raw`\([^()]*\)|${DQ}|${SQ}`, 'gi')
 
   /**
    * Replaces every remote reference in a CSS string with a token.
@@ -84,6 +127,12 @@ export function serialise(policy) {
    * `inAttribute` says whether the result is going into a `style` ATTRIBUTE
    * rather than a `<style>` element, and it is not a nicety — see the `@import`
    * arm.
+   *
+   * Callers hand this CSS the CSSOM has already re-serialised (`normalisedSheet`
+   * and `normalisedStyle` below), which is what makes a pattern match enough:
+   * `u\72 l(…)` and `@\69mport` are `url(` and `@import` to the CSS parser and
+   * were invisible to every pattern here, and the CSSOM writes them back out in
+   * plain letters.
    */
   function queueCssUrls(css, inAttribute) {
     return css
@@ -101,55 +150,50 @@ export function serialise(policy) {
        * inliner fetches as a BLOB. An imported sheet base64'd that way loses
        * every font and image its own `url()`s point at.
        */
-      .replace(
-        /@import\s+(?:url\(\s*(['"]?)([^'")]+)\1\s*\)|(['"])([^'"]+)\3)[^;]*;?/gi,
-        (whole, _q1, viaUrl, _q2, viaString) => {
-          /*
-           * An `@import` in a style ATTRIBUTE is not a stylesheet: the CSS
-           * parser honours `@import` only at the top of a style SHEET, so no
-           * browser ever fetched this one and dropping it loses nothing — hence
-           * no `dropped += 1` either, since nothing was there to keep.
-           *
-           * It is dropped rather than tokenised because of where the token would
-           * land. `background.js` splices a `css` token's value — whatever the
-           * remote server returned — into the document as text, and escapes it
-           * with `cssSafe`, which escapes `<` ALONE on the stated assumption
-           * that a `css` token always sits inside a `<style>` element. This was
-           * the one path that broke that assumption, and the escape is useless
-           * inside a quoted attribute value: measured end to end, a sheet
-           * answering `a{content:"x"}" onload="alert(1)" background="https://…`
-           * closed the `style` attribute and wrote both an event handler and a
-           * live address into the stored capture. Keeping the assumption TRUE is
-           * cheaper and more honest than widening the escape, which would have
-           * had to mangle `"` and `'` in every legitimate stylesheet.
-           */
-          if (inAttribute === true) return ''
-          const raw = viaUrl ?? viaString ?? ''
-          if (raw.trim().startsWith('data:')) return whole
-          const href = absolute(raw)
-          if (href === null) {
-            dropped += 1
-            return ''
-          }
-          return token(href, 'css')
-        },
-      )
-      .replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (whole, _quote, raw) => {
-        const value = raw.trim()
-        // A token this same chain just produced. The `@import` rewrite above
-        // emits `url("__JOJO_ASSET_n__")`, and without this the pattern below
-        // matched it, failed to resolve it, and replaced it with `none` — so the
-        // fix for bare `@import` was undone one line later and the stylesheet was
-        // silently dropped AND miscounted. Two replaces in one chain is exactly
-        // the shape where a rewrite gets rewritten.
-        if (value.startsWith('__JOJO_ASSET_')) return whole
+      .replace(CSS_IMPORT, (whole, u1, u2, u3, s1, s2) => {
+        /*
+         * An `@import` in a style ATTRIBUTE is not a stylesheet: the CSS
+         * parser honours `@import` only at the top of a style SHEET, so no
+         * browser ever fetched this one and dropping it loses nothing — hence
+         * no `dropped += 1` either, since nothing was there to keep.
+         *
+         * It is dropped rather than tokenised because of where the token would
+         * land. `background.js` splices a `css` token's value — whatever the
+         * remote server returned — into the document as text, and escapes it
+         * with `cssSafe`, which escapes `<` ALONE on the stated assumption
+         * that a `css` token always sits inside a `<style>` element. This was
+         * the one path that broke that assumption, and the escape is useless
+         * inside a quoted attribute value: measured end to end, a sheet
+         * answering `a{content:"x"}" onload="alert(1)" background="https://…`
+         * closed the `style` attribute and wrote both an event handler and a
+         * live address into the stored capture. Keeping the assumption TRUE is
+         * cheaper and more honest than widening the escape, which would have
+         * had to mangle `"` and `'` in every legitimate stylesheet.
+         */
+        if (inAttribute === true) return ''
+        const raw = cssUnescape(u1 ?? u2 ?? u3 ?? s1 ?? s2 ?? '').trim()
+        if (raw.startsWith('data:')) return whole
+        const href = absolute(raw)
+        if (href === null) {
+          dropped += 1
+          return ''
+        }
+        return token(href, 'css')
+      })
+      .replace(CSS_URL, (whole, dq, sq, bare) => {
+        const value = cssUnescape(dq ?? sq ?? bare ?? '').trim()
+        // A token this same chain just produced. Without this the pattern
+        // matched one, failed to resolve it, and replaced it with `none` — so a
+        // stylesheet was silently dropped AND miscounted. Two replaces in one
+        // chain is exactly the shape where a rewrite gets rewritten.
+        if (value.startsWith(TOKEN)) return whole
         if (value.startsWith('data:')) return whole
         // A same-document reference — `filter='url(#frameNoise)'` inside inline
         // SVG. Resolving one invents a URL that never existed, which is then
         // fetched, counted as dropped, and written back as `url("")` —
         // corrupting a data URI already decided upon.
         if (value.startsWith('#') || value.startsWith('%23')) return whole
-        const href = absolute(raw)
+        const href = absolute(value)
         if (href === null) {
           dropped += 1
           return 'none'
@@ -179,24 +223,21 @@ export function serialise(policy) {
        * simply stays outside the match, which leaves `-webkit-image-set`
        * rewritten correctly and untouched.
        */
-      .replace(/(image-set\()((?:[^()"']|"[^"]*"|'[^']*'|\([^()]*\))*)\)/gi, (_whole, head, body) => {
-        const rewritten = body.replace(
-          /\([^()]*\)|(['"])([^'"]*)\1/gi,
-          (piece, _quote, raw) => {
-            if (raw === undefined) return piece
-            const value = raw.trim()
-            if (value === '' || value.startsWith('__JOJO_ASSET_')) return piece
-            if (value.startsWith('data:')) return piece
-            const href = absolute(raw)
-            if (href === null) {
-              dropped += 1
-              // `url("")` rather than `none`: an image-set option has to be a
-              // URL, and `none` there invalidates the whole declaration.
-              return 'url("")'
-            }
-            return `url("${token(href, 'css-asset')}")`
-          },
-        )
+      .replace(CSS_IMAGE_SET, (_whole, head, body) => {
+        const rewritten = body.replace(CSS_IMAGE_SET_PIECE, (piece, dq, sq) => {
+          if (dq === undefined && sq === undefined) return piece
+          const value = cssUnescape(dq ?? sq).trim()
+          if (value === '' || value.startsWith(TOKEN)) return piece
+          if (value.startsWith('data:')) return piece
+          const href = absolute(value)
+          if (href === null) {
+            dropped += 1
+            // `url("")` rather than `none`: an image-set option has to be a
+            // URL, and `none` there invalidates the whole declaration.
+            return 'url("")'
+          }
+          return `url("${token(href, 'css-asset')}")`
+        })
         return `${head}${rewritten})`
       })
   }
@@ -209,6 +250,8 @@ export function serialise(policy) {
   // first, while `cloneNode(true)` still guarantees element-for-element
   // alignment, and stashed on the clone for the later passes to read.
   const RESOLVED = 'data-jojo-resolved-src'
+  /** The clone's <style> elements already written back from the live CSSOM. */
+  const normalised = new WeakSet()
   {
     const cloned = [...doc.querySelectorAll('*')]
     const living = [...document.documentElement.querySelectorAll('*')]
@@ -237,8 +280,15 @@ export function serialise(policy) {
         // textContent — emotion and styled-components in production do exactly
         // this. Reading only textContent captured Workday's markup with almost
         // none of its styling.
-        if (node.tagName === 'STYLE' && (node.textContent ?? '').trim() === '' && live.sheet) {
+        //
+        // And EVERY <style> is now written back from its CSSOM rules, not only
+        // the empty ones: the CSSOM decodes CSS escapes and writes `url(`,
+        // `@import` and the URL itself in plain letters, so `u\72 l(https://…)`
+        // or `@\69mport "…"` — which the browser honours and no pattern below
+        // could read — reaches the tokeniser as the fetch it is.
+        if (node.tagName === 'STYLE' && live.sheet) {
           node.textContent = rulesOf(live.sheet)
+          normalised.add(node)
         }
       }
     }
@@ -268,6 +318,19 @@ export function serialise(policy) {
       }
       node.remove()
     }
+  }
+
+  // ---- 1b. SVG animations that write an address ---------------------------
+  //
+  // `<set attributeName="href" to="https://…">` gives an element a live address
+  // at VIEW time, after every check has read the markup as having none — and
+  // SMIL runs with scripts off, so the sandbox does not stop it. Dropped: an
+  // animation of a link target is not something a posting needs, and one whose
+  // values name an address is a fetch however it is aimed.
+  for (const node of [...doc.querySelectorAll('set, animate, animateTransform, animateMotion')]) {
+    const target = (node.getAttribute('attributeName') ?? '').trim().toLowerCase()
+    const values = ['to', 'from', 'by', 'values'].map((a) => node.getAttribute(a) ?? '').join(';')
+    if (/^(?:xlink:)?href$|^src$/.test(target) || /https?:|\/\/|\\\\/i.test(values)) node.remove()
   }
 
   // ---- 2. attributes, walked against the live tree --------------------------
@@ -350,11 +413,17 @@ export function serialise(policy) {
 
     // A style attribute can name a background image, which is a fetch dressed
     // as a colour.
-    const inline = node.getAttribute('style')
-    if (inline !== null && /url\(|@import|image-set\(/i.test(inline)) {
+    //
+    // Read back through the CSSOM first — `node.style.cssText` is the attribute
+    // as the CSS parser understood it, escapes decoded — for the reason pass 0
+    // gives for <style>.
+    const raw = node.getAttribute('style')
+    if (raw !== null) {
+      const inline = normalisedStyle(node, raw)
       // `true`: this string is going back into an ATTRIBUTE, which changes what
       // may be tokenised into it. See the `@import` arm of `queueCssUrls`.
-      node.setAttribute('style', queueCssUrls(inline, true))
+      if (/url\(|@import|image-set\(/i.test(inline)) node.setAttribute('style', queueCssUrls(inline, true))
+      else if (inline !== raw) node.setAttribute('style', inline)
     }
 
     // Read in `pickImageSrc`, and gone before the document is written out — a
@@ -433,8 +502,12 @@ export function serialise(policy) {
   // inline sheets; a cross-origin sheet throws `SecurityError` on `.cssRules`
   // and is exactly the case the <link> fetch path above already covers.
   for (const style of [...doc.querySelectorAll('style')]) {
-    const text = style.textContent ?? ''
-    if (text.startsWith('__JOJO_ASSET_')) continue // a token from step 1
+    const raw = style.textContent ?? ''
+    if (raw.startsWith(TOKEN)) continue // a token from step 1
+    // One pass 0 could not reach — read through a constructed sheet instead,
+    // so its escapes are decoded all the same.
+    const text = normalised.has(style) ? raw : normalisedSheet(raw)
+    if (text !== raw) style.textContent = text
     // CSSOM-only sheets were already filled in by pass 0, where the live node
     // was still reachable; nothing here has to index two lists against each
     // other, which is what made this fragile once step 1 inserted new <style>
@@ -454,11 +527,40 @@ export function serialise(policy) {
 
   function rulesOf(sheet) {
     try {
-      return [...sheet.cssRules].map((r) => r.cssText).join('\n')
+      // `<` escaped: the CSSOM writes a string's `</style>` back out verbatim,
+      // and a rule a script inserted can carry one — which would end this
+      // element in the saved file and put whatever followed it in as markup.
+      // `\3c ` is the same character to the CSS parser.
+      return [...sheet.cssRules].map((r) => r.cssText).join('\n').replace(/</g, '\\3c ')
     } catch {
       // Cross-origin. The <link> path fetches these by URL instead.
       return ''
     }
+  }
+
+  /**
+   * CSS text the live page has no sheet for, parsed and written back out.
+   * `replaceSync` ignores `@import` — fine here, since a <style> with no live
+   * sheet was never applied by the page either. If it cannot be parsed at all,
+   * text carrying an escape is dropped rather than trusted: an escape is the
+   * one thing the tokeniser cannot read.
+   */
+  function normalisedSheet(text) {
+    if (text.trim() === '') return text
+    try {
+      const sheet = new CSSStyleSheet()
+      sheet.replaceSync(text)
+      return rulesOf(sheet)
+    } catch {
+      return text.includes('\\') ? '' : text
+    }
+  }
+
+  /** A style attribute as the CSS parser read it; see the call site. */
+  function normalisedStyle(node, raw) {
+    const declared = node.style
+    if (declared && typeof declared.cssText === 'string') return declared.cssText
+    return raw.includes('\\') ? '' : raw
   }
 
   // ---- 4. <template> contents ----------------------------------------------

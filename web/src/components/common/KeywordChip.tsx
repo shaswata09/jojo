@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import type { Label } from '@/data/labels'
 import { useLabels } from '@/lib/labels-context'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /** Rename, recolour, delete — the body of a chip's menu. */
 function KeywordMenu({
@@ -61,7 +62,7 @@ function KeywordMenu({
               setError(null)
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (isCommitEnter(e)) {
                 e.preventDefault()
                 save()
               }

@@ -1,26 +1,69 @@
 import { describe, expect, it } from 'vitest'
 import { TOOLS } from '../tools/index'
-import { CATALOG, describeEntry, entryForWire, functionSpecs, mcpSpecs, toWireName } from './catalog'
+import type { AnyTool } from '../tools/tool'
+import {
+  CATALOG,
+  describeEntry,
+  entryForWire,
+  functionSpecs,
+  mcpSpecs,
+  needsConfirming,
+  toWireName,
+} from './catalog'
 import { READS } from './queries'
 import { NODE_TYPES } from '../core/model'
 
 describe('coverage', () => {
-  it('exposes every tool in the registry, plus every read', () => {
+  const tools = Object.values(TOOLS) as AnyTool[]
+  const catalogued = tools.filter((t) => t.catalogued !== false)
+
+  it('exposes every catalogued tool in the registry, plus every read', () => {
     // The claim the whole feature rests on: a tool the app can run is a tool a
-    // model can call. A count is what makes adding a tool and forgetting the
-    // catalog a failing test rather than a silent gap.
-    expect(CATALOG).toHaveLength(Object.keys(TOOLS).length + Object.keys(READS).length)
-    for (const name of Object.keys(TOOLS)) {
-      expect(CATALOG.some((e) => e.name === name)).toBe(true)
+    // model can call — unless it is the app's own bookkeeping. A count is what
+    // makes adding a tool and forgetting the catalog a failing test rather than
+    // a silent gap.
+    expect(CATALOG).toHaveLength(catalogued.length + Object.keys(READS).length)
+    for (const t of catalogued) {
+      expect(CATALOG.some((e) => e.name === t.name)).toBe(true)
     }
   })
 
-  it('hides nothing, including the tools marked internal', () => {
+  it('hides nothing marked only internal', () => {
     // `Tool.internal` means "hidden from the palette", which is a claim about
     // screen space and not about safety.
-    const internal = Object.values(TOOLS).filter((t) => t.internal)
+    const internal = catalogued.filter((t) => t.internal)
     expect(internal.length).toBeGreaterThan(0)
     for (const t of internal) expect(CATALOG.some((e) => e.name === t.name)).toBe(true)
+  })
+
+  /*
+   * The app's bookkeeping, which the catalog used to offer like any other
+   * write: a model under Semi-auto could replace another conversation's
+   * transcript (not undoable), plant a compaction summary, or raise and
+   * approve a scout's cards. See `Tool.catalogued`.
+   */
+  it('leaves out the app’s own bookkeeping, and only that', () => {
+    expect(
+      tools
+        .filter((t) => t.catalogued === false)
+        .map((t) => t.name)
+        .sort(),
+    ).toEqual([
+      'assistant.thread.context.set',
+      'assistant.thread.set',
+      'pipeline.proposal.approve',
+      'pipeline.proposal.clear',
+      'pipeline.proposal.discard',
+      'pipeline.proposal.fail',
+      'pipeline.proposal.raise',
+      'pipeline.proposal.reading.set',
+      'pipeline.proposal.sweep',
+      'pipeline.run.record',
+      'profile.background.import',
+    ])
+    for (const name of ['assistant.thread.set', 'pipeline.proposal.approve']) {
+      expect(entryForWire(toWireName(name))).toBeUndefined()
+    }
   })
 
   it('puts the reads first, where a model’s attention is', () => {
@@ -75,7 +118,7 @@ describe('destructiveness', () => {
     expect(CATALOG.find((e) => e.name === 'application.create')?.destructive).toBe(false)
   })
 
-  it('counts twenty-one, which is a number three comments quote', () => {
+  it('counts nineteen, which is a number three comments quote', () => {
     /*
      * Pinned because nothing pinned it, and the neighbouring counts hid that:
      * flipping any tool's `effect` from 'delete' to 'update' left CATALOG at
@@ -86,7 +129,7 @@ describe('destructiveness', () => {
      *   kg/agent/loop.ts   — the `GATE_FOR` comment and the three-settings one
      *   core/model.ts      — the `APPROVAL_LABEL` paragraph
      */
-    expect(CATALOG.filter((e) => e.destructive)).toHaveLength(21)
+    expect(CATALOG.filter((e) => e.destructive)).toHaveLength(19)
   })
 
   it('singles out the operations that both destroy and cannot be undone', () => {
@@ -105,10 +148,21 @@ describe('destructiveness', () => {
     for (const e of noWayBack) expect(describeEntry(e)).toContain('NOT undoable')
   })
 
-  it('does not warn about an unjournalled write that destroys nothing', () => {
-    const save = CATALOG.find((e) => e.name === 'assistant.thread.set')
-    expect(save?.destructive).toBe(false)
-    expect(describeEntry(save!)).not.toContain('Destructive')
+  /*
+   * `scout.pipeline.update` and `.create` set the boards a pipeline opens and
+   * whether it runs unattended. Asking about every rename would teach a model
+   * to ask in prose about nothing, so the widening is per call.
+   */
+  it('asks about a pipeline’s boards and autonomy, not its name', () => {
+    const update = CATALOG.find((e) => e.name === 'scout.pipeline.update')!
+    expect(update.destructive).toBe(false)
+    expect(needsConfirming(update, { id: 'pipeline:1', name: 'Texas' })).toBe(false)
+    expect(needsConfirming(update, { id: 'pipeline:1', source: 'https://x.test' })).toBe(true)
+    expect(needsConfirming(update, { id: 'pipeline:1', auto: true })).toBe(true)
+    expect(describeEntry(update)).toContain('needs the person’s approval')
+    expect(describeEntry(update)).not.toContain('Destructive')
+    const hint = mcpSpecs().find((m) => m.name === 'scout_pipeline_update')?.annotations
+    expect(hint?.destructiveHint).toBe(true)
   })
 
   it('warns a model in prose as well as in a flag it never sees', () => {
@@ -188,20 +242,19 @@ describe('what a model reads about a tool', () => {
 describe('the counts the comments quote', () => {
   it('matches what queries.ts, mcp.ts and execute.ts say out loud', () => {
     // If this fails, the number changed. Update it here AND in:
-    //   kg/agent/queries.ts   — "a hundred and five entries", "a hundred and seventeen names"
-    //   kg/agent/mcp.ts       — "a hundred and five tools is one page" (twice)
-    //   kg/agent/execute.ts   — "listing a hundred and five tools"
-    //   kg/agent/loop.ts      — "every non-read step (95 of 105 tools)"
+    //   kg/agent/queries.ts   — "ninety-six entries", "a hundred and eight names"
+    //   kg/agent/mcp.ts       — "ninety-six tools is one page" (twice)
+    //   kg/agent/loop.ts      — "every non-read step (86 of 96 tools)"
     //   web/src/lib/keys-stay-local.test.ts — "the hundred and five tools live"
     //   core/model.ts         — the destructive count on `APPROVAL_LABEL`
     //   web guide CodeStructure.tsx — "N named write operations"
-    expect(CATALOG.length).toBe(105)
+    expect(CATALOG.length).toBe(96)
   })
 
   it('matches the write/read split queries.ts quotes', () => {
-    // "ninety-five write tools already" — the number the generic-readers
+    // "eighty-six write tools already" — the number the generic-readers
     // argument is measured against.
-    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(95)
+    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(86)
   })
 
   it('matches the seventeen node types that paragraph counts', () => {

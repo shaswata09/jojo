@@ -23,7 +23,7 @@
 import type { EdgeId, Instant, NodeId, NodeType, StoredEdge, StoredNode } from '../core/model'
 import { newNodeId, slugify, uniqueSlug } from '../core/ref'
 import type { Parsed } from '../core/schema'
-import type { RecordDelta } from '../repo/journal'
+import type { JournalEntry, RecordDelta } from '../repo/journal'
 import type { Repository } from '../repo/repository'
 import { TOOLS } from './index'
 import type { InputOf, OutputOf, ToolName } from './index'
@@ -68,6 +68,9 @@ export interface ToolRuntime {
 /** Deep enough that no honest composite reaches it, shallow enough to stop a runaway. */
 const MAX_DEPTH = 8
 
+/** Bounds `undoStep`'s walk back through redo/undo pairs; the rings hold 50. */
+const UNDO_DEPTH_GUARD = 64
+
 /**
  * `InputOf<N>` stays deferred while `N` is generic, so it reads as `unknown` and
  * will not pass through `AnyTool`'s erased `available` signature. The tool's own
@@ -80,7 +83,23 @@ const asPartial = (input: unknown) => input as Parameters<NonNullable<AnyTool['a
 export function createToolRuntime(deps: { repo: Repository; now: () => Instant }): ToolRuntime {
   const { repo, now } = deps
 
-  const toolOf = (name: ToolName): AnyTool => TOOLS[name]
+  /**
+   * A ToolFailure, not a TypeError, for a name the registry does not hold.
+   *
+   * Names arrive from outside the type system — an agent's proposal approved
+   * after an update renamed or removed the tool it named — and `TOOLS[name]`
+   * answered `undefined`, so `tool.input.parse` threw a TypeError that `run`
+   * re-throws as a bug and the route crashed instead of the card failing.
+   * `Object.hasOwn`, so `'toString'` is not a tool either.
+   */
+  const toolOf = (name: ToolName): AnyTool => {
+    if (!Object.hasOwn(TOOLS, name)) {
+      throw new ToolFailure([
+        { message: `There is no tool called “${String(name)}” any more.`, code: 'tool/refused' },
+      ])
+    }
+    return TOOLS[name]
+  }
 
   const errorsOf = (parsed: Parsed<unknown>): readonly ToolError[] =>
     parsed.ok
@@ -329,21 +348,61 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
     return {
       ok: true,
       output: undefined,
-      announcement: { title: dir === 'undo' ? 'Undone' : 'Redone', description: target.label },
+      // The action's own name. The target is often itself a revert, labelled
+      // "Undo …" for the audit log, and "Redone · Undo Rice added" says the
+      // opposite of what happened.
+      announcement: {
+        title: dir === 'undo' ? 'Undone' : 'Redone',
+        description: target.reverts?.of ?? target.label,
+      },
       changed,
       journalId: entry.id,
       undo: null,
     }
   }
 
+  /**
+   * A step's own Undo (`ToolResult.undo`) — guarded, unlike the bare
+   * `repo.revert` it used to be.
+   *
+   * The assistant transcript offers Undo on EVERY step, long after it ran, and
+   * the closure reverted the entry wherever it was: pressed twice, the second
+   * press found it in the audit ring and undid the undo; pressed after a later
+   * step, it replayed whole before-images over that step's work. The revert is
+   * now field-level (`revertDraft`), so later writes survive; this adds the other
+   * half of `undoableWith`'s guard in `react/undo.ts`.
+   *
+   * It follows the entry through ⌘Z/⇧⌘Z: after an undo and a redo the change is
+   * live again under the redo's id, so that is what gets reverted. When no entry
+   * on the undo ring stands for the step — already undone, or aged off the ring
+   * — it does nothing, because the step is not there to take back.
+   */
+  function undoStep(id: string): void {
+    const byId = new Map(repo.audit.map((e) => [e.id, e]))
+    const stand = repo.undoable.find((e) => {
+      // An entry on the undo ring stands for `id` if it IS `id`, or redoes it:
+      // a redo reverts an undo, which reverts `id`. Walked back pair by pair.
+      let at: JournalEntry | undefined = e
+      for (let hops = 0; at !== undefined && hops < UNDO_DEPTH_GUARD; hops += 1) {
+        if (at.id === id) return true
+        if (at.reverts?.undone !== false) return false
+        const undo = byId.get(at.reverts.id)
+        at = undo?.reverts?.undone === true ? byId.get(undo.reverts.id) : undefined
+      }
+      return false
+    })
+    if (stand) repo.revert(stand.id)
+  }
+
   const runtime: ToolRuntime = {
     run<N extends ToolName>(name: N, input: InputOf<N>): ToolResult<OutputOf<N>> {
-      const tool = toolOf(name)
       const buf = newBuffer()
       const instant = now()
 
+      let tool: AnyTool
       let output: OutputOf<N>
       try {
+        tool = toolOf(name)
         output = execute(name, input, buf, [], instant)
       } catch (e) {
         // The buffer is discarded either way; the difference is who hears about
@@ -405,7 +464,7 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
         announcement,
         changed,
         journalId: entry.id,
-        undo: undoable ? () => void repo.revert(entry.id) : null,
+        undo: undoable ? () => undoStep(entry.id) : null,
       }
     },
 

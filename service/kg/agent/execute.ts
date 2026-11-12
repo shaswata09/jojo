@@ -28,6 +28,7 @@ import type { ToolName } from '../tools/index'
 import type { Announcement, ToolError } from '../tools/tool'
 import { entryFor, entryForWire } from './catalog'
 import type { CatalogEntry } from './catalog'
+import type { Cancellation } from './loop'
 import { CONTEXT_BUDGET } from './paging'
 import { READS } from './queries'
 import type { ReadName } from './queries'
@@ -61,7 +62,11 @@ export type ToolHost = {
    * work — the bytes are in IndexedDB or on a filesystem, and the conversion is
    * a network call `check-platform` forbids this layer to make.
    */
-  convert?: (fileId: string) => Promise<{ ok: true; markdown: string } | { ok: false; reason: string }>
+  convert?: (
+    fileId: string,
+    /** The run's Stop, for an app that can cancel the conversion request. */
+    signal?: Cancellation,
+  ) => Promise<{ ok: true; markdown: string } | { ok: false; reason: string }>
   /**
    * The rows of a job board's search page, when the app can reach one.
    *
@@ -127,13 +132,19 @@ export async function callTool(
   host: ToolHost,
   name: string,
   args: unknown,
+  /**
+   * The run's Stop, for the reads that take long enough to need one — a board
+   * crawl of ten pages, a document conversion. Checked between pages; see
+   * `ReadContext.signal`.
+   */
+  signal?: Cancellation,
 ): Promise<CallOutcome> {
   const entry = lookup(name)
   if (!entry) {
     return {
       ok: false,
-      // Naming the shape rather than listing a hundred and five tools: the list is
-      // already in the model's context, and repeating it in an error is how a
+      // Naming the shape rather than listing every tool: the list is already
+      // in the model's context, and repeating it in an error is how a
       // recoverable mistake costs a thousand tokens.
       error: `No tool is called ${name}. Use one of the names given in the tool list, exactly as spelled.`,
     }
@@ -143,42 +154,106 @@ export async function callTool(
   // entirely for those, and `undefined` fails an object parse that `{}` passes.
   const input = args === undefined || args === null ? {} : args
 
-  if (entry.effect === 'read') {
-    const read = READS[entry.name as ReadName]
-    const parsed = read.input.parse(input)
-    if (!parsed.ok) return { ok: false, entry, error: formatIssues(parsed.issues) }
-    const ctx = {
-      ...(host.convert ? { convert: host.convert } : {}),
-      ...(host.scan ? { scan: host.scan } : {}),
-      ...(host.boards ? { boards: host.boards } : {}),
-      // Read per call, not per run. A pipeline on a timer outlives midnight.
-      today: host.today(),
+  /*
+   * Caught, because the header promises this never throws and two lines below
+   * could: a read awaits `convert` or `scan`, which are the app's network code,
+   * and a write runs a tool whose non-`ToolFailure` errors the runtime
+   * rethrows. Uncaught, a throw ended the whole turn with the step frozen at
+   * `running`, and over MCP rejected `handleMcp` rather than answering. The
+   * message is still the model's to read: it is a fact about this call.
+   */
+  try {
+    if (entry.effect === 'read') {
+      const read = READS[entry.name as ReadName]
+      const parsed = read.input.parse(input)
+      if (!parsed.ok) return { ok: false, entry, error: formatIssues(parsed.issues) }
+      const ctx = {
+        ...(host.convert ? { convert: host.convert } : {}),
+        ...(host.scan ? { scan: host.scan } : {}),
+        ...(host.boards ? { boards: host.boards } : {}),
+        ...(signal ? { signal } : {}),
+        // Read per call, not per run. A pipeline on a timer outlives midnight.
+        today: host.today(),
+      }
+      return {
+        ok: true,
+        entry,
+        result: await read.read(host.memory(), parsed.value as never, ctx),
+      }
+    }
+
+    const toolName = entry.name as ToolName
+    // Checked before run, so a bad argument never opens a transaction. `run`
+    // would parse it again anyway; doing it here is what turns the issues into
+    // a sentence addressed to the caller rather than a generic refusal.
+    const checked = host.check(toolName, input)
+    if (!checked.ok) return { ok: false, entry, error: formatIssues(checked.issues) }
+
+    const result = host.run(toolName, checked.value)
+    if (!result.ok) {
+      return { ok: false, entry, error: result.errors.map((e) => e.message).join('; ') }
     }
     return {
       ok: true,
       entry,
-      result: await read.read(host.memory(), parsed.value as never, ctx),
+      result: result.output,
+      announcement: result.announcement,
+      undo: result.undo,
     }
+  } catch (e) {
+    const said = e instanceof Error && e.message ? e.message : String(e)
+    return { ok: false, entry, error: `${entry.name} did not finish: ${said}` }
   }
+}
 
-  const toolName = entry.name as ToolName
-  // Checked before run, so a bad argument never opens a transaction. `run` would
-  // parse it again anyway; doing it here is what turns the issues into a
-  // sentence addressed to the caller rather than a generic refusal.
-  const checked = host.check(toolName, input)
-  if (!checked.ok) return { ok: false, entry, error: formatIssues(checked.issues) }
+/**
+ * Shaped like a record id — `app:0192…`, `note:1` — rather than any string.
+ *
+ * Loose on purpose (tests and fixtures use short ids), and what it must
+ * exclude is the strings a write returns that are NOT ids: an ISO date from
+ * `timeline.item.snooze` has no prefix before a colon, and an instant starts
+ * with a digit.
+ */
+const ID_SHAPE = /^[a-z][a-zA-Z-]*:[^\s:]+$/
+const isIdLike = (value: unknown): value is string =>
+  typeof value === 'string' && ID_SHAPE.test(value)
 
-  const result = host.run(toolName, checked.value)
-  if (!result.ok) {
-    return { ok: false, entry, error: result.errors.map((e) => e.message).join('; ') }
+/**
+ * The ids a write handed back, wherever it put them.
+ *
+ * Most writes return one id as a string. Some return several —
+ * `vault.file.add` a list, `profile.background.add` `{ ids, created }` — and
+ * those were rendered as no id at all, so the model had just created records
+ * it could not name. Only the top level and one object's `id`/`ids` are read:
+ * a write's output is small and its ids are where it put them.
+ */
+function idsIn(result: unknown): string[] {
+  if (isIdLike(result)) return [result]
+  if (Array.isArray(result)) return result.filter(isIdLike)
+  if (typeof result === 'object' && result !== null) {
+    const { id, ids } = result as { id?: unknown; ids?: unknown }
+    return [...(isIdLike(id) ? [id] : []), ...(Array.isArray(ids) ? ids.filter(isIdLike) : [])]
   }
-  return {
-    ok: true,
-    entry,
-    result: result.output,
-    announcement: result.announcement,
-    undo: result.undo,
+  return []
+}
+
+/** How many ids a write's sentence lists before saying how many more. */
+const IDS_SHOWN = 20
+
+/** The tail a write's sentence carries: its ids, or a plain value that is not one. */
+function writeTail(result: unknown): string {
+  const ids = idsIn(result)
+  if (ids.length === 1) return ` (id: ${ids[0] ?? ''})`
+  if (ids.length > 1) {
+    const shown = ids.slice(0, IDS_SHOWN).join(', ')
+    const more = ids.length > IDS_SHOWN ? `, and ${String(ids.length - IDS_SHOWN)} more` : ''
+    return ` (ids: ${shown}${more})`
   }
+  // A date a snooze moved to, a count a sweep removed: worth saying, and NOT
+  // an id — labelling a date `id:` invited the model to pass it as one.
+  if (typeof result === 'string' && result.length > 0 && result.length <= 80) return ` (result: ${result})`
+  if (typeof result === 'number' || typeof result === 'boolean') return ` (result: ${String(result)})`
+  return ''
 }
 
 /**
@@ -202,7 +277,7 @@ export function renderOutcome(outcome: CallOutcome, budget = 6000): string {
     const said = a ? [a.title, a.description].filter(Boolean).join(' — ') : 'Done.'
     // The id goes back too: the model has just created something and the next
     // step almost always needs to name it.
-    return typeof outcome.result === 'string' ? `${said} (id: ${outcome.result})` : said
+    return `${said}${writeTail(outcome.result)}`
   }
   const json = JSON.stringify(outcome.result)
   const cap = SELF_PAGED.has(outcome.entry.name) ? Math.max(budget, PAGED_CEILING) : budget

@@ -26,16 +26,6 @@ export const MIN_SHEET_WIDTH = 520
 export const MAX_SHEET_WIDTH = 1100
 
 /**
- * Room left for the page behind it — the `calc(100vw - 3rem)` the sheet carries
- * in CSS, kept as a number so the clamp and the stylesheet cannot disagree.
- *
- * No longer what decides the maximum; see `MAX_SHARE`. Still exported because
- * the stylesheet's cap is the safety net between a window resize and the effect
- * that answers it.
- */
-export const VIEWPORT_GUTTER = 48
-
-/**
  * The most of the window the sheet may ever take.
  *
  * A share rather than `viewport - 48`, and the reason is the sidebar. It is

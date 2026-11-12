@@ -24,6 +24,7 @@
  */
 
 import { reportError } from '@/lib/report-error'
+import { revokeLater } from '@/lib/save-file'
 import { useCallback, useMemo } from 'react'
 import { useGraph } from '@jojo/service/react/kg-context'
 import {
@@ -463,14 +464,13 @@ export function useBackup(readable?: () => unknown): BackupState {
         return 'failed'
       }
 
-      // Revoked on the next task, NOT synchronously and not in a `finally`.
-      // A synchronous revoke races the download the click just started and the
-      // file arrives EMPTY — which is the worst possible outcome here, because
-      // the user has a file named like a backup that contains nothing, and
-      // `writeLastBackup` below has just told them they are safe.
-      // `vault-blobs.ts` learned this first; this path had kept the racy form.
-      const url = href
-      setTimeout(() => URL.revokeObjectURL(url), 0)
+      // Revoked LATER, NOT synchronously and not in a `finally`. An early
+      // revoke races the download the click just started and the file arrives
+      // EMPTY — which is the worst possible outcome here, because the user has
+      // a file named like a backup that contains nothing, and
+      // `writeLastBackup` below has just told them they are safe. "Next task"
+      // was not late enough for Firefox on a large file; see `revokeLater`.
+      revokeLater(href)
 
       // Recorded only after the click. Recording it first would mean a browser
       // that blocked the download left jojo believing the user was safe.

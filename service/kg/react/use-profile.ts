@@ -51,7 +51,7 @@ export function useProfile() {
 
   const update = useCallback(
     (patch: Partial<Profile>) => {
-      run('profile.set', profileSetInput(patch))
+      return run('profile.set', profileSetInput(patch))
     },
     [run],
   )

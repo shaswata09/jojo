@@ -179,6 +179,34 @@ export type Tool<I, O = void> = {
    */
   readonly system?: boolean
   /**
+   * `false`: the app's own bookkeeping, never offered to a model or an MCP client.
+   *
+   * Distinct from both flags above. `internal` is about the palette and
+   * `system` about the undo ring; this is about who may CALL the tool. Saving a
+   * transcript, storing a compaction summary, raising or answering a pipeline's
+   * suggestion card and logging a round are things the app does on a person's
+   * behalf through `runtime.run`. Offered to a model they were a hole: under
+   * Semi-auto a model could wipe another conversation with
+   * `assistant.thread.set` (not undoable), plant a summary, or approve a card
+   * nobody pressed. `catalog.ts` leaves these out, which closes every door the
+   * model and MCP reach tools through — the offer, the executor and the MCP
+   * call all resolve names against the catalog.
+   */
+  readonly catalogued?: false
+  /**
+   * Needs confirming for SOME inputs: the per-call widening of `destructive`.
+   *
+   * `scout.pipeline.update` renames a pipeline (harmless) and sets the boards
+   * it opens and whether it runs unattended (not harmless: an injected model
+   * could point a pipeline at its own address and switch auto on). Marking the
+   * whole tool destructive would make every filter tweak ask and tell the model
+   * a rename "discards something"; this asks only for the fields that matter.
+   * `because` is one sentence appended to what the model reads about the tool.
+   *
+   * Only ever widens, like `destructive`.
+   */
+  readonly confirms?: { readonly when: (input: I) => boolean; readonly because: string }
+  /**
    * Excluded from the journal.
    *
    * The admin tools already go through a confirmation dialog rather than an undo

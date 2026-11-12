@@ -25,40 +25,21 @@
  * outlive builds, and a tool removed from `TWIN_TOOLS` between the two must not
  * be applicable by a card that is still on screen.
  *
- * WHAT THIS DOES NOT DEFEND AGAINST. `catalog.ts` offers every registry tool to
- * the model, `internal` included, so a general Assistant conversation can call
- * `pipeline.proposal.approve` itself and skip the card. That is bounded rather
- * than closed, and the bound is worth stating accurately, because this paragraph
- * used to state a smaller one than the code provides: it said the worst
- * reachable outcome was "a note or a tag the user had not yet said yes to".
- *
- * What holds is the allowlist, read off `TWIN_TOOLS` itself: fifteen tools, of
- * which five create, nine update and one files a conversation. No `*.delete` and
- * no `application.update` are among them — that half of the sentence was right,
- * and `core/proposal.test.ts` pins both — so nothing is destroyed and no
- * application is restaged, repriced or renamed. But an update OVERWRITES, and
- * nine of the fifteen are updates: `vault.snippet.update` replaces the body of a
- * snippet the person wrote, `timeline.item.update` moves an interview's date,
- * `profile.background.update` rewrites a fact about them, and
- * `keyword.record.set` replaces a record's whole keyword set rather than adding
- * to it. Anyone sizing this margin should be sizing that, not a tag.
- *
- * What keeps it a margin rather than a hole is the commit shape above: each of
- * those writes lands as one transaction and one journal row, so every one of
- * them has a route back — which is what auto mode already grants a twin
- * pipeline anyway (`AUTO_CAPABLE`, in `core/proposal.ts`). Route back, not one
- * keystroke, and the difference is worth measuring before leaning on it: the
- * undo ring holds `UNDO_DEPTH` = 50 entries and each approval takes one of
- * them, so a run of unasked-for edits costs one ⌘Z apiece and anything past the
- * fiftieth has to be reverted from the audit log in Settings, which keeps
- * `AUDIT_CAP` = 200. Closing it properly needs a `catalogued: false` flag on
- * `Tool`, which does not exist yet and is not worth inventing for this margin.
+ * WHO MAY CALL THESE. The app, and nothing else. Every tool in this file is
+ * `catalogued: false` (see `Tool.catalogued`), so neither a model nor an MCP
+ * client is offered them or can run them by name. Until 2026-11 the catalog
+ * offered the whole registry, so a general Assistant conversation could raise
+ * a card nobody's pipeline proposed, or approve one the person never pressed —
+ * under Semi-auto with no question asked, since approving is an `update`. The
+ * allowlist (`mayPropose`, `TWIN_TOOLS`) bounded what such an approval could
+ * write; it did not stop the approval happening. The card's buttons are now the
+ * only way a suggestion is answered.
  */
 
 import { isAnswerable, mayPropose } from '../core/proposal'
 import { s } from '../core/schema'
 import type { NodeId } from '../core/model'
-import { PIPELINE_KINDS } from '../core/model'
+import { MAX_PROPOSAL_READING, PIPELINE_KINDS } from '../core/model'
 import type { ToolName } from './index'
 import { defineTool } from './tool'
 
@@ -88,6 +69,7 @@ export const proposalRaise = defineTool({
   title: 'Suggest a change',
   summary: 'Queues one action for the person to approve or discard.',
   effect: 'create',
+  catalogued: false,
   touches: ['proposal'],
   internal: true,
   system: true,
@@ -151,6 +133,7 @@ export const proposalApprove = defineTool({
   // from here. `touches` drives cache invalidation for the palette, and the
   // inner call declares its own, so the union is right at run time even though
   // this list cannot name it.
+  catalogued: false,
   touches: ['proposal'],
   input: s.object({ id: proposalId }),
 
@@ -232,6 +215,7 @@ export const proposalDiscard = defineTool({
   title: 'Discard suggestion',
   summary: 'Declines a queued suggestion. Nothing is changed.',
   effect: 'update',
+  catalogued: false,
   touches: ['proposal'],
   input: s.object({ id: proposalId }),
 
@@ -278,6 +262,7 @@ export const proposalFail = defineTool({
   title: 'Record a failed suggestion',
   summary: 'Marks a queued suggestion as one that could not be carried out.',
   effect: 'update',
+  catalogued: false,
   touches: ['proposal'],
   internal: true,
   system: true,
@@ -291,6 +276,50 @@ export const proposalFail = defineTool({
     })
   },
   describe: () => ({ title: 'Could not be applied' }),
+})
+
+/**
+ * Puts what the posting's page said on a suggestion, before it is answered.
+ *
+ * The background read of a scouted posting (`use-scout-reading` in the web
+ * app) lands here: the page kept, and the employer, role, place and keywords
+ * the model read off it, as JSON text — see `ProposalProps.reading` and
+ * `scoutReading`. `system`, because nobody pressed anything and a ⌘Z should
+ * not take a reading back instead of the person's own last edit.
+ *
+ * Pending posting suggestions only. A card already answered has had its read
+ * used or thrown away, and a reading on any other kind of suggestion would be
+ * about nothing.
+ */
+export const proposalReadingSet = defineTool({
+  name: 'pipeline.proposal.reading.set',
+  title: 'Record what a suggested posting says',
+  summary: 'Stores the reading of a suggested posting’s page on its card.',
+  effect: 'update',
+  catalogued: false,
+  touches: ['proposal'],
+  internal: true,
+  system: true,
+  input: s.object({
+    id: proposalId,
+    reading: s.string({ min: 2, max: MAX_PROPOSAL_READING, label: 'Reading' }),
+  }),
+  run(ctx, input): void {
+    const proposal = ctx.require('proposal', input.id)
+    if (proposal.props.tool !== 'scout.posting.save') {
+      ctx.fail('Only a suggested posting has a page to read.', { field: 'id' })
+    }
+    if (proposal.props.status !== 'pending') {
+      ctx.fail('That suggestion has already been answered.', { field: 'id' })
+    }
+    try {
+      JSON.parse(input.reading)
+    } catch {
+      ctx.fail('That reading is not valid JSON.', { field: 'reading' })
+    }
+    ctx.tx.patch<'proposal'>(input.id, { reading: input.reading })
+  },
+  describe: () => ({ title: 'Posting read' }),
 })
 
 /* ------------------------------- housekeeping ----------------------------- */
@@ -322,6 +351,7 @@ export const proposalSweep = defineTool({
   title: 'Clear answered suggestions',
   summary: 'Removes suggestions that have already been approved or discarded.',
   effect: 'delete',
+  catalogued: false,
   touches: ['proposal'],
   input: s.object({ pipelineId: s.id('pipeline', { label: 'Pipeline' }) }),
 
@@ -386,6 +416,7 @@ export const proposalClear = defineTool({
   summary:
     'Empties the suggestion queue — declines anything still waiting and takes the answered cards off the list. Nothing else is changed, and the pipelines keep running.',
   effect: 'delete',
+  catalogued: false,
   touches: ['proposal'],
   input: s.object({}),
 
@@ -426,6 +457,7 @@ export const pipelineRunRecord = defineTool({
   title: 'Record a pipeline round',
   summary: 'Notes when a pipeline last ran and whether it found anything.',
   effect: 'update',
+  catalogued: false,
   touches: ['pipeline'],
   internal: true,
   system: true,

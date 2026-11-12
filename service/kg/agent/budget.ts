@@ -475,6 +475,14 @@ export function stubToFit(
   messages: readonly ChatMessage[],
   fixed: readonly unknown[],
   window: number,
+  /**
+   * What the loop appended to a result, by call id — "You have one step
+   * left…", a stuck nudge. Kept whole when that result has to be cut: they are
+   * instructions, not data, and a cut that keeps the front would lose them on
+   * the round they matter. Older results are stubbed whole, instruction with
+   * them, which is right — it was for a round already answered.
+   */
+  tails?: ReadonlyMap<string, string>,
 ): { messages: ChatMessage[]; stubbed: number } {
   const ceiling = window - RESERVED_FOR_REPLY
   const working: ChatMessage[] = [...messages]
@@ -513,11 +521,14 @@ export function stubToFit(
     }
     const m = largest === -1 ? undefined : working[largest]
     if (m === undefined || m.role !== 'tool' || m.content.length <= FRESH_FLOOR) break
-    const keep = Math.max(FRESH_FLOOR, Math.floor(m.content.length * 0.6))
+    const tail = tails?.get(m.tool_call_id) ?? ''
+    const body = tail !== '' && m.content.endsWith(tail) ? m.content.slice(0, -tail.length) : m.content
+    if (body.length <= FRESH_FLOOR) break
+    const keep = Math.max(FRESH_FLOOR, Math.floor(body.length * 0.6))
     working[largest] = {
       role: 'tool',
       tool_call_id: m.tool_call_id,
-      content: `${m.content.slice(0, keep)}\n[…cut to fit the space left — answer from what is above, or ask for fewer fields or a narrower query]`,
+      content: `${body.slice(0, keep)}\n[…cut to fit the space left — answer from what is above, or ask for fewer fields or a narrower query]${tail}`,
     }
     stubbed += 1
   }

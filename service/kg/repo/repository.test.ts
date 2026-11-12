@@ -1164,3 +1164,88 @@ describe('two holds that overlap', () => {
     expect(rows.ok && rows.value.nodes).toHaveLength(0)
   })
 })
+
+/**
+ * A revert rebased onto the records as they are now.
+ *
+ * `stack: false` writes stay off the undo ring, so ⌘Z reaches PAST them — and a
+ * revert that replayed whole before-images erased them. Reproduced with the fit
+ * reading stored on a file whose note had just been edited.
+ */
+describe('revert, after a write it did not make', () => {
+  const edited = (from: StoredNode, props: Record<string, unknown>): StoredNode =>
+    ({ ...from, props: { ...from.props, ...props }, updatedAt: '2026-10-12T10:00:00.000Z' }) as StoredNode
+  const update = (before: StoredNode, after: StoredNode, label = 'Note edited') =>
+    draft({ tool: 'application.note.set', label, nodes: [{ id: before.id, before, after }] })
+
+  it('puts back only the fields the entry changed, on undo and on redo', () => {
+    const rice = application('rice')
+    const { repo } = setup([rice])
+    const noted = edited(rice, { note: 'mine' })
+    const entry = repo.commit(update(rice, noted))
+    const live = repo.getSnapshot().node(rice.id)!
+    repo.commit(update(live, edited(live, { location: 'Houston' }), 'System wrote'), { stack: false })
+
+    const undone = repo.revert(entry.id)
+    expect(repo.getSnapshot().node(rice.id)?.props).toMatchObject({ note: '', location: 'Houston' })
+
+    repo.commit(update(repo.getSnapshot().node(rice.id)!, edited(rice, { note: '', location: 'Houston', comp: '90k' }), 'Again'), { stack: false })
+    repo.revert(undone.id)
+    expect(repo.getSnapshot().node(rice.id)?.props).toMatchObject({ note: 'mine', location: 'Houston', comp: '90k' })
+  })
+
+  it('lets a later write to the same field win', () => {
+    const rice = application('rice')
+    const { repo } = setup([rice])
+    const entry = repo.commit(update(rice, edited(rice, { note: 'mine' })))
+    const live = repo.getSnapshot().node(rice.id)!
+    repo.commit(update(live, edited(live, { note: 'theirs' }), 'System wrote'), { stack: false })
+
+    repo.revert(entry.id)
+
+    expect(repo.getSnapshot().node(rice.id, 'application')?.props.note).toBe('theirs')
+  })
+
+  it('does not resurrect a record deleted since', () => {
+    const rice = application('rice')
+    const { repo } = setup([rice])
+    const entry = repo.commit(update(rice, edited(rice, { note: 'mine' })))
+    const live = repo.getSnapshot().node(rice.id)!
+    repo.commit(draft({ nodes: [{ id: rice.id, before: live, after: null }] }), { stack: false })
+
+    repo.revert(entry.id)
+
+    expect(repo.getSnapshot().node(rice.id)).toBeUndefined()
+  })
+
+  it('does not put back an edge whose other end is gone', async () => {
+    const rice = application('rice')
+    const item = reminder('rice-deadline')
+    const edge = about(item.id, rice.id)
+    const { driver, repo } = setup([rice, item], [edge])
+    const unlinked = repo.commit(draft({ nodes: [{ id: item.id, before: item, after: null }], edges: [{ id: edge.id, before: edge, after: null }] }))
+    repo.commit(draft({ nodes: [{ id: rice.id, before: rice, after: null }] }))
+
+    repo.revert(unlinked.id)
+
+    expect(repo.getSnapshot().node(item.id)).toBeDefined()
+    expect(repo.getSnapshot().edge(edge.id)).toBeUndefined()
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.edges).toEqual([])
+  })
+})
+
+describe('a write off the undo ring', () => {
+  it('is journalled without its record images, and its records are still written', async () => {
+    const { driver, repo } = setup()
+    const rice = application('rice')
+    repo.commit(created(rice), { stack: false })
+
+    expect(repo.audit[0]?.trimmed).toBe(true)
+    expect(repo.audit[0]?.nodes).toEqual([{ id: rice.id, before: null, after: null }])
+    await repo.flush()
+    const rows = await driver.readAll()
+    expect(rows.ok && rows.value.nodes).toEqual([rice])
+  })
+})

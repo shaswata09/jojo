@@ -93,6 +93,22 @@
         A model on your own machine is never routed here and is unaffected.
       </p>
       <ul id="models" class="models"></ul>
+      <!--
+        Off until turned on, unlike every provider above. Each of those goes to
+        one named company; this lets a page reach any private address — a model
+        server, but also a router or a NAS — so the person turns it on knowingly.
+      -->
+      <div class="row">
+        <p class="note">
+          <strong>Models on my network</strong> — a model server at a private address
+          (10.x, 192.168.x, .local) reached from jojo's hosted copy.
+        </p>
+        <label class="switch">
+          <input id="network-on" type="checkbox" />
+          <span class="track" aria-hidden="true"></span>
+          <span class="sr">Relay to models on my own network</span>
+        </label>
+      </div>
     </section>
 
     <script src="popup.js" type="module"></script>

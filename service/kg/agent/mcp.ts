@@ -63,6 +63,11 @@ export type McpResponse =
  * spelling the client sends.
  */
 export type McpOptions = {
+  /**
+   * Defaults to `mcpAllowed`, never to "everything". It used to fail open: a
+   * caller that forgot it handed a client `memory.reset` and `memory.clear`.
+   * Exposing the withheld pair takes an explicit `allow: () => true`.
+   */
   allow?: (toolName: string) => boolean
 }
 
@@ -129,7 +134,7 @@ export async function handleMcp(
   const isNotification = !('id' in (request as object)) || (request as McpRequest).id === undefined
   if (method.startsWith('notifications/')) return isNotification ? null : ok(id, {})
 
-  const allow = options.allow
+  const allow = options.allow ?? mcpAllowed
 
   switch (method) {
     case 'initialize':
@@ -148,15 +153,12 @@ export async function handleMcp(
       return ok(id, {})
 
     case 'tools/list':
-      // No cursor: a hundred and five tools is one page, and paginating a list that
+      // No cursor: ninety-six tools is one page, and paginating a list that
       // never grows past a screen is a second code path with no second caller.
       // The count is pinned in `catalog.test.ts`, so this line is told when it
       // stops being true rather than quietly becoming a different claim.
       return ok(id, {
-        tools:
-          allow === undefined
-            ? mcpSpecs()
-            : CATALOG.filter((entry) => allow(entry.name)).map(toMcpSpec),
+        tools: CATALOG.filter((entry) => allow(entry.name)).map(toMcpSpec),
       })
 
     case 'tools/call': {
@@ -169,7 +171,7 @@ export async function handleMcp(
       // a tool at all falls through to `callTool`, which says so in its own
       // words.
       const entry = CATALOG.find((e) => e.name === p.name || e.wireName === p.name)
-      if (allow !== undefined && entry !== undefined && !allow(entry.name)) {
+      if (entry !== undefined && !allow(entry.name)) {
         return ok(id, {
           content: [
             {
@@ -198,7 +200,7 @@ export async function handleMcp(
  * The manifest a client would fetch, as a value.
  *
  * Exported separately because it is useful without the protocol: a settings
- * screen that wants to show "a hundred and five tools are exposed" should not have to
+ * screen that wants to show "ninety-six tools are exposed" should not have to
  * hand-roll a JSON-RPC request to find out.
  */
 export const mcpManifest = () => ({

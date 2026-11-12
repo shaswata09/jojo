@@ -21,6 +21,7 @@ import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * The card's only colour, and it comes off the date.
@@ -55,7 +56,7 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
   const anchor = snoozeAnchor(item.date)
 
   const done = () => {
-    toggleDone(item.id)
+    if (announceRefusal(toggleDone(item.id), toast)) return
     toast({
       title: `${item.title} completed`,
       description: 'It leaves the deck and this week — nothing is deleted.',
@@ -68,7 +69,7 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
   const push = (days: number) => {
     const before = item.date
     setOpen(false)
-    snooze(item.id, days)
+    if (announceRefusal(snooze(item.id, days), toast)) return
     toast({
       title: `${item.title} rescheduled`,
       description: `Now due ${shortDate(addDays(anchor, days))}, on the calendar and the week ahead.`,

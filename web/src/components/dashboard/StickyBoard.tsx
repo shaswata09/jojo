@@ -16,6 +16,7 @@ import { useDialogs } from '@/lib/dialogs-context'
 import { reminderFromNote } from '@/lib/sticky'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /**
  * The dashboard's sticky notes: notes to self, quick to write and quick to
@@ -149,7 +150,7 @@ function StickyCard({
       event.preventDefault()
       setText(note.text)
       setEditing(false)
-    } else if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+    } else if (isCommitEnter(event) && (event.metaKey || event.ctrlKey)) {
       event.preventDefault()
       finish()
     }

@@ -45,7 +45,7 @@ import { runAgent } from '../agent/loop'
 import type { AgentStep, Cancellation } from '../agent/loop'
 import type { LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
-import { PIPELINE_PROMPTS, proposingHost, toolsForKind } from '../agent/pipelines'
+import { pipelinePrompt, proposingHost, toolsForKind } from '../agent/pipelines'
 import { dayOf } from '../core/project'
 import { AUTO_CAPABLE, WORKING_GAP_MS, isDue, shouldOfferShutdown } from '../core/proposal'
 import { parseSources } from '../core/board'
@@ -117,14 +117,24 @@ export const isAuto = (p: Pipeline): boolean => p.auto === true && AUTO_CAPABLE[
 
 export function usePipelines({
   llm,
+  llmFor,
   maxSteps,
   convert,
   scan,
   onError,
   hasDocument,
+  documentsReady = true,
 }: {
   /** `null` when no model is configured — the whole feature is then paused. */
   llm: LlmTurnFn | null
+  /**
+   * The model call for ONE round, given that round's Stop — used in place of
+   * `llm` when present. Switching a pipeline off, or a settings change, aborts
+   * the round in flight; with only `llm` that ended the loop between steps
+   * while the HTTP request ran on, holding the engine-wide lock the whole
+   * time. An app that can cancel a request hooks `signal.onAbort`.
+   */
+  llmFor?: (signal: Cancellation) => LlmTurnFn
   maxSteps?: number
   convert?: ToolHost['convert']
   /**
@@ -134,6 +144,13 @@ export function usePipelines({
    * means the record is believed, which is right on the phone.
    */
   hasDocument?: (fileId: string) => boolean
+  /**
+   * Whether `hasDocument` can be believed yet. On the web the blob index loads
+   * asynchronously and the scheduler ticks on mount, so the first twin round of
+   * a session was told there was no CV to read. Twin rounds wait for this;
+   * absent means ready, which is right where `hasDocument` is synchronous.
+   */
+  documentsReady?: boolean
   /**
    * Where a round that threw goes, beyond the pipeline's own log.
    *
@@ -159,7 +176,15 @@ export function usePipelines({
    * they are filtered here — once, at the single place every surface reads
    * proposals from — so no component has to remember the distinction.
    */
-  const proposals = projections.proposals(graph).filter((p) => p.swept !== true)
+  /*
+   * Memoised on the graph: a fresh array every render meant `pendingFor`,
+   * `shutdownOffer` and the context value all changed every render, so every
+   * consumer of `PipelinesContext` re-rendered with them.
+   */
+  const proposals = useMemo(
+    () => projections.proposals(graph).filter((p) => p.swept !== true),
+    [graph, projections],
+  )
 
   const [running, setRunning] = useState<string | null>(null)
   const [activity, setActivity] = useState<string | null>(null)
@@ -170,11 +195,11 @@ export function usePipelines({
    *
    * The loop cannot close over `pipelines` — see the header. It reads this.
    */
-  const state = useRef({ pipelines, proposals })
-  state.current = { pipelines, proposals }
+  const state = useRef({ pipelines, proposals, documentsReady })
+  state.current = { pipelines, proposals, documentsReady }
 
   const busy = useRef(false)
-  const cancel = useRef<{ aborted: boolean } | null>(null)
+  const cancel = useRef<RoundStop | null>(null)
   const logSeq = useRef(0)
 
   const note = useCallback(
@@ -222,6 +247,8 @@ export function usePipelines({
       if (!llm) return
       await runPipelineRound(pipeline, {
         llm,
+        ...(llmFor === undefined ? {} : { llmFor }),
+        documentsReady: state.current.documentsReady,
         host,
         runtime,
         note,
@@ -235,13 +262,15 @@ export function usePipelines({
         agent: runAgent,
       })
     },
-    [hasDocument, host, llm, maxSteps, note, onError, runtime],
+    [hasDocument, host, llm, llmFor, maxSteps, note, onError, runtime],
   )
 
   /* ------------------------------ the scheduler --------------------------- */
 
   const runRoundRef = useRef(runRound)
   runRoundRef.current = runRound
+
+  const tickRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     if (!llm) return
@@ -261,18 +290,30 @@ export function usePipelines({
        */
       const due = state.current.pipelines
         .filter((p) => p.enabled && isDue(p.schedule, p.lastRunAt, at, p.idleRounds ?? 0))
+        // A twin waits for the document index, and is skipped rather than
+        // picked: picked, it would win every tick and starve the rest.
+        .filter((p) => kindOf(p) !== 'twin' || state.current.documentsReady)
         .sort((a, b) => (a.lastRunAt ?? '').localeCompare(b.lastRunAt ?? ''))[0]
       if (due) void runRoundRef.current(due)
     }
     // Once immediately, so switching a pipeline on does something visible
     // rather than something that will happen within fifteen seconds.
     tick()
+    tickRef.current = tick
     const id = setInterval(tick, TICK_MS)
     return () => {
+      tickRef.current = null
       clearInterval(id)
       abortInFlight(cancel)
     }
   }, [llm, now])
+
+  // The index arriving is a reason to look again now rather than a tick later.
+  // Its own effect, because re-running the scheduler's would abort the round
+  // in flight on the way.
+  useEffect(() => {
+    if (documentsReady) tickRef.current?.()
+  }, [documentsReady])
 
   /* -------------------------------- answering ----------------------------- */
 
@@ -397,26 +438,51 @@ export function usePipelines({
     if (shutdownOffer) runtime.run('pipeline.run.record', { id: shutdownOffer.id, raised: 1 })
   }, [runtime, shutdownOffer])
 
-  return {
-    pipelines,
-    proposals,
-    pendingFor,
-    running,
-    activity,
-    log,
-    shutdownOffer,
-    paused: !llm,
-    approve,
-    discard,
-    approveAll,
-    sweep,
-    clearAll,
-    setEnabled,
-    setAuto,
-    runNow,
-    acceptShutdown,
-    dismissShutdown,
-  }
+  // One object per change rather than per render: it is a context value, and a
+  // fresh one re-rendered every consumer of `PipelinesContext` on every render.
+  const paused = !llm
+  return useMemo(
+    () => ({
+      pipelines,
+      proposals,
+      pendingFor,
+      running,
+      activity,
+      log,
+      shutdownOffer,
+      paused,
+      approve,
+      discard,
+      approveAll,
+      sweep,
+      clearAll,
+      setEnabled,
+      setAuto,
+      runNow,
+      acceptShutdown,
+      dismissShutdown,
+    }),
+    [
+      pipelines,
+      proposals,
+      pendingFor,
+      running,
+      activity,
+      log,
+      shutdownOffer,
+      paused,
+      approve,
+      discard,
+      approveAll,
+      sweep,
+      clearAll,
+      setEnabled,
+      setAuto,
+      runNow,
+      acceptShutdown,
+      dismissShutdown,
+    ],
+  )
 }
 
 /* ------------------------------- one round --------------------------------- */
@@ -430,20 +496,49 @@ export function usePipelines({
  * `.current` in a cleanup is a real bug for the second kind. Reading it here
  * says which kind this is.
  */
-const abortInFlight = (cancel: RoundDeps['cancel']): void => {
-  if (cancel.current) cancel.current.aborted = true
+export const abortInFlight = (cancel: RoundDeps['cancel']): void => {
+  if (!cancel.current) return
+  cancel.current.aborted = true
+  // The request and the board scan in flight, not only the loop between steps.
+  cancel.current.fire?.()
+}
+
+/**
+ * A round's Stop: the flag the loop reads, plus listeners for whatever can be
+ * cancelled outright — the model request, a document conversion. `fire` is
+ * optional so a test can still hand in a bare `{ aborted }`.
+ */
+export type RoundStop = { aborted: boolean; fire?: () => void }
+
+function roundStop(): RoundStop & Required<Pick<Cancellation, 'onAbort'>> {
+  const listeners: (() => void)[] = []
+  const stop = {
+    aborted: false,
+    onAbort: (fn: () => void) => {
+      if (stop.aborted) fn()
+      else listeners.push(fn)
+    },
+    fire: () => {
+      for (const fn of listeners.splice(0)) fn()
+    },
+  }
+  return stop
 }
 
 /** Everything a round needs that only the hook can own. See `runPipelineRound`. */
 export type RoundDeps = {
   llm: LlmTurnFn
+  /** This round's model call, built on its Stop. See `usePipelines`. */
+  llmFor?: (signal: Cancellation) => LlmTurnFn
+  /** False while the document index is loading: a twin round waits. See `usePipelines`. */
+  documentsReady?: boolean
   host: ToolHost
   runtime: Pick<ToolRuntime, 'run'>
   note: (pipelineId: string, text: string, tone: PipelineLogEntry['tone']) => void
   /** The engine-wide lock. A `useRef` cell, which is a plain `{current}` box. */
   busy: { current: boolean }
   /** The round in flight, so the scheduler's cleanup and the toggle can stop it. */
-  cancel: { current: { aborted: boolean } | null }
+  cancel: { current: RoundStop | null }
   setRunning: (id: string | null) => void
   setActivity: (text: string | null) => void
   maxSteps?: number
@@ -487,13 +582,19 @@ export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Pro
     hasDocument,
   } = deps
   if (busy.current) return
+  const kind = kindOf(pipeline)
+  // Told there is no CV when the index simply has not loaded, a twin proposes
+  // the wrong work for the whole round. The scheduler skips it; this covers Run now.
+  if (kind === 'twin' && deps.documentsReady === false) {
+    note(pipeline.id, 'Waiting for your documents to finish loading.', 'note')
+    return
+  }
   busy.current = true
   setRunning(pipeline.id)
   setActivity(null)
 
-  const kind = kindOf(pipeline)
   const auto = isAuto(pipeline)
-  const stop = { aborted: false }
+  const stop = roundStop()
   cancel.current = stop
 
   // The model's own prose, kept so the proposing host can use the latest of
@@ -539,11 +640,11 @@ export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Pro
   try {
     const result = await agent({
       host: agentHost,
-      llm,
+      llm: deps.llmFor ? deps.llmFor(stop) : llm,
       history: [],
       // Through `host`, not `repo`: it is the seam the agent itself reads
       // the store through, and it is what the hook already hands down.
-      prompt: promptFor(pipeline, kind, host.memory(), hasDocument),
+      prompt: promptFor(pipeline, kind, host.memory(), hasDocument, auto),
       tools: toolsForKind(kind),
       ...(maxSteps === undefined ? {} : { maxSteps }),
       signal: stop satisfies Cancellation,
@@ -638,8 +739,10 @@ function promptFor(
   kind: PipelineKind,
   memory: GraphSnapshot,
   hasDocument?: (fileId: string) => boolean,
+  /** An auto round's writes land, and it must be told so. See `pipelinePrompt`. */
+  auto = false,
 ): string {
-  const parts = [PIPELINE_PROMPTS[kind], `The saved search is called “${pipeline.name}”.`]
+  const parts = [pipelinePrompt(kind, auto), `The saved search is called “${pipeline.name}”.`]
   if (pipeline.filter && pipeline.filter !== '—') {
     parts.push(`The person described what matters to them as: “${pipeline.filter}”.`)
   }

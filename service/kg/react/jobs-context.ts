@@ -40,8 +40,3 @@ export function useJobsAbout(recordId: string): readonly Job[] {
   )
 }
 
-/** Everything queued or running, so a shell can say the app is busy. */
-export function useLiveJobs(): readonly Job[] {
-  const jobs = useJobs()
-  return useSyncExternalStore(jobs.subscribe, jobs.live, jobs.live)
-}

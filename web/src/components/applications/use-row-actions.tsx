@@ -4,9 +4,11 @@ import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/s
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useToast } from '@/lib/toast-context'
+import { useUndoable } from '@/lib/undo'
 import { report } from '@/lib/analytics'
 import { advanceGesture, isAdvance, type AdvanceGesture } from '@/lib/mascot-cues'
 import { useMascot } from '@/lib/mascot-context'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * Everything a row or card can do to its record, in one place.
@@ -22,6 +24,7 @@ export function useRowActions() {
   const { open } = useDialogs()
   const { update, remove, duplicate, setStage } = useApplications()
   const { toast } = useToast()
+  const undoable = useUndoable()
   const { play } = useMascot()
   const [pendingDelete, setPendingDelete] = useState<Application | null>(null)
   /** What the mascot did on the last advance, so it does not do it twice over. */
@@ -51,12 +54,13 @@ export function useRowActions() {
   const onMoveStage = useCallback(
     (a: Application, stage: Stage) => {
       if (a.stage === stage) return
-      // Snapshot all three fields the move rewrites. `update` stamps daysAgo 0
-      // on every edit unless the patch overrides it, so an undo that put back
-      // only the stage would leave the row claiming it was touched today — and
-      // daysAgo is the list's default sort.
-      const before = { stage: a.stage, lastAction: a.lastAction, daysAgo: a.daysAgo }
-      setStage(a.id, stage)
+      // The journal's Undo, not a hand-built patch: `application.update` also
+      // stamps `stageDates` and `submittedOn` on a stage change, so putting back
+      // only stage/lastAction/daysAgo left a Draft→Submitted→Undo record
+      // counted as sent, dated for a stage it never reached.
+      const from = a.stage
+      const { value: moved, restore } = undoable(() => setStage(a.id, stage))
+      if (announceRefusal(moved, toast)) return
       /*
        * Moving BACK to draft is not an advance and the vocabulary has no value
        * for it, so it is not reported. That is the vocabulary being right rather
@@ -75,18 +79,18 @@ export function useRowActions() {
        * design, and both renderers drop the animation themselves under
        * `prefers-reduced-motion`.
        */
-      if (isAdvance(before.stage, stage)) {
+      if (isAdvance(from, stage)) {
         const gesture = advanceGesture(Math.random(), lastGesture.current)
         lastGesture.current = gesture
         play(gesture)
       }
       toast({
         title: `${displayName(a)} moved to ${STAGE_LABEL[stage]}`,
-        description: `It was in ${STAGE_LABEL[before.stage]}. The dashboard pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,
-        action: { label: 'Undo', onClick: () => update(a.id, before) },
+        description: `It was in ${STAGE_LABEL[from]}. The dashboard pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,
+        ...(restore ? { action: { label: 'Undo', onClick: restore } } : {}),
       })
     },
-    [setStage, update, toast, play],
+    [setStage, undoable, toast, play],
   )
 
   const onDelete = () => {

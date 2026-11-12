@@ -298,7 +298,10 @@ describe('createMemoryDriver', () => {
       const cloned = await driver.readAll()
       expect(cloned.ok).toBe(true)
       if (!cloned.ok) return
-      expect(driver.readAllUncloned()).toEqual(cloned.value)
+      // The rows, not `opsKeys`: that is a read-side annotation for the boot
+      // prune, and `rn-driver` serialises this result, so it stays out of it.
+      const { opsKeys: _keys, ...rows } = cloned.value
+      expect(driver.readAllUncloned()).toEqual(rows)
     })
 
     it('does not clone — which is the point, and the hazard', async () => {

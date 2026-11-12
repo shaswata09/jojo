@@ -205,6 +205,8 @@ async function drawRouting() {
   $('reader-test').disabled = !routing.reader.enabled
   if (!routing.reader.enabled) readerDot('idle', 'Switched off')
 
+  $('network-on').checked = routing.network === true
+
   const list = $('models')
   list.textContent = ''
   for (const host of hosts) {
@@ -371,6 +373,10 @@ async function start() {
   })
 
   $('reader-test').addEventListener('click', probeReader)
+
+  $('network-on').addEventListener('change', async () => {
+    await ask({ type: 'jojo:set-routing', network: $('network-on').checked })
+  })
 
   await draw(drawTab, (why) => {
     $('tab-title').textContent = 'Could not read this tab'

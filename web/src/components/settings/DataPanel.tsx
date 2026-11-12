@@ -33,6 +33,7 @@ import { describeBackup } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useToast } from '@/lib/toast-context'
+import { announceRefusal } from '@/components/common/write-result'
 
 export function DataPanel() {
   const { exportJSON, clearAll, isEmpty, dataSet } = useStoreAdmin()
@@ -330,8 +331,9 @@ export function DataPanel() {
   const onClearRecords = async () => {
     if (untouchedDemo) {
       if (!(await chooseDataSet('empty'))) return
-    } else {
-      clearAll()
+    } else if (announceRefusal(clearAll(), toast)) {
+      // Refused: the records are still there, so their documents must stay too.
+      return
     }
 
     /*

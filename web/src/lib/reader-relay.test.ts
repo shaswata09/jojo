@@ -242,15 +242,25 @@ describe('a relayed GET carries no body', () => {
     expect(rebuild).toMatch(/\.\.\.\(typeof relayed\.body === 'string' && relayed\.body !== ''/)
   })
 
-  it('and the worker refuses to attach one to a GET or HEAD at all', () => {
+  it('and the worker never attaches one to a GET, and sends nothing but GET and POST', async () => {
     // Belt and braces: the bridge is one caller, and the worker is the thing
-    // that actually calls `fetch`.
-    const fn = backgroundSource.slice(
-      backgroundSource.indexOf('async function relay('),
-      backgroundSource.indexOf('/* --------------------------------- scanning'),
-    )
-    expect(fn).toContain("method !== 'GET' && method !== 'HEAD'")
-    expect(fn).toContain('sendsBody')
+    // that actually calls `fetch`. HEAD, PUT and DELETE are refused outright —
+    // jojo sends none of them, and a relay that carried them let a page aim
+    // any verb at any local server.
+    const sent: { method?: string; body?: unknown }[] = []
+    const relay = liftRelay(((_url: string, init: { method?: string; body?: unknown }) => {
+      sent.push(init)
+      return Promise.resolve(new Response('ok'))
+    }) as unknown as () => Promise<unknown>)
+    await relay({ url: 'http://127.0.0.1:3001/mcp', method: 'get', body: 'x' }, 'reader')
+    expect(sent).toEqual([expect.objectContaining({ method: 'GET' })])
+    expect(sent[0]).not.toHaveProperty('body')
+    for (const method of ['HEAD', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']) {
+      const answer = await relay({ url: 'http://127.0.0.1:3001/mcp', method }, 'reader')
+      expect(answer.ok, method).toBe(false)
+      expect(answer.reason, method).toContain('GET and POST only')
+    }
+    expect(sent).toHaveLength(1)
   })
 
   it('names what it was calling, rather than saying "reader" for everything', () => {
@@ -461,5 +471,77 @@ describe('the MCP link has a verb of its own', () => {
     expect(numberIn(bridgeSource, 'BRIDGE_PROTOCOL')).toBeGreaterThanOrEqual(
       numberIn(bridgeCallerSource, 'MCP_LINK_PROTOCOL'),
     )
+  })
+})
+
+/**
+ * The two loopback relays, pinned to the one server each is for.
+ *
+ * Both checked only `isLoopback`, so a page could relay any method to ANY port
+ * on this machine — every dev server, database console and admin UI the person
+ * had running — and read the answer. A read is now pinned to the reader address
+ * saved in the popup, the link to jojo-bridge's own port.
+ */
+describe('which loopback server each relay may reach', () => {
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+  const same = new Function(
+    `${backgroundSource.slice(backgroundSource.indexOf('function isLoopback('), backgroundSource.indexOf('/**', backgroundSource.indexOf('function sameLoopbackServer(')))}; return sameLoopbackServer`,
+  )() as (a: string, b: string) => boolean
+
+  it('matches by port, whichever loopback spelling each side used', () => {
+    expect(same('http://localhost:3001/mcp', 'http://127.0.0.1:3001/mcp')).toBe(true)
+    expect(same('http://[::1]:3001/x', 'http://127.0.0.1:3001/mcp')).toBe(true)
+    expect(same('http://127.0.0.1:5432/', 'http://127.0.0.1:3001/mcp')).toBe(false)
+    expect(same('http://127.0.0.1/', 'http://127.0.0.1:80/')).toBe(true)
+    expect(same('http://evil.example:3001/', 'http://127.0.0.1:3001/')).toBe(false)
+  })
+
+  const handler = (verb: string, next: string) =>
+    withoutComments(
+      backgroundSource.slice(
+        backgroundSource.indexOf(`message?.type === '${verb}'`),
+        backgroundSource.indexOf(`message?.type === '${next}'`),
+      ),
+    )
+
+  it('pins a read to the reader address saved in the extension', () => {
+    const read = handler('jojo:read-document', 'jojo:mcp-link')
+    expect(read).toContain('sameLoopbackServer(url, routes.reader.endpoint)')
+    expect(read.indexOf('sameLoopbackServer')).toBeLessThan(read.indexOf('await relay('))
+  })
+
+  it('pins the link to jojo-bridge’s port, the one the page dials', async () => {
+    const link = handler('jojo:mcp-link', 'jojo:call-model')
+    expect(link).toContain('sameLoopbackServer(url, JOJO_BRIDGE_ADDRESS)')
+    expect(link.indexOf('sameLoopbackServer')).toBeLessThan(link.indexOf('await relay('))
+    const pinned = /const JOJO_BRIDGE_ADDRESS = '([^']+)'/.exec(backgroundSource)?.[1]
+    const { BRIDGE_ADDRESS } = await import('./mcp-link')
+    expect(pinned).toBe(BRIDGE_ADDRESS)
+  })
+})
+
+/**
+ * The scan's budget, derived from the worker's worst case rather than guessed.
+ *
+ * The page gave a scan 40 s while the worker could spend 25 s loading, 2.5 s
+ * settling and 10 s pressing "Load more" — 37.5 s before tab creation, two
+ * script injections and the reply hop — so a slow board the worker read was
+ * reported "could not be read" a moment before the rows arrived.
+ */
+describe('how long the page waits for a scan', () => {
+  it('outlasts everything the worker may spend on one board, with real margin', () => {
+    const worst =
+      numberIn(backgroundSource, 'LOAD_TIMEOUT_MS') +
+      numberIn(backgroundSource, 'SETTLE_MS') +
+      numberIn(backgroundSource, 'MORE_BUDGET_MS') +
+      // The last "Load more" wait checks the budget BEFORE sleeping, so it can
+      // overrun by one step of its poll.
+      250
+    expect(numberIn(bridgeCallerSource, 'SCAN_TIMEOUT_MS') - worst).toBeGreaterThanOrEqual(7500)
+  })
+
+  it('is not what somebody with no extension waits on a relayed read', () => {
+    // Lengthening the scan must not lengthen "the extension did not answer".
+    expect(numberIn(bridgeCallerSource, 'UNPROVEN_RELAY_TIMEOUT_MS')).toBeLessThanOrEqual(40000)
   })
 })

@@ -49,9 +49,27 @@ export function isoOf(y: number, m: number, d: number): string {
   return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`
 }
 
+/**
+ * The calendar date at the head of an ISO string — `2026-11-11` and
+ * `2026-11-11T09:30:00.000Z` both read as the 11th.
+ *
+ * `ISODate` and `Instant` are both plain `string` in the model, so the compiler
+ * cannot stop an Instant arriving here, and one did: the phone's "last used"
+ * line passes `handedOverAt`. Splitting on '-' then made the day
+ * `Number('11T09:30:00.000Z')` — NaN — and printed "Nov NaN". Reading the
+ * leading `YYYY-MM-DD` instead accepts both shapes. An Instant's date part is
+ * its UTC date, which is what was written down; converting to local time would
+ * need a clock-zone this layer does not have.
+ *
+ * Anything without that prefix still yields NaN parts, as before — a malformed
+ * date fails visibly rather than being guessed at.
+ */
+const DATE_HEAD = /^(\d{4})-(\d{1,2})-(\d{1,2})/
+
 export function partsOf(iso: string): { y: number; m: number; d: number } {
-  const [y, m, d] = iso.split('-')
-  return { y: Number(y), m: Number(m), d: Number(d) }
+  const head = DATE_HEAD.exec(iso)
+  if (head === null) return { y: Number.NaN, m: Number.NaN, d: Number.NaN }
+  return { y: Number(head[1]), m: Number(head[2]), d: Number(head[3]) }
 }
 
 export function addDays(iso: string, n: number): string {
@@ -168,7 +186,10 @@ export function whenLabel(item: TimelineItem, today: string): string {
  */
 export type Urgency = 'overdue' | 'soon' | 'later' | 'done'
 
-export function urgencyOf(item: Pick<TimelineItem, 'date' | 'completedOn'>, today: string): Urgency {
+export function urgencyOf(
+  item: Pick<TimelineItem, 'date' | 'completedOn'>,
+  today: string,
+): Urgency {
   if (item.completedOn) return 'done'
   const gap = daysBetween(today, item.date)
   if (gap < 0) return 'overdue'

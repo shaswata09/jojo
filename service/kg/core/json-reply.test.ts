@@ -33,6 +33,27 @@ describe('firstJsonObject', () => {
     })
   })
 
+  it('skips a brace in prose before the object', () => {
+    // The first balanced span was `{role}`, it failed to parse, and the scan
+    // gave up with the object sitting a sentence later.
+    const reply = 'I will fill the {role} placeholder. Here: ```json {"role":"Engineer"}```'
+    expect(firstJsonObject(reply)).toEqual({ role: 'Engineer' })
+    expect(salvageJsonObject(reply)).toEqual({ value: { role: 'Engineer' }, truncated: false })
+    expect(firstJsonObject('{a} and {b} then {"c":3}')).toEqual({ c: 3 })
+  })
+
+  it('resumes after a failed span, never inside it', () => {
+    // `{"a":1}` is a child of a span that is not JSON; it is not the reply.
+    expect(firstJsonObject('{note: {"a":1}} nothing else')).toBeNull()
+  })
+
+  it('salvages a truncated object that follows a brace in prose', () => {
+    expect(salvageJsonObject('Filling {role}: {"entries":[{"a":1},{"b"')).toEqual({
+      value: { entries: [{ a: 1 }] },
+      truncated: true,
+    })
+  })
+
   it('returns null for a reply with no object, and for a truncated one', () => {
     expect(firstJsonObject('I could not do that.')).toBeNull()
     expect(firstJsonObject('{"entries":[{"a":1},{"b"')).toBeNull()

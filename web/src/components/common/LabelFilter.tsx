@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useLabels } from '@/lib/labels-context'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /**
  * Filter by the user's own keywords, and manage them in place.
@@ -128,7 +129,7 @@ export function LabelFilter({
             onKeyDown={(e) => {
               // Enter is how anyone types a tag; requiring the mouse for the
               // last step would undo the point of an inline field.
-              if (e.key === 'Enter') {
+              if (isCommitEnter(e)) {
                 e.preventDefault()
                 create()
               }

@@ -91,7 +91,7 @@ export function useTimeline() {
 
   const update = useCallback(
     (id: string, patch: Partial<TimelineItem>) => {
-      run('timeline.item.update', {
+      return run('timeline.item.update', {
         id,
         ...present('title', patch.title),
         ...present('date', patch.date),
@@ -126,22 +126,23 @@ export function useTimeline() {
       // Read, then asked for a specific state. Calling a `toggle` tool would
       // have put the same bug in the layer below: an undo firing after the item
       // was unticked elsewhere would tick it again.
-      if (item.props.completedOn) run('timeline.item.reopen', { id })
-      else run('timeline.item.complete', { id, on: today })
+      return item.props.completedOn
+        ? run('timeline.item.reopen', { id })
+        : run('timeline.item.complete', { id, on: today })
     },
     [repo, run, today],
   )
 
   const snooze = useCallback(
     (id: string, days: number) => {
-      run('timeline.item.snooze', { id, days })
+      return run('timeline.item.snooze', { id, days })
     },
     [run],
   )
 
   const reschedule = useCallback(
     (id: string, iso: string) => {
-      run('timeline.item.reschedule', { id, date: iso })
+      return run('timeline.item.reschedule', { id, date: iso })
     },
     [run],
   )

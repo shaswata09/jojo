@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Label } from '@/data/labels'
 import { useLabels } from '@/lib/labels-context'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /** Whether two names are the same keyword. Folded, so case is not a difference. */
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -73,7 +74,7 @@ function KeywordRow({
                   setError(null)
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (isCommitEnter(e)) {
                     e.preventDefault()
                     save()
                   }

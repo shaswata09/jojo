@@ -122,3 +122,39 @@ export function keywordsOf(
   const legacy = labelIdsOf(id)
   return [...new Set([...canonical, ...legacy])]
 }
+
+/**
+ * The deadline half of a save, as `application.update` reads it.
+ *
+ * Absent (`undefined`) when the field still holds what the dialog was opened
+ * with: whoever opened it decides what to prefill, and a save that always wrote
+ * would re-stamp the item every time someone edited a location. `null` when the
+ * person emptied it — the tool then deletes the item it owns.
+ */
+export function deadlineWrite(
+  form: Pick<FormState, 'deadline'>,
+  initial: Pick<ApplicationInitial, 'deadline'> | undefined,
+): string | null | undefined {
+  if (form.deadline === (initial?.deadline ?? '')) return undefined
+  return form.deadline === '' ? null : form.deadline
+}
+
+/**
+ * A refusal from the tool, put where the person will see it.
+ *
+ * The form validates first, but the tool is the authority — a schema can refuse
+ * what `validate` let through — and a refusal used to vanish while the dialog
+ * closed under a "Changes saved" toast. A message naming a field this form has
+ * goes on that field; the first message is also the toast's.
+ */
+export function refusalOf(errors: readonly { message: string; field?: string }[]): {
+  message: string
+  fields: Errors
+} {
+  const fields: Errors = {}
+  for (const error of errors) {
+    const key = FIELD_ORDER.find((k) => k === error.field)
+    if (key !== undefined && fields[key] === undefined) fields[key] = error.message
+  }
+  return { message: errors[0]?.message ?? 'Something about that record did not fit.', fields }
+}

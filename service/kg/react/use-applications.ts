@@ -45,7 +45,26 @@ export type ApplicationDraft = Omit<
   Application,
   'id' | 'slug' | 'lastAction' | 'daysAgo' | 'stageDates'
 > &
-  Partial<Pick<Application, 'lastAction' | 'daysAgo'>>
+  Partial<Pick<Application, 'lastAction' | 'daysAgo'>> &
+  FormWrites<string>
+
+/**
+ * The two writes the form owns beyond the record: its deadline and its keyword
+ * set (keyword node ids).
+ *
+ * Carried INTO `application.create` / `application.update` rather than written
+ * beside them, so a save is one transaction, one journal entry and one Undo —
+ * and so the deadline goes through the tool layer's `syncDeadline`, the one
+ * copy of the rule that re-titles it when the employer is renamed. The web
+ * form used to keep its own copy of that rule, and the assistant's path did
+ * not have it.
+ *
+ * `deadline` absent leaves the date alone; on update `null` deletes the item.
+ */
+export type FormWrites<D extends string | null = string | null> = {
+  deadline?: D
+  keywords?: readonly string[]
+}
 
 /** The instant that reads as `days` ago from `today`, at the same local noon. */
 const agoOf = (today: string, days: number) =>
@@ -83,6 +102,8 @@ export function applicationCreateInput(draft: ApplicationDraft) {
     ...present('firstReplyOn', draft.firstReplyOn),
     ...present('outcome', draft.outcome),
     ...present('offer', draft.offer),
+    ...present('deadline', draft.deadline),
+    ...present('keywords', draft.keywords === undefined ? undefined : [...draft.keywords]),
   }
 }
 
@@ -94,7 +115,12 @@ export function applicationCreateInput(draft: ApplicationDraft) {
  * Dropping it would have made every undo of a stage move leave the row claiming
  * it was touched today.
  */
-export function applicationUpdateInput(id: string, patch: ApplicationPatch, today: string) {
+export function applicationUpdateInput(
+  id: string,
+  patch: ApplicationPatch,
+  today: string,
+  writes: FormWrites = {},
+) {
   return {
     id,
     ...(typeof patch.daysAgo === 'number' ? { lastActionAt: agoOf(today, patch.daysAgo) } : {}),
@@ -119,6 +145,10 @@ export function applicationUpdateInput(id: string, patch: ApplicationPatch, toda
     ...asNull('stageDates', patch, 'stageDates'),
     ...asNull('outcome', patch, 'outcome'),
     ...asNull('offer', patch, 'offer'),
+    // `null` is a real value here (delete the deadline), so `present` and not
+    // `asNull`: only an absent key means "leave it alone".
+    ...present('deadline', writes.deadline),
+    ...present('keywords', writes.keywords === undefined ? undefined : [...writes.keywords]),
   }
 }
 
@@ -184,15 +214,21 @@ export function useApplications() {
   /**
    * A patch over the whole record, including clearing a field.
    *
-   * A key that is PRESENT and `undefined` means "clear this", which is how
-   * `revertOf` (in `routes/ApplicationDetail.tsx`) spells a restore; a key that is
-   * absent means "leave it alone". `Object.hasOwn` is the only thing that can
-   * tell those apart, and conflating them would make an undo of a stage change
-   * quietly wipe the dates the stage change had filled in.
+   * A key that is PRESENT and `undefined` means "clear this" — how an emptied
+   * form field, or a restored before-image, spells it; a key that is absent
+   * means "leave it alone". `Object.hasOwn` is the only thing that can tell
+   * those apart, and conflating them would make a partial edit quietly wipe
+   * fields it never mentioned. (A stage move's Undo no longer comes through
+   * here at all: it reverts the journal entry, via `useUndoable`.)
+   *
+   * `writes` carries the form's deadline and keyword set into the same call.
+   * Returns the `ToolResult`, so a caller can tell a refusal from a save.
    */
   const update = useCallback(
-    (id: string, patch: ApplicationPatch) => {
-      run('application.update', applicationUpdateInput(id, patch, today))
+    (id: string, patch: ApplicationPatch, writes?: FormWrites) => {
+      // The result goes back to the caller: a refused edit ("Cannot be blank.")
+      // used to be dropped here, and the form toasted "Changes saved" over it.
+      return run('application.update', applicationUpdateInput(id, patch, today, writes))
     },
     [run, today],
   )
@@ -211,7 +247,7 @@ export function useApplications() {
    */
   const setNote = useCallback(
     (id: string, note: string, format?: string) => {
-      run('application.note.set', { id, note, ...(format === undefined ? {} : { format }) })
+      return run('application.note.set', { id, note, ...(format === undefined ? {} : { format }) })
     },
     [run],
   )

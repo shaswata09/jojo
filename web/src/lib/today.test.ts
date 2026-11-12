@@ -86,6 +86,48 @@ describe('the pinned day', () => {
     expect(today.TODAY).toBe('2026-10-14')
   })
 
+  it('tells subscribers when the day turns, and only then', async () => {
+    // What makes `KgProvider` repaint at midnight: `webHost.onDayTurn` hands
+    // this listener over, and the provider re-reads `today` when it fires.
+    vi.useFakeTimers()
+    vi.setSystemTime(lateOnThe12th)
+    const today = await import('@/lib/today')
+    const { webHost } = await import('@/lib/host')
+    const heard = vi.fn()
+    const stop = webHost.onDayTurn?.(heard)
+
+    await vi.advanceTimersByTimeAsync(5 * 60_000)
+    expect(heard).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(15 * 60_000)
+    expect(today.TODAY).toBe('2026-10-13')
+    expect(heard).toHaveBeenCalledTimes(1)
+
+    stop?.()
+    await vi.advanceTimersByTimeAsync(24 * 3_600_000)
+    expect(heard).toHaveBeenCalledTimes(1)
+  })
+
+  it('is what KgProvider takes its today from', async () => {
+    // No mount tests (house rule), so the provider's half of the wiring is held
+    // by its text: a provider that went back to a bare `dayOf(now())` would
+    // pass the test above and still repaint nothing at midnight.
+    // A `?raw` glob, not an import: it yields the file's text and instantiates
+    // nothing, which is the form check-no-copies allows for a relative path.
+    const [source] = Object.values(
+      import.meta.glob('../../../service/kg/react/kg.tsx', {
+        query: '?raw',
+        import: 'default',
+        eager: true,
+      }),
+    ) as string[]
+    expect(source).toBeDefined()
+    expect(source).toMatch(
+      /const today = useSyncExternalStore\(day\.subscribe, day\.getSnapshot, day\.getSnapshot\)/,
+    )
+    expect(source).toMatch(/daySource\(host, now\)/)
+  })
+
   it('catches up when the tab comes back from a machine that was asleep', async () => {
     // A suspended machine runs no timers at all, so the midnight one is still
     // pending when the lid opens. `visibilitychange` is the correction.

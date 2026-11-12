@@ -42,6 +42,7 @@ import { useChecklist } from '@/lib/checklist-agent'
 import { useToast } from '@/lib/toast-context'
 import { supersededToast } from '@jojo/service/react/undo'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 export function ChecklistPanel({ applicationId }: { applicationId: string }) {
   const c = useChecklist(applicationId)
@@ -131,6 +132,9 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
                 type="button"
                 role="checkbox"
                 aria-checked={item.doneOn !== undefined}
+                // The step's own words: a list of unnamed checkboxes reads as
+                // "checkbox, checked" five times over to a screen reader.
+                aria-label={item.text}
                 onClick={() => c.tick(item.id, item.doneOn === undefined)}
                 /* `.touch-target` is load-bearing: an 18px box matches none of
                    index.css's size selectors, so without it this is an 18×18
@@ -152,7 +156,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
                     setEditing(null)
                   }}
                   onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-                    if (e.key === 'Enter') e.currentTarget.blur()
+                    if (isCommitEnter(e)) e.currentTarget.blur()
                     if (e.key === 'Escape') {
                       // Or the record itself closes. See the header.
                       e.preventDefault()
@@ -215,7 +219,7 @@ export function ChecklistPanel({ applicationId }: { applicationId: string }) {
           aria-label="Add a step"
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-text-placeholder placeholder:italic"
           onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === 'Enter') commit()
+            if (isCommitEnter(e)) commit()
             if (e.key === 'Escape') {
               e.preventDefault()
               e.stopPropagation()

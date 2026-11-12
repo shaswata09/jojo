@@ -98,6 +98,10 @@ export function AddFromLinkDialog({
 
       abort.current = null
       setStep(null)
+      // Cancelled while it read (Cancel, or the dialog closed): stop here.
+      // `close()` would shut whatever dialog is open NOW — maybe not this one —
+      // and the form would open over a read the person abandoned.
+      if (stop.signal.aborted) return
 
       if (!outcome.ok) {
         setError(outcome.reason)

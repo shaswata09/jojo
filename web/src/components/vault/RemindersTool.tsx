@@ -24,6 +24,7 @@ import { TODAY } from '@/lib/today'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * Everything flagged to come back to, off the one timeline.
@@ -165,7 +166,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
     toggle: (item) => {
       const done = Boolean(item.completedOn)
       play(item.id, { preview: { completedOn: done ? null : TODAY }, arrive: true }, () => {
-        toggleDone(item.id)
+        if (announceRefusal(toggleDone(item.id), toast)) return
         toast({
           title: `${item.title} ${done ? 'reopened' : 'completed'}`,
           description: done
@@ -186,7 +187,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
       const before = item.date
       const after = addDays(anchorOf(item), days)
       play(item.id, { preview: { date: after }, arrive: true }, () => {
-        snooze(item.id, days)
+        if (announceRefusal(snooze(item.id, days), toast)) return
         toast({
           title: `${item.title} moved`,
           description: `Now due ${shortDate(after)} · ${whenLabel({ ...item, date: after }, TODAY)}`,
@@ -200,7 +201,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
     moveTo: (item, iso) => {
       const before = item.date
       play(item.id, { preview: { date: iso }, arrive: true }, () => {
-        reschedule(item.id, iso)
+        if (announceRefusal(reschedule(item.id, iso), toast)) return
         toast({
           title: `${item.title} moved`,
           description: `Now due ${shortDate(iso)} · ${whenLabel({ ...item, date: iso }, TODAY)}`,

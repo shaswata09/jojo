@@ -112,6 +112,37 @@ const orderedRows = (store: Store): StoredRow[] =>
     .sort(([a], [b]) => compareKeys(a, b))
     .map(([, row]) => row)
 
+/**
+ * The first `[type, props.slug]` two node rows share, or null.
+ *
+ * IndexedDB's unique `by-type-slug` index (`schema.ts`), modelled. A stand-in
+ * that accepted duplicates let a restore pass every test and the phone, then
+ * fail whole with a ConstraintError in the browser. Sparse like the real index:
+ * a row whose type or slug is not a valid key (a profile has no slug) is simply
+ * not in it. A full pass, but `commit` already copies every store per batch.
+ */
+function slugClash(nodes: Store): string | null {
+  const seen = new Set<string>()
+  for (const row of nodes.values()) {
+    const type = row['type']
+    const props = row['props']
+    if (typeof type !== 'string' || typeof props !== 'object' || props === null) continue
+    const slug = (props as Record<string, unknown>)['slug']
+    if (typeof slug !== 'string' && typeof slug !== 'number') continue
+    const key = `${type}\0${typeof slug}:${String(slug)}`
+    if (seen.has(key)) return `${type} '${String(slug)}'`
+    seen.add(key)
+  }
+  return null
+}
+
+/** What `classify` makes of IndexedDB's own refusal of the same rows. */
+const clashFailure = <T>(clash: string, operation: string): DriverResult<T> =>
+  driverFail<T>('storage/corrupt', `two records share the address ${clash}`, {
+    name: 'ConstraintError',
+    operation,
+  })
+
 const readStore = (store: Store): StoredRow[] =>
   orderedRows(store).map((row) => structuredClone(row) as StoredRow)
 
@@ -207,6 +238,8 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
       edges: readStore(stores.edges),
       meta: readStore(stores.meta) as MetaRow[],
       ops: readStore(stores.ops),
+      // Same order as `readStore` — both sort by key — so index i names row i.
+      opsKeys: [...stores.ops.keys()].sort(compareKeys),
     })
 
   /**
@@ -260,6 +293,11 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
       return classify<void>(e, 'commit')
     }
 
+    if (ops.some((op) => op.store === 'nodes')) {
+      const clash = slugClash(next.nodes)
+      if (clash !== null) return clashFailure<void>(clash, 'commit')
+    }
+
     stores = next
     return driverOk(undefined)
   }
@@ -273,6 +311,8 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
     } catch (e) {
       return classify<void>(e, 'replace')
     }
+    const clash = slugClash(next.nodes)
+    if (clash !== null) return clashFailure<void>(clash, 'replace')
     stores = next
     return driverOk(undefined)
   }
@@ -296,6 +336,8 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
     } catch (e) {
       return classify<boolean>(e, 'seedIfPristine')
     }
+    const clash = slugClash(next.nodes)
+    if (clash !== null) return clashFailure<boolean>(clash, 'seedIfPristine')
     stores = next
     return driverOk(true)
   }

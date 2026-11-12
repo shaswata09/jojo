@@ -56,7 +56,7 @@ export function useScout() {
 
   const updateMatch = useCallback(
     (id: string, patch: Partial<Match>) => {
-      run('scout.match.update', {
+      return run('scout.match.update', {
         id,
         ...present('role', patch.role),
         ...present('detail', patch.detail),
@@ -107,7 +107,7 @@ export function useScout() {
 
   const updatePosting = useCallback(
     (id: string, patch: Partial<SavedPosting>) => {
-      run('scout.posting.update', {
+      return run('scout.posting.update', {
         id,
         ...present('title', patch.title),
         ...present('url', patch.url),
@@ -150,15 +150,21 @@ export function useScout() {
       // `enabled` is its own tool: pausing a pipeline is a decision with its own
       // undo label, and folding it into the generic edit would announce "Pipeline
       // updated" for a switch the user flicked.
-      if (patch.enabled !== undefined)
-        run('scout.pipeline.enable.set', { id, enabled: patch.enabled })
+      const switched =
+        patch.enabled === undefined
+          ? undefined
+          : run('scout.pipeline.enable.set', { id, enabled: patch.enabled })
+      // A refused switch stops here, so the caller hears the first refusal
+      // rather than a later success that hides it.
+      if (switched !== undefined && !switched.ok) return switched
       const edits = {
         ...present('name', patch.name),
         ...present('source', patch.source),
         ...present('schedule', patch.schedule),
         ...present('filter', patch.filter),
       }
-      if (Object.keys(edits).length > 0) run('scout.pipeline.update', { id, ...edits })
+      if (Object.keys(edits).length > 0) return run('scout.pipeline.update', { id, ...edits })
+      return switched
     },
     [run],
   )

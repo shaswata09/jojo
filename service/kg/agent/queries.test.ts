@@ -13,7 +13,7 @@ import { FUNCTION_NAMES } from '../core/expression'
 import { MutableSnapshot } from '../core/snapshot'
 import { createRepository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
-import { READS, labelOf, render } from './queries'
+import { READS, labelOf, render, DOCUMENT_CLOSE, DOCUMENT_OPEN } from './queries'
 import type { NodeId, Source, StoredNode } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 
@@ -482,8 +482,10 @@ describe('reading a document', () => {
         next: number | null
       }
       expect(out.ok).toBe(true)
-      // The note is appended for the model; the document text is what precedes it.
-      seen += out.markdown.split('\n\n[')[0]
+      // The text sits inside the fence; the note is appended after it.
+      const fenced = out.markdown.split(DOCUMENT_CLOSE)[0] ?? ''
+      expect(fenced.startsWith(DOCUMENT_OPEN)).toBe(true)
+      seen += fenced.slice(DOCUMENT_OPEN.length)
       calls += 1
       if (out.next === null) break
       from = out.next
@@ -714,6 +716,36 @@ describe('reading a job board', () => {
     expect(out.pagesRead).toBe(2)
     expect(out.alreadySeen).toBe(1)
     expect(out.postings.map((p) => p.title)).toEqual(['Job 2'])
+  })
+
+  /*
+   * A crawl follows up to ten pages, each a tab opened in the person's own
+   * browser, and nothing checked Stop between them — the read ran to the end
+   * after the UI said it had stopped.
+   */
+  it('opens no further page once the run is stopped', async () => {
+    const opened: string[] = []
+    const signal = { aborted: false }
+    const scan = async (url: string) => {
+      opened.push(url)
+      signal.aborted = true
+      return {
+        ok: true as const,
+        rows: [
+          { url: '/jobs/1001', title: 'Job 1' },
+          { url: '/jobs?page=2', title: 'Next' },
+        ],
+      }
+    }
+    const out = (await board.read(memory, { url: 'https://a.test/jobs' }, {
+      today: TODAY,
+      scan,
+      signal,
+      boards: ['https://a.test/jobs'],
+    })) as { ok: boolean; pagesRead: number; postings: { title: string }[] }
+    expect(opened).toEqual(['https://a.test/jobs'])
+    expect(out.pagesRead).toBe(1)
+    expect(out.postings.map((p) => p.title)).toEqual(['Job 1'])
   })
 
   it('says a board is done for now when everything on it has been seen', async () => {

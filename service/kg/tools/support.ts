@@ -84,6 +84,37 @@ export function touch(ctx: ToolContext, id: NodeId, lastAction: string): void {
 }
 
 /**
+ * Everything a save of the application form can change, as one comparable
+ * string: the props, the employer, the keywords, and the deadline it owns.
+ *
+ * Read before and after the write, so `application.update` touches only when
+ * something moved. Touching unconditionally stamped `lastActionAt`, which made
+ * Save on an untouched form a real change — it took an undo slot and floated
+ * the row to the top of a list sorted by that field.
+ *
+ * Keys sorted, because `tx.patch` rebuilds props by spreading and a key that
+ * was deleted and put back moves.
+ */
+export function formStateOf(m: GraphSnapshot, appId: NodeId): string {
+  const sorted = (_key: string, value: unknown): unknown =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+      ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
+      : value
+  return JSON.stringify(
+    {
+      props: m.node(appId, 'application')?.props,
+      org: m.out(appId, 'AT').map((e) => e.to),
+      keywords: m
+        .in(appId, 'TAGS')
+        .map((e) => e.from)
+        .sort(),
+      deadline: applicationDeadlineOf(m, appId)?.props,
+    },
+    sorted,
+  )
+}
+
+/**
  * Spreads a key only when there is a value for it.
  *
  * `...(x === undefined ? {} : { note: x })` reads the same and does not compile

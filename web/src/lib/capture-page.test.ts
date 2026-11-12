@@ -21,6 +21,7 @@ import backgroundSource from '../../extension/background.js?raw'
 // of its own; `capture-shrink.test.ts` imports it the same way. It is handed to
 // the lifted worker untyped, which is how the worker itself receives it.
 import { shrinkToFit } from '../../extension/shrink.js'
+import bridgeCallerSource from './capture-bridge.ts?raw'
 
 /** A declaration out of `background.js`, to the end of its body. */
 function lift(name: string): string {
@@ -54,6 +55,15 @@ type Page = {
 }
 type Result = { ok: true; capture: Page } | { ok: false; reason: string }
 
+/** A `const NAME = <number>` out of a source file, as the number. */
+function numberIn(source: string, name: string): number {
+  const match = new RegExp(`const ${name} = ([\\d_]+)`).exec(source)
+  if (match === null) throw new Error(`${name} is not a numeric constant any more`)
+  return Number(match[1]!.replace(/_/g, ''))
+}
+
+const INLINE_BY = numberIn(backgroundSource, 'CAPTURE_PAGE_INLINE_BY_MS')
+
 // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
 const build = new Function(
   'chrome',
@@ -65,12 +75,21 @@ const build = new Function(
   'inline',
   'CAPTURE_MAX_BYTES',
   'shrinkToFit',
-  [SIGN_IN, lift('hostOf'), lift('byteLength'), lift('looksLikeSignIn'), lift('capturePage')].join(
-    '\n',
-  ) + '\nreturn { capturePage, looksLikeSignIn }',
+  'captureNonce',
+  'CAPTURE_PAGE_INLINE_BY_MS',
+  [
+    SIGN_IN,
+    lift('hostOf'),
+    lift('byteLength'),
+    lift('looksLikeSignIn'),
+    lift('privateHost'),
+    lift('isLocalTarget'),
+    lift('capturePage'),
+  ].join('\n') + '\nreturn { capturePage, looksLikeSignIn, isLocalTarget }',
 ) as (...deps: unknown[]) => {
   capturePage: (url: string) => Promise<Result>
   looksLikeSignIn: (requested: string, landed: string) => boolean
+  isLocalTarget: (url: string) => boolean
 }
 
 const served = {
@@ -92,6 +111,8 @@ function worker({
 }: { landed?: string; loads?: boolean; throws?: string; inlined?: string } = {}) {
   const created: { url: string; active: boolean }[] = []
   const removed: number[] = []
+  /** What `inline` was handed, and whether the tab was already gone when it ran. */
+  const inlinedWith: { nonce: unknown; deadline: unknown; tabOpen: boolean }[] = []
   let stored = 0
   const chrome = {
     tabs: {
@@ -120,18 +141,23 @@ function worker({
     },
     action: { setBadgeText: async () => undefined, setTitle: async () => undefined },
   }
-  const { capturePage, looksLikeSignIn } = build(
+  const { capturePage, looksLikeSignIn, isLocalTarget } = build(
     chrome,
     async () => loads,
     async () => undefined,
     0,
     () => undefined,
     {},
-    async (page: { dropped: number }) => ({ html: inlined, dropped: page.dropped + 2 }),
+    async (page: { dropped: number }, nonce: unknown, deadline: unknown) => {
+      inlinedWith.push({ nonce, deadline, tabOpen: !removed.includes(7) })
+      return { html: inlined, dropped: page.dropped + 2 }
+    },
     8 * 1024 * 1024,
     shrinkToFit,
+    () => 'feedfacefeedfacefeedface',
+    INLINE_BY,
   )
-  return { capturePage, looksLikeSignIn, created, removed, stored: () => stored }
+  return { capturePage, looksLikeSignIn, isLocalTarget, created, removed, inlinedWith, stored: () => stored }
 }
 
 describe('capturing a posting by its address', () => {
@@ -293,5 +319,180 @@ describe('what counts as a sign-in wall', () => {
     ]) {
       expect(looksLikeSignIn(asked, fine), fine).toBe(false)
     }
+  })
+})
+
+describe('the tab and the clock', () => {
+  it('closes the tab before inlining, not after it', async () => {
+    // Inlining can take a minute; the tab sat open in the person's window,
+    // signed in and running the site's scripts, for all of it.
+    const w = worker()
+    await w.capturePage(served.url)
+    expect(w.inlinedWith).toHaveLength(1)
+    expect(w.inlinedWith[0]!.tabOpen).toBe(false)
+    // Once: the `finally` does not close it a second time.
+    expect(w.removed).toEqual([7])
+  })
+
+  it('hands the serialiser’s nonce and a deadline to the inliner', async () => {
+    const w = worker()
+    const before = Date.now()
+    await w.capturePage(served.url)
+    const { nonce, deadline } = w.inlinedWith[0]!
+    expect(nonce).toBe('feedfacefeedfacefeedface')
+    expect(deadline).toBeGreaterThanOrEqual(before + INLINE_BY)
+    expect(deadline).toBeLessThanOrEqual(Date.now() + INLINE_BY)
+  })
+
+  it('stops inlining well inside the page’s own budget', () => {
+    /*
+     * The race has to go the worker's way: a capture finished after the page
+     * gave up is posted into a closed channel and nothing is kept — measured on
+     * AcademicCareers. After the deadline come only `shrinkToFit` and one
+     * message back, so fifteen seconds of margin is generous rather than tight.
+     */
+    expect(INLINE_BY + 15000).toBeLessThanOrEqual(numberIn(bridgeCallerSource, 'CAPTURE_TIMEOUT_MS'))
+  })
+})
+
+describe('where "From link" and the scan will not go', () => {
+  const { isLocalTarget } = worker()
+
+  it('refuses this machine and the person’s own network, in every spelling URL normalises', () => {
+    for (const url of [
+      'http://localhost:3000/',
+      'http://app.localhost/',
+      'http://127.0.0.1/',
+      'http://127.1/',
+      'http://2130706433/',
+      'http://0.0.0.0/',
+      'http://[::1]/',
+      'http://[::ffff:127.0.0.1]/',
+      'http://10.0.0.5/admin',
+      'http://0xa.0.0.5/',
+      'http://172.16.0.1/',
+      'https://192.168.1.1/',
+      'http://169.254.169.254/latest/meta-data/',
+      'http://[fd00::1]/',
+      'http://[fe80::1]/',
+      'http://[::ffff:10.0.0.1]/',
+      'http://nas.local/',
+      'http://router.lan/',
+      'not a url',
+    ]) {
+      expect(isLocalTarget(url), url).toBe(true)
+    }
+  })
+
+  it('lets every public board through', () => {
+    for (const url of [
+      'https://www.linkedin.com/jobs/view/4012/',
+      'https://job-boards.greenhouse.io/acme/jobs/4',
+      'https://172.15.0.1/',
+      'https://192.169.0.1/',
+      'https://academiccareers.com/job/183456/x/',
+    ]) {
+      expect(isLocalTarget(url), url).toBe(false)
+    }
+  })
+
+  it('refuses a public address that redirects onto the network', async () => {
+    const w = worker({ landed: 'http://192.168.1.1/' })
+    const out = await w.capturePage(served.url)
+    expect(out).toMatchObject({ ok: false })
+    expect(w.inlinedWith).toHaveLength(0)
+  })
+
+  it('is checked by both verbs before a tab opens', () => {
+    for (const verb of ["'jojo:scan-board'", "'jojo:capture-url'"]) {
+      const handler = backgroundSource.slice(backgroundSource.indexOf(`message?.type === ${verb}`))
+      const body = handler.slice(0, handler.indexOf('\n  }\n'))
+      expect(body.indexOf('isLocalTarget(url)'), verb).toBeGreaterThan(-1)
+      expect(body.indexOf('isLocalTarget(url)'), verb).toBeLessThan(body.search(/await (scanBoard|capturePage)\(/))
+    }
+  })
+})
+
+/**
+ * "Load more" can navigate. A link dressed as a button, or a button inside a
+ * form, moves the tab — and the harvest read whatever page it reached, with
+ * every check already behind it. The worker now asks where the tab is AFTER
+ * pressing, and the presser skips anything that would submit a form.
+ */
+describe('a scan whose "Load more" navigates the tab', () => {
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+  const buildScan = new Function(
+    'chrome',
+    'waitForLoad',
+    'sleep',
+    'SETTLE_MS',
+    'expandListing',
+    'harvest',
+    'MORE_ROUNDS',
+    'MORE_WAIT_MS',
+    'MORE_BUDGET_MS',
+    'HARVEST_LIMIT',
+    [
+      SIGN_IN,
+      lift('hostOf'),
+      lift('sameSite'),
+      lift('looksLikeSignIn'),
+      lift('privateHost'),
+      lift('isLocalTarget'),
+      lift('boardRefusal'),
+      lift('scanBoard'),
+    ].join('\n') + '\nreturn scanBoard',
+  ) as (...deps: unknown[]) => (url: string) => Promise<{ ok: boolean; reason?: string; landed?: string }>
+
+  function scanner(urls: string[]) {
+    let gets = 0
+    const ran: string[] = []
+    const expandListing = () => undefined
+    const harvest = () => undefined
+    const chrome = {
+      tabs: {
+        create: async () => ({ id: 9 }),
+        get: async () => ({ id: 9, url: urls[Math.min(gets++, urls.length - 1)], status: 'complete' }),
+        remove: async () => undefined,
+      },
+      scripting: {
+        executeScript: async ({ func }: { func: unknown }) => {
+          ran.push(func === expandListing ? 'expand' : 'harvest')
+          return [{ result: [] }]
+        },
+      },
+    }
+    const scan = buildScan(chrome, async () => true, async () => undefined, 0, expandListing, harvest, 1, 1, 1, 10)
+    return { scan, ran }
+  }
+
+  const board = 'https://careercenter.cra.org/jobs/'
+
+  it('refuses when pressing landed on a sign-in page, and harvests nothing', async () => {
+    const { scan, ran } = scanner([board, 'https://careercenter.cra.org/login?next=/jobs'])
+    const out = await scan(board)
+    expect(out.ok).toBe(false)
+    expect(ran).toEqual(['expand'])
+  })
+
+  it('refuses when pressing left the site', async () => {
+    const { scan, ran } = scanner([board, 'https://elsewhere.example/'])
+    expect((await scan(board)).ok).toBe(false)
+    expect(ran).toEqual(['expand'])
+  })
+
+  it('reads the board, and says where, when pressing stayed put', async () => {
+    const { scan, ran } = scanner([board, board])
+    await expect(scan(board)).resolves.toMatchObject({ ok: true, landed: board })
+    expect(ran).toEqual(['expand', 'harvest'])
+  })
+})
+
+describe('the "Load more" presser', () => {
+  it('skips a submit button and anything inside a form', async () => {
+    const harvestSource = (await import('../../extension/harvest.js?raw')).default
+    const finder = harvestSource.slice(harvestSource.indexOf('const findMore'), harvestSource.indexOf('const links ='))
+    expect(finder).toMatch(/type'\) \|\| ''\)\.toLowerCase\(\) === 'submit'/)
+    expect(finder).toContain("el.closest('form')")
   })
 })

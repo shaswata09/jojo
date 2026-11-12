@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useLabels } from '@/lib/labels-context'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /**
  * Pick keywords for a record that may not exist yet, without writing any.
@@ -114,7 +115,7 @@ export function KeywordPicker({
             onKeyDown={(e) => {
               // Enter has to finish the keyword rather than submit the form
               // behind it — that would save the record mid-thought.
-              if (e.key === 'Enter') {
+              if (isCommitEnter(e)) {
                 e.preventDefault()
                 create()
               }

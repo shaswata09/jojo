@@ -119,7 +119,7 @@ export function useVault() {
 
   const updateLink = useCallback(
     (id: string, patch: Partial<VaultLink>) => {
-      run('vault.link.update', {
+      return run('vault.link.update', {
         id,
         ...present('title', patch.title),
         ...present('url', patch.url),
@@ -187,7 +187,7 @@ export function useVault() {
    */
   const updateFile = useCallback(
     (id: string, patch: Partial<VaultFile>, noteFormat?: string) => {
-      run('vault.file.update', {
+      return run('vault.file.update', {
         id,
         ...present('name', patch.name),
         ...present('kind', patch.kind),
@@ -210,7 +210,13 @@ export function useVault() {
   const removeFile = useCallback(
     (id: string) => {
       const result = run('vault.file.delete', { id })
-      return { restore: (result.ok && result.undo) || nothingToRestore }
+      // `ok` and the refusal ride along so a caller can stop before it deletes
+      // the bytes and says "deleted" about a record that is still there.
+      return {
+        ok: result.ok,
+        refusal: result.ok ? undefined : result.errors[0]?.message,
+        restore: (result.ok && result.undo) || nothingToRestore,
+      }
     },
     [run],
   )
@@ -255,7 +261,7 @@ export function useVault() {
 
   const updateSnippet = useCallback(
     (id: string, patch: Partial<Snippet>, format?: string) => {
-      run('vault.snippet.update', {
+      return run('vault.snippet.update', {
         id,
         ...present('title', patch.title),
         ...present('tag', patch.tag),
@@ -306,7 +312,7 @@ export function useVault() {
 
   const updatePerson = useCallback(
     (id: string, patch: Partial<Person>) => {
-      run('vault.person.update', {
+      return run('vault.person.update', {
         id,
         ...present('name', patch.name),
         ...present('role', patch.role),

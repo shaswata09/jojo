@@ -22,12 +22,21 @@ import { useVaultBlobs } from '@/lib/vault-blobs'
  * no blob behind it is an ordinary state: it is every file in a backup restored
  * onto a machine that never had the originals.
  */
-export function useReadDocument(): (fileId: string) => Promise<ConvertResult> {
+/** A run's Stop, as the agent hands it to a host's `convert`. */
+export type ReadCancellation = {
+  readonly aborted: boolean
+  readonly onAbort?: (fn: () => void) => void
+}
+
+export function useReadDocument(): (
+  fileId: string,
+  cancel?: ReadCancellation,
+) => Promise<ConvertResult> {
   const { reader } = useModelSettings()
   const blobs = useVaultBlobs()
 
   return useCallback(
-    async (fileId: string) => {
+    async (fileId: string, cancel?: ReadCancellation) => {
       const file = await blobs.get(fileId)
       if (!file) {
         return {
@@ -54,7 +63,13 @@ export function useReadDocument(): (fileId: string) => Promise<ConvertResult> {
               : `${here.reason} No document reader is connected to try harder — Settings is where its address goes.`,
         }
       }
-      return convertFile(reader, file)
+      // The agent's Stop is a flag with an optional callback; the reader's
+      // transport wants an AbortSignal. Bridged here so a stopped run does not
+      // leave a conversion running for most of a minute.
+      if (cancel?.aborted) return { ok: false as const, reason: 'The read was cancelled.' }
+      const controller = new AbortController()
+      cancel?.onAbort?.(() => controller.abort())
+      return convertFile(reader, file, controller.signal)
     },
     [blobs, reader],
   )

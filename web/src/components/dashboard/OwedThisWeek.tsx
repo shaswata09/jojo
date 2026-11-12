@@ -29,6 +29,7 @@ import { KIND_ICON, MARK_DOT, MARK_TEXT, dateMark } from '@/lib/timeline-visuals
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
+import { announceRefusal } from '@/components/common/write-result'
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -254,7 +255,7 @@ export function OwedThisWeek() {
    * second toggle would re-tick it.
    */
   const complete = (item: TimelineItem) => {
-    toggleDone(item.id)
+    if (announceRefusal(toggleDone(item.id), toast)) return
     toast({
       title: `${item.title} completed`,
       description: 'It leaves this list and counts towards today — nothing is deleted.',
@@ -264,7 +265,7 @@ export function OwedThisWeek() {
 
   const push = (item: TimelineItem, by: number) => {
     const before = item.date
-    snooze(item.id, by)
+    if (announceRefusal(snooze(item.id, by), toast)) return
     toast({
       title: `${item.title} rescheduled`,
       description: `Now due ${shortDate(addDays(snoozeAnchor(item.date), by))}, here and on the calendar.`,

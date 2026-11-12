@@ -40,8 +40,14 @@ const region = backgroundSource.slice(
   backgroundSource.indexOf('async function read()'),
 )
 
-/** The real `inline`, given only the names it takes from outside itself. */
-function liftInline(fetchImpl: (href: string) => Promise<Fetched>): Inline {
+/** This harness's capture nonce. The worker mints a random one per capture. */
+const NONCE = 'a1b2c3d4e5f60718293a4b5c'
+/** Token `n` as the worker and serialiser now spell it. */
+const tok = (n: number) => `__JOJO_ASSET_${NONCE}_${String(n)}__`
+
+type RealInline = (page: Page, nonce: string, deadline?: number) => Promise<{ html: string; dropped: number }>
+
+function liftRealInline(fetchImpl: (href: string) => Promise<Fetched>): RealInline {
   if (region === '' || !region.includes('async function inline(')) {
     throw new Error('inline() is not where this test expects it in extension/background.js')
   }
@@ -51,7 +57,24 @@ function liftInline(fetchImpl: (href: string) => Promise<Fetched>): Inline {
     'CAPTURE_SCHEMES',
     'fetch',
     `${region}; return inline`,
-  )(CAPTURE_MAX_ASSET_BYTES, CAPTURE_SCHEMES, fetchImpl) as Inline
+  )(CAPTURE_MAX_ASSET_BYTES, CAPTURE_SCHEMES, fetchImpl) as RealInline
+}
+
+/**
+ * The real `inline`, given only the names it takes from outside itself.
+ *
+ * The cases below are written with readable `__JOJO_ASSET_n__` placeholders;
+ * this turns each into the nonce'd token the serialiser really mints, so what
+ * runs is the production splice and nothing else.
+ */
+function liftInline(fetchImpl: (href: string) => Promise<Fetched>, budgetMs = 60000): Inline {
+  const inline = liftRealInline(fetchImpl)
+  return (page) =>
+    inline(
+      { ...page, html: page.html.replace(/__JOJO_ASSET_(\d+)__/g, (_w, n: string) => tok(Number(n))) },
+      NONCE,
+      Date.now() + budgetMs,
+    )
 }
 
 const sheet = (css: string): Fetched => ({
@@ -88,7 +111,7 @@ describe('a capture whose stylesheets keep naming new stylesheets', () => {
     expect(result.dropped).toBe(501)
     // The invariant this whole function exists for still holds: no token and no
     // live address survives into the archive.
-    expect(result.html).not.toMatch(/__JOJO_ASSET_\d+__/)
+    expect(result.html).not.toContain('__JOJO_ASSET_')
     expect(result.html).not.toContain('https://boards.example')
   })
 
@@ -310,10 +333,10 @@ describe('the final sweep', () => {
  * TRUE rather than widening the escape to mangle `"` in every real stylesheet.
  */
 describe("the extension's CSS tokeniser", () => {
-  /** `queueCssUrls`, given only the three names it takes from `serialise()`. */
+  /** `queueCssUrls` and its patterns, given only the names it takes from `serialise()`. */
   function liftQueueCssUrls() {
     const region = serialiseSource.slice(
-      serialiseSource.indexOf('  function queueCssUrls('),
+      serialiseSource.indexOf('  // ---- the CSS tokeniser'),
       serialiseSource.indexOf('  // ---- 0.'),
     )
     if (region === '' || !region.includes('function queueCssUrls(')) {
@@ -338,8 +361,9 @@ describe("the extension's CSS tokeniser", () => {
     const run = new Function(
       'absolute',
       'token',
+      'TOKEN',
       `let dropped = 0; ${region}; return queueCssUrls`,
-    )(absolute, token) as (css: string, inAttribute: boolean) => string
+    )(absolute, token, '__JOJO_ASSET_') as (css: string, inAttribute: boolean) => string
     return { run, assets }
   }
 
@@ -386,5 +410,173 @@ describe("the extension's CSS tokeniser", () => {
     const css = '.a{background:image-set("data:image/png;base64,AAAA" 1x)}'
     expect(run(css, false)).toBe(css)
     expect(assets).toEqual([])
+  })
+})
+
+/**
+ * Quoted CSS strings, read as the CSS parser reads them.
+ *
+ * The tokenisers matched `url\(\s*(['"]?)([^'")]+)\1\s*\)`, which stops at the
+ * first `)` or quote of EITHER kind — so `url("https://x/a)b.png")` and
+ * `url('https://x/a"b.png')` matched nothing, were never tokenised, and loaded
+ * on view. Reproduced in Chromium before the fix.
+ */
+describe('a quoted url() holding a ) or the other quote', () => {
+  it('is fetched and inlined from a fetched stylesheet', async () => {
+    const fetched: string[] = []
+    const inline = liftInline((href) => {
+      fetched.push(href)
+      return Promise.resolve(
+        href.endsWith('s.css')
+          ? sheet(`.a{background:url("https://cdn.test/a)b.png")}.b{background:url('https://cdn.test/c"d.png')}.c{background:url("https://cdn.test/e\\"f.png")}`)
+          : { ...sheet(''), blob: () => Promise.resolve({ size: 4 }) },
+      )
+    })
+    const result = await inline({ html: '<style>__JOJO_ASSET_0__</style>', assets: [{ href: 'https://cdn.test/s.css', kind: 'css' }] })
+    expect(fetched).toContain('https://cdn.test/a)b.png')
+    expect(fetched).toContain('https://cdn.test/c%22d.png')
+    // An escaped quote is the quote itself, not a backslash in the address.
+    expect(fetched).toContain('https://cdn.test/e%22f.png')
+    expect(result.html).not.toContain('cdn.test/a)b')
+    expect(result.html).not.toContain('cdn.test/c"d')
+  })
+
+  it('is tokenised in the page’s own CSS', () => {
+    const region = serialiseSource.slice(
+      serialiseSource.indexOf('  // ---- the CSS tokeniser'),
+      serialiseSource.indexOf('  // ---- 0.'),
+    )
+    const queued: string[] = []
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const run = new Function('absolute', 'token', 'TOKEN', `let dropped = 0; ${region}; return queueCssUrls`)(
+      (v: string) => new URL(v, 'https://board.test/').href,
+      (href: string) => {
+        queued.push(href)
+        return `T${String(queued.length - 1)}`
+      },
+      '__JOJO_ASSET_x_',
+    ) as (css: string, inAttribute: boolean) => string
+    const out = run(`.a{background:url("https://cdn.test/a)b.png")} .b{background:url('https://cdn.test/c"d.png')}`, false)
+    expect(queued).toEqual(['https://cdn.test/a)b.png', 'https://cdn.test/c%22d.png'])
+    expect(out).toBe('.a{background:url("T0")} .b{background:url("T1")}')
+  })
+})
+
+/**
+ * A token the PAGE wrote.
+ *
+ * The prefix was the constant `__JOJO_ASSET_`, so a page could write
+ * `__JOJO_ASSET_0__` into an attribute and the splice replaced it with asset 0
+ * — here a stylesheet whose `"` closed the attribute. Reproduced before the
+ * fix: the saved capture carried `onload="alert(1)"`, which runs when the
+ * downloaded file is opened.
+ */
+describe('a token-shaped string the page wrote itself', () => {
+  const evil = 'a{content:"x"}" onload="alert(1)" b="'
+
+  it('is never spliced, because it does not carry this capture’s nonce', async () => {
+    const inline = liftRealInline(() => Promise.resolve(sheet(evil)))
+    const result = await inline(
+      {
+        html: `<div title="__JOJO_ASSET_0__">x</div><style>${tok(0)}</style>`,
+        assets: [{ href: 'https://cdn.test/s.css', kind: 'css' }],
+      },
+      NONCE,
+    )
+    expect(result.html).toContain('<div title="__JOJO_ASSET_0__">')
+    expect(result.html).not.toMatch(/<div[^>]*onload/)
+  })
+
+  it('is left as text rather than stripped, since stripping one can write a handler', async () => {
+    // Removing `__JOJO_ASSET_0__` from this attribute NAME would leave `onerror=`.
+    const inline = liftRealInline(() => Promise.resolve(sheet('')))
+    const html = '<img __jojo_asset_0__onerror="alert(1)" src="data:,">'
+    const result = await inline({ html, assets: [] }, NONCE)
+    expect(result.html).toBe(html)
+    expect(result.html).not.toMatch(/\sonerror=/)
+  })
+
+  it('is minted fresh for every capture', () => {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const mint = new Function('CAPTURE_MAX_ASSET_BYTES', 'CAPTURE_SCHEMES', 'fetch', `${region}; return captureNonce`)(
+      CAPTURE_MAX_ASSET_BYTES,
+      CAPTURE_SCHEMES,
+      fetch,
+    ) as () => string
+    const a = mint()
+    expect(a).toMatch(/^[0-9a-f]{24}$/)
+    expect(mint()).not.toBe(a)
+  })
+})
+
+/**
+ * A total deadline, and what happens when it arrives.
+ *
+ * The loop fetched one asset at a time with 15 s each and no total, so "From
+ * link" on a heavy board (AcademicCareers, measured) was still inlining when the
+ * page gave up at 90 s and nothing was kept. Now inlining STOPS at its deadline
+ * and the page is kept with whatever was not fetched counted and emptied.
+ */
+describe('inlining against a deadline', () => {
+  const never = () => new Promise<Fetched>(() => undefined)
+
+  it('returns at the deadline even when a fetch never answers, and keeps the page', async () => {
+    const inline = liftInline(never, 300)
+    const started = Date.now()
+    const result = await inline({
+      html: '<style>__JOJO_ASSET_0__</style><img src="__JOJO_ASSET_1__"><h1>Posting</h1>',
+      assets: [
+        { href: 'https://cdn.test/s.css', kind: 'css' },
+        { href: 'https://cdn.test/x.png', kind: 'img' },
+      ],
+    })
+    expect(Date.now() - started).toBeLessThan(3000)
+    expect(result.html).toBe('<style></style><img src=""><h1>Posting</h1>')
+    expect(result.dropped).toBe(2)
+  })
+
+  it('keeps what arrived in time and drops only the rest', async () => {
+    const inline = liftInline((href) => (href.endsWith('fast.css') ? Promise.resolve(sheet('body{}')) : never()), 300)
+    const result = await inline({
+      html: '<style>__JOJO_ASSET_0__</style><style>__JOJO_ASSET_1__</style>',
+      assets: [
+        { href: 'https://cdn.test/fast.css', kind: 'css' },
+        { href: 'https://cdn.test/slow.css', kind: 'css' },
+      ],
+    })
+    expect(result.html).toBe('<style>body{}</style><style></style>')
+    expect(result.dropped).toBe(1)
+  })
+
+  it('counts assets never even started, when the deadline has already passed', async () => {
+    let fetches = 0
+    const inline = liftInline(() => {
+      fetches += 1
+      return Promise.resolve(sheet(''))
+    }, -1)
+    const result = await inline({
+      html: '<style>__JOJO_ASSET_0__</style>',
+      assets: [{ href: 'https://cdn.test/s.css', kind: 'css' }],
+    })
+    expect(fetches).toBe(0)
+    expect(result.dropped).toBe(1)
+    expect(result.html).toBe('<style></style>')
+  })
+
+  it('splices a sheet’s nested assets after the sheet that names them', async () => {
+    // Several fetches run at once now, so values arrive in any order; a nested
+    // sheet's token exists in the document only once its parent's text has
+    // been spliced. Splicing by token index is what keeps the nested sheet.
+    const inline = liftInline((href) =>
+      href.endsWith('a.css')
+        ? new Promise((resolve) => setTimeout(() => resolve(sheet('@import "/b.css"; .a{color:blue}')), 30))
+        : Promise.resolve(sheet('.b{color:red}')),
+    )
+    const result = await inline({
+      html: '<style>__JOJO_ASSET_0__</style>',
+      assets: [{ href: 'https://cdn.test/a.css', kind: 'css' }],
+    })
+    expect(result.html).toBe('<style>.b{color:red} .a{color:blue}</style>')
+    expect(result.dropped).toBe(0)
   })
 })

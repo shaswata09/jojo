@@ -143,10 +143,12 @@ export const STORE_SPECS: readonly StoreSpec[] = [
     // the only allocator two tabs share. A counter kept per tab had them both
     // writing key 41 and silently overwriting each other's history.
     //
-    // The two callers that DO pass explicit keys — `replace`, and the audit prune
-    // on open — both renumber from 1 inside a transaction that has just cleared
-    // the store. That is safe because a generator is never rewound by `clear()`,
-    // only by deleting the store, so what they append next still lands above.
+    // The two callers that DO pass explicit keys: `replace` renumbers from 1
+    // inside a transaction that has just cleared the store — safe because a
+    // generator is never rewound by `clear()`, so what is appended next still
+    // lands above — and the audit prune on open, which rewrites rows at the keys
+    // `readAll` reported for them (`Rows.opsKeys`) rather than clearing, so a
+    // row another tab appended after that read survives it.
     keyPath: null,
     autoIncrement: true,
     indexes: [

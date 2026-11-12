@@ -23,6 +23,7 @@ import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
+import { announceRefusal } from '@/components/common/write-result'
 import { TODAY } from '@/lib/today'
 
 export function ItemForm({
@@ -177,7 +178,9 @@ export function ItemForm({
       // which this dialog collects — survive an edit. The copy handed to
       // `onSaved` is rebuilt the same way rather than read back from the store,
       // which has not re-rendered yet.
-      update(editingId, patch)
+      // A refusal keeps the dialog open with what was typed, rather than
+      // closing it under an 'updated' toast that is not true.
+      if (announceRefusal(update(editingId, patch), toast)) return
       // `urgency` is carried across by hand for the same reason the other three
       // survive: the patch no longer collects it, and the type still requires
       // one. The fallback matches the default `add` stamps.

@@ -124,6 +124,32 @@ describe('restoreBackup', () => {
     expect(out.skipped).toBeGreaterThan(0)
   })
 
+  /**
+   * Two records of one type sharing a slug — a hand-merged file, or two
+   * keywords both called "Remote". The store's `[type, slug]` index is unique,
+   * so writing them as they are made IndexedDB refuse the WHOLE restore with a
+   * ConstraintError. The later one is re-addressed instead, and reported.
+   */
+  it('re-addresses a record whose slug another of its type already holds', async () => {
+    const repo = stubRepo()
+    const a = node('01a02b14-31db-7278-a6d7-c03d325832ba')
+    const b = { ...node('01a02b14-4e77-7c01-9f3a-118d4c9a77e1'), props: { ...a.props } }
+    const c = { ...node('01a02b14-5e77-7c01-9f3a-118d4c9a77e2'), props: { ...a.props } }
+    const out = await restoreBackup(repo, stubBlobs(), plan({ nodes: [a, b, c] as never }), '2026-08-22T12:00:00.000Z')
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) return
+    expect(out.nodes).toBe(3)
+    expect(out.skipped).toBe(2)
+    const written = (repo.replaceAll.mock.calls[0] as unknown as [{ nodes: { id: string; props: { slug: string } }[] }])[0]
+    const slugs = written.nodes.map((n) => [n.id, n.props.slug])
+    expect(slugs).toEqual([
+      [a.id, a.props.slug],
+      [b.id, `${a.props.slug}-2`],
+      [c.id, `${a.props.slug}-3`],
+    ])
+  })
+
   it('refuses when NOTHING in the file could be read', async () => {
     // Salvage has a floor. A file where every row is unreadable is not a backup
     // with a bad record in it — it is not a backup, and replacing a working

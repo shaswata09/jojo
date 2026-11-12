@@ -41,6 +41,7 @@
  */
 
 import { CATALOG } from './catalog'
+import type { Cancellation } from './loop'
 import type { ChatMessage, Turn } from '../core/model-server'
 import { firstJsonObject } from '../core/json-reply'
 
@@ -139,7 +140,7 @@ export type ChooserDeps = {
    * far easier task than doing the work, and the two do not have to be the same
    * weights.
    */
-  readonly ask: (messages: readonly ChatMessage[]) => Promise<Turn>
+  readonly ask: (messages: readonly ChatMessage[], signal?: Cancellation) => Promise<Turn>
   /** Recent lines of the conversation, oldest first. Empty is fine. */
   readonly recent?: readonly string[]
 }
@@ -152,13 +153,18 @@ export type ChooserDeps = {
  * lexical retriever, which is offline and cannot fail, so a chooser that is
  * down costs latency and never capability.
  */
-export async function pickTools({ ask, recent = [] }: ChooserDeps, request: string): Promise<string[] | null> {
+export async function pickTools(
+  { ask, recent = [] }: ChooserDeps,
+  request: string,
+  /** The run's Stop, handed to `ask` so its request can be cancelled, not just ignored. */
+  signal?: Cancellation,
+): Promise<string[] | null> {
   let turn: Turn
   try {
-    turn = await ask(retrieverMessages(request, recent))
+    turn = await ask(retrieverMessages(request, recent), signal)
   } catch {
     return null
   }
-  if (!turn.ok || turn.text === null) return null
+  if (signal?.aborted || !turn.ok || turn.text === null) return null
   return readPicks(turn.text)
 }

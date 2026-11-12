@@ -1301,6 +1301,22 @@ describe('a request that grows during one run', () => {
     ...Array.from({ length: rounds }, (_, i) => [assistant(`c${String(i)}`), result(`c${String(i)}`, 6000)]).flat(),
   ]
 
+  /*
+   * The loop appends its own instructions to a result — "You have one step
+   * left…", a stuck nudge — and a cut that kept the FRONT of the content cut
+   * those off, on exactly the round the model most needed to read them.
+   */
+  it('keeps the loop’s own instruction when it has to cut a fresh result', () => {
+    const tail = '\n\nYou have one step left. Answer now with what you have.'
+    const messages = run(1)
+    const last = messages.at(-1) as { role: 'tool'; tool_call_id: string; content: string }
+    messages[messages.length - 1] = { ...last, content: `${last.content}${tail}` }
+    const out = stubToFit(messages, [], 1200, new Map([[last.tool_call_id, tail]]))
+    expect(out.stubbed).toBeGreaterThan(0)
+    expect(out.messages.at(-1)?.content?.endsWith(tail)).toBe(true)
+    expect(out.messages.at(-1)?.content).toContain('cut to fit')
+  })
+
   it('leaves a request that already fits completely alone', () => {
     const messages = run(1)
     const out = stubToFit(messages, [], 128_000)
@@ -1357,9 +1373,13 @@ describe('how much one tool result may carry', () => {
   })
 
   it('leaves the full catalogue where it was, because there is no room to give', () => {
-    // Under `full` the fixed part is ~26k of a 32k window: half of what is
-    // left is under the old cap, so the floor holds and nothing changes.
-    expect(resultBudget([user('hello')], [functionSpecs()], 32_768)).toBe(RESULT_FLOOR)
+    // Under `full` the fixed part is most of a 32k window: half of what is
+    // left is about the old cap, so the budget barely moves off the floor.
+    // (Exactly the floor until the app's bookkeeping tools left the catalogue
+    // and freed a few hundred tokens.)
+    const budget = resultBudget([user('hello')], [functionSpecs()], 32_768)
+    expect(budget).toBeGreaterThanOrEqual(RESULT_FLOOR)
+    expect(budget).toBeLessThan(RESULT_FLOOR * 1.1)
   })
 })
 

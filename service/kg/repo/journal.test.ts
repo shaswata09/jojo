@@ -615,3 +615,26 @@ describe('trimJournal', () => {
     for (const [i, row] of trimmed.entries()) expect(row).toBe(rows[i])
   })
 })
+
+describe('readJournalRows and `reverts`', () => {
+  const row = (reverts: unknown) => ({
+    id: 'u',
+    at: '2026-10-12T09:00:00.000Z',
+    tool: 'application.create',
+    label: 'Undo Rice added',
+    calls: [],
+    nodes: [],
+    edges: [],
+    reverts,
+  })
+
+  it('carries which entry an undo took back, so a reload still says what it was', () => {
+    const [entry] = readJournalRows([row({ id: 'e', of: 'Rice added', undone: true })])
+    expect(entry?.reverts).toEqual({ id: 'e', of: 'Rice added', undone: true })
+  })
+
+  it('drops a malformed one rather than trusting it', () => {
+    const [entry] = readJournalRows([row({ id: 'e', of: 'Rice added' })])
+    expect(entry).not.toHaveProperty('reverts')
+  })
+})

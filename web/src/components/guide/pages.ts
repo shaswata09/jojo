@@ -50,6 +50,11 @@ const META: Record<GuidePage, Omit<GuidePageMeta, 'id'>> = {
     blurb:
       'The open-source work jojo is made of, the licences that cover it, and how the code is arranged.',
   },
+  faq: {
+    label: 'FAQ',
+    blurb:
+      'How the code is layered across the web app, the phone app and the extension, how a request travels through it, and where a change belongs.',
+  },
   licence: {
     label: 'Licence',
     blurb:

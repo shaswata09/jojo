@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { revokeLater } from '@/lib/save-file'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { ICS_FILENAME, ICS_MIME, buildCalendar, calendarSize } from '@jojo/service/core/ics'
@@ -43,12 +44,10 @@ export function useCalendarExport() {
       anchor.href = href
       anchor.download = ICS_FILENAME
       anchor.click()
-      // Revoked on the next task, not synchronously: a synchronous revoke races
-      // the download the click just started and the file arrives empty. The
-      // Blob URL still gets released — one task later — so it does not pin its
-      // bytes for the life of the tab.
-      const url = href
-      setTimeout(() => URL.revokeObjectURL(url), 0)
+      // Revoked later, not synchronously: an early revoke races the download
+      // the click just started and the file arrives empty. The Blob URL still
+      // gets released, so it does not pin its bytes for the life of the tab.
+      revokeLater(href)
       return true
     } catch {
       // Only on the throwing path, where no download was started to race.

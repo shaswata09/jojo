@@ -18,6 +18,7 @@ import type {
   FormState,
 } from '@/components/applications/dialog/form-state'
 import { useApplicationWrites } from '@/components/applications/dialog/use-application-writes'
+import type { SaveOutcome } from '@/components/applications/dialog/use-application-writes'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -252,8 +253,20 @@ export function ApplicationDialog({
       return
     }
     if (!record) return
-    save(record)
-    onOpenChange(false)
+    if (settled(save(record))) onOpenChange(false)
+  }
+
+  /**
+   * Closes only on a write the store took.
+   *
+   * A refusal keeps the dialog open with what was typed still in it, the
+   * message on the field it names, and the toast saying why — it used to close
+   * under "Changes saved" whatever the tool answered.
+   */
+  function settled(outcome: SaveOutcome): boolean {
+    if (outcome.ok) return true
+    setCheck({ attempted: true, errors: outcome.fields })
+    return false
   }
 
   /**
@@ -296,13 +309,13 @@ export function ApplicationDialog({
       setConfirm(found)
       return
     }
-    create()
-    onOpenChange(false)
+    if (settled(create())) onOpenChange(false)
   }
 
   const addAnyway = () => {
-    create()
-    onOpenChange(false)
+    if (settled(create())) onOpenChange(false)
+    // Back to the form, where the refusal is written on its field.
+    else setConfirm(null)
   }
 
   const errors = check.attempted ? check.errors : {}

@@ -20,6 +20,7 @@ import type { StoredRow } from '../storage/schema'
 import type { BootResult, DurableBootOptions } from './boot'
 import { live } from './boot-live'
 import { AUDIT_CAP, readJournalRows, trimJournal } from './journal'
+import type { JournalEntry } from './journal'
 import { metaRow, opened } from './meta'
 import type { StoreMeta } from './meta'
 import { createRepository } from './repository'
@@ -106,7 +107,25 @@ export async function ready(
     kgWarn(`the stored graph failed ${problems.length} integrity check(s)`, { problems })
   }
 
-  const history = readJournalRows(rows.ops)
+  // Parsed row by row so each entry keeps the key it was read at (when the
+  // driver can say — `Rows.opsKeys`). The prune below must touch only the rows
+  // THIS read saw; see the comment there.
+  const keys = rows.opsKeys?.length === rows.ops.length ? rows.opsKeys : undefined
+  const keyOf = new Map<JournalEntry, string | number>()
+  const unreadable: (string | number)[] = []
+  const parsed: JournalEntry[] = []
+  rows.ops.forEach((row, index) => {
+    const [entry] = readJournalRows([row])
+    const key = keys?.[index]
+    if (entry === undefined) {
+      if (key !== undefined) unreadable.push(key)
+      return
+    }
+    parsed.push(entry)
+    if (key !== undefined) keyOf.set(entry, key)
+  })
+  // `readJournalRows`' own order: oldest first by `at`, stable.
+  const history = parsed.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
   // Capped first, then trimmed. `trimJournal` drops the record images from
   // everything older than the undo window — measured at 95% of the persisted
   // blob with the ring full, which on the phone is rewritten on every commit.
@@ -116,8 +135,8 @@ export async function ready(
   // One transaction for the two things every open owes the store: the audit
   // trimmed to its cap, and `lastOpenedAt`. Written through the driver rather
   // than the queue because the repository does not exist yet, and in one batch
-  // because the `clear` below and the rows that replace it must land together —
-  // a half-landed prune is an audit log that cleared and did not come back.
+  // because the deletes below and the rewrites beside them must land together —
+  // a half-landed prune is an audit log that lost rows and did not get them back.
   //
   // NOT because a counter continues from these keys, which is what this used to
   // say. There is no such counter: `opsFor` in `repository.ts` appends with
@@ -140,7 +159,32 @@ export async function ready(
   // launch cleared `ops` and wrote all 200 rows back byte-identical, and said
   // 'pruned the audit log from 200 to 200 entries' while doing it.
   const trimmedSomething = kept.some((entry, i) => entry !== history[history.length - kept.length + i])
-  if (kept.length < history.length || trimmedSomething) {
+  if ((kept.length < history.length || trimmedSomething) && keys !== undefined) {
+    /*
+     * Row by row, at the keys the read saw — never `clear()`.
+     *
+     * The read above and this commit are two transactions, and another tab can
+     * append a journal row between them. A `clear` followed by the rows THIS
+     * read returned destroyed that row: it was in neither half. Deleting the
+     * dropped rows and rewriting the trimmed ones in place leaves every row this
+     * open never saw exactly where its writer put it.
+     */
+    const dropped = history.slice(0, history.length - kept.length)
+    for (const entry of dropped) {
+      const key = keyOf.get(entry)
+      if (key !== undefined) chores.push({ kind: 'delete', store: 'ops', key })
+    }
+    for (const key of unreadable) chores.push({ kind: 'delete', store: 'ops', key })
+    kept.forEach((entry, index) => {
+      const original = history[history.length - kept.length + index]
+      const key = original === undefined ? undefined : keyOf.get(original)
+      if (entry === original || key === undefined) return
+      chores.push({ kind: 'put', store: 'ops', key, value: entry as unknown as StoredRow })
+    })
+    kgLog(`pruned the audit log from ${history.length} to ${kept.length} entries`)
+  } else if (kept.length < history.length || trimmedSomething) {
+    // A driver that cannot name its keys: the old clear-and-rewrite, which
+    // still has the cross-tab window above but is the only prune available.
     chores.push({ kind: 'clear', store: 'ops' })
     kept.forEach((entry, index) => {
       chores.push({

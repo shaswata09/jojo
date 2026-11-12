@@ -358,6 +358,20 @@ describe('what a screen sees', () => {
     expect(jobs.about('application:a')).not.toBe(first)
   })
 
+  it('keeps a record’s array when only another record’s job moved', () => {
+    // A step on one card must not hand every other open panel a fresh array:
+    // that is a re-render per step for every record on screen.
+    const { jobs } = harness()
+    const other = deferred()
+    jobs.start(spec('a', deferred().run, { about: 'application:a' }))
+    const held = jobs.about('application:a')
+    jobs.start(spec('b', other.run, { about: 'application:b' }))
+    other.seen.onStep?.('Reading the posting')
+    expect(jobs.about('application:a')).toBe(held)
+    // And a record with nothing queued answers one shared empty array.
+    expect(jobs.about('application:none')).toBe(jobs.about('application:nobody'))
+  })
+
   it('keeps one record’s jobs out of another’s', () => {
     const { jobs } = harness()
     jobs.start(spec('a', deferred().run))

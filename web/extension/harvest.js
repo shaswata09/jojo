@@ -146,6 +146,10 @@ export async function expandListing(rounds, waitMs, budgetMs) {
       // A real link elsewhere is navigation, not "more of this list".
       const href = el.getAttribute && el.getAttribute('href')
       if (el.tagName === 'A' && href && !/^(#|javascript:)/i.test(href.trim())) continue
+      // A submit is navigation too: pressing a button inside a form posts it
+      // and the tab lands somewhere the worker's checks never saw. The worker
+      // re-checks where the tab is afterwards; this keeps it from going.
+      if ((el.getAttribute('type') || '').toLowerCase() === 'submit' || el.closest('form')) continue
       return el
     }
     return null

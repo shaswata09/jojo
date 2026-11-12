@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import type { ReactNode } from 'react'
+import type { Cancellation } from '@jojo/service/agent/loop'
 import { PipelinesContext } from '@jojo/service/react/pipelines-context'
 import { reportError } from '@/lib/report-error'
 import { usePipelines } from '@jojo/service/react/use-pipelines'
@@ -7,6 +8,7 @@ import { agentTurn, isConfigured } from '@/lib/llm'
 import { scanBoard } from '@/lib/capture-bridge'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
+import { ScoutReader } from '@/lib/scout-reading'
 
 /**
  * Runs the pipelines for as long as this tab is open.
@@ -27,13 +29,33 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
       agentTurn(settings, messages, tools),
     [settings],
   )
+  /*
+   * Per round, on the round's own Stop. Switching a pipeline off and a settings
+   * change both stop the round in flight, and without a signal the request ran
+   * to completion anyway — holding the one lock every pipeline shares.
+   */
+  const llmFor = useCallback(
+    (signal: Cancellation) => {
+      const controller = new AbortController()
+      signal.onAbort?.(() => {
+        controller.abort()
+      })
+      return (messages: Parameters<typeof agentTurn>[1], tools: Parameters<typeof agentTurn>[2]) =>
+        agentTurn(settings, messages, tools, controller.signal)
+    },
+    [settings],
+  )
   // The twin's briefing names the documents worth reading, and on this platform
   // only the blob store knows which records have one behind them.
   const blobs = useVaultBlobs()
   const state = usePipelines({
     llm: isConfigured(settings) ? llm : null,
+    llmFor,
     scan: scanBoard,
     hasDocument: blobs.has,
+    // The blob index loads after mount; until it has, `has` answers no for
+    // every document, and a twin round would be told there is no CV.
+    documentsReady: blobs.ready,
     /*
      * A round that throws is caught inside the hook so the schedule is not left
      * wedged — and catching it took away the only durable record. It used to
@@ -48,5 +70,13 @@ export function PipelinesProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  return <PipelinesContext value={state}>{children}</PipelinesContext>
+  return (
+    <PipelinesContext value={state}>
+      {/* Reads each suggested posting while it waits for an answer — up here
+          with the rounds that raise them, so a suggestion raised while you are
+          on another page is read there too. */}
+      <ScoutReader />
+      {children}
+    </PipelinesContext>
+  )
 }

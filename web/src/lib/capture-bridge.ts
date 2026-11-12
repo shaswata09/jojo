@@ -5,7 +5,7 @@ import {
   type CaptureEnvelope,
   type CaptureRejection,
 } from '@jojo/service/core/capture'
-import type { BoardScan } from '@jojo/service/core/board'
+import type { BoardScan, ScanCancellation } from '@jojo/service/core/board'
 
 /**
  * The app's end of the conversation with the capture extension.
@@ -81,6 +81,23 @@ const STALE =
  * panel, so a slow answer is worse than a wrong one the poll will correct.
  */
 const PROBE_TIMEOUT_MS = 400
+
+/**
+ * How long a probe gets when the bridge is KNOWN to be in the page and the
+ * question is only whether its worker is awake.
+ *
+ * An MV3 service worker is stopped when idle, and starting it again takes
+ * longer than 400 ms often enough to matter: the probe before a model call read
+ * a cold worker as "no extension", and a cloud turn fell back to a direct send
+ * that CORS then refused — reported as the provider being unreachable. The
+ * bridge marks the document when it loads (`BRIDGE_MARK`), so this patience is
+ * spent only where an extension is actually installed; without the mark the
+ * probe stays at 400 ms and the no-extension path stays fast.
+ */
+const PROBE_COLD_TIMEOUT_MS = 5000
+
+/** The attribute `bridge.js` sets on `<html>` when it loads. Must match it. */
+const BRIDGE_MARK = 'data-jojo-bridge'
 
 /**
  * How long a TAKE gets, which is a different question entirely.
@@ -190,6 +207,8 @@ type Ask = {
   link?: { url: string; method: string; headers: Record<string, string>; body?: string }
   /** The crash-reporting choice, and a request for what the worker has kept. */
   crash?: { on?: boolean; clear?: boolean }
+  /** A probe's budget, when it is not the default 400 ms. See `probeExtension`. */
+  patience?: number
   /**
    * The caller's cancel, which ends the WAIT rather than the work.
    *
@@ -206,14 +225,26 @@ type Ask = {
 /**
  * How long a SCAN gets, which is longer than anything else here by a lot.
  *
- * The worker opens a real tab, waits for the board to finish loading, waits
- * again for its JavaScript to render the results, reads it and closes it — the
- * extension's own budget for that is 25s of loading plus 2.5s of settling. This
- * has to outlast that or the app gives up on a scan that then succeeds into a
- * void, and the page reports "no boards could be read" about a board that was
- * read.
+ * The worker opens a real tab and, at worst, waits 25 s for it to load
+ * (`LOAD_TIMEOUT_MS`), 2.5 s for its JavaScript (`SETTLE_MS`), and up to 10 s
+ * more pressing "Load more" (`MORE_BUDGET_MS`) — whose last wait can overrun
+ * that budget by a step — before it harvests and closes the tab. That is ~38 s
+ * of the worker's own clock before tab creation, script injection and the reply
+ * hop, and this was 40 s: a slow board that the worker read successfully was
+ * reported here as "no boards could be read" two seconds earlier.
+ *
+ * Fifty, and `reader-relay.test.ts` reads all four numbers out of
+ * `background.js` and fails if the worker's worst case comes within 7.5 s of it.
  */
-const SCAN_TIMEOUT_MS = 40000
+const SCAN_TIMEOUT_MS = 50000
+
+/**
+ * How long a relayed read or model call waits BEFORE anything has answered on
+ * this bridge — see `answered`. Its own number rather than the scan's, so that
+ * lengthening the scan does not make somebody without the extension wait longer
+ * to be told so.
+ */
+const UNPROVEN_RELAY_TIMEOUT_MS = 40000
 
 /**
  * How long a CAPTURE gets: a scan's budget, and the inlining on top of it.
@@ -329,14 +360,14 @@ function ask(request: Ask): Promise<Reply | null> {
           // Borrowing the scan's was what threw away conversions and model
           // answers that had not finished yet — see `RELAY_TIMEOUT_MS`. The
           // link's held poll (25 s) fits under either.
-          (answered ? RELAY_TIMEOUT_MS : SCAN_TIMEOUT_MS)
+          (answered ? RELAY_TIMEOUT_MS : UNPROVEN_RELAY_TIMEOUT_MS)
         : request.capture !== undefined
           ? CAPTURE_TIMEOUT_MS
           : request.scan !== undefined
           ? SCAN_TIMEOUT_MS
           : request.take === true
             ? TAKE_TIMEOUT_MS
-            : PROBE_TIMEOUT_MS
+            : (request.patience ?? PROBE_TIMEOUT_MS)
     let timer = window.setTimeout(() => done(null), timeout)
     window.addEventListener('message', onMessage)
     // Checked as well as listened for: `abort` never fires on a signal that was
@@ -369,6 +400,26 @@ function ask(request: Ask): Promise<Reply | null> {
   })
 }
 
+/**
+ * Is there an extension, asked as cheaply as the answer allows.
+ *
+ * Once anything has answered on this bridge the question is settled for the
+ * session (`answered`), and the extension is assumed present rather than asked
+ * again before every model call. Before that: 400 ms when no bridge has marked
+ * the document — the no-extension path, which must stay fast — and
+ * `PROBE_COLD_TIMEOUT_MS` when one has, because then silence means a worker
+ * that is starting, not one that is missing.
+ */
+async function probeExtension(signal?: AbortSignal): Promise<Reply | 'known' | null> {
+  if (answered) return 'known'
+  const marked =
+    typeof document !== 'undefined' && document.documentElement.hasAttribute(BRIDGE_MARK)
+  return ask({
+    ...(marked ? { patience: PROBE_COLD_TIMEOUT_MS } : {}),
+    ...(signal === undefined ? {} : { signal }),
+  })
+}
+
 /** The bridge revision that follows a same-site redirect and presses "Load more". See `bridge.js`. */
 const FOLLOWS_BOARDS = 9
 
@@ -392,10 +443,29 @@ const OLD_SCANNER =
  */
 export async function scanBoard(
   url: string,
+  signal?: ScanCancellation,
 ): ReturnType<BoardScan> {
-  const reply = await ask({ scan: url })
+  /*
+   * A stop ends the WAIT, as it does for `capturePage`; the worker's tab still
+   * closes on its own clock. The caller's cancellation is structural (the
+   * agent layer's `Cancellation`), so it is bridged onto a real signal here —
+   * through `onAbort` when it has one, `addEventListener` when it is a real
+   * `AbortSignal`, and a check up front either way.
+   */
+  const stop = new AbortController()
+  if (signal !== undefined) {
+    const abort = () => {
+      stop.abort()
+    }
+    if (signal.aborted) abort()
+    signal.onAbort?.(abort)
+    ;(signal as { addEventListener?: (type: 'abort', fn: () => void, options?: { once?: boolean }) => void })
+      .addEventListener?.('abort', abort, { once: true })
+  }
+  const reply = await ask({ scan: url, signal: stop.signal })
 
   if (reply === null) {
+    if (stop.signal.aborted) return { ok: false, reason: 'The read was cancelled.' }
     return {
       ok: false,
       reason:
@@ -514,7 +584,7 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
   const waiting = signal === undefined ? {} : { signal }
   const cancelled: PageCapture = { ok: false, absent: false, reason: 'The read was cancelled.' }
 
-  const probe = await ask(waiting)
+  const probe = await probeExtension(signal)
   if (probe === null) {
     if (signal?.aborted === true) return cancelled
     return {
@@ -524,7 +594,11 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
         'The jojo browser extension did not answer, so the page could not be opened. Settings has the installer.',
     }
   }
-  if ((probe.protocol ?? 0) < CAPTURES_BY_ADDRESS) return { ok: false, absent: false, reason: STALE }
+  // A probe skipped because something already answered carries no revision;
+  // the capture's own reply does, and is checked below.
+  if (probe !== 'known' && (probe.protocol ?? 0) < CAPTURES_BY_ADDRESS) {
+    return { ok: false, absent: false, reason: STALE }
+  }
 
   const reply = await ask({ capture: url, ...waiting })
   if (reply === null) {
@@ -536,6 +610,7 @@ export async function capturePage(url: string, signal?: AbortSignal): Promise<Pa
         'The jojo extension opened the page but did not finish saving it in time. A very heavy page can take longer — try again, or open it and use the extension’s Capture button.',
     }
   }
+  if ((reply.protocol ?? 0) < CAPTURES_BY_ADDRESS) return { ok: false, absent: false, reason: STALE }
   if (reply.ok !== true) {
     return { ok: false, absent: false, reason: workerReason(reply.error, url) }
   }
@@ -712,9 +787,11 @@ export async function callModel(
    *
    * The probe is the same one the install prompt uses, so this adds a round trip
    * to a relay that was going to happen anyway and removes a 40-second stall
-   * from one that was not.
+   * from one that was not. It is skipped once anything has answered, and given
+   * longer when the bridge has marked the page — see `probeExtension` for the
+   * cold worker that 400 ms read as "no extension".
    */
-  if ((await ask({})) === null) {
+  if ((await probeExtension()) === null) {
     return {
       failed: {
         reason:

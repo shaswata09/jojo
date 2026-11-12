@@ -23,6 +23,7 @@ import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { report } from '@/lib/analytics'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * Saved URLs, filed by what they are.
@@ -151,7 +152,7 @@ export function LinksTool({ focus }: { focus?: string }) {
 
   const onMove = (link: VaultLink, next: LinkCategory) => {
     const before = link.category
-    updateLink(link.id, { category: next })
+    if (announceRefusal(updateLink(link.id, { category: next }), toast)) return
     toast({
       title: `${link.title} moved`,
       description: `Filed under ${next}${bucket !== 'all' && bucket !== next ? ` — out of the ${bucket} list you are looking at` : ''}.`,

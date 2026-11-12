@@ -6,6 +6,7 @@ import { Chip } from '@/components/common/Chip'
 import { EmptyState } from '@/components/common/EmptyState'
 import { FileViewer } from '@/components/vault/FileViewer'
 import { useFileDrop } from '@/components/vault/files/use-file-drop'
+import { useFileIntake } from '@/components/vault/files/use-file-intake'
 import { useFileDelete } from '@/lib/use-file-delete'
 import { Field, SettingRow } from '@/components/common/Field'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
@@ -21,13 +22,13 @@ import { agoLabel } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useProfile } from '@jojo/service/react/use-profile'
 import { useVault } from '@jojo/service/react/use-vault'
-import { kindOfFile, sizeLabel } from '@/lib/files'
 import { useTitle, vaultPath } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
 import { pickedFiles } from '@/lib/file-input'
+import { announceRefusal } from '@/components/common/write-result'
 
 /** The bucket a profile document belongs to, in the Vault's own vocabulary. */
 const DOCUMENTS_BUCKET = 'Applications' as const
@@ -79,7 +80,7 @@ export function Profile() {
   const [addingRole, setAddingRole] = useState(false)
   const [termDraft, setTermDraft] = useState('')
 
-  const { files, addFile } = useVault()
+  const { files } = useVault()
   const blobs = useVaultBlobs()
   const { get, all } = useApplications()
   const { toast } = useToast()
@@ -132,7 +133,9 @@ export function Profile() {
    * quietly fails and takes what was typed with it.
    */
   const onSave = () => {
-    const { restore } = undoable(() => update({ text: draft }))
+    const { value, restore } = undoable(() => update({ text: draft }))
+    // Kept open with what was typed if the write was refused.
+    if (announceRefusal(value, toast)) return
     setEdit(null)
     toast({
       title: 'Profile saved',
@@ -147,60 +150,27 @@ export function Profile() {
   }
 
   /**
-   * One intake for both ways in.
+   * One intake for both ways in — and the same one the Vault uses.
    *
-   * Split out of the change handler when the card learned to accept a drop:
-   * picking and dropping have to file the same record, store the same bytes and
-   * raise the same toast, and two copies of that is how one of them quietly
-   * stops storing the document.
+   * Picking and dropping have to file the same record, store the same bytes
+   * and raise the same toast. This page used to do that by itself with one
+   * `addFile` per file, which skipped the Vault's rules: a second drop of the
+   * same CV made a second row, a row a full disk left without its document
+   * could not be refilled from here, and a dropped folder filed as a document.
    */
-  const takeFiles = async (list: Iterable<File> | null) => {
-    const picked = Array.from(list ?? [])
-    if (picked.length === 0) return
-
-    let stored = 0
-    for (const file of picked) {
-      const record = addFile({
-        name: file.name,
-        kind: kindOfFile(file.name, file.type),
-        bucket: DOCUMENTS_BUCKET,
-        size: sizeLabel(file.size),
-      })
-      // The document itself, not just the three facts about it.
-      //
-      // This used to file the name, size and kind and drop the bytes on the
-      // floor — correct when nothing in jojo stored a document, and a silent
-      // inconsistency once the Vault did: the same CV kept its contents when
-      // dropped on the Vault and lost them when uploaded here, which is the
-      // screen a person is most likely to upload a CV from.
-      if (await blobs.put(record.id, file)) stored += 1
-    }
-
-    toast(
-      stored === picked.length
-        ? {
-            title: picked.length === 1 ? 'Document added' : `${picked.length} documents added`,
-            description: `Filed in the Vault under ${DOCUMENTS_BUCKET} and saved in this browser. Nothing was uploaded anywhere.`,
-          }
-        : {
-            title: `${picked.length - stored} could not be saved`,
-            description:
-              'The rows are filed, but this browser refused to store the documents — usually because its storage is full. Free some space and upload them again.',
-            tone: 'danger',
-          },
-    )
-  }
+  const takeFiles = useFileIntake({
+    bucket: DOCUMENTS_BUCKET,
+    place: `in the Vault under ${DOCUMENTS_BUCKET}`,
+  })
 
   const onPicked = (event: ChangeEvent<HTMLInputElement>) => {
     // Copied off the input BEFORE it is cleared — see `lib/file-input.ts`.
     // This read `files` first, cleared, then filed: the list is live, the
     // clear emptied it, and nothing was ever stored from this page.
-    void takeFiles(pickedFiles(event.target))
+    takeFiles(pickedFiles(event.target))
   }
 
-  const drop = useFileDrop((list) => {
-    void takeFiles(list)
-  })
+  const drop = useFileDrop(takeFiles)
 
   /*
    * The document being previewed, and its bytes.

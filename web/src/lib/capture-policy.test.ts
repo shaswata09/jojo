@@ -152,3 +152,63 @@ describe('which model addresses the extension will relay', () => {
     expect(fn).toContain("protocol !== 'http:'")
   })
 })
+
+/**
+ * "Models on my network" is a switch, and it starts OFF.
+ *
+ * The comment above `isPrivateNetwork` said the popup's routing switches turned
+ * the LAN relay off "by host like any other" — but those switches are keyed by
+ * the hosted providers' names, so `10.0.0.5` had no switch and could never be
+ * refused. Executed, not read: `modelRefusal` is lifted out of the file the
+ * browser loads and run against a stored routing.
+ */
+describe('relaying to a model on the person’s own network', () => {
+  const MODEL_HOSTS = arrayLiteral('MODEL_HOSTS')
+  /** A `function name(` or `async function name(` out of background.js, to its closing brace. */
+  const fn = (name: string) => {
+    const at = backgroundSource.search(new RegExp(`(?:async )?function ${name}\\(`))
+    let depth = 0
+    for (let i = backgroundSource.indexOf('{', at); i < backgroundSource.length; i += 1) {
+      if (backgroundSource[i] === '{') depth += 1
+      else if (backgroundSource[i] === '}' && --depth === 0) return backgroundSource.slice(at, i + 1)
+    }
+    throw new Error(`${name} not found`)
+  }
+  const refusalWith = (saved: unknown) =>
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    new Function(
+      'MODEL_HOSTS',
+      'chrome',
+      [
+        "const ROUTING = 'jojo.routing'",
+        "const READER_DEFAULT = 'http://127.0.0.1:3001/mcp'",
+        ...['defaultRouting', 'routing', 'hostOf', 'isLoopback', 'isPrivateNetwork', 'privateHost', 'isKnownModelHost', 'modelRefusal'].map(fn),
+        'return modelRefusal',
+      ].join('\n'),
+    )(MODEL_HOSTS, { storage: { local: { get: async () => ({ 'jojo.routing': saved }) } } }) as (
+      url: string,
+    ) => Promise<string | null>
+
+  it('is refused until the person turns it on, and the refusal names the switch', async () => {
+    for (const saved of [undefined, {}, { network: false }]) {
+      const reason = await refusalWith(saved)('http://10.0.0.5:8000/v1/chat/completions')
+      expect(reason).toContain('Models on my network')
+    }
+  })
+
+  it('is relayed once they have', async () => {
+    await expect(refusalWith({ network: true })('http://10.0.0.5:8000/v1/chat/completions')).resolves.toBeNull()
+  })
+
+  it('leaves loopback and the named providers exactly as they were', async () => {
+    const refusal = refusalWith(undefined)
+    await expect(refusal('http://127.0.0.1:11434/v1/chat/completions')).resolves.toBeNull()
+    await expect(refusal(`https://${MODEL_HOSTS[0]!}/v1/chat/completions`)).resolves.toBeNull()
+    await expect(refusal('http://evil.example/v1')).resolves.toContain('not a model provider')
+  })
+
+  it('cannot be switched on by a page, only by the popup', () => {
+    const handler = backgroundSource.slice(backgroundSource.indexOf("message?.type === 'jojo:set-routing'"))
+    expect(handler.slice(0, 80)).toContain('&& fromOwnPage')
+  })
+})

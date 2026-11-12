@@ -29,16 +29,18 @@ import { useFillFromPosting } from '@/lib/fill-from-posting'
 import { isConfigured } from '@/lib/llm'
 import { useKeepPostingPage } from '@/lib/posting-agent'
 import type { KeptPage } from '@/lib/posting-agent'
+import { readingInFlight, useDropDiscardedPage } from '@/lib/scout-reading'
 import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { report } from '@/lib/analytics'
 import { kindOf } from '@jojo/service/react/use-pipelines'
-import { jobFromApproval, postingPreview } from '@jojo/service/core/proposal'
+import { jobFromApproval, postingPreview, scoutReading } from '@jojo/service/core/proposal'
 import { postingIdentity } from '@jojo/service/core/capture'
 import { findSameJob } from '@jojo/service/core/same-job'
 import type { JobIdentity } from '@jojo/service/core/same-job'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
+import { announceRefusal } from '@/components/common/write-result'
 
 export function JobScout() {
   useTitle('Job scout')
@@ -85,12 +87,21 @@ export function JobScout() {
   }
 
   /** What a scout suggestion says the job is. */
-  const identityOf = (input: string): JobIdentity => {
+  const identityOf = (input: string, reading?: string): JobIdentity => {
+    // What the page said beats what the listing said, where the page was read.
+    const read = scoutReading(reading)
+    const page = read?.ok ? read.fields : {}
     try {
       const raw = JSON.parse(input) as Record<string, unknown>
       const text = (key: string) =>
         typeof raw[key] === 'string' ? (raw[key] as string) : undefined
-      return { org: text('org'), role: text('title'), location: text('location'), url: text('url') }
+      return {
+        org: page.org ?? text('org'),
+        role: page.role ?? text('title'),
+        location: page.location ?? text('location'),
+        url: text('url'),
+        postingId: page.postingId,
+      }
     } catch {
       return {}
     }
@@ -142,6 +153,7 @@ export function JobScout() {
   const keepPage = useKeepPostingPage()
   const { reader, settings } = useModelSettings()
   const fillFromPosting = useFillFromPosting()
+  const dropDiscardedPage = useDropDiscardedPage()
   const graph = useGraph()
   const { files } = useVault()
   /** Postings whose page is being kept right now, by identity. */
@@ -188,7 +200,7 @@ export function JobScout() {
 
   const savePipeline = (draft: PipelineDraft) => {
     if (editing && editing !== 'new') {
-      updatePipeline(editing.id, draft)
+      if (announceRefusal(updatePipeline(editing.id, draft), toast)) return
       toast({ title: 'Pipeline updated', description: draft.name })
     } else {
       // Switched on: a new pipeline that arrived off would read as a create
@@ -277,7 +289,7 @@ export function JobScout() {
         })
       : null
     if (posting && existing) {
-      updatePosting(postingId, { applicationId: existing.id })
+      if (announceRefusal(updatePosting(postingId, { applicationId: existing.id }), toast)) return
       if (!pageFor(posting)) keepAndReport(posting.url, posting.title)
       sayAlreadyHave(existing, existing)
       return
@@ -340,6 +352,8 @@ export function JobScout() {
     application: { id: string; org: string },
     typed: string,
     title: string,
+    /** The suggestion it was approved from, whose page may already have been read. */
+    proposal?: { id: string; reading?: string | undefined },
   ) => {
     // Seeded and pasted postings are often stored without a scheme ('jobs.rice.edu/…').
     const postingUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(typed.trim())
@@ -352,16 +366,23 @@ export function JobScout() {
     const key = keyOf(postingUrl)
     setKeeping((now) => new Set(now).add(key))
     try {
+      // Read while it waited for an answer, or being read right now — see
+      // `ScoutReader`. Either way the page is not opened a second time.
+      const pending = proposal ? readingInFlight(proposal.id) : undefined
+      const known = pending ? await pending : proposal ? scoutReading(proposal.reading) : null
       const out = await fillFromPosting({
         applicationId: application.id,
         url: postingUrl,
         settings,
         reader,
+        ...(known?.ok ? { known } : {}),
       })
       if (!out.ok) {
         toast({
           title: `${application.org}: the posting could not be read`,
-          description: `${out.reason} The draft keeps what its link says — open it to fill in the rest.`,
+          description: out.kept
+            ? `${out.reason} The page itself was saved and filed under the draft — open it to fill in the rest.`
+            : `${out.reason} The draft keeps what its link says — open it to fill in the rest.`,
           tone: 'danger',
         })
         return
@@ -424,14 +445,17 @@ export function JobScout() {
     const page = seen?.href ? { url: seen.href, title: seen.title ?? seen.label } : null
     // Already an application under another board's address: the posting is
     // filed against that one instead of becoming a second.
-    const existing = kind === 'posting' ? alreadyHave(identityOf(proposal.input)) : null
+    const existing =
+      kind === 'posting' ? alreadyHave(identityOf(proposal.input, proposal.reading)) : null
     if (existing) {
-      updatePosting(made, { applicationId: existing.id })
+      // Refused, the posting is still saved — only the link to the existing
+      // application is missing — so the reader is told and the flow goes on.
+      announceRefusal(updatePosting(made, { applicationId: existing.id }), toast)
       return { repeat: true as const, existing, page }
     }
     const application = draftFrom(kind, made)
     if (!application) return null
-    return { repeat: false as const, application, page }
+    return { repeat: false as const, application, page, proposal }
   }
 
   const onApproveProposal = (id: string) => {
@@ -443,17 +467,21 @@ export function JobScout() {
       sayAlreadyHave(done.existing, done.existing)
       return
     }
-    const { application, page } = done
-    toast({
-      title: `${application.org} added to your applications as a draft`,
-      description: page
-        ? isConfigured(settings)
-          ? 'Reading the posting to fill in its details — the draft updates when it is done.'
-          : 'Filled from its link. Connect a model in Settings to have the posting itself read in.'
-        : 'Open it to fill in the rest.',
-      action: { label: 'Open', onClick: () => navigate(appPath(application)) },
-    })
-    if (page) void fillDraft(application, page.url, page.title)
+    const { application, page, proposal } = done
+    // Already read while it waited: the fill's own toast follows at once and
+    // says everything, so a "reading…" one in front of it would only flicker.
+    const readAlready = page !== null && scoutReading(proposal.reading)?.ok === true
+    if (!readAlready)
+      toast({
+        title: `${application.org} added to your applications as a draft`,
+        description: page
+          ? isConfigured(settings)
+            ? 'Reading the posting to fill in its details — the draft updates when it is done.'
+            : 'Filled from its link. Connect a model in Settings to have the posting itself read in.'
+          : 'Open it to fill in the rest.',
+        action: { label: 'Open', onClick: () => navigate(appPath(application)) },
+      })
+    if (page) void fillDraft(application, page.url, page.title, proposal)
   }
 
   /**
@@ -488,8 +516,8 @@ export function JobScout() {
         : 'Filled from their links. Connect a model in Settings to have the postings themselves read in.',
     })
     void (async () => {
-      for (const { application, page } of done) {
-        if (page) await fillDraft(application, page.url, page.title)
+      for (const { application, page, proposal } of done) {
+        if (page) await fillDraft(application, page.url, page.title, proposal)
       }
     })()
   }
@@ -583,6 +611,7 @@ export function JobScout() {
         onApprove={onApproveProposal}
         onDiscard={(id) => {
           engine.discard(id)
+          dropDiscardedPage(id)
           report('scout_proposal_decided', { decision: 'declined' })
         }}
         onApproveAll={onApproveAll}

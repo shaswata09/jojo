@@ -185,6 +185,30 @@ export const CONFORMANCE_CASES: readonly ConformanceCase[] = [
   },
   {
     /**
+     * The same path trashed twice — a file deleted, re-added and deleted again —
+     * collided on one Trash key and the second copy overwrote the first. Both
+     * have to stay recoverable, so the later one takes a suffixed name.
+     */
+    name: 'trashing the same path twice keeps both copies',
+    async run(store) {
+      ok(await store.write('Documents/CV.pdf', bytes('first')), 'write first')
+      ok(await store.trash('Documents/CV.pdf'), 'trash first')
+      ok(await store.write('Documents/CV.pdf', bytes('second')), 'write second')
+      ok(await store.trash('Documents/CV.pdf'), 'trash second')
+      eq(
+        dec.decode(ok(await store.read('jojo/Trash/Documents/CV.pdf'), 'read first')),
+        'first',
+        'first copy survives',
+      )
+      eq(
+        dec.decode(ok(await store.read('jojo/Trash/Documents/CV (2).pdf'), 'read second')),
+        'second',
+        'second copy is beside it',
+      )
+    },
+  },
+  {
+    /**
      * A real filesystem takes the bytes. Aliasing the caller's array let a
      * caller reusing its buffer rewrite a file already written, and a fake more
      * forgiving than the real adapter hides the bugs it exists to catch.

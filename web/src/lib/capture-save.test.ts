@@ -40,7 +40,8 @@ describe('the saved file', () => {
      * text. The comment must end exactly once, where it is meant to.
      */
     const out = file({ ...KEPT, url: 'https://evil.example/a--b-->injected<script>' })
-    const comment = out.slice(out.indexOf('<!--'), out.indexOf('<html'))
+    // To the policy <meta>, which is the first thing after the comment.
+    const comment = out.slice(out.indexOf('<!--'), out.indexOf('<meta'))
     expect(comment.match(/-->/g)).toHaveLength(1)
     expect(comment.trimEnd().endsWith('-->')).toBe(true)
   })
@@ -77,5 +78,18 @@ describe('the file name', () => {
 
   it('leaves the date off when it is not a date', () => {
     expect(name({ ...KEPT, capturedAt: 'yesterday' })).toBe('senior-ml-engineer.html')
+  })
+})
+
+describe('the saved file’s own lock', () => {
+  it('carries the viewer’s policy, transcribed exactly, ahead of everything the page wrote', async () => {
+    // @ts-expect-error — the same untyped module as above.
+    const { CAPTURE_VIEW_CSP: transcribed } = await import('../../extension/save-file.js')
+    const { CAPTURE_VIEW_CSP } = await import('@jojo/service/core/capture')
+    expect(transcribed).toBe(CAPTURE_VIEW_CSP)
+    const out = file({ ...KEPT, html: '<!doctype html><html><head><link rel=stylesheet href="https://x.test/s.css"></head></html>' })
+    const meta = out.indexOf('http-equiv="Content-Security-Policy"')
+    expect(meta).toBeGreaterThan(out.indexOf('-->'))
+    expect(meta).toBeLessThan(out.indexOf('<html'))
   })
 })

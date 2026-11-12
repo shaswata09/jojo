@@ -218,6 +218,7 @@ export const COMPOSES: ReadonlyMap<string, readonly string[]> = new Map([
   ['scout.posting.promote', ['application.create']],
   ['scout.match.promote', ['application.create']],
   ['profile.document.add', ['vault.file.add']],
+  ['profile.background.import', ['profile.background.add', 'claim.add']],
   /*
    * `pipeline.proposal.approve` calls whatever tool the stored proposal names —
    * `ctx.call(tool as ToolName, …)`, the one dynamic dispatch in the registry.

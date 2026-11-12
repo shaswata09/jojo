@@ -21,7 +21,7 @@
  * timer. This file only answers: may it, and is it new.
  */
 
-import { canonicalPostingUrl } from './capture'
+import { canonicalPostingUrl, postingIdentity } from './capture'
 import type { Instant, Match, PipelineKind, Proposal, ProposalStatus, SavedPosting } from './model'
 import type { GraphSnapshot } from './snapshot'
 import type { JobIdentity } from './same-job'
@@ -259,6 +259,100 @@ export function postingPreview(tool: string, inputJson: string): PostingPreview 
   }
 }
 
+/** The fields a reading can carry, as `PostingDraft` names them. */
+const READ_FIELDS = [
+  'org',
+  'role',
+  'roleTag',
+  'location',
+  'comp',
+  'postingId',
+  'deadline',
+  'source',
+] as const
+
+/**
+ * What the background read of a suggested posting found — see
+ * `ProposalProps.reading`.
+ *
+ * `ok: false` is a read that was tried and failed, kept so the card can say why
+ * and the queue does not open the same page again on every visit. `fileId` is
+ * the page in the Vault, on either side: a page is kept as soon as it is read,
+ * so a model that would not answer still leaves it.
+ */
+export type ScoutReading =
+  | {
+      ok: true
+      fields: Partial<Record<(typeof READ_FIELDS)[number], string>>
+      /** The person's own keywords the posting matched, ids and names both. */
+      keywords: { id: string; name: string }[]
+      missing: string[]
+      fileId?: string
+      via: 'extension' | 'reader'
+      readAt: string
+    }
+  | { ok: false; reason: string; fileId?: string; readAt: string }
+
+/**
+ * A stored reading, or null when there is none or it does not parse.
+ *
+ * Defensive the whole way down: this is JSON text from the graph, and a
+ * reading that has drifted from this shape should cost the card its extra
+ * line, never the queue.
+ */
+export function scoutReading(json: string | undefined): ScoutReading | null {
+  if (json === undefined) return null
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(json)
+  } catch {
+    return null
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null
+  const r = parsed as Record<string, unknown>
+  const str = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined)
+  const readAt = str(r['readAt']) ?? ''
+  const fileId = str(r['fileId'])
+  if (r['ok'] === false) {
+    return {
+      ok: false,
+      reason: str(r['reason']) ?? 'The posting could not be read.',
+      readAt,
+      ...(fileId ? { fileId } : {}),
+    }
+  }
+  if (r['ok'] !== true) return null
+  const rawFields =
+    typeof r['fields'] === 'object' && r['fields'] !== null
+      ? (r['fields'] as Record<string, unknown>)
+      : {}
+  const fields: Partial<Record<(typeof READ_FIELDS)[number], string>> = {}
+  for (const key of READ_FIELDS) {
+    const value = str(rawFields[key])
+    if (value !== undefined) fields[key] = value
+  }
+  const keywords = Array.isArray(r['keywords'])
+    ? r['keywords'].flatMap((k: unknown) => {
+        if (typeof k !== 'object' || k === null) return []
+        const id = str((k as Record<string, unknown>)['id'])
+        const name = str((k as Record<string, unknown>)['name'])
+        return id && name ? [{ id, name }] : []
+      })
+    : []
+  const missing = Array.isArray(r['missing'])
+    ? r['missing'].filter((m): m is string => typeof m === 'string')
+    : []
+  return {
+    ok: true,
+    fields,
+    keywords,
+    missing,
+    via: r['via'] === 'reader' ? 'reader' : 'extension',
+    readAt,
+    ...(fileId ? { fileId } : {}),
+  }
+}
+
 /**
  * Bare addresses — 'jobs.rice.edu/postings/29411', which is how the seeded
  * postings and plenty of pasted links are written — are read as https, the
@@ -310,27 +404,17 @@ const isId = (value: string): boolean => /^[a-z]+:[0-9a-f-]{8,}$/i.test(value)
  * second caller that needed it, which is the usual sign a helper was put in the
  * right place.
  *
- * Everything after canonicalisation is the cheap half: lowercase the host,
- * drop a trailing slash, ignore the fragment. Tracking parameters are NOT
- * stripped in general, because on a board we do not have a canonicaliser for,
- * a query string is often the whole identity of the posting.
+ * It IS `postingIdentity` now, which is the repo's one answer to "same posting
+ * URL". This used to be its own reduction — keeping the scheme, `www.` and every
+ * `utm_*` — so the scout's "never propose one twice" disagreed with the
+ * duplicate warning and the capture filing about the same pair of links: an
+ * `http://www.` spelling of a job already saved under `https://` came back as a
+ * new proposal. Anything that is not an address compares as its folded text, so
+ * a pipeline proposing a bare slug twice still only asks once.
  */
 export function postingKey(url: string): string {
-  const canonical = canonicalPostingUrl(url.trim())
-  // The fragment goes from the TEXT rather than from the parsed URL.
-  // `types/portable-globals.d.ts` declares only the URL members this layer
-  // reads — `hash` is deliberately not one of them, and the note there says
-  // why: declaring all thirteen fields is an invitation to use them.
-  const bare = canonical.split('#')[0] ?? canonical
-  try {
-    const parsed = new URL(bare)
-    const path = parsed.pathname.replace(/\/+$/, '')
-    return `${parsed.protocol}//${parsed.hostname.toLowerCase()}${path}${parsed.search}`
-  } catch {
-    // Not a URL we can parse — compare the text, folded. A pipeline that
-    // proposes a bare slug twice should still only ask once.
-    return bare.toLowerCase()
-  }
+  const text = url.trim()
+  return postingIdentity(text) ?? (text.split('#')[0] ?? text).toLowerCase()
 }
 
 /**

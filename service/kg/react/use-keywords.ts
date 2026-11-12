@@ -124,7 +124,7 @@ export function useKeywords() {
    */
   const setTone = useCallback(
     (id: string, tone: LabelTone, ink: string | null = null) => {
-      run('keyword.tone.set', { id, tone, ink })
+      return run('keyword.tone.set', { id, tone, ink })
     },
     [run],
   )
@@ -156,8 +156,9 @@ export function useKeywords() {
         .getSnapshot()
         .out(labelId, 'TAGS')
         .some((e) => e.to === record)
-      if (on) run('keyword.detach', { record, keyword: labelId })
-      else run('keyword.attach', { record, keyword: labelId })
+      return on
+        ? run('keyword.detach', { record, keyword: labelId })
+        : run('keyword.attach', { record, keyword: labelId })
     },
     [repo, run],
   )
@@ -166,7 +167,7 @@ export function useKeywords() {
     (key: string, labelIds: readonly string[]) => {
       const record = recordKey(key)
       if (record === undefined) return
-      run('keyword.record.set', { record, keywords: [...labelIds] })
+      return run('keyword.record.set', { record, keywords: [...labelIds] })
     },
     [run],
   )
@@ -182,7 +183,7 @@ export function useKeywords() {
     (key: string) => {
       const record = recordKey(key)
       if (record === undefined) return
-      run('keyword.record.set', { record, keywords: [] })
+      return run('keyword.record.set', { record, keywords: [] })
     },
     [run],
   )

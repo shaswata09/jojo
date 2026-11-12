@@ -184,6 +184,26 @@ export const SWAP_SUFFIX = '.crswap'
 
 export const isSwapFile = (name: string): boolean => name.endsWith(SWAP_SUFFIX)
 
+/**
+ * The `n`th Trash name for `path`: `jojo/Trash/<path>` first, then
+ * `jojo/Trash/<dir>/<name> (n).<ext>`.
+ *
+ * Shared by every adapter so they suffix identically. Trashing a path that was
+ * already trashed once — a document deleted, re-added and deleted again —
+ * used to land on the same key and overwrite the earlier copy, in the one
+ * method whose promise is that nothing is unrecoverable.
+ */
+export function trashPath(path: string, n: number): string {
+  if (n <= 1) return `jojo/Trash/${path}`
+  const slash = path.lastIndexOf('/')
+  const dir = path.slice(0, slash + 1)
+  const base = path.slice(slash + 1)
+  const dot = base.lastIndexOf('.')
+  // A leading dot is a hidden file's name, not an extension.
+  const [stem, ext] = dot > 0 ? [base.slice(0, dot), base.slice(dot)] : [base, '']
+  return `jojo/Trash/${dir}${stem} (${String(n)})${ext}`
+}
+
 /*
  * The folder layout constants that used to sit here — DOCUMENTS_DIR, JOJO_DIR,
  * TRASH_DIR, IDENTITY_PATH, MIRROR_PATH, MIRROR_PREVIOUS_PATH — were written

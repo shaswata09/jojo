@@ -11,7 +11,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { CaptureExtensionPanel } from '@/components/settings/CaptureExtensionPanel'
-import { DocumentReaderPanel, LocalModelPanel } from '@/components/settings/ConnectionsSection'
+import { DocumentReaderPanel } from '@/components/settings/DocumentReaderPanel'
+import { LocalModelPanel } from '@/components/settings/LocalModelPanel'
 import { isConfigured } from '@/lib/llm'
 import { syncExtensionCrashReporting, useCaptureInbox } from '@/lib/capture-bridge'
 import { CRASH_CAPABILITY, crashEnabled, setCrashEnabled } from '@/lib/crash-log'
@@ -125,10 +126,10 @@ export function ConnectModelStep({ onSkip, onDone }: { onSkip: () => void; onDon
       onDone={onDone}
       body={<LocalModelPanel bare />}
     >
-      This is what makes jojo agentic rather than a filing cabinet: it can then answer questions about
-      your search, write follow-ups and drafts, and run the Job Scout pipelines that keep your records
-      complete and watch for postings. Point it at a model on your own machine and nothing leaves the
-      device.
+      This is what makes jojo agentic rather than a filing cabinet: it can then answer questions
+      about your search, write follow-ups and drafts, and run the Job Scout pipelines that keep your
+      records complete and watch for postings. Point it at a model on your own machine and nothing
+      leaves the device.
     </Step>
   )
 }
@@ -153,8 +154,8 @@ export function DocumentReaderStep({ onSkip, onDone }: { onSkip: () => void; onD
       body={<DocumentReaderPanel bare />}
     >
       Without this the assistant can see a document’s name and nothing else. Run MarkItDown on this
-      machine — two commands, below — and it can read what is inside your CVs, cover letters and saved
-      postings when it drafts and answers.
+      machine — two commands, below — and it can read what is inside your CVs, cover letters and
+      saved postings when it drafts and answers.
     </Step>
   )
 }
@@ -276,13 +277,13 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
         </div>
 
         <p className="text-sm text-text-2">
-          In this browser and in the jojo extension, crash reports <span className="text-text-1">stay
-          on this device</span>: nothing is uploaded, and a backup file does not carry them. You read
-          them yourself under Settings. On the jojo phone app the same report is also sent to
-          Google&apos;s Firebase Crashlytics, which adds your device model, its operating system
-          version, and a random id it uses to count how many people hit the same crash — no name, no
-          account, nothing tied to you. Usage counts, the second switch below, go to Google
-          Analytics from every version including this one.
+          In this browser and in the jojo extension, crash reports{' '}
+          <span className="text-text-1">stay on this device</span>: nothing is uploaded, and a
+          backup file does not carry them. You read them yourself under Settings. On the jojo phone
+          app the same report is also sent to Google&apos;s Firebase Crashlytics, which adds your
+          device model, its operating system version, and a random id it uses to count how many
+          people hit the same crash — no name, no account, nothing tied to you. Usage counts, the
+          second switch below, go to Google Analytics from every version including this one.
         </p>
 
         <div className="space-y-1">
@@ -375,7 +376,8 @@ export function ExtensionStep({ onSkip, onDone }: { onSkip: () => void; onDone: 
       body={<CaptureExtensionPanel />}
     >
       Job adverts come down, often before you hear back. The browser extension saves a posting as it
-      reads today, into your own vault — and it is also how the Job Scout reads the boards you follow.
+      reads today, into your own vault — and it is also how the Job Scout reads the boards you
+      follow.
     </Step>
   )
 }

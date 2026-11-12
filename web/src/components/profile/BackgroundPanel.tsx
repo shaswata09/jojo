@@ -25,6 +25,7 @@ import { useToast } from '@/lib/toast-context'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /**
  * What jojo knows about the person, grouped and listed.
@@ -206,7 +207,7 @@ function EntryForm({
       onDone()
       return
     }
-    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+    if (isCommitEnter(event) && (event.metaKey || event.ctrlKey)) {
       event.preventDefault()
       submit()
     }

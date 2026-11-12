@@ -56,10 +56,23 @@ type Container = {
  *
  * Balanced-brace scanning from the first `{`, so prose either side is ignored
  * and a brace in a trailing sentence cannot extend the span.
+ *
+ * A balanced span that is not JSON is skipped and the scan resumes AFTER it.
+ * Models write braces in prose before the object too — "I will fill the {role}
+ * placeholder. Here: {…}" — and stopping at the first span returned null for a
+ * reply whose object was right there. Resuming after the span, not inside it,
+ * keeps a nested object from being mistaken for the answer. An UNBALANCED span
+ * still ends the search: everything after its `{` is inside it, so a later
+ * balanced brace is one of its children — a truncated array's first entry is
+ * not the reply.
  */
 export function firstJsonObject(text: string): unknown {
-  const found = scan(text)
-  return found === null ? null : parseOrNull(found.complete)
+  for (const found of spans(text)) {
+    if (found.complete === null) return null
+    const value = parseOrNull(found.complete)
+    if (value !== null) return value
+  }
+  return null
 }
 
 /**
@@ -71,15 +84,34 @@ export function firstJsonObject(text: string): unknown {
  * answer", and only one of them is true.
  */
 export function salvageJsonObject(text: string): { value: unknown; truncated: boolean } {
-  const found = scan(text)
-  if (found === null) return { value: null, truncated: false }
+  // Same walk as `firstJsonObject`: a balanced span that is not JSON is prose,
+  // and the object (whole or cut off) may still follow it.
+  for (const found of spans(text)) {
+    if (found.complete !== null) {
+      const whole = parseOrNull(found.complete)
+      if (whole !== null) return { value: whole, truncated: false }
+      continue
+    }
+    if (found.salvaged === null) return { value: null, truncated: false }
+    const value = parseOrNull(found.salvaged)
+    return value === null ? { value: null, truncated: false } : { value, truncated: true }
+  }
+  return { value: null, truncated: false }
+}
 
-  const whole = parseOrNull(found.complete)
-  if (whole !== null) return { value: whole, truncated: false }
-  if (found.salvaged === null) return { value: null, truncated: false }
-
-  const value = parseOrNull(found.salvaged)
-  return value === null ? { value: null, truncated: false } : { value, truncated: true }
+/**
+ * Every candidate span, in order: from the first `{`, then from the first `{`
+ * after each BALANCED span ends. An unbalanced span runs to the end of the
+ * text, so it is always the last one yielded.
+ */
+function* spans(text: string): Generator<{ complete: string | null; salvaged: string | null }> {
+  let start = text.indexOf('{')
+  while (start !== -1) {
+    const found = scan(text, start)
+    yield found
+    if (found.complete === null) return
+    start = text.indexOf('{', start + found.complete.length)
+  }
 }
 
 const parseOrNull = (text: string | null): unknown => {
@@ -98,10 +130,7 @@ const parseOrNull = (text: string | null): unknown => {
  * is left when it did not: the text up to the innermost container that actually
  * finished a child, with the still-open containers closed after it.
  */
-function scan(text: string): { complete: string | null; salvaged: string | null } | null {
-  const start = text.indexOf('{')
-  if (start === -1) return null
-
+function scan(text: string, start: number): { complete: string | null; salvaged: string | null } {
   const stack: Container[] = []
   let inString = false
   let escaped = false

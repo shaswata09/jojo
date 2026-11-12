@@ -11,7 +11,16 @@
 
 import { describe, expect, it } from 'vitest'
 import type { TimelineItem } from './model'
-import { bucketOf, remindersOf, urgencyOf } from './dates'
+import {
+  addDays,
+  agoLabel,
+  bucketOf,
+  daysBetween,
+  partsOf,
+  remindersOf,
+  shortDate,
+  urgencyOf,
+} from './dates'
 
 const TODAY = '2026-08-18'
 
@@ -181,5 +190,34 @@ describe('urgencyOf', () => {
   it('is done once ticked off, even when the date has passed', () => {
     // A deadline met last week is not a missed one.
     expect(urgencyOf({ date: '2026-10-01', completedOn: '2026-09-30' }, today)).toBe('done')
+  })
+})
+
+/**
+ * An Instant where a date was expected.
+ *
+ * `ISODate` and `Instant` are both plain strings, so nothing stops a timestamp
+ * reaching these helpers — the phone's "last used" line passes one. Splitting
+ * on '-' read the day as `Number('11T09:30:00.000Z')` and printed "Nov NaN".
+ */
+describe('date helpers given an Instant', () => {
+  const instant = '2026-11-11T09:30:00.000Z'
+
+  it('reads the date part', () => {
+    expect(partsOf(instant)).toEqual({ y: 2026, m: 11, d: 11 })
+    expect(shortDate(instant)).toBe('Nov 11')
+    expect(daysBetween('2026-11-10', instant)).toBe(1)
+    expect(daysBetween(instant, '2026-11-14')).toBe(3)
+    expect(addDays(instant, 1)).toBe('2026-11-12')
+    expect(agoLabel(instant, '2026-11-13')).toBe('2 days ago')
+  })
+
+  it('still reads a plain date, padded or not', () => {
+    expect(shortDate('2026-11-05')).toBe('Nov 5')
+    expect(partsOf('2026-1-5')).toEqual({ y: 2026, m: 1, d: 5 })
+  })
+
+  it('fails visibly, not plausibly, on something that is not a date', () => {
+    expect(Number.isNaN(daysBetween('yesterday', '2026-11-11'))).toBe(true)
   })
 })

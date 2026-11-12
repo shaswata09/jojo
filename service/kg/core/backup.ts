@@ -33,6 +33,8 @@
  */
 
 import type { StoredEdge, StoredNode } from './model'
+import { lossOf, validateRows } from './validate'
+import type { RowLoss } from './validate'
 
 /** Distinguishes a jojo backup from any other JSON someone might open. */
 export const BACKUP_FORMAT = 'jojo.backup'
@@ -217,6 +219,12 @@ export type RestorePlan = {
   nodes: readonly StoredNode[]
   edges: readonly StoredEdge[]
   documents: readonly { path: string; data: Uint8Array }[]
+  /**
+   * What the restore's salvage will leave out or change, counted by the reader.
+   * Optional so a plan built by hand (a test, the phone's transfer) still
+   * type-checks; `describeBackup` counts it itself when absent.
+   */
+  loss?: RowLoss
 }
 
 const fail = (code: BackupReadFailure['code'], message: string): BackupRead => ({
@@ -311,6 +319,12 @@ export function validateBackup(
     documents.push({ path: doc.path, data })
   }
 
+  // The rows themselves, checked the way `restoreBackup` will check them. Not a
+  // refusal — the restore salvages, and one bad row in four hundred should cost
+  // that row — but counted HERE, so the confirmation can say what will be lost
+  // before the swap rather than the report saying it after.
+  const loss = lossOf(nodes, edges, validateRows(nodes, edges, { salvage: true }))
+
   return {
     ok: true,
     value: {
@@ -318,6 +332,7 @@ export function validateBackup(
       nodes: nodes as readonly StoredNode[],
       edges: edges as readonly StoredEdge[],
       documents,
+      loss,
     },
   }
 }
@@ -325,8 +340,33 @@ export function validateBackup(
 /** A one-line summary for a confirmation dialog: what is about to replace what. */
 export function describeBackup(plan: RestorePlan): string {
   const docs = plan.documents.length
+  const loss =
+    plan.loss ?? lossOf(plan.nodes, plan.edges, validateRows(plan.nodes, plan.edges, { salvage: true }))
   return (
     `${plan.nodes.length} records, ${plan.edges.length} links` +
-    (docs === 0 ? ', no documents' : `, ${docs} document${docs === 1 ? '' : 's'}`)
+    (docs === 0 ? ', no documents' : `, ${docs} document${docs === 1 ? '' : 's'}`) +
+    lossClause(loss)
   )
+}
+
+const count = (n: number, one: string): string => `${n} ${one}${n === 1 ? '' : 's'}`
+
+/**
+ * The salvage, said before the swap. Empty when the file is whole.
+ *
+ * A clause on the same sentence rather than a second one, so every caller that
+ * already shows `describeBackup` shows the loss without being changed.
+ */
+function lossClause(loss: RowLoss): string {
+  const left = [
+    ...(loss.records > 0 ? [count(loss.records, 'record')] : []),
+    ...(loss.links > 0 ? [count(loss.links, 'link')] : []),
+  ]
+  const parts = [
+    ...(left.length > 0 ? [`${left.join(' and ')} cannot be read and will be left out`] : []),
+    ...(loss.changed > 0
+      ? [`${count(loss.changed, 'record')} will come back changed`]
+      : []),
+  ]
+  return parts.length === 0 ? '' : ` — of which ${parts.join(', and ')}`
 }

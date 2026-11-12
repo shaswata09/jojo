@@ -53,7 +53,12 @@ const FULL_DRAFT: Required<ApplicationDraft> = {
   firstReplyOn: '2026-09-05',
   outcome: 'rejected',
   offer: { respondBy: '2026-10-01', comp: '$120k base', note: 'Verbal so far.' },
+  deadline: '2026-10-15',
+  keywords: ['keyword:0192-ml'],
 }
+
+/** The record half of the draft — what the update's patch is shaped like. */
+const { deadline: _deadline, keywords: _keywords, ...DRAFT_RECORD } = FULL_DRAFT
 
 /**
  * The same record as the store would read it back.
@@ -63,7 +68,7 @@ const FULL_DRAFT: Required<ApplicationDraft> = {
  * carry them, because correcting one is an update.
  */
 const FULL_APP: Required<Application> = {
-  ...FULL_DRAFT,
+  ...DRAFT_RECORD,
   id: 'app:0192-rice',
   slug: 'rice',
   stageDates: { screen: '2026-09-14', interview: '2026-09-20' },
@@ -123,6 +128,28 @@ describe('applicationUpdateInput', () => {
         (FULL_APP as Record<string, unknown>)[key],
       )
     }
+  })
+
+  it('carries the form’s deadline and keywords into the same call', () => {
+    // One call is one journal entry is one Undo, and it routes the deadline
+    // through the tool's `syncDeadline` — the copy that re-titles on a rename.
+    const input = applicationUpdateInput('x', { org: 'Rice' }, TODAY, {
+      deadline: '2026-10-15',
+      keywords: ['keyword:0192-ml'],
+    })
+    expect(input).toEqual({
+      id: 'x',
+      org: 'Rice',
+      deadline: '2026-10-15',
+      keywords: ['keyword:0192-ml'],
+    })
+    // `null` deletes the deadline and must reach the tool as `null`.
+    expect(applicationUpdateInput('x', {}, TODAY, { deadline: null })).toEqual({
+      id: 'x',
+      deadline: null,
+    })
+    // Absent leaves both alone.
+    expect(applicationUpdateInput('x', {}, TODAY, {})).toEqual({ id: 'x' })
   })
 
   it('turns a restored daysAgo into the instant it describes', () => {

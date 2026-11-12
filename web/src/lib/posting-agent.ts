@@ -63,6 +63,20 @@ import { useVaultBlobs } from '@/lib/vault-blobs'
  * application when one is created. Cancelling leaves a saved posting and no
  * application, which is exactly what "I looked at this and decided not to
  * apply" should leave behind.
+ *
+ * AND BEFORE THE MODEL IS ASKED. It used to be kept only after the model had
+ * answered, so a refused request or an answer that would not parse threw away
+ * a page that had been opened and read perfectly well. It is kept as soon as
+ * it is read (once it is more than a blank shell), and a failure further on
+ * hands it back in `file` so the caller can still say where it is. A read of
+ * an address whose page is already kept reuses that page rather than keeping
+ * a second copy — the retry after a failed model call is exactly that case.
+ *
+ * A PAGE WHOSE BYTES DID NOT LAND IS NOT KEPT. The record is written first and
+ * the bytes second, and a failed byte write used to be ignored: the record
+ * stayed, `postingSourceForUrl` counted the address as kept for ever, and the
+ * page was never fetched again. Now the record is taken back out and the
+ * failure is said, so trying again can work.
  */
 
 export type PostingStep = 'reading' | 'asking' | 'saving'
@@ -87,7 +101,17 @@ export type PostingOutcome =
       keywords: readonly string[]
       via: PostingRoute
     }
-  | { ok: false; step: PostingStep; reason: string }
+  | {
+      ok: false
+      step: PostingStep
+      reason: string
+      /**
+       * The page, when it was kept before the step that failed — so a model
+       * that refused or a reply that would not parse does not cost the person
+       * the page they had already opened.
+       */
+      file?: VaultFile
+    }
 
 export type ReadPostingOptions = {
   url: string
@@ -109,7 +133,7 @@ type Page =
   { via: 'extension'; text: string; capture: CaptureEnvelope } | { via: 'reader'; text: string }
 
 /** Said when there is nothing in this browser that can open a page at all. */
-const NOTHING_TO_READ_WITH =
+export const NOTHING_TO_READ_WITH =
   'Reading a posting needs the jojo browser extension, which opens the page the way you would and saves it, or the document reader, which fetches it. Neither is set up in this browser — Settings has both.'
 
 /**
@@ -154,6 +178,10 @@ function nameFor(stem: string, url: string): string {
   }
 }
 
+/** Said when the record was written and its bytes were not. */
+const NOT_STORED =
+  'The page was read, but this browser would not store it — it may be out of room for jojo. Nothing was kept; free some space and try again.'
+
 /** Said when the page came back as almost nothing — per route, because the fix differs. */
 function nearlyEmpty(via: PostingRoute): string {
   return via === 'extension'
@@ -167,51 +195,72 @@ function nearlyEmpty(via: PostingRoute): string {
  * One function for both callers — the "From link" read and the scout keeping a
  * posting it found — so a page saved either way is one kind of record: same
  * drawer, same name, same note, same bytes.
+ *
+ * `null` when the bytes did not land. The record written a moment earlier is
+ * removed again first, so nothing is left claiming the page is kept — see
+ * "A PAGE WHOSE BYTES DID NOT LAND" in the header.
  */
-function useSavePage(): (page: Page, target: string, stem: string) => Promise<VaultFile> {
-  const { addFile } = useVault()
+function useSavePage(): (page: Page, target: string, stem: string) => Promise<VaultFile | null> {
+  const { addFile, removeFile } = useVault()
   const blobs = useVaultBlobs()
   const fileCapture = useFileCapture()
   return useCallback(
-    async (page: Page, target: string, stem: string): Promise<VaultFile> => {
+    async (page: Page, target: string, stem: string): Promise<VaultFile | null> => {
+      let kept: { file: VaultFile; stored: boolean }
       if (page.via === 'extension') {
         // Filed by the same hook the capture inbox uses, so a posting saved
         // from a pasted link and one saved with the Capture button are one
         // kind of record: same drawer, same name, same note, same bytes.
-        return (await fileCapture(page.capture)).file
+        const filed = await fileCapture(page.capture)
+        kept = { file: filed.file, stored: filed.stored }
+      } else {
+        // Wrapped, not raw: the record is `kind: 'page'` and both viewers
+        // render a page as HTML, which would collapse every newline in the
+        // markdown. See `postingDocument`.
+        const html = postingDocument(target, page.text)
+        const bytes = new TextEncoder().encode(html)
+        const name = nameFor(stem, target)
+        const saved = addFile({
+          name,
+          // 'page' rather than 'md': what was saved IS a posting, and the
+          // kind is what the Vault's icon and the viewer key off.
+          kind: 'page',
+          // The settled rule: a posting is somebody else's document and
+          // never lands in 'Applications', which holds what the user wrote.
+          bucket: 'Job postings',
+          size: sizeLabel(bytes.byteLength),
+          sourceUrl: target,
+          capturedAt: new Date().toISOString(),
+          savedOn: TODAY,
+          note: `Read by the model from ${target}`,
+        })
+        const stored = await blobs.put(saved.id, new File([bytes], name, { type: 'text/html' }))
+        kept = { file: saved, stored }
       }
-      // Wrapped, not raw: the record is `kind: 'page'` and both viewers
-      // render a page as HTML, which would collapse every newline in the
-      // markdown. See `postingDocument`.
-      const html = postingDocument(target, page.text)
-      const bytes = new TextEncoder().encode(html)
-      const name = nameFor(stem, target)
-      const saved = addFile({
-        name,
-        // 'page' rather than 'md': what was saved IS a posting, and the
-        // kind is what the Vault's icon and the viewer key off.
-        kind: 'page',
-        // The settled rule: a posting is somebody else's document and
-        // never lands in 'Applications', which holds what the user wrote.
-        bucket: 'Job postings',
-        size: sizeLabel(bytes.byteLength),
-        sourceUrl: target,
-        capturedAt: new Date().toISOString(),
-        savedOn: TODAY,
-        note: `Read by the model from ${target}`,
-      })
-      // Best effort, and reported through the record rather than thrown:
-      // the row is already written, and a storage failure must not lose
-      // the draft the user is about to be shown.
-      await blobs.put(saved.id, new File([bytes], name, { type: 'text/html' }))
-      return saved
+      return keptOrDropped(kept, removeFile)
     },
-    [addFile, blobs, fileCapture],
+    [addFile, removeFile, blobs, fileCapture],
   )
+}
+
+/**
+ * The page, or `null` with its record taken back out when the bytes did not
+ * land. Exported for its test: this is the line that decides whether a URL is
+ * counted as kept for ever.
+ */
+export function keptOrDropped(
+  kept: { file: VaultFile; stored: boolean },
+  removeFile: (id: string) => unknown,
+): VaultFile | null {
+  if (kept.stored) return kept.file
+  removeFile(kept.file.id)
+  return null
 }
 
 export function useReadPosting(): (options: ReadPostingOptions) => Promise<PostingOutcome> {
   const savePage = useSavePage()
+  const { repo, projections } = useKg()
+  const { updateFile } = useVault()
   /*
    * The person's own vocabulary, so the model can pick from it rather than
    * inventing words nobody files anything under.
@@ -253,6 +302,17 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         return { ok: false, step: 'reading', reason: nearlyEmpty(page.via) }
       }
 
+      // Kept NOW, before the model is asked — see "AND BEFORE THE MODEL IS
+      // ASKED" in the header. A page this address already has is reused, so a
+      // second try after a failed ask does not keep a second copy.
+      const graph = repo.getSnapshot()
+      const source = postingSourceForUrl(graph, target)
+      const already =
+        reuseFile ??
+        (source ? projections.files(graph).find((f) => f.id === source.fileId) : undefined)
+      const file = already ?? (await savePage(page, target, ''))
+      if (file === null) return { ok: false, step: 'saving', reason: NOT_STORED }
+
       /* ------------------------------ 2. ask ------------------------------- */
       onStep?.('asking')
       /*
@@ -278,37 +338,41 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         }
         return turn.text
       })
-      if (refused.reason !== undefined) return { ok: false, step: 'asking', reason: refused.reason }
+      if (refused.reason !== undefined) {
+        return { ok: false, step: 'asking', reason: refused.reason, file }
+      }
       if (!read.ok) {
         // Said, because otherwise the obvious response to a slow failure is to
         // press the button again — which is the thing that just happened twice.
         const tried = read.attempts > 1 ? ' Asked twice, with the same result.' : ''
-        return { ok: false, step: 'asking', reason: `${read.reason}${tried}` }
+        return { ok: false, step: 'asking', reason: `${read.reason}${tried}`, file }
       }
 
       /* ------------------------------ 3. save ------------------------------ */
       onStep?.('saving')
-      const file =
-        reuseFile ??
-        (await savePage(
-          page,
-          target,
-          [read.draft.org, read.draft.role].filter(Boolean).join(' — '),
-        ))
+      // The reader's copy was kept before there was anything better to call
+      // it than the host; the employer the model just read is a better name.
+      // The extension's copy is named from the page's own title and kept so.
+      const stem = [read.draft.org, read.draft.role].filter(Boolean).join(' — ')
+      let named = file
+      if (already === undefined && page.via === 'reader' && stem.trim() !== '') {
+        const name = nameFor(stem, target)
+        if (updateFile(file.id, { name }).ok) named = { ...file, name }
+      }
 
       return {
         ok: true,
         // The URL is the one field the model is not asked for and cannot get
         // wrong, so it is set here from what the user actually pasted.
         draft: { ...read.draft, url: target },
-        file,
+        file: named,
         missing: read.missing,
         // Names in, ids out, and the crossing happens exactly here.
         keywords: matchKeywords(offered, read.keywordNames),
         via: page.via,
       }
     },
-    [savePage, labels, countFor],
+    [savePage, labels, countFor, repo, projections, updateFile],
   )
 }
 
@@ -407,6 +471,11 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
             ? { ...opened, capture: { ...opened.capture, url: target } }
             : opened
         const file = await savePage(page, target, options.title)
+        // The bytes did not land and the record is already gone again, so
+        // nothing counts this address as kept and the next ask re-fetches it.
+        // Returned (not thrown) inside the in-flight promise, whose `finally`
+        // clears the entry — a retry starts a fresh capture.
+        if (file === null) return { ok: false, reason: NOT_STORED }
 
         const graph = repo.getSnapshot()
         const application = applicationForPostingUrl(projections.postings(graph), target)

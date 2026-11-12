@@ -49,6 +49,7 @@ import {
   fileFail,
   fileOk,
   isSwapFile,
+  trashPath,
   type FileEntry,
   type FileResult,
   type FileStore,
@@ -293,8 +294,14 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
         // whose whole promise is that nothing is unrecoverable.
         //
         // One transaction, so a failure between the two cannot lose the file.
+        //
+        // Probed inside that transaction, so the free name it finds is still
+        // free when the put lands — an earlier copy trashed from the same path
+        // is never overwritten. See `trashPath`.
         const tx = handle.transaction(STORE, 'readwrite')
-        await tx.store.put(rec, `${TRASH_DIR}/${path}`)
+        let n = 1
+        while ((await tx.store.getKey(trashPath(path, n))) !== undefined) n += 1
+        await tx.store.put(rec, trashPath(path, n))
         await tx.store.delete(path)
         await tx.done
         return fileOk(undefined)

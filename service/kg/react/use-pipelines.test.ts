@@ -13,7 +13,7 @@ import type { ToolHost } from '../agent/execute'
 import type { AgentRun } from '../agent/loop'
 import type { ToolRuntime } from '../tools/runtime'
 import type { Pipeline } from '../core/model'
-import { runPipelineRound } from './use-pipelines'
+import { abortInFlight, runPipelineRound } from './use-pipelines'
 import type { PipelineLogEntry, RoundDeps } from './use-pipelines'
 
 const host: ToolHost = {
@@ -181,5 +181,73 @@ describe('a round that throws', () => {
     // is what survives a reload.
     expect(log).toContain('error')
     expect(reported).toEqual([boom])
+  })
+})
+
+describe('what a round is told, and when it may start', () => {
+  const twin: Pipeline = { ...pipeline, id: 'pipeline:t', name: 'Me', kind: 'twin', auto: true }
+
+  /*
+   * An auto twin is handed the real host, so its writes land — and it was
+   * told, in the prompt every pipeline shares, that nothing takes effect and
+   * every call is a card. A model that believes that writes more freely.
+   */
+  it('tells an auto twin that its writes land and can be undone', async () => {
+    let prompt = ''
+    const { deps } = harness(async (options) => {
+      prompt = options.prompt
+      return { messages: [], answer: null, steps: [], stopped: 'answered', offered: null }
+    })
+    await runPipelineRound(twin, deps)
+    expect(prompt).toContain('takes effect immediately')
+    expect(prompt).toContain('undo')
+    expect(prompt).not.toContain('Nothing you call takes effect immediately')
+
+    await runPipelineRound({ ...twin, auto: false }, deps)
+    expect(prompt).toContain('Nothing you call takes effect immediately')
+  })
+
+  /*
+   * Switching a pipeline off set a flag the loop reads between steps; the
+   * request in flight ran on, and the engine-wide lock with it.
+   */
+  it('cancels the round’s own request when the round is stopped', async () => {
+    const cancelled: string[] = []
+    const { deps, cancel } = harness(async (options) => {
+      await options.llm([], [])
+      return { messages: [], answer: null, steps: [], stopped: 'aborted', offered: null }
+    })
+    deps.llmFor = (signal) => () =>
+      new Promise((resolve) => {
+        signal.onAbort?.(() => {
+          cancelled.push('request')
+          resolve({ ok: false, error: 'aborted' } as never)
+        })
+      })
+    const round = runPipelineRound(pipeline, deps)
+    await Promise.resolve()
+    abortInFlight(cancel)
+    await round
+    expect(cancelled).toEqual(['request'])
+  })
+
+  /*
+   * The blob index loads after the scheduler's first tick, so the first twin
+   * round of a session was told there was no CV.
+   */
+  it('does not start a twin round before the documents are known', async () => {
+    let ran = false
+    const { deps, busy } = harness(async () => {
+      ran = true
+      return { messages: [], answer: null, steps: [], stopped: 'answered', offered: null }
+    })
+    deps.documentsReady = false
+    await runPipelineRound(twin, deps)
+    expect(ran).toBe(false)
+    expect(busy.current).toBe(false)
+
+    // A scout does not read documents and is not held up by them.
+    await runPipelineRound(pipeline, deps)
+    expect(ran).toBe(true)
   })
 })

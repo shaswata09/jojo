@@ -22,6 +22,7 @@ import {
   fileFail,
   fileOk,
   isSwapFile,
+  trashPath,
   type FileEntry,
   type FileFailure,
   type FileResult,
@@ -171,7 +172,11 @@ export function createMemoryFileStore(options: MemoryFileStoreOptions = {}): Mem
       // directories collapsed onto `jojo/Trash/CV.pdf` and the second silently
       // overwrote the first — in the one method whose entire documented promise
       // is that nothing is ever unrecoverable.
-      files.set(`jojo/Trash/${path}`, rec)
+      //
+      // And never over an earlier copy at the same path: see `trashPath`.
+      let n = 1
+      while (files.has(trashPath(path, n))) n += 1
+      files.set(trashPath(path, n), rec)
       return fileOk(undefined)
     },
 

@@ -28,6 +28,7 @@ import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
 import { report } from '@/lib/analytics'
+import { announceRefusal } from '@/components/common/write-result'
 
 /** How long the copied confirmation stays up. */
 const COPIED_MS = 1600
@@ -235,13 +236,14 @@ export function SnippetsTool({ focus }: { focus?: string }) {
       const before = snippets.find((s) => s.id === id)
       const beforeKeywords = labelIdsOf(id)
 
-      updateSnippet(
+      const result = updateSnippet(
         id,
         { title, tag: editing.tag, body, applicationIds: editing.applicationIds },
         // '' rather than omitted when there is none: absent means "keep what is
         // stored", and clearing every mark off a snippet has to be savable.
         format ?? '',
       )
+      if (announceRefusal(result, toast)) return
       commitKeywords(id, chosen)
       // The draft takes the trimmed title too, or the dirty check compares
       // 'Short bio ' against the 'Short bio' that was stored and the panel keeps
@@ -309,7 +311,13 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     // The editor stays open on the record it just created rather than closing:
     // the first save is usually followed by another edit.
     setEditing({ ...editing, id: record.id, title })
-    setClean({ title, tag: editing.tag, body, keywords: keywordKey(chosen), applicationIds: editing.applicationIds })
+    setClean({
+      title,
+      tag: editing.tag,
+      body,
+      keywords: keywordKey(chosen),
+      applicationIds: editing.applicationIds,
+    })
 
     // Saved into a list the filters are hiding is the one outcome that looks
     // like a dropped write, so it gets named rather than a bare confirmation.
@@ -365,7 +373,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
 
   const onMove = (s: Snippet, next: SnippetTag) => {
     const before = s.tag
-    updateSnippet(s.id, { tag: next })
+    if (announceRefusal(updateSnippet(s.id, { tag: next }), toast)) return
     if (editing?.id === s.id) setEditing((prev) => (prev ? { ...prev, tag: next } : prev))
     toast({
       title: `${s.title} moved`,

@@ -74,21 +74,45 @@ export const cleared = (value: string | undefined) =>
 /**
  * Syncs the one deadline the application form owns.
  *
- * `undefined` means the field was never touched and nothing happens — a save
- * that always wrote minted a second deadline every time someone edited a
+ * `undefined` means the field was never touched and the date is left alone — a
+ * save that always wrote minted a second deadline every time someone edited a
  * location. `null` means the user emptied it, which is the one destructive half
  * of an otherwise harmless save.
+ *
+ * `before` is the application's display name as it stood when the calling tool
+ * began, read before that tool re-linked the employer or rewrote the role.
+ * When given, a rename carries to the calendar — but only while the item still
+ * holds the name it was given (`before`). Once someone has retitled it by hand
+ * that title is theirs, not a derived string to overwrite. This rule used to
+ * live only in the web form's own copy of this function, so a rename through
+ * the assistant, MCP or the phone left the calendar saying the old employer.
+ * It is applied even when `deadline` is `undefined`: renaming the employer
+ * without touching the date is the common case, not the edge.
  */
-export function syncDeadline(ctx: ToolContext, id: NodeId, deadline: ISODate | null | undefined) {
-  if (deadline === undefined) return
+export function syncDeadline(
+  ctx: ToolContext,
+  id: NodeId,
+  deadline: ISODate | null | undefined,
+  before?: string,
+) {
   const existing = applicationDeadlineOf(ctx.memory, id)
+  const title = displayOf(ctx.memory, id)
+  const retitle =
+    existing !== undefined &&
+    before !== undefined &&
+    before !== title &&
+    existing.props.title === before
+
+  if (deadline === undefined) {
+    if (retitle) ctx.call('timeline.item.update', { id: existing.id, title })
+    return
+  }
 
   if (deadline === null) {
     if (existing) ctx.call('timeline.item.delete', { id: existing.id })
     return
   }
 
-  const title = displayOf(ctx.memory, id)
   if (!existing) {
     // Without this the first application anyone adds is invisible everywhere
     // that reads dates — the calendar, This week, the priority deck — and the
@@ -111,6 +135,7 @@ export function syncDeadline(ctx: ToolContext, id: NodeId, deadline: ISODate | n
   ctx.call('timeline.item.update', {
     id: existing.id,
     date: deadline,
+    ...(retitle ? { title } : {}),
     ...(existing.props.date === deadline
       ? {}
       : { urgency: deadlineUrgency(dayOf(ctx.now), deadline) }),

@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { hexOfHsv, hsvOf, normaliseHex } from '@jojo/service/core/ink'
 import type { Hsv } from '@jojo/service/core/ink'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /**
  * Any colour off the spectrum, picked INSIDE the page.
@@ -97,7 +98,8 @@ export function SpectrumPicker({
    * popover — without the browser treating the move as hovering something else.
    */
   const drag =
-    (read: (x: number, y: number, base: Hsv) => Hsv) => (event: ReactPointerEvent<HTMLDivElement>) => {
+    (read: (x: number, y: number, base: Hsv) => Hsv) =>
+    (event: ReactPointerEvent<HTMLDivElement>) => {
       if (event.button !== 0) return
       event.preventDefault()
       const el = event.currentTarget
@@ -205,8 +207,10 @@ export function SpectrumPicker({
         onPointerDown={drag((x, _y, base) => fromStrip(x, base))}
         onKeyDown={nudge((base, key, big) => {
           const d = big ? 15 : 3
-          if (key === 'ArrowLeft' || key === 'ArrowDown') return { ...base, h: Math.max(0, base.h - d) }
-          if (key === 'ArrowRight' || key === 'ArrowUp') return { ...base, h: Math.min(359.9, base.h + d) }
+          if (key === 'ArrowLeft' || key === 'ArrowDown')
+            return { ...base, h: Math.max(0, base.h - d) }
+          if (key === 'ArrowRight' || key === 'ArrowUp')
+            return { ...base, h: Math.min(359.9, base.h + d) }
           return null
         })}
         onKeyUp={commitKey}
@@ -219,7 +223,10 @@ export function SpectrumPicker({
         <span
           aria-hidden
           className="pointer-events-none absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.45)]"
-          style={{ left: `${(hsv.h / 359.9) * 100}%`, background: hexOfHsv({ h: hsv.h, s: 1, v: 1 }) }}
+          style={{
+            left: `${(hsv.h / 359.9) * 100}%`,
+            background: hexOfHsv({ h: hsv.h, s: 1, v: 1 }),
+          }}
         />
       </div>
 
@@ -234,7 +241,7 @@ export function SpectrumPicker({
           onChange={(e) => setTyped(e.target.value)}
           onBlur={commitTyped}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (isCommitEnter(e)) {
               e.preventDefault()
               commitTyped()
             }

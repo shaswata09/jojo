@@ -116,7 +116,19 @@ export function createJobs<S extends Cancellation>({
   let stopping = false
 
   let liveSnapshot: readonly Job[] = []
-  const aboutSnapshots = new Map<string, readonly Job[]>()
+  /**
+   * `about` answers, computed lazily and keyed to the `jobs` version they were
+   * read at.
+   *
+   * They used to be recomputed eagerly in `notify` for every record ever asked
+   * about, and never dropped — so every step of every job cost records × jobs,
+   * and a session that opened a hundred records paid for all hundred forever.
+   * Now a getter recomputes only its own record, only when something moved, and
+   * a record with no jobs holds no entry at all (it answers the shared `NONE`).
+   */
+  let version = 0
+  const aboutSnapshots = new Map<string, { version: number; jobs: readonly Job[] }>()
+  const NONE: readonly Job[] = Object.freeze([])
 
   const same = <T>(a: readonly T[], b: readonly T[]): boolean =>
     a.length === b.length && a.every((x, i) => x === b[i])
@@ -130,10 +142,6 @@ export function createJobs<S extends Cancellation>({
      */
     const nextLive = live(jobs)
     if (!same(nextLive, liveSnapshot)) liveSnapshot = nextLive
-    for (const [recordId, held] of aboutSnapshots) {
-      const next = aboutIn(jobs, recordId)
-      if (!same(next, held)) aboutSnapshots.set(recordId, next)
-    }
     // Copied before iterating: a listener that unsubscribes itself while being
     // notified would otherwise mutate the set mid-loop.
     // eslint-disable-next-line unicorn/no-useless-spread
@@ -142,6 +150,7 @@ export function createJobs<S extends Cancellation>({
 
   const set = (next: readonly Job[]): void => {
     jobs = next
+    version += 1
     notify()
   }
 
@@ -324,12 +333,19 @@ export function createJobs<S extends Cancellation>({
 
     about(recordId: string): readonly Job[] {
       // Memoised per record, because this is a `useSyncExternalStore` getter and
-      // a new array every call is an infinite render loop.
+      // a new array every call is an infinite render loop. The held array is
+      // kept when nothing in it moved, so an unrelated job's step does not
+      // re-render this record's panel.
       const held = aboutSnapshots.get(recordId)
-      if (held !== undefined) return held
+      if (held !== undefined && held.version === version) return held.jobs
       const next = aboutIn(jobs, recordId)
-      aboutSnapshots.set(recordId, next)
-      return next
+      if (next.length === 0) {
+        aboutSnapshots.delete(recordId)
+        return NONE
+      }
+      const kept = held !== undefined && same(next, held.jobs) ? held.jobs : next
+      aboutSnapshots.set(recordId, { version, jobs: kept })
+      return kept
     },
 
     live: () => liveSnapshot,

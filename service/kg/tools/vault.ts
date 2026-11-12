@@ -756,8 +756,14 @@ export const vaultFileNoteSet = defineTool({
   input: s.object({ id: fileId, note: s.string({ label: 'Note' }) }),
 
   run(ctx, input) {
-    ctx.require('file', input.id)
-    ctx.tx.patch<'file'>(input.id, { note: cleared(input.note) })
+    const current = ctx.require('file', input.id)
+    const note = cleared(input.note)
+    // The spans follow the text, as in `vault.file.update`. Left alone, a bold
+    // "URGENT" stayed on the first six characters of whatever replaced it.
+    ctx.tx.patch<'file'>(input.id, {
+      note,
+      noteFormat: retextFormat(current.props.note ?? '', note ?? '', current.props.noteFormat),
+    })
   },
 
   describe: (input) => ({ title: input.note.trim() ? 'Note saved' : 'Note cleared' }),
@@ -903,6 +909,17 @@ export const vaultSnippetDuplicate = defineTool({
   run(ctx, input): NodeId {
     const source = ctx.require('snippet', input.id)
     const id = ctx.newId('snippet')
+    // Everything but `tailored`. A copy the person made is not the model's
+    // output, and a duplicate that kept the provenance would show up on the
+    // application's tailoring card claiming a model wrote it.
+    const { tailored: _tailored, bodyFormat, ...rest } = source.props
+    // And without the marks, for the same reason from the other side: a body is
+    // only ever READ as marked when its record says a model wrote it, so a copy
+    // that kept `**` and `##` would show them as typed. The spans move with the
+    // text — stripping marks shifts every offset, and the copy's bold used to
+    // land on the wrong characters.
+    const body = source.props.tailored === undefined ? source.props.body : stripMarks(source.props.body)
+    const format = body === source.props.body ? bodyFormat : retextFormat(source.props.body, body, bodyFormat)
     ctx.tx.put({
       id,
       type: 'snippet',
@@ -910,14 +927,9 @@ export const vaultSnippetDuplicate = defineTool({
       // minted just above is what puts the copy at the top of the list. See the
       // note on the link duplicate above for why that matters.
       props: {
-        // Everything but `tailored`. A copy the person made is not the
-        // model's output, and a duplicate that kept the provenance would show
-        // up on the application's tailoring card claiming a model wrote it.
-        ...(({ tailored: _tailored, ...rest }) => rest)(source.props),
-        // And without the marks, for the same reason from the other side: a
-        // body is only ever READ as marked when its record says a model wrote
-        // it, so a copy that kept `**` and `##` would show them as typed.
-        ...(source.props.tailored === undefined ? {} : { body: stripMarks(source.props.body) }),
+        ...rest,
+        body,
+        ...opt('bodyFormat', format),
         ...(input.title === undefined ? {} : { title: input.title }),
         slug: ctx.mintSlug('snippet', input.title ?? source.props.title),
       },

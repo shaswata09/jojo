@@ -54,6 +54,17 @@ export type JournalEntry = {
    * rather than a boolean that an old stored row would be missing.
    */
   trimmed?: true
+  /**
+   * Set on an entry `revert` wrote: which entry it took back, what that action
+   * was called, and whether the action now stands undone.
+   *
+   * Without it an undo was journalled under the original tool AND label, so the
+   * audit log showed "Rice added" twice and nothing said the second one was its
+   * opposite. `label` now says so ("Undo Rice added" / "Redo Rice added"), and
+   * `of` keeps the plain name for the ⌘Z toast, which announces "Undone · Rice
+   * added" rather than "Undone · Undo Rice added".
+   */
+  reverts?: { id: string; of: string; undone: boolean }
 }
 
 /** An entry as a tool hands it over: the repository stamps the id and the time. */
@@ -300,6 +311,7 @@ export function readJournalRows(rows: readonly unknown[]): JournalEntry[] {
       // key must be ABSENT — not `undefined` — on every entry inside the undo
       // window and every row written before this field existed.
       ...(row['trimmed'] === true ? { trimmed: true as const } : {}),
+      ...readReverts(row['reverts']),
     })
   }
 
@@ -309,6 +321,118 @@ export function readJournalRows(rows: readonly unknown[]): JournalEntry[] {
   // after another tab's prune would otherwise read the audit inside out.
   entries.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
   return entries
+}
+
+/** `reverts` off disk, kept only when it is the shape `revert` writes. */
+function readReverts(value: unknown): { reverts?: NonNullable<JournalEntry['reverts']> } {
+  if (!isRow(value)) return {}
+  const { id, of, undone } = value
+  if (typeof id !== 'string' || typeof of !== 'string' || typeof undone !== 'boolean') return {}
+  return { reverts: { id, of, undone } }
+}
+
+/* --------------------------------- revert --------------------------------- */
+
+/** What `revertDraft` reads the live records through. `GraphSnapshot` satisfies it. */
+export type GraphReader = {
+  node(id: NodeId): StoredNode | undefined
+  edge(id: EdgeId): StoredEdge | undefined
+}
+
+type Image = Record<string, unknown>
+
+/**
+ * `live`, with every key `forward` changed and nobody has changed since put back
+ * to `back`. One level deep; `props` goes one level further.
+ *
+ * A key the entry did not change keeps its live value, and a key somebody has
+ * written since keeps theirs: the later write wins, because it is the one the
+ * user (or the system) did last.
+ */
+function mergeBack(live: Image, forward: Image, back: Image, nested: boolean): Image {
+  const out: Image = { ...live }
+  for (const key of new Set([...Object.keys(forward), ...Object.keys(back)])) {
+    const f = forward[key]
+    const b = back[key]
+    if (nested && key === 'props' && isRow(f) && isRow(b) && isRow(live[key])) {
+      out[key] = mergeBack(live[key], f, b, false)
+      continue
+    }
+    if (sameImage(f, b) || !sameImage(live[key], f)) continue
+    if (key in back) out[key] = b
+    else delete out[key]
+  }
+  return out
+}
+
+/**
+ * One delta of an entry, replayed backwards against what is live NOW.
+ *
+ * Returns the delta to commit — `before` is the live record, so the journal row
+ * and the next revert (redo) read what really happened — or `null` for nothing.
+ */
+function revertDelta<T extends StoredNode | StoredEdge>(
+  delta: RecordDelta<T>,
+  live: T | undefined,
+): RecordDelta<T> | null {
+  const now = live ?? null
+  // Untouched since: the stored image goes back exactly, byte for byte.
+  if (sameImage(now, delta.after)) {
+    return now === null && delta.before === null ? null : { id: delta.id, before: now, after: delta.before }
+  }
+  // The entry created it: undoing the creation removes it, whatever has been
+  // written to it since. Already gone is nothing to do.
+  if (delta.before === null) return now === null ? null : { id: delta.id, before: now, after: null }
+  // The entry deleted it and it is back (only another revert does that), or
+  // the entry edited it and it has since been deleted: the later write stands.
+  if (delta.after === null || now === null) return null
+  const merged = mergeBack(
+    now as unknown as Image,
+    delta.after as unknown as Image,
+    delta.before as unknown as Image,
+    true,
+  ) as unknown as T
+  return sameImage(merged, now) ? null : { id: delta.id, before: now, after: merged }
+}
+
+/**
+ * The draft that takes `entry` back, rebased onto the records as they are now.
+ *
+ * `invert` replays whole before-images, which is only right while nothing has
+ * written those records since. Writes off the undo ring do — `fit.reading.set`
+ * stores its reading on the very file whose note was just edited, a file's
+ * bytes attach seconds after the drop — and ⌘Z of the note used to land the
+ * whole old file image and erase the reading with it. An agent step's Undo
+ * reaches past later steps the same way. So a revert puts back only what the
+ * entry changed, field by field, and only where the field still holds what the
+ * entry left: everything written since survives, in both directions, because
+ * redo is a revert of this.
+ */
+export function revertDraft(
+  entry: JournalEntry,
+  live: GraphReader,
+  label: string,
+  undone: boolean,
+): JournalDraft {
+  const nodes: RecordDelta<StoredNode>[] = []
+  const edges: RecordDelta<StoredEdge>[] = []
+  for (const d of entry.nodes) {
+    const back = revertDelta(d, live.node(d.id as NodeId))
+    if (back) nodes.push(back)
+  }
+  for (const d of entry.edges) {
+    const back = revertDelta(d, live.edge(d.id as EdgeId))
+    if (back) edges.push(back)
+  }
+  return {
+    tool: entry.tool,
+    input: entry.input,
+    label,
+    calls: entry.calls,
+    nodes,
+    edges,
+    reverts: { id: entry.id, of: entry.reverts?.of ?? entry.label, undone },
+  }
 }
 
 /* ---------------------------------- rings --------------------------------- */

@@ -94,11 +94,66 @@ describe('handshake', () => {
 
 describe('tools/list', () => {
   it('lists every catalogued tool with a schema', async () => {
-    const r = (await handleMcp(host(), { jsonrpc: '2.0', id: 2, method: 'tools/list' })) as {
+    const r = (await handleMcp(host(), { jsonrpc: '2.0', id: 2, method: 'tools/list' }, {
+      allow: () => true,
+    })) as {
       result: { tools: { name: string; inputSchema: unknown }[] }
     }
     expect(r.result.tools.length).toBe(mcpManifest().tools.length)
     expect(r.result.tools.every((t) => t.inputSchema !== undefined)).toBe(true)
+  })
+
+  /*
+   * `allow` used to fail open: a caller that omitted it listed and ran the two
+   * tools nothing can take back. Withholding is the default now, and exposing
+   * them is an explicit `allow: () => true`.
+   */
+  it('withholds the un-undoable pair when no policy is passed', async () => {
+    const h = host()
+    const r = (await handleMcp(h, { jsonrpc: '2.0', id: 2, method: 'tools/list' })) as {
+      result: { tools: { name: string }[] }
+    }
+    const names = r.result.tools.map((t) => t.name)
+    expect(names).not.toContain('memory_reset')
+    expect(names).not.toContain('memory_clear')
+    await callTool(h, 'application.create', {
+      org: 'Stripe',
+      role: 'ML engineer',
+      roleTag: 'ML Engineer',
+      stage: 'submitted',
+    })
+    const wiped = (await call(h, 'memory_clear', {})) as { result: { isError: boolean } }
+    expect(wiped.result.isError).toBe(true)
+    expect(h.memory().ofType('application')).toHaveLength(1)
+  })
+
+  /*
+   * The app's own bookkeeping is not a client's to call: saving a transcript
+   * wholesale (not undoable) and answering a scout's card were both reachable
+   * over the link. `Tool.catalogued: false` keeps them off both doors.
+   */
+  it.each([
+    'assistant.thread.set',
+    'assistant.thread.context.set',
+    'pipeline.proposal.raise',
+    'pipeline.proposal.approve',
+    'pipeline.proposal.discard',
+    'pipeline.proposal.fail',
+    'pipeline.proposal.reading.set',
+    'pipeline.proposal.sweep',
+    'pipeline.proposal.clear',
+    'pipeline.run.record',
+  ])('neither lists nor runs %s', async (name) => {
+    const h = host()
+    const listed = (await handleMcp(h, { jsonrpc: '2.0', id: 2, method: 'tools/list' }, {
+      allow: () => true,
+    })) as { result: { tools: { name: string }[] } }
+    expect(listed.result.tools.map((t) => t.name)).not.toContain(name.replaceAll('.', '_'))
+    const r = (await call(h, name, { id: 'thread:x', entries: [] })) as {
+      result: { isError: boolean; content: { text: string }[] }
+    }
+    expect(r.result.isError).toBe(true)
+    expect(r.result.content[0]?.text).toContain('No tool is called')
   })
 })
 

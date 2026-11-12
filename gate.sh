@@ -12,7 +12,9 @@ echo "service"
 if [ -f service/vitest.config.mts ] || [ -f service/vitest.config.ts ]; then
   run "lint (the layer guards)" npm -w @jojo/service run lint
   run "tsc"                     npm -w @jojo/service exec -- tsc -b
-  run "test"                    npm -w @jojo/service run test
+  # test:coverage, as CI runs it: the same suite plus the kg/core and kg/agent
+  # coverage floors in service/vitest.config.mts.
+  run "test (+ coverage floors)"  npm -w @jojo/service run test:coverage
 else
   echo "  (not populated yet — step 2)"
 fi

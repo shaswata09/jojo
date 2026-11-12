@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { entryFor } from './catalog'
-import { readStepDetail, renderOutcome } from './execute'
+import { callTool, readStepDetail, renderOutcome } from './execute'
 import { CONTEXT_BUDGET, pageNote, pageOf } from './paging'
 
 describe('reading a step’s result back', () => {
@@ -114,5 +114,81 @@ describe('a read that already paged itself', () => {
     const rows = Array.from({ length: 400 }, (_, i) => ({ id: `app:${String(i)}`, org: 'Org' }))
     const text = renderOutcome({ ok: true, entry: entryFor('memory.list')!, result: rows })
     expect(text).toContain('[Truncated at 6000 characters')
+  })
+})
+
+describe('what a write hands back to the model', () => {
+  const wrote = (result: unknown) =>
+    renderOutcome({
+      ok: true,
+      entry: { effect: 'create' } as never,
+      result,
+      announcement: { title: 'Saved' },
+    })
+
+  it('names one id', () => {
+    expect(wrote('note:0193c')).toBe('Saved (id: note:0193c)')
+  })
+
+  /*
+   * `vault.file.add` returns a list and `profile.background.add` returns
+   * `{ ids, created }`; both used to come back with no id at all, so the model
+   * had just made records it could not name.
+   */
+  it('names every id a write returned as a list or inside an object', () => {
+    expect(wrote(['file:1', 'file:2'])).toBe('Saved (ids: file:1, file:2)')
+    expect(wrote({ ids: ['background:1', 'background:2'], created: 2 })).toBe(
+      'Saved (ids: background:1, background:2)',
+    )
+  })
+
+  /* A snooze returns the date it moved to, which was labelled `id:`. */
+  it('does not call a date an id', () => {
+    const said = wrote('2026-11-20')
+    expect(said).not.toContain('id:')
+    expect(said).toContain('2026-11-20')
+  })
+})
+
+describe('a call that throws', () => {
+  const base = {
+    memory: () => ({}) as never,
+    today: () => '2026-10-12',
+    check: () => ({ ok: true as const, value: {} }),
+  }
+
+  /*
+   * `callTool` promises never to throw. A read awaits the app's own network
+   * code and a write can rethrow a non-`ToolFailure`; either used to end the
+   * turn with the step stuck at `running`.
+   */
+  it('turns a thrown write into a result the model can read', async () => {
+    const out = await callTool(
+      {
+        ...base,
+        run: () => {
+          throw new Error('disk full')
+        },
+      },
+      'sticky.note.create',
+      { text: 'x' },
+    )
+    expect(out.ok).toBe(false)
+    expect((out as { error: string }).error).toContain('disk full')
+  })
+
+  it('turns a thrown read into a result the model can read', async () => {
+    const out = await callTool(
+      {
+        ...base,
+        memory: () => ({ node: () => ({ id: 'file:1', type: 'file', props: { name: 'CV' } }) }) as never,
+        run: () => ({ ok: false as const, errors: [] }),
+        convert: () => Promise.reject(new Error('reader offline')),
+      },
+      'vault.file.read',
+      { id: 'file:0192f4c1-7b3e-7a41-9c2d-8f5e1a0b6d33' },
+    )
+    expect(out.ok).toBe(false)
+    expect((out as { error: string }).error).toContain('reader offline')
   })
 })

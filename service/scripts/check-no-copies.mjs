@@ -204,6 +204,44 @@ const KNOWN_TWINS = [
     why: 'the same seam for kg/react/use-read-fit, plus the AbortController kg/react may not name',
     maxLines: 45,
   },
+  /*
+   * The five below surfaced on 2026-11-11, the day `fingerprint` stopped
+   * hashing comments. Each pair was already the same CODE and differed only in
+   * its header comment (or, for deadline, one `export`), so the guard had never
+   * seen them. Recorded rather than refactored: mobile is out of scope for that
+   * change, and each is the same kind of platform seam as cv-agent above. The
+   * caps are their size on that day plus a little, so they cannot grow a rule
+   * back silently.
+   */
+  {
+    file: 'lib/checklist-agent.ts',
+    why: 'the transport seam for kg/react/use-draft-checklist — same shape as cv-agent',
+    maxLines: 48,
+  },
+  {
+    file: 'lib/duplicate-agent.ts',
+    why: 'the transport seam for kg/react/use-duplicate-check',
+    maxLines: 20,
+  },
+  {
+    file: 'lib/ids.ts',
+    why: 'app-side id helpers over kg/core/ref; candidates to move into the package',
+    maxLines: 70,
+  },
+  {
+    file: 'lib/jobs.tsx',
+    why: "the provider wiring around kg/react/jobs and each app's toast port",
+    maxLines: 80,
+  },
+  {
+    // Different paths in the two apps, hence `twin`: `file` is mobile's,
+    // `twin` is web's. Both read the DEADLINE_DETAIL sentinel from kg/tools;
+    // the predicate belongs beside it in the package.
+    file: 'lib/deadline.ts',
+    twin: 'components/applications/deadline.ts',
+    why: 'the application-deadline predicate over the DEADLINE_DETAIL sentinel; should move into kg',
+    maxLines: 40,
+  },
 ]
 
 /* -------------------------------------------------------------------------- */
@@ -248,20 +286,77 @@ const canonicalSpecifier = (spec) => spec.split('/').pop()
 const SPECIFIER_LITERAL = /(['"])((?:@jojo\/service|@\/|\.{1,2}\/)[^'"]*)\1/g
 
 /**
- * The hash rule (a) compares.
+ * Source with its comments removed, so the fingerprint is of the CODE.
  *
- * Line endings and trailing whitespace are normalised because a copy that
- * crossed an editor should still be a copy, and specifiers are canonicalised
- * because a copy that crossed a package boundary always rewrites them.
- * Everything else — comments included — is left alone: the doc comments in this
- * codebase carry the reasoning, and a paste that keeps them is the paste most
- * worth catching, because it arrives claiming to be the original.
+ * A small scanner rather than a regex, because the code is full of strings that
+ * contain `//` (every URL) and `/*` (glob patterns). Quote and template states
+ * are tracked; a regex literal containing a quote can confuse it, and the cost
+ * of that is one file fingerprinting differently, never two different files
+ * fingerprinting the same.
+ */
+function stripComments(text) {
+  let out = ''
+  let i = 0
+  let quote = null
+  while (i < text.length) {
+    const ch = text[i]
+    if (quote !== null) {
+      out += ch
+      if (ch === '\\') {
+        out += text[i + 1] ?? ''
+        i += 2
+        continue
+      }
+      if (ch === quote) quote = null
+      i += 1
+      continue
+    }
+    if (ch === "'" || ch === '"' || ch === '`') {
+      quote = ch
+      out += ch
+      i += 1
+      continue
+    }
+    if (ch === '/' && text[i + 1] === '/') {
+      while (i < text.length && text[i] !== '\n') i += 1
+      continue
+    }
+    if (ch === '/' && text[i + 1] === '*') {
+      const end = text.indexOf('*/', i + 2)
+      i = end === -1 ? text.length : end + 2
+      out += ' '
+      continue
+    }
+    out += ch
+    i += 1
+  }
+  return out
+}
+
+/**
+ * The hash rules (a) and (d) compare.
+ *
+ * Specifiers are canonicalised because a copy that crossed a package boundary
+ * always rewrites them. Comments, whitespace and the `export` keyword are
+ * dropped, and that is a change of mind: the whole file used to be hashed, on
+ * the argument that a paste keeping the doc comments is the one most worth
+ * catching. It is — but a paste that EDITS one comment, or adds one `export`,
+ * was then a different hash and went unreported: `web/src/components/
+ * applications/deadline.ts` and `mobile/src/lib/deadline.ts` differed by a
+ * single `export` and passed. A copy is a copy of the code; what the comments
+ * say and which names leave the module do not make it a second implementation.
  */
 function fingerprint(file) {
-  const text = readFileSync(file, 'utf8')
-    .replace(/\r\n/g, '\n')
-    .replace(SPECIFIER_LITERAL, (_m, q, spec) => `${q}${canonicalSpecifier(spec)}${q}`)
-    .replace(/[ \t]+\n/g, '\n')
+  const text = stripComments(
+    readFileSync(file, 'utf8')
+      .replace(/\r\n/g, '\n')
+      .replace(SPECIFIER_LITERAL, (_m, q, spec) => `${q}${canonicalSpecifier(spec)}${q}`),
+  )
+    .replace(
+      /(^|[;{}\s])export\s+(?=(?:default\s+|declare\s+)?(?:async\s+)?(?:const|let|var|function|class|type|interface|enum|abstract)\b)/g,
+      '$1',
+    )
+    .replace(/\s+/g, ' ')
     .trim()
   return createHash('sha256').update(text).digest('hex')
 }
@@ -493,8 +588,6 @@ for (const { dir, why } of FORBIDDEN_DIRS) {
 
 /* --- (d) twins ------------------------------------------------------------ */
 
-const known = new Map(KNOWN_TWINS.map((t) => [t.file, t]))
-
 /*
  * An exemption is for wiring, and wiring is short.
  *
@@ -510,6 +603,17 @@ const overgrown = (file, entry) => {
   const lines = readFileSync(file, 'utf8').split('\n').length
   return lines > entry.maxLines ? lines : null
 }
+
+/**
+ * The exemption for a pair, matched on BOTH paths. Most entries name one path
+ * that both apps share; an entry with `twin` names a pair that lives at
+ * different paths, in either order.
+ */
+const exemptionFor = (a, b) =>
+  KNOWN_TWINS.find((t) => {
+    const other = t.twin ?? t.file
+    return (t.file === a && other === b) || (t.file === b && other === a)
+  })
 
 /*
  * Every pair of apps, not web against mobile.
@@ -540,12 +644,14 @@ for (let i = 0; i < byApp.length; i += 1) {
       if (twin === undefined) continue
       const inside = path.relative(byApp[j].src, file).split(path.sep).join('/')
       const twinInside = path.relative(byApp[i].src, twin).split(path.sep).join('/')
-      const exemption = twinInside === inside ? known.get(inside) : undefined
+      const exemption = exemptionFor(inside, twinInside)
       if (exemption) {
-        const lines = overgrown(file, exemption)
-        if (lines === null) continue
+        // Either side may grow, so both are measured.
+        const grown = [file, twin].find((f) => overgrown(f, exemption) !== null)
+        if (grown === undefined) continue
+        const lines = overgrown(grown, exemption)
         fail(
-          `${rel(file)} is exempt as "${exemption.why}" but is now ${lines} lines, over its ` +
+          `${rel(grown)} is exempt as "${exemption.why}" but is now ${lines} lines, over its ` +
             `${String(exemption.maxLines)}-line bound.\n      An exemption is for wiring. Either move ` +
             `what grew into @jojo/service, or argue the bound up on purpose.`,
         )

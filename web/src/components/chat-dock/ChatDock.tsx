@@ -191,7 +191,11 @@ function useDockPosition(travel: number) {
   }
 
   const where =
-    position === 0 ? 'in the corner' : position === 1 ? 'at the far left' : `${String(Math.round(position * 100))}% of the way left`
+    position === 0
+      ? 'in the corner'
+      : position === 1
+        ? 'at the far left'
+        : `${String(Math.round(position * 100))}% of the way left`
   const grip = (
     <button
       type="button"
@@ -252,6 +256,12 @@ export function ChatDock() {
   const [query, setQuery] = useState('')
   /** In the one-panel layouts: whether the list is showing in place of the front window. */
   const [showList, setShowList] = useState(false)
+  /**
+   * Whether the person has opened or switched a window since the dock mounted.
+   * A window that mounts before then was restored, not asked for, and must not
+   * take the caret from the page (`take-focus.ts`).
+   */
+  const [used, setUsed] = useState(false)
 
   useEffect(() => {
     writeStored(DOCK_KEY, serializeDock(state))
@@ -284,16 +294,24 @@ export function ChatDock() {
       sheet.applicationId !== null && byId.has(sheet.applicationId) ? sheet.applicationId : null
     update((s) => setListOpen(openDraft(s, subject, mint()), s.listOpen))
     setShowList(false)
+    setUsed(true)
   }
   const openConversation = (id: NodeId) => {
     update((s) => openThread(s, id, mint()))
     setShowList(false)
+    setUsed(true)
   }
   const onAdopt = useCallback(
     (key: string, id: NodeId) => update((s) => adoptThread(s, key, id)),
     [update],
   )
-  const onToggle = useCallback((key: string) => update((s) => toggleMinimized(s, key)), [update])
+  const onToggle = useCallback(
+    (key: string) => {
+      update((s) => toggleMinimized(s, key))
+      setUsed(true)
+    },
+    [update],
+  )
   const onClose = useCallback((key: string) => update((s) => closeWindow(s, key)), [update])
   const onDetach = useCallback((key: string) => update((s) => detachApplication(s, key)), [update])
 
@@ -422,6 +440,7 @@ export function ChatDock() {
             onAdopt={onAdopt}
             onToggle={onToggle}
             onClose={onClose}
+            dockUsed={used}
             onDetach={onDetach}
             onBack={() => setShowList(true)}
           />
@@ -461,6 +480,7 @@ export function ChatDock() {
             onAdopt={onAdopt}
             onToggle={onToggle}
             onClose={onClose}
+            dockUsed={used}
             onDetach={onDetach}
             onBack={() => setShowList(true)}
           />
@@ -527,6 +547,7 @@ export function ChatDock() {
           onToggle={onToggle}
           onClose={onClose}
           onDetach={onDetach}
+          dockUsed={used}
         />
       ))}
 
@@ -537,7 +558,10 @@ export function ChatDock() {
         <Overflow
           hidden={hidden}
           threads={threads}
-          onPick={(key) => update((s) => focusWindow(s, key))}
+          onPick={(key) => {
+            update((s) => focusWindow(s, key))
+            setUsed(true)
+          }}
         />
       ) : null}
     </div>

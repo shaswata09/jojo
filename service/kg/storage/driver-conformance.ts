@@ -224,6 +224,53 @@ export function describeDriverConformance(subject: DriverSubject): void {
     })
 
     /**
+     * `[type, props.slug]` is unique, as `by-type-slug` declares in `schema.ts`.
+     *
+     * IndexedDB enforces it with a ConstraintError; the memory driver — which
+     * every test and the phone's `rn-driver` run on — used to accept two
+     * keywords slugged 'remote' and hand both back. So a restore that worked in
+     * the suite and on the phone was refused whole in the browser. A driver
+     * that diverges here hides the bug from every test that runs on it.
+     */
+    it('refuses a second record of the same type with the same slug', async () => {
+      const { driver } = subject.make()
+      await driver.open()
+      const keyword = (id: string, slug: string): StoredRow => ({
+        id,
+        type: 'keyword',
+        props: { slug },
+      })
+
+      const first = await driver.commit([
+        { kind: 'put', store: 'nodes', key: 'k1', value: keyword('k1', 'remote') },
+      ])
+      expect(first.ok).toBe(true)
+
+      const clash = await driver.commit([
+        { kind: 'put', store: 'nodes', key: 'k2', value: keyword('k2', 'remote') },
+      ])
+      expect(!clash.ok && clash.error.code).toBe('storage/corrupt')
+
+      // Same slug under ANOTHER type is not a clash; neither is the same record
+      // rewritten in place.
+      const fine = await driver.commit([
+        { kind: 'put', store: 'nodes', key: 'a1', value: { ...keyword('a1', 'remote'), type: 'application' } },
+        { kind: 'put', store: 'nodes', key: 'k1', value: keyword('k1', 'remote') },
+      ])
+      expect(fine.ok).toBe(true)
+
+      const replaced = await driver.replace(
+        rowsWith(keyword('k3', 'remote'), keyword('k4', 'remote')),
+      )
+      expect(replaced.ok).toBe(false)
+
+      const rows = await driver.readAll()
+      expect(rows.ok && idsOf(rows.value.nodes).sort()).toEqual(['a1', 'k1'])
+
+      driver.close()
+    })
+
+    /**
      * The batch is all of it or none of it, including when a row is refused
      * part-way through.
      *

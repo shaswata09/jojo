@@ -42,6 +42,7 @@ import { fileURLToPath } from 'node:url'
  * `test/import-specifiers.test.ts` holds the wrapped-import cases.
  */
 import { specsIn, todayImportsIn } from './import-specifiers.mjs'
+import { cyclesIn } from './import-cycles.mjs'
 
 /*
  * The package root, not the app root. This guard used to live in `web/scripts/`
@@ -794,6 +795,169 @@ for (const adapter of ADAPTERS) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The apps' own code, and which service layers it may reach.
+ *
+ * Everything above stops at `kg/`, `data/` and the two adapters, so the layer
+ * rule ended exactly where the most code lives. Measured when this was added:
+ * app code imported `@jojo/service/repo` from 22 web and 11 mobile modules,
+ * `tools` from 17 and 2, and settings panels called `repo.revert`,
+ * `restoreBackup` and `replaceAll` straight from a component — the repository's
+ * write surface, reachable from any screen, with no hook in between to own the
+ * error handling, the journal entry or the cache invalidation.
+ *
+ * The rule, by directory:
+ *
+ * - UI (`components`, `routes`, `screens`, `sheets` directly under an app's
+ *   `src`): `core`, `data`, `react`, `log` and `agent` only. React state and
+ *   writes arrive through `@jojo/service/react/*` hooks; that is the layer that
+ *   exists to bind the graph to a renderer.
+ * - Seams (`lib`): the same, plus the files in APP_SEAMS — the boot, restore,
+ *   backup and pairing paths that genuinely have to hold a repository, a
+ *   driver or the crypto box, because they are what CREATES them for the React
+ *   layer to wrap.
+ *
+ * Type-only imports count. A component typed against `Repository` is a
+ * component that was handed one, which is the coupling this exists to stop.
+ * Tests are exempt: a test builds a repository to drive the code under test.
+ * `kg/` is the adapters' section above, and the rest of `src` (App.tsx,
+ * main.tsx, navigation, theme) is not policed here yet — none of it reaches
+ * below `react` today.
+ *
+ * Two allowlists, both PER FILE AND PER LAYER: an entry grants exactly the
+ * layers listed, so an allowlisted file that starts importing a new layer
+ * still fails. An entry that no longer matches anything is reported, so the
+ * list can only shrink.
+ */
+const APP_ALLOWED = new Set(['core', 'data', 'react', 'log', 'agent'])
+const APP_UI_DIRS = new Set(['components', 'routes', 'screens', 'sheets'])
+const APP_SEAM_DIRS = new Set(['lib'])
+
+/**
+ * lib/ files that legitimately sit below the React layer. Each one constructs or
+ * restores the thing a hook later wraps; a new entry needs the same kind of
+ * reason written beside it.
+ */
+const APP_SEAMS = {
+  // Boot: opens the driver and the repository the KgProvider is handed.
+  'web/src/lib/boot-context.ts': ['repo', 'storage'],
+  'web/src/lib/store.tsx': ['repo'],
+  'mobile/src/lib/boot-state.ts': ['repo'],
+  'mobile/src/lib/store.tsx': ['repo'],
+  // Whole-store replacement (seed, import, restore) — below any single write hook.
+  'web/src/lib/data-set.ts': ['repo'],
+  'mobile/src/lib/restore-received.ts': ['repo'],
+  'mobile/src/lib/restore-documents.ts': ['repo'],
+  // Device-to-device handoff: the crypto box and the "handed over" stamp.
+  'web/src/lib/handoff-send.ts': ['repo', 'crypto'],
+  'web/src/lib/pairing-session.ts': ['crypto'],
+  'mobile/src/lib/handoff-receive.ts': ['crypto'],
+  // Type-only (`ToolName`) — the create menu names the tool it dispatches.
+  'web/src/lib/create-actions.ts': ['tools'],
+  // `DEADLINE_DETAIL` copy, a twin of web's components/applications/deadline.ts.
+  'mobile/src/lib/deadline.ts': ['tools'],
+}
+
+/**
+ * EXISTING VIOLATIONS, NOT PRECEDENT. These UI files reached below `react` before
+ * this guard existed. Each should move behind a hook in `kg/react` (or a lib/
+ * seam) and then come off this list; nothing new may be added to it to make the
+ * gate green.
+ */
+const APP_UI_DEBT = {
+  'web/src/components/applications/deadline.ts': ['tools'],
+  'web/src/components/common/StoreRecovery.tsx': ['storage'],
+  'web/src/components/common/ToolRunDialog.tsx': ['tools'],
+  'web/src/components/common/tool-form.ts': ['tools'],
+  'web/src/components/graph/GraphDetail.tsx': ['tools'],
+  'web/src/components/layout/SpotlightSearch.tsx': ['tools'],
+  'web/src/components/settings/AuditLog.tsx': ['repo'],
+  'web/src/components/settings/DataPanel.tsx': ['repo'],
+  'web/src/components/settings/Diagnostics.tsx': ['repo'],
+  'mobile/src/components/common/AuditLog.tsx': ['repo'],
+  'mobile/src/components/transfer/ReceivePanel.tsx': ['crypto'],
+  'mobile/src/screens/MoreScreen.tsx': ['repo'],
+  'mobile/src/sheets/ApplicationSheet.tsx': ['tools'],
+}
+
+const appGrantsUsed = new Set()
+for (const src of appRoots()) {
+  for (const dir of readdirSync(src)) {
+    const zone = APP_UI_DIRS.has(dir) ? 'ui' : APP_SEAM_DIRS.has(dir) ? 'seam' : null
+    const full = path.join(src, dir)
+    if (zone === null || !statSync(full).isDirectory()) continue
+
+    for (const file of walk(full)) {
+      if (isTest(file)) continue
+      const rel = path.relative(ROOT, file).split(path.sep).join('/')
+      const source = readFileSync(file, 'utf8')
+      const grants = (zone === 'ui' ? APP_UI_DEBT : APP_SEAMS)[rel] ?? []
+
+      for (const spec of specsIn(source)) {
+        if (!spec.startsWith(`${SELF}/`)) continue
+        const layer = spec.slice(SELF.length + 1).split('/')[0]
+        if (APP_ALLOWED.has(layer)) continue
+        if (grants.includes(layer)) {
+          appGrantsUsed.add(`${rel}:${layer}`)
+          continue
+        }
+        fail(
+          file,
+          lineOf(source, spec),
+          zone === 'ui'
+            ? `UI code imports '${spec}'. Components, routes, screens and sheets may reach ` +
+                `${[...APP_ALLOWED].join(', ')} — state and writes go through a hook in ` +
+                `'@jojo/service/react/…', which owns the error handling and the journal.`
+            : `lib/ imports '${spec}' and is not an APP_SEAMS entry for '${layer}'. If this file ` +
+                `really creates what a hook later wraps (boot, restore, pairing), add it to ` +
+                `APP_SEAMS with the reason; otherwise reach the graph through '@jojo/service/react/…'.`,
+        )
+      }
+    }
+  }
+}
+
+/*
+ * Stale entries are a warning, not a failure: moving a file behind a hook is
+ * exactly what the debt list is asking for, and should not turn the gate red
+ * for whoever did it. Delete the line the warning names.
+ */
+for (const [list, entries] of [
+  ['APP_SEAMS', APP_SEAMS],
+  ['APP_UI_DEBT', APP_UI_DEBT],
+]) {
+  for (const [rel, layers] of Object.entries(entries)) {
+    for (const layer of layers) {
+      if (!appGrantsUsed.has(`${rel}:${layer}`)) {
+        console.warn(
+          `check-layers: ${list} entry '${rel}' -> ${layer} no longer matches; remove it.`,
+        )
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*
+ * No value-import cycles inside the package. The layer rule above makes a cycle
+ * ACROSS layers impossible; this is the one inside a layer, which it cannot
+ * see. See import-cycles.mjs for what counts as an edge. There is no allowlist:
+ * the one cycle that existed (agent/queries.ts <-> agent/graph-query.ts) was
+ * removed before this check landed, so any cycle is new.
+ */
+for (const cycle of cyclesIn([...walk(KG), ...walk(DATA)].filter((f) => !isTest(f)))) {
+  fail(
+    cycle[0],
+    1,
+    `is in a value-import cycle: ${cycle.map(relOf).join(' <-> ')}. One of these modules runs its ` +
+      `top level against the other's uninitialised bindings, and which one depends on the bundler. ` +
+      `Move the shared part down into its own module, or make the back edge 'import type'.`,
+  )
+}
+
 if (failures.length > 0) {
   console.error(`\ncheck-layers: ${failures.length} layer violation(s)\n`)
   for (const f of failures) console.error(`  ${f}`)
@@ -802,4 +966,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('check-layers: kg, data and the platform adapters import in one direction')
+console.log('check-layers: kg, data, the platform adapters and the apps import in one direction')

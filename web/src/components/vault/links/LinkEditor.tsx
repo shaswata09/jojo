@@ -9,6 +9,7 @@ import { LINK_CATEGORIES } from '@/data/vault'
 import type { LinkCategory, VaultLink } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useToast } from '@/lib/toast-context'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * Height and border of a Field's input, which a bare `select` cannot inherit.
@@ -59,13 +60,16 @@ export function LinkEditor({ link, onDone }: { link: VaultLink; onDone: () => vo
       applicationIds: link.applicationIds,
     }
 
-    updateLink(link.id, {
+    const written = updateLink(link.id, {
       title: title.trim(),
       url: cleanUrl,
       category,
       note: note.trim() || undefined,
       applicationIds,
     })
+    // Refused (a blank title, a malformed address): the editor stays open
+    // with what was typed, rather than closing over a success toast.
+    if (announceRefusal(written, toast)) return
     toast({
       title: `${title.trim()} updated`,
       description: `Filed under ${category}.`,

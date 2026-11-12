@@ -46,7 +46,7 @@ export type CompPeriod = 'year' | 'month' | 'week' | 'day' | 'hour'
 export type ParsedComp = {
   /** The number as written, before any annualising. */
   amount: number
-  /** '$', '£', '€' or a three-letter code, when one was written. */
+  /** '$', '£', '€', '¥', '₹' or a three-letter code, when one was written. */
   currency?: string
   period: CompPeriod
   /** Whether the period was stated or assumed. See `annualised`. */
@@ -55,7 +55,7 @@ export type ParsedComp = {
   matched: string
 }
 
-const SYMBOLS: Record<string, string> = { $: '$', '£': '£', '€': '€', '¥': '¥' }
+const SYMBOLS: Record<string, string> = { $: '$', '£': '£', '€': '€', '¥': '¥', '₹': '₹' }
 
 const CODES = new Set(['usd', 'gbp', 'eur', 'cad', 'aud', 'chf', 'sek', 'jpy', 'inr'])
 
@@ -80,12 +80,27 @@ const PERIODS: { pattern: RegExp; period: CompPeriod }[] = [
  * a year — a thousandth of the figure, ranked below every other offer on the
  * comparison screen and shown beside the text it contradicted.
  */
+/*
+ * Two more shapes, both of which read as a small fraction of the real figure:
+ *
+ * - Indian lakh grouping, `12,00,000` — pairs of digits above the thousands.
+ *   The grouped alternative needs three digits after every comma, so it failed
+ *   and the bare-number branch took `12`: twelve rupees a year. `(?:,\d{2})+,\d{3}`
+ *   is that shape and nothing else, and it is tried after the western one so
+ *   `112,000` keeps its reading.
+ * - A decimal tail after a grouped amount, `€1.200,50`. The `,50` was left
+ *   between the digits and `monthly`, so the period word no longer touched the
+ *   amount, `nearestPeriod` then took `monthly` as the label of the number `50`,
+ *   and a monthly stipend read as €1,200 a YEAR. `cents` consumes the tail so
+ *   the period touches again; `readAmount` keeps it only when its separator is
+ *   not the grouping one.
+ */
 const AMOUNT =
-  /(?<currency>[$£€¥])?\s*(?<before>[a-z]{3})?\s*(?<digits>\d{1,3}(?:[,\s.]\d{3})+|\d+(?:\.\d+)?)\s*(?<k>k\b|m\b)?\s*(?<code>[a-z]{3}\b)?/i
+  /(?<currency>[$£€¥₹])?\s*(?<before>[a-z]{3})?\s*(?<digits>\d{1,3}(?:[,\s.]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3}|\d+(?:\.\d+)?)(?<cents>[.,]\d{1,2}(?!\d))?\s*(?<k>k\b|m\b)?\s*(?<code>[a-z]{3}\b)?/i
 
-/** `112,500`, `112 000`, `112.500` — the grouped form, where the separator is
- *  standing between thousands rather than in front of cents. */
-const GROUPED = /^\d{1,3}(?:[,\s.]\d{3})+$/
+/** `112,500`, `112 000`, `112.500`, `12,00,000` — the grouped form, where the
+ *  separator is standing between thousands rather than in front of cents. */
+const GROUPED = /^(?:\d{1,3}(?:[,\s.]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})$/
 
 /** The same pattern across the whole text rather than stopping at the first
  *  hit. See `parseComp`: the first hit is not the first AMOUNT. */
@@ -193,7 +208,18 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
    * reason `112.5k` does — the writer already said which thousands they meant.
    */
   const grouped = suffix === undefined && separated
-  const base = Number(raw.replace(grouped ? /[,\s.]/g : /[,\s]/g, ''))
+  const whole = Number(raw.replace(grouped ? /[,\s.]/g : /[,\s]/g, ''))
+  /*
+   * A decimal tail counts only after the GROUPED form and only when its
+   * separator differs from the grouping one: `€1.200,50` and `$1,200.50` are
+   * cents, while `1,200,50` is not a decimal anything and keeps its old reading.
+   */
+  const cents = groups['cents']
+  const tail =
+    cents !== undefined && grouped && !raw.includes(cents.charAt(0))
+      ? Number(`0.${cents.slice(1)}`)
+      : 0
+  const base = whole + tail
   if (!Number.isFinite(base) || base <= 0) return undefined
 
   const amount = base * (suffix === 'm' ? 1_000_000 : suffix === 'k' ? 1_000 : 1)
@@ -331,8 +357,26 @@ export const annualised = (parsed: ParsedComp): number => parsed.amount * PER_YE
  * that quietly used last Tuesday's is worse than one that admits it cannot
  * compare. Two offers in different currencies are shown with both figures and
  * no ranking.
+ *
+ * Strict equality, an unmarked amount included. A missing currency used to
+ * match ANY currency, which is not transitive: `95,000` matched both `$112k`
+ * and `£90k` while those two did not match each other, and both comparison
+ * screens check every offer against the FIRST one only — so `['95,000',
+ * '$112k', '£90k']` was ranked, with the dollar figure marked best over the
+ * pound one. As an equivalence relation, "every offer comparable with the
+ * first" means "every pair comparable", which is what those screens assume.
  */
 export function comparable(a: ParsedComp, b: ParsedComp): boolean {
-  if (a.currency === undefined || b.currency === undefined) return true
   return a.currency === b.currency
+}
+
+/**
+ * Whether a set of offers can be ranked at all: at least two, and every
+ * currency the same — all naming one, or none naming any. Prefer this to
+ * pairwise checks at a call site; it is the one rule both screens need.
+ */
+export function rankable(parsed: readonly ParsedComp[]): boolean {
+  if (parsed.length < 2) return false
+  const first = parsed[0]
+  return first !== undefined && parsed.every((p) => comparable(p, first))
 }

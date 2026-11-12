@@ -100,6 +100,27 @@ export type PairingSession = {
  */
 const REFRESH_MARGIN_MS = 20_000
 
+/**
+ * Arms the re-mint of the offer, and keeps it from firing once paired.
+ *
+ * The timer used to run on after `complete` set the phase to 'paired', so a
+ * transfer still going twenty-odd seconds before the offer's expiry had a
+ * fresh offer minted under it and the phase flipped back to 'offering' — the
+ * screen started asking to pair a device it was already talking to. `paired`
+ * is read when the timer FIRES, not when it is armed, because pairing happens
+ * in between. Returns the cancel, for the effect's cleanup.
+ */
+export function armRefresh(
+  refresh: () => void,
+  paired: () => boolean,
+  delay: number = PAIRING_TTL_MS - REFRESH_MARGIN_MS,
+): () => void {
+  const id = setTimeout(() => {
+    if (!paired()) refresh()
+  }, delay)
+  return () => clearTimeout(id)
+}
+
 export function usePairingSession(active: boolean): PairingSession {
   // One instance for the life of the component. `createSecrets` is cheap, but a
   // new one per render would be a new object identity in every callback below.
@@ -122,8 +143,14 @@ export function usePairingSession(active: boolean): PairingSession {
    * because the code had refreshed since.
    */
   const state = useRef<PairingState | null>(null)
+  /** Set by `complete`; read by the refresh timer. A ref for the reason `state` is. */
+  const paired = useRef(false)
 
-  const refresh = useCallback(() => setGeneration((n) => n + 1), [])
+  // An explicit refresh is a person asking for a new code, so it starts over.
+  const refresh = useCallback(() => {
+    paired.current = false
+    setGeneration((n) => n + 1)
+  }, [])
 
   useEffect(() => {
     if (!active) return
@@ -172,10 +199,10 @@ export function usePairingSession(active: boolean): PairingSession {
     // Re-minting on a timer rather than watching a clock: nothing needs to know
     // the remaining time, only that a fresh code goes up before this one stops
     // working.
-    const id = setTimeout(refresh, PAIRING_TTL_MS - REFRESH_MARGIN_MS)
+    const cancel = armRefresh(refresh, () => paired.current)
     return () => {
       live = false
-      clearTimeout(id)
+      cancel()
     }
   }, [active, secrets, generation, refresh])
 
@@ -183,6 +210,7 @@ export function usePairingSession(active: boolean): PairingSession {
   // is no pairing that outlives the page, by design — see `core/pairing.ts`.
   useEffect(() => {
     if (active) return
+    paired.current = false
     state.current = null
     setFrames(null)
     setToken(null)
@@ -209,6 +237,7 @@ export function usePairingSession(active: boolean): PairingSession {
       // on screen would invite a second device to pair against a session this
       // one is already holding.
       state.current = null
+      paired.current = true
       setFrames(null)
       setRefused(null)
       setKeys(result.value)

@@ -38,7 +38,18 @@ export function useFileDelete() {
        */
       const had = blobs.has(file.id)
       const stashed = labelIdsOf(file.id)
-      const { restore } = removeFile(file.id)
+      const removed = removeFile(file.id)
+      if (!removed.ok) {
+        // Refused: the record is still there, so its bytes and keywords stay
+        // too, and the toast says why instead of "deleted".
+        toast({
+          title: 'That did not delete',
+          description: removed.refusal ?? `${file.name} is still in the Vault.`,
+          tone: 'danger',
+        })
+        return
+      }
+      const { restore } = removed
       removeRecord(file.id)
       // The stored copy goes too. Without this the record disappears and its
       // bytes stay in IndexedDB for good.

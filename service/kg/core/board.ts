@@ -23,7 +23,7 @@
  * every board would be the search page it had just read, filed as a job.
  */
 
-import { canonicalPostingUrl, onBoard } from './capture'
+import { canonicalPostingUrl, onBoard, pageIdentity } from './capture'
 
 /** One row of a search-results page, after this module has vetted it. */
 export type BoardListing = {
@@ -350,7 +350,21 @@ function text(value: unknown, key: 'org' | 'location'): Record<string, string> {
  */
 export type BoardScan = (
   url: string,
+  /**
+   * The caller's stop. A scan opens a real tab and can take most of a minute,
+   * so a stopped run should stop WAITING on it rather than read one more board
+   * after the person pressed Stop. Structural, like the agent layer's
+   * `Cancellation` — which satisfies it — because this layer has no
+   * `AbortSignal` to name.
+   */
+  signal?: ScanCancellation,
 ) => Promise<{ ok: true; rows: unknown; landed?: string } | { ok: false; reason: string }>
+
+/** Anything with an `aborted` flag, and optionally a way to hear the abort. */
+export type ScanCancellation = {
+  readonly aborted: boolean
+  readonly onAbort?: (fn: () => void) => void
+}
 
 /** How many pages of one board a single read follows before handing back a `next`. */
 export const BOARD_MAX_PAGES = 10
@@ -360,14 +374,13 @@ const NEXT_TEXT =
   /^(?:(?:next(?:\s+(?:page|\d+))?|more\s+(?:results|jobs|listings)|older(?:\s+(?:posts|jobs|entries))?)\s*(?:[›»>→]|\.{2,3}|…)?|[›»>→]{1,2})$/i
 const PREVIOUS_TEXT = /^(?:[‹«<←]|prev(?:ious)?\b.*|newer\b.*|first\b.*|last\b.*)$/i
 
-/** A page's identity for "have I read this one": host, path and query; never the fragment. */
+/**
+ * A page's identity for "have I read this one": `pageIdentity`, the listing
+ * half of the rule `postingIdentity` applies to postings — host without `www.`,
+ * sorted query without analytics, and the fragment only when it is a route.
+ */
 export function pageKey(url: string): string {
-  try {
-    const parsed = new URL(url.split('#')[0] ?? url)
-    return `${parsed.hostname.toLowerCase().replace(/^www\./, '')}${parsed.pathname.replace(/\/+$/, '')}${parsed.search}`
-  } catch {
-    return url
-  }
+  return pageIdentity(url) ?? url
 }
 
 /** The listing a page belongs to: its path with a trailing `/page/3` or `/3` taken off. */

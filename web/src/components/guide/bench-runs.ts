@@ -161,8 +161,7 @@ export type Payload = {
 const PAYLOAD = report as unknown as Payload
 const ROWS = PAYLOAD.report ?? []
 
-/** When the published payload was measured, and under what setup. */
-export const RAN_AT: string = PAYLOAD.ranAt ?? ''
+/** Under what setup the published payload was measured. */
 export const SETUP = PAYLOAD.setup
 /** How many passes the payload was built from; `null` when it does not say. */
 export const RUNS: number | null = typeof PAYLOAD.runs === 'number' ? PAYLOAD.runs : null
@@ -275,7 +274,9 @@ export type RowTelemetry = {
 }
 
 const readSpread = (raw: RawSpread | undefined): Spread | null =>
-  raw === undefined || raw.mean === null ? null : { mean: raw.mean, sd: raw.sd ?? raw.stddev ?? null }
+  raw === undefined || raw.mean === null
+    ? null
+    : { mean: raw.mean, sd: raw.sd ?? raw.stddev ?? null }
 
 /**
  * The noise for one row, from wherever the payload put it.
@@ -331,10 +332,13 @@ export function rowTelemetry(model: string, condition: string): RowTelemetry {
 const DASH = '—'
 
 /** 99,884 → "100k"; 850 → "850". Prompt sizes are only meaningful to a digit or two. */
-const tokens = (n: number): string => (n >= 10_000 ? `${String(Math.round(n / 1000))}k` : String(Math.round(n)))
+const tokens = (n: number): string =>
+  n >= 10_000 ? `${String(Math.round(n / 1000))}k` : String(Math.round(n))
 
 export const costText = (cost: RowCost | null): string =>
-  cost === null ? DASH : `${cost.rounds.toFixed(1)} rounds · ${tokens(cost.promptPerConversation)} tokens`
+  cost === null
+    ? DASH
+    : `${cost.rounds.toFixed(1)} rounds · ${tokens(cost.promptPerConversation)} tokens`
 
 /**
  * "81 ± 1.2 · 3 unstable". A one-run payload has no band, and `noiseOf` has
@@ -343,7 +347,10 @@ export const costText = (cost: RowCost | null): string =>
  */
 export const noiseText = (noise: RowNoise | null): string => {
   if (noise === null) return DASH
-  const band = noise.clean.sd === null ? noise.clean.mean.toFixed(1) : `${noise.clean.mean.toFixed(1)} ± ${noise.clean.sd.toFixed(1)}`
+  const band =
+    noise.clean.sd === null
+      ? noise.clean.mean.toFixed(1)
+      : `${noise.clean.mean.toFixed(1)} ± ${noise.clean.sd.toFixed(1)}`
   return `${band} · ${String(noise.unstable.length)} unstable`
 }
 

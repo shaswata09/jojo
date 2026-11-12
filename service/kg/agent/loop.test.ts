@@ -1343,6 +1343,67 @@ describe('the long-conversation harness', () => {
     expect(summary?.content).toContain('Rice')
   })
 
+  /*
+   * Stop pressed while the summary is being written. The summariser is handed
+   * the run's signal so it can cancel its request, and whatever comes back is
+   * not kept: `compacted` is what the caller persists over the thread, and a
+   * summary of an abandoned turn must not replace the exchanges it covers.
+   */
+  it('hands the summariser the run’s Stop, and keeps nothing it wrote after Stop', async () => {
+    const { llm } = seeing()
+    const signal = { aborted: false }
+    let given: unknown
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: long(),
+      prompt: 'and now?',
+      onEvent: () => {},
+      window: RESERVED_FOR_REPLY + 2_000,
+      tools: ['memory.overview'],
+      signal,
+      // An earlier summary, so `compact` has something to return even when its
+      // own call is discarded — the loop's check is what must hold here.
+      context: 'They asked about Baylor first.',
+      summariser: {
+        ask: async (_messages, s) => {
+          given = s
+          signal.aborted = true
+          return { ok: true, text: 'They asked about Rice.', toolCalls: [], finishReason: 'stop' }
+        },
+      },
+    })
+    expect(given).toBe(signal)
+    expect(run.compacted).toBeUndefined()
+    expect(run.stopped).toBe('aborted')
+  })
+
+  it('hands the chooser the run’s Stop, and ignores a pick that arrives after it', async () => {
+    const { seen, llm } = seeing()
+    const signal = { aborted: false }
+    let given: unknown
+    const run = await runAgent({
+      host: host(),
+      llm,
+      history: [],
+      prompt: 'add an application to Rice',
+      onEvent: () => {},
+      window: 8_000,
+      retrieve: { carried: null },
+      signal,
+      chooser: {
+        ask: async (_messages, s) => {
+          given = s
+          signal.aborted = true
+          return { ok: true, text: '{"tools":["application.create"]}', toolCalls: [], finishReason: 'stop' }
+        },
+      },
+    })
+    expect(given).toBe(signal)
+    expect(seen).toHaveLength(0)
+    expect(run.stopped).toBe('aborted')
+  })
+
   it('does not summarise, or record, a request that could not be sent', async () => {
     /*
      * Overflow: the tool schemas alone exceed the window. History is dropped

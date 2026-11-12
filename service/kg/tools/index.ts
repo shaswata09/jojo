@@ -52,6 +52,7 @@ import {
   proposalDiscard,
   proposalFail,
   proposalRaise,
+  proposalReadingSet,
   proposalClear,
   proposalSweep,
 } from './pipeline'
@@ -61,6 +62,7 @@ import {
   profileBackgroundAdd,
   profileBackgroundUpdate,
   profileBackgroundDelete,
+  profileBackgroundImport,
   profileMatchTermAdd,
   profileMatchTermRemove,
   profilePreferenceSet,
@@ -205,6 +207,7 @@ export const TOOLS = {
   'claim.add': claimAdd,
   'profile.background.update': profileBackgroundUpdate,
   'profile.background.delete': profileBackgroundDelete,
+  'profile.background.import': profileBackgroundImport,
 
   'fit.reading.set': fitReadingSet,
   'fit.reading.clear': fitReadingClear,
@@ -226,6 +229,7 @@ export const TOOLS = {
   'pipeline.proposal.approve': proposalApprove,
   'pipeline.proposal.discard': proposalDiscard,
   'pipeline.proposal.fail': proposalFail,
+  'pipeline.proposal.reading.set': proposalReadingSet,
   'pipeline.proposal.clear': proposalClear,
   'pipeline.proposal.sweep': proposalSweep,
   'pipeline.run.record': pipelineRunRecord,

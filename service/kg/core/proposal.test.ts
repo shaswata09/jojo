@@ -30,6 +30,7 @@ import {
   postingKey,
   postingPreview,
   proposalDetail,
+  scoutReading,
   shouldOfferShutdown,
 } from './proposal'
 import { PIPELINE_KINDS, PROPOSAL_STATUSES } from './model'
@@ -496,5 +497,46 @@ describe('finding the job an approved scout suggestion saved', () => {
   it('does not match an empty role or address to anything', () => {
     expect(jobFromApproval(matchSave('   '), [{ id: 'm9', role: '' }], [])).toBeNull()
     expect(jobFromApproval(postingSave(''), [], [{ id: 'p9', url: '' }])).toBeNull()
+  })
+})
+
+describe('what a suggested posting’s page said', () => {
+  it('reads back a stored reading, keeping only the fields it knows', () => {
+    const read = scoutReading(
+      JSON.stringify({
+        ok: true,
+        fields: { org: 'Rice University', role: '  Assistant Professor ', salary: 'x', comp: 7 },
+        keywords: [{ id: 'kw_1', name: 'Research' }, { id: 'kw_2' }, 'nope'],
+        missing: ['deadline', 3],
+        fileId: 'file_1',
+        via: 'extension',
+        readAt: '2026-11-11T10:00:00.000Z',
+      }),
+    )
+    expect(read).toEqual({
+      ok: true,
+      fields: { org: 'Rice University', role: 'Assistant Professor' },
+      keywords: [{ id: 'kw_1', name: 'Research' }],
+      missing: ['deadline'],
+      fileId: 'file_1',
+      via: 'extension',
+      readAt: '2026-11-11T10:00:00.000Z',
+    })
+  })
+
+  it('keeps a failed read’s sentence and the page it still kept', () => {
+    expect(scoutReading(JSON.stringify({ ok: false, reason: 'Sign in first.', fileId: 'f' }))).toEqual({
+      ok: false,
+      reason: 'Sign in first.',
+      fileId: 'f',
+      readAt: '',
+    })
+  })
+
+  it('shows nothing for a reading that is absent or does not parse', () => {
+    expect(scoutReading(undefined)).toBeNull()
+    expect(scoutReading('{oops')).toBeNull()
+    expect(scoutReading('[1]')).toBeNull()
+    expect(scoutReading(JSON.stringify({ fields: {} }))).toBeNull()
   })
 })

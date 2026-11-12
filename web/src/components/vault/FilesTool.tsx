@@ -14,7 +14,7 @@ import { VaultSearch, VaultToolbar } from '@/components/vault/VaultToolbar'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { FileRow } from '@/components/vault/files/FileRow'
 import type { EditableField } from '@/components/vault/files/FileRow'
-import { sortDrop } from '@/components/vault/files/intake'
+import { useFileIntake } from '@/components/vault/files/use-file-intake'
 import { UnfiledChip } from '@/components/vault/files/UnfiledChip'
 import { unfiledCount, visibleFiles } from '@/components/vault/files/filters'
 import { useFileDelete } from '@/lib/use-file-delete'
@@ -22,16 +22,15 @@ import { useFileDrop } from '@/components/vault/files/use-file-drop'
 import { FILE_BUCKETS } from '@/data/vault'
 import type { FileBucket, VaultFile } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
-import { kindOfFile, sizeLabel } from '@/lib/files'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
 import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { cn } from '@/lib/utils'
-import { report } from '@/lib/analytics'
 import { readableDocuments } from '@jojo/service/core/twin'
 import { useGraph } from '@jojo/service/react/kg-context'
 import { requestProfileRead } from '@jojo/service/react/profile-read-request'
 import { useModelSettings } from '@/lib/model-settings-context'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * Read-later files, in buckets.
@@ -107,7 +106,7 @@ export function FilesTool({ focus }: { focus?: string }) {
 
   // The keyword half of a delete moved into `useFileDelete` with the rest of it.
   const { matches, selected: selectedLabels, clearSelected } = useLabels()
-  const { files, addFile, updateFile, removeFile } = useVault()
+  const { files, updateFile } = useVault()
   // Named for the row's link, the toast and the search; the picker reads the
   // list itself.
   const { byId } = useApplications()
@@ -163,129 +162,20 @@ export function FilesTool({ focus }: { focus?: string }) {
     }
   }, [openId, blobs])
 
-  const addFiles = (list: FileList | null) => {
-    // `blobs.has` so a record left without its document — a write refused on
-    // quota — is refillable rather than rejected as a duplicate of itself.
-    const { total, picked, fresh, refill, folders, skipped } = sortDrop(list, files, (f) =>
-      blobs.has(f.id),
-    )
-    if (total === 0) return
-
-    if (picked.length === 0) {
-      toast({
-        title: folders === 1 ? 'That looks like a folder' : 'Those look like folders',
-        description:
-          'jojo files documents one at a time. Open the folder and drop the files in it.',
-      })
-      return
-    }
-
-    // Refills first: they add no rows, so the toast below can still speak about
-    // what was newly filed without counting them twice.
-    for (const { file, record } of refill) {
-      void blobs.put(record.id, file).then((stored) => {
-        toast(
-          stored
-            ? {
-                title: `${file.name} is attached again`,
-                description: 'The row was already here without its document. It has one now.',
-              }
-            : {
-                title: `${file.name} still could not be saved`,
-                description:
-                  'This browser refused to store it again — its storage is probably still full.',
-                tone: 'danger',
-              },
-        )
-      })
-    }
-
-    const added: string[] = []
-    for (const file of fresh) {
-      const record = addFile({
-        name: file.name,
-        kind: kindOfFile(file.name, file.type),
-        bucket: target,
-        size: sizeLabel(file.size),
-      })
-      added.push(record.id)
-      // Per file, inside the loop: dropping six documents at once is six
-      // filings, and counting the gesture instead of the documents would make a
-      // bulk drop look like a single use of the feature.
-      report('vault_item_added', { kind: 'file' })
-      // Not awaited, so the row appears immediately — a 5 MB write measured 15 ms
-      // but a slow disk or a full quota can take much longer, and blocking the
-      // drop on it would make filing feel broken.
-      //
-      // The RESULT is not discarded, though. It used to be, and the toast said
-      // "added" either way: a write that failed on quota left a row on screen
-      // naming a document that was never stored, which is the failure this whole
-      // feature exists to end. A refusal now says so.
-      void blobs.put(record.id, file).then((stored) => {
-        if (stored) return
-        toast({
-          title: `${file.name} was filed, but not saved`,
-          description:
-            'The row is here, but this browser refused to store the document — usually because its storage is full. Free some space and drop the same file in again; it will attach to this row rather than making a second one.',
-          tone: 'danger',
-        })
-      })
-    }
-
-    if (fresh.length === 0 && refill.length === 0) {
-      toast({
-        title: skipped === 1 ? 'That file is already here' : 'Those files are already here',
-        description: 'A file of the same name is already in the vault.',
-      })
-      return
-    }
-
-    // A file added while a keyword filter is up carries no keywords yet, so it
-    // is filed correctly and rendered nowhere. Saying "added" over an unchanged
-    // list is how a prototype gets accused of dropping writes.
-    const hidden = selectedLabels.size > 0
-    const named = fresh.length === 1 ? fresh[0].name : `${fresh.length} files`
-    toast({
-      title: `${named} added`,
-      description: hidden
-        ? `Filed under ${target} — hidden while the keyword filter is on.`
-        : `Filed under ${target} and saved in this browser. Nothing was uploaded anywhere.`,
-      action: {
-        label: 'Undo',
-        onClick: () =>
-          added.forEach((id) => {
-            removeFile(id)
-            // The second place a record can go away, and it needs the same
-            // treatment as `onDelete`: undoing an add that has already stored
-            // its bytes would otherwise leave them in IndexedDB with no record
-            // pointing at them and no way to reach them again.
-            void blobs.remove(id)
-          }),
-      },
-    })
-    if (skipped > 0) {
-      toast({
-        title: `${skipped} skipped`,
-        description: 'A file of the same name was already in the vault.',
-      })
-    }
-    // Said even when the rest of the drop landed. A mixed drop that silently
-    // dropped the folders would leave the user counting rows and not finding
-    // the number they expected.
-    if (folders > 0) {
-      toast({
-        title: folders === 1 ? '1 folder skipped' : `${folders} folders skipped`,
-        description:
-          'jojo files documents one at a time. Open the folder and drop the files in it.',
-      })
-    }
-  }
+  // The shared intake (`use-file-intake.ts`) — the Profile page files through
+  // it too. A file added while a keyword filter is up carries no keywords yet,
+  // so it is filed correctly and rendered nowhere; the toast says so.
+  const addFiles = useFileIntake({
+    bucket: target,
+    hidden: selectedLabels.size > 0,
+    reportAdds: true,
+  })
 
   const { dragging, onDragEnter, onDragOver, onDragLeave, onDrop } = useFileDrop(addFiles)
 
   const onRename = (file: VaultFile, next: string) => {
     const before = file.name
-    updateFile(file.id, { name: next })
+    if (announceRefusal(updateFile(file.id, { name: next }), toast)) return
     setEditing(null)
     toast({
       title: `${next} renamed`,
@@ -299,7 +189,7 @@ export function FilesTool({ focus }: { focus?: string }) {
 
   const onNote = (file: VaultFile, next: string) => {
     const before = file.note
-    updateFile(file.id, { note: next || undefined })
+    if (announceRefusal(updateFile(file.id, { note: next || undefined }), toast)) return
     setEditing(null)
     toast({
       title: `${file.name} ${next ? 'note saved' : 'note cleared'}`,
@@ -325,7 +215,7 @@ export function FilesTool({ focus }: { focus?: string }) {
    */
   const onFileUnder = (file: VaultFile, applicationIds: string[]) => {
     const before = file.applicationIds
-    updateFile(file.id, { applicationIds })
+    if (announceRefusal(updateFile(file.id, { applicationIds }), toast)) return
     setEditing(null)
     const chosen = applicationIds.map((id) => byId.get(id)).filter((a) => a !== undefined)
     toast({
@@ -347,7 +237,7 @@ export function FilesTool({ focus }: { focus?: string }) {
 
   const onMove = (file: VaultFile, next: FileBucket) => {
     const before = file.bucket
-    updateFile(file.id, { bucket: next })
+    if (announceRefusal(updateFile(file.id, { bucket: next }), toast)) return
     toast({
       title: `${file.name} moved`,
       description: `Filed under ${next}${bucket !== 'all' && bucket !== next ? ` — out of the ${bucket} list you are looking at` : ''}.`,

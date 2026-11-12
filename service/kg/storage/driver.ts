@@ -76,6 +76,18 @@ export type Rows = {
   edges: readonly StoredRow[]
   meta: readonly MetaRow[]
   ops: readonly StoredRow[]
+  /**
+   * The key of each `ops` row, index for index — set by `readAll`, ignored by
+   * every writer.
+   *
+   * `ops` is out-of-line, so a value never names its own key, and the boot
+   * prune used to `clear()` the store and write back what it had read. A row
+   * another tab appended between that read and the prune was in neither half
+   * and was destroyed. With the keys, the prune deletes and rewrites only the
+   * rows it actually read. Optional so a driver that cannot say stays valid;
+   * the prune falls back to the clear for it.
+   */
+  opsKeys?: readonly (string | number)[]
 }
 
 export const emptyRows = (): Rows => ({ nodes: [], edges: [], meta: [], ops: [] })

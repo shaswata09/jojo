@@ -119,6 +119,29 @@ function repin(): void {
   if (day === TODAY) return
   TODAY = day
   TODAY_PARTS = partsOfDay(day)
+  // Copied before iterating, so a listener that unsubscribes itself is safe.
+  // eslint-disable-next-line unicorn/no-useless-spread
+  for (const listener of [...dayListeners]) listener()
+}
+
+const dayListeners = new Set<() => void>()
+
+/**
+ * Told when the pin moves — at the local midnight, or on coming back to a tab
+ * that slept through it.
+ *
+ * This is what lets something REPAINT on the turn, which the pin alone never
+ * did: `webHost.onDayTurn` hands it to `KgProvider`, whose `today` (and every
+ * projection measured against it — `daysAgo`, the overdue buckets) was taken
+ * once per provider render and so stayed on Monday all of Tuesday in a tab
+ * nobody reloaded. Returns an unsubscribe, the shape `useSyncExternalStore`
+ * wants.
+ */
+export function onDayTurn(listener: () => void): () => void {
+  dayListeners.add(listener)
+  return () => {
+    dayListeners.delete(listener)
+  }
 }
 
 /**

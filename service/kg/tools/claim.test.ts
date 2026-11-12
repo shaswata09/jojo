@@ -163,3 +163,24 @@ describe('what it will not relate', () => {
     expect(relate(w, w.paper, 'is evidence of', gone).ok).toBe(false)
   })
 })
+
+describe('deleting one end of a claim', () => {
+  it('deletes the claim with it, and undo brings both back', () => {
+    const w = world()
+    const out = relate(w, w.paper, 'is evidence of', w.skill)
+    expect(out.ok).toBe(true)
+    const claim = out.ok ? out.output : ('' as NodeId)
+
+    const del = w.runtime.run('profile.background.delete', { id: w.skill } as never)
+    if (!del.ok) throw new Error(del.errors.map((e) => e.message).join('; '))
+
+    // Was: the claim survived with its SUBJECT edge and no OBJECT — half a
+    // fact nothing could show or delete.
+    expect(w.memory().node(claim)).toBeUndefined()
+    expect(w.memory().ofType('claim')).toEqual([])
+
+    w.runtime.undo()
+    expect(w.memory().node(claim)).toBeDefined()
+    expect(w.memory().out(claim, 'OBJECT')[0]?.to).toBe(w.skill)
+  })
+})

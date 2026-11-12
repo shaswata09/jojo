@@ -27,6 +27,9 @@
  * the second platform discovers it as a crash at import time.
  */
 
+import type { Instant } from '../core/model'
+import { dayOf } from '../core/project'
+
 /** Which direction the user asked for. `redo` is ⇧⌘Z on web, Edit ▸ Redo on desktop. */
 export type UndoDirection = 'undo' | 'redo'
 
@@ -102,10 +105,42 @@ export interface Host {
    * over a single-process store is the case that can still say no.
    */
   onResume?(run: () => void): () => void
+
+  /**
+   * The local calendar day has turned — at midnight, or on waking a machine
+   * that slept through it.
+   *
+   * `KgProvider` measures every projection against `today`, and without a
+   * signal it read that only when it happened to re-render, which is rarely:
+   * a tab opened on Monday called Tuesday's reminders "tomorrow" all Tuesday.
+   * The graph owns state this event acts on (`daysAgo` and every bucket are
+   * projected against it), which is the bar for a member here.
+   *
+   * Optional: a host that omits it keeps the old behaviour, and the provider
+   * still reads the clock on every render it does get. The adapter owns the
+   * mechanism — a timer re-armed at local midnight plus a check on coming
+   * back to the app — because only the platform knows when it was asleep.
+   */
+  onDayTurn?(run: () => void): () => void
 }
 
 /** One shared no-op unsubscribe, so a headless host allocates nothing per mount. */
 const unsubscribe = () => {}
+
+
+/**
+ * The day as an external store: the host's turn signal, and the clock.
+ *
+ * Pulled out of the component so it can be held to its contract without a
+ * tree (no mount tests in this repo). A host with no `onDayTurn` subscribes
+ * to nothing, which is exactly the behaviour every host had before.
+ */
+export function daySource(host: Host, now: () => Instant) {
+  return {
+    subscribe: (notify: () => void) => host.onDayTurn?.(notify) ?? unsubscribe,
+    getSnapshot: () => dayOf(now()),
+  }
+}
 
 /**
  * The host that supplies nothing.

@@ -8,12 +8,17 @@
  * point: a tool added to `TOOLS` is callable by a model, and listed over MCP, on
  * the same day, without anybody remembering to update a manifest.
  *
- * WHAT IS IN IT. Every write tool plus every read. Internal tools
- * are included, and that is a change of position worth stating: `Tool.internal`
- * means "hidden from the palette and the inspector", which is a claim about
- * screen space, not about safety — `org.ensure` is exactly the kind of thing a
- * model composing a create ought to be able to reach. Nothing is hidden from the
- * catalog. What IS marked is destructiveness, so the caller can decide.
+ * WHAT IS IN IT. Every write tool plus every read, less the app's own
+ * bookkeeping. `Tool.internal` means "hidden from the palette and the
+ * inspector", which is a claim about screen space, not about safety —
+ * `org.ensure` is exactly the kind of thing a model composing a create ought to
+ * be able to reach, so internal tools are in. `Tool.catalogued: false` is the
+ * claim about safety: saving a transcript, storing a compaction summary,
+ * raising or answering a pipeline's card, logging a round. Those are left out
+ * HERE, and that is enough, because every door resolves names through this
+ * list — the model's tool list, `callTool` (so the loop's executor), and MCP's
+ * `tools/list` and `tools/call`. The app runs them through `runtime.run`, which
+ * never looks at the catalog.
  *
  * THE NAME PROBLEM. Tool names here are `domain.noun.verb` and have been since
  * the registry was written. OpenAI-compatible servers constrain function names
@@ -66,6 +71,13 @@ export type CatalogEntry = {
   /** False for the admin pair; every other write can be taken back. */
   readonly undoable: boolean
   readonly parameters: JsonSchema
+  /**
+   * True when THESE arguments need confirming although the tool is not
+   * `destructive` as a whole. See `Tool.confirms`; absent for almost every tool.
+   */
+  readonly confirmsFor?: (input: unknown) => boolean
+  /** The sentence the model reads about when that happens. */
+  readonly confirmsBecause?: string
 }
 
 /**
@@ -107,8 +119,31 @@ function buildEntry(tool: AnyTool | ReadTool<any>, effect: Effect): CatalogEntry
     destructive,
     undoable: effect !== 'read' && (tool as AnyTool).undoable !== false,
     parameters: toJsonSchema(tool.input.meta),
+    ...confirmsOf(tool),
   }
 }
+
+/** `Tool.confirms`, lifted onto the entry. A read never has it. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function confirmsOf(tool: AnyTool | ReadTool<any>): Pick<CatalogEntry, 'confirmsFor' | 'confirmsBecause'> {
+  const confirms = (tool as AnyTool).confirms
+  if (confirms === undefined) return {}
+  return {
+    // Arguments arrive from a model as `unknown`; a non-object cannot name the
+    // fields the predicate is about, and `runtime.check` refuses it later anyway.
+    confirmsFor: (input) =>
+      typeof input === 'object' && input !== null && confirms.when(input as never),
+    confirmsBecause: confirms.because,
+  }
+}
+
+/**
+ * Whether this call has to be confirmed: the tool's own flag, or the per-call
+ * widening for the fields that need it. The one predicate the loop's approval
+ * gate asks.
+ */
+export const needsConfirming = (entry: CatalogEntry, input: unknown): boolean =>
+  entry.destructive || (entry.confirmsFor?.(input) ?? false)
 
 /**
  * Reads first, deliberately.
@@ -120,7 +155,9 @@ function buildEntry(tool: AnyTool | ReadTool<any>, effect: Effect): CatalogEntry
  */
 export const CATALOG: readonly CatalogEntry[] = [
   ...Object.values(READS).map((r) => buildEntry(r, 'read')),
-  ...Object.values(TOOLS).map((t) => buildEntry(t as AnyTool, (t as AnyTool).effect)),
+  ...(Object.values(TOOLS) as AnyTool[])
+    .filter((t) => t.catalogued !== false)
+    .map((t) => buildEntry(t, t.effect)),
 ]
 
 const BY_WIRE = new Map(CATALOG.map((e) => [e.wireName, e]))
@@ -184,6 +221,8 @@ export function describeEntry(entry: CatalogEntry): string {
           ? 'Destructive: this removes a record. Confirm with the user before calling it.'
           : 'Destructive: this discards something the user cannot easily get back. Confirm with the user before calling it.',
     )
+  } else if (entry.confirmsBecause !== undefined) {
+    parts.push(entry.confirmsBecause)
   }
   return parts.join(' ')
 }
@@ -216,7 +255,9 @@ export const toMcpSpec = (entry: CatalogEntry): McpToolSpec => ({
   // update, and claiming it for a create would be a lie a client may act on.
   annotations: {
     readOnlyHint: entry.effect === 'read',
-    destructiveHint: entry.destructive,
+    // A tool that is destructive only for some arguments is hinted as
+    // destructive: a client deciding whether to ask cannot see which call it is.
+    destructiveHint: entry.destructive || entry.confirmsFor !== undefined,
     idempotentHint: entry.effect === 'read' || entry.effect === 'update',
   },
 })

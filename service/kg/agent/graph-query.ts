@@ -30,8 +30,8 @@ import { NODE_TYPES, RELS, TIMELINE_KIND_VALUES } from '../core/model'
 import type { ISODate, NodeId, NodeType, Rel, StoredNode } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import { s } from '../core/schema'
-import { labelOf, render } from './queries'
-import type { AgentRecord } from './queries'
+import { labelOf, render } from './records'
+import type { AgentRecord } from './records'
 
 /* -------------------------------- the shape ------------------------------- */
 

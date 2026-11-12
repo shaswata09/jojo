@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { focusLine } from '@jojo/service/agent/focus'
+import type { Cancellation } from '@jojo/service/agent/loop'
 import type { Application, NodeId } from '@jojo/service/core/model'
 import type { ChatMessage } from '@jojo/service/core/model-server'
 import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
@@ -88,7 +89,17 @@ export function useConversation({
     // Minimal reasoning: picking tools and summarising are mechanical, and a
     // reasoning summariser spent close to two minutes on one compaction.
     const helper = { ...settings, thinking: helperThinking(settings.thinking ?? DEFAULT_THINKING) }
-    return { ask: (messages: readonly ChatMessage[]) => agentTurn(helper, messages, []) }
+    return {
+      // The run's Stop, so a chooser or summariser call nobody is waiting for
+      // is cancelled rather than run to its timeout.
+      ask: (messages: readonly ChatMessage[], signal?: Cancellation) => {
+        const controller = new AbortController()
+        signal?.onAbort?.(() => {
+          controller.abort()
+        })
+        return agentTurn(helper, messages, [], controller.signal)
+      },
+    }
   }, [settings])
 
   const convert = useReadDocument()

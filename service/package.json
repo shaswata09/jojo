@@ -75,8 +75,8 @@
     "oxlint": "^1.75.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.13",
-    "typescript": "~5.9.2",
-    "vitest": "^4.0.0"
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@noble/ciphers": "^2.3.0",

@@ -391,6 +391,34 @@ describe('recordsIn — the ledger without a model', () => {
     ])
   })
 
+  /*
+   * The largest reads are the ones `renderOutcome` cuts, and its banner sits
+   * OUTSIDE the JSON — as does the loop's own suffix ("You have one step
+   * left…", a stuck nudge). `JSON.parse` failed on all of them, so exactly the
+   * results with the most records yielded none.
+   */
+  it('reads the records out of a truncated result and one carrying the loop’s suffix', () => {
+    const rows = Array.from({ length: 60 }, (_, i) =>
+      record(`app:${String(i)}`, `Employer ${String(i)}`, { note: 'x'.repeat(80) }),
+    )
+    const cut = `${page(...rows).slice(0, 3000)}\n\n[Truncated at 3000 characters. Narrow the search.]`
+    const fromCut = recordsIn([result(cut)])
+    expect(fromCut.length).toBeGreaterThan(10)
+    expect(fromCut[0]).toEqual({ id: 'app:0', label: 'Employer 0' })
+    // Never a half record: the last one listed is whole.
+    expect(fromCut.every((e) => /^Employer \d+$/.test(e.label))).toBe(true)
+
+    const suffixed = `${page(record('app:9', 'Rice'))}\n\nYou have one step left. Answer now with what you have.`
+    expect(recordsIn([result(suffixed)])).toEqual([{ id: 'app:9', label: 'Rice' }])
+  })
+
+  it('reads every id off a write that returned several', () => {
+    expect(recordsIn([result('Files added — CV, Statement (ids: file:1, file:2)')])).toEqual([
+      { id: 'file:1', label: 'Files added — CV, Statement' },
+      { id: 'file:2', label: 'Files added — CV, Statement' },
+    ])
+  })
+
   it('ignores a result that is not JSON, and never throws', () => {
     expect(
       recordsIn([result('Rice University — Interview'), result('{not json'), result('')]),

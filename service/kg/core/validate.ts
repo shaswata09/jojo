@@ -50,6 +50,7 @@ import {
   MAX_CHECKLIST_TEXT,
   MAX_NOTE_SPANS,
   MAX_POSTING_SUMMARY,
+  MAX_PROPOSAL_READING,
   MAX_STICKY_TEXT,
   MAX_REQUIREMENT_TEXT,
   MAX_REQUIREMENTS,
@@ -65,7 +66,7 @@ import {
   TIMELINE_KIND_VALUES,
   URGENCY_VALUES,
 } from './model'
-import { edgeId, parseNodeId, typeOfId } from './ref'
+import { edgeId, parseNodeId, typeOfId, uniqueSlug } from './ref'
 import { noteSpanShape } from './note-format'
 import { stageDatesShape } from './stage-dates'
 import type { Schema } from './schema'
@@ -546,6 +547,7 @@ export const NODE_PROP_SCHEMAS = {
     decidedAt: s.optional(s.instant({ label: 'Decided at' })),
     error: s.optional(s.string({ label: 'Error' })),
     swept: s.optional(s.boolean({ label: 'Swept' })),
+    reading: s.optional(s.string({ max: MAX_PROPOSAL_READING, label: 'Reading' })),
   }),
   profile: s.object({
     text: profileTextSchema,
@@ -706,6 +708,8 @@ export function validateEdge(row: unknown): Validated<StoredEdge> {
 
 /* -------------------------------- the batch ------------------------------- */
 
+const APPEARED_TWICE = 'Appeared twice; the later one was kept.'
+
 export type ValidatedRows = {
   nodes: StoredNode[]
   edges: StoredEdge[]
@@ -806,6 +810,47 @@ function withoutSalvageable(row: unknown): { row: unknown; type: NodeType } | nu
   return { row: { ...row, props: nextProps }, type: type as NodeType }
 }
 
+/**
+ * The salvage path's answer to two records of one type sharing a slug.
+ *
+ * `[type, slug]` is a unique index in IndexedDB (`by-type-slug`), so a backup
+ * holding two keywords slugged 'remote' — a hand-merged file, or one written
+ * before the rule was kept everywhere — made the store refuse the WHOLE restore
+ * with a ConstraintError. The first keeps its address; each later one takes the
+ * next free `-n`, the same way `mintSlug` would have, and is reported. Edges
+ * join ids, not slugs, so nothing else moves.
+ */
+function readdressed(nodes: readonly StoredNode[], skipped: Diagnostic[]): StoredNode[] {
+  const taken = new Map<NodeType, Set<string>>()
+  for (const node of nodes) {
+    if (node.type === 'profile') continue
+    let slugs = taken.get(node.type)
+    if (!slugs) taken.set(node.type, (slugs = new Set()))
+    slugs.add(node.props.slug)
+  }
+  const kept = new Map<NodeType, Set<string>>()
+  return nodes.map((node) => {
+    if (node.type === 'profile') return node
+    let mine = kept.get(node.type)
+    if (!mine) kept.set(node.type, (mine = new Set()))
+    const slug = node.props.slug
+    if (!mine.has(slug)) {
+      mine.add(slug)
+      return node
+    }
+    // Free against EVERY slug of this type in the file, not only the ones seen
+    // so far — a later record may already be called 'remote-2'.
+    const all = taken.get(node.type) ?? new Set<string>()
+    const next = uniqueSlug(slug, all)
+    all.add(next)
+    mine.add(next)
+    skipped.push(
+      diagnostic('nodes', node.id, `Shared the address '${slug}' with another ${node.type}; it is now '${next}'.`),
+    )
+    return { ...node, props: { ...node.props, slug: next } } as StoredNode
+  })
+}
+
 export function validateRows(
   nodeRows: readonly unknown[],
   edgeRows: readonly unknown[],
@@ -845,11 +890,11 @@ export function validateRows(
     // come out of IndexedDB, so this only fires on an import or a merge — the
     // two paths where silently keeping one of two records is worst.
     if (byId.has(parsed.value.id)) {
-      skipped.push(diagnostic('nodes', parsed.value.id, 'Appeared twice; the later one was kept.'))
+      skipped.push(diagnostic('nodes', parsed.value.id, APPEARED_TWICE))
     }
     byId.set(parsed.value.id, parsed.value)
   }
-  nodes.push(...byId.values())
+  nodes.push(...(options.salvage === true ? readdressed([...byId.values()], skipped) : byId.values()))
 
   const seenEdge = new Set<string>()
   for (const row of edgeRows) {
@@ -869,6 +914,45 @@ export function validateRows(
   }
 
   return { nodes, edges, skipped }
+}
+
+/**
+ * What salvaging these rows will cost, in the person's terms.
+ *
+ * `restoreBackup` salvages: unreadable rows are dropped and the rest restored.
+ * Counted here so a confirmation can say so BEFORE the swap — "12 records"
+ * followed by a report of 9 after an operation with no undo is the loss being
+ * disclosed too late to decline.
+ *
+ * `records` and `links` were in the file and will not be restored; `changed`
+ * are restored with something stripped or re-addressed.
+ */
+export type RowLoss = { records: number; links: number; changed: number }
+
+export function lossOf(
+  nodeRows: readonly unknown[],
+  edgeRows: readonly unknown[],
+  checked: ValidatedRows,
+): RowLoss {
+  const kept = new Set(checked.nodes.map((n) => n.id))
+  const changed = new Set<string>()
+  for (const d of checked.skipped) {
+    // A kept record named in a diagnostic came back altered — except the twin
+    // of a duplicate id, which is a dropped ROW and already counted below.
+    if (d.store === 'nodes' && d.id !== null && kept.has(d.id) && d.message !== APPEARED_TWICE) {
+      changed.add(d.id)
+    }
+  }
+  return {
+    records: nodeRows.length - checked.nodes.length,
+    // Diagnostics, not a subtraction: a link listed twice under one id is the
+    // same link, and `validateRows` collapses it without a word.
+    links: Math.min(
+      checked.skipped.filter((d) => d.store === 'edges').length,
+      edgeRows.length - checked.edges.length,
+    ),
+    changed: changed.size,
+  }
 }
 
 /* ------------------------------- invariants ------------------------------- */

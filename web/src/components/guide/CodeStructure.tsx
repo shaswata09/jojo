@@ -108,18 +108,18 @@ export const SHAPE: DirRow[] = [
     lines: 41538,
     what: 'model, ids, schema, algebra, dates',
   },
-  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7502, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7919, what: 'transactions, journal, boot' },
   {
     dir: 'service/kg/tools',
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
     // clearing it — the two halves of a reading that survives a reload.
     // `tailor.ts` and its test: the one write behind the tailoring card.
-    files: 34,
-    tests: 10,
+    files: 36,
+    tests: 12,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one — and again when
     // `vault.ts` grew the two verbs that name one person on one job.
-    lines: 11681,
+    lines: 12509,
     what: '95 named write operations',
   },
   {
@@ -138,8 +138,8 @@ export const SHAPE: DirRow[] = [
     // application a conversation is about, so "this one" has a referent.
     // `record-query.ts` and its test: filter, sort, group and add up over a
     // record's stored and derived fields, for `memory.list`.
-    files: 72,
-    tests: 35,
+    files: 75,
+    tests: 37,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
     // handset — which has no Python and cannot install an extension — reads
@@ -153,14 +153,14 @@ export const SHAPE: DirRow[] = [
     // keywords to the model and match the reply back onto the ones that exist.
     // Re-measured 2026-10-22, when `memory.list` became a query tool:
     // `record-query.ts` and its test, and the window-sized result cap.
-    lines: 45577,
+    lines: 45648,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
     dir: 'service/kg/storage',
     files: 13,
     tests: 4,
-    lines: 2963,
+    lines: 3118,
     what: 'the port, and no platform',
   },
   {
@@ -178,12 +178,12 @@ export const SHAPE: DirRow[] = [
     // `jobs.ts`, its test, `jobs-context.ts` and `jobs-provider.tsx`: the
     // registry above the router that makes a job outlive the screen that
     // asked for it — `agent-runs.ts`'s argument, generalised.
-    files: 56,
-    tests: 14,
+    files: 57,
+    tests: 15,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 12038,
+    lines: 12622,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -221,9 +221,12 @@ export const SHAPE: DirRow[] = [
     // The chat dock: `chat-dock/ChatDock.tsx` and `ChatWindow.tsx`, and the two
     // pieces it shares with the Assistant page, `assistant/Transcript.tsx` and
     // `assistant/Composer.tsx`.
-    files: 319,
-    tests: 31,
-    lines: 57823,
+    // 323 with the Guide's FAQ page: `guide/GuideFaq.tsx`, the map it draws
+    // (`guide/faq-map.ts`, with a test that every path it names exists) and
+    // `diagrams/StackDiagram.tsx`.
+    files: 339,
+    tests: 38,
+    lines: 59265,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -266,9 +269,12 @@ export const SHAPE: DirRow[] = [
     // 165 with the chat dock: `chat-dock.ts` and its test (windows, layout,
     // persistence), `use-conversation.ts` (one conversation's wiring, shared
     // with the Assistant) and `sheet-presence.ts` (where the open record is).
-    files: 169,
-    tests: 63,
-    lines: 25622,
+    // 175 with `scout-reading.tsx`: each suggested posting read while it waits
+    // for an answer, so the card shows the employer, role and place, and
+    // approving does not open the page a second time.
+    files: 175,
+    tests: 68,
+    lines: 27274,
     what: 'web-only adapters and URL state',
   },
   {
@@ -298,7 +304,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 99
+export const WEB_TEST_FILES = 111
 
 type TestGroup = { title: string; files: string; body: string }
 

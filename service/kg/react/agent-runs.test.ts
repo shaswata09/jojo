@@ -646,6 +646,75 @@ describe('a run abandoned while a new one takes its place', () => {
     expect(cancelled).toHaveBeenCalledTimes(1)
   })
 
+  /*
+   * A run that threw recorded its error on screen and saved nothing, so on
+   * reload the question — and any writes its steps had already made — were
+   * gone from the conversation. The settle path now runs for a throw too.
+   */
+  it('saves a run that threw, question and error both', async () => {
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    runs.start({
+      threadId: A,
+      prompt: 'hello',
+      history: [],
+      llm: () => () => Promise.reject(new Error('socket closed')),
+      host,
+      onSettled,
+    })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalled())
+    const [threadId, entries] = onSettled.mock.calls[0]!
+    expect(threadId).toBe(A)
+    expect(entries.map((e: { kind: string }) => e.kind)).toEqual(['you', 'error'])
+  })
+
+  /*
+   * The registry remembers this session's copy of a conversation, and used to
+   * prefer it to the stored one. A conversation that moved on elsewhere —
+   * another tab, a restore — was then saved over with the stale copy plus the
+   * new turn, and `assistant.thread.set` is not undoable.
+   */
+  it('starts from the stored conversation when it has moved on since this session ran', async () => {
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    runs.start({ threadId: A, prompt: 'first', history: [], llm: () => echo, host, onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(1))
+
+    const stored = [
+      { kind: 'you' as const, id: 't0', text: 'first' },
+      { kind: 'answer' as const, id: 't1', text: 'answered:first' },
+      { kind: 'you' as const, id: 't2', text: 'asked in the other tab' },
+      { kind: 'answer' as const, id: 't3', text: 'answered there' },
+    ]
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => echo, host, entries: stored, onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(2))
+    const saved = (onSettled.mock.calls[1]![1] as { text?: string }[]).map((e) => e.text)
+    expect(saved).toEqual([
+      'first',
+      'answered:first',
+      'asked in the other tab',
+      'answered there',
+      'second',
+      'answered:second',
+    ])
+  })
+
+  it('keeps this session’s copy when the stored one is behind it', async () => {
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    runs.start({ threadId: A, prompt: 'first', history: [], llm: () => echo, host, onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(1))
+    // A caller whose save never landed hands back less than the registry has.
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => echo, host, entries: [], onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(2))
+    expect((onSettled.mock.calls[1]![1] as { text?: string }[]).map((e) => e.text)).toEqual([
+      'first',
+      'answered:first',
+      'second',
+      'answered:second',
+    ])
+  })
+
   it('never saves the replacement’s transcript under the abandoned run’s turn', async () => {
     const runs = createAgentRuns()
     const abandoned = heldModel()

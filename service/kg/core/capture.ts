@@ -56,17 +56,21 @@
  * NOT block subresource loads. An `<img>`, a `@font-face` or a
  * `background-image` inside a fully sandboxed frame fetches exactly as it would
  * anywhere else, and the phone's `originWhitelist` gates navigations rather than
- * fetches. There is no CSP on the viewer either.
+ * fetches.
  *
- * So the invariant is carried entirely by the capture: every subresource is
+ * So the invariant is carried first by the capture: every subresource is
  * inlined as a `data:` URI, and anything that cannot be inlined is emptied
  * rather than kept. `remoteRefCount` below is the check that the emptying
- * actually happened, and it is the last line of defence rather than a
- * belt-and-braces second one. Treat a hole in it as a live beacon, because that
- * is what it is.
+ * actually happened.
  *
- * A real second lock would be a `Content-Security-Policy` on the frame. That is
- * worth adding and is not here yet.
+ * The second lock is `lockedCaptureHtml`: the web viewer writes a
+ * `Content-Security-Policy` into the document before rendering it, with
+ * `default-src 'none'` and only `data:` let back in, so a reference every
+ * pattern below missed is refused by the browser rather than fetched. It closes
+ * the whole class — CSS escapes, entity-encoded schemes, SMIL — that a regex
+ * scan can only chase one spelling at a time. It does not cover a capture opened
+ * from a downloaded file or on the phone's viewer unless those add it too, so a
+ * hole in the scan is still a live beacon somewhere.
  */
 
 import type { Instant } from './model'
@@ -82,29 +86,6 @@ import type { Instant } from './model'
  * whatever produced it was not a browser.
  */
 export const CAPTURE_SCHEMES = ['http:', 'https:'] as const
-
-/**
- * Schemes a subresource may still name inside a stored capture.
- *
- * `data:` because that is what inlining produces, and `about:` because
- * `about:blank` is what an emptied `<iframe src>` becomes. Everything else —
- * `http:`, `https:`, `blob:`, `filesystem:` and the two that are code rather
- * than content — is either a fetch or an execution, and neither belongs in an
- * archive.
- *
- * Note what is NOT here: `https:`. A capture that kept its remote image URLs
- * would render more faithfully on the day it was taken and would be a beacon
- * every day after.
- *
- * READ BY NOTHING, and kept deliberately rather than by neglect. Both walks
- * decide the same question the other way round — they ask what may be FETCHED
- * (`CAPTURE_SCHEMES`) and empty everything else — so this list is the statement
- * of what a well-formed capture may contain, which is what `remoteRefCount`
- * checks by exclusion. If a third platform ever validates a stored capture
- * rather than producing one, this is the constant it needs. Anyone deleting it
- * as dead should delete this paragraph with it and not merely the line.
- */
-export const CAPTURE_SUBRESOURCE_SCHEMES = ['data:', 'about:'] as const
 
 /**
  * Elements that never survive a capture, whatever they contain.
@@ -396,8 +377,67 @@ export function isCaptureSource(url: string): boolean {
  * The unquoted arm ends at whitespace or `>`, which is exactly where the HTML
  * tokeniser ends an unquoted attribute value.
  */
-const REMOTE_REF =
-  /<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*(?:(["'])\s*(?:https?:|\/\/)[^"']*\1|(?:https?:|\/\/)[^\s>]*)/gi
+const SCHEME = String.raw`(?:h[\t\n\r]*t[\t\n\r]*t[\t\n\r]*p[\t\n\r]*(?:s[\t\n\r]*)?:|[\\/][\t\n\r]*[\\/])`
+/** The unquoted spelling: a tab or newline ENDS an unquoted value, so none can sit inside. */
+const SCHEME_BARE = String.raw`(?:https?:|[\\/]{2})`
+/** Whatever the URL parser strips off the front of a value: C0 controls and space. */
+const LEAD = String.raw`[\x00-\x20]*`
+/** A tag, walked the way the tokeniser walks one — quoted runs whole, only an unquoted `>` ends it. */
+const TAG = String.raw`<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*?`
+
+/*
+ * The scheme is spelled loosely ON PURPOSE (`SCHEME` above), and each loosening
+ * is a spelling the URL parser accepts and the old `https?:|\/\/` did not:
+ * ASCII tab and newline are deleted from anywhere in a URL (`h<TAB>ttps://`),
+ * leading C0 controls and spaces are trimmed, and a backslash is a slash in a
+ * special scheme — `\\evil.example/x` against an https base is protocol-
+ * relative. A serialiser rewrites all of those correctly, because it resolves
+ * with `new URL`; this scan is the check that it did, so it has to read them as
+ * the parser does.
+ *
+ * `xlink:href` is on the name list because the old `\s(?:…href)` needed
+ * whitespace before `href` and an SVG link has a colon there — the walk handled
+ * it and nothing checked that it had.
+ */
+const REMOTE_REF = new RegExp(
+  String.raw`${TAG}\s(?:xlink:)?(?:src|href|poster|data|action|formaction|background)\s*=\s*(?:["']${LEAD}${SCHEME}|${SCHEME_BARE})`,
+  'gi',
+)
+
+/**
+ * `srcset` names one URL PER CANDIDATE, and only the first sat where
+ * `REMOTE_REF` looks: `srcset="data:… 1x, https://cdn/big.png 2x"` passed with
+ * the 2x image live, to be fetched on the first high-density screen. Every
+ * candidate is read here. `https?:` anywhere in the value counts (a base64
+ * payload has no `:`), and `//` only after whitespace or the opening quote,
+ * because base64 does contain `/` and a `,//8A…` payload is not an address.
+ */
+const REMOTE_SRCSET_REF = new RegExp(
+  String.raw`${TAG}\s(?:srcset|imagesrcset)\s*=\s*(?:"(?:[^"]*?https?:|(?:[^"]*?\s)?[\\/]{2})|'(?:[^']*?https?:|(?:[^']*?\s)?[\\/]{2})|${SCHEME_BARE})`,
+  'gi',
+)
+
+/**
+ * SVG animation writes an attribute at VIEW time: `<set attributeName="href"
+ * to="https://…">` gives an `<image>` a live address after every check here
+ * has read it as having none. SMIL runs with scripts off, so the sandbox does
+ * not stop it. Any URL in an animation value counts — `values` is a `;` list, so
+ * not just at the start.
+ */
+const REMOTE_ANIMATION_REF = new RegExp(
+  String.raw`${TAG}\s(?:to|from|by|values)\s*=\s*(?:"[^"]*?${SCHEME}|'[^']*?${SCHEME}|${SCHEME_BARE})`,
+  'gi',
+)
+
+/**
+ * `<meta http-equiv=refresh content="0;url=https://…">` navigates the frame on
+ * open, with no attribute this file names. Both walks strip every refresh, so
+ * one surviving is a walk that missed it.
+ */
+const REMOTE_REFRESH_REF = new RegExp(
+  String.raw`<meta\b(?:[^>"']|"[^"]*"|'[^']*')*?\shttp-equiv\s*=\s*["']?\s*refresh`,
+  'gi',
+)
 
 /**
  * The other half, and it was missing.
@@ -417,7 +457,14 @@ const REMOTE_REF =
  * looking. For an invariant whose failure is silent and permanent, that is the
  * right way round.
  */
-const REMOTE_CSS_REF = /url\(\s*(['"]?)\s*(?:https?:|\/\/)[^)'"]*\1\s*\)/gi
+/*
+ * Matched up to the scheme and no further. It used to demand the closing quote
+ * and `)` as well, with `[^)'"]*` between — and so `url("https://x/a)b.png")`,
+ * a `)` legally inside a quoted URL, scanned as clean. Reaching the scheme is
+ * already the whole finding. `src()` is the CSS Values 4 spelling of the same
+ * function.
+ */
+const REMOTE_CSS_REF = new RegExp(String.raw`(?:url|src)\(\s*["']?${LEAD}${SCHEME}`, 'gi')
 
 /**
  * The third spelling, and the one that got through.
@@ -433,7 +480,8 @@ const REMOTE_CSS_REF = /url\(\s*(['"]?)\s*(?:https?:|\/\/)[^)'"]*\1\s*\)/gi
  * A leak that a check misses is worse than one it catches loudly, and this file
  * says the scan is the only line of defence. It has to know all three.
  */
-const REMOTE_IMPORT_REF = /@import\s+(?:url\(\s*)?(['"]?)\s*(?:https?:|\/\/)[^)'";]*\1/gi
+// `\s*`, not `\s+`: `@import"https://…"` needs no space and is honoured.
+const REMOTE_IMPORT_REF = new RegExp(String.raw`@import\s*(?:url\(\s*)?["']?${LEAD}${SCHEME}`, 'gi')
 
 /**
  * The fourth spelling, and the only one with no `url(` and no attribute at all.
@@ -458,25 +506,146 @@ const REMOTE_IMPORT_REF = /@import\s+(?:url\(\s*)?(['"]?)\s*(?:https?:|\/\/)[^)'
  * here — `REMOTE_CSS_REF` already counts it, and the merged-range tally below
  * would collapse the two anyway.
  */
-const REMOTE_IMAGE_SET_REF =
-  /image-set\((?:[^()"']|\([^()]*\)|"[^"]*"|'[^']*')*?(['"])\s*(?:https?:|\/\/)[^'"]*\1/gi
+const REMOTE_IMAGE_SET_REF = new RegExp(
+  String.raw`image-set\((?:[^()"']|\([^()]*\)|"[^"]*"|'[^']*')*?["']?${LEAD}${SCHEME}`,
+  'gi',
+)
 
-/** How many remote references survived. Zero is the only acceptable answer. */
-export function remoteRefCount(html: string): number {
-  /*
-   * Counted as MERGED RANGES, not as three tallies added together.
-   *
-   * The patterns overlap on purpose — `@import url("https://…")` is both an
-   * import and a `url()` — and they do not start at the same offset, so neither
-   * summing them nor de-duplicating by start position gives the right answer.
-   * Summing reported two leaks where there is one.
-   *
-   * The invariant only cares whether this is zero, so none of that changes
-   * whether a capture is accepted. It changes what the user is told, and a
-   * count that says two about one thing is a count nobody can act on.
-   */
+/**
+ * A CSS identifier spelled with an escape: `u\72 l(…)`, `@\69mport "…"`.
+ *
+ * The CSS parser decodes escapes in identifiers, so those ARE `url(` and
+ * `@import` — and every pattern above, and both serialisers' tokenisers, read
+ * the literal letters and walked past them. Measured: a `<style>` carrying
+ * `.a{background:u\72 l(https://…)}` scanned as clean and fetched on view.
+ *
+ * Refused whatever it points at. The web serialiser round-trips page CSS
+ * through the CSSOM, which writes escapes back out as plain letters, so an
+ * escaped `url` surviving to here is one no tokeniser ever saw — and its target,
+ * relative or not, was never inlined.
+ */
+// One maximal identifier run per match, greedy and with nothing to backtrack
+// into, so an 8 MB document is one linear pass rather than a quadratic one.
+const CSS_IDENT_RUN = /@?(?:[\w-]|\\(?:[0-9a-f]{1,6}[ \t\r\n\f]?|[^\r\n\f0-9a-f]))+/gi
+
+const PATTERNS = [
+  REMOTE_REF,
+  REMOTE_SRCSET_REF,
+  REMOTE_ANIMATION_REF,
+  REMOTE_REFRESH_REF,
+  REMOTE_CSS_REF,
+  REMOTE_IMPORT_REF,
+  REMOTE_IMAGE_SET_REF,
+]
+
+/** The identifiers an escape must not be allowed to spell. */
+const FETCHING_IDENTS = new Set(['url', 'src', '@import', 'image-set', '-webkit-image-set'])
+
+/**
+ * The ASCII named references that can spell part of a URL or a CSS token.
+ *
+ * Not the whole HTML table: every other named reference decodes to something
+ * outside ASCII, which cannot form a scheme or a bracket. `lt`/`gt` are
+ * deliberately absent, and the quotes decode to a SPACE — see `safeChar`.
+ */
+const NAMED: Record<string, string> = {
+  quot: ' ',
+  apos: ' ',
+  amp: '&',
+  colon: ':',
+  sol: '/',
+  bsol: '\\',
+  lpar: '(',
+  rpar: ')',
+  period: '.',
+  comma: ',',
+  semi: ';',
+  equals: '=',
+  num: '#',
+  commat: '@',
+  percnt: '%',
+  quest: '?',
+  excl: '!',
+  plus: '+',
+  lowbar: '_',
+  hyphen: '-',
+  dash: '-',
+  tab: '\t',
+  newline: '\n',
+}
+
+/**
+ * One decoded code point, with the three that would change the document's
+ * STRUCTURE held back.
+ *
+ * `<` and `>` stay encoded. Decoding them would turn a posting's prose about
+ * markup (`&lt;img src="https://…"&gt;`) into a tag and refuse the capture over
+ * its own body text; and cssSafe's `\3c ` exists precisely so a hostile sheet's
+ * `</style><img…>` never becomes one.
+ *
+ * A quote becomes a SPACE. Every pattern above accepts a URL with no quote
+ * before it, so `url(&quot;https://…` still reads as `url( https://…` and is
+ * caught — while the real quotes that delimit attribute values keep their
+ * pairing. A decoded `"` inside `style="…"` would end that value early for the
+ * tag walk, the walk would pair quotes off by one from there on, and one tag
+ * could be scanned to the end of an 8 MB document.
+ */
+const safeChar = (code: number, original: string): string => {
+  if (!Number.isFinite(code) || code <= 0 || code > 0x10ffff) return original
+  if (code === 0x3c || code === 0x3e) return original
+  if (code === 0x22 || code === 0x27) return ' '
+  return String.fromCodePoint(code)
+}
+
+/**
+ * The document as the browser will READ it, for the patterns above.
+ *
+ * `outerHTML` writes `style="background-image: url(&quot;https://…&quot;)"`,
+ * and an attacker can write `https&#58;//` — both are a live URL to the parser
+ * and neither matched a pattern that wants a literal quote and colon. So the
+ * patterns are also run over a copy with character references decoded, then CSS
+ * escapes decoded (`\68 ttps`), in the order the browser applies them to a
+ * `style` attribute.
+ *
+ * A second copy has CSS comments removed outside strings, because a comment
+ * between `url(` and its quoted string, or between `@import` and its string, is
+ * honoured and no pattern spans one. It is a SEPARATE copy rather than this one
+ * with a step added, because a comment opener the stripper misreads (inside a
+ * string it failed to track) could then swallow a URL the decoded copy shows.
+ */
+function decoded(html: string): string {
+  return cssUnescaped(entities(html))
+}
+
+/** Character references decoded, except to `<` and `>`. */
+function entities(html: string): string {
+  return html
+    .replace(/&#x([0-9a-f]+);?/gi, (whole, hex: string) => safeChar(parseInt(hex, 16), whole))
+    .replace(/&#(\d+);?/g, (whole, dec: string) => safeChar(parseInt(dec, 10), whole))
+    .replace(/&([a-z]+);/gi, (whole, name: string) => NAMED[name.toLowerCase()] ?? whole)
+    .replace(/&(quot|amp|apos)(?![;a-z0-9=])/gi, (whole, name: string) => NAMED[name.toLowerCase()] ?? whole)
+}
+
+/** CSS escapes decoded, except to `<` and `>`. */
+function cssUnescaped(text: string): string {
+  return text
+    .replace(/\\([0-9a-f]{1,6})[ \t\r\n\f]?/gi, (whole, hex: string) => safeChar(parseInt(hex, 16), whole))
+    .replace(/\\([^\r\n\f0-9a-f])/gi, (_whole, ch: string) => (ch === '"' || ch === "'" ? ' ' : ch))
+}
+
+// An unclosed comment runs to the end, as the CSS tokeniser reads it — and as
+// `$` lets the lazy body stop there in one pass instead of rescanning the rest
+// of the document from every later `/*`.
+const uncommented = (css: string): string =>
+  css.replace(
+    /("(?:[^"\\\n]|\\[\s\S])*"|'(?:[^'\\\n]|\\[\s\S])*')|\/\*[\s\S]*?(?:\*\/|$)/g,
+    (_w, kept?: string) => kept ?? ' ',
+  )
+
+/** Merged-range count of every pattern over one spelling of the document. */
+function spansIn(html: string): number {
   const spans: [number, number][] = []
-  for (const pattern of [REMOTE_REF, REMOTE_CSS_REF, REMOTE_IMPORT_REF, REMOTE_IMAGE_SET_REF]) {
+  for (const pattern of PATTERNS) {
     for (const match of html.matchAll(pattern)) {
       spans.push([match.index, match.index + match[0].length])
     }
@@ -491,6 +660,45 @@ export function remoteRefCount(html: string): number {
     end = Math.max(end, to)
   }
   return count
+}
+
+/** Escaped identifiers that spell a fetching CSS function. Read off the entity-decoded text. */
+function escapedIdents(html: string): number {
+  if (!html.includes('\\')) return 0
+  let count = 0
+  for (const match of html.matchAll(CSS_IDENT_RUN)) {
+    const run = match[0]
+    if (!run.includes('\\')) continue
+    // Only where it is used as a function or an at-rule: followed by `(` or a
+    // string, as `url(`, `image-set(` and `@import "…"` are.
+    if (!/^\s*[("']/.test(html.slice(match.index + run.length, match.index + run.length + 8))) continue
+    if (FETCHING_IDENTS.has(cssUnescaped(run).toLowerCase())) count += 1
+  }
+  return count
+}
+
+/** How many remote references survived. Zero is the only acceptable answer. */
+export function remoteRefCount(html: string): number {
+  /*
+   * Counted as MERGED RANGES, not as tallies added together.
+   *
+   * The patterns overlap on purpose — `@import url("https://…")` is both an
+   * import and a `url()` — and they do not start at the same offset, so neither
+   * summing them nor de-duplicating by start position gives the right answer.
+   * Summing reported two leaks where there is one.
+   *
+   * Then the LARGEST count across the three spellings (as written, decoded,
+   * decoded without comments), not their sum: they are one document read three
+   * ways, and offsets do not line up between them. Zero means zero in all three.
+   *
+   * The invariant only cares whether this is zero. The count is what the user
+   * is told, and a count that says two about one thing is one nobody can act on.
+   */
+  const plain = decoded(html)
+  return (
+    Math.max(spansIn(html), spansIn(plain), spansIn(uncommented(plain))) +
+    escapedIdents(entities(html))
+  )
 }
 
 /**
@@ -527,6 +735,51 @@ export function readCapture(value: unknown): CaptureEnvelope | CaptureRejection 
 }
 
 /**
+ * The policy a captured page is VIEWED under: nothing but `data:`.
+ *
+ * `default-src 'none'` refuses every fetch, then images, fonts, media and
+ * stylesheets are let back in from `data:` alone — which is everything inlining
+ * produces. `'unsafe-inline'` for styles because a capture IS inline styles;
+ * there is no script to abuse it, and `default-src 'none'` covers `script-src`.
+ * `base-uri` and `form-action` do not fall back to `default-src`, so they are
+ * named.
+ */
+export const CAPTURE_VIEW_CSP =
+  "default-src 'none'; img-src data:; style-src 'unsafe-inline' data:; font-src data:; media-src data:; base-uri 'none'; form-action 'none'"
+
+/**
+ * A stored capture with the viewer's policy written in as the FIRST thing in
+ * its head — the second lock that the header of this file describes.
+ *
+ * `sandbox=""` on the frame stops scripts, forms and navigation and stops no
+ * fetch at all, so before this every hole in `remoteRefCount` was a live beacon.
+ * A `<meta http-equiv>` CSP inside a `srcdoc` document is honoured, and it
+ * applies to everything parsed after it, so where it goes is the whole design:
+ *
+ *   - after a leading doctype (and any comments before it), never before — a
+ *     `<meta>` ahead of the doctype makes the doctype a parse error and the page
+ *     renders in quirks mode;
+ *   - and before EVERYTHING else, including the document's own `<html>` and
+ *     `<head>`. A `<meta>` there opens an implied `<html>` and `<head>` and lands
+ *     in it; the page's own `<html lang>` then merges its attributes into that
+ *     element and its `<head>` is ignored, which is the tokeniser's ordinary
+ *     recovery. So it works the same with a head, without one, and ahead of a
+ *     hostile early `<meta>` or `<link>` the page put first — nothing in the
+ *     stored text can come before it.
+ *
+ * Policies combine by intersection, so a page that carried a looser CSP of its
+ * own (both walks strip those anyway) cannot widen this one.
+ */
+export function lockedCaptureHtml(html: string): string {
+  const meta = `<meta http-equiv="Content-Security-Policy" content="${CAPTURE_VIEW_CSP}">`
+  const lead = /^﻿?(?:\s|<!--[\s\S]*?-->)*(?:<!doctype[^>]*>)?/i.exec(html)
+  // Only past the comments when a doctype follows them: a meta between a
+  // comment and the first tag is in the same place as one at the very start.
+  const at = lead !== null && /<!doctype/i.test(lead[0]) ? lead[0].length : 0
+  return `${html.slice(0, at)}${meta}${html.slice(at)}`
+}
+
+/**
  * UTF-8 length without a TextEncoder.
  *
  * `TextEncoder` is a global, and `check-platform.mjs` is right to be suspicious
@@ -558,12 +811,25 @@ function byteLength(text: string): number {
  */
 export function captureFileName(url: string, title: string, day: string): string {
   const stem = title.trim().length > 0 ? title : hostOf(url)
-  const safe = stem
-    .normalize('NFKD')
-    .replace(/[^\p{L}\p{N}\s-]/gu, '')
-    .trim()
-    .replace(/\s+/g, '-')
+  /*
+   * NFKC and the marks KEPT. This was NFKD with `\p{M}` stripped, which is how
+   * to fold `é` to `e` and is wrong for every script whose marks are letters'
+   * vowels: 'हिन्दी' came out 'हनद'. Composed form keeps Latin accents as one
+   * character and leaves Devanagari, Thai or Arabic exactly as written.
+   *
+   * Cut by CODE POINT rather than `.slice`: a UTF-16 slice through an emoji or
+   * a supplementary-plane character leaves a lone surrogate, which is not a
+   * character at all and which some filesystems refuse.
+   */
+  const safe = [
+    ...stem
+      .normalize('NFKC')
+      .replace(/[^\p{L}\p{M}\p{N}\s-]/gu, '')
+      .trim()
+      .replace(/\s+/g, '-'),
+  ]
     .slice(0, 60)
+    .join('')
     .replace(/-+$/, '')
   return `${safe.length > 0 ? safe : 'posting'}-${day}.html`
 }
@@ -623,6 +889,7 @@ export function canonicalPostingUrl(url: string): string {
     if (onBoard(host, 'myworkdayjobs.com')) return workday(parsed, host)
     if (onBoard(host, 'academicjobsonline.org')) return academicJobsOnline(parsed)
     if (onBoard(host, 'higheredjobs.com')) return higherEdJobs(parsed, host)
+    if (onBoard(host, 'indeed.com')) return indeed(parsed, host)
 
     return url
   } catch {
@@ -652,7 +919,20 @@ function linkedIn(parsed: URL): string {
  * `?gh_src=` a search result carries is the other half.
  */
 function greenhouse(parsed: URL): string {
-  const match = /^\/(?:embed\/job_app\?for=)?([^/?#]+)\/jobs\/(\d+)/.exec(parsed.pathname)
+  /*
+   * The embed form, `/embed/job_app?for=<board>&token=<job>`. Its identity is in
+   * the QUERY, and this used to test `?for=` against the pathname — which never
+   * contains a `?` — so the embed spelling never folded onto the job it is.
+   */
+  if (/^\/embed\/job_app\/?$/.test(parsed.pathname)) {
+    const board = parsed.searchParams.get('for')
+    const token = parsed.searchParams.get('token')
+    if (board !== null && /^[\w-]+$/.test(board) && token !== null && /^\d+$/.test(token)) {
+      return `https://job-boards.greenhouse.io/${board}/jobs/${token}`
+    }
+    return parsed.href
+  }
+  const match = /^\/([^/?#]+)\/jobs\/(\d+)/.exec(parsed.pathname)
   if (match === null) return parsed.href
   return `https://job-boards.greenhouse.io/${match[1]!}/jobs/${match[2]!}`
 }
@@ -709,6 +989,19 @@ function higherEdJobs(parsed: URL, host: string): string {
 }
 
 /**
+ * Indeed names a job by `jk` on `/viewjob`, and by `vjk` on a search page —
+ * `/jobs?q=…&vjk=<id>` is the results list with that job open beside it. Both
+ * fold to the `/viewjob` address, which is the one that opens the job alone.
+ * The regional host (`ca.indeed.com`) is kept: it is the board that served it.
+ */
+function indeed(parsed: URL, host: string): string {
+  const viewing = /^\/viewjob\/?$/i.test(parsed.pathname) ? parsed.searchParams.get('jk') : null
+  const id = viewing ?? parsed.searchParams.get('vjk')
+  if (id === null || !/^[0-9a-f]{8,32}$/i.test(id)) return parsed.href
+  return `https://${host}/viewjob?jk=${id.toLowerCase()}`
+}
+
+/**
  * Query parameters put there by whatever the link was copied FROM, never by the
  * posting.
  *
@@ -719,6 +1012,11 @@ function higherEdJobs(parsed: URL, host: string): string {
  * goes in only when it identifies nothing anywhere: `utm_*` and the click ids,
  * the referral fields, and `gh_src`, which is the one a Greenhouse search
  * result adds to a link the ad itself does not have.
+ *
+ * NOT `vjk`, which was here and merged jobs: on Indeed's `/jobs?q=…&vjk=<id>`
+ * search page `vjk` is the job open in the side pane — the posting's own key —
+ * so every job viewed from one search folded to one identity. `indeed` below
+ * rewrites that shape to `/viewjob?jk=<id>` instead.
  */
 const TRACKING = new Set([
   'gh_src',
@@ -732,7 +1030,6 @@ const TRACKING = new Set([
   'trackingid',
   'refid',
   'tk',
-  'vjk',
   'gclid',
   'fbclid',
   'msclkid',
@@ -751,8 +1048,9 @@ const isTracking = (name: string): boolean => {
 
 /**
  * A URL reduced to what identifies the posting: host without `www.`, path
- * without its trailing slash, and the query minus its tracking. Scheme and
- * fragment go. `undefined` for anything that is not a usable address.
+ * without its trailing slash, and the query minus its tracking. The scheme
+ * goes, and the fragment too unless it is a route (see `addressKey`).
+ * `undefined` for anything that is not a usable address.
  *
  * THE ONE ANSWER to "are these the same posting", and it lives here because
  * three places were answering it differently. The duplicate warning compared
@@ -779,11 +1077,33 @@ const isTracking = (name: string): boolean => {
  * an application carries is one somebody typed.
  */
 export function postingIdentity(raw: string): string | undefined {
+  return addressKey(raw, true)
+}
+
+/** Analytics parameters, which never name a page of a listing either. */
+const ANALYTICS = new Set(['gclid', 'fbclid', 'msclkid', 'igshid', 'mc_cid', 'mc_eid', '_hsenc', '_hsmi'])
+
+/**
+ * The same reduction for a page of a board's LISTING (`core/board.ts`'s
+ * `pageKey`), which is a different question in two ways.
+ *
+ * No posting canonicalisation: a LinkedIn search page carrying `currentJobId`
+ * is a list, and folding it to that one job would make every page of the search
+ * the same page. And only analytics parameters go, not `TRACKING`: `from`,
+ * `src` and `ref` identify nothing on a posting, but `?from=20` is how some
+ * boards say "page two", and dropping it ended a read after page one.
+ */
+export function pageIdentity(raw: string): string | undefined {
+  return addressKey(raw, false)
+}
+
+function addressKey(raw: string, posting: boolean): string | undefined {
   const text = raw.trim()
   if (!text) return undefined
   const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `https://${text}`
   try {
-    const url = new URL(canonicalPostingUrl(withScheme))
+    const canonical = posting ? canonicalPostingUrl(withScheme) : withScheme
+    const url = new URL(canonical)
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined
     const host = url.hostname.toLowerCase().replace(/^www\./, '')
     const path = url.pathname.replace(/\/+$/, '')
@@ -804,10 +1124,27 @@ export function postingIdentity(raw: string): string | undefined {
           ? ([pair, ''] as const)
           : ([pair.slice(0, at), pair.slice(at + 1)] as const)
       })
-      .filter(([name]) => !isTracking(name))
+      .filter(([name]) =>
+        posting
+          ? !isTracking(name)
+          : !name.toLowerCase().startsWith('utm_') && !ANALYTICS.has(name.toLowerCase()),
+      )
       .map(([name, value]) => `${name.toLowerCase()}=${value}`)
       .sort()
-    return identifying.length === 0 ? `${host}${path}` : `${host}${path}?${identifying.join('&')}`
+    /*
+     * The fragment, kept only where it is the ADDRESS. On most sites `#apply`
+     * is a scroll position and two links differing by it are one posting; on a
+     * hash-routed board `#/job/123` and `#/job/456` are two jobs that used to
+     * collapse into one key, so the second was reported as already saved.
+     * `#/` and `#!` are the router spellings; a fragment on an empty path is
+     * the only thing telling two addresses apart at all. Read from the TEXT,
+     * because `hash` is not among the URL members this layer may use.
+     */
+    const hashAt = canonical.indexOf('#')
+    const fragment = hashAt === -1 ? '' : canonical.slice(hashAt)
+    const routed = /^#[/!]./.test(fragment) || (path === '' && fragment.length > 1) ? fragment : ''
+    const base = identifying.length === 0 ? `${host}${path}` : `${host}${path}?${identifying.join('&')}`
+    return `${base}${routed}`
   } catch {
     return undefined
   }

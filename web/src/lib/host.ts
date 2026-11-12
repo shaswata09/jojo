@@ -17,6 +17,7 @@
  */
 
 import type { Host } from '@jojo/service/react/host'
+import { onDayTurn } from '@/lib/today'
 
 export const webHost: Host = {
   /**
@@ -88,6 +89,10 @@ export const webHost: Host = {
    *
    * Paired with `onSuspend`'s hidden branch, which flushed on the way out.
    */
+  // The pin in `today.ts` owns the midnight timer and the wake-up checks; this
+  // only forwards its turn, so the provider and the pin cannot disagree.
+  onDayTurn: (run) => onDayTurn(run),
+
   onResume(run) {
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') run()

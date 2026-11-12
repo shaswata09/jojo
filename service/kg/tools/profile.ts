@@ -15,6 +15,8 @@ import { BACKGROUND_KINDS, DEFAULT_ROLES } from '../core/model'
  */
 
 import type { FileBucket, NodeId, ProfileText } from '../core/model'
+import { checkClaim, indexClaims } from '../core/claim'
+import type { Claim } from '../core/claim'
 import { foldName } from '../core/ref'
 import type { GraphSnapshot } from '../core/snapshot'
 import { s } from '../core/schema'
@@ -566,4 +568,129 @@ export const profileBackgroundDelete = defineTool({
     title: 'Removed',
     description: titleOfBackground(m, input.id),
   }),
+})
+
+/* -------------------------------------------------------------------------- */
+/* Importing a reading, as one act                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The claims already in the graph, in the shape `core/claim.ts` compares.
+ *
+ * Read from `ctx.memory`, so it includes the claims this transaction has
+ * already written — the import adds a dozen in a row and the eleventh has to
+ * see the tenth. A claim missing an end is skipped, as `claim.add` skips it.
+ */
+function claimsHeld(memory: GraphSnapshot): Claim[] {
+  return memory.ofType('claim').flatMap((n) => {
+    const subject = memory.out(n.id, 'SUBJECT')[0]?.to
+    const object = memory.out(n.id, 'OBJECT')[0]?.to
+    return subject === undefined || object === undefined
+      ? []
+      : [{ subject, predicate: n.props.predicate, object }]
+  })
+}
+
+/**
+ * The facts a CV reading proposed, and the relations between them, in one
+ * transaction.
+ *
+ * The profile banner's Confirm used to run `profile.background.add` and then
+ * `claim.add` once per relation, from the view. That was a dozen commits for one
+ * click: no single Undo could take the import back, and a failure part way left
+ * the facts filed with half their relations. One composite is one journal row
+ * and one Undo.
+ *
+ * A relation `claim.add` would REFUSE — the graph already holds it under another
+ * name, or it is malformed — is skipped rather than called. Inside a composite a
+ * refusal throws and would roll back the whole import, and a duplicate relation
+ * is the duplicate gate working, not a reason to lose thirty facts. So the same
+ * check `claim.add` makes is made here first, against the transaction's own
+ * view of the graph.
+ *
+ * Not offered to a model (`catalogued: false`): an agent reading a CV already
+ * has the two tools this is made of, and needs no third way to do the same.
+ */
+export const profileBackgroundImport = defineTool({
+  name: 'profile.background.import',
+  title: 'Import background',
+  summary:
+    'Files the facts read from a document, and the relations between them, as one action with one undo.',
+  effect: 'create',
+  touches: ['background', 'claim'],
+  catalogued: false,
+  input: s.object({
+    background: s.array(s.object(backgroundFields), { min: 1, label: 'Background' }),
+    relations: s.optional(
+      s.array(
+        s.object({
+          subject: s.number({ int: true, min: 0, label: 'From (position)' }),
+          predicate: s.string({ min: 1, label: 'Relation' }),
+          object: s.number({ int: true, min: 0, label: 'To (position)' }),
+        }),
+        {
+          label: 'Relations',
+          description: 'Ends are positions in `background`, because nothing has an id yet.',
+        },
+      ),
+    ),
+    source: s.optional(
+      s.string({ label: 'Read from', description: 'The id of the document this came from.' }),
+    ),
+  }),
+
+  run(ctx, input): { ids: NodeId[]; created: NodeId[]; related: NodeId[] } {
+    // `source` on every entry that lacks one: `twinState` counts a document as
+    // read when a fact points back at it, so an import without it would leave
+    // the document unread and the banner would offer it again tomorrow.
+    const { source } = input
+    const { ids, created } = ctx.call('profile.background.add', {
+      background: input.background.map((draft) =>
+        draft.source === undefined && source !== undefined ? { ...draft, source } : draft,
+      ),
+    })
+
+    const related: NodeId[] = []
+    for (const link of input.relations ?? []) {
+      // `profile.background.add` returns ids in the order it was given the
+      // entries, which is what makes a position resolvable at all.
+      const subject = ids[link.subject]
+      const object = ids[link.object]
+      if (subject === undefined || object === undefined) continue
+      const verdict = checkClaim(
+        { subject, predicate: link.predicate, object },
+        indexClaims(claimsHeld(ctx.memory)),
+      )
+      if (verdict.verdict !== 'new') continue
+      related.push(
+        ctx.call('claim.add', {
+          subject,
+          predicate: link.predicate,
+          object,
+          ...(source === undefined ? {} : { source }),
+        }),
+      )
+    }
+
+    return { ids, created, related }
+  },
+
+  describe: (input, output) => {
+    const fresh = output.created.length
+    const known = output.ids.length - fresh
+    const facts =
+      known === 0
+        ? `${fresh} fact${fresh === 1 ? '' : 's'} imported`
+        : fresh === 0
+          ? 'Already on your profile'
+          : `${fresh} imported, ${known} already known`
+    const links = output.related.length
+    return {
+      title: links > 0 ? `${facts}, ${links} relation${links === 1 ? '' : 's'}` : facts,
+      description: input.background
+        .map((c) => c.title)
+        .slice(0, 3)
+        .join(', '),
+    }
+  },
 })

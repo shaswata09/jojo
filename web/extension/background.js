@@ -44,9 +44,18 @@ const QUEUE = 'jojo.captures'
  * not interchangeable to the person paying: a key for one is not a key for
  * another, and "route to NVIDIA but not to OpenAI" is a real preference.
  *
- * Absent means ON. An extension that arrives switched off looks broken, and the
- * failure — a relay that refuses — reads exactly like the bug this whole file
- * exists to work around. Defaults live in `defaultRouting`.
+ * Absent means ON for the reader and the named providers. An extension that
+ * arrives switched off looks broken, and the failure — a relay that refuses —
+ * reads exactly like the bug this whole file exists to work around. Defaults
+ * live in `defaultRouting`.
+ *
+ * `network` — models on the person's own network — is the exception, and is
+ * OFF until they turn it on. The other routes each go to one named place; this
+ * one goes to any private address a page names, which is a page reaching the
+ * person's router, printer and NAS through their browser. Nothing a page sends
+ * can switch it on (a script on jojo's origin could send the same thing), so
+ * only the popup can: one press, named in the refusal the first time a model on
+ * the network is asked for.
  */
 const ROUTING = 'jojo.routing'
 
@@ -56,6 +65,7 @@ function defaultRouting() {
   return {
     reader: { enabled: true, endpoint: READER_DEFAULT },
     models: Object.fromEntries(MODEL_HOSTS.map((host) => [host, true])),
+    network: false,
   }
 }
 
@@ -76,6 +86,8 @@ async function routing() {
     // added to the allowlist appears switched on instead of missing, and one
     // removed from it cannot linger in storage as a route that no longer exists.
     models: Object.fromEntries(MODEL_HOSTS.map((host) => [host, saved.models?.[host] !== false])),
+    // `=== true`: absent is OFF here, unlike every switch above. See ROUTING.
+    network: saved.network === true,
   }
 }
 
@@ -162,6 +174,30 @@ function isLoopback(raw) {
 }
 
 /**
+ * Whether two loopback addresses are the same SERVER: same port, any of the
+ * three loopback spellings. Not `origin` equality — `localhost` and `127.0.0.1`
+ * are one listener, and somebody who typed one in Settings and the other in the
+ * popup should not be refused for it.
+ */
+function sameLoopbackServer(a, b) {
+  if (!isLoopback(a) || !isLoopback(b)) return false
+  const port = (raw) => {
+    const url = new URL(raw)
+    return url.port === '' ? '80' : url.port
+  }
+  return port(a) === port(b)
+}
+
+/**
+ * jojo-bridge's port — `DEFAULT_PORT` in `jojo-bridge.mjs`, and the one the
+ * page dials (`BRIDGE_ADDRESS` in `web/src/lib/mcp-link.ts`). The link is
+ * pinned to it: without a pin, `jojo:mcp-link` relayed any request to any port
+ * on this machine, so a page could drive every local dev server and database
+ * console the person had running.
+ */
+const JOJO_BRIDGE_ADDRESS = 'http://127.0.0.1:3002'
+
+/**
  * A machine on the person's OWN network, reached over plain http.
  *
  * ## Why this exists
@@ -195,9 +231,12 @@ function isLoopback(raw) {
  * access to from where they are sitting.
  *
  * The user-facing consequence is worth stating plainly: with the extension
- * installed, a page can ask it to fetch from the user's own LAN. That is the
- * capability being granted, deliberately, because it is the one the product
- * needs; the routing switch in the popup turns it off by host like any other.
+ * installed and "Models on my network" switched on, a page can ask it to fetch
+ * from the user's own LAN. That switch is OFF until the person turns it on in
+ * the popup — an earlier version of this comment said the per-provider switches
+ * already turned it off, and they could not: they are keyed by the hosted
+ * providers' names, so `10.0.0.5` had no switch at all. `modelRefusal` reads
+ * `routing().network`.
  */
 function isPrivateNetwork(raw) {
   let url
@@ -207,12 +246,31 @@ function isPrivateNetwork(raw) {
     return false
   }
   if (url.protocol !== 'http:') return false
-  const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase()
+  return privateHost(url.hostname)
+}
+
+/**
+ * Whether a hostname is on a private network: RFC 1918, link-local, IPv6
+ * unique-local and link-local, and mDNS. Loopback is NOT included — it is
+ * `isLoopback`'s question — and the hostname is as `URL` normalised it, so
+ * `http://0xa.1/` has already become `10.0.0.1` by the time it arrives.
+ */
+function privateHost(hostname) {
+  const host = String(hostname).replace(/^\[|\]$/g, '').toLowerCase()
 
   if (host.endsWith('.local')) return true
 
-  // IPv6 unique-local and link-local.
-  if (host.includes(':')) return /^f[cd][0-9a-f]{2}:/.test(host) || /^fe[89ab][0-9a-f]:/.test(host)
+  if (host.includes(':')) {
+    // An IPv4 address written as IPv6 (`::ffff:a00:1`) is that IPv4 address.
+    const mapped = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(host)
+    if (mapped) {
+      const hi = parseInt(mapped[1], 16)
+      const lo = parseInt(mapped[2], 16)
+      return privateHost(`${String(hi >> 8)}.${String(hi & 255)}.${String(lo >> 8)}.${String(lo & 255)}`)
+    }
+    // IPv6 unique-local and link-local.
+    return /^f[cd][0-9a-f]{2}:/.test(host) || /^fe[89ab][0-9a-f]:/.test(host)
+  }
 
   const parts = host.split('.')
   if (parts.length !== 4) return false
@@ -224,6 +282,35 @@ function isPrivateNetwork(raw) {
   if (a === 192 && b === 168) return true
   if (a === 169 && b === 254) return true
   return false
+}
+
+/**
+ * Whether an address is this machine or the person's own network, by ANY scheme.
+ *
+ * The scan and "From link" open a tab with the person's cookies and hand the
+ * whole rendered DOM back to the page that asked. Pointed at a router's admin
+ * page, a NAS, or a dev server on this machine, that is a page reading the
+ * person's intranet through their own browser — so those two verbs refuse it,
+ * before the tab opens and again after any redirect. A posting is on the public
+ * web; nobody's job advert lives at 192.168.1.1.
+ *
+ * Hostname-only. A public name that RESOLVES to a private address passes, and a
+ * worker cannot see DNS answers to close that; `privateHost` closes every
+ * literal spelling.
+ */
+function isLocalTarget(raw) {
+  let url
+  try {
+    url = new URL(raw)
+  } catch {
+    return true
+  }
+  const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase()
+  if (host === '' || host === 'localhost' || host.endsWith('.localhost')) return true
+  if (host === '::1' || host === '::' || host === '0.0.0.0' || /^127\./.test(host) || /^0\./.test(host)) return true
+  if (/^::ffff:7f[0-9a-f]{2}:/.test(host)) return true
+  if (host.endsWith('.internal') || host.endsWith('.lan') || host.endsWith('.home.arpa')) return true
+  return privateHost(host)
 }
 
 /**
@@ -252,6 +339,20 @@ const MODEL_STREAM_PORT = 'jojo:model-stream'
  * knows what was being called and for how long.
  */
 const READ_TIMEOUT_MS = 120000
+
+/**
+ * The only methods any relay carries. Every request jojo makes through one is a
+ * GET (a model list, the link's poll) or a POST (a completion, an MCP call);
+ * anything else a page asks for is a verb jojo never sends, aimed at a server
+ * that would act on it.
+ */
+const RELAY_METHODS = ['GET', 'POST']
+
+/** The method to send, or null when it is not one a relay carries. */
+function relayMethod(request) {
+  const method = typeof request?.method === 'string' ? request.method.trim().toUpperCase() : 'POST'
+  return RELAY_METHODS.includes(method) ? method : null
+}
 
 /**
  * A model provider jojo knows about, over https.
@@ -298,10 +399,19 @@ async function relay(request, what) {
   const timer = setTimeout(() => {
     controller.abort()
   }, READ_TIMEOUT_MS)
-  const method = typeof request.method === 'string' ? request.method : 'POST'
-  // A GET or HEAD may not carry one, and `fetch` throws rather than ignoring it:
+  const method = relayMethod(request)
+  if (method === null) {
+    clearTimeout(timer)
+    return {
+      ok: false,
+      status: 0,
+      text: '',
+      reason: `The extension relays GET and POST only, so the ${what} was not called.`,
+    }
+  }
+  // A GET may not carry one, and `fetch` throws rather than ignoring it:
   // "Request with GET/HEAD method cannot have body". The model list is a GET.
-  const sendsBody = method !== 'GET' && method !== 'HEAD'
+  const sendsBody = method !== 'GET'
   try {
     const response = await fetch(request.url, {
       method,
@@ -465,18 +575,28 @@ async function scanBoard(url) {
      */
     const landed = await chrome.tabs.get(tabId)
     const at = typeof landed.url === 'string' && landed.url.length > 0 ? landed.url : url
-    if (!sameSite(hostOf(at), hostOf(url)) || looksLikeSignIn(url, at)) {
-      return {
-        ok: false,
-        reason: `That board sent us to ${hostOf(at)}, which usually means it wants a sign-in. Open it in a tab and sign in, then try again.`,
-      }
-    }
+    const refused = boardRefusal(url, at)
+    if (refused !== null) return { ok: false, reason: refused }
 
     // Best effort: a board with nothing to press, or a press that throws,
     // still gets read as it stands.
     await chrome.scripting
       .executeScript({ target: { tabId }, func: expandListing, args: [MORE_ROUNDS, MORE_WAIT_MS, MORE_BUDGET_MS] })
       .catch(() => undefined)
+
+    /*
+     * Asked AGAIN after pressing. A "Load more" that was really a link, or a
+     * board whose button submits a form, navigates the tab — and the harvest
+     * below then read whatever page it reached, signed-in or off-site, with
+     * every check above already behind it. The same three checks, on where the
+     * tab is NOW.
+     */
+    const after = await chrome.tabs.get(tabId)
+    const now = typeof after.url === 'string' && after.url.length > 0 ? after.url : at
+    if (now !== at) {
+      const moved = boardRefusal(url, now)
+      if (moved !== null) return { ok: false, reason: moved }
+    }
 
     const [run] = await chrome.scripting.executeScript({
       target: { tabId },
@@ -485,12 +605,26 @@ async function scanBoard(url) {
     })
     // Where it landed, so relative rows and next-page links resolve against the
     // page they were read on rather than the address that redirected there.
-    return { ok: true, rows: Array.isArray(run?.result) ? run.result : [], landed: at }
+    return { ok: true, rows: Array.isArray(run?.result) ? run.result : [], landed: now }
   } catch (error) {
     return { ok: false, reason: error instanceof Error ? error.message : String(error) }
   } finally {
     if (tabId !== null) await chrome.tabs.remove(tabId).catch(() => undefined)
   }
+}
+
+/**
+ * Why a board tab that is now at `at` must not be read, or null. Asked once the
+ * page has loaded and again after "Load more", which can navigate.
+ */
+function boardRefusal(url, at) {
+  if (isLocalTarget(at)) {
+    return 'That board sent us to an address on this machine or your own network, so it was not read.'
+  }
+  if (!sameSite(hostOf(at), hostOf(url)) || looksLikeSignIn(url, at)) {
+    return `That board sent us to ${hostOf(at)}, which usually means it wants a sign-in. Open it in a tab and sign in, then try again.`
+  }
+  return null
 }
 
 function hostOf(url) {
@@ -538,6 +672,20 @@ function looksLikeSignIn(requested, landed) {
 }
 
 /**
+ * How far into a "From link" capture inlining must STOP, counted from when the
+ * request arrived.
+ *
+ * The page gives up at `CAPTURE_TIMEOUT_MS` (90 s, `capture-bridge.ts`), and
+ * the order of the race is the whole point: if the page gives up first, a
+ * capture the worker then finishes is posted into a closed channel and nothing
+ * is kept. Measured: an AcademicCareers posting was still inlining at 90 s and
+ * the person was told it "did not finish saving in time". So inlining stops
+ * here and keeps what it has; after it come only `shrinkToFit` and one message
+ * back, which take seconds, and `capture-page.test.ts` holds the margin.
+ */
+const CAPTURE_PAGE_INLINE_BY_MS = 65000
+
+/**
  * Opens a posting in a background tab and hands the whole page back.
  *
  * The app's "From link". `capture()` below reads the tab the person is looking
@@ -552,12 +700,15 @@ function looksLikeSignIn(requested, landed) {
  * the reply and the app files it. Queuing it as well would file it twice the
  * next time the inbox drained.
  *
- * Inactive, and closed in a `finally`, for the reason `scanBoard` gives. It
+ * Inactive, and closed the moment it has been read — with a `finally` behind
+ * that for every earlier exit — for the reason `scanBoard` gives. It
  * carries the person's own cookies, which is the point — a posting behind a
  * sign-in reads as it does for them — and a sign-in wall is refused rather than
  * saved, because a login form filed under a job is worse than nothing.
  */
 async function capturePage(url) {
+  // The page's clock started when it asked, so this one does too.
+  const started = Date.now()
   let tabId = null
   try {
     const tab = await chrome.tabs.create({ url, active: false })
@@ -569,6 +720,14 @@ async function capturePage(url) {
     await sleep(SETTLE_MS)
 
     const landed = await chrome.tabs.get(tabId)
+    // A public address that redirects onto this machine or the LAN is refused
+    // here, after the redirect — the address asked for was checked before.
+    if (typeof landed.url === 'string' && isLocalTarget(landed.url)) {
+      return {
+        ok: false,
+        reason: 'That page sent us to an address on this machine or your own network, so it was not kept.',
+      }
+    }
     if (typeof landed.url === 'string' && looksLikeSignIn(url, landed.url)) {
       return {
         ok: false,
@@ -576,15 +735,27 @@ async function capturePage(url) {
       }
     }
 
+    const nonce = captureNonce()
     const [run] = await chrome.scripting.executeScript({
       target: { tabId },
       func: serialise,
-      args: [POLICY],
+      args: [POLICY, nonce],
     })
     const page = run?.result
+
+    /*
+     * Closed NOW, not in the `finally`. Everything after this works on the
+     * string already in hand, and inlining can take a minute — during which
+     * the tab sat open in the person's window, signed in and running the
+     * site's scripts, for no reason at all. The `finally` still covers every
+     * earlier exit.
+     */
+    await chrome.tabs.remove(tabId).catch(() => undefined)
+    tabId = null
+
     if (!page) return { ok: false, reason: 'Nothing came back from that page.' }
 
-    let { html, dropped } = await inline(page)
+    let { html, dropped } = await inline(page, nonce, started + CAPTURE_PAGE_INLINE_BY_MS)
 
     /*
      * Over the cap: leave out the heaviest embedded assets until it fits — the
@@ -645,15 +816,18 @@ async function capturePage(url) {
 async function capture(tabId) {
   await badge(tabId, '…')
   try {
+    const nonce = captureNonce()
     const [run] = await chrome.scripting.executeScript({
       target: { tabId },
       func: serialise,
-      args: [POLICY],
+      args: [POLICY, nonce],
     })
     const page = run?.result
     if (!page) return fail(tabId, 'Nothing came back from that page.')
 
-    let { html, dropped } = await inline(page)
+    // Nobody is waiting on a clock here, but the badge is, and the loop used to
+    // be able to run for hours (500 assets at 15 s each). Two minutes.
+    let { html, dropped } = await inline(page, nonce, Date.now() + 120000)
 
     /*
      * Over the cap: leave out the heaviest embedded assets until it fits,
@@ -680,24 +854,28 @@ async function capture(tabId) {
       dropped += fitted.dropped
     }
 
-    const queued = await read()
-    // Its handle for the acknowledgement below, and what the popup's Save
-    // button asks for. Minted here because this is the only place that can.
-    const id = `cap_${String(Date.now())}_${String(queued.length)}`
-    queued.push({
-      // Its handle for the acknowledgement below. Minted here because this is
-      // the only place that can, and a counter would collide across a worker
-      // restart — MV3 stops the worker whenever it is idle.
-      id,
-      url: page.url,
-      title: page.title,
-      html,
-      capturedAt: page.capturedAt,
-      dropped,
-      shadowRoots: page.shadowRoots ?? 0,
-      trimmed,
+    // Inside the queue lock: see `withQueue`.
+    const { queued, id } = await withQueue(async () => {
+      const queued = await read()
+      // Its handle for the acknowledgement below, and what the popup's Save
+      // button asks for. Minted here because this is the only place that can.
+      const id = `cap_${String(Date.now())}_${String(queued.length)}`
+      queued.push({
+        // Its handle for the acknowledgement below. Minted here because this is
+        // the only place that can, and a counter would collide across a worker
+        // restart — MV3 stops the worker whenever it is idle.
+        id,
+        url: page.url,
+        title: page.title,
+        html,
+        capturedAt: page.capturedAt,
+        dropped,
+        shadowRoots: page.shadowRoots ?? 0,
+        trimmed,
+      })
+      await chrome.storage.local.set({ [QUEUE]: queued })
+      return { queued, id }
     })
-    await chrome.storage.local.set({ [QUEUE]: queued })
     // Global as well as per-tab: `setBadgeText` with a tabId sets it for THAT
     // tab only, so the count vanished the moment the posting was closed and
     // reappeared as a stale number on whatever tab had been captured before.
@@ -756,7 +934,8 @@ const cssSafe = (css) => css.replace(/</g, '\\3c ')
  * same address, so a page whose sheets import two FRESH ones apiece has no end
  * — and unbounded here means a service worker fetching forever with the badge
  * stuck on '…', no error, and nothing the user can do but disable the
- * extension. The loop is sequential, so nothing else in the worker runs either.
+ * extension. (The deadline `inline` now takes bounds the time too; this bounds
+ * the count, which a deadline alone would let run to hundreds of requests.)
  *
  * Set far above what a real posting needs — the widest board measured while the
  * de-duplication above was written queued 47 addresses — and far below forever.
@@ -771,6 +950,75 @@ const cssSafe = (css) => css.replace(/</g, '\\3c ')
 const CAPTURE_MAX_ASSETS = 500
 
 /**
+ * How many assets are fetched at once. The loop was sequential, so a page with
+ * 200 assets on a slow CDN spent minutes on what a browser does in seconds —
+ * AcademicCareers measured past the page's 90-second budget and was not kept.
+ * Six is a browser's own per-host connection limit.
+ */
+const INLINE_CONCURRENCY = 6
+
+/** The per-asset timeout. A CDN that never answers costs this, never more. */
+const ASSET_TIMEOUT_MS = 15000
+
+/**
+ * A capture's random token prefix, minted per capture by the worker.
+ *
+ * The prefix used to be the constant `__JOJO_ASSET_`, which a page could simply
+ * WRITE: put `__JOJO_ASSET_3__` in an attribute, and the splice below replaced
+ * it with asset 3's value — a fetched stylesheet whose `"` closed the attribute
+ * and wrote `onload=` into the saved file, which runs when the person opens the
+ * download. With a nonce the page cannot know, every token in the document is
+ * one this capture put there. Page-written look-alikes are left as the text
+ * they are rather than stripped: removing one from `__JOJO_ASSET_0__onerror=`
+ * would itself write `onerror=`.
+ */
+function captureNonce() {
+  const bytes = crypto.getRandomValues(new Uint8Array(12))
+  return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+/** A promise that gives up after `ms`, whatever the thing it waits on does. */
+function within(promise, ms) {
+  let timer
+  return Promise.race([
+    promise,
+    new Promise((_resolve, reject) => {
+      timer = setTimeout(() => reject(new Error('timed out')), Math.max(0, ms))
+    }),
+  ]).finally(() => clearTimeout(timer))
+}
+
+/** A CSS string's escapes decoded, so the URL resolved is the URL the parser reads. */
+function cssUnescape(text) {
+  return text
+    .replace(/\\([0-9a-fA-F]{1,6})[ \t\r\n\f]?/g, (_w, hex) => {
+      const code = parseInt(hex, 16)
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : '�'
+    })
+    .replace(/\\\r\n|\\[\n\r\f]/g, '')
+    .replace(/\\([\s\S])/g, '$1')
+}
+
+/**
+ * A quoted CSS string, `"…"` or `'…'`, with its escapes — and so with the OTHER
+ * quote and a `)` allowed inside it. The tokenisers used `([^'")]+)`, which
+ * stopped at the first `)` or quote of either kind: `url("https://x/a)b.png")`
+ * failed to match at all, was never tokenised, and loaded on view.
+ */
+const CSS_DQ = String.raw`"((?:[^"\\\n]|\\[\s\S])*)"`
+const CSS_SQ = String.raw`'((?:[^'\\\n]|\\[\s\S])*)'`
+const CSS_URL = new RegExp(String.raw`url\(\s*(?:${CSS_DQ}|${CSS_SQ}|((?:[^'"()\\\s]|\\[\s\S])*))\s*\)`, 'gi')
+const CSS_IMPORT = new RegExp(
+  String.raw`@import\s*(?:url\(\s*(?:${CSS_DQ}|${CSS_SQ}|((?:[^'"()\\\s]|\\[\s\S])*))\s*\)|${CSS_DQ}|${CSS_SQ})[^;]*;?`,
+  'gi',
+)
+const CSS_IMAGE_SET = new RegExp(
+  String.raw`(image-set\()((?:[^()"']|"(?:[^"\\\n]|\\[\s\S])*"|'(?:[^'\\\n]|\\[\s\S])*'|\([^()]*\))*)\)`,
+  'gi',
+)
+const CSS_IMAGE_SET_PIECE = new RegExp(String.raw`\([^()]*\)|${CSS_DQ}|${CSS_SQ}`, 'gi')
+
+/**
  * Turns every queued address into a `data:` URI, and empties what it cannot.
  *
  * The order matters: stylesheets are resolved first because their text names
@@ -782,16 +1030,26 @@ const CAPTURE_MAX_ASSETS = 500
  * an empty value and counted. That is the whole reason the invariant holds
  * without trusting the network: a capture cannot end up with a live URL in it,
  * because the only two outcomes for an address are "inlined" and "gone".
+ *
+ * `deadline` is a `Date.now()` time by which inlining STOPS — not fails. What
+ * has been fetched by then is kept, everything else is counted into `dropped`
+ * and emptied by the sweep at the end exactly as a failed fetch is, and the
+ * page is still kept. "From link" was refused whole at the page's 90 seconds on
+ * a heavy board; a posting missing some fonts is worth keeping, and no posting
+ * is not.
  */
-async function inline(page) {
-  const resolved = new Map()
+async function inline(page, nonce, deadline = Date.now() + 120000) {
+  const prefix = `__JOJO_ASSET_${nonce}_`
+  const keyOf = (index) => `${prefix}${String(index)}__`
+  /** One value per token INDEX — spliced in index order, see below. */
+  const resolved = []
   /** Which resolved values are stylesheet TEXT. See the splice below. */
   const cssKeys = new Set()
   let dropped = page.dropped ?? 0
   const assets = [...page.assets]
 
   /**
-   * One entry per ADDRESS, beside the one-entry-per-token map above.
+   * One entry per ADDRESS, beside the one-entry-per-token list above.
    *
    * Without this the same font embedded twice is base64-encoded twice, and that
    * is not a tidiness point — it was the whole reason a board failed. Measured
@@ -801,192 +1059,200 @@ async function inline(page) {
    * tenants tested came out over `CAPTURE_MAX_BYTES` and were refused outright;
    * de-duped they land at 4.8–5.2 MB. Greenhouse and Ashby never repeat an
    * address, which is why the bug looked like "Lever pages are big".
+   *
+   * Holds the PROMISE of a value, so two workers reaching one address at once
+   * share one fetch rather than racing two.
    */
   const byHref = new Map()
 
-  for (let i = 0; i < assets.length; i += 1) {
-    if (i >= CAPTURE_MAX_ASSETS) {
-      // Counted, not silently truncated: `dropped` is what the panel shows and
-      // what tells somebody their capture is missing pieces. Their tokens are
-      // emptied by the sweep at the end of this function, exactly as a failed
-      // fetch's would be, so the "inlined or gone" invariant still holds.
-      dropped += assets.length - i
-      break
-    }
-    const { href, kind } = assets[i]
-    const key = `__JOJO_ASSET_${String(i)}__`
-
-    /*
-     * Keyed by KIND as well as address, and the branch below records `cssKeys`
-     * like the fetch path does.
-     *
-     * `serialise.js` mints a token per OCCURRENCE with no de-duplication of its
-     * own, so two identical `<link rel=stylesheet>` tags — or a `<link>` and an
-     * `@import` of the same sheet — produce two tokens for one address. This
-     * branch gave the second one its value without ever reaching `cssKeys.add`
-     * below, so the splice at the end of this function escaped the FIRST
-     * occurrence and spliced the second one raw. Measured end to end: with a
-     * sheet answering `}</style><img alt="a > b" src=https://evil.example/…>`,
-     * the stored capture carried the first copy escaped and the second as a live
-     * `<img>`, and `remoteRefCount` returned 0. Escaping decided by which turn of
-     * the loop happened to fetch an address first is not escaping.
-     *
-     * The kind is in the key because it decides the escape and the value is not
-     * interchangeable between kinds: the same address wanted as `css` (text) and
-     * as `css-asset` (a data URI inside `url()`) must not hand one form of the
-     * value to the other. The cost is one extra fetch in that rare case; the
-     * duplication this map exists to kill — the same webfont in two `<style>`
-     * blocks, 4.1 MB of a 9.3 MB capture — is same-kind and still collapses.
-     */
-    const cacheKey = `${kind}\u0000${href}`
-    const seen = byHref.get(cacheKey)
-    if (seen !== undefined) {
-      resolved.set(key, seen)
-      if (kind === 'css') cssKeys.add(key)
-      continue
-    }
-
-    try {
-      // Timed out rather than hung: the loop is sequential, so one CDN that never
-      // answers leaves the badge on '…' with no route to recovery. The header
-      // above already promised this; it was not implemented.
-      const response = await fetch(href, {
-        credentials: 'omit',
-        redirect: 'follow',
-        signal: AbortSignal.timeout(15000),
-      })
-      if (!response.ok) throw new Error(`HTTP ${String(response.status)}`)
-
-      if (kind === 'css') {
-        const text = await response.text()
-        // The same cap the blob branch below applies, which this branch reached
-        // its `continue` without ever meeting: a stylesheet is the one asset
-        // whose bytes are kept as TEXT, so an enormous one was inlined whole
-        // into a document that is itself capped, and the whole capture was then
-        // refused for being too large with no clue which asset did it.
-        if (byteLength(text) > CAPTURE_MAX_ASSET_BYTES) throw new Error('stylesheet too large')
-        /*
-         * Its own `@import`s FIRST, then its own `url()`s. Both become tokens
-         * appended to the list this loop is walking, so they are fetched by a
-         * later turn of it and one pass covers arbitrary nesting.
-         *
-         * The `@import` half was missing, and it was a live leak rather than a
-         * missing nicety: the walk sanitises the imports it can see in the
-         * page's own `<style>` blocks, but a stylesheet FETCHED here could carry
-         * its own `@import "https://…"`, which passed through untouched, passed
-         * `remoteRefCount` — which knew nothing about `@import` — and was
-         * fetched by the viewer every time the capture was opened.
-         */
-        const withImports = text.replace(
-          /@import\s+(?:url\(\s*(['"]?)([^'")]+)\1\s*\)|(['"])([^'"]+)\3)[^;]*;?/gi,
-          (whole, _q1, viaUrl, _q2, viaString) => {
-            const raw = viaUrl ?? viaString ?? ''
-            if (raw.trim().startsWith('data:')) return whole
-            const nested = absolute(raw, href)
-            if (nested === null) {
-              dropped += 1
-              return ''
-            }
-            const at = assets.length
-            assets.push({ href: nested, kind: 'css' })
-            return `__JOJO_ASSET_${String(at)}__`
-          },
-        )
-        const inlinedCss = withImports.replace(
-          /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
-          (whole, _q, raw) => {
-            const value = raw.trim()
-            if (value.startsWith('__JOJO_ASSET_')) return whole
-            if (value.startsWith('data:')) return whole
-            // A same-document reference — `filter='url(#frameNoise)'` inside an
-            // inline SVG. Resolving one produces a URL that never existed, which
-            // is then fetched (404/403), counted as a dropped asset, and written
-            // back as `url("")` — corrupting a data URI the pipeline had already
-            // decided to keep. Measured on every Ashby posting.
-            if (value.startsWith('#') || value.startsWith('%23')) return whole
-            const nested = absolute(raw, href)
-            if (nested === null) {
-              dropped += 1
-              return 'none'
-            }
-            const at = assets.length
-            assets.push({ href: nested, kind: 'css-asset' })
-            return `url("__JOJO_ASSET_${String(at)}__")`
-          },
-        )
-        /*
-         * `image-set()`, whose URL can be a BARE STRING.
-         *
-         * `image-set("https://cdn/x.png" 1x)` is a fetch with no `url(`, no
-         * `@import` and no attribute name, so the two rewrites above walk past
-         * it and all three patterns in `remoteRefCount` were blind to it.
-         * Measured before this ran: the address reached the stored capture
-         * untouched, the scan returned 0, and `readCapture` accepted the file.
-         * `serialise.js` tokenises the same shape in the page's own CSS; this is
-         * the half that covers a stylesheet fetched from the network.
-         *
-         * Runs after the `url()` pass, so a `url()` inside an image-set is
-         * already a token. The inner replace consumes a parenthesised group
-         * whole, which keeps it off that token and off `type("image/avif")` —
-         * an image-set option whose string is a MIME type, not an address.
-         *
-         * Anchored on the literal `image-set(` rather than on a pattern that
-         * absorbs the vendor prefix: a leading `[a-z-]*` rescans to the end of
-         * every run of letters at every offset, and a 2 MB stylesheet made this
-         * quadratic — measured as a test run that never finished. The prefix
-         * stays outside the match, so `-webkit-image-set` is still rewritten.
-         */
-        const withImageSets = inlinedCss.replace(
-          /(image-set\()((?:[^()"']|"[^"]*"|'[^']*'|\([^()]*\))*)\)/gi,
-          (_whole, head, body) => {
-            const rewritten = body.replace(
-              /\([^()]*\)|(['"])([^'"]*)\1/gi,
-              (piece, _quote, raw) => {
-                if (raw === undefined) return piece
-                const value = raw.trim()
-                if (value === '' || value.startsWith('__JOJO_ASSET_')) return piece
-                if (value.startsWith('data:')) return piece
-                const nested = absolute(raw, href)
-                if (nested === null) {
-                  dropped += 1
-                  // `url("")` rather than `none`: an image-set option has to be
-                  // a URL, and `none` there invalidates the declaration.
-                  return 'url("")'
-                }
-                const at = assets.length
-                assets.push({ href: nested, kind: 'css-asset' })
-                return `url("__JOJO_ASSET_${String(at)}__")`
-              },
-            )
-            return `${head}${rewritten})`
-          },
-        )
-        resolved.set(key, withImageSets)
-        // Recorded rather than inferred. Only stylesheet TEXT is spliced as
-        // markup-adjacent content and needs escaping; a data URI is base64 and
-        // cannot contain `<` — but deciding that by sniffing the value would be
-        // one refactor away from being wrong.
-        cssKeys.add(key)
-        byHref.set(cacheKey, withImageSets)
-        continue
-      }
-
-      const blob = await response.blob()
-      if (blob.size > CAPTURE_MAX_ASSET_BYTES) throw new Error('asset too large')
-      const uri = await dataUri(blob)
-      resolved.set(key, uri)
-      byHref.set(cacheKey, uri)
-    } catch {
-      dropped += 1
-      resolved.set(key, '')
-      // Remembered as a failure too, so a page naming a dead asset ten times
-      // makes one request rather than ten.
-      byHref.set(cacheKey, '')
-    }
+  /** Queues a nested address found inside a fetched stylesheet; returns its token. */
+  const queue = (href, kind) => {
+    const at = assets.length
+    assets.push({ href, kind })
+    return keyOf(at)
   }
 
+  /** A fetched stylesheet's own `@import`s, `url()`s and `image-set()` strings, tokenised. */
+  const rewriteSheet = (text, href) => {
+    /*
+     * Its own `@import`s FIRST, then its own `url()`s. Both become tokens
+     * appended to the list this loop is walking, so they are fetched by a
+     * later turn of it and one pass covers arbitrary nesting.
+     *
+     * The `@import` half was missing, and it was a live leak rather than a
+     * missing nicety: the walk sanitises the imports it can see in the
+     * page's own `<style>` blocks, but a stylesheet FETCHED here could carry
+     * its own `@import "https://…"`, which passed through untouched, passed
+     * `remoteRefCount` — which knew nothing about `@import` — and was
+     * fetched by the viewer every time the capture was opened.
+     */
+    const withImports = text.replace(CSS_IMPORT, (whole, u1, u2, u3, s1, s2) => {
+      const raw = cssUnescape(u1 ?? u2 ?? u3 ?? s1 ?? s2 ?? '')
+      if (raw.trim().startsWith('data:')) return whole
+      const nested = absolute(raw.trim(), href)
+      if (nested === null) {
+        dropped += 1
+        return ''
+      }
+      return queue(nested, 'css')
+    })
+    const inlinedCss = withImports.replace(CSS_URL, (whole, dq, sq, bare) => {
+      const value = cssUnescape(dq ?? sq ?? bare ?? '').trim()
+      if (value.startsWith(prefix)) return whole
+      if (value.startsWith('data:')) return whole
+      // A same-document reference — `filter='url(#frameNoise)'` inside an
+      // inline SVG. Resolving one produces a URL that never existed, which
+      // is then fetched (404/403), counted as a dropped asset, and written
+      // back as `url("")` — corrupting a data URI the pipeline had already
+      // decided to keep. Measured on every Ashby posting.
+      if (value.startsWith('#') || value.startsWith('%23')) return whole
+      const nested = absolute(value, href)
+      if (nested === null) {
+        dropped += 1
+        return 'none'
+      }
+      return `url("${queue(nested, 'css-asset')}")`
+    })
+    /*
+     * `image-set()`, whose URL can be a BARE STRING.
+     *
+     * `image-set("https://cdn/x.png" 1x)` is a fetch with no `url(`, no
+     * `@import` and no attribute name, so the two rewrites above walk past
+     * it and all three patterns in `remoteRefCount` were blind to it.
+     * Measured before this ran: the address reached the stored capture
+     * untouched, the scan returned 0, and `readCapture` accepted the file.
+     * `serialise.js` tokenises the same shape in the page's own CSS; this is
+     * the half that covers a stylesheet fetched from the network.
+     *
+     * Runs after the `url()` pass, so a `url()` inside an image-set is
+     * already a token. The inner replace consumes a parenthesised group
+     * whole, which keeps it off that token and off `type("image/avif")` —
+     * an image-set option whose string is a MIME type, not an address.
+     *
+     * Anchored on the literal `image-set(` rather than on a pattern that
+     * absorbs the vendor prefix: a leading `[a-z-]*` rescans to the end of
+     * every run of letters at every offset, and a 2 MB stylesheet made this
+     * quadratic — measured as a test run that never finished. The prefix
+     * stays outside the match, so `-webkit-image-set` is still rewritten.
+     */
+    return inlinedCss.replace(CSS_IMAGE_SET, (_whole, head, body) => {
+      const rewritten = body.replace(CSS_IMAGE_SET_PIECE, (piece, dq, sq) => {
+        if (dq === undefined && sq === undefined) return piece
+        const value = cssUnescape(dq ?? sq).trim()
+        if (value === '' || value.startsWith(prefix)) return piece
+        if (value.startsWith('data:')) return piece
+        const nested = absolute(value, href)
+        if (nested === null) {
+          dropped += 1
+          // `url("")` rather than `none`: an image-set option has to be
+          // a URL, and `none` there invalidates the declaration.
+          return 'url("")'
+        }
+        return `url("${queue(nested, 'css-asset')}")`
+      })
+      return `${head}${rewritten})`
+    })
+  }
+
+  /** One address, fetched within what is left of the deadline. */
+  const fetchOne = async (href, kind) => {
+    const left = Math.min(ASSET_TIMEOUT_MS, deadline - Date.now())
+    if (left <= 0) throw new Error('out of time')
+    // Timed out rather than hung — by the signal for a real fetch, and by the
+    // race for everything after it, since a body can stall as well.
+    const response = await within(
+      fetch(href, { credentials: 'omit', redirect: 'follow', signal: AbortSignal.timeout(left) }),
+      left,
+    )
+    if (!response.ok) throw new Error(`HTTP ${String(response.status)}`)
+    if (kind === 'css') {
+      const text = await within(response.text(), deadline - Date.now())
+      // The same cap the blob branch below applies, which this branch reached
+      // its return without ever meeting: a stylesheet is the one asset whose
+      // bytes are kept as TEXT, so an enormous one was inlined whole into a
+      // document that is itself capped, and the whole capture was then refused
+      // for being too large with no clue which asset did it.
+      if (byteLength(text) > CAPTURE_MAX_ASSET_BYTES) throw new Error('stylesheet too large')
+      return rewriteSheet(text, href)
+    }
+    const blob = await within(response.blob(), deadline - Date.now())
+    if (blob.size > CAPTURE_MAX_ASSET_BYTES) throw new Error('asset too large')
+    return dataUri(blob)
+  }
+
+  let claimed = 0
+  const work = async () => {
+    for (;;) {
+      if (Date.now() >= deadline) return
+      if (claimed >= assets.length || claimed >= CAPTURE_MAX_ASSETS) return
+      const i = claimed
+      claimed += 1
+      const { href, kind } = assets[i]
+
+      /*
+       * Keyed by KIND as well as address, and `cssKeys` recorded on every path.
+       *
+       * `serialise.js` mints a token per OCCURRENCE with no de-duplication of
+       * its own, so two identical `<link rel=stylesheet>` tags — or a `<link>`
+       * and an `@import` of the same sheet — produce two tokens for one address.
+       * The shared-value path once skipped `cssKeys.add`, so the splice escaped
+       * the FIRST occurrence and spliced the second one raw. Measured end to
+       * end: with a sheet answering `}</style><img alt="a > b"
+       * src=https://evil.example/…>`, the stored capture carried the first copy
+       * escaped and the second as a live `<img>`, and `remoteRefCount` returned
+       * 0. Escaping decided by which turn of the loop fetched an address first
+       * is not escaping.
+       *
+       * The kind is in the key because it decides the escape and the value is
+       * not interchangeable between kinds: the same address wanted as `css`
+       * (text) and as `css-asset` (a data URI inside `url()`) must not hand one
+       * form of the value to the other.
+       */
+      if (kind === 'css') cssKeys.add(i)
+      const cacheKey = `${kind}\u0000${href}`
+      let pending = byHref.get(cacheKey)
+      if (pending === undefined) {
+        pending = fetchOne(href, kind).then(
+          (value) => ({ value }),
+          // Remembered as a failure too, so a page naming a dead asset ten times
+          // makes one request rather than ten.
+          () => ({ value: '', failed: true }),
+        )
+        byHref.set(cacheKey, pending)
+      }
+      const outcome = await pending
+      if (outcome.failed) dropped += 1
+      resolved[i] = outcome.value
+    }
+  }
+  /*
+   * A few workers draining one list that the stylesheets keep appending to. A
+   * worker that finds the list momentarily empty while another is still
+   * fetching a sheet stops early, so the pool is re-run until a pass claims
+   * nothing new — which is at most once per nesting level.
+   */
+  for (let before = -1; before !== claimed; ) {
+    before = claimed
+    await Promise.all(Array.from({ length: INLINE_CONCURRENCY }, work))
+  }
+
+  // Counted, not silently truncated: `dropped` is what the panel shows and what
+  // tells somebody their capture is missing pieces. Past the asset cap or past
+  // the deadline alike, the tokens left are emptied by the sweep below, exactly
+  // as a failed fetch's would be, so the "inlined or gone" invariant holds.
+  dropped += assets.length - claimed
+
   let html = page.html
-  for (const [key, value] of resolved) {
+  /*
+   * In INDEX order, which is the order the tokens were minted. A stylesheet's
+   * nested tokens are only in the document once that stylesheet's text has been
+   * spliced, and a nested token always has a higher index than its sheet — so
+   * splicing by index can never look for a token before it exists, however the
+   * fetches finished.
+   */
+  for (let i = 0; i < resolved.length; i += 1) {
+    const value = resolved[i]
+    if (value === undefined) continue
     /*
      * Stylesheet text is spliced into the document, so it must not be able to
      * LEAVE the element it is spliced into.
@@ -1004,13 +1270,15 @@ async function inline(page) {
      * literal `</`. Escaping it as `\3c ` — the CSS hex escape, trailing space
      * included — keeps any (pathological) legitimate use rendering the same.
      */
-    html = html.split(key).join(cssKeys.has(key) ? cssSafe(value) : value)
+    html = html.split(keyOf(i)).join(cssKeys.has(i) ? cssSafe(value) : value)
   }
 
   // Anything the walk missed. A token left standing would render as literal
   // text, and a surviving http(s) address would be the one thing this must not
-  // ship — so both are swept here rather than hoped about.
-  html = html.replace(/__JOJO_ASSET_\d+__/g, '')
+  // ship — so both are swept here rather than hoped about. THIS capture's
+  // tokens only: see `captureNonce` for why a page's look-alikes stay.
+  html = html.split(prefix).map((part, n) => (n === 0 ? part : part.replace(/^\d+__/, ''))).join('')
+
   // Anchored to `<[^>]*?`, so it can only match INSIDE a tag.
   //
   // Without that anchor this ran over the whole document string including text
@@ -1037,14 +1305,22 @@ async function inline(page) {
   // when the tokeniser starts a tag. Identical to `REMOTE_REF` in
   // `service/kg/core/capture.ts` — a third copy lives in
   // `mobile/src/lib/capture.ts`, and the three change together.
+  //
+  // The scheme is matched as loosely as the URL parser reads it — a tab or
+  // newline inside it, leading control characters, backslashes for slashes —
+  // and `xlink:href` is on the list, because `remoteRefCount` now counts all of
+  // those and a scan stricter than this sweep refuses a capture with no remedy.
+  // A quoted value is consumed to ITS OWN closing quote, so the other quote
+  // inside it no longer stops the match short.
   html = html.replace(
-    /(<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(?:(["'])\s*(?:https?:|\/\/)[^"']*\2|(?:https?:|\/\/)[^\s>]*)/gi,
-    (_whole, head, quote) => {
+    // The C0 range is deliberate: it is what the URL parser trims.
+    // eslint-disable-next-line no-control-regex
+    /(<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*?\s(?:xlink:)?(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(?:"[\x00-\x20]*(?:h[\t\n\r]*t[\t\n\r]*t[\t\n\r]*p[\t\n\r]*(?:s[\t\n\r]*)?:|[\\/][\t\n\r]*[\\/])[^"]*"|'[\x00-\x20]*(?:h[\t\n\r]*t[\t\n\r]*t[\t\n\r]*p[\t\n\r]*(?:s[\t\n\r]*)?:|[\\/][\t\n\r]*[\\/])[^']*'|(?:https?:|[\\/]{2})[^\s>]*)/gi,
+    (_whole, head) => {
       dropped += 1
-      // An unquoted value is emptied by writing a quoted empty one, which is
-      // valid HTML and cannot be re-read as a URL.
-      const q = quote ?? '"'
-      return `${head}${q}${q}`
+      // Emptied by writing a quoted empty value, which is valid HTML whatever
+      // the original quoting and cannot be re-read as a URL.
+      return `${head}""`
     },
   )
 
@@ -1078,9 +1354,36 @@ async function read() {
   return Array.isArray(stored[QUEUE]) ? stored[QUEUE] : []
 }
 
+/**
+ * Every read-modify-write of the queue, one at a time.
+ *
+ * `capture`, `delete`, `clear` and `ack` each read the whole queue, change it
+ * and write it back, with awaits in between. Two at once — a capture landing
+ * while jojo acknowledges the last batch — each wrote back the list it read,
+ * and the second write erased the first's change: a kept page vanished, or a
+ * filed one came back to be filed again. Chained here, each sees the last's
+ * result. A failure does not jam the chain.
+ */
+let queueChain = Promise.resolve()
+function withQueue(change) {
+  const run = queueChain.then(change, change)
+  queueChain = run.catch(() => undefined)
+  return run
+}
+
+/**
+ * A badge on one tab, best effort. The tab may have closed since the capture
+ * started — `setBadgeText` then REJECTS, and that rejection escaped every
+ * handler that awaited it, so the reply never came and the caller sat out its
+ * whole timeout. A badge is decoration; it never decides an outcome.
+ */
 async function badge(tabId, text, title) {
-  await chrome.action.setBadgeText({ tabId, text })
-  if (title !== undefined) await chrome.action.setTitle({ tabId, title })
+  try {
+    await chrome.action.setBadgeText({ tabId, text })
+    if (title !== undefined) await chrome.action.setTitle({ tabId, title })
+  } catch {
+    // The tab is gone. Nothing to mark.
+  }
 }
 
 /**
@@ -1109,6 +1412,14 @@ async function modelRefusal(url) {
   // gated here — a local model never left the machine.
   if (host && !isLoopback(url) && routes.models[host] === false) {
     return `Routing to ${host} is switched off in the jojo extension.`
+  }
+  // A model on the person's own network, which has its own switch and is OFF
+  // until they turn it on — see ROUTING. Named so the fix is one press away.
+  if (isPrivateNetwork(url) && !routes.network) {
+    return (
+      `${host} is on your own network, and relaying to models on your network is switched off ` +
+      'in the jojo extension. Open the extension and turn on "Models on my network".'
+    )
   }
   if (!isLoopback(url) && !isPrivateNetwork(url) && !isKnownModelHost(url)) {
     return (
@@ -1170,7 +1481,14 @@ chrome.runtime.onConnect.addListener((port) => {
         }
       }
 
-      const refusal = await modelRefusal(url)
+      // Inside a try like everything after it: a throw here would otherwise
+      // end the stream with no 'done', and the page would wait out its budget.
+      let refusal
+      try {
+        refusal = await modelRefusal(url)
+      } catch (error) {
+        refusal = `The extension could not read its routing settings: ${reasonOf(error)}`
+      }
       if (refusal) {
         send({ type: 'done', ok: false, status: 0, text: '', reason: refusal })
         return
@@ -1190,8 +1508,9 @@ chrome.runtime.onConnect.addListener((port) => {
       arm()
 
       try {
-        const method = typeof request.method === 'string' ? request.method : 'POST'
-        const sendsBody = method !== 'GET' && method !== 'HEAD'
+        const method = relayMethod(request)
+        if (method === null) throw new Error('the extension relays GET and POST only')
+        const sendsBody = method !== 'GET'
         const response = await fetch(url, {
           method,
           headers: request.headers && typeof request.headers === 'object' ? request.headers : {},
@@ -1248,6 +1567,34 @@ chrome.runtime.onConnect.addListener((port) => {
   })
 })
 
+/** Where the crash-reporting choice and the worker's own crash log live. */
+const CRASH_ON = 'jojo.crash.on'
+const CRASH_LOG = 'jojo.crash.log'
+/** Enough to see a pattern, too few to grow without end. */
+const CRASH_LOG_MAX = 20
+
+/** A sentence from whatever was thrown. */
+function reasonOf(error) {
+  return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * One handler failure, kept only when the person has crash reporting on —
+ * the default is off, and this records nothing until they say otherwise. What
+ * is kept is the verb and the message: never a URL, a body or a page.
+ */
+async function recordCrash(verb, error) {
+  try {
+    const stored = await chrome.storage.local.get([CRASH_ON, CRASH_LOG])
+    if (stored[CRASH_ON] !== true) return
+    const log = Array.isArray(stored[CRASH_LOG]) ? stored[CRASH_LOG] : []
+    log.push({ at: new Date().toISOString(), verb: String(verb ?? ''), message: reasonOf(error).slice(0, 300) })
+    await chrome.storage.local.set({ [CRASH_LOG]: log.slice(-CRASH_LOG_MAX) })
+  } catch {
+    // A crash log that crashes has nothing left to report to.
+  }
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   /* ------------------------- the popup's own verbs ------------------------ */
 
@@ -1273,8 +1620,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     typeof sender.url === 'string' &&
     sender.url.startsWith(chrome.runtime.getURL(''))
 
+  /*
+   * Every async handler below runs through this, and it always ANSWERS.
+   *
+   * They were `void (async () => { … sendResponse(…) })(); return true` with no
+   * catch, so anything that threw — a storage read, a badge on a tab that had
+   * closed — rejected into nowhere, the channel stayed open with no reply, and
+   * the caller sat out its whole timeout (90 s for "From link") before saying
+   * the extension had not answered. Now a throw answers `{ ok: false, reason }`
+   * at once, and is kept for the crash log when the person has that on.
+   */
+  const guarded = (body) => {
+    void body().catch((error) => {
+      void recordCrash(message?.type, error)
+      try {
+        sendResponse({ ok: false, status: 0, text: '', reason: reasonOf(error) })
+      } catch {
+        // The caller has gone; there is nobody left to tell.
+      }
+    })
+    return true
+  }
+
   if (message?.type === 'jojo:list-captures' && fromOwnPage) {
-    void (async () => {
+    return guarded(async () => {
       const queued = await read()
       // WITHOUT `html`. A capture is a whole inlined page — often megabytes —
       // and the popup only ever draws a title, an address and a size. Sending
@@ -1290,29 +1659,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           dropped: c.dropped ?? 0,
         })),
       })
-    })()
-    return true
+    })
   }
 
   if (message?.type === 'jojo:delete-capture' && fromOwnPage) {
-    void (async () => {
+    return guarded(async () => {
       const id = typeof message.id === 'string' ? message.id : ''
-      const queued = await read()
-      const kept = queued.filter((c) => c.id !== id)
-      await chrome.storage.local.set({ [QUEUE]: kept })
+      const kept = await withQueue(async () => {
+        const queued = (await read()).filter((c) => c.id !== id)
+        await chrome.storage.local.set({ [QUEUE]: queued })
+        return queued
+      })
       await chrome.action.setBadgeText({ text: kept.length > 0 ? String(kept.length) : '' })
       sendResponse({ ok: true, remaining: kept.length })
-    })()
-    return true
+    })
   }
 
   if (message?.type === 'jojo:clear-captures' && fromOwnPage) {
-    void (async () => {
-      await chrome.storage.local.set({ [QUEUE]: [] })
+    return guarded(async () => {
+      await withQueue(() => chrome.storage.local.set({ [QUEUE]: [] }))
       await chrome.action.setBadgeText({ text: '' })
       sendResponse({ ok: true, remaining: 0 })
-    })()
-    return true
+    })
   }
 
   /*
@@ -1324,7 +1692,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
    * every other popup verb: only a page served from this extension may ask.
    */
   if (message?.type === 'jojo:get-capture' && fromOwnPage) {
-    void (async () => {
+    return guarded(async () => {
       const id = typeof message.id === 'string' ? message.id : ''
       const found = (await read()).find((c) => c.id === id)
       sendResponse(
@@ -1332,12 +1700,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           ? { ok: true, url: found.url, title: found.title, capturedAt: found.capturedAt, html: found.html }
           : { ok: false, reason: 'That page is no longer kept.' },
       )
-    })()
-    return true
+    })
   }
 
   if (message?.type === 'jojo:capture-tab' && fromOwnPage) {
-    void (async () => {
+    return guarded(async () => {
       const tabId = typeof message.tabId === 'number' ? message.tabId : null
       if (tabId === null) {
         sendResponse({ ok: false, reason: 'No page to capture.' })
@@ -1347,19 +1714,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // unconditionally, which is how a page that was never stored came back
       // to the popup as "Kept.".
       sendResponse(await capture(tabId))
-    })()
-    return true
+    })
   }
 
   if (message?.type === 'jojo:get-routing' && fromOwnPage) {
-    void (async () => {
+    return guarded(async () => {
       sendResponse({ routing: await routing(), hosts: MODEL_HOSTS })
-    })()
-    return true
+    })
   }
 
   if (message?.type === 'jojo:set-routing' && fromOwnPage) {
-    void (async () => {
+    return guarded(async () => {
       const current = await routing()
       const next = {
         reader: {
@@ -1382,11 +1747,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               : current.models[host],
           ]),
         ),
+        network: typeof message.network === 'boolean' ? message.network : current.network,
       }
       await chrome.storage.local.set({ [ROUTING]: next })
       sendResponse({ routing: next })
-    })()
-    return true
+    })
   }
 
   /*
@@ -1398,7 +1763,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
    * that returns a `result` is the only answer that means what the dot claims.
    */
   if (message?.type === 'jojo:probe-reader' && fromOwnPage) {
-    void (async () => {
+    return guarded(async () => {
       const url =
         typeof message.endpoint === 'string' && message.endpoint.trim()
           ? message.endpoint.trim()
@@ -1433,12 +1798,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         status: answer.status ?? 0,
         reason: answer.reason ?? null,
       })
-    })()
-    return true
+    })
   }
 
   if (message?.type === 'jojo:take-captures') {
-    void (async () => {
+    return guarded(async () => {
       // Handed over, NOT deleted.
       //
       // Emptying the queue here was a real loss: jojo validates every envelope
@@ -1448,15 +1812,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // `jojo:ack-captures`, which names the ids that were actually filed.
       const queued = await read()
       sendResponse({ captures: queued })
-    })()
-    return true // the response is async
+    })
   }
   if (message?.type === 'jojo:ack-captures') {
-    void (async () => {
+    return guarded(async () => {
       const kept = new Set(Array.isArray(message.ids) ? message.ids : [])
-      const queued = await read()
-      const left = queued.filter((c) => !kept.has(c.id))
-      await chrome.storage.local.set({ [QUEUE]: left })
+      const left = await withQueue(async () => {
+        const remaining = (await read()).filter((c) => !kept.has(c.id))
+        await chrome.storage.local.set({ [QUEUE]: remaining })
+        return remaining
+      })
       const text = left.length > 0 ? String(left.length) : ''
       await chrome.action.setBadgeText({ text })
       // The per-tab overrides set at capture time survive a global write, so
@@ -1471,12 +1836,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         ),
       )
       sendResponse({ remaining: left.length })
-    })()
-    return true
+    })
   }
   if (message?.type === 'jojo:peek-captures') {
-    void read().then((queued) => sendResponse({ count: queued.length }))
-    return true
+    return guarded(async () => {
+      sendResponse({ count: (await read()).length })
+    })
   }
   /*
    * The one verb the app initiates rather than drains.
@@ -1511,7 +1876,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
    * machine, so it cannot.
    */
   if (message?.type === 'jojo:read-document') {
-    void (async () => {
+    return guarded(async () => {
       const request = message.request
       const url = typeof request?.url === 'string' ? request.url : ''
       // The switch, before the address check. Somebody who turned the reader
@@ -1539,9 +1904,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })
         return
       }
+      /*
+       * And it has to be THE reader — the address saved in this extension's
+       * popup — not any port on this machine. Loopback alone let a page reach
+       * every local service the person runs, with any method, and read the
+       * answer. Same port, any loopback spelling: see `sameLoopbackServer`.
+       */
+      if (!sameLoopbackServer(url, routes.reader.endpoint)) {
+        sendResponse({
+          ok: false,
+          status: 0,
+          text: '',
+          reason:
+            `The extension only relays documents to the reader address saved in it (${routes.reader.endpoint}). ` +
+            'If MarkItDown is listening somewhere else, open the jojo extension and change the Document reader address to match.',
+        })
+        return
+      }
       sendResponse(await relay(request, 'reader'))
-    })()
-    return true
+    })
   }
 
   /*
@@ -1560,22 +1941,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
    * request, and the extension's own permissions are the whole web.
    */
   if (message?.type === 'jojo:mcp-link') {
-    void (async () => {
+    return guarded(async () => {
       const request = message.request
       const url = typeof request?.url === 'string' ? request.url : ''
-      if (!isLoopback(url)) {
+      // Loopback AND jojo-bridge's own port — see JOJO_BRIDGE_ADDRESS.
+      if (!isLoopback(url) || !sameLoopbackServer(url, JOJO_BRIDGE_ADDRESS)) {
         sendResponse({
           ok: false,
           status: 0,
           text: '',
-          reason:
-            'jojo-bridge has to be on this machine — the extension only relays the link to loopback.',
+          reason: `jojo-bridge has to be at ${JOJO_BRIDGE_ADDRESS} — the extension only relays the link there.`,
         })
         return
       }
       sendResponse(await relay(request, 'jojo-bridge'))
-    })()
-    return true
+    })
   }
 
   /*
@@ -1588,7 +1968,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
    * place to get that wrong.
    */
   if (message?.type === 'jojo:call-model') {
-    void (async () => {
+    return guarded(async () => {
       const request = message.request
       const url = typeof request?.url === 'string' ? request.url : ''
       const refusal = await modelRefusal(url)
@@ -1597,20 +1977,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return
       }
       sendResponse(await relay(request, 'model provider'))
-    })()
-    return true
+    })
   }
 
   if (message?.type === 'jojo:scan-board') {
-    void (async () => {
+    return guarded(async () => {
       const url = typeof message.url === 'string' ? message.url : ''
       if (!/^https?:\/\//i.test(url)) {
         sendResponse({ ok: false, reason: 'That is not an address I can open.' })
         return
       }
+      // See `isLocalTarget`: a tab with the person's cookies is not opened on
+      // their own machine or network for a page to read.
+      if (isLocalTarget(url)) {
+        sendResponse({ ok: false, reason: 'That address is on this machine or your own network, so it was not opened.' })
+        return
+      }
       sendResponse(await scanBoard(url))
-    })()
-    return true
+    })
   }
 
   /*
@@ -1621,15 +2005,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
    * read — and for the same reason: opening a public page IS the feature.
    */
   if (message?.type === 'jojo:capture-url') {
-    void (async () => {
+    return guarded(async () => {
       const url = typeof message.url === 'string' ? message.url : ''
       if (!/^https?:\/\//i.test(url)) {
         sendResponse({ ok: false, reason: 'That is not an address I can open.' })
         return
       }
+      if (isLocalTarget(url)) {
+        sendResponse({ ok: false, reason: 'That address is on this machine or your own network, so it was not opened.' })
+        return
+      }
       sendResponse(await capturePage(url))
-    })()
-    return true
+    })
+  }
+
+  /*
+   * The crash-reporting choice, which `bridge.js` has forwarded since protocol 4
+   * and nothing here answered — so the verb fell through to `return false` and
+   * every caller got "message port closed". The page owns the choice and pushes
+   * it; this keeps it, clears the log when asked, and hands back what it has.
+   */
+  if (message?.type === 'jojo:crash-reporting') {
+    return guarded(async () => {
+      const stored = await chrome.storage.local.get([CRASH_ON, CRASH_LOG])
+      const on = typeof message.on === 'boolean' ? message.on : stored[CRASH_ON] === true
+      const kept = message.clear === true || !on ? [] : (Array.isArray(stored[CRASH_LOG]) ? stored[CRASH_LOG] : [])
+      await chrome.storage.local.set({ [CRASH_ON]: on, [CRASH_LOG]: kept })
+      sendResponse({ on, crashes: kept })
+    })
   }
   return false
 })

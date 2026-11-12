@@ -18,7 +18,7 @@ import type { VaultFile } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useGraph } from '@jojo/service/react/kg-context'
 import type { NodeId } from '@jojo/service/core/model'
-import { hostOf, isCaptureSource } from '@jojo/service/core/capture'
+import { hostOf, isCaptureSource, lockedCaptureHtml } from '@jojo/service/core/capture'
 import { pdfObjectUrl, placeholderPdf } from '@/lib/placeholder-pdf'
 import { htmlFromNote, noteFromRuns } from '@/lib/note-html'
 import { rawRunsFromHtml } from '@/lib/note-runs'
@@ -26,6 +26,8 @@ import { encodeFormat } from '@jojo/service/core/note-format'
 import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
+import { revokeLater } from '@/lib/save-file'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * Shows a file in the browser's own document viewer.
@@ -105,11 +107,14 @@ export function FileViewer({
    * now, off the journal's before-image rather than a copy captured here.
    */
   const saveNote = () => {
-    const { restore } = undoable(() =>
+    const { value, restore } = undoable(() =>
       // '' rather than omitted: absent means "keep the formatting that is
       // stored", and clearing every mark off a note has to be savable.
       updateFile(file.id, { note: noteText || undefined }, noteFormat ?? ''),
     )
+    // A refused write says so in the tool's words, and the editor stays dirty —
+    // "Note saved" over a refusal was the screen claiming a write that never was.
+    if (announceRefusal(value, toast)) return
     setNoteSaved(true)
     toast({
       title: `Note saved on ${file.name}`,
@@ -142,6 +147,14 @@ export function FileViewer({
    * as a value it could inspect.
    */
   const pageBlob = file.kind === 'page' ? blob : undefined
+  /**
+   * The captured page with its viewing policy written in — see
+   * `lockedCaptureHtml`. `sandbox=""` stops scripts and navigation and stops no
+   * fetch at all, so the CSP is what makes "a stored capture reaches the network
+   * never" true in this frame even for a reference the capture checks missed.
+   * Applied here, at the one place a capture is rendered, rather than to the
+   * stored bytes: the file stays as captured, and every viewing is locked.
+   */
   const [pageHtml, setPageHtml] = useState<string | null>(null)
 
   useEffect(() => {
@@ -152,7 +165,7 @@ export function FileViewer({
     let alive = true
     pageBlob.text().then(
       (text) => {
-        if (alive) setPageHtml(text)
+        if (alive) setPageHtml(lockedCaptureHtml(text))
       },
       (error: unknown) => {
         if (!alive) return
@@ -264,9 +277,9 @@ export function FileViewer({
     anchor.href = href
     anchor.download = blob.name
     anchor.click()
-    // Revoked next frame, not immediately: a synchronous revoke races the
-    // download the click just started and the file arrives empty.
-    setTimeout(() => URL.revokeObjectURL(href), 0)
+    // Revoked LATER, not next frame: a revoke races the download the click just
+    // started, and Firefox reads the URL after a frame has already passed.
+    revokeLater(href)
   }
 
   /**
@@ -285,9 +298,9 @@ export function FileViewer({
        * `sandbox` attribute means NO sandbox: the frame would run the site's
        * scripts with the app's own origin. The empty value is the opposite, and
        * the two look alike enough in a diff that it is worth saying which one this
-       * is. `referrerPolicy` and the missing `allow` are belt to the same braces:
-       * a capture has nothing left to fetch, and if one ever did, this frame is
-       * not the thing that lets it.
+       * is. The sandbox does NOT stop subresource fetches; the CSP that
+       * `lockedCaptureHtml` puts first in the document does. `referrerPolicy` and
+       * the missing `allow` are belt to the same braces.
        */
       <iframe
         key={file.id}

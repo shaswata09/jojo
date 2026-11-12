@@ -17,6 +17,7 @@ import { useToast } from '@/lib/toast-context'
 import { useConversation } from '@/lib/use-conversation'
 import { cn } from '@/lib/utils'
 import type { DockDrag } from '@/components/chat-dock/ChatDock'
+import { shouldTakeFocus } from '@/components/chat-dock/take-focus'
 
 /** Openers for a conversation about one application — the questions people ask beside a record. */
 const ABOUT_PROMPTS = [
@@ -47,6 +48,7 @@ export function ChatWindow({
   onBack,
   fullScreen = false,
   drag,
+  dockUsed = false,
 }: {
   win: DockWindow
   width: number | undefined
@@ -61,6 +63,8 @@ export function ChatWindow({
   fullScreen?: boolean
   /** Moving the whole dock by this header. Absent full screen, where there is nowhere to move it. */
   drag?: DockDrag | undefined
+  /** The person has used the dock since it mounted — see `take-focus.ts`. */
+  dockUsed?: boolean | undefined
 }) {
   const { file } = useThreads()
   const { toast } = useToast()
@@ -83,11 +87,23 @@ export function ChatWindow({
     if (el && stick.current) el.scrollTop = el.scrollHeight
   }, [entries, busy, open])
 
-  /* A window opened out takes the caret, so typing can start at once. */
+  /* A window the person opened out takes the caret, so typing can start at
+     once — but not one that merely mounted open (a reload, a return from the
+     Assistant page). `take-focus.ts` has the rule. */
   const composerId = `dock-prompt-${win.key}`
+  const seen = useRef<{ open: boolean; showing: string } | null>(null)
   useEffect(() => {
-    if (open) document.getElementById(composerId)?.focus()
-  }, [open, composerId])
+    const prev = seen.current
+    seen.current = { open, showing: composerId }
+    const take = shouldTakeFocus({
+      open,
+      wasOpen: prev?.open ?? null,
+      showing: composerId,
+      wasShowing: prev?.showing ?? null,
+      dockUsed,
+    })
+    if (take) document.getElementById(composerId)?.focus()
+  }, [open, composerId, dockUsed])
 
   const ask = (text: string) => {
     stick.current = true

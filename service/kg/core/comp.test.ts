@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { annualised, comparable, parseComp } from './comp'
+import { annualised, comparable, parseComp, rankable } from './comp'
 
 /**
  * Reading money out of free text.
@@ -87,9 +87,69 @@ describe('comparable', () => {
   it('compares when both name the same currency, or when neither names one', () => {
     expect(comparable(parseComp('$112k')!, parseComp('$95k')!)).toBe(true)
     expect(comparable(parseComp('112k')!, parseComp('95k')!)).toBe(true)
-    // One side unmarked is treated as the same currency — a store is one
-    // person's job search, and "$112k" beside "95,000" is not two economies.
-    expect(comparable(parseComp('$112k')!, parseComp('95,000')!)).toBe(true)
+  })
+
+  it('does not let an unmarked amount match a marked one', () => {
+    // It used to match anything, which is not transitive: `95,000` matched both
+    // `$112k` and `£90k`, and a screen checking each offer against the first
+    // then ranked dollars against pounds.
+    expect(comparable(parseComp('$112k')!, parseComp('95,000')!)).toBe(false)
+  })
+})
+
+describe('rankable', () => {
+  const read = (...texts: string[]) => texts.map((t) => parseComp(t)!)
+
+  it('refuses a set whose currencies disagree, whichever offer is first', () => {
+    expect(rankable(read('95,000', '$112k', '£90k'))).toBe(false)
+    expect(rankable(read('$112k', '95,000', '£90k'))).toBe(false)
+    expect(rankable(read('$112k', '95,000'))).toBe(false)
+  })
+
+  it('ranks a set that all names one currency, or that names none', () => {
+    expect(rankable(read('$112k', '$95,000', 'USD 1'))).toBe(false)
+    expect(rankable(read('$112k', '$95,000'))).toBe(true)
+    expect(rankable(read('112k', '95,000'))).toBe(true)
+  })
+
+  it('needs two offers to rank', () => {
+    expect(rankable(read('$112k'))).toBe(false)
+    expect(rankable([])).toBe(false)
+  })
+})
+
+describe('Indian and decimal-comma amounts', () => {
+  it('reads the rupee sign and lakh grouping', () => {
+    // `12,00,000` failed the three-digit grouping and read as twelve.
+    expect(parseComp('₹12,00,000 per annum')).toMatchObject({
+      amount: 1_200_000,
+      currency: '₹',
+      period: 'year',
+      periodStated: true,
+    })
+    expect(parseComp('INR 1,20,00,000')).toMatchObject({ amount: 12_000_000, currency: 'INR' })
+    // Lakh grouping is itself a money signal, like a western separator, so it
+    // wins over an earlier bare number instead of tying with it.
+    expect(parseComp('Team of 12, salary 12,00,000')?.amount).toBe(1_200_000)
+    // The western reading is untouched.
+    expect(parseComp('$112,000')?.amount).toBe(112_000)
+  })
+
+  it('keeps a decimal tail, so the period word still touches the amount', () => {
+    // The `,50` sat between the digits and `monthly`, and a monthly stipend
+    // read as €1,200 a year.
+    const stipend = parseComp('Stipend €1.200,50 monthly')
+    expect(stipend).toMatchObject({
+      amount: 1200.5,
+      currency: '€',
+      period: 'month',
+      periodStated: true,
+    })
+    expect(parseComp('$1,200.50 per month')).toMatchObject({ amount: 1200.5, period: 'month' })
+  })
+
+  it('does not read a tail that repeats the grouping separator as cents', () => {
+    expect(parseComp('$1,200,50')?.amount).toBe(1200)
   })
 })
 

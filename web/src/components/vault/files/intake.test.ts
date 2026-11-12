@@ -14,13 +14,31 @@ import type { VaultFile } from '@jojo/service/core/model'
 import { sortDrop } from '@/components/vault/files/intake'
 
 const record = (name: string, id = name): VaultFile =>
-  ({ id: `file:${id}`, name, kind: 'pdf', bucket: 'To read', size: '1 KB', savedOn: '2026-01-01' }) as VaultFile
+  ({
+    id: `file:${id}`,
+    name,
+    kind: 'pdf',
+    bucket: 'To read',
+    size: '1 KB',
+    savedOn: '2026-01-01',
+  }) as VaultFile
 
 /** `FileList` is a DOM type; the code only ever iterates it. */
 const drop = (...names: string[]) =>
   names.map((n) => new File([new Uint8Array([1])], n)) as unknown as FileList
 
 describe('sortDrop', () => {
+  it('takes the plain array the Profile picker hands it, with the same rules', () => {
+    // Profile's picker copies the files off the input (`pickedFiles`) before
+    // clearing it, so it arrives as File[] — and used to bypass this function
+    // entirely, filing a duplicate row for a CV already in the vault.
+    const files = [new File([new Uint8Array([1])], 'CV.pdf'), new File([], 'Folder')]
+    const out = sortDrop(files, [record('cv.pdf')], () => true)
+    expect(out.fresh).toHaveLength(0)
+    expect(out.skipped).toBe(1)
+    expect(out.folders).toBe(1)
+  })
+
   it('files a name the vault has never seen', () => {
     const out = sortDrop(drop('CV.pdf'), [])
     expect(out.fresh).toHaveLength(1)

@@ -2289,6 +2289,31 @@ describe('the proposal queue', () => {
     expect(proposal?.props.error).toBe('That record is no longer here.')
   })
 
+  it('keeps what a suggested posting’s page said, until the card is answered', () => {
+    const h = harness()
+    const pipeline = aPipeline(h)
+    const id = okOr(
+      h.runtime.run('pipeline.proposal.raise', {
+        pipelineId: pipeline,
+        kind: 'scout',
+        tool: 'scout.posting.save',
+        input: JSON.stringify({ url: 'https://jobs.rice.edu/postings/1' }),
+        title: 'Save posting',
+        rationale: '',
+      }),
+    )
+    const reading = JSON.stringify({ ok: true, fields: { org: 'Rice University' } })
+    const depth = h.repo.undoable.length
+    okOr(h.runtime.run('pipeline.proposal.reading.set', { id, reading }))
+    expect(h.repo.getSnapshot().node(id, 'proposal')?.props.reading).toBe(reading)
+    // Background bookkeeping, so ⌘Z still means the person's own last edit.
+    expect(h.repo.undoable).toHaveLength(depth)
+
+    expect(h.runtime.run('pipeline.proposal.reading.set', { id, reading: '{oops' }).ok).toBe(false)
+    okOr(h.runtime.run('pipeline.proposal.discard', { id }))
+    expect(h.runtime.run('pipeline.proposal.reading.set', { id, reading }).ok).toBe(false)
+  })
+
   it('discards without touching anything else', () => {
     const h = harness()
     const pipeline = aPipeline(h)

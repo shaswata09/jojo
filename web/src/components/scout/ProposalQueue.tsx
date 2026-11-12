@@ -2,8 +2,10 @@ import {
   Check,
   ExternalLink,
   FilePlus2,
+  FileCheck2,
   Inbox,
   ListChecks,
+  LoaderCircle,
   Sparkles,
   Trash2,
   TriangleAlert,
@@ -16,7 +18,16 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { approvedLabel, postingPreview, proposalDetail } from '@jojo/service/core/proposal'
+import {
+  approvedLabel,
+  postingPreview,
+  proposalDetail,
+  scoutReading,
+} from '@jojo/service/core/proposal'
+import type { ScoutReading } from '@jojo/service/core/proposal'
+import { shortDate } from '@jojo/service/core/dates'
+import { KeywordChips } from '@/components/common/LabelPicker'
+import { useReadingNow } from '@/lib/scout-reading'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
 
@@ -201,6 +212,8 @@ function ProposalCard({
   const status = base && p.status === 'approved' ? { ...base, label: approvedLabel(p.tool) } : base
   const posting = postingPreview(p.tool, p.input)
   const detail = posting ? null : proposalDetail(p.input)
+  const reading = posting ? scoutReading(p.reading) : null
+  const readingNow = useReadingNow(p.id)
 
   return (
     <li
@@ -247,11 +260,25 @@ function ProposalCard({
                 <p className="line-clamp-2 text-xs leading-relaxed wrap-anywhere text-text-1">
                   {posting.summary}
                 </p>
-              ) : (
+              ) : reading?.ok || readingNow ? null : (
+                // Not said once the page itself has been read (or is being):
+                // the reading below is the summary, and better.
                 <p className="text-xs text-text-3 italic">
                   No summary came with this one — open the posting to see what it is.
                 </p>
               )}
+              {readingNow ? (
+                <p className="flex items-center gap-1.5 text-xs text-text-3">
+                  <LoaderCircle
+                    className="size-3 shrink-0 animate-spin motion-reduce:animate-none"
+                    strokeWidth={1.8}
+                    aria-hidden
+                  />
+                  Reading the posting for its details…
+                </p>
+              ) : reading ? (
+                <ReadingLine reading={reading} />
+              ) : null}
               {posting.href ? (
                 <a
                   href={posting.href}
@@ -355,5 +382,49 @@ function ProposalCard({
         ) : null}
       </div>
     </li>
+  )
+}
+
+/**
+ * What the posting's page said, read before the card was answered — see
+ * `ScoutReader`. The employer, role and place first, because those decide
+ * whether a job is worth a look; then the deadline, the person's own keywords
+ * the page matched, and whether the page itself was kept.
+ */
+function ReadingLine({ reading }: { reading: ScoutReading }) {
+  if (!reading.ok) {
+    return (
+      <p className="flex items-start gap-1.5 text-xs leading-relaxed wrap-anywhere text-text-3">
+        <TriangleAlert className="mt-0.5 size-3 shrink-0" strokeWidth={1.8} aria-hidden />
+        <span>
+          The page could not be read: {reading.reason}
+          {reading.fileId ? ' The page itself was saved.' : ''}
+        </span>
+      </p>
+    )
+  }
+  const { fields } = reading
+  const who = [fields.org, fields.role].filter(Boolean).join(' — ')
+  const facts = [
+    fields.location,
+    fields.comp && fields.comp.length <= 60 ? fields.comp : undefined,
+    fields.deadline ? `apply by ${shortDate(fields.deadline)}` : undefined,
+  ].filter(Boolean)
+  return (
+    <div className="space-y-1 rounded border border-hairline bg-well px-2 py-1.5">
+      {who ? <p className="text-xs font-medium wrap-anywhere text-text-1">{who}</p> : null}
+      {facts.length > 0 ? (
+        <p className="text-xs wrap-anywhere text-text-2">{facts.join(' · ')}</p>
+      ) : null}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <KeywordChips ids={reading.keywords.map((k) => k.id)} />
+        {reading.fileId ? (
+          <span className="flex items-center gap-1 text-xs text-text-3">
+            <FileCheck2 className="size-3 shrink-0" strokeWidth={1.8} aria-hidden />
+            Page saved
+          </span>
+        ) : null}
+      </div>
+    </div>
   )
 }

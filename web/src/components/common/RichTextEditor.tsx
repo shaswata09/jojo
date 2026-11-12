@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import {
   Bold,
   Italic,
@@ -180,6 +180,10 @@ export function RichTextEditor({
    */
   const lastRange = useRef<Range | null>(null)
 
+  // Two editors can be mounted at once (the note panel and the file viewer), so
+  // the size picker's label needs an id of its own.
+  const sizeId = useId()
+
   /** The colour popover, held here so a preset can close it and a commit can leave it open. */
   const [colourOpen, setColourOpen] = useState(false)
 
@@ -250,11 +254,11 @@ export function RichTextEditor({
   return (
     <div className={cn('flex min-h-0 flex-col', className)}>
       <div className="flex flex-wrap items-center gap-1 rounded-t-md border border-hairline bg-well px-1.5 py-1.5">
-        <label className="sr-only" htmlFor="rte-size">
+        <label className="sr-only" htmlFor={sizeId}>
           Font size
         </label>
         <select
-          id="rte-size"
+          id={sizeId}
           defaultValue="3"
           onChange={(e) => exec('fontSize', e.target.value)}
           className="cursor-pointer rounded-sm border border-hairline bg-panel px-1.5 py-1 text-xs text-text-2"
@@ -286,15 +290,15 @@ export function RichTextEditor({
 
         {!inlineOnly &&
           LISTS.map(({ cmd, icon: Icon, label }) => (
-          <button
-            key={cmd}
-            type="button"
-            title={label}
-            aria-label={label}
-            aria-pressed={!!active[cmd]}
-            onClick={() => exec(cmd)}
-            className={cn(btn, active[cmd] && btnOn)}
-          >
+            <button
+              key={cmd}
+              type="button"
+              title={label}
+              aria-label={label}
+              aria-pressed={!!active[cmd]}
+              onClick={() => exec(cmd)}
+              className={cn(btn, active[cmd] && btnOn)}
+            >
               <Icon className="size-3.5" strokeWidth={2} aria-hidden />
             </button>
           ))}
@@ -357,18 +361,20 @@ export function RichTextEditor({
             </div>
 
             {/*
-              * Any colour at all, under the presets rather than behind a ninth
-              * swatch: a picker in a popover in a popover is two clicks for the
-              * one thing somebody opened this to do.
-              *
-              * It STAYS OPEN across commits, so a colour can be dragged, looked
-              * at on the text, and dragged again. Each release applies once.
-              * And it persists — a colour none of the eight is kept as a hex on
-              * the span (`noteFromRuns` → `NoteSpan.ink`), so it is still there
-              * after a reload.
-              */}
+             * Any colour at all, under the presets rather than behind a ninth
+             * swatch: a picker in a popover in a popover is two clicks for the
+             * one thing somebody opened this to do.
+             *
+             * It STAYS OPEN across commits, so a colour can be dragged, looked
+             * at on the text, and dragged again. Each release applies once.
+             * And it persists — a colour none of the eight is kept as a hex on
+             * the span (`noteFromRuns` → `NoteSpan.ink`), so it is still there
+             * after a reload.
+             */}
             <div className="border-t border-hairline pt-2">
-              <div className="mb-1.5 px-0.5 text-xs tracking-wide text-text-3 uppercase">Any colour</div>
+              <div className="mb-1.5 px-0.5 text-xs tracking-wide text-text-3 uppercase">
+                Any colour
+              </div>
               <SpectrumPicker value={undefined} onCommit={(hex) => exec('foreColor', hex)} />
             </div>
           </PopoverContent>

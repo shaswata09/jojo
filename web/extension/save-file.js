@@ -19,6 +19,19 @@
  * address carrying `-->` would otherwise end the comment early and spill the
  * rest of the sentence into the page as text.
  */
+/**
+ * The policy the saved file opens under: nothing but `data:`. A transcription of
+ * `CAPTURE_VIEW_CSP` in `service/kg/core/capture.ts`, checked against it by
+ * `capture-save.test.ts`.
+ *
+ * jojo's own viewer writes this in before rendering a capture; a DOWNLOADED copy
+ * is opened straight from disk, with no sandbox and no viewer, so it carries
+ * the policy itself. A remote reference every check missed is then refused by
+ * the browser that opens the file, rather than fetched from somebody's desk.
+ */
+export const CAPTURE_VIEW_CSP =
+  "default-src 'none'; img-src data:; style-src 'unsafe-inline' data:; font-src data:; media-src data:; base-uri 'none'; form-action 'none'"
+
 export function asFile(kept) {
   const source = String(kept.url ?? '').replace(/--/g, '%2D%2D')
   const when = String(kept.capturedAt ?? '').replace(/--/g, '')
@@ -26,9 +39,12 @@ export function asFile(kept) {
     `<!-- Saved by the jojo extension from ${source} on ${when}. ` +
     'Styles, images and fonts are embedded; scripts were removed, so it opens offline. -->\n'
   const html = String(kept.html ?? '')
+  // First after the doctype and the comment, before anything the page wrote —
+  // the same place `lockedCaptureHtml` puts it, for the reasons it gives.
+  const lock = `<meta http-equiv="Content-Security-Policy" content="${CAPTURE_VIEW_CSP}">\n`
   return /^\s*<!doctype/i.test(html)
-    ? html.replace(/^(\s*<!doctype[^>]*>)/i, `$1\n${provenance}`)
-    : `<!doctype html>\n${provenance}${html}`
+    ? html.replace(/^(\s*<!doctype[^>]*>)/i, `$1\n${provenance}${lock}`)
+    : `<!doctype html>\n${provenance}${lock}${html}`
 }
 
 /** 'senior-ml-engineer-2026-09-11.html' — readable, and safe on every filesystem. */

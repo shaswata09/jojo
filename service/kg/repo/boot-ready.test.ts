@@ -278,4 +278,44 @@ describe('re-opening a store whose audit was pruned on an earlier launch', () =>
     second.dispose()
     first.dispose()
   })
+
+  /**
+   * Another tab's journal row, committed between this open's read and its prune.
+   *
+   * The prune used to `clear()` the whole `ops` store and write back what it
+   * had READ — so a row appended by a second tab in between was in neither
+   * half and was destroyed. Only the rows the read saw may be removed.
+   */
+  it('keeps a journal row another tab appended after the read', async () => {
+    const driver = createMemoryDriver({
+      rows: {
+        nodes: [],
+        edges: [],
+        meta: [STORED_META],
+        ops: Array.from({ length: REVERTABLE_DEPTH + 5 }, (_, i) => journalRow(i)),
+      },
+    })
+    let raced = false
+    const racing: MemoryDriver = {
+      ...driver,
+      readAll: async () => {
+        const read = await driver.readAll()
+        if (!raced) {
+          raced = true
+          await driver.commit([{ kind: 'put', store: 'ops', key: null, value: journalRow(50) }])
+        }
+        return read
+      },
+    }
+
+    const session = sessionOf(await bootWith(racing))
+    await session.repo.flush()
+
+    const ids = (await readRows(driver)).ops.map((row) => row['id'])
+    expect(ids).toContain('entry-0050')
+    // The prune still happened to the rows it did read.
+    expect(ids).toHaveLength(REVERTABLE_DEPTH + 6)
+    expect((await readRows(driver)).ops[0]?.['trimmed']).toBe(true)
+    session.dispose()
+  })
 })

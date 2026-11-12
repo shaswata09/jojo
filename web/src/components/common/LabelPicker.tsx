@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useLabels } from '@/lib/labels-context'
 import { useTheme } from '@/lib/theme-context'
 import { cn } from '@/lib/utils'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /**
  * The keywords on one record: the picker that edits them, and the chips that
@@ -107,7 +108,7 @@ export function LabelPicker({
           aria-label="New keyword"
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (isCommitEnter(e)) {
               e.preventDefault()
               create()
             }
@@ -121,8 +122,28 @@ export function LabelPicker({
 /** The keywords on one record, shown inline. Read-only. */
 export function LabelChips({ recordId, className }: { recordId: string; className?: string }) {
   const { labelsOf } = useLabels()
+  return <ChipsOf labels={labelsOf(recordId)} className={className} />
+}
+
+/**
+ * Keywords by id, shown the way a record's are — for keywords that are not on
+ * a record yet, like the ones a suggested posting's page matched. Ids no longer
+ * in the vocabulary are left out.
+ */
+export function KeywordChips({ ids, className }: { ids: readonly string[]; className?: string }) {
+  const { labels } = useLabels()
+  const wanted = new Set(ids)
+  return <ChipsOf labels={labels.filter((l) => wanted.has(l.id))} className={className} />
+}
+
+function ChipsOf({
+  labels: mine,
+  className,
+}: {
+  labels: readonly ReturnType<typeof useLabels>['labels'][number][]
+  className?: string | undefined
+}) {
   const { theme } = useTheme()
-  const mine = labelsOf(recordId)
   if (mine.length === 0) return null
 
   return (

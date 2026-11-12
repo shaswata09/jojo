@@ -101,6 +101,9 @@ export const threadCreate = defineTool({
 export const threadSet = defineTool({
   name: 'assistant.thread.set',
   title: 'Save the conversation',
+  // The app's write, never a model's: offered to one, it could empty any other
+  // conversation with no prompt and no undo. See `Tool.catalogued`.
+  catalogued: false,
   summary:
     'Records what has been said in a conversation so far. The app calls this as the conversation happens — you never need to, and calling it would rewrite the record of what you did.',
   effect: 'update',
@@ -265,6 +268,9 @@ export const threadDelete = defineTool({
 export const threadContextSet = defineTool({
   name: 'assistant.thread.context.set',
   title: 'Remember earlier in this conversation',
+  // The app's write, never a model's: offered to one, it could plant a summary
+  // that every later turn reads as the conversation's history.
+  catalogued: false,
   summary:
     'Stores a short summary of the part of a conversation that no longer fits in the model’s context, so the assistant still knows what was established.',
   effect: 'update',

@@ -137,6 +137,7 @@
 
 import type { NodeId } from '../core/model'
 import type { ChatMessage, Turn } from '../core/model-server'
+import type { Cancellation } from './loop'
 import { TYPE_PREFIX } from '../core/ref'
 
 /**
@@ -252,8 +253,11 @@ export const LEDGER_HEADING = 'RECORDS SEEN'
  */
 const PROSE_LABEL_CHARS = 60
 
-/** The `(id: …)` tail `renderOutcome` puts on every write result that has an id. */
-const PROSE_RECORD = /^(.*)\s\(id: ([^)]+)\)$/
+/**
+ * The `(id: …)` tail `renderOutcome` puts on a write result with one id, or
+ * `(ids: a, b)` on one that returned several.
+ */
+const PROSE_RECORD = /^(.*)\s\(ids?: ([^)]+)\)$/
 
 /**
  * Most ledger entries when there is no budget to reserve a third of.
@@ -438,7 +442,60 @@ function collectProse(text: string, into: Map<string, string>): void {
   for (const line of text.split('\n')) {
     const match = PROSE_RECORD.exec(line)
     if (match?.[1] === undefined || match[2] === undefined) continue
-    if (!into.has(match[2])) into.set(match[2], match[1].trim().slice(0, PROSE_LABEL_CHARS))
+    const label = match[1].trim().slice(0, PROSE_LABEL_CHARS)
+    // `, and 3 more` closes a long list; it names no record.
+    for (const id of match[2].split(', ')) {
+      if (id === '' || id.startsWith('and ') || into.has(id)) continue
+      into.set(id, label)
+    }
+  }
+}
+
+/**
+ * One JSON string literal's body, escapes included — the `…` in `"…"`.
+ */
+const JSON_STRING = '((?:[^"\\\\]|\\\\.)*)'
+
+/**
+ * An `id` and the `label` after it in the same object, with only scalar
+ * fields between — the shape `render` writes (`{"id":…,"type":…,"label":…}`)
+ * and a `related` row writes (`…"id":…,"type":…,"label":…`).
+ */
+const ID_THEN_LABEL = new RegExp(
+  `"id":"${JSON_STRING}"(?:,"[A-Za-z]+":(?:"(?:[^"\\\\]|\\\\.)*"|[-0-9.a-z]+))*?,"label":"${JSON_STRING}"`,
+  'g',
+)
+
+/**
+ * The records in a result that is JSON at the front and something else after.
+ *
+ * `renderOutcome` appends its truncation banner OUTSIDE the JSON, and the loop
+ * appends its own instructions ("You have one step left…", a stuck nudge) the
+ * same way — so the largest reads, the ones carrying the most records, are
+ * exactly the ones `JSON.parse` refuses. `JSON.stringify` never writes a raw
+ * newline, so whatever precedes the first one is the JSON as sent: parsed whole
+ * when it is whole, and scanned for `id`/`label` pairs when the cut landed
+ * mid-value. A pair cut partway through its label has no closing quote and is
+ * not matched, so a half record never enters the ledger.
+ */
+function collectHead(text: string, into: Map<string, string>): void {
+  const end = text.indexOf('\n')
+  const head = end === -1 ? text : text.slice(0, end)
+  if (!head.startsWith('{') && !head.startsWith('[')) return
+  try {
+    collect(JSON.parse(head) as unknown, into)
+    return
+  } catch {
+    // Cut mid-value: fall through to the scan.
+  }
+  for (const match of head.matchAll(ID_THEN_LABEL)) {
+    try {
+      const id = JSON.parse(`"${match[1] ?? ''}"`) as string
+      const label = JSON.parse(`"${match[2] ?? ''}"`) as string
+      if (id !== '' && !into.has(id)) into.set(id, label)
+    } catch {
+      // An escape the cut split in two. Skip the pair, never the result.
+    }
   }
 }
 
@@ -462,6 +519,7 @@ export const recordsIn = (dropped: readonly ChatMessage[]): readonly LedgerEntry
     try {
       parsed = JSON.parse(message.content)
     } catch {
+      collectHead(message.content, seen)
       collectProse(message.content, seen)
       continue
     }
@@ -806,8 +864,11 @@ export const asMessage = (
 }
 
 export type CompactDeps = {
-  /** The summariser's model call. May be a different, smaller model. */
-  readonly ask: (messages: readonly ChatMessage[]) => Promise<Turn>
+  /**
+   * The summariser's model call. May be a different, smaller model. Handed the
+   * run's Stop so a compaction nobody is waiting for can cancel its request.
+   */
+  readonly ask: (messages: readonly ChatMessage[], signal?: Cancellation) => Promise<Turn>
 }
 
 /**
@@ -824,6 +885,7 @@ async function notesFor(
   { ask }: CompactDeps,
   dropped: readonly ChatMessage[],
   options: CompactOptions,
+  signal?: Cancellation,
 ): Promise<string | null> {
   const budget = textBudget(options)
   if (budget !== undefined && budget < MIN_SUMMARY_CHARS) return null
@@ -831,11 +893,11 @@ async function notesFor(
   if (input.length === 0) return null
   let turn: Turn
   try {
-    turn = await ask(compactionMessages(input, options))
+    turn = await ask(compactionMessages(input, options), signal)
   } catch {
     return null
   }
-  if (!turn.ok || turn.text === null) return null
+  if (signal?.aborted || !turn.ok || turn.text === null) return null
   // An empty reply is refused by `fit`, which keeps no empty part. Ids come
   // out first: they belong to the ledger, and the notes are the only place a
   // wrong one can enter (`stripIds`). The length rules then measure what is
@@ -951,6 +1013,7 @@ export async function compact(
   deps: CompactDeps,
   dropped: readonly ChatMessage[],
   options: CompactOptions = {},
+  signal?: Cancellation,
 ): Promise<string | null> {
   const entries = merged(
     options.earlier === undefined ? [] : ledgerIn(options.earlier),
@@ -959,7 +1022,7 @@ export async function compact(
   // The earlier NOTES, verbatim: an earlier summary that is a ledger alone
   // carries none, and its ids are merged above rather than copied by a model.
   const carried = options.earlier === undefined ? '' : split(options.earlier).notes.trim()
-  const fresh = await notesFor(deps, dropped, options)
+  const fresh = await notesFor(deps, dropped, options, signal)
   const notes = [carried, fresh ?? ''].filter((part) => part !== '').join(SECTION_JOIN)
   const out = fit(notes, entries, textBudget(options))
   return out === '' ? null : out

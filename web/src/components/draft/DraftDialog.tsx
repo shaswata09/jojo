@@ -30,6 +30,7 @@ import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 import { contentModal } from '@/components/ui/dialog-width'
+import { announceRefusal } from '@/components/common/write-result'
 
 /** How long the copied confirmation stays up — the same beat as SnippetsTool. */
 const COPIED_MS = 1600
@@ -105,7 +106,9 @@ export type DraftDialogProps = {
 export function DraftDialog({ open, onOpenChange, itemId, applicationId }: DraftDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn('max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)_auto]', contentModal)}>
+      <DialogContent
+        className={cn('max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)_auto]', contentModal)}
+      >
         {/* The body is a child so it mounts with the dialog: the chosen snippet
             and the substituted text are seeded once, and a fresh open starts
             from the props rather than from a half-edited draft. */}
@@ -218,7 +221,7 @@ function DraftBody({
   const markSent = () => {
     if (!item) return
     const before = item.completedOn ?? null
-    update(item.id, { completedOn: TODAY })
+    if (announceRefusal(update(item.id, { completedOn: TODAY }), toast)) return
     onOpenChange(false)
     toast({
       // Nothing was sent from here, and the copy says only what happened: the

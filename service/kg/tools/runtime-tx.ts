@@ -61,11 +61,24 @@ export function makeTx(
     },
 
     del(id: NodeId) {
-      // The edges go with it. An edge whose endpoint is missing is corrupt and
-      // the boot integrity check rejects the whole graph over one of them —
-      // whereas the RECORDS at the other end are untouched, which is D15.
-      dropIncident(id)
-      stage(buf.nodes, id, priorNode(id), null)
+      const del = (target: NodeId) => {
+        const memory = read()
+        if (!memory.node(target)) return
+        // A claim about this record goes with it — the one exception to D15. A
+        // claim IS its two ends: with one gone, `storedClaims` skips it, nothing
+        // can show or delete it, and it sits in the store as half a fact. Read
+        // before `dropIncident` takes the edges that say which claims they are.
+        const claims = [...memory.in(target, 'SUBJECT'), ...memory.in(target, 'OBJECT')].map(
+          (e) => e.from,
+        )
+        // The edges go with it. An edge whose endpoint is missing is corrupt and
+        // the boot integrity check rejects the whole graph over one of them —
+        // whereas the RECORDS at the other end are untouched, which is D15.
+        dropIncident(target)
+        stage(buf.nodes, target, priorNode(target), null)
+        for (const claim of claims) del(claim)
+      }
+      del(id)
     },
 
     link(from: NodeId, rel: Rel, to: NodeId, props: Props = {}) {

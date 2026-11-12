@@ -31,7 +31,8 @@ const isProbablyDirectory = (file: File) => file.type === '' && !file.name.inclu
  * was entirely folders.
  */
 export function sortDrop(
-  list: FileList | null,
+  // A FileList from a drop, or the array `pickedFiles` copied off an input.
+  list: Iterable<File> | ArrayLike<File> | null,
   existing: readonly VaultFile[],
   /**
    * Whether a record already holds bytes. Absent means "assume they all do",

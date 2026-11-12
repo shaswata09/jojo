@@ -10,6 +10,7 @@ import { useGraph } from '@jojo/service/react/kg-context'
 import { htmlFromNote, noteFromRuns } from '@/lib/note-html'
 import { rawRunsFromHtml } from '@/lib/note-runs'
 import { useToast } from '@/lib/toast-context'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * The free-text note on the record, with its formatting.
@@ -94,8 +95,13 @@ export function NotePanel({ application: a }: { application: Application }) {
     dirty.current = false
     const encoded = encodeFormat(format)
     if (text === baseline.current.note && encoded === baseline.current.format) return
+    // Refused: left dirty, so the next blur or unmount tries again rather than
+    // treating what is on screen as stored.
+    if (announceRefusal(setNote(a.id, text, encoded ?? ''), toast)) {
+      dirty.current = true
+      return
+    }
     baseline.current = { note: text, format: encoded }
-    setNote(a.id, text, encoded ?? '')
     setSaved(true)
 
     /*

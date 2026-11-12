@@ -276,6 +276,13 @@ window.addEventListener('message', (event) => {
   )
 })
 
+// Marked on the document as well, which the page can read synchronously and
+// before any worker is awake: `capture-bridge.ts` gives its probe a longer
+// budget when this is present, because then silence is an MV3 worker starting
+// up rather than no extension at all. The attribute name must match
+// `BRIDGE_MARK` there.
+document.documentElement.setAttribute('data-jojo-bridge', String(BRIDGE_PROTOCOL))
+
 // Announced once so the app can tell "no extension" from "extension with
 // nothing queued" — two states that otherwise look identical and want
 // completely different sentences on screen.

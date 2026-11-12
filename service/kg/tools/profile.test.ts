@@ -177,3 +177,87 @@ describe('profile.set and the role list', () => {
     expect(rolesOf(h)).toEqual(before)
   })
 })
+
+/*
+ * The CV import as one act. The banner's Confirm used to call
+ * `profile.background.add` and then `claim.add` per relation from the view —
+ * a dozen commits for one click, no single Undo, and a partial failure left
+ * facts without their relations.
+ */
+describe('profile.background.import', () => {
+  const drafts = [
+    { kind: 'publication' as const, title: 'OSDI paper' },
+    { kind: 'skill' as const, title: 'Distributed systems' },
+    { kind: 'employment' as const, title: 'Research intern', where: 'Allen Institute for AI' },
+  ]
+
+  const claims = (h: ReturnType<typeof harness>) => h.repo.getSnapshot().ofType('claim')
+  const facts = (h: ReturnType<typeof harness>) => h.repo.getSnapshot().ofType('background')
+
+  it('files the facts and their relations in one commit, with the source on every fact', () => {
+    const h = harness()
+    const out = okOr(
+      h.runtime.run('profile.background.import', {
+        background: drafts,
+        relations: [{ subject: 0, predicate: 'is evidence of', object: 1 }],
+        source: 'file_cv',
+      }),
+    )
+
+    expect(out.ids).toHaveLength(3)
+    expect(out.created).toHaveLength(3)
+    expect(out.related).toHaveLength(1)
+    expect(facts(h).every((n) => n.props.source === 'file_cv')).toBe(true)
+    expect(claims(h)).toHaveLength(1)
+    expect(claims(h)[0]!.props.source).toBe('file_cv')
+  })
+
+  it('is taken back whole by one undo', () => {
+    const h = harness()
+    okOr(
+      h.runtime.run('profile.background.import', {
+        background: drafts,
+        relations: [{ subject: 0, predicate: 'is evidence of', object: 1 }],
+      }),
+    )
+    h.runtime.undo()
+    expect(facts(h)).toHaveLength(0)
+    expect(claims(h)).toHaveLength(0)
+  })
+
+  it('skips a relation the graph already holds rather than losing the import to it', () => {
+    const h = harness()
+    const out = okOr(
+      h.runtime.run('profile.background.import', {
+        background: drafts,
+        relations: [
+          { subject: 0, predicate: 'is evidence of', object: 1 },
+          // The same fact again, which `claim.add` refuses — and a refusal
+          // inside a composite would throw away all three facts with it.
+          { subject: 0, predicate: 'is evidence of', object: 1 },
+          // Out of range: an entry the person dropped before confirming.
+          { subject: 0, predicate: 'supports', object: 9 },
+        ],
+      }),
+    )
+
+    expect(out.related).toHaveLength(1)
+    expect(facts(h)).toHaveLength(3)
+    expect(claims(h)).toHaveLength(1)
+  })
+
+  it('re-importing the same reading adds nothing new', () => {
+    const h = harness()
+    const input = {
+      background: drafts,
+      relations: [{ subject: 0, predicate: 'is evidence of', object: 1 }],
+    }
+    okOr(h.runtime.run('profile.background.import', input))
+    const again = okOr(h.runtime.run('profile.background.import', input))
+
+    expect(again.created).toHaveLength(0)
+    expect(again.related).toHaveLength(0)
+    expect(facts(h)).toHaveLength(3)
+    expect(claims(h)).toHaveLength(1)
+  })
+})

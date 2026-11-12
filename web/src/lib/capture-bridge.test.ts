@@ -40,7 +40,24 @@ const fakeWindow = {
 
 vi.stubGlobal('window', fakeWindow)
 
-const { readDocument, capturePage } = await import('./capture-bridge')
+/** Whether the bridge has marked the document, as `bridge.js` does on load. */
+let marked = false
+vi.stubGlobal('document', {
+  documentElement: { hasAttribute: (name: string) => name === 'data-jojo-bridge' && marked },
+})
+
+type Bridge = typeof import('./capture-bridge')
+let { readDocument, capturePage, scanBoard, callModel }: Bridge = await import('./capture-bridge')
+
+/**
+ * A fresh copy of the module, with nothing yet answered on it. `answered` is
+ * module state — it is what lets the long budgets and the skipped probe be
+ * EARNED — so a test about a first contact needs a page that has had none.
+ */
+async function freshPage() {
+  vi.resetModules()
+  ;({ readDocument, capturePage, scanBoard, callModel } = await import('./capture-bridge'))
+}
 const { CAPTURE_REJECTION_MESSAGE } = await import('@jojo/service/core/capture')
 
 /** What the bridge would post back, correlated on the id the page chose. */
@@ -60,6 +77,7 @@ const request = { url: 'http://127.0.0.1:3001/mcp', method: 'POST', headers: {},
 beforeEach(() => {
   listeners.clear()
   posted.length = 0
+  marked = false
 })
 
 afterEach(() => {
@@ -174,6 +192,7 @@ describe('how long a relayed read waits', () => {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 describe('capturing a page by its address', () => {
+  beforeEach(freshPage)
   const url = 'https://job-boards.greenhouse.io/acme/jobs/4'
   const page = {
     url,
@@ -273,5 +292,77 @@ describe('capturing a page by its address', () => {
       reason: 'The read was cancelled.',
     })
     expect(listeners.size).toBe(0)
+  })
+})
+
+/**
+ * The probe before a model call or a "From link" read.
+ *
+ * 400 ms decided "no extension", and an MV3 worker that had gone idle often
+ * takes longer than that to wake — so a cloud turn read a cold worker as absent
+ * and fell back to a direct send that CORS refused. Now the probe is skipped
+ * once anything has answered, and given longer when the bridge has marked the
+ * page; without the mark it stays at 400 ms.
+ */
+describe('asking whether the extension is there', () => {
+  beforeEach(freshPage)
+  const model = { url: 'https://api.openai.com/v1/chat/completions', method: 'POST', headers: {}, body: '{}' }
+
+  it('waits for a cold worker when the bridge has marked the page', async () => {
+    vi.useFakeTimers()
+    marked = true
+    const call = callModel(model)
+    await vi.advanceTimersByTimeAsync(2000)
+    // Still waiting at two seconds: a 400 ms probe would have given up already.
+    expect(posted).toHaveLength(1)
+    reply({ protocol: 9, count: 0 })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(posted.at(-1)).toMatchObject({ model: { url: model.url } })
+    reply({ protocol: 9, ok: true, status: 200, text: 'hi' })
+    await expect(call).resolves.toEqual({ ok: true, status: 200, text: 'hi' })
+  })
+
+  it('still answers "absent" in 400 ms when no bridge marked the page', async () => {
+    vi.useFakeTimers()
+    const call = callModel(model)
+    await vi.advanceTimersByTimeAsync(401)
+    await expect(call).resolves.toMatchObject({ failed: { reason: expect.stringContaining('did not answer') } })
+  })
+
+  it('does not ask again once the extension has answered', async () => {
+    const first = callModel(model)
+    reply({ protocol: 9, count: 0 })
+    await settle()
+    reply({ protocol: 9, ok: true, status: 200, text: 'one' })
+    await first
+    posted.length = 0
+    const second = callModel(model)
+    await settle()
+    // Straight to the model: no probe went out ahead of it.
+    expect(posted).toHaveLength(1)
+    expect(posted[0]).toMatchObject({ model: { url: model.url } })
+    reply({ protocol: 9, ok: true, status: 200, text: 'two' })
+    await expect(second).resolves.toEqual({ ok: true, status: 200, text: 'two' })
+  })
+})
+
+describe('a board scan that is stopped', () => {
+  it('stops waiting and says it was cancelled', async () => {
+    let fire: (() => void) | undefined
+    const stop = { aborted: false, onAbort: (fn: () => void) => { fire = fn } }
+    const scan = scanBoard('https://careercenter.cra.org/jobs/', stop)
+    expect(posted.at(-1)).toMatchObject({ scan: 'https://careercenter.cra.org/jobs/' })
+    fire?.()
+    await expect(scan).resolves.toEqual({ ok: false, reason: 'The read was cancelled.' })
+    expect(listeners.size).toBe(0)
+  })
+
+  it('takes a real AbortSignal too, and an already-stopped one never waits', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    await expect(scanBoard('https://careercenter.cra.org/jobs/', controller.signal)).resolves.toEqual({
+      ok: false,
+      reason: 'The read was cancelled.',
+    })
   })
 })

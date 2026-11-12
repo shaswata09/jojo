@@ -10,9 +10,11 @@
  * A spread reducer treated both as "write undefined", which happened to be right.
  * A schema cannot: `s.optional` drops an explicit `undefined` before the tool
  * sees it, so a patch spelling a clear that way would have been read as "not
- * mentioned" — and `revertOf` (in `routes/ApplicationDetail.tsx`) restores a
- * before-image by handing back exactly that. The undo of a stage change would
- * have put the stage back and left the offer it had just written.
+ * mentioned" — and a hand-built restore of a before-image hands back exactly
+ * that. (The stage-change undo that first did so, `revertOf` in
+ * `routes/ApplicationDetail.tsx`, is gone; it reverts the journal entry now.)
+ * Read that way, an undo would have put the stage back and left the offer it
+ * had just written.
  *
  * `Object.hasOwn` is the only thing that can tell the two apart, so it is the
  * one test all three helpers below are built on.

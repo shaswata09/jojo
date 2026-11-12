@@ -462,11 +462,14 @@ export function createIdbDriver(options: IdbDriverOptions = {}): Driver {
       // the transaction never sees an idle moment. Reading them one at a time
       // with an await between would work — each await is a request of this
       // transaction — but it would also be four round trips where one will do.
-      const [nodes, edges, meta, ops] = await Promise.all([
+      // `getAllKeys` in the same transaction, so it names exactly the rows
+      // `getAll` returned, in the same ascending order. See `Rows.opsKeys`.
+      const [nodes, edges, meta, ops, opsKeys] = await Promise.all([
         tx.objectStore('nodes').getAll(),
         tx.objectStore('edges').getAll(),
         tx.objectStore('meta').getAll(),
         tx.objectStore('ops').getAll(),
+        tx.objectStore('ops').getAllKeys(),
       ])
       await tx.done
 
@@ -475,6 +478,7 @@ export function createIdbDriver(options: IdbDriverOptions = {}): Driver {
         edges: edges as StoredRow[],
         meta: meta as MetaRow[],
         ops: ops as StoredRow[],
+        opsKeys: opsKeys as (string | number)[],
       })
     } catch (e) {
       return classify<Rows>(e, 'readAll')

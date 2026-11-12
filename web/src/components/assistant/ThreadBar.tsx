@@ -10,6 +10,7 @@ import { Segment } from '@/components/common/Segment'
 import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { isCommitEnter } from '@/components/common/enter-key'
 
 /**
  * The open conversation: its name, the job it is about, and what you can do to it.
@@ -68,7 +69,7 @@ export function ThreadBar({
                 aria-label="Conversation title"
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (isCommitEnter(e)) {
                     onRename(active.id, draft)
                     setEditing(false)
                   }

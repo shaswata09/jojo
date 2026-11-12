@@ -15,6 +15,7 @@ import type { Person } from '@jojo/service/core/model'
 import { displayName } from '@jojo/service/data/seed'
 import { useToast } from '@/lib/toast-context'
 import { report } from '@/lib/analytics'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * The people a job search is actually made of.
@@ -119,8 +120,9 @@ export function PeopleTool({ focus }: { focus?: string }) {
             setEditing(null)
           }}
           onSave={(draft) => {
-            if (editing) updatePerson(editing.id, draft)
-            else {
+            if (editing) {
+              if (announceRefusal(updatePerson(editing.id, draft), toast)) return
+            } else {
               addPerson(draft)
               // Only on a new one. An edit is not a filing, and counting it as
               // one would make the vault look busier than it is.

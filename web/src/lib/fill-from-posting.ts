@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 import type { PostingDraft } from '@jojo/service/agent/read-posting'
 import type { Application, NodeId } from '@jojo/service/core/model'
+import { SOURCES } from '@jojo/service/core/model'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import { postingIdentity } from '@jojo/service/core/capture'
+import type { ScoutReading } from '@jojo/service/core/proposal'
 import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
 import { useDuplicateCheck } from '@/lib/duplicate-agent'
 import { useUndoable } from '@/lib/undo'
@@ -11,7 +13,7 @@ import { useRun } from '@jojo/service/react/use-tool'
 import { useVault } from '@jojo/service/react/use-vault'
 import type { ModelSettings } from '@/lib/llm'
 import { useReadPosting } from '@/lib/posting-agent'
-import type { PostingRoute, PostingStep } from '@/lib/posting-agent'
+import type { PostingOutcome, PostingRoute, PostingStep } from '@/lib/posting-agent'
 
 /** The fields a posting can fill on an application, in the order they are reported. */
 const FILLABLE = ['org', 'role', 'roleTag', 'location', 'comp', 'postingId', 'source'] as const
@@ -116,6 +118,13 @@ export function fillPatch(
   return { patch, filled, confirmed, keptYours }
 }
 
+/** A stored reading's fields as a draft — the source only when it is one the app knows. */
+function knownDraft(known: Extract<ScoutReading, { ok: true }>, url: string): PostingDraft {
+  const { source, ...rest } = known.fields
+  const valid = (SOURCES as readonly string[]).includes(source ?? '')
+  return { ...rest, ...(valid ? { source: source as Application['source'] } : {}), url }
+}
+
 /** Why the static rule called it a duplicate, in a sentence. */
 const DUPLICATE_WHY = {
   id: 'Both postings carry the same posting ID.',
@@ -143,7 +152,13 @@ export type FillOutcome =
        */
       duplicate?: { id: string; name: string; why: string; restore: () => void }
     }
-  | { ok: false; step: PostingStep | 'filling'; reason: string }
+  | {
+      ok: false
+      step: PostingStep | 'filling'
+      reason: string
+      /** The page was kept and filed under the draft, though its fields were not filled. */
+      kept?: true
+    }
 
 /**
  * Reads a posting and fills the application it became — "From link"'s
@@ -161,6 +176,12 @@ export function useFillFromPosting(): (options: {
   url: string
   settings: ModelSettings
   reader: string
+  /**
+   * What the page said when it was read while the suggestion waited — see
+   * `ScoutReader`. Used instead of opening the page again, as long as the
+   * page it kept is still in the Vault.
+   */
+  known?: Extract<ScoutReading, { ok: true }>
 }) => Promise<FillOutcome> {
   const readPosting = useReadPosting()
   const run = useRun()
@@ -170,8 +191,17 @@ export function useFillFromPosting(): (options: {
   const undoable = useUndoable()
 
   return useCallback(
-    async ({ applicationId, url, settings, reader }) => {
+    async ({ applicationId, url, settings, reader, known }) => {
       const id = applicationId as NodeId
+      /** Files a kept page under the draft, beside anything it is filed under already. */
+      const fileUnder = (fileId: string, application: NodeId) => {
+        const filed = repo
+          .getSnapshot()
+          .many(fileId as NodeId, 'FILED_UNDER', 'out', 'application')
+          .map((a) => a.id)
+        if (!filed.includes(application))
+          updateFile(fileId, { applicationIds: [...filed, application] })
+      }
       const before = projections.application(repo.getSnapshot(), id)
       if (!before)
         return {
@@ -180,15 +210,42 @@ export function useFillFromPosting(): (options: {
           reason: 'The draft was deleted before its posting could be read.',
         }
 
-      const kept = postingSourceForUrl(repo.getSnapshot(), url)
-      const reuse = kept ? files.find((f) => f.id === kept.fileId) : undefined
-      const read = await readPosting({
-        url,
-        settings,
-        reader,
-        ...(reuse ? { reuseFile: reuse } : {}),
-      })
-      if (!read.ok) return read
+      const knownFile = known?.fileId ? files.find((f) => f.id === known.fileId) : undefined
+      const read: PostingOutcome =
+        known && knownFile
+          ? {
+              ok: true,
+              draft: knownDraft(known, url),
+              file: knownFile,
+              missing: known.missing,
+              keywords: known.keywords.map((k) => k.id),
+              via: known.via,
+            }
+          : await (() => {
+              const kept = postingSourceForUrl(repo.getSnapshot(), url)
+              const reuse = kept ? files.find((f) => f.id === kept.fileId) : undefined
+              return readPosting({
+                url,
+                settings,
+                reader,
+                ...(reuse ? { reuseFile: reuse } : {}),
+              })
+            })()
+      if (!read.ok) {
+        /*
+         * The page was kept before the model was asked (`useReadPosting`), so a
+         * refused or unparseable answer still leaves it in the Vault — filed
+         * under the draft here, so the application opens with its posting
+         * attached even though the fields stayed as the address guessed them.
+         */
+        if (read.file) fileUnder(read.file.id, id)
+        return {
+          ok: false,
+          step: read.step,
+          reason: read.reason,
+          ...(read.file ? { kept: true as const } : {}),
+        }
+      }
 
       const graph = repo.getSnapshot()
       const now = projections.application(graph, id)
@@ -281,12 +338,7 @@ export function useFillFromPosting(): (options: {
         }
       }
 
-      // The page, filed under the draft, beside anything it is filed under already.
-      const filedUnder = graph
-        .many(read.file.id as NodeId, 'FILED_UNDER', 'out', 'application')
-        .map((a) => a.id)
-      if (!filedUnder.includes(id))
-        updateFile(read.file.id, { applicationIds: [...filedUnder, id] })
+      fileUnder(read.file.id, id)
 
       const after = projections.application(repo.getSnapshot(), id) ?? now
       const name = after.role ? `${after.org} — ${after.role}` : after.org

@@ -438,6 +438,18 @@ export const scoutMatchDismiss = defineTool({
 
 /* -------------------------------- pipelines ------------------------------- */
 
+/**
+ * Where a pipeline looks, and whether it acts unattended, are the two settings
+ * a prompt-injected model would want: `source` becomes the boards `board.search`
+ * may open in the person's own browser, and `auto` lets a twin write without a
+ * card. So setting either asks first, the way raising the agent's own
+ * permission does (`assistant.thread.auto.set`). See `Tool.confirms`.
+ */
+const SOURCE_OR_AUTO = {
+  because:
+    'Setting where a pipeline looks or letting it run without asking needs the person’s approval; they may be shown the change first.',
+}
+
 const pipelineFields = {
   name: s.string({ min: 1, label: 'Name' }),
   source: s.string({ min: 1, label: 'Where it watches' }),
@@ -451,6 +463,8 @@ export const scoutPipelineCreate = defineTool({
   summary: 'Saves a search over a job board for the scout to watch.',
   effect: 'create',
   touches: ['pipeline'],
+  // `source` is required here, so every create names boards.
+  confirms: { ...SOURCE_OR_AUTO, when: () => true },
   input: s.object({
     ...pipelineFields,
     enabled: s.optional(s.boolean({ label: 'Active' })),
@@ -498,6 +512,10 @@ export const scoutPipelineUpdate = defineTool({
   summary: 'Saves the pipeline’s name, source, schedule and filter.',
   effect: 'update',
   touches: ['pipeline'],
+  confirms: {
+    ...SOURCE_OR_AUTO,
+    when: (input) => input.source !== undefined || input.auto !== undefined,
+  },
   input: s.object({
     id: pipelineId,
     name: s.optional(pipelineFields.name),

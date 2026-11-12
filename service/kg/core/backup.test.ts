@@ -218,9 +218,67 @@ describe('reading a backup, which must refuse rather than repair', () => {
     }
   })
 
+  /** A row that passes `validateRows` — the same shape `restore.test.ts` uses. */
+  const realNode = (uuid: string): StoredNode =>
+    ({
+      id: `app:${uuid}`,
+      type: 'application',
+      props: {
+        slug: uuid,
+        role: 'Research Engineer',
+        note: '',
+        roleTag: 'Researcher',
+        stage: 'submitted',
+        lastAction: 'Submitted',
+        lastActionAt: '2026-01-01T00:00:00.000Z',
+      },
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }) as unknown as StoredNode
+  const A = '01a02b14-31db-7278-a6d7-c03d325832ba'
+  const B = '01a02b14-4e77-7c01-9f3a-118d4c9a77e1'
+
   it('describes what a restore would replace, for the confirmation', () => {
-    const read = readBackup(good())
+    const read = readBackup(
+      JSON.stringify(
+        buildBackup({
+          exportedAt: '2026-08-22T10:00:00.000Z',
+          nodes: [realNode(A)],
+          edges: [],
+          documents: [{ path: 'Documents/CV.pdf', data: enc('%PDF-1.7') }],
+        }),
+      ),
+    )
     expect(read.ok).toBe(true)
-    if (read.ok) expect(describeBackup(read.value)).toBe('1 records, 0 links, 1 document')
+    if (!read.ok) return
+    expect(describeBackup(read.value)).toBe('1 records, 0 links, 1 document')
+    expect(read.value.loss).toEqual({ records: 0, links: 0, changed: 0 })
+  })
+
+  /**
+   * The restore SALVAGES — it drops rows it cannot read and restores the rest.
+   * Unless the reader says so up front, the person confirms "12 records" and
+   * gets 9, and only learns it from the report after the swap they cannot undo.
+   */
+  it('counts what the restore will leave out or change, before the swap', () => {
+    const broken = { ...realNode(B), id: 'not-a-jojo-id' } as StoredNode
+    const twin = { ...realNode(B), props: { ...realNode(A).props } } as StoredNode
+    const dangling = edge(`app:${A}`, 'org:01a02b14-0000-7000-8000-000000000000')
+    const read = readBackup(
+      JSON.stringify(
+        buildBackup({
+          exportedAt: '2026-08-22T10:00:00.000Z',
+          nodes: [realNode(A), twin, broken],
+          edges: [dangling],
+          documents: [],
+        }),
+      ),
+    )
+    expect(read.ok).toBe(true)
+    if (!read.ok) return
+    expect(read.value.loss).toEqual({ records: 1, links: 1, changed: 1 })
+    expect(describeBackup(read.value)).toBe(
+      '3 records, 1 links, no documents — of which 1 record and 1 link cannot be read and will be left out, and 1 record will come back changed',
+    )
   })
 })

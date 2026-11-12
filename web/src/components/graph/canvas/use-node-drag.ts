@@ -13,9 +13,7 @@
 import { useCallback, useRef } from 'react'
 import { wake } from '@/components/graph/force'
 import type { Sim } from '@/components/graph/force'
-
-/** Pointer travel that turns a click into a drag. */
-const DRAG_SLOP = 3
+import { pastSlop } from './drag-slop'
 
 export type NodeDragHandlers = {
   onPointerDown: (event: React.PointerEvent<SVGGElement>, id: string) => void
@@ -49,6 +47,9 @@ export function useNodeDrag({
     pointerId: number
     dx: number
     dy: number
+    /** Where the press landed — the slop is total travel from here. */
+    pressX: number
+    pressY: number
     moved: boolean
   } | null>(null)
 
@@ -87,6 +88,8 @@ export function useNodeDrag({
       pointerId: event.pointerId,
       dx: node.x - point.x,
       dy: node.y - point.y,
+      pressX: point.x,
+      pressY: point.y,
       moved: false,
     }
     node.pinned = true
@@ -102,7 +105,7 @@ export function useNodeDrag({
     const point = toLocal(event.clientX, event.clientY)
     const nextX = point.x + state.dx
     const nextY = point.y + state.dy
-    if (Math.hypot(nextX - node.x, nextY - node.y) > DRAG_SLOP) state.moved = true
+    if (!state.moved && pastSlop({ x: state.pressX, y: state.pressY }, point)) state.moved = true
     node.x = nextX
     node.y = nextY
     node.vx = 0

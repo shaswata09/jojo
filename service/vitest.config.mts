@@ -75,6 +75,23 @@ export default defineConfig({
       reporter: ['text-summary'],
       include: ['kg/**/*.ts'],
       exclude: ['**/*.test.ts', 'kg/react/use-*.ts', 'kg/**/*-conformance.ts'],
+
+      /*
+       * Floors, not targets, for the two layers whose tests are the product's
+       * correctness argument. Measured 2026-11-11 on HEAD: core 97.2 lines /
+       * 95.4 statements / 97.1 functions / 90.3 branches; agent 98.2 / 96.8 /
+       * 98.1 / 89.6. Each floor is a point or two under, so ordinary churn
+       * passes and a new untested module of any size does not. Raise them when
+       * coverage rises; lowering one is a decision to write down here.
+       *
+       * Per directory rather than global: `kg/react` sits near 77% for the
+       * reason given above, and a global number would let a drop in core hide
+       * behind a rise in react.
+       */
+      thresholds: {
+        'kg/core/**': { lines: 96, statements: 94, functions: 96, branches: 88 },
+        'kg/agent/**': { lines: 97, statements: 95, functions: 96, branches: 88 },
+      },
     },
   },
 })

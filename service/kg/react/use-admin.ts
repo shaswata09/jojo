@@ -74,11 +74,11 @@ export function useStoreAdmin() {
   const dataSet = repo.meta.dataSet
 
   const reset = useCallback(() => {
-    run('memory.reset', {})
+    return run('memory.reset', {})
   }, [run])
 
   const clearAll = useCallback(() => {
-    run('memory.clear', {})
+    return run('memory.clear', {})
   }, [run])
 
   /**

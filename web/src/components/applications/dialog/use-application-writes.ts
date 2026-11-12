@@ -1,36 +1,37 @@
-import { DEADLINE_DETAIL, applicationDeadlineOf } from '@/components/applications/deadline'
-import type { ApplicationInitial, FormState } from '@/components/applications/dialog/form-state'
+import type { ApplicationInitial, Errors, FormState } from '@/components/applications/dialog/form-state'
+import { deadlineWrite, refusalOf } from '@/components/applications/dialog/form-state'
 import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, RoleTag } from '@/data/seed'
 import { shortDate } from '@/data/timeline'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useVault } from '@jojo/service/react/use-vault'
-import { useTimeline } from '@jojo/service/react/use-timeline'
 import { report } from '@/lib/analytics'
 import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useReadFit } from '@/lib/fit-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
-// Imported, not redeclared. This file used to carry its own `deadlineUrgency`
-// with the 7/21-day thresholds spelled a second time, twenty lines from a
-// comment explaining that the seed's colours mix proximity with readiness. The
-// tool layer's copy is the one the store writes through, so a drift here would
-// have shown the user one colour on the form's item and another on everything
-// the tools mint.
-import { deadlineUrgency } from '@jojo/service/tools/support'
-import { refKey } from '@/lib/ids'
-import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
-import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
+
+/** What Save came to: the record as stored, or the tool's refusal to show. */
+export type SaveOutcome =
+  | { ok: true; application: Application }
+  | { ok: false; message: string; fields: Errors }
 
 /**
  * Everything `ApplicationDialog` writes when Save is pressed, and nothing else.
  *
- * Kept apart from the form because the three writes here — the record, its
- * keywords, and the deadline timeline item — are the part with consequences
- * outside the dialog, and the comments below are all about which of them can be
- * undone together.
+ * Kept apart from the form because the writes here — the record, its keywords,
+ * the deadline timeline item, and the posting filed under it — are the part
+ * with consequences outside the dialog.
+ *
+ * The record, its keywords and its deadline travel in ONE `application.create`
+ * or `application.update` call: one transaction, one journal entry, one Undo,
+ * and the deadline goes through the tool layer's `syncDeadline` — the single
+ * copy of the rule that re-titles it when the employer is renamed. This file
+ * used to mint and sync the deadline itself, with its own copy of that rule,
+ * and the copies had drifted: only this one re-titled, so a rename through the
+ * assistant left the calendar naming the old employer.
  */
 export function useApplicationWrites({
   form,
@@ -42,12 +43,10 @@ export function useApplicationWrites({
   initial?: ApplicationInitial
 }) {
   const applications = useApplications()
-  const timeline = useTimeline()
   const graph = useGraph()
   const { projections } = useKg()
   const { settings } = useModelSettings()
   const readFit = useReadFit()
-  const { setRecord } = useLabels()
   const { toast } = useToast()
   const undoable = useUndoable()
   const vault = useVault()
@@ -75,59 +74,6 @@ export function useApplicationWrites({
     postingId: form.postingId.trim() || undefined,
     confirmationRef: form.confirmationRef.trim() || undefined,
   })
-
-  function mintDeadline(application: Application) {
-    // Without this the first application anyone adds is invisible everywhere
-    // that reads dates — the calendar, This week, the priority deck — and the
-    // app looks like it lost the record.
-    timeline.add({
-      title: displayName(application),
-      detail: DEADLINE_DETAIL,
-      date: form.deadline,
-      kind: 'deadline',
-      urgency: deadlineUrgency(TODAY, form.deadline),
-      applicationIds: [application.id],
-      allDay: true,
-      // Off, like every seeded application deadline. The reminders list and the
-      // command palette both caption a reminder with its related application,
-      // and this item's title IS that application — so with `remind` on the row
-      // rendered its own name twice. It still reaches the calendar, This week
-      // and the priority deck, which read the whole timeline rather than the
-      // reminders slice.
-      remind: false,
-    })
-  }
-
-  /** Returns the undo handle when the edit deleted a deadline, otherwise null. */
-  function syncDeadline(next: Application, previous: Application) {
-    // An untouched date field must not reach the calendar at all. Whoever opened
-    // this dialog decides what to prefill, and a save that always wrote would
-    // mint a duplicate deadline every time someone edited a location.
-    if (form.deadline === (initial?.deadline ?? '')) return null
-
-    const existing = applicationDeadlineOf(timeline.forApplication(next.id))
-
-    if (!form.deadline) {
-      if (!existing) return null
-      return timeline.remove(existing.id)
-    }
-
-    if (!existing) {
-      mintDeadline(next)
-      return null
-    }
-
-    const dateChanged = existing.date !== form.deadline
-    timeline.update(existing.id, {
-      date: form.deadline,
-      // Renaming the employer should carry to the calendar, but only while the
-      // item still holds the name this dialog gave it. Once someone has retitled
-      // it by hand that title is theirs, not a derived string to overwrite.
-      title: existing.title === displayName(previous) ? displayName(next) : existing.title,
-      urgency: dateChanged ? deadlineUrgency(TODAY, form.deadline) : existing.urgency,
-    })
-    return null
-  }
 
   /**
    * Reads what the posting asks for, now, so the record opens with an answer.
@@ -182,29 +128,45 @@ export function useApplicationWrites({
     void readFit({ fileId: source.fileId, name: source.name, settings }).catch(() => {})
   }
 
+  /** The refusal, said, and handed back for the form to put on its fields. */
+  function refused(errors: readonly { message: string; field?: string }[]): SaveOutcome {
+    const { message, fields } = refusalOf(errors)
+    toast({ title: 'That did not save', description: message, tone: 'danger' })
+    return { ok: false, message, fields }
+  }
+
   /**
-   * One user action, three writes — the record, its keywords, and the deadline
-   * the form minted — so the Undo has to cover all three.
+   * One user action: the record with its keywords and deadline in one call,
+   * and the posting it came from filed under it — so the Undo covers both.
    *
-   * This toast had none at all, which broke the app's own law that every write
-   * carries one, and it was the only "added" toast in the app that did not:
-   * deleting an application offers a restore, and so does discarding this very
-   * form. `undoable` wraps the whole burst rather than the create alone,
-   * because reverting only the record would have left the deadline on the
-   * calendar pointing at an application that no longer existed.
+   * `undoable` wraps the burst rather than the create alone, because reverting
+   * only the record would have left the posting filed under an application
+   * that no longer existed.
    */
-  function create(): Application {
+  function create(): SaveOutcome {
+    let failure: SaveOutcome | null = null
     const { value: created, restore } = undoable(() => {
       const fields = shared()
-      const record = applications.add({
-        ...fields,
-        // The store's own default reads 'Draft created', which is a lie for
-        // anything logged at a later stage — people add an interview they are
-        // already booked for.
-        lastAction: fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
-      })
-
-      setRecord(refKey('app', record.id), keywords)
+      let record: Application
+      try {
+        record = applications.add({
+          ...fields,
+          // The store's own default reads 'Draft created', which is a lie for
+          // anything logged at a later stage — people add an interview they are
+          // already booked for.
+          lastAction:
+            fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
+          ...(form.deadline ? { deadline: form.deadline } : {}),
+          keywords,
+        })
+      } catch (error) {
+        // `add` throws on a refusal (its other callers rely on that); here the
+        // form is open and the person can fix what was refused.
+        failure = refused([
+          { message: error instanceof Error ? error.message : String(error) },
+        ])
+        return null
+      }
       /*
        * The posting "From link" saved, filed under what it became — inside the
        * same undo, because an Undo that took the application away and left the
@@ -218,13 +180,13 @@ export function useApplicationWrites({
           applicationIds: [...new Set([...posting.applicationIds, record.id])],
         })
       }
-      if (form.deadline) mintDeadline(record)
       // 'manual' because this is the dialog: somebody typed it in. The other
       // three sources in the vocabulary belong to the scout, the link importer
       // and the browser capture, and each reports its own.
       report('application_created', { source: 'manual' })
       return record
     })
+    if (created === null) return failure ?? refused([])
 
     // After the transaction closes, not inside it. `undoableWith` measures the
     // journal either side of the write to decide what an Undo covers, and a
@@ -250,39 +212,47 @@ export function useApplicationWrites({
         .join(' '),
       action: restore ? { label: 'Undo', onClick: restore } : undefined,
     })
-    return created
+    return { ok: true, application: created }
   }
 
-  function save(current: Application): Application {
+  function save(current: Application): SaveOutcome {
     const fields = shared()
     const moved = current.stage !== fields.stage
     const lastAction = moved ? `Moved to ${STAGE_LABEL[fields.stage]}` : 'Details edited'
+    const deadline = deadlineWrite(form, initial)
 
-    applications.update(current.id, { ...fields, lastAction })
-    // One write, not two. There used to be a `removeRecord(current.id)` under
-    // this line, sweeping the bare-id spelling the seeded applications were
-    // keyed by so the record did not exist under two keys and get counted
-    // twice. Both spellings now resolve to the same node (D14 — a keyword is a
-    // node and tagging is a `TAGS` edge), so that call cleared the keywords this
-    // one had just set.
-    setRecord(refKey('app', current.id), keywords)
+    // One call: the fields, the keyword set and the deadline. There used to be
+    // a `removeRecord(current.id)` beside the keyword write, sweeping the
+    // bare-id spelling the seeded applications were keyed by; both spellings
+    // now resolve to the same node (D14), so that call cleared the keywords
+    // this one had just set.
+    const { value: result, restore } = undoable(() =>
+      applications.update(
+        current.id,
+        { ...fields, lastAction },
+        { keywords, ...(deadline === undefined ? {} : { deadline }) },
+      ),
+    )
+    // The tool's answer decides the toast. It used to be thrown away, so a
+    // refused edit ("Cannot be blank.") closed the dialog under "Changes saved".
+    if (!result.ok) return refused(result.errors)
 
-    // Mirrors what `update` stamps, so `onSaved` hands back the record the store
+    // Mirrors what `update` stamps, so the caller gets the record the store
     // now holds rather than one with a stale activity line.
     const next: Application = { ...current, ...fields, lastAction, daysAgo: 0 }
-    const removed = syncDeadline(next, current)
+    const removed = deadline === null
 
     toast({
       title: 'Changes saved',
       description: removed
         ? `${displayName(next)} — its deadline is off the calendar.`
         : displayName(next),
-      // The record's own fields can be typed back; a timeline item that was
-      // deleted as a side effect of clearing one field cannot, so the one
-      // destructive part of this save is the part that gets the undo.
-      action: removed ? { label: 'Restore deadline', onClick: removed.restore } : undefined,
+      // The record's own fields can be typed back; a deadline deleted as a side
+      // effect of clearing one field cannot. The save is one journal entry now,
+      // so the Undo offered for that case puts the whole save back.
+      action: removed && restore ? { label: 'Undo', onClick: restore } : undefined,
     })
-    return next
+    return { ok: true, application: next }
   }
 
   return { create, save }

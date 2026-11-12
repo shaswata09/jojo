@@ -27,7 +27,15 @@ import type { KgErrorCode, Result } from '../core/result'
 import type { GraphSnapshot, MutableSnapshot } from '../core/snapshot'
 import type { Driver, DurableOp, StoreEvent } from '../storage/driver'
 import type { StoredRow } from '../storage/schema'
-import { AUDIT_CAP, Ring, UNDO_DEPTH, applyJournal, changesNothing, invert } from './journal'
+import {
+  AUDIT_CAP,
+  Ring,
+  UNDO_DEPTH,
+  applyJournal,
+  changesNothing,
+  revertDraft,
+  trimJournal,
+} from './journal'
 import type { JournalDraft, JournalEntry, RecordDelta } from './journal'
 import { metaRow, touched } from './meta'
 import type { StoreMeta } from './meta'
@@ -215,7 +223,7 @@ export const rowOf = (record: StoredNode | StoredEdge): StoredRow => record as u
  * to re-derive what a write touched forgets things in exactly the way the
  * hand-written undo closures did, one layer down.
  */
-function opsFor(entry: JournalEntry): DurableOp[] {
+function opsFor(entry: JournalEntry, row: JournalEntry = entry): DurableOp[] {
   const ops: DurableOp[] = []
 
   const push = <T extends StoredNode | StoredEdge>(
@@ -239,7 +247,7 @@ function opsFor(entry: JournalEntry): DurableOp[] {
   // exists to be. `schema.ts` has had `autoIncrement: true` on this store all
   // along, described there as the backstop for a caller that forgets its key.
   // The caller did not forget — it insisted — and the backstop is the fix.
-  ops.push({ kind: 'put', store: 'ops', key: null, value: entry as unknown as StoredRow })
+  ops.push({ kind: 'put', store: 'ops', key: null, value: row as unknown as StoredRow })
   return ops
 }
 
@@ -282,6 +290,43 @@ function withDisplacedEdges(s: MutableSnapshot, entry: JournalEntry): JournalEnt
 
   if (displaced.length === 0) return entry
   return { ...entry, edges: [...entry.edges, ...displaced] }
+}
+
+/**
+ * The entry, minus any edge it would put back with an end that is not there.
+ *
+ * `withDisplacedEdges` covers an edge whose node this entry REMOVES. This is
+ * the other half: an edge this entry RESTORES whose node something else has
+ * since removed. Reverting a person's delete after their application was
+ * deleted put the FILED_UNDER edge back pointing at nothing, in memory and on
+ * disk, and boot's integrity check then refuses the whole graph over it.
+ * `putEdge` does not check, and the tools' `tx.link` does — but a replayed image
+ * never went through `tx.link`. A live edge in that position becomes a removal;
+ * one that was not live is simply not put back.
+ *
+ * Applied to reverts only. A commit's edges come from `tx.link`, which already
+ * refuses a missing end loudly; dropping one here would hide that bug instead.
+ */
+function withoutDanglingEdges<E extends Pick<JournalEntry, 'nodes' | 'edges'>>(
+  s: MutableSnapshot,
+  entry: E,
+): E {
+  const after = new Map(entry.nodes.map((d) => [d.id, d.after !== null]))
+  const present = (id: NodeId) => after.get(id) ?? s.node(id) !== undefined
+
+  let dropped = false
+  const edges: RecordDelta<StoredEdge>[] = []
+  for (const delta of entry.edges) {
+    const image = delta.after
+    if (image === null || (present(image.from) && present(image.to))) {
+      edges.push(delta)
+      continue
+    }
+    dropped = true
+    const live = s.edge(delta.id as EdgeId)
+    if (live) edges.push({ id: delta.id, before: live, after: null })
+  }
+  return dropped ? { ...entry, edges } : entry
 }
 
 export function createRepository(options: RepositoryOptions): Repository {
@@ -348,14 +393,27 @@ export function createRepository(options: RepositoryOptions): Repository {
   let holds: DurableOp[][] = []
   const innermost = (): DurableOp[] | null => holds[holds.length - 1] ?? null
 
-  function land(stamped: JournalEntry): JournalEntry {
+  /**
+   * `trim` journals the entry without its record images.
+   *
+   * For a write that is off the undo ring (`stack: false`). The images exist to
+   * be replayed, and nothing replays these: ⌘Z never reaches them. What they DID
+   * cost was measured — `assistant.thread.set` re-saves the whole transcript
+   * after every exchange, and a 120-exchange conversation (a 185 KB record)
+   * wrote 39.5 MB of before-and-after transcripts into the journal, in memory
+   * and on disk. The records themselves are written from the full entry; only
+   * the audit row loses its images, exactly as `trimJournal` does for age.
+   */
+  function land(stamped: JournalEntry, trim = false): JournalEntry {
     const entry = withDisplacedEdges(snapshot, stamped)
     applyJournal(snapshot, entry, 'redo')
     snapshot.commit()
     current = reading(snapshot)
-    audit.push(entry)
 
-    const ops = opsFor(entry)
+    const row = trim ? (trimJournal([entry], 0)[0] ?? entry) : entry
+    audit.push(row)
+
+    const ops = opsFor(entry, row)
 
     // Demo data stops being demo data the moment the user writes to it. Left at
     // 'demo', Settings would go on offering to replace their records with the
@@ -393,7 +451,21 @@ export function createRepository(options: RepositoryOptions): Repository {
     if (hold === null) queue.enqueue(ops)
     else hold.push(...ops)
     notify()
-    return entry
+    return row
+  }
+
+  /**
+   * Takes `target` back against the records as they are NOW, not as it left them.
+   *
+   * See `revertDraft`: a whole-image replay erased whatever a system write (the
+   * fit reading, a file's bytes) or a later agent step had put on the same
+   * record since.
+   */
+  const revertOf = (target: JournalEntry): JournalEntry => {
+    const undone = target.reverts?.undone !== true
+    const of = target.reverts?.of ?? target.label
+    const draft = revertDraft(target, current, `${undone ? 'Undo' : 'Redo'} ${of}`, undone)
+    return land(stamp(withoutDanglingEdges(snapshot, draft)))
   }
 
   return {
@@ -429,7 +501,7 @@ export function createRepository(options: RepositoryOptions): Repository {
     },
 
     commit(draft, options) {
-      const entry = land(stamp(draft))
+      const entry = land(stamp(draft), options?.stack === false)
       // Journalled and audited either way — the audit log's job is to record
       // everything that touched the store, and a background attach is exactly
       // the kind of write a user later wants an account of. Only the undo ring
@@ -459,7 +531,7 @@ export function createRepository(options: RepositoryOptions): Repository {
       const fromUndo = undo.entries.find((e) => e.id === entryId)
       if (fromUndo) {
         removeFromRing(undo, entryId)
-        const entry = land(stamp(invert(fromUndo, fromUndo.label)))
+        const entry = revertOf(fromUndo)
         redo.push(entry)
         return entry
       }
@@ -467,7 +539,7 @@ export function createRepository(options: RepositoryOptions): Repository {
       const fromRedo = redo.entries.find((e) => e.id === entryId)
       if (fromRedo) {
         removeFromRing(redo, entryId)
-        const entry = land(stamp(invert(fromRedo, fromRedo.label)))
+        const entry = revertOf(fromRedo)
         undo.push(entry)
         return entry
       }
@@ -496,7 +568,7 @@ export function createRepository(options: RepositoryOptions): Repository {
       // NOT become redoable: offering redo for something undone from three hours
       // ago would promise to reapply a before-image captured against records
       // that have been edited a dozen times since.
-      const entry = land(stamp(invert(fromAudit, `Undo ${fromAudit.label}`)))
+      const entry = revertOf(fromAudit)
       undo.push(entry)
       redo.clear()
       return entry

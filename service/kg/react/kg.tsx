@@ -44,14 +44,13 @@
  * stopped being evidence that anything was fixed.
  */
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import type { Instant } from '../core/model'
-import { dayOf } from '../core/project'
 import type { Repository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
 import type { ToolRuntime } from '../tools/runtime'
-import { headlessHost } from './host'
+import { daySource, headlessHost } from './host'
 import type { Host, UndoDirection } from './host'
 import { KgContext } from './kg-context'
 import type { KgContextValue } from './kg-context'
@@ -85,7 +84,14 @@ export function KgProvider({ repo, now, host = headlessHost, children }: KgProvi
   // the moment it became the real clock: after 5pm in Austin every row on the
   // dashboard would have been measured against tomorrow, so today's reminders
   // read as overdue and a record touched a minute ago read as "1 day ago".
-  const today = dayOf(now())
+  //
+  // Subscribed, not just read: `host.onDayTurn` fires at the local midnight and
+  // on waking, and the snapshot is a plain 'YYYY-MM-DD' string, so React
+  // re-renders the provider exactly when the day changes and never otherwise.
+  // Read once per render all the same — `useSyncExternalStore` hands every
+  // child the one value this render took.
+  const day = useMemo(() => daySource(host, now), [host, now])
+  const today = useSyncExternalStore(day.subscribe, day.getSnapshot, day.getSnapshot)
 
   const runtime = useMemo(() => createToolRuntime({ repo, now }), [repo, now])
   const projections = useMemo(() => createProjections(today), [today])

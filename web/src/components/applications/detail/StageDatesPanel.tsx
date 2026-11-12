@@ -9,6 +9,7 @@ import { useApplications } from '@jojo/service/react/use-applications'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
 import { cn } from '@/lib/utils'
+import { announceRefusal } from '@/components/common/write-result'
 
 /**
  * When this application reached each stage.
@@ -72,7 +73,8 @@ export function StageDatesPanel({ application: a }: { application: Application }
      * was replaced is gone from the screen as well as from the record, so this
      * is a write with nothing visible to reverse it.
      */
-    const { restore } = undoable(() => update(a.id, setStageDate(a, stage, on)))
+    const { value, restore } = undoable(() => update(a.id, setStageDate(a, stage, on)))
+    if (announceRefusal(value, toast)) return
     toast({
       title: on
         ? `${STAGE_LABEL[stage]} dated ${shortDate(on)}`

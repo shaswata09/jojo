@@ -37,7 +37,7 @@ import {
   syncDeadline,
   syncKeywords,
 } from './application-fields'
-import { STAGE_LABEL, dayOf, displayOf, opt, touch } from './support'
+import { STAGE_LABEL, dayOf, displayOf, formStateOf, opt, touch } from './support'
 import { defineTool } from './tool'
 
 /* ------------------------------- org.ensure ------------------------------- */
@@ -220,6 +220,11 @@ export const applicationUpdate = defineTool({
 
   run(ctx, input) {
     const current = ctx.require('application', input.id)
+    // Read before ANY write: the org link below changes the display name, and
+    // `syncDeadline` needs the old one to tell whether the deadline's title was
+    // the generated one it should follow.
+    const before = displayOf(ctx.memory, input.id)
+    const was = formStateOf(ctx.memory, input.id)
     const moved = input.stage !== undefined && input.stage !== current.props.stage
     /**
      * The record's dates AS THIS CALL LEAVES THEM — what the stamp below has to
@@ -296,18 +301,25 @@ export const applicationUpdate = defineTool({
       ...(input.offer === undefined ? {} : { offer: input.offer ?? undefined }),
     })
 
-    touch(
-      ctx,
-      input.id,
-      input.lastAction ??
-        (moved && input.stage ? `Moved to ${STAGE_LABEL[input.stage]}` : 'Details edited'),
-    )
+    syncKeywords(ctx, input.id, input.keywords)
+    syncDeadline(ctx, input.id, input.deadline, before)
+
+    // Activity only when something moved — see `formStateOf`. An explicit
+    // `lastAction` is a field the caller asked for and is written either way.
+    if (formStateOf(ctx.memory, input.id) !== was) {
+      touch(
+        ctx,
+        input.id,
+        input.lastAction ??
+          (moved && input.stage ? `Moved to ${STAGE_LABEL[input.stage]}` : 'Details edited'),
+      )
+    } else if (input.lastAction !== undefined) {
+      ctx.tx.patch<'application'>(input.id, { lastAction: input.lastAction })
+    }
     // After `touch`, which has just stamped `now` over it.
     if (input.lastActionAt !== undefined) {
       ctx.tx.patch<'application'>(input.id, { lastActionAt: input.lastActionAt })
     }
-    syncKeywords(ctx, input.id, input.keywords)
-    syncDeadline(ctx, input.id, input.deadline)
   },
 
   describe: (input, _output, m) => ({

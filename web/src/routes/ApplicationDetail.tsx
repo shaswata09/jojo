@@ -32,6 +32,8 @@ import { useVault } from '@jojo/service/react/use-vault'
 import { useDialogs } from '@/lib/dialogs-context'
 import { appPath, applicationsPath, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
+import { useUndoable } from '@/lib/undo'
+import { announceRefusal } from '@/components/common/write-result'
 
 export type ApplicationDetailProps = {
   /**
@@ -111,9 +113,10 @@ function Detail({
 }: { application: Application } & ApplicationDetailProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const undoable = useUndoable()
   const { open: openDialog } = useDialogs()
   const { update, remove, duplicate } = useApplications()
-  const { forApplication, add: addItem, remove: removeItem } = useTimeline()
+  const { forApplication, add: addItem } = useTimeline()
   const { links, files, snippets } = useVault()
   const { postings, matches } = useScout()
   // The record's own name, so a tab left open on one application is
@@ -191,31 +194,31 @@ function Detail({
    *
    * A stage move rewrites up to five fields in one go and can drop the offer
    * the user typed — while merely *deleting* the record gets both a confirm
-   * dialog and an undo. Snapshotting first is what closes that gap: `a` is the
-   * record as it stands this render, so the revert is a fact rather than a
-   * reconstruction, and the minted timeline row goes back out with it.
+   * dialog and an undo. The Undo is the journal's, not a patch built here: the
+   * tool also stamps `stageDates` and `submittedOn` on a stage change, which no
+   * patch the page could see would put back, so a hand-built revert left a
+   * Draft→Submitted→Undo record counted as sent. The minted timeline row is
+   * inside the same capture, so it goes back out with it.
    */
   const applyStageMove = (
     patch: Partial<Application>,
     extraItem?: TimelineDraft,
     consequences: string[] = [],
   ) => {
-    const before = a
     const to = patch.stage ?? a.stage
 
-    update(a.id, patch)
-    const minted = extraItem ? addItem(extraItem) : undefined
+    const { value: moved, restore } = undoable(() => {
+      const written = update(a.id, patch)
+      // No timeline row for a move that did not happen.
+      if (written.ok && extraItem) addItem(extraItem)
+      return written
+    })
+    if (announceRefusal(moved, toast)) return
 
     toast({
       title: `${displayName(a)} moved to ${STAGE_LABEL[to]}`,
       description: consequences.length > 0 ? consequences.join(' ') : undefined,
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          update(before.id, revertOf(before, patch))
-          if (minted) removeItem(minted.id)
-        },
-      },
+      ...(restore ? { action: { label: 'Undo', onClick: restore } } : {}),
     })
   }
 
@@ -228,17 +231,20 @@ function Detail({
   }
 
   const onDecide = (decision: OfferDecision) => {
-    const before = a
-    const patch: Partial<Application> = {
-      stage: 'closed',
-      outcome: decision,
-      lastAction: decision === 'accepted' ? 'Offer accepted' : 'Offer declined',
-    }
-    update(a.id, patch)
+    // Through the journal for the reason `applyStageMove` gives: closing stamps
+    // a Closed date the page never sees.
+    const { value: closed, restore } = undoable(() =>
+      update(a.id, {
+        stage: 'closed',
+        outcome: decision,
+        lastAction: decision === 'accepted' ? 'Offer accepted' : 'Offer declined',
+      }),
+    )
+    if (announceRefusal(closed, toast)) return
     toast({
       title: `${displayName(a)} closed`,
       description: `Recorded as ${decision}. The offer details and its reminders were kept.`,
-      action: { label: 'Undo', onClick: () => update(before.id, revertOf(before, patch)) },
+      ...(restore ? { action: { label: 'Undo', onClick: restore } } : {}),
     })
   }
 
@@ -375,23 +381,4 @@ function Detail({
       />
     </div>
   )
-}
-
-/**
- * The patch that puts `before` back, given the patch that changed it.
- *
- * Keyed off the patch rather than off a hand-written field list on purpose: the
- * stage form writes a different set of fields for each destination — six today
- * — and a list here would be a seventh place to remember when one of them grows
- * a field. `undefined` values count: `{ offer: undefined }` is how the form
- * clears an offer, and `Object.keys` sees it, which is exactly the write that
- * most needs undoing.
- *
- * `daysAgo` rides along because `update` stamps it to 0 on every write, so
- * without it an undone move would still claim the record was touched today.
- */
-function revertOf(before: Application, patch: Partial<Application>): Partial<Application> {
-  const revert: Record<string, unknown> = { daysAgo: before.daysAgo }
-  for (const key of Object.keys(patch)) revert[key] = before[key as keyof Application]
-  return revert as Partial<Application>
 }

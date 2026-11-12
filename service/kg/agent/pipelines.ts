@@ -24,7 +24,14 @@
  * remaining steps verifying them.
  */
 
-import { PIPELINE_TOOLS, isKnownPosting, knownJobs, knownPostingUrls, mayPropose } from '../core/proposal'
+import {
+  AUTO_CAPABLE,
+  PIPELINE_TOOLS,
+  isKnownPosting,
+  knownJobs,
+  knownPostingUrls,
+  mayPropose,
+} from '../core/proposal'
 import { findSameJob } from '../core/same-job'
 import type { NodeId, PipelineKind } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
@@ -56,6 +63,24 @@ const COMMON = [
 ].join(' ')
 
 /**
+ * The same rules for a round whose writes LAND.
+ *
+ * An auto twin is handed the real host (`use-pipelines.ts`), not the proposing
+ * one, and was still told every call was a queued card that takes effect
+ * later. A model that believes that writes more freely — the person will
+ * check — and reports "suggested" for what has already happened. The truth is
+ * different on both counts: each write is applied now, and each one has an
+ * undo, which is what makes running unattended acceptable at all.
+ */
+const COMMON_AUTO = [
+  'You are working through someone’s job-application records on their own machine.',
+  'They have let this pipeline act without asking: every change you make takes effect immediately, and they can undo it afterwards. So make only changes you are sure of.',
+  'Do not call the same change twice, and do not re-read a record just to check that a change landed.',
+  'Never invent a fact. If a field is empty and nothing in the records tells you what belongs there, leave it empty; an empty field is not a problem to fix.',
+  'Look before you change anything. Read the records first, and do not add something the records already contain.',
+].join(' ')
+
+/**
  * The twin's instructions, rewritten around what it is actually for.
  *
  * It used to say "make the records match what the person already knows but has
@@ -75,8 +100,7 @@ const COMMON = [
  * rather than asking — see `core/twin.ts` for why absence is the one thing a
  * model should not be asked to notice.
  */
-const TWIN_PROMPT = [
-  COMMON,
+const TWIN_BODY = [
   'Your job is to build and maintain a picture of the PERSON, so that later the app can weigh a job posting against what they have actually done.',
   'That picture lives in their background: degrees, posts held, publications, skills, teaching, awards, service.',
   'Your first duty is to read documents they have uploaded — a CV, a research or teaching statement — with vault.file.read, and record what those documents SAY with profile.background.add.',
@@ -86,7 +110,9 @@ const TWIN_PROMPT = [
   'After that, the ordinary tidying — a note recording something the other records imply, a reminder for a deadline that has none.',
   'Prefer few and specific over many and generic. Five suggestions someone accepts beat twenty they scroll past.',
   'When there is nothing missing, say so and stop. That is a complete answer, not a failure.',
-].join(' ')
+]
+
+const TWIN_PROMPT = [COMMON, ...TWIN_BODY].join(' ')
 
 const SCOUT_PROMPT = [
   COMMON,
@@ -104,6 +130,17 @@ const SCOUT_PROMPT = [
 export const PIPELINE_PROMPTS: { readonly [K in PipelineKind]: string } = {
   twin: TWIN_PROMPT,
   scout: SCOUT_PROMPT,
+}
+
+/**
+ * What a round of this kind is told, given whether its writes land.
+ *
+ * Only a kind that may run auto (`AUTO_CAPABLE`) has a second variant; a scout
+ * always proposes, so `auto` cannot change what it is told.
+ */
+export function pipelinePrompt(kind: PipelineKind, auto: boolean): string {
+  if (auto && AUTO_CAPABLE[kind] && kind === 'twin') return [COMMON_AUTO, ...TWIN_BODY].join(' ')
+  return PIPELINE_PROMPTS[kind]
 }
 
 /**

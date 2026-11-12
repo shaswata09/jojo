@@ -29,6 +29,7 @@ import { useToast } from '@/lib/toast-context'
 import { TODAY_PARTS } from '@/lib/today'
 import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
 import { useReducedMotion } from '@/lib/use-media-query'
+import { announceRefusal } from '@/components/common/write-result'
 
 export function Calendar() {
   // The month and the selected day live in the URL, not in state: a search
@@ -151,7 +152,7 @@ export function Calendar() {
     if (!item || item.date === iso) return
 
     const from = item.date
-    reschedule(item.id, iso)
+    if (announceRefusal(reschedule(item.id, iso), toast)) return
     toast({
       title: `Moved to ${shortDate(iso)}`,
       description: item.title,

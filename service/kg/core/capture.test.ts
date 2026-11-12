@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { kindOfFile } from './files'
+import { pageKey } from './board'
+import { postingKey } from './proposal'
 import type { CaptureEnvelope } from './capture'
 import {
   CAPTURE_EXTENSIONS,
@@ -11,7 +13,10 @@ import {
   captureNote,
   hostOf,
   isCaptureSource,
+  lockedCaptureHtml,
+  CAPTURE_VIEW_CSP,
   onBoard,
+  pageIdentity,
   postingIdentity,
   readCapture,
   remoteRefCount,
@@ -657,5 +662,213 @@ describe('a host that merely ends with a board’s domain', () => {
     expect(onBoard('jobs.lever.co', 'lever.co')).toBe(true)
     expect(onBoard('unilever.co', 'lever.co')).toBe(false)
     expect(onBoard('careers.unilever.co', 'lever.co')).toBe(false)
+  })
+})
+
+/**
+ * Spellings of a live reference that every pattern used to walk past. Each one
+ * was reproduced against the scan before it was fixed — `remoteRefCount` said 0
+ * and `readCapture` accepted the file — and each is the shape a browser really
+ * honours, so a capture carrying it fetched on view.
+ */
+describe('remoteRefCount, the spellings the review found', () => {
+  const leaks: [string, string][] = [
+    // #1 — a quoted url() whose URL carries a `)` or the other quote.
+    ['a `)` inside a quoted url()', '<style>.a{background:url("https://x.test/a)b.png")}</style>'],
+    ['the other quote inside a quoted url()', `<style>.a{background:url('https://x.test/a"b.png')}</style>`],
+    // #2 — CSS escapes, in a <style> and in a style attribute.
+    ['an escaped url identifier', '<style>.a{background:u\\72 l(https://x.test/a.png)}</style>'],
+    ['an escaped @import', '<style>@\\69mport "https://x.test/s.css";</style>'],
+    ['an escaped identifier in a style attribute', '<div style="background:u\\72 l(https://x.test/a.png)"></div>'],
+    ['an escaped identifier pointing somewhere relative', '<style>.a{background:\\75rl(/a.png)}</style>'],
+    ['an escaped scheme inside the string', '<style>.a{background:url("\\68 ttps://x.test/a.png")}</style>'],
+    ['a comment between url( and its string', '<style>.a{background:url( /**/ "https://x.test/a.png")}</style>'],
+    ['@import with no space before its string', '<style>@import"https://x.test/s.css";</style>'],
+    ['@import with a comment before its string', '<style>@import/**/"https://x.test/s.css";</style>'],
+    // #3 — SMIL setting an address at view time.
+    ['a <set> writing href', '<svg><image><set attributeName="href" to="https://x.test/a.png"/></image></svg>'],
+    ['an <animate> values list', '<svg><image><animate attributeName="href" values="#a;https://x.test/b.png"/></image></svg>'],
+    // #4 — what outerHTML actually writes, and the encodings around it.
+    ['an entity-quoted url() in a style attribute', '<div style="background-image: url(&quot;https://cdn.test/x.png&quot;);"></div>'],
+    ['the second srcset candidate', '<img src="data:image/png;base64,AA" srcset="data:image/png;base64,AA 1x, https://cdn.test/big.png 2x">'],
+    ['a protocol-relative second srcset candidate', '<img srcset="data:image/png;base64,AA 1x, //cdn.test/big.png 2x">'],
+    ['xlink:href', '<svg><image xlink:href="https://cdn.test/x.png"></image></svg>'],
+    ['an entity-encoded colon', '<img src="https&#58;//cdn.test/x.png">'],
+    // A decoded quote must not re-pair the tag's real quotes and hide the next attribute.
+    ['an encoded scheme after an entity quote in the same tag', '<img title="&quot;" src="https&#58;//cdn.test/x.png">'],
+    ['a hex-encoded first letter', '<img src="&#x68;ttps://cdn.test/x.png">'],
+    ['a named-entity colon', '<img src="https&colon;//cdn.test/x.png">'],
+    ['a tab inside the scheme', '<img src="ht\ttps://cdn.test/x.png">'],
+    ['a leading control character', '<img src="\u0001https://cdn.test/x.png">'],
+    ['backslashes for slashes', '<img src="\\\\cdn.test/x.png">'],
+    ['a meta refresh', '<meta http-equiv="refresh" content="0;url=https://evil.test/">'],
+    ['a meta refresh with content first', '<meta content="0;url=https://evil.test/" http-equiv=refresh>'],
+    ['src() in CSS', '<style>.a{background:src("https://x.test/a.png")}</style>'],
+  ]
+  it.each(leaks)('counts %s', (_what, html) => {
+    expect(remoteRefCount(html)).toBeGreaterThan(0)
+    expect(readCapture(envelope({ html }))).toBe('leaks')
+  })
+
+  const clean: [string, string][] = [
+    ['an icon font escape', '<style>.i:before{content:"\\f101"}.q:before{content:"\\201C"}</style>'],
+    ['cssSafe output, which must never decode into a tag', '<style>a{}\\3c /style>\\3c img src=https://x.test/a.png></style>'],
+    ['markup quoted inside an attribute', '<img alt="&lt;img src=&quot;https://x.test/a.png&quot;&gt;" src="data:,">'],
+    ['markup quoted in prose, numerically', '<p>&#60;img src=&#34;https://x.test/a.png&#34;&#62;</p>'],
+    ['a base64 srcset candidate that happens to start with //', '<img srcset="data:image/jpeg;base64,//8AAA 1x">'],
+    ['an entity-quoted data: url()', '<div style="background: url(&quot;data:image/png;base64,AA&quot;)"></div>'],
+    ['a same-document SMIL value', '<svg><set attributeName="href" to="#icon"/></svg>'],
+    ['a meta charset', '<meta charset="utf-8">'],
+  ]
+  it.each(clean)('does not count %s', (_what, html) => {
+    expect(remoteRefCount(html)).toBe(0)
+  })
+
+  it('stays linear on the inputs a hostile page would choose', () => {
+    // An unclosed comment opener repeated, an identifier run with no end, and
+    // unbalanced entity quotes inside attributes: each was a way to make the
+    // decoded copies rescan the document from every position. No clock here —
+    // this layer may not read one (D26) — but at these sizes a quadratic
+    // pattern runs for minutes, not milliseconds, and the run times out.
+    expect(remoteRefCount('/*a'.repeat(200_000))).toBe(0)
+    expect(remoteRefCount(`${'a'.repeat(1_000_000)}\\`)).toBe(0)
+    expect(remoteRefCount('<div title="&quot;">x</div>'.repeat(40_000))).toBe(0)
+  })
+})
+
+describe('lockedCaptureHtml', () => {
+  const META = `<meta http-equiv="Content-Security-Policy" content="${CAPTURE_VIEW_CSP}">`
+
+  it('refuses every fetch but data:', () => {
+    expect(CAPTURE_VIEW_CSP).toContain("default-src 'none'")
+    for (const directive of ['img-src data:', 'font-src data:', 'media-src data:', "base-uri 'none'", "form-action 'none'"]) {
+      expect(CAPTURE_VIEW_CSP).toContain(directive)
+    }
+    expect(CAPTURE_VIEW_CSP).not.toMatch(/https?:|\*/)
+  })
+
+  it('goes straight after the doctype, ahead of the document’s own head', () => {
+    const out = lockedCaptureHtml('<!doctype html><html lang="en"><head><title>t</title></head><body>x</body></html>')
+    expect(out).toBe(`<!doctype html>${META}<html lang="en"><head><title>t</title></head><body>x</body></html>`)
+  })
+
+  it('goes first when there is no doctype and no head', () => {
+    expect(lockedCaptureHtml('<p>posting</p>')).toBe(`${META}<p>posting</p>`)
+  })
+
+  it('stays after a doctype that comments precede, so the page keeps standards mode', () => {
+    const out = lockedCaptureHtml('<!-- saved -->\n<!DOCTYPE html><html><body></body></html>')
+    expect(out.indexOf(META)).toBe('<!-- saved -->\n<!DOCTYPE html>'.length)
+  })
+
+  it('comes before a hostile early <meta> or <link> the page put first', () => {
+    const hostile = '<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src *"><link rel=stylesheet href="https://x.test/s.css">'
+    const out = lockedCaptureHtml(hostile)
+    expect(out.indexOf(META)).toBe('<!doctype html>'.length)
+    expect(out.indexOf(META)).toBeLessThan(out.indexOf('default-src *'))
+  })
+})
+
+describe('captureFileName, beyond Latin', () => {
+  it('keeps the vowel signs of an Indic title', () => {
+    expect(captureFileName('https://x.test/1', 'हिन्दी अनुवादक', '2026-10-12')).toBe('हिन्दी-अनुवादक-2026-10-12.html')
+  })
+
+  it('still composes a Latin accent rather than dropping it', () => {
+    expect(captureFileName('https://x.test/1', 'Ingénieur', '2026-10-12')).toBe('Ingénieur-2026-10-12.html')
+  })
+
+  it('never cuts a character in half', () => {
+    const name = captureFileName('https://x.test/1', `${'a'.repeat(59)}𠀀𠀀`, '2026-10-12')
+    expect(name).toBe(`${'a'.repeat(59)}𠀀-2026-10-12.html`)
+    expect(name).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/)
+  })
+})
+
+describe('postingIdentity, the jobs it used to merge', () => {
+  const same = (a: string, b: string) => postingIdentity(a) === postingIdentity(b)
+
+  it('keeps two Indeed jobs opened from one search apart', () => {
+    expect(
+      same(
+        'https://www.indeed.com/jobs?q=engineer&vjk=0123456789abcdef',
+        'https://www.indeed.com/jobs?q=engineer&vjk=fedcba9876543210',
+      ),
+    ).toBe(false)
+  })
+
+  it('reads a search page’s open job as that job', () => {
+    expect(
+      same(
+        'https://www.indeed.com/jobs?q=engineer&l=Remote&vjk=0123456789abcdef',
+        'https://www.indeed.com/viewjob?jk=0123456789abcdef&tk=abc&from=serp',
+      ),
+    ).toBe(true)
+  })
+
+  it('keeps two jobs on a hash-routed board apart', () => {
+    expect(same('https://careers.acme.test/#/job/123', 'https://careers.acme.test/#/job/456')).toBe(false)
+    expect(same('https://acme.test/jobs#!/posting/1', 'https://acme.test/jobs#!/posting/2')).toBe(false)
+    expect(same('https://acme.test/#job-1', 'https://acme.test/#job-2')).toBe(false)
+  })
+
+  it('still folds a fragment that is only a scroll position', () => {
+    expect(same('https://acme.test/jobs/1#apply', 'https://acme.test/jobs/1')).toBe(true)
+  })
+
+  it('folds the Greenhouse embed form onto the job it embeds', () => {
+    expect(canonicalPostingUrl('https://boards.greenhouse.io/embed/job_app?for=acme&token=4012345')).toBe(
+      'https://job-boards.greenhouse.io/acme/jobs/4012345',
+    )
+    expect(
+      same('https://boards.greenhouse.io/embed/job_app?for=acme&token=4012345', 'https://job-boards.greenhouse.io/acme/jobs/4012345'),
+    ).toBe(true)
+  })
+})
+
+describe('pageIdentity', () => {
+  it('keeps a listing’s paging parameters, which a posting key would drop', () => {
+    expect(pageIdentity('https://board.test/jobs?from=0')).not.toBe(pageIdentity('https://board.test/jobs?from=20'))
+  })
+
+  it('does not fold a search page onto the job open beside it', () => {
+    expect(pageIdentity('https://www.linkedin.com/jobs/search/?currentJobId=4012&start=25')).not.toBe(
+      pageIdentity('https://www.linkedin.com/jobs/search/?currentJobId=4012&start=50'),
+    )
+  })
+
+  it('drops analytics and folds www and a trailing slash', () => {
+    expect(pageIdentity('https://www.board.test/jobs/?utm_source=x&gclid=1')).toBe('board.test/jobs')
+  })
+})
+
+/**
+ * Three answers to "same posting URL" disagreed — `postingIdentity`, the scout's
+ * `postingKey` (which kept the scheme, `www.` and `utm_*`), and the board
+ * reader's `pageKey` — so the scout re-proposed a job the duplicate warning
+ * would have called saved. Both now route through the one reduction here.
+ */
+describe('the posting keys agree', () => {
+  const pairs: [string, string][] = [
+    ['http://www.boards.test/jobs/1/?utm_source=mail', 'https://boards.test/jobs/1'],
+    ['https://www.indeed.com/jobs?q=x&vjk=0123456789abcdef', 'https://www.indeed.com/viewjob?jk=0123456789abcdef'],
+    ['https://careers.acme.test/#/job/1?x', 'https://careers.acme.test/#/job/2?x'],
+  ]
+  it.each(pairs)('postingKey(%s) agrees with postingIdentity', (a, b) => {
+    expect(postingKey(a) === postingKey(b)).toBe(postingIdentity(a) === postingIdentity(b))
+  })
+
+  it('folds what postingIdentity folds, where postingKey used to keep it', () => {
+    expect(postingKey('http://www.boards.test/jobs/1/?utm_source=mail')).toBe(postingKey('https://boards.test/jobs/1'))
+  })
+
+  it('still compares a non-address as its folded text', () => {
+    expect(postingKey('  Senior Engineer at Acme ')).toBe('senior engineer at acme')
+  })
+
+  it('gives pageKey the same host, slash and fragment rules', () => {
+    expect(pageKey('https://www.board.test/jobs/?utm_campaign=x')).toBe(pageKey('http://board.test/jobs'))
+    expect(pageKey('https://board.test/#/jobs?page=1')).not.toBe(pageKey('https://board.test/#/jobs?page=2'))
+    expect(pageKey('https://board.test/jobs?page=2#top')).toBe(pageKey('https://board.test/jobs?page=2'))
   })
 })

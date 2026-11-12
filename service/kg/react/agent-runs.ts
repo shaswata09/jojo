@@ -164,11 +164,11 @@ export type StartOptions = {
   /** Which steps to stop and ask about. See `AgentOptions.gate`. */
   gate?: 'destructive' | 'writes' | 'none'
   /**
-   * The conversation as it is stored, for a run the registry has never seen.
+   * The conversation as it is stored.
    *
-   * Only read when there is no live run for the thread — see `start`. Stored
-   * entries carry `t0…tn` ids and the registry mints `e0…en`, so the two can
-   * never collide.
+   * Preferred to the registry's own copy unless that copy is longer — see
+   * `start` for why the graph wins. Stored entries carry `t0…tn` ids and the
+   * registry mints `e0…en`, so the two can never collide.
    */
   entries?: readonly AgentEntry[]
   tools?: readonly string[]
@@ -344,12 +344,28 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
      * and one answer, while the model still answered correctly because `history`
      * was passed separately and was right.
      *
-     * `options.entries` is the stored transcript. It is used only when the
-     * registry has nothing, because an in-session run already holds those turns
-     * and taking both would duplicate them.
+     * `options.entries` is the stored transcript. One list or the other, never
+     * both: an in-session run already holds those turns, and taking both would
+     * duplicate them.
+     */
+    /*
+     * And not this session's copy when the STORED one has moved on.
+     *
+     * The registry's copy used to win whenever it existed, so a conversation
+     * continued in another tab, or put back by a restore, was saved over with
+     * this session's older list plus the new turn — and that save replaces the
+     * stored entries with no undo. The graph is the truth: every settle writes
+     * the registry's list to it, so when the stored list is at least as long it
+     * holds everything the registry does, and more if it moved on. Only a
+     * registry that is LONGER — a save that never landed, a caller that keeps
+     * none — knows something the store does not.
      */
     const existing = runs.get(threadId)
-    const before = existing?.entries ?? options.entries ?? []
+    const stored = options.entries
+    const before =
+      stored !== undefined && (existing === undefined || stored.length >= existing.entries.length)
+        ? stored
+        : (existing?.entries ?? [])
     const seq = (inner.get(threadId)?.seq ?? before.length) + 1
     inner.set(threadId, { cancel, seq })
 
@@ -463,6 +479,9 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
     let draft: { id: string; text: string } | null = null
     /** The thinking currently streaming, kept apart from the prose draft. */
     let thinking: { id: string; text: string } | null = null
+
+    /** Whether `onSettled` already ran, so the catch path never saves twice. */
+    let settled = false
 
     void (async () => {
       try {
@@ -650,6 +669,7 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
         // saving here is a wholesale replace of the stored conversation.
         if (mine()) {
           const finished = runs.get(threadId)
+          settled = true
           onSettled?.(threadId, finished?.entries ?? [], run.messages.slice(1))
         }
       } catch (e) {
@@ -678,6 +698,20 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
                 ? `Something went wrong answering that: ${e.message}`
                 : 'Something went wrong answering that.',
           })
+          /*
+           * Saved too, not only shown. A throw used to skip the save, so on
+           * reload the question vanished — along with the steps before the
+           * throw, whose writes HAD landed. `settled` keeps a throw from
+           * `onSettled` itself from saving twice. The model-facing history is
+           * the question on what came before: the run's own messages died
+           * with it.
+           */
+          if (!settled) {
+            onSettled?.(threadId, runs.get(threadId)?.entries ?? [], [
+              ...history,
+              { role: 'user', content: clean },
+            ])
+          }
         }
       } finally {
         // The unlock, and the one that did the damage. Releasing a lock this

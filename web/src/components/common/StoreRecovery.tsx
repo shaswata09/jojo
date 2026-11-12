@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import type { Rows } from '@jojo/service/storage/driver'
 import { useBoot } from '@/lib/boot-context'
+import { revokeLater } from '@/lib/save-file'
 
 /**
  * The store is there and it cannot be read.
@@ -68,12 +69,12 @@ export function StoreRecovery({ detail, rescued }: { detail: string; rescued: Ro
     anchor.href = href
     anchor.download = 'jojo-rescued-rows.json'
     anchor.click()
-    // Next task, not now. A synchronous revoke races the download the click
-    // just started and hands back an EMPTY file — and this is the rescue
-    // export from a store that will not open, so it is the one download in the
-    // app where an empty file is the difference between keeping their records
-    // and losing them.
-    setTimeout(() => URL.revokeObjectURL(href), 0)
+    // Not now, and not on the next task either. A synchronous revoke races the
+    // download the click just started and hands back an EMPTY file, and Firefox
+    // resolves blob URLs late enough that the next task can lose it too — and
+    // this is the rescue export from a store that will not open, so it is the
+    // one download where an empty file means losing their records.
+    revokeLater(href)
   }
 
   const rescuedCount = rescued ? rescued.nodes.length + rescued.edges.length : 0

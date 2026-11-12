@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
 import { GuideBuiltWith } from '@/components/guide/GuideBuiltWith'
 import { GuideGraph } from '@/components/guide/GuideGraph'
+import { GuideFaq } from '@/components/guide/GuideFaq'
 import { GuideLicence } from '@/components/guide/GuideLicence'
 import { GuideOverview } from '@/components/guide/GuideOverview'
 import { GuideScreens } from '@/components/guide/GuideScreens'
@@ -236,6 +237,7 @@ export default function App() {
             <Route path="graph" element={<GuideGraph />} />
             <Route path="tools" element={<GuideTools />} />
             <Route path="built-with" element={<GuideBuiltWith />} />
+            <Route path="faq" element={<GuideFaq />} />
             <Route path="licence" element={<GuideLicence />} />
           </Route>
           <Route

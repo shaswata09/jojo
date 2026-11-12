@@ -380,8 +380,8 @@ export type ApprovalMode = (typeof APPROVAL_MODES)[number]
  *
  * `SAID` names deletion explicitly rather than saying "dangerous", because the
  * line the app actually draws is `delete` and `admin`, plus the handful of
- * tools that ask to be confirmed themselves — twenty of a hundred, counted
- * 2026-09-13 and pinned in `catalog.test.ts`. Closing an application is a
+ * tools that ask to be confirmed themselves — nineteen of the ninety-six a
+ * model is offered, counted 2026-11-11 and pinned in `catalog.test.ts`. Closing an application is a
  * `move` and passes without a prompt under `semi`, which is worth a person
  * knowing before they choose it.
  */
@@ -888,6 +888,8 @@ export type Proposal = {
   proposedAt: Instant
   decidedAt?: Instant
   error?: string
+  /** See `ProposalProps.reading`. */
+  reading?: string
 }
 
 export type Match = {
@@ -1639,6 +1641,13 @@ export type SnippetProps = {
  */
 export const MAX_POSTING_SUMMARY = 300
 
+/**
+ * The longest a suggestion's stored reading may be, as JSON text. A dozen short
+ * fields and a few keyword names come to well under a kilobyte; anything near
+ * this did not come from the reader.
+ */
+export const MAX_PROPOSAL_READING = 4000
+
 export type PostingProps = {
   slug: string
   title: string
@@ -1779,6 +1788,22 @@ export type ProposalProps = {
    * unswept, which is what it was.
    */
   swept?: boolean
+  /**
+   * What reading the posting's page said, before anyone decided on it — JSON
+   * text, parsed by `scoutReading` in `core/proposal`.
+   *
+   * Only on a `scout.posting.save` suggestion. The scout writes a suggestion
+   * from a board's listing — a few words and a link — and the person is asked
+   * to decide on that. So each one is read in the background, the way approving
+   * reads one (`pipeline.proposal.reading.set`): the page kept in the Vault, and
+   * the employer, role, place and keywords put on the card. Approving then uses
+   * this rather than opening the page a second time.
+   *
+   * Text rather than a typed prop for the reason `input` is: it is the app's
+   * own scratch about one card, and a shape that changes must never make a boot
+   * drop queued suggestions. A reading that does not parse is simply not shown.
+   */
+  reading?: string
 }
 
 export type ProfileProps = Profile
