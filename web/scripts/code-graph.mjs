@@ -49,7 +49,7 @@ export function includePath(file) {
     file === 'mobile/index.ts' ||
     /^service\/(kg|data)\//.test(file) ||
     /^web\/src\//.test(file) ||
-    /^web\/extension\/[^/]+\.js$/.test(file) ||
+    /^web\/extension\/(?:worker\/)?[^/]+\.js$/.test(file) ||
     /^mobile\/src\//.test(file)
   )
 }

@@ -91,7 +91,7 @@ function reportFailure(
  * Loopback is excluded because browsers treat it as potentially trustworthy, so
  * it works directly and a relay would only add a hop.
  *
- * Kept in step with `isPrivateNetwork` in `web/extension/background.js`: this
+ * Kept in step with `isPrivateNetwork` in `web/extension/worker/targets.js`: this
  * decides what to ASK for and that decides what is ALLOWED, and the two
  * disagreeing is what produced a refusal message telling somebody to install
  * the extension that was refusing them.

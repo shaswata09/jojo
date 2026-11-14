@@ -71,7 +71,7 @@ const REPLY = 'jojo:capture-reply'
  */
 const BRIDGE_PROTOCOL = 9
 
-/** Must match `background.js`. A mismatch is a silent no-op, not an error. */
+/** Must match `worker/model-stream.js`. A mismatch is a silent no-op, not an error. */
 const MODEL_STREAM_PORT = 'jojo:model-stream'
 
 /** The per-chunk message. The final reply still arrives as a normal REPLY. */

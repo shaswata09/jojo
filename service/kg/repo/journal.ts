@@ -151,7 +151,7 @@ export function applyJournal(s: GraphWriter, entry: JournalEntry, dir: Direction
     // writer (`MutableSnapshot.putEdge`) returns early on an id it already
     // holds. So an edge delta with BOTH images set never reached memory, while
     // `opsFor` wrote the `after` image to disk in the same commit — the two
-    // copies then disagreed until the next reload. `fileUnder` (`tools/vault.ts`)
+    // copies then disagreed until the next reload. `fileUnder` (`tools/vault-shared.ts`)
     // makes that delta on every save: it unlinks every FILED_UNDER edge and
     // writes them all back, so re-saving an untouched form restamps
     // `createdAt`. Measured against the code before this line: memory held

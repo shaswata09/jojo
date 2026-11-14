@@ -8,21 +8,23 @@
  * page whose sheets import two new sheets apiece had the service worker fetching
  * forever with the badge stuck on '…' and no route to recovery.
  *
- * Run for real, out of the file the browser loads, for the reason
- * `reader-relay.test.ts` gives: a transcription of a guard is not the guard, and
- * a termination argument in prose is worth nothing. `?raw` and `new Function`
- * are that file's precedent — the extension is plain JS with no declarations and
- * cannot be imported.
+ * Run for real — imported from the module the browser loads, with only `fetch`
+ * replaced — for the reason `reader-relay.test.ts` gives: a transcription of a
+ * guard is not the guard, and a termination argument in prose is worth nothing.
  *
- * `serialise.js`'s `queueCssUrls` is lifted the same way, at the bottom. It is
- * the other end of the same pipe: what it decides to tokenise is what `inline()`
- * splices, and the escape at that splice is chosen by the KIND the tokeniser
- * gave it. One of those two files alone cannot show the invariant holding.
+ * `serialise.js`'s `queueCssUrls` is tested too, at the bottom. It is the other
+ * end of the same pipe: what it decides to tokenise is what `inline()` splices,
+ * and the escape at that splice is chosen by the KIND the tokeniser gave it.
+ * One of those two files alone cannot show the invariant holding. It is a
+ * helper NESTED inside `serialise` — which is injected into the page whole and
+ * so cannot import or export anything — so it alone is lifted out of the source
+ * by name rather than imported.
  */
 
-import { describe, expect, it } from 'vitest'
-import backgroundSource from '../../extension/background.js?raw'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import serialiseSource from '../../extension/serialise.js?raw'
+// @ts-expect-error — a plain ES module the worker loads from disk, with no types.
+import { captureNonce, inline as workerInline } from '../../extension/worker/inline.js'
 import { CAPTURE_MAX_ASSET_BYTES, CAPTURE_SCHEMES } from '@jojo/service/core/capture'
 
 type Asset = { href: string; kind: string }
@@ -30,27 +32,9 @@ type Page = { html: string; assets: Asset[]; dropped?: number }
 type Inline = (page: Page) => Promise<{ html: string; dropped: number }>
 type Fetched = { ok: boolean; status: number; text: () => Promise<string>; url?: string }
 
-/** A `function name(` out of `background.js`, to its closing brace. */
-function liftFn(name: string): string {
-  const at = backgroundSource.search(new RegExp(`function ${name}\\(`))
-  if (at === -1) throw new Error(`${name} is not in extension/background.js any more`)
-  let depth = 0
-  for (let i = backgroundSource.indexOf('{', at); i < backgroundSource.length; i += 1) {
-    if (backgroundSource[i] === '{') depth += 1
-    else if (backgroundSource[i] === '}' && --depth === 0) return backgroundSource.slice(at, i + 1)
-  }
-  throw new Error(`could not find the end of ${name}`)
-}
-
-/**
- * `cssSafe` through `byteLength`, which is `inline` and the three helpers it
- * calls. Sliced rather than brace-matched because it is one contiguous run in
- * the file and the pieces are useless apart.
- */
-const region = backgroundSource.slice(
-  backgroundSource.indexOf('const cssSafe ='),
-  backgroundSource.indexOf('async function read()'),
-)
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 /** This harness's capture nonce. The worker mints a random one per capture. */
 const NONCE = 'a1b2c3d4e5f60718293a4b5c'
@@ -59,19 +43,12 @@ const tok = (n: number) => `__JOJO_ASSET_${NONCE}_${String(n)}__`
 
 type RealInline = (page: Page, nonce: string, deadline?: number) => Promise<{ html: string; dropped: number }>
 
+/** The real `inline`, with every `fetch` it makes answered by `fetchImpl`. */
 function liftRealInline(fetchImpl: (href: string) => Promise<Fetched>): RealInline {
-  if (region === '' || !region.includes('async function inline(')) {
-    throw new Error('inline() is not where this test expects it in extension/background.js')
+  return (page, nonce, deadline) => {
+    vi.stubGlobal('fetch', fetchImpl)
+    return (workerInline as RealInline)(page, nonce, deadline)
   }
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  return new Function(
-    'CAPTURE_MAX_ASSET_BYTES',
-    'CAPTURE_SCHEMES',
-    'fetch',
-    // The local-target rule `inline` asks of every asset, lifted from the same
-    // file so the one under test is the real one.
-    `${liftFn('privateHost')}\n${liftFn('isLocalTarget')}\n${region}; return inline`,
-  )(CAPTURE_MAX_ASSET_BYTES, CAPTURE_SCHEMES, fetchImpl) as RealInline
 }
 
 /**
@@ -346,16 +323,27 @@ describe('the final sweep', () => {
  * nothing that a browser would have loaded, and it keeps `cssSafe`'s assumption
  * TRUE rather than widening the escape to mangle `"` in every real stylesheet.
  */
+/**
+ * `queueCssUrls` and everything it reads inside `serialise` — `cssUnescape` and
+ * the patterns between them — from the first of those nested helpers to the
+ * closing brace of the second.
+ */
+function tokeniserSource(): string {
+  const at = serialiseSource.indexOf('  function cssUnescape(')
+  const fn = serialiseSource.indexOf('  function queueCssUrls(')
+  if (at === -1 || fn === -1 || fn < at) throw new Error('the CSS tokeniser is not in extension/serialise.js any more')
+  let depth = 0
+  for (let i = serialiseSource.indexOf('{', fn); i < serialiseSource.length; i += 1) {
+    if (serialiseSource[i] === '{') depth += 1
+    else if (serialiseSource[i] === '}' && --depth === 0) return serialiseSource.slice(at, i + 1)
+  }
+  throw new Error('could not find the end of queueCssUrls')
+}
+
 describe("the extension's CSS tokeniser", () => {
   /** `queueCssUrls` and its patterns, given only the names it takes from `serialise()`. */
   function liftQueueCssUrls() {
-    const region = serialiseSource.slice(
-      serialiseSource.indexOf('  // ---- the CSS tokeniser'),
-      serialiseSource.indexOf('  // ---- 0.'),
-    )
-    if (region === '' || !region.includes('function queueCssUrls(')) {
-      throw new Error('queueCssUrls() is not where this test expects it in extension/serialise.js')
-    }
+    const region = tokeniserSource()
     const assets: { href: string; kind: string }[] = []
     const absolute = (value: unknown) => {
       try {
@@ -456,10 +444,7 @@ describe('a quoted url() holding a ) or the other quote', () => {
   })
 
   it('is tokenised in the page’s own CSS', () => {
-    const region = serialiseSource.slice(
-      serialiseSource.indexOf('  // ---- the CSS tokeniser'),
-      serialiseSource.indexOf('  // ---- 0.'),
-    )
+    const region = tokeniserSource()
     const queued: string[] = []
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
     const run = new Function('absolute', 'token', 'TOKEN', `let dropped = 0; ${region}; return queueCssUrls`)(
@@ -511,12 +496,7 @@ describe('a token-shaped string the page wrote itself', () => {
   })
 
   it('is minted fresh for every capture', () => {
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    const mint = new Function('CAPTURE_MAX_ASSET_BYTES', 'CAPTURE_SCHEMES', 'fetch', `${region}; return captureNonce`)(
-      CAPTURE_MAX_ASSET_BYTES,
-      CAPTURE_SCHEMES,
-      fetch,
-    ) as () => string
+    const mint = captureNonce as () => string
     const a = mint()
     expect(a).toMatch(/^[0-9a-f]{24}$/)
     expect(mint()).not.toBe(a)

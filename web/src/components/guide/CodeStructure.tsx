@@ -98,14 +98,14 @@ export const SHAPE: DirRow[] = [
     // for each application, and the one rule for when a brief counts as empty.
     // `backup-stream.ts` and its test: the backup written and read in pieces,
     // because a 500 MB store is more base64 than one string can hold.
-    files: 146,
+    files: 177,
     tests: 71,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
     // Re-measured 2026-10-22 with `backup-stream.ts`.
-    lines: 43457,
+    lines: 44118,
     what: 'model, ids, schema, algebra, dates',
   },
   { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8182, what: 'transactions, journal, boot' },
@@ -114,12 +114,12 @@ export const SHAPE: DirRow[] = [
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
     // clearing it — the two halves of a reading that survives a reload.
     // `tailor.ts` and its test: the one write behind the tailoring card.
-    files: 37,
+    files: 41,
     tests: 13,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one — and again when
     // `vault.ts` grew the two verbs that name one person on one job.
-    lines: 13123,
+    lines: 13166,
     what: '95 named write operations',
   },
   {
@@ -138,7 +138,7 @@ export const SHAPE: DirRow[] = [
     // application a conversation is about, so "this one" has a referent.
     // `record-query.ts` and its test: filter, sort, group and add up over a
     // record's stored and derived fields, for `memory.list`.
-    files: 75,
+    files: 99,
     tests: 37,
     // Re-measured when the phone got a reader of its own: `documents.ts` turns
     // DOCX, ODF, decks, saved pages and RTF into text as pure functions, so a
@@ -153,7 +153,7 @@ export const SHAPE: DirRow[] = [
     // keywords to the model and match the reply back onto the ones that exist.
     // Re-measured 2026-10-22, when `memory.list` became a query tool:
     // `record-query.ts` and its test, and the window-sized result cap.
-    lines: 45648,
+    lines: 46998,
     what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
   },
   {
@@ -224,14 +224,14 @@ export const SHAPE: DirRow[] = [
     // 323 with the Guide's Control flow graph page: `guide/GuideControlFlow.tsx`, the map it draws
     // (`guide/flow-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    files: 360,
-    tests: 49,
-    lines: 61643,
+    files: 390,
+    tests: 52,
+    lines: 64390,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
   // shared pieces the chat dock draws too.
-  { dir: 'web/src/routes', files: 15, tests: 0, lines: 4875, what: 'fifteen pages' },
+  { dir: 'web/src/routes', files: 15, tests: 0, lines: 2934, what: 'fifteen pages' },
   {
     dir: 'web/src/lib',
     // Re-measured 2026-09-11: `capture-page.test.ts`, the extension opening a
@@ -304,7 +304,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 128
+export const WEB_TEST_FILES = 131
 
 type TestGroup = { title: string; files: string; body: string }
 

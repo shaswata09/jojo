@@ -246,7 +246,7 @@ describe('tx.del takes the edges with it', () => {
 /**
  * `tx.unlinkAll`'s `rel` filter, which four live callers depend on.
  *
- * Every one of them is the "unfile this record" path — `vault.ts` over
+ * Every one of them is the "unfile this record" path — `vault-shared.ts` over
  * `FILED_UNDER`, `timeline.ts` over `ABOUT`, `scout.ts` twice over `BECAME` —
  * and every one runs on a record that also carries `TAGS` edges. Both mutations
  * passed the suite before this block: dropping the filter, and making the whole

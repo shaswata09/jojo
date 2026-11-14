@@ -5,7 +5,7 @@
  * signed-in browser, the document reader on their own machine — and hand back
  * whatever came. A posting is on the public web; nobody's job advert lives at
  * 192.168.1.1. The extension refuses these for its own route
- * (`isLocalTarget` in `web/extension/background.js`); this is the same refusal
+ * (`isLocalTarget` in `web/extension/worker/targets.js`); this is the same refusal
  * for the reader's route, which had none (R6), and for the scout's background
  * reads before either route is tried.
  *

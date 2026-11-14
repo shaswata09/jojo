@@ -5,7 +5,7 @@
  * separate page — rather than the popup downloading directly — because the
  * popup cannot keep a download alive: see the comment in `save.html`.
  *
- * The file needs nothing but itself. `inline()` in `background.js` already
+ * The file needs nothing but itself. `inline()` in `worker/inline.js` already
  * turned every stylesheet into a `<style>` block and every image and font into
  * a `data:` URI, so it opens in any browser with no connection — measured with
  * the origin server stopped: styles applied, every image drawn, zero requests.

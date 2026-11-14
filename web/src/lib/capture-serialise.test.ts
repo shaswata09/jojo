@@ -17,7 +17,9 @@
  * into a document from `createHTMLDocument`, which has no browsing context and
  * so no custom element definitions; nothing in the walk builds elements in the
  * live document; and the returned string gets a last look for the two tags the
- * attack wrote. The string pass is EXECUTED, lifted from the file.
+ * attack wrote. The string pass is EXECUTED: it is `lastLookAtString`, a helper
+ * nested inside `serialise` (which is injected into the page whole, so nothing
+ * in it can be exported), lifted out of the file by name.
  */
 import { describe, expect, it } from 'vitest'
 import serialiseSource from '../../extension/serialise.js?raw'
@@ -42,15 +44,27 @@ describe('the copy the walk works on', () => {
 })
 
 describe('the last look at the returned string', () => {
-  /** The pass, lifted from the file and run on a string. */
+  /** The pass, lifted from the file by name and run on a string. */
   const pass = (() => {
-    const at = code.indexOf('const html = `<!doctype html>${doc.outerHTML}`')
-    const end = code.indexOf('return {', at)
-    if (at === -1 || end === -1) throw new Error('the final string pass is not where this test expects it')
-    const body = code.slice(at, end).replace('`<!doctype html>${doc.outerHTML}`', 'input')
+    const at = code.indexOf('function lastLookAtString(')
+    if (at === -1) throw new Error('the final string pass is not in extension/serialise.js any more')
+    let depth = 0
+    let end = -1
+    for (let i = code.indexOf('{', at); i < code.length; i += 1) {
+      if (code[i] === '{') depth += 1
+      else if (code[i] === '}' && --depth === 0) {
+        end = i + 1
+        break
+      }
+    }
+    if (end === -1) throw new Error('could not find the end of lastLookAtString')
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    return new Function('input', `${body}; return html`) as (input: string) => string
+    return new Function(`${code.slice(at, end)}; return lastLookAtString`)() as (input: string) => string
   })()
+
+  it('is what the returned string is built from, not a helper beside it', () => {
+    expect(code).toContain('const html = lastLookAtString(`<!doctype html>${doc.outerHTML}`)')
+  })
 
   it('removes a refresh and a preconnect written after the strip ran, and keeps the rest', () => {
     const out = pass(

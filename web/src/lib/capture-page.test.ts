@@ -10,37 +10,64 @@
  * time the inbox drained.
  *
  * Run rather than re-described, for the reason `reader-relay.test.ts` gives: a
- * transcription of a guard is not the guard. `?raw` and `new Function` are its
- * precedent; `chrome` and the helpers the function calls are injected, and
- * `hostOf`, `byteLength` and `looksLikeSignIn` are lifted out of the same file
- * so the ones under test are the real ones.
+ * transcription of a guard is not the guard. The worker's own modules are
+ * imported; `chrome` is a fake, and the two seams a test cannot wait on — the
+ * tab's load and settle (`worker/tabs.js`) and the asset loop with its nonce
+ * (`worker/inline.js`) — are mocked, so everything else under test is real.
  */
-import { describe, expect, it } from 'vitest'
-import backgroundSource from '../../extension/background.js?raw'
-// @ts-expect-error — a plain ES module the worker loads from disk, with no types
-// of its own; `capture-shrink.test.ts` imports it the same way. It is handed to
-// the lifted worker untyped, which is how the worker itself receives it.
-import { shrinkToFit } from '../../extension/shrink.js'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+// @ts-expect-error — a plain ES module the worker loads from disk, with no types.
+import { CAPTURE_PAGE_INLINE_BY_MS, capturePage } from '../../extension/worker/capture.js'
+// @ts-expect-error — as above.
+import { isLocalTarget, looksLikeSignIn } from '../../extension/worker/targets.js'
+// @ts-expect-error — as above.
+import { scanBoard } from '../../extension/worker/scan-board.js'
+// @ts-expect-error — as above.
+import { onCaptureUrl, onScanBoard } from '../../extension/worker/page-verbs.js'
+// @ts-expect-error — as above.
+import { PAGE_VERBS } from '../../extension/worker/messages.js'
+// @ts-expect-error — as above.
+import { expandListing } from '../../extension/harvest.js'
+import captureSource from '../../extension/worker/capture.js?raw'
+import pageVerbsSource from '../../extension/worker/page-verbs.js?raw'
 import bridgeCallerSource from './capture-bridge.ts?raw'
 
-/** A declaration out of `background.js`, to the end of its body. */
-function lift(name: string): string {
-  const at = backgroundSource.search(new RegExp(`(?:async )?function ${name}\\(`))
-  if (at === -1) throw new Error(`${name} is not in extension/background.js any more`)
+/** What the mocked seams answer, set per worker. */
+const seams = vi.hoisted(() => ({
+  loads: true,
+  inline: (async () => ({ html: '', dropped: 0 })) as (...args: unknown[]) => Promise<unknown>,
+}))
+
+vi.mock('../../extension/worker/tabs.js', () => ({
+  SETTLE_MS: 0,
+  sleep: async () => undefined,
+  waitForLoad: async () => seams.loads,
+}))
+
+vi.mock('../../extension/worker/inline.js', () => ({
+  captureNonce: () => 'feedfacefeedfacefeedface',
+  inline: (...args: unknown[]) => seams.inline(...args),
+}))
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+/** A function declaration out of a module's source, to the end of its body. */
+function lift(source: string, name: string): string {
+  const at = source.search(new RegExp(`(?:async )?function ${name}\\(`))
+  if (at === -1) throw new Error(`${name} is not in that module any more`)
   let depth = 0
-  for (let i = backgroundSource.indexOf('{', at); i < backgroundSource.length; i += 1) {
-    const c = backgroundSource[i]
+  for (let i = source.indexOf('{', at); i < source.length; i += 1) {
+    const c = source[i]
     if (c === '{') depth += 1
     else if (c === '}') {
       depth -= 1
-      if (depth === 0) return backgroundSource.slice(at, i + 1)
+      if (depth === 0) return source.slice(at, i + 1)
     }
   }
   throw new Error(`could not find the end of ${name}`)
 }
-
-const SIGN_IN = /^const SIGN_IN = .*$/m.exec(backgroundSource)?.[0]
-if (SIGN_IN === undefined) throw new Error('SIGN_IN is not in extension/background.js any more')
 
 /** The cap `policy.js` sets, which the harness hands the worker. */
 const CAP = 8 * 1024 * 1024
@@ -62,35 +89,7 @@ function numberIn(source: string, name: string): number {
   return Number(match[1]!.replace(/_/g, ''))
 }
 
-const INLINE_BY = numberIn(backgroundSource, 'CAPTURE_PAGE_INLINE_BY_MS')
-
-// eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-const build = new Function(
-  'chrome',
-  'waitForLoad',
-  'sleep',
-  'SETTLE_MS',
-  'serialise',
-  'POLICY',
-  'inline',
-  'CAPTURE_MAX_BYTES',
-  'shrinkToFit',
-  'captureNonce',
-  'CAPTURE_PAGE_INLINE_BY_MS',
-  [
-    SIGN_IN,
-    lift('hostOf'),
-    lift('byteLength'),
-    lift('looksLikeSignIn'),
-    lift('privateHost'),
-    lift('isLocalTarget'),
-    lift('capturePage'),
-  ].join('\n') + '\nreturn { capturePage, looksLikeSignIn, isLocalTarget }',
-) as (...deps: unknown[]) => {
-  capturePage: (url: string) => Promise<Result>
-  looksLikeSignIn: (requested: string, landed: string) => boolean
-  isLocalTarget: (url: string) => boolean
-}
+const INLINE_BY = CAPTURE_PAGE_INLINE_BY_MS as number
 
 const served = {
   url: 'https://job-boards.greenhouse.io/acme/jobs/4',
@@ -142,23 +141,18 @@ function worker({
     },
     action: { setBadgeText: async () => undefined, setTitle: async () => undefined },
   }
-  const { capturePage, looksLikeSignIn, isLocalTarget } = build(
-    chrome,
-    async () => loads,
-    async () => undefined,
-    0,
-    () => undefined,
-    {},
-    async (page: { dropped: number }, nonce: unknown, deadline: unknown) => {
-      inlinedWith.push({ nonce, deadline, tabOpen: !removed.includes(7) })
-      return { html: inlined, dropped: page.dropped + 2 }
-    },
-    8 * 1024 * 1024,
-    shrinkToFit,
-    () => 'feedfacefeedfacefeedface',
-    INLINE_BY,
-  )
-  return { capturePage, looksLikeSignIn, isLocalTarget, created, removed, inlinedWith, stored: () => stored }
+  seams.loads = loads
+  seams.inline = async (...args: unknown[]) => {
+    const [page, nonce, deadline] = args as [{ dropped: number }, unknown, unknown]
+    inlinedWith.push({ nonce, deadline, tabOpen: !removed.includes(7) })
+    return { html: inlined, dropped: page.dropped + 2 }
+  }
+  /** The real `capturePage`, run against this worker's `chrome`. */
+  const run = (url: string): Promise<Result> => {
+    vi.stubGlobal('chrome', chrome)
+    return (capturePage as (url: string) => Promise<Result>)(url)
+  }
+  return { capturePage: run, created, removed, inlinedWith, stored: () => stored }
 }
 
 describe('capturing a posting by its address', () => {
@@ -261,7 +255,7 @@ describe('capturing a posting by its address', () => {
     // all-or-nothing refusal, so the same page was kept by one button and
     // refused by the other.
     for (const name of ['capture', 'capturePage']) {
-      expect(lift(name), `${name} no longer calls shrinkToFit`).toContain(
+      expect(lift(captureSource, name), `${name} no longer calls shrinkToFit`).toContain(
         'shrinkToFit(html, CAPTURE_MAX_BYTES)',
       )
     }
@@ -284,8 +278,6 @@ describe('capturing a posting by its address', () => {
 })
 
 describe('what counts as a sign-in wall', () => {
-  const { looksLikeSignIn } = worker()
-
   it('is a page it was SENT to, never the address asked for', () => {
     // A posting whose own path says "login" is still the posting.
     expect(
@@ -357,8 +349,6 @@ describe('the tab and the clock', () => {
 })
 
 describe('where "From link" and the scan will not go', () => {
-  const { isLocalTarget } = worker()
-
   it('refuses this machine and the person’s own network, in every spelling URL normalises', () => {
     for (const url of [
       'http://localhost:3000/',
@@ -430,9 +420,13 @@ describe('where "From link" and the scan will not go', () => {
   })
 
   it('is checked by both verbs before a tab opens', () => {
-    for (const verb of ["'jojo:scan-board'", "'jojo:capture-url'"]) {
-      const handler = backgroundSource.slice(backgroundSource.indexOf(`message?.type === ${verb}`))
-      const body = handler.slice(0, handler.indexOf('\n  }\n'))
+    for (const [verb, handler, name] of [
+      ['jojo:scan-board', onScanBoard, 'onScanBoard'],
+      ['jojo:capture-url', onCaptureUrl, 'onCaptureUrl'],
+    ] as const) {
+      // The verb is answered by this handler, and the handler checks first.
+      expect(PAGE_VERBS.get(verb), verb).toBe(handler)
+      const body = lift(pageVerbsSource, name)
       expect(body.indexOf('isLocalTarget(url)'), verb).toBeGreaterThan(-1)
       expect(body.indexOf('isLocalTarget(url)'), verb).toBeLessThan(body.search(/await (scanBoard|capturePage)\(/))
     }
@@ -446,35 +440,9 @@ describe('where "From link" and the scan will not go', () => {
  * pressing, and the presser skips anything that would submit a form.
  */
 describe('a scan whose "Load more" navigates the tab', () => {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  const buildScan = new Function(
-    'chrome',
-    'waitForLoad',
-    'sleep',
-    'SETTLE_MS',
-    'expandListing',
-    'harvest',
-    'MORE_ROUNDS',
-    'MORE_WAIT_MS',
-    'MORE_BUDGET_MS',
-    'HARVEST_LIMIT',
-    [
-      SIGN_IN,
-      lift('hostOf'),
-      lift('sameSite'),
-      lift('looksLikeSignIn'),
-      lift('privateHost'),
-      lift('isLocalTarget'),
-      lift('boardRefusal'),
-      lift('scanBoard'),
-    ].join('\n') + '\nreturn scanBoard',
-  ) as (...deps: unknown[]) => (url: string) => Promise<{ ok: boolean; reason?: string; landed?: string }>
-
   function scanner(urls: string[]) {
     let gets = 0
     const ran: string[] = []
-    const expandListing = () => undefined
-    const harvest = () => undefined
     const chrome = {
       tabs: {
         create: async () => ({ id: 9 }),
@@ -488,7 +456,12 @@ describe('a scan whose "Load more" navigates the tab', () => {
         },
       },
     }
-    const scan = buildScan(chrome, async () => true, async () => undefined, 0, expandListing, harvest, 1, 1, 1, 10)
+    seams.loads = true
+    /** The real `scanBoard`, run against this scanner's `chrome`. */
+    const scan = (url: string) => {
+      vi.stubGlobal('chrome', chrome)
+      return (scanBoard as (url: string) => Promise<{ ok: boolean; reason?: string; landed?: string }>)(url)
+    }
     return { scan, ran }
   }
 

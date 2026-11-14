@@ -21,8 +21,8 @@
  * off the site's CDN is the same cross-origin request the web app cannot make
  * either — blocked, and blocked silently enough that a capture would come back
  * unstyled with no error to show for it. So this collects the addresses and
- * hands them back; `background.js` does the fetching, where the extension's host
- * permissions make it legal.
+ * hands them back; the worker (`worker/inline.js`) does the fetching, where the
+ * extension's host permissions make it legal.
  *
  * Assets are replaced with a token rather than substituted by URL later, because
  * the same URL appears in a document more than once, sometimes escaped
@@ -55,6 +55,14 @@
  * with no browsing context, and a document with none has no custom element
  * definitions to look up: nothing is constructed, nothing is called back, and
  * every pass below works on markup the page can no longer touch.
+ *
+ * ## One nested helper per pass
+ *
+ * The walk is a sequence of passes, and each is its own nested function below
+ * so it reads on its own — nested rather than top-level because a top-level
+ * helper would not survive the trip into the page. The order they run in is
+ * written once, at the bottom of `serialise`, and it is load-bearing: see pass
+ * 0's note on why the live-tree facts come first.
  */
 
 export function serialise(policy, nonce) {
@@ -71,7 +79,7 @@ export function serialise(policy, nonce) {
   /*
    * Every token this capture mints carries the worker's per-capture nonce. A
    * constant prefix was a token the PAGE could write too — see `captureNonce`
-   * in `background.js` for what that let a page put into the saved file. No
+   * in `worker/inline.js` for what that let a page put into the saved file. No
    * nonce, no capture: a token anybody can forge is worse than none.
    */
   if (typeof nonce !== 'string' || !/^[0-9a-f]{16,}$/.test(nonce)) {
@@ -180,7 +188,7 @@ export function serialise(policy, nonce) {
          * no `dropped += 1` either, since nothing was there to keep.
          *
          * It is dropped rather than tokenised because of where the token would
-         * land. `background.js` splices a `css` token's value — whatever the
+         * land. `worker/splice.js` splices a `css` token's value — whatever the
          * remote server returned — into the document as text, and escapes it
          * with `cssSafe`, which escapes `<` ALONE on the stated assumption
          * that a `css` token always sits inside a `<style>` element. This was
@@ -274,7 +282,7 @@ export function serialise(policy, nonce) {
   const RESOLVED = 'data-jojo-resolved-src'
   /** The clone's <style> elements already written back from the live CSSOM. */
   const normalised = new WeakSet()
-  {
+  function readLiveTree() {
     const cloned = [...doc.querySelectorAll('*')]
     const living = [...document.documentElement.querySelectorAll('*')]
     if (cloned.length === living.length) {
@@ -320,25 +328,27 @@ export function serialise(policy, nonce) {
   //
   // Done first and on the clone, so the walks below never see a <script>'s text
   // or a <link>'s href and never have to decide about them.
-  for (const tag of CAPTURE_STRIP_TAGS) {
-    for (const node of [...doc.querySelectorAll(tag)]) {
-      if (tag === 'link') {
-        const rel = (node.getAttribute('rel') ?? '').toLowerCase()
-        const href = absolute(node.getAttribute('href'))
-        if (rel.includes('stylesheet') && href !== null) {
-          const style = inert.createElement('style')
-          style.textContent = token(href, 'css')
-          node.replaceWith(style)
-          continue
+  function stripElements() {
+    for (const tag of CAPTURE_STRIP_TAGS) {
+      for (const node of [...doc.querySelectorAll(tag)]) {
+        if (tag === 'link') {
+          const rel = (node.getAttribute('rel') ?? '').toLowerCase()
+          const href = absolute(node.getAttribute('href'))
+          if (rel.includes('stylesheet') && href !== null) {
+            const style = inert.createElement('style')
+            style.textContent = token(href, 'css')
+            node.replaceWith(style)
+            continue
+          }
         }
+        // <meta> carries charset and viewport, which a capture wants to keep, and
+        // http-equiv refresh, which would navigate the archive away from itself.
+        if (tag === 'meta') {
+          const equiv = (node.getAttribute('http-equiv') ?? '').toLowerCase()
+          if (equiv !== 'refresh' && equiv !== 'content-security-policy') continue
+        }
+        node.remove()
       }
-      // <meta> carries charset and viewport, which a capture wants to keep, and
-      // http-equiv refresh, which would navigate the archive away from itself.
-      if (tag === 'meta') {
-        const equiv = (node.getAttribute('http-equiv') ?? '').toLowerCase()
-        if (equiv !== 'refresh' && equiv !== 'content-security-policy') continue
-      }
-      node.remove()
     }
   }
 
@@ -349,24 +359,41 @@ export function serialise(policy, nonce) {
   // SMIL runs with scripts off, so the sandbox does not stop it. Dropped: an
   // animation of a link target is not something a posting needs, and one whose
   // values name an address is a fetch however it is aimed.
-  for (const node of [...doc.querySelectorAll('set, animate, animateTransform, animateMotion')]) {
-    const target = (node.getAttribute('attributeName') ?? '').trim().toLowerCase()
-    const values = ['to', 'from', 'by', 'values'].map((a) => node.getAttribute(a) ?? '').join(';')
-    if (/^(?:xlink:)?href$|^src$/.test(target) || /https?:|\/\/|\\\\/i.test(values)) node.remove()
+  function dropAddressAnimations() {
+    for (const node of [...doc.querySelectorAll('set, animate, animateTransform, animateMotion')]) {
+      const target = (node.getAttribute('attributeName') ?? '').trim().toLowerCase()
+      const values = ['to', 'from', 'by', 'values'].map((a) => node.getAttribute(a) ?? '').join(';')
+      if (/^(?:xlink:)?href$|^src$/.test(target) || /https?:|\/\/|\\\\/i.test(values)) node.remove()
+    }
   }
 
   // ---- 2. attributes, walked against the live tree --------------------------
-  /*
-   * `[doc, ...]`, because `doc` is the cloned `<html>` ELEMENT, not a Document.
-   *
-   * `Element.querySelectorAll('*')` returns DESCENDANTS — it never matches the
-   * element it is called on. So the root element's own attributes skipped every
-   * strip and every rewrite in this pass: an `on*` handler, a
-   * `CAPTURE_STRIP_ATTRS` entry, or a CSSOM-set
-   * `documentElement.style.backgroundImage` on `<html>` went into the archive
-   * untouched, as a live remote address.
-   */
-  for (const node of [doc, ...doc.querySelectorAll('*')]) {
+  function rewriteAttributes() {
+    /*
+     * `[doc, ...]`, because `doc` is the cloned `<html>` ELEMENT, not a Document.
+     *
+     * `Element.querySelectorAll('*')` returns DESCENDANTS — it never matches the
+     * element it is called on. So the root element's own attributes skipped every
+     * strip and every rewrite in this pass: an `on*` handler, a
+     * `CAPTURE_STRIP_ATTRS` entry, or a CSSOM-set
+     * `documentElement.style.backgroundImage` on `<html>` went into the archive
+     * untouched, as a live remote address.
+     */
+    for (const node of [doc, ...doc.querySelectorAll('*')]) {
+      stripHandlers(node)
+      rewriteLinks(node)
+      rewriteSources(node)
+      rewriteStyleAttribute(node)
+
+      // Read in `pickImageSrc`, and gone before the document is written out — a
+      // lazy loader's address list has no business sitting in the archive.
+      for (const attr of CAPTURE_LAZY_ATTRS) node.removeAttribute(attr)
+      node.removeAttribute(RESOLVED)
+    }
+  }
+
+  /** The attributes that never survive: the policy's list and every on* handler. */
+  function stripHandlers(node) {
     for (const attr of CAPTURE_STRIP_ATTRS) node.removeAttribute(attr)
 
     // Every on* handler. Markup can carry code without a <script> in sight, and
@@ -375,7 +402,10 @@ export function serialise(policy, nonce) {
     for (const { name } of [...node.attributes]) {
       if (name.toLowerCase().startsWith('on')) node.removeAttribute(name)
     }
+  }
 
+  /** A link keeps where it pointed beside it, and loses the address itself. */
+  function rewriteLinks(node) {
     // An SVG link. `tagName` on an SVG anchor is lowercase 'a', so the anchor
     // branch below misses it — and `xlink:href` is invisible to the leak scan as
     // well, because that pattern needs whitespace or a quote before `href` and
@@ -404,7 +434,10 @@ export function serialise(policy, nonce) {
       node.removeAttribute('href')
       if (href !== null) node.setAttribute(CAPTURE_HREF_ATTR, href)
     }
+  }
 
+  /** An image's one source tokenised; every other URL slot emptied. */
+  function rewriteSources(node) {
     // `if/else`, not an early `continue`. The early exit skipped the inline
     // `style` rewrite below for exactly the element most likely to carry a
     // background image, and `<img style="background:url(https://…)">` shipped
@@ -432,7 +465,10 @@ export function serialise(policy, nonce) {
       // fetch.
       if (node.hasAttribute('background')) node.removeAttribute('background')
     }
+  }
 
+  /** A style attribute's addresses tokenised, after a round trip through the CSSOM. */
+  function rewriteStyleAttribute(node) {
     // A style attribute can name a background image, which is a fetch dressed
     // as a colour.
     //
@@ -447,11 +483,6 @@ export function serialise(policy, nonce) {
       if (/url\(|@import|image-set\(/i.test(inline)) node.setAttribute('style', queueCssUrls(inline, true))
       else if (inline !== raw) node.setAttribute('style', inline)
     }
-
-    // Read in `pickImageSrc`, and gone before the document is written out — a
-    // lazy loader's address list has no business sitting in the archive.
-    for (const attr of CAPTURE_LAZY_ATTRS) node.removeAttribute(attr)
-    node.removeAttribute(RESOLVED)
   }
 
   /**
@@ -523,28 +554,32 @@ export function serialise(policy, nonce) {
   // The rules ARE readable from `document.styleSheets` for same-origin and
   // inline sheets; a cross-origin sheet throws `SecurityError` on `.cssRules`
   // and is exactly the case the <link> fetch path above already covers.
-  for (const style of [...doc.querySelectorAll('style')]) {
-    const raw = style.textContent ?? ''
-    if (raw.startsWith(TOKEN)) continue // a token from step 1
-    // One pass 0 could not reach — read through a constructed sheet instead,
-    // so its escapes are decoded all the same.
-    const text = normalised.has(style) ? raw : normalisedSheet(raw)
-    if (text !== raw) style.textContent = text
-    // CSSOM-only sheets were already filled in by pass 0, where the live node
-    // was still reachable; nothing here has to index two lists against each
-    // other, which is what made this fragile once step 1 inserted new <style>
-    // elements the live tree does not have.
-    if (/url\(|@import|image-set\(/i.test(text)) style.textContent = queueCssUrls(text, false)
+  function normaliseStyleElements() {
+    for (const style of [...doc.querySelectorAll('style')]) {
+      const raw = style.textContent ?? ''
+      if (raw.startsWith(TOKEN)) continue // a token from step 1
+      // One pass 0 could not reach — read through a constructed sheet instead,
+      // so its escapes are decoded all the same.
+      const text = normalised.has(style) ? raw : normalisedSheet(raw)
+      if (text !== raw) style.textContent = text
+      // CSSOM-only sheets were already filled in by pass 0, where the live node
+      // was still reachable; nothing here has to index two lists against each
+      // other, which is what made this fragile once step 1 inserted new <style>
+      // elements the live tree does not have.
+      if (/url\(|@import|image-set\(/i.test(text)) style.textContent = queueCssUrls(text, false)
+    }
   }
 
   // Constructed stylesheets have no DOM node at all, so nothing above can find
   // them. They are appended as one <style> carrying the same rules.
-  const adopted = (document.adoptedStyleSheets ?? []).map(rulesOf).filter((t) => t.trim() !== '')
-  if (adopted.length > 0) {
-    const style = inert.createElement('style')
-    style.textContent = queueCssUrls(adopted.join('\n'), false)
-    const head = doc.querySelector('head') ?? doc
-    head.append(style)
+  function appendAdoptedSheets() {
+    const adopted = (document.adoptedStyleSheets ?? []).map(rulesOf).filter((t) => t.trim() !== '')
+    if (adopted.length > 0) {
+      const style = inert.createElement('style')
+      style.textContent = queueCssUrls(adopted.join('\n'), false)
+      const head = doc.querySelector('head') ?? doc
+      head.append(style)
+    }
   }
 
   function rulesOf(sheet) {
@@ -591,12 +626,14 @@ export function serialise(policy, nonce) {
   // out, but `querySelectorAll` never descends into a DocumentFragment that is
   // not in the tree — so everything above skipped it: scripts unstripped,
   // handlers unstripped, URLs untouched. What kept that from being a leak was
-  // the blunt string sweep in `background.js`, which is not a mechanism to rely
+  // the blunt string sweep in `worker/splice.js`, which is not a mechanism to rely
   // on. Emptied instead: a template is inert markup a script was going to
   // stamp out, and there is no script any more.
-  for (const template of [...doc.querySelectorAll('template')]) {
-    if (template.content.querySelector('*') !== null) dropped += 1
-    template.innerHTML = ''
+  function emptyTemplates() {
+    for (const template of [...doc.querySelectorAll('template')]) {
+      if (template.content.querySelector('*') !== null) dropped += 1
+      template.innerHTML = ''
+    }
   }
 
   // ---- 5. the un-clamp rule -------------------------------------------------
@@ -604,23 +641,25 @@ export function serialise(policy, nonce) {
   // Appended last so it wins on specificity as well as order. Marked elements
   // only — a blanket rule would unclamp things the page clamps for layout
   // reasons rather than to hide text.
-  if (doc.querySelector(`[${CAPTURE_UNCLAMP_ATTR}]`) !== null) {
-    const unclamp = inert.createElement('style')
-    unclamp.textContent =
-      // `display:block` ONLY where a line clamp was actually in force — that
-      // idiom needs `display:-webkit-box`, and releasing the clamp without
-      // restoring a sane display leaves the text in a broken box. Everywhere
-      // else the element keeps its own display: forcing block on any
-      // overflow-hidden container would flatten grids and flex rows that were
-      // never hiding anything.
-      `[${CAPTURE_UNCLAMP_ATTR}]{` +
-      '-webkit-line-clamp:unset !important;' +
-      'max-height:none !important;' +
-      'overflow:visible !important;' +
-      '}' +
-      `[${CAPTURE_UNCLAMP_ATTR}="clamp"]{display:block !important;}`
-    const head = doc.querySelector('head') ?? doc
-    head.append(unclamp)
+  function appendUnclampRule() {
+    if (doc.querySelector(`[${CAPTURE_UNCLAMP_ATTR}]`) !== null) {
+      const unclamp = inert.createElement('style')
+      unclamp.textContent =
+        // `display:block` ONLY where a line clamp was actually in force — that
+        // idiom needs `display:-webkit-box`, and releasing the clamp without
+        // restoring a sane display leaves the text in a broken box. Everywhere
+        // else the element keeps its own display: forcing block on any
+        // overflow-hidden container would flatten grids and flex rows that were
+        // never hiding anything.
+        `[${CAPTURE_UNCLAMP_ATTR}]{` +
+        '-webkit-line-clamp:unset !important;' +
+        'max-height:none !important;' +
+        'overflow:visible !important;' +
+        '}' +
+        `[${CAPTURE_UNCLAMP_ATTR}="clamp"]{display:block !important;}`
+      const head = doc.querySelector('head') ?? doc
+      head.append(unclamp)
+    }
   }
 
   // ---- 6. a last look at the STRING ----------------------------------------
@@ -636,10 +675,23 @@ export function serialise(policy, nonce) {
   // this string is the serialiser's own output, so every attribute value is
   // double-quoted with any `"` inside written as `&quot;`, and text `<` is
   // `&lt;`. Stylesheet text has its `<` escaped by `rulesOf`.
-  const html = `<!doctype html>${doc.outerHTML}`.replace(
-    /<(link|meta)(?=[\s/>])(?:[^>"]|"[^"]*")*>/gi,
-    (tag, name) => (name.toLowerCase() === 'link' || /\shttp-equiv\s*=/i.test(tag) ? '' : tag),
-  )
+  function lastLookAtString(html) {
+    return html.replace(
+      /<(link|meta)(?=[\s/>])(?:[^>"]|"[^"]*")*>/gi,
+      (tag, name) => (name.toLowerCase() === 'link' || /\shttp-equiv\s*=/i.test(tag) ? '' : tag),
+    )
+  }
+
+  // ---- the walk, in order ---------------------------------------------------
+  readLiveTree()
+  stripElements()
+  dropAddressAnimations()
+  rewriteAttributes()
+  normaliseStyleElements()
+  appendAdoptedSheets()
+  emptyTemplates()
+  appendUnclampRule()
+  const html = lastLookAtString(`<!doctype html>${doc.outerHTML}`)
 
   return {
     url: location.href,

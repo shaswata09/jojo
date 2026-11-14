@@ -47,7 +47,7 @@ an action that declares a `default_popup`. The capture path is the same
 function, reached from the popup through `jojo:capture-tab`.
 
 The verbs the popup and the save page use are answered only for pages served out of this extension
-— the check is the sender's own URL, in `background.js`. They are more powerful
+— the check is the sender's own URL, in `worker/messages.js`. They are more powerful
 than the ones the web app gets (`jojo:capture-tab` scripts a tab of its
 choosing; `jojo:set-routing` changes what the relays carry) and no page on the
 web can reach them, jojo's own included.
@@ -132,8 +132,8 @@ permissions, which is a much worse bug than the one it fixes. So the worker
 parses the address and refuses anything that is not `127.0.0.1`, `localhost` or
 `[::1]` over plain http. It is parsed rather than string-matched because
 `http://127.0.0.1@evil.example.com/` passes a `startsWith` test and is a request
-to evil.example.com; `web/src/lib/reader-relay.test.ts` executes the real
-function out of `background.js` and asserts exactly that case.
+to evil.example.com; `web/src/lib/reader-relay.test.ts` imports the real
+function from `worker/targets.js` and asserts exactly that case.
 
 Board scanning is deliberately different — opening a public page IS its feature,
 and it has its own guards. Reading a document has no business leaving this
@@ -151,7 +151,7 @@ at all**, so the browser blocks the real request and the page reports a bare
 `jojo:call-model` relays those, and its allowlist is loopback **plus** the
 provider hosts in `policy.js`. Loopback means the ports local model servers
 use out of the box (Ollama 11434, LM Studio 1234, 8000, 8080 and a few more —
-`LOCAL_MODEL_PORTS` in `background.js`); any other port on this machine needs
+`LOCAL_MODEL_PORTS` in `worker/routing.js`); any other port on this machine needs
 "Models on my network", and jojo's own reader (3001) and bridge (3002) are
 refused outright. The hosts are transcribed from `service/kg/core/provider.ts`
 and checked against it by `web/src/lib/capture-policy.test.ts`, so a host cannot
@@ -273,7 +273,8 @@ machine, and hands it to jojo the next time you open it.
 | --------------- | --------------------------------------------------------------------------------- |
 | `manifest.json` | MV3. `host_permissions` is what lets the worker fetch subresources without CORS.  |
 | `serialise.js`  | The DOM walk. Injected into the tab; collects addresses, never fetches them.      |
-| `background.js` | Fetches those addresses, inlines them, sweeps anything left, queues the result.   |
+| `background.js` | The service worker's entry point: registers its listeners, nothing else.          |
+| `worker/`       | The service worker itself, one ES module per job — fetches those addresses, inlines them, sweeps anything left, queues the result, and relays. `background.js` lists the modules. |
 | `bridge.js`     | Runs on jojo's own origin and relays between the page and the worker.             |
 | `policy.js`     | What may be kept. A transcription of `service/kg/core/capture.ts`, checked below. |
 | `shrink.js`     | Fits a capture over the size cap by leaving out its heaviest embedded images and fonts, instead of discarding the page. Checked by `web/src/lib/capture-shrink.test.ts`. |

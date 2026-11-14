@@ -1,25 +1,26 @@
 /**
  * The extension's message handlers, run as the browser runs them.
  *
- * The whole of `background.js` is evaluated against a fake `chrome`, with its
- * imports handed in by name, and messages are sent to the listener it
- * registers. The other worker tests lift one function at a time; these are the
- * promises that only exist at the level of the HANDLER — that every verb
+ * The whole worker — `background.js` and every module under `worker/` it
+ * imports — is loaded fresh against a fake `chrome`, and messages are sent to
+ * the listener it registers. The other worker tests import one function at a
+ * time; these are the promises that only exist at the level of the HANDLER —
+ * that every verb
  * answers even when something inside it throws, that the crash-reporting verb
  * the bridge forwards is actually answered, and that two writes to the queue
  * cannot erase each other.
  */
-import { describe, expect, it } from 'vitest'
-import backgroundSource from '../../extension/background.js?raw'
-// @ts-expect-error — a plain ES module the worker loads from disk, with no types
-// of its own; handed to the evaluated worker untyped, as the browser hands it.
-import * as policy from '../../extension/policy.js'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 type Listener = (message: unknown, sender: unknown, sendResponse: (value: unknown) => void) => boolean
 type Store = Record<string, unknown>
 
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
 /** The worker, booted against an in-memory `chrome`. */
-function boot(options: { failGet?: boolean; slowSet?: number; failWrite?: string } = {}) {
+async function boot(options: { failGet?: boolean; slowSet?: number; failWrite?: string } = {}) {
   const store: Store = {}
   const listeners: Listener[] = []
   const chrome = {
@@ -58,17 +59,12 @@ function boot(options: { failGet?: boolean; slowSet?: number; failWrite?: string
     tabs: { query: async () => [], get: async () => ({}), remove: async () => undefined },
     scripting: { executeScript: async () => [{ result: null }] },
   }
-  const body = backgroundSource.replace(/^import[\s\S]*?from '[^']+'\n/gm, '')
-  const names = Object.keys(policy)
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  new Function('chrome', 'expandListing', 'harvest', 'serialise', 'shrinkToFit', ...names, body)(
-    chrome,
-    () => undefined,
-    () => undefined,
-    () => undefined,
-    (html: string) => ({ html, dropped: 0 }),
-    ...names.map((n) => (policy as Record<string, unknown>)[n]),
-  )
+  vi.stubGlobal('chrome', chrome)
+  // A fresh module graph per boot, as a fresh service worker has: the queue
+  // lock and everything else module-level starts over.
+  vi.resetModules()
+  // @ts-expect-error — the worker's entry point, a plain ES module with no types.
+  await import('../../extension/background.js')
   if (listeners.length !== 1) throw new Error('background.js registered no message listener')
   const send = (message: unknown, own = false) =>
     new Promise<unknown>((resolve) => {
@@ -81,7 +77,7 @@ function boot(options: { failGet?: boolean; slowSet?: number; failWrite?: string
 
 describe('every verb answers', () => {
   it('with a reason when something inside it throws, rather than leaving the caller waiting', async () => {
-    const { send } = boot({ failGet: true })
+    const { send } = await boot({ failGet: true })
     for (const type of ['jojo:peek-captures', 'jojo:take-captures', 'jojo:ack-captures', 'jojo:read-document']) {
       await expect(send({ type, ids: [] }), type).resolves.toMatchObject({
         ok: false,
@@ -91,7 +87,7 @@ describe('every verb answers', () => {
   })
 
   it('answers a capture of a tab that has since closed, instead of rejecting on its badge', async () => {
-    const { send } = boot()
+    const { send } = await boot()
     // The serialiser stub returns nothing, so this fails — and says so, with
     // the badge on the closed tab swallowed rather than thrown.
     await expect(send({ type: 'jojo:capture-tab', tabId: 404 }, true)).resolves.toMatchObject({
@@ -103,7 +99,7 @@ describe('every verb answers', () => {
 
 describe('the crash-reporting verb', () => {
   it('is answered, with the choice and what has been kept', async () => {
-    const { send } = boot()
+    const { send } = await boot()
     await expect(send({ type: 'jojo:crash-reporting', on: true, clear: false })).resolves.toEqual({
       on: true,
       crashes: [],
@@ -111,7 +107,7 @@ describe('the crash-reporting verb', () => {
   })
 
   it('keeps a handler failure once it is switched on — the verb and the message, nothing else', async () => {
-    const { send } = boot({ failWrite: 'jojo.captures' })
+    const { send } = await boot({ failWrite: 'jojo.captures' })
     await send({ type: 'jojo:crash-reporting', on: true })
     await expect(send({ type: 'jojo:delete-capture', id: 'x' }, true)).resolves.toMatchObject({
       ok: false,
@@ -127,21 +123,21 @@ describe('the crash-reporting verb', () => {
   })
 
   it('records nothing for a failure while it is off', async () => {
-    const { send } = boot({ failWrite: 'jojo.captures' })
+    const { send } = await boot({ failWrite: 'jojo.captures' })
     await send({ type: 'jojo:delete-capture', id: 'x' }, true)
     await new Promise((r) => setTimeout(r, 0))
     await expect(send({ type: 'jojo:crash-reporting', on: true })).resolves.toEqual({ on: true, crashes: [] })
   })
 
   it('records nothing while it is off, which is the default', async () => {
-    const { send } = boot({ failGet: false })
+    const { send } = await boot({ failGet: false })
     await expect(send({ type: 'jojo:crash-reporting' })).resolves.toEqual({ on: false, crashes: [] })
   })
 })
 
 describe('the capture queue', () => {
   it('loses nothing when an acknowledgement and a delete land together', async () => {
-    const { send, store } = boot({ slowSet: 5 })
+    const { send, store } = await boot({ slowSet: 5 })
     store['jojo.captures'] = [
       { id: 'a', url: 'https://x.test/a', html: '' },
       { id: 'b', url: 'https://x.test/b', html: '' },

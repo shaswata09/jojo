@@ -1,6 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import policySource from '../../extension/policy.js?raw'
-import backgroundSource from '../../extension/background.js?raw'
+import routingSource from '../../extension/worker/routing.js?raw'
+import targetsSource from '../../extension/worker/targets.js?raw'
+// @ts-expect-error — a plain ES module the worker loads from disk, with no types.
+import { modelRefusal } from '../../extension/worker/routing.js'
+// @ts-expect-error — as above.
+import { OWN_PAGE_VERBS, PAGE_VERBS, onMessage } from '../../extension/worker/messages.js'
 import { PROVIDERS } from '@jojo/service/core/provider'
 import {
   CAPTURE_HREF_ATTR,
@@ -128,13 +133,14 @@ describe("the extension's model-host list matches the provider table", () => {
  * hosted providers, so somebody with a model server on their own network
  * installed an extension that then refused the address it was installed for.
  *
- * Read from source because the extension is plain JS in no tsconfig — the same
- * technique `reader-relay.test.ts` uses.
+ * Read from source, because what is asserted is which checks the guard is
+ * written with; the next block runs it.
  */
 describe('which model addresses the extension will relay', () => {
-  const source = backgroundSource.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+  const strip = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
 
   it('relays private-network addresses as well as loopback and known providers', () => {
+    const source = strip(routingSource)
     const guard = source.slice(source.indexOf('async function modelRefusal'))
     expect(guard).toContain('isPrivateNetwork(url)')
     expect(guard).toContain('isLoopback(url)')
@@ -142,6 +148,7 @@ describe('which model addresses the extension will relay', () => {
   })
 
   it('accepts only ranges that are unroutable on the public internet', () => {
+    const source = strip(targetsSource)
     const fn = source.slice(source.indexOf('function isPrivateNetwork'))
     // RFC 1918, RFC 3927 link-local, and mDNS. A public http address relayed
     // would make this a way for any page to launder a request through the
@@ -159,37 +166,19 @@ describe('which model addresses the extension will relay', () => {
  * The comment above `isPrivateNetwork` said the popup's routing switches turned
  * the LAN relay off "by host like any other" — but those switches are keyed by
  * the hosted providers' names, so `10.0.0.5` had no switch and could never be
- * refused. Executed, not read: `modelRefusal` is lifted out of the file the
- * browser loads and run against a stored routing.
+ * refused. Executed, not read: the real `modelRefusal` is imported from the
+ * module the browser loads and run against a stored routing.
  */
 describe('relaying to a model on the person’s own network', () => {
   const MODEL_HOSTS = arrayLiteral('MODEL_HOSTS')
-  /** A `function name(` or `async function name(` out of background.js, to its closing brace. */
-  const fn = (name: string) => {
-    const at = backgroundSource.search(new RegExp(`(?:async )?function ${name}\\(`))
-    let depth = 0
-    for (let i = backgroundSource.indexOf('{', at); i < backgroundSource.length; i += 1) {
-      if (backgroundSource[i] === '{') depth += 1
-      else if (backgroundSource[i] === '}' && --depth === 0) return backgroundSource.slice(at, i + 1)
-    }
-    throw new Error(`${name} not found`)
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+  /** The real `modelRefusal`, reading `saved` as the routing the popup stored. */
+  const refusalWith = (saved: unknown) => (url: string) => {
+    vi.stubGlobal('chrome', { storage: { local: { get: async () => ({ 'jojo.routing': saved }) } } })
+    return (modelRefusal as (url: string) => Promise<string | null>)(url)
   }
-  const refusalWith = (saved: unknown) =>
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    new Function(
-      'MODEL_HOSTS',
-      'chrome',
-      [
-        "const ROUTING = 'jojo.routing'",
-        "const READER_DEFAULT = 'http://127.0.0.1:3001/mcp'",
-        /^const JOJO_BRIDGE_ADDRESS = .*$/m.exec(backgroundSource)![0],
-        /^const LOCAL_MODEL_PORTS = .*$/m.exec(backgroundSource)![0],
-        ...['defaultRouting', 'routing', 'hostOf', 'isLoopback', 'portOf', 'isPrivateNetwork', 'privateHost', 'isKnownModelHost', 'modelRefusal'].map(fn),
-        'return modelRefusal',
-      ].join('\n'),
-    )(MODEL_HOSTS, { storage: { local: { get: async () => ({ 'jojo.routing': saved }) } } }) as (
-      url: string,
-    ) => Promise<string | null>
 
   it('is refused until the person turns it on, and the refusal names the switch', async () => {
     for (const saved of [undefined, {}, { network: false }]) {
@@ -240,8 +229,36 @@ describe('relaying to a model on the person’s own network', () => {
     await expect(refusalWith({ network: true })('http://127.0.0.1:8103/v1/chat/completions')).resolves.toBeNull()
   })
 
-  it('cannot be switched on by a page, only by the popup', () => {
-    const handler = backgroundSource.slice(backgroundSource.indexOf("message?.type === 'jojo:set-routing'"))
-    expect(handler.slice(0, 80)).toContain('&& fromOwnPage')
+  it('cannot be switched on by a page, only by the popup', async () => {
+    // One of the popup's own verbs, and not one a page can send.
+    expect(OWN_PAGE_VERBS.has('jojo:set-routing')).toBe(true)
+    expect(PAGE_VERBS.has('jojo:set-routing')).toBe(false)
+    // And run: from a web page it is not answered and nothing is written; from
+    // the popup it is.
+    const writes: unknown[] = []
+    vi.stubGlobal('chrome', {
+      runtime: { id: 'ext', getURL: (path: string) => `chrome-extension://ext/${path}` },
+      storage: {
+        local: {
+          get: async () => ({}),
+          set: async (values: unknown) => {
+            writes.push(values)
+          },
+        },
+      },
+    })
+    type Listener = (message: unknown, sender: unknown, respond: (value: unknown) => void) => boolean
+    const listener = onMessage as Listener
+    const message = { type: 'jojo:set-routing', network: true }
+    const answers: unknown[] = []
+    expect(listener(message, { id: 'ext', url: 'https://jojo.test/' }, (v) => answers.push(v))).toBe(false)
+    await new Promise((r) => setTimeout(r, 0))
+    expect(writes).toEqual([])
+    expect(answers).toEqual([])
+    const answered = await new Promise((resolve) => {
+      expect(listener(message, { id: 'ext', url: 'chrome-extension://ext/popup.html' }, resolve)).toBe(true)
+    })
+    expect(answered).toMatchObject({ routing: { network: true } })
+    expect(writes).toEqual([{ 'jojo.routing': expect.objectContaining({ network: true }) }])
   })
 })

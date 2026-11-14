@@ -1,51 +1,29 @@
 import { useState } from 'react'
-import { Plus, Radar, TriangleAlert } from 'lucide-react'
-import { useNavigate } from 'react-router'
-import { draftFromUrl } from '@/components/applications/draft-from'
-import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { MatchesPanel } from '@/components/scout/MatchesPanel'
 import { PipelineDialog } from '@/components/scout/PipelineDialog'
-import type { PipelineDraft } from '@/components/scout/PipelineDialog'
 import { PipelinesPanel } from '@/components/scout/PipelinesPanel'
 import { PostingsPanel } from '@/components/scout/PostingsPanel'
 import { ProposalQueue } from '@/components/scout/ProposalQueue'
+import { PausedNotice, RunsLocallyNote, ScoutHeader } from '@/components/scout/ScoutHeader'
 import { ShutdownDialog } from '@/components/scout/ShutdownDialog'
+import { useFillDraft } from '@/components/scout/use-fill-draft'
+import { usePipelineActions } from '@/components/scout/use-pipeline-actions'
+import { usePostingActions } from '@/components/scout/use-posting-actions'
+import { usePostingPages } from '@/components/scout/use-posting-pages'
+import { useProposalActions } from '@/components/scout/use-proposal-actions'
 import { FilePreviewDialog } from '@/components/vault/FilePreviewDialog'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import type { Pipeline, SavedPosting } from '@/data/scout'
 import type { VaultFile } from '@/data/vault'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useProfile } from '@jojo/service/react/use-profile'
-import { useGraph, useKg } from '@jojo/service/react/kg-context'
-import { useVault } from '@jojo/service/react/use-vault'
 import { useScout } from '@jojo/service/react/use-scout'
 import { usePipelinesState } from '@jojo/service/react/pipelines-context'
-import { appPath, scoutPath, useTitle } from '@/lib/links'
+import { useTitle } from '@/lib/links'
 import { useScoutParams } from '@/lib/link-params'
-import { useToast } from '@/lib/toast-context'
-import { useModelSettings } from '@/lib/model-settings-context'
-import { useFillFromPosting } from '@/lib/fill-from-posting'
-import { isConfigured } from '@/lib/llm'
-import { useKeepPostingPage } from '@/lib/posting-agent'
-import type { KeptPage } from '@/lib/posting-agent'
-import { takeReading, useDropDiscardedPage } from '@/lib/scout-reading'
-import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
-import { report } from '@/lib/analytics'
-import { kindOf } from '@jojo/service/react/use-pipelines'
-import { jobFromApproval, postingPreview, scoutReading } from '@jojo/service/core/proposal'
-import { postingIdentity } from '@jojo/service/core/capture'
-import { findSameJob } from '@jojo/service/core/same-job'
-import type { JobIdentity } from '@jojo/service/core/same-job'
-import { postingSourceForUrl } from '@jojo/service/core/posting-source'
-import type { ApprovedJob } from '@jojo/service/core/proposal'
-import { announceRefusal } from '@/components/common/write-result'
+import { jobFromApproval } from '@jojo/service/core/proposal'
 
 export function JobScout() {
   useTitle('Job scout')
-  /** 'new' opens the create dialog; a pipeline opens the same dialog seeded. */
-  const [editing, setEditing] = useState<Pipeline | 'new' | null>(null)
   // Page option: a long list of off pipelines buries the ones actually running.
   const [onlyActive, setOnlyActive] = useState(false)
 
@@ -59,64 +37,9 @@ export function JobScout() {
    * promising it was kept for the visit — while the matches and postings beside
    * it, which are in the store, survived the same trip. One screen, two rules.
    */
-  const {
-    matches,
-    postings,
-    addPosting,
-    removePosting,
-    updatePosting,
-    promoteToApplication,
-    promotePosting,
-    pipelines,
-    addPipeline,
-    updatePipeline,
-    removePipeline,
-  } = useScout()
+  const scout = useScout()
+  const { matches, postings, pipelines } = scout
   const { get } = useApplications()
-  const kg = useKg()
-
-  /**
-   * The application this job already is, if any — the same job under another
-   * board's address (`core/same-job.ts`). Read from the store itself, not this
-   * render's list: Approve all makes several drafts in one handler, and the
-   * second must see the first.
-   */
-  const alreadyHave = (job: JobIdentity) => {
-    const apps = kg.projections.applications(kg.repo.getSnapshot())
-    return findSameJob(apps, job)?.record ?? null
-  }
-
-  /** What a scout suggestion says the job is. */
-  const identityOf = (input: string, reading?: string): JobIdentity => {
-    // What the page said beats what the listing said, where the page was read.
-    const read = scoutReading(reading)
-    const page = read?.ok ? read.fields : {}
-    try {
-      const raw = JSON.parse(input) as Record<string, unknown>
-      const text = (key: string) =>
-        typeof raw[key] === 'string' ? (raw[key] as string) : undefined
-      return {
-        org: page.org ?? text('org'),
-        role: page.role ?? text('title'),
-        location: page.location ?? text('location'),
-        url: text('url'),
-        postingId: page.postingId,
-      }
-    } catch {
-      return {}
-    }
-  }
-
-  /** Said once a job turned out to be one already in the applications. */
-  const sayAlreadyHave = (
-    existing: { org: string; role: string },
-    target: Parameters<typeof appPath>[0],
-  ) =>
-    toast({
-      title: `Already in your applications — not added again`,
-      description: `This is ${existing.role ? `${existing.org} — ${existing.role}` : existing.org}, reposted on another board. The posting is linked to it, and its page is filed under it.`,
-      action: { label: 'Open', onClick: () => navigate(appPath(target)) },
-    })
   // The matches are scored against this rather than shipped with a number.
   const { profile } = useProfile()
 
@@ -131,455 +54,32 @@ export function JobScout() {
    */
   const engine = usePipelinesState()
 
-  const navigate = useNavigate()
   // Arrived from a graph node or a query row naming a match or a saved posting.
   // Both lists live on this page and their ids come from different collections,
   // so the parameter names the list too — see `ScoutFocus` in links.ts.
   const { focus, token, set } = useScoutParams()
   useArrivalHighlight(token, () => set({ focus: undefined }))
   const focusedRow = useArrivalScroll<HTMLDivElement>(token)
-  const { toast } = useToast()
-  const undoable = useUndoable()
-  const [url, setUrl] = useState('')
 
-  /*
-   * The page behind each posting, kept the way "From link" keeps one.
-   *
-   * A saved posting used to be a URL and a date: the scout found the job, the
-   * person approved it, and the page itself — the requirements, the deadline,
-   * the thing the listing coming down takes with it — was never kept, though
-   * the button to open it sat disabled on every row. See `useKeepPostingPage`.
-   */
-  const keepPage = useKeepPostingPage()
-  const { reader, settings } = useModelSettings()
-  const fillFromPosting = useFillFromPosting()
-  const dropDiscardedPage = useDropDiscardedPage()
-  const graph = useGraph()
-  const { files } = useVault()
-  /** Postings whose page is being kept right now, by identity. */
-  const [keeping, setKeeping] = useState<ReadonlySet<string>>(() => new Set())
+  const pages = usePostingPages()
   const [snapshot, setSnapshot] = useState<VaultFile | null>(null)
-  const keyOf = (postingUrl: string) => postingIdentity(postingUrl) ?? postingUrl
-
-  const pageFor = (posting: SavedPosting): VaultFile | null => {
-    const source = postingSourceForUrl(graph, posting.url)
-    return source ? (files.find((f) => f.id === source.fileId) ?? null) : null
-  }
-
-  /** Says how keeping one page went. Quiet when it was already in the Vault. */
-  const reportKept = (kept: KeptPage, title: string) => {
-    if (!kept.ok) {
-      toast({ title: 'The posting’s page was not saved', description: kept.reason, tone: 'danger' })
-      return
-    }
-    if (kept.via === 'already') return
-    toast({
-      title: 'Posting page saved',
-      description: kept.filedUnder
-        ? `${title} — filed under its application.`
-        : `${title} — in the Vault under Job postings.`,
-    })
-  }
-
-  const keepPostingPage = async (postingUrl: string, title: string): Promise<KeptPage> => {
-    const key = keyOf(postingUrl)
-    setKeeping((now) => new Set(now).add(key))
-    try {
-      return await keepPage({ url: postingUrl, title, reader })
-    } finally {
-      setKeeping((now) => {
-        const next = new Set(now)
-        next.delete(key)
-        return next
-      })
-    }
-  }
-
-  const keepAndReport = (postingUrl: string, title: string) =>
-    void keepPostingPage(postingUrl, title).then((kept) => reportKept(kept, title))
-
-  const savePipeline = (draft: PipelineDraft) => {
-    if (editing && editing !== 'new') {
-      if (announceRefusal(updatePipeline(editing.id, draft), toast)) return
-      toast({ title: 'Pipeline updated', description: draft.name })
-    } else {
-      // Switched on: a new pipeline that arrived off would read as a create
-      // that failed. Whether it can actually run is the model's business, and
-      // the toast says which of the two just happened rather than asserting the
-      // pessimistic one the way it used to.
-      const pipeline = addPipeline({ ...draft, enabled: true })
-      toast({
-        title: 'Pipeline created',
-        description: engine.paused
-          ? `${pipeline.name} — paused until a model is connected.`
-          : `${pipeline.name} — it will start looking shortly.`,
-      })
-    }
-    setEditing(null)
-  }
-
-  /**
-   * A pipeline is several fields someone sat and wrote — but the store hands
-   * back a real restore, so this is an undo like every other delete in the app
-   * rather than the confirmation it used to need.
-   */
-  const onDeletePipeline = (pipeline: Pipeline) => {
-    const { restore } = removePipeline(pipeline.id)
-    toast({
-      title: 'Pipeline deleted',
-      description: `${pipeline.name} stops watching ${pipeline.source}.`,
-      tone: 'danger',
-      action: { label: 'Undo', onClick: restore },
-    })
-  }
-
-  /**
-   * Turns a match into a real application and goes straight to it.
-   *
-   * The Undo carries the reader back to this page as well as reverting the
-   * write. Without the navigation it would delete the record out from under the
-   * detail route the promotion had just pushed them onto, and the page they were
-   * looking at would empty itself while they were reading it.
-   */
-  const onPromote = (matchId: string) => {
-    const { value: application, restore } = undoable(() => promoteToApplication(matchId))
-    if (!application) return
-    toast({
-      title: `${application.org} added as a draft`,
-      description: 'The match stays in this feed, now linked to the application.',
-      action: restore
-        ? {
-            label: 'Undo',
-            onClick: () => {
-              restore()
-              navigate(scoutPath({ focus: { kind: 'match', id: matchId } }))
-            },
-          }
-        : undefined,
-    })
-    navigate(appPath(application))
-  }
-
-  /**
-   * Files the posting. No page is fetched — nothing here can — so the record
-   * says what it is: a URL you kept, with the employer guessed off it.
-   */
-  const onSavePosting = () => {
-    const text = url.trim()
-    if (!text) return
-    const guess = draftFromUrl(text)
-    const title = [guess.org, guess.role].filter(Boolean).join(' — ') || text
-    addPosting({ title, url: text, size: '—' })
-    setUrl('')
-    toast({ title: 'Posting saved', description: title })
-    keepAndReport(text, title)
-  }
-
-  /** The second way in, and the one the panel copy promises. Same shape as the
-   *  match promotion above: the posting stays filed, now linked, and the Undo
-   *  reverts the write and brings the reader back off the detail route. */
-  const onPromotePosting = (postingId: string) => {
-    const posting = postings.find((p) => p.id === postingId)
-    const existing = posting
-      ? alreadyHave({
-          org: posting.org,
-          role: posting.title,
-          location: posting.location,
-          url: posting.url,
-        })
-      : null
-    if (posting && existing) {
-      if (announceRefusal(updatePosting(postingId, { applicationId: existing.id }), toast)) return
-      if (!pageFor(posting)) keepAndReport(posting.url, posting.title)
-      sayAlreadyHave(existing, existing)
-      return
-    }
-    const { value: application, restore } = undoable(() => promotePosting(postingId))
-    if (!application) return
-    /*
-     * With a model connected, the posting is read into the draft — the same
-     * check approval makes (`fillDraft`): the page opened, the employer, role,
-     * location, pay, deadline and posting ID read off it, and the draft filled
-     * where the address alone had guessed. Without one, the page is only kept
-     * — and filed under the application by the promote when it already was.
-     */
-    const reading = Boolean(posting) && isConfigured(settings)
-    if (posting && reading) void fillDraft(application, posting.url, posting.title)
-    else if (posting && !pageFor(posting)) keepAndReport(posting.url, posting.title)
-    toast({
-      title: `${application.org} added as a draft`,
-      description: reading
-        ? 'Reading the posting to check and fill in its details — the draft updates when it is done.'
-        : 'The posting stays saved here, now linked to the application.',
-      action: restore
-        ? {
-            label: 'Undo',
-            onClick: () => {
-              restore()
-              navigate(scoutPath({ focus: { kind: 'posting', id: postingId } }))
-            },
-          }
-        : undefined,
-    })
-    navigate(appPath(application))
-  }
-
-  const onPromoteJob = (job: ApprovedJob) =>
-    job.kind === 'match' ? onPromote(job.id) : onPromotePosting(job.id)
-
-  /**
-   * The draft an approved job becomes, and — for a posting — the page read into it.
-   *
-   * Reported 2026-10-27: approving a scouted job filed it and stopped, so the
-   * person had to press "Add to applications" for every job they had already
-   * said yes to, and the draft that made was named off the address alone —
-   * "CRA — Assistant professor manhattan kansas" for a Kansas State posting on
-   * CRA's board. Approval now makes the draft itself, and the posting is read
-   * the way "From link" reads one: the page is opened, the model is asked for
-   * the employer, role, location, pay, deadline and posting ID, the page is
-   * kept in the Vault and filed under the draft, and the draft is filled from
-   * what the page said.
-   *
-   * The draft exists before the read finishes, from the address — so a read
-   * that fails (no extension, no model, a sign-in wall) still leaves the job in
-   * the applications, and says why the details are thin. Without a model there
-   * is nothing to ask, and the page is only kept, as approval did before.
-   */
-  const draftFrom = (kind: ApprovedJob['kind'], id: string) =>
-    kind === 'match' ? promoteToApplication(id) : promotePosting(id)
-
-  const fillDraft = async (
-    application: { id: string; org: string },
-    typed: string,
-    title: string,
-    /** The suggestion it was approved from, whose page may already have been read. */
-    proposal?: { id: string; reading?: string | undefined },
-  ) => {
-    // Seeded and pasted postings are often stored without a scheme ('jobs.rice.edu/…').
-    const postingUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(typed.trim())
-      ? typed.trim()
-      : `https://${typed.trim()}`
-    if (!isConfigured(settings)) {
-      keepAndReport(postingUrl, title)
-      return
-    }
-    const key = keyOf(postingUrl)
-    setKeeping((now) => new Set(now).add(key))
-    try {
-      // Read while it waited for an answer, or being read right now — see
-      // `ScoutReader`. Either way the page is not opened a second time.
-      // Taken from the reader when it has one, running or finished: under
-      // Approve all a read can finish before this card's turn, after the card
-      // stopped being able to store it.
-      const pending = proposal ? takeReading(proposal.id) : undefined
-      const known =
-        (pending ? await pending : null) ?? (proposal ? scoutReading(proposal.reading) : null)
-      const out = await fillFromPosting({
-        applicationId: application.id,
-        url: postingUrl,
-        settings,
-        reader,
-        ...(known?.ok ? { known } : {}),
-      })
-      if (!out.ok) {
-        toast({
-          title: `${application.org}: the posting could not be read`,
-          description: out.kept
-            ? `${out.reason} The page itself was saved and filed under the draft — open it to fill in the rest.`
-            : `${out.reason} The draft keeps what its link says — open it to fill in the rest.`,
-          tone: 'danger',
-        })
-        return
-      }
-      if (out.duplicate) {
-        const { duplicate } = out
-        // The draft is gone; a reader sitting on its page is moved to the one kept.
-        if (window.location.pathname === appPath(application as Parameters<typeof appPath>[0])) {
-          navigate(appPath({ id: duplicate.id }))
-        }
-        toast({
-          title: `Already in your applications — not added again`,
-          description: `The posting is ${duplicate.name}, which you already have. ${duplicate.why} Its page is filed under that one.`,
-          action: { label: 'Keep both', onClick: duplicate.restore },
-        })
-        return
-      }
-      const name = out.name
-      toast({
-        title:
-          out.filled.length > 0
-            ? `${name} filled from the posting`
-            : `${name} checked against the posting`,
-        description: [
-          out.filled.length > 0 ? `Filled in: ${out.filled.join(', ')}.` : '',
-          out.confirmed.length > 0 ? `Checked against the page: ${out.confirmed.join(', ')}.` : '',
-          out.keptYours.length > 0 ? `Kept your edits to: ${out.keptYours.join(', ')}.` : '',
-          out.filled.length === 0 && out.confirmed.length === 0
-            ? 'The page added nothing the draft did not have.'
-            : '',
-          out.missing.length > 0 ? `Not on the page: ${out.missing.join(', ')}.` : '',
-          'The page is filed under it.',
-        ]
-          .filter(Boolean)
-          .join(' '),
-        action: { label: 'Open', onClick: () => navigate(appPath({ id: out.application })) },
-      })
-    } finally {
-      setKeeping((now) => {
-        const next = new Set(now)
-        next.delete(key)
-        return next
-      })
-    }
-  }
-
-  /** One approval: the job filed, its draft made, and the page read into it. Returns the draft. */
-  const approveOne = (id: string) => {
-    const proposal = engine.proposals.find((p) => p.id === id)
-    const made = engine.approve(id)
-    if (
-      !made ||
-      !proposal ||
-      (proposal.tool !== 'scout.match.save' && proposal.tool !== 'scout.posting.save')
-    ) {
-      return null
-    }
-    const kind = proposal.tool === 'scout.match.save' ? 'match' : 'posting'
-    const seen = kind === 'posting' ? postingPreview(proposal.tool, proposal.input) : null
-    const page = seen?.href ? { url: seen.href, title: seen.title ?? seen.label } : null
-    // Already an application under another board's address: the posting is
-    // filed against that one instead of becoming a second.
-    const existing =
-      kind === 'posting' ? alreadyHave(identityOf(proposal.input, proposal.reading)) : null
-    if (existing) {
-      // Refused, the posting is still saved — only the link to the existing
-      // application is missing — so the reader is told and the flow goes on.
-      announceRefusal(updatePosting(made, { applicationId: existing.id }), toast)
-      return { repeat: true as const, existing, page }
-    }
-    const application = draftFrom(kind, made)
-    if (!application) return null
-    return { repeat: false as const, application, page, proposal }
-  }
-
-  const onApproveProposal = (id: string) => {
-    const done = approveOne(id)
-    report('scout_proposal_decided', { decision: 'approved' })
-    if (!done) return
-    if (done.repeat) {
-      if (done.page) keepAndReport(done.page.url, done.page.title)
-      sayAlreadyHave(done.existing, done.existing)
-      return
-    }
-    const { application, page, proposal } = done
-    // Already read while it waited: the fill's own toast follows at once and
-    // says everything, so a "reading…" one in front of it would only flicker.
-    const readAlready = page !== null && scoutReading(proposal.reading)?.ok === true
-    if (!readAlready)
-      toast({
-        title: `${application.org} added to your applications as a draft`,
-        description: page
-          ? isConfigured(settings)
-            ? 'Reading the posting to fill in its details — the draft updates when it is done.'
-            : 'Filled from its link. Connect a model in Settings to have the posting itself read in.'
-          : 'Open it to fill in the rest.',
-        action: { label: 'Open', onClick: () => navigate(appPath(application)) },
-      })
-    if (page) void fillDraft(application, page.url, page.title, proposal)
-  }
-
-  /**
-   * Approve all: each job its own approval and its own draft, then the pages
-   * read one at a time — each opens a tab and asks the model, and a dozen at
-   * once would be a dozen tabs.
-   */
-  const onApproveAll = (pipelineId: string) => {
-    const ids = engine.proposals
-      .filter((p) => p.pipelineId === pipelineId && p.status === 'pending')
-      .map((p) => p.id)
-    const results = ids.flatMap((id) => {
-      const one = approveOne(id)
-      return one ? [one] : []
-    })
-    const done = results.flatMap((r) => (r.repeat ? [] : [r]))
-    const repeats = results.flatMap((r) => (r.repeat ? [r] : []))
-    for (const r of repeats) if (r.page) keepAndReport(r.page.url, r.page.title)
-    report('scout_proposal_decided', { decision: 'approved' })
-    if (done.length === 0 && repeats.length > 0) {
-      toast({
-        title: `Already in your applications — nothing new added`,
-        description: `${String(repeats.length)} ${repeats.length === 1 ? 'is a job' : 'are jobs'} you already have, reposted on another board. ${repeats.length === 1 ? 'It is' : 'They are'} linked to the application${repeats.length === 1 ? '' : 's'} you have.`,
-      })
-      return
-    }
-    if (done.length === 0) return
-    toast({
-      title: `${String(done.length)} added to your applications as drafts${repeats.length > 0 ? ` · ${String(repeats.length)} already there` : ''}`,
-      description: isConfigured(settings)
-        ? 'Reading each posting in turn to fill in its details.'
-        : 'Filled from their links. Connect a model in Settings to have the postings themselves read in.',
-    })
-    void (async () => {
-      for (const { application, page, proposal } of done) {
-        if (page) await fillDraft(application, page.url, page.title, proposal)
-      }
-    })()
-  }
-
-  /** A URL and a title, retyped in seconds — undo toast, no confirmation. */
-  const onRemovePosting = (id: string, title: string) => {
-    const { restore } = removePosting(id)
-    toast({
-      title: 'Posting removed',
-      description: title,
-      tone: 'danger',
-      action: { label: 'Undo', onClick: restore },
-    })
-  }
+  const fillDraft = useFillDraft(pages)
+  const pipelineActions = usePipelineActions(scout, engine)
+  const { editing, setEditing } = pipelineActions
+  const posting = usePostingActions(scout, pages, fillDraft)
+  const proposal = useProposalActions(scout, engine, pages, fillDraft)
 
   const visiblePipelines = pipelines.filter((p) => !onlyActive || p.enabled)
 
   return (
     <>
-      <PageHeader
-        title="Job scout"
-        subtitle="Saved searches that will watch job boards for you — and somewhere to park postings today"
-        settings={
-          <PageOption
-            label="Only active pipelines"
-            hint="Hide the ones switched off"
-            control={
-              <Switch
-                checked={onlyActive}
-                onCheckedChange={setOnlyActive}
-                aria-label="Only active pipelines"
-              />
-            }
-          />
-        }
-        actions={
-          <Button size="sm" onClick={() => setEditing('new')}>
-            <Plus className="size-3.5" strokeWidth={2} aria-hidden />
-            New pipeline
-          </Button>
-        }
+      <ScoutHeader
+        onlyActive={onlyActive}
+        onOnlyActive={setOnlyActive}
+        onNew={() => setEditing('new')}
       />
 
-      {/* System status, stated plainly rather than implied by a colour — and
-          read off the model settings rather than hardcoded, which is what it
-          was while nothing could run either way. */}
-      {engine.paused ? (
-        <div
-          role="status"
-          className="flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning"
-        >
-          <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
-          <p>
-            No local model is connected, so pipelines are paused. You can still write them and save
-            postings below — they start running once a model is reachable.
-          </p>
-        </div>
-      ) : null}
+      {engine.paused ? <PausedNotice /> : null}
 
       <PipelinesPanel
         pipelines={visiblePipelines}
@@ -591,24 +91,10 @@ export function JobScout() {
         onShowAll={() => setOnlyActive(false)}
         onNew={() => setEditing('new')}
         onEdit={setEditing}
-        onDelete={onDeletePipeline}
-        onToggle={(pipeline, enabled) => {
-          announceRefusal(engine.setEnabled(pipeline, enabled), toast)
-        }}
-        onSetAuto={(pipeline, auto) => {
-          announceRefusal(engine.setAuto(pipeline, auto), toast)
-        }}
-        onRunNow={(id) => {
-          engine.runNow(id)
-          /*
-           * The KIND, not the pipeline — its name is a saved search somebody
-           * wrote, which frequently contains a role and a city. `kindOf` is the
-           * same lookup the engine uses to pick the prompt, so the two agree by
-           * construction rather than by a second list kept in step by hand.
-           */
-          const pipeline = engine.pipelines.find((p) => p.id === id)
-          if (pipeline) report('scout_pipeline_started', { kind: kindOf(pipeline) })
-        }}
+        onDelete={pipelineActions.onDelete}
+        onToggle={pipelineActions.onToggle}
+        onSetAuto={pipelineActions.onSetAuto}
+        onRunNow={pipelineActions.onRunNow}
       />
 
       {/* Above the matches and the postings: it is the only panel on the page
@@ -616,23 +102,13 @@ export function JobScout() {
       <ProposalQueue
         proposals={engine.proposals}
         pipelines={engine.pipelines}
-        onApprove={onApproveProposal}
-        onDiscard={(id) => {
-          engine.discard(id)
-          dropDiscardedPage(id)
-          report('scout_proposal_decided', { decision: 'declined' })
-        }}
-        onApproveAll={onApproveAll}
+        onApprove={proposal.onApprove}
+        onDiscard={proposal.onDiscard}
+        onApproveAll={proposal.onApproveAll}
         onSweep={engine.sweep}
-        onClearAll={() => {
-          // Every card the clear declines gives back the page its read kept,
-          // as a Discard does; the rest of the queue was answered already.
-          const pending = engine.proposals.filter((p) => p.status === 'pending').map((p) => p.id)
-          if (announceRefusal(engine.clearAll(), toast)) return
-          for (const id of pending) dropDiscardedPage(id)
-        }}
+        onClearAll={proposal.onClearAll}
         jobFor={(p) => jobFromApproval(p, matches, postings)}
-        onPromote={onPromoteJob}
+        onPromote={posting.onPromoteJob}
       />
 
       <MatchesPanel
@@ -641,7 +117,7 @@ export function JobScout() {
         profile={profile}
         focus={focus}
         focusedRow={focusedRow}
-        onPromote={onPromote}
+        onPromote={posting.onPromote}
       />
 
       <PostingsPanel
@@ -649,15 +125,15 @@ export function JobScout() {
         getApplication={get}
         focus={focus}
         focusedRow={focusedRow}
-        url={url}
-        onUrlChange={setUrl}
-        onSave={onSavePosting}
-        onPromote={onPromotePosting}
-        onRemove={onRemovePosting}
-        pageFor={pageFor}
-        isKeeping={(p) => keeping.has(keyOf(p.url))}
+        url={posting.url}
+        onUrlChange={posting.setUrl}
+        onSave={posting.onSavePosting}
+        onPromote={posting.onPromotePosting}
+        onRemove={posting.onRemovePosting}
+        pageFor={pages.pageFor}
+        isKeeping={pages.isKeeping}
         onOpenPage={setSnapshot}
-        onKeepPage={(p) => keepAndReport(p.url, p.title)}
+        onKeepPage={(p) => pages.keepAndReport(p.url, p.title)}
       />
 
       <FilePreviewDialog
@@ -668,10 +144,7 @@ export function JobScout() {
         }
       />
 
-      <p className="flex items-center gap-2 text-xs text-text-3">
-        <Radar className="size-3.5" strokeWidth={1.7} aria-hidden />
-        Pipelines run on your machine, while this tab is open. Nothing is sent to a third party.
-      </p>
+      <RunsLocallyNote />
 
       <ShutdownDialog
         pipeline={engine.shutdownOffer}
@@ -689,7 +162,7 @@ export function JobScout() {
             if (!open) setEditing(null)
           }}
           initial={editing === 'new' ? undefined : editing}
-          onSave={savePipeline}
+          onSave={pipelineActions.savePipeline}
         />
       ) : null}
     </>

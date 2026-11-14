@@ -82,7 +82,9 @@ if (!existsSync(SOURCE)) {
  * scripts are classic scripts. A file that parses as either is fine; a file
  * that parses as neither is the failure this exists to catch.
  */
-for (const file of readdirSync(SOURCE).filter((f) => f.endsWith('.js'))) {
+// Recursive, so the service worker's modules under `worker/` are checked too —
+// a top-level-only read zipped them without ever parsing them.
+for (const file of readdirSync(SOURCE, { recursive: true }).filter((f) => String(f).endsWith('.js'))) {
   const source = readFileSync(join(SOURCE, file), 'utf8')
   const errors = []
   for (const type of ['module', 'commonjs']) {

@@ -21,7 +21,7 @@
  * lost mid-operation.
  *
  * The verbs it uses are answered only for the extension's own pages
- * (`fromOwnPage` in `background.js`). They are more powerful than the ones the
+ * (`fromOwnPage` in `worker/messages.js`). They are more powerful than the ones the
  * web app gets and are not reachable from a page.
  */
 

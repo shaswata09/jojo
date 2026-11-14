@@ -51,7 +51,7 @@ const LOOPBACK = /^https?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?
 /**
  * A machine on the person's own network — which the extension will relay to.
  *
- * Kept in step with `isPrivateNetwork` in `web/extension/background.js`. It
+ * Kept in step with `isPrivateNetwork` in `web/extension/worker/targets.js`. It
  * decides what may be relayed; this decides which remedy to offer, and the two
  * disagreeing is how the old sentence came to recommend an extension that would
  * refuse the very address it was recommended for.

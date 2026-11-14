@@ -18,6 +18,7 @@ const listed = import.meta.glob(
     '../../../../service/{kg,data,scripts,test}/**/*.{ts,tsx,mjs}',
     '../../../../web/{src,scripts}/**/*.{ts,tsx,mjs}',
     '../../../../web/extension/*.{js,json}',
+    '../../../../web/extension/worker/*.js',
     '../../../../mobile/{src,scripts}/**/*.{ts,tsx,mjs}',
     '../../../../mobile/App.tsx',
     '../../../../jojo-bridge.mjs',

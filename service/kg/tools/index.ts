@@ -111,22 +111,28 @@ import {
   vaultFileMove,
   vaultFileNoteSet,
   vaultFileUpdate,
+} from './vault-files'
+import {
   vaultLinkDelete,
   vaultLinkDuplicate,
   vaultLinkRecategorise,
   vaultLinkSave,
   vaultLinkUpdate,
+} from './vault-links'
+import {
   vaultPersonCreate,
   vaultPersonDelete,
   vaultPersonFile,
   vaultPersonUnfile,
   vaultPersonUpdate,
+} from './vault-people'
+import {
   vaultSnippetCreate,
   vaultSnippetDelete,
   vaultSnippetDuplicate,
   vaultSnippetRetag,
   vaultSnippetUpdate,
-} from './vault'
+} from './vault-snippets'
 
 export const TOOLS = {
   'application.create': applicationCreate,

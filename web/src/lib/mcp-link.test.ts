@@ -371,9 +371,11 @@ describe('two tabs with the link on', () => {
         resolve()
       })
     })
-    // Two to attach, and at most a couple of displacements inside the first
-    // retry; the spin was sixteen or more.
-    expect(polls).toBeLessThanOrEqual(5)
+    // Two to attach and a few displacements while the back-off grows; the spin
+    // was sixteen or more. Real time on a loaded machine adds a poll or two of
+    // jitter — a bound of five made the gate red once in ten runs — so the
+    // line sits at eight, still half of what the bug produced.
+    expect(polls).toBeLessThanOrEqual(8)
   }, 10_000)
 })
 

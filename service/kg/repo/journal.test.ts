@@ -200,7 +200,7 @@ describe('applyJournal', () => {
    * at all. `MutableSnapshot.putEdge` is insert-if-absent and returns early on
    * an id it already holds, so an edge delta with BOTH images set never reached
    * memory while `opsFor` wrote the `after` image to disk in the same commit.
-   * `fileUnder` (`tools/vault.ts`) stages exactly that delta on every save: it
+   * `fileUnder` (`tools/vault-shared.ts`) stages exactly that delta on every save: it
    * unlinks every FILED_UNDER edge and writes them all back, so an untouched
    * filing is restamped. Measured against the code before the fix, re-saving a
    * document left the snapshot holding createdAt 15:00:02 and the ops store

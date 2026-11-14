@@ -8,59 +8,55 @@
  * the response back: an open proxy wearing jojo's permissions, and a far worse
  * bug than the one the relay exists to fix.
  *
- * So the rule is asserted by running the real function out of `background.js`
- * rather than by re-describing it here. `capture-policy.test.ts` set the
- * precedent of reading extension source with `?raw`; this goes one further and
- * executes it, because a transcription of a guard is not the guard.
+ * So the rule is asserted by running the real function — imported from the
+ * worker module the browser loads — rather than by re-describing it here,
+ * because a transcription of a guard is not the guard.
  */
 
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+// @ts-expect-error — a plain ES module the worker loads from disk, with no types.
+import { isLoopback as workerIsLoopback, sameLoopbackServer } from '../../extension/worker/targets.js'
+// @ts-expect-error — as above.
+import { JOJO_BRIDGE_ADDRESS, isKnownModelHost as workerIsKnownModelHost } from '../../extension/worker/routing.js'
+// @ts-expect-error — as above.
+import { READ_TIMEOUT_MS as WORKER_READ_TIMEOUT_MS, relay } from '../../extension/worker/relay.js'
+// @ts-expect-error — as above.
+import { LOAD_TIMEOUT_MS, SETTLE_MS } from '../../extension/worker/tabs.js'
+// @ts-expect-error — as above.
+import { MORE_BUDGET_MS } from '../../extension/worker/scan-board.js'
+// @ts-expect-error — as above.
+import { onMcpLink, onReadDocument } from '../../extension/worker/relay-verbs.js'
+// @ts-expect-error — as above.
+import { PAGE_VERBS } from '../../extension/worker/messages.js'
 import backgroundSource from '../../extension/background.js?raw'
+import installSource from '../../extension/worker/install.js?raw'
+import messagesSource from '../../extension/worker/messages.js?raw'
+import relayVerbsSource from '../../extension/worker/relay-verbs.js?raw'
 
 import bridgeCallerSource from './capture-bridge.ts?raw'
-import policySource from '../../extension/policy.js?raw'
 import bridgeSource from '../../extension/bridge.js?raw'
 
-/*
- * Read as source, not imported. The extension is plain JS with no declarations —
- * which is exactly why `capture-policy.test.ts` reads it this way — and parsing
- * the literal checks what the browser will load rather than what TypeScript can
- * be talked into believing about it.
- */
-const MODEL_HOSTS: string[] = (() => {
-  const match = /export const MODEL_HOSTS = \[([\s\S]*?)\]/.exec(policySource)
-  if (match === null) throw new Error('MODEL_HOSTS is not exported from extension/policy.js')
-  return [...match[1]!.matchAll(/'([^']*)'/g)].map((m) => m[1]!)
-})()
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
-/** The real function, lifted out of the file the browser loads. */
-function lift(name: string): (url: string) => boolean {
-  const at = backgroundSource.indexOf(`function ${name}(`)
-  if (at === -1) throw new Error(`${name} is not in extension/background.js any more`)
-  // To the end of the function, found by matching braces from its first one.
+const isLoopback = workerIsLoopback as (url: string) => boolean
+
+/** A function declaration out of a module's source, to the end of its body. */
+function lift(source: string, name: string): string {
+  const at = source.search(new RegExp(`(?:async )?function ${name}\\(`))
+  if (at === -1) throw new Error(`${name} is not in that module any more`)
   let depth = 0
-  let end = -1
-  for (let i = backgroundSource.indexOf('{', at); i < backgroundSource.length; i += 1) {
-    const c = backgroundSource[i]
+  for (let i = source.indexOf('{', at); i < source.length; i += 1) {
+    const c = source[i]
     if (c === '{') depth += 1
     else if (c === '}') {
       depth -= 1
-      if (depth === 0) {
-        end = i + 1
-        break
-      }
+      if (depth === 0) return source.slice(at, i + 1)
     }
   }
-  if (end === -1) throw new Error(`could not find the end of ${name}`)
-  const source = backgroundSource.slice(at, end)
-  // `MODEL_HOSTS` is a module import in the real file, so it is supplied here.
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  return new Function('MODEL_HOSTS', `${source}; return ${name}`)(MODEL_HOSTS) as (
-    url: string,
-  ) => boolean
+  throw new Error(`could not find the end of ${name}`)
 }
-
-const isLoopback = lift('isLoopback')
 
 /**
  * Where the timeout decision ends, located by what the file actually says.
@@ -145,16 +141,17 @@ describe('what the extension will relay to', () => {
 
 describe('the relay is wired into the extension it ships with', () => {
   it('handles the read verb in the worker', () => {
-    expect(backgroundSource).toContain("'jojo:read-document'")
+    expect(messagesSource).toContain("'jojo:read-document'")
+    expect(PAGE_VERBS.get('jojo:read-document')).toBe(onReadDocument)
     // And checks the address before fetching, not after.
-    const handler = backgroundSource.slice(backgroundSource.indexOf("'jojo:read-document'"))
+    const handler = lift(relayVerbsSource, 'onReadDocument')
     // The address is checked BEFORE anything is fetched, not after.
     expect(handler.indexOf('isLoopback')).toBeLessThan(handler.indexOf('await relay('))
   })
 })
 
 describe('what the extension will relay a MODEL request to', () => {
-  const isKnownModelHost: (url: string) => boolean = lift('isKnownModelHost')
+  const isKnownModelHost = workerIsKnownModelHost as (url: string) => boolean
 
   it('allows the providers in its own list', () => {
     expect(isKnownModelHost('https://integrate.api.nvidia.com/v1/chat/completions')).toBe(true)
@@ -264,8 +261,8 @@ describe('a relayed GET carries no body', () => {
   })
 
   it('names what it was calling, rather than saying "reader" for everything', () => {
-    expect(backgroundSource).toContain("relay(request, 'reader')")
-    expect(backgroundSource).toContain("relay(request, 'model provider')")
+    expect(relayVerbsSource).toContain("relay(request, 'reader')")
+    expect(relayVerbsSource).toContain("relay(request, 'model provider')")
   })
 })
 
@@ -280,20 +277,9 @@ describe('installing the extension reaches tabs that are already open', () => {
     expect(backgroundSource).toContain('chrome.runtime.onInstalled.addListener')
     expect(backgroundSource).toContain('injectIntoOpenTabs')
     // Read from the manifest rather than repeated, so the port list has one owner.
-    expect(backgroundSource).toContain('chrome.runtime.getManifest().content_scripts')
+    expect(installSource).toContain('chrome.runtime.getManifest().content_scripts')
   })
 })
-
-/**
- * The region of the worker that owns the hop: the budget, the model allowlist
- * and `relay` itself. Lifted whole rather than function by function, because
- * `relay` reads `READ_TIMEOUT_MS` and a test that supplied its own would be
- * asserting against a number the browser never uses.
- */
-const relayRegion = backgroundSource.slice(
-  backgroundSource.indexOf('const READ_TIMEOUT_MS'),
-  backgroundSource.indexOf('/* --------------------------------- scanning'),
-)
 
 type Relayed = { ok: boolean; status: number; text: string; reason?: string }
 type Relay = (
@@ -301,13 +287,16 @@ type Relay = (
   what: string,
 ) => Promise<Relayed>
 
-/** The real `relay`, with only `fetch` replaced. */
+/**
+ * The real `relay`, with only `fetch` replaced. It reads the real
+ * `READ_TIMEOUT_MS`: a test that supplied its own would be asserting against a
+ * number the browser never uses.
+ */
 function liftRelay(fetchImpl: () => Promise<unknown>): Relay {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  return new Function('MODEL_HOSTS', 'fetch', `${relayRegion}; return relay`)(
-    MODEL_HOSTS,
-    fetchImpl,
-  ) as Relay
+  return (request, what) => {
+    vi.stubGlobal('fetch', fetchImpl)
+    return (relay as Relay)(request, what)
+  }
 }
 
 /** The number the worker actually ships, read out of the file the browser loads. */
@@ -317,7 +306,7 @@ const numberIn = (source: string, name: string): number => {
   return Number(match[1])
 }
 
-const READ_TIMEOUT_MS = numberIn(backgroundSource, 'READ_TIMEOUT_MS')
+const READ_TIMEOUT_MS = WORKER_READ_TIMEOUT_MS as number
 
 describe('a relay whose far end is not there', () => {
   const request = { url: 'http://127.0.0.1:3001/mcp', method: 'POST', headers: {}, body: '{}' }
@@ -425,13 +414,11 @@ describe('the MCP link has a verb of its own', () => {
    * turned document reading off lost the link as well, and was told it was
    * because document reading is off.
    */
-  const handler = backgroundSource.slice(
-    backgroundSource.indexOf("message?.type === 'jojo:mcp-link'"),
-    backgroundSource.indexOf("message?.type === 'jojo:call-model'"),
-  )
+  const handler = lift(relayVerbsSource, 'onMcpLink')
 
   it('is handled in the worker, checking the address before fetching', () => {
-    expect(backgroundSource).toContain("message?.type === 'jojo:mcp-link'")
+    expect(messagesSource).toContain("'jojo:mcp-link'")
+    expect(PAGE_VERBS.get('jojo:mcp-link')).toBe(onMcpLink)
     expect(handler.indexOf('isLoopback')).toBeGreaterThan(-1)
     expect(handler.indexOf('isLoopback')).toBeLessThan(handler.indexOf('await relay('))
   })
@@ -483,10 +470,7 @@ describe('the MCP link has a verb of its own', () => {
  * saved in the popup, the link to jojo-bridge's own port.
  */
 describe('which loopback server each relay may reach', () => {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-  const same = new Function(
-    `${backgroundSource.slice(backgroundSource.indexOf('function isLoopback('), backgroundSource.indexOf('/**', backgroundSource.indexOf('function sameLoopbackServer(')))}; return sameLoopbackServer`,
-  )() as (a: string, b: string) => boolean
+  const same = sameLoopbackServer as (a: string, b: string) => boolean
 
   it('matches by port, whichever loopback spelling each side used', () => {
     expect(same('http://localhost:3001/mcp', 'http://127.0.0.1:3001/mcp')).toBe(true)
@@ -496,25 +480,19 @@ describe('which loopback server each relay may reach', () => {
     expect(same('http://evil.example:3001/', 'http://127.0.0.1:3001/')).toBe(false)
   })
 
-  const handler = (verb: string, next: string) =>
-    withoutComments(
-      backgroundSource.slice(
-        backgroundSource.indexOf(`message?.type === '${verb}'`),
-        backgroundSource.indexOf(`message?.type === '${next}'`),
-      ),
-    )
+  const handler = (name: string) => withoutComments(lift(relayVerbsSource, name))
 
   it('pins a read to the reader address saved in the extension', () => {
-    const read = handler('jojo:read-document', 'jojo:mcp-link')
+    const read = handler('onReadDocument')
     expect(read).toContain('sameLoopbackServer(url, routes.reader.endpoint)')
     expect(read.indexOf('sameLoopbackServer')).toBeLessThan(read.indexOf('await relay('))
   })
 
   it('pins the link to jojo-bridge’s port, the one the page dials', async () => {
-    const link = handler('jojo:mcp-link', 'jojo:call-model')
+    const link = handler('onMcpLink')
     expect(link).toContain('sameLoopbackServer(url, JOJO_BRIDGE_ADDRESS)')
     expect(link.indexOf('sameLoopbackServer')).toBeLessThan(link.indexOf('await relay('))
-    const pinned = /const JOJO_BRIDGE_ADDRESS = '([^']+)'/.exec(backgroundSource)?.[1]
+    const pinned = JOJO_BRIDGE_ADDRESS as string
     const { BRIDGE_ADDRESS } = await import('./mcp-link')
     expect(pinned).toBe(BRIDGE_ADDRESS)
   })
@@ -531,9 +509,9 @@ describe('which loopback server each relay may reach', () => {
 describe('how long the page waits for a scan', () => {
   it('outlasts everything the worker may spend on one board, with real margin', () => {
     const worst =
-      numberIn(backgroundSource, 'LOAD_TIMEOUT_MS') +
-      numberIn(backgroundSource, 'SETTLE_MS') +
-      numberIn(backgroundSource, 'MORE_BUDGET_MS') +
+      (LOAD_TIMEOUT_MS as number) +
+      (SETTLE_MS as number) +
+      (MORE_BUDGET_MS as number) +
       // The last "Load more" wait checks the budget BEFORE sleeping, so it can
       // overrun by one step of its poll.
       250
