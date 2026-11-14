@@ -98,7 +98,17 @@ export function useScout() {
       // single `scout.posting.save` input should do it for atomicity, and should
       // know that the two-entry path is currently load-bearing on that rule.
       if (draft.applicationId !== undefined) {
-        run('scout.posting.update', { id: result.output, applicationId: draft.applicationId })
+        const linked = run('scout.posting.update', {
+          id: result.output,
+          applicationId: draft.applicationId,
+        })
+        // A refused link used to be dropped, leaving a posting saved with no
+        // tie to the application the caller asked for. The save is taken back
+        // and the refusal thrown, the way a refused save already is (R38).
+        if (!linked.ok) {
+          result.undo?.()
+          throw new Error(linked.errors[0]?.message ?? 'Could not link the posting.')
+        }
       }
       return readBack(projections.postings, result.output)
     },

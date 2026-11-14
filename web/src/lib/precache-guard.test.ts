@@ -19,7 +19,7 @@
  * than about the document.
  */
 import { describe, expect, it } from 'vitest'
-import { auditPrecache, entryAssets, localPath } from '../../scripts/precache-guard.mjs'
+import { auditPrecache, entryAssets, isFingerprinted, localPath, precachedAsset } from '../../scripts/precache-guard.mjs'
 import makeSw from '../../scripts/make-sw.mjs?raw'
 
 /**
@@ -177,5 +177,39 @@ describe('make-sw wiring', () => {
     expect(exit, 'the branch has to exit').toBeGreaterThan(-1)
     expect(write, 'make-sw should still write the worker').toBeGreaterThan(-1)
     expect(write).toBeGreaterThan(exit)
+  })
+})
+
+describe('which lazy chunks are installed with the worker', () => {
+  /*
+   * R32(b). A chunk reached only by a lazy import was cached on first use, and
+   * the next deploy's worker deleted that cache on activate — so the graph and
+   * the PDF editor failed offline after every deploy until opened online.
+   */
+  it('precaches the lazy routes, their worker and the fonts', () => {
+    for (const url of [
+      'assets/Graph-BQk3qKyV.js',
+      'assets/PdfEditor-Bh2orkEx.js',
+      'assets/pdf.worker.min-CDpS5KSo.js',
+      'assets/WorkflowFlow-C2DX8v4A.js',
+      'assets/WorkflowFlow-DLioOiRN.css',
+      'assets/inter-latin-wght-normal-Dx4kXJAl.woff2',
+    ])
+      expect(precachedAsset(url), url).toBe(true)
+  })
+
+  it('leaves the Transfer scene to first use, and nothing outside assets/', () => {
+    expect(precachedAsset('assets/DataTransferScene-Dj5ps2Oj.js')).toBe(false)
+    expect(precachedAsset('mascot.splinecode')).toBe(false)
+    expect(precachedAsset('jojo-extension.zip')).toBe(false)
+  })
+
+  it('carries fingerprinted files over on activate instead of deleting them', () => {
+    // The worker is generated text; this pins that activate copies before it deletes.
+    const activate = makeSw.slice(makeSw.indexOf("addEventListener('activate'"))
+    expect(activate.indexOf('carry(')).toBeGreaterThan(-1)
+    expect(activate.indexOf('carry(')).toBeLessThan(activate.indexOf('caches.delete'))
+    expect(isFingerprinted('assets/x-ABC.js')).toBe(true)
+    expect(isFingerprinted('mascot.splinecode')).toBe(false)
   })
 })

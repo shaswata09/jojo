@@ -221,8 +221,18 @@ export const profileMatchTermRemove = defineTool({
 
   run(ctx, input) {
     const profile = profileNode(ctx)
+    // Trimmed as `add` trims, so what was added can be removed as typed.
+    const term = input.term.trim()
+    // A term that is not there is a refusal: "removed" over nothing was
+    // counted as landed and repeated to the person (R11c).
+    if (!profile.props.matchTerms.includes(term)) {
+      ctx.fail(`“${term}” is not one of the match terms, so nothing was removed.`, {
+        field: 'term',
+        code: 'graph/not-found',
+      })
+    }
     ctx.tx.patch<'profile'>(profile.id, {
-      matchTerms: profile.props.matchTerms.filter((t) => t !== input.term),
+      matchTerms: profile.props.matchTerms.filter((t) => t !== term),
     })
   },
 

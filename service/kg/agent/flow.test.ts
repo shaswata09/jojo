@@ -225,6 +225,26 @@ describe('routing that is not a line', () => {
     expect(out.trace.length).toBeLessThanOrEqual(FLOW_BUDGET + 1)
   })
 
+  // The budget counts attempts; a node's own retries used to run past it.
+  it('stops a node retrying past the budget', async () => {
+    let calls = 0
+    const out = await runFlow(
+      flow(
+        node('a', {
+          attempts: FLOW_BUDGET * 4,
+          run: async () => {
+            calls += 1
+            return { ok: false, reason: 'again', retry: true }
+          },
+        }),
+      ),
+      start,
+    )
+    expect(out.ok).toBe(false)
+    expect(calls).toBe(FLOW_BUDGET)
+    expect(out.reason).toContain('stopped')
+  })
+
   it('refuses an edge to a step that does not exist', async () => {
     const out = await runFlow(flow(node('a', { to: () => 'nowhere' })), start)
     expect(out.ok).toBe(false)

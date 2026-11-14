@@ -76,7 +76,11 @@ export type VaultBlobs = {
   revision: number
   put: (id: string, file: File) => Promise<boolean>
   get: (id: string) => Promise<File | null>
-  remove: (id: string) => Promise<void>
+  /**
+   * Resolves true when there were bytes and they were trashed — the answer an
+   * Undo needs, and one `has` cannot give before the index has hydrated.
+   */
+  remove: (id: string) => Promise<boolean>
   /**
    * Puts back what `remove` took. Returns false if it could not — a caller that
    * promised the document would come back needs to know when it did not.
@@ -240,16 +244,19 @@ const subscribers = new Set<() => void>()
  */
 let changes = 0
 
-function setIndex(next: ReadonlyMap<string, string>): void {
+function setIndex(next: ReadonlyMap<string, string>, ready = true): void {
   changes += 1
-  current = { index: next, ready: true, revision: current.revision + 1 }
+  current = { index: next, ready, revision: current.revision + 1 }
   for (const notify of [...subscribers]) notify()
 }
 
 function edit(change: (index: Map<string, string>) => void): void {
   const next = new Map(current.index)
   change(next)
-  setIndex(next)
+  // Keeps `ready` as it was: a put landing while the first listing is still in
+  // flight used to flip it true over an index holding only that one document,
+  // and every "not on this device" read in that window was wrong.
+  setIndex(next, current.ready)
 }
 
 async function relist(): Promise<void> {
@@ -321,6 +328,36 @@ export const blobIndex = {
 const trashed = new Map<string, { path: string; data: Uint8Array }>()
 
 /**
+ * How long the bytes of a deleted document are held for its Undo.
+ *
+ * Without a limit the map kept every document deleted this session, in full,
+ * for the life of the page. The toast offering the Undo runs 8 s but pauses
+ * while hovered or focused, so the hold is generous rather than exact; past it,
+ * Undo brings the row back and says the document could not come with it.
+ */
+export const TRASH_HOLD_MS = 120_000
+
+const evictions = new Map<string, ReturnType<typeof setTimeout>>()
+
+function hold(id: string, entry: { path: string; data: Uint8Array }): void {
+  trashed.set(id, entry)
+  clearTimeout(evictions.get(id))
+  evictions.set(
+    id,
+    setTimeout(() => {
+      evictions.delete(id)
+      trashed.delete(id)
+    }, TRASH_HOLD_MS),
+  )
+}
+
+function release(id: string): void {
+  clearTimeout(evictions.get(id))
+  evictions.delete(id)
+  trashed.delete(id)
+}
+
+/**
  * Removals still running, by id.
  *
  * `remove` reads, then trashes, then records the bytes — three awaits. An Undo
@@ -328,7 +365,7 @@ const trashed = new Map<string, { path: string; data: Uint8Array }>()
  * and the remove then finished: the document trashed, purged on the next load,
  * gone. `restore` now waits for the removal it is undoing.
  */
-const removing = new Map<string, Promise<void>>()
+const removing = new Map<string, Promise<boolean>>()
 
 async function put(id: string, file: File): Promise<boolean> {
   // `arrayBuffer()` rejects when the file moved, was deleted, or the OS
@@ -387,7 +424,7 @@ async function get(id: string): Promise<File | null> {
   return new File([read.value as unknown as BlobPart], name, { type: mimeOfFile(name) })
 }
 
-function remove(id: string): Promise<void> {
+function remove(id: string): Promise<boolean> {
   // Recorded BEFORE the first await, so an Undo pressed while this runs finds
   // it and waits instead of reporting there was nothing to put back.
   const running = removeNow(id).finally(() => {
@@ -397,12 +434,14 @@ function remove(id: string): Promise<void> {
   return running
 }
 
-async function removeNow(id: string): Promise<void> {
+async function removeNow(id: string): Promise<boolean> {
   // The index is per page now, but it may still be hydrating on a delete made
-  // in the first moments after load.
-  if (!current.ready) await hydrate()
+  // in the first moments after load. Always awaited, not only while `ready` is
+  // false: `ready` can be true over a partial index (a lookup's own listing),
+  // and a miss here leaves the bytes behind for good.
+  await hydrate()
   const path = current.index.get(id)
-  if (path === undefined) return
+  if (path === undefined) return false
   // Read BEFORE trashing, so Undo has the bytes in hand whatever happens to
   // the folder afterwards.
   const held = await store().read(path)
@@ -410,10 +449,11 @@ async function removeNow(id: string): Promise<void> {
   // its full relative path, so a record removed by a misclick has not taken
   // the document with it even if this tab is closed.
   const moved = await store().trash(path)
-  if (!moved.ok) return
-  if (held.ok) trashed.set(id, { path, data: held.value })
+  if (!moved.ok) return false
+  if (held.ok) hold(id, { path, data: held.value })
   edit((index) => index.delete(id))
   announce()
+  return true
 }
 
 async function restore(id: string): Promise<boolean> {
@@ -426,7 +466,7 @@ async function restore(id: string): Promise<boolean> {
   // expressible on every adapter.
   const rewritten = await store().write(held.path, held.data)
   if (!rewritten.ok) return false
-  trashed.delete(id)
+  release(id)
   edit((index) => index.set(id, held.path))
   announce()
   return true
@@ -457,6 +497,9 @@ async function replaceAll(
   // exactly the moment a person might discover they picked the wrong file.
   // What they replaced is still under `jojo/Trash`.
   for (const [, path] of current.index) await store().trash(path)
+  // A restore replaces every record; an Undo of a delete from before it would
+  // put back a document belonging to none of them.
+  for (const id of [...trashed.keys()]) release(id)
 
   const next = new Map<string, string>()
   let landed = 0

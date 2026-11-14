@@ -41,13 +41,26 @@ const CHIP: { readonly [S in McpLinkStatus['state']]: { tone: Tone; label: strin
   'stale-extension': { tone: 'amber', label: 'Reload the extension' },
 }
 
+/**
+ * Which shell the first command is written for. Windows gets PowerShell, where
+ * `curl` is an alias and `&&` does not exist; everything else gets a POSIX
+ * shell. Read once: the platform does not change under a running page.
+ */
+const SHELL: 'posix' | 'powershell' =
+  typeof navigator !== 'undefined' && /Windows/i.test(navigator.userAgent) ? 'powershell' : 'posix'
+
 /** The sentence under the chip: what is true now, and what to do about it. */
 function explain(link: McpLink): string {
   switch (link.status.state) {
     case 'off':
       return ''
     case 'searching':
-      return 'Nothing is answering at 127.0.0.1:3002 yet. Start jojo-bridge with the first command — jojo keeps looking.'
+      // The link says why when it knows: another tab carrying it, or something
+      // that is not jojo-bridge sitting on the port.
+      return (
+        link.status.reason ??
+        'Nothing is answering at 127.0.0.1:3002 yet. Start jojo-bridge with the first command — jojo keeps looking.'
+      )
     case 'ready':
       return link.served > 0
         ? `Answered ${String(link.served)} ${link.served === 1 ? 'request' : 'requests'} from your client this session, most recently ${link.lastMethod ?? 'one'}.`
@@ -127,9 +140,13 @@ export function McpLinkPanel() {
           <Step
             n={1}
             title="Start jojo-bridge, and leave it running"
-            command={bridgeCommand(script, link.token)}
+            command={bridgeCommand(script, link.token, SHELL)}
             copyLabel="Copy the command that starts jojo-bridge"
-            note="Needs Node 18 or newer. In Windows PowerShell, type curl.exe for curl, and ; for &&."
+            note={
+              SHELL === 'powershell'
+                ? 'Needs Node 18 or newer. Paste it into Windows PowerShell. The token goes in through the environment, so it never shows in the process list. A jojo-bridge downloaded before this version must be downloaded again — the command does that.'
+                : 'Needs Node 18 or newer. The token goes in through the environment, so it never shows in the process list. A jojo-bridge downloaded before this version must be downloaded again — the command does that.'
+            }
           />
           <Step
             n={2}

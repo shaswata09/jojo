@@ -72,6 +72,8 @@ export type FieldMeta = {
   /** string length, number value, array length. */
   min?: number
   max?: number
+  /** number — whole numbers only, so the model is offered `integer`, not `number`. */
+  int?: boolean
   multiline?: boolean
   placeholder?: string
 }
@@ -147,7 +149,9 @@ function string(o: TextOptions = {}): Schema<string> {
 }
 
 function number(o: TextOptions & { int?: boolean } = {}): Schema<number> {
-  return define(metaOf('number', o), (input, path) => {
+  const meta = metaOf('number', o)
+  if (o.int) meta.int = true
+  return define(meta, (input, path) => {
     // NaN and Infinity are numbers to `typeof` and are not numbers to anyone
     // else. Left in, a NaN fit score renders as 'NaN% fit' and sorts nowhere.
     if (typeof input !== 'number' || !Number.isFinite(input))

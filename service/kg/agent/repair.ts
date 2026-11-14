@@ -71,6 +71,7 @@
  */
 
 import { NODE_TYPES } from '../core/model'
+import { REPLACES_LIST } from './json-schema'
 import type { JsonSchema } from './json-schema'
 
 /* --------------------------------- result --------------------------------- */
@@ -105,6 +106,11 @@ export type RepairKind =
   | 'dropped-null'
   /** No arguments at all, for a tool that requires none. */
   | 'empty-args'
+  /**
+   * NOT a repair: a lone value, or a singular key, aimed at a list that
+   * replaces the whole set. Recorded so `repairArgs` can refuse the call.
+   */
+  | 'refused-partial-list'
 
 export type Repair = {
   readonly kind: RepairKind
@@ -134,7 +140,18 @@ export type Repair = {
  */
 export type RepairResult =
   | { readonly ok: true; readonly args: Record<string, unknown>; readonly repairs: readonly Repair[] }
-  | { readonly ok: false; readonly reason: string; readonly repairs: readonly Repair[] }
+  | {
+      readonly ok: false
+      readonly reason: string
+      readonly repairs: readonly Repair[]
+      /**
+       * The set-replacing fields a lone value was aimed at. Present only for
+       * that refusal, which `loop.ts` turns into its own sentence: unlike the
+       * others, the original arguments must NOT carry on, because the tool
+       * would either ignore the stray key or replace the set with one item.
+       */
+      readonly replacesList?: readonly string[]
+    }
 
 /* --------------------------------- entry ---------------------------------- */
 
@@ -180,6 +197,16 @@ export function repairArgs(schema: JsonSchema, raw: unknown): RepairResult {
 
   if (!isPlainObject(value)) {
     return { ok: false, reason: `the arguments were ${describeShape(value)}, not an object`, repairs }
+  }
+
+  const partial = repairs.filter((r) => r.kind === 'refused-partial-list').map((r) => r.path)
+  if (partial.length > 0) {
+    return {
+      ok: false,
+      reason: `a single value was sent for a list that replaces the whole set: ${partial.join(', ')}`,
+      repairs: repairs.filter((r) => r.kind !== 'refused-partial-list'),
+      replacesList: partial,
+    }
   }
 
   const missing = (schema.required ?? []).filter((key) => !(key in value))
@@ -454,13 +481,40 @@ function repairObject(
     if (key === '__proto__') continue
 
     const name = renames.get(key) ?? key
-    if (name !== key) {
-      push(repairs, 'renamed-key', join(path, name), `"${key}" is called "${name}" in this tool`)
-    }
-
     const field = props[name]
     const at = join(path, name)
     const raw = value[key]
+
+    /*
+     * A LIST THAT REPLACES THE SET is not wrapped and not renamed onto.
+     *
+     * `{keyword: "kw:3"}` on `application.update` was renamed to `keywords`
+     * and wrapped as `["kw:3"]` — two honest repairs that composed into a
+     * call wiping every other tag, reported as success (R11a, reproduced end
+     * to end). The model meant "add this one"; the field means "these are all
+     * of them". No repair can tell which, so the call is refused and the
+     * model is told to send the whole list. A real list under the right key,
+     * a JSON-encoded one, and null (clear) are untouched.
+     */
+    if (field && replacesList(field)) {
+      const nested: Repair[] = []
+      const repaired = repairValue(field, raw, at, nested)
+      const singular = name !== key && plural(norm(key), norm(name))
+      const wrapped = nested.some((r) => r.path === at && (r.kind === 'wrapped-list' || r.kind === 'split-list'))
+      if (singular || wrapped) {
+        push(repairs, 'refused-partial-list', at, `${name} replaces the whole list`)
+        out[key] = raw
+        continue
+      }
+      if (name !== key) push(repairs, 'renamed-key', at, `"${key}" is called "${name}" in this tool`)
+      repairs.push(...nested)
+      out[name] = repaired
+      continue
+    }
+
+    if (name !== key) {
+      push(repairs, 'renamed-key', join(path, name), `"${key}" is called "${name}" in this tool`)
+    }
 
     /*
      * NULL FOR AN ABSENT OPTIONAL, dropped rather than passed on.
@@ -798,6 +852,11 @@ function accepts(schema: JsonSchema, value: unknown): boolean {
    * value it was going to get anyway and lets the real parser write the refusal.
    */
   return true
+}
+
+/** The sentence `catalog.ts` puts on every list an update replaces wholesale. */
+function replacesList(schema: JsonSchema): boolean {
+  return schema.type === 'array' && (schema.description ?? '').includes(REPLACES_LIST)
 }
 
 /**

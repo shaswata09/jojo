@@ -289,11 +289,48 @@ const SPECIFIER_LITERAL = /(['"])((?:@jojo\/service|@\/|\.{1,2}\/)[^'"]*)\1/g
  * Source with its comments removed, so the fingerprint is of the CODE.
  *
  * A small scanner rather than a regex, because the code is full of strings that
- * contain `//` (every URL) and `/*` (glob patterns). Quote and template states
- * are tracked; a regex literal containing a quote can confuse it, and the cost
- * of that is one file fingerprinting differently, never two different files
- * fingerprinting the same.
+ * contain `//` (every URL) and `/*` (glob patterns). Quote, template and
+ * regex-literal states are tracked. Regex literals were not, and a quote inside
+ * one (`/['"]/`) opened a "string" that ran on past the real comments, which
+ * were then hashed as code (R38) — two copies whose comments differed went
+ * unreported. A `/` starts a regex where an expression can start: after an
+ * operator, an opening bracket, a comma, or a keyword such as `return`; after
+ * a name, a number or a closing bracket it is division.
  */
+const REGEX_AFTER_WORD = new Set(['return', 'typeof', 'instanceof', 'in', 'of', 'new', 'delete', 'void', 'throw', 'case', 'do', 'else', 'yield', 'await'])
+
+/** Whether a `/` at `i` (not `//` or `/*`) begins a regex literal, judged from what precedes it in `out`. */
+function regexCanStart(out) {
+  let j = out.length - 1
+  while (j >= 0 && /\s/.test(out[j])) j -= 1
+  if (j < 0) return true
+  const prev = out[j]
+  if (/[\w$]/.test(prev)) {
+    let k = j
+    while (k >= 0 && /[\w$]/.test(out[k])) k -= 1
+    return REGEX_AFTER_WORD.has(out.slice(k + 1, j + 1))
+  }
+  return !/[)\]}'"`]/.test(prev)
+}
+
+/** The index just past a regex literal starting at `i`, honouring escapes and `[...]` classes. */
+function regexEnd(text, i) {
+  let j = i + 1
+  let inClass = false
+  while (j < text.length && text[j] !== '\n') {
+    const c = text[j]
+    if (c === '\\') j += 2
+    else {
+      if (c === '[') inClass = true
+      else if (c === ']') inClass = false
+      else if (c === '/' && !inClass) return j + 1
+      j += 1
+    }
+  }
+  // Unterminated on its line: not a regex after all. Treat the `/` as division.
+  return i + 1
+}
+
 function stripComments(text) {
   let out = ''
   let i = 0
@@ -325,6 +362,12 @@ function stripComments(text) {
       const end = text.indexOf('*/', i + 2)
       i = end === -1 ? text.length : end + 2
       out += ' '
+      continue
+    }
+    if (ch === '/' && regexCanStart(out)) {
+      const end = regexEnd(text, i)
+      out += text.slice(i, end)
+      i = end
       continue
     }
     out += ch

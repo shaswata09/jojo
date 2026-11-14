@@ -132,6 +132,75 @@ export function setAnalyticsEnabled(on: boolean): void {
    * analytics off must never be the thing that fetches it.
    */
   if (loaded) void applyCollection(on)
+  // Off also means forgotten: see `forgetAnalyticsIdentity`.
+  if (!on) forgetAnalyticsIdentity()
+}
+
+/**
+ * The SDK's identifiers for this browser, as it leaves them.
+ *
+ * GA keeps a client id in `_ga` and a session in `_ga_<measurement id>` (and
+ * `_gid` in older tags); Firebase keeps an installation id and a heartbeat log
+ * in two IndexedDB databases of its own. Turning analytics off stopped new
+ * reports but left all of them, so a person who said no still carried the id
+ * that their earlier reports were filed under.
+ */
+export const ANALYTICS_LEFTOVERS = {
+  cookie: /^_ga(?:_|$)|^_gid$/,
+  databases: ['firebase-installations-database', 'firebase-heartbeat-database'],
+} as const
+
+type Leftovers = {
+  readCookies: () => string
+  writeCookie: (line: string) => void
+  hostname: string
+  deleteDatabase: (name: string) => void
+}
+
+const browserLeftovers = (): Leftovers | null =>
+  typeof document === 'undefined'
+    ? null
+    : {
+        readCookies: () => document.cookie,
+        writeCookie: (line) => {
+          document.cookie = line
+        },
+        hostname: location.hostname,
+        deleteDatabase: (name) => {
+          indexedDB.deleteDatabase(name)
+        },
+      }
+
+/**
+ * Deletes what `ANALYTICS_LEFTOVERS` names. Local only: nothing is sent.
+ *
+ * Each cookie is expired on this host and on every parent domain, because gtag
+ * writes it on the widest domain it is allowed to and a cookie only expires
+ * under the domain it was set on. A database the loaded SDK still holds open
+ * is deleted when the page closes — `deleteDatabase` waits, it does not fail.
+ */
+export function forgetAnalyticsIdentity(env: Leftovers | null = browserLeftovers()): void {
+  if (env === null) return
+  try {
+    const labels = env.hostname.split('.')
+    const domains = ['', ...labels.slice(0, -1).map((_, i) => `; domain=.${labels.slice(i).join('.')}`)]
+    for (const pair of env.readCookies().split(';')) {
+      const name = pair.split('=')[0]?.trim() ?? ''
+      if (!ANALYTICS_LEFTOVERS.cookie.test(name)) continue
+      for (const domain of domains) {
+        env.writeCookie(`${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain}`)
+      }
+    }
+  } catch {
+    /* document.cookie throws in a sandboxed frame */
+  }
+  for (const name of ANALYTICS_LEFTOVERS.databases) {
+    try {
+      env.deleteDatabase(name)
+    } catch {
+      /* no IndexedDB here, so nothing was kept in it */
+    }
+  }
 }
 
 /** Whether anything would actually be sent right now. */

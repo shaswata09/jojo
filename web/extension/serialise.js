@@ -34,9 +34,27 @@
  * Several rules can only be decided from the RENDERED page: whether a paragraph
  * is clamped, whether an image below the fold ever got a `src`. Those are
  * computed-style and layout questions, and a detached clone has neither. So the
- * walk holds both trees and indexes them together — `cloneNode(true)` produces a
- * faithful copy in the same tick, so `documentElement.querySelectorAll('*')` and
- * the clone's are element-for-element aligned. The live page is never mutated.
+ * walk holds both trees and indexes them together — the copy is made in the
+ * same tick, so `documentElement.querySelectorAll('*')` and the copy's are
+ * element-for-element aligned. The live page is never mutated.
+ *
+ * ## The copy lives in an INERT document
+ *
+ * It was `document.documentElement.cloneNode(true)`, and that runs the PAGE's
+ * code. A clone made in the live document is upgraded by the page's custom
+ * element registry: constructors run on it, and `attributeChangedCallback`
+ * fires on every attribute this walk later writes — in the page's own world,
+ * with a reference to the clone. Reproduced: an element watching `style` read
+ * this capture's nonce off the first token written into it, and a second one
+ * waited for the strip passes to finish, then prepended
+ * `<meta http-equiv=refresh>` and a `<link rel=preconnect>` to the clone's
+ * head and appended a forged token. The saved file navigated on open.
+ *
+ * `importNode` into a document from `createHTMLDocument` makes the same copy —
+ * same tree, same order, so the alignment above still holds — in a document
+ * with no browsing context, and a document with none has no custom element
+ * definitions to look up: nothing is constructed, nothing is called back, and
+ * every pass below works on markup the page can no longer touch.
  */
 
 export function serialise(policy, nonce) {
@@ -61,7 +79,11 @@ export function serialise(policy, nonce) {
   }
   const TOKEN = `__JOJO_ASSET_${nonce}_`
 
-  const doc = document.documentElement.cloneNode(true)
+  // See "The copy lives in an INERT document" above. Every element this walk
+  // creates is created by `inert` too, for the same reason.
+  const inert = document.implementation.createHTMLDocument('')
+  const doc = inert.importNode(document.documentElement, true)
+  inert.replaceChild(doc, inert.documentElement)
   const assets = []
   let dropped = 0
   let shadowRoots = 0
@@ -247,7 +269,7 @@ export function serialise(policy, nonce) {
   // Ordering, and it is load-bearing. Step 1 below deletes elements from the
   // clone, after which the two trees no longer line up and no computed-style
   // question can be answered at all. So the rendered-page facts are collected
-  // first, while `cloneNode(true)` still guarantees element-for-element
+  // first, while the fresh copy still guarantees element-for-element
   // alignment, and stashed on the clone for the later passes to read.
   const RESOLVED = 'data-jojo-resolved-src'
   /** The clone's <style> elements already written back from the live CSSOM. */
@@ -265,7 +287,7 @@ export function serialise(policy, nonce) {
         const clamp = clampKind(live)
         if (clamp !== null) node.setAttribute(CAPTURE_UNCLAMP_ATTR, clamp)
 
-        // A shadow root's contents cannot be reached: `cloneNode` does not copy
+        // A shadow root's contents cannot be reached: `importNode` does not copy
         // one and `outerHTML` never serialises one. Counted rather than ignored,
         // so "part of this page is missing" is a number the user sees.
         if (live.shadowRoot !== null) shadowRoots += 1
@@ -304,7 +326,7 @@ export function serialise(policy, nonce) {
         const rel = (node.getAttribute('rel') ?? '').toLowerCase()
         const href = absolute(node.getAttribute('href'))
         if (rel.includes('stylesheet') && href !== null) {
-          const style = document.createElement('style')
+          const style = inert.createElement('style')
           style.textContent = token(href, 'css')
           node.replaceWith(style)
           continue
@@ -519,7 +541,7 @@ export function serialise(policy, nonce) {
   // them. They are appended as one <style> carrying the same rules.
   const adopted = (document.adoptedStyleSheets ?? []).map(rulesOf).filter((t) => t.trim() !== '')
   if (adopted.length > 0) {
-    const style = document.createElement('style')
+    const style = inert.createElement('style')
     style.textContent = queueCssUrls(adopted.join('\n'), false)
     const head = doc.querySelector('head') ?? doc
     head.append(style)
@@ -565,7 +587,7 @@ export function serialise(policy, nonce) {
 
   // ---- 4. <template> contents ----------------------------------------------
   //
-  // `cloneNode(true)` copies a template's content and the serialiser writes it
+  // `importNode(…, true)` copies a template's content and the serialiser writes it
   // out, but `querySelectorAll` never descends into a DocumentFragment that is
   // not in the tree — so everything above skipped it: scripts unstripped,
   // handlers unstripped, URLs untouched. What kept that from being a leak was
@@ -583,7 +605,7 @@ export function serialise(policy, nonce) {
   // only — a blanket rule would unclamp things the page clamps for layout
   // reasons rather than to hide text.
   if (doc.querySelector(`[${CAPTURE_UNCLAMP_ATTR}]`) !== null) {
-    const unclamp = document.createElement('style')
+    const unclamp = inert.createElement('style')
     unclamp.textContent =
       // `display:block` ONLY where a line clamp was actually in force — that
       // idiom needs `display:-webkit-box`, and releasing the clamp without
@@ -601,10 +623,28 @@ export function serialise(policy, nonce) {
     head.append(unclamp)
   }
 
+  // ---- 6. a last look at the STRING ----------------------------------------
+  //
+  // Run after every DOM pass, on the text that is actually returned. Nothing
+  // above should have left a `<link>` or a `<meta http-equiv>`: the strip pass
+  // removes every link and every refresh and CSP meta. This is the check that it
+  // did, on the one form a later step cannot change — and the shape that got
+  // through before the copy was inert was exactly a refresh and a preconnect
+  // written into the tree AFTER the strip ran.
+  //
+  // A plain pattern is exact here, which it would not be on page-written HTML:
+  // this string is the serialiser's own output, so every attribute value is
+  // double-quoted with any `"` inside written as `&quot;`, and text `<` is
+  // `&lt;`. Stylesheet text has its `<` escaped by `rulesOf`.
+  const html = `<!doctype html>${doc.outerHTML}`.replace(
+    /<(link|meta)(?=[\s/>])(?:[^>"]|"[^"]*")*>/gi,
+    (tag, name) => (name.toLowerCase() === 'link' || /\shttp-equiv\s*=/i.test(tag) ? '' : tag),
+  )
+
   return {
     url: location.href,
     title: (document.title || '').trim(),
-    html: `<!doctype html>${doc.outerHTML}`,
+    html,
     assets,
     dropped,
     shadowRoots,

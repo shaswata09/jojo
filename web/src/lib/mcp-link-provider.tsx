@@ -4,7 +4,7 @@ import type { ToolHost } from '@jojo/service/agent/execute'
 import { mcpAllowed } from '@jojo/service/agent/mcp'
 import { useToolHost } from '@jojo/service/react/use-tool-host'
 import { relayToBridge } from '@/lib/capture-bridge'
-import { BRIDGE_ADDRESS, directTransport, mintToken, runLink } from '@/lib/mcp-link'
+import { BRIDGE_ADDRESS, directTransport, mintToken, runElected, runLink } from '@/lib/mcp-link'
 import type { LinkStatus, LinkTransport } from '@/lib/mcp-link'
 import { useReadDocument } from '@/lib/read-document'
 import { readStored, writeStored } from '@/lib/storage'
@@ -124,20 +124,31 @@ export function McpLinkProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!on) return
     const controller = new AbortController()
-    void runLink({
-      address: BRIDGE_ADDRESS,
-      token: stored.token,
-      transport: local ? directTransport() : throughExtension,
-      host: live,
-      // Everything except the two tools that cannot be undone. See `mcpAllowed`.
-      allow: mcpAllowed,
-      signal: controller.signal,
-      onStatus: setStatus,
-      onServed: (method) => {
-        setServed((n) => n + 1)
-        setLastMethod(method)
+    // One tab of this browser runs the link at a time; see `runElected`.
+    void runElected(
+      controller.signal,
+      () =>
+        runLink({
+          address: BRIDGE_ADDRESS,
+          token: stored.token,
+          transport: local ? directTransport() : throughExtension,
+          host: live,
+          // Everything except the two tools that cannot be undone. See `mcpAllowed`.
+          allow: mcpAllowed,
+          signal: controller.signal,
+          onStatus: setStatus,
+          onServed: (method) => {
+            setServed((n) => n + 1)
+            setLastMethod(method)
+          },
+        }),
+      () => {
+        setStatus({
+          state: 'searching',
+          reason: 'Another jojo tab in this browser is carrying the link; this one takes over when that tab closes.',
+        })
       },
-    })
+    )
     return () => {
       controller.abort()
     }

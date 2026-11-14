@@ -22,6 +22,7 @@
 import { hostOf } from '@/components/vault/links/url'
 import type { Application } from '@/data/seed'
 import { shortDate } from '@/data/timeline'
+import { sentOn } from '@jojo/service/core/sent-on'
 import type { TimelineItem } from '@/data/timeline'
 
 /**
@@ -53,7 +54,9 @@ export function fillsFor(app?: Application, item?: TimelineItem): Record<string,
     fills.COMPANY = app.org
     fills.INSTITUTION = app.org
 
-    const sent = app.submittedOn ?? app.appliedOn
+    // The one precedence for "when it went in", shared with Statistics and the
+    // agent, which used to disagree with each other (R25).
+    const sent = sentOn(app)
     if (sent) fills.DATE = shortDate(sent)
 
     const portal = app.url === undefined ? undefined : hostOf(app.url)

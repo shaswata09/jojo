@@ -6,6 +6,51 @@ import { kindOfFile, sizeLabel } from '@/lib/files'
 import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { sortDrop } from '@/components/vault/files/intake'
+import { CAPTURE_MAX_BYTES, remoteRefCount } from '@jojo/service/core/capture'
+
+/**
+ * What to tell the person about a web page they dropped in, or null when there
+ * is nothing to say.
+ *
+ * A capture from the extension or the phone is checked by `readCapture` before
+ * it is filed, and refused if it still names anything on the web. A .html file
+ * dropped on the Vault skipped that check entirely, so a saved page that loads
+ * its pictures from a tracker was filed as if it were self-contained — and,
+ * before the viewer's lock was rebuilt, beaconed on every viewing.
+ *
+ * It is filed anyway rather than refused. An ordinary "Save page as" file names
+ * dozens of addresses, and refusing all of those would make the Vault useless
+ * for the one kind of page people most often have; the viewer shows a page with
+ * every fetch blocked whatever it names. What changes is that the person is
+ * TOLD, so a page with its images missing is not a mystery.
+ */
+export async function droppedPageNote(
+  file: File,
+): Promise<{ title: string; description: string } | null> {
+  // .mhtml is a MIME archive, not markup; the scan would read its encoded parts.
+  if (!/\.html?$/i.test(file.name)) return null
+  // The scan is a regex over the whole text, so a huge file is not handed to it
+  // — the same order `readCapture` checks in.
+  if (file.size > CAPTURE_MAX_BYTES) {
+    return {
+      title: `${file.name} was too large to check`,
+      description:
+        'It is filed, and it opens with every web address in it blocked, so nothing in it reaches the network — but anything it loads from the web will be missing.',
+    }
+  }
+  let refs: number
+  try {
+    refs = remoteRefCount(await file.text())
+  } catch {
+    return null
+  }
+  if (refs === 0) return null
+  return {
+    title: `${file.name} names ${String(refs)} web address${refs === 1 ? '' : 'es'}`,
+    description:
+      'It is filed as you dropped it, and jojo shows it with every one of them blocked, so opening it never reaches the network. Pictures or styles it loaded from the web will be missing.',
+  }
+}
 
 /**
  * The one way a document enters the Vault, for every surface that takes one.
@@ -88,6 +133,12 @@ export function useFileIntake({
           size: sizeLabel(file.size),
         })
         added.push(record.id)
+        // A dropped web page is scanned the way a capture is; see `droppedPageNote`.
+        if (record.kind === 'page') {
+          void droppedPageNote(file).then((note) => {
+            if (note) toast(note)
+          })
+        }
         // Per file: six documents dropped at once are six filings.
         if (reportAdds) report('vault_item_added', { kind: 'file' })
         // Not awaited, so the row appears immediately — a slow disk or a full

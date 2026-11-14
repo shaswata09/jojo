@@ -32,8 +32,15 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-row-hover aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
         ghost:
           'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
+        // The ink is the danger red pushed toward the page's far pole, not the
+        // red itself: on its own tinted fill, in a confirm dialog's muted
+        // footer, plain `text-destructive` measured 4.27:1 light and 4.36:1
+        // dark. Mixed in sRGB so the arithmetic matches what was measured:
+        // light ≥ 5.1:1 and dark ≥ 4.9:1 over the fill and its hover, on both
+        // the dialog body and its footer. The dark fill steps down (/15, /20)
+        // because the lighter ink alone could not clear 4.5 over /30.
         destructive:
-          'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
+          'bg-destructive/10 text-[color-mix(in_srgb,var(--color-destructive)_80%,black)] hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/15 dark:text-[color-mix(in_srgb,var(--color-destructive)_85%,white)] dark:hover:bg-destructive/20 dark:focus-visible:ring-destructive/40',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {

@@ -24,6 +24,7 @@ import { PdfMergeRow, PdfMergeRowGhost, type MergeRow } from './PdfMergeRow'
 import { asChoice, usePdfFiles, type PdfChoice } from './use-pdf-files'
 import { useDroppedPdfs, type PdfDelivery } from './use-dropped-pdfs'
 import type { FileBucket } from '@/data/vault'
+import { dragAnnouncements } from '@/components/common/drag-announcements'
 
 /**
  * One arrow press, one position.
@@ -164,6 +165,18 @@ export function PdfMergePanel({ dropped }: { dropped?: PdfDelivery | null }) {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          // File names and positions; the row keys are minted ids.
+          accessibility={{
+            announcements: dragAnnouncements({
+              item: (key) => rows.find((row) => row.key === key)?.choice.name,
+              target: (key) => {
+                const at = rows.findIndex((row) => row.key === key)
+                return at < 0
+                  ? undefined
+                  : `position ${String(at + 1)} of ${String(rows.length)}, ${rows[at]?.choice.name ?? ''}`
+              },
+            }),
+          }}
           onDragStart={(event: DragStartEvent) => setDragging(String(event.active.id))}
           onDragEnd={onDragEnd}
           onDragCancel={() => setDragging(null)}

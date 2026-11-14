@@ -180,15 +180,24 @@ describe('what a drafting run may and may not do', () => {
 })
 
 describe('changing and removing', () => {
-  it('does nothing, and writes nothing, for a step that is not there', () => {
+  /*
+   * Refused, and writes nothing. It used to SUCCEED — "Step ticked" over a
+   * step that does not exist — and the verify gate counted that as landed, so
+   * a model that ticked a step by its text was told it had (R11c).
+   */
+  it('refuses, and writes nothing, for a step that is not there', () => {
     const h = harness()
     const id = anApplication(h)
     okOr(add(h, id, 'Order a transcript'))
     const before = h.repo.getSnapshot().node(id as never, 'application')?.updatedAt
 
-    okOr(h.runtime.run('application.checklist.item.set', { id, itemId: 'nope', done: true }))
-    okOr(h.runtime.run('application.checklist.item.remove', { id, itemId: 'nope' }))
+    const set = h.runtime.run('application.checklist.item.set', { id, itemId: 'Order a transcript', done: true })
+    const remove = h.runtime.run('application.checklist.item.remove', { id, itemId: 'nope' })
+    expect(set.ok).toBe(false)
+    expect(remove.ok).toBe(false)
+    expect(set.ok ? '' : set.errors[0]?.message).toContain('Read the application for its steps')
     expect(h.repo.getSnapshot().node(id as never, 'application')?.updatedAt).toBe(before)
+    expect(listOf(h, id)[0]?.doneOn).toBeUndefined()
   })
 
   it('does not restamp a step that is already ticked', () => {

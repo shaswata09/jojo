@@ -86,8 +86,25 @@ export type PairingSession = {
    * result usable in the same function that asked for it.
    */
   complete: (response: Uint8Array) => Promise<SessionKeys | null>
-  /** Throws the current offer away and shows a new one. */
+  /**
+   * Throws the current offer away and shows a new one — and forgets a pairing.
+   *
+   * The screen MUST call this when the handoff the pairing was for ends, done
+   * or failed (`needsNewOffer`). The offer is single-use and the re-mint timer
+   * stands down once paired, so nothing else ever puts a code back up: after
+   * one pairing, a failed send could not be retried and a second device could
+   * not be sent to without leaving the page (R18).
+   */
   refresh: () => void
+}
+
+/**
+ * Whether a send at this stage has finished with the pairing it used, so the
+ * screen should call `refresh` for a new code. Both ends: a finished send's
+ * offer is spent, and a failed one's keys belong to a session that is over.
+ */
+export function needsNewOffer(stage: string): boolean {
+  return stage === 'done' || stage === 'failed'
 }
 
 /**
@@ -149,6 +166,10 @@ export function usePairingSession(active: boolean): PairingSession {
   // An explicit refresh is a person asking for a new code, so it starts over.
   const refresh = useCallback(() => {
     paired.current = false
+    // A new code is a new session: the old keys belong to a send that has
+    // ended, and keeping them left the screen saying "paired" under a code
+    // nobody had scanned yet.
+    setKeys(null)
     setGeneration((n) => n + 1)
   }, [])
 

@@ -84,6 +84,10 @@ export function DataPanel() {
     // under `backup` it merged with export failures — and left `restore`, which
     // exists for exactly this, with no user anywhere in the app.
     if (picked.kind === 'unreadable') reportError('restore', picked.thrown)
+    // The parser's own words, kept off the screen and put here: a file that is
+    // not JSON is either another file entirely or a truncated backup, and the
+    // second is a writer bug worth chasing.
+    if (picked.kind === 'refused' && picked.parseError) reportError('restore', picked.parseError)
     toast({ title: picked.title, description: picked.description, tone: 'danger' })
   }
 

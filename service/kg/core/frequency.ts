@@ -22,7 +22,7 @@
  */
 
 import { addDays, isoOf, partsOf, shortDate } from './dates'
-import type { Application, Period } from './model'
+import type { Period } from './model'
 
 /**
  * How far back each period is allowed to run before the axis stops being
@@ -32,13 +32,11 @@ import type { Application, Period } from './model'
 export const MAX_BUCKETS: Record<Period, number> = { week: 14, month: 12, quarter: 8 }
 
 /**
- * The date an application counts against.
- *
- * `submittedOn` is the fallback because the seed records carry that and not
- * `appliedOn` — a chart keyed on `appliedOn` alone would have been empty on
- * the demo data, which is the same class of bug as never reading the store.
+ * The date an application counts against. Re-exported so the web and phone
+ * charts keep their import; the precedence lives in `sent-on.ts`, shared with
+ * the statistics, the advice and the agent.
  */
-export const sentOn = (a: Application) => a.appliedOn ?? a.submittedOn
+export { sentOn } from './sent-on'
 
 /** Monday of the week `iso` falls in. */
 export function weekStart(iso: string) {

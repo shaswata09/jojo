@@ -24,7 +24,8 @@ import { useFileCapture } from '@/lib/file-capture'
 import { agentTurn } from '@/lib/llm'
 import type { ModelSettings } from '@/lib/llm'
 import { convertUrl } from '@/lib/markitdown'
-import { useVaultBlobs } from '@/lib/vault-blobs'
+import { blobIndex, useVaultBlobs } from '@/lib/vault-blobs'
+import { isLocalTarget } from '@/lib/posting-target'
 
 /**
  * A job posting URL, read by the model into a draft application.
@@ -100,11 +101,20 @@ export type PostingOutcome =
        */
       keywords: readonly string[]
       via: PostingRoute
+      /**
+       * True when this read kept the page; false when it reused one already in
+       * the Vault. Whoever may later take the page back out (a discarded scout
+       * suggestion) must only ever take one it created — a reused page can be
+       * the person's own clip of the address (R9).
+       */
+      created: boolean
     }
   | {
       ok: false
       step: PostingStep
       reason: string
+      /** As on success: whether `file` was kept by this read. */
+      created?: boolean
       /**
        * The page, when it was kept before the step that failed — so a model
        * that refused or a reply that would not parse does not cost the person
@@ -132,6 +142,10 @@ export type ReadPostingOptions = {
 type Page =
   { via: 'extension'; text: string; capture: CaptureEnvelope } | { via: 'reader'; text: string }
 
+/** Said for an address on this machine or the person's own network. */
+export const LOCAL_TARGET =
+  'That address is on this computer or your own network, not a job board — jojo does not open those.'
+
 /** Said when there is nothing in this browser that can open a page at all. */
 export const NOTHING_TO_READ_WITH =
   'Reading a posting needs the jojo browser extension, which opens the page the way you would and saves it, or the document reader, which fetches it. Neither is set up in this browser — Settings has both.'
@@ -146,6 +160,9 @@ async function openPage(
   reader: string,
   signal?: AbortSignal,
 ): Promise<Page | { reason: string }> {
+  // Before either route: the extension refuses these for itself, the reader
+  // never did, and its fetch runs on the person's own machine (R6).
+  if (isLocalTarget(target)) return { reason: LOCAL_TARGET }
   const captured = await capturePage(target, signal)
   if (captured.ok) {
     return {
@@ -257,8 +274,27 @@ export function keptOrDropped(
   return null
 }
 
+/**
+ * The kept page a read may reuse instead of keeping the fresh one: the record
+ * for this address, but only while its bytes are on this device.
+ *
+ * A record alone is not a copy. One whose bytes never landed here (another
+ * device's record, a restore without its documents) used to be reused, and the
+ * page just read — the only copy there was — was thrown away (R17). The newer
+ * record wins `postingSourceForUrl`, so saving it also makes it the one found.
+ */
+export function reusablePage<F extends { id: string }>(
+  fileId: string | undefined,
+  files: readonly F[],
+  hasBytes: (id: string) => boolean,
+): F | undefined {
+  if (fileId === undefined || !hasBytes(fileId)) return undefined
+  return files.find((f) => f.id === fileId)
+}
+
 export function useReadPosting(): (options: ReadPostingOptions) => Promise<PostingOutcome> {
   const savePage = useSavePage()
+  const blobs = useVaultBlobs()
   const { repo, projections } = useKg()
   const { updateFile } = useVault()
   /*
@@ -305,13 +341,15 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       // Kept NOW, before the model is asked — see "AND BEFORE THE MODEL IS
       // ASKED" in the header. A page this address already has is reused, so a
       // second try after a failed ask does not keep a second copy.
+      // The index first: before it hydrates every `has` is false.
+      await blobIndex.ready()
       const graph = repo.getSnapshot()
       const source = postingSourceForUrl(graph, target)
       const already =
-        reuseFile ??
-        (source ? projections.files(graph).find((f) => f.id === source.fileId) : undefined)
+        reuseFile ?? reusablePage(source?.fileId, projections.files(graph), blobs.has)
       const file = already ?? (await savePage(page, target, ''))
       if (file === null) return { ok: false, step: 'saving', reason: NOT_STORED }
+      const created = already === undefined
 
       /* ------------------------------ 2. ask ------------------------------- */
       onStep?.('asking')
@@ -339,13 +377,13 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         return turn.text
       })
       if (refused.reason !== undefined) {
-        return { ok: false, step: 'asking', reason: refused.reason, file }
+        return { ok: false, step: 'asking', reason: refused.reason, file, created }
       }
       if (!read.ok) {
         // Said, because otherwise the obvious response to a slow failure is to
         // press the button again — which is the thing that just happened twice.
         const tried = read.attempts > 1 ? ' Asked twice, with the same result.' : ''
-        return { ok: false, step: 'asking', reason: `${read.reason}${tried}`, file }
+        return { ok: false, step: 'asking', reason: `${read.reason}${tried}`, file, created }
       }
 
       /* ------------------------------ 3. save ------------------------------ */
@@ -370,9 +408,10 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
         // Names in, ids out, and the crossing happens exactly here.
         keywords: matchKeywords(offered, read.keywordNames),
         via: page.via,
+        created,
       }
     },
-    [savePage, labels, countFor, repo, projections, updateFile],
+    [savePage, blobs, labels, countFor, repo, projections, updateFile],
   )
 }
 
@@ -431,6 +470,7 @@ const inFlight = new Map<string, Promise<KeptPage>>()
  */
 export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<KeptPage> {
   const savePage = useSavePage()
+  const blobs = useVaultBlobs()
   const { repo, projections } = useKg()
   const { updateFile } = useVault()
   return useCallback(
@@ -441,14 +481,9 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
       const target = canonicalPostingUrl(
         /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`,
       )
-      const kept = postingSourceForUrl(repo.getSnapshot(), target)
-      if (kept)
-        return Promise.resolve({ ok: true, fileId: kept.fileId, name: kept.name, via: 'already' })
-
       const key = postingIdentity(target) ?? target
       const running = inFlight.get(key)
       if (running) return running
-
       // Only for a posting that is actually saved. Approve all approves first
       // and keeps pages after, and an approval that failed would otherwise
       // leave a page in the Vault about a job nothing points at.
@@ -463,6 +498,13 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
       }
 
       const run = (async (): Promise<KeptPage> => {
+        // Kept already counts only with its bytes on this device — see
+        // `reusablePage`. A record without them is fetched again (R17). After
+        // the index has loaded, or every page would look missing.
+        await blobIndex.ready()
+        const kept = postingSourceForUrl(repo.getSnapshot(), target)
+        if (kept && blobs.has(kept.fileId))
+          return { ok: true, fileId: kept.fileId, name: kept.name, via: 'already' }
         const opened = await openPage(target, options.reader, options.signal)
         if ('reason' in opened) return { ok: false, reason: opened.reason }
         if (opened.text.trim().length < 200) return { ok: false, reason: nearlyEmpty(opened.via) }
@@ -496,7 +538,7 @@ export function useKeepPostingPage(): (options: KeepPageOptions) => Promise<Kept
       inFlight.set(key, run)
       return run
     },
-    [savePage, repo, projections, updateFile],
+    [savePage, blobs, repo, projections, updateFile],
   )
 }
 

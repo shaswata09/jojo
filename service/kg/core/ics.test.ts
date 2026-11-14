@@ -260,6 +260,61 @@ describe('buildCalendar', () => {
     expect(ics).not.toContain('BEGIN:VEVENT')
   })
 
+  it('keeps a completed item but takes its alarm off', () => {
+    // A finished task still belongs on the record of what happened, but an
+    // alert for it the morning before is noise the person already dealt with.
+    const lines = unfold(
+      buildCalendar({ items: [item({ completedOn: '2026-09-01' })], applications: [], at: AT }),
+    )
+    expect(lines).toContain('BEGIN:VEVENT')
+    expect(lines).not.toContain('BEGIN:VALARM')
+    // An open item beside it keeps its own.
+    const both = unfold(
+      buildCalendar({
+        items: [item({ completedOn: '2026-09-01' }), item({ id: 'tl:2' })],
+        applications: [],
+        at: AT,
+      }),
+    )
+    expect(both.filter((l) => l === 'BEGIN:VALARM')).toHaveLength(1)
+  })
+
+  it('does not export an offer deadline twice when a timeline item already holds it', () => {
+    // Recording an offer mints "X — respond to offer" on the timeline, on the
+    // same day as `offer.respondBy`. Two events, two alarms, one decision.
+    const offer = application({ offer: { respondBy: '2026-09-26', note: '' } })
+    const minted = item({ id: 'tl:9', date: '2026-09-26', applicationIds: ['app:1'] })
+    const input = { items: [minted], applications: [offer] }
+    const ics = buildCalendar({ ...input, at: AT })
+    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1)
+    expect(calendarSize(input)).toBe(1)
+    // A deadline on another day, or for another job, does not count.
+    for (const other of [{ date: '2026-09-25' }, { applicationIds: ['app:2'] }, { kind: 'prep' as const }]) {
+      const near = { items: [{ ...minted, ...other }], applications: [offer] }
+      expect(buildCalendar({ ...near, at: AT }).match(/BEGIN:VEVENT/g)).toHaveLength(2)
+      expect(calendarSize(near)).toBe(2)
+    }
+  })
+
+  it('does not export the offer on a closed record', () => {
+    // A board move from Offer to Closed can keep the offer on the record; its
+    // reply-by date is no longer a deadline anybody has.
+    const input = {
+      items: [],
+      applications: [application({ stage: 'closed', offer: { respondBy: '2026-09-26', note: '' } })],
+    }
+    expect(buildCalendar({ ...input, at: AT })).not.toContain('BEGIN:VEVENT')
+    expect(calendarSize(input)).toBe(0)
+  })
+
+  it('strips control characters a strict importer rejects', () => {
+    const lines = unfold(
+      buildCalendar({ items: [item({ title: 'a\u0007b\u000bc\u001fd\u007fe\tf' })], applications: [], at: AT }),
+    )
+    const summary = lines.find((l) => l.startsWith('SUMMARY:')) ?? ''
+    expect(summary).toBe('SUMMARY:Deadline · abcde\tf')
+  })
+
   it('counts what a button would promise', () => {
     expect(
       calendarSize({

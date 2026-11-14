@@ -285,22 +285,40 @@ export function isReportable(value: unknown): value is Reportable {
   if (typeof value !== 'object' || value === null) return false
   const { event, params } = value as { event?: unknown; params?: unknown }
   if (typeof event !== 'string' || !(EVENTS as readonly string[]).includes(event)) return false
-  if (typeof params !== 'object' || params === null) return false
+  if (typeof params !== 'object' || params === null || Array.isArray(params)) return false
 
-  for (const v of Object.values(params as Record<string, unknown>)) {
-    // Numbers and booleans are always safe: they cannot carry a name.
-    if (typeof v === 'number') {
-      if (!Number.isFinite(v)) return false
-      continue
+  /*
+   * The KEYS are checked against the event's own, exactly, before any value.
+   * Checking values alone let any declared word out under any key — an
+   * `employer: 'link'` on any event — and any number under a key nobody had
+   * bucketed.
+   */
+  const rules: Readonly<Record<string, Rule>> = PARAM_RULES[event as AnalyticsEvent]
+  const keys = Object.keys(params)
+  const expected = Object.keys(rules)
+  if (keys.length !== expected.length || !expected.every((k) => keys.includes(k))) return false
+
+  for (const key of expected) {
+    const v = (params as Record<string, unknown>)[key]
+    const rule = rules[key]
+    if (rule === 'boolean') {
+      if (typeof v !== 'boolean') return false
+    } else if (rule === 'small-count') {
+      // A whole number in a small range: what a count of jojo's own things is.
+      // Anything else — a fraction, a timestamp — is a fingerprint.
+      if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > MAX_SMALL_COUNT) return false
+    } else if (
+      /*
+       * A string is allowed ONLY when it is a value this file declares for
+       * this key. That is what makes "no free text" a fact rather than a
+       * convention: an employer name is a string, and it is not in any list.
+       */
+      typeof v !== 'string' ||
+      rule === undefined ||
+      !rule.includes(v)
+    ) {
+      return false
     }
-    if (typeof v === 'boolean') continue
-    /*
-     * A string is allowed ONLY when it is a value this file declares. That is
-     * what makes "no free text" a fact rather than a convention: an employer
-     * name is a string, and it is not in any of these lists.
-     */
-    if (typeof v === 'string' && ALLOWED_STRINGS.has(v)) continue
-    return false
   }
   return true
 }
@@ -381,31 +399,56 @@ export function errorKind(thrown: unknown): (typeof ERROR_KINDS)[number] {
 /** Which call failed. This file's own vocabulary, so it is declared here. */
 export const FAILURE_PHASES = ['connect', 'chat', 'models'] as const
 
-/** Every string any event may carry, flattened. Built from the lists above. */
-const ALLOWED_STRINGS: ReadonlySet<string> = new Set<string>([
-  ...SCREENS,
-  ...COUNTS,
-  ...KINDS,
-  ...DECISIONS,
-  ...DIRECTIONS,
-  ...FAILURE_KINDS,
-  ...FAILURE_PHASES,
-  ...ERROR_SITES,
-  ...ERROR_KINDS,
-  ...OUTCOMES,
-  ...PROVIDERS_REPORTED,
-  // The small unions declared inline in `EventParams`.
-  'manual',
-  'link',
-  'scout',
-  'capture',
-  'submitted',
-  'screen',
-  'interview',
-  'offer',
-  'closed',
-  'twin',
-  'path',
-  'extension',
-  'direct',
-])
+/** How a parameter's value is checked at runtime. */
+type Rule = readonly string[] | 'boolean' | 'small-count'
+
+/** The largest count reported exactly. The tool catalogue is well under it. */
+const MAX_SMALL_COUNT = 1000
+
+/**
+ * The rule for one declared parameter type: its literals, a flag, or a count.
+ * `[T]` stops `boolean` distributing into `true | false`.
+ */
+type RuleFor<T> = [T] extends [boolean]
+  ? 'boolean'
+  : [T] extends [number]
+    ? 'small-count'
+    : [T] extends [string]
+      ? readonly T[]
+      : never
+
+/**
+ * `EventParams` at runtime, key by key. Last in the file because it reads
+ * every list above, and a `const` cannot be read before its line runs.
+ * Typed against it, so an event or a
+ * parameter added there and not here is a compile error, and a literal here
+ * that the type does not declare is one too.
+ */
+const PARAM_RULES: {
+  readonly [E in AnalyticsEvent]: { readonly [K in keyof EventParams[E]]-?: RuleFor<EventParams[E][K]> }
+} = {
+  app_opened: {},
+  screen_viewed: { screen: SCREENS },
+  application_created: { source: ['manual', 'link', 'scout', 'capture'] },
+  application_advanced: { to: ['submitted', 'screen', 'interview', 'offer', 'closed'] },
+  assistant_asked: { tools_available: 'small-count', has_model: 'boolean' },
+  assistant_tool_decided: { decision: DECISIONS, destructive: 'boolean' },
+  scout_pipeline_started: { kind: ['twin', 'scout'] },
+  scout_proposal_decided: { decision: DECISIONS },
+  vault_item_added: { kind: KINDS },
+  model_connected: { provider: PROVIDERS_REPORTED },
+  model_failed: {
+    provider: PROVIDERS_REPORTED,
+    kind: FAILURE_KINDS,
+    phase: FAILURE_PHASES,
+  },
+  error_caught: {
+    where: ERROR_SITES,
+    kind: ERROR_KINDS,
+    fatal: 'boolean',
+  },
+  reader_connected: { via: ['path', 'extension', 'direct'] },
+  backup_used: { direction: DIRECTIONS, records: COUNTS },
+  transfer_completed: { records: COUNTS },
+  tour_used: { outcome: OUTCOMES },
+}

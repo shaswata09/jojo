@@ -92,6 +92,12 @@ export function Graph() {
    * one table between them is worse than either.
    */
   const [asked, setAsked] = useState<{ result: QueryResult; question: string } | null>(null)
+  /**
+   * Bumped to tell the Ask box to drop its trace. The box keeps its run under a
+   * fixed key so an answer survives leaving the page, so remounting it would
+   * not clear anything; it has to be asked.
+   */
+  const [askReset, setAskReset] = useState(0)
   const result = asked?.result ?? built
 
   const onAsk = useCallback(
@@ -232,7 +238,14 @@ export function Graph() {
                   No records match this question ·{' '}
                   <button
                     type="button"
-                    onClick={() => setQuery(null)}
+                    onClick={() => {
+                      // Both ways of asking: a question asked in words outranks
+                      // the builder's, so clearing only `query` left an Ask
+                      // answer (and its "no records match") exactly where it was.
+                      setQuery(null)
+                      setAsked(null)
+                      setAskReset((n) => n + 1)
+                    }}
                     className="cursor-pointer underline underline-offset-2 transition-colors hover:text-text-1"
                   >
                     clear the query
@@ -288,6 +301,7 @@ export function Graph() {
         onAskClear={() => {
           setAsked(null)
         }}
+        askReset={askReset}
         selectedId={selectedId}
         onSelectNode={setSelectedId}
       />

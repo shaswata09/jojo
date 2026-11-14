@@ -48,6 +48,38 @@ describe('which records are worth asking about', () => {
     expect(duplicateCandidates(saved, { org: 'Rice' }, 'a3')).toEqual([])
   })
 
+  // R23. Characters, not words: Rice was inside PricewaterhouseCoopers.
+  it('matches whole words, not letters inside a longer name', () => {
+    for (const [a, b] of [
+      ['Rice', 'PricewaterhouseCoopers'],
+      ['Meta', 'Metabolon'],
+      ['Apple', 'Applied Materials'],
+      ['UT', 'Georgia Institute of Technology'],
+      ['UT', 'Southern Utah University'],
+      ['MIT', 'Smith College'],
+    ]) {
+      expect(sameEmployer(a, b), `${a} | ${b}`).toBe(false)
+    }
+    expect(sameEmployer('Rice', 'Rice University')).toBe(true)
+    expect(sameEmployer('Apple Inc.', 'Apple')).toBe(true)
+    // A name made only of words the overlap test ignores is still contained,
+    // whichever side it is on.
+    expect(sameEmployer('University College', 'University College London')).toBe(true)
+    expect(sameEmployer('University College London', 'University College')).toBe(true)
+  })
+
+  it('shows the closest roles when there are more than it can show', () => {
+    const many = [
+      ...Array.from({ length: 12 }, (_, i) => ({ id: `n${String(i)}`, org: 'Stripe', role: `Sales Manager ${String(i)}` })),
+      { id: 'real', org: 'Stripe', role: 'Machine Learning Engineer' },
+    ]
+    const ids = duplicateCandidates(many, { org: 'Stripe', role: 'Senior Machine Learning Engineer' }).map((r) => r.id)
+    expect(ids[0]).toBe('real')
+    expect(ids).toHaveLength(MAX_CANDIDATES)
+    // Ties keep the order they arrived in, newest first.
+    expect(ids.slice(1, 3)).toEqual(['n0', 'n1'])
+  })
+
   it('caps what the model is shown', () => {
     const many = Array.from({ length: 20 }, (_, i) => ({
       id: `s${String(i)}`,

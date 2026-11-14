@@ -94,7 +94,13 @@ export const keywordCreate = defineTool({
     return id
   },
 
-  describe: (input) => ({ title: `${input.name.trim()} added` }),
+  // A keyword found by name is handed back, not made: "Remote added" over a
+  // keyword that was already there told the person something that did not
+  // happen, and the verify gate counted it as a write.
+  describe: (input, output, _m, before) =>
+    before?.node(output, 'keyword')
+      ? { title: `${input.name.trim()} already there` }
+      : { title: `${input.name.trim()} added` },
 })
 
 export const keywordRename = defineTool({

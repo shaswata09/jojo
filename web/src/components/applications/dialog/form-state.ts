@@ -18,6 +18,13 @@ export type ApplicationInitial = Partial<Application> & {
    * discarded · Undo" hands the form back still knowing which page it came from.
    */
   postingFileId?: string
+  /**
+   * The deadline the calendar holds for this record now, apart from `deadline`
+   * (what the field is prefilled with). They differ after "Changes discarded ·
+   * Undo": the form comes back holding the typed date, and a save diffed
+   * against that prefill sent nothing, so the change was silently dropped.
+   */
+  storedDeadline?: string
 }
 
 export type FormState = {
@@ -124,6 +131,27 @@ export function keywordsOf(
 }
 
 /**
+ * What the edit dialog opens with: the stored record, then whatever the opener
+ * (or a draft handed back by "Changes discarded · Undo") brought.
+ *
+ * `storedDeadline` is read from the calendar on every open and always wins
+ * over a copy carried in the draft, so the save diffs the form against the
+ * date the calendar holds now — see `deadlineWrite`.
+ */
+export function editInitial(
+  record: Application,
+  opened: ApplicationInitial | undefined,
+  stored: string | undefined,
+): ApplicationInitial {
+  return {
+    ...record,
+    ...opened,
+    deadline: opened?.deadline ?? stored ?? '',
+    storedDeadline: stored ?? '',
+  }
+}
+
+/**
  * The deadline half of a save, as `application.update` reads it.
  *
  * Absent (`undefined`) when the field still holds what the dialog was opened
@@ -133,9 +161,12 @@ export function keywordsOf(
  */
 export function deadlineWrite(
   form: Pick<FormState, 'deadline'>,
-  initial: Pick<ApplicationInitial, 'deadline'> | undefined,
+  initial: Pick<ApplicationInitial, 'deadline' | 'storedDeadline'> | undefined,
 ): string | null | undefined {
-  if (form.deadline === (initial?.deadline ?? '')) return undefined
+  // Against what is stored when the opener said, not what the field was seeded
+  // with — a restored draft seeds it with the very change to be saved.
+  const stored = initial?.storedDeadline ?? initial?.deadline ?? ''
+  if (form.deadline === stored) return undefined
   return form.deadline === '' ? null : form.deadline
 }
 

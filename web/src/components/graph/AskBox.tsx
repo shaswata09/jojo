@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router'
 import { ArrowUp, Sparkles } from 'lucide-react'
@@ -52,10 +52,13 @@ const SUGGESTIONS = [
 export function AskBox({
   onAnswer,
   onClear,
+  resetKey,
 }: {
   /** Called with each `graph.query` answer as it lands, and the question asked. */
   onAnswer: (answer: GraphQueryResult, asked: string) => void
   onClear: () => void
+  /** A change means the page cleared the query: drop the trace with it. */
+  resetKey: number
 }) {
   const { settings } = useModelSettings()
   const connected = isConfigured(settings)
@@ -134,11 +137,29 @@ export function AskBox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answeredId])
 
+  /*
+   * The page's "clear the query" reaches the trace too. The run is keyed so it
+   * survives leaving the page, which is why a remount would not do this. The
+   * first value is skipped: arriving is not clearing.
+   */
+  const seenReset = useRef(resetKey)
+  useEffect(() => {
+    if (seenReset.current === resetKey) return
+    seenReset.current = resetKey
+    clear()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new key clears
+  }, [resetKey])
+
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
     const clean = prompt.trim()
     if (!clean || busy) return
     setPrompt('')
+    // Focus stays in the box. The Ask button is swapped for Stop the moment the
+    // run starts, so a click on it would otherwise leave focus on <body>.
+    inputRef.current?.focus()
     void send(clean)
   }
 
@@ -165,8 +186,13 @@ export function AskBox({
           <Input
             id="graph-ask"
             value={prompt}
+            ref={inputRef}
             autoComplete="off"
-            disabled={busy}
+            // readOnly, not disabled: a disabled field drops focus to <body> the
+            // moment the question is sent, and a keyboard user starts over from
+            // the top of the page. Typing is still refused while it runs.
+            readOnly={busy}
+            aria-disabled={busy || undefined}
             placeholder="Which applications have no follow-up scheduled?"
             onChange={(e) => setPrompt(e.target.value)}
           />

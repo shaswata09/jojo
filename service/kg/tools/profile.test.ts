@@ -261,3 +261,18 @@ describe('profile.background.import', () => {
     expect(claims(h)).toHaveLength(1)
   })
 })
+
+/*
+ * R11c. Removing a term that is not there said "removed" and changed nothing,
+ * and the verify gate counted it as landed.
+ */
+describe('profile.matchTerm.remove', () => {
+  it('refuses a term that is not there, and removes one that is, as typed', () => {
+    const h = harness()
+    okOr(h.runtime.run('profile.matchTerm.add', { term: 'graph inference' }))
+    const missing = h.runtime.run('profile.matchTerm.remove', { term: 'graph learning' })
+    expect(missing.ok).toBe(false)
+    okOr(h.runtime.run('profile.matchTerm.remove', { term: ' graph inference ' }))
+    expect((h.repo.getSnapshot().ofType('profile')[0]?.props as { matchTerms: string[] } | undefined)?.matchTerms).toEqual([])
+  })
+})

@@ -9,7 +9,7 @@
  */
 
 import 'fake-indexeddb/auto'
-import { deleteDB } from 'idb'
+import { deleteDB, openDB } from 'idb'
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   CONFORMANCE_CASES,
@@ -197,5 +197,93 @@ describe('idb-file-store — what only this adapter has to answer for', () => {
     const url = await store.url('Documents/CV.pdf')
     expect(url.ok).toBe(true)
     if (url.ok) expect(url.value.startsWith('blob:')).toBe(true)
+  })
+})
+
+describe('idb-file-store — what list and open cost', () => {
+  /*
+   * R33. `list` read every document in full to report its size and mtime, so
+   * forty 1 MB documents were 40 MB read on every page load. Counted here at
+   * the IndexedDB boundary: how many records come out of `blobs` during a list.
+   */
+  it('lists without reading a single document', async () => {
+    const store = await freshStore()
+    for (let i = 0; i < 5; i += 1) await store.write(`Documents/${String(i)}.pdf`, new Uint8Array(1000 + i))
+    const proto = IDBObjectStore.prototype
+    const realGet = proto.get
+    let blobReads = 0
+    proto.get = function (this: IDBObjectStore, key: IDBValidKey | IDBKeyRange) {
+      if (this.name === 'blobs') blobReads += 1
+      return realGet.call(this, key)
+    }
+    try {
+      const listed = await store.list('Documents')
+      expect(listed.ok).toBe(true)
+      if (listed.ok) {
+        expect(listed.value.map((e) => e.bytes).sort()).toEqual([1000, 1001, 1002, 1003, 1004])
+        expect(listed.value.every((e) => e.mtime > 1_000)).toBe(true)
+      }
+    } finally {
+      proto.get = realGet
+    }
+    expect(blobReads).toBe(0)
+  })
+
+  it('carries a version-1 database over, sizes and times intact', async () => {
+    const dbName = `jojo-files-v1-${++seq}`
+    await deleteDB(dbName)
+    // The shape version 1 wrote: one store, `{ data, mtime }` per key.
+    const old = await openDB(dbName, 1, {
+      upgrade(fresh) {
+        fresh.createObjectStore('blobs')
+      },
+    })
+    await old.put('blobs', { data: new Uint8Array(42), mtime: 7 }, 'Documents/old.pdf')
+    old.close()
+
+    const store = createIdbFileStore({ now: tickingClock(), dbName })
+    expect((await store.open()).ok).toBe(true)
+    const listed = await store.list('Documents')
+    expect(listed.ok && listed.value).toEqual([{ path: 'Documents/old.pdf', bytes: 42, mtime: 7 }])
+    const read = await store.read('Documents/old.pdf')
+    expect(read.ok && read.value.length).toBe(42)
+  })
+
+  it('opens one connection for concurrent first calls', async () => {
+    const dbName = `jojo-files-once-${++seq}`
+    await deleteDB(dbName)
+    const realOpen = indexedDB.open.bind(indexedDB)
+    let opens = 0
+    indexedDB.open = (name: string, version?: number) => {
+      if (name === dbName) opens += 1
+      return realOpen(name, version)
+    }
+    try {
+      const store = createIdbFileStore({ now: tickingClock(), dbName })
+      await Promise.all([store.exists('a'), store.exists('b'), store.list(''), store.stat('c')])
+    } finally {
+      indexedDB.open = realOpen
+    }
+    expect(opens).toBe(1)
+  })
+
+  it('lets go when another tab upgrades, and reopens on the next call', async () => {
+    const dbName = `jojo-files-blocking-${++seq}`
+    await deleteDB(dbName)
+    const store = createIdbFileStore({ now: tickingClock(), dbName })
+    await store.write('Documents/CV.pdf', enc.encode('kept'))
+    // A newer build in another tab. Without `blocking` handling this open
+    // would wait forever on the connection the store above is holding.
+    const newer = await openDB(dbName, 3)
+    newer.close()
+    // The store's next call reopens — and meets version 3, which it cannot
+    // open at version 2. A failure, not a hang.
+    const after = await Promise.race([
+      store.exists('Documents/CV.pdf'),
+      new Promise<'hung'>((resolve) => setTimeout(() => {
+        resolve('hung')
+      }, 2_000)),
+    ])
+    expect(after).not.toBe('hung')
   })
 })

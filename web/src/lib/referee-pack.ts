@@ -1,4 +1,5 @@
 import { STAGE_LABEL, type Application, type ISODate, type RefereeBrief } from '@jojo/service/core/model'
+import { sentOn } from '@jojo/service/core/sent-on'
 import { type ArchiveEntry, uniqueEntryNames } from '@/lib/document-archive'
 import { type Cell, safeLink, type Table } from '@/lib/spreadsheet'
 
@@ -34,12 +35,11 @@ export type PackItem = {
 }
 
 /**
- * The date the application went in: `appliedOn`, which the stage move to
- * Submitted records, or `submittedOn`, which older and imported records carry
- * instead. Blank rather than guessed when neither is set.
+ * The date the application went in, read the way every other screen reads it
+ * (`sentOn`), so a corrected date on the Stage dates panel reaches the list a
+ * referee is sent. Blank rather than guessed when neither is set.
  */
-export const appliedDate = (application: Application) =>
-  application.appliedOn ?? application.submittedOn ?? ''
+export const appliedDate = (application: Application) => sentOn(application) ?? ''
 
 /** One per line, with a bullet, so a cell of several reads as a list in Excel. */
 const lines = (items: readonly string[] | undefined) => (items ?? []).map((item) => `• ${item}`).join('\n')

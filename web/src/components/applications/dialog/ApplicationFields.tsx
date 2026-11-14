@@ -71,7 +71,7 @@ function RoleTagField({
           // visible while you pick from it.
           collisionPadding={12}
         >
-          <Command>
+          <Command label="Search role tags">
             <CommandInput placeholder="Search role tags…" />
             <CommandList>
               <CommandEmpty>No role tag matches.</CommandEmpty>

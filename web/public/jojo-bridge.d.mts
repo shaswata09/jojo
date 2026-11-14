@@ -11,6 +11,9 @@ export const DEFAULT_PORT: number
 export const POLL_MS: number
 export const ATTACH_WAIT_MS: number
 export const REPLY_WAIT_MS: number
+export const MAX_BODY_BYTES: number
+export const HELLO: Readonly<{ name: string; protocol: number }>
+export const DISPLACED: number
 
 export function tokenMatches(expected: string, header: string | undefined): boolean
 export function isLoopbackHost(host: string | undefined, port: number): boolean

@@ -29,7 +29,7 @@ import { useFillFromPosting } from '@/lib/fill-from-posting'
 import { isConfigured } from '@/lib/llm'
 import { useKeepPostingPage } from '@/lib/posting-agent'
 import type { KeptPage } from '@/lib/posting-agent'
-import { readingInFlight, useDropDiscardedPage } from '@/lib/scout-reading'
+import { takeReading, useDropDiscardedPage } from '@/lib/scout-reading'
 import { useUndoable } from '@/lib/undo'
 import { useArrivalHighlight, useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { report } from '@/lib/analytics'
@@ -368,8 +368,12 @@ export function JobScout() {
     try {
       // Read while it waited for an answer, or being read right now — see
       // `ScoutReader`. Either way the page is not opened a second time.
-      const pending = proposal ? readingInFlight(proposal.id) : undefined
-      const known = pending ? await pending : proposal ? scoutReading(proposal.reading) : null
+      // Taken from the reader when it has one, running or finished: under
+      // Approve all a read can finish before this card's turn, after the card
+      // stopped being able to store it.
+      const pending = proposal ? takeReading(proposal.id) : undefined
+      const known =
+        (pending ? await pending : null) ?? (proposal ? scoutReading(proposal.reading) : null)
       const out = await fillFromPosting({
         applicationId: application.id,
         url: postingUrl,
@@ -588,8 +592,12 @@ export function JobScout() {
         onNew={() => setEditing('new')}
         onEdit={setEditing}
         onDelete={onDeletePipeline}
-        onToggle={engine.setEnabled}
-        onSetAuto={engine.setAuto}
+        onToggle={(pipeline, enabled) => {
+          announceRefusal(engine.setEnabled(pipeline, enabled), toast)
+        }}
+        onSetAuto={(pipeline, auto) => {
+          announceRefusal(engine.setAuto(pipeline, auto), toast)
+        }}
         onRunNow={(id) => {
           engine.runNow(id)
           /*
@@ -616,7 +624,13 @@ export function JobScout() {
         }}
         onApproveAll={onApproveAll}
         onSweep={engine.sweep}
-        onClearAll={engine.clearAll}
+        onClearAll={() => {
+          // Every card the clear declines gives back the page its read kept,
+          // as a Discard does; the rest of the queue was answered already.
+          const pending = engine.proposals.filter((p) => p.status === 'pending').map((p) => p.id)
+          if (announceRefusal(engine.clearAll(), toast)) return
+          for (const id of pending) dropDiscardedPage(id)
+        }}
         jobFor={(p) => jobFromApproval(p, matches, postings)}
         onPromote={onPromoteJob}
       />

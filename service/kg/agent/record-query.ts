@@ -39,6 +39,7 @@
 import { addDays, daysBetween } from '../core/dates'
 import { TAGGABLE } from '../core/model'
 import type { ISODate, NodeType, Rel, StoredNode } from '../core/model'
+import { sentOn } from '../core/sent-on'
 import type { GraphSnapshot } from '../core/snapshot'
 
 /* ------------------------------- the fields ------------------------------- */
@@ -107,7 +108,8 @@ export function derivedFields(node: StoredNode, memory: GraphSnapshot, today: IS
     out.overdue = items.filter((i) => i.props.date < today).length
 
     const p = (node as StoredNode<'application'>).props
-    const sent = p.submittedOn ?? p.appliedOn
+    // The one precedence every reader shares (R25); see `core/sent-on.ts`.
+    const sent = sentOn(p)
     if (isDate(sent) && isDate(p.firstReplyOn)) out.daysToReply = daysBetween(dayPart(sent), dayPart(p.firstReplyOn))
   }
 

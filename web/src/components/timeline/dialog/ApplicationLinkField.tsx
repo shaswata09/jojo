@@ -78,7 +78,7 @@ export function ApplicationLinkField({
           {/* Matched to the trigger so the longest name is readable, and padding
               dropped because Command brings its own. */}
           <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
-            <Command>
+            <Command label="Search applications to link">
               <CommandInput placeholder="Search applications…" />
               <CommandList>
                 <CommandEmpty>

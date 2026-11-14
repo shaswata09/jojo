@@ -235,7 +235,7 @@ function DraftBody({
   const picker = (
     <div className="flex min-h-0 flex-col gap-2">
       <p className={cn(HINT, 'px-0.5')}>Start from one of your email snippets.</p>
-      <Command className="min-h-0 rounded-lg border border-hairline bg-well">
+      <Command label="Search snippets" className="min-h-0 rounded-lg border border-hairline bg-well">
         <CommandInput placeholder="Search snippets…" />
         <CommandList>
           <CommandEmpty>No snippet matches that.</CommandEmpty>

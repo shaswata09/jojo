@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import {
+  DISPLACED,
+  HELLO,
+  MAX_BODY_BYTES,
   createBridge,
   isLoopbackHost,
   isLoopbackOrigin,
@@ -287,13 +290,14 @@ describe('a request, handed to the tab and answered', () => {
   })
 
   it('lets the last tab to attach win', async () => {
-    // Two open tabs settle without either being told anything: the earlier
-    // poll gets an empty answer and the later one gets the work.
+    // The earlier poll is told it was displaced — 409, not the idle 204 that
+    // sent it straight back to displace the other (R31) — and the later one
+    // gets the work.
     const { port } = await start({ attachWaitMs: 1_000 })
     const first = poll(port)
     await new Promise((resolve) => setTimeout(resolve, 30))
     const second = poll(port)
-    expect((await first).status).toBe(204)
+    expect((await first).status).toBe(DISPLACED)
 
     const asked = ask(port, rpc(6, 'ping'))
     const { handed } = await second
@@ -351,5 +355,41 @@ describe('the tab side, from the development server', () => {
   it('needs the token on the tab side too', async () => {
     const { port } = await start()
     expect((await raw(port, 'GET', '/tab/next', {})).status).toBe(401)
+  })
+})
+
+describe('telling the tab what it is talking to', () => {
+  it('names itself without a token, and says nothing else', async () => {
+    const { port } = await start()
+    const r = await raw(port, 'GET', '/tab/hello', { origin: 'http://localhost:5173' })
+    expect(r.status).toBe(200)
+    expect(JSON.parse(r.text)).toEqual(HELLO)
+    expect(r.headers['access-control-allow-origin']).toBe('http://localhost:5173')
+  })
+
+  it('still answers only to names for this machine', async () => {
+    const { port } = await start()
+    expect((await raw(port, 'GET', '/tab/hello', { host: 'evil.example' })).status).toBe(421)
+  })
+})
+
+describe('an oversized body', () => {
+  /*
+   * R31(d). The socket was destroyed mid-upload, so the sender saw a reset and
+   * never the 413 that says why.
+   */
+  it('is refused with 413 the sender can read, not a reset', async () => {
+    const { port } = await start()
+    const big = '"' + 'x'.repeat(MAX_BODY_BYTES + 10) + '"'
+    const r = await raw(port, 'POST', '/mcp', { ...AUTH, 'content-type': 'application/json' }, big)
+    expect(r.status).toBe(413)
+    expect(r.headers['connection']).toBe('close')
+  })
+
+  it('on the tab side too', async () => {
+    const { port } = await start()
+    const big = '"' + 'x'.repeat(MAX_BODY_BYTES + 10) + '"'
+    const r = await raw(port, 'POST', '/tab/reply', { ...AUTH, 'content-type': 'application/json' }, big)
+    expect(r.status).toBe(413)
   })
 })

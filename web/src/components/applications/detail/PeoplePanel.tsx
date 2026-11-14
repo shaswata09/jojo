@@ -270,7 +270,7 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
               </button>
             ))}
           </div>
-          <Command>
+          <Command label="Search people">
             <CommandInput
               placeholder="Search people, or type a new name…"
               value={query}

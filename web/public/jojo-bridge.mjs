@@ -4,7 +4,11 @@
  * your browser. Claude Code is the client this was built for; anything that
  * speaks MCP over HTTP will do.
  *
- *   node jojo-bridge.mjs --token <the token jojo shows you>
+ *   JOJO_BRIDGE_TOKEN=<the token jojo shows you> node jojo-bridge.mjs
+ *
+ * The token comes through the environment rather than the command line: a
+ * program's arguments are readable by every user on the machine (`ps`), its
+ * environment only by the same user. `--token` still works, for tests.
  *
  * ## Why a bridge exists at all
  *
@@ -51,7 +55,10 @@
  * ## The protocol, briefly
  *
  *   POST /mcp          the client's side. One JSON-RPC message in, one out.
+ *   GET  /tab/hello    no token: says "this is jojo-bridge", so the tab can check
+ *                      what is on the port before it sends its token there.
  *   GET  /tab/next     the tab's side. Held open until there is work (or 25 s).
+ *                      409 when a newer poll took its place (another tab).
  *   POST /tab/reply    the tab's answer to the message it was handed.
  *
  * The tab owns MCP itself — see `handleMcp` in `@jojo/service/agent/mcp`. This
@@ -79,7 +86,26 @@ export const ATTACH_WAIT_MS = 30_000
 export const REPLY_WAIT_MS = 120_000
 
 /** Bigger than any honest MCP request, far smaller than anything that could hurt. */
-const MAX_BODY_BYTES = 1_000_000
+export const MAX_BODY_BYTES = 1_000_000
+
+/**
+ * What `GET /tab/hello` answers, and all it answers. Transcribed in the tab as
+ * `BRIDGE_HELLO` (web/src/lib/mcp-link.ts); the joined test fails if they drift.
+ *
+ * Not a secret and not proof against a hostile program, which could copy it.
+ * It is there so a tab whose port 3002 is held by some other local server — a
+ * dev server, a database console — does not hand that server its token.
+ */
+export const HELLO = Object.freeze({ name: 'jojo-bridge', protocol: 2 })
+
+/**
+ * The status a held poll gets when a newer poll takes its place.
+ *
+ * Not 204, which means "nothing yet, ask again": two tabs answered that way
+ * re-polled at once, displaced each other, and traded about eight requests a
+ * second for as long as both were open. A distinct status lets the tab back off.
+ */
+export const DISPLACED = 409
 
 /**
  * A bearer header against the expected token, in constant time.
@@ -217,13 +243,20 @@ export function createBridge({
       req.on('data', (chunk) => {
         size += chunk.length
         if (size > MAX_BODY_BYTES) {
+          /*
+           * Stop keeping it, but do not cut the socket here: a reset races the
+           * 413 and the sender sees "connection reset" instead of the reason.
+           * The caller answers with `connection: close` and `refuse` destroys
+           * the socket once that answer is on the wire.
+           */
+          chunks.length = 0
           resolve({ ok: false, status: 413 })
-          req.destroy()
           return
         }
         chunks.push(chunk)
       })
       req.on('end', () => {
+        if (size > MAX_BODY_BYTES) return
         try {
           resolve({ ok: true, value: JSON.parse(Buffer.concat(chunks).toString('utf8')) })
         } catch {
@@ -232,6 +265,22 @@ export function createBridge({
       })
       req.on('error', () => resolve({ ok: false, status: 400 }))
     })
+
+  /**
+   * A refused body: the status, then the socket closed behind it.
+   *
+   * The rest of an oversized body may still be arriving. Waiting for it would
+   * let a sender hold the connection as long as it liked, so the answer says
+   * `connection: close` and the socket goes once the answer has been written.
+   */
+  const refuse = (req, res, status, body, headers = {}) => {
+    if (status !== 413) return send(res, status, body, headers)
+    res.on('finish', () => {
+      // A beat for the answer to leave the socket buffer, then cut what is left.
+      setTimeout(() => req.socket?.destroy(), 50).unref?.()
+    })
+    send(res, status, body, { ...headers, connection: 'close' })
+  }
 
   /* ----------------------------- the client side ---------------------------- */
 
@@ -247,7 +296,10 @@ export function createBridge({
     if (req.method !== 'POST') return send(res, 405, undefined, { allow: 'POST' })
 
     const body = await readJson(req)
-    if (!body.ok) return send(res, body.status, rpcError(null, 'That was not a JSON-RPC message.'))
+    if (!body.ok) {
+      const why = body.status === 413 ? 'That message is too large.' : 'That was not a JSON-RPC message.'
+      return refuse(req, res, body.status, rpcError(null, why))
+    }
     const message = body.value
     if (typeof message !== 'object' || message === null || Array.isArray(message)) {
       return send(res, 400, rpcError(null, 'One JSON-RPC message per request.'))
@@ -306,12 +358,13 @@ export function createBridge({
     lastPoll = Date.now()
     noteAttach()
 
-    // The last tab to attach wins. An earlier one still holding a poll gets an
-    // empty answer and polls again, which is how two open tabs settle without
-    // either being told anything.
+    // The last tab to attach wins: it may be the only one still there, since a
+    // poll carried by the extension outlives its tab. The one it displaced is
+    // told so (DISPLACED, not 204) and backs off rather than displacing back at
+    // once — see DISPLACED.
     if (parked !== null) {
       clearTimeout(parked.timer)
-      send(parked.res, 204, undefined, parked.cors)
+      send(parked.res, DISPLACED, undefined, parked.cors)
     }
 
     const timer = setTimeout(() => {
@@ -332,7 +385,7 @@ export function createBridge({
     const cors = corsFor(req)
     if (!tokenMatches(token, req.headers.authorization)) return send(res, 401, undefined, cors)
     const body = await readJson(req)
-    if (!body.ok) return send(res, body.status, undefined, cors)
+    if (!body.ok) return refuse(req, res, body.status, undefined, cors)
     const item = inflight.get(body.value?.seq)
     // A reply for something no longer waiting — timed out, or from a tab that
     // lost the race to attach. Accepted and dropped; the client already has its
@@ -358,8 +411,10 @@ export function createBridge({
 
     const path = (req.url ?? '').split('?')[0]
     if (path === '/mcp') return void onMcp(req, res)
-    if (path === '/tab/next' || path === '/tab/reply') {
+    if (path === '/tab/next' || path === '/tab/reply' || path === '/tab/hello') {
       if (req.method === 'OPTIONS') return onTabPreflight(req, res)
+      // No token, and nothing but the fixed signature: see HELLO.
+      if (path === '/tab/hello' && req.method === 'GET') return send(res, 200, HELLO, corsFor(req))
       if (path === '/tab/next' && req.method === 'GET') return onTabNext(req, res)
       if (path === '/tab/reply' && req.method === 'POST') return void onTabReply(req, res)
       return send(res, 405, undefined)
@@ -399,6 +454,9 @@ function argument(args, name) {
 function main() {
   const args = process.argv.slice(2)
   const token = argument(args, 'token') ?? process.env.JOJO_BRIDGE_TOKEN
+  // Not handed on to anything this starts. (It never starts anything; this is
+  // so that stays true if it ever does.)
+  delete process.env.JOJO_BRIDGE_TOKEN
   const port = Number(argument(args, 'port') ?? DEFAULT_PORT)
 
   if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{32,}$/.test(token)) {
@@ -410,13 +468,20 @@ function main() {
     console.error(`"${String(port)}" is not a port number.`)
     process.exit(1)
   }
+  if (port !== DEFAULT_PORT) {
+    // Kept for testing. jojo, its extension and Settings all dial 3002.
+    console.error(`Note: jojo only connects on port ${String(DEFAULT_PORT)}; on ${String(port)} it will not find this.`)
+  }
 
   const bridge = createBridge({ token, port, log: (line) => console.log(line) })
   const server = createServer(bridge.handle)
   server.on('error', (error) => {
     if (error.code === 'EADDRINUSE') {
       console.error(`Port ${String(port)} is already in use — is jojo-bridge already running?`)
-      console.error('Stop the other copy, or start this one with --port <another port>.')
+      // Not "--port": jojo only dials 3002, so another port would never connect.
+      console.error(
+        `If it is, use that one. If something else holds port ${String(port)}, stop it first: jojo only connects to jojo-bridge on ${String(DEFAULT_PORT)}.`,
+      )
     } else {
       console.error(error.message)
     }

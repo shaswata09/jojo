@@ -53,6 +53,13 @@ export const fitReadingSet = defineTool({
    */
   internal: true,
   system: true,
+  /*
+   * And off the catalog. `system` is right for the panel and wrong for a
+   * model: a model's write with this flag skipped the undo ring, so ⌘Z after
+   * it undid the person's previous action instead (R8). The panel calls this
+   * through `runtime.run`; nothing a model is asked to do needs it.
+   */
+  catalogued: false,
   input: s.object({
     fileId,
     requirements: s.array(

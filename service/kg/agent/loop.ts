@@ -1905,7 +1905,7 @@ async function performCall(
     effect: entry?.effect ?? 'unknown',
     // Per call, on the repaired arguments the gate is about to be shown: a
     // pipeline rename passes, pointing it at new boards asks. See `Tool.confirms`.
-    destructive: entry === undefined ? false : needsConfirming(entry, args),
+    destructive: entry === undefined ? false : needsConfirming(entry, args, host.memory()),
     args,
     status: 'running',
   }
@@ -1936,6 +1936,21 @@ async function performCall(
     }
     onEvent({ type: 'step', step: settled })
     return settled
+  }
+
+  /*
+   * A lone value aimed at a list that replaces the set. Refused here, not
+   * passed on: the tool would either ignore the stray singular key and report
+   * success, or replace every tag with the one sent (R11a). The sentence says
+   * what the field does and what to send instead.
+   */
+  if (repaired?.ok === false && repaired.replacesList !== undefined) {
+    const fields = repaired.replacesList.join(', ')
+    return settle({
+      ...base,
+      status: 'failed',
+      detail: `Error: ${fields} replaces the whole list on this tool, so sending one item would remove every other one. Nothing was changed. Read the record for its current list, then send the full list: every item to keep plus the new one, under the field name ${fields}.`,
+    })
   }
 
   /*
@@ -1972,8 +1987,8 @@ async function performCall(
   /*
    * Three settings, and the middle one is where the interesting failure lives.
    *
-   *   writes       — every non-read step (86 of 96 tools)
-   *   destructive  — `delete` and `admin`, plus the tools that ask (19 of 96),
+   *   writes       — every non-read step (85 of 95 tools)
+   *   destructive  — `delete` and `admin`, plus the tools that ask (19 of 95),
    *                  plus a call whose arguments ask (`Tool.confirms`)
    *   none         — nothing, and the person chose that explicitly
    *

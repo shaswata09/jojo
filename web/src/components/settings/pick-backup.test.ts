@@ -69,6 +69,27 @@ describe('reading a chosen backup', () => {
     expect(picked.description).toContain('Nothing has been changed')
   })
 
+  it('says plainly that a non-JSON file is not a backup, and keeps the parser for the log', async () => {
+    // A zip, a PDF, a half-written file: JSON.parse's message reached the
+    // toast verbatim ("Unexpected token 'P', \"PK…\" is not valid JSON").
+    for (const picked of [
+      await readPickedBackup(chosen(() => Promise.resolve('PK\u0003\u0004 not json'))),
+      await readPickedBackup([new File(['{"truncated": '], 'backup.json')] as unknown as FileList),
+    ]) {
+      expect(picked.kind).toBe('refused')
+      if (picked.kind !== 'refused') return
+      expect(picked.description).toBe("That file isn't a jojo backup. Nothing has been changed.")
+      expect(picked.description).not.toMatch(/JSON|token|position/i)
+      expect(picked.parseError).toBeInstanceOf(Error)
+      expect(picked.parseError?.message).not.toBe('')
+    }
+  })
+
+  it('logs nothing for a JSON file the validator refused', async () => {
+    const picked = await readPickedBackup(chosen(() => Promise.resolve('{"hello":1}')))
+    expect(picked.kind === 'refused' && picked.parseError).toBeFalsy()
+  })
+
   it('resolves rather than rejecting when the bytes will not read', async () => {
     // The reproduction. Chrome throws exactly this after a file is moved,
     // renamed or unplugged between the picker and the read.

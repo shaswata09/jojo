@@ -80,7 +80,7 @@ export function NewMenu({ className }: { className?: string }) {
             Drop the input and Radix focuses the popover instead — a parent of
             the Command root, so nothing bubbles into it and the list becomes
             unreachable from the keyboard while still looking navigable. */}
-        <Command>
+        <Command label="Find something to add">
           <CommandInput placeholder="Find something to add…" className="h-9" />
           <CommandList>
             <CommandEmpty>Nothing to add matches that.</CommandEmpty>

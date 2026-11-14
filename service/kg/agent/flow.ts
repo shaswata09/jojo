@@ -184,6 +184,16 @@ export async function runFlow<S>(
     let outcome: StepOutcome<S> | null = null
 
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      // The budget counts attempts, so it is checked per attempt: checked only
+      // per node, a node with `attempts: 1000` ran a thousand times past it.
+      if (runs >= FLOW_BUDGET) {
+        return {
+          ok: false,
+          state,
+          trace,
+          reason: `“${flow.name}” ran ${String(runs)} steps without finishing, so it was stopped.`,
+        }
+      }
       runs += 1
       if (options.signal?.aborted) return { ok: false, state, trace, reason: 'Stopped.' }
 

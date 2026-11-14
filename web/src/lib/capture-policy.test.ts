@@ -182,7 +182,9 @@ describe('relaying to a model on the person’s own network', () => {
       [
         "const ROUTING = 'jojo.routing'",
         "const READER_DEFAULT = 'http://127.0.0.1:3001/mcp'",
-        ...['defaultRouting', 'routing', 'hostOf', 'isLoopback', 'isPrivateNetwork', 'privateHost', 'isKnownModelHost', 'modelRefusal'].map(fn),
+        /^const JOJO_BRIDGE_ADDRESS = .*$/m.exec(backgroundSource)![0],
+        /^const LOCAL_MODEL_PORTS = .*$/m.exec(backgroundSource)![0],
+        ...['defaultRouting', 'routing', 'hostOf', 'isLoopback', 'portOf', 'isPrivateNetwork', 'privateHost', 'isKnownModelHost', 'modelRefusal'].map(fn),
         'return modelRefusal',
       ].join('\n'),
     )(MODEL_HOSTS, { storage: { local: { get: async () => ({ 'jojo.routing': saved }) } } }) as (
@@ -205,6 +207,37 @@ describe('relaying to a model on the person’s own network', () => {
     await expect(refusal('http://127.0.0.1:11434/v1/chat/completions')).resolves.toBeNull()
     await expect(refusal(`https://${MODEL_HOSTS[0]!}/v1/chat/completions`)).resolves.toBeNull()
     await expect(refusal('http://evil.example/v1')).resolves.toContain('not a model provider')
+  })
+
+  /*
+   * Round 2: the relay took ANY loopback port and path, so a page could send a
+   * "model" request at jojo's reader (3001), its bridge (3002) or any local dev
+   * server and read the answer — undoing the pinning those two verbs have.
+   */
+  it('keeps the usual local model ports working out of the box', async () => {
+    const refusal = refusalWith(undefined)
+    for (const at of ['http://localhost:11434/api/chat', 'http://127.0.0.1:1234/v1/models', 'http://localhost:8000/v1/chat/completions', 'http://127.0.0.1:8080/v1/chat/completions']) {
+      await expect(refusal(at), at).resolves.toBeNull()
+    }
+  })
+
+  it('never relays a model request to jojo’s own reader or bridge, switch or no switch', async () => {
+    for (const saved of [undefined, { network: true }]) {
+      const refusal = refusalWith(saved)
+      for (const at of ['http://127.0.0.1:3001/mcp', 'http://localhost:3002/link', 'http://[::1]:3001/mcp']) {
+        await expect(refusal(at), at).resolves.toMatch(/reader or bridge/)
+      }
+    }
+    // A reader the person moved to another port is refused there too.
+    await expect(
+      refusalWith({ reader: { endpoint: 'http://127.0.0.1:3555/mcp' } })('http://127.0.0.1:3555/mcp'),
+    ).resolves.toMatch(/reader or bridge/)
+  })
+
+  it('puts any other loopback port behind the network switch', async () => {
+    await expect(refusalWith(undefined)('http://127.0.0.1:5432/')).resolves.toContain('Models on my network')
+    await expect(refusalWith(undefined)('http://localhost/admin')).resolves.toContain('Models on my network')
+    await expect(refusalWith({ network: true })('http://127.0.0.1:8103/v1/chat/completions')).resolves.toBeNull()
   })
 
   it('cannot be switched on by a page, only by the popup', () => {

@@ -198,6 +198,33 @@ function sameLoopbackServer(a, b) {
 const JOJO_BRIDGE_ADDRESS = 'http://127.0.0.1:3002'
 
 /**
+ * The loopback ports a local model server listens on out of the box: Ollama
+ * 11434, LM Studio 1234, vLLM and llama-cpp-python 8000, llama.cpp's server,
+ * LocalAI and TGI 8080, Jan 1337, GPT4All 4891, text-generation-webui 5000 and
+ * KoboldCpp 5001.
+ *
+ * The model relay used to take ANY loopback port and path, which undid the
+ * pinning above: a page could send `jojo:call-model` at the reader on 3001, the
+ * bridge on 3002, or a dev server or database console, and get its answer
+ * back. The page cannot say which ports are the person's real providers in a
+ * way this worker could trust — a script on jojo's origin can send the same
+ * message — so the list is fixed here. Any other loopback port is behind the
+ * "Models on my network" switch, which only the popup can turn on, and the
+ * reader's and bridge's ports are refused whatever the switch says.
+ */
+const LOCAL_MODEL_PORTS = ['11434', '1234', '8000', '8080', '1337', '4891', '5000', '5001']
+
+/** An http address's port, with the scheme default filled in; '' if unparseable. */
+function portOf(raw) {
+  try {
+    const url = new URL(raw)
+    return url.port === '' ? (url.protocol === 'https:' ? '443' : '80') : url.port
+  } catch {
+    return ''
+  }
+}
+
+/**
  * A machine on the person's OWN network, reached over plain http.
  *
  * ## Why this exists
@@ -256,7 +283,9 @@ function isPrivateNetwork(raw) {
  * `http://0xa.1/` has already become `10.0.0.1` by the time it arrives.
  */
 function privateHost(hostname) {
-  const host = String(hostname).replace(/^\[|\]$/g, '').toLowerCase()
+  // A trailing dot is the same name (`nas.local.` is `nas.local`), and `URL`
+  // keeps it, so every suffix test below missed it.
+  const host = String(hostname).replace(/^\[|\]$/g, '').toLowerCase().replace(/\.+$/, '')
 
   if (host.endsWith('.local')) return true
 
@@ -281,6 +310,9 @@ function privateHost(hostname) {
   if (a === 172 && b !== undefined && b >= 16 && b <= 31) return true
   if (a === 192 && b === 168) return true
   if (a === 169 && b === 254) return true
+  // RFC 6598 carrier-grade NAT, 100.64/10 — also where Tailscale puts every
+  // machine on a tailnet, which is the person's own network by another name.
+  if (a === 100 && b !== undefined && b >= 64 && b <= 127) return true
   return false
 }
 
@@ -294,9 +326,12 @@ function privateHost(hostname) {
  * before the tab opens and again after any redirect. A posting is on the public
  * web; nobody's job advert lives at 192.168.1.1.
  *
- * Hostname-only. A public name that RESOLVES to a private address passes, and a
- * worker cannot see DNS answers to close that; `privateHost` closes every
- * literal spelling.
+ * Hostname-only. A public name that RESOLVES to a private address passes —
+ * DNS rebinding, a name that answers public for the check and private for the
+ * fetch, included. A worker cannot see DNS answers, so that is out of reach
+ * here; `privateHost` closes every LITERAL spelling. `URL` already folds the
+ * numeric ones (`0x7f.1`, `2130706433`, `0177.0.0.1`, `127.0.0.1.`) into dotted
+ * decimal, so they need no case of their own.
  */
 function isLocalTarget(raw) {
   let url
@@ -305,8 +340,15 @@ function isLocalTarget(raw) {
   } catch {
     return true
   }
-  const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase()
+  // Trailing dots stripped: `URL` keeps `localhost.`, which is localhost to
+  // every resolver and slipped past the equality test below.
+  const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase().replace(/\.+$/, '')
   if (host === '' || host === 'localhost' || host.endsWith('.localhost')) return true
+  // A single-label name — `http://router/`, `http://intranet/` — is resolved
+  // through the local search domain, so it is a machine on the person's own
+  // network by construction. No public posting lives at one. (IPv6 has colons
+  // and no dots, and is judged below.)
+  if (!host.includes('.') && !host.includes(':')) return true
   if (host === '::1' || host === '::' || host === '0.0.0.0' || /^127\./.test(host) || /^0\./.test(host)) return true
   if (/^::ffff:7f[0-9a-f]{2}:/.test(host)) return true
   if (host.endsWith('.internal') || host.endsWith('.lan') || host.endsWith('.home.arpa')) return true
@@ -603,6 +645,14 @@ async function scanBoard(url) {
       func: harvest,
       args: [HARVEST_LIMIT],
     })
+    // And once more AFTER reading: a board that navigated during the harvest
+    // handed back links from wherever it went, and those are not this board's.
+    const finished = await chrome.tabs.get(tabId)
+    const end = typeof finished.url === 'string' && finished.url.length > 0 ? finished.url : now
+    if (end !== now) {
+      const moved = boardRefusal(url, end)
+      if (moved !== null) return { ok: false, reason: moved }
+    }
     // Where it landed, so relative rows and next-page links resolve against the
     // page they were read on rather than the address that redirected there.
     return { ok: true, rows: Array.isArray(run?.result) ? run.result : [], landed: now }
@@ -754,6 +804,15 @@ async function capturePage(url) {
     tabId = null
 
     if (!page) return { ok: false, reason: 'Nothing came back from that page.' }
+    // Asked a third time, of where the page REPORTS it was when it was read.
+    // The tab check above ran before the settle; a page script that navigated
+    // in the gap would otherwise be read and kept from wherever it went.
+    if (typeof page.url !== 'string' || isLocalTarget(page.url)) {
+      return {
+        ok: false,
+        reason: 'That page moved to an address on this machine or your own network, so it was not kept.',
+      }
+    }
 
     let { html, dropped } = await inline(page, nonce, started + CAPTURE_PAGE_INLINE_BY_MS)
 
@@ -1154,16 +1213,45 @@ async function inline(page, nonce, deadline = Date.now() + 120000) {
     })
   }
 
+  /*
+   * Whether this page may pull assets off this machine or the person's network.
+   *
+   * A posting on the public web may NOT: this fetch runs with the extension's
+   * host permissions, so `<link href=http://127.0.0.1:3001/…>` — or a public
+   * address that 302s there — had the local service's answer spliced into the
+   * capture and handed to whatever reads it. Measured with a router-style
+   * `/secret` on loopback: its body came back inside the stored page.
+   *
+   * A page that is itself local — the person capturing their own intranet
+   * posting from the tab they are looking at — keeps its local assets: it
+   * names nothing the person was not already shown.
+   */
+  // Only a real http(s) address counts: `isLocalTarget` says yes to anything it
+  // cannot parse, and a page with no usable `url` must not unlock this.
+  const localPage = typeof page.url === 'string' && /^https?:\/\//i.test(page.url) && isLocalTarget(page.url)
+
   /** One address, fetched within what is left of the deadline. */
   const fetchOne = async (href, kind) => {
     const left = Math.min(ASSET_TIMEOUT_MS, deadline - Date.now())
     if (left <= 0) throw new Error('out of time')
+    if (!localPage && isLocalTarget(href)) throw new Error('a local address')
     // Timed out rather than hung — by the signal for a real fetch, and by the
     // race for everything after it, since a body can stall as well.
+    //
+    // Redirects are followed, and the place they END is judged below. A worker
+    // cannot judge each hop: `redirect: 'manual'` hands back an opaque response
+    // with no Location to read, so there is no next hop to check. What the
+    // final check guarantees is that a body from this machine or the LAN is
+    // never READ into a capture; an intermediate hop there is a blind GET whose
+    // answer is discarded. A public name that resolves to a private address
+    // (DNS rebinding) is out of reach for the reason `isLocalTarget` gives.
     const response = await within(
       fetch(href, { credentials: 'omit', redirect: 'follow', signal: AbortSignal.timeout(left) }),
       left,
     )
+    if (!localPage && typeof response.url === 'string' && response.url !== '' && isLocalTarget(response.url)) {
+      throw new Error('redirected to a local address')
+    }
     if (!response.ok) throw new Error(`HTTP ${String(response.status)}`)
     if (kind === 'css') {
       const text = await within(response.text(), deadline - Date.now())
@@ -1408,10 +1496,27 @@ async function modelRefusal(url) {
   const routes = await routing()
   const host = hostOf(url)
   // A provider the person switched off is refused BY NAME, so the message says
-  // which one and where to change it. Loopback is not a provider and is not
-  // gated here — a local model never left the machine.
+  // which one and where to change it. Loopback is not a provider and has no
+  // switch of its own — it is pinned by port just below.
   if (host && !isLoopback(url) && routes.models[host] === false) {
     return `Routing to ${host} is switched off in the jojo extension.`
+  }
+  // Loopback is pinned too — see LOCAL_MODEL_PORTS. jojo's own reader and
+  // bridge are never a model, so they are refused even with the switch on.
+  if (isLoopback(url)) {
+    const port = portOf(url)
+    const reader = isLoopback(routes.reader.endpoint) ? portOf(routes.reader.endpoint) : ''
+    if (port === portOf(READER_DEFAULT) || port === portOf(JOJO_BRIDGE_ADDRESS) || port === reader) {
+      return `Port ${port} on this machine is jojo's own document reader or bridge, not a model, so the extension will not send a model request there.`
+    }
+    if (!LOCAL_MODEL_PORTS.includes(port) && !routes.network) {
+      return (
+        `Port ${port} on this machine is not one a local model server uses by default ` +
+        `(${LOCAL_MODEL_PORTS.join(', ')}), so relaying to it is switched off in the jojo extension. ` +
+        'Open the extension and turn on "Models on my network" to allow other ports.'
+      )
+    }
+    return null
   }
   // A model on the person's own network, which has its own switch and is OFF
   // until they turn it on — see ROUTING. Named so the fix is one press away.

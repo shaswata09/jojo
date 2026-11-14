@@ -93,13 +93,41 @@ const initials = (text: string): string =>
     .map((w) => w[0] ?? '')
     .join('')
 
+const tokens = (folded: string): string[] => folded.split(/[^a-z0-9]+/).filter((w) => w.length > 0)
+
+/** Whether `inner` appears as a contiguous run of whole words inside `outer`. */
+function containsRun(outer: readonly string[], inner: readonly string[]): boolean {
+  if (inner.length === 0 || inner.length > outer.length) return false
+  for (let i = 0; i + inner.length <= outer.length; i += 1) {
+    if (inner.every((w, j) => outer[i + j] === w)) return true
+  }
+  return false
+}
+
+/** Share of the smaller role's words the two have in common; 0 when either has none. */
+function roleOverlap(a: string | undefined, b: string | undefined): number {
+  const wa = words(a ?? '')
+  const wb = words(b ?? '')
+  if (wa.size === 0 || wb.size === 0) return 0
+  let shared = 0
+  for (const w of wa) if (wb.has(w)) shared += 1
+  return shared / Math.min(wa.size, wb.size)
+}
+
 /** Whether two employer names are plausibly one employer. */
 export function sameEmployer(a: string | undefined, b: string | undefined): boolean {
   if (!a || !b) return false
   const fa = fold(a)
   const fb = fold(b)
   if (fa === fb) return true
-  if (fa.includes(fb) || fb.includes(fa)) return true
+  /*
+   * Whole words, in order, not characters: `includes` put Rice inside
+   * PricewaterhouseCoopers, Meta inside Metabolon and UT inside every
+   * "Institute", and those crowded the real UT out of the eight shown (R23).
+   */
+  const ta = tokens(fa)
+  const tb = tokens(fb)
+  if (containsRun(ta, tb) || containsRun(tb, ta)) return true
   /*
    * The acronym. "UTK" against "University of Tennessee, Knoxville" shares no
    * word and is what a person types — measured: three models all missed the
@@ -130,9 +158,17 @@ export function duplicateCandidates<T extends DuplicateSubject & { id: string }>
   candidate: DuplicateSubject,
   skipId?: string,
 ): T[] {
+  /*
+   * Closest role first, THEN capped. Capped first, the eight shown were the
+   * eight newest at that employer — and at a big one the real duplicate was
+   * often the ninth. `sort` is stable, so equals stay newest first.
+   */
   return existing
     .filter((r) => r.id !== skipId && sameEmployer(r.org, candidate.org))
+    .map((r) => ({ r, score: roleOverlap(r.role, candidate.role) }))
+    .sort((x, y) => y.score - x.score)
     .slice(0, MAX_CANDIDATES)
+    .map((x) => x.r)
 }
 
 const line = (s: DuplicateSubject): string =>

@@ -28,6 +28,7 @@ import { TODAY } from '@/lib/today'
 import { useUndoable } from '@/lib/undo'
 import { revokeLater } from '@/lib/save-file'
 import { announceRefusal } from '@/components/common/write-result'
+import { noPreviewText, previewKind, TEXT_PREVIEW_BYTES } from '@/components/vault/file-preview'
 
 /**
  * Shows a file in the browser's own document viewer.
@@ -36,8 +37,9 @@ import { announceRefusal } from '@/components/common/write-result'
  * ships — scrolling, zoom, page count, find, print, all of it — which is the
  * behaviour asked for and none of which is worth reimplementing.
  *
- * Only PDFs get a preview. A browser cannot render .doc or .slides, and dressing
- * one up in a viewer frame would promise something it cannot do.
+ * PDFs, captured pages, text and pictures get a preview — see `previewKind`. A
+ * browser cannot render .doc or .slides, and dressing one up in a viewer frame
+ * would promise something it cannot do.
  *
  * A `blob` means the caller holds the real file — anything added this session —
  * and the frame shows the document itself. The seeded rows have no bytes behind
@@ -127,7 +129,65 @@ export function FileViewer({
 
   // Only a PDF is worth pointing the frame at: a real .docx would hand the user
   // a download prompt where they asked for a preview.
-  const real = file.kind === 'pdf' ? blob : undefined
+  const kind = previewKind(file, blob)
+  const real = kind === 'pdf' ? blob : undefined
+
+  /*
+   * Text and pictures preview too — see `previewKind`. Text is read and handed
+   * to React as a STRING, so it is escaped like any other text node and a .md
+   * holding markup shows the markup. A picture gets its own object URL, kept
+   * apart from `url` below, which is the PDF frame's.
+   */
+  const textBlob = kind === 'text' ? blob : undefined
+  const imageBlob = kind === 'image' ? blob : undefined
+  const [text, setText] = useState<{ body: string; cut: boolean } | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!textBlob) {
+      setText(null)
+      return
+    }
+    setPreviewError(null)
+    let alive = true
+    textBlob
+      .slice(0, TEXT_PREVIEW_BYTES)
+      .text()
+      .then(
+        (body) => {
+          if (alive) setText({ body, cut: textBlob.size > TEXT_PREVIEW_BYTES })
+        },
+        (error: unknown) => {
+          if (!alive) return
+          setText(null)
+          setPreviewError(error instanceof Error ? error.message : String(error))
+        },
+      )
+    return () => {
+      alive = false
+    }
+  }, [textBlob])
+
+  useEffect(() => {
+    if (!imageBlob) {
+      setImageUrl(null)
+      return
+    }
+    setPreviewError(null)
+    let next: string
+    try {
+      next = URL.createObjectURL(imageBlob)
+    } catch (error) {
+      // Inside a try for the reason the PDF effect below gives.
+      setImageUrl(null)
+      setPreviewError(error instanceof Error ? error.message : String(error))
+      return
+    }
+    setImageUrl(next)
+    // Later rather than now: the expanded view remounts the <img> on the same
+    // URL, and a revoke that lands first leaves it blank.
+    return () => revokeLater(next)
+  }, [imageBlob])
 
   /**
    * A captured posting takes the other path entirely.
@@ -233,7 +293,9 @@ export function FileViewer({
      * a file. A preview pane may fail as a preview pane; it may not take the
      * application down.
      */
-    setPreviewError(null)
+    // Not cleared for a text or picture row: their own effects report into
+    // the same slot, and this one has nothing to say about them.
+    if (kind !== 'text' && kind !== 'image') setPreviewError(null)
 
     // Blob URLs pin their data until revoked either way, so both branches clean
     // up after themselves — without it every preview leaks a document for the
@@ -261,7 +323,7 @@ export function FileViewer({
     }
     setUrl(next)
     return () => URL.revokeObjectURL(next)
-  }, [pdf, real])
+  }, [pdf, real, kind])
 
   /**
    * Hands the document to the browser's downloader.
@@ -317,6 +379,24 @@ export function FileViewer({
         title={`${file.name} preview`}
         className="w-full flex-1 rounded-md border border-hairline bg-well"
       />
+    ) : text !== null ? (
+      <div className="flex min-h-0 flex-1 flex-col gap-1">
+        <pre
+          aria-label={`${file.name}, as text`}
+          className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words rounded-md border border-hairline bg-well p-3 font-mono text-xs text-text-1"
+        >
+          {text.body}
+        </pre>
+        {text.cut ? (
+          <p className="text-xs text-text-3">
+            Only the first megabyte is shown. Save opens the whole file in your own application.
+          </p>
+        ) : null}
+      </div>
+    ) : imageUrl !== null ? (
+      <div className="grid min-h-0 flex-1 place-items-center overflow-auto rounded-md border border-hairline bg-well p-3">
+        <img src={imageUrl} alt={file.name} className="max-h-full max-w-full object-contain" />
+      </div>
     ) : previewError ? (
       <EmptyState
         icon={FileWarning}
@@ -330,31 +410,11 @@ export function FileViewer({
         icon={FileQuestion}
         title="No preview for this type"
         /*
-         * This used to end "Opening it will hand off to your own application once
-         * files are stored locally" — a promise of work that was not coming when
-         * it was written, and has since arrived: documents ARE stored, and the
-         * Save button in this viewer's header is the hand-off.
-         *
-         * The sentence still says nothing about THIS row's bytes, and now for a
-         * better reason than the original. Reaching here means the row has none —
-         * a demo record, a page captured on another device, or a write that
-         * failed — and which of those it is decides the repair, so a sentence
-         * guessing between them gets it wrong for two out of three.
-         *
-         * Says nothing about THIS row's bytes, deliberately, for the reason the
-         * placeholder's own comment gives: a .docx dropped in this session is here
-         * too, held in state and unframed on purpose, and a sentence guessing
-         * which of the two the reader is looking at gets it wrong for one of them.
+         * Branched on whether the bytes are HERE. It said "there is no stored
+         * document behind this row" for every non-PDF, including a .docx the
+         * person had just dropped and could Save from this same header.
          */
-        description={
-          file.kind === 'page'
-            ? // A page with no bytes is a different failure from a .docx, and
-              // saying "browsers cannot render page files" would be nonsense \u2014 a
-              // browser is the one thing that certainly can. What is missing here
-              // is the capture, not the capability.
-              'This posting has no saved copy on this device. Captures are kept where they were taken, so one made on your phone is not here \u2014 and a row restored from a backup carries the record without the page.'
-            : `Browsers render PDFs natively but not ${file.kind} files \u2014 and there is no stored document behind this row to hand to anything else.`
-        }
+        description={noPreviewText(file, blob !== undefined)}
       />
     )
 
@@ -386,7 +446,7 @@ export function FileViewer({
           {/* Only offered when there is something to enlarge. On the
               no-preview state the button would open a bigger copy of a
               sentence explaining that there is nothing to see. */}
-          {url !== null || pageHtml !== null ? (
+          {url !== null || pageHtml !== null || text !== null || imageUrl !== null ? (
             <ExpandButton onClick={() => setFull(true)} label="Open the preview full screen" />
           ) : null}
           {/* Offered only for a real document, because the placeholder is

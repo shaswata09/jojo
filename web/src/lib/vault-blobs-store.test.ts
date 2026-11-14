@@ -21,12 +21,17 @@ const fake = vi.hoisted(() => ({
   lists: 0,
   /** When set, `trash` waits for this before doing anything. */
   gate: null as Promise<void> | null,
+  /** When set, the page-load trash sweep waits for this — hydration held open. */
+  purgeGate: null as Promise<void> | null,
 }))
 
 vi.mock('@/kg/storage/idb-file-store', () => ({
   createIdbFileStore: () => ({
     open: async () => ({ ok: true, value: undefined }),
-    purgeTrash: async () => 0,
+    purgeTrash: async () => {
+      if (fake.purgeGate) await fake.purgeGate
+      return 0
+    },
     persisted: async () => false,
     list: (dir: string) => {
       fake.lists += 1
@@ -47,7 +52,18 @@ beforeEach(() => {
   vi.resetModules()
   fake.lists = 0
   fake.gate = null
+  fake.purgeGate = null
+  vi.useRealTimers()
 })
+
+/** Holds the first listing open until the returned function is called. */
+function holdHydration(): () => void {
+  let open: () => void = () => {}
+  fake.purgeGate = new Promise<void>((resolve) => {
+    open = resolve
+  })
+  return open
+}
 
 async function load(files: Record<string, Uint8Array> = {}) {
   fake.store = createMemoryFileStore({ files })
@@ -104,6 +120,65 @@ describe('Undo of a document delete', () => {
     expect(mod.blobIndex.getSnapshot().index.has('f3')).toBe(true)
     const back = await mod.vaultBlobStore.get('f3')
     expect(back === null ? null : await back.text()).toBe('statement.pdf bytes')
+  })
+})
+
+describe('before the index has hydrated', () => {
+  it('a delete still trashes the bytes, says so, and its Undo puts them back', async () => {
+    const open = holdHydration()
+    const mod = await load({ [blobPath('f1', 'cv.pdf')]: bytes('cv') })
+    mod.blobIndex.subscribe(() => {})
+    // What the delete hook used to read first: false, before hydration.
+    expect(mod.vaultBlobStore.has('f1')).toBe(false)
+    const removal = mod.vaultBlobStore.remove('f1')
+    open()
+    expect(await removal).toBe(true)
+    expect(mod.vaultBlobStore.has('f1')).toBe(false)
+    expect(await mod.vaultBlobStore.restore('f1')).toBe(true)
+    const back = await mod.vaultBlobStore.get('f1')
+    expect(back === null ? null : await back.text()).toBe('cv')
+  })
+
+  it('a put does not report the index ready while it is missing the rest', async () => {
+    const open = holdHydration()
+    const mod = await load({ [blobPath('cv1', 'cv.pdf')]: bytes('cv') })
+    mod.blobIndex.subscribe(() => {})
+    await putVia(mod, 'cap1', 'page.html')
+    expect(mod.blobIndex.getSnapshot().ready).toBe(false)
+    open()
+    await mod.blobIndex.ready()
+    expect(mod.blobIndex.getSnapshot().ready).toBe(true)
+    expect(mod.vaultBlobStore.has('cv1')).toBe(true)
+    expect(mod.vaultBlobStore.has('cap1')).toBe(true)
+  })
+})
+
+describe('the bytes held for Undo', () => {
+  it('are let go once the Undo window has passed', async () => {
+    const mod = await load({ [blobPath('f4', 'cv.pdf')]: bytes('cv') })
+    await mod.blobIndex.ready()
+    vi.useFakeTimers()
+    expect(await mod.vaultBlobStore.remove('f4')).toBe(true)
+    vi.advanceTimersByTime(mod.TRASH_HOLD_MS - 1)
+    vi.advanceTimersByTime(1)
+    expect(await mod.vaultBlobStore.restore('f4')).toBe(false)
+  })
+
+  it('are still there inside the window', async () => {
+    const mod = await load({ [blobPath('f5', 'cv.pdf')]: bytes('cv') })
+    await mod.blobIndex.ready()
+    vi.useFakeTimers()
+    expect(await mod.vaultBlobStore.remove('f5')).toBe(true)
+    vi.advanceTimersByTime(mod.TRASH_HOLD_MS - 1)
+    expect(await mod.vaultBlobStore.restore('f5')).toBe(true)
+  })
+
+  it('are let go by a restore that replaces every document', async () => {
+    const mod = await load({ [blobPath('f6', 'cv.pdf')]: bytes('cv') })
+    await mod.blobIndex.ready()
+    expect(await mod.vaultBlobStore.remove('f6')).toBe(true)
+    await mod.vaultBlobStore.replaceAll([])
+    expect(await mod.vaultBlobStore.restore('f6')).toBe(false)
   })
 })
 

@@ -16,7 +16,8 @@
  * with the same message. Nothing downstream trusts this output.
  *
  * The subset is deliberate — `type`, `description`, `enum`, `items`,
- * `properties`, `required`, `minimum`/`maximum`, `minLength`/`maxLength`. It is
+ * `properties`, `required`, `minimum`/`maximum`, `minLength`/`maxLength`, and
+ * one `pattern` (a colour, whose shape no other keyword can say). It is
  * what OpenAI's function-calling and MCP's `inputSchema` both read, and every
  * keyword beyond it is one more thing a small local model can misread. This app
  * points at whatever the user is running on their own machine, which is
@@ -42,7 +43,21 @@ export type JsonSchema = {
   minItems?: number
   maxItems?: number
   format?: string
+  pattern?: string
 }
+
+/**
+ * Said on every list field of an update, and READ by `repair.ts`.
+ *
+ * On an update every top-level list is a set: `application.update`'s
+ * `keywords`, the Vault's `applicationIds`, a timeline item's applications. A
+ * model asked to add one tag sent `{keyword: "kw:3"}`, repair renamed and
+ * wrapped it, and the whole set became that one tag while the step reported
+ * success (R11a). The sentence tells the model; `repair.ts` keys its refusal
+ * off the same constant, and `catalog.ts` is what appends it, so the two cannot drift apart.
+ */
+export const REPLACES_LIST =
+  'Replaces the whole list: send every item that should remain, not only the one being added or removed.'
 
 /** The primitives that map straight across, with nothing else to say. */
 const PLAIN: Partial<Record<FieldKind, JsonSchema>> = {
@@ -72,6 +87,16 @@ const FORMATTED: Partial<Record<FieldKind, JsonSchema>> = {
   id: {
     type: 'string',
     description: 'The id of an existing record, exactly as a read tool returned it.',
+  },
+  /*
+   * A colour was `{}` — no type at all — so a model was told any value would
+   * do and `keyword.create`'s `ink` arrived as "purple". The pattern is the
+   * form the parser stores; it also reads rgb(), but a model needs one shape.
+   */
+  color: {
+    type: 'string',
+    pattern: '^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$',
+    description: '#rrggbb',
   },
 }
 
@@ -116,6 +141,15 @@ function fieldBody(meta: FieldMeta, key?: string): JsonSchema {
   if (meta.kind === 'object') return objectBody(meta)
   const formatted = FORMATTED[meta.kind]
   if (formatted) return { ...formatted }
+  /*
+   * A whole number says so. `s.number({ int: true })` refused 2.5 at the
+   * parser while the schema said `number`, so a model was invited to send what
+   * would be refused — `timeline.item.snooze`'s `days`, a read's `from`. Read
+   * off the meta loosely: `int` reaches it once `core/schema.ts` records it.
+   */
+  if (meta.kind === 'number' && (meta as FieldMeta & { int?: boolean }).int === true) {
+    return withBounds({ type: 'integer' }, meta)
+  }
   return withBounds({ ...PLAIN[meta.kind] }, meta)
 }
 
@@ -147,7 +181,7 @@ function objectBody(meta: FieldMeta): JsonSchema {
 
 function withBounds(body: JsonSchema, meta: FieldMeta): JsonSchema {
   if (meta.min === undefined && meta.max === undefined) return body
-  if (body.type === 'number') {
+  if (body.type === 'number' || body.type === 'integer') {
     if (meta.min !== undefined) body.minimum = meta.min
     if (meta.max !== undefined) body.maximum = meta.max
     return body

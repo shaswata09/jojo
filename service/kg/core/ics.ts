@@ -10,14 +10,19 @@
  * needs no permission, no background task, no server and no account: hand it an
  * `.ics` and the reminder fires on their watch.
  *
- * ## What goes in that the app's own calendar leaves out
+ * ## The offer deadline, once
  *
- * `offer.respondBy` is a FIELD on an application, not a timeline item, so it has
- * never appeared on the Calendar page — the dashboard is the only screen that
- * shows it. It is also the most consequential date in a job search: the one with
- * an offer attached and a clock running. An export that left it out to match the
- * in-app calendar would be matching the wrong thing, so it is written here as a
- * deadline of its own.
+ * `offer.respondBy` is a FIELD on an application, and the most consequential
+ * date in a job search: the one with an offer attached and a clock running.
+ * Recording an offer now also mints a "respond to offer" deadline on the
+ * timeline for that day, so the field is written as an event of its own only
+ * when no such deadline already holds it (an offer recorded before that, or
+ * one whose item was deleted) — and never for a closed record. See `offersOf`.
+ *
+ * ## Done is not due
+ *
+ * A completed item is still exported — the calendar is a record of what
+ * happened too — but without its alarm, so nothing fires for work already done.
  *
  * ## The constraints this file works under
  *
@@ -39,7 +44,7 @@
 
 import { addDays } from './dates'
 import { displayName } from './model'
-import type { Application, Instant, TimelineItem, TimelineKind } from './model'
+import type { Application, Instant, OfferApplication, TimelineItem, TimelineKind } from './model'
 
 /** What the calendar file is called when it lands in someone's downloads. */
 export const ICS_FILENAME = 'jojo-dates.ics'
@@ -83,17 +88,24 @@ const ALARM_TIMED = '-PT30M'
 
 /**
  * RFC 5545 §3.3.11. Backslash, semicolon and comma are separators in the
- * grammar and a newline has to become the two characters `\n`.
+ * grammar and a newline has to become the two characters `\n`. Every other
+ * control character (tab aside, which TEXT allows) is outside the grammar
+ * altogether — a pasted bell or vertical tab gets the whole file refused by a
+ * strict importer — so they are dropped rather than escaped.
  *
  * The order matters: backslashes first, or every escape added below gets escaped
  * again by the pass that was meant to run before it.
  */
 function escapeText(value: string): string {
-  return value
-    .replace(/\\/g, '\\\\')
-    .replace(/\r\n|\r|\n/g, '\\n')
-    .replace(/;/g, '\\;')
-    .replace(/,/g, '\\,')
+  return (
+    value
+      // eslint-disable-next-line no-control-regex -- stripping them is the point
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
+      .replace(/\\/g, '\\\\')
+      .replace(/\r\n|\r|\n/g, '\\n')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,')
+  )
 }
 
 /** UTF-8 length of one code point, without a `TextEncoder` to ask. */
@@ -173,6 +185,8 @@ function asStamp(at: Instant): string {
 /** One event, already flattened out of whichever record it came from. */
 type Event = {
   uid: string
+  /** False for an item already done: still on the record, no alert. */
+  alarm: boolean
   summary: string
   /** 'YYYY-MM-DD'. */
   date: string
@@ -207,14 +221,15 @@ function eventLines(e: Event, stamp: string): string[] {
   if (description) out.push(line('DESCRIPTION', escapeText(description)))
   out.push(line('CATEGORIES', escapeText(e.category)))
 
-  out.push(
-    'BEGIN:VALARM',
-    'ACTION:DISPLAY',
-    line('DESCRIPTION', escapeText(e.summary)),
-    line('TRIGGER', e.allDay ? ALARM_ALL_DAY : ALARM_TIMED),
-    'END:VALARM',
-    'END:VEVENT',
-  )
+  if (e.alarm)
+    out.push(
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      line('DESCRIPTION', escapeText(e.summary)),
+      line('TRIGGER', e.allDay ? ALARM_ALL_DAY : ALARM_TIMED),
+      'END:VALARM',
+    )
+  out.push('END:VEVENT')
   return out
 }
 
@@ -227,9 +242,32 @@ export type CalendarInput = {
   at: Instant
 }
 
+/**
+ * The applications whose offer deadline is written as an event of its own.
+ *
+ * Not a closed record's: a board move from Offer to Closed can keep the offer,
+ * and its reply-by date is no deadline anybody has any more. And not one a
+ * timeline deadline already sits on — recording an offer mints "X — respond to
+ * offer" on that same day, and the export wrote both, so the person got two
+ * events and two alerts for one decision.
+ */
+function offersOf(input: Omit<CalendarInput, 'at'>): OfferApplication[] {
+  return input.applications.filter(
+    (a): a is OfferApplication =>
+      a.offer !== undefined &&
+      a.stage !== 'closed' &&
+      !input.items.some(
+        (i) =>
+          i.kind === 'deadline' &&
+          i.date === a.offer?.respondBy &&
+          i.applicationIds.includes(a.id),
+      ),
+  )
+}
+
 /** How many events a given store would produce. For a button that says so. */
 export function calendarSize(input: Omit<CalendarInput, 'at'>): number {
-  return input.items.length + input.applications.filter((a) => a.offer !== undefined).length
+  return input.items.length + offersOf(input).length
 }
 
 /**
@@ -253,6 +291,7 @@ export function buildCalendar(input: CalendarInput): string {
   // and only the first is what an all-day item means.
   const events: Event[] = input.items.map((item) => ({
     uid: `${item.id}@jojo.local`,
+    alarm: !item.completedOn,
     summary: `${KIND_LABEL[item.kind]} · ${item.title}`,
     date: item.date,
     allDay: item.allDay,
@@ -271,10 +310,10 @@ export function buildCalendar(input: CalendarInput): string {
     category: KIND_LABEL[item.kind],
   }))
 
-  for (const a of input.applications) {
-    if (!a.offer) continue
+  for (const a of offersOf(input)) {
     events.push({
       uid: `${a.id}-offer@jojo.local`,
+      alarm: true,
       summary: `Deadline · Reply to ${a.org}`,
       date: a.offer.respondBy,
       allDay: true,

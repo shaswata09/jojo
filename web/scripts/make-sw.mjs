@@ -37,12 +37,13 @@
 
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
-import { dirname, join, posix, relative, sep } from 'node:path'
+import { dirname, join, posix, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { auditPrecache, localPath } from './precache-guard.mjs'
+import { auditPrecache, isFingerprinted, localPath, precachedAsset } from './precache-guard.mjs'
 
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
-const DIST = join(WEB, 'dist')
+// `JOJO_DIST` lets gate.sh check a build made elsewhere without wiping `dist/`.
+const DIST = process.env.JOJO_DIST ? resolve(process.env.JOJO_DIST) : join(WEB, 'dist')
 
 /**
  * What has to be in the cache for the app to BOOT with no network.
@@ -114,6 +115,15 @@ for (const [, raw] of html.matchAll(REFERENCED)) {
 for (const f of files) if (f.url.startsWith('icons/')) boot.add(f.url)
 
 /*
+ * And every lazy chunk but the Transfer scene — see `precachedAsset`. Boot
+ * alone was the right test for the FIRST offline load, and wrong for the one
+ * after a deploy: a page reached by a lazy import (the graph, the PDF editor)
+ * was cached on first use, the next deploy's worker deleted that cache on
+ * activate, and the page failed offline until it had been opened online again.
+ */
+for (const f of files) if (precachedAsset(f.url)) boot.add(f.url)
+
+/*
  * Fail closed: the assets the DOCUMENT names must actually be in that list.
  *
  * `REFERENCED` above stays deliberately permissive — any src or href, so a shell
@@ -144,10 +154,13 @@ if (broken.length > 0) {
 // worker, or every deploy invalidates a cache it had no reason to.
 const version = createHash('sha256')
 const precache = []
+/** Every fingerprinted file of this build, precached or not. See `carry` in the worker. */
+const fingerprinted = []
 for (const file of files) {
   version.update(file.url)
   version.update(readFileSync(file.full))
   if (boot.has(file.url)) precache.push(file.url)
+  if (isFingerprinted(file.url)) fingerprinted.push(file.url)
 }
 const hash = version.digest('hex').slice(0, 12)
 
@@ -167,6 +180,25 @@ const READER = new URL('reader', self.location.href).pathname
 const PRECACHE = ${JSON.stringify(precache, null, 2)}.map(
   (path) => new URL(path, self.location.href).href,
 )
+/**
+ * This build's fingerprinted files. A hashed name is one set of bytes forever,
+ * so a copy cached by an earlier worker is still right and is carried over on
+ * activate instead of being deleted with that worker's cache — which is how a
+ * lazy chunk that is not precached (the Transfer scene) stays offline.
+ */
+const CARRY = new Set(${JSON.stringify(fingerprinted)}.map(
+  (path) => new URL(path, self.location.href).href,
+))
+
+/** Copies what CARRY names out of an old cache into the new one. */
+async function carry(from, into) {
+  const old = await caches.open(from)
+  for (const request of await old.keys()) {
+    if (!CARRY.has(request.url) || (await into.match(request))) continue
+    const response = await old.match(request)
+    if (response) await into.put(request, response)
+  }
+}
 
 self.addEventListener('install', (event) => {
   // No skipWaiting. A new worker takes over on the next load rather than
@@ -177,12 +209,17 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((names) =>
-        Promise.all(names.filter((n) => n.startsWith('jojo-') && n !== CACHE).map((n) => caches.delete(n))),
-      )
-      .then(() => self.clients.claim()),
+    (async () => {
+      const into = await caches.open(CACHE)
+      const old = (await caches.keys()).filter((n) => n.startsWith('jojo-') && n !== CACHE)
+      for (const name of old) {
+        // A failed carry only costs a re-fetch later; it must not keep the
+        // old cache, or the worker, from being replaced.
+        await carry(name, into).catch(() => {})
+        await caches.delete(name)
+      }
+      await self.clients.claim()
+    })(),
   )
 })
 
@@ -243,7 +280,7 @@ const precached = files.filter((f) => boot.has(f.url))
 const deferred = files.filter((f) => !boot.has(f.url))
 console.log(
   `make-sw: dist/sw.js written, version ${hash}\n` +
-    `  precached ${String(precached.length)} files the page needs to boot ` +
+    `  precached ${String(precached.length)} files: the boot set and every lazy chunk but the Transfer scene ` +
     `(${kb(precached.reduce((n, f) => n + f.size, 0))})\n` +
     `  ${String(deferred.length)} more cached on first use ` +
     `(${kb(deferred.reduce((n, f) => n + f.size, 0))})`,

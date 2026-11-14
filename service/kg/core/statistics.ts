@@ -25,9 +25,10 @@
  * Spelling it at the source is what let this file move down into `core`, where
  * the layer guard bans importing anything else at all.
  */
-import type { Application, RoleTag, TimelineItem } from './model'
+import type { Application, Offer, Outcome, RoleTag, Stage, StageDates, TimelineItem } from './model'
 import { ROLES } from './model'
 import { daysBetween } from './dates'
+import { sentOn } from './sent-on'
 
 /**
  * A typical search, for the comparison figure beside each real one.
@@ -77,10 +78,33 @@ export const REACH = {
   offer: 5,
 } as const
 
-export function reachedOf(a: Application): number {
+/**
+ * What `reachedOf` reads, spelled `| undefined` so a record as a write leaves
+ * it (and `stage-dates.ts`'s narrower shape) can be asked too.
+ */
+export type Reachable = {
+  readonly stage: Stage
+  readonly outcome?: Outcome | undefined
+  readonly offer?: Offer | undefined
+  readonly stageDates?: StageDates | undefined
+  readonly firstReplyOn?: string | undefined
+  readonly submittedOn?: string | undefined
+  readonly appliedOn?: string | undefined
+}
+
+export function reachedOf(a: Reachable): number {
   // `declined` and `accepted` both mean an offer existed, so a closed record
-  // still counts at the end of the funnel — that is what happened to it.
-  if (a.stage === 'offer' || a.outcome === 'accepted' || a.outcome === 'declined')
+  // still counts at the end of the funnel — that is what happened to it. So
+  // does a kept offer or a dated Offer stage: a board move from Offer to
+  // Closed records no outcome, and without these the offer fell out of the
+  // offer rate and the record banded as Withdrawn.
+  if (
+    a.stage === 'offer' ||
+    a.outcome === 'accepted' ||
+    a.outcome === 'declined' ||
+    a.offer !== undefined ||
+    a.stageDates?.offer !== undefined
+  )
     return REACH.offer
   if (a.stage === 'interview') return REACH.interview
   if (a.stage === 'screen') return REACH.screen
@@ -134,9 +158,8 @@ export type Kpi = {
 export function replyGaps(all: readonly Application[]): number[] {
   return all
     .map((a) => {
-      // Same fallback order as the frequency chart: seed rows carry
-      // `submittedOn` and rows the user creates carry `appliedOn`.
-      const sent = a.appliedOn ?? a.submittedOn
+      // One precedence for every reader; see `sent-on.ts`.
+      const sent = sentOn(a)
       return sent && a.firstReplyOn ? daysBetween(sent, a.firstReplyOn) : null
     })
     .filter((n): n is number => n !== null && n >= 0)
@@ -260,7 +283,8 @@ export function outcomesFor(all: readonly Application[]): OutcomeBand[] {
 function bandOf(a: Application): (typeof OUTCOME_BANDS)[number] {
   // Offer first, or a live offer would be swept into "In progress" and the
   // panel would disagree with the funnel step beside it.
-  if (a.stage === 'offer' || a.outcome === 'accepted' || a.outcome === 'declined') return 'Offer'
+  // The same test as the funnel's last step, so the two always cross-foot.
+  if (reachedOf(a) >= REACH.offer) return 'Offer'
   if (a.stage !== 'closed') return 'In progress'
   if (a.outcome === 'rejected') return 'Rejected'
   if (a.outcome === 'ghosted') return 'No reply'

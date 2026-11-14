@@ -49,6 +49,35 @@ describe('draftFromUrl', () => {
     expect(draftFromUrl('https://careers.google.co.uk/jobs/ml-engineer')?.org).toBe('Google')
   })
 
+  it('keeps a two-letter employer that is not the country code', () => {
+    // Every two-letter label used to count as a suffix, so these came back as
+    // an employer called 'Jobs' or 'Careers'.
+    expect(draftFromUrl('https://jobs.ox.ac.uk/job/research-fellow')?.org).toBe('OX')
+    expect(draftFromUrl('https://careers.ge.com/data-scientist-12345')?.org).toBe('GE')
+    expect(draftFromUrl('https://careers.hp.com/ml-engineer')?.org).toBe('HP')
+    expect(draftFromUrl('https://jobs.gm.com/en-us/software-engineer')?.org).toBe('GM')
+    expect(draftFromUrl('https://careers.example.de/stelle')?.org).toBe('Example')
+    expect(draftFromUrl('https://jobs.unimelb.edu.au/en/job/1')?.org).toBe('Unimelb')
+  })
+
+  it('never names the employer after the site’s own filing label', () => {
+    expect(draftFromUrl('https://careers.co.uk/ml-engineer')?.org).toBeUndefined()
+  })
+
+  it('treats jobs.ac.uk as a board that does not carry the employer', () => {
+    const draft = draftFromUrl('https://www.jobs.ac.uk/job/DEF123/lecturer-in-statistics')
+    expect(draft.org).toBeUndefined()
+    expect(draft.source).toBe('Job board')
+    expect(draft.role).toBe('Lecturer in statistics')
+    // Not even when the path leads with a name, which a tenant board reads
+    // as the employer.
+    expect(draftFromUrl('https://www.jobs.ac.uk/lecturer-in-statistics/ABC123').org).toBeUndefined()
+  })
+
+  it('reads a second-level label as a suffix only before a country code', () => {
+    expect(draftFromUrl('https://jobs.net.com/platform-engineer')?.org).toBe('NET')
+  })
+
   it('uppercases short names, because UNT is a name where Unt is a typo', () => {
     expect(draftFromUrl('https://jobs.unt.edu/postings/cs-faculty')?.org).toBe('UNT')
   })

@@ -9,7 +9,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import type { VaultFile } from '@jojo/service/data/vault'
-import { keptOrDropped } from './posting-agent'
+import { keptOrDropped, reusablePage } from './posting-agent'
 
 const file = { id: 'file_1', name: 'Rice — Assistant Professor.html' } as VaultFile
 
@@ -24,5 +24,21 @@ describe('keptOrDropped', () => {
     const removeFile = vi.fn()
     expect(keptOrDropped({ file, stored: false }, removeFile)).toBeNull()
     expect(removeFile).toHaveBeenCalledWith('file_1')
+  })
+})
+
+describe('reusablePage', () => {
+  const files = [file, { id: 'file_2', name: 'Other.html' } as VaultFile]
+
+  it('reuses the kept page when its bytes are on this device', () => {
+    expect(reusablePage('file_1', files, () => true)).toBe(file)
+  })
+
+  it('does not reuse a record whose bytes are not here — the fresh read is kept (R17)', () => {
+    expect(reusablePage('file_1', files, (id) => id !== 'file_1')).toBeUndefined()
+  })
+
+  it('reuses nothing when nothing is kept for the address', () => {
+    expect(reusablePage(undefined, files, () => true)).toBeUndefined()
   })
 })

@@ -30,6 +30,7 @@ import {
 import type { NodeId } from '../core/model'
 import { briefsWithin, normaliseBriefs } from '../core/referee-brief'
 import { s } from '../core/schema'
+import type { GraphSnapshot } from '../core/snapshot'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 import { dayOf, opt } from './support'
@@ -150,12 +151,17 @@ export const vaultPersonCreate = defineTool({
     /*
      * What they are on each of those jobs, so adding somebody from an
      * application's own page is ONE write — and one undo — rather than a create
-     * followed by a role. Only for applications in `applicationIds`.
+     * followed by a role. A role names its application, so it files the person
+     * there too: it used to be dropped unless `applicationIds` repeated the id,
+     * and a model sending only `roles` was told "Person saved" with no filing
+     * and no role (R12).
      */
     roles: s.optional(
       s.array(s.object({ applicationId: s.id('application', { label: 'Application' }), role: contactRole }), {
         max: MAX_BRIEFS,
         label: 'Roles',
+        description:
+          'What they are on each application. Each one also files the person under that application, so it need not be repeated in applicationIds.',
       }),
     ),
   }),
@@ -188,9 +194,10 @@ export const vaultPersonCreate = defineTool({
       updatedAt: ctx.now,
     })
     fileUnder(ctx, id, input.applicationIds)
-    const filed = new Set<string>(input.applicationIds ?? [])
+    // A role implies its filing (see `roles` above): each one is linked with
+    // its role whether or not `applicationIds` named it, replacing the bare
+    // edge when it did.
     for (const { applicationId, role } of input.roles ?? []) {
-      if (!filed.has(applicationId)) continue
       ctx.tx.unlink(id, 'FILED_UNDER', applicationId)
       ctx.tx.link(id, 'FILED_UNDER', applicationId, { role })
     }
@@ -203,9 +210,21 @@ export const vaultPersonCreate = defineTool({
 export const vaultPersonUpdate = defineTool({
   name: 'vault.person.update',
   title: 'Edit person',
-  summary: 'Saves what you know about them, which jobs they are named on, and their briefs.',
+  summary:
+    'Saves what you know about them, which jobs they are named on, and their briefs. `applicationIds` replaces the whole filing: an application left out loses this person, and their brief and role for it. To name or un-name them on one job, use vault.person.file or vault.person.unfile.',
   effect: 'update',
   touches: ['person'],
+  /*
+   * Asked about only when the filing sent would drop a job this person has a
+   * brief or a role on. `applicationIds: []` beside a phone number silently
+   * deleted every referee brief, ungated (R12); a filing that drops nothing
+   * written down is still a plain save.
+   */
+  confirms: {
+    when: (input, memory) => dropsBriefOrRole(input, memory),
+    because:
+      'Asks first when the filing sent leaves out an application this person has a brief or a role on: those are deleted with it.',
+  },
   input: s.object({
     id: personId,
     name: s.optional(s.string({ min: 1, label: 'Name' })),
@@ -256,6 +275,24 @@ export const vaultPersonUpdate = defineTool({
     description: m.node(input.id, 'person')?.props.name ?? '',
   }),
 })
+
+/**
+ * Whether this update's filing leaves out an application the person has a
+ * brief or a role on. Absent `applicationIds` leaves the filing alone; `null`
+ * and `[]` both empty it.
+ */
+function dropsBriefOrRole(
+  input: { id: NodeId; applicationIds?: readonly NodeId[] | null },
+  memory: GraphSnapshot,
+): boolean {
+  if (input.applicationIds === undefined) return false
+  const kept = new Set<string>(input.applicationIds ?? [])
+  const person = memory.node(input.id, 'person')
+  const briefed = new Set<string>((person?.props.briefs ?? []).map((b) => b.applicationId))
+  return memory
+    .out(input.id, 'FILED_UNDER')
+    .some((e) => !kept.has(e.to) && (briefed.has(e.to) || (e.props as { role?: unknown }).role !== undefined))
+}
 
 export const vaultPersonDelete = defineTool({
   name: 'vault.person.delete',
@@ -339,6 +376,15 @@ export const vaultPersonUnfile = defineTool({
 
   run(ctx, input) {
     const person = ctx.require('person', input.id)
+    ctx.require('application', input.applicationId)
+    // Not named there is a refusal, not a quiet success the verify gate then
+    // counts as landed (R11c).
+    if (!ctx.memory.out(input.id, 'FILED_UNDER').some((e) => e.to === input.applicationId)) {
+      ctx.fail(`${person.props.name} is not named on that application, so there was nothing to take off.`, {
+        field: 'applicationId',
+        code: 'graph/not-found',
+      })
+    }
     ctx.tx.unlink(input.id, 'FILED_UNDER', input.applicationId)
     const filed = new Set<string>(
       ctx.memory

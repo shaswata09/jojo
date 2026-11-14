@@ -751,32 +751,58 @@ export const CAPTURE_VIEW_CSP =
  * A stored capture with the viewer's policy written in as the FIRST thing in
  * its head — the second lock that the header of this file describes.
  *
- * `sandbox=""` on the frame stops scripts, forms and navigation and stops no
- * fetch at all, so before this every hole in `remoteRefCount` was a live beacon.
- * A `<meta http-equiv>` CSP inside a `srcdoc` document is honoured, and it
- * applies to everything parsed after it, so where it goes is the whole design:
+ * `sandbox=""` on the frame stops scripts, forms, navigation and meta refresh,
+ * and stops no fetch at all, so before this every hole in `remoteRefCount` was a
+ * live beacon. A `<meta http-equiv>` CSP inside a `srcdoc` document is honoured
+ * only when it is in the HEAD, and it applies to everything parsed after it.
  *
- *   - after a leading doctype (and any comments before it), never before — a
- *     `<meta>` ahead of the doctype makes the doctype a parse error and the page
- *     renders in quirks mode;
- *   - and before EVERYTHING else, including the document's own `<html>` and
- *     `<head>`. A `<meta>` there opens an implied `<html>` and `<head>` and lands
- *     in it; the page's own `<html lang>` then merges its attributes into that
- *     element and its `<head>` is ignored, which is the tokeniser's ordinary
- *     recovery. So it works the same with a head, without one, and ahead of a
- *     hostile early `<meta>` or `<link>` the page put first — nothing in the
- *     stored text can come before it.
+ * ## The head is written here, not found
+ *
+ * This used to look for the stored page's own doctype with a pattern —
+ * `^\uFEFF?(?:\s|<!--…-->)*(?:<!doctype…>)?` — and slot the policy in after it.
+ * The pattern read the start of the page the way JavaScript does, not the way
+ * the HTML parser does, and they disagree (round-2 review, R2, reproduced in
+ * Chromium): JS `\s` takes NBSP and U+2028, which the parser reads as TEXT —
+ * opening `<body>` and putting the policy there, where it does nothing; a
+ * second BOM is text too; and `<!-->` and `<!-- --!>` are comments the parser
+ * ENDS where the lazy `-->` match did not, so an `<img>` the pattern thought
+ * was inside a comment loaded before the policy existed. Each one beaconed.
+ *
+ * So the head is ours and comes first, unconditionally: a doctype, then
+ * `<head>` and the policy, then the stored bytes. Nothing the page wrote can
+ * come before it, whatever it starts with. The page's own doctype later in the
+ * stream is a parse error the parser ignores; its `<html lang>` merges into
+ * ours, its `<head>` is ignored and its head children land in ours — the
+ * tokeniser's ordinary recovery. Our doctype is written only when the page had
+ * one near the top, so a page that rendered in quirks mode still does.
+ *
+ * ## And the tags no CSP governs are disarmed
+ *
+ * `<link rel=preconnect>` and `dns-prefetch` open a connection the policy never
+ * sees (reproduced: a TCP connect to the named host on every view), and
+ * `prefetch`, `preload` and `icon` are fetch paths that depend on each
+ * browser's mapping onto directives. Every `<link>` is renamed to
+ * `<basefont>` — void, parsed exactly like `<link>` in a head, and inert —
+ * by the tag NAME, so no attribute is ever parsed by a pattern. A stylesheet
+ * `<link>` goes too: under this policy it could only load a `data:` sheet, and
+ * neither serialiser ever writes one (both turn stylesheets into `<style>`).
  *
  * Policies combine by intersection, so a page that carried a looser CSP of its
  * own (both walks strip those anyway) cannot widen this one.
  */
 export function lockedCaptureHtml(html: string): string {
   const meta = `<meta http-equiv="Content-Security-Policy" content="${CAPTURE_VIEW_CSP}">`
-  const lead = /^﻿?(?:\s|<!--[\s\S]*?-->)*(?:<!doctype[^>]*>)?/i.exec(html)
-  // Only past the comments when a doctype follows them: a meta between a
-  // comment and the first tag is in the same place as one at the very start.
-  const at = lead !== null && /<!doctype/i.test(lead[0]) ? lead[0].length : 0
-  return `${html.slice(0, at)}${meta}${html.slice(at)}`
+  // Every leading BOM, which the parser would otherwise render as text; then the
+  // page's own doctype if it is the next thing, since ours replaces it.
+  const body = html.replace(/^\uFEFF+/, '')
+  const doctype = /<!doctype\s+html/i.test(body.slice(0, 1024)) ? '<!doctype html>' : ''
+  const rest = body.replace(/^[\t\n\f\r ]*<!doctype[^>]*>/i, '')
+  return `${doctype}<head>${meta}<meta http-equiv="x-dns-prefetch-control" content="off">${inertLinks(rest)}`
+}
+
+/** Every `<link` tag renamed to an inert void one. See `lockedCaptureHtml`. */
+function inertLinks(html: string): string {
+  return html.replace(/<link(?=[\t\n\f\r />])/gi, '<basefont')
 }
 
 /**

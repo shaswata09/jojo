@@ -4,6 +4,7 @@ import { AddFromLinkDialog } from '@/components/applications/AddFromLinkDialog'
 import { ApplicationDialog } from '@/components/applications/ApplicationDialog'
 import type { ApplicationInitial } from '@/components/applications/ApplicationDialog'
 import { applicationDeadlineOf } from '@/components/applications/deadline'
+import { editInitial } from '@/components/applications/dialog/form-state'
 import { DraftDialog } from '@/components/draft/DraftDialog'
 import type { DraftDialogProps } from '@/components/draft/DraftDialog'
 import { TimelineItemDialog } from '@/components/timeline/TimelineItemDialog'
@@ -151,9 +152,7 @@ export function DialogHost() {
     // calendar", so a blank prefill on a record that already has a deadline
     // reads as "cleared" and deletes it — and any other date reads as a move.
     const deadline = record ? applicationDeadlineOf(forApplication(record.id))?.date : undefined
-    const initial = record
-      ? { ...record, ...props.initial, deadline: props.initial?.deadline ?? deadline ?? '' }
-      : props.initial
+    const initial = record ? editInitial(record, props.initial, deadline) : props.initial
 
     return (
       <ApplicationDialog

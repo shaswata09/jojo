@@ -24,11 +24,12 @@
  */
 
 import { copyFileSync, existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
-const dist = join(WEB, 'dist')
+// `JOJO_DIST` lets gate.sh check a build made elsewhere without wiping `dist/`.
+const dist = process.env.JOJO_DIST ? resolve(process.env.JOJO_DIST) : join(WEB, 'dist')
 const index = join(dist, 'index.html')
 
 if (!existsSync(index)) {

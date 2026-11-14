@@ -38,13 +38,53 @@ export function asFile(kept) {
   const provenance =
     `<!-- Saved by the jojo extension from ${source} on ${when}. ` +
     'Styles, images and fonts are embedded; scripts were removed, so it opens offline. -->\n'
-  const html = String(kept.html ?? '')
-  // First after the doctype and the comment, before anything the page wrote —
-  // the same place `lockedCaptureHtml` puts it, for the reasons it gives.
-  const lock = `<meta http-equiv="Content-Security-Policy" content="${CAPTURE_VIEW_CSP}">\n`
-  return /^\s*<!doctype/i.test(html)
-    ? html.replace(/^(\s*<!doctype[^>]*>)/i, `$1\n${provenance}${lock}`)
-    : `<!doctype html>\n${provenance}${lock}${html}`
+  /*
+   * The head this file opens with is written HERE, ahead of every byte the page
+   * wrote, rather than slotted in after the page's own doctype by a pattern.
+   * That pattern (`^\s*<!doctype`) read the start of the page the way a regex
+   * does, not the way the HTML parser does, and `lockedCaptureHtml` measured
+   * where the two disagree: a leading NBSP or BOM, or a comment the parser ends
+   * early, and the policy landed somewhere it does not apply. A doctype of the
+   * page's own that comes later is a stray the parser ignores, so the page's
+   * leading one is simply dropped.
+   *
+   * `charset` first, because the page's own <meta> tags do not survive (below)
+   * and a file opened from disk carries no content type.
+   */
+  const head =
+    '<meta charset="utf-8">\n' +
+    `<meta http-equiv="Content-Security-Policy" content="${CAPTURE_VIEW_CSP}">\n` +
+    '<meta http-equiv="x-dns-prefetch-control" content="off">\n'
+  const html = String(kept.html ?? '').replace(/^\uFEFF*[\t\n\f\r ]*(?:<!doctype[^>]*>)?/i, '')
+  return `<!doctype html>\n${provenance}${head}${inertHeadTags(html)}`
+}
+
+/**
+ * Every `<link>` and `<meta>` the page wrote, made into an element that does
+ * nothing.
+ *
+ * The CSP above stops fetches. It does not stop NAVIGATION — a
+ * `<meta http-equiv=refresh>` sends the file, opened from disk with no sandbox
+ * around it, to any address on open — nor a `<link rel=preconnect>` or
+ * `dns-prefetch`, which open a connection the policy never sees. Reproduced:
+ * a downloaded capture carrying a refresh beaconed the moment it was opened.
+ * The serialiser removes those, and this is the file's own answer for the one
+ * that got past it.
+ *
+ * Renamed rather than parsed and filtered. Deciding which ones are harmless
+ * means reading their attributes, and a pattern reads an unquoted value with a
+ * stray `"` in it differently from the parser — the shape every regex-over-HTML
+ * check in this extension has lost to. Renaming the TAG needs no attributes at
+ * all: `<basefont>` is void and parsed exactly like `<link>` in a head, so the
+ * document's structure is unchanged, and it does nothing in any current
+ * browser. The page's own charset and viewport go with the rest; the head
+ * above supplies the charset.
+ *
+ * `sandbox` is not added to the policy: a CSP delivered by <meta> may not carry
+ * it, and browsers ignore it there.
+ */
+export function inertHeadTags(html) {
+  return html.replace(/<(?:link|meta)(?=[\t\n\f\r />])/gi, '<basefont')
 }
 
 /** 'senior-ml-engineer-2026-09-11.html' — readable, and safe on every filesystem. */

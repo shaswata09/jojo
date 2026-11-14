@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest'
 import { MutableSnapshot } from '../core/snapshot'
 import { createRepository } from '../repo/repository'
 import { createToolRuntime } from './runtime'
+import { TOOLS } from './index'
 import type { NodeId } from '../core/model'
 
 const NOW = '2026-08-25T09:00:00.000Z'
@@ -122,5 +123,22 @@ describe('taking a keyword off a record', () => {
     expect(w.repo.getSnapshot().out(w.keyword, 'TAGS')).toHaveLength(0)
     // D15: unlink, never cascade.
     expect(w.repo.getSnapshot().node(w.keyword)).toBeDefined()
+  })
+})
+
+/*
+ * A get-or-create says which it did. "Referral added" over a keyword that was
+ * already there told the person — and the verify gate — about a write that
+ * did not happen. `before` is the store without this call's write.
+ */
+describe('keyword.create says when it found one', () => {
+  it('reads "already there" for a keyword that existed, "added" for a new one', () => {
+    const { repo, keyword } = world()
+    const describeCreate = TOOLS['keyword.create'].describe
+    const before = repo.getSnapshot()
+    expect(describeCreate({ name: ' referral ' }, keyword, before, before).title).toBe('referral already there')
+    expect(describeCreate({ name: 'Remote' }, 'kw:new' as NodeId, before, before).title).toBe('Remote added')
+    // A runtime that does not pass `before` yet keeps the old sentence.
+    expect(describeCreate({ name: 'Referral' }, keyword, before).title).toBe('Referral added')
   })
 })

@@ -277,4 +277,57 @@ describe('undoableWith', () => {
 
     expect(value).toBe('app:rice')
   })
+  /**
+   * R10f, both halves. The guard compared WHOLE images, so a system write on
+   * the same record (a fit reading, kept off the undo ring) made the toast's
+   * Undo refuse with "changed since" while ⌘Z — field-level — would have
+   * worked. And it looked for the original id only, so after ⌘Z then ⇧⌘Z the
+   * change was live under the redo's id and the toast reported it undone.
+   */
+  it('R10f: is not refused by a system write to another field of the same record', () => {
+    const repo = setup([application('rice', 'as it was')])
+
+    const { restore } = undoableWith(repo, () => {
+      repo.commit(putting(application('rice', 'saved'), application('rice', 'as it was')))
+    })
+    const read = { ...application('rice', 'saved') }
+    read.props = { ...read.props, lastAction: 'Fit read' } as typeof read.props
+    repo.commit(putting(read, application('rice', 'saved')), { stack: false })
+
+    const outcome = restore?.()
+
+    expect(outcome).toEqual({ reverted: 1, superseded: [], alreadyUndone: 0 })
+    expect(noteOf(repo, 'app:rice')).toBe('as it was')
+    expect(repo.getSnapshot().node('app:rice', 'application')?.props.lastAction).toBe('Fit read')
+  })
+
+  it('R10f: says so, rather than "Undone", when a system write has replaced all of it', () => {
+    const repo = setup([application('rice', 'as it was')])
+
+    const { restore } = undoableWith(repo, () => {
+      repo.commit(putting(application('rice', 'saved'), application('rice', 'as it was')))
+    })
+    repo.commit(putting(application('rice', 'theirs'), application('rice', 'saved')), { stack: false })
+
+    const outcome = restore?.()
+
+    expect(outcome).toEqual({ reverted: 0, superseded: ['app:rice written'], alreadyUndone: 0 })
+    expect(noteOf(repo, 'app:rice')).toBe('theirs')
+  })
+
+  it('R10f: follows the change through ⌘Z and ⇧⌘Z rather than calling it undone', () => {
+    const repo = setup([application('rice', 'as it was')])
+
+    const { restore } = undoableWith(repo, () => {
+      repo.commit(putting(application('rice', 'saved'), application('rice', 'as it was')))
+    })
+    repo.revert(repo.undoable[0]!.id)
+    repo.revert(repo.redoable[0]!.id)
+    expect(noteOf(repo, 'app:rice')).toBe('saved')
+
+    const outcome = restore?.()
+
+    expect(outcome).toEqual({ reverted: 1, superseded: [], alreadyUndone: 0 })
+    expect(noteOf(repo, 'app:rice')).toBe('as it was')
+  })
 })

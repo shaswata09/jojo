@@ -314,6 +314,9 @@ export type PulseReceiver = {
  */
 const AGREE_TO_RELATCH = 2
 
+const sameBytes = (a: Uint8Array, b: Uint8Array): boolean =>
+  a.length === b.length && a.every((v, i) => v === b[i])
+
 export function createPulseReceiver(): PulseReceiver {
   let total = 0
   const held = new Map<number, Uint8Array>()
@@ -351,7 +354,16 @@ export function createPulseReceiver(): PulseReceiver {
       dissenting = 0
     }
 
-    if (held.has(read.index)) return 'duplicate'
+    const prior = held.get(read.index)
+    if (prior !== undefined) {
+      if (sameBytes(prior, read.bytes)) return 'duplicate'
+      // Same slot, same total, different bytes: a new stream of the same
+      // length — the web re-mints its pairing offer on a timer, and two offers
+      // always share a total. Keeping what was held would splice the two into
+      // a payload that passes every check and pairs with neither, so start
+      // over from this frame. A frame corrupted past the CRC costs a lap.
+      held.clear()
+    }
 
     held.set(read.index, read.bytes)
     return held.size === total ? 'complete' : 'accepted'

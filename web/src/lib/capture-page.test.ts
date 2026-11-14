@@ -108,7 +108,8 @@ function worker({
   loads = true,
   throws,
   inlined = served.html,
-}: { landed?: string; loads?: boolean; throws?: string; inlined?: string } = {}) {
+  readAt = served.url,
+}: { landed?: string; loads?: boolean; throws?: string; inlined?: string; readAt?: string } = {}) {
   const created: { url: string; active: boolean }[] = []
   const removed: number[] = []
   /** What `inline` was handed, and whether the tab was already gone when it ran. */
@@ -128,7 +129,7 @@ function worker({
     scripting: {
       executeScript: async () => {
         if (throws !== undefined) throw new Error(throws)
-        return [{ result: served }]
+        return [{ result: { ...served, url: readAt } }]
       },
     },
     storage: {
@@ -379,6 +380,21 @@ describe('where "From link" and the scan will not go', () => {
       'http://nas.local/',
       'http://router.lan/',
       'not a url',
+      // Round 2: a trailing dot, carrier-grade NAT / Tailscale, single-label
+      // intranet names, and the numeric spellings URL folds.
+      'http://localhost./',
+      'http://LOCALHOST.:8080/',
+      'http://app.localhost./',
+      'http://nas.local./',
+      'http://100.64.0.1/',
+      'http://100.127.255.254/',
+      'http://router/',
+      'http://router./',
+      'http://intranet:8080/jobs',
+      'http://0x7f.1/',
+      'http://0177.0.0.1/',
+      'http://017700000001/',
+      'http://127.0.0.1./',
     ]) {
       expect(isLocalTarget(url), url).toBe(true)
     }
@@ -390,6 +406,9 @@ describe('where "From link" and the scan will not go', () => {
       'https://job-boards.greenhouse.io/acme/jobs/4',
       'https://172.15.0.1/',
       'https://192.169.0.1/',
+      'https://100.63.255.255/',
+      'https://100.128.0.1/',
+      'https://www.linkedin.com./jobs/view/4012/',
       'https://academiccareers.com/job/183456/x/',
     ]) {
       expect(isLocalTarget(url), url).toBe(false)
@@ -398,6 +417,13 @@ describe('where "From link" and the scan will not go', () => {
 
   it('refuses a public address that redirects onto the network', async () => {
     const w = worker({ landed: 'http://192.168.1.1/' })
+    const out = await w.capturePage(served.url)
+    expect(out).toMatchObject({ ok: false })
+    expect(w.inlinedWith).toHaveLength(0)
+  })
+
+  it('refuses a page that moved onto the network after the tab was checked', async () => {
+    const w = worker({ readAt: 'http://192.168.1.1/admin' })
     const out = await w.capturePage(served.url)
     expect(out).toMatchObject({ ok: false })
     expect(w.inlinedWith).toHaveLength(0)
@@ -479,6 +505,12 @@ describe('a scan whose "Load more" navigates the tab', () => {
     const { scan, ran } = scanner([board, 'https://elsewhere.example/'])
     expect((await scan(board)).ok).toBe(false)
     expect(ran).toEqual(['expand'])
+  })
+
+  it('refuses when the board navigated onto the network while it was being read', async () => {
+    const { scan, ran } = scanner([board, board, 'http://192.168.1.1/'])
+    expect((await scan(board)).ok).toBe(false)
+    expect(ran).toEqual(['expand', 'harvest'])
   })
 
   it('reads the board, and says where, when pressing stayed put', async () => {

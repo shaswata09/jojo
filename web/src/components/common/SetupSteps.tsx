@@ -18,6 +18,9 @@ import { syncExtensionCrashReporting, useCaptureInbox } from '@/lib/capture-brid
 import { CRASH_CAPABILITY, crashEnabled, setCrashEnabled } from '@/lib/crash-log'
 import { ANALYTICS_CAPABILITY, analyticsEnabled, setAnalyticsEnabled } from '@/lib/analytics'
 import { SettingRow } from '@/components/common/Field'
+import { usageSwitchStart } from '@/components/common/consent-start'
+import { wasOffered } from '@/lib/onboarding'
+import { CRASH_DEFAULTS } from '@jojo/service/core/crash-config'
 import { Switch } from '@/components/ui/switch'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { contentModal } from '@/components/ui/dialog-width'
@@ -204,7 +207,11 @@ export function CrashStep({ onSkip, onDone }: { onSkip: () => void; onDone: () =
    * actually set.
    */
   const [crashes, setCrashes] = useState(crashEnabled)
-  const [usage, setUsage] = useState(analyticsEnabled)
+  // Not `analyticsEnabled` alone: it reads false until this very question has
+  // been answered, which drew the usage switch off under "both on".
+  const [usage, setUsage] = useState(() =>
+    usageSwitchStart(analyticsEnabled(), wasOffered('crash'), CRASH_DEFAULTS.enabled),
+  )
 
   const choose = (crashesOn: boolean, usageOn: boolean) => {
     setCrashEnabled(crashesOn)

@@ -175,6 +175,40 @@ describe('createMemoryDriver', () => {
     expect(rows.nodes).toEqual([{ id: `app:${marker}` }])
   })
 
+  /**
+   * R20: the slug check is about the rows THIS batch puts, as IndexedDB's
+   * unique index is. A store that already held one duplicate pair (an old
+   * build, a restore from before the check) refused every later node write —
+   * every save in the app — because the clash was found by scanning the whole
+   * store, not the batch.
+   */
+  it('refuses a batch for its own slug clash, not for an old one elsewhere in the store', async () => {
+    const kw = (id: string, slug: string) => ({ id, type: 'keyword', props: { slug } })
+    const driver = createMemoryDriver({
+      rows: { nodes: [kw('k:a', 'remote'), kw('k:b', 'remote')], edges: [], meta: [], ops: [] },
+    })
+    await driver.open()
+
+    expect((await driver.commit([put('nodes', 'k:c', kw('k:c', 'ml'))])).ok).toBe(true)
+    // Re-addressing one of the old pair is how the clash gets fixed, so it must go through.
+    expect((await driver.commit([put('nodes', 'k:a', kw('k:a', 'remote-2'))])).ok).toBe(true)
+    const healed = createMemoryDriver({
+      rows: { nodes: [kw('k:a', 'remote'), kw('k:b', 'remote')], edges: [], meta: [], ops: [] },
+    })
+    // Rewriting one of the pair under the SAME slug is refused, as IndexedDB's index refuses it.
+    expect((await healed.commit([put('nodes', 'k:a', kw('k:a', 'remote'))])).ok).toBe(false)
+    const joined = await driver.commit([put('nodes', 'k:d', kw('k:d', 'remote'))])
+    // A new row joining the remaining one still is.
+    expect(!joined.ok && joined.error.code).toBe('storage/corrupt')
+    // So is a clash inside the batch itself.
+    const inside = await driver.commit([
+      put('nodes', 'k:e', kw('k:e', 'nlp')),
+      put('nodes', 'k:f', kw('k:f', 'nlp')),
+    ])
+    expect(inside.ok).toBe(false)
+    expect(unwrap(await driver.readAll()).nodes.map((n) => n['id'])).toEqual(['k:a', 'k:b', 'k:c'])
+  })
+
   // D24: first run is the ABSENCE of the meta row, never "the node store is
   // empty". A driver that tested `nodes` would reseed the demo fixtures over
   // Settings → Records → Empty on every reload, which makes the button

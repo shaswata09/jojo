@@ -12,7 +12,8 @@ import { CalendarArrowDown, Plus } from 'lucide-react'
 import { DayRail } from '@/components/calendar/DayRail'
 import { EventChip } from '@/components/calendar/EventChip'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
-import { DAY_DROP_PREFIX, dropTarget } from '@/components/calendar/drop-target'
+import { DAY_DROP_PREFIX, dayDropLabel, dropTarget } from '@/components/calendar/drop-target'
+import { dragAnnouncements } from '@/components/common/drag-announcements'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -156,7 +157,14 @@ export function Calendar() {
     toast({
       title: `Moved to ${shortDate(iso)}`,
       description: item.title,
-      action: { label: 'Undo', onClick: () => reschedule(item.id, from) },
+      // The undo is a write too, and can be refused (the item deleted since, a
+      // date the tool rejects); say so rather than leave the toast's promise.
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          announceRefusal(reschedule(item.id, from), toast)
+        },
+      },
     })
   }
 
@@ -219,6 +227,13 @@ export function Calendar() {
       <DndContext
         sensors={sensors}
         collisionDetection={dropTarget}
+        // Event titles and day names, not the ids dnd-kit would read aloud.
+        accessibility={{
+          announcements: dragAnnouncements({
+            item: (id) => get(id)?.title,
+            target: dayDropLabel,
+          }),
+        }}
         onDragStart={(e: DragStartEvent) => setActiveId(String(e.active.id))}
         onDragEnd={onDragEnd}
         onDragCancel={() => setActiveId(null)}

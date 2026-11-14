@@ -61,6 +61,13 @@ export const threadCreate = defineTool({
   summary: 'Opens a new conversation with the assistant, kept on this device.',
   effect: 'create',
   touches: ['thread'],
+  /*
+   * The app stores the first exchange with the record, in one commit. A model
+   * may start a conversation and name it, never write one: `entries` here is a
+   * transcript whose `you` turns replay to the model as the person speaking,
+   * so a create carrying them forged consent nobody gave (R7b).
+   */
+  appOnlyFields: ['entries'],
   input: s.object({
     title: s.optional(s.string({ label: 'Title' })),
     entries: s.optional(entries),

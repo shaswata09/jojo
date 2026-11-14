@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import type { PostingDraft } from '@jojo/service/agent/read-posting'
 import type { Application, NodeId } from '@jojo/service/core/model'
 import { SOURCES } from '@jojo/service/core/model'
-import { postingSourceForUrl } from '@jojo/service/core/posting-source'
 import { postingIdentity } from '@jojo/service/core/capture'
 import type { ScoutReading } from '@jojo/service/core/proposal'
 import { DEFAULT_THINKING, helperThinking } from '@jojo/service/core/model-server'
@@ -11,6 +10,7 @@ import { useUndoable } from '@/lib/undo'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useRun } from '@jojo/service/react/use-tool'
 import { useVault } from '@jojo/service/react/use-vault'
+import type { VaultFile } from '@jojo/service/data/vault'
 import type { ModelSettings } from '@/lib/llm'
 import { useReadPosting } from '@/lib/posting-agent'
 import type { PostingOutcome, PostingRoute, PostingStep } from '@/lib/posting-agent'
@@ -125,6 +125,34 @@ function knownDraft(known: Extract<ScoutReading, { ok: true }>, url: string): Po
   return { ...rest, ...(valid ? { source: source as Application['source'] } : {}), url }
 }
 
+/**
+ * The outcome a stored reading stands for, when the page it kept is still in
+ * the Vault — or null, and the page is read afresh.
+ *
+ * `files` must be read from the store when this is called, not from the
+ * render that made the callback: an approval pressed while the background read
+ * was running awaits that read, whose page was kept after the render — so the
+ * render's list never held it, and the posting was opened a second time.
+ */
+export function knownRead(
+  known: Extract<ScoutReading, { ok: true }> | undefined,
+  url: string,
+  files: readonly VaultFile[],
+): Extract<PostingOutcome, { ok: true }> | null {
+  if (!known?.fileId) return null
+  const file = files.find((f) => f.id === known.fileId)
+  if (!file) return null
+  return {
+    ok: true,
+    draft: knownDraft(known, url),
+    file,
+    missing: known.missing,
+    keywords: known.keywords.map((k) => k.id),
+    via: known.via,
+    created: known.created === true,
+  }
+}
+
 /** Why the static rule called it a duplicate, in a sentence. */
 const DUPLICATE_WHY = {
   id: 'Both postings carry the same posting ID.',
@@ -186,7 +214,7 @@ export function useFillFromPosting(): (options: {
   const readPosting = useReadPosting()
   const run = useRun()
   const { repo, projections } = useKg()
-  const { files, updateFile } = useVault()
+  const { updateFile } = useVault()
   const checkDuplicate = useDuplicateCheck()
   const undoable = useUndoable()
 
@@ -210,27 +238,11 @@ export function useFillFromPosting(): (options: {
           reason: 'The draft was deleted before its posting could be read.',
         }
 
-      const knownFile = known?.fileId ? files.find((f) => f.id === known.fileId) : undefined
+      // A page already kept for this address is reused by `readPosting`
+      // itself, and only while its bytes are on this device (R17).
       const read: PostingOutcome =
-        known && knownFile
-          ? {
-              ok: true,
-              draft: knownDraft(known, url),
-              file: knownFile,
-              missing: known.missing,
-              keywords: known.keywords.map((k) => k.id),
-              via: known.via,
-            }
-          : await (() => {
-              const kept = postingSourceForUrl(repo.getSnapshot(), url)
-              const reuse = kept ? files.find((f) => f.id === kept.fileId) : undefined
-              return readPosting({
-                url,
-                settings,
-                reader,
-                ...(reuse ? { reuseFile: reuse } : {}),
-              })
-            })()
+        knownRead(known, url, projections.files(repo.getSnapshot())) ??
+        (await readPosting({ url, settings, reader }))
       if (!read.ok) {
         /*
          * The page was kept before the model was asked (`useReadPosting`), so a
@@ -353,6 +365,6 @@ export function useFillFromPosting(): (options: {
         via: read.via,
       }
     },
-    [readPosting, run, repo, projections, files, updateFile, checkDuplicate, undoable],
+    [readPosting, run, repo, projections, updateFile, checkDuplicate, undoable],
   )
 }

@@ -12,6 +12,7 @@ import {
 } from './catalog'
 import { READS } from './queries'
 import { NODE_TYPES } from '../core/model'
+import { MutableSnapshot } from '../core/snapshot'
 
 describe('coverage', () => {
   const tools = Object.values(TOOLS) as AnyTool[]
@@ -51,6 +52,9 @@ describe('coverage', () => {
     ).toEqual([
       'assistant.thread.context.set',
       'assistant.thread.set',
+      // The fit panel's own write: `system`, so a model calling it skipped
+      // the undo ring (R8).
+      'fit.reading.set',
       'pipeline.proposal.approve',
       'pipeline.proposal.clear',
       'pipeline.proposal.discard',
@@ -156,9 +160,10 @@ describe('destructiveness', () => {
   it('asks about a pipeline’s boards and autonomy, not its name', () => {
     const update = CATALOG.find((e) => e.name === 'scout.pipeline.update')!
     expect(update.destructive).toBe(false)
-    expect(needsConfirming(update, { id: 'pipeline:1', name: 'Texas' })).toBe(false)
-    expect(needsConfirming(update, { id: 'pipeline:1', source: 'https://x.test' })).toBe(true)
-    expect(needsConfirming(update, { id: 'pipeline:1', auto: true })).toBe(true)
+    const m = new MutableSnapshot()
+    expect(needsConfirming(update, { id: 'pipeline:1', name: 'Texas' }, m)).toBe(false)
+    expect(needsConfirming(update, { id: 'pipeline:1', source: 'https://x.test' }, m)).toBe(true)
+    expect(needsConfirming(update, { id: 'pipeline:1', auto: true }, m)).toBe(true)
     expect(describeEntry(update)).toContain('needs the person’s approval')
     expect(describeEntry(update)).not.toContain('Destructive')
     const hint = mcpSpecs().find((m) => m.name === 'scout_pipeline_update')?.annotations
@@ -242,19 +247,19 @@ describe('what a model reads about a tool', () => {
 describe('the counts the comments quote', () => {
   it('matches what queries.ts, mcp.ts and execute.ts say out loud', () => {
     // If this fails, the number changed. Update it here AND in:
-    //   kg/agent/queries.ts   — "ninety-six entries", "a hundred and eight names"
-    //   kg/agent/mcp.ts       — "ninety-six tools is one page" (twice)
-    //   kg/agent/loop.ts      — "every non-read step (86 of 96 tools)"
+    //   kg/agent/queries.ts   — "ninety-five entries", "a hundred and seven names"
+    //   kg/agent/mcp.ts       — "ninety-five tools is one page" (twice)
+    //   kg/agent/loop.ts      — "every non-read step (85 of 95 tools)"
     //   web/src/lib/keys-stay-local.test.ts — "the hundred and five tools live"
     //   core/model.ts         — the destructive count on `APPROVAL_LABEL`
     //   web guide CodeStructure.tsx — "N named write operations"
-    expect(CATALOG.length).toBe(96)
+    expect(CATALOG.length).toBe(95)
   })
 
   it('matches the write/read split queries.ts quotes', () => {
-    // "eighty-six write tools already" — the number the generic-readers
+    // "eighty-five write tools already" — the number the generic-readers
     // argument is measured against.
-    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(86)
+    expect(CATALOG.filter((e) => e.effect !== 'read')).toHaveLength(85)
   })
 
   it('matches the seventeen node types that paragraph counts', () => {

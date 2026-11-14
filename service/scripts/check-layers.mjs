@@ -814,17 +814,20 @@ for (const adapter of ADAPTERS) {
  *   `src`): `core`, `data`, `react`, `log` and `agent` only. React state and
  *   writes arrive through `@jojo/service/react/*` hooks; that is the layer that
  *   exists to bind the graph to a renderer.
- * - Seams (`lib`): the same, plus the files in APP_SEAMS — the boot, restore,
- *   backup and pairing paths that genuinely have to hold a repository, a
- *   driver or the crypto box, because they are what CREATES them for the React
- *   layer to wrap.
+ * - Everything else under an app's `src` except `kg/` — `lib`, and also
+ *   `navigation`, `theme`, `data`, `App.tsx`, `main.tsx` and any directory
+ *   added later (plus `App.tsx` at an app's root, where React Native keeps
+ *   it): the same, plus the files in APP_SEAMS — the boot, restore, backup and
+ *   pairing paths that genuinely have to hold a repository, a driver or the
+ *   crypto box, because they are what CREATES them for the React layer to wrap.
  *
  * Type-only imports count. A component typed against `Repository` is a
  * component that was handed one, which is the coupling this exists to stop.
  * Tests are exempt: a test builds a repository to drive the code under test.
- * `kg/` is the adapters' section above, and the rest of `src` (App.tsx,
- * main.tsx, navigation, theme) is not policed here yet — none of it reaches
- * below `react` today.
+ * `kg/` is the adapters' section above. Nothing else is skipped: this used to
+ * police only the four UI directories and `lib`, so `navigation/`, `theme/`,
+ * `data/`, `App.tsx` and `main.tsx` could import any layer unseen (R38). The
+ * rule is by exclusion now — a new directory is policed the day it appears.
  *
  * Two allowlists, both PER FILE AND PER LAYER: an entry grants exactly the
  * layers listed, so an allowlisted file that starts importing a new layer
@@ -833,7 +836,8 @@ for (const adapter of ADAPTERS) {
  */
 const APP_ALLOWED = new Set(['core', 'data', 'react', 'log', 'agent'])
 const APP_UI_DIRS = new Set(['components', 'routes', 'screens', 'sheets'])
-const APP_SEAM_DIRS = new Set(['lib'])
+/** Under an app's `src`, the one directory this section leaves to the adapters' rules. */
+const APP_ADAPTER_DIR = 'kg'
 
 /**
  * lib/ files that legitimately sit below the React layer. Each one constructs or
@@ -882,40 +886,51 @@ const APP_UI_DEBT = {
   'mobile/src/sheets/ApplicationSheet.tsx': ['tools'],
 }
 
-const appGrantsUsed = new Set()
-for (const src of appRoots()) {
-  for (const dir of readdirSync(src)) {
-    const zone = APP_UI_DIRS.has(dir) ? 'ui' : APP_SEAM_DIRS.has(dir) ? 'seam' : null
-    const full = path.join(src, dir)
-    if (zone === null || !statSync(full).isDirectory()) continue
-
-    for (const file of walk(full)) {
-      if (isTest(file)) continue
-      const rel = path.relative(ROOT, file).split(path.sep).join('/')
-      const source = readFileSync(file, 'utf8')
-      const grants = (zone === 'ui' ? APP_UI_DEBT : APP_SEAMS)[rel] ?? []
-
-      for (const spec of specsIn(source)) {
-        if (!spec.startsWith(`${SELF}/`)) continue
-        const layer = spec.slice(SELF.length + 1).split('/')[0]
-        if (APP_ALLOWED.has(layer)) continue
-        if (grants.includes(layer)) {
-          appGrantsUsed.add(`${rel}:${layer}`)
-          continue
-        }
-        fail(
-          file,
-          lineOf(source, spec),
-          zone === 'ui'
-            ? `UI code imports '${spec}'. Components, routes, screens and sheets may reach ` +
-                `${[...APP_ALLOWED].join(', ')} — state and writes go through a hook in ` +
-                `'@jojo/service/react/…', which owns the error handling and the journal.`
-            : `lib/ imports '${spec}' and is not an APP_SEAMS entry for '${layer}'. If this file ` +
-                `really creates what a hook later wraps (boot, restore, pairing), add it to ` +
-                `APP_SEAMS with the reason; otherwise reach the graph through '@jojo/service/react/…'.`,
-        )
-      }
+/** Every app file this section polices, with its zone: UI directories, or everything else. */
+function appFiles(src) {
+  const out = []
+  for (const entry of readdirSync(src)) {
+    const full = path.join(src, entry)
+    if (statSync(full).isDirectory()) {
+      if (entry === APP_ADAPTER_DIR) continue
+      const zone = APP_UI_DIRS.has(entry) ? 'ui' : 'seam'
+      for (const file of walk(full)) out.push({ file, zone })
+    } else if (/\.tsx?$/.test(entry)) {
+      out.push({ file: full, zone: 'seam' })
     }
+  }
+  // React Native keeps its root component beside `src`, not in it.
+  const rootApp = path.join(path.dirname(src), 'App.tsx')
+  if (existsSync(rootApp)) out.push({ file: rootApp, zone: 'seam' })
+  return out
+}
+
+const appGrantsUsed = new Set()
+for (const { file, zone } of appRoots().flatMap(appFiles)) {
+  if (isTest(file)) continue
+  const rel = path.relative(ROOT, file).split(path.sep).join('/')
+  const source = readFileSync(file, 'utf8')
+  const grants = (zone === 'ui' ? APP_UI_DEBT : APP_SEAMS)[rel] ?? []
+
+  for (const spec of specsIn(source)) {
+    if (!spec.startsWith(`${SELF}/`)) continue
+    const layer = spec.slice(SELF.length + 1).split('/')[0]
+    if (APP_ALLOWED.has(layer)) continue
+    if (grants.includes(layer)) {
+      appGrantsUsed.add(`${rel}:${layer}`)
+      continue
+    }
+    fail(
+      file,
+      lineOf(source, spec),
+      zone === 'ui'
+        ? `UI code imports '${spec}'. Components, routes, screens and sheets may reach ` +
+            `${[...APP_ALLOWED].join(', ')} — state and writes go through a hook in ` +
+            `'@jojo/service/react/…', which owns the error handling and the journal.`
+        : `lib/ imports '${spec}' and is not an APP_SEAMS entry for '${layer}'. If this file ` +
+            `really creates what a hook later wraps (boot, restore, pairing), add it to ` +
+            `APP_SEAMS with the reason; otherwise reach the graph through '@jojo/service/react/…'.`,
+    )
   }
 }
 

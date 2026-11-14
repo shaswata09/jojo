@@ -149,7 +149,11 @@ at all**, so the browser blocks the real request and the page reports a bare
 `Failed to fetch` that names nothing.
 
 `jojo:call-model` relays those, and its allowlist is loopback **plus** the
-provider hosts in `policy.js` — transcribed from `service/kg/core/provider.ts`
+provider hosts in `policy.js`. Loopback means the ports local model servers
+use out of the box (Ollama 11434, LM Studio 1234, 8000, 8080 and a few more —
+`LOCAL_MODEL_PORTS` in `background.js`); any other port on this machine needs
+"Models on my network", and jojo's own reader (3001) and bridge (3002) are
+refused outright. The hosts are transcribed from `service/kg/core/provider.ts`
 and checked against it by `web/src/lib/capture-policy.test.ts`, so a host cannot
 drift in or out unnoticed. Exact hostname match, not a suffix test, because
 `endsWith('openai.com')` also accepts `evil-openai.com`.

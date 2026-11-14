@@ -6,6 +6,22 @@ import { useToast } from '@/lib/toast-context'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 
 /**
+ * Puts a deleted record's document back, and says whether one was lost.
+ *
+ * Always asks the store, rather than only when `has` said there were bytes:
+ * before the blob index hydrates `has` answers false for every document, so a
+ * delete made then trashed the bytes and the Undo never asked for them back.
+ * Whether there was anything to lose is taken from the removal itself.
+ */
+export async function undoDocument(
+  removal: Promise<boolean>,
+  restore: () => Promise<boolean>,
+): Promise<'back' | 'none' | 'lost'> {
+  if (await restore()) return 'back'
+  return (await removal.catch(() => false)) ? 'lost' : 'none'
+}
+
+/**
  * Deleting a document, everywhere it can be deleted from.
  *
  * Extracted from the Vault's files tool when the Profile page grew a delete of
@@ -36,7 +52,9 @@ export function useFileDelete() {
        * that matters. Seen on the Profile page, whose card is mostly such rows,
        * but the Vault's delete had it too — they are the same call.
        */
-      const had = blobs.has(file.id)
+      // Unknown until the index has loaded — said as "any stored copy" then,
+      // rather than claiming there was none.
+      const had = blobs.ready ? blobs.has(file.id) : undefined
       const stashed = labelIdsOf(file.id)
       const removed = removeFile(file.id)
       if (!removed.ok) {
@@ -53,14 +71,17 @@ export function useFileDelete() {
       removeRecord(file.id)
       // The stored copy goes too. Without this the record disappears and its
       // bytes stay in IndexedDB for good.
-      void blobs.remove(file.id)
+      const removal = blobs.remove(file.id)
       onGone?.(file.id)
 
       toast({
         title: `${file.name} deleted`,
-        description: had
-          ? 'The row, its keywords and jojo’s copy of the document all go. The original on your computer is untouched.'
-          : 'The row and its keywords go. There was no stored copy of this one to lose.',
+        description:
+          had === undefined
+            ? 'The row, its keywords and any copy jojo kept all go. The original on your computer is untouched.'
+            : had
+              ? 'The row, its keywords and jojo’s copy of the document all go. The original on your computer is untouched.'
+              : 'The row and its keywords go. There was no stored copy of this one to lose.',
         tone: 'danger',
         action: {
           label: 'Undo',
@@ -70,12 +91,8 @@ export function useFileDelete() {
             // An Undo that restores a record whose document has gone is worse
             // than no Undo, because the row looks intact and the loss is only
             // discovered later, by someone opening it.
-            if (!had) {
-              if (stashed.length > 0) setRecord(file.id, stashed)
-              return
-            }
-            void blobs.restore(file.id).then((came) => {
-              if (came) return
+            void undoDocument(removal, () => blobs.restore(file.id)).then((outcome) => {
+              if (outcome !== 'lost') return
               toast({
                 title: `${file.name} came back without its document`,
                 description:

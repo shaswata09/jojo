@@ -104,6 +104,23 @@ describe('the kinds a model gets wrong without help', () => {
     // application id where a keyword id belongs.
     expect(of(s.id('keyword')).description).toContain('keyword')
   })
+
+  // A colour was `{}`: no type, so "purple" looked as good as "#7c3aed".
+  it('gives a colour a type and the one shape it stores', () => {
+    const color = of(s.hexColor())
+    expect(color.type).toBe('string')
+    expect(color.pattern).toBe('^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
+    expect(color.description).toContain('#rrggbb')
+    expect(new RegExp(color.pattern ?? '').test('#7c3aed')).toBe(true)
+    expect(new RegExp(color.pattern ?? '').test('purple')).toBe(false)
+  })
+
+  // The parser refuses 2.5 for `int`; the schema has to say so up front.
+  it('calls a whole number an integer, bounds and all', () => {
+    const meta = { kind: 'number' as const, int: true, min: 1, max: 30 }
+    expect(toJsonSchema(meta)).toMatchObject({ type: 'integer', minimum: 1, maximum: 30 })
+    expect(toJsonSchema({ kind: 'number' }).type).toBe('number')
+  })
 })
 
 describe('collections', () => {

@@ -29,7 +29,9 @@ describe('the same job on two boards', () => {
   })
 
   it('is recognised by its posting ID or address before anything else', () => {
-    expect(sameJob({ postingId: 'R0012345' }, { postingId: 'Req # R0012345' })).toBe('id')
+    expect(
+      sameJob({ org: 'Rice', postingId: 'R0012345' }, { org: 'Rice University', postingId: 'Req # R0012345' }),
+    ).toBe('id')
     expect(sameJob({ url: cra.url }, { url: `${cra.url}?utm_source=email` })).toBe('url')
   })
 
@@ -71,5 +73,48 @@ describe('one employer, spelled two ways', () => {
     expect(sameEmployerStrict('Kansas State University', 'Kansas State University, Manhattan')).toBe(true)
     expect(sameEmployerStrict('KSU', 'Kansas State University')).toBe(true)
     expect(sameEmployerStrict('The University of Tennessee', 'University of Tennessee')).toBe(true)
+  })
+})
+
+describe('employers whose names share their words', () => {
+  it('keeps apart names that hold the same words in another order', () => {
+    expect(sameEmployerStrict('Texas A&M University', 'University of Texas')).toBe(false)
+    expect(sameEmployerStrict('Miami University', 'University of Miami')).toBe(false)
+    expect(sameEmployerStrict('Washington University in St. Louis', 'University of Washington')).toBe(false)
+    const role = 'Assistant Professor of Economics'
+    expect(sameJob({ org: 'Miami University', role }, { org: 'University of Miami', role })).toBeNull()
+  })
+
+  it('does not let a bare generic word stand for an employer', () => {
+    expect(sameEmployerStrict('University', 'University of Miami')).toBe(false)
+    // ...though a name is still itself.
+    expect(sameEmployerStrict('The College', 'College')).toBe(true)
+  })
+
+  it('still matches a name that is the other with a campus after it', () => {
+    expect(sameEmployerStrict('Rice', 'Rice University')).toBe(true)
+    expect(sameEmployerStrict('Miami University', 'Miami University, Oxford')).toBe(true)
+  })
+})
+
+describe('a posting ID on its own', () => {
+  /*
+   * Short requisition numbers collide across employers — 'JR100234' at Rice
+   * and at Duke are two jobs. The ID decides only when something else about
+   * the two says they are the same place.
+   */
+  it('does not join two employers that happen to share a number', () => {
+    expect(sameJob({ org: 'Rice', role: 'x', postingId: 'JR100234' }, { org: 'Duke', role: 'y', postingId: 'JR100234' })).toBeNull()
+    expect(sameJob({ postingId: 'R0012345' }, { postingId: 'R0012345' })).toBeNull()
+  })
+
+  it('decides when the employer or the site agrees', () => {
+    expect(
+      sameJob(
+        { org: 'Miami University', role: 'x', postingId: 'JR1', url: 'https://jobs.example.edu/a' },
+        { org: 'University of Miami', role: 'y', postingId: 'JR1', url: 'https://www.jobs.example.edu/b' },
+      ),
+    ).toBe('id')
+    expect(sameJob({ org: 'Rice University', role: 'x', postingId: 'JR1' }, { org: 'Rice', role: 'y', postingId: 'JR1' })).toBe('id')
   })
 })

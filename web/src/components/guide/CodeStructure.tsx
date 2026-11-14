@@ -98,28 +98,28 @@ export const SHAPE: DirRow[] = [
     // for each application, and the one rule for when a brief counts as empty.
     // `backup-stream.ts` and its test: the backup written and read in pieces,
     // because a 500 MB store is more base64 than one string can hold.
-    files: 144,
-    tests: 70,
+    files: 146,
+    tests: 71,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
     // rule came with it.
     // Re-measured 2026-10-22 with `backup-stream.ts`.
-    lines: 41538,
+    lines: 43457,
     what: 'model, ids, schema, algebra, dates',
   },
-  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 7919, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8182, what: 'transactions, journal, boot' },
   {
     dir: 'service/kg/tools',
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
     // clearing it — the two halves of a reading that survives a reload.
     // `tailor.ts` and its test: the one write behind the tailoring card.
-    files: 36,
-    tests: 12,
+    files: 37,
+    tests: 13,
     // Re-measured when the two proposal verbs got an `available` gate, so a
     // suggestion already answered stops being offered as one — and again when
     // `vault.ts` grew the two verbs that name one person on one job.
-    lines: 12509,
+    lines: 13123,
     what: '95 named write operations',
   },
   {
@@ -191,7 +191,7 @@ export const SHAPE: DirRow[] = [
     dir: 'web/src/kg/storage',
     files: 12,
     tests: 4,
-    lines: 2756,
+    lines: 2938,
     what: 'the IndexedDB adapter, and the folder one',
   },
   {
@@ -224,9 +224,9 @@ export const SHAPE: DirRow[] = [
     // 323 with the Guide's FAQ page: `guide/GuideFaq.tsx`, the map it draws
     // (`guide/faq-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    files: 339,
-    tests: 38,
-    lines: 59265,
+    files: 352,
+    tests: 46,
+    lines: 60362,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -272,9 +272,9 @@ export const SHAPE: DirRow[] = [
     // 175 with `scout-reading.tsx`: each suggested posting read while it waits
     // for an answer, so the card shows the employer, role and place, and
     // approving does not open the page a second time.
-    files: 175,
-    tests: 68,
-    lines: 27274,
+    files: 183,
+    tests: 74,
+    lines: 28897,
     what: 'web-only adapters and URL state',
   },
   {
@@ -304,7 +304,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 111
+export const WEB_TEST_FILES = 125
 
 type TestGroup = { title: string; files: string; body: string }
 

@@ -42,6 +42,15 @@
  * is why `list` of a directory that was never created answers `ok([])` rather
  * than a failure, and why that costs no special case here. `memory-file-store`
  * is shaped the same way for the same reason, and the two pass the same suite.
+ *
+ * ## Two stores: the bytes, and what `list` needs
+ *
+ * `blobs` holds each file's bytes; `meta` holds `{ bytes, mtime }` under the
+ * same key, written in the same transaction. `list` answers from `meta` alone.
+ * Before it existed, `list` read every document in full to report two numbers —
+ * forty 1 MB documents meant 40 MB read on every page load. Version 2 created
+ * `meta` and filled it once from the existing blobs; `list` still backfills a
+ * key it finds without one, so a gap costs one read, never a wrong answer.
  */
 
 import { openDB, type IDBPDatabase } from 'idb'
@@ -58,6 +67,9 @@ import {
 
 const DB_NAME = 'jojo-files'
 const STORE = 'blobs'
+/** `{ bytes, mtime }` per key. See "Two stores" above. */
+const META = 'meta'
+const DB_VERSION = 2
 const IDENTITY_PATH = 'jojo/folder.json'
 const TRASH_DIR = 'jojo/Trash'
 
@@ -66,6 +78,8 @@ const localLocks = new Set<string>()
 
 /** What a key holds. `mtime` is ours to mint: there is no filesystem to ask. */
 type Record = { data: Uint8Array; mtime: number }
+/** What `list` and `stat` need, without the bytes. */
+type Meta = { bytes: number; mtime: number }
 
 export type IdbFileStoreOptions = {
   /**
@@ -98,6 +112,8 @@ export interface IdbFileStore extends FileStore {
   persisted(): Promise<boolean>
 }
 
+const metaOf = (rec: Record): Meta => ({ bytes: rec.data.byteLength, mtime: rec.mtime })
+
 const messageOf = (e: unknown): string =>
   e instanceof Error ? `${e.name}: ${e.message}` : String(e)
 
@@ -114,7 +130,12 @@ const codeOf = (e: unknown): 'quota' | 'failed' =>
 
 export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
   const dbName = options.dbName ?? DB_NAME
-  let db: IDBPDatabase | null = null
+  /*
+   * The open, memoised as a promise rather than the handle: two first calls
+   * arriving together used to open two connections, and the first was left
+   * open and unreferenced — which then blocked the next version upgrade.
+   */
+  let opening: Promise<IDBPDatabase> | null = null
   let connected = false
   let askedToPersist = false
   /**
@@ -128,15 +149,51 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
    */
   let forgotten = false
 
-  async function ensure(): Promise<IDBPDatabase> {
-    if (db) return db
-    db = await openDB(dbName, 1, {
-      upgrade(fresh) {
-        fresh.createObjectStore(STORE)
+  function ensure(): Promise<IDBPDatabase> {
+    if (opening) return opening
+    const pending = openDB(dbName, DB_VERSION, {
+      async upgrade(fresh, oldVersion, _newVersion, tx) {
+        if (oldVersion < 1) fresh.createObjectStore(STORE)
+        if (oldVersion < 2) {
+          const meta = fresh.createObjectStore(META)
+          // The one time every blob is read: to write what `list` needs.
+          let cursor = await tx.objectStore(STORE).openCursor()
+          while (cursor) {
+            const rec = cursor.value as Record
+            await meta.put(metaOf(rec), cursor.key)
+            cursor = await cursor.continue()
+          }
+        }
       },
-    })
-    connected = true
-    return db
+      /*
+       * Another tab wants a newer version. Holding this connection open would
+       * stall that tab's open until this one closed, so let go; the next call
+       * here reopens — and meets the newer version, which is the right failure.
+       */
+      blocking() {
+        void pending.then((handle) => {
+          handle.close()
+        })
+        if (opening === pending) opening = null
+      },
+      // The browser closed it (storage cleared, a crash). Reopen next time.
+      terminated() {
+        if (opening === pending) opening = null
+      },
+    }).then(
+      (handle) => {
+        connected = true
+        return handle
+      },
+      (error: unknown) => {
+        // Not memoised: a failed open (blocked IndexedDB, a version error) is
+        // tried again by the next call rather than answered from a dead promise.
+        if (opening === pending) opening = null
+        throw error
+      },
+    )
+    opening = pending
+    return pending
   }
 
   /**
@@ -163,11 +220,22 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
     }
   }
 
-  const entryOf = (path: string, rec: Record): FileEntry => ({
+  const entryOf = (path: string, rec: Record | Meta): FileEntry => ({
     path,
-    bytes: rec.data.byteLength,
+    bytes: 'data' in rec ? rec.data.byteLength : rec.bytes,
     mtime: rec.mtime,
   })
+
+  /** The metadata for a key, backfilled from the blob if it has none. */
+  async function metaFor(handle: IDBPDatabase, key: string): Promise<Meta | undefined> {
+    const meta = (await handle.get(META, key)) as Meta | undefined
+    if (meta !== undefined) return meta
+    const rec = (await handle.get(STORE, key)) as Record | undefined
+    if (rec === undefined) return undefined
+    const made = metaOf(rec)
+    await handle.put(META, made, key)
+    return made
+  }
 
   /**
    * Asks the browser not to evict, once, on the first write.
@@ -236,18 +304,19 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
           // System Access adapter can carry one, and a caller must not have to
           // remember which store it is talking to.
           if (isSwapFile(key)) continue
-          const rec = (await handle.get(STORE, key)) as Record | undefined
-          if (rec) out.push(entryOf(key, rec))
+          // From `meta`, not the blob: see "Two stores" at the top.
+          const meta = await metaFor(handle, key)
+          if (meta) out.push(entryOf(key, meta))
         }
         return fileOk(out)
       }),
 
     stat: async (path) =>
       attempt<FileEntry>('stat', path, async (handle) => {
-        const rec = (await handle.get(STORE, path)) as Record | undefined
-        return rec === undefined
+        const meta = await metaFor(handle, path)
+        return meta === undefined
           ? fileFail<FileEntry>('files/not-found', 'no such file', { path })
-          : fileOk(entryOf(path, rec))
+          : fileOk(entryOf(path, meta))
       }),
 
     read: async (path) =>
@@ -271,7 +340,11 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
         // Copied for the same reason as `read`, and just as unobservably: the
         // structured clone has already happened by the time `put` resolves.
         const rec: Record = { data: data.slice(), mtime: options.now() }
-        await handle.put(STORE, rec, path)
+        // Both or neither, so `list` never reports a size the bytes do not have.
+        const tx = handle.transaction([STORE, META], 'readwrite')
+        await tx.objectStore(STORE).put(rec, path)
+        await tx.objectStore(META).put(metaOf(rec), path)
+        await tx.done
         return fileOk(entryOf(path, rec))
       }),
 
@@ -298,11 +371,15 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
         // Probed inside that transaction, so the free name it finds is still
         // free when the put lands — an earlier copy trashed from the same path
         // is never overwritten. See `trashPath`.
-        const tx = handle.transaction(STORE, 'readwrite')
+        const tx = handle.transaction([STORE, META], 'readwrite')
+        const blobs = tx.objectStore(STORE)
+        const meta = tx.objectStore(META)
         let n = 1
-        while ((await tx.store.getKey(trashPath(path, n))) !== undefined) n += 1
-        await tx.store.put(rec, trashPath(path, n))
-        await tx.store.delete(path)
+        while ((await blobs.getKey(trashPath(path, n))) !== undefined) n += 1
+        await blobs.put(rec, trashPath(path, n))
+        await meta.put(metaOf(rec), trashPath(path, n))
+        await blobs.delete(path)
+        await meta.delete(path)
         await tx.done
         return fileOk(undefined)
       }),
@@ -372,8 +449,11 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
         // One transaction: a purge that half-completes leaves keys that the next
         // sweep will find anyway, but doing it atomically means the count
         // returned is the count actually freed.
-        const tx = handle.transaction(STORE, 'readwrite')
-        for (const key of doomed) await tx.store.delete(key)
+        const tx = handle.transaction([STORE, META], 'readwrite')
+        for (const key of doomed) {
+          await tx.objectStore(STORE).delete(key)
+          await tx.objectStore(META).delete(key)
+        }
         await tx.done
         return doomed.length
       } catch {
@@ -394,7 +474,10 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
     forget: async () => {
       try {
         const handle = await ensure()
-        await handle.clear(STORE)
+        const tx = handle.transaction([STORE, META], 'readwrite')
+        await tx.objectStore(STORE).clear()
+        await tx.objectStore(META).clear()
+        await tx.done
       } catch {
         // Already unreachable; there is nothing left to forget.
       }

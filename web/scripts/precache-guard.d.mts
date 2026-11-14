@@ -18,3 +18,7 @@ export declare function auditPrecache(input: {
   boot: ReadonlySet<string>
   emittedCss: boolean
 }): string[]
+
+export declare const isFingerprinted: (url: string) => boolean
+export declare const LAZY: RegExp
+export declare const precachedAsset: (url: string) => boolean

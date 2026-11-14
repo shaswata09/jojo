@@ -68,6 +68,35 @@ export type LinkStatus =
   /** The extension is there but predates the link. */
   | { state: 'stale-extension' }
 
+/**
+ * What jojo-bridge answers at `GET /tab/hello`, with no token asked or sent.
+ * Transcribed from `HELLO` in `jojo-bridge.mjs`; the joined test checks it.
+ *
+ * Checked before the token goes anywhere. Port 3002 is pinned at both ends, so
+ * if some other local server holds it the tab would otherwise send that server
+ * its bearer token on every poll. Not proof against a hostile program — the
+ * signature is public — but that program could read the token from the MCP
+ * client's config anyway.
+ */
+export const BRIDGE_HELLO = { name: 'jojo-bridge', protocol: 2 } as const
+
+/** The bridge's answer to a held poll a newer poll replaced — another tab. */
+export const DISPLACED_STATUS = 409
+
+/** Whether a `/tab/hello` answer is jojo-bridge's. */
+export function isBridgeHello(text: string): boolean {
+  try {
+    const parsed = JSON.parse(text) as { name?: unknown; protocol?: unknown }
+    return (
+      parsed.name === BRIDGE_HELLO.name &&
+      typeof parsed.protocol === 'number' &&
+      parsed.protocol >= BRIDGE_HELLO.protocol
+    )
+  } catch {
+    return false
+  }
+}
+
 /** First retry, and the ceiling the doubling stops at. */
 export const FIRST_RETRY_MS = 5_000
 export const MAX_RETRY_MS = 60_000
@@ -216,9 +245,47 @@ export async function runLink({
     delay = Math.min(delay * 2, MAX_RETRY_MS)
   }
 
+  /*
+   * Whether what answers at `address` has said it is jojo-bridge since the
+   * last failure. Reset on any failure, because a bridge that went away may
+   * come back as something else on the same port.
+   */
+  let identified = false
+
   onStatus({ state: 'searching' })
 
   while (!signal.aborted) {
+    if (!identified) {
+      const hello = await transport({ url: `${address}/tab/hello`, method: 'GET', headers: {} }, signal)
+      if (signal.aborted) return
+      if ('failed' in hello) {
+        strikes += 1
+        const named =
+          hello.failed.kind === 'absent'
+            ? ({ state: 'no-extension' } as const)
+            : hello.failed.kind === 'stale'
+              ? ({ state: 'stale-extension' } as const)
+              : null
+        onStatus(
+          named !== null && strikes >= 2 ? named : { state: 'searching', reason: hello.failed.reason },
+        )
+        await backOff()
+        continue
+      }
+      if (hello.status !== 200 || !isBridgeHello(hello.text)) {
+        // Something is listening, and it is not jojo-bridge — or is a copy
+        // from before this check, which the person can replace with the
+        // command in Settings. Either way the token stays here.
+        onStatus({
+          state: 'searching',
+          reason: `Something other than jojo-bridge (or an older copy of it) is answering at ${address}.`,
+        })
+        await backOff()
+        continue
+      }
+      identified = true
+    }
+
     const askedAt = Date.now()
     const next = await transport(
       { url: `${address}/tab/next`, method: 'GET', headers: { authorization } },
@@ -227,6 +294,7 @@ export async function runLink({
     if (signal.aborted) return
 
     if ('failed' in next) {
+      identified = false
       strikes += 1
       const named =
         next.failed.kind === 'absent'
@@ -256,7 +324,21 @@ export async function runLink({
       if (Date.now() - askedAt < MIN_POLL_GAP_MS) await wait(MIN_POLL_GAP_MS, signal)
       continue
     }
+    if (next.status === DISPLACED_STATUS) {
+      /*
+       * Another tab polled after this one, so the bridge gave it the line.
+       * Backing off — rather than polling again at once — is what stops two
+       * tabs displacing each other several times a second. The provider also
+       * elects one tab with a Web Lock, so this is the path for a browser
+       * without one, or a window that slipped past the election.
+       */
+      strikes = 0
+      onStatus({ state: 'searching', reason: 'Another jojo tab is holding the link.' })
+      await backOff()
+      continue
+    }
     if (next.status !== 200) {
+      identified = false
       onStatus({ state: 'searching', reason: `jojo-bridge answered ${String(next.status)}.` })
       await backOff()
       continue
@@ -270,6 +352,10 @@ export async function runLink({
     try {
       handed = JSON.parse(next.text) as { seq?: unknown; message?: unknown }
     } catch {
+      // Paced, not retried at once: a server that answers every poll with the
+      // same unreadable 200 would otherwise be polled as fast as it answers.
+      identified = false
+      await backOff()
       continue
     }
     const message = handed.message as { id?: unknown; method?: unknown } | undefined
@@ -301,9 +387,60 @@ export async function runLink({
   }
 }
 
-/** The line that starts the bridge, with this tab's token in it. */
-export const bridgeCommand = (scriptUrl: string, token: string) =>
-  `curl -fsSL ${scriptUrl} -o jojo-bridge.mjs && node jojo-bridge.mjs --token ${token}`
+/**
+ * The line that starts the bridge, with this tab's token in it.
+ *
+ * The token goes in through the environment, not as `--token`: a program's
+ * arguments can be read by every user on the machine through `ps`, its
+ * environment only by the same user. `posix` is macOS and Linux shells;
+ * `powershell` is Windows, where `curl` is an alias unless spelled `curl.exe`
+ * and `&&` does not exist in Windows PowerShell 5.
+ */
+export const bridgeCommand = (scriptUrl: string, token: string, shell: 'posix' | 'powershell' = 'posix') =>
+  shell === 'powershell'
+    ? `curl.exe -fsSL ${scriptUrl} -o jojo-bridge.mjs; $env:JOJO_BRIDGE_TOKEN="${token}"; node jojo-bridge.mjs`
+    : `curl -fsSL ${scriptUrl} -o jojo-bridge.mjs && JOJO_BRIDGE_TOKEN=${token} node jojo-bridge.mjs`
+
+/**
+ * Runs `run` in at most one jojo tab of this browser at a time.
+ *
+ * Two tabs each running the link displace each other's poll at the bridge
+ * (R31). A Web Lock elects one: the other tabs wait in line, and the next one
+ * takes over the moment the holder closes or switches the link off — the
+ * browser releases a dead tab's lock itself. `onWaiting` is called when this
+ * tab is queued behind another.
+ *
+ * Without `navigator.locks` (every browser jojo supports has it; a test
+ * environment may not) it simply runs, and the bridge's DISPLACED answer keeps
+ * the pair from spinning.
+ */
+export async function runElected(
+  signal: AbortSignal,
+  run: () => Promise<void>,
+  onWaiting: () => void,
+  locks: LockManager | undefined = typeof navigator === 'undefined' ? undefined : navigator.locks,
+): Promise<void> {
+  if (locks === undefined) {
+    await run()
+    return
+  }
+  try {
+    let got = false
+    // Asked without waiting first, so a tab that is queued can say so.
+    await locks.request(LINK_LOCK, { ifAvailable: true }, async (lock) => {
+      if (lock === null) return
+      got = true
+      await run()
+    })
+    if (got || signal.aborted) return
+    onWaiting()
+    await locks.request(LINK_LOCK, { signal }, run)
+  } catch {
+    // Aborted while waiting in line — the link was switched off.
+  }
+}
+
+const LINK_LOCK = 'jojo-mcp-link'
 
 /** The line that connects Claude Code to it. Double quotes, so it pastes into PowerShell too. */
 export const clientCommand = (token: string, address = BRIDGE_ADDRESS) =>

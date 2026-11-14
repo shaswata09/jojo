@@ -121,17 +121,44 @@ const orderedRows = (store: Store): StoredRow[] =>
  * a row whose type or slug is not a valid key (a profile has no slug) is simply
  * not in it. A full pass, but `commit` already copies every store per batch.
  */
-function slugClash(nodes: Store): string | null {
-  const seen = new Set<string>()
-  for (const row of nodes.values()) {
+function slugClash(nodes: Store, only?: ReadonlySet<Key>): string | null {
+  const addressOf = (row: StoredRow): { key: string; label: string } | null => {
     const type = row['type']
     const props = row['props']
-    if (typeof type !== 'string' || typeof props !== 'object' || props === null) continue
+    if (typeof type !== 'string' || typeof props !== 'object' || props === null) return null
     const slug = (props as Record<string, unknown>)['slug']
-    if (typeof slug !== 'string' && typeof slug !== 'number') continue
-    const key = `${type}\0${typeof slug}:${String(slug)}`
-    if (seen.has(key)) return `${type} '${String(slug)}'`
-    seen.add(key)
+    if (typeof slug !== 'string' && typeof slug !== 'number') return null
+    return { key: `${type}\0${typeof slug}:${String(slug)}`, label: `${type} '${String(slug)}'` }
+  }
+
+  // `only` is a commit's own puts. IndexedDB's unique index refuses a put whose
+  // address another row holds, and says nothing about two OTHER rows that
+  // already share one. Scanning for any pair at all made one old duplicate (from
+  // a build before this check, or the phone's store) refuse every later node
+  // write in the app — every save — until the store was rebuilt.
+  const wanted = new Map<string, Key>()
+  if (only) {
+    for (const k of only) {
+      const row = nodes.get(k)
+      const address = row ? addressOf(row) : null
+      // Two puts in this batch on one address: the scan below finds the one
+      // this map does not name, so no separate check is needed here.
+      if (address) wanted.set(address.key, k)
+    }
+    if (wanted.size === 0) return null
+  }
+
+  const seen = new Set<string>()
+  for (const [k, row] of nodes) {
+    const address = addressOf(row)
+    if (!address) continue
+    if (only) {
+      const owner = wanted.get(address.key)
+      if (owner !== undefined && owner !== k) return address.label
+      continue
+    }
+    if (seen.has(address.key)) return address.label
+    seen.add(address.key)
   }
   return null
 }
@@ -293,8 +320,12 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): MemoryDri
       return classify<void>(e, 'commit')
     }
 
-    if (ops.some((op) => op.store === 'nodes')) {
-      const clash = slugClash(next.nodes)
+    const putNodes = new Set<Key>()
+    for (const op of ops) {
+      if (op.store === 'nodes' && op.kind === 'put') putNodes.add(keyOf('nodes', op.key, op.value))
+    }
+    if (putNodes.size > 0) {
+      const clash = slugClash(next.nodes, putNodes)
       if (clash !== null) return clashFailure<void>(clash, 'commit')
     }
 

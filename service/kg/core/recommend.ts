@@ -36,6 +36,7 @@ import type { Application, TimelineItem } from './model'
 import { daysBetween } from './dates'
 import { medianOf, REACH, reachedOf, replyGaps, TYPICAL } from './statistics'
 import { comparisonsFor, rangeLabel } from './segments'
+import { sentOn } from './sent-on'
 
 /** After a fortnight with no activity, a live application has gone quiet. */
 const STALE_DAYS = 14
@@ -125,8 +126,10 @@ export function recommendationsFor(input: {
   const median = medianOf(replyGaps(applications))
   if (median !== null) {
     const silent = sent.filter((a) => {
-      if (a.firstReplyOn || a.stage === 'closed') return false
-      const at = a.appliedOn ?? a.submittedOn
+      // Any reply at all — a screen, an interview, an offer — is not silence,
+      // whether or not `firstReplyOn` was filled in.
+      if (reachedOf(a) >= REACH.replied || a.stage === 'closed') return false
+      const at = sentOn(a)
       return at !== undefined && daysBetween(at, today) > median
     })
     if (silent.length > 0) {

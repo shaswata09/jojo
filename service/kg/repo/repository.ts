@@ -313,20 +313,63 @@ function withoutDanglingEdges<E extends Pick<JournalEntry, 'nodes' | 'edges'>>(
 ): E {
   const after = new Map(entry.nodes.map((d) => [d.id, d.after !== null]))
   const present = (id: NodeId) => after.get(id) ?? s.node(id) !== undefined
+  // Claims that cannot come back, because an END of theirs is not coming back.
+  //
+  // A claim IS its two ends — `tx.del` deletes one with either end, and
+  // `storedClaims` skips one missing an end, so a half claim is a record
+  // nothing can show or delete. Step Undo of a background delete restored the
+  // claim with SUBJECT and dropped OBJECT, whose other record had been deleted
+  // since. Such a claim stays deleted, which then drops its other end's edge
+  // too — so this repeats until nothing new is held back.
+  const halfClaims = new Set<NodeId>()
 
-  let dropped = false
-  const edges: RecordDelta<StoredEdge>[] = []
-  for (const delta of entry.edges) {
-    const image = delta.after
-    if (image === null || (present(image.from) && present(image.to))) {
-      edges.push(delta)
-      continue
+  for (;;) {
+    let dropped = false
+    const edges: RecordDelta<StoredEdge>[] = []
+    let more = false
+    for (const delta of entry.edges) {
+      const image = delta.after
+      if (image === null || (present(image.from) && present(image.to))) {
+        edges.push(delta)
+        continue
+      }
+      dropped = true
+      if ((image.rel === 'SUBJECT' || image.rel === 'OBJECT') && !halfClaims.has(image.from)) {
+        halfClaims.add(image.from)
+        if (after.get(image.from) === true) {
+          after.set(image.from, false)
+          more = true
+        }
+      }
+      const live = s.edge(delta.id as EdgeId)
+      if (live) edges.push({ id: delta.id, before: live, after: null })
     }
-    dropped = true
-    const live = s.edge(delta.id as EdgeId)
-    if (live) edges.push({ id: delta.id, before: live, after: null })
+    if (more) continue
+    if (!dropped) return entry
+    const nodes = entry.nodes.flatMap((d): RecordDelta<StoredNode>[] => {
+      if (d.after === null || !halfClaims.has(d.id as NodeId)) return [d]
+      const live = s.node(d.id as NodeId)
+      return live ? [{ id: d.id, before: live, after: null }] : []
+    })
+    return { ...entry, nodes, edges }
   }
-  return dropped ? { ...entry, edges } : entry
+}
+
+/**
+ * What `revert` throws when the entry has nothing left to take back.
+ *
+ * Every field it changed has been written since (a fit reading replaced the
+ * one it cleared, a stage moved on), so the draft is empty. Committing it
+ * anyway toasted "Undone" over a change that was not undone and pushed an
+ * empty entry onto redo, whose ⇧⌘Z then did nothing either. Thrown, like the
+ * other two refusals here, so every caller's existing catch reports it; `revert`
+ * has already taken the entry off its ring, because it will never revert.
+ */
+export class NothingToRevert extends Error {
+  constructor(dir: 'undo' | 'redo') {
+    super(`Nothing to ${dir} — it has changed since`)
+    this.name = 'NothingToRevert'
+  }
 }
 
 export function createRepository(options: RepositoryOptions): Repository {
@@ -461,11 +504,23 @@ export function createRepository(options: RepositoryOptions): Repository {
    * fit reading, a file's bytes) or a later agent step had put on the same
    * record since.
    */
-  const revertOf = (target: JournalEntry): JournalEntry => {
+  const draftOf = (target: JournalEntry): JournalDraft => {
     const undone = target.reverts?.undone !== true
     const of = target.reverts?.of ?? target.label
-    const draft = revertDraft(target, current, `${undone ? 'Undo' : 'Redo'} ${of}`, undone)
-    return land(stamp(withoutDanglingEdges(snapshot, draft)))
+    const draft = revertDraft(target, current, `${undone ? 'Undo' : 'Redo'} ${of}`, undone, audit.entries)
+    return withoutDanglingEdges(snapshot, draft)
+  }
+
+  /**
+   * The draft, or the refusal when there is nothing in it.
+   *
+   * `changesNothing` rather than "no deltas": a draft that only restamps
+   * `updatedAt` takes nothing back either.
+   */
+  const revertible = (target: JournalEntry): JournalDraft => {
+    const draft = draftOf(target)
+    if (changesNothing(draft)) throw new NothingToRevert(target.reverts?.undone === true ? 'redo' : 'undo')
+    return draft
   }
 
   return {
@@ -528,10 +583,12 @@ export function createRepository(options: RepositoryOptions): Repository {
     },
 
     revert(entryId) {
+      // Off the ring BEFORE the draft is judged: an entry with nothing left to
+      // take back never will have, so it goes even when `revertible` throws.
       const fromUndo = undo.entries.find((e) => e.id === entryId)
       if (fromUndo) {
         removeFromRing(undo, entryId)
-        const entry = revertOf(fromUndo)
+        const entry = land(stamp(revertible(fromUndo)))
         redo.push(entry)
         return entry
       }
@@ -539,7 +596,7 @@ export function createRepository(options: RepositoryOptions): Repository {
       const fromRedo = redo.entries.find((e) => e.id === entryId)
       if (fromRedo) {
         removeFromRing(redo, entryId)
-        const entry = revertOf(fromRedo)
+        const entry = land(stamp(revertible(fromRedo)))
         undo.push(entry)
         return entry
       }
@@ -561,14 +618,17 @@ export function createRepository(options: RepositoryOptions): Repository {
        */
       if (fromAudit.trimmed === true) {
         throw new Error(
-          `'${fromAudit.label}' is too far back to undo — the journal keeps what changed, but not enough to put it back`,
+          // Not "too far back" alone: a `stack: false` system write (a fit
+          // reading, a file's bytes landing) is trimmed the moment it lands, so
+          // the newest row can be one of these and was being called old.
+          `'${fromAudit.label}' can't be undone from here — it was a background write or is too far back, and the journal keeps what changed but not enough to put it back`,
         )
       }
       // Reverting a row out of the audit log is an ordinary new change. It does
       // NOT become redoable: offering redo for something undone from three hours
       // ago would promise to reapply a before-image captured against records
       // that have been edited a dozen times since.
-      const entry = revertOf(fromAudit)
+      const entry = land(stamp(revertible(fromAudit)))
       undo.push(entry)
       redo.clear()
       return entry

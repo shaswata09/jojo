@@ -33,6 +33,7 @@
 
 import { ROLES, SOURCES } from '../core/model'
 import { foldName } from '../core/ref'
+import { s } from '../core/schema'
 import type { Application, RoleTag, Source } from '../core/model'
 import { firstJsonObject } from '../core/json-reply'
 import type { ChatMessage } from '../core/model-server'
@@ -265,9 +266,11 @@ function flatten(html: string): string {
 export function postingTextFromHtml(html: string): string {
   let page = html.replace(/<!--[\s\S]*?-->/g, '')
   for (const tag of NOT_THE_POSTING) {
-    page = page.replace(new RegExp(`<${tag}\\b${ATTRS}>[\\s\\S]*?</${tag}\\s*>`, 'gi'), ' ')
+    // `(?![\w-])`, not `\b`: a hyphen is a word boundary, so `<svg\b` opened
+    // on `<svg-icon>` and erased the posting up to the next real `</svg>` (R28).
+    page = page.replace(new RegExp(`<${tag}(?![\\w-])${ATTRS}>[\\s\\S]*?</${tag}(?![\\w-])\\s*>`, 'gi'), ' ')
   }
-  const main = /<main\b[^>]*>([\s\S]*)<\/main\s*>/i.exec(page)?.[1]
+  const main = /<main(?![\w-])[^>]*>([\s\S]*)<\/main\s*>/i.exec(page)?.[1]
   if (main !== undefined) {
     const text = flatten(main)
     if (text.length >= MAIN_MIN) return text
@@ -482,8 +485,13 @@ export function readPosting(reply: string): PostingRead {
 
   // The form's date input takes ISO and nothing else, so 'rolling', 'open until
   // filled' and '15 November' are all dropped here rather than rejected later.
+  // And a day that exists: '2026-09-31' passed the regex, and then the whole
+  // `application.update` fill was refused over one field. Checked by the same
+  // parser the tool uses, so an impossible date lands in `missing` instead.
   const deadline = textOf(raw['deadline'])
-  if (deadline !== undefined && ISO_DATE.test(deadline)) draft.deadline = deadline
+  if (deadline !== undefined && ISO_DATE.test(deadline) && s.isoDate().parse(deadline).ok) {
+    draft.deadline = deadline
+  }
 
   const source = textOf(raw['source'])
   if (source !== undefined && (SOURCES as readonly string[]).includes(source)) {

@@ -59,6 +59,7 @@ export function QueryPanel({
   onSelectNode,
   onAsk,
   onAskClear,
+  askReset,
 }: {
   graph: Graph
   /** Null until the first question is asked, so the canvas starts undimmed. */
@@ -70,6 +71,8 @@ export function QueryPanel({
   /** A model-written query's answer, which takes over the table and the canvas. */
   onAsk: (answer: GraphQueryResult, asked: string) => void
   onAskClear: () => void
+  /** Changes when the page clears the query, so the Ask box drops its trace. */
+  askReset: number
 }) {
   const fieldId = useId()
   const [mode, setMode] = useState<'pattern' | 'path'>('pattern')
@@ -145,7 +148,7 @@ export function QueryPanel({
       </PanelTitle>
 
       <div className="mb-4">
-        <AskBox onAnswer={onAsk} onClear={onAskClear} />
+        <AskBox onAnswer={onAsk} onClear={onAskClear} resetKey={askReset} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-5">

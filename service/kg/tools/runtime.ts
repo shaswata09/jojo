@@ -23,7 +23,9 @@
 import type { EdgeId, Instant, NodeId, NodeType, StoredEdge, StoredNode } from '../core/model'
 import { newNodeId, slugify, uniqueSlug } from '../core/ref'
 import type { Parsed } from '../core/schema'
+import { standingFor } from '../repo/journal'
 import type { JournalEntry, RecordDelta } from '../repo/journal'
+import { NothingToRevert } from '../repo/repository'
 import type { Repository } from '../repo/repository'
 import { TOOLS } from './index'
 import type { InputOf, OutputOf, ToolName } from './index'
@@ -67,9 +69,6 @@ export interface ToolRuntime {
 
 /** Deep enough that no honest composite reaches it, shallow enough to stop a runaway. */
 const MAX_DEPTH = 8
-
-/** Bounds `undoStep`'s walk back through redo/undo pairs; the rings hold 50. */
-const UNDO_DEPTH_GUARD = 64
 
 /**
  * `InputOf<N>` stays deferred while `N` is generic, so it reads as `unknown` and
@@ -336,7 +335,17 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
       return { ok: false, errors: [{ message: `Nothing to ${dir}.`, code: 'tool/refused' }] }
     }
 
-    const entry = repo.revert(target.id)
+    let entry: JournalEntry
+    try {
+      entry = repo.revert(target.id)
+    } catch (e) {
+      // Every field it changed has been written since. The repository has
+      // already taken it off the ring, so the next press reaches the one below.
+      if (e instanceof NothingToRevert) {
+        return { ok: false, errors: [{ message: e.message, code: 'tool/refused' }] }
+      }
+      throw e
+    }
     const changed: ChangeSet = { created: [], updated: [], deleted: [], edges: [] }
     for (const d of entry.nodes) {
       if (d.before === null) changed.created.push(d.id)
@@ -378,20 +387,17 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
    * — it does nothing, because the step is not there to take back.
    */
   function undoStep(id: string): void {
-    const byId = new Map(repo.audit.map((e) => [e.id, e]))
-    const stand = repo.undoable.find((e) => {
-      // An entry on the undo ring stands for `id` if it IS `id`, or redoes it:
-      // a redo reverts an undo, which reverts `id`. Walked back pair by pair.
-      let at: JournalEntry | undefined = e
-      for (let hops = 0; at !== undefined && hops < UNDO_DEPTH_GUARD; hops += 1) {
-        if (at.id === id) return true
-        if (at.reverts?.undone !== false) return false
-        const undo = byId.get(at.reverts.id)
-        at = undo?.reverts?.undone === true ? byId.get(undo.reverts.id) : undefined
-      }
-      return false
-    })
-    if (stand) repo.revert(stand.id)
+    // Matched on `reverts.root`, not walked through the audit ring: that ring
+    // is shared with every `stack: false` system write, and 200 fit readings
+    // after a ⌘Z/⇧⌘Z pair broke the walk and this did nothing.
+    const stand = standingFor(id, repo.undoable, repo.audit)
+    if (!stand) return
+    try {
+      repo.revert(stand.id)
+    } catch (e) {
+      // Nothing left to take back: everything it changed was written since.
+      if (!(e instanceof NothingToRevert)) throw e
+    }
   }
 
   const runtime: ToolRuntime = {
@@ -422,7 +428,9 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
       // other way for a delete: the record it has to name is one this
       // transaction has already staged as gone.
       const seen = overlay(repo.getSnapshot(), forDescribe(buf))
-      const announcement = tool.describe(input, output, seen)
+      // The committed snapshot as well, so a describe can tell a record it
+      // made from one it found already there (keyword.create, org.ensure).
+      const announcement = tool.describe(input, output, seen, repo.getSnapshot())
 
       // `undoable: false` is enforced on the STACK, not on the journal.
       // `repo.commit` is the only path from a transaction buffer to the durable

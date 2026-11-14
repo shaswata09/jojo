@@ -30,6 +30,16 @@ export function AppShell() {
    * record closed".
    */
   const lastPath = useRef<string | null>(null)
+  /**
+   * The same, for the focus effect. Its own ref because the scroll reset is a
+   * layout effect and has already written `lastPath` by the time this reads it.
+   */
+  const focusPath = useRef<string | null>(null)
+  /** Read by the focus effect, which must not re-run on a resize. */
+  const isDesktopRef = useRef(isDesktop)
+  useLayoutEffect(() => {
+    isDesktopRef.current = isDesktop
+  }, [isDesktop])
 
   /** Closes and returns focus to the trigger — for Escape, backdrop and the X. */
   const closeNav = useCallback(() => {
@@ -72,10 +82,22 @@ export function AppShell() {
    * deep-linked record out of view the moment it arrived.
    */
   useEffect(() => {
+    const from = focusPath.current
+    focusPath.current = pathname
     if (!landed.current) {
       landed.current = true
       return
     }
+    /*
+     * Opening or closing a record over the same page, on a desktop. The sheet
+     * is a Radix dialog: it takes focus on open and hands it back to the card
+     * or row that opened it on close. Pulling it to <main> here ran after that
+     * return and left a keyboard user at the top of the page instead of on the
+     * row they were on. The same exemption the scroll reset below makes, for
+     * the same reason; below `lg` the record replaces the list, so it is a
+     * real arrival and focus still moves.
+     */
+    if (from !== null && isDesktopRef.current && isSamePage(from, pathname)) return
     // preventScroll because the page has just been put where it belongs by the
     // layout effect below, or by whichever row asked to be brought into view.
     // Focusing an element the browser thinks is off-screen scrolls it, and this

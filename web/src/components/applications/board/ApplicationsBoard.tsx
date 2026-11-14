@@ -14,7 +14,8 @@ import {
 import { BoardCardBody } from '@/components/applications/board/BoardCard'
 import { BoardColumn } from '@/components/applications/board/BoardColumn'
 import { PanelScroll } from '@/components/common/Panel'
-import { STAGES, type Application, type Stage } from '@/data/seed'
+import { STAGES, STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
+import { dragAnnouncements } from '@/components/common/drag-announcements'
 import { cn } from '@/lib/utils'
 
 /**
@@ -71,6 +72,17 @@ export function ApplicationsBoard({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
+      // Names, not the UUIDs dnd-kit would otherwise read aloud.
+      accessibility={{
+        announcements: dragAnnouncements({
+          item: (id) => {
+            const app = apps.find((a) => a.id === id)
+            return app ? displayName(app) : undefined
+          },
+          target: (id) =>
+            Object.hasOwn(STAGE_LABEL, id) ? `the ${STAGE_LABEL[id as Stage]} column` : undefined,
+        }),
+      }}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onDragCancel={() => setActiveId(null)}

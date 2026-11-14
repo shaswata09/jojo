@@ -66,11 +66,19 @@ export function AuditLog() {
   const entries = repo.audit
   const shown = all ? entries : entries.slice(0, FIRST_PAGE)
   const top = entries[0]
-  // `trimmed` as well as the tool: an entry whose record images were dropped to
-  // keep the persisted journal small cannot be put back, and `revert` throws on
-  // one. It should not be reachable — the trim keeps the newest entries whole —
-  // but a disabled button says "no" better than a caught exception does.
+  // `trimmed` as well as the tool: an entry whose record images were dropped
+  // cannot be put back, and `revert` throws on one. That is reachable: a
+  // background write (stack: false — a fit reading, a file's bytes) is always
+  // trimmed, so the button is disabled whenever one is the newest row, as well
+  // as for an entry too far back to have kept its images.
   const canUndo = top !== undefined && !NO_UNDO.includes(top.tool) && top.trimmed !== true
+  // Said by case: the whole-store sentence on a trimmed row named the wrong
+  // reason for the same disabled button.
+  const undoTitle = canUndo
+    ? 'Puts the records back as they were before this change'
+    : top !== undefined && NO_UNDO.includes(top.tool)
+      ? 'This one replaced the whole store, so there is nothing to put back'
+      : "jojo kept a record of this change but not enough to put it back — it was a background write (a fit reading, a file's bytes) or is too far back"
 
   const onUndo = () => {
     if (!top) return
@@ -118,11 +126,7 @@ export function AuditLog() {
                     className="shrink-0"
                     onClick={onUndo}
                     disabled={!canUndo}
-                    title={
-                      canUndo
-                        ? 'Puts the records back as they were before this change'
-                        : 'This one replaced the whole store, so there is nothing to put back'
-                    }
+                    title={undoTitle}
                   >
                     <RotateCcw className="size-3.5" strokeWidth={1.8} aria-hidden />
                     Undo

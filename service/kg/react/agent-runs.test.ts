@@ -699,6 +699,97 @@ describe('a run abandoned while a new one takes its place', () => {
     ])
   })
 
+  /*
+   * R14. The stored copy is `toAgentEntries(stored)`, which cannot carry an
+   * `undo` closure — so preferring it whenever it was as long as the
+   * registry's took per-step Undo off every earlier step the moment the
+   * person sent a follow-up.
+   */
+  it('keeps an earlier step’s Undo across a follow-up, and still takes what the store added', async () => {
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    const undo = vi.fn()
+    const writing: ToolHost = {
+      ...host,
+      run: () => ({ ok: true, output: 'snippet:1', announcement: { title: 'Saved' }, undo }),
+    }
+    let n = 0
+    const writeThenSay = async (): Promise<Turn> =>
+      n++ === 0
+        ? {
+            ok: true,
+            text: null,
+            toolCalls: [{ id: 'c1', name: 'vault_snippet_create', args: { title: 'N', body: 'hello', tag: 'Email' }, raw: '' }],
+            finishReason: 'tool_calls',
+          }
+        : answering('Saved.')
+    runs.start({ threadId: A, prompt: 'add a note', history: [], llm: () => writeThenSay, host: writing, gate: 'none', onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(1))
+
+    // What `use-agent` hands back: the stored transcript, read back, no closures.
+    const strip = (entries: readonly { kind: string; id: string }[]) =>
+      entries.map((e, i) =>
+        e.kind === 'step'
+          ? (() => {
+              const { undo: _gone, ...step } = (e as unknown as { step: { undo?: unknown } }).step
+              return { kind: 'step' as const, id: `t${String(i)}`, step }
+            })()
+          : { ...e, id: `t${String(i)}` },
+      ) as never
+    const stepUndo = () =>
+      (runs.get(A)?.entries ?? []).filter((e) => e.kind === 'step').map((e) => typeof (e as unknown as { step: { undo?: unknown } }).step.undo)
+
+    const same = strip(runs.get(A)?.entries ?? [])
+    runs.start({ threadId: A, prompt: 'thanks', history: [], llm: () => echo, host, entries: same, onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(2))
+    expect(stepUndo()).toEqual(['function'])
+
+    // The store moved on in another tab: its extra turns are taken, and the
+    // step this session ran keeps its Undo.
+    const moved = [
+      ...strip(runs.get(A)?.entries ?? []),
+      { kind: 'you', id: 'tx', text: 'asked in the other tab' },
+      { kind: 'answer', id: 'ty', text: 'answered there' },
+    ] as never
+    runs.start({ threadId: A, prompt: 'third', history: [], llm: () => echo, host, entries: moved, onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(3))
+    expect(stepUndo()).toEqual(['function'])
+    expect((runs.get(A)?.entries ?? []).map((e) => ('text' in e ? e.text : e.kind))).toEqual([
+      'add a note',
+      'step',
+      'Saved.',
+      'thanks',
+      'answered:thanks',
+      'asked in the other tab',
+      'answered there',
+      'third',
+      'answered:third',
+    ])
+  })
+
+  /*
+   * A restore of the same length but different words is the graph moving on
+   * too: the registry's copy must not win just because it has closures.
+   */
+  it('starts from the stored conversation when it differs at the same length', async () => {
+    const runs = createAgentRuns()
+    const onSettled = vi.fn()
+    runs.start({ threadId: A, prompt: 'first', history: [], llm: () => echo, host, onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(1))
+    const restored = [
+      { kind: 'you' as const, id: 't0', text: 'restored question' },
+      { kind: 'answer' as const, id: 't1', text: 'restored answer' },
+    ]
+    runs.start({ threadId: A, prompt: 'second', history: [], llm: () => echo, host, entries: restored, onSettled })
+    await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(2))
+    expect((onSettled.mock.calls[1]![1] as { text?: string }[]).map((e) => e.text)).toEqual([
+      'restored question',
+      'restored answer',
+      'second',
+      'answered:second',
+    ])
+  })
+
   it('keeps this session’s copy when the stored one is behind it', async () => {
     const runs = createAgentRuns()
     const onSettled = vi.fn()

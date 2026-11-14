@@ -1,6 +1,7 @@
 import { STAGE_VALUES } from './model'
 import type { ISODate, Stage, StageDates } from './model'
 import { s } from './schema'
+import { REACH, reachedOf, type Reachable } from './statistics'
 
 /**
  * When an application entered each stage, and the one place that knows where
@@ -10,7 +11,7 @@ import { s } from './schema'
  *
  * Five of the six stages are read and written in `stageDates`. The sixth is
  * not: `submitted` lives in `submittedOn`, which predates stages having dates
- * at all and which the funnel, the response-time chart, `frequency.sentOn`,
+ * at all and which the funnel, the response-time chart, `sent-on.ts`,
  * `recommend.ts` and the seed all read. Moving it would be a migration of five
  * readers and every stored record to gain nothing; copying it into `stageDates`
  * as well would be one fact in two places, and the copy nothing reads is the
@@ -111,12 +112,34 @@ export function enteredStage(a: DatedApplication, stage: Stage, on: ISODate): St
  * application through three stages before this feature existed fill in the two
  * they missed. Never the stages ahead of it: a Draft offering to date its Offer
  * is a form asking about something that has not happened.
+ *
+ * Closed is the exception to "up to the one it is in". It is the last stage, so
+ * that rule offered every stage on every closed record — a rejection after one
+ * email asked when the offer came. A closed record offers what it can be shown
+ * to have reached (`reachedOf`: a reply, a kept offer, an outcome that means
+ * one existed) or dated, and Closed itself.
  */
-export function stagesToDate(a: DatedApplication & { readonly stage: Stage }): Stage[] {
-  const reached = STAGE_VALUES.indexOf(a.stage)
+export function stagesToDate(a: Reachable): Stage[] {
+  const reached =
+    a.stage === 'closed'
+      ? Math.max(
+          STAGE_VALUES.indexOf(LIVED[reachedOf(a)] ?? 'submitted'),
+          ...STAGE_VALUES.map((s, i) => (s !== 'closed' && stageDateOf(a, s) !== undefined ? i : 0)),
+        )
+      : STAGE_VALUES.indexOf(a.stage)
   return STAGE_VALUES.filter(
-    (s, i) => i <= reached || stageDateOf(a, s) !== undefined,
+    (s, i) => i <= reached || stageDateOf(a, s) !== undefined || s === a.stage,
   )
+}
+
+/** The stage a `REACH` rank was lived in. A reply is not a stage; it is Submitted. */
+const LIVED: Readonly<Record<number, Stage>> = {
+  [REACH.draft]: 'draft',
+  [REACH.sent]: 'submitted',
+  [REACH.replied]: 'submitted',
+  [REACH.screen]: 'screen',
+  [REACH.interview]: 'interview',
+  [REACH.offer]: 'offer',
 }
 
 /**

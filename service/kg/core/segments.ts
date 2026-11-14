@@ -30,6 +30,14 @@
  * Reporting a difference that is not there sends somebody to rewrite a CV that
  * was fine, or to stop applying to the kind of job they are best suited to.
  *
+ * ## And it pays for every look
+ *
+ * The finding is the best and worst of several arms, across three splits,
+ * re-checked on every save. The intervals are therefore widened together,
+ * Bonferroni-style, by the number of pairs on the whole screen (`familyZ`), so
+ * a search where nothing matters produces a finding well under 5% of the time
+ * over its life rather than about one time in five.
+ *
  * ## What is deliberately NOT here
  *
  * No p-value reaches the screen. A number a reader cannot interpret is a number
@@ -56,20 +64,67 @@ export type Interval = { readonly low: number; readonly high: number }
 const Z = 1.96
 
 /**
- * The Wilson score interval for `count` successes out of `of`.
+ * The Wilson score interval for `count` successes out of `of`, at 95%.
  *
  * Clamped to 0–1 at the edges: the formula cannot leave the range, but floating
  * point at n = 1 lands on -1e-17, which formats as "-0%".
  */
 export function wilson(count: number, of: number): Interval {
+  return wilsonAt(count, of, Z)
+}
+
+function wilsonAt(count: number, of: number, z: number): Interval {
   if (of <= 0) return { low: 0, high: 1 }
   const p = count / of
-  const z2 = Z * Z
+  const z2 = z * z
   const denominator = 1 + z2 / of
   const centre = (p + z2 / (2 * of)) / denominator
-  const half = (Z / denominator) * Math.sqrt((p * (1 - p)) / of + z2 / (4 * of * of))
+  const half = (z / denominator) * Math.sqrt((p * (1 - p)) / of + z2 / (4 * of * of))
   return { low: Math.max(0, centre - half), high: Math.min(1, centre + half) }
 }
+
+/**
+ * The upper-tail normal quantile: the z with P(Z > z) = `tail`.
+ *
+ * Acklam's rational approximation (relative error ~1e-9), which is plenty for
+ * a threshold; core has no stats library and must not grow one for this.
+ */
+function upperQuantile(tail: number): number {
+  const p = 1 - tail
+  const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239]
+  const b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572]
+  const c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783]
+  const d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416]
+  const low = 0.02425
+  const poly = (k: readonly number[], x: number) => k.reduce((acc, v) => acc * x + v, 0)
+  if (p < low) {
+    const q = Math.sqrt(-2 * Math.log(p))
+    return poly(c, q) / (poly(d, q) * q + 1)
+  }
+  if (p > 1 - low) {
+    const q = Math.sqrt(-2 * Math.log(1 - p))
+    return -poly(c, q) / (poly(d, q) * q + 1)
+  }
+  const q = p - 0.5
+  const r = q * q
+  return (poly(a, r) * q) / (poly(b, r) * r + 1)
+}
+
+/**
+ * The z a family of `pairs` pairwise looks has to clear: Bonferroni at 5%.
+ *
+ * WHY: the finding is the best and the worst of k arms, picked after looking,
+ * across several splits. Each pair is a chance for noise to separate, so a
+ * no-effect search with six sources used to produce a "measured" finding about
+ * one time in five over its life. Splitting the 5% across every pair the
+ * screen could have reported keeps the family's error at 5%. One pair is the
+ * plain 1.96.
+ */
+export function familyZ(pairs: number): number {
+  return upperQuantile(0.05 / (2 * Math.max(1, pairs)))
+}
+
+const pairsOf = (k: number) => (k * (k - 1)) / 2
 
 /** One side of a comparison: a slice of the search and how it did. */
 export type Arm = {
@@ -85,14 +140,16 @@ export type Arm = {
 /**
  * The fewest records an arm needs before it is compared at all.
  *
- * Four, and it is a floor on top of the interval rule rather than instead of
+ * Five, and it is a floor on top of the interval rule rather than instead of
  * it. Three of three is 100% with a Wilson range of 44–100%, which can clear a
  * weak opposing arm and produce "every application you sent through a referral
  * got a reply" out of three coincidences. The interval is the mathematics; this
- * is the judgement that a finding drawn from three records is not worth putting
- * in front of somebody however the arithmetic falls.
+ * is the judgement that a finding drawn from that few records is not worth
+ * putting in front of somebody however the arithmetic falls. It was four until
+ * a no-effect simulation showed 4-of-4 against 0-of-4 turning up by chance
+ * often enough to matter once a search is re-checked on every save.
  */
-export const MIN_ARM = 4
+export const MIN_ARM = 5
 
 export type Comparison = {
   /** What the search was split by: 'where they came from', 'the kind of role'. */
@@ -122,13 +179,31 @@ export type Comparison = {
  */
 export function compare(
   rows: readonly Application[],
-  spec: {
-    dimension: string
-    measure: string
-    labelOf: (a: Application) => string | null
-    hit: (a: Application) => boolean
-  },
+  spec: Spec,
+  /**
+   * How many pairwise looks the whole screen takes, of which this split is
+   * part. Only ever raises the bar: a value below this split's own pairs is
+   * ignored, so no caller can lower it to make a finding appear.
+   */
+  familyPairs = 0,
 ): Comparison | null {
+  const split = splitOf(rows, spec)
+  return judge(spec, split, Math.max(familyPairs, pairsOf(split.sizes.length)))
+}
+
+type Spec = {
+  dimension: string
+  measure: string
+  labelOf: (a: Application) => string | null
+  hit: (a: Application) => boolean
+}
+
+type Split = {
+  readonly sizes: readonly { label: string; of: number; count: number }[]
+  readonly tooFew: number
+}
+
+function splitOf(rows: readonly Application[], spec: Spec): Split {
   const groups = new Map<string, Application[]>()
   for (const row of rows) {
     const label = spec.labelOf(row)
@@ -139,23 +214,29 @@ export function compare(
   }
 
   let tooFew = 0
-  const arms: Arm[] = []
+  const sizes: { label: string; of: number; count: number }[] = []
   for (const [label, members] of groups) {
     if (members.length < MIN_ARM) {
       tooFew += 1
       continue
     }
-    const count = members.filter(spec.hit).length
-    arms.push({
-      label,
-      of: members.length,
-      count,
-      rate: Math.round((count / members.length) * 100),
-      interval: wilson(count, members.length),
-    })
+    sizes.push({ label, of: members.length, count: members.filter(spec.hit).length })
   }
+  return { sizes, tooFew }
+}
 
-  if (arms.length < 2) return null
+function judge(spec: Spec, split: Split, pairs: number): Comparison | null {
+  if (split.sizes.length < 2) return null
+  // The interval each arm carries is the one the decision is made on, so the
+  // screen's "the ranges do not overlap" stays literally true.
+  const z = familyZ(pairs)
+  const arms: Arm[] = split.sizes.map(({ label, of, count }) => ({
+    label,
+    of,
+    count,
+    rate: Math.round((count / of) * 100),
+    interval: wilsonAt(count, of, z),
+  }))
 
   // Sorted by the rate a person would read, not by the interval — the ordering
   // on screen has to match the numbers on screen. Ties broken by the larger
@@ -181,7 +262,7 @@ export function compare(
      * some other way, the strict form is the one that stays correct.
      */
     confident: best.interval.low > worst.interval.high,
-    tooFew,
+    tooFew: split.tooFew,
   }
 }
 
@@ -215,8 +296,12 @@ export function comparisonsFor(all: readonly Application[]): Comparison[] {
     },
   ]
 
-  return specs.flatMap((spec) => {
-    const found = compare(sent, spec)
+  // Every pair across every split is one look at the same records, so the
+  // correction is taken over all of them together, not per split.
+  const splits = specs.map((spec) => ({ spec, split: splitOf(sent, spec) }))
+  const pairs = splits.reduce((n, { split }) => n + pairsOf(split.sizes.length), 0)
+  return splits.flatMap(({ spec, split }) => {
+    const found = judge(spec, split, pairs)
     return found === null ? [] : [found]
   })
 }

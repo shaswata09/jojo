@@ -115,10 +115,12 @@ jobs:
     needs: gate
     runs-on: ubuntu-latest
 
+    # Read-only, like every job but `release`. This one runs on pull requests,
+    # and a pull request's code (its npm scripts, its Gradle files) must not
+    # run with a token that can write to the repository. Attaching the APK to
+    # a release is the `release` job's, which runs only on a tag.
     permissions:
-      # Only to create the release below, and only on a tag. Every other job
-      # here stays on the read-only default.
-      contents: write
+      contents: read
 
     steps:
       # `persist-credentials: false` so the job's token is not written into
@@ -162,7 +164,7 @@ jobs:
       # exists and is what it was there for — adb; the rest Gradle fetches.
       # Third-party actions are pinned to a commit, not a tag: a tag can be
       # moved by whoever controls that repository, and these jobs hold
-      # `contents: write` and the signing secrets. The tag is the comment;
+      # the signing secrets (and the release job, `contents: write`). The tag is the comment;
       # bump both together. First-party `actions/*` stay on tags.
       - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3 (v3.2.2)
         with:
@@ -202,7 +204,10 @@ jobs:
       # Google plugins, and the APK builds with no Firebase in it — which is
       # exactly what a fork should get. `lib/crash.ts` and `lib/analytics.ts`
       # both treat a missing native module as a normal state, so that APK runs.
+      # Not on a pull request: its code is not yet reviewed, and nothing a PR
+      # build needs depends on Firebase being compiled in.
       - name: Put the Firebase config in place
+        if: github.event_name != 'pull_request'
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
@@ -219,13 +224,17 @@ jobs:
             echo "No GOOGLE_SERVICES_JSON secret — building without Firebase."
           fi
 
+      # The signing secrets are withheld from pull-request builds — the
+      # expressions below are empty there — so a PR's Gradle files and npm
+      # scripts never run beside the upload key. A PR still builds, signed
+      # with the debug key, through the same `else` branch a fork takes.
       - name: Build the release APK
         working-directory: mobile/android
         env:
-          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEYSTORE_B64: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_BASE64 || '' }}
+          STORE_PASSWORD: ${{ github.event_name != 'pull_request' && secrets.ANDROID_STORE_PASSWORD || '' }}
+          KEY_ALIAS: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEY_ALIAS || '' }}
+          KEY_PASSWORD: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEY_PASSWORD || '' }}
         run: |
           set -euo pipefail
           # `assembleReleaseAndroidTest` alongside the app, and
@@ -300,8 +309,11 @@ jobs:
       # Through `env:` the value is one shell variable however many lines and
       # quotes it contains, and `[ -n "$FIREBASE_SERVICE_ACCOUNT" ]` means what it
       # reads as.
+      # Never on a pull request, so `ready` is unset there and every step that
+      # holds the service-account key below is skipped.
       - name: Is Firebase configured?
         id: firebase
+        if: github.event_name != 'pull_request'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_ANDROID_APP_ID: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
@@ -314,8 +326,16 @@ jobs:
             echo "Firebase secrets are not set; skipping App Distribution and Test Lab."
           fi
 
+      # The CLI is installed BEFORE the key exists on disk, pinned to an exact
+      # version and with `--ignore-scripts`: an install runs code from the
+      # registry, and none of it should run beside a credential. 13.35.1 is
+      # the last 13.x; bump it deliberately, never to a range.
+      - name: Install the Firebase CLI
+        if: steps.firebase.outputs.ready == 'true' && github.event_name != 'pull_request'
+        run: npm install -g --ignore-scripts firebase-tools@13.35.1
+
       - name: Write the service-account key
-        if: steps.firebase.outputs.ready == 'true'
+        if: steps.firebase.outputs.ready == 'true' && github.event_name != 'pull_request'
         # Through `env:`, not `${{ }}` inside the script: an expression is
         # pasted into the shell text BEFORE bash runs, so a key containing a
         # single quote ends the string and the rest runs as commands — and the
@@ -330,7 +350,7 @@ jobs:
       # Testers get the build before a tag exists, which is the whole point of
       # App Distribution: the feedback is meant to arrive BEFORE the release.
       - name: Send the APK to testers
-        if: steps.firebase.outputs.ready == 'true'
+        if: steps.firebase.outputs.ready == 'true' && github.event_name != 'pull_request'
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
           FIREBASE_ANDROID_APP_ID: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
@@ -338,7 +358,6 @@ jobs:
           # cannot become shell syntax.
           REF_NAME: ${{ github.ref_name }}
         run: |
-          npm install -g firebase-tools@13
           APK=$(ls mobile/android/app/build/outputs/apk/release/*.apk | head -1)
           # `--groups` names a tester group created in the Firebase console. An
           # absent group is not an error worth failing a build over — the binary
@@ -376,7 +395,7 @@ jobs:
       # ---------------------------------------------------------------- #
       - name: Run the instrumentation suite on Test Lab
         if: >-
-          steps.firebase.outputs.ready == 'true' &&
+          steps.firebase.outputs.ready == 'true' && github.event_name != 'pull_request' &&
           (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
@@ -407,7 +426,7 @@ jobs:
 
       - name: Crawl the app on Test Lab (Robo, advisory)
         if: >-
-          steps.firebase.outputs.ready == 'true' &&
+          steps.firebase.outputs.ready == 'true' && github.event_name != 'pull_request' &&
           startsWith(github.ref, 'refs/tags/v')
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
@@ -438,27 +457,6 @@ jobs:
       - name: Forget the key
         if: always() && steps.firebase.outputs.ready == 'true'
         run: rm -f "$RUNNER_TEMP/firebase-key.json"
-
-      # Anyone can download a release asset; an Actions artifact needs a GitHub
-      # login and expires. So a tagged build publishes the APK where a person
-      # with an Android phone can actually get at it.
-      #
-      # `draft: true` on purpose — the release is created with the APK attached
-      # and waits for a human to write the notes and press publish. A pipeline
-      # that publishes to the world unattended is one bad tag away from an
-      # announcement nobody meant to make.
-      - name: Attach the APK to a release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 (v2.6.2), pinned — see setup-android
-        with:
-          draft: true
-          files: mobile/android/app/build/outputs/apk/release/*.apk
-          body: |
-            Android APK for ${{ github.ref_name }}, built by run ${{ github.run_number }}.
-
-            Install it by downloading the `.apk` and opening it on the phone —
-            Android will ask you to allow installs from this source. Requires
-            Android 12 or newer.
 
   # ------------------------------------------------------------------ #
   # iOS, and why it is shaped differently from the Android job above.
@@ -605,9 +603,11 @@ jobs:
           FIREBASE_IOS_APP_ID: ${{ secrets.FIREBASE_IOS_APP_ID }}
           REF_NAME: ${{ github.ref_name }}
         run: |
+          # Installed first, pinned, scripts off — see the android job's
+          # "Install the Firebase CLI". The key is written after.
+          npm install -g --ignore-scripts firebase-tools@13.35.1
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-key.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-key.json"
-          npm install -g firebase-tools@13
           IPA=$(ls "$RUNNER_TEMP"/export/*.ipa | head -1)
           firebase appdistribution:distribute "$IPA" \
             --app "$FIREBASE_IOS_APP_ID" \
@@ -638,9 +638,9 @@ jobs:
     needs: gate
     runs-on: ubuntu-latest
 
+    # Read-only: see the android job. The `release` job attaches the zip.
     permissions:
-      # Only to attach the zip to a release, and only on a tag.
-      contents: write
+      contents: read
 
     steps:
       # `persist-credentials: false` so the job's token is not written into
@@ -683,21 +683,60 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-      # Onto the same draft release the APK goes to. `action-gh-release` appends
-      # to an existing release for the tag rather than replacing it, so the two
-      # jobs can run in either order and the release ends up with both files.
-      - name: Attach the extension to a release
-        if: startsWith(github.ref, 'refs/tags/v')
+  # ------------------------------------------------------------------ #
+  # The draft release: the only job with `contents: write`, and only on a tag.
+  #
+  # Its own job so the write token never shares a runner with a build. The
+  # android and extension jobs run on pull requests, execute the PR's npm
+  # scripts and Gradle files, and so hold only `contents: read`; this job runs
+  # no project code at all — it downloads their artifacts and attaches them.
+  #
+  # Anyone can download a release asset; an Actions artifact needs a GitHub
+  # login and expires. So a tagged build publishes the APK and the extension
+  # where a person can actually get at them.
+  #
+  # `draft: true` on purpose — the release is created with the files attached
+  # and waits for a human to write the notes and press publish. A pipeline
+  # that publishes to the world unattended is one bad tag away from an
+  # announcement nobody meant to make.
+  # ------------------------------------------------------------------ #
+  release:
+    name: Draft release
+    needs: [android, extension]
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: jojo-android-${{ github.run_number }}
+          path: release/android
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: jojo-extension-${{ github.run_number }}
+          path: release/extension
+
+      - name: Attach the APK and the extension to a release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2 (v2.6.2), pinned — see setup-android
         with:
           draft: true
-          files: web/public/jojo-extension.zip
+          files: |
+            release/android/*.apk
+            release/extension/jojo-extension.zip
           body: |
-            Browser extension for ${{ github.ref_name }}, built by run ${{ github.run_number }}.
+            jojo ${{ github.ref_name }}, built by run ${{ github.run_number }}.
 
-            Unzip it, then load it in Chrome or Edge at `chrome://extensions`
-            with Developer mode on and "Load unpacked". It captures the job
-            posting in the current tab and hands it to jojo.
+            Android: download the `.apk` and open it on the phone — Android
+            will ask you to allow installs from this source. Requires Android
+            12 or newer.
+
+            Browser extension: unzip it, then load it in Chrome or Edge at
+            `chrome://extensions` with Developer mode on and "Load unpacked".
+            It captures the job posting in the current tab and hands it to jojo.
 
   deploy:
     name: Deploy to Pages

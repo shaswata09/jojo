@@ -30,9 +30,10 @@
  * is how a trace stops matching a manifest.
  */
 
+import type { GraphSnapshot } from '../core/snapshot'
 import { TOOLS } from '../tools/index'
 import type { AnyTool } from '../tools/tool'
-import { toJsonSchema } from './json-schema'
+import { REPLACES_LIST, toJsonSchema } from './json-schema'
 import type { JsonSchema } from './json-schema'
 import { READS } from './queries'
 import type { ReadTool } from './queries'
@@ -75,7 +76,7 @@ export type CatalogEntry = {
    * True when THESE arguments need confirming although the tool is not
    * `destructive` as a whole. See `Tool.confirms`; absent for almost every tool.
    */
-  readonly confirmsFor?: (input: unknown) => boolean
+  readonly confirmsFor?: (input: unknown, memory: GraphSnapshot) => boolean
   /** The sentence the model reads about when that happens. */
   readonly confirmsBecause?: string
 }
@@ -118,9 +119,32 @@ function buildEntry(tool: AnyTool | ReadTool<any>, effect: Effect): CatalogEntry
     effect,
     destructive,
     undoable: effect !== 'read' && (tool as AnyTool).undoable !== false,
-    parameters: toJsonSchema(tool.input.meta),
+    parameters: modelParameters(toJsonSchema(tool.input.meta), effect, (tool as AnyTool).appOnlyFields ?? []),
     ...confirmsOf(tool),
   }
+}
+
+/**
+ * The schema a model or MCP client is shown: the tool's own, less its
+ * app-only fields (see `Tool.appOnlyFields`), with each list on an update
+ * saying that it replaces the set.
+ */
+function modelParameters(schema: JsonSchema, effect: Effect, appOnly: readonly string[]): JsonSchema {
+  const props = schema.properties
+  if (props === undefined) return schema
+  const properties: Record<string, JsonSchema> = {}
+  for (const [key, field] of Object.entries(props)) {
+    if (appOnly.includes(key)) continue
+    properties[key] =
+      effect === 'update' && field.type === 'array'
+        ? { ...field, description: field.description ? `${field.description} ${REPLACES_LIST}` : REPLACES_LIST }
+        : field
+  }
+  const out: JsonSchema = { ...schema, properties }
+  const required = (schema.required ?? []).filter((k) => !appOnly.includes(k))
+  if (required.length > 0) out.required = required
+  else delete out.required
+  return out
 }
 
 /** `Tool.confirms`, lifted onto the entry. A read never has it. */
@@ -131,8 +155,8 @@ function confirmsOf(tool: AnyTool | ReadTool<any>): Pick<CatalogEntry, 'confirms
   return {
     // Arguments arrive from a model as `unknown`; a non-object cannot name the
     // fields the predicate is about, and `runtime.check` refuses it later anyway.
-    confirmsFor: (input) =>
-      typeof input === 'object' && input !== null && confirms.when(input as never),
+    confirmsFor: (input, memory) =>
+      typeof input === 'object' && input !== null && confirms.when(input as never, memory),
     confirmsBecause: confirms.because,
   }
 }
@@ -142,8 +166,8 @@ function confirmsOf(tool: AnyTool | ReadTool<any>): Pick<CatalogEntry, 'confirms
  * widening for the fields that need it. The one predicate the loop's approval
  * gate asks.
  */
-export const needsConfirming = (entry: CatalogEntry, input: unknown): boolean =>
-  entry.destructive || (entry.confirmsFor?.(input) ?? false)
+export const needsConfirming = (entry: CatalogEntry, input: unknown, memory: GraphSnapshot): boolean =>
+  entry.destructive || (entry.confirmsFor?.(input, memory) ?? false)
 
 /**
  * Reads first, deliberately.

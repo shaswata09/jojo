@@ -380,7 +380,7 @@ export type ApprovalMode = (typeof APPROVAL_MODES)[number]
  *
  * `SAID` names deletion explicitly rather than saying "dangerous", because the
  * line the app actually draws is `delete` and `admin`, plus the handful of
- * tools that ask to be confirmed themselves — nineteen of the ninety-six a
+ * tools that ask to be confirmed themselves — nineteen of the ninety-five a
  * model is offered, counted 2026-11-11 and pinned in `catalog.test.ts`. Closing an application is a
  * `move` and passes without a prompt under `semi`, which is worth a person
  * knowing before they choose it.
@@ -438,7 +438,7 @@ export type Stage = (typeof STAGE_VALUES)[number]
  *
  * `submitted` IS NOT STORED HERE. The submitted date has lived in
  * `submittedOn` since before stages carried dates, and five things read it —
- * the funnel's reach, the response-time chart, `frequency.sentOn`,
+ * the funnel's reach, the response-time chart, `core/sent-on.ts`,
  * `recommend.ts` and the seed. Writing it in two places would be two copies of
  * one fact, and the copy nothing reads is the one that goes stale. Everything
  * that reads or writes a stage date goes through `core/stage-dates.ts`, which

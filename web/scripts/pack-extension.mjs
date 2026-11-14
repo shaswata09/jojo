@@ -14,9 +14,15 @@
  * files would scatter into Downloads and the next step would fail on something
  * that is not the extension's fault.
  *
- * Uses the system `zip`, which is present on macOS and Linux, rather than adding
- * an archiver dependency to an app that has none. On a machine without it the
- * script says so and exits non-zero rather than writing a corrupt file.
+ * Zipped with fflate — already a dependency of the app, for "Download every
+ * document" — rather than the system `zip`, for two reasons. The output is
+ * byte-for-byte reproducible: every entry gets the same fixed timestamp and the
+ * entries go in sorted order, so packing the same files twice gives the same
+ * zip. With `zip` each pack stamped the staging copy's fresh mtimes, the zip
+ * changed on every build, and since the service worker's VERSION hashes every
+ * file in `dist/`, every build shipped a "new" worker and threw away every
+ * visitor's cache (R32). And it needs nothing on PATH, so a Windows checkout
+ * builds too.
  *
  * Output goes to `web/public/`, which Vite copies to the build root verbatim —
  * so the download works in `npm run dev` and in a built `dist/` with no server
@@ -24,20 +30,10 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs'
-import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { dirname, join, posix, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { zipSync } from 'fflate'
 
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
 const SOURCE = join(WEB, 'extension')
@@ -49,43 +45,8 @@ if (!existsSync(SOURCE)) {
   process.exit(1)
 }
 
-/*
- * `--optional` — asked for by `npm run dev`, and not by `npm run build`.
- *
- * A missing `zip` used to stop both, and the reasoning for stopping the BUILD
- * still holds: shipping a Settings page whose Download button hands somebody
- * Vite's index.html renamed to .zip fails three steps later at the unzip and
- * reads as a corrupt download.
- *
- * Stopping `dev` was a different thing wearing the same argument. `zip` is on
- * macOS and on most Linux images and is not on a plain Windows box, so the
- * first thing a Windows contributor met was a dev server that would not start,
- * over a download button they were not working on. Skipping it there costs one
- * 404 on a page nobody is testing; failing there costs the contributor.
- */
-const optional = process.argv.includes('--optional')
-
-try {
-  execFileSync('zip', ['--version'], { stdio: 'ignore' })
-} catch {
-  const where = optional
-    ? '  Skipping it: `npm run dev` runs anyway, and the extension download in\n' +
-      '  Settings will 404 until `zip` is available. `npm run build` still fails\n' +
-      '  on this, because a published build with a broken download is worse than\n' +
-      '  no build.\n'
-    : '  `npm run build` stops here: the alternative is a Settings page whose\n' +
-      "  Download button hands the user Vite's index.html renamed to .zip, which\n" +
-      '  fails three steps later at the unzip and reads as a corrupt download.\n'
-  console.error(
-    `pack-extension: no \`zip\` on PATH.\n${where}` +
-      '  macOS and most Linux images ship `zip`; on Debian it is `apt install zip`,\n' +
-      '  and on Windows it comes with Git Bash or `winget install 7zip.7zip`.',
-  )
-  process.exit(optional ? 0 : 1)
-}
-
 /**
- * Staged under its own directory name so the archive contains
+ * Every entry sits under one directory name, so the archive contains
  * `jojo-extension/manifest.json` rather than `manifest.json` at the root. The
  * whole point is that the user ends up with one folder to point Chrome at.
  */
@@ -143,9 +104,27 @@ for (const file of readdirSync(SOURCE).filter((f) => f.endsWith('.js'))) {
   }
 }
 
-const stage = mkdtempSync(join(tmpdir(), 'jojo-ext-'))
-const folder = join(stage, 'jojo-extension')
-cpSync(SOURCE, folder, { recursive: true })
+/** Never packed: Finder's litter, which Chrome refuses to load beside an extension. */
+const JUNK = /(^|\/)(\.DS_Store|__MACOSX)(\/|$)/
+
+function walk(dir) {
+  const out = []
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry)
+    if (statSync(full).isDirectory()) out.push(...walk(full))
+    else out.push(full)
+  }
+  return out
+}
+
+/** Every file to pack, by its path inside the extension, in a fixed order. */
+const files = new Map(
+  walk(SOURCE)
+    .map((full) => [relative(SOURCE, full).split(sep).join(posix.sep), full])
+    .filter(([rel]) => !JUNK.test(rel))
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([rel, full]) => [rel, readFileSync(full)]),
+)
 
 /*
  * The origin this build of the app will be served from, added to the packed
@@ -168,8 +147,7 @@ cpSync(SOURCE, folder, { recursive: true })
  */
 const extra = (process.env.JOJO_APP_ORIGIN ?? '').trim()
 if (extra) {
-  const path = join(folder, 'manifest.json')
-  const manifest = JSON.parse(readFileSync(path, 'utf8'))
+  const manifest = JSON.parse(new TextDecoder().decode(files.get('manifest.json')))
   /*
    * `${origin}/*`, never a bare origin. A match pattern MUST carry a path
    * component: `https://example.com` is invalid, and Chrome's response to one
@@ -181,22 +159,23 @@ if (extra) {
   if (!manifest.content_scripts[0].matches.includes(pattern)) {
     manifest.content_scripts[0].matches.push(pattern)
   }
-  writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`)
+  files.set('manifest.json', new TextEncoder().encode(`${JSON.stringify(manifest, null, 2)}\n`))
   console.log(`pack-extension: added ${pattern} to content_scripts.matches`)
 }
 
-mkdirSync(PUBLIC, { recursive: true })
-rmSync(OUT, { force: true })
+/*
+ * One fixed timestamp for every entry, built from LOCAL date parts because a
+ * zip's DOS time is local time and fflate encodes it from the local parts:
+ * this way the bytes are the same in every time zone. 1980-01-01 is the DOS
+ * epoch, the earliest a zip can say — and plainly not a real modification time.
+ */
+const FIXED = new Date(1980, 0, 1, 0, 0, 0)
 
-// -X drops the extra file attributes (uid/gid, and on macOS the AppleDouble
-// entries) so the archive is the same bytes wherever it is built. It does NOT
-// exclude `.DS_Store`, which is a real file rather than an attribute — hence the
-// explicit exclusion below, because Chrome refuses to load an unpacked
-// extension whose directory contains files it cannot account for.
-execFileSync('zip', ['-r', '-X', '-q', OUT, 'jojo-extension', '-x', '*.DS_Store', '__MACOSX/*'], {
-  cwd: stage,
-})
-rmSync(stage, { recursive: true, force: true })
+const entries = {}
+for (const [rel, bytes] of files) entries[`jojo-extension/${rel}`] = [bytes, { mtime: FIXED }]
+
+mkdirSync(PUBLIC, { recursive: true })
+writeFileSync(OUT, zipSync(entries, { level: 9 }))
 
 const { version } = JSON.parse(readFileSync(join(SOURCE, 'manifest.json'), 'utf8'))
 const size = statSync(OUT).size

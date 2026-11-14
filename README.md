@@ -10,7 +10,7 @@
 > - **For research and testing.** It is built to explore what a local-first, agentic job tracker can do. Treat what it produces — a draft, a match, a suggested reminder — as a starting point to check, not an answer to act on. Nothing it writes has been reviewed by anybody.
 > - **Copying and distribution.** The Apache-2.0 licence lets you use, change and redistribute this, and that grant stands. What we ask is that you do not pass it on as a finished or supported product, and that anything you build on it carries the same notice — because the person downstream deserves to know it is research code as much as you did.
 > - **No warranty, and no liability.** Provided “as is”, with no warranty of any kind and no liability for any loss arising from its use or distribution — see sections 7 and 8 of the licence. That covers lost or corrupted records, a missed deadline, and anything a connected model gets wrong.
-> - **The services you connect are yours.** jojo ships no API key and bundles no third-party code. Every model, reader and provider is one you configure with your own credentials, which makes you the party to that agreement and responsible for what you send. jojo is not a party to it and cannot answer for it.
+> - **The services you connect are yours.** jojo ships no API key and no account with any service. Every model, reader and provider is one you configure with your own credentials, which makes you the party to that agreement and responsible for what you send. jojo is not a party to it and cannot answer for it.
 
 **J**arvis f**O**r **J**ob **O**rganization — an agentic assistant that tracks, organises and works on your search for academic and industry jobs.
 
@@ -531,7 +531,7 @@ client** in the web app and run the two commands it shows, which carry a token
 minted for you:
 
 ```
-curl -fsSL <jojo's address>/jojo-bridge.mjs -o jojo-bridge.mjs && node jojo-bridge.mjs --token <token>
+curl -fsSL <jojo's address>/jojo-bridge.mjs -o jojo-bridge.mjs && JOJO_BRIDGE_TOKEN=<token> node jojo-bridge.mjs
 claude mcp add --transport http jojo http://127.0.0.1:3002/mcp --header "Authorization: Bearer <token>"
 ```
 

@@ -28,7 +28,19 @@ import { CAPTURE_MAX_ASSET_BYTES, CAPTURE_SCHEMES } from '@jojo/service/core/cap
 type Asset = { href: string; kind: string }
 type Page = { html: string; assets: Asset[]; dropped?: number }
 type Inline = (page: Page) => Promise<{ html: string; dropped: number }>
-type Fetched = { ok: boolean; status: number; text: () => Promise<string> }
+type Fetched = { ok: boolean; status: number; text: () => Promise<string>; url?: string }
+
+/** A `function name(` out of `background.js`, to its closing brace. */
+function liftFn(name: string): string {
+  const at = backgroundSource.search(new RegExp(`function ${name}\\(`))
+  if (at === -1) throw new Error(`${name} is not in extension/background.js any more`)
+  let depth = 0
+  for (let i = backgroundSource.indexOf('{', at); i < backgroundSource.length; i += 1) {
+    if (backgroundSource[i] === '{') depth += 1
+    else if (backgroundSource[i] === '}' && --depth === 0) return backgroundSource.slice(at, i + 1)
+  }
+  throw new Error(`could not find the end of ${name}`)
+}
 
 /**
  * `cssSafe` through `byteLength`, which is `inline` and the three helpers it
@@ -56,7 +68,9 @@ function liftRealInline(fetchImpl: (href: string) => Promise<Fetched>): RealInli
     'CAPTURE_MAX_ASSET_BYTES',
     'CAPTURE_SCHEMES',
     'fetch',
-    `${region}; return inline`,
+    // The local-target rule `inline` asks of every asset, lifted from the same
+    // file so the one under test is the real one.
+    `${liftFn('privateHost')}\n${liftFn('isLocalTarget')}\n${region}; return inline`,
   )(CAPTURE_MAX_ASSET_BYTES, CAPTURE_SCHEMES, fetchImpl) as RealInline
 }
 
@@ -577,6 +591,59 @@ describe('inlining against a deadline', () => {
       assets: [{ href: 'https://cdn.test/a.css', kind: 'css' }],
     })
     expect(result.html).toBe('<style>.b{color:red} .a{color:blue}</style>')
+    expect(result.dropped).toBe(0)
+  })
+})
+
+/**
+ * An asset on this machine or the person's own network.
+ *
+ * The worker fetches with the extension's host permissions, so a posting that
+ * named `http://127.0.0.1:…` — or a public address that 302s there — had the
+ * local service's answer spliced into the capture. Reproduced against a
+ * router-style `/secret` on loopback before the fix.
+ */
+describe('an asset that points at this machine or the LAN', () => {
+  const SECRET = 'ROUTER-ADMIN-SECRET-TOKEN-1234'
+
+  it('is never fetched, and is counted as dropped', async () => {
+    const asked: string[] = []
+    const inline = liftInline((href) => {
+      asked.push(href)
+      return Promise.resolve(sheet(`a{content:"${SECRET}"}`))
+    })
+    const result = await inline({
+      html: '<style>__JOJO_ASSET_0__</style><style>__JOJO_ASSET_1__</style><style>__JOJO_ASSET_2__</style>',
+      assets: [
+        { href: 'http://127.0.0.1:3001/secret', kind: 'css' },
+        { href: 'http://192.168.1.1/admin.css', kind: 'css' },
+        { href: 'http://router/x.css', kind: 'css' },
+      ],
+    })
+    expect(asked).toEqual([])
+    expect(result.html).not.toContain(SECRET)
+    expect(result.dropped).toBe(3)
+  })
+
+  it('is dropped when a public address redirects onto it', async () => {
+    const inline = liftInline((href) =>
+      Promise.resolve({ ...sheet(`a{content:"${SECRET}"}`), url: href.replace('https://cdn.example/', 'http://127.0.0.1:8931/') }),
+    )
+    const result = await inline({
+      html: '<style>__JOJO_ASSET_0__</style>',
+      assets: [{ href: 'https://cdn.example/redir-private', kind: 'css' }],
+    })
+    expect(result.html).not.toContain(SECRET)
+    expect(result.dropped).toBe(1)
+  })
+
+  it('still inlines a public asset that ends where it started', async () => {
+    const inline = liftInline((href) => Promise.resolve({ ...sheet('b{color:red}'), url: href }))
+    const result = await inline({
+      html: '<style>__JOJO_ASSET_0__</style>',
+      assets: [{ href: 'https://cdn.example/s.css', kind: 'css' }],
+    })
+    expect(result.html).toBe('<style>b{color:red}</style>')
     expect(result.dropped).toBe(0)
   })
 })

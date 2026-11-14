@@ -260,3 +260,221 @@ describe('writes that change nothing, and text that changes under its formatting
     expect(runsOf(p.body, p.bodyFormat).filter((r) => r.bold).map((r) => r.text)).toEqual(['ML'])
   })
 })
+
+/* Round-2 review findings (R10a–e, R13), each reproduced before it was fixed. */
+
+describe('a revert that would reach past a later write', () => {
+  it("R10a: a step's Undo of the first job at an employer keeps the employer a later job is at", () => {
+    const w = world()
+    const first = w.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'draft' })
+    const second = w.app()
+    const s = () => w.repo.getSnapshot()
+    const org = s().one(second, 'AT', 'organisation')
+    expect(org).toBeDefined()
+
+    first.undo?.()
+
+    expect(s().node(first.output as NodeId)).toBeUndefined()
+    // Was 0: the org went with the first job and took the second job's AT edge.
+    expect(s().out(second, 'AT').map((e) => e.to)).toEqual([org!.id])
+    expect(s().in(org!.id, 'AT')).toHaveLength(1)
+  })
+
+  it('R10a: ⌘Z of a move to a new employer takes that employer back and restores the old one', () => {
+    const w = world()
+    const id = w.app()
+    const rice = w.repo.getSnapshot().one(id, 'AT', 'organisation')!
+    w.run('application.update', { id, org: 'MIT' })
+    w.runtime.undo()
+    const s = w.repo.getSnapshot()
+    expect(s.one(id, 'AT', 'organisation')?.id).toBe(rice.id)
+    expect(s.ofType('organisation').map((o) => o.props.name)).toEqual(['Rice'])
+  })
+
+  it('R10a: a job something now copies stays, whole, employer and all', () => {
+    const w = world()
+    const create = w.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'draft' })
+    const id = create.output as NodeId
+    const copy = w.run('application.duplicate', { id }).output as NodeId
+
+    create.undo?.()
+
+    const s = w.repo.getSnapshot()
+    expect(s.node(id)).toBeDefined()
+    expect(s.one(id, 'AT', 'organisation')?.props.name).toBe('Rice')
+    expect(s.one(copy, 'COPY_OF', 'application')?.id).toBe(id)
+  })
+
+  it('R10a: tagging a new job does not pin it — its Undo still takes it back', () => {
+    const w = world()
+    const create = w.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'draft' })
+    const id = create.output as NodeId
+    const other = w.app()
+    const kw = w.run('keyword.create', { name: 'ml' }).output as NodeId
+    w.run('keyword.record.set', { record: id, keywords: [kw] })
+
+    create.undo?.()
+
+    const s = w.repo.getSnapshot()
+    expect(s.node(id)).toBeUndefined()
+    expect(s.node(kw)).toBeDefined()
+    expect(s.one(other, 'AT', 'organisation')?.props.name).toBe('Rice')
+  })
+
+  it('R10a: still takes the employer back when nothing else is at it', () => {
+    const w = world()
+    w.app()
+    w.runtime.undo()
+    expect(w.repo.getSnapshot().ofType('organisation')).toEqual([])
+    expect(w.repo.getSnapshot().ofType('application')).toEqual([])
+  })
+
+  it('R10b: never splits a stage move — Interview keeps the submitted date its first move stamped', () => {
+    const w = world()
+    const id = w.app()
+    const submitted = w.run('application.update', { id, stage: 'submitted' })
+    const on = w.props(id)['submittedOn']
+    expect(on).toBeDefined()
+    w.run('application.update', { id, stage: 'interview' })
+
+    submitted.undo?.()
+
+    // Was stage 'interview' with no submittedOn: the stage had moved on, so it
+    // stayed, while the date it was moved with went back on its own.
+    expect(w.props(id)).toMatchObject({ stage: 'interview', submittedOn: on })
+  })
+
+  it('R10b: a later correction to one date of the move pins the whole move', () => {
+    const w = world()
+    const id = w.app()
+    const move = w.run('application.update', { id, stage: 'submitted' })
+    w.run('application.update', { id, submittedOn: '2026-08-01' })
+
+    move.undo?.()
+
+    expect(w.props(id)).toMatchObject({ stage: 'submitted', submittedOn: '2026-08-01' })
+  })
+
+  it('R10b: a stage move with nothing after it still comes back whole', () => {
+    const w = world()
+    const id = w.app()
+    const before = structuredClone(w.props(id))
+    w.run('application.update', { id, stage: 'submitted' })
+    w.run('application.note.set', { id, note: 'later note' })
+    const move = w.repo.undoable[1]!
+    w.repo.revert(move.id)
+    expect(w.props(id)['stage']).toBe('draft')
+    expect(w.props(id)['submittedOn']).toBe(before['submittedOn'])
+    expect(w.props(id)['note']).toBe('later note')
+  })
+
+  it("R10c: a step's Undo of a delete never brings a claim back with one end", () => {
+    const w = world()
+    const { ids } = w.run('profile.background.add', {
+      background: [
+        { kind: 'skill', title: 'Rust' },
+        { kind: 'employment', title: 'Engineer', where: 'Acme' },
+      ],
+    }).output as { ids: NodeId[] }
+    const [a, b] = ids as [NodeId, NodeId]
+    const claim = w.run('claim.add', { subject: a, predicate: 'used in', object: b }).output as NodeId
+    const delA = w.run('profile.background.delete', { id: a })
+    w.run('profile.background.delete', { id: b })
+
+    delA.undo?.()
+
+    const s = w.repo.getSnapshot()
+    expect(s.node(a)).toBeDefined()
+    // Was back with SUBJECT and no OBJECT: half a fact nothing can show or delete.
+    expect(s.node(claim)).toBeUndefined()
+    for (const e of s.edges()) {
+      expect(s.node(e.from)).toBeDefined()
+      expect(s.node(e.to)).toBeDefined()
+    }
+  })
+})
+
+describe('an undo with nothing left to take back', () => {
+  it('R10d: says so, leaves the ring, and offers no redo', () => {
+    const w = world()
+    const f = w.file()
+    const read = (t: string) =>
+      w.run('fit.reading.set', { fileId: f, requirements: [{ text: t, essential: true }], model: 'm' })
+    read('PhD')
+    w.run('fit.reading.clear', { fileId: f })
+    read('MSc')
+    const audited = w.repo.audit.length
+    const top = w.repo.undoable[0]!.id
+
+    const out = w.runtime.undo()
+
+    expect(out.ok).toBe(false)
+    expect(!out.ok && out.errors[0]?.message).toMatch(/Nothing to undo/)
+    expect(w.repo.undoable.some((e) => e.id === top)).toBe(false)
+    expect(w.repo.redoable).toHaveLength(0)
+    expect(w.repo.audit.length).toBe(audited)
+    expect(JSON.stringify(w.props(f)['reading'])).toContain('MSc')
+  })
+})
+
+describe("a step's Undo after the audit ring has turned over", () => {
+  it('R10e: still finds the step through ⌘Z/⇧⌘Z after 200 system writes', () => {
+    const w = world()
+    const id = w.app()
+    const f = w.file()
+    const step = w.run('application.note.set', { id, note: 'agent note' })
+    w.runtime.undo()
+    w.runtime.redo()
+    for (let i = 0; i < 205; i += 1) {
+      w.run('fit.reading.set', { fileId: f, requirements: [{ text: `R${String(i)}`, essential: true }], model: 'm' })
+    }
+
+    step.undo?.()
+
+    expect(w.props(id)['note'] ?? '').toBe('')
+  })
+})
+
+describe('application.delete', () => {
+  it('R13: takes its own deadline and an employer left with no jobs, and Undo brings both back', () => {
+    const w = world()
+    const id = w.run('application.create', {
+      org: 'Rice University',
+      role: 'AP',
+      roleTag: 'Faculty',
+      stage: 'draft',
+      deadline: '2026-08-28',
+    }).output as NodeId
+    const other = w.run('timeline.item.create', {
+      title: 'Call Ann',
+      date: '2026-08-29',
+      kind: 'call',
+      applicationIds: [id],
+    }).output as NodeId
+    const s = () => w.repo.getSnapshot()
+    const deadline = s().many(id, 'ABOUT', 'in', 'timelineItem').find((i) => i.id !== other)!
+    const org = s().one(id, 'AT', 'organisation')!
+
+    w.run('application.delete', { id })
+
+    expect(s().node(deadline.id)).toBeUndefined()
+    expect(s().node(org.id)).toBeUndefined()
+    // Every other item stays, unlinked (D15).
+    expect(s().node(other)).toBeDefined()
+
+    w.runtime.undo()
+
+    expect(s().node(id)).toBeDefined()
+    expect(s().node(deadline.id)).toBeDefined()
+    expect(s().one(id, 'AT', 'organisation')?.id).toBe(org.id)
+  })
+
+  it('R13: keeps an employer another job is still at', () => {
+    const w = world()
+    const id = w.app()
+    const second = w.app()
+    const org = w.repo.getSnapshot().one(id, 'AT', 'organisation')!
+    w.run('application.delete', { id })
+    expect(w.repo.getSnapshot().one(second, 'AT', 'organisation')?.id).toBe(org.id)
+  })
+})

@@ -17,24 +17,32 @@
  * Dynamic `import()` is ignored too: it runs after both modules have finished
  * initialising, which is the usual way to break a cycle on purpose.
  *
- * Regex-based for the same reason as the rest of these guards: a specifier is
- * a string literal at a fixed place in a statement, and the cost of a missed
- * odd spelling is a cycle unreported, not a gate wrongly red.
+ * Parsed with TypeScript's own parser, as `check-platform.mjs` does. This was
+ * a pair of line-anchored regexes, and a missed spelling is a cycle nobody is
+ * told about: an import after a `;` on the same line, or after a block
+ * comment (`/* why *\/ import { x } from './y'`), was not an edge at all (R38).
+ * The parser has no notion of lines, and it is also what tells `import type`
+ * from `import { type A }` without a pattern having to.
  */
 
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
+import ts from 'typescript'
 
-/** `import …/export … from '…'`, capturing whether the statement is `type`. */
-const FROM = /(?:^|\n)[ \t]*(import|export)\s+(type\s+)?[^;'"`]*?\bfrom\s*['"]([^'"]+)['"]/g
-/** `import '…'` for side effects. */
-const BARE = /(?:^|\n)[ \t]*import\s*['"]([^'"]+)['"]/g
-
-/** Relative VALUE specifiers in `source`. */
+/** Relative VALUE specifiers in `source`: every top-level import and re-export not erased. */
 export function valueSpecsIn(source) {
+  const file = ts.createSourceFile('x.tsx', source, ts.ScriptTarget.Latest, false, ts.ScriptKind.TSX)
   const out = []
-  for (const m of source.matchAll(FROM)) if (m[2] === undefined) out.push(m[3])
-  for (const m of source.matchAll(BARE)) out.push(m[1])
+  for (const statement of file.statements) {
+    if (ts.isImportDeclaration(statement)) {
+      // `import type …` is erased; `import { type A } …` is not (see above).
+      if (statement.importClause?.isTypeOnly === true) continue
+      if (ts.isStringLiteral(statement.moduleSpecifier)) out.push(statement.moduleSpecifier.text)
+    } else if (ts.isExportDeclaration(statement) && statement.moduleSpecifier !== undefined) {
+      if (statement.isTypeOnly) continue
+      if (ts.isStringLiteral(statement.moduleSpecifier)) out.push(statement.moduleSpecifier.text)
+    }
+  }
   return out.filter((spec) => spec.startsWith('.'))
 }
 

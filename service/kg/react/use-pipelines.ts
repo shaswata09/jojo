@@ -53,7 +53,8 @@ import { twinBriefing, twinState } from '../core/twin'
 import type { GraphSnapshot } from '../core/snapshot'
 import type { Instant, Pipeline, PipelineKind, Proposal } from '../core/model'
 import type { ToolName } from '../tools/index'
-import type { ToolRuntime } from '../tools/runtime'
+import type { ToolResult, ToolRuntime } from '../tools/runtime'
+import { canonicalPostingUrl, postingIdentity } from '../core/capture'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
 
@@ -101,10 +102,13 @@ export type PipelinesState = {
   discard: (id: string) => void
   approveAll: (pipelineId: string) => void
   sweep: (pipelineId: string) => void
-  /** Empties the queue: declines what is pending, clears what is answered. */
-  clearAll: () => void
-  setEnabled: (pipeline: Pipeline, enabled: boolean) => void
-  setAuto: (pipeline: Pipeline, auto: boolean) => void
+  /**
+   * Empties the queue: declines what is pending, clears what is answered.
+   * These three hand back the tool's result so a refusal can be said (R38).
+   */
+  clearAll: () => ToolResult<number>
+  setEnabled: (pipeline: Pipeline, enabled: boolean) => ToolResult<unknown>
+  setAuto: (pipeline: Pipeline, auto: boolean) => ToolResult<unknown>
   runNow: (pipelineId: string) => void
   acceptShutdown: () => void
   dismissShutdown: () => void
@@ -362,23 +366,24 @@ export function usePipelines({
    * proposal whose pipeline was deleted belongs to no pipeline and no loop
    * would reach it, and `sweep` leaves pending cards alone in any case.
    */
-  const clearAll = useCallback(() => void run('pipeline.proposal.clear', {}), [run])
+  const clearAll = useCallback(() => run('pipeline.proposal.clear', {}), [run])
 
   /* -------------------------------- the toggle ---------------------------- */
 
   const setEnabled = useCallback(
     (pipeline: Pipeline, enabled: boolean) => {
-      run('scout.pipeline.enable.set', { id: pipeline.id, enabled })
+      const result = run('scout.pipeline.enable.set', { id: pipeline.id, enabled })
       // Switching one off mid-round stops the round too; the derived offer
       // falls away on its own, because a disabled pipeline is not a candidate.
-      if (!enabled && running === pipeline.id) abortInFlight(cancel)
+      // Only a switch that landed: a refused one left the pipeline running.
+      if (result.ok && !enabled && running === pipeline.id) abortInFlight(cancel)
+      return result
     },
     [run, running],
   )
 
   const setAuto = useCallback(
-    (pipeline: Pipeline, auto: boolean) =>
-      void run('scout.pipeline.update', { id: pipeline.id, auto }),
+    (pipeline: Pipeline, auto: boolean) => run('scout.pipeline.update', { id: pipeline.id, auto }),
     [run],
   )
 
@@ -658,7 +663,10 @@ export async function runPipelineRound(pipeline: Pipeline, deps: RoundDeps): Pro
           note(pipeline.id, event.reason, 'error')
           return
         }
-        if (event.type === 'step') recordStep(pipeline.id, event.step, auto, note)
+        if (event.type === 'step') {
+          noteBoardListings(pipeline.id, event.step)
+          recordStep(pipeline.id, event.step, auto, note)
+        }
       },
     })
 
@@ -821,4 +829,41 @@ function recordStep(
       : (step.announcement?.title ?? step.title),
     auto ? 'applied' : 'suggested',
   )
+}
+
+/* ------------------------------ board listings ---------------------------- */
+
+/**
+ * The posting addresses each pipeline's `board.search` reads listed, this page.
+ *
+ * What the background reader (web `ScoutReader`) may open on its own. It opens
+ * a tab signed in as the person, and a suggestion's address is whatever the
+ * model wrote — a prompt-injected listing could make that a webmail inbox. An
+ * address a board read actually listed is one the board put there, not the
+ * model. Memory, not the graph: after a reload the reader falls back to the
+ * pipeline's own board hosts, and anything else waits for Approve.
+ */
+const listed = new Map<string, Set<string>>()
+
+const listingKey = (url: string): string => postingIdentity(url) ?? canonicalPostingUrl(url)
+
+/** Records what a finished `board.search` listed. Exported for its test. */
+export function noteBoardListings(pipelineId: string, step: AgentStep): void {
+  if (step.name !== 'board.search' || step.status !== 'done') return
+  const postings = (step.output as { postings?: unknown } | null | undefined)?.postings
+  if (!Array.isArray(postings)) return
+  let seen = listed.get(pipelineId)
+  if (seen === undefined) {
+    seen = new Set()
+    listed.set(pipelineId, seen)
+  }
+  for (const posting of postings) {
+    const url = (posting as { url?: unknown } | null)?.url
+    if (typeof url === 'string') seen.add(listingKey(url))
+  }
+}
+
+/** Whether one of this pipeline's board reads listed `url` this page. */
+export function listedByBoard(pipelineId: string, url: string): boolean {
+  return listed.get(pipelineId)?.has(listingKey(url)) ?? false
 }

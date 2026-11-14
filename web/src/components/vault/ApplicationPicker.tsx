@@ -81,7 +81,7 @@ export function ApplicationPicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
-          <Command>
+          <Command label="Search applications">
             <CommandInput placeholder="Search applications…" />
             <CommandList>
               <CommandEmpty>

@@ -747,25 +747,60 @@ describe('lockedCaptureHtml', () => {
     expect(CAPTURE_VIEW_CSP).not.toMatch(/https?:|\*/)
   })
 
-  it('goes straight after the doctype, ahead of the document’s own head', () => {
+  const HEAD = `<head>${META}<meta http-equiv="x-dns-prefetch-control" content="off">`
+
+  it('writes its own doctype and head first, and the page after them', () => {
     const out = lockedCaptureHtml('<!doctype html><html lang="en"><head><title>t</title></head><body>x</body></html>')
-    expect(out).toBe(`<!doctype html>${META}<html lang="en"><head><title>t</title></head><body>x</body></html>`)
+    expect(out).toBe(`<!doctype html>${HEAD}<html lang="en"><head><title>t</title></head><body>x</body></html>`)
   })
 
-  it('goes first when there is no doctype and no head', () => {
-    expect(lockedCaptureHtml('<p>posting</p>')).toBe(`${META}<p>posting</p>`)
+  it('writes no doctype for a page that had none, so a quirks page stays one', () => {
+    expect(lockedCaptureHtml('<p>posting</p>')).toBe(`${HEAD}<p>posting</p>`)
   })
 
-  it('stays after a doctype that comments precede, so the page keeps standards mode', () => {
+  it('keeps standards mode for a doctype that comments precede', () => {
     const out = lockedCaptureHtml('<!-- saved -->\n<!DOCTYPE html><html><body></body></html>')
-    expect(out.indexOf(META)).toBe('<!-- saved -->\n<!DOCTYPE html>'.length)
+    expect(out.startsWith(`<!doctype html>${HEAD}<!-- saved -->`)).toBe(true)
   })
 
   it('comes before a hostile early <meta> or <link> the page put first', () => {
     const hostile = '<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src *"><link rel=stylesheet href="https://x.test/s.css">'
     const out = lockedCaptureHtml(hostile)
-    expect(out.indexOf(META)).toBe('<!doctype html>'.length)
+    expect(out.indexOf(META)).toBe('<!doctype html><head>'.length)
     expect(out.indexOf(META)).toBeLessThan(out.indexOf('default-src *'))
+  })
+
+  /*
+   * Round 2, R2 — reproduced in headless Chromium inside `<iframe sandbox=""
+   * srcdoc>`, as FileViewer renders a capture. Each of these starts in a way a
+   * JS pattern reads differently from the HTML parser, and with the policy
+   * placed by that pattern each one fetched its beacon.
+   */
+  it('is first whatever the page starts with', () => {
+    const beacon = '<img src="http://evil.test/b">'
+    for (const page of [
+      `\u00A0<!doctype html><html><body>${beacon}</body></html>`,
+      `\u2028<!doctype html><html><body>${beacon}</body></html>`,
+      `\uFEFF<!doctype html><html><body>${beacon}</body></html>`,
+      `\uFEFF\uFEFF<!doctype html>${beacon}`,
+      `<!-->${beacon}<!-- x --><!doctype html><p>posting</p>`,
+      `<!-- a --!>${beacon}<!-- x --><!doctype html><p>posting</p>`,
+    ]) {
+      const out = lockedCaptureHtml(page)
+      expect(out.startsWith('<!doctype html><head>') || out.startsWith('<head>'), JSON.stringify(page)).toBe(true)
+      expect(out.indexOf(META), JSON.stringify(page)).toBeLessThan(out.indexOf(beacon))
+      expect(out, JSON.stringify(page)).not.toContain('\uFEFF<')
+    }
+  })
+
+  it('disarms every <link>, which no CSP stops from connecting', () => {
+    const out = lockedCaptureHtml(
+      '<!doctype html><head><link rel="preconnect" href="http://evil.test:8942/"><LINK\trel=dns-prefetch href=//d.test>' +
+        '<link/rel=prefetch href=http://e.test/p><link rel=icon href=http://e.test/i></head><body>link text</body>',
+    )
+    expect(out).not.toMatch(/<link/i)
+    expect(out.match(/<basefont/g)).toHaveLength(4)
+    expect(out).toContain('link text')
   })
 })
 

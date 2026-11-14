@@ -114,6 +114,26 @@ describe('which stages a record offers to date', () => {
     ])
   })
 
+  it('does not offer an Offer date on a closed record that never had one', () => {
+    // Closed is the last stage, so "everything up to it" was every stage —
+    // a rejection after one email offered to date its offer.
+    expect(stagesToDate({ stage: 'closed', stageDates: { closed: '2026-09-30' } })).toEqual([
+      'draft',
+      'submitted',
+      'closed',
+    ])
+  })
+
+  it('offers a closed record the stages it reached or dated', () => {
+    expect(
+      stagesToDate({ stage: 'closed', stageDates: { interview: '2026-09-20', closed: '2026-09-30' } }),
+    ).toEqual(['draft', 'submitted', 'screen', 'interview', 'closed'])
+    // An offer kept through the move to Closed is an offer reached.
+    expect(
+      stagesToDate({ stage: 'closed', offer: { respondBy: '2026-10-01', note: '' } }),
+    ).toEqual(['draft', 'submitted', 'screen', 'interview', 'offer', 'closed'])
+  })
+
   it('counts submitted as dated through submittedOn', () => {
     expect(stagesToDate({ stage: 'draft', submittedOn: '2026-09-10' })).toEqual([
       'draft',

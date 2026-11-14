@@ -73,7 +73,10 @@ export const orgEnsure = defineTool({
     return id
   },
 
-  describe: (input) => ({ title: `${input.name} added` }),
+  // "added" only when it was: ensure returns an employer that already exists.
+  describe: (input, output, _m, before) => ({
+    title: before?.node(output) ? `${input.name} already there` : `${input.name} added`,
+  }),
 })
 
 /* ------------------------------ create/update ----------------------------- */

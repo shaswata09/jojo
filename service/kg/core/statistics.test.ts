@@ -253,7 +253,14 @@ describe('the KPI tiles', () => {
     expect(median.value).toBe('4 days')
   })
 
-  /** `appliedOn` first, then `submittedOn` — the same fallback the chart uses. */
+  /** `submittedOn` first — the date the Stage dates panel corrects. See `sent-on.ts`. */
+  it('measures from the corrected submitted date when both are present', () => {
+    const replied = [
+      app({ appliedOn: '2026-10-01', submittedOn: '2026-10-05', firstReplyOn: '2026-10-07' }),
+    ]
+    expect(kpi(replied, 'Median reply time').value).toBe('2 days')
+  })
+
   it('falls back to submittedOn for a seed row that has no appliedOn', () => {
     const replied = [app({ submittedOn: '2026-10-01', firstReplyOn: '2026-10-04' })]
     expect(kpi(replied, 'Median reply time').value).toBe('3 days')
@@ -309,6 +316,22 @@ describe('the outcome bands', () => {
 
   it('reads a record closed with no outcome as withdrawn', () => {
     expect(band([app({ stage: 'closed' })], 'Withdrawn').count).toBe(1)
+  })
+
+  /**
+   * A board move from Offer to Closed sets no outcome, and may keep the offer
+   * (or only its stage date). An offer existed, so it stays in the Offer band
+   * and the offer rate rather than reading as Withdrawn.
+   */
+  it('keeps an offer that was closed without an outcome in the Offer band', () => {
+    const kept = app({ stage: 'closed', offer: { respondBy: '2026-10-20', note: '' } })
+    const dated = app({ stage: 'closed', stageDates: { offer: '2026-10-01', closed: '2026-10-09' } })
+    for (const a of [kept, dated]) {
+      expect(reachedOf(a)).toBe(REACH.offer)
+      expect(band([a], 'Offer').count).toBe(1)
+      expect(band([a], 'Withdrawn').count).toBe(0)
+    }
+    expect(kpi([kept, staged('submitted')], 'Offer rate').value).toBe('50%')
   })
 
   it('files a ghosting under No reply and a rejection under Rejected', () => {

@@ -59,8 +59,15 @@ export type PickedBackup =
   | { kind: 'none' }
   /** A whole backup, ready to be staged behind the confirmation. */
   | { kind: 'plan'; plan: RestorePlan }
-  /** Read, and refused by the validator. The reason is `readBackup`'s own. */
-  | { kind: 'refused'; title: string; description: string }
+  /**
+   * Read, and refused by the validator. The reason is `readBackup`'s own,
+   * except for a file that is not JSON at all: that reason is the parser's
+   * ("Unexpected token 'P', \"PK…\" is not valid JSON"), which says nothing a
+   * person can act on, so it is replaced and carried out as `parseError` for
+   * `reportError` instead. A truncated file of jojo's own is the one way a real
+   * backup lands here, and that one is worth a line in the log.
+   */
+  | { kind: 'refused'; title: string; description: string; parseError?: Error }
   /**
    * The bytes never arrived. `thrown` is carried out for `reportError`: this is
    * a browser or filesystem failure rather than a bad file, so it is the only
@@ -94,6 +101,15 @@ export async function readPickedBackup(list: FileList | null): Promise<PickedBac
       description:
         'Your browser could not read that file — it may have been moved, renamed or disconnected since you chose it. Nothing has been changed; choose it again once it is back.',
       thrown,
+    }
+  }
+
+  if (!read.ok && read.error.code === 'backup/unreadable') {
+    return {
+      kind: 'refused',
+      title: 'That file cannot be restored',
+      description: "That file isn't a jojo backup. Nothing has been changed.",
+      parseError: new Error(read.error.message),
     }
   }
 

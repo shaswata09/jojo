@@ -31,11 +31,18 @@
                              a vLLM box on their LAN, or one of four cloud
                              providers, and it is free text in Settings. Any
                              list here would either be wrong or be `*`.
-        script-src         — the theme resolver below is an inline script and
-                             must run before first paint. Locking this down
-                             means hashing it and every inline script Vite
-                             emits, which is worth doing and is not a one-line
-                             change.
+
+      ADDED AT BUILD TIME, NOT HERE:
+        script-src, worker-src — `scripts/csp.mjs`, run by `vite.config.ts`,
+                             appends them to this tag in the built page: 'self',
+                             the sha256 of the theme resolver below (hashed from
+                             the HTML the build emits, so an edit cannot leave a
+                             stale hash), 'wasm-unsafe-eval' for the mascot's and
+                             pdf.js's WebAssembly, gtag's host only in a build
+                             with analytics, and workers from 'self' and blob:.
+                             Not written here because the dev server injects
+                             inline scripts of its own that no fixed policy
+                             would allow.
     -->
     <meta
       http-equiv="Content-Security-Policy"

@@ -34,6 +34,8 @@ import { repairArgs, summarizeRepairs } from './repair'
 const APP = 'app:01234567-89ab-4cde-8123-456789abcdef'
 const KW1 = 'kw:11111111-89ab-4cde-8123-456789abcdef'
 const KW2 = 'kw:22222222-89ab-4cde-8123-456789abcdef'
+/** A create's required fields, for the list repairs a create may still take. */
+const CREATE = { org: 'Rice', role: 'SWE', roleTag: 'Engineering', stage: 'draft' }
 
 const schemaOf = (tool: string): JsonSchema => {
   const entry = entryFor(tool)
@@ -185,8 +187,10 @@ describe('garbage around the JSON', () => {
 })
 
 describe('a string where a list belongs', () => {
+  // On a CREATE: nothing is there to replace. An update's list is refused
+  // instead — see 'a list that replaces the set' below.
   it('splits on commas for a list of strings', () => {
-    const args = repaired('keyword.record.set', { record: APP, keywords: `${KW1}, ${KW2}` })
+    const args = repaired('application.create', { ...CREATE, keywords: `${KW1}, ${KW2}` })
     expect(args['keywords']).toEqual([KW1, KW2])
   })
 
@@ -194,14 +198,14 @@ describe('a string where a list belongs', () => {
     // `"kw:…, kw:…,"` is what a model writing a list one item at a time produces
     // when it stops. Kept, the empty piece reaches the tool as an id pointing at
     // no record, and the split is reported as a repair that broke the call.
-    const args = repaired('keyword.record.set', { record: APP, keywords: `${KW1}, , ${KW2},` })
+    const args = repaired('application.create', { ...CREATE, keywords: `${KW1}, , ${KW2},` })
     expect(args['keywords']).toEqual([KW1, KW2])
   })
 
   it('wraps a single value rather than splitting nothing', () => {
-    const args = repaired('keyword.record.set', { record: APP, keywords: KW1 })
+    const args = repaired('application.create', { ...CREATE, keywords: KW1 })
     expect(args['keywords']).toEqual([KW1])
-    expect(kinds('keyword.record.set', { record: APP, keywords: KW1 })).toEqual(['wrapped-list'])
+    expect(kinds('application.create', { ...CREATE, keywords: KW1 })).toEqual(['wrapped-list'])
   })
 
   it('unwraps a one-item list for a field that takes one value', () => {
@@ -336,7 +340,7 @@ describe('key aliases', () => {
   })
 
   it('matches singular to plural and a trailing Id to the bare name', () => {
-    expect(repaired('keyword.record.set', { record: APP, keyword: [KW1] })['keywords']).toEqual([KW1])
+    expect(repaired('application.create', { ...CREATE, keyword: [KW1] })['keywords']).toEqual([KW1])
     expect(repaired('keyword.record.set', { recordId: APP, keywords: [KW1] })['record']).toBe(APP)
   })
 
@@ -642,8 +646,8 @@ describe('the repaired call is one the real tool accepts', () => {
   const CASES: readonly [string, string, unknown][] = [
     ['the whole object as a JSON string', 'memory.list', '{"type":"application"}'],
     ['one field as a JSON string', 'application.update', { id: APP, keywords: `["${KW1}"]` }],
-    ['a string where a list belongs', 'keyword.record.set', { record: APP, keywords: `${KW1}, ${KW2}` }],
-    ['a lone id where a list belongs', 'keyword.record.set', { record: APP, keywords: KW1 }],
+    ['a string where a list belongs', 'application.create', { ...CREATE, keywords: `${KW1}, ${KW2}` }],
+    ['a lone id where a list belongs', 'application.create', { ...CREATE, keywords: KW1 }],
     ['a number as a string', 'memory.list', { type: 'application', limit: '5' }],
     ['a boolean as a string', 'application.update', { id: APP, flagged: 'true' }],
     ['a label read as a key', 'keyword.rename', { keyword: KW1, name: 'Systems' }],
@@ -670,5 +674,43 @@ describe('the repaired call is one the real tool accepts', () => {
     const out = repairArgs(schemaOf(tool), raw)
     expect(out.ok).toBe(true)
     expect(out.ok && parse(tool, out.args).ok).toBe(true)
+  })
+})
+
+/*
+ * R11a. On an update a list is the whole set, so a lone value — wrapped, split
+ * or moved from a singular key — would replace every item with itself. Each
+ * of these was repaired into a call that wiped the user's other tags and was
+ * reported as success.
+ */
+describe('a list that replaces the set', () => {
+  const refused = (tool: string, raw: unknown) => {
+    const out = repairArgs(schemaOf(tool), raw)
+    expect(out.ok, JSON.stringify(raw)).toBe(false)
+    return out.ok ? [] : (out.replacesList ?? [])
+  }
+
+  it('says so in the schema the model reads', () => {
+    for (const tool of ['application.update', 'keyword.record.set', 'vault.file.update', 'timeline.item.update']) {
+      const field = tool === 'application.update' || tool === 'keyword.record.set' ? 'keywords' : 'applicationIds'
+      expect(schemaOf(tool).properties?.[field]?.description, tool).toContain('Replaces the whole list')
+    }
+    // A create has no set to replace, and is not told it does.
+    expect(schemaOf('application.create').properties?.['keywords']?.description).not.toContain('Replaces')
+  })
+
+  it('is never wrapped, split or renamed onto', () => {
+    expect(refused('application.update', { id: APP, keyword: KW1 })).toEqual(['keywords'])
+    expect(refused('application.update', { id: APP, keyword: [KW1] })).toEqual(['keywords'])
+    expect(refused('application.update', { id: APP, keywords: KW1 })).toEqual(['keywords'])
+    expect(refused('keyword.record.set', { record: APP, keywords: `${KW1}, ${KW2}` })).toEqual(['keywords'])
+    expect(refused('vault.file.update', { id: 'file:1', applicationId: APP })).toEqual(['applicationIds'])
+  })
+
+  it('takes the whole list, a JSON-encoded one, and null, untouched', () => {
+    expect(repaired('keyword.record.set', { record: APP, keywords: [KW1, KW2] })['keywords']).toEqual([KW1, KW2])
+    expect(repaired('application.update', { id: APP, keywords: `["${KW1}"]` })['keywords']).toEqual([KW1])
+    expect(repaired('application.update', { id: APP, Keywords: [KW1] })['keywords']).toEqual([KW1])
+    expect(repaired('vault.file.update', { id: 'file:1', applicationIds: null })['applicationIds']).toBeNull()
   })
 })

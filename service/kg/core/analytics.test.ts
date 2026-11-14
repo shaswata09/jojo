@@ -87,6 +87,38 @@ describe('the vocabulary is closed', () => {
     ).toBe(false)
   })
 
+  it('rejects a key the event does not declare, even with a declared value', () => {
+    /*
+     * The values alone were checked, so any declared word under any key went
+     * out: `{ employer: 'link' }` on any event, or a number under a key nobody
+     * bucketed. The key set is the event's own, exactly.
+     */
+    for (const leak of [
+      { event: 'app_opened', params: { stage: 'offer' } },
+      { event: 'application_created', params: { source: 'manual', at: 'link' } },
+      { event: 'transfer_completed', params: { records: '6-20', bytes: 48213 } },
+      { event: 'screen_viewed', params: { screen: 'vault', open_for: true } },
+      // A declared value, but another event's.
+      { event: 'screen_viewed', params: { screen: 'offer' } },
+      { event: 'application_advanced', params: { to: 'draft' } },
+      // A missing parameter is a wrong event too.
+      { event: 'model_failed', params: { provider: 'nvidia', kind: 'timeout' } },
+      // A number where a word belongs, and a word where a flag belongs.
+      { event: 'backup_used', params: { direction: 'export', records: 37 } },
+      { event: 'assistant_asked', params: { tools_available: 86, has_model: 'other' } },
+    ]) {
+      expect(isReportable(leak), JSON.stringify(leak)).toBe(false)
+    }
+  })
+
+  it('takes a number only where one is declared, and only a small whole count', () => {
+    // A timestamp or an exact record count is a fingerprint.
+    for (const n of [1.5, -1, 1_731_500_000_000]) {
+      expect(isReportable({ event: 'assistant_asked', params: { tools_available: n, has_model: true } }), String(n)).toBe(false)
+    }
+    expect(isReportable({ event: 'assistant_asked', params: { tools_available: 0, has_model: false } })).toBe(true)
+  })
+
   it('rejects anything that is not an object, without throwing', () => {
     for (const junk of [null, undefined, 'app_opened', 42, [], { event: 'app_opened' }]) {
       expect(() => isReportable(junk), String(junk)).not.toThrow()

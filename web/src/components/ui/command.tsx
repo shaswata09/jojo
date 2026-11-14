@@ -12,6 +12,11 @@ import {
 import { InputGroup, InputGroupAddon } from '@/components/ui/input-group'
 import { SearchIcon, CheckIcon } from 'lucide-react'
 
+/*
+ * Give every <Command> a `label`. cmdk points its input's aria-labelledby at a
+ * hidden <label> of its own, which wins over a placeholder or an aria-label on
+ * the input, so a Command without one leaves its search box with no name.
+ */
 function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive

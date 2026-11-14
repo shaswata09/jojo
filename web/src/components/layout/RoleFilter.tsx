@@ -80,7 +80,7 @@ export function RoleFilter() {
         </PopoverTrigger>
 
         <PopoverContent align="end" className="w-64 p-0">
-          <Command>
+          <Command label="Find a role">
             <CommandInput placeholder="Find a role…" className="h-9" />
             <CommandList>
               <CommandEmpty>No role matches.</CommandEmpty>

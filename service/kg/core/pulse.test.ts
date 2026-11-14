@@ -285,3 +285,47 @@ describe('a wrong total does not wedge the scanner', () => {
     expect([...receiver.payload()!]).toEqual([...wanted])
   })
 })
+
+describe('a re-minted code does not splice into the old one', () => {
+  /*
+   * The web re-mints its pairing offer on a timer. Both offers are the same
+   * length, so the same total: a camera that caught part of the first and
+   * then kept reading the second used to finish with a payload stitched from
+   * both, which passes every check and pairs with neither.
+   */
+  const first = () => planPulse(offer())
+  const second = () =>
+    planPulse(encodeOffer({ publicKey: bytes(32, 7), secret: bytes(32, 8), nonce: bytes(16, 9) }))
+
+  it('starts over when a frame it holds comes back different', () => {
+    const a = first()
+    const b = second()
+    expect(a.total).toBe(b.total)
+    const receiver = createPulseReceiver()
+    for (let i = 0; i < 6; i += 1) receiver.accept(a.frames[i]!)
+
+    let last = ''
+    for (const frame of b.frames) last = receiver.accept(frame)
+    expect(last).toBe('complete')
+    expect([...receiver.payload()!]).toEqual([...encodeOffer({ publicKey: bytes(32, 7), secret: bytes(32, 8), nonce: bytes(16, 9) })])
+  })
+
+  it('keeps the frame that disagreed, so the new code is not a lap behind', () => {
+    const a = first()
+    const b = second()
+    const receiver = createPulseReceiver()
+    receiver.accept(a.frames[0]!)
+    receiver.accept(a.frames[1]!)
+    expect(receiver.accept(b.frames[1]!)).toBe('accepted')
+    expect(receiver.progress().have).toBe(1)
+    expect(receiver.missing()).not.toContain(1)
+  })
+
+  it('still calls an identical repeat a duplicate', () => {
+    const a = first()
+    const receiver = createPulseReceiver()
+    receiver.accept(a.frames[3]!)
+    expect(receiver.accept(a.frames[3]!)).toBe('duplicate')
+    expect(receiver.progress().have).toBe(1)
+  })
+})

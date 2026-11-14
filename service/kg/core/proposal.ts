@@ -288,10 +288,16 @@ export type ScoutReading =
       keywords: { id: string; name: string }[]
       missing: string[]
       fileId?: string
+      /**
+       * Set when this read KEPT the page, rather than reusing one already in
+       * the Vault. Only such a page is this card's to take back out on
+       * Discard: a reused one may be the person's own clip of that address.
+       */
+      created?: true
       via: 'extension' | 'reader'
       readAt: string
     }
-  | { ok: false; reason: string; fileId?: string; readAt: string }
+  | { ok: false; reason: string; fileId?: string; created?: true; readAt: string }
 
 /**
  * A stored reading, or null when there is none or it does not parse.
@@ -313,12 +319,16 @@ export function scoutReading(json: string | undefined): ScoutReading | null {
   const str = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined)
   const readAt = str(r['readAt']) ?? ''
   const fileId = str(r['fileId'])
+  // Strictly `true`: a reading stored before this flag existed reads as
+  // "not created", so its page is never deleted on the card's say-so.
+  const created = fileId !== undefined && r['created'] === true ? { created: true as const } : {}
   if (r['ok'] === false) {
     return {
       ok: false,
       reason: str(r['reason']) ?? 'The posting could not be read.',
       readAt,
       ...(fileId ? { fileId } : {}),
+      ...created,
     }
   }
   if (r['ok'] !== true) return null
@@ -350,6 +360,7 @@ export function scoutReading(json: string | undefined): ScoutReading | null {
     via: r['via'] === 'reader' ? 'reader' : 'extension',
     readAt,
     ...(fileId ? { fileId } : {}),
+    ...created,
   }
 }
 

@@ -533,6 +533,22 @@ describe('what a suggested posting’s page said', () => {
     })
   })
 
+  it('says whether the read kept the page itself — only then may Discard take it', () => {
+    const made = { ok: true, fields: {}, keywords: [], missing: [], fileId: 'f', readAt: '' }
+    expect(scoutReading(JSON.stringify({ ...made, created: true }))).toMatchObject({ created: true })
+    // Reused the person's own clip: no flag, so Discard leaves it (R9).
+    expect(scoutReading(JSON.stringify(made))).not.toHaveProperty('created')
+    // Anything but `true` is not a claim to the page.
+    expect(scoutReading(JSON.stringify({ ...made, created: 'yes' }))).not.toHaveProperty('created')
+    expect(
+      scoutReading(JSON.stringify({ ok: false, reason: 'x', fileId: 'f', created: true })),
+    ).toMatchObject({ created: true })
+    // No page, nothing created.
+    expect(scoutReading(JSON.stringify({ ok: false, reason: 'x', created: true }))).not.toHaveProperty(
+      'created',
+    )
+  })
+
   it('shows nothing for a reading that is absent or does not parse', () => {
     expect(scoutReading(undefined)).toBeNull()
     expect(scoutReading('{oops')).toBeNull()

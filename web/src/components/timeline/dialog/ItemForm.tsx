@@ -23,7 +23,8 @@ import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
 import { useLabels } from '@/lib/labels-context'
 import { useToast } from '@/lib/toast-context'
-import { announceRefusal } from '@/components/common/write-result'
+import { announceRefusal, refusalToast } from '@/components/common/write-result'
+import { useUndoable } from '@/lib/undo'
 import { TODAY } from '@/lib/today'
 
 export function ItemForm({
@@ -42,6 +43,7 @@ export function ItemForm({
   const { get, add, update, remove } = useTimeline()
   const { labelIdsOf, setRecord, removeRecord } = useLabels()
   const { toast } = useToast()
+  const undoable = useUndoable()
 
   const editingId = initial?.id
   const stored = editingId ? get(editingId) : undefined
@@ -168,11 +170,13 @@ export function ItemForm({
       // the seed set, since nothing reads it.
     }
 
-    // Read before the write, or Undo restores the state it just created.
-    const beforeItem = editingId ? stored : undefined
-    const beforeKeywords = editingId ? labelIdsOf(editingId) : []
-
     let saved: TimelineItem
+    // The journal's Undo for an edit, not a hand-built patch. Handing `update`
+    // the stored record back merged it over the edit, so a key the record never
+    // had (an all-day item's `startMins`, an empty `note`) stayed at what was
+    // typed and an all-day event came back timed. The journal reverts to the
+    // whole before-image, keywords included, since both write the same graph.
+    let restoreEdit: (() => unknown) | null = null
     if (editingId) {
       // `update` merges, so `completedOn`, `location` and `joinUrl` — none of
       // which this dialog collects — survive an edit. The copy handed to
@@ -180,15 +184,23 @@ export function ItemForm({
       // which has not re-rendered yet.
       // A refusal keeps the dialog open with what was typed, rather than
       // closing it under an 'updated' toast that is not true.
-      if (announceRefusal(update(editingId, patch), toast)) return
+      const { value: written, restore } = undoable(() => {
+        const result = update(editingId, patch)
+        // Keywords inside the same burst so one Undo takes both back; skipped
+        // on a refusal, which keeps the dialog open with what was typed.
+        if (refusalToast(result) === null) commitKeywords(editingId)
+        return result
+      })
+      if (announceRefusal(written, toast)) return
+      restoreEdit = restore
       // `urgency` is carried across by hand for the same reason the other three
       // survive: the patch no longer collects it, and the type still requires
       // one. The fallback matches the default `add` stamps.
       saved = { ...stored, ...patch, id: editingId, urgency: stored?.urgency ?? 'gray' }
     } else {
       saved = add(patch)
+      commitKeywords(saved.id)
     }
-    commitKeywords(saved.id)
 
     // Named for what it will be, not for which button opened the dialog: turning
     // "show in reminders" off in reminder mode means it is not a reminder, and
@@ -207,22 +219,22 @@ export function ItemForm({
       ]
         .filter(Boolean)
         .join(' — '),
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          if (editingId) {
-            // The whole stored record, not a diff: `update` merges, so handing
-            // it back the object it had restores fields this dialog never
-            // collected as well as the ones it did.
-            if (beforeItem) update(editingId, beforeItem)
-            if (beforeKeywords.length > 0) setRecord(editingId, beforeKeywords)
-            else removeRecord(editingId)
-          } else {
-            remove(saved.id)
-            removeRecord(saved.id)
-          }
-        },
-      },
+      // An edit that committed nothing (Save with nothing changed) offers no
+      // Undo, rather than a button that would do nothing.
+      ...(editingId && !restoreEdit
+        ? {}
+        : {
+            action: {
+              label: 'Undo',
+              onClick: () => {
+                if (restoreEdit) restoreEdit()
+                else {
+                  remove(saved.id)
+                  removeRecord(saved.id)
+                }
+              },
+            },
+          }),
     })
 
     onSaved?.(saved)

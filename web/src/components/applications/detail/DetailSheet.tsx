@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import { readStored, writeStored } from '@/lib/storage'
 import { clearSheet, publishSheet } from '@/lib/sheet-presence'
 import { isInChatDock } from '@/lib/chat-dock'
+import { triggerElement } from '@/lib/dialogs-context'
+import { TOAST_STACK_SELECTOR, deferFocusReturn } from '@/lib/toast-context'
 import {
   MIN_SHEET_WIDTH,
   SHEET_WIDTH_KEY,
@@ -132,9 +134,36 @@ export function DetailSheet({
     [],
   )
 
+  /**
+   * The card or row this record was opened from, to hand focus back to.
+   *
+   * There is no `DialogTrigger` — the sheet opens on a route — and a non-modal
+   * Radix dialog's own restore focuses only the trigger, so closing dropped
+   * focus on <body> (and, before the shell exempted same-page moves, on
+   * <main>): a keyboard user lost their place on the board. `??=` for the
+   * reason `ui/dialog.tsx` gives: a re-attached ref must not capture something
+   * inside the sheet.
+   */
+  const opener = useRef<HTMLElement | null>(null)
+  const onCloseAutoFocus = useCallback((event: Event) => {
+    const back = opener.current?.isConnected ? opener.current : null
+    // An Undo raised on the way out has taken focus; hand the opener to the
+    // toast for when it goes, as `ui/dialog.tsx` does.
+    if (document.activeElement?.closest(TOAST_STACK_SELECTOR)) {
+      deferFocusReturn(back)
+      event.preventDefault()
+      return
+    }
+    event.preventDefault()
+    // Gone with the record (deleted from inside the sheet): the page itself,
+    // rather than <body>, above the skip link and the whole sidebar.
+    ;(back ?? document.getElementById('main'))?.focus({ preventScroll: true })
+  }, [])
+
   const setRef = useCallback(
     (el: HTMLDivElement | null) => {
       node.current = el
+      if (el) opener.current ??= triggerElement()
       observer.current?.disconnect()
       if (el) {
         observer.current = new ResizeObserver(publish)
@@ -186,6 +215,7 @@ export function DetailSheet({
           // record opens into a portal, would otherwise dismiss the record the
           // user is working in.
           onFocusOutside={(event) => event.preventDefault()}
+          onCloseAutoFocus={onCloseAutoFocus}
           /*
            * The chat dock is outside the sheet and must not dismiss it. Radix
            * closes a layer on any pointer-down outside it and on Escape from

@@ -164,17 +164,36 @@ const AGGREGATORS = new Set([
   'interfolio',
 ])
 
+/**
+ * Boards whose name is a whole host rather than one label. 'jobs.ac.uk' is the
+ * UK academic aggregator, and none of its labels is distinctive on its own —
+ * 'jobs' alone would make every careers subdomain a board.
+ */
+const BOARD_HOSTS = ['jobs.ac.uk']
+
+const onBoardHost = (hostname: string) => {
+  const host = hostname.toLowerCase()
+  return BOARD_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))
+}
+
 /** Subdomains that are the site's own filing rather than a tenant's name. */
 const GENERIC_HOSTS = new Set(['www', 'jobs', 'job', 'careers', 'career', 'boards', 'apply', 'my'])
 
 /**
- * Suffix labels that are never the employer's name. Every two-letter label
- * counts too — those are country codes, and without that rule
- * 'careers.google.co.uk' files the application under an employer called 'UK'.
+ * Top-level labels that are never the employer's name. A final two-letter
+ * label counts too — a country code — or 'careers.google.co.uk' files the
+ * application under an employer called 'UK'.
  */
 const SUFFIXES = new Set(['com', 'org', 'net', 'edu', 'gov', 'ac', 'co', 'io', 'jobs'])
 
-const isSuffix = (label: string) => SUFFIXES.has(label) || label.length === 2
+/**
+ * The second level a country code is registered under: the 'ac' in '.ac.uk',
+ * the 'com' in '.com.au'. Only these, and only right before a country code —
+ * any other two-letter label is somebody's name ('ox', 'ge', 'hp'), and
+ * treating every one as a suffix turned 'jobs.ox.ac.uk' into an employer
+ * called 'Jobs'.
+ */
+const COUNTRY_SECOND_LEVEL = new Set(['ac', 'co', 'com', 'gov', 'edu', 'org', 'net'])
 
 /**
  * Path segments that describe the site's own filing, not the job. Dropping them
@@ -306,10 +325,14 @@ function orgFromHost(hostname: string) {
     .replace(/^www\./, '')
     .split('.')
     .filter(Boolean)
+  const lower = (i: number) => (labels[i] ?? '').toLowerCase()
   let at = labels.length - 1
   // Never past the first label, so a two-letter employer keeps its own name.
-  while (at > 0 && isSuffix((labels[at] ?? '').toLowerCase())) at -= 1
-  return labels[at] ?? ''
+  const country = lower(at).length === 2
+  if (at > 0 && (SUFFIXES.has(lower(at)) || country)) at -= 1
+  if (at > 0 && country && COUNTRY_SECOND_LEVEL.has(lower(at))) at -= 1
+  // 'careers.co.uk' has no employer in it; the filing label is not one.
+  return GENERIC_HOSTS.has(lower(at)) ? '' : (labels[at] ?? '')
 }
 
 /**
@@ -355,7 +378,7 @@ function orgFromBoard(url: URL, segments: string[], named: string[]) {
     .toLowerCase()
     .replace(/^www\./, '')
     .split('.')
-  if (labels.some((l) => AGGREGATORS.has(l))) return ''
+  if (labels.some((l) => AGGREGATORS.has(l)) || onBoardHost(url.hostname)) return ''
 
   const first = segments[0]
   if (first && named.includes(first)) return first
@@ -385,7 +408,7 @@ export function draftFromUrl(u: string): Partial<Application> {
 
   const { url, href } = parsed
   const labels = url.hostname.toLowerCase().split('.')
-  const board = labels.some((l) => JOB_BOARDS.has(l))
+  const board = labels.some((l) => JOB_BOARDS.has(l)) || onBoardHost(url.hostname)
   const source: Source = board ? 'Job board' : 'Careers page'
 
   const segments = url.pathname

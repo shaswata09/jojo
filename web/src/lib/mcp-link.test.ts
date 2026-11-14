@@ -6,8 +6,8 @@ import type { GraphSnapshot } from '@jojo/service/core/snapshot'
 import { createRepository } from '@jojo/service/repo/repository'
 import { createToolRuntime } from '@jojo/service/tools/runtime'
 import type { ToolName } from '@jojo/service/tools/index'
-import { createBridge } from '../../public/jojo-bridge.mjs'
-import { directTransport, runLink } from './mcp-link'
+import { DISPLACED, HELLO, createBridge } from '../../public/jojo-bridge.mjs'
+import { BRIDGE_HELLO, bridgeCommand, directTransport, isBridgeHello, runElected, runLink } from './mcp-link'
 import type { LinkStatus } from './mcp-link'
 
 /**
@@ -265,11 +265,12 @@ describe('what the tab says about the link', () => {
       signal: controller.signal,
       onStatus: (status) => statuses.push(status),
       wait: () => new Promise((resolve) => setTimeout(resolve, 5)),
-      transport: async () => {
+      transport: async (request) => {
         calls += 1
         // One miss, then the bridge answers as usual.
-        return calls === 1
-          ? { failed: { kind: 'absent' as const, reason: 'no answer' } }
+        if (calls === 1) return { failed: { kind: 'absent' as const, reason: 'no answer' } }
+        return request.url.endsWith('/tab/hello')
+          ? { ok: true, status: 200, text: JSON.stringify(BRIDGE_HELLO) }
           : { ok: true, status: 204, text: '' }
       },
     })
@@ -324,4 +325,205 @@ describe('what the tab says about the link', () => {
     const after = await client(port, { jsonrpc: '2.0', id: 9, method: 'tools/list' })
     expect(after.body?.error?.message).toContain('not connected')
   }, 20_000)
+})
+
+describe('two tabs with the link on', () => {
+  /*
+   * R31(a). With no election, each tab's new poll displaced the other's held
+   * one, the displaced tab polled again at once, and the pair settled into
+   * about eight requests a second for as long as both stayed open. Measured
+   * here against the real bridge and the real loop, with the real pause.
+   */
+  it('settles instead of trading polls several times a second', async () => {
+    let handler: (req: unknown, res: unknown) => void = () => {}
+    let polls = 0
+    const server = http.createServer((req, res) => {
+      if (String((req as { url?: string }).url).startsWith('/tab/next')) polls += 1
+      handler(req, res)
+    })
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', resolve)
+    })
+    const address = server.address()
+    if (address === null || typeof address === 'string') throw new Error('no port was bound')
+    const port = address.port
+    // A long hold, as in production, so every early answer is a displacement.
+    const bridge = createBridge({ token: TOKEN, port, pollMs: 20_000 })
+    handler = bridge.handle
+
+    const controller = new AbortController()
+    const tab = () =>
+      runLink({
+        address: `http://127.0.0.1:${String(port)}`,
+        token: TOKEN,
+        transport: directTransport(),
+        host: tabHost(),
+        signal: controller.signal,
+        onStatus: () => {},
+      })
+    const linked = [tab(), tab()]
+    await new Promise((resolve) => setTimeout(resolve, 2_000))
+    controller.abort()
+    await Promise.all(linked)
+    server.closeAllConnections()
+    await new Promise<void>((resolve) => {
+      server.close(() => {
+        resolve()
+      })
+    })
+    // Two to attach, and at most a couple of displacements inside the first
+    // retry; the spin was sixteen or more.
+    expect(polls).toBeLessThanOrEqual(5)
+  }, 10_000)
+})
+
+describe('what the tab checks before it sends its token', () => {
+  it('agrees with the bridge about the signature and the displaced status', () => {
+    expect(isBridgeHello(JSON.stringify(HELLO))).toBe(true)
+    expect(BRIDGE_HELLO).toEqual(HELLO)
+    expect(DISPLACED).toBe(409)
+  })
+
+  /*
+   * R31(c). Port 3002 is pinned in the page, the extension and Settings, so
+   * whatever else holds it was being sent the bearer token on every poll.
+   */
+  it('sends no token to a server on the port that is not jojo-bridge', async () => {
+    const seen: { url: string; authorization: string | undefined }[] = []
+    const statuses: LinkStatus[] = []
+    const controller = new AbortController()
+    const linked = runLink({
+      address: 'http://127.0.0.1:9',
+      token: TOKEN,
+      host: tabHost(),
+      signal: controller.signal,
+      onStatus: (status) => statuses.push(status),
+      wait: () => new Promise((resolve) => setTimeout(resolve, 5)),
+      // Some other local server: answers everything with a page of its own.
+      transport: async (request) => {
+        seen.push({ url: request.url, authorization: request.headers['authorization'] })
+        return { ok: true, status: 200, text: '<!doctype html><title>dev server</title>' }
+      },
+    })
+    await until(() => seen.length >= 3)
+    controller.abort()
+    await linked
+    expect(seen.every((s) => s.url.endsWith('/tab/hello') && s.authorization === undefined)).toBe(true)
+    expect(statuses.at(-1)).toMatchObject({ state: 'searching' })
+    expect(JSON.stringify(statuses)).toContain('Something other than jojo-bridge')
+  })
+})
+
+describe('the command that starts the bridge', () => {
+  /*
+   * R31(b). `--token <t>` put the credential in the process list for every
+   * user on the machine. The environment is readable only by the same user.
+   */
+  it('passes the token through the environment, in both shells', () => {
+    const posix = bridgeCommand('https://x.example/jojo-bridge.mjs', 'TKN')
+    const ps = bridgeCommand('https://x.example/jojo-bridge.mjs', 'TKN', 'powershell')
+    for (const line of [posix, ps]) expect(line).not.toContain('--token')
+    expect(posix).toContain('JOJO_BRIDGE_TOKEN=TKN node jojo-bridge.mjs')
+    expect(ps).toContain('$env:JOJO_BRIDGE_TOKEN="TKN"; node jojo-bridge.mjs')
+    expect(ps).toMatch(/^curl\.exe /)
+  })
+})
+
+describe('electing one tab', () => {
+  /** A LockManager with exactly the behaviour `runElected` relies on. */
+  function fakeLocks() {
+    let held = false
+    const queue: (() => void)[] = []
+    const release = () => {
+      held = false
+      queue.shift()?.()
+    }
+    const request = async (
+      _name: string,
+      options: { ifAvailable?: boolean; signal?: AbortSignal },
+      callback: (lock: object | null) => Promise<void>,
+    ) => {
+      if (held && options.ifAvailable === true) return callback(null)
+      if (held) {
+        await new Promise<void>((resolve, reject) => {
+          queue.push(resolve)
+          options.signal?.addEventListener('abort', () => {
+            reject(new Error('AbortError'))
+          })
+        })
+      }
+      held = true
+      try {
+        return await callback({})
+      } finally {
+        release()
+      }
+    }
+    return { request } as unknown as LockManager
+  }
+
+  it('runs the link in one tab and hands it on when that tab lets go', async () => {
+    const locks = fakeLocks()
+    const running: string[] = []
+    const waiting: string[] = []
+    const tab = (name: string) => {
+      const controller = new AbortController()
+      const done = runElected(
+        controller.signal,
+        async () => {
+          running.push(name)
+          await new Promise<void>((resolve) => {
+            controller.signal.addEventListener('abort', () => {
+              resolve()
+            })
+          })
+        },
+        () => waiting.push(name),
+        locks,
+      )
+      return { controller, done }
+    }
+    const a = tab('a')
+    const b = tab('b')
+    await until(() => running.length === 1 && waiting.length === 1)
+    expect(running).toEqual(['a'])
+    expect(waiting).toEqual(['b'])
+    a.controller.abort()
+    await a.done
+    await until(() => running.length === 2)
+    expect(running).toEqual(['a', 'b'])
+    b.controller.abort()
+    await b.done
+  })
+
+  it('stops waiting in line when switched off', async () => {
+    const locks = fakeLocks()
+    const holder = new AbortController()
+    const held = runElected(
+      holder.signal,
+      () =>
+        new Promise<void>((resolve) => {
+          holder.signal.addEventListener('abort', () => {
+            resolve()
+          })
+        }),
+      () => {},
+      locks,
+    )
+    const queued = new AbortController()
+    let ran = false
+    const waiting = runElected(
+      queued.signal,
+      async () => {
+        ran = true
+      },
+      () => {},
+      locks,
+    )
+    queued.abort()
+    await waiting
+    holder.abort()
+    await held
+    expect(ran).toBe(false)
+  })
 })

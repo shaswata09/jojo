@@ -64,9 +64,12 @@ describe('refereeTable', () => {
 })
 
 describe('appliedDate', () => {
-  it('prefers the applied date and falls back to the submitted one', () => {
-    expect(appliedDate(app({ appliedOn: '2026-09-01', submittedOn: '2026-08-30' }))).toBe('2026-09-01')
-    expect(appliedDate(app({ submittedOn: '2026-08-30' }))).toBe('2026-08-30')
+  it('reads the sent date the way every screen does: the editable submitted date first', () => {
+    // `submittedOn` is what the Stage dates panel corrects; `appliedOn` is
+    // filled once. Reading them the other way round here made the list a
+    // referee received disagree with Statistics. See core/sent-on.
+    expect(appliedDate(app({ appliedOn: '2026-09-01', submittedOn: '2026-08-30' }))).toBe('2026-08-30')
+    expect(appliedDate(app({ appliedOn: '2026-09-01' }))).toBe('2026-09-01')
     expect(appliedDate(app())).toBe('')
   })
 })

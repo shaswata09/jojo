@@ -8,7 +8,9 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { execFile } from 'node:child_process'
 import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
+import { loadEnv } from 'vite'
 import type { Plugin } from 'vite'
+import { withScriptPolicy, withoutEvalProbe } from './scripts/csp.mjs'
 
 // https://vite.dev/config/
 /**
@@ -62,7 +64,7 @@ function freshExtensionZip(): Plugin {
     new Promise<void>((resolve) => {
       execFile(
         process.execPath,
-        [path.join(here, 'scripts', 'pack-extension.mjs'), '--optional'],
+        [path.join(here, 'scripts', 'pack-extension.mjs')],
         { cwd: here },
         () => {
           resolve()
@@ -101,9 +103,40 @@ function freshExtensionZip(): Plugin {
   }
 }
 
+/**
+ * The built page's `script-src` and `worker-src`, hashed from the HTML the
+ * build emits. Build only — see `scripts/csp.mjs` for why, and for each source.
+ */
+function contentSecurityPolicy(analytics: boolean): Plugin {
+  return {
+    name: 'jojo:csp',
+    apply: 'build',
+    // The Spline runtime's `new Function` probe — see `withoutEvalProbe`.
+    transform(code, id) {
+      if (!/[\\/]@splinetool[\\/]runtime[\\/]build[\\/]runtime\.js$/.test(id)) return null
+      const patched = withoutEvalProbe(code)
+      if (patched === null) {
+        this.error(
+          'jojo:csp — the `new Function` probe in @splinetool/runtime has moved. Find the new one and update EVAL_PROBE in scripts/csp.mjs, or the built page logs a CSP violation on every load.',
+        )
+      }
+      return { code: patched, map: null }
+    },
+    transformIndexHtml: {
+      // Last, so the hash is taken from the inline script as it will ship.
+      order: 'post',
+      handler: (html) => withScriptPolicy(html, { analytics }),
+    },
+  }
+}
+
+const envDir = fileURLToPath(new URL('..', import.meta.url))
+/** Same test as `ANALYTICS_CAPABILITY` needs at least: a measurement id to load gtag for. */
+const analyticsBuilt = (loadEnv('production', envDir, 'VITE_')['VITE_ANALYTICS_ID'] ?? '').trim() !== ''
+
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss(), freshExtensionZip()],
+  plugins: [react(), tailwindcss(), freshExtensionZip(), contentSecurityPolicy(analyticsBuilt)],
   /*
    * `.env` lives at the REPO ROOT, not in `web/`.
    *
@@ -116,7 +149,7 @@ export default defineConfig({
    * The VITE_ prefix rule still applies and is the safety mechanism: anything in
    * that file without the prefix is not exposed to the bundle at all.
    */
-  envDir: fileURLToPath(new URL('..', import.meta.url)),
+  envDir,
   /**
    * A same-origin path to MarkItDown, because a browser cannot reach it directly.
    *

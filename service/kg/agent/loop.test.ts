@@ -1804,7 +1804,9 @@ describe('the long-conversation harness', () => {
       let n = 0
       return async (): Promise<Turn> =>
         n++ === 0
-          ? calls('memory_clear', { confirm: true })
+          // No arguments: `memory.clear` declares none, and an undeclared key
+          // on a write is refused before it runs (R11b).
+          ? calls('memory_clear', {})
           : { ok: true, text: 'done', toolCalls: [], finishReason: 'stop' }
     }
 

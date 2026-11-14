@@ -3,7 +3,9 @@
  *
  * `delete` and `duplicate` are here rather than beside create/update because
  * neither goes anywhere near the form: they are the two places that decide what
- * an application takes with it. `delete` takes nothing (D15), `duplicate` takes
+ * an application takes with it. `delete` takes only what the form made for it —
+ * its own deadline and an employer left with no jobs — and nothing filed under
+ * it (D15); `duplicate` takes
  * a listed subset and deliberately not the offer. `note.set` and `flag.set` are
  * the two fields a card writes without opening the dialog at all.
  */
@@ -12,7 +14,7 @@ import { s } from '../core/schema'
 import type { NodeId } from '../core/model'
 import { decodeFormat, normaliseFormat, retextFormat } from '../core/note-format'
 import { appId, noteText } from './application-fields'
-import { displayOf, opt, touch } from './support'
+import { applicationDeadlineOf, displayOf, opt, touch } from './support'
 import { defineTool } from './tool'
 
 /* --------------------------------- delete --------------------------------- */
@@ -20,19 +22,32 @@ import { defineTool } from './tool'
 export const applicationDelete = defineTool({
   name: 'application.delete',
   title: 'Delete application',
-  summary: 'Removes the application. Everything filed under it survives, unlinked.',
+  summary:
+    'Removes the application and the deadline it owns. Everything else filed under it survives, unlinked.',
   effect: 'delete',
   touches: ['application'],
   input: s.object({ id: appId }),
 
   run(ctx, input) {
     ctx.require('application', input.id)
+    // Read before the delete takes the ABOUT and AT edges that say which they are.
+    const deadline = applicationDeadlineOf(ctx.memory, input.id)
+    const org = ctx.memory.one(input.id, 'AT', 'organisation')
     // `tx.del` drops the node and its edges and touches nothing at the other
     // end. That is D15 said in graph: the reference-letter tracker filed under
     // one application is a document in its own right, and a dialog saying
     // "delete Rice" cannot fairly be read as consent to delete the four files
     // someone spent an evening on.
     ctx.tx.del(input.id)
+    // Two exceptions, both records the application form made FOR this
+    // application rather than things a person filed under it. Its deadline
+    // (the one `syncDeadline` owns) was left as an ABOUT-less item, urgent and
+    // red on the calendar, titled after a job that no longer exists. And the
+    // employer `org.ensure` stood up for it was left with no applications.
+    // Same transaction, so the one Undo brings all three back.
+    if (deadline) ctx.call('timeline.item.delete', { id: deadline.id })
+    // Only when nothing at all is left on it — no other job, tag or claim.
+    if (org && ctx.memory.incident(org.id).length === 0) ctx.tx.del(org.id)
   },
 
   describe: (input, _output, m) => ({

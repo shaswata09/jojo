@@ -13,7 +13,7 @@ import type { ToolHost } from '../agent/execute'
 import type { AgentRun } from '../agent/loop'
 import type { ToolRuntime } from '../tools/runtime'
 import type { Pipeline } from '../core/model'
-import { abortInFlight, runPipelineRound } from './use-pipelines'
+import { abortInFlight, listedByBoard, runPipelineRound } from './use-pipelines'
 import type { PipelineLogEntry, RoundDeps } from './use-pipelines'
 
 const host: ToolHost = {
@@ -249,5 +249,60 @@ describe('what a round is told, and when it may start', () => {
     // A scout does not read documents and is not held up by them.
     await runPipelineRound(pipeline, deps)
     expect(ran).toBe(true)
+  })
+})
+
+describe('what a board read listed', () => {
+  /*
+   * The background reader opens a suggestion's page in the person's own,
+   * signed-in browser, so it may only open what a board actually listed — not
+   * any address the model wrote into a suggestion (R6).
+   */
+  const step = (name: string, status: 'done' | 'failed', output: unknown) => ({
+    id: 's1',
+    name,
+    title: name,
+    effect: 'read' as const,
+    destructive: false,
+    args: { url: 'https://cra.org/ads/' },
+    status,
+    output,
+  })
+
+  it('remembers the postings a finished board.search returned, per pipeline', async () => {
+    const { deps } = harness(async (options) => {
+      options.onEvent?.({
+        type: 'step',
+        step: step('board.search', 'done', {
+          postings: [{ url: 'https://cra.org/ads/4411', title: 'Lecturer' }],
+        }),
+      } as never)
+      // A second board read in the same round adds to the first.
+      options.onEvent?.({
+        type: 'step',
+        step: step('board.search', 'done', {
+          postings: [{ url: 'https://cra.org/ads/5522', title: 'Professor' }],
+        }),
+      } as never)
+      options.onEvent?.({
+        type: 'step',
+        step: step('board.search', 'failed', {
+          postings: [{ url: 'https://cra.org/ads/9999', title: 'Not read' }],
+        }),
+      } as never)
+      options.onEvent?.({
+        type: 'step',
+        step: step('scout.posting.save', 'done', {
+          postings: [{ url: 'https://mail.example/inbox', title: 'x' }],
+        }),
+      } as never)
+      return { messages: [], answer: null, steps: [], stopped: 'answered', offered: null }
+    })
+    await runPipelineRound({ ...pipeline, id: 'pipeline:listed' }, deps)
+    expect(listedByBoard('pipeline:listed', 'https://cra.org/ads/4411')).toBe(true)
+    expect(listedByBoard('pipeline:listed', 'https://cra.org/ads/5522')).toBe(true)
+    expect(listedByBoard('pipeline:other', 'https://cra.org/ads/4411')).toBe(false)
+    expect(listedByBoard('pipeline:listed', 'https://cra.org/ads/9999')).toBe(false)
+    expect(listedByBoard('pipeline:listed', 'https://mail.example/inbox')).toBe(false)
   })
 })

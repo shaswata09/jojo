@@ -212,14 +212,35 @@ describe('the posting’s own ID', () => {
     { id: 'a2', org: 'Acme', role: 'Engineer', url: 'https://acme.test/jobs/7' },
   ]
 
-  it('is the strongest match: the same number is the same job whatever else differs', () => {
+  it('is the strongest match: the same number at the same employer is the same job', () => {
     const hit = findDuplicate(rows, {
-      org: 'University of Tennessee',
+      org: 'UTK',
       role: 'Faculty',
       postingId: '179545452',
     })
     expect(hit?.record.id).toBe('a1')
     expect(hit?.reason).toBe('id')
+  })
+
+  it('does not join two employers on a number alone', () => {
+    // Short requisition numbers repeat across employers: 'Req 1234' at
+    // Houston is not 'Job ID 1234' at Rice.
+    const stored = [{ id: 'r1', org: 'Rice University', role: 'Statistics', postingId: 'Job ID 1234' }]
+    expect(findDuplicate(stored, { org: 'University of Houston', role: 'Chemistry', postingId: 'Req 1234' })).toBeUndefined()
+    // The same site is enough to believe it.
+    const onSite = [{ ...stored[0]!, url: 'https://jobs.example.edu/1234' }]
+    expect(
+      findDuplicate(onSite, {
+        org: 'University of Houston',
+        role: 'Chemistry',
+        postingId: 'Req 1234',
+        url: 'https://jobs.example.edu/view?id=1234',
+      })?.reason,
+    ).toBe('id')
+  })
+
+  it('reads a number past a label of more than one word', () => {
+    expect(postingIdKey('Job Posting ID: 123')).toBe('123')
   })
 
   it('reads the number past the label a page puts in front of it', () => {

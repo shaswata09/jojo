@@ -222,6 +222,25 @@ export type AgentRuns = {
  */
 export type ErrorPort = (thrown: unknown) => void
 
+/**
+ * Does the stored list begin with what this session holds? Compared the way
+ * a save and a read-back can preserve: kind and words, a step's tool and
+ * settled status. A thought is cut short on save, so only its kind counts.
+ */
+function startsWith(stored: readonly AgentEntry[], held: readonly AgentEntry[]): boolean {
+  return held.every((h, i) => {
+    const s = stored[i]
+    if (s === undefined || s.kind !== h.kind) return false
+    if (h.kind === 'thought') return true
+    if (h.kind === 'step') {
+      const step = (s as Extract<AgentEntry, { kind: 'step' }>).step
+      const settled = h.step.status === 'running' ? 'failed' : h.step.status
+      return step.name === h.step.name && step.status === settled
+    }
+    return (s as { text: string }).text === h.text
+  })
+}
+
 export function createAgentRuns(onError?: ErrorPort): AgentRuns {
   /** The live state per conversation, replaced wholesale on every change. */
   const runs = new Map<NodeId, AgentRun>()
@@ -360,12 +379,29 @@ export function createAgentRuns(onError?: ErrorPort): AgentRuns {
      * registry that is LONGER — a save that never landed, a caller that keeps
      * none — knows something the store does not.
      */
+    /*
+     * And the registry's copy of what the two AGREE on.
+     *
+     * The stored list is `toAgentEntries` of what was saved, and a closure
+     * cannot be saved — so taking it whole, whenever it was as long as the
+     * registry's, took per-step Undo off every earlier step the moment the
+     * person sent a follow-up (R14). When the store begins with exactly what
+     * the registry holds, the registry's entries are kept and only what the
+     * store has BEYOND them is taken. A store that differs inside that prefix
+     * (a restore) still wins whole.
+     */
     const existing = runs.get(threadId)
     const stored = options.entries
     const before =
-      stored !== undefined && (existing === undefined || stored.length >= existing.entries.length)
-        ? stored
-        : (existing?.entries ?? [])
+      stored === undefined
+        ? (existing?.entries ?? [])
+        : existing === undefined
+          ? stored
+          : stored.length < existing.entries.length
+            ? existing.entries
+            : startsWith(stored, existing.entries)
+              ? [...existing.entries, ...stored.slice(existing.entries.length)]
+              : stored
     const seq = (inner.get(threadId)?.seq ?? before.length) + 1
     inner.set(threadId, { cancel, seq })
 

@@ -1,7 +1,21 @@
 import { closestCenter, pointerWithin, type CollisionDetection } from '@dnd-kit/core'
+import { MONTH_LABELS } from '@/data/calendar'
 
 /** Namespaced so a droppable day can never collide with a timeline item's id. */
 export const DAY_DROP_PREFIX = 'day:'
+
+/**
+ * The spoken name of a day cell's drop id — 'November 2' for 'day:2026-11-02',
+ * the same words the cell's own buttons are labelled with — for the drag
+ * announcements, which would otherwise read the id. `undefined` for anything
+ * that is not a day.
+ */
+export function dayDropLabel(id: string): string | undefined {
+  if (!id.startsWith(DAY_DROP_PREFIX)) return undefined
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(id.slice(DAY_DROP_PREFIX.length))
+  const month = match ? MONTH_LABELS[Number(match[2]) - 1] : undefined
+  return match && month ? `${month} ${String(Number(match[3]))}` : undefined
+}
 
 /** The grid's `gap-1`, in px. How far a release may miss a cell and still count. */
 const CELL_GAP = 4

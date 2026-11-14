@@ -120,6 +120,19 @@ describe('reading the reply', () => {
     if (read.ok) expect(read.draft.deadline).toBeUndefined()
   })
 
+  // R28. A shaped but impossible day sank the whole `application.update` fill.
+  it('drops a deadline that is not a day on the calendar, and says it is missing', () => {
+    for (const deadline of ['2026-09-31', '2026-02-30', '2026-13-01']) {
+      const read = readPosting(reply({ org: 'Rice', role: 'Postdoc', deadline }))
+      expect(read.ok).toBe(true)
+      if (!read.ok) return
+      expect(read.draft.deadline, deadline).toBeUndefined()
+      expect(read.missing).toContain('deadline')
+    }
+    const real = readPosting(reply({ org: 'Rice', deadline: '2028-02-29' }))
+    expect(real.ok && real.draft.deadline).toBe('2028-02-29')
+  })
+
   it('treats the filler words the prompt banned as absent', () => {
     const read = readPosting(
       reply({ org: 'Rice', role: 'Postdoc', comp: 'N/A', location: 'unknown' }),
@@ -341,6 +354,28 @@ describe('the page text, from a page the extension captured', () => {
     expect(postingTextFromHtml('<ul><li><p>Distributed systems</p></li></ul>')).toBe(
       '- Distributed systems',
     )
+  })
+
+  // R28. `\b` treats a hyphen as a boundary, so `<svg\b` opened on
+  // `<svg-icon>` and erased everything up to the next real `</svg>`.
+  it('does not mistake a custom element for the tag it starts with', () => {
+    const text = postingTextFromHtml(
+      `<body><header><svg-icon name="logo"></svg-icon></header>` +
+        `<h1>Assistant Professor of Computer Science</h1><p>Rice University invites applications.</p>` +
+        `<footer><svg viewBox="0 0 1 1"><path d="M0 0"/></svg></footer></body>`,
+    )
+    expect(text).toContain('Assistant Professor of Computer Science')
+    expect(text).toContain('Rice University invites applications.')
+    const nav = postingTextFromHtml(
+      '<body><nav-menu><a>Jobs</a></nav-menu><h1>Data Scientist</h1><p>Acme Corp. Apply by 2026-12-01.</p><nav>x</nav></body>',
+    )
+    expect(nav).toContain('Data Scientist')
+    expect(nav).toContain('Apply by 2026-12-01')
+    expect(nav).not.toMatch(/\bx\b/)
+    const main = postingTextFromHtml(
+      `<body><main-nav>Menu</main-nav><main><h1>Research Engineer</h1><p>${'Build things. '.repeat(30)}</p></main></body>`,
+    )
+    expect(main).not.toContain('Menu')
   })
 
   it('decodes an entity once, not twice', () => {

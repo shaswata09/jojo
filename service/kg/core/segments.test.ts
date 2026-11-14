@@ -138,34 +138,36 @@ describe('refusing to call it a finding', () => {
      * "every referral you sent got a reply" would be printed from three
      * records. The interval is the mathematics; the floor is the judgement.
      */
-    const rows = [...arm('Referral', 3, 3), ...arm('Job board', 12, 0)]
+    const rows = [...arm('Referral', MIN_ARM - 1, MIN_ARM - 1), ...arm('Job board', 12, 0)]
     expect(compare(rows, REPLIED)).toBeNull()
   })
 
   it('does call the most lopsided split the floor allows', () => {
     /*
-     * 4 of 4 against 0 of 4 — the extreme of what `MIN_ARM` lets through — and
-     * the app does report it: 51–100% against 0–49%. That is the right answer
-     * rather than an accident of the formula. Fisher's exact test on the same
-     * table gives p ≈ 0.029, so a reader who reached for the standard tool
-     * would come to the same conclusion from the same eight records.
+     * 5 of 5 against 0 of 5 — the extreme of what `MIN_ARM` lets through — and
+     * the app does report it when it is the only pair on screen. Fisher's exact
+     * test on the same table gives p ≈ 0.008.
      *
      * Pinned because it is the boundary of the module's willingness to speak,
      * and a change to `MIN_ARM` or to Z should have to move this line
      * deliberately rather than in passing.
      */
-    const found = compare([...arm('Referral', 4, 4), ...arm('Job board', 4, 0)], REPLIED)
+    const found = compare([...arm('Referral', 5, 5), ...arm('Job board', 5, 0)], REPLIED)
     expect(found?.best.rate).toBe(100)
     expect(found?.worst.rate).toBe(0)
     expect(found?.confident).toBe(true)
   })
 
+  it('no longer reports four of four against none of four', () => {
+    // The old floor's extreme, and the shape noise produces most often.
+    expect(compare([...arm('Referral', 4, 4), ...arm('Job board', 4, 0)], REPLIED)).toBeNull()
+  })
+
   it('stays quiet on a small split that is merely suggestive', () => {
-    // 3 of 4 against 1 of 4 is the shape a person would over-read on sight —
-    // "referrals do three times better" — and eight records cannot support it.
-    // 30–95% against 5–70%, overlapping heavily.
-    const found = compare([...arm('Referral', 4, 3), ...arm('Job board', 4, 1)], REPLIED)
-    expect(found?.best.rate).toBe(75)
+    // 4 of 5 against 1 of 5 is the shape a person would over-read on sight —
+    // "referrals do four times better" — and ten records cannot support it.
+    const found = compare([...arm('Referral', 5, 4), ...arm('Job board', 5, 1)], REPLIED)
+    expect(found?.best.rate).toBe(80)
     expect(found?.confident).toBe(false)
   })
 
@@ -233,5 +235,94 @@ describe('the splits the app actually makes', () => {
   it('returns nothing at all for a young search', () => {
     // The commonest state, and silence is the right output for it.
     expect(comparisonsFor(arm('Referral', 3, 2))).toEqual([])
+  })
+})
+
+describe('many looks at the same records', () => {
+  /** A seeded LCG, so the simulation is the same run every time. */
+  const seeded = (seed: number) => {
+    let s = seed
+    return () => {
+      s = (s * 1103515245 + 12345) % 2147483648
+      return s / 2147483648
+    }
+  }
+  const SOURCES = ['Referral', 'Job board', 'Careers page', 'Recruiter', 'LinkedIn', 'Conference']
+  const ROLES = ['Faculty', 'Industry', 'Postdoc']
+  /** A search where nothing makes a difference: every slice replies at `p`. */
+  const noEffect = (rnd: () => number, i: number, p: number) =>
+    app({
+      id: `s${String(i)}`,
+      source: SOURCES[Math.floor(rnd() * SOURCES.length)] as Application['source'],
+      roleTag: ROLES[Math.floor(rnd() * ROLES.length)] as Application['roleTag'],
+      firstReplyOn: rnd() < p ? '2026-08-15' : undefined,
+    })
+  const falseFinding = (rows: readonly Application[]) => comparisonsFor(rows).some((c) => c.confident)
+
+  it('rarely invents a finding from a search with no real difference', () => {
+    /*
+     * The reviewer's simulation: six sources, three role tags, one reply rate
+     * for everybody. Taking the best and worst of six arms across three splits
+     * found a "difference" in ~5–8% of such searches at 40–60 records — and
+     * re-checking after every save, ~20% over a search's life.
+     */
+    const rnd = seeded(12345)
+    for (const size of [40, 60]) {
+      let found = 0
+      const trials = 400
+      for (let t = 0; t < trials; t += 1) {
+        const rows = Array.from({ length: size }, (_, i) => noEffect(rnd, i, 0.38))
+        if (falseFinding(rows)) found += 1
+      }
+      expect(found / trials).toBeLessThanOrEqual(0.05)
+    }
+  })
+
+  it('stays quiet when re-checked after every record is added', () => {
+    const rnd = seeded(777)
+    let ever = 0
+    const trials = 150
+    for (let t = 0; t < trials; t += 1) {
+      const rows: Application[] = []
+      let seen = false
+      for (let i = 0; i < 60 && !seen; i += 1) {
+        rows.push(noEffect(rnd, i, 0.38))
+        seen = falseFinding(rows)
+      }
+      if (seen) ever += 1
+    }
+    expect(ever / trials).toBeLessThanOrEqual(0.05)
+  })
+
+  it('makes each split pay for the others on the same screen', () => {
+    /*
+     * 9 of 10 against 2 of 10 clears the bar on its own (one pair), and does
+     * not once fourteen other pairs are being looked at too.
+     */
+    const rows = [...arm('Referral', 10, 9), ...arm('Job board', 10, 2)]
+    expect(compare(rows, REPLIED)?.confident).toBe(true)
+    expect(compare(rows, REPLIED, 15)?.confident).toBe(false)
+    // And the family can only make it stricter, never looser.
+    const many = [...rows, ...arm('Careers page', 10, 5), ...arm('Recruiter', 10, 5)]
+    expect(compare(many, REPLIED, 0)?.confident).toBe(compare(many, REPLIED, 6)?.confident)
+  })
+
+  it('counts the pairs of every split on the screen, not just its own', () => {
+    // The same 9-of-10 against 2-of-10 by source, now beside a role split with
+    // six pairs of its own: the source finding has to clear all of them.
+    const rows = [...arm('Referral', 10, 9), ...arm('Job board', 10, 2)].map((a, i) => ({
+      ...a,
+      roleTag: ['Faculty', 'Industry', 'Postdoc', 'Staff'][i % 4] as Application['roleTag'],
+    }))
+    const source = comparisonsFor(rows).find(
+      (c) => c.measure === 'replied' && c.dimension === 'where they came from',
+    )
+    expect(source?.arms).toHaveLength(2)
+    expect(source?.confident).toBe(false)
+  })
+
+  it('still finds a difference that is really there', () => {
+    const found = comparisonsFor([...arm('Referral', 20, 16), ...arm('Job board', 40, 4)])
+    expect(found.find((c) => c.measure === 'replied' && c.dimension === 'where they came from')?.confident).toBe(true)
   })
 })

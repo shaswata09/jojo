@@ -88,3 +88,25 @@ export function auditPrecache({ html, base, boot, emittedCss }) {
 
   return problems
 }
+
+/**
+ * Whether a file of the build is fingerprinted: Vite's `assets/`, where every
+ * name carries a content hash, so a URL means one set of bytes forever.
+ */
+export const isFingerprinted = (url) => url.startsWith('assets/')
+
+/**
+ * Chunks left to be cached on first use rather than installed.
+ *
+ * Only the Transfer page's 3D scene: 1.5 MB that is useless offline anyway,
+ * since a transfer needs a second device on the network. Everything else a
+ * lazy route loads — the graph, the PDF editor and its worker, the workflow
+ * diagrams, the fonts' other scripts — is precached (R32): a lazy chunk cached
+ * only on use was deleted with the old cache on the next deploy, so those pages
+ * failed offline until visited online again.
+ */
+export const LAZY = /^assets\/DataTransferScene-/
+
+/** Fingerprinted code, styles, fonts and wasm, except what `LAZY` names. */
+export const precachedAsset = (url) =>
+  isFingerprinted(url) && /\.(?:m?js|css|woff2|wasm)$/.test(url) && !LAZY.test(url)

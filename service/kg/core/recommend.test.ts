@@ -129,6 +129,28 @@ describe('what it counts', () => {
     expect(ids(run([...replied, fresh]))).not.toContain('silent:past-median')
   })
 
+  it('does not chase an application that has moved on to an interview or offer', () => {
+    // No `firstReplyOn` recorded, but an interview or an offer is a reply.
+    const replied = [
+      app({ appliedOn: '2026-08-01', firstReplyOn: '2026-08-06' }),
+      app({ appliedOn: '2026-08-01', firstReplyOn: '2026-08-06' }),
+    ]
+    for (const stage of ['screen', 'interview', 'offer'] as const) {
+      const busy = app({ appliedOn: '2026-08-01', stage })
+      expect(ids(run([...replied, busy]))).not.toContain('silent:past-median')
+    }
+  })
+
+  it('measures silence from the corrected submitted date', () => {
+    const replied = [
+      app({ appliedOn: '2026-08-01', firstReplyOn: '2026-08-06' }),
+      app({ appliedOn: '2026-08-01', firstReplyOn: '2026-08-06' }),
+    ]
+    // Applied long ago, but the submission was corrected to two days back.
+    const fresh = app({ appliedOn: '2026-08-01', submittedOn: '2026-09-12' })
+    expect(ids(run([...replied, fresh]))).not.toContain('silent:past-median')
+  })
+
   it('does not chase a closed application', () => {
     const replied = [
       app({ appliedOn: '2026-08-01', firstReplyOn: '2026-08-06' }),

@@ -18,6 +18,7 @@ import type { PostingStep } from '@/lib/posting-agent'
 import { useToast } from '@/lib/toast-context'
 import { cn } from '@/lib/utils'
 import { contentModal } from '@/components/ui/dialog-width'
+import { readFailureMessage } from '@/components/applications/read-failure'
 
 /**
  * Paste a posting URL and let the model fill the form in.
@@ -104,7 +105,9 @@ export function AddFromLinkDialog({
       if (stop.signal.aborted) return
 
       if (!outcome.ok) {
-        setError(outcome.reason)
+        // Named when the page was kept before the step that failed, so nobody
+        // opens it again to keep a copy they already have.
+        setError(readFailureMessage(outcome.reason, outcome.file))
         return
       }
 

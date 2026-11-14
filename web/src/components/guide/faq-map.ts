@@ -57,6 +57,9 @@ export const FAQ_LAYERS: readonly FaqLayer[] = [
       { path: 'web/src/lib/capture-bridge.ts', role: 'postMessage client for the extension: capture, board scan, relays' },
       { path: 'web/src/lib/pipelines.tsx', role: 'Wires the model and board scan into the Job Scout engine' },
       { path: 'web/src/lib/host.ts', role: 'The web implementation of the Host port' },
+      { path: 'web/src/lib/scout-reading-queue.ts', role: 'Which scout cards are read in the background, the one-at-a-time lock, readings kept for Approve' },
+      { path: 'web/src/lib/posting-target.ts', role: 'Refuses local and private addresses before a posting is opened' },
+      { path: 'web/scripts/csp.mjs', role: 'The production Content-Security-Policy, hashed from the built page' },
     ],
   },
   {
@@ -173,6 +176,7 @@ export const FAQ_LAYERS: readonly FaqLayer[] = [
       { path: 'service/kg/core/capture.ts', role: 'Page capture rules and posting identity' },
       { path: 'service/kg/core/provider.ts', role: 'The model provider table' },
       { path: 'service/kg/core/backup.ts', role: 'The backup file format' },
+      { path: 'service/kg/core/sent-on.ts', role: 'The one rule for the date an application was sent' },
     ],
   },
   {

@@ -12,7 +12,7 @@ import { totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
 import { ConnectPanel } from '@/components/transfer-ui/ConnectPanel'
 import { useBackup } from '@/lib/backup'
 import { useHandoffSend } from '@/lib/handoff-send'
-import { usePairingSession } from '@/lib/pairing-session'
+import { needsNewOffer, usePairingSession } from '@/lib/pairing-session'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useApplications } from '@jojo/service/react/use-applications'
@@ -231,6 +231,18 @@ export function Transfer() {
   // convoy to the same phone. Returning the function covers both — React runs
   // cleanup before re-running the effect, so a role switch still cancels.
   useEffect(() => cancel, [role, cancel])
+
+  /*
+   * A new code once the send it paired for is over, done or failed. The offer
+   * is single-use and its re-mint timer stands down once paired, so without
+   * this a failed send could not be retried and a second device could not be
+   * sent to without leaving the page (R18). On the stage CHANGE only, so one
+   * finished send mints one new code.
+   */
+  const { refresh } = pairing
+  useEffect(() => {
+    if (needsNewOffer(send.stage)) refresh()
+  }, [send.stage, refresh])
 
   const empty = totalOf(groups) === 0
 

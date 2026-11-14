@@ -14,7 +14,7 @@ import type { Driver, DurableOp, StoreEvent } from '../storage/driver'
 import { createMemoryDriver } from '../storage/memory-driver'
 import type { JournalDraft } from './journal'
 import { freshMeta } from './meta'
-import { createRepository, onRemoteCommit } from './repository'
+import { NothingToRevert, createRepository, onRemoteCommit } from './repository'
 import type { PersistenceHealth } from './queue'
 import type { Repository } from './repository'
 
@@ -1200,10 +1200,16 @@ describe('revert, after a write it did not make', () => {
     const entry = repo.commit(update(rice, edited(rice, { note: 'mine' })))
     const live = repo.getSnapshot().node(rice.id)!
     repo.commit(update(live, edited(live, { note: 'theirs' }), 'System wrote'), { stack: false })
+    const audited = repo.audit.length
 
-    repo.revert(entry.id)
+    // R10d: nothing is left to take back, so it says so instead of committing
+    // an empty "Undone" — and leaves the ring without offering a redo.
+    expect(() => repo.revert(entry.id)).toThrow(NothingToRevert)
 
     expect(repo.getSnapshot().node(rice.id, 'application')?.props.note).toBe('theirs')
+    expect(repo.audit.length).toBe(audited)
+    expect(repo.undoable.some((e) => e.id === entry.id)).toBe(false)
+    expect(repo.redoable).toEqual([])
   })
 
   it('does not resurrect a record deleted since', () => {
@@ -1213,7 +1219,7 @@ describe('revert, after a write it did not make', () => {
     const live = repo.getSnapshot().node(rice.id)!
     repo.commit(draft({ nodes: [{ id: rice.id, before: live, after: null }] }), { stack: false })
 
-    repo.revert(entry.id)
+    expect(() => repo.revert(entry.id)).toThrow(NothingToRevert)
 
     expect(repo.getSnapshot().node(rice.id)).toBeUndefined()
   })

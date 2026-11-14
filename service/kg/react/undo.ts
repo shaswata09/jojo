@@ -33,9 +33,9 @@
  */
 
 import { useCallback } from 'react'
-import type { StoredEdge, StoredNode } from '../core/model'
-import type { GraphSnapshot } from '../core/snapshot'
-import type { JournalEntry, RecordDelta } from '../repo/journal'
+import { standingFor } from '../repo/journal'
+import type { JournalEntry } from '../repo/journal'
+import { NothingToRevert } from '../repo/repository'
 import type { Repository } from '../repo/repository'
 import { useKg } from './kg-context'
 import { useToast } from './toast'
@@ -53,10 +53,12 @@ import type { ToastOptions } from './toast'
  * `vite.config.ts`; that file is in another workspace and stopped being the
  * config for this suite when the layer moved out of the app.
  *
- * `getSnapshot` is here because reverting an entry is only safe while the
- * records it touched still look the way it left them — see `movedOn`.
+ * `getSnapshot` is not read here any more (the revert judges the live graph
+ * itself) and stays so the four call sites keep passing what they pass.
+ * `audit` is for `standingFor`'s fallback on journal rows written before
+ * `reverts.root` existed.
  */
-export type UndoJournal = Pick<Repository, 'undoable' | 'revert' | 'getSnapshot'>
+export type UndoJournal = Pick<Repository, 'undoable' | 'revert' | 'getSnapshot' | 'audit'>
 
 /**
  * What pressing Undo actually did.
@@ -71,8 +73,8 @@ export type RestoreOutcome = {
   reverted: number
   /**
    * Labels of the entries left alone because the user has written to those
-   * records since. Reverting one applies a whole-record before-image (D12), so
-   * it would have taken the newer writes with it.
+   * records since (see `movedOn`), or because every field they changed has
+   * been written over and there is nothing left to put back.
    */
   superseded: readonly string[]
   /**
@@ -105,56 +107,32 @@ export type Undoable<T> = {
 }
 
 /**
- * Deep value equality over the JSON-shaped half of a stored record.
- *
- * Reference equality would very nearly do — `MutableSnapshot.putNode` stores the
- * object it is handed, so an untouched record is still the very object the entry
- * captured. It is not used because the two failure modes are not symmetric: a
- * false "unchanged" costs one over-eager revert, while a false "changed" makes
- * Undo quietly stop working everywhere, and any future layer that clones a row
- * on the way in would cause exactly that.
- */
-function sameValue(a: unknown, b: unknown): boolean {
-  if (a === b) return true
-  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false
-  if (Array.isArray(a) !== Array.isArray(b)) return false
-
-  if (Array.isArray(a) && Array.isArray(b)) {
-    return a.length === b.length && a.every((item, i) => sameValue(item, b[i]))
-  }
-
-  const left = a as Record<string, unknown>
-  const right = b as Record<string, unknown>
-  const keys = Object.keys(left)
-  if (keys.length !== Object.keys(right).length) return false
-  return keys.every((key) => key in right && sameValue(left[key], right[key]))
-}
-
-const stillTheImage = <T>(current: T | undefined, after: T | null): boolean =>
-  after === null ? current === undefined : current !== undefined && sameValue(current, after)
-
-/**
- * Whether the graph has moved on from what this entry left behind.
+ * Whether this entry is no longer the user's to take back from here.
  *
  * The bug this exists for: the profile is one node, and the save bar, the match
  * terms and both switches all write it through `profile.set` — the chips and
- * switches on click, deliberately outside the save bar. So "Profile saved ·
- * Undo" could be pressed AFTER a switch had been flipped, and because a revert
- * applies `before` as a whole record (D12), the flip went with it and nothing
- * said so. Every caller here has that shape available to it the moment a second
- * mechanism writes the same record, so the check belongs to the family and not
- * to the profile page.
+ * switches on click, deliberately outside the save bar. "Profile saved · Undo"
+ * pressed after a switch flip used to put the whole old record back, flip and
+ * all, and nothing said so.
+ *
+ * It no longer compares whole images. That check refused whenever ANYTHING
+ * had written the record since — a fit reading or any other `stack: false`
+ * system write included — so the toast said "changed since" where ⌘Z, which
+ * is field-level, worked. What it asks now is whether a later USER write
+ * touched the same record: an entry above this one on the undo ring. ⌘Z would
+ * take that one back first, and a toast reaching past it would undo work typed
+ * after the toast appeared — creating an application and then writing its
+ * note, say. System writes never reach the ring, so they cannot trip this.
+ *
+ * The other refusal — nothing left to take back, because every field it
+ * changed has been written over — is the repository's own (`NothingToRevert`),
+ * judged on the very `revertDraft` ⌘Z commits; `undoableWith` catches it.
  */
-function movedOn(snapshot: GraphSnapshot, entry: JournalEntry): boolean {
-  const changed = <T extends StoredNode | StoredEdge>(
-    deltas: readonly RecordDelta<T>[],
-    read: (id: string) => T | undefined,
-  ) => deltas.some((delta) => !stillTheImage(read(delta.id), delta.after))
-
-  return (
-    changed(entry.nodes, (id) => snapshot.node(id)) ||
-    changed(entry.edges, (id) => snapshot.edge(id))
-  )
+function movedOn(journal: UndoJournal, entry: JournalEntry): boolean {
+  const ring = journal.undoable
+  const touched = new Set([...entry.nodes, ...entry.edges].map((d) => d.id))
+  const since = ring.slice(0, Math.max(0, ring.findIndex((e) => e.id === entry.id)))
+  return since.some((e) => [...e.nodes, ...e.edges].some((d) => touched.has(d.id)))
 }
 
 /**
@@ -169,13 +147,14 @@ function movedOn(snapshot: GraphSnapshot, entry: JournalEntry): boolean {
  *
  * Two entries are skipped rather than reverted.
  *
- * One that is no longer on the undo stack got there by being undone already — by
- * ⌘Z, or by another card's Undo — and `repo.revert` would have found it in the
- * audit ring and applied it a second time, undoing the undo.
+ * One that nothing on the undo stack stands for got there by being undone
+ * already — by ⌘Z, or by another card's Undo — and `repo.revert` would have
+ * found it in the audit ring and applied it a second time, undoing the undo.
+ * "Stands for" follows ⌘Z/⇧⌘Z (`standingFor`): after an undo and a redo the
+ * change is live again under the redo's id, and that is what gets reverted.
  *
- * One whose records no longer look the way it left them belongs to a write the
- * user has since written over. `before` is a whole record, so putting it back
- * would silently discard everything typed after the toast appeared.
+ * One the user has written over since, or that has nothing left to put back —
+ * see `movedOn`.
  *
  * Both checks are made per entry, inside the loop, against a snapshot read again
  * each time. Deciding up front would have declared the older half of a burst
@@ -206,16 +185,26 @@ export function undoableWith<T>(journal: UndoJournal, write: () => T): Undoable<
       const superseded: string[] = []
 
       for (const entry of committed) {
-        if (!journal.undoable.some((e) => e.id === entry.id)) {
+        // Through the chain, as a step's Undo does: after ⌘Z then ⇧⌘Z the
+        // change is live again under the redo's id, not undone.
+        const stand = standingFor(entry.id, journal.undoable, journal.audit)
+        if (!stand) {
           alreadyUndone += 1
           continue
         }
-        if (movedOn(journal.getSnapshot(), entry)) {
+        if (movedOn(journal, stand)) {
           superseded.push(entry.label)
           continue
         }
-        journal.revert(entry.id)
-        reverted += 1
+        try {
+          journal.revert(stand.id)
+          reverted += 1
+        } catch (e) {
+          // Every field it changed has been written over since: nothing left
+          // to put back, which the user is told rather than shown "Undone".
+          if (!(e instanceof NothingToRevert)) throw e
+          superseded.push(entry.label)
+        }
       }
 
       return { reverted, superseded, alreadyUndone }

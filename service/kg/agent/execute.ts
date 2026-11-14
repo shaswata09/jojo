@@ -182,6 +182,29 @@ export async function callTool(
       }
     }
 
+    /*
+     * A key the published schema does not declare is REFUSED on a write.
+     *
+     * `core/schema.ts` passes unknown keys through, which is right for stored
+     * records and wrong here: `timeline.item.update {id, due}` reported "Item
+     * saved" and changed nothing, and the model told the person the date had
+     * moved (R11b). Checked against the CATALOG's schema rather than the
+     * tool's, so a field the app alone may send (`Tool.appOnlyFields`) is
+     * refused too. After repair, which has already moved every near-miss key
+     * it could; what is left is a key nobody can place.
+     */
+    const declared = entry.parameters.properties
+    if (declared !== undefined && typeof input === 'object' && !Array.isArray(input)) {
+      const unread = Object.keys(input).filter((key) => !Object.hasOwn(declared, key))
+      if (unread.length > 0) {
+        return {
+          ok: false,
+          entry,
+          error: `These were sent and are not fields of this tool: ${unread.join(', ')}. Its fields are: ${Object.keys(declared).join(', ')}.`,
+        }
+      }
+    }
+
     const toolName = entry.name as ToolName
     // Checked before run, so a bad argument never opens a transaction. `run`
     // would parse it again anyway; doing it here is what turns the issues into

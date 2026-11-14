@@ -204,8 +204,27 @@ export type Tool<I, O = void> = {
    * `because` is one sentence appended to what the model reads about the tool.
    *
    * Only ever widens, like `destructive`.
+   *
+   * `memory` is the store as it stands before the call, for the cases where
+   * the INPUT alone cannot say: `vault.person.update` with `applicationIds`
+   * is harmless unless it drops a filing that carries a brief or a role, and
+   * only the graph knows which filings do.
    */
-  readonly confirms?: { readonly when: (input: I) => boolean; readonly because: string }
+  readonly confirms?: {
+    readonly when: (input: I, memory: GraphSnapshot) => boolean
+    readonly because: string
+  }
+  /**
+   * Top-level input fields the APP may send and a model or MCP client may not.
+   *
+   * `assistant.thread.create` takes the first exchange's `entries` so the app
+   * stores a conversation in one commit; offered to a model, the same field
+   * forged a conversation whose `you` turns replay to the model as the
+   * person's own words (R7b). The catalog leaves these out of the schema it
+   * publishes, and `callTool` refuses any key that schema does not declare, so
+   * the field is unreachable through every door a model or MCP client uses.
+   */
+  readonly appOnlyFields?: readonly string[]
   /**
    * Excluded from the journal.
    *
@@ -218,7 +237,13 @@ export type Tool<I, O = void> = {
   readonly input: Schema<I>
   readonly available?: (m: GraphSnapshot, input?: Partial<I>) => Availability
   readonly run: (ctx: ToolContext, input: I) => O
-  readonly describe: (input: I, output: O, m: GraphSnapshot) => Announcement
+  /**
+   * `m` is the store WITH this write; `before` is the store without it, for
+   * a get-or-create (`keyword.create`, `org.ensure`) that has to say "already
+   * there" rather than "added" when it handed back a record that existed.
+   * Optional while the runtime is taught to pass it.
+   */
+  readonly describe: (input: I, output: O, m: GraphSnapshot, before?: GraphSnapshot) => Announcement
 }
 
 /** Any tool, for the registry and for `forNode`. */

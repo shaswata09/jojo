@@ -40,6 +40,7 @@ import { s } from '../core/schema'
 import { appId } from './application-fields'
 import { displayOf } from './support'
 import { defineTool } from './tool'
+import type { ToolContext } from './tool'
 
 const itemId = s.string({ min: 1, label: 'Step' })
 const stepText = s.string({ min: 1, max: MAX_CHECKLIST_TEXT, label: 'Step' })
@@ -165,6 +166,10 @@ export const checklistItemSet = defineTool({
   run(ctx, input): void {
     const application = ctx.require('application', input.id)
     const held = application.props.checklist
+    // An unknown step is a refusal, not a no-op: "Step ticked" over nothing
+    // was counted as landed by the verify gate and repeated to the person as
+    // done (R11c). A no-op is a success only when the step exists.
+    requireStep(ctx, held, input.itemId)
     const next = setItem(
       held,
       input.itemId,
@@ -174,8 +179,8 @@ export const checklistItemSet = defineTool({
       },
       ctx.now,
     )
-    // An unknown step, or a change that changes nothing. Both write nothing:
-    // a no-op patch stamps `updatedAt` and eats an undo slot.
+    // A change that changes nothing writes nothing: a no-op patch stamps
+    // `updatedAt` and eats an undo slot.
     if (next === itemsOf(held)) return
     ctx.tx.patch<'application'>(input.id, { checklist: stored(next) })
   },
@@ -201,6 +206,7 @@ export const checklistItemRemove = defineTool({
   run(ctx, input): void {
     const application = ctx.require('application', input.id)
     const held = application.props.checklist
+    requireStep(ctx, held, input.itemId)
     const next = removeItem(held, input.itemId)
     if (next === itemsOf(held)) return
     ctx.tx.patch<'application'>(input.id, { checklist: stored(next) })
@@ -216,3 +222,16 @@ export const checklistItemRemove = defineTool({
     }
   },
 })
+
+/** Fails, naming where the ids are, when no step on this checklist has `itemId`. */
+function requireStep(
+  ctx: ToolContext,
+  held: Parameters<typeof itemsOf>[0],
+  itemId: string,
+): void {
+  if (itemsOf(held).some((i) => i.id === itemId)) return
+  ctx.fail('No step on this application’s checklist has that id. Read the application for its steps and their ids.', {
+    field: 'itemId',
+    code: 'graph/not-found',
+  })
+}

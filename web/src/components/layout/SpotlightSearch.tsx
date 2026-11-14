@@ -353,7 +353,7 @@ export function SpotlightSearch({
         {/* This build's CommandDialog renders Dialog > DialogContent > children
           with no cmdk root, so the Command provider has to be supplied here —
           without it CommandInput has no store and throws on mount. */}
-        <Command filter={matchesQuery}>
+        <Command label="Search applications, reminders, events and pages" filter={matchesQuery}>
           <CommandInput placeholder="Search applications, reminders, events…" />
           <CommandList className="max-h-[62vh]">
             <CommandEmpty>

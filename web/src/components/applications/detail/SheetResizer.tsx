@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { cn } from '@/lib/utils'
-import { MIN_SHEET_WIDTH, maxWidthFor, nudgeWidth, widthFromPointer } from '@/lib/sheet-width'
+import { MIN_SHEET_WIDTH, widthFromPointer } from '@/lib/sheet-width'
+import { widthForKey } from '@/components/applications/detail/resizer-keys'
 
 /**
  * The grab strip down the sheet's left edge.
@@ -144,24 +145,13 @@ export function SheetResizer({
 
   const onKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
-      const viewport = window.innerWidth
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        event.preventDefault()
-        onWidth(nudgeWidth(width, event.key === 'ArrowLeft' ? -1 : 1, viewport, event.shiftKey))
-        return
-      }
-      // Home and End mean the extremes on every slider; a separator is one.
-      if (event.key === 'Home') {
-        event.preventDefault()
-        onWidth(maxWidthFor(viewport))
-        return
-      } else if (event.key === 'End') {
-        event.preventDefault()
-        onWidth(MIN_SHEET_WIDTH)
-      } else if (event.key === 'Enter') {
-        event.preventDefault()
-        onReset()
-      }
+      // Arrows nudge, Home/End go to the extremes (Home = aria-valuemin, per
+      // the APG separator pattern), Enter resets. The mapping is `widthForKey`.
+      const next = widthForKey(event.key, width, window.innerWidth, event.shiftKey)
+      if (next === null) return
+      event.preventDefault()
+      if (next === 'reset') onReset()
+      else onWidth(next)
     },
     [onReset, onWidth, width],
   )

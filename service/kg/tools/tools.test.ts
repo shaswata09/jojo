@@ -479,8 +479,10 @@ describe('duplicating a record filed under several applications', () => {
         }),
       )
       expect(roleOn(h, person, apps[0]!)).toBe('contact')
-      // A role for a job not in `applicationIds` files nothing.
-      expect(isFiled(h, person, apps[1]!)).toBe(false)
+      // A role names its job, so it files the person there too (R12): it used
+      // to be dropped, and "Person saved" reported a role nobody stored.
+      expect(isFiled(h, person, apps[1]!)).toBe(true)
+      expect(roleOn(h, person, apps[1]!)).toBe('recommender')
     })
 
     it('takes a person off one job, with its brief, and nothing else', () => {
