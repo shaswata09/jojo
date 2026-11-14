@@ -87,10 +87,23 @@ export default defineConfig({
        * Per directory rather than global: `kg/react` sits near 77% for the
        * reason given above, and a global number would let a drop in core hide
        * behind a rise in react.
+       *
+       * `kg/tools` and `kg/repo` joined them 2026-11-14, set under the lower
+       * of two measurements taken that day while other work was landing in
+       * both: tools 96.7 lines / 94.1 statements / 95.6 functions / 75.0
+       * branches; repo 87.4 / 85.4 / 86.5 / 75.6. Lower than the other two,
+       * and set where they are rather than where they ought to be — the point
+       * is that the undo, salvage and boot paths in these two layers had no
+       * gate signal at all, so new untested code there landed silently. The
+       * branch gaps are concentrated in `tools/application.ts`,
+       * `repo/boot.ts`, `repo/boot-live.ts` and `repo/seed.ts`; raise these as
+       * those are tested.
        */
       thresholds: {
         'kg/core/**': { lines: 96, statements: 94, functions: 96, branches: 88 },
         'kg/agent/**': { lines: 97, statements: 95, functions: 96, branches: 88 },
+        'kg/tools/**': { lines: 95, statements: 92, functions: 94, branches: 73 },
+        'kg/repo/**': { lines: 86, statements: 84, functions: 85, branches: 74 },
       },
     },
   },

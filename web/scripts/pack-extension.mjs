@@ -32,7 +32,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, posix, relative, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zipSync } from 'fflate'
 
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -104,6 +104,44 @@ for (const file of readdirSync(SOURCE, { recursive: true }).filter((f) => String
     console.error('The extension would install and answer nothing. Refusing to pack it.')
     process.exit(1)
   }
+}
+
+/*
+ * And the service worker's modules have to LINK.
+ *
+ * A parse is per file, so it cannot see that `background.js` imports a name
+ * `worker/messages.js` no longer exports: both files parse, the zip is made,
+ * and Chrome refuses to register the worker — the same "installs and answers
+ * nothing" as above, from a renamed export. So the worker is imported for real,
+ * in a child process, against a `chrome` that answers every property and call
+ * with itself: linking needs nothing from it, and the top level only adds
+ * listeners. A child so that nothing the worker starts can keep this script
+ * running, and so a hang is a timeout rather than a pack that never finishes.
+ */
+const LINK_CHECK = `
+const anything = () =>
+  new Proxy(function () {}, {
+    get: (_target, key) => (key === 'then' ? undefined : anything()),
+    apply: () => anything(),
+    construct: () => anything(),
+  })
+globalThis.chrome = anything()
+await import(process.env.JOJO_WORKER_ENTRY)
+process.exit(0)
+`
+try {
+  execFileSync(process.execPath, ['--input-type', 'module', '--eval', LINK_CHECK], {
+    env: { ...process.env, JOJO_WORKER_ENTRY: pathToFileURL(join(SOURCE, 'background.js')).href },
+    stdio: ['ignore', 'ignore', 'pipe'],
+    timeout: 30_000,
+  })
+} catch (error) {
+  const said = String(error.stderr ?? error.message)
+    .split('\n')
+    .find((l) => /Error/.test(l))
+  console.error(`pack-extension: the service worker does not load — ${said ?? 'it timed out'}`)
+  console.error('Chrome would refuse to register it, and the extension would answer nothing. Refusing to pack it.')
+  process.exit(1)
 }
 
 /** Never packed: Finder's litter, which Chrome refuses to load beside an extension. */

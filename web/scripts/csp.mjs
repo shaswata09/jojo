@@ -20,9 +20,16 @@
  *                         (Spline: physics, navmesh, boolean ops) and pdf.js
  *                         instantiate wasm; without this they throw on load.
  *                         It allows wasm only — not `eval`, not `new Function`.
- *   googletagmanager.com  only in a build with analytics configured:
+ *   …/gtag/js             only in a build with analytics configured:
  *                         `firebase/analytics` loads gtag.js from there. A
- *                         build without analytics does not allow it.
+ *                         build without analytics does not allow it. The
+ *                         PATH, not the host: the host serves every Google
+ *                         Tag Manager container (`gtm.js?id=GTM-<anyone>`),
+ *                         and a container runs whatever its owner put in it,
+ *                         so allowing the host would let one injected tag
+ *                         run someone else's code (round-3 review). A path
+ *                         without a trailing slash matches that one file;
+ *                         the query string is not part of the match.
  *   worker-src 'self' blob:
  *                         pdf.js runs its worker from this origin; Spline
  *                         starts its workers from blob: URLs it creates.
@@ -33,7 +40,7 @@ import { createHash } from 'node:crypto'
 const META = /(<meta\s+http-equiv="Content-Security-Policy"\s+content=")([^"]*)(")/i
 const INLINE = /<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi
 
-export const GTM = 'https://www.googletagmanager.com'
+export const GTM = 'https://www.googletagmanager.com/gtag/js'
 
 /** sha256 CSP sources for every inline <script> in `html`, in document order. */
 export function inlineScriptHashes(html) {

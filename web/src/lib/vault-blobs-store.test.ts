@@ -23,9 +23,13 @@ const fake = vi.hoisted(() => ({
   gate: null as Promise<void> | null,
   /** When set, the page-load trash sweep waits for this — hydration held open. */
   purgeGate: null as Promise<void> | null,
+  /** When set, `list` answers this instead of asking the store. */
+  listAnswer: null as unknown,
 }))
 
-vi.mock('@/kg/storage/idb-file-store', () => ({
+vi.mock('@/kg/storage/idb-file-store', async () => ({
+  trashPath: (await import('@jojo/service/storage/file-store')).trashPath,
+  isBlockedFailure: (error: { context?: Record<string, unknown> }) => error.context?.blocked === true,
   createIdbFileStore: () => ({
     open: async () => ({ ok: true, value: undefined }),
     purgeTrash: async () => {
@@ -35,8 +39,9 @@ vi.mock('@/kg/storage/idb-file-store', () => ({
     persisted: async () => false,
     list: (dir: string) => {
       fake.lists += 1
-      return fake.store.list(dir)
+      return fake.listAnswer ?? fake.store.list(dir)
     },
+    stat: (path: string) => fake.store.stat(path),
     read: (path: string) => fake.store.read(path),
     write: (path: string, data: Uint8Array) => fake.store.write(path, data),
     trash: async (path: string) => {
@@ -53,6 +58,7 @@ beforeEach(() => {
   fake.lists = 0
   fake.gate = null
   fake.purgeGate = null
+  fake.listAnswer = null
   vi.useRealTimers()
 })
 
@@ -154,14 +160,46 @@ describe('before the index has hydrated', () => {
 })
 
 describe('the bytes held for Undo', () => {
-  it('are let go once the Undo window has passed', async () => {
+  it('are let go once the Undo window has passed, and Undo then reads the trash copy', async () => {
     const mod = await load({ [blobPath('f4', 'cv.pdf')]: bytes('cv') })
     await mod.blobIndex.ready()
     vi.useFakeTimers()
     expect(await mod.vaultBlobStore.remove('f4')).toBe(true)
     vi.advanceTimersByTime(mod.TRASH_HOLD_MS - 1)
     vi.advanceTimersByTime(1)
-    expect(await mod.vaultBlobStore.restore('f4')).toBe(false)
+    // R3: the toast's countdown pauses while hovered or focused, so it can
+    // outlast the hold. The bytes are still under `jojo/Trash`.
+    expect(await mod.vaultBlobStore.restore('f4')).toBe(true)
+    const back = await mod.vaultBlobStore.get('f4')
+    expect(back === null ? null : await back.text()).toBe('cv')
+  })
+
+  it('come back from the latest trash copy when the same document was deleted twice', async () => {
+    const mod = await load({ [blobPath('f7', 'cv.pdf')]: bytes('cv') })
+    await mod.blobIndex.ready()
+    vi.useFakeTimers()
+    expect(await mod.vaultBlobStore.remove('f7')).toBe(true)
+    expect(await mod.vaultBlobStore.restore('f7')).toBe(true)
+    // Rewritten with different bytes, then deleted again: two trash copies.
+    await putVia(mod, 'f7', 'cv.pdf')
+    expect(await mod.vaultBlobStore.remove('f7')).toBe(true)
+    vi.advanceTimersByTime(mod.TRASH_HOLD_MS)
+    expect(await mod.vaultBlobStore.restore('f7')).toBe(true)
+    const back = await mod.vaultBlobStore.get('f7')
+    expect(back === null ? null : await back.text()).toBe('cv.pdf bytes')
+  })
+
+  it('say no once the hold is gone and the trash has been swept', async () => {
+    const mod = await load({ [blobPath('f8', 'cv.pdf')]: bytes('cv') })
+    await mod.blobIndex.ready()
+    vi.useFakeTimers()
+    expect(await mod.vaultBlobStore.remove('f8')).toBe(true)
+    vi.advanceTimersByTime(mod.TRASH_HOLD_MS)
+    // Another tab loaded and swept `jojo/Trash`.
+    const listed = await fake.store.list('jojo/Trash/Documents')
+    expect(listed.ok && listed.value.length).toBe(1)
+    await sweep(listed.ok ? listed.value.map((e) => e.path) : [])
+    expect(await mod.vaultBlobStore.restore('f8')).toBe(false)
   })
 
   it('are still there inside the window', async () => {
@@ -182,7 +220,68 @@ describe('the bytes held for Undo', () => {
   })
 })
 
+describe('a restore made before the index has hydrated', () => {
+  /*
+   * R2 finding, open into R3: `replaceAll` walked `current.index` without
+   * waiting for the first listing, so on a page that had just loaded it
+   * trashed nothing, and the listing — re-taken because the restore bumped
+   * `changes` — then put the old documents back beside the restored ones.
+   */
+  it('trashes the documents it replaces, and they stay gone', async () => {
+    const open = holdHydration()
+    const mod = await load({ [blobPath('old1', 'cv.pdf')]: bytes('old') })
+    mod.blobIndex.subscribe(() => {})
+    const replacing = mod.vaultBlobStore.replaceAll([
+      { path: blobPath('new1', 'letter.pdf'), data: bytes('new') },
+    ])
+    open()
+    expect(await replacing).toBe(1)
+    await mod.blobIndex.ready()
+    expect(mod.vaultBlobStore.has('old1')).toBe(false)
+    expect(mod.vaultBlobStore.has('new1')).toBe(true)
+    const left = await fake.store.list('Documents')
+    expect(left.ok && left.value.map((e) => e.path)).toEqual([blobPath('new1', 'letter.pdf')])
+  })
+})
+
+describe('when another tab holds the documents database', () => {
+  it('says so on the index, and clears once that tab lets go', async () => {
+    fake.listAnswer = {
+      ok: false,
+      error: { code: 'files/failed', message: 'list: blocked', context: { blocked: true } },
+    }
+    vi.useFakeTimers()
+    const mod = await load({ [blobPath('b1', 'cv.pdf')]: bytes('cv') })
+    mod.blobIndex.subscribe(() => {})
+    await mod.blobIndex.ready()
+    expect(mod.blobIndex.getSnapshot().blocked).toBe(true)
+    expect(mod.vaultBlobStore.has('b1')).toBe(false)
+    // The other tab closes; the next retry finds the database open.
+    fake.listAnswer = null
+    await vi.advanceTimersByTimeAsync(5_000)
+    expect(mod.blobIndex.getSnapshot().blocked).toBe(false)
+    expect(mod.vaultBlobStore.has('b1')).toBe(true)
+  })
+
+  it('is not reported for any other failure', async () => {
+    fake.listAnswer = { ok: false, error: { code: 'files/failed', message: 'list: broke' } }
+    const mod = await load()
+    mod.blobIndex.subscribe(() => {})
+    await mod.blobIndex.ready()
+    expect(mod.blobIndex.getSnapshot().blocked).toBe(false)
+  })
+})
+
 async function putVia(mod: typeof import('./vault-blobs'), id: string, name: string) {
   const ok = await mod.vaultBlobStore.put(id, new File([`${name} bytes`], name))
   expect(ok).toBe(true)
+}
+
+/**
+ * What another tab's page-load sweep does to `jojo/Trash`: the copies are no
+ * longer where they were. The memory store has no unlink, so they are moved
+ * aside with its own `trash`, which empties those keys just the same.
+ */
+async function sweep(paths: readonly string[]) {
+  for (const path of paths) await fake.store.trash(path)
 }

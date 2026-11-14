@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import type { ChatMessage } from '../core/model-server'
 import type { ApprovalMode, NodeId, StoredNode, ThreadEntry } from '../core/model'
 import { MAX_THOUGHT_STORED, approvalOf } from '../core/model'
 import { toWireName } from '../agent/catalog'
 import type { AgentEntry } from './use-agent'
+import type { GraphSnapshot } from '../core/snapshot'
 import { useGraph, useKg } from './kg-context'
 
 /**
@@ -58,31 +59,69 @@ const entriesOf = (node: StoredNode<'thread'>): ThreadEntry[] =>
       typeof e === 'object' && e !== null && KINDS.has((e as { kind?: unknown }).kind as string),
   )
 
+const threadOf = (node: StoredNode<'thread'>, graph: GraphSnapshot): Thread => ({
+  id: node.id,
+  title: node.props.title,
+  entries: entriesOf(node),
+  applicationId: graph.one(node.id, 'FILED_UNDER', 'application')?.id ?? null,
+  approval: approvalOf(node.props),
+  ...(node.props.context === undefined ? {} : { context: node.props.context }),
+  // Zero, not undefined: every caller slices with it, and a default of
+  // zero means "nothing summarised yet" without a check at each site.
+  contextThrough: node.props.contextThrough ?? 0,
+  updatedAt: node.updatedAt,
+})
+
+/** What one reading of the conversations keeps for the next. */
+export type ThreadReading = {
+  readonly list: Thread[]
+  readonly byId: ReadonlyMap<NodeId, { node: StoredNode<'thread'>; epoch: number; thread: Thread }>
+}
+
+/**
+ * The conversations, reusing every `Thread` whose node did not change.
+ *
+ * This rebuilt every thread on every commit, because `graph` is a new object per
+ * commit. A conversation's `entries` is the whole transcript, so a sticky note
+ * moved on the dashboard handed every open chat a "new" thread and the screens
+ * built from it — `toAgentEntries`, the Markdown transcript — redid their work
+ * for a conversation nobody had touched. A thread is reused while its node is
+ * the same object and its epoch has not moved (the epoch covers its
+ * `FILED_UNDER` edge and the application at the end of it), and the list keeps
+ * its identity when every member does.
+ */
+export function readThreads(graph: GraphSnapshot, held: ThreadReading | null): ThreadReading {
+  const byId = new Map<NodeId, { node: StoredNode<'thread'>; epoch: number; thread: Thread }>()
+  const list = graph
+    .ofType('thread')
+    .map((node) => {
+      const epoch = graph.epoch(node.id)
+      const hit = held?.byId.get(node.id)
+      const thread =
+        hit !== undefined && hit.node === node && hit.epoch === epoch
+          ? hit.thread
+          : threadOf(node, graph)
+      byId.set(node.id, { node, epoch, thread })
+      return thread
+    })
+    // Most recently touched first: a list of conversations is read like an
+    // inbox, and the one you were just in is the one you want back.
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+  const same =
+    held !== null && held.list.length === list.length && held.list.every((t, i) => t === list[i])
+  return { list: same ? held.list : list, byId }
+}
+
 export function useThreads() {
   const graph = useGraph()
   const { runtime } = useKg()
 
-  const threads = useMemo<Thread[]>(
-    () =>
-      graph
-        .ofType('thread')
-        .map((node) => ({
-          id: node.id,
-          title: node.props.title,
-          entries: entriesOf(node),
-          applicationId: graph.one(node.id, 'FILED_UNDER', 'application')?.id ?? null,
-          approval: approvalOf(node.props),
-          ...(node.props.context === undefined ? {} : { context: node.props.context }),
-          // Zero, not undefined: every caller slices with it, and a default of
-          // zero means "nothing summarised yet" without a check at each site.
-          contextThrough: node.props.contextThrough ?? 0,
-          updatedAt: node.updatedAt,
-        }))
-        // Most recently touched first: a list of conversations is read like an
-        // inbox, and the one you were just in is the one you want back.
-        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
-    [graph],
-  )
+  // The ref only ever holds a reading equal in content to the one just made, so
+  // a render React throws away leaves nothing wrong behind.
+  const held = useRef<ThreadReading | null>(null)
+  const reading = useMemo(() => readThreads(graph, held.current), [graph])
+  held.current = reading
+  const threads = reading.list
 
   const create = useCallback(
     (opts: { title?: string; applicationId?: NodeId; entries?: readonly ThreadEntry[] } = {}) =>

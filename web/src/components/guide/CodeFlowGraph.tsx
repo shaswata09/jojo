@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import {
   Background,
   Controls,
@@ -16,7 +17,15 @@ import type { CodeGraph, CodeGroup } from '../../../scripts/code-graph.mjs'
 import { Chip } from '@/components/common/Chip'
 import { CHANNELS } from '@/components/guide/flow-map'
 import { CODE_NODE, TIER_LABEL, layoutCodeGraph } from '@/components/guide/flow-layout'
-import { fileLinks, filesOf, neighboursOf, strokeFor } from '@/components/guide/code-graph-view'
+import {
+  fileLinks,
+  filesOf,
+  moduleLabel,
+  neighboursOf,
+  nextPick,
+  picksOnKey,
+  strokeFor,
+} from '@/components/guide/code-graph-view'
 import { useTheme } from '@/lib/theme-context'
 import { cn } from '@/lib/utils'
 
@@ -71,6 +80,20 @@ function LaneLabel({ data }: NodeProps<Node<{ text: string }>>) {
 
 const NODE_TYPES = { group: GroupBox, lane: LaneLabel }
 
+/*
+ * What xyflow tells a screen reader about every box, replaced. Its own words
+ * ("press delete to remove it", "use the arrow keys to move the node")
+ * describe an editor, and on this graph neither key does anything. Both keys
+ * are set because xyflow picks between them by `disableKeyboardA11y`, the
+ * opposite way round to what their names say.
+ */
+const DESCRIBE_MODULE = 'Press Enter or Space to show what this module uses, what uses it, and its files.'
+const ARIA_LABELS = {
+  'node.a11yDescription.default': DESCRIBE_MODULE,
+  'node.a11yDescription.keyboardDisabled': DESCRIBE_MODULE,
+  'edge.a11yDescription.default': 'An import between two modules.',
+}
+
 const BANDS = [
   { id: 'web', label: 'Web app' },
   { id: 'service', label: 'Shared service' },
@@ -105,6 +128,10 @@ export function CodeFlowGraph() {
       data: { text: TIER_LABEL[lane.tier] },
       selectable: false,
       draggable: false,
+      // A caption, not a control: it was a tab stop with nothing to do, and it
+      // carried the "press Enter" description of the modules.
+      focusable: false,
+      domAttributes: { 'aria-describedby': undefined },
     })),
     ...layout.nodes
       .filter((n) => visible(n.id))
@@ -115,6 +142,10 @@ export function CodeFlowGraph() {
           type: 'group',
           position: { x: n.x, y: n.y },
           data: { group, lit: n.id === selected, dim: touching !== null && !touching.has(n.id) },
+          // It acts as a button (Enter and Space pick it, below), so it says so.
+          ariaRole: 'button' as const,
+          ariaLabel: moduleLabel(group, n.id === selected),
+          domAttributes: { 'aria-pressed': n.id === selected },
         }
       }),
   ]
@@ -128,6 +159,7 @@ export function CodeFlowGraph() {
           id: `${e.from}->${e.to}`,
           source: e.from,
           target: e.to,
+          ariaLabel: `${e.from} imports ${e.to}, ${String(e.count)} ${e.count === 1 ? 'time' : 'times'}`,
           markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12 },
           style: {
             stroke: on ? 'var(--accent)' : 'var(--hairline-strong)',
@@ -155,6 +187,21 @@ export function CodeFlowGraph() {
   const pick = (id: string | null) => {
     setSelected(id)
     setFile(null)
+  }
+
+  /*
+   * Enter or Space on a focused module picks it, as a click does. xyflow's
+   * nodes take focus but only call `onNodeClick` for a pointer, so a keyboard
+   * user could tab to every module and open none of them. Caught here, as the
+   * key bubbles out of the focused node, because a node's own handlers are
+   * xyflow's (`domAttributes` cannot carry one).
+   */
+  const onGraphKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!picksOnKey(event.key) || !(event.target instanceof Element)) return
+    const id = event.target.closest('.react-flow__node')?.getAttribute('data-id')
+    if (id === null || id === undefined || !groupById.has(id)) return
+    event.preventDefault()
+    pick(nextPick(selected, id))
   }
 
   return (
@@ -189,8 +236,11 @@ export function CodeFlowGraph() {
         </span>
       </div>
 
-      <div className="h-[52rem] max-h-[85vh] overflow-hidden rounded-lg border border-hairline bg-well">
+      <div className="h-[52rem] max-h-[85vh] overflow-hidden rounded-lg border border-hairline bg-well" onKeyDown={onGraphKey}>
         <ReactFlow
+          // Named, so its description element is its own and not the flowchart's
+          // further down the page (xyflow ids both after this; both were "1").
+          id="code-flow-graph"
           nodes={nodes}
           edges={edges}
           nodeTypes={NODE_TYPES}
@@ -201,6 +251,12 @@ export function CodeFlowGraph() {
           nodesDraggable={false}
           nodesConnectable={false}
           edgesFocusable={false}
+          // Picking is ours (`pick`), not xyflow's selection; nothing can be
+          // deleted; and Space picks a module rather than arming a pan.
+          elementsSelectable={false}
+          deleteKeyCode={null}
+          panActivationKeyCode={null}
+          ariaLabelConfig={ARIA_LABELS}
           minZoom={0.15}
           maxZoom={1.8}
           // The wheel scrolls the page; zoom with the buttons, a pinch or a
@@ -208,7 +264,7 @@ export function CodeFlowGraph() {
           zoomOnScroll={false}
           preventScrolling={false}
           onNodeClick={(_, node) => {
-            if (node.type === 'group') pick(node.id === selected ? null : node.id)
+            if (node.type === 'group') pick(nextPick(selected, node.id))
           }}
           onPaneClick={() => pick(null)}
         >

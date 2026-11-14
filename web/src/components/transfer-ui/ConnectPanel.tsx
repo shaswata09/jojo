@@ -49,10 +49,27 @@ export function ConnectPanel({ send, token }: { send: SendState; token: string |
       <PanelTitle hint="from the other device">Connect</PanelTitle>
 
       {send.stage === 'done' ? (
-        <p className="text-sm text-text-2">
-          Everything moved{send.target === null ? '' : ` to ${send.target}`}. Both devices now hold
-          the same records.
-        </p>
+        <>
+          <p className="text-sm text-text-2">
+            Everything moved{send.target === null ? '' : ` to ${send.target}`}. Both devices now
+            hold the same records.
+          </p>
+          {/* The page has already put a new code up for the next device, and
+              this is the way back to the field to type that device's address.
+              Without it a finished send was a dead end: no field, a payload
+              switch still locked, and only leaving the page to start over. */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3"
+            onClick={() => {
+              setCode('')
+              send.cancel()
+            }}
+          >
+            Send to another device
+          </Button>
+        </>
       ) : (
         <>
           <p className="mb-3 text-sm text-text-2">

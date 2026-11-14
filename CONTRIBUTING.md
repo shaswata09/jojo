@@ -43,8 +43,8 @@ this repo is sometimes worked on from more than one place at once.
 - `service/` — everything both apps share: the graph, the tools, the agent, the
   React hooks. It is compiled **unchanged** into a browser and into React Native,
   so it may not import `node:` anything, touch the DOM, read the clock, or reach
-  the network. Four scripts in `service/scripts/` enforce that and run as part of
-  the lint step.
+  the network. Scripts in `service/scripts/` enforce that and run as part of
+  the lint step; `service/README.md` lists them.
 - `web/` and `mobile/` — only what is genuinely platform-specific. If you find
   yourself writing the same file twice, it belongs in `service/`.
 

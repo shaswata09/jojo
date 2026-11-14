@@ -91,6 +91,21 @@ export type JournalEntry = {
      */
     root?: string
   }
+  /**
+   * Claims this revert would have put back but could not, because one of
+   * their ends had been deleted by a later entry. Set on revert entries only.
+   *
+   * A claim is its two ends (`withoutDanglingEdges` in `repository.ts`), so
+   * one with an end missing stays deleted. But the entry that deleted that end
+   * never held the claim, so reverting it later brought the end back and the
+   * claim never returned: delete Ann, delete Bob, Undo Ann's delete, ⌘Z, and
+   * both were back with nothing between them. Kept here so the revert that
+   * restores the missing end restores the claim with it (`withHeldClaims`).
+   *
+   * Optional: rows written before this existed lack it, and so does every
+   * revert that held nothing back.
+   */
+  held?: { nodes: readonly StoredNode[]; edges: readonly StoredEdge[] }
 }
 
 /** An entry as a tool hands it over: the repository stamps the id and the time. */
@@ -338,6 +353,7 @@ export function readJournalRows(rows: readonly unknown[]): JournalEntry[] {
       // window and every row written before this field existed.
       ...(row['trimmed'] === true ? { trimmed: true as const } : {}),
       ...readReverts(row['reverts']),
+      ...readHeld(row['held']),
     })
   }
 
@@ -355,6 +371,20 @@ function readReverts(value: unknown): { reverts?: NonNullable<JournalEntry['reve
   const { id, of, undone, root } = value
   if (typeof id !== 'string' || typeof of !== 'string' || typeof undone !== 'boolean') return {}
   return { reverts: { id, of, undone, ...(typeof root === 'string' ? { root } : {}) } }
+}
+
+/**
+ * `held` off disk, kept only when it is two arrays of rows.
+ *
+ * Envelope only, like the images: `withHeldClaims` re-checks every end against
+ * the live graph before it puts anything back, so a stale row can only fail to
+ * restore, never restore half a claim.
+ */
+function readHeld(value: unknown): { held?: NonNullable<JournalEntry['held']> } {
+  if (!isRow(value)) return {}
+  const { nodes, edges } = value
+  if (!Array.isArray(nodes) || !Array.isArray(edges) || !nodes.every(isRow) || !edges.every(isRow)) return {}
+  return { held: { nodes: nodes as StoredNode[], edges: edges as StoredEdge[] } }
 }
 
 /* --------------------------------- revert --------------------------------- */
@@ -384,6 +414,12 @@ type Image = Record<string, unknown>
  * that moves a stage writes these together), not of one tool. Typed against
  * the props so a renamed field fails to compile here.
  *
+ * `offer` is in the stage group because a move to Offer writes it and the
+ * statistics read it as the stage reached (`reachedOf` counts any offer as
+ * REACH.offer). Outside the group, Undo of a move to Offer after the offer was
+ * edited put the stage back to Interview and kept the edited offer, so the
+ * board and the funnel still showed an offer the user had taken back.
+ *
  * `lastAction`/`lastActionAt` are deliberately NOT in the stage group. Every
  * write stamps them (`touch`), so with them inside, editing a note after a
  * stage move would pin the move and its Undo would do nothing. They revert per
@@ -393,7 +429,7 @@ type Image = Record<string, unknown>
  */
 const FIELD_GROUPS: { readonly [T in NodeType]?: readonly (readonly (keyof NodePropsByType[T] & string)[])[] } = {
   application: [
-    ['stage', 'submittedOn', 'appliedOn', 'firstReplyOn', 'stageDates', 'outcome'],
+    ['stage', 'submittedOn', 'appliedOn', 'firstReplyOn', 'stageDates', 'outcome', 'offer'],
     ['note', 'noteFormat'],
   ],
   file: [['note', 'noteFormat']],
@@ -498,6 +534,15 @@ function revertDelta<T extends StoredNode | StoredEdge>(
  * window does not pin it. Iterated, because a kept record keeps the links it
  * hangs by: a kept application keeps its employer. What stays is only what
  * something else needs; everything else the entry linked still comes out.
+ *
+ * A kept record also keeps what the entry made FOR it: a record the entry
+ * created whose association (a `many` relation, such as a deadline's ABOUT or
+ * a keyword's TAGS) points at a kept record. Without this, Undo of creating an
+ * application that has since been duplicated kept the application and deleted
+ * the deadline its form stood up, so the calendar lost the item while the
+ * toast said Undone. The application's own one-slot link (its AT) does not
+ * count: that is the application pointing at its employer, not something made
+ * for the employer, and counting it would pin every job at a kept employer.
  */
 function keepReferenced(
   nodes: RecordDelta<StoredNode>[],
@@ -512,18 +557,25 @@ function keepReferenced(
   const unlinking = new Set(edges.filter((d) => d.after === null).map((d) => d.id))
   const kept = new Set<string>()
   const stays = (id: string) => !removing.has(id) || kept.has(id)
+  // The entry's own associations, by the record they hang from.
+  const madeFor = new Map<string, string[]>()
+  for (const d of edges) {
+    if (d.after !== null || d.before === null || EDGE_SCHEMA[d.before.rel].fromCardinality !== 'many') continue
+    madeFor.set(d.before.from, [...(madeFor.get(d.before.from) ?? []), d.before.to])
+  }
 
   for (let grew = true; grew; ) {
     grew = false
     for (const id of removing) {
       if (kept.has(id)) continue
-      const held = live
-        .in(id as NodeId)
-        .some(
-          (e) =>
-            EDGE_SCHEMA[e.rel].fromCardinality === 'one' &&
-            (unlinking.has(e.id) ? kept.has(e.from) : stays(e.from)),
-        )
+      const held =
+        live
+          .in(id as NodeId)
+          .some(
+            (e) =>
+              EDGE_SCHEMA[e.rel].fromCardinality === 'one' &&
+              (unlinking.has(e.id) ? kept.has(e.from) : stays(e.from)),
+          ) || (madeFor.get(id) ?? []).some((to) => kept.has(to))
       if (held) {
         kept.add(id)
         grew = true
@@ -632,6 +684,24 @@ export function standingFor(
   )
 }
 
+/**
+ * Whether the change `id` made stands undone: the newest revert in its chain
+ * took it back.
+ *
+ * What a step's Undo says when `standingFor` finds nothing, so it can tell
+ * "⌘Z already did that" from "too far back to reach". The redo ring is asked
+ * first because it outlives the audit ring's turnover (`reverts.root`).
+ */
+export function undoneFor(
+  id: string,
+  redoable: readonly JournalEntry[],
+  audit: readonly JournalEntry[] = [],
+): boolean {
+  const find = byIdOf(audit)
+  if (redoable.some((e) => e.reverts?.undone === true && rootOf(e, find) === id)) return true
+  return audit.find((e) => e.reverts !== undefined && rootOf(e, find) === id)?.reverts?.undone === true
+}
+
 /* ---------------------------------- rings --------------------------------- */
 
 /**
@@ -713,8 +783,10 @@ export function trimJournal(
   const firstKept = Math.max(0, entries.length - keepImages)
   return entries.map((entry, i) => {
     if (i >= firstKept || entry.trimmed === true) return entry
+    // `held` is record images too, and goes with the rest of them.
+    const { held: _held, ...rest } = entry
     return {
-      ...entry,
+      ...rest,
       trimmed: true as const,
       // `input` and `calls` go with the images, and for the same reason: the
       // only thing that reads either is `invert`, and a trimmed entry cannot be

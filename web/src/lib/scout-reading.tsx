@@ -13,8 +13,13 @@ import { unshout } from '@/lib/fill-from-posting'
 import { isConfigured } from '@/lib/llm'
 import { useLabels } from '@/lib/labels-context'
 import { useModelSettings } from '@/lib/model-settings-context'
-import { NOTHING_TO_READ_WITH, useReadPosting } from '@/lib/posting-agent'
-import { discardablePage, nextToRead, readingQueue } from '@/lib/scout-reading-queue'
+import { NOTHING_TO_READ_WITH, NO_BACKGROUND_ROUTE, useReadPosting } from '@/lib/posting-agent'
+import {
+  discardablePages,
+  nextToRead,
+  otherClaimant,
+  readingQueue,
+} from '@/lib/scout-reading-queue'
 
 /**
  * Reads each posting the scout suggests, before anyone decides on it.
@@ -33,16 +38,19 @@ import { discardablePage, nextToRead, readingQueue } from '@/lib/scout-reading-q
  * module-level (`readingQueue`), not React state — see its header.
  *
  * ONLY ADDRESSES A BOARD GAVE. The tab is the person's signed-in browser, so
- * the reader opens only what a board read listed or what is on a board the
- * pipeline watches, and never this machine or the person's network
+ * the reader opens only a posting's address that a board read listed or that
+ * is on a board the pipeline watches, and never this machine or the person's
+ * network
  * (`autoReadable`). Anything else waits for Approve. Nothing is read for a
  * pipeline that is paused or gone, and a read in flight is stopped when its
  * pipeline is paused, the settings change, or the reader unmounts.
  *
  * ONLY WHERE A READ CAN HAPPEN. Without a model there is nothing to ask, and
- * without the extension or the document reader there is nothing to open a page
- * with — and a card saying so twelve times over would be noise. The first read
- * that finds no way to open a page stops the queue until the settings change.
+ * without the extension there is nothing to open a page with — and a card
+ * saying so twelve times over would be noise. The first read that finds no way
+ * to open a page stops the queue until the settings change. The document reader
+ * does not count here: it follows redirects without checking where they go, so
+ * it is kept for postings a person opens (`unattended` in `posting-agent.ts`).
  *
  * A READ IS TRIED ONCE. A failure is stored too, with its sentence, so the card
  * can say why and the queue does not open the same page on every visit.
@@ -67,18 +75,23 @@ export function useReadingNow(proposalId: string): boolean {
 
 /**
  * Takes a page out of the Vault unless something else claims it — filed under
- * an application, or its address saved as a posting some other way — because
- * then it is not only this card's.
+ * an application, its address saved as a posting some other way, or another
+ * card's reading pointing at it — because then it is not only this card's.
  */
-function useDropUnclaimedPage(): (fileId: string, url: string | undefined) => void {
+function useDropUnclaimedPage(): (
+  fileId: string,
+  url: string | undefined,
+  proposalId: string,
+) => void {
   const { repo, projections } = useKg()
   const { removeFile } = useVault()
   const blobs = useVaultBlobs()
   return useCallback(
-    (fileId: string, url: string | undefined) => {
+    (fileId: string, url: string | undefined, proposalId: string) => {
       const graph = repo.getSnapshot()
       if (graph.node(fileId as NodeId, 'file') === undefined) return
       if (graph.many(fileId as NodeId, 'FILED_UNDER', 'out', 'application').length > 0) return
+      if (otherClaimant(projections.proposals(graph), proposalId, fileId)) return
       const key = url ? (postingIdentity(url) ?? url) : undefined
       const saved = projections
         .postings(graph)
@@ -95,7 +108,7 @@ function useDropUnclaimedPage(): (fileId: string, url: string | undefined) => vo
  *
  * The page was kept so the card could be read and approval could be instant;
  * a job the person turned down is not one they want a 7 MB copy of. Only a
- * page this card's read created (`discardablePage`): one it reused may be the
+ * page this card's read kept (`discardablePages`): one it reused may be the
  * person's own clip of the address. Left alone, too, when anything else claims
  * it (`useDropUnclaimedPage`).
  */
@@ -104,12 +117,19 @@ export function useDropDiscardedPage(): (proposalId: string, page?: string) => v
   const dropUnclaimed = useDropUnclaimedPage()
   return useCallback(
     (proposalId: string, page?: string) => {
-      const proposal = projections.proposals(repo.getSnapshot()).find((p) => p.id === proposalId)
+      const graph = repo.getSnapshot()
+      const proposal = projections.proposals(graph).find((p) => p.id === proposalId)
       if (proposal?.status !== 'discarded') return
-      // Passed in when the read finished after the discard, and so could not be stored.
-      const fileId = discardablePage(scoutReading(proposal.reading), page)
-      if (fileId === null) return
-      dropUnclaimed(fileId, postingPreview(proposal.tool, proposal.input)?.href ?? undefined)
+      const url = postingPreview(proposal.tool, proposal.input)?.href ?? undefined
+      // `page` is passed in when the read finished after the discard, and so
+      // could not be stored on the card.
+      const pages = discardablePages(
+        proposalId,
+        scoutReading(proposal.reading),
+        projections.files(graph),
+        page,
+      )
+      for (const fileId of pages) dropUnclaimed(fileId, url, proposalId)
     },
     [repo, projections, dropUnclaimed],
   )
@@ -169,16 +189,23 @@ export function ScoutReader(): null {
     current = mine
 
     const read = (async (): Promise<ScoutReading | null> => {
-      const out = await readPosting({ url, settings, reader, signal: stop.signal })
+      const out = await readPosting({
+        url,
+        settings,
+        reader,
+        signal: stop.signal,
+        unattended: true,
+        keptFor: proposal.id,
+      })
       const readAt = new Date().toISOString()
       if (!out.ok && stop.signal.aborted) {
         // Stopped, not failed: nothing is stored, the card is tried again
         // when it may be, and a page this read kept goes again.
         tried.current.delete(proposal.id)
-        if (out.file && out.created === true) dropUnclaimed(out.file.id, url)
+        if (out.file && out.created === true) dropUnclaimed(out.file.id, url, proposal.id)
         return null
       }
-      if (!out.ok && out.reason === NOTHING_TO_READ_WITH) {
+      if (!out.ok && (out.reason === NOTHING_TO_READ_WITH || out.reason === NO_BACKGROUND_ROUTE)) {
         // Not this card's fault: it is read once something can open a page.
         tried.current.delete(proposal.id)
         setBlocked(true)
@@ -224,8 +251,9 @@ export function ScoutReader(): null {
         reading: JSON.stringify(reading),
       })
       // Discarded while its page was being read: a page this read kept goes
-      // again, the way it would have had the discard come after.
-      if (!stored.ok && reading.fileId && reading.created) dropDiscarded(proposal.id, reading.fileId)
+      // again, the way it would have had the discard come after — the one it
+      // created, and one an earlier read kept for this card before a reload.
+      if (!stored.ok) dropDiscarded(proposal.id, reading.created ? reading.fileId : undefined)
       return reading
     })().finally(() => {
       if (current === mine) current = null

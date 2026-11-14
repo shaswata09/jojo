@@ -7,7 +7,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { armRefresh, needsNewOffer } from './pairing-session'
+import { armRefresh } from './pairing-session'
 
 afterEach(() => {
   vi.useRealTimers()
@@ -43,17 +43,3 @@ describe('armRefresh', () => {
   })
 })
 
-describe('needsNewOffer', () => {
-  // After one pairing nothing put a code back up: the timer stands down once
-  // paired, so a failed or finished send left the screen with no code (R18).
-  it('asks for a new code once the send has ended, either way', () => {
-    expect(needsNewOffer('done')).toBe(true)
-    expect(needsNewOffer('failed')).toBe(true)
-  })
-
-  it('leaves the offer alone while it is waiting or the send is running', () => {
-    for (const stage of ['idle', 'connecting', 'packing', 'sending']) {
-      expect(needsNewOffer(stage)).toBe(false)
-    }
-  })
-})

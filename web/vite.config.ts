@@ -12,6 +12,9 @@ import { loadEnv } from 'vite'
 import type { Plugin } from 'vite'
 import { withScriptPolicy, withoutEvalProbe } from './scripts/csp.mjs'
 import { buildCodeGraph, collectSources } from './scripts/code-graph.mjs'
+import { readFileSync as readManifest } from 'node:fs'
+import { creditProblems, packageOfModule } from './src/components/guide/credits.ts'
+import type { BundledCopy } from './src/components/guide/credits.ts'
 
 // https://vite.dev/config/
 /**
@@ -158,6 +161,51 @@ function codeGraph(): Plugin {
   }
 }
 
+/**
+ * Fails the build when it ships a package the Guide's Built with page does not
+ * credit, or credits under a licence the package does not state.
+ *
+ * Read from what the bundle actually contains — every module of every chunk,
+ * traced back to the package folder it came from — rather than from
+ * package.json, which lists only what jojo imports. That is how the d3 modules
+ * (ISC), pako (MIT and Zlib) and tslib (0BSD) shipped uncredited: three levels
+ * down, under @xyflow/react and pdf-lib. A module tree-shaken to nothing is
+ * not counted; it ships no code. Build only — dev serves no bundle.
+ */
+function creditedBundle(): Plugin {
+  return {
+    name: 'jojo:credited-bundle',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      const copies = new Map<string, BundledCopy>()
+      for (const output of Object.values(bundle)) {
+        if (output.type !== 'chunk') continue
+        for (const [id, rendered] of Object.entries(output.modules)) {
+          if (rendered.renderedLength === 0) continue
+          const pkg = packageOfModule(id)
+          if (pkg === null || copies.has(pkg.dir)) continue
+          let manifest: { version?: unknown; license?: unknown } = {}
+          try {
+            manifest = JSON.parse(readManifest(`${pkg.dir}/package.json`, 'utf8')) as typeof manifest
+          } catch {
+            // No readable manifest: credited by name, with nothing stated.
+          }
+          const licence = manifest.license
+          copies.set(pkg.dir, {
+            name: pkg.name,
+            version: typeof manifest.version === 'string' ? manifest.version : '?',
+            licence: typeof licence === 'string' ? licence : null,
+          })
+        }
+      }
+      const problems = creditProblems([...copies.values()])
+      if (problems.length > 0) {
+        this.error(`jojo:credited-bundle — the bundle ships code the Built with page does not credit:\n  ${problems.join('\n  ')}`)
+      }
+    },
+  }
+}
+
 const envDir = fileURLToPath(new URL('..', import.meta.url))
 /** Same test as `ANALYTICS_CAPABILITY` needs at least: a measurement id to load gtag for. */
 const analyticsBuilt = (loadEnv('production', envDir, 'VITE_')['VITE_ANALYTICS_ID'] ?? '').trim() !== ''
@@ -170,6 +218,7 @@ export default defineConfig({
     freshExtensionZip(),
     contentSecurityPolicy(analyticsBuilt),
     codeGraph(),
+    creditedBundle(),
   ],
   /*
    * `.env` lives at the REPO ROOT, not in `web/`.

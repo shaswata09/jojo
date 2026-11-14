@@ -371,7 +371,8 @@ export function placeHistory(
    * Not kept when Stop was pressed while it was being written. `written` is
    * what the caller PERSISTS as the thread's context, and a summary of a turn
    * the person abandoned — possibly cut off mid-request — must not replace
-   * the exchanges it claims to cover. The run ends as `aborted` below.
+   * the exchanges it claims to cover. The run ends as `aborted` at the top of
+   * the first round (`modelRound` in `round.ts`).
    */
   if (summary !== null && !signal?.aborted) {
     // `asMessage` owns the prefix and the pointer; the thread stores the

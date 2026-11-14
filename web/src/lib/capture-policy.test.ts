@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import policySource from '../../extension/policy.js?raw'
 import routingSource from '../../extension/worker/routing.js?raw'
-import targetsSource from '../../extension/worker/targets.js?raw'
 // @ts-expect-error — a plain ES module the worker loads from disk, with no types.
 import { modelRefusal } from '../../extension/worker/routing.js'
 // @ts-expect-error — as above.
 import { OWN_PAGE_VERBS, PAGE_VERBS, onMessage } from '../../extension/worker/messages.js'
+// @ts-expect-error — as above.
+import { isPrivateNetwork } from '../../extension/worker/targets.js'
 import { PROVIDERS } from '@jojo/service/core/provider'
 import {
   CAPTURE_HREF_ATTR,
@@ -133,8 +134,9 @@ describe("the extension's model-host list matches the provider table", () => {
  * hosted providers, so somebody with a model server on their own network
  * installed an extension that then refused the address it was installed for.
  *
- * Read from source, because what is asserted is which checks the guard is
- * written with; the next block runs it.
+ * The guard's shape is read from source, because what is asserted there is
+ * which checks it is written with; the range table runs `isPrivateNetwork`, and
+ * the next block runs the guard.
  */
 describe('which model addresses the extension will relay', () => {
   const strip = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
@@ -147,16 +149,46 @@ describe('which model addresses the extension will relay', () => {
     expect(guard).toContain('isKnownModelHost(url)')
   })
 
+  /*
+   * RFC 1918, link-local, carrier-grade NAT, IPv6 unique- and link-local, and
+   * mDNS — over plain http only. A public address relayed would make this a way
+   * for any page to launder a request through the person's browser. Run, not
+   * read: this used to grep the source from the function to the END of the file,
+   * so `=== 172` held whether or not the 16–31 bound existed (round-3 review).
+   */
   it('accepts only ranges that are unroutable on the public internet', () => {
-    const source = strip(targetsSource)
-    const fn = source.slice(source.indexOf('function isPrivateNetwork'))
-    // RFC 1918, RFC 3927 link-local, and mDNS. A public http address relayed
-    // would make this a way for any page to launder a request through the
-    // user's browser.
-    for (const marker of ['=== 10', '=== 172', '=== 192', '=== 169', ".local'"]) {
-      expect(fn).toContain(marker)
-    }
-    expect(fn).toContain("protocol !== 'http:'")
+    const relayable = isPrivateNetwork as (url: string) => boolean
+    const cases: [string, boolean][] = [
+      ['http://10.0.0.5:8000/', true],
+      ['http://10.255.255.255/', true],
+      ['http://172.15.0.1/', false],
+      ['http://172.16.0.1/', true],
+      ['http://172.31.255.1/', true],
+      ['http://172.32.0.1/', false],
+      ['http://192.168.1.20:11434/', true],
+      ['http://192.169.1.20/', false],
+      ['http://169.254.1.1/', true],
+      ['http://100.63.0.1/', false],
+      ['http://100.64.0.1/', true],
+      ['http://100.127.255.1/', true],
+      ['http://100.128.0.1/', false],
+      ['http://nas.local/', true],
+      ['http://nas.local./', true],
+      ['http://local.example/', false],
+      ['http://[fd12:3456::1]/', true],
+      ['http://[fe80::1]/', true],
+      ['http://[::ffff:a00:1]/', true],
+      ['http://[::ffff:808:808]/', false],
+      ['http://0xa.1/', true],
+      // Plain http only, and never loopback: that is `isLoopback`'s question.
+      ['https://10.0.0.5/', false],
+      ['https://nas.local/', false],
+      ['http://127.0.0.1:11434/', false],
+      ['http://8.8.8.8/', false],
+      ['http://example.com/', false],
+      ['not a url', false],
+    ]
+    for (const [url, expected] of cases) expect(relayable(url), url).toBe(expected)
   })
 })
 

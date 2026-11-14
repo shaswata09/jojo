@@ -10,7 +10,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { CHANNELS, CONTROL_FLOWS, FLOW_LAYERS, flowMapPaths } from './flow-map'
+import { CHANNELS, CONTROL_FLOWS, FLOW_LAYERS, flowMapPaths, flowSteps, tabForKey } from './flow-map'
+import type { ControlFlow } from './flow-map'
 import { hasForwardCycle } from './flow-layout'
 
 const listed = import.meta.glob(
@@ -132,5 +133,111 @@ describe('each control flow graph', () => {
       expect(groups.has(c.from), c.from).toBe(true)
       expect(groups.has(c.to), c.to).toBe(true)
     }
+  })
+})
+
+/*
+ * Two charts that once told a maintainer something the code does not do. Each
+ * check is the shape of the code path, so redrawing the chart back into the
+ * old shape fails here.
+ */
+describe('the charts say what the code does', () => {
+  const flow = (id: string) => CONTROL_FLOWS.find((f) => f.id === id) as ControlFlow
+  const kindOf = (f: ControlFlow, id: string) => f.nodes.find((n) => n.id === id)?.kind
+  const exits = (f: ControlFlow, id: string) => f.edges.filter((e) => e.from === id)
+
+  it('From link: the extension and the leak check can each stop the read with a reason', () => {
+    // `capturePage` returns {ok:false} for a stale extension, a worker refusal,
+    // a timeout, and a page `readCapture` rejects; `openPage` stops on any of them.
+    const f = flow('from-link')
+    for (const id of ['capture', 'gate']) {
+      expect(kindOf(f, id), id).toBe('decision')
+      expect(exits(f, id).some((e) => kindOf(f, e.to) === 'stop'), id).toBe(true)
+    }
+    // And the reader's fetch, which `convertUrl` can fail the same way.
+    expect(exits(f, 'fetch').some((e) => kindOf(f, e.to) === 'stop')).toBe(true)
+  })
+
+  it('Creating: the card and its Undo come straight from the commit, before the disk', () => {
+    // `repository.commit` is synchronous and only queues the disk write;
+    // `create()` toasts at once, and `queue.ts` never rolls a failed write back.
+    const f = flow('create-web')
+    const fromCommit = exits(f, 'commit').map((e) => e.to)
+    expect(fromCommit).toContain('shown')
+    expect(kindOf(f, 'shown')).toBe('end')
+    expect(f.edges.some((e) => e.to === 'shown' && e.from === 'disk')).toBe(false)
+    expect(exits(f, 'disk').map((e) => e.to)).toContain('banner')
+  })
+
+  it('Assistant turn: the approval gate shows the floor no mode lifts', () => {
+    // `isGated` returns true for `alwaysAsks` (memory.reset, memory.clear)
+    // before it reads the mode, so even "act without asking" asks for these.
+    const gate = flow('chat-turn').nodes.find((n) => n.id === 'gate')
+    expect(gate?.path).toBe('service/kg/agent/perform-call.ts')
+    expect(gate?.label).toMatch(/always/i)
+  })
+
+  it('Creating: the duplicate prompt offers all four of its buttons', () => {
+    const labels = exits(flow('create-web'), 'confirm').map((e) => e.label ?? '')
+    for (const word of ['open', 'discard', 'edit instead', 'add anyway']) {
+      expect(labels.some((l) => l.toLowerCase().includes(word)), word).toBe(true)
+    }
+  })
+})
+
+describe('a chart as text', () => {
+  const tiny: Pick<ControlFlow, 'nodes' | 'edges'> = {
+    nodes: [
+      { id: 'a', kind: 'start', label: 'Begin', layer: 'web', path: 'web/a.ts' },
+      { id: 'b', kind: 'decision', label: 'Good?', layer: 'web', path: 'web/b.ts' },
+      { id: 'c', kind: 'stop', label: 'Refused', layer: 'web', path: 'web/c.ts' },
+      { id: 'd', kind: 'end', label: 'Done', layer: 'web', path: 'web/d.ts' },
+    ],
+    edges: [
+      { from: 'a', to: 'b' },
+      { from: 'b', to: 'c', label: 'no' },
+      { from: 'b', to: 'd', label: 'yes' },
+      { from: 'b', to: 'a', label: 'retry', back: true },
+    ],
+  }
+
+  it('numbers the boxes and names each branch and where it leads', () => {
+    expect(flowSteps(tiny)).toEqual([
+      { id: 'a', text: 'Start: Begin. In web/a.ts', exits: ['Next: step 2, Good?'] },
+      {
+        id: 'b',
+        text: 'Decision: Good? In web/b.ts',
+        exits: ['no: step 3, Refused', 'yes: step 4, Done', 'retry: step 1, Begin (back to an earlier step)'],
+      },
+      { id: 'c', text: 'Stops here: Refused. In web/c.ts', exits: ['The journey stops here.'] },
+      { id: 'd', text: 'End: Done. In web/d.ts', exits: ['The journey ends here.'] },
+    ])
+  })
+
+  it('gives every node of every real chart a line, and every decision a labelled exit per branch', () => {
+    for (const f of CONTROL_FLOWS) {
+      const steps = flowSteps(f)
+      expect(steps.map((s) => s.id)).toEqual(f.nodes.map((n) => n.id))
+      for (const s of steps) {
+        expect(s.exits.length, `${f.id}/${s.id}`).toBeGreaterThan(0)
+        expect(s.exits.join(' '), `${f.id}/${s.id}`).not.toContain('step ?')
+      }
+    }
+  })
+})
+
+describe('the journey tabs', () => {
+  it('step with the arrows, wrapping at both ends, and jump with Home and End', () => {
+    expect(tabForKey('ArrowRight', 0, 6)).toBe(1)
+    expect(tabForKey('ArrowRight', 5, 6)).toBe(0)
+    expect(tabForKey('ArrowLeft', 0, 6)).toBe(5)
+    expect(tabForKey('ArrowLeft', 3, 6)).toBe(2)
+    expect(tabForKey('Home', 4, 6)).toBe(0)
+    expect(tabForKey('End', 1, 6)).toBe(5)
+  })
+
+  it('leave every other key alone, so Tab still leaves the list', () => {
+    for (const key of ['Tab', 'Enter', ' ', 'ArrowUp', 'ArrowDown', 'a']) expect(tabForKey(key, 2, 6)).toBeNull()
+    expect(tabForKey('ArrowRight', 0, 0)).toBeNull()
   })
 })

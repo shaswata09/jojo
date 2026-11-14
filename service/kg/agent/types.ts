@@ -8,6 +8,7 @@
  */
 
 import type { ChatMessage, Turn } from '../core/model-server'
+import type { StepUndoOutcome } from '../tools/runtime'
 import type { Announcement } from '../tools/tool'
 import type { Effect } from './catalog'
 import type { CompactDeps, ThreadRef } from './compact'
@@ -76,7 +77,7 @@ export type AgentStep = {
    */
   repairs?: readonly RepairKind[]
   /** Present and non-null when this step can be taken back. */
-  undo?: (() => void) | null
+  undo?: (() => StepUndoOutcome) | null
 }
 
 export type AgentEvent =
@@ -170,7 +171,7 @@ export type AgentOptions = {
    */
   maxSteps?: number
   /**
-   * Consulted before every destructive call. Absent means "allow", which is the
+   * Consulted before every call `gate` stops. Absent means "allow", which is the
    * right default for a headless test and the wrong one for a UI — both apps
    * pass one.
    */
@@ -179,10 +180,14 @@ export type AgentOptions = {
    * Which steps have to be approved. Defaults to `destructive`.
    *
    * `destructive` is delete and admin, plus the tools that declare themselves
-   * so — 19 of the 96 catalog entries, the ones whose catalog description
+   * so — 19 of the 95 catalog entries, the ones whose catalog description
    * already warns the model about them. `writes` is every step that is not a
-   * read: 86 of them, which is what "ask me before it changes anything"
-   * actually means.
+   * read: 85 of them, which is what "ask me before it changes anything"
+   * actually means. `none` is what `auto` maps to (`GATE_FOR`).
+   *
+   * No setting lifts the floor: `memory.reset` and `memory.clear` cannot be
+   * undone, so they are asked about under all three, `none` included. See
+   * `CatalogEntry.alwaysAsks`.
    *
    * The policy is the CALLER'S, which is why it is here rather than widening
    * `destructive` in `catalog.ts`. That flag is load-bearing elsewhere — it

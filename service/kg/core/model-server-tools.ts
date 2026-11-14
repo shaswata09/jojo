@@ -2,7 +2,9 @@
  * Tool calls off the wire: the name cleaned, the arguments parsed once, and an
  * id for a call whose server did not give it one.
  *
- * Split out of `model-server.ts`, which re-exports every public name here.
+ * Split out of `model-server.ts`, which re-exports the names importers used
+ * before the split. `readToolCalls` and `readOllamaToolCalls` are exported for
+ * `model-server-turn.ts` and are not part of that surface.
  */
 
 import { safeParse } from './model-server-protocol'
@@ -156,7 +158,7 @@ export function readOllamaToolCalls(raw: unknown): ToolCall[] {
  * in stored transcripts that tests read back.
  */
 let callSeq = 0
-export const nextCallId = (): string => {
+const nextCallId = (): string => {
   callSeq += 1
   return `call_${String(callSeq)}`
 }

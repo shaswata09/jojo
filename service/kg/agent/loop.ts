@@ -94,6 +94,7 @@ export type {
 } from './types'
 export { CONTINUE_PROMPT, CUT_CALL_PROMPT, SYSTEM_PROMPT } from './prompt'
 export { EMPTY_TURN_RETRIES, MAX_CONTINUATIONS_PER_TURN } from './round'
+export { GATE_FOR } from './perform-call'
 
 /**
  * One user turn: choose the tools, fit the history, then ask the model and act

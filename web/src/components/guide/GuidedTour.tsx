@@ -117,6 +117,8 @@ export function TourLauncher({ className }: { className?: string }) {
 
   /** The scroll container, which is the dialog itself — see its className. */
   const contentRef = useRef<HTMLDivElement>(null)
+  /** The launcher, which the handed-off dialog returns focus to — see `onCloseAutoFocus`. */
+  const launcherRef = useRef<HTMLButtonElement>(null)
 
   const total = STEPS.length
   const current = STEPS[step] ?? STEPS[0]
@@ -210,6 +212,7 @@ export function TourLauncher({ className }: { className?: string }) {
   return (
     <>
       <Button
+        ref={launcherRef}
         variant="outline"
         className={cn('gap-1.5', className)}
         onClick={() => {
@@ -240,6 +243,12 @@ export function TourLauncher({ className }: { className?: string }) {
             // button that opened this one, which would put the reader outside
             // the thing they just asked for.
             event.preventDefault()
+            // But park it on the launcher first. The next dialog reads where to
+            // return focus from whatever holds it as it mounts, and at this
+            // moment nothing does: the button that asked for it went with this
+            // dialog. So closing the real dialog dropped focus to <body>, and the
+            // "Resume the tour" launcher that the reader comes back to had none.
+            launcherRef.current?.focus()
             run()
           }}
         >

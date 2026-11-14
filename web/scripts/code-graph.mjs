@@ -13,8 +13,9 @@
  * the rules on small fixtures and then check the real graph's invariants.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { lstatSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
+import ts from 'typescript'
 
 /**
  * The service layers in order, top to bottom. An import may only point at a
@@ -105,27 +106,63 @@ export function labelOf(id) {
     .replace(/^(web|mobile)\//, '$1 · ')
 }
 
+/** How TypeScript should read a file, from its extension. */
+function scriptKindOf(file) {
+  if (file.endsWith('.tsx')) return ts.ScriptKind.TSX
+  if (file.endsWith('.ts')) return ts.ScriptKind.TS
+  if (file.endsWith('.jsx')) return ts.ScriptKind.JSX
+  return ts.ScriptKind.JS
+}
+
+/** True for `import { type A, type B } from …` and `export { type C } from …`: names, all of them types. */
+const allTypes = (elements) => elements.length > 0 && elements.every((e) => e.isTypeOnly)
+
 /**
  * The runtime imports in a source file: static `import … from`, `export … from`,
  * side-effect imports and dynamic `import()`. Type-only imports are left out —
  * this is a graph of what runs — and so is anything carrying a query
  * (`?raw`, `?url`), which loads a file's text or address, not its code.
+ *
+ * Read off TypeScript's syntax tree, not with a regular expression. The regex
+ * this replaced could not tell code from text: in a file without semicolons,
+ * `export type A = B` ran on to the next `export … from` and swallowed it (one
+ * real edge was missing that way), and the words `import x from './y'` inside a
+ * template literal or JSX text drew an arrow to a file nobody imports. The
+ * parser knows where a string or a type alias ends, so neither can happen.
+ *
+ * `file` picks the dialect — JSX only parses as TSX — and defaults to TSX,
+ * which also reads plain TypeScript.
  */
-export function importsOf(source) {
-  const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
-  const found = []
-  const statement =
-    /(?:^|[;\n])\s*(import|export)\s+(type\s+)?([^'";]*?)\s*from\s*['"]([^'"]+)['"]/g
-  for (const m of code.matchAll(statement)) {
-    if (m[2]) continue
-    // `import { type A, type B } from` is type-only too.
-    const names = m[3].replace(/^\{|\}$/g, '').split(',').map((n) => n.trim()).filter(Boolean)
-    if (m[3].trim().startsWith('{') && names.length > 0 && names.every((n) => n.startsWith('type '))) continue
-    found.push(m[4])
+export function importsOf(source, file = 'source.tsx') {
+  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, false, scriptKindOf(file))
+  const found = new Set()
+  const visit = (node) => {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      const clause = node.importClause
+      const typeOnly =
+        clause !== undefined &&
+        (clause.isTypeOnly ||
+          (clause.name === undefined &&
+            clause.namedBindings !== undefined &&
+            ts.isNamedImports(clause.namedBindings) &&
+            allTypes(clause.namedBindings.elements)))
+      if (!typeOnly) found.add(node.moduleSpecifier.text)
+    } else if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      const clause = node.exportClause
+      const typeOnly = node.isTypeOnly || (clause !== undefined && ts.isNamedExports(clause) && allTypes(clause.elements))
+      if (!typeOnly) found.add(node.moduleSpecifier.text)
+    } else if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments[0] !== undefined &&
+      ts.isStringLiteralLike(node.arguments[0])
+    ) {
+      found.add(node.arguments[0].text)
+    }
+    ts.forEachChild(node, visit)
   }
-  for (const m of code.matchAll(/(?:^|[;\n])\s*import\s*['"]([^'"]+)['"]/g)) found.push(m[1])
-  for (const m of code.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)) found.push(m[1])
-  return [...new Set(found)].filter((spec) => !spec.includes('?'))
+  visit(tree)
+  return [...found].filter((spec) => !spec.includes('?'))
 }
 
 const SERVICE_EXPORTS = {
@@ -180,7 +217,7 @@ export function buildCodeGraph(sources) {
 
   const files = paths.map((p) => {
     const targets = new Set()
-    for (const spec of importsOf(sources[p])) {
+    for (const spec of importsOf(sources[p], p)) {
       const hit = resolveImport(spec, p, known)
       if (hit !== null && hit !== p) targets.add(index.get(hit))
     }
@@ -220,16 +257,26 @@ export function buildCodeGraph(sources) {
   }
 }
 
-/** Reads every file the graph counts, from the repository root on disk. */
+/**
+ * Reads every file the graph counts, from the repository root on disk.
+ *
+ * Symbolic links are skipped, not followed. The graph names files by their
+ * place in this repository and ships those names in the bundle, so a link to a
+ * folder elsewhere (`web/src/notes -> ~/notes`) would publish the names of
+ * files that are not part of jojo, and a link back up the tree
+ * (`web/src/loop -> ..`) made the walk recurse until it threw ELOOP and took
+ * the build down with it. Nothing jojo builds lives behind a link.
+ */
 export function collectSources(root) {
   const sources = {}
   const walk = (rel) => {
     for (const name of readdirSync(path.join(root, rel))) {
       if (name === 'node_modules' || name.startsWith('.')) continue
       const child = rel ? `${rel}/${name}` : name
-      const stat = statSync(path.join(root, child))
+      const stat = lstatSync(path.join(root, child))
+      if (stat.isSymbolicLink()) continue
       if (stat.isDirectory()) walk(child)
-      else if (includePath(child)) sources[child] = readFileSync(path.join(root, child), 'utf8')
+      else if (stat.isFile() && includePath(child)) sources[child] = readFileSync(path.join(root, child), 'utf8')
     }
   }
   for (const dir of ['service/kg', 'service/data', 'web/src', 'web/extension', 'mobile/src']) walk(dir)

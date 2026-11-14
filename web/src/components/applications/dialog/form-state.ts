@@ -25,6 +25,13 @@ export type ApplicationInitial = Partial<Application> & {
    * against that prefill sent nothing, so the change was silently dropped.
    */
   storedDeadline?: string
+  /**
+   * Set on the draft "Changes discarded · Undo" (or "Draft discarded · Undo")
+   * hands back. That draft becomes `initial`, so a form measured against
+   * `initial` read as untouched, and the next Escape closed it with no toast
+   * and no Undo — the edits the person had just asked for back were gone.
+   */
+  restored?: boolean
 }
 
 export type FormState = {
@@ -68,6 +75,27 @@ export function formFrom(initial?: ApplicationInitial): FormState {
     deadline: initial?.deadline ?? '',
     note: initial?.note ?? '',
   }
+}
+
+/**
+ * Whether closing the dialog would take something with it.
+ *
+ * Measured against what it opened with — except for a draft handed back by
+ * Undo, which is unsaved by definition however little has changed since: its
+ * `initial` IS the typed draft, so the comparison would call it clean.
+ */
+export function hasUnsaved(
+  form: FormState,
+  keywords: readonly string[],
+  initial: ApplicationInitial | undefined,
+  openedKeywords: readonly string[],
+): boolean {
+  if (initial?.restored === true) return true
+  const sorted = (ids: readonly string[]) => [...ids].sort().join(' ')
+  return (
+    JSON.stringify(form) !== JSON.stringify(formFrom(initial)) ||
+    sorted(keywords) !== sorted(openedKeywords)
+  )
 }
 
 /**

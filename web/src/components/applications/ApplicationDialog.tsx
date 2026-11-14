@@ -9,6 +9,7 @@ import { ApplicationFields } from '@/components/applications/dialog/ApplicationF
 import {
   FIELD_ORDER,
   formFrom,
+  hasUnsaved,
   keywordsOf,
   validate,
 } from '@/components/applications/dialog/form-state'
@@ -150,9 +151,7 @@ export function ApplicationDialog({
     setForm((f) => ({ ...f, [key]: value }))
 
   /** Anything typed that closing would take with it. */
-  const dirty =
-    JSON.stringify(form) !== JSON.stringify(formFrom(initial)) ||
-    [...keywords].sort().join(' ') !== [...keywordsOf(initial, labelIdsOf)].sort().join(' ')
+  const dirty = hasUnsaved(form, keywords, initial, keywordsOf(initial, labelIdsOf))
 
   /** The typed values, in the shape that reopens this dialog holding them. */
   const asInitial = (): ApplicationInitial => ({
@@ -168,6 +167,8 @@ export function ApplicationDialog({
     note: form.note,
     deadline: form.deadline,
     keywords,
+    // So the form it reopens counts as unsaved — see `hasUnsaved`.
+    restored: true,
   })
 
   /**

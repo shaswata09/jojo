@@ -120,7 +120,7 @@ export const SHAPE: DirRow[] = [
     // suggestion already answered stops being offered as one — and again when
     // `vault.ts` grew the two verbs that name one person on one job.
     lines: 13166,
-    what: '95 named write operations',
+    what: '95 named operations, 85 of them writes',
   },
   {
     dir: 'service/kg/agent',
@@ -154,7 +154,7 @@ export const SHAPE: DirRow[] = [
     // Re-measured 2026-10-22, when `memory.list` became a query tool:
     // `record-query.ts` and its test, and the window-sized result cap.
     lines: 46998,
-    what: 'the loop, the catalog, 9 reads, the pipelines, the weak-model guards',
+    what: 'the loop, the catalog, 10 reads, the pipelines, the weak-model guards',
   },
   {
     dir: 'service/kg/storage',
@@ -178,12 +178,12 @@ export const SHAPE: DirRow[] = [
     // `jobs.ts`, its test, `jobs-context.ts` and `jobs-provider.tsx`: the
     // registry above the router that makes a job outlive the screen that
     // asked for it — `agent-runs.ts`'s argument, generalised.
-    files: 57,
-    tests: 15,
+    files: 58,
+    tests: 16,
     // Re-measured 2026-09-05: `historyFor` replays the covered user turns
     // ahead of the tail so a compaction never loses what the person said,
     // and `agent-runs` forwards the stored summary and the thread id.
-    lines: 12622,
+    lines: 13282,
     what: 'providers and hooks',
   },
   { dir: 'service/kg/log.ts', files: 1, tests: 0, lines: 48, what: 'the console is the telemetry' },
@@ -191,8 +191,8 @@ export const SHAPE: DirRow[] = [
     dir: 'web/src/kg/storage',
     files: 12,
     tests: 4,
-    lines: 2938,
-    what: 'the IndexedDB adapter, and the folder one',
+    lines: 3085,
+    what: 'the IndexedDB adapter and the documents store',
   },
   {
     dir: 'web/src/components',
@@ -224,9 +224,9 @@ export const SHAPE: DirRow[] = [
     // 323 with the Guide's Control flow graph page: `guide/GuideControlFlow.tsx`, the map it draws
     // (`guide/flow-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    files: 390,
-    tests: 52,
-    lines: 64390,
+    files: 394,
+    tests: 54,
+    lines: 65815,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -274,7 +274,7 @@ export const SHAPE: DirRow[] = [
     // approving does not open the page a second time.
     files: 183,
     tests: 74,
-    lines: 28897,
+    lines: 30024,
     what: 'web-only adapters and URL state',
   },
   {
@@ -304,7 +304,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 131
+export const WEB_TEST_FILES = 133
 
 type TestGroup = { title: string; files: string; body: string }
 

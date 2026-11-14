@@ -11,6 +11,7 @@ import {
   type NodeProps,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { FLOW_KIND_WORD, flowNodeText } from '@/components/guide/flow-map'
 import type { ControlFlow, FlowNode as FlowNodeData } from '@/components/guide/flow-map'
 import { FLOW_NODE, flowBoxHeight, layoutControlFlow } from '@/components/guide/flow-layout'
 import { useTheme } from '@/lib/theme-context'
@@ -33,28 +34,43 @@ const KIND_STYLE: Record<FlowNodeData['kind'], string> = {
   end: 'rounded-full border-success-border bg-success-soft',
 }
 
-const KIND_WORD: Record<FlowNodeData['kind'], string> = {
-  start: 'Start',
-  step: '',
-  decision: 'Decision',
-  stop: 'Stops here',
-  end: 'End',
+/*
+ * What xyflow tells a screen reader about every box, replaced. Its own words
+ * promise "press delete to remove it" and "use the arrow keys to move the
+ * node", and neither does anything on a chart that cannot be edited. Both keys
+ * are set because xyflow picks between them by `disableKeyboardA11y`, the
+ * opposite way round to what their names say.
+ */
+const DESCRIBE_BOX = 'A box in this flowchart. The list of steps after the chart says where each way out of it leads.'
+const ARIA_LABELS = {
+  'node.a11yDescription.default': DESCRIBE_BOX,
+  'node.a11yDescription.keyboardDisabled': DESCRIBE_BOX,
+  'edge.a11yDescription.default': 'An arrow to the next box.',
 }
 
 function FlowBox({ data }: NodeProps<Node<FlowNodeData>>) {
+  const short = data.path.split('/').slice(-2).join('/')
   return (
     <div
-      className={cn('border px-3 py-1.5 shadow-sm', KIND_STYLE[data.kind])}
+      className={cn('relative border px-3 py-1.5 shadow-sm', KIND_STYLE[data.kind])}
       style={{ width: FLOW_NODE.width, minHeight: FLOW_NODE.height }}
-      title={data.path}
     >
       <Handle type="target" position={Position.Top} className={HANDLE} />
       <Handle id="loop-in" type="target" position={Position.Right} className={HANDLE} />
-      {KIND_WORD[data.kind] ? (
-        <div className="text-[9px] font-medium tracking-wide text-text-3 uppercase">{KIND_WORD[data.kind]}</div>
-      ) : null}
+      {data.kind === 'step' ? null : (
+        <div className="text-[9px] font-medium tracking-wide text-text-3 uppercase">{FLOW_KIND_WORD[data.kind]}</div>
+      )}
       <div className="text-[12px] leading-snug text-text-1">{data.label}</div>
-      <div className="mt-0.5 truncate font-mono text-[9.5px] text-text-3">{data.path.split('/').slice(-2).join('/')}</div>
+      <div className="mt-0.5 truncate font-mono text-[9.5px] text-text-3">{short}</div>
+      {/* The whole path, under the box, while it is hovered OR focused — it
+          was a `title`, which only a mouse can reach. `group` is on xyflow's
+          wrapper (the element that takes focus), set per node below. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-full left-0 z-10 mt-1 hidden max-w-[22rem] rounded border border-hairline-strong bg-panel px-1.5 py-0.5 font-mono text-[10px] break-all text-text-1 shadow-sm group-hover:block group-focus-visible:block"
+      >
+        {data.path}
+      </div>
       <Handle type="source" position={Position.Bottom} className={HANDLE} />
       <Handle id="loop-out" type="source" position={Position.Right} className={HANDLE} />
     </div>
@@ -68,18 +84,29 @@ export function ControlFlowGraph({ flow }: { flow: ControlFlow }) {
   const placed = useMemo(() => layoutControlFlow(flow), [flow])
   const byId = new Map(flow.nodes.map((n) => [n.id, n]))
 
-  const nodes: Node[] = placed.map((p) => ({
-    id: p.id,
-    type: 'flow',
-    position: { x: p.x, y: p.y },
-    data: byId.get(p.id) as FlowNodeData,
-  }))
+  const nodes: Node[] = placed.map((p) => {
+    const data = byId.get(p.id) as FlowNodeData
+    return {
+      id: p.id,
+      type: 'flow',
+      position: { x: p.x, y: p.y },
+      data,
+      ariaLabel: `${flowNodeText(data)} File ${data.path}`,
+      // `group` lets the box show its full path while focused; raised so that
+      // path is drawn over the box below rather than under it (xyflow sets
+      // each node's z-index inline, hence the !important).
+      className: 'group hover:z-50! focus-visible:z-50!',
+    }
+  })
 
   const edges: Edge[] = flow.edges.map((e, i) => {
     const loop = e.back === true
     const from = byId.get(e.from)
+    const to = byId.get(e.to)
     return {
       id: `${String(i)}:${e.from}->${e.to}`,
+      // xyflow's default names the ids ("Edge from save to valid").
+      ariaLabel: `From “${from?.label ?? e.from}”${e.label ? `, ${e.label}` : ''}, to “${to?.label ?? e.to}”`,
       source: e.from,
       target: e.to,
       ...(loop ? { sourceHandle: 'loop-out', targetHandle: 'loop-in', type: 'smoothstep' } : {}),
@@ -99,6 +126,9 @@ export function ControlFlowGraph({ flow }: { flow: ControlFlow }) {
       style={{ height: flowBoxHeight(placed) }}
     >
       <ReactFlow
+        // Its own id, so its description element is not the code graph's: xyflow
+        // names both after this, and two charts on one page both defaulted to "1".
+        id={`control-flow-${flow.id}`}
         nodes={nodes}
         edges={edges}
         nodeTypes={NODE_TYPES}
@@ -108,6 +138,11 @@ export function ControlFlowGraph({ flow }: { flow: ControlFlow }) {
         nodesDraggable={false}
         nodesConnectable={false}
         edgesFocusable={false}
+        // Nothing here is picked or deleted: without these, Enter "selected" a
+        // box to no effect and Backspace was wired to remove one.
+        elementsSelectable={false}
+        deleteKeyCode={null}
+        ariaLabelConfig={ARIA_LABELS}
         minZoom={0.2}
         maxZoom={1.8}
         // The wheel scrolls the page: the chart is drawn tall enough to read,

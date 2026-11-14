@@ -22,7 +22,13 @@ import {
 import { MAX_CHECKLIST_ITEMS, MAX_CHECKLIST_TEXT } from './model'
 import type { ChecklistItem } from './model'
 
-const NOW = '2026-09-14T09:00:00.000Z'
+/*
+ * Local noon on 14 September, wherever the suite runs. The day stamped on a
+ * ticked step is the person's own day (`dayOf` reads local time), so a fixed
+ * UTC instant is the 13th in Samoa and the 15th in Kiritimati — and a test
+ * pinned to one would go red on a machine in either.
+ */
+const NOW = new Date(2026, 8, 14, 12).toISOString()
 const item = (id: string, text: string, over: Partial<ChecklistItem> = {}): ChecklistItem => ({
   id,
   text,

@@ -16,12 +16,13 @@
  * of what that file is now.
  */
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import type { Label, LabelTone, NodeId } from '../core/model'
 import { isNodeId } from '../core/ref'
+import type { GraphSnapshot } from '../core/snapshot'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
-import { nothingToRestore } from './patch'
+import { removalOf } from './use-vault'
 
 /**
  * A record key from a card, as a NodeId.
@@ -69,12 +70,67 @@ export function recordKey(key: string): NodeId | undefined {
  */
 const EMPTY: readonly Label[] = []
 
+/**
+ * Who carries which keyword, read off the `TAGS` edges once per commit.
+ *
+ * `key` spells every `TAGS` edge, so two indexes with the same key describe the
+ * same tagging. That is what lets `useKeywords` keep its helpers' identity
+ * across a commit that touched no tag. They used to depend on `graph`, which is
+ * a new object on EVERY commit, so `LabelsProvider`'s context value changed on
+ * every commit and every chip, filter and count under it re-rendered for a
+ * sticky note being moved.
+ */
+export type TagIndex = {
+  readonly key: string
+  /** Record → the keywords on it. */
+  readonly onRecord: ReadonlyMap<NodeId, ReadonlySet<NodeId>>
+  /** Keyword → how many records it tags. */
+  readonly count: ReadonlyMap<NodeId, number>
+}
+
+/**
+ * Walked from the keyword end: a `TAGS` edge always starts at a keyword (see
+ * `EDGE_SCHEMA`), so the keywords' out-edges are every tag there is.
+ */
+export function tagIndexOf(graph: Pick<GraphSnapshot, 'ofType' | 'out'>): TagIndex {
+  const onRecord = new Map<NodeId, Set<NodeId>>()
+  const count = new Map<NodeId, number>()
+  const parts: string[] = []
+  for (const keyword of graph.ofType('keyword')) {
+    const edges = graph.out(keyword.id, 'TAGS')
+    count.set(keyword.id, edges.length)
+    parts.push(keyword.id)
+    for (const edge of edges) {
+      parts.push(edge.to)
+      const mine = onRecord.get(edge.to)
+      if (mine) mine.add(keyword.id)
+      else onRecord.set(edge.to, new Set([keyword.id]))
+    }
+    // A separator no id contains, so `k1 r1 | k2` and `k1 | r1 k2` differ.
+    parts.push('|')
+  }
+  return { key: parts.join(' '), onRecord, count }
+}
+
+/** The held index while the tagging is unchanged, so its identity says "same tags". */
+export function sameTagging(held: TagIndex | null, fresh: TagIndex): TagIndex {
+  return held !== null && held.key === fresh.key ? held : fresh
+}
+
 export function useKeywords() {
   const graph = useGraph()
   const { repo, projections } = useKg()
   const run = useRun()
 
   const labels = projections.keywords(graph)
+
+  // Rebuilt per commit, kept per tagging: see `TagIndex`. The ref only ever
+  // holds an index equal in content to the one just built, so a render that
+  // React throws away leaves nothing wrong behind.
+  const built = useMemo(() => tagIndexOf(graph), [graph])
+  const held = useRef<TagIndex | null>(null)
+  const tags = sameTagging(held.current, built)
+  held.current = tags
 
   /**
    * The keywords on one record, in the order the keywords themselves are in.
@@ -87,10 +143,10 @@ export function useKeywords() {
     (key: string): Label[] => {
       const record = recordKey(key)
       if (record === undefined) return [...EMPTY]
-      const mine = new Set(graph.in(record, 'TAGS').map((e) => e.from))
-      return mine.size === 0 ? [...EMPTY] : labels.filter((l) => mine.has(l.id))
+      const mine = tags.onRecord.get(record)
+      return mine === undefined ? [...EMPTY] : labels.filter((l) => mine.has(l.id))
     },
-    [graph, labels],
+    [tags, labels],
   )
 
   const labelIdsOf = useCallback((key: string) => labelsOf(key).map((l) => l.id), [labelsOf])
@@ -139,8 +195,7 @@ export function useKeywords() {
    */
   const removeLabel = useCallback(
     (id: string) => {
-      const result = run('keyword.delete', { id })
-      return { restore: (result.ok && result.undo) || nothingToRestore }
+      return removalOf(run('keyword.delete', { id }))
     },
     [run],
   )
@@ -188,7 +243,10 @@ export function useKeywords() {
     [run],
   )
 
-  const countFor = useCallback((labelId: string) => graph.out(labelId, 'TAGS').length, [graph])
+  const countFor = useCallback(
+    (labelId: string) => tags.count.get(labelId as NodeId) ?? 0,
+    [tags],
+  )
 
   /**
    * How many of these records carry each keyword — every keyword, one pass.
@@ -212,22 +270,23 @@ export function useKeywords() {
       for (const id of ids) {
         const record = recordKey(id)
         if (record === undefined) continue
-        for (const edge of graph.in(record, 'TAGS')) {
-          out.set(edge.from, (out.get(edge.from) ?? 0) + 1)
+        for (const keyword of tags.onRecord.get(record) ?? []) {
+          out.set(keyword, (out.get(keyword) ?? 0) + 1)
         }
       }
       return out
     },
-    [graph],
+    [tags],
   )
 
   const carries = useCallback(
     (key: string, selected: ReadonlySet<string>) => {
       const record = recordKey(key)
       if (record === undefined) return false
-      return graph.in(record, 'TAGS').some((e) => selected.has(e.from))
+      for (const keyword of tags.onRecord.get(record) ?? []) if (selected.has(keyword)) return true
+      return false
     },
-    [graph],
+    [tags],
   )
 
   /**

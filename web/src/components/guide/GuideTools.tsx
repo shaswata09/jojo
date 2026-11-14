@@ -50,8 +50,12 @@ export function GuideTools() {
    * so it fell outside the denominator by luck rather than by the sentence
    * being right. A count in prose that survives on a coincidence is a count
    * waiting to be wrong.
+   *
+   * `alwaysAsks` is destructive and not undoable, and it is the flag the
+   * approval gate reads for its floor, so the sentence below and the gate are
+   * counting the same tools.
    */
-  const irreversible = CATALOG.filter((e) => e.destructive && !e.undoable).length
+  const irreversible = CATALOG.filter((e) => e.alwaysAsks).length
 
   return (
     <>
@@ -83,7 +87,8 @@ export function GuideTools() {
           {irreversible === 1 ? 'One' : irreversible === 2 ? 'Two' : String(irreversible)} of those{' '}
           {String(destructive)} cannot be undone at all — the ones that replace or empty the whole
           store. Those are never offered to the assistant unless your own words ask for them, and
-          they stop for a confirmation even then.
+          they stop for a confirmation even then, whichever approval mode the conversation is in.
+          Auto acts without asking on everything that can be undone; it still asks before these.
         </p>
         <p className="mt-3 text-sm text-text-2">
           &ldquo;Your own words ask for them&rdquo; is a specific test, not a judgement call: the

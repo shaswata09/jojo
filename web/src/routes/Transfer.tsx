@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Smartphone } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -12,7 +12,8 @@ import { totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
 import { ConnectPanel } from '@/components/transfer-ui/ConnectPanel'
 import { useBackup } from '@/lib/backup'
 import { useHandoffSend } from '@/lib/handoff-send'
-import { needsNewOffer, usePairingSession } from '@/lib/pairing-session'
+import { usePairingSession } from '@/lib/pairing-session'
+import { replacesOffer } from '@/components/transfer-ui/send-cycle'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useApplications } from '@jojo/service/react/use-applications'
@@ -80,6 +81,21 @@ export function Transfer() {
   const pairing = usePairingSession(role === 'send')
   const backup = useBackup()
   /*
+   * Whether the current run has handed the phone's answer to the pairing — the
+   * line between a failure the same code can retry and one that spends it (see
+   * `send-cycle.ts`). State rather than a ref so that the effect below sees it
+   * flip even if React folds a run's 'connecting' into its 'failed' render.
+   */
+  const [answered, setAnswered] = useState(false)
+  const { complete: pair } = pairing
+  const complete = useCallback(
+    (response: Uint8Array) => {
+      setAnswered(true)
+      return pair(response)
+    },
+    [pair],
+  )
+  /*
    * The transfer itself.
    *
    * `build` is passed rather than called: the backup is gathered only after the
@@ -91,7 +107,7 @@ export function Transfer() {
     // `pairing.complete` returns the keys rather than a flag, deliberately —
     // reading `pairing.keys` here would read this render's value, which is null
     // until React re-renders, and the transfer would stop saying it had failed.
-    complete: pairing.complete,
+    complete,
     build: () => backup.build({ documents: sendFiles }),
   })
   /**
@@ -233,16 +249,20 @@ export function Transfer() {
   useEffect(() => cancel, [role, cancel])
 
   /*
-   * A new code once the send it paired for is over, done or failed. The offer
-   * is single-use and its re-mint timer stands down once paired, so without
-   * this a failed send could not be retried and a second device could not be
-   * sent to without leaving the page (R18). On the stage CHANGE only, so one
-   * finished send mints one new code.
+   * A new code once the run that used this one is over — done, failed after
+   * the phone answered, or abandoned. The offer is single-use and its re-mint
+   * timer stands down once paired, so without this a failed send could not be
+   * retried and a second device could not be sent to without leaving the page
+   * (R18). A run that stopped BEFORE the answer keeps the code: the phone still
+   * holds it, and retyping the address is the whole fix. Clearing `answered`
+   * with the refresh is what makes one finished run mint one new code.
    */
   const { refresh } = pairing
   useEffect(() => {
-    if (needsNewOffer(send.stage)) refresh()
-  }, [send.stage, refresh])
+    if (!replacesOffer(send.stage, answered)) return
+    setAnswered(false)
+    refresh()
+  }, [send.stage, answered, refresh])
 
   const empty = totalOf(groups) === 0
 

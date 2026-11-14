@@ -24,6 +24,15 @@ export const ARRIVAL_HIGHLIGHT_MS = 2600
  *
  * Clearing the parameter is the actual un-highlight — the render reads `focus`
  * straight from the URL — so this owns the timer and nothing else.
+ *
+ * The timer checks the address bar before it clears. Leaving a page does not
+ * always unmount it at once: the router renders the next route in a
+ * transition, and a lazy route keeps the old one on screen until its chunk
+ * arrives. A timer firing in that gap cleared `focus` through the OLD page's
+ * `setSearchParams`, which resolves against the old route — so picking a
+ * Calendar result in ⌘K within 2.6 s of arriving at a highlighted reminder
+ * navigated straight back to the Vault. The address bar has already moved by
+ * then; that is the check.
  */
 export function useArrivalHighlight(focus: string | undefined, clear: () => void) {
   // Held in a ref so a call site can pass an inline arrow without restarting
@@ -35,7 +44,11 @@ export function useArrivalHighlight(focus: string | undefined, clear: () => void
 
   useEffect(() => {
     if (!focus) return
-    const timer = window.setTimeout(() => latest.current(), ARRIVAL_HIGHLIGHT_MS)
+    const armedOn = window.location.pathname
+    const timer = window.setTimeout(() => {
+      // A page being left must not clear its own focus (see above).
+      if (window.location.pathname === armedOn) latest.current()
+    }, ARRIVAL_HIGHLIGHT_MS)
     return () => window.clearTimeout(timer)
   }, [focus])
 }

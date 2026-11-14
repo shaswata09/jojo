@@ -7,7 +7,15 @@ import { createRepository } from '@jojo/service/repo/repository'
 import { createToolRuntime } from '@jojo/service/tools/runtime'
 import type { ToolName } from '@jojo/service/tools/index'
 import { DISPLACED, HELLO, createBridge } from '../../public/jojo-bridge.mjs'
-import { BRIDGE_HELLO, bridgeCommand, directTransport, isBridgeHello, runElected, runLink } from './mcp-link'
+import {
+  BRIDGE_HELLO,
+  bridgeCommand,
+  directTransport,
+  failureStatus,
+  isBridgeHello,
+  runElected,
+  runLink,
+} from './mcp-link'
 import type { LinkStatus } from './mcp-link'
 
 /**
@@ -34,10 +42,27 @@ type NodeServer = {
   address: () => { port: number } | string | null
   close: (done?: () => void) => void
   closeAllConnections: () => void
+  closeIdleConnections: () => void
+  getConnections: (done: (error: Error | null, count: number) => void) => void
+}
+type Incoming = {
+  setEncoding: (encoding: 'utf8') => void
+  on: (event: 'data' | 'end', listener: (chunk: string) => void) => void
 }
 // @ts-expect-error TS2307 — node:http has no types under tsconfig.app.json; the socket is the whole point of this test.
 const http = (await import('node:http')) as {
   createServer: (handler: (req: unknown, res: unknown) => void) => NodeServer
+  request: (
+    options: {
+      host: string
+      port: number
+      path: string
+      method: string
+      agent: false
+      headers: Record<string, string>
+    },
+    onResponse: (res: Incoming) => void,
+  ) => { on: (event: 'error', listener: (error: Error) => void) => void; end: (body: string) => void }
 }
 
 const TOKEN = 't'.repeat(43)
@@ -132,7 +157,7 @@ async function world({ token = TOKEN, attachWaitMs = 2_000 } = {}) {
       })
     })
   })
-  return { port, host, statuses, served, controller, linked, bridge }
+  return { port, host, statuses, served, controller, linked, bridge, server }
 }
 
 /** What Claude Code does: one JSON-RPC message per POST, a bearer token, no Origin. */
@@ -151,10 +176,50 @@ async function client(port: number, message: object) {
   }
 }
 
+/**
+ * `client`, on a connection of its own.
+ *
+ * `fetch` keeps sockets alive in a pool this test process shares with the tab's
+ * own transport, and reuses one the server has just closed — before the close
+ * has reached this side — as "fetch failed: ECONNRESET". Where a test closes
+ * the server's sockets on purpose, the question goes on a new one.
+ */
+function clientOnNewSocket(port: number, message: object) {
+  return new Promise<{ error?: { message: string } }>((resolve, reject) => {
+    const body = JSON.stringify(message)
+    const request = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path: '/mcp',
+        method: 'POST',
+        agent: false,
+        headers: {
+          authorization: `Bearer ${TOKEN}`,
+          'content-type': 'application/json',
+          'content-length': String(body.length),
+        },
+      },
+      (res) => {
+        let text = ''
+        res.setEncoding('utf8')
+        res.on('data', (chunk) => {
+          text += chunk
+        })
+        res.on('end', () => {
+          resolve(JSON.parse(text) as { error?: { message: string } })
+        })
+      },
+    )
+    request.on('error', reject)
+    request.end(body)
+  })
+}
+
 /** Waits for something the loop will get to, rather than sleeping a guessed amount. */
-async function until(check: () => boolean, ms = 10_000) {
+async function until(check: () => boolean | Promise<boolean>, ms = 10_000) {
   const deadline = Date.now() + ms
-  while (!check()) {
+  while (!(await check())) {
     if (Date.now() > deadline) throw new Error('timed out waiting')
     await new Promise((resolve) => setTimeout(resolve, 20))
   }
@@ -297,33 +362,87 @@ describe('what the tab says about the link', () => {
     await linked
   })
 
+  /*
+   * The commonest state of all — the switch is on and the bridge is not started
+   * yet — read "Failed to fetch": the browser's own words for a refused
+   * connection, carried up as the reason and preferred over the panel's
+   * "Start jojo-bridge with the first command".
+   */
+  it('keeps the browser\'s transport error off the status line', async () => {
+    const statuses: LinkStatus[] = []
+    const controller = new AbortController()
+    const linked = runLink({
+      address: 'http://127.0.0.1:9',
+      token: TOKEN,
+      host: tabHost(),
+      signal: controller.signal,
+      onStatus: (status) => statuses.push(status),
+      wait: () => new Promise((resolve) => setTimeout(resolve, 5)),
+      transport: async () => ({ failed: { kind: 'transport' as const, reason: 'Failed to fetch' } }),
+    })
+    await until(() => statuses.length >= 3)
+    controller.abort()
+    await linked
+    expect(statuses.every((s) => s.state === 'searching' && s.reason === undefined)).toBe(true)
+  })
+
+  it('words each failure for the person reading it', () => {
+    const transport = { kind: 'transport' as const, reason: 'Failed to fetch' }
+    const absent = { kind: 'absent' as const, reason: 'The jojo browser extension did not answer.' }
+    const stale = { kind: 'stale' as const, reason: 'Reload the extension.' }
+    // No reason, so the panel's own sentence about starting the bridge shows.
+    expect(failureStatus(transport, 1)).toEqual({ state: 'searching' })
+    expect(failureStatus(transport, 5)).toEqual({ state: 'searching' })
+    // The extension's sentences are written for people, so a first miss says them.
+    expect(failureStatus(absent, 1)).toEqual({ state: 'searching', reason: absent.reason })
+    expect(failureStatus(stale, 1)).toEqual({ state: 'searching', reason: stale.reason })
+    // A miss that repeats names the fix.
+    expect(failureStatus(absent, 2)).toEqual({ state: 'no-extension' })
+    expect(failureStatus(stale, 2)).toEqual({ state: 'stale-extension' })
+  })
+
   it('reports a token the bridge refuses', async () => {
     const { statuses } = await world({ token: 'x'.repeat(43) })
     await until(() => statuses.some((s) => s.state === 'bad-token'))
   })
 
   /*
-   * The generous timeout is not padding. This one waits on three real clocks in
-   * series — a poll to be answered, a socket close to be noticed, then the
-   * bridge's attach budget — and it failed once in a full-suite run while
-   * passing every time on its own. A time-sensitive test that is only reliable
-   * when the machine is idle reports load as a defect.
+   * The generous timeout is not padding: this waits on real sockets closing and
+   * then on the bridge's attach budget, and a loaded machine stretches both.
    */
   it('stops when switched off, and the client is told jojo is not connected', async () => {
-    const { port, statuses, controller, linked, bridge } = await world({ attachWaitMs: 300 })
+    const { port, statuses, controller, linked, bridge, server } = await world({ attachWaitMs: 300 })
     await until(() => statuses.some((s) => s.state === 'ready'))
     controller.abort()
     await linked
     /*
-     * Once the bridge has SEEN the poll go. Asking before then is the orphan
-     * window the bridge's header describes: a request can reach a poll the tab
-     * has already let go of. The bridge now skips a poll whose connection is
-     * gone rather than handing it work, and this waits for that to be the
-     * state rather than racing it.
+     * Not until the tab's last connection has CLOSED. Waiting for `polling` to
+     * read false was not enough, and the trace of a failing run says why: with
+     * polls every 250 ms, the switch-off can land just after the tab sent its
+     * next poll. `polling` reads false, the client asks, and the abandoned poll
+     * and the client's question are parsed in the same tick — poll first. The
+     * bridge parks the dead poll, hands it the question before the socket's
+     * close is seen, and the client waits out the reply budget for "did not
+     * answer in time" (measured: abort @265, poll @269, mcp @269, close @270).
+     *
+     * That is the bridge's orphan window, which no bridge can close: the close
+     * has not arrived yet. What this test is about is the state after it, so it
+     * waits for the tab's sockets to be gone. Idle keep-alive sockets are
+     * closed here because they would otherwise sit open for seconds; one
+     * carrying a poll is not idle and has to be closed by the tab's own abort.
      */
-    await until(() => !bridge.state().polling)
-    const after = await client(port, { jsonrpc: '2.0', id: 9, method: 'tools/list' })
-    expect(after.body?.error?.message).toContain('not connected')
+    await until(async () => {
+      server.closeIdleConnections()
+      const open = await new Promise<number>((resolve) => {
+        server.getConnections((_, count) => {
+          resolve(count)
+        })
+      })
+      return open === 0
+    })
+    expect(bridge.state().polling).toBe(false)
+    const after = await clientOnNewSocket(port, { jsonrpc: '2.0', id: 9, method: 'tools/list' })
+    expect(after.error?.message).toContain('not connected')
   }, 20_000)
 })
 

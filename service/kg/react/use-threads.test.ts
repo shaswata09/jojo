@@ -7,11 +7,14 @@
  * so a thread that continues wrongly fails as an opaque 400 several turns later.
  */
 import { describe, expect, it } from 'vitest'
-import type { ThreadEntry } from '../core/model'
+import type { NodePropsByType, NodeType, StoredNode, ThreadEntry } from '../core/model'
+import { edgeId, newNodeId } from '../core/ref'
+import { MutableSnapshot } from '../core/snapshot'
 import {
   entriesForMessages,
   historyFor,
   nextContextThrough,
+  readThreads,
   toAgentEntries,
   toThreadEntries,
   toTranscript,
@@ -404,5 +407,82 @@ describe('what the model thought, in a saved conversation', () => {
     const [stored] = toThreadEntries([long])
     expect(stored?.kind).toBe('thought')
     expect((stored as { text: string }).text.length).toBe(8000)
+  })
+})
+
+/*
+ * A thread keeps its identity across a commit that did not touch it.
+ *
+ * Rebuilt on every commit, every open chat window was handed a "new" thread for
+ * a sticky note moved on the dashboard, and re-derived and re-drew its whole
+ * transcript. The other direction matters more: a reused thread after a real
+ * change would show a stale conversation.
+ */
+describe('readThreads', () => {
+  const NOW = '2026-11-14T09:00:00.000Z'
+  let clock = Date.UTC(2026, 10, 14)
+  const node = <T extends NodeType>(type: T, props: NodePropsByType[T], at = NOW): StoredNode<T> => {
+    clock += 1
+    return { id: newNodeId(type, clock), type, props, createdAt: at, updatedAt: at } as StoredNode<T>
+  }
+  const thread = (title: string, at = NOW) =>
+    node('thread', { slug: title, title, entries: [{ kind: 'you', text: title }] }, at)
+
+  it('reuses every thread, and the list, when the commit touched none of them', () => {
+    const a = thread('a')
+    const g = MutableSnapshot.from([a, thread('b')])
+    const first = readThreads(g, null)
+    g.putNode(node('stickyNote', { text: 'x' } as NodePropsByType['stickyNote']))
+    const second = readThreads(g, first)
+    expect(second.list).toBe(first.list)
+    expect(second.list.find((t) => t.id === a.id)).toBe(first.list.find((t) => t.id === a.id))
+  })
+
+  it('rebuilds the thread that changed and keeps the one that did not', () => {
+    const a = thread('a')
+    const b = thread('b')
+    const g = MutableSnapshot.from([a, b])
+    const first = readThreads(g, null)
+    g.putNode({
+      ...a,
+      props: { ...a.props, entries: [...a.props.entries, { kind: 'answer', text: 'ok' }] },
+    })
+    const second = readThreads(g, first)
+    expect(second.list).not.toBe(first.list)
+    expect(second.list.find((t) => t.id === a.id)?.entries).toHaveLength(2)
+    expect(second.list.find((t) => t.id === b.id)).toBe(first.list.find((t) => t.id === b.id))
+  })
+
+  it('sees a conversation filed under an application, which changes no prop on it', () => {
+    const a = thread('a')
+    const app = node('application', {
+      slug: 'rice',
+      role: '',
+      note: '',
+      roleTag: 'Assistant Professor',
+      stage: 'draft',
+      lastAction: 'Draft created',
+      lastActionAt: NOW,
+    } as NodePropsByType['application'])
+    const g = MutableSnapshot.from([a, app])
+    const first = readThreads(g, null)
+    g.putEdge({
+      id: edgeId(a.id, 'FILED_UNDER', app.id),
+      rel: 'FILED_UNDER',
+      from: a.id,
+      to: app.id,
+      props: {},
+      createdAt: NOW,
+    })
+    const second = readThreads(g, first)
+    expect(second.list[0]?.applicationId).toBe(app.id)
+  })
+
+  it('drops a deleted conversation', () => {
+    const a = thread('a')
+    const g = MutableSnapshot.from([a, thread('b')])
+    const first = readThreads(g, null)
+    g.removeNode(a.id)
+    expect(readThreads(g, first).list.map((t) => t.title)).toEqual(['b'])
   })
 })

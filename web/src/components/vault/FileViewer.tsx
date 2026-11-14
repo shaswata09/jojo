@@ -18,7 +18,13 @@ import type { VaultFile } from '@/data/vault'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useGraph } from '@jojo/service/react/kg-context'
 import type { NodeId } from '@jojo/service/core/model'
-import { hostOf, isCaptureSource, lockedCaptureHtml } from '@jojo/service/core/capture'
+import {
+  hostOf,
+  isCaptureSource,
+  isPageArchive,
+  lockedCaptureHtml,
+  PAGE_ARCHIVE_NO_PREVIEW,
+} from '@jojo/service/core/capture'
 import { pdfObjectUrl, placeholderPdf } from '@/lib/placeholder-pdf'
 import { htmlFromNote, noteFromRuns } from '@/lib/note-html'
 import { rawRunsFromHtml } from '@/lib/note-runs'
@@ -205,8 +211,12 @@ export function FileViewer({
    * Read as text rather than handed over as bytes because that is what `srcdoc`
    * takes, and because it is the last point at which the app sees the document
    * as a value it could inspect.
+   *
+   * Not for an .mhtml archive: that is MIME text, not markup, and it gets "no
+   * preview" — see `isPageArchive`.
    */
-  const pageBlob = file.kind === 'page' ? blob : undefined
+  const archive = file.kind === 'page' && isPageArchive(file.name)
+  const pageBlob = file.kind === 'page' && !archive ? blob : undefined
   /**
    * The captured page with its viewing policy written in — see
    * `lockedCaptureHtml`. `sandbox=""` stops scripts and navigation and stops no
@@ -414,7 +424,7 @@ export function FileViewer({
          * document behind this row" for every non-PDF, including a .docx the
          * person had just dropped and could Save from this same header.
          */
-        description={noPreviewText(file, blob !== undefined)}
+        description={archive && blob ? PAGE_ARCHIVE_NO_PREVIEW : noPreviewText(file, blob !== undefined)}
       />
     )
 

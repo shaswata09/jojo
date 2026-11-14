@@ -36,7 +36,7 @@ import { useToast } from '@/lib/toast-context'
 import { announceRefusal } from '@/components/common/write-result'
 
 export function DataPanel() {
-  const { exportJSON, clearAll, isEmpty, dataSet } = useStoreAdmin()
+  const { exportJSON, clearAll, isEmpty, demoReplacesNothing, dataSet } = useStoreAdmin()
   // The readable half is still `exportJSON`'s projections; the restorable half is
   // the raw rows and the document bytes that `useBackup` adds around them.
   const backup = useBackup(exportJSON)
@@ -376,7 +376,7 @@ export function DataPanel() {
     void onLoadDemo()
   }
 
-  const copy = pendingCopy({ untouchedDemo, isEmpty, durable, persists, onExport })
+  const copy = pendingCopy({ untouchedDemo, demoReplacesNothing, durable, persists, onExport })
 
   return (
     <>
@@ -454,7 +454,7 @@ export function DataPanel() {
                demo store from an authored one, and only the meta row can. */
             description={
               isEmpty
-                ? `Every list is empty, so every page is showing its first-run state.${durable ? ' It stays empty when you come back.' : ''}`
+                ? `Every list is empty, so every page is showing its first-run state.${durable ? ' It stays empty when you come back.' : ''}${demoReplacesNothing ? '' : ' Your keywords are still here, and loading the demo data replaces them with its own.'}`
                 : untouchedDemo
                   ? 'The demo search jojo ships with — twelve applications, a timeline, a stocked vault. None of it is yours yet.'
                   : 'Your own records. Loading the demo data replaces them, so export a backup first if you want them.'
@@ -476,7 +476,7 @@ export function DataPanel() {
             description={
               untouchedDemo
                 ? 'Removes the demo data and leaves jojo empty. Nothing here is yours yet, so the seeded keywords go with it.'
-                : 'Removes every application, timeline item, vault entry, saved posting and your profile. Your keywords are kept.'
+                : 'Removes every application, timeline item, vault entry, saved posting, contact, note, conversation and CV fact, and blanks your profile. Your keywords are kept.'
             }
             control={
               <Button

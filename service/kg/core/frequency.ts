@@ -66,7 +66,12 @@ export function bucketLabel(key: string, period: Period): string {
     const [monthName = key] = shortDate(`${key}-01`).split(' ')
     return monthName
   }
-  return key.slice(5)
+  // 'Q3 2025', never 'Q3'. Eight quarters is two years, so a bare quarter name
+  // repeats on the same axis: the chart read 'Q3 Q4 Q1 Q2 Q3 Q4', its data table
+  // had two indistinguishable 'Q3' rows, and the web chart, which keys its bars
+  // by label, logged duplicate React keys. A month needs no year because twelve
+  // buckets never hold the same month twice.
+  return `${key.slice(5)} ${key.slice(0, 4)}`
 }
 
 /**

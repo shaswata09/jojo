@@ -25,9 +25,11 @@ import type { BoardScan } from '../core/board'
 import type { ISODate } from '../core/model'
 import type { GraphSnapshot } from '../core/snapshot'
 import type { ToolName } from '../tools/index'
+import type { StepUndoOutcome } from '../tools/runtime'
 import type { Announcement, ToolError } from '../tools/tool'
 import { entryFor, entryForWire } from './catalog'
 import type { CatalogEntry } from './catalog'
+import type { JsonSchema } from './json-schema'
 import type { Cancellation } from './loop'
 import { CONTEXT_BUDGET } from './paging'
 import { READS } from './queries'
@@ -103,7 +105,7 @@ export type ToolHost = {
     name: ToolName,
     input: unknown,
   ) =>
-    | { ok: true; output: unknown; announcement: Announcement; undo: (() => void) | null }
+    | { ok: true; output: unknown; announcement: Announcement; undo: (() => StepUndoOutcome) | null }
     | { ok: false; errors: readonly ToolError[] }
 }
 
@@ -114,7 +116,7 @@ export type CallOutcome =
       result: unknown
       /** The sentence the app's own toast would have shown. Absent for a read. */
       announcement?: Announcement
-      undo?: (() => void) | null
+      undo?: (() => StepUndoOutcome) | null
     }
   | { ok: false; entry?: CatalogEntry; error: string }
 
@@ -203,6 +205,25 @@ export async function callTool(
           error: `These were sent and are not fields of this tool: ${unread.join(', ')}. Its fields are: ${Object.keys(declared).join(', ')}.`,
         }
       }
+      /*
+       * And the same one level down, and the level below that. An offer sent as
+       * `{respondBy, salary}` was stored with `salary` where no screen reads it
+       * and `comp` empty, reported done. Only on this door — the model's and
+       * MCP's — and never on load or restore, where a key an older build wrote
+       * has to keep being accepted.
+       */
+      const nested = undeclaredWithin(input, entry.parameters, '')
+      if (nested.length > 0) {
+        return {
+          ok: false,
+          entry,
+          error: `These were sent and are not fields of this tool: ${nested
+            .map((n) => n.path)
+            .join(', ')}. ${[...new Map(nested.map((n) => [n.parent, n.fields])).entries()]
+            .map(([parent, fields]) => `${parent} takes: ${fields.join(', ')}.`)
+            .join(' ')}`,
+        }
+      }
     }
 
     const toolName = entry.name as ToolName
@@ -227,6 +248,43 @@ export async function callTool(
     const said = e instanceof Error && e.message ? e.message : String(e)
     return { ok: false, entry, error: `${entry.name} did not finish: ${said}` }
   }
+}
+
+/** A key a nested object was sent that its published schema does not declare. */
+type Undeclared = { readonly path: string; readonly parent: string; readonly fields: readonly string[] }
+
+/**
+ * Every undeclared key BELOW the top level, by path (`offer.salary`,
+ * `briefs[0].tone`). The top level is checked by the caller with its own
+ * sentence. Walks only what the schema describes: an object with `properties`
+ * is strict (the catalog publishes those with `additionalProperties: false`),
+ * a record (`additionalProperties` as a schema) is walked by value, and
+ * anything else — a scalar, a schema with neither — is left alone.
+ */
+function undeclaredWithin(value: unknown, schema: JsonSchema, at: string): Undeclared[] {
+  if (Array.isArray(value)) {
+    const items = schema.items
+    return items === undefined ? [] : value.flatMap((v, i) => undeclaredWithin(v, items, `${at}[${String(i)}]`))
+  }
+  if (typeof value !== 'object' || value === null) return []
+  const out: Undeclared[] = []
+  const props = schema.properties
+  const extra = schema.additionalProperties
+  for (const [key, v] of Object.entries(value)) {
+    const path = at === '' ? key : `${at}.${key}`
+    if (props !== undefined) {
+      const field = props[key]
+      if (field === undefined) {
+        // The top level is the caller's; only report from one level down.
+        if (at !== '') out.push({ path, parent: at, fields: Object.keys(props) })
+        continue
+      }
+      out.push(...undeclaredWithin(v, field, path))
+    } else if (typeof extra === 'object') {
+      out.push(...undeclaredWithin(v, extra, path))
+    }
+  }
+  return out
 }
 
 /**

@@ -291,18 +291,31 @@ describe('a revert that would reach past a later write', () => {
     expect(s.ofType('organisation').map((o) => o.props.name)).toEqual(['Rice'])
   })
 
-  it('R10a: a job something now copies stays, whole, employer and all', () => {
+  it('R10a: a job something now copies stays, whole, employer, deadline and all', () => {
     const w = world()
-    const create = w.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'draft' })
+    const create = w.run('application.create', {
+      org: 'Rice',
+      role: 'AP',
+      roleTag: 'Faculty',
+      stage: 'draft',
+      deadline: '2026-09-30',
+    })
     const id = create.output as NodeId
+    const deadline = w.repo.getSnapshot().many(id, 'ABOUT', 'in', 'timelineItem')[0]!
     const copy = w.run('application.duplicate', { id }).output as NodeId
 
-    create.undo?.()
+    const outcome = create.undo?.()
 
     const s = w.repo.getSnapshot()
     expect(s.node(id)).toBeDefined()
     expect(s.one(id, 'AT', 'organisation')?.props.name).toBe('Rice')
     expect(s.one(copy, 'COPY_OF', 'application')?.id).toBe(id)
+    // Was deleted: the job stayed and the deadline its form stood up for it
+    // went, so the calendar lost the item while the toast said Undone.
+    expect(s.many(id, 'ABOUT', 'in', 'timelineItem').map((i) => i.id)).toEqual([deadline.id])
+    // Everything the entry made is still needed, so nothing was taken back.
+    expect(outcome).toBe('nothing')
+    expect(w.repo.redoable).toHaveLength(0)
   })
 
   it('R10a: tagging a new job does not pin it — its Undo still takes it back', () => {
@@ -476,5 +489,178 @@ describe('application.delete', () => {
     const org = w.repo.getSnapshot().one(id, 'AT', 'organisation')!
     w.run('application.delete', { id })
     expect(w.repo.getSnapshot().one(second, 'AT', 'organisation')?.id).toBe(org.id)
+  })
+})
+
+describe('R3: deletes undone out of order', () => {
+  const deleteBoth = (w: ReturnType<typeof world>) => {
+    const first = w.run('application.create', {
+      org: 'Rice',
+      role: 'AP',
+      roleTag: 'Faculty',
+      stage: 'draft',
+      deadline: '2026-09-30',
+    }).output as NodeId
+    const second = w.run('application.create', { org: 'Rice', role: 'Lecturer', roleTag: 'Faculty', stage: 'draft' })
+      .output as NodeId
+    const org = w.repo.getSnapshot().one(first, 'AT', 'organisation')!
+    const d1 = w.run('application.delete', { id: first })
+    w.run('application.delete', { id: second })
+    // The second delete took the employer: nothing was left at it.
+    expect(w.repo.getSnapshot().node(org.id)).toBeUndefined()
+    return { first, second, org, d1 }
+  }
+
+  it("a step's Undo of the first brings its employer back, and ⌘Z of the second shares it", () => {
+    const w = world()
+    const { first, second, org, d1 } = deleteBoth(w)
+
+    expect(d1.undo?.()).toBe('undone')
+
+    const s = () => w.repo.getSnapshot()
+    // Was '(none)': the first delete never held the org, so its AT edge was
+    // dropped as dangling and no later revert put it back.
+    expect(s().one(first, 'AT', 'organisation')?.id).toBe(org.id)
+    expect(s().ofType('organisation')).toHaveLength(1)
+
+    w.runtime.undo()
+
+    expect(s().one(second, 'AT', 'organisation')?.id).toBe(org.id)
+    expect(s().one(first, 'AT', 'organisation')?.id).toBe(org.id)
+    expect(s().ofType('organisation')).toHaveLength(1)
+  })
+
+  it('a redo of that Undo takes the job back and the employer with it, as the delete did', () => {
+    const w = world()
+    const { first, org, d1 } = deleteBoth(w)
+    d1.undo?.()
+
+    w.runtime.redo()
+
+    expect(w.repo.getSnapshot().node(first)).toBeUndefined()
+    expect(w.repo.getSnapshot().node(org.id)).toBeUndefined()
+  })
+
+  it('a claim deleted with one end comes back with the revert that restores the other', () => {
+    const w = world()
+    const ann = w.run('vault.person.create', { name: 'Ann' }).output as NodeId
+    const bob = w.run('vault.person.create', { name: 'Bob' }).output as NodeId
+    const claim = w.run('claim.add', { subject: ann, predicate: 'supervised', object: bob }).output as NodeId
+    const delAnn = w.run('vault.person.delete', { id: ann })
+    w.run('vault.person.delete', { id: bob })
+
+    delAnn.undo?.()
+    // Half a claim is never put back (R10c).
+    expect(w.repo.getSnapshot().node(claim)).toBeUndefined()
+
+    w.runtime.undo()
+
+    // Was lost for good: Bob's delete never held the claim.
+    const s = w.repo.getSnapshot()
+    expect(s.node(claim)).toBeDefined()
+    expect(s.one(claim, 'SUBJECT', 'person')?.id).toBe(ann)
+    expect(s.one(claim, 'OBJECT', 'person')?.id).toBe(bob)
+
+    // And a redo of Bob's restore takes the claim away with him again.
+    w.runtime.redo()
+    expect(w.repo.getSnapshot().node(bob)).toBeUndefined()
+    expect(w.repo.getSnapshot().node(claim)).toBeUndefined()
+    for (const e of w.repo.getSnapshot().edges()) {
+      expect(w.repo.getSnapshot().node(e.from)).toBeDefined()
+      expect(w.repo.getSnapshot().node(e.to)).toBeDefined()
+    }
+  })
+})
+
+describe('R3: an Undo after the employer was stood up again', () => {
+  it('re-points the job at the live employer rather than restoring a second one', () => {
+    const w = world()
+    const first = w.app()
+    const del = w.run('application.delete', { id: first })
+    const second = w.app()
+    const live = w.repo.getSnapshot().one(second, 'AT', 'organisation')!
+
+    del.undo?.()
+
+    const s = w.repo.getSnapshot()
+    // Was two organisations named Rice, on two graph nodes.
+    expect(s.ofType('organisation').map((o) => o.id)).toEqual([live.id])
+    expect(s.one(first, 'AT', 'organisation')?.id).toBe(live.id)
+    for (const e of s.edges()) {
+      expect(s.node(e.from)).toBeDefined()
+      expect(s.node(e.to)).toBeDefined()
+    }
+
+    // ⇧⌘Z takes the job back and leaves the employer the other job is at.
+    w.runtime.redo()
+    expect(w.repo.getSnapshot().node(first)).toBeUndefined()
+    expect(w.repo.getSnapshot().one(second, 'AT', 'organisation')?.id).toBe(live.id)
+  })
+})
+
+describe('R3: the stage group', () => {
+  it('pins a move to Offer once the offer is edited, rather than keeping an offer at Interview', () => {
+    const w = world()
+    const id = w.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'interview' })
+      .output as NodeId
+    const move = w.run('application.stage.advance', {
+      id,
+      stage: 'offer',
+      offer: { respondBy: '2026-09-10', note: 'x' },
+    })
+    w.run('application.update', { id, offer: { respondBy: '2026-09-12', note: 'y' } })
+
+    expect(move.undo?.()).toBe('nothing')
+
+    expect(w.props(id)).toMatchObject({ stage: 'offer', offer: { respondBy: '2026-09-12', note: 'y' } })
+  })
+
+  it('pins a close once its outcome is edited, rather than reopening with a closing outcome', () => {
+    const w = world()
+    const id = w.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'interview' })
+      .output as NodeId
+    const close = w.run('application.stage.advance', { id, stage: 'closed', outcome: 'rejected' })
+    w.run('application.update', { id, outcome: 'withdrawn' })
+
+    expect(close.undo?.()).toBe('nothing')
+
+    expect(w.props(id)).toMatchObject({ stage: 'closed', outcome: 'withdrawn' })
+  })
+
+  it('pins a move to Submitted once a reply date is added', () => {
+    const w = world()
+    const id = w.app()
+    const move = w.run('application.stage.advance', { id, stage: 'submitted', submittedOn: '2026-08-20' })
+    w.run('application.update', { id, firstReplyOn: '2026-08-24' })
+
+    expect(move.undo?.()).toBe('nothing')
+
+    expect(w.props(id)).toMatchObject({ stage: 'submitted', submittedOn: '2026-08-20', firstReplyOn: '2026-08-24' })
+  })
+})
+
+describe("R3: what a step's Undo says it did", () => {
+  it('says undone, then already undone, and a ⌘Z-undone step says the same', () => {
+    const w = world()
+    const id = w.app()
+    const note = w.run('application.note.set', { id, note: 'first note' })
+    expect(note.undo?.()).toBe('undone')
+    expect(note.undo?.()).toBe('already-undone')
+
+    const again = w.run('application.note.set', { id, note: 'second note' })
+    w.runtime.undo()
+    expect(again.undo?.()).toBe('already-undone')
+    // ⇧⌘Z puts it back, so the step can be taken back again.
+    w.runtime.redo()
+    expect(again.undo?.()).toBe('undone')
+  })
+
+  it('says out of reach once the step has aged off the undo ring', () => {
+    const w = world()
+    const id = w.app()
+    const note = w.run('application.note.set', { id, note: 'first note' })
+    for (let i = 0; i < 55; i += 1) w.run('application.note.set', { id, note: `note ${String(i)}` })
+
+    expect(note.undo?.()).toBe('out-of-reach')
   })
 })

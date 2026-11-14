@@ -267,11 +267,14 @@ export function ChatDock() {
     writeStored(DOCK_KEY, serializeDock(state))
   }, [state])
 
-  /* A conversation deleted elsewhere closes its window. Only once there are
-     conversations to compare against, so a store still loading cannot wipe
-     the windows a reload restored. */
+  /* A conversation deleted elsewhere closes its window — including the last
+     one. This used to skip an empty list, to spare "a store still loading" the
+     windows a reload restored; but the dock only mounts inside the store's
+     provider, after boot, so an empty list is a real answer. Skipping it left a
+     window open on a deleted conversation after Clear records or after deleting
+     the last one: it kept the dead id, so a question sent there never started a
+     new conversation, and the reply was saved to nothing. */
   useEffect(() => {
-    if (threads.length === 0) return
     setState((s) => dropMissing(s, new Set(threads.map((t) => t.id))))
   }, [threads])
 
@@ -312,7 +315,30 @@ export function ChatDock() {
     },
     [update],
   )
-  const onClose = useCallback((key: string) => update((s) => closeWindow(s, key)), [update])
+  /*
+   * Closing a window unmounts the button that was pressed, and focus on an
+   * unmounted element falls to <body>: the next Tab started again at "Skip to
+   * main content". So a close asks for focus to land on the first
+   * `[data-dock-home]` once the dock has re-rendered without the window: the
+   * bar's "Show conversations" toggle, the phone's round button, or, where the
+   * layout shows one panel at a time and another window takes this one's place,
+   * that window's header. Only when focus was actually lost, so a close that
+   * left focus somewhere real moves nothing.
+   */
+  const refocus = useRef(false)
+  const onClose = useCallback(
+    (key: string) => {
+      refocus.current = true
+      update((s) => closeWindow(s, key))
+    },
+    [update],
+  )
+  useEffect(() => {
+    if (!refocus.current) return
+    refocus.current = false
+    const lost = document.activeElement === null || document.activeElement === document.body
+    if (lost) document.querySelector<HTMLElement>('[data-dock-home]')?.focus()
+  }, [state])
   const onDetach = useCallback((key: string) => update((s) => detachApplication(s, key)), [update])
 
   const layout = dockLayout(viewport, sheet.width, state.windows.length, leftBound)
@@ -387,6 +413,7 @@ export function ChatDock() {
         className="size-8 shrink-0 text-text-3"
         aria-label={opts.open ? 'Hide conversations' : 'Show conversations'}
         aria-expanded={opts.open}
+        data-dock-home=""
         onClick={(e) => {
           e.stopPropagation()
           opts.onToggle()
@@ -423,6 +450,7 @@ export function ChatDock() {
             size="icon"
             className="size-12 rounded-full shadow-[var(--shadow-raised)]"
             aria-label="Chat with jojo"
+            data-dock-home=""
             onClick={() => update((s) => setListOpen(s, true))}
           >
             <RobotIcon className="size-6" aria-hidden />

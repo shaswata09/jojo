@@ -22,6 +22,32 @@ import { useGraph, useKg } from './kg-context'
 import { useReadBack } from './read-back'
 import { useRun } from './use-tool'
 import { asNull, asText, nothingToRestore, present } from './patch'
+import type { ToolResult } from '../tools/runtime'
+
+/**
+ * What every `remove*` (and the person filing calls) hands back: whether it
+ * happened, why not if it did not, and the undo.
+ *
+ * One shape for every delete. `removeFile` returned this while `removeLink`,
+ * `removeSnippet`, `removePerson`, `unfilePerson` and `useKeywords().removeLabel`
+ * returned only `{ restore }`, so their callers could not tell a refusal from a
+ * delete — an id already gone because the agent or another tab removed it still
+ * got "<title> deleted" and an Undo that did nothing. `restore` is a no-op on a
+ * refusal, so a caller that ignores `ok` is no worse off than before; one that
+ * reads it can say what happened.
+ */
+export type Removal = {
+  ok: boolean
+  /** The tool's own reason, when it refused. */
+  refusal: string | undefined
+  restore: () => void
+}
+
+export function removalOf(result: ToolResult<unknown>): Removal {
+  return result.ok
+    ? { ok: true, refusal: undefined, restore: result.undo ?? nothingToRestore }
+    : { ok: false, refusal: result.errors[0]?.message, restore: nothingToRestore }
+}
 
 /*
  * `applicationIds` is OPTIONAL on a draft and required on the projection.
@@ -134,8 +160,7 @@ export function useVault() {
 
   const removeLink = useCallback(
     (id: string) => {
-      const result = run('vault.link.delete', { id })
-      return { restore: (result.ok && result.undo) || nothingToRestore }
+      return removalOf(run('vault.link.delete', { id }))
     },
     [run],
   )
@@ -209,14 +234,9 @@ export function useVault() {
 
   const removeFile = useCallback(
     (id: string) => {
-      const result = run('vault.file.delete', { id })
       // `ok` and the refusal ride along so a caller can stop before it deletes
       // the bytes and says "deleted" about a record that is still there.
-      return {
-        ok: result.ok,
-        refusal: result.ok ? undefined : result.errors[0]?.message,
-        restore: (result.ok && result.undo) || nothingToRestore,
-      }
+      return removalOf(run('vault.file.delete', { id }))
     },
     [run],
   )
@@ -281,8 +301,7 @@ export function useVault() {
 
   const removeSnippet = useCallback(
     (id: string) => {
-      const result = run('vault.snippet.delete', { id })
-      return { restore: (result.ok && result.undo) || nothingToRestore }
+      return removalOf(run('vault.snippet.delete', { id }))
     },
     [run],
   )
@@ -331,8 +350,7 @@ export function useVault() {
 
   const removePerson = useCallback(
     (id: string) => {
-      const result = run('vault.person.delete', { id })
-      return { restore: (result.ok && result.undo) || nothingToRestore }
+      return removalOf(run('vault.person.delete', { id }))
     },
     [run],
   )
@@ -343,12 +361,13 @@ export function useVault() {
    */
   const filePerson = useCallback(
     (id: string, applicationId: string, role?: ContactRole | null) => {
-      const result = run('vault.person.file', {
-        id,
-        applicationId,
-        ...(role === undefined ? {} : { role }),
-      })
-      return { ok: result.ok, restore: (result.ok && result.undo) || nothingToRestore }
+      return removalOf(
+        run('vault.person.file', {
+          id,
+          applicationId,
+          ...(role === undefined ? {} : { role }),
+        }),
+      )
     },
     [run],
   )
@@ -356,8 +375,7 @@ export function useVault() {
   /** Take one person off one application. They stay in the Vault and on their other jobs. */
   const unfilePerson = useCallback(
     (id: string, applicationId: string) => {
-      const result = run('vault.person.unfile', { id, applicationId })
-      return { restore: (result.ok && result.undo) || nothingToRestore }
+      return removalOf(run('vault.person.unfile', { id, applicationId }))
     },
     [run],
   )

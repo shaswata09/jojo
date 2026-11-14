@@ -92,6 +92,41 @@ export const JOJO_BRIDGE_ADDRESS = 'http://127.0.0.1:3002'
  */
 export const LOCAL_MODEL_PORTS = ['11434', '1234', '8000', '8080', '1337', '4891', '5000', '5001']
 
+/**
+ * The paths a model request goes to, for an address on this machine or the
+ * person's network.
+ *
+ * The port alone was not enough: 8000 is also Django's, 8080 every Java and
+ * proxy dev server's, 5000 Flask's and macOS AirPlay's, so a page could send
+ * `jojo:call-model` at `http://localhost:8000/admin/` and read the answer. So
+ * the path has to be a model API too, and this list is what the app actually
+ * calls — `modelsUrl` and `chatUrl` in `core/model-server-protocol.ts`
+ * (`<endpoint>/models`, `<endpoint>/chat/completions`), the Ollama dialect in
+ * `core/model-server-request.ts` (`/api/tags`, `/api/chat`), and the Anthropic
+ * one in `core/anthropic.ts` (`<endpoint>/messages`) — plus the neighbours a
+ * local server answers on the same API (completions, embeddings, Ollama's
+ * generate, show, version, ps, embed).
+ *
+ * The OpenAI-shaped tails sit at the root or under a version segment, because
+ * the endpoint is whatever the person typed: `/v1` for Ollama, LM Studio, vLLM,
+ * llama.cpp, LocalAI, Jan, GPT4All, text-generation-webui and KoboldCpp,
+ * nothing at all for llama.cpp's bare `/chat/completions`, `/openai/v1` or
+ * `/api/v1` behind a proxy. The version segment is what keeps a dev server's
+ * own `/api/models` or `/admin/messages` out. Ollama's native paths sit at the
+ * root, where Ollama puts them.
+ */
+const MODEL_API_PATH =
+  /^(?:(?:\/[\w.~-]+)*\/v\d+[\w.-]*)?\/(?:chat\/completions|completions|models|embeddings|messages)\/?$|^\/api\/(?:chat|generate|tags|show|version|ps|embed|embeddings)\/?$/
+
+/** Whether an address's path is one a model API answers on. See `MODEL_API_PATH`. */
+export function isModelApiPath(raw) {
+  try {
+    return MODEL_API_PATH.test(new URL(raw).pathname)
+  } catch {
+    return false
+  }
+}
+
 /** An http address's port, with the scheme default filled in; '' if unparseable. */
 function portOf(raw) {
   try {
@@ -163,7 +198,7 @@ export async function modelRefusal(url) {
         'Open the extension and turn on "Models on my network" to allow other ports.'
       )
     }
-    return null
+    return notAModelPath(url)
   }
   // A model on the person's own network, which has its own switch and is OFF
   // until they turn it on — see ROUTING. Named so the fix is one press away.
@@ -173,6 +208,9 @@ export async function modelRefusal(url) {
       'in the jojo extension. Open the extension and turn on "Models on my network".'
     )
   }
+  // The switch lets a page reach the LAN's model servers, not every web
+  // console on it — the same path rule as loopback.
+  if (isPrivateNetwork(url)) return notAModelPath(url)
   if (!isLoopback(url) && !isPrivateNetwork(url) && !isKnownModelHost(url)) {
     return (
       'That address is not a model provider jojo knows about, is not on this machine, ' +
@@ -182,4 +220,19 @@ export async function modelRefusal(url) {
     )
   }
   return null
+}
+
+/** The refusal for a local or LAN address whose path is not a model API, or null. */
+function notAModelPath(url) {
+  if (isModelApiPath(url)) return null
+  let path = ''
+  try {
+    path = new URL(url).pathname
+  } catch {
+    // Unparseable addresses never reach here; `isLoopback` refused them.
+  }
+  return (
+    `${path || 'That path'} is not a model API path, so the jojo extension will not relay it to this machine ` +
+    'or your network. A local model is reached at its /v1/chat/completions or /api/chat address.'
+  )
 }

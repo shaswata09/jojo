@@ -134,9 +134,10 @@ async function sendToModel(
    * is not a model provider jojo knows about" — a policy refusal wearing the
    * clothes of a typo.
    *
-   * Both halves are fixed now, and they had to move together: `background.js`
-   * relays private-network addresses over http (RFC 1918, link-local, `.local`
-   * — never a public address), and this asks it to.
+   * Both halves are fixed now, and they had to move together: the extension's
+   * worker (`worker/routing.js`) relays private-network addresses over http
+   * (RFC 1918, link-local, `.local` — never a public address), and this asks it
+   * to.
    *
    * LOOPBACK IS DELIBERATELY NOT HERE. The browser permits an https page to
    * call `http://localhost`, so a local Ollama keeps its direct path and does

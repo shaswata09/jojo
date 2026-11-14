@@ -157,6 +157,25 @@ export function mintToken(): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
+/**
+ * What a request that got no HTTP answer says on the status line.
+ *
+ * The extension's two failures name their fix on the second strike in a row
+ * (see `runLink` for why not the first); until then they say what they are in
+ * a sentence written for people. A TRANSPORT failure carries no reason at all:
+ * its text is whatever the browser's `fetch` threw — "Failed to fetch", in
+ * Chrome — and that replaced the panel's "Start jojo-bridge with the first
+ * command" in the commonest case there is, a bridge not started yet.
+ */
+export function failureStatus(
+  failed: { reason: string; kind: 'absent' | 'stale' | 'transport' },
+  strikes: number,
+): LinkStatus {
+  if (failed.kind === 'transport') return { state: 'searching' }
+  if (strikes >= 2) return { state: failed.kind === 'absent' ? 'no-extension' : 'stale-extension' }
+  return { state: 'searching', reason: failed.reason }
+}
+
 /** A wait that ends early when the link is switched off. */
 const pause = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve) => {
@@ -260,15 +279,7 @@ export async function runLink({
       if (signal.aborted) return
       if ('failed' in hello) {
         strikes += 1
-        const named =
-          hello.failed.kind === 'absent'
-            ? ({ state: 'no-extension' } as const)
-            : hello.failed.kind === 'stale'
-              ? ({ state: 'stale-extension' } as const)
-              : null
-        onStatus(
-          named !== null && strikes >= 2 ? named : { state: 'searching', reason: hello.failed.reason },
-        )
+        onStatus(failureStatus(hello.failed, strikes))
         await backOff()
         continue
       }
@@ -296,15 +307,7 @@ export async function runLink({
     if ('failed' in next) {
       identified = false
       strikes += 1
-      const named =
-        next.failed.kind === 'absent'
-          ? ({ state: 'no-extension' } as const)
-          : next.failed.kind === 'stale'
-            ? ({ state: 'stale-extension' } as const)
-            : null
-      onStatus(
-        named !== null && strikes >= 2 ? named : { state: 'searching', reason: next.failed.reason },
-      )
+      onStatus(failureStatus(next.failed, strikes))
       await backOff()
       continue
     }

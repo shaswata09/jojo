@@ -60,6 +60,7 @@ import {
   isSwapFile,
   trashPath,
   type FileEntry,
+  type FileFailure,
   type FileResult,
   type FileStore,
   type VaultIdentity,
@@ -72,6 +73,44 @@ const META = 'meta'
 const DB_VERSION = 2
 const IDENTITY_PATH = 'jojo/folder.json'
 const TRASH_DIR = 'jojo/Trash'
+
+/**
+ * How long an open waits on another tab before this store gives up and says so.
+ *
+ * The same five seconds `idb-driver` waits for the graph database, for the same
+ * reasons: the usual blocker is the person's own other tab, which they close,
+ * and the unusual one is a tab pinned months ago that nobody will close, which
+ * must not leave the Vault waiting forever with nothing on screen. A build from
+ * before version 2 has no `versionchange` handler, so its tab never lets go on
+ * its own — measured: `list` and `open` were both still pending after three
+ * seconds, and stayed pending until that tab closed.
+ */
+const BLOCKED_GRACE_MS = 5_000
+
+/**
+ * The context a blocked open carries on its `files/failed`.
+ *
+ * Context rather than a new failure code, because the port's codes are shared
+ * with the phone and the folder adapters and none of them can be blocked like
+ * this. The sentence the person reads ("close the other jojo tabs") is minted
+ * above this layer, as the port says every user-facing sentence is.
+ */
+const BLOCKED_CONTEXT = { blocked: true } as const
+
+/** Thrown into `attempt` when the grace period runs out. Never escapes this file. */
+class BlockedOpen extends Error {
+  override name = 'BlockedOpen'
+}
+
+/**
+ * Where `trash` puts its nth copy of a path. Re-exported for `vault-blobs`,
+ * whose Undo reads a copy back, so the app reaches the naming through this
+ * adapter rather than importing the storage port directly.
+ */
+export { trashPath }
+
+/** Whether a failure is a blocked open rather than a broken store. */
+export const isBlockedFailure = (error: FileFailure): boolean => error.context?.['blocked'] === true
 
 /** Held names, for the environments with no `navigator.locks`. See `withLock`. */
 const localLocks = new Set<string>()
@@ -89,6 +128,8 @@ export type IdbFileStoreOptions = {
   now: () => number
   /** Overridable so tests can point at a scratch database. */
   dbName?: string
+  /** Overridable so a test need not wait the full grace. See `BLOCKED_GRACE_MS`. */
+  blockedGraceMs?: number
 }
 
 export interface IdbFileStore extends FileStore {
@@ -136,6 +177,18 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
    * open and unreferenced — which then blocked the next version upgrade.
    */
   let opening: Promise<IDBPDatabase> | null = null
+  /**
+   * Rejects once the open in `opening` has been blocked for the whole grace.
+   *
+   * Raced beside `opening` rather than replacing it. The open itself is left
+   * pending, so it completes the moment the other tab lets go and the next call
+   * simply finds the database open — no second request queued behind the first,
+   * and no connection opened late that nobody holds (which would block the NEXT
+   * upgrade the way this one was blocked). Until then every call fails at once
+   * with `files/failed` instead of each one waiting out its own grace.
+   */
+  let stalled: Promise<never> | null = null
+  const grace = options.blockedGraceMs ?? BLOCKED_GRACE_MS
   let connected = false
   let askedToPersist = false
   /**
@@ -150,7 +203,17 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
   let forgotten = false
 
   function ensure(): Promise<IDBPDatabase> {
-    if (opening) return opening
+    // `opening` first: once the open has landed it wins the race even though
+    // `stalled` rejected long ago, because a race between two settled promises
+    // goes to the one listed first.
+    if (opening) return stalled ? Promise.race([opening, stalled]) : opening
+    let giveUp: (error: Error) => void = () => {}
+    const stall = new Promise<never>((_resolve, reject) => {
+      giveUp = reject
+    })
+    // Only ever observed through the race above; never an unhandled rejection.
+    stall.catch(() => {})
+    let timer: ReturnType<typeof setTimeout> | null = null
     const pending = openDB(dbName, DB_VERSION, {
       async upgrade(fresh, oldVersion, _newVersion, tx) {
         if (oldVersion < 1) fresh.createObjectStore(STORE)
@@ -164,6 +227,17 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
             cursor = await cursor.continue()
           }
         }
+      },
+      /*
+       * An older connection in another tab is in the way of this upgrade — a
+       * tab still running a build from before version 2, which has no
+       * `versionchange` handler and so never lets go by itself. Waited on for
+       * the grace, then reported; see `stalled`.
+       */
+      blocked() {
+        timer ??= setTimeout(() => {
+          giveUp(new BlockedOpen('another tab holds an older version of the database open'))
+        }, grace)
       },
       /*
        * Another tab wants a newer version. Holding this connection open would
@@ -182,18 +256,25 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
       },
     }).then(
       (handle) => {
+        if (timer !== null) clearTimeout(timer)
+        if (opening === pending) stalled = null
         connected = true
         return handle
       },
       (error: unknown) => {
+        if (timer !== null) clearTimeout(timer)
         // Not memoised: a failed open (blocked IndexedDB, a version error) is
         // tried again by the next call rather than answered from a dead promise.
-        if (opening === pending) opening = null
+        if (opening === pending) {
+          opening = null
+          stalled = null
+        }
         throw error
       },
     )
     opening = pending
-    return pending
+    stalled = stall
+    return Promise.race([pending, stall])
   }
 
   /**
@@ -212,6 +293,12 @@ export function createIdbFileStore(options: IdbFileStoreOptions): IdbFileStore {
     try {
       return await fn(await ensure())
     } catch (e) {
+      // Not a missing folder and not a broken store: the database is there and
+      // another tab is holding it. Said apart from both, because the remedy —
+      // close the other jojo tabs — is the only one that works.
+      if (e instanceof BlockedOpen) {
+        return fileFail<T>('files/failed', `${what}: ${e.message}`, { ...BLOCKED_CONTEXT, path })
+      }
       // A blocked IndexedDB — private browsing, a managed browser — is the one
       // case where this adapter genuinely has no folder rather than a failed
       // operation, and `files/no-folder` is the answer the app already renders.

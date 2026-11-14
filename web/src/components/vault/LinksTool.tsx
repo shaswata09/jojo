@@ -168,7 +168,18 @@ export function LinksTool({ focus }: { focus?: string }) {
    */
   const onDelete = (link: VaultLink) => {
     const stashed = labelIdsOf(link.id)
-    const { restore } = removeLink(link.id)
+    const removed = removeLink(link.id)
+    // Refused — already gone, removed by the assistant or another tab: say so
+    // rather than "deleted" with an Undo that does nothing.
+    if (!removed.ok) {
+      toast({
+        title: 'That did not delete',
+        description: removed.refusal ?? `${link.title} is still in the Vault.`,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = removed
     removeRecord(link.id)
     if (editingId === link.id) setEditingId(null)
 

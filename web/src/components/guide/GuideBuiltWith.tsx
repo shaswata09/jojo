@@ -7,7 +7,10 @@ import { GuideContents } from '@/components/guide/GuideNav'
 import { ImportRule } from '@/components/guide/ImportRule'
 import {
   DEVELOPMENT,
+  BSD_3_TEXT,
   ISC_TEXT,
+  ZERO_BSD_TEXT,
+  ZLIB_TEXT,
   MIT_TEXT,
   PHONE,
   RUNTIME,
@@ -231,6 +234,9 @@ export function GuideBuiltWith() {
 
         <LicenceText name="The MIT License" text={MIT_TEXT} />
         <LicenceText name="The ISC License" text={ISC_TEXT} />
+        <LicenceText name="The BSD 3-Clause License (d3-ease)" text={BSD_3_TEXT} />
+        <LicenceText name="The zlib License (pako's zlib port)" text={ZLIB_TEXT} />
+        <LicenceText name="The BSD Zero Clause License (tslib)" text={ZERO_BSD_TEXT} />
 
         <div className="mt-4 space-y-2 border-t border-hairline pt-4 text-sm text-text-2">
           <p>

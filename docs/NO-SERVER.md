@@ -98,9 +98,13 @@ nor the Local Network Access gate applies to it.
 
 That is the route jojo's document reader takes on a hosted copy: the page hands
 the request to the extension's service worker and the worker makes the hop to
-`127.0.0.1`. See `web/extension/README.md`. The worker refuses any address that
-is not loopback, because it is relaying a request the page composed and its own
-permissions are `http://*` and `https://*`.
+`127.0.0.1`. See `web/extension/README.md`. The reader relay refuses any address
+that is not loopback, and any loopback address but the reader's own, because it
+is relaying a request the page composed and its own permissions are `http://*`
+and `https://*`. (The model relay is a separate route with its own switches:
+named providers, a fixed list of local model ports, and — off until the person
+turns it on — models on their own network. `web/extension/worker/routing.js`
+holds those rules.)
 
 This does not weaken §1.2's conclusion for the bridge that was deleted — a
 background helper still cannot ask for a permission, and an extension is not a

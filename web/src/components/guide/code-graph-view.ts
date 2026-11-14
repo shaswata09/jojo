@@ -34,3 +34,15 @@ export function fileLinks(graph: Pick<CodeGraph, 'files'>, path: string): { impo
 
 /** Stroke width for an edge carrying `count` imports: thicker for busier paths, but bounded. */
 export const strokeFor = (count: number) => Math.min(4, 1 + Math.log2(count))
+
+/** The module picked after choosing `id`: a second choice of the same one clears it. */
+export const nextPick = (selected: string | null, id: string): string | null => (id === selected ? null : id)
+
+/** Whether a key on a focused module picks it — the keys a button answers to. */
+export const picksOnKey = (key: string): boolean => key === 'Enter' || key === ' '
+
+/** What a module box says to a screen reader: its name, its size, and whether it is the one picked. */
+export function moduleLabel(group: { readonly label: string; readonly files: number; readonly lines: number }, picked: boolean): string {
+  const size = `${String(group.files)} ${group.files === 1 ? 'file' : 'files'}, ${group.lines.toLocaleString('en')} lines`
+  return `${group.label}: ${size}${picked ? ', picked' : ''}`
+}

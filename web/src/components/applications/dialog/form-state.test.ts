@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Application } from '@/data/seed'
-import { deadlineWrite, editInitial, refusalOf } from './form-state'
+import { deadlineWrite, editInitial, formFrom, hasUnsaved, refusalOf } from './form-state'
 
 describe('deadlineWrite', () => {
   it('sends nothing when the field still holds what the dialog opened with', () => {
@@ -29,6 +29,20 @@ describe('refusalOf', () => {
   it('keeps a refusal on a field the form does not show for the toast alone', () => {
     const out = refusalOf([{ message: 'Needs to be a date.', field: 'appliedOn' }])
     expect(out).toEqual({ message: 'Needs to be a date.', fields: {} })
+  })
+
+  // Two messages on one field: the field shows the first, which is also the
+  // toast's — a later one there would contradict the toast beside it.
+  it('keeps the first message per field, the one the toast leads with', () => {
+    const out = refusalOf([
+      { message: 'Cannot be blank.', field: 'org' },
+      { message: 'Too long.', field: 'org' },
+      { message: 'Not a link.', field: 'url' },
+    ])
+    expect(out).toEqual({
+      message: 'Cannot be blank.',
+      fields: { org: 'Cannot be blank.', url: 'Not a link.' },
+    })
   })
 
   it('still says something when the tool gave no message', () => {
@@ -79,5 +93,27 @@ describe('editInitial', () => {
     const initial = editInitial(record, { deadline: '' }, undefined)
     expect(initial.storedDeadline).toBe('')
     expect(deadlineWrite({ deadline: '' }, initial)).toBeUndefined()
+  })
+})
+
+describe('hasUnsaved', () => {
+  const record = { id: 'app:rice', org: 'Rice', role: 'Lecturer', roleTag: 'Lecturer' } as const
+  const initial = editInitial(record as unknown as Application, undefined, '2026-12-01')
+
+  it('is clean as opened, and dirty once a field or a keyword changes', () => {
+    const form = formFrom(initial)
+    expect(hasUnsaved(form, ['k1'], initial, ['k1'])).toBe(false)
+    expect(hasUnsaved({ ...form, role: 'Principal scientist' }, ['k1'], initial, ['k1'])).toBe(true)
+    expect(hasUnsaved(form, ['k1', 'k2'], initial, ['k1'])).toBe(true)
+  })
+
+  // Edit → type → Escape → "Changes discarded · Undo" → Escape. The draft
+  // handed back is the new `initial`, so measured against it the restored form
+  // read as untouched and the second Escape threw the edits away with no toast.
+  it('counts a draft handed back by Undo as unsaved, in edit and in create', () => {
+    const draft = { ...initial, role: 'Principal scientist', restored: true }
+    expect(hasUnsaved(formFrom(draft), ['k1'], draft, ['k1'])).toBe(true)
+    const created = { org: 'Databricks', role: 'Researcher', restored: true }
+    expect(hasUnsaved(formFrom(created), [], created, [])).toBe(true)
   })
 })

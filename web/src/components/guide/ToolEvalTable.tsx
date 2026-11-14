@@ -3,7 +3,7 @@ import report from '@/components/guide/tool-eval.json'
 /**
  * What actually happened when real models were pointed at jojo's real tools.
  *
- * The numbers are generated, not written. `service/kg/agent/live-eval.test.ts`
+ * The numbers are generated, not written. `service/test/live-eval.test.ts`
  * runs every scenario against every model and writes the JSON this imports —
  * so a claim on this page cannot drift away from the run that produced it, and
  * re-running is what updates the page.

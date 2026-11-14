@@ -638,3 +638,37 @@ describe('readJournalRows and `reverts`', () => {
     expect(entry).not.toHaveProperty('reverts')
   })
 })
+
+describe('readJournalRows and trimJournal, and `held`', () => {
+  const claim = { id: 'claim:c', type: 'claim', props: {}, createdAt: AT, updatedAt: AT }
+  const end = { id: 'claim:c|SUBJECT|person:a', from: 'claim:c', rel: 'SUBJECT', to: 'person:a', createdAt: AT }
+  const row = (held: unknown) => ({
+    id: 'u',
+    at: AT,
+    tool: 'vault.person.delete',
+    label: 'Undo Ann removed',
+    calls: [],
+    nodes: [],
+    edges: [],
+    reverts: { id: 'e', of: 'Ann removed', undone: true },
+    held,
+  })
+
+  it('carries the claims a revert held back, so a rehydrated audit can still restore them', () => {
+    const [entry] = readJournalRows([row({ nodes: [claim], edges: [end] })])
+    expect(entry?.held).toEqual({ nodes: [claim], edges: [end] })
+  })
+
+  it('reads a row without one, or with a malformed one, as holding nothing', () => {
+    expect(readJournalRows([row(undefined)])[0]).not.toHaveProperty('held')
+    expect(readJournalRows([row({ nodes: 'x', edges: [] })])[0]).not.toHaveProperty('held')
+    expect(readJournalRows([row({ nodes: [1], edges: [] })])[0]).not.toHaveProperty('held')
+  })
+
+  it('drops them with the other images when the entry is trimmed', () => {
+    const [entry] = readJournalRows([row({ nodes: [claim], edges: [end] })])
+    const [trimmed] = trimJournal([entry!], 0)
+    expect(trimmed?.trimmed).toBe(true)
+    expect(trimmed).not.toHaveProperty('held')
+  })
+})

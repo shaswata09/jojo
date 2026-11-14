@@ -243,7 +243,16 @@ export function RemindersTool({ focus }: { focus?: string }) {
     remove: (item) => {
       const keywords = labelIdsOf(item.id)
       play(item.id, {}, () => {
-        const { restore } = remove(item.id)
+        const removed = remove(item.id)
+        if (!removed.ok) {
+          toast({
+            title: 'That did not delete',
+            description: removed.refusal ?? `${item.title} is still on the list.`,
+            tone: 'danger',
+          })
+          return
+        }
+        const { restore } = removed
         removeRecord(item.id)
         toast({
           title: `${item.title} deleted`,

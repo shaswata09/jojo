@@ -425,7 +425,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's1',
           tool: 'memory.search',
           args: { query: 'Stripe' },
-          why: 'Turn 1 asks what stage the Stripe application is at. The employer is an organisation one hop away, but `haystack` in queries.ts folds `labelOf` into the searchable text and `labelOf` appends the org for an application — so a single search on the literal \'Stripe\' returns the record with its stage (\'offer\') AND its id, which turn 2 needs. memory.search is in the turn\'s mustCallOneOf READS list.',
+          why: 'Turn 1 asks what stage the Stripe application is at. The employer is an organisation one hop away, but `haystack` in agent/reads/shared.ts folds `labelOf` into the searchable text and `labelOf` appends the org for an application — so a single search on the literal \'Stripe\' returns the record with its stage (\'offer\') AND its id, which turn 2 needs. memory.search is in the turn\'s mustCallOneOf READS list.',
         },
         {
           id: 's2',
@@ -1509,7 +1509,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's3',
           tool: 'vault.file.update',
           args: { id: '$s1', applicationIds: '$s2' },
-          why: 'The single write. `update` and not `vault.file.add`: CV-2026.pdf is already in the vault, and the case\'s `count: 4` check exists precisely to catch a model that files by creating a fifth. `applicationIds` routes through vault.ts\'s `fileUnder`, which writes the FILED_UNDER edge that the harness resolves into the derived `filedUnder` prop the state check reads. Both arguments are runtime ids, so both are `$` references.',
+          why: 'The single write. `update` and not `vault.file.add`: CV-2026.pdf is already in the vault, and the case\'s `count: 4` check exists precisely to catch a model that files by creating a fifth. `applicationIds` routes through `fileUnder` in vault-shared.ts, which writes the FILED_UNDER edge that the harness resolves into the derived `filedUnder` prop the state check reads. Both arguments are runtime ids, so both are `$` references.',
         },
       ],
       links: [
@@ -1748,7 +1748,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's1',
           tool: 'memory.search',
           args: { query: 'Rice' },
-          why: 'The id is not in the sentence. The world holds TWO Rice applications (Assistant Professor, Computer Science — submitted, deadline 2026-09-30; and Postdoctoral Fellow, Physics — draft), so the search has to happen and its result has to be read carefully enough to pick the assistant professorship. `memory.search` is the natural first move here and the one the app was tuned for: `queries.ts` folds the record\'s LABEL into the haystack precisely so that searching an employer name finds the application, whose org is one hop away.',
+          why: 'The id is not in the sentence. The world holds TWO Rice applications (Assistant Professor, Computer Science — submitted, deadline 2026-09-30; and Postdoctoral Fellow, Physics — draft), so the search has to happen and its result has to be read carefully enough to pick the assistant professorship. `memory.search` is the natural first move here and the one the app was tuned for: `haystack` in `reads/shared.ts` folds the record\'s LABEL into the haystack precisely so that searching an employer name finds the application, whose org is one hop away.',
         },
         {
           id: 's2',
@@ -3718,7 +3718,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'snippet-reworded-and-retagged',
     group: 'documents',
-    why: 'The edit half of snippets, which no case reached: `vault.snippet.update` and `vault.snippet.retag` were required by nothing, so a snippet that could not be edited would not turn anything red. Two edits to the world\'s one snippet where the second is a purpose-built move and the first cannot be done by it. The failures are shaped like the link case one collection over: copying the snippet and editing the copy (`vault.snippet.duplicate`), saving a fresh one with the new wording (`vault.snippet.create`), or delete-and-recreate — all of which leave two records or reset identity, and all of which are forbidden by name because `count snippet is 1` cannot say which one happened. Read in `vault.ts`: `update` patches title, tag and body and never the slug, so `follow-up-after-interview` is the stable handle the retag check hangs off.',
+    why: 'The edit half of snippets, which no case reached: `vault.snippet.update` and `vault.snippet.retag` were required by nothing, so a snippet that could not be edited would not turn anything red. Two edits to the world\'s one snippet where the second is a purpose-built move and the first cannot be done by it. The failures are shaped like the link case one collection over: copying the snippet and editing the copy (`vault.snippet.duplicate`), saving a fresh one with the new wording (`vault.snippet.create`), or delete-and-recreate — all of which leave two records or reset identity, and all of which are forbidden by name because `count snippet is 1` cannot say which one happened. Read in `vault-snippets.ts`: `update` patches title, tag and body and never the slug, so `follow-up-after-interview` is the stable handle the retag check hangs off.',
     turns: [
       {
         say: 'What does my follow-up snippet actually say?',
@@ -3806,7 +3806,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'teaching-statement-into-talks',
     group: 'documents',
-    why: 'Two file edits nothing in the suite asked for: `vault.file.move` (a bucket is the only field it takes) and `vault.file.note.set`. The first failure is \'moving\' by adding a copy under the new bucket — `count file` catches the copy, and add-then-delete is what the forbidden pair is for. The second is a retrieval trap, measured against `retrieve.ts` rather than read off its lexicon: `note` aliases to both the snippet and the application family, but on \'Put a note on it too: last revised for the Rice job talk\' the cut keeps the APPLICATION tools and drops every `vault.snippet.*` — so in the narrowed condition the near miss in front of the model is `application.note.set` on the Rice assistant professorship, whose name is in the sentence, and in the full condition it is a snippet holding the words. Both leave the file un-annotated; both are forbidden and both are checked in the store. Read in `vault.ts`: `note.set` stores the trimmed text (asserted by substring) and `bucket` is an enum from FILE_BUCKET_VALUES (asserted exactly).',
+    why: 'Two file edits nothing in the suite asked for: `vault.file.move` (a bucket is the only field it takes) and `vault.file.note.set`. The first failure is \'moving\' by adding a copy under the new bucket — `count file` catches the copy, and add-then-delete is what the forbidden pair is for. The second is a retrieval trap, measured against `retrieve.ts` rather than read off its lexicon: `note` aliases to both the snippet and the application family, but on \'Put a note on it too: last revised for the Rice job talk\' the cut keeps the APPLICATION tools and drops every `vault.snippet.*` — so in the narrowed condition the near miss in front of the model is `application.note.set` on the Rice assistant professorship, whose name is in the sentence, and in the full condition it is a snippet holding the words. Both leave the file un-annotated; both are forbidden and both are checked in the store. Read in `vault-files.ts`: `note.set` stores the trimmed text (asserted by substring) and `bucket` is an enum from FILE_BUCKET_VALUES (asserted exactly).',
     turns: [
       {
         say: 'My teaching statement file is in the wrong bucket. Move it from Applications to Talks — I only use it for job talks now.',
@@ -3869,7 +3869,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
         where: { prop: 'name', contains: 'Research-statement' },
         prop: 'note',
         is: null,
-        why: 'And it landed on the right file. \'statement\' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault.ts drops the key entirely, which `is: null` accepts.',
+        why: 'And it landed on the right file. \'statement\' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault-shared.ts drops the key entirely, which `is: null` accepts.',
       },
       {
         kind: 'prop',
@@ -3904,7 +3904,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'which-cv-to-delete',
     group: 'documents',
-    why: 'The destructive half of files, and the restraint that has to sit in front of it. `vault.file.delete` was required by no conversation, so the one tool that removes a document could break unnoticed. The world holds two CVs — CV-2026.pdf and Old-CV-2024.pdf — and \'the CV\' picks neither, so the first turn has no correct action, only a correct question; NOT \'the old CV\', because a file is literally named Old-CV-2024.pdf and a model that deleted it on those words would be right. Read in `vault.ts`: delete is `ctx.require` then `tx.del`, touches only [\'file\'], no cascade — so the count drops by exactly one and everything else must be exactly where it was.',
+    why: 'The destructive half of files, and the restraint that has to sit in front of it. `vault.file.delete` was required by no conversation, so the one tool that removes a document could break unnoticed. The world holds two CVs — CV-2026.pdf and Old-CV-2024.pdf — and \'the CV\' picks neither, so the first turn has no correct action, only a correct question; NOT \'the old CV\', because a file is literally named Old-CV-2024.pdf and a model that deleted it on those words would be right. Read in `vault-files.ts`: delete is `ctx.require` then `tx.del`, touches only [\'file\'], no cascade — so the count drops by exactly one and everything else must be exactly where it was.',
     turns: [
       {
         say: 'Delete the CV from my vault.',
@@ -3970,7 +3970,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'copy-the-rice-link',
     group: 'documents',
-    why: '`vault.link.duplicate` was required by no case, and it is the one vault tool whose whole contract is what it CARRIES: read in `vault.ts`, it spreads the source\'s title, url, category and note, restamps `savedOn` to today, copies every FILED_UNDER edge, and mints a new slug from the source title — which `mintSlug` in `runtime.ts` resolves to the first free name in the \'x\', \'x-2\' series, so the copy is deterministically `rice-cs-faculty-openings-2`. That slug is what makes the second turn checkable: \'point the copy at the physics page\' only lands on the copy if the model used the id the duplicate returned, and a model that edited the original instead leaves a store that every content check — count, both urls, both titles — scores identically. The edge axis cannot see it either, since duplicate-before-update is satisfied by order alone. Only record identity can.',
+    why: '`vault.link.duplicate` was required by no case, and it is the one vault tool whose whole contract is what it CARRIES: read in `vault-links.ts`, it spreads the source\'s title, url, category and note, restamps `savedOn` to today, copies every FILED_UNDER edge, and mints a new slug from the source title — which `mintSlug` in `runtime.ts` resolves to the first free name in the \'x\', \'x-2\' series, so the copy is deterministically `rice-cs-faculty-openings-2`. That slug is what makes the second turn checkable: \'point the copy at the physics page\' only lands on the copy if the model used the id the duplicate returned, and a model that edited the original instead leaves a store that every content check — count, both urls, both titles — scores identically. The edge axis cannot see it either, since duplicate-before-update is satisfied by order alone. Only record identity can.',
     turns: [
       {
         say: 'Make a copy of the Rice openings link — I want a second one for the physics department.',
@@ -4090,7 +4090,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's2',
           tool: 'memory.search',
           args: { query: 'Stripe' },
-          why: 'The application\'s id for `applicationId`. A separate read in a separate domain — `haystack` in queries.ts folds `labelOf` into an application\'s searchable text, so the literal \'Stripe\' returns the Systems Engineer application; probed, it also returns the Stripe organisation, the Stripe deadline item and the Stripe THREAD, which is the thing being filed, not the target, and a model has to read the `type` column to tell them apart.',
+          why: 'The application\'s id for `applicationId`. A separate read in a separate domain — `haystack` in agent/reads/shared.ts folds `labelOf` into an application\'s searchable text, so the literal \'Stripe\' returns the Systems Engineer application; probed, it also returns the Stripe organisation, the Stripe deadline item and the Stripe THREAD, which is the thing being filed, not the target, and a model has to read the `type` column to tell them apart.',
         },
         {
           id: 's3',
@@ -4278,7 +4278,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's1',
           tool: 'memory.search',
           args: { query: 'cover letter' },
-          why: 'The thread\'s id. `haystack` in queries.ts lowercases every string prop plus the label, so the literal matches the thread\'s title and slug — and nothing else in the seeded world: no file, snippet or link mentions a cover letter. The sentence\'s bait is lexical, not a second matching record.',
+          why: 'The thread\'s id. `haystack` in agent/reads/shared.ts lowercases every string prop plus the label, so the literal matches the thread\'s title and slug — and nothing else in the seeded world: no file, snippet or link mentions a cover letter. The sentence\'s bait is lexical, not a second matching record.',
         },
         {
           id: 's2',
@@ -4959,7 +4959,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's2',
           tool: 'memory.list',
           args: { type: 'profile' },
-          why: 'The only read that reaches the field. `memory.search` folds string props only (`haystack` in agent/queries.ts), so an array of role tags is invisible to it — measured on the built world after the write: `memory.search {query: \'Research Scientist\', type: \'profile\'}` returns total 0; `memory.get` needs an id the model was never shown. `memory.list` scoped to `profile` returns the one node with `roles` spread into it (`render` spreads props). The link is temporal, not a `$` dependency: the read is the read-back and has no meaning before the write.',
+          why: 'The only read that reaches the field. `memory.search` folds string props only (`haystack` in agent/reads/shared.ts), so an array of role tags is invisible to it — measured on the built world after the write: `memory.search {query: \'Research Scientist\', type: \'profile\'}` returns total 0; `memory.get` needs an id the model was never shown. `memory.list` scoped to `profile` returns the one node with `roles` spread into it (`render` spreads props). The link is temporal, not a `$` dependency: the read is the read-back and has no meaning before the write.',
         },
       ],
       links: [
@@ -5535,7 +5535,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'spelled-differently-baylor',
     group: 'harness',
-    why: 'Loop bait for the stuck detector. `memory.search` is a case-folded SUBSTRING match over the record\'s props and label (`haystack` in agent/queries.ts), and the person says \'Baylor Medicine\' where the store says \'Baylor College of Medicine\' — probed against the built world: \'Baylor Medicine\' returns zero, \'Baylor\' returns three (the organisation, the application, the \'Baylor — second interview\' item). A weak model re-issues the empty search verbatim; the detector\'s fingerprint survives whitespace and key order, nudges the succeeding repeat on its third occurrence and stops the run on its fifth (STUCK_LIMITS repeatNudge 3 / repeatStop 5, inside the runner\'s maxSteps of 12). The gold path is to change the read, not to repeat it, and the state checks pin the write to the Baylor record and to no other. The other failure it catches is the system prompt\'s own line — \'If you cannot find a record, say so. Never create one so that there is something to act on\' — via a model that mints an application, promotes a saved posting or match into one, or renames the employer through `application.update`\'s `org` argument (probed: that mints a sixth organisation).',
+    why: 'Loop bait for the stuck detector. `memory.search` is a case-folded SUBSTRING match over the record\'s props and label (`haystack` in agent/reads/shared.ts), and the person says \'Baylor Medicine\' where the store says \'Baylor College of Medicine\' — probed against the built world: \'Baylor Medicine\' returns zero, \'Baylor\' returns three (the organisation, the application, the \'Baylor — second interview\' item). A weak model re-issues the empty search verbatim; the detector\'s fingerprint survives whitespace and key order, nudges the succeeding repeat on its third occurrence and stops the run on its fifth (STUCK_LIMITS repeatNudge 3 / repeatStop 5, inside the runner\'s maxSteps of 12). The gold path is to change the read, not to repeat it, and the state checks pin the write to the Baylor record and to no other. The other failure it catches is the system prompt\'s own line — \'If you cannot find a record, say so. Never create one so that there is something to act on\' — via a model that mints an application, promotes a saved posting or match into one, or renames the employer through `application.update`\'s `org` argument (probed: that mints a sixth organisation).',
     turns: [
       {
         say: 'Put Houston down as the location on my Baylor Medicine application.',
@@ -7077,7 +7077,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's2',
           tool: 'vault.snippet.delete',
           args: { id: '$s1' },
-          why: 'The delete, on the id the list returned. `vault.snippet.delete` takes an id and nothing else (vault.ts: `input: s.object({ id: snippetId })`), so there is nothing to carry from the sentence and the only argument is a runtime reference.',
+          why: 'The delete, on the id the list returned. `vault.snippet.delete` takes an id and nothing else (vault-snippets.ts: `input: s.object({ id: snippetId })`), so there is nothing to carry from the sentence and the only argument is a runtime reference.',
         },
       ],
       links: [
@@ -7120,7 +7120,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
   {
     id: 'snippet-copied-for-a-variant',
     group: 'documents',
-    why: '`vault.snippet.duplicate` was required by nothing, and `save-a-snippet` names it only as a wrong path. Here it is the right one: a variant WITHOUT losing the original is exactly what the tool\'s summary promises (vault.ts: \'Copies the snippet so a variant can be written without losing the original\'). The failures are the two ways of getting a second record that is not a copy — `vault.snippet.create` with retyped text — and the one way of getting a second record that IS a copy but the wrong one renamed: `vault.snippet.update` retitling the original, the duplicate-CV failure inverted. Read in vault.ts: `duplicate` spreads the source props and mints a new slug FROM THE SOURCE TITLE, so the copy carries the body and the tag exactly and its slug is `follow-up-after-interview-2` (measured); `update` patches title and never slug. That slug is what tells the copy from the original once both carry the same body — measured, without it a run that duplicated and then retitled the ORIGINAL passes every title, body and tag check, because the two records differ in nothing else.',
+    why: '`vault.snippet.duplicate` was required by nothing, and `save-a-snippet` names it only as a wrong path. Here it is the right one: a variant WITHOUT losing the original is exactly what the tool\'s summary promises (vault-snippets.ts: \'Copies the snippet so a variant can be written without losing the original\'). The failures are the two ways of getting a second record that is not a copy — `vault.snippet.create` with retyped text — and the one way of getting a second record that IS a copy but the wrong one renamed: `vault.snippet.update` retitling the original, the duplicate-CV failure inverted. Read in vault-snippets.ts: `duplicate` spreads the source props and mints a new slug FROM THE SOURCE TITLE, so the copy carries the body and the tag exactly and its slug is `follow-up-after-interview-2` (measured); `update` patches title and never slug. That slug is what tells the copy from the original once both carry the same body — measured, without it a run that duplicated and then retitled the ORIGINAL passes every title, body and tag check, because the two records differ in nothing else.',
     turns: [
       {
         say: 'Duplicate my follow-up snippet — I want to write a Rice-specific version without losing the original.',
@@ -7175,7 +7175,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
         where: { prop: 'title', contains: 'rice follow-up' },
         prop: 'slug',
         is: 'follow-up-after-interview-2',
-        why: 'The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy\'s slug from the SOURCE title (vault.ts: `mintSlug(\'snippet\', source.props.title)`), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves \'Rice follow-up\' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled \'Rice follow-up\' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured).',
+        why: 'The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy\'s slug from the SOURCE title (vault-snippets.ts: `mintSlug(\'snippet\', input.title ?? source.props.title)`, and the duplicate here sends no title), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves \'Rice follow-up\' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled \'Rice follow-up\' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured).',
       },
       {
         kind: 'prop',
@@ -7660,7 +7660,7 @@ export const CONVERSATIONS: readonly Conversation[] = [
           id: 's2',
           tool: 'memory.list',
           args: { type: 'profile' },
-          why: 'The only read that reaches the field. Measured after the write: `memory.list {type:\'profile\'}` returns the one node with `text` rendered as an object containing the value; `memory.search` returns 0 for \'Cloudflare\' and for \'position\' because `haystack` in agent/queries.ts joins string-valued props only; `memory.get` needs an id the model was never shown. The link is temporal rather than a `$` dependency: this is the read-back and has no meaning before the write.',
+          why: 'The only read that reaches the field. Measured after the write: `memory.list {type:\'profile\'}` returns the one node with `text` rendered as an object containing the value; `memory.search` returns 0 for \'Cloudflare\' and for \'position\' because `haystack` in agent/reads/shared.ts joins string-valued props only; `memory.get` needs an id the model was never shown. The link is temporal rather than a `$` dependency: this is the read-back and has no meaning before the write.',
         },
       ],
       links: [

@@ -13,6 +13,7 @@ import {
   captureNote,
   hostOf,
   isCaptureSource,
+  isPageArchive,
   lockedCaptureHtml,
   CAPTURE_VIEW_CSP,
   onBoard,
@@ -801,6 +802,76 @@ describe('lockedCaptureHtml', () => {
     expect(out).not.toMatch(/<link/i)
     expect(out.match(/<basefont/g)).toHaveLength(4)
     expect(out).toContain('link text')
+  })
+
+  /*
+   * Round 3 — reproduced in Chrome for Testing 151 and Chrome 157, in a frame
+   * built exactly as FileViewer builds it: one `<script>` anywhere let the
+   * preload scanner fetch every reference after it without the policy, and a
+   * later clean capture in the same tab leaked too. Each spelling below fetched
+   * its beacon with the lock as it was. The test is the tokeniser's own: a tag
+   * starts with `<`, an optional `/`, the name, then whitespace, `/` or `>`.
+   */
+  const TAG = (name: string) => new RegExp(`<\\/?${name}(?=[\\t\\n\\f\\r />])`, 'i')
+
+  it('leaves no <script> for the preload scanner to stop at, however it is spelled', () => {
+    const beacon = '<img src="http://evil.test/b">'
+    for (const script of [
+      '<script>1</script>',
+      '<script type=text/plain>1</script>',
+      '<script type=module>1</script>',
+      '<SCRIPT>1</SCRIPT >',
+      '<script/x>1</script/>',
+      '<script\n>1</script\n>',
+      '<ScRiPt\tsrc="https://evil.test/s.js"></sCrIpT\f>',
+      '<svg><script>1</script></svg>',
+      '<template><script>1</script></template>',
+    ]) {
+      const out = lockedCaptureHtml(`<!doctype html><p>posting</p>${script}${beacon}`)
+      expect(out, script).not.toMatch(TAG('script'))
+      expect(out, script).toContain('<xmp hidden')
+      expect(out.indexOf(`content="${CAPTURE_VIEW_CSP}"`), script).toBeLessThan(out.indexOf(beacon))
+    }
+  })
+
+  it('keeps a script that spells the replacement’s end tag from bringing one back', () => {
+    const out = lockedCaptureHtml('<script>var s="</xmp><script>x</script>";</script><img src="http://evil.test/b">')
+    expect(out).not.toMatch(TAG('script'))
+    // Every `<xmp` it opened is a hidden one; the stray `</xmp>` only ends one early.
+    expect(out.match(/<xmp\b/gi)?.length).toBe(out.match(/<xmp hidden/g)?.length)
+  })
+
+  it('disarms nested frames and every link a click could follow', () => {
+    const out = lockedCaptureHtml(
+      '<p><a href="https://acme.test/apply">Apply</a> <A\nHREF=https://acme.test/x>x</A >' +
+        '<svg><a href="https://acme.test/svg"><text>logo</text></a></svg>' +
+        '<map><area href="https://acme.test/area" shape=rect coords="0,0,1,1"></map>' +
+        '<iframe srcdoc="&lt;a href=https://acme.test/n&gt;n&lt;/a&gt;"></iframe>' +
+        '<abbr>a</abbr><address>b</address><aside>c</aside><audio></audio><article></article></p>',
+    )
+    for (const name of ['a', 'area', 'iframe']) expect(out, name).not.toMatch(TAG(name))
+    expect(out).toContain('<g href="https://acme.test/apply">Apply</g>')
+    // Elements whose names merely start with an "a" are left as they were.
+    for (const kept of ['<abbr>', '<address>', '<aside>', '<audio>', '<article>']) expect(out).toContain(kept)
+  })
+
+  it('changes only the string the frame is given', () => {
+    const page = '<script>1</script><a href="https://acme.test/">x</a>'
+    lockedCaptureHtml(page)
+    expect(page).toBe('<script>1</script><a href="https://acme.test/">x</a>')
+  })
+})
+
+describe('isPageArchive', () => {
+  it('names the MIME archives the viewer does not render, and nothing else', () => {
+    for (const name of ['posting.mhtml', 'POSTING.MHT', 'a.b.mhtml']) expect(isPageArchive(name), name).toBe(true)
+    for (const name of ['posting.html', 'posting.htm', 'mhtml.html', 'notes.mhtml.txt']) {
+      expect(isPageArchive(name), name).toBe(false)
+    }
+  })
+
+  it('covers exactly the archive half of CAPTURE_EXTENSIONS', () => {
+    expect(CAPTURE_EXTENSIONS.filter((ext) => isPageArchive(`x.${ext}`))).toEqual(['mhtml', 'mht'])
   })
 })
 

@@ -7,7 +7,7 @@ import { CAPTURE_MAX_ASSETS } from '@jojo/service/core/capture'
  * `capture-script.ts` walks the page inside the WebView and hands back
  * addresses; `inlineCapture` fetches them, splices the results into the markup
  * and puts the document past `readCapture`. It shares its SHAPE with
- * `web/extension/background.js` and, for a long time, shared only the shape:
+ * `web/extension/worker/inline.js` and, for a long time, shared only the shape:
  * three of the defences the extension grew after a leak were never carried
  * across, and every one of them was reachable here.
  *

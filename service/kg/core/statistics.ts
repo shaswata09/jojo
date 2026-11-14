@@ -61,10 +61,11 @@ const STALE_DAYS = 14
  * The rank a record has to reach to be counted at each funnel step.
  *
  * The store keeps only the CURRENT stage, so this reads how far a record can be
- * *shown* to have got: its stage, plus the two dates it carries. A closed
- * application that reached an interview before it was rejected therefore counts
- * only as far as its `firstReplyOn` — the app never recorded the rest, and
- * guessing it back is how the old funnel came to disagree with the board.
+ * *shown* to have got: its stage, plus the dates it carries. A closed
+ * application counts as far as the stages it has dates for (the board stamps
+ * each one on the way through) or its `firstReplyOn` — anything further was
+ * never recorded, and guessing it back is how the old funnel came to disagree
+ * with the board.
  *
  * Under-counting is the safe direction: this can never claim more than the
  * board shows, which is the whole point.
@@ -106,8 +107,14 @@ export function reachedOf(a: Reachable): number {
     a.stageDates?.offer !== undefined
   )
     return REACH.offer
-  if (a.stage === 'interview') return REACH.interview
-  if (a.stage === 'screen') return REACH.screen
+  // A closed record is read the way its own panel reads it (`stagesToDate`):
+  // a dated Interview or Screen is a stage it went through before it ended.
+  // Open records are read by their stage alone, because a date there can be
+  // left behind by a card dragged back after a mis-drop.
+  const closed = a.stage === 'closed'
+  if (a.stage === 'interview' || (closed && a.stageDates?.interview !== undefined))
+    return REACH.interview
+  if (a.stage === 'screen' || (closed && a.stageDates?.screen !== undefined)) return REACH.screen
   if (a.firstReplyOn) return REACH.replied
   if (a.stage === 'submitted' || a.stage === 'closed' || a.submittedOn || a.appliedOn)
     return REACH.sent

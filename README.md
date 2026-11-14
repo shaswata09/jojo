@@ -180,9 +180,6 @@ jojo/
 ├── mobile/              React Native app for Android and iOS
 │   ├── android/         Committed Gradle project
 │   └── ios/             Committed Xcode project
-│   ├── linux/
-│   ├── mac/
-│   └── windows/
 └── .claude/skills/      UI/UX design intelligence used while building
 ```
 
@@ -446,13 +443,18 @@ than by agreement — "verbatim" used to mean a `cp -R` copy that had drifted 81
 lines, and that copy is deleted. See `mobile/README.md`.
 
 **The agent:** built, and optional. A threaded assistant whose runs keep going
-when you leave the page, `service/kg/agent`'s loop over 77 named write tools and 9 reads, "Ask the
-graph" in a sentence, and two Job Scout pipelines — one that proposes what your
-records are missing, one that reads the boards you follow through the extension.
-Every step that writes is shown to you and waits for a yes; turning a thread to
-auto-approve drops that to the destructive steps only, which is a floor and not
-a setting. It needs a model you point it at, and without one every screen that
-uses it says so by name rather than pretending.
+when you leave the page, `service/kg/agent`'s loop over the tool catalog (85
+named write tools and 10 reads, pinned in `catalog.test.ts`), "Ask the graph" in
+a sentence, and two Job Scout pipelines — one that proposes what your records
+are missing, one that reads the boards you follow through the extension. Each
+conversation has an approval mode. Manual, the default, shows you every step
+that writes and waits for a yes. Semi-auto asks only before the destructive
+steps: deletions, plus the few tools that declare themselves so. Auto asks
+before nothing that can be undone. Under all three, emptying the store and
+replacing it with the demo data still stop for a confirmation, because those two
+cannot be taken back; that is a floor, not a setting. It needs a model you point
+it at, and without one every screen that uses it says so by name rather than
+pretending.
 
 **Deliberately not built:** a localhost bridge. One was designed and written —
 loopback HTTP, a session token, path confinement, five cross-compiled binaries —
@@ -493,7 +495,7 @@ Persistence shipped: a knowledge graph in IndexedDB on web and AsyncStorage on m
 
 ## Known decisions still open
 
-- **Component tests.** There are around 2,300 Vitest tests across the three workspaces, but D20 rules out
+- **Component tests.** There are several thousand Vitest tests across the three workspaces, but D20 rules out
   jsdom and Testing Library, so nothing mounts a component. UI logic is verified by driving the
   real apps. That trade is deliberate; what it cost at the time is written up in `docs/AUDIT.md`, which is a record of a past audit rather than a live defect list.
 - **`BrowserRouter` vs `HashRouter`.** Deep links like `/settings` need SPA rewrites on a static host

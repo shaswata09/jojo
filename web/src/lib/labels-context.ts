@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { Label, LabelTone } from '@/data/labels'
+import type { Removal } from '@jojo/service/react/use-vault'
 
 export type LabelsContextValue = {
   /**
@@ -34,7 +35,7 @@ export type LabelsContextValue = {
    * here, on ⌘Z, on ⇧⌘Z or in another tab — which is three more paths than a
    * `restore` callback could reach.
    */
-  removeLabel: (id: string) => { restore: () => void }
+  removeLabel: (id: string) => Removal
   /** Recolours a keyword. Purely cosmetic, and instant — no confirmation. */
   /**
    * `ink` is a hex for a colour off the spectrum, or `null` to go back to the

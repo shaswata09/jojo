@@ -56,12 +56,37 @@ const ALLOWED = new Map([
   ['mobile/android/local.properties', 'written by the Android SDK tools and gitignored because it holds one machine\'s SDK path; the README names it to say what to put in it'],
 ])
 
+/*
+ * Where the paths are read from.
+ *
+ * Every Markdown file a reader is pointed at — the root README and
+ * CONTRIBUTING, each workspace's README, and `docs/` — plus the guide's own
+ * source, because the guide is documentation that ships inside the app and its
+ * pointers rot exactly as prose does.
+ *
+ * Listed rather than globbed over the tree. A glob would pick up vendored
+ * READMEs under `node_modules` and native build folders, and whether this
+ * guard passed would then depend on what a machine had installed — which is
+ * the kind of flake that gets a guard switched off.
+ */
+const listed = (dir, keep) =>
+  existsSync(path.join(ROOT, dir))
+    ? readdirSync(path.join(ROOT, dir), { recursive: true })
+        .map(String)
+        .filter(keep)
+        .map((f) => `${dir}/${f.split(path.sep).join('/')}`)
+    : []
+
 const docs = [
   'README.md',
-  ...readdirSync(path.join(ROOT, 'docs'))
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => `docs/${f}`),
-]
+  'CONTRIBUTING.md',
+  'service/README.md',
+  'service/bench/README.md',
+  'mobile/README.md',
+  'web/extension/README.md',
+  ...listed('docs', (f) => f.endsWith('.md') && !f.includes('/')),
+  ...listed('web/src/components/guide', (f) => /\.(ts|tsx)$/.test(f)),
+].filter((doc) => existsSync(path.join(ROOT, doc)))
 
 /*
  * Backticked, and rooted at a workspace we can check. Anything else in backticks
@@ -70,21 +95,33 @@ const docs = [
  */
 const PATH_IN_TICKS = /`((?:web|mobile|service|docs)\/[A-Za-z0-9_.@/-]+)`/g
 
+/*
+ * Inside `service/`, its own files are written from the package root —
+ * `kg/agent/loop.ts`, not `service/kg/agent/loop.ts`. Read those too, but only
+ * with a source extension: `kg/` and a `.ts` together are a file and nothing
+ * else, where `kg/agent` alone could be a directory named in passing.
+ */
+const SERVICE_PATH_IN_TICKS = /`(kg\/[A-Za-z0-9_.@/-]+\.(?:ts|tsx|mts|mjs))`/g
+
 const failures = []
 for (const doc of docs) {
   const text = readFileSync(path.join(ROOT, doc), 'utf8')
+  const local = doc.startsWith('service/')
   for (const [i, line] of text.split('\n').entries()) {
-    for (const match of line.matchAll(PATH_IN_TICKS)) {
-      const named = match[1]
+    const named = [
+      ...[...line.matchAll(PATH_IN_TICKS)].map((m) => m[1]),
+      ...(local ? [...line.matchAll(SERVICE_PATH_IN_TICKS)].map((m) => `service/${m[1]}`) : []),
+    ]
+    for (const name of named) {
       // An ellipsis is prose about a family of files, not a claim about one.
-      if (named.includes('...') || named.includes('…')) continue
-      if (ALLOWED.has(named)) continue
-      const full = path.join(ROOT, named)
+      if (name.includes('...') || name.includes('…')) continue
+      if (ALLOWED.has(name)) continue
+      const full = path.join(ROOT, name)
       // A bare name may be missing its extension — `kg/core/model` for
       // `model.ts` — which is how these are written and is not a mistake.
       const found =
         existsSync(full) || ['.ts', '.tsx', '.mjs', '.js', '.md', '.json'].some((e) => existsSync(full + e))
-      if (!found) failures.push(`${doc}:${i + 1}  names \`${named}\`, which is not in the repository`)
+      if (!found) failures.push(`${doc}:${i + 1}  names \`${name}\`, which is not in the repository`)
     }
   }
 }
@@ -100,4 +137,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('check-docs: every path named in README and docs/ resolves')
+console.log(`check-docs: every path named in ${String(docs.length)} documents resolves`)

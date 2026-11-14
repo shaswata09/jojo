@@ -6366,7 +6366,7 @@
                 },
                 "prop": "note",
                 "is": null,
-                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault.ts drops the key entirely, which `is: null` accepts."
+                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault-shared.ts drops the key entirely, which `is: null` accepts."
               },
               "pass": true,
               "saw": "cleared"
@@ -13471,7 +13471,7 @@
                 },
                 "prop": "slug",
                 "is": "follow-up-after-interview-2",
-                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault.ts: `mintSlug('snippet', source.props.title)`), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
+                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault-snippets.ts: `mintSlug('snippet', input.title ?? source.props.title)`, and the duplicate here sends no title), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
               },
               "pass": false,
               "saw": "follow-up-after-interview-(rice)"
@@ -21533,7 +21533,7 @@
                 },
                 "prop": "note",
                 "is": null,
-                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault.ts drops the key entirely, which `is: null` accepts."
+                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault-shared.ts drops the key entirely, which `is: null` accepts."
               },
               "pass": true,
               "saw": "cleared"
@@ -28634,7 +28634,7 @@
                 },
                 "prop": "slug",
                 "is": "follow-up-after-interview-2",
-                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault.ts: `mintSlug('snippet', source.props.title)`), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
+                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault-snippets.ts: `mintSlug('snippet', input.title ?? source.props.title)`, and the duplicate here sends no title), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
               },
               "pass": false,
               "saw": "follow-up-after-interview-(rice)"
@@ -36718,7 +36718,7 @@
                 },
                 "prop": "note",
                 "is": null,
-                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault.ts drops the key entirely, which `is: null` accepts."
+                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault-shared.ts drops the key entirely, which `is: null` accepts."
               },
               "pass": true,
               "saw": "cleared"
@@ -43907,7 +43907,7 @@
                 },
                 "prop": "slug",
                 "is": "follow-up-after-interview-2",
-                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault.ts: `mintSlug('snippet', source.props.title)`), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
+                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault-snippets.ts: `mintSlug('snippet', input.title ?? source.props.title)`, and the duplicate here sends no title), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
               },
               "pass": false,
               "saw": "follow-up-after-interview-(rice)"
@@ -51983,7 +51983,7 @@
                 },
                 "prop": "note",
                 "is": null,
-                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault.ts drops the key entirely, which `is: null` accepts."
+                "why": "And it landed on the right file. 'statement' matches two seeded documents, and the research statement is the nearest miss for a model that took the wrong search hit; its note has to still be absent — `cleared` in vault-shared.ts drops the key entirely, which `is: null` accepts."
               },
               "pass": true,
               "saw": "cleared"
@@ -59134,7 +59134,7 @@
                 },
                 "prop": "slug",
                 "is": "follow-up-after-interview-2",
-                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault.ts: `mintSlug('snippet', source.props.title)`), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
+                "why": "The check that tells the copy from the original, and the only one that can: after a correct run both records carry the seeded body and tag, and the title is the thing the run changed. `duplicate` mints the copy's slug from the SOURCE title (vault-snippets.ts: `mintSlug('snippet', input.title ?? source.props.title)`, and the duplicate here sends no title), so the copy is `follow-up-after-interview-2` and `update` never touches it (measured). A run that duplicated and then retitled the ORIGINAL leaves 'Rice follow-up' on the record whose slug is `follow-up-after-interview` — measured: this check fails, and every title/body/tag check passes. A `vault.snippet.create` titled 'Rice follow-up' mints `rice-follow-up` and fails here even when the body was pasted exactly (measured)."
               },
               "pass": false,
               "saw": "follow-up-after-interview-(rice)"

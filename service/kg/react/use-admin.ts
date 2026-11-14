@@ -30,7 +30,10 @@
  */
 
 import { useCallback, useMemo } from 'react'
+import { NODE_TYPES } from '../core/model'
+import type { NodeType } from '../core/model'
 import { profileIsBlank } from '../core/profile'
+import type { GraphSnapshot } from '../core/snapshot'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
 
@@ -46,6 +49,48 @@ import { useRun } from './use-tool'
  * a way such a validator would have to notice.
  */
 const EXPORT_VERSION = 1
+
+/**
+ * The node types that count as "something in the store", as a subtraction from
+ * `NODE_TYPES` rather than a list.
+ *
+ * This was a list — applications, timeline, links, files, snippets, postings,
+ * matches, pipelines — and it was short. `memory.clear` and loading the demo walk
+ * every node type, so a store holding only sticky notes, conversations, people
+ * or CV facts read as empty: Settings disabled "Clear records" with "There is
+ * nothing left to clear", and the Load demo dialog said nothing would be
+ * replaced, offered no export, and then deleted all of it. Subtracting means a
+ * type added to the model is counted the day it is added, which is the same
+ * argument `tools/memory.ts` makes for the wipe itself.
+ *
+ * What is left out, and why:
+ *  - `keyword`: "Clear records" keeps keywords, so they are not what it would
+ *    clear. They are counted apart, for the demo, which does replace them.
+ *  - `profile`: a singleton that always exists; it counts when it is not blank.
+ *  - `organisation`: minted on first mention of an employer rather than made by
+ *    the user, and left behind when its last application goes, so counting it
+ *    would make a store with nothing in it report that it has something.
+ */
+const NOT_COUNTED: ReadonlySet<NodeType> = new Set<NodeType>(['keyword', 'profile', 'organisation'])
+const COUNTED_TYPES: readonly NodeType[] = NODE_TYPES.filter((type) => !NOT_COUNTED.has(type))
+
+/**
+ * What is in the store, as the two questions Settings asks of it.
+ *
+ * `isEmpty` — is there a record "Clear records" would remove? `demoReplacesNothing`
+ * — would loading the demo data destroy nothing? The second is stricter by the
+ * keywords: clearing keeps them and loading the demo replaces them with its own,
+ * so a store emptied by "Clear records" still has something the demo would take.
+ *
+ * Pure and exported so the counting can be tested without a renderer (D20).
+ */
+export function storeContents(
+  graph: Pick<GraphSnapshot, 'ofType'>,
+  profileBlank: boolean,
+): { isEmpty: boolean; demoReplacesNothing: boolean } {
+  const isEmpty = profileBlank && COUNTED_TYPES.every((type) => graph.ofType(type).length === 0)
+  return { isEmpty, demoReplacesNothing: isEmpty && graph.ofType('keyword').length === 0 }
+}
 
 export function useStoreAdmin() {
   const graph = useGraph()
@@ -122,28 +167,16 @@ export function useStoreAdmin() {
   }, [graph, projections, now])
 
   /**
-   * Walked type by type rather than over the projections.
-   *
-   * The profile is not a list and an organisation is not a record the user made
-   * — it is minted on first mention of an employer — so counting either would
-   * make a store with nothing in it report that it has something.
+   * Walked type by type rather than over the projections; `storeContents` says
+   * which types count and why.
    */
-  const isEmpty = useMemo(
-    () =>
-      graph.ofType('application').length === 0 &&
-      graph.ofType('timelineItem').length === 0 &&
-      graph.ofType('link').length === 0 &&
-      graph.ofType('file').length === 0 &&
-      graph.ofType('snippet').length === 0 &&
-      graph.ofType('posting').length === 0 &&
-      graph.ofType('match').length === 0 &&
-      graph.ofType('pipeline').length === 0 &&
-      profileIsBlank(projections.profile(graph)),
+  const { isEmpty, demoReplacesNothing } = useMemo(
+    () => storeContents(graph, profileIsBlank(projections.profile(graph))),
     [graph, projections],
   )
 
   return useMemo(
-    () => ({ reset, clearAll, exportJSON, isEmpty, dataSet }),
-    [reset, clearAll, exportJSON, isEmpty, dataSet],
+    () => ({ reset, clearAll, exportJSON, isEmpty, demoReplacesNothing, dataSet }),
+    [reset, clearAll, exportJSON, isEmpty, demoReplacesNothing, dataSet],
   )
 }

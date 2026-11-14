@@ -259,23 +259,25 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
   {
     id: 'create-web',
     name: 'Creating an application',
-    summary: 'The web form, from Save to the card on the board, including every way it can stop.',
+    summary: 'The web form, from Save to the card on the board, including every way it can stop — and the disk write, which happens after the card is already showing.',
     nodes: [
       { id: 'save', kind: 'start', label: 'Save pressed in the application form', layer: 'web', path: 'web/src/components/applications/ApplicationDialog.tsx' },
       { id: 'valid', kind: 'decision', label: 'Form valid?', layer: 'web', path: 'web/src/components/applications/dialog/form-state.ts' },
       { id: 'invalid', kind: 'stop', label: 'Field errors shown; nothing saved', layer: 'web', path: 'web/src/components/applications/dialog/form-state.ts' },
       { id: 'dup', kind: 'decision', label: 'Looks like one you already have? (posting ID → URL → name → model judge)', layer: 'web', path: 'web/src/lib/duplicate-agent.ts' },
-      { id: 'confirm', kind: 'decision', label: 'Person: open the existing one, or save anyway?', layer: 'web', path: 'web/src/components/applications/ApplicationDialog.tsx' },
+      { id: 'confirm', kind: 'decision', label: 'Person, comparing the two side by side: what now?', layer: 'web', path: 'web/src/components/applications/ApplicationDialog.tsx' },
       { id: 'opened', kind: 'end', label: 'Existing record opened; nothing saved', layer: 'web', path: 'web/src/components/applications/ApplicationDialog.tsx' },
+      { id: 'discarded', kind: 'end', label: 'Form closed; nothing saved', layer: 'web', path: 'web/src/components/applications/ApplicationDialog.tsx' },
       { id: 'write', kind: 'step', label: 'One application.create, with deadline and keywords', layer: 'web', path: 'web/src/components/applications/dialog/use-application-writes.ts' },
       { id: 'hook', kind: 'step', label: 'add() runs the tool through the runtime', layer: 'react', path: 'service/kg/react/use-applications.ts' },
       { id: 'check', kind: 'decision', label: 'Input matches the schema and the tool is available?', layer: 'tools', path: 'service/kg/tools/runtime.ts' },
       { id: 'refused', kind: 'stop', label: 'Refusal shown on its field; form stays open', layer: 'web', path: 'web/src/components/applications/dialog/form-state.ts' },
       { id: 'run', kind: 'step', label: 'Mint id and slug, org.ensure, sync deadline and keywords', layer: 'tools', path: 'service/kg/tools/application.ts' },
-      { id: 'commit', kind: 'step', label: 'Commit: graph, journal, undo ring, write queue', layer: 'repo', path: 'service/kg/repo/repository.ts' },
-      { id: 'disk', kind: 'decision', label: 'IndexedDB write succeeded?', layer: 'adapters', path: 'web/src/kg/storage/idb-driver.ts' },
-      { id: 'banner', kind: 'stop', label: 'Storage banner: changes are only in this tab', layer: 'web', path: 'web/src/components/layout/StorageBanner.tsx' },
-      { id: 'shown', kind: 'end', label: 'Subscribers re-render; toast offers Undo', layer: 'react', path: 'service/kg/react/kg.tsx' },
+      { id: 'commit', kind: 'step', label: 'Commit, synchronously: graph, journal, undo ring; disk writes queued', layer: 'repo', path: 'service/kg/repo/repository.ts' },
+      { id: 'shown', kind: 'end', label: 'Card on the board, form closed; toast offers Undo', layer: 'web', path: 'web/src/components/applications/dialog/use-application-writes.ts' },
+      { id: 'disk', kind: 'decision', label: 'IndexedDB write lands? (retried; never rolled back)', layer: 'repo', path: 'service/kg/repo/queue.ts' },
+      { id: 'stored', kind: 'end', label: 'Stored on this device', layer: 'adapters', path: 'web/src/kg/storage/idb-driver.ts' },
+      { id: 'banner', kind: 'stop', label: 'Storage banner: the card stays; changes held only in this tab', layer: 'web', path: 'web/src/components/layout/StorageBanner.tsx' },
     ],
     edges: [
       { from: 'save', to: 'valid' },
@@ -283,16 +285,23 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
       { from: 'valid', to: 'dup', label: 'yes' },
       { from: 'dup', to: 'confirm', label: 'maybe' },
       { from: 'dup', to: 'write', label: 'no' },
-      { from: 'confirm', to: 'opened', label: 'open it' },
-      { from: 'confirm', to: 'write', label: 'save anyway' },
+      { from: 'confirm', to: 'opened', label: 'open the one you have' },
+      { from: 'confirm', to: 'discarded', label: 'discard this one' },
+      { from: 'confirm', to: 'save', label: 'edit instead — back to the form', back: true },
+      { from: 'confirm', to: 'write', label: 'add anyway' },
       { from: 'write', to: 'hook' },
       { from: 'hook', to: 'check' },
       { from: 'check', to: 'refused', label: 'no' },
       { from: 'check', to: 'run', label: 'yes' },
       { from: 'run', to: 'commit' },
-      { from: 'commit', to: 'disk' },
-      { from: 'disk', to: 'shown', label: 'yes' },
-      { from: 'disk', to: 'banner', label: 'no' },
+      // Two ways out of a step, because `commit` returns before the disk is
+      // touched: the card and its Undo are on screen at once, and the queue
+      // drains afterwards. A failed write keeps its ops and retries; the record
+      // is never taken back off the board (`queue.ts`).
+      { from: 'commit', to: 'shown', label: 'at once' },
+      { from: 'commit', to: 'disk', label: 'afterwards, in the background' },
+      { from: 'disk', to: 'stored', label: 'yes' },
+      { from: 'disk', to: 'banner', label: 'no — keeps failing' },
     ],
   },
   {
@@ -316,7 +325,7 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
       { id: 'offered', kind: 'decision', label: 'Was that tool offered?', layer: 'agent', path: 'service/kg/agent/perform-call.ts' },
       { id: 'repair', kind: 'step', label: 'Repair the arguments against the schema', layer: 'agent', path: 'service/kg/agent/repair.ts' },
       { id: 'partial', kind: 'decision', label: 'Would one item replace a whole list?', layer: 'agent', path: 'service/kg/agent/repair.ts' },
-      { id: 'gate', kind: 'decision', label: 'Needs the person’s approval? (mode, destructive, confirms)', layer: 'agent', path: 'service/kg/agent/catalog.ts' },
+      { id: 'gate', kind: 'decision', label: 'Ask the person? Always for memory reset/clear; otherwise by mode and kind', layer: 'agent', path: 'service/kg/agent/perform-call.ts' },
       { id: 'approve', kind: 'decision', label: 'Person approves?', layer: 'web', path: 'web/src/components/assistant/ApprovalHost.tsx' },
       { id: 'exec', kind: 'decision', label: 'Only declared fields, and the tool accepts them?', layer: 'agent', path: 'service/kg/agent/execute.ts' },
       { id: 'tool', kind: 'step', label: 'Read, or write committed as one undoable entry', layer: 'tools', path: 'service/kg/tools/runtime.ts' },
@@ -373,12 +382,12 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
       { id: 'raise', kind: 'decision', label: 'Allowed for this kind, and not a duplicate?', layer: 'agent', path: 'service/kg/agent/pipelines.ts' },
       { id: 'dropped', kind: 'stop', label: 'Not raised', layer: 'agent', path: 'service/kg/agent/pipelines.ts' },
       { id: 'card', kind: 'step', label: 'Suggestion card raised', layer: 'tools', path: 'service/kg/tools/pipeline.ts' },
-      { id: 'auto', kind: 'decision', label: 'Listed on this round’s boards, and not a local address?', layer: 'web', path: 'web/src/lib/scout-reading-queue.ts' },
-      { id: 'read', kind: 'step', label: 'Background read: page kept, posting read into a reading', layer: 'web', path: 'web/src/lib/scout-reading.tsx' },
+      { id: 'auto', kind: 'decision', label: 'A posting’s address, listed on this round’s boards or on a watched board, and not a local address?', layer: 'web', path: 'web/src/lib/scout-reading-queue.ts' },
+      { id: 'read', kind: 'step', label: 'Background read (extension only): page kept and marked for this card, posting read into a reading', layer: 'web', path: 'web/src/lib/scout-reading.tsx' },
       { id: 'decide', kind: 'decision', label: 'Person: approve or discard?', layer: 'web', path: 'web/src/components/scout/ProposalQueue.tsx' },
       { id: 'approve', kind: 'step', label: 'pipeline.proposal.approve runs the saved write', layer: 'tools', path: 'service/kg/tools/pipeline.ts' },
       { id: 'fill', kind: 'end', label: 'Saved and filled from the reading; Add to applications offered', layer: 'web', path: 'web/src/lib/fill-from-posting.ts' },
-      { id: 'discard', kind: 'end', label: 'Discarded; the page is dropped only if the read created it', layer: 'web', path: 'web/src/lib/scout-reading.tsx' },
+      { id: 'discard', kind: 'end', label: 'Discarded; the page is dropped only if this card’s read kept it and nothing else claims it', layer: 'web', path: 'web/src/lib/scout-reading.tsx' },
     ],
     edges: [
       { from: 'tick', to: 'twin' },
@@ -403,20 +412,23 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
   {
     id: 'from-link',
     name: '“From link”: reading a posting',
-    summary: 'A pasted URL becomes a kept page and a prefilled form — through the extension when there is one, the document reader when not.',
+    summary: 'A pasted URL becomes a kept page and a prefilled form — through the extension when there is one, the document reader when not. A route that fails stops with its own reason; the other route is never tried instead.',
     nodes: [
       { id: 'paste', kind: 'start', label: 'Posting URL pasted', layer: 'web', path: 'web/src/components/applications/AddFromLinkDialog.tsx' },
       { id: 'local', kind: 'decision', label: 'Local or private address?', layer: 'web', path: 'web/src/lib/posting-target.ts' },
       { id: 'refuse', kind: 'stop', label: 'Refused', layer: 'web', path: 'web/src/lib/posting-target.ts' },
       { id: 'ext', kind: 'decision', label: 'Extension answering?', layer: 'web', path: 'web/src/lib/capture-bridge.ts' },
-      { id: 'capture', kind: 'step', label: 'Worker: open the tab, check for sign-in, copy it inertly, inline assets by a deadline', layer: 'extension', path: 'web/extension/worker/capture.js' },
-      { id: 'gate', kind: 'step', label: 'Leak check on the returned page', layer: 'core', path: 'service/kg/core/capture.ts' },
+      { id: 'capture', kind: 'decision', label: 'Extension current, and the page opened, copied and kept in time?', layer: 'extension', path: 'web/extension/worker/capture.js' },
+      { id: 'notkept', kind: 'stop', label: 'Its reason shown: sign in, reload the extension, or try again', layer: 'web', path: 'web/src/lib/capture-bridge.ts' },
+      { id: 'gate', kind: 'decision', label: 'Leak check: a page, from a web address, small enough, nothing remote?', layer: 'core', path: 'service/kg/core/capture.ts' },
+      { id: 'rejected', kind: 'stop', label: 'Page refused, and why', layer: 'web', path: 'web/src/lib/capture-bridge.ts' },
       { id: 'reader', kind: 'decision', label: 'Document reader set up?', layer: 'web', path: 'web/src/lib/markitdown.ts' },
       { id: 'none', kind: 'stop', label: 'Nothing here can open pages: Settings has both', layer: 'web', path: 'web/src/lib/posting-agent.ts' },
-      { id: 'fetch', kind: 'step', label: 'Reader fetches the page', layer: 'web', path: 'web/src/lib/markitdown.ts' },
+      { id: 'fetch', kind: 'decision', label: 'Reader fetched the page?', layer: 'web', path: 'web/src/lib/markitdown.ts' },
+      { id: 'unread', kind: 'stop', label: 'The reader’s reason shown', layer: 'web', path: 'web/src/lib/markitdown.ts' },
       { id: 'empty', kind: 'decision', label: 'Came back nearly empty?', layer: 'web', path: 'web/src/lib/posting-agent.ts' },
       { id: 'blank', kind: 'stop', label: 'Told to sign in, or use the extension', layer: 'web', path: 'web/src/lib/posting-agent.ts' },
-      { id: 'keep', kind: 'decision', label: 'Page kept, and its bytes stored on this device?', layer: 'web', path: 'web/src/lib/vault-blobs.ts' },
+      { id: 'keep', kind: 'decision', label: 'Page kept with its bytes on this device? (a kept copy is reused)', layer: 'web', path: 'web/src/lib/vault-blobs.ts' },
       { id: 'unsaved', kind: 'stop', label: 'Record removed again; nothing kept', layer: 'web', path: 'web/src/lib/posting-agent.ts' },
       { id: 'model', kind: 'decision', label: 'Model reads it into a draft? (asked twice at most)', layer: 'agent', path: 'service/kg/agent/read-posting.ts' },
       { id: 'kept', kind: 'end', label: 'Error shown; the page is still in the Vault', layer: 'web', path: 'web/src/components/applications/AddFromLinkDialog.tsx' },
@@ -428,11 +440,14 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
       { from: 'local', to: 'ext', label: 'no' },
       { from: 'ext', to: 'capture', label: 'yes' },
       { from: 'ext', to: 'reader', label: 'no' },
-      { from: 'capture', to: 'gate' },
-      { from: 'gate', to: 'empty' },
+      { from: 'capture', to: 'notkept', label: 'no' },
+      { from: 'capture', to: 'gate', label: 'yes' },
+      { from: 'gate', to: 'rejected', label: 'no' },
+      { from: 'gate', to: 'empty', label: 'yes' },
       { from: 'reader', to: 'none', label: 'no' },
       { from: 'reader', to: 'fetch', label: 'yes' },
-      { from: 'fetch', to: 'empty' },
+      { from: 'fetch', to: 'unread', label: 'no' },
+      { from: 'fetch', to: 'empty', label: 'yes' },
       { from: 'empty', to: 'blank', label: 'yes' },
       { from: 'empty', to: 'keep', label: 'no' },
       { from: 'keep', to: 'unsaved', label: 'no' },
@@ -481,14 +496,15 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
     summary: 'How a change is taken back field by field, keeping whatever has been written since.',
     nodes: [
       { id: 'key', kind: 'start', label: '⌘Z, or Undo on a toast or a step', layer: 'web', path: 'web/src/lib/host.ts' },
-      { id: 'ring', kind: 'decision', label: 'Anything on the undo ring?', layer: 'tools', path: 'service/kg/tools/runtime.ts' },
-      { id: 'empty', kind: 'end', label: 'Nothing to undo', layer: 'tools', path: 'service/kg/tools/runtime.ts' },
+      { id: 'ring', kind: 'decision', label: 'Anything on the undo ring? (for a step: that step)', layer: 'tools', path: 'service/kg/tools/runtime.ts' },
+      { id: 'empty', kind: 'end', label: 'Nothing to undo; a step says “already undone” or “out of reach”', layer: 'tools', path: 'service/kg/tools/runtime.ts' },
       { id: 'rebase', kind: 'step', label: 'Rebase the entry against the records as they are now', layer: 'repo', path: 'service/kg/repo/journal.ts' },
       { id: 'group', kind: 'decision', label: 'A field in a group (stage and its dates, text and its formatting) changed since?', layer: 'repo', path: 'service/kg/repo/journal.ts' },
       { id: 'hold', kind: 'step', label: 'Leave that whole group as it is', layer: 'repo', path: 'service/kg/repo/journal.ts' },
       { id: 'used', kind: 'decision', label: 'A record it created is still used by a later one?', layer: 'repo', path: 'service/kg/repo/journal.ts' },
-      { id: 'keepit', kind: 'step', label: 'Keep that record', layer: 'repo', path: 'service/kg/repo/journal.ts' },
-      { id: 'edges', kind: 'step', label: 'Drop links, and claims, whose other end is gone', layer: 'repo', path: 'service/kg/repo/repository.ts' },
+      { id: 'keepit', kind: 'step', label: 'Keep that record, and what the entry made for it (deadline, tags, filing)', layer: 'repo', path: 'service/kg/repo/journal.ts' },
+      { id: 'employer', kind: 'step', label: 'Bring back a missing employer, or re-point to a live one of that name', layer: 'repo', path: 'service/kg/repo/repository.ts' },
+      { id: 'edges', kind: 'step', label: 'Drop links and claims with an end gone; a claim is held until its end returns', layer: 'repo', path: 'service/kg/repo/repository.ts' },
       { id: 'left', kind: 'decision', label: 'Anything left to change?', layer: 'repo', path: 'service/kg/repo/repository.ts' },
       { id: 'nothing', kind: 'end', label: '“Nothing to undo — it has changed since”', layer: 'repo', path: 'service/kg/repo/repository.ts' },
       { id: 'land', kind: 'end', label: 'Landed as a new entry, offered for redo', layer: 'repo', path: 'service/kg/repo/repository.ts' },
@@ -502,8 +518,9 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
       { from: 'group', to: 'used', label: 'no' },
       { from: 'hold', to: 'used' },
       { from: 'used', to: 'keepit', label: 'yes' },
-      { from: 'used', to: 'edges', label: 'no' },
-      { from: 'keepit', to: 'edges' },
+      { from: 'used', to: 'employer', label: 'no' },
+      { from: 'keepit', to: 'employer' },
+      { from: 'employer', to: 'edges' },
       { from: 'edges', to: 'left' },
       { from: 'left', to: 'nothing', label: 'no' },
       { from: 'left', to: 'land', label: 'yes' },
@@ -590,7 +607,76 @@ export const FLOW_PLACEMENT: readonly FlowQuestion[] = [
   },
 ]
 
-/** Every repo path this page names — what `faq-map.test.ts` checks still exists. */
+/** What each kind of box is called, on the box and in the step list read aloud. */
+export const FLOW_KIND_WORD: Record<FlowNodeKind, string> = {
+  start: 'Start',
+  step: 'Step',
+  decision: 'Decision',
+  stop: 'Stops here',
+  end: 'End',
+}
+
+/**
+ * A box as one sentence — "Decision: Form valid?" — for the step list and the
+ * box's own accessible name. A label that already ends a sentence takes no
+ * full stop.
+ */
+export function flowNodeText(node: Pick<FlowNode, 'kind' | 'label'>): string {
+  return `${FLOW_KIND_WORD[node.kind]}: ${/[.?!]$/.test(node.label) ? node.label : `${node.label}.`}`
+}
+
+/** One box of a chart as text: what it is, and where each way out of it leads. */
+export type FlowStepText = { readonly id: string; readonly text: string; readonly exits: readonly string[] }
+
+/**
+ * A chart as a numbered list, for whoever cannot see it.
+ *
+ * The drawing carries its branches only as SVG edge labels, which a screen
+ * reader never reaches: it hears a run of boxes and no connections, so the one
+ * thing a flowchart is for — what follows a decision — was lost. This is the
+ * same chart in words, in the order the boxes are written (top to bottom), each
+ * exit naming its branch and the step it leads to by number.
+ */
+export function flowSteps(flow: Pick<ControlFlow, 'nodes' | 'edges'>): FlowStepText[] {
+  const number = new Map(flow.nodes.map((n, i) => [n.id, i + 1]))
+  const byId = new Map(flow.nodes.map((n) => [n.id, n]))
+  return flow.nodes.map((node) => {
+    const out = flow.edges.filter((e) => e.from === node.id)
+    const exits =
+      out.length === 0
+        ? [node.kind === 'stop' ? 'The journey stops here.' : 'The journey ends here.']
+        : out.map((e) => {
+            const to = byId.get(e.to)
+            const where = `step ${String(number.get(e.to) ?? '?')}, ${to?.label ?? e.to}`
+            const back = e.back === true ? ' (back to an earlier step)' : ''
+            return `${e.label === undefined ? 'Next' : e.label}: ${where}${back}`
+          })
+    return { id: node.id, text: `${flowNodeText(node)} In ${node.path}`, exits }
+  })
+}
+
+/**
+ * Which journey tab a key moves to, per the tabs pattern: arrows step and wrap
+ * around, Home and End jump to the ends. `null` for a key the tab list leaves
+ * alone, so Tab still moves out of it and into the chart.
+ */
+export function tabForKey(key: string, current: number, count: number): number | null {
+  if (count <= 0) return null
+  switch (key) {
+    case 'ArrowRight':
+      return (current + 1) % count
+    case 'ArrowLeft':
+      return (current - 1 + count) % count
+    case 'Home':
+      return 0
+    case 'End':
+      return count - 1
+    default:
+      return null
+  }
+}
+
+/** Every repo path this page names — what `flow-map.test.ts` checks still exists. */
 export function flowMapPaths(): string[] {
   const paths = new Set<string>()
   for (const layer of FLOW_LAYERS) {

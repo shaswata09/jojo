@@ -71,6 +71,19 @@ export type CatalogEntry = {
   readonly destructive: boolean
   /** False for the admin pair; every other write can be taken back. */
   readonly undoable: boolean
+  /**
+   * Asked about under EVERY approval mode, `auto` included.
+   *
+   * Destructive and not undoable: `memory.reset` and `memory.clear`, the two
+   * steps that replace or empty the whole store. Every other step a mode lets
+   * through can be taken back afterwards, which is what makes letting it
+   * through a reasonable thing for a person to choose. These two cannot, so no
+   * mode lifts the question — see `isGated` in `perform-call.ts`.
+   *
+   * Derived from the same two facts rather than listed, so a third tool with
+   * both properties is asked about the day it is written.
+   */
+  readonly alwaysAsks: boolean
   readonly parameters: JsonSchema
   /**
    * True when THESE arguments need confirming although the tool is not
@@ -111,6 +124,7 @@ function buildEntry(tool: AnyTool | ReadTool<any>, effect: Effect): CatalogEntry
    */
   const destructive =
     effect === 'delete' || effect === 'admin' || (tool as AnyTool).destructive === true
+  const undoable = effect !== 'read' && (tool as AnyTool).undoable !== false
   return {
     name: tool.name,
     wireName: toWireName(tool.name),
@@ -118,7 +132,8 @@ function buildEntry(tool: AnyTool | ReadTool<any>, effect: Effect): CatalogEntry
     summary: tool.summary,
     effect,
     destructive,
-    undoable: effect !== 'read' && (tool as AnyTool).undoable !== false,
+    undoable,
+    alwaysAsks: destructive && !undoable,
     parameters: modelParameters(toJsonSchema(tool.input.meta), effect, (tool as AnyTool).appOnlyFields ?? []),
     ...confirmsOf(tool),
   }

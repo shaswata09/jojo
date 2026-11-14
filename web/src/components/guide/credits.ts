@@ -37,10 +37,17 @@ export type Credit = {
   what: string
   /** Where to look. One path, or a short list; the first place that proves it. */
   where?: string
+  /**
+   * A scope this credit speaks for, such as `@radix-ui/` under `radix-ui`: an
+   * umbrella package whose parts are published separately, by the same
+   * holder, under the same licence. The build's check accepts a bundled part
+   * on the umbrella's credit, and still checks the part's licence against it.
+   */
+  covers?: string
 }
 
-/** What runs in the app itself. */
-export const RUNTIME: readonly Credit[] = [
+/** What jojo itself imports, and what runs in the app because of it. */
+const DIRECT: readonly Credit[] = [
   {
     name: 'react',
     version: '19.2.8',
@@ -71,6 +78,7 @@ export const RUNTIME: readonly Credit[] = [
     holder: '2022 WorkOS',
     what: 'The accessible parts under the buttons you press — dialogs, sheets, popovers, menus, switches, tooltips: focus handling, keyboard behaviour and the ARIA wiring. jojo styles them; Radix makes them behave. Its positioning comes from Floating UI (MIT), which it brings with it.',
     where: 'src/components/ui',
+    covers: '@radix-ui/',
   },
   {
     name: 'lucide-react',
@@ -95,6 +103,7 @@ export const RUNTIME: readonly Credit[] = [
     holder: 'Google LLC',
     what: 'Usage analytics, and only that — `firebase/app` and `firebase/analytics`, loaded on demand the first time something is reported, so a build without analytics, or a person who turned it off, downloads none of it. The package ships no licence file; the licence is from its manifest and the holder from the notice at the top of each of its files.',
     where: 'src/lib/analytics.ts',
+    covers: '@firebase/',
   },
   {
     name: 'tailwindcss',
@@ -245,7 +254,7 @@ export const RUNTIME: readonly Credit[] = [
     version: '12.11.5',
     licence: 'MIT',
     holder: 'webkid GmbH',
-    what: 'The arrows on the benchmark\u2019s workflow graphs \u2014 nodes, edges, panning and the fit-to-view. Only the drawing: every coordinate is computed in `bench-flow.ts`, because a layout that lives in a component is a layout nothing can test. Loaded on demand, so the page that never opens it never downloads it.',
+    what: 'The arrows on the benchmark\u2019s workflow graphs and on both graphs of the Control flow graph page \u2014 nodes, edges, panning and the fit-to-view. Only the drawing: every coordinate is computed in `bench-flow.ts` and `flow-layout.ts`, because a layout that lives in a component is a layout nothing can test. Loaded on demand, so the page that never opens it never downloads it.',
     where: 'src/components/guide/WorkflowFlow.tsx',
   },
   {
@@ -281,6 +290,328 @@ export const RUNTIME: readonly Credit[] = [
     where: 'vite.config.ts',
   },
 ]
+
+/**
+ * In the bundle because something above needs it, not because jojo imports it.
+ *
+ * Credited all the same: what ships is what the licences attach to, and an
+ * ISC or BSD notice owed by a package three levels down is owed just as much.
+ * The list came from walking the production build's source maps, and the build
+ * keeps it complete: `jojo:credited-bundle` in `vite.config.ts` reads the
+ * package of every module it emits and fails if one is credited nowhere here,
+ * or is credited under a licence other than the one it states. Parts of
+ * Radix (`@radix-ui/…`) and Firebase (`@firebase/…`) ride on their umbrella's
+ * credit above — see `covers`.
+ *
+ * Where two copies of one package are bundled, the version is the one the app
+ * resolves, and the other is named in the text; both state the same licence.
+ */
+export const BUNDLED: readonly Credit[] = [
+  {
+    name: '@dnd-kit/accessibility',
+    version: '3.1.1',
+    licence: 'MIT',
+    holder: '2021, Claudéric Demers',
+    what: 'Brought in by @dnd-kit/core: the screen-reader announcements while a card is dragged.',
+  },
+  {
+    name: '@dnd-kit/utilities',
+    version: '3.2.2',
+    licence: 'MIT',
+    holder: '2021, Claudéric Demers',
+    what: 'Brought in by @dnd-kit/core: the small helpers its sensors are written with.',
+  },
+  {
+    name: '@floating-ui/core',
+    version: '1.8.0',
+    licence: 'MIT',
+    holder: '2021-present Floating UI contributors',
+    what: 'Brought in by Radix: the arithmetic that places a popover beside what opened it and keeps it on screen.',
+  },
+  {
+    name: '@floating-ui/dom',
+    version: '1.8.0',
+    licence: 'MIT',
+    holder: '2021-present Floating UI contributors',
+    what: 'Brought in by Radix: the same placement, measured against the page.',
+  },
+  {
+    name: '@floating-ui/react-dom',
+    version: '2.1.9',
+    licence: 'MIT',
+    holder: '2021-present Floating UI contributors',
+    what: 'Brought in by Radix: the React binding of that placement.',
+  },
+  {
+    name: '@floating-ui/utils',
+    version: '0.2.12',
+    licence: 'MIT',
+    holder: '2021-present Floating UI contributors',
+    what: 'Brought in by Radix, under the three above.',
+  },
+  {
+    name: '@pdf-lib/standard-fonts',
+    version: '1.0.0',
+    licence: 'MIT',
+    holder: '2018 Andrew Dillon',
+    what: 'Brought in by pdf-lib: the metrics of the fourteen standard PDF fonts, used when a comment is written onto a page.',
+  },
+  {
+    name: '@pdf-lib/upng',
+    version: '1.0.1',
+    licence: 'MIT',
+    holder: '2017 Photopea',
+    what: 'Brought in by pdf-lib: its PNG decoder.',
+  },
+  {
+    name: 'pako',
+    version: '1.0.11',
+    licence: '(MIT AND Zlib)',
+    holder:
+      '2014-2017 Vitaly Puzrin and Andrei Tuputcyn; the zlib port 1995-2013 Jean-loup Gailly and Mark Adler',
+    what: 'Brought in by pdf-lib: the deflate that compresses a saved PDF. Its own code is MIT; the parts ported from zlib keep the zlib licence, quoted in THIRD-PARTY-NOTICES.md.',
+  },
+  {
+    name: 'tslib',
+    version: '2.8.1',
+    licence: '0BSD',
+    holder: 'Microsoft Corporation',
+    what: 'The helpers TypeScript compiles into a library — here into dnd-kit, Firebase and the packages under Radix’s dialogs. pdf-lib brings a second copy, 1.14.1. 0BSD asks for no notice; it is credited because it ships.',
+  },
+  {
+    name: '@xyflow/system',
+    version: '0.0.81',
+    licence: 'MIT',
+    holder: '2019-2025 webkid GmbH',
+    what: 'Brought in by @xyflow/react: the framework-free half of it — panning, zooming and edge paths.',
+  },
+  {
+    name: 'classcat',
+    version: '5.0.5',
+    licence: 'MIT',
+    holder: 'Jorge Bucaran',
+    what: 'Brought in by @xyflow/react: its class names.',
+  },
+  {
+    name: 'd3-color',
+    version: '3.1.0',
+    licence: 'ISC',
+    holder: '2010-2022 Mike Bostock',
+    what: 'Brought in by @xyflow/react, through d3-zoom: colour parsing for its transitions.',
+  },
+  {
+    name: 'd3-dispatch',
+    version: '3.0.1',
+    licence: 'ISC',
+    holder: '2010-2021 Mike Bostock',
+    what: 'Brought in by @xyflow/react, through d3-zoom: its event dispatch.',
+  },
+  {
+    name: 'd3-drag',
+    version: '3.0.0',
+    licence: 'ISC',
+    holder: '2010-2021 Mike Bostock',
+    what: 'Brought in by @xyflow/react: dragging the canvas to pan it.',
+  },
+  {
+    name: 'd3-ease',
+    version: '3.0.1',
+    licence: 'BSD-3-Clause',
+    holder: '2010-2021 Mike Bostock; 2001 Robert Penner',
+    what: 'Brought in by @xyflow/react, through d3-transition: the easing of a zoom. The one BSD licence in the bundle; its text is quoted in THIRD-PARTY-NOTICES.md, as a binary redistribution requires.',
+  },
+  {
+    name: 'd3-interpolate',
+    version: '3.0.1',
+    licence: 'ISC',
+    holder: '2010-2021 Mike Bostock',
+    what: 'Brought in by @xyflow/react, through d3-zoom: the in-between steps of a zoom.',
+  },
+  {
+    name: 'd3-selection',
+    version: '3.0.0',
+    licence: 'ISC',
+    holder: '2010-2021 Mike Bostock',
+    what: 'Brought in by @xyflow/react: how d3-zoom attaches to the canvas.',
+  },
+  {
+    name: 'd3-timer',
+    version: '3.0.1',
+    licence: 'ISC',
+    holder: '2010-2021 Mike Bostock',
+    what: 'Brought in by @xyflow/react, through d3-transition: the frame timer behind an animated zoom.',
+  },
+  {
+    name: 'd3-transition',
+    version: '3.0.1',
+    licence: 'ISC',
+    holder: '2010-2021 Mike Bostock',
+    what: 'Brought in by @xyflow/react: animated fit-to-view and zoom.',
+  },
+  {
+    name: 'd3-zoom',
+    version: '3.0.0',
+    licence: 'ISC',
+    holder: '2010-2021 Mike Bostock',
+    what: 'Brought in by @xyflow/react: pan and zoom on the graphs.',
+  },
+  {
+    name: 'zustand',
+    version: '5.0.15',
+    licence: 'MIT',
+    holder: '2019 Paul Henschel',
+    what: 'Brought in by @react-three/fiber, which keeps the transfer scene’s state in it. @xyflow/react brings a second copy, 4.5.7, for the graphs’ state.',
+  },
+  {
+    name: 'use-sync-external-store',
+    version: '1.6.0',
+    licence: 'MIT',
+    holder: 'Meta Platforms, Inc. and affiliates',
+    what: 'Brought in by zustand and @react-three/fiber: the React shim their stores subscribe through.',
+  },
+  {
+    name: 'its-fine',
+    version: '2.0.0',
+    licence: 'MIT',
+    holder: '2022-2025 Poimandres',
+    what: 'Brought in by @react-three/fiber: carries React context into the 3D scene.',
+  },
+  {
+    name: 'suspend-react',
+    version: '0.1.3',
+    licence: 'MIT',
+    holder: '2021 Paul Henschel',
+    what: 'Brought in by @react-three/fiber and drei: waits for the scene’s textures without blocking the page.',
+  },
+  {
+    name: 'react-use-measure',
+    version: '2.1.7',
+    licence: 'MIT',
+    holder: '2019-2025 Poimandres',
+    what: 'Brought in by @react-three/fiber: sizes the canvas to its box.',
+  },
+  {
+    name: 'react-merge-refs',
+    version: '2.1.1',
+    licence: 'MIT',
+    holder: '2020 Greg Bergé',
+    what: 'Brought in by @splinetool/react-spline: joins its refs to the mascot’s canvas.',
+  },
+  {
+    name: 'lodash.debounce',
+    version: '4.0.8',
+    licence: 'MIT',
+    holder:
+      'jQuery Foundation and other contributors; based on Underscore.js, Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors',
+    what: 'Brought in by @splinetool/react-spline: holds back a resize of the mascot’s canvas until the window has settled.',
+  },
+  {
+    name: 'aria-hidden',
+    version: '1.2.6',
+    licence: 'MIT',
+    holder: '2017 Anton Korzunov',
+    what: 'Brought in by Radix: hides the rest of the page from a screen reader while a dialog is open.',
+  },
+  {
+    name: 'react-remove-scroll',
+    version: '2.7.2',
+    licence: 'MIT',
+    holder: '2017 Anton Korzunov',
+    what: 'Brought in by Radix: stops the page behind an open dialog from scrolling.',
+  },
+  {
+    name: 'react-remove-scroll-bar',
+    version: '2.3.8',
+    licence: 'MIT',
+    holder: 'Anton Korzunov (the package ships no licence file; the licence is from its manifest)',
+    what: 'Brought in by Radix: keeps the layout from jumping when that scroll bar goes away.',
+  },
+  {
+    name: 'react-style-singleton',
+    version: '2.2.3',
+    licence: 'MIT',
+    holder: '2017 Anton Korzunov',
+    what: 'Brought in by Radix, under the scroll lock: one style tag however many dialogs are open.',
+  },
+  {
+    name: 'use-callback-ref',
+    version: '1.3.3',
+    licence: 'MIT',
+    holder: '2017 Anton Korzunov',
+    what: 'Brought in by Radix, under the scroll lock.',
+  },
+  {
+    name: 'use-sidecar',
+    version: '1.1.3',
+    licence: 'MIT',
+    holder: '2017 Anton Korzunov',
+    what: 'Brought in by Radix, under the scroll lock: loads its event handling apart from its markup.',
+  },
+  {
+    name: 'get-nonce',
+    version: '1.0.1',
+    licence: 'MIT',
+    holder: '2020 Anton Korzunov',
+    what: 'Brought in by Radix, under the scroll lock: the nonce for the style tag it writes, when a page sets one.',
+  },
+]
+
+/** What runs in the app itself: what jojo imports, then what those bring with them. */
+export const RUNTIME: readonly Credit[] = [...DIRECT, ...BUNDLED]
+
+/** One package copy the build put in the bundle, as the build reads it off disk. */
+export type BundledCopy = {
+  readonly name: string
+  readonly version: string
+  readonly licence: string | null
+}
+
+/**
+ * The package a bundled module came from, and the folder its manifest is in.
+ *
+ * The LAST `node_modules` in the path, so a copy nested under another package
+ * (`@xyflow/react/node_modules/zustand`) is that copy and not its parent.
+ * `null` for jojo's own files and the bundler's virtual modules.
+ */
+export function packageOfModule(id: string): { name: string; dir: string } | null {
+  const path = (id.split('?')[0] ?? '').replace(/\\/g, '/').replace(/^\0/, '')
+  const marker = '/node_modules/'
+  const at = path.lastIndexOf(marker)
+  if (at === -1) return null
+  const [first = '', second = ''] = path.slice(at + marker.length).split('/')
+  const name = first.startsWith('@') ? (second === '' ? '' : `${first}/${second}`) : first
+  if (name === '' || name.startsWith('.')) return null
+  return { name, dir: `${path.slice(0, at + marker.length)}${name}` }
+}
+
+/**
+ * What the build bundled that this file does not credit, or credits wrongly —
+ * one sentence each, sorted, so the build can fail with all of them at once.
+ */
+export function creditProblems(
+  bundled: readonly BundledCopy[],
+  credits: readonly Credit[] = RUNTIME,
+): string[] {
+  const problems = new Set<string>()
+  for (const copy of bundled) {
+    const credit =
+      credits.find((c) => c.name === copy.name) ??
+      credits.find((c) => c.covers !== undefined && copy.name.startsWith(c.covers))
+    if (credit === undefined) {
+      problems.add(
+        `${copy.name} ${copy.version} (${copy.licence ?? 'no licence stated'}) is in the bundle and credited nowhere — add it to BUNDLED in credits.ts.`,
+      )
+    } else if (copy.licence !== null && credit.licence !== copy.licence) {
+      // A manifest that states nothing is not a disagreement: the credit may
+      // read the licence from the file beside it (@splinetool/react-spline).
+      // The test holds those credits to node_modules either way.
+      problems.add(
+        `${copy.name} ${copy.version} states ${copy.licence ?? 'no licence'}, and is credited under ${credit.licence ?? 'none'} (${credit.name}).`,
+      )
+    }
+  }
+  return [...problems].sort()
+}
 
 /**
  * What the phone app is made of.
@@ -453,7 +784,7 @@ export const DEVELOPMENT: readonly Credit[] = [
     version: '6.0.3',
     licence: 'Apache-2.0',
     holder: 'Microsoft Corporation',
-    what: 'Four separate compiler projects, so the portable layers can be compiled without the DOM in scope — which is what makes a browser API in the wrong file a build error rather than a code review. It is also the parser one of the two guard scripts uses.',
+    what: 'Four separate compiler projects, so the portable layers can be compiled without the DOM in scope — which is what makes a browser API in the wrong file a build error rather than a code review. It is also the parser one of the two guard scripts uses, and the one the code flow graph reads imports with.',
   },
   {
     name: 'vitest',
@@ -535,7 +866,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
 
-/** The full ISC permission notice — lucide-react and idb. */
+/** The full ISC permission notice — lucide-react, idb and the d3 modules under the graphs. */
 export const ISC_TEXT = `Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
 THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.`
@@ -575,3 +906,28 @@ export const APACHE_CLAUSES: readonly { heading: string; text: string }[] = [
     text: 'Unless required by applicable law or agreed to in writing, Licensor provides the Work … on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied … In no event and under no legal theory … shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work.',
   },
 ]
+
+/** The BSD 3-Clause licence, as d3-ease states it beneath its two copyright lines. */
+export const BSD_3_TEXT = `Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+* Neither the name of the author nor the names of contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`
+
+/** The zlib licence, as pako's zlib port carries it at the top of each file. */
+export const ZLIB_TEXT = `This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.`
+
+/** The BSD Zero Clause licence — tslib. It asks for no notice at all. */
+export const ZERO_BSD_TEXT = `Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.`

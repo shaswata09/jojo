@@ -26,6 +26,7 @@ import type { ModelSettings } from '@/lib/llm'
 import { convertUrl } from '@/lib/markitdown'
 import { blobIndex, useVaultBlobs } from '@/lib/vault-blobs'
 import { isLocalTarget } from '@/lib/posting-target'
+import { scoutKeptNote } from '@/lib/scout-reading-queue'
 
 /**
  * A job posting URL, read by the model into a draft application.
@@ -56,6 +57,15 @@ import { isLocalTarget } from '@/lib/posting-target'
  * which is a fact about the page. A posting that wants a sign-in wants one from
  * the reader too, and trying it would replace the useful sentence with a worse
  * one.
+ *
+ * NEVER THE READER FOR A READ NOBODY ASKED FOR. MarkItDown fetches the page
+ * itself and follows redirects, and nothing here sees the hops: only the first
+ * address is checked against `isLocalTarget`. Measured 2026-11-14: a public
+ * address answering 302 to `http://127.0.0.1:…/secret` came back as the
+ * secret's text. A person who pasted or approved an address has seen it; the
+ * scout's background reader opens what a board listed before anyone has
+ * looked, so it is `unattended` and goes through the extension or not at all —
+ * the extension checks where a tab LANDED before it reads it.
  *
  * WHY THE PAGE IS SAVED BEFORE THE FORM OPENS. The posting is a record in its
  * own right — the thing that belongs to somebody else, kept in the Vault under
@@ -131,6 +141,18 @@ export type ReadPostingOptions = {
   onStep?: (step: PostingStep) => void
   signal?: AbortSignal
   /**
+   * Set by the scout's background reader: nobody has looked at this address
+   * yet, so the document reader, which follows redirects unchecked, is not
+   * used. See "NEVER THE READER" in the header.
+   */
+  unattended?: boolean
+  /**
+   * The suggestion this read is for, when the scout's reader is the caller. A
+   * page this read keeps is marked as kept for it (`scoutKeptNote`), so a
+   * Discard can take it back out even when the reading that said so was lost.
+   */
+  keptFor?: string
+  /**
    * A copy of this page the Vault already holds. The page is still opened —
    * the model reads the live text — but not saved a second time; the outcome
    * carries this file instead.
@@ -151,7 +173,29 @@ export const NOTHING_TO_READ_WITH =
   'Reading a posting needs the jojo browser extension, which opens the page the way you would and saves it, or the document reader, which fetches it. Neither is set up in this browser — Settings has both.'
 
 /**
- * Opens the page: through the extension when there is one, the reader when not.
+ * Said, to the background reader, when this browser has no extension. Not this
+ * card's failure: the queue stops until something changes, as it does for
+ * `NOTHING_TO_READ_WITH`.
+ */
+export const NO_BACKGROUND_ROUTE =
+  'Reading suggestions before you look at them needs the jojo browser extension. The document reader is used only for a posting you open yourself.'
+
+/**
+ * What a read does when the extension is not there: the reader's address, or
+ * why there is nothing to read with. Exported for its test.
+ */
+export function withoutExtension(
+  reader: string,
+  unattended: boolean,
+): { reader: string } | { reason: string } {
+  if (unattended) return { reason: NO_BACKGROUND_ROUTE }
+  if (reader.trim() === '') return { reason: NOTHING_TO_READ_WITH }
+  return { reader }
+}
+
+/**
+ * Opens the page: through the extension when there is one, the reader when not
+ * — and, for an `unattended` read, never the reader.
  *
  * See the header for why the order is availability and never failure.
  */
@@ -159,6 +203,7 @@ async function openPage(
   target: string,
   reader: string,
   signal?: AbortSignal,
+  unattended = false,
 ): Promise<Page | { reason: string }> {
   // Before either route: the extension refuses these for itself, the reader
   // never did, and its fetch runs on the person's own machine (R6).
@@ -172,8 +217,9 @@ async function openPage(
     }
   }
   if (!captured.absent) return { reason: captured.reason }
-  if (reader.trim() === '') return { reason: NOTHING_TO_READ_WITH }
-  const converted = await convertUrl(reader, target, signal)
+  const route = withoutExtension(reader, unattended)
+  if ('reason' in route) return route
+  const converted = await convertUrl(route.reader, target, signal)
   return converted.ok ? { via: 'reader', text: converted.markdown } : { reason: converted.reason }
 }
 
@@ -318,6 +364,8 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       reader,
       onStep,
       signal,
+      unattended,
+      keptFor,
       reuseFile,
     }: ReadPostingOptions): Promise<PostingOutcome> => {
       const target = canonicalPostingUrl(url.trim())
@@ -327,7 +375,7 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
 
       /* ------------------------------ 1. read ------------------------------ */
       onStep?.('reading')
-      const page = await openPage(target, reader, signal)
+      const page = await openPage(target, reader, signal, unattended)
       if ('reason' in page) return { ok: false, step: 'reading', reason: page.reason }
 
       // A page that came back as almost nothing is worth catching HERE rather
@@ -345,11 +393,16 @@ export function useReadPosting(): (options: ReadPostingOptions) => Promise<Posti
       await blobIndex.ready()
       const graph = repo.getSnapshot()
       const source = postingSourceForUrl(graph, target)
-      const already =
-        reuseFile ?? reusablePage(source?.fileId, projections.files(graph), blobs.has)
+      const already = reuseFile ?? reusablePage(source?.fileId, projections.files(graph), blobs.has)
       const file = already ?? (await savePage(page, target, ''))
       if (file === null) return { ok: false, step: 'saving', reason: NOT_STORED }
       const created = already === undefined
+      // Marked as this suggestion's NOW, before the model is asked: the
+      // reading that would say so lands only after the answer, and a reload in
+      // between used to leave the page with no claimant Discard could see.
+      if (created && keptFor !== undefined) {
+        updateFile(file.id, { note: scoutKeptNote(file.note, keptFor) })
+      }
 
       /* ------------------------------ 2. ask ------------------------------- */
       onStep?.('asking')

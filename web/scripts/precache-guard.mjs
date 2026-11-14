@@ -110,3 +110,77 @@ export const LAZY = /^assets\/DataTransferScene-/
 /** Fingerprinted code, styles, fonts and wasm, except what `LAZY` names. */
 export const precachedAsset = (url) =>
   isFingerprinted(url) && /\.(?:m?js|css|woff2|wasm)$/.test(url) && !LAZY.test(url)
+
+/**
+ * Files outside `assets/` that are installed with the worker anyway.
+ *
+ * The mascot's scene (1.3 MB) and the wasm it runs on keep the same URL across
+ * builds, so they were left to the runtime rule — cached on first use, and in
+ * the worker's own cache, which the next deploy's worker deletes on activate.
+ * After every deploy the 3D mascot fell back to the SVG offline until it had
+ * been opened online again: R32 for the half that is not fingerprinted. They
+ * load on every page, so installing them costs nothing the first visit was not
+ * going to fetch, and the worker reuses an earlier cache's copy when its bytes
+ * are unchanged rather than downloading them again.
+ */
+export const OFFLINE_STATIC = /^(?:mascot\.splinecode|spline\/[^/]+\.wasm)$/
+
+/** Whether a non-fingerprinted file of the build is installed with the worker. */
+export const precachedStatic = (url) => OFFLINE_STATIC.test(url)
+
+/**
+ * The strings `index.html` has to contain to be THIS build's document: the
+ * URL of every script and stylesheet it names, as written.
+ *
+ * The worker checks the document it installs against these, because the
+ * network can hand it an older one — a CDN edge that has not caught up with a
+ * deploy, or the browser's HTTP cache, which is what it used to come from. An
+ * older `index.html` names an entry chunk this cache does not hold, and offline
+ * that is a blank page.
+ */
+export function bootMarks(html, base) {
+  const { script, stylesheet } = entryAssets(html, base)
+  return [...script, ...stylesheet].map((path) => base + path)
+}
+
+/*
+ * The functions below run INSIDE the service worker. `make-sw.mjs` writes their
+ * source into `sw.js` with `Function.prototype.toString`, so the test beside
+ * this file exercises the code that ships rather than a copy of it. That is
+ * also their constraint: each must be self-contained — no imports, nothing
+ * from this module's scope.
+ */
+
+/**
+ * Whether a window is running the build whose fingerprinted files are `own`.
+ *
+ * `reported` is every script and stylesheet URL the window's document holds,
+ * Vite's runtime-inserted preloads included. Only this origin's `assets/` is
+ * compared — that is where every name carries a content hash, so a URL there
+ * names one build — and a window reporting none of those is not counted as
+ * running anything.
+ */
+export function belongsToBuild(reported, own, assetsPrefix) {
+  if (!Array.isArray(reported)) return false
+  const hashed = reported.filter((url) => typeof url === 'string' && url.startsWith(assetsPrefix))
+  return hashed.length > 0 && hashed.every((url) => own.has(url))
+}
+
+/**
+ * The jojo caches made before `own`, oldest first.
+ *
+ * `caches.keys()` lists in creation order, and a worker's cache is created at
+ * its install, so these are the caches of earlier builds. Only those: a cache
+ * made AFTER `own` belongs to a newer worker that may be installing right now,
+ * and deleting it would leave that worker installed over nothing.
+ */
+export function olderCaches(keys, own) {
+  const at = keys.indexOf(own)
+  const before = at < 0 ? keys.filter((name) => name !== own) : keys.slice(0, at)
+  return before.filter((name) => name.startsWith('jojo-'))
+}
+
+/** Whether a fetched `index.html` is this build's: it names every mark. */
+export function indexIsBuild(text, marks) {
+  return marks.length > 0 && marks.every((mark) => text.includes(mark))
+}

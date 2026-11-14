@@ -19,7 +19,18 @@
  * than about the document.
  */
 import { describe, expect, it } from 'vitest'
-import { auditPrecache, entryAssets, isFingerprinted, localPath, precachedAsset } from '../../scripts/precache-guard.mjs'
+import {
+  auditPrecache,
+  belongsToBuild,
+  bootMarks,
+  entryAssets,
+  indexIsBuild,
+  isFingerprinted,
+  localPath,
+  olderCaches,
+  precachedAsset,
+  precachedStatic,
+} from '../../scripts/precache-guard.mjs'
 import makeSw from '../../scripts/make-sw.mjs?raw'
 
 /**
@@ -211,5 +222,147 @@ describe('which lazy chunks are installed with the worker', () => {
     expect(activate.indexOf('carry(')).toBeLessThan(activate.indexOf('caches.delete'))
     expect(isFingerprinted('assets/x-ABC.js')).toBe(true)
     expect(isFingerprinted('mascot.splinecode')).toBe(false)
+  })
+})
+
+describe('what the mascot needs offline', () => {
+  /*
+   * R3. The scene and its wasm keep one URL across builds, so they were left
+   * to first use — in the worker's own cache, which the next deploy deleted.
+   */
+  it('installs the scene and the wasm with the worker', () => {
+    expect(precachedStatic('mascot.splinecode')).toBe(true)
+    expect(precachedStatic('spline/process.wasm')).toBe(true)
+  })
+
+  it('is what make-sw adds to the install', () => {
+    expect(makeSw).toMatch(/if \(precachedStatic\(f\.url\)\) boot\.add\(f\.url\)/)
+  })
+
+  it('and nothing else outside assets/ that is large and not needed offline', () => {
+    expect(precachedStatic('jojo-extension.zip')).toBe(false)
+    expect(precachedStatic('transfer/scene.png')).toBe(false)
+    expect(precachedStatic('jojo-bridge.mjs')).toBe(false)
+  })
+})
+
+describe('the document the worker installs', () => {
+  /*
+   * R3. Install fetched index.html through the HTTP cache, and the host sends
+   * max-age=600: within ten minutes of a deploy the new worker cached the OLD
+   * document, which names an entry chunk neither cache holds. Offline was a
+   * blank page.
+   */
+  const marks = bootMarks(SHELL, '/')
+
+  it('is recognised by the URLs it names', () => {
+    expect(marks).toEqual(['/assets/index-AAA.js', '/assets/index-CCC.css'])
+    expect(indexIsBuild(SHELL, marks)).toBe(true)
+  })
+
+  it('is refused when it is the previous build’s', () => {
+    expect(indexIsBuild(SHELL.replace('index-AAA.js', 'index-OLD.js'), marks)).toBe(false)
+    expect(indexIsBuild('', marks)).toBe(false)
+  })
+
+  it('is never accepted on no evidence', () => {
+    expect(indexIsBuild(SHELL, [])).toBe(false)
+  })
+
+  it('is fetched past the HTTP cache, checked, and put in last', () => {
+    const install = makeSw.slice(makeSw.indexOf("addEventListener('install'"))
+    const body = install.slice(0, install.indexOf('addEventListener(', 10))
+    expect(body).toMatch(/fetch\(new Request\(INDEX, \{ cache: 'reload' \}\)\)/)
+    const check = body.indexOf('indexIsBuild(')
+    const put = body.indexOf('cache.put(INDEX')
+    const rest = body.indexOf('Promise.all(PRECACHE')
+    expect(check).toBeGreaterThan(-1)
+    expect(put).toBeGreaterThan(check)
+    expect(rest).toBeGreaterThan(-1)
+    expect(put).toBeGreaterThan(rest)
+    // And a file outside assets/ is fetched past the HTTP cache as well.
+    expect(makeSw).toMatch(/fetch\(new Request\(url, \{ cache: 'reload' \}\)\)/)
+  })
+})
+
+describe('which build a window is running', () => {
+  const ASSETS = 'https://x.test/jojo/assets/'
+  const own = new Set([`${ASSETS}index-NEW.js`, `${ASSETS}index-NEW.css`, `${ASSETS}Graph-NEW.js`])
+
+  it('is this one when every hashed file it holds is this build’s', () => {
+    expect(
+      belongsToBuild(
+        [`${ASSETS}index-NEW.js`, `${ASSETS}index-NEW.css`, 'https://x.test/jojo/favicon.svg'],
+        own,
+        ASSETS,
+      ),
+    ).toBe(true)
+  })
+
+  it('is another when any hashed file is not', () => {
+    expect(belongsToBuild([`${ASSETS}index-NEW.js`, `${ASSETS}Graph-OLD.js`], own, ASSETS)).toBe(false)
+    expect(belongsToBuild([`${ASSETS}index-OLD.js`], own, ASSETS)).toBe(false)
+  })
+
+  it('is unknown — so not this one — for silence or a window with nothing hashed', () => {
+    expect(belongsToBuild(null, own, ASSETS)).toBe(false)
+    expect(belongsToBuild(undefined, own, ASSETS)).toBe(false)
+    expect(belongsToBuild([], own, ASSETS)).toBe(false)
+    expect(belongsToBuild(['https://x.test/jojo/favicon.svg'], own, ASSETS)).toBe(false)
+  })
+
+  it('is not fooled by another origin’s assets/', () => {
+    expect(belongsToBuild(['https://evil.test/jojo/assets/index-NEW.js'], own, ASSETS)).toBe(false)
+  })
+})
+
+describe('the caches an update touches', () => {
+  it('are the ones made before this worker’s, oldest first', () => {
+    expect(olderCaches(['jojo-a', 'other', 'jojo-b', 'jojo-c', 'jojo-d'], 'jojo-c')).toEqual([
+      'jojo-a',
+      'jojo-b',
+    ])
+  })
+
+  it('never include a newer worker’s cache, which may be mid-install', () => {
+    expect(olderCaches(['jojo-mine', 'jojo-newer'], 'jojo-mine')).toEqual([])
+  })
+
+  it('are every other jojo cache when this worker’s own is missing', () => {
+    expect(olderCaches(['jojo-a', 'x', 'jojo-b'], 'jojo-c')).toEqual(['jojo-a', 'jojo-b'])
+  })
+})
+
+describe('when a waiting worker takes over', () => {
+  /*
+   * R3. No skipWaiting and no handshake: the waiting worker never activated,
+   * and offline the old one booted the old build against a database the new
+   * one had upgraded. It must take over — but only when no open window still
+   * runs the old build, whose lazy chunks live in the cache activate deletes.
+   */
+  const listener = makeSw.slice(makeSw.indexOf("addEventListener('message'"))
+  const body = listener.slice(0, listener.indexOf("addEventListener('activate'"))
+
+  it('ships the tested helpers as they are', () => {
+    for (const fn of [belongsToBuild, olderCaches, indexIsBuild])
+      expect(makeSw).toContain('${' + fn.name + '.toString()}')
+  })
+
+  it('checks the sender, asks every window, and only then skips waiting', () => {
+    const sender = body.indexOf('belongsToBuild(data.assets')
+    const census = body.indexOf("matchAll({ type: 'window', includeUncontrolled: true })")
+    const verdict = body.indexOf('answers.every((assets) => belongsToBuild(assets')
+    const skip = body.indexOf('self.skipWaiting()')
+    expect(sender).toBeGreaterThan(-1)
+    expect(census).toBeGreaterThan(sender)
+    expect(verdict).toBeGreaterThan(census)
+    expect(skip).toBeGreaterThan(verdict)
+    // Exactly one call, and it is the guarded one.
+    expect(makeSw.split('skipWaiting()').length - 1).toBe(1)
+  })
+
+  it('deletes only older caches on activate', () => {
+    const activate = makeSw.slice(makeSw.indexOf("addEventListener('activate'"))
+    expect(activate.slice(0, activate.indexOf('caches.delete'))).toContain('olderCaches(')
   })
 })

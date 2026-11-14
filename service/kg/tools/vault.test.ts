@@ -129,7 +129,59 @@ describe('vault.person.update asks before a filing drops a brief or a role', () 
     expect(b.asks({ id: b.person, applicationIds: [b.rice, b.baylor, b.ut] })).toBe(false)
   })
 
+  it('asks when the briefs sent drop or blank one the person already has', () => {
+    const b = briefed()
+    expect(b.asks({ id: b.person, briefs: [] })).toBe(true)
+    expect(b.asks({ id: b.person, briefs: [{ applicationId: b.ut, note: 'Mention teaching' }] })).toBe(true)
+    // Blank is dropped on save, by the same `normaliseBriefs` the predicate reads.
+    expect(b.asks({ id: b.person, briefs: [{ applicationId: b.rice, note: '   ' }] })).toBe(true)
+  })
+
+  it('does not ask when the briefs sent keep every one already written', () => {
+    const b = briefed()
+    expect(b.asks({ id: b.person, briefs: [{ applicationId: b.rice, note: 'Stress the grant, and the lab' }] })).toBe(false)
+    expect(
+      b.asks({
+        id: b.person,
+        briefs: [
+          { applicationId: b.rice, note: 'Stress the grant' },
+          { applicationId: b.ut, note: 'Mention teaching' },
+        ],
+      }),
+    ).toBe(false)
+  })
+
   it('says the filing is the whole set', () => {
     expect(TOOLS['vault.person.update'].summary).toContain('replaces the whole filing')
+  })
+})
+
+describe('vault.person.unfile asks before it takes a brief or a role with it', () => {
+  function filed() {
+    const h = harness()
+    const rice = app(h, 'Rice')
+    const baylor = app(h, 'Baylor')
+    const ut = app(h, 'UT')
+    const person = run(h, 'vault.person.create', {
+      name: 'Anita',
+      applicationIds: [rice, baylor, ut],
+      roles: [{ applicationId: baylor, role: 'contact' }],
+    })
+    run(h, 'vault.person.update', { id: person, briefs: [{ applicationId: rice, note: 'Stress the grant' }] })
+    const confirms = TOOLS['vault.person.unfile'].confirms
+    if (!confirms) throw new Error('vault.person.unfile declares no confirms')
+    const asks = (applicationId: NodeId) => confirms.when({ id: person, applicationId } as never, h.repo.getSnapshot())
+    return { rice, baylor, ut, asks }
+  }
+
+  it('asks for a job with a brief, and for a job with a role', () => {
+    const f = filed()
+    expect(f.asks(f.rice)).toBe(true)
+    expect(f.asks(f.baylor)).toBe(true)
+  })
+
+  it('does not ask for a bare filing', () => {
+    const f = filed()
+    expect(f.asks(f.ut)).toBe(false)
   })
 })

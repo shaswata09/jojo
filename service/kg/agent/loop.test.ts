@@ -7,6 +7,8 @@
  * fake would let through untested.
  */
 import { describe, expect, it, vi } from 'vitest'
+import { APPROVAL_MODES } from '../core/model'
+import type { ApprovalMode } from '../core/model'
 import { MutableSnapshot } from '../core/snapshot'
 import { createRepository } from '../repo/repository'
 import { createToolRuntime } from '../tools/runtime'
@@ -18,7 +20,7 @@ import { CATALOG } from './catalog'
 import { fitHistory, RESERVED_FOR_REPLY, SUMMARY_SHARE } from './budget'
 import { SECTION_MARK, asMessage, compact, MIN_SUMMARY_CHARS, replacedBy } from './compact'
 import { estimateTokens } from '../core/model-server'
-import { CONTINUE_PROMPT, CUT_CALL_PROMPT, runAgent, SYSTEM_PROMPT } from './loop'
+import { CONTINUE_PROMPT, CUT_CALL_PROMPT, GATE_FOR, runAgent, SYSTEM_PROMPT } from './loop'
 import type { AgentEvent, LlmTurnFn } from './loop'
 
 const START = Date.parse('2026-08-22T09:00:00.000Z')
@@ -367,6 +369,41 @@ describe('the stops', () => {
         .nodes()
         .filter((n) => n.type === 'keyword'),
     ).toHaveLength(1)
+  })
+
+  it('does not emit an answer once Stop has landed, however late after the reply', async () => {
+    /*
+     * The flag set k microtasks after the model's reply resolves. The round
+     * checks it as the reply lands, and the loop then awaits the round, so a
+     * Stop in those few ticks used to get `answer` emitted after it and the
+     * run reported `answered`. Whatever k, a run that ends answered must not
+     * have seen the flag before it said so.
+     */
+    for (let k = 0; k <= 6; k++) {
+      const signal = { aborted: false }
+      const seen: string[] = []
+      const llm: LlmTurnFn = () => {
+        const reply = Promise.resolve(says('Nothing to do here.'))
+        let later: Promise<unknown> = reply
+        for (let i = 0; i < k; i++) later = later.then(() => undefined)
+        void later.then(() => {
+          signal.aborted = true
+        })
+        return reply
+      }
+      const run = await runAgent({
+        host: host(),
+        llm,
+        history: [],
+        prompt: 'hi',
+        signal,
+        onEvent: (e) => {
+          if (e.type === 'answer') seen.push(signal.aborted ? 'answer-after-stop' : 'answer')
+        },
+      })
+      expect(seen, `k=${String(k)}`).not.toContain('answer-after-stop')
+      if (run.stopped === 'answered') expect(seen).toEqual(['answer'])
+    }
   })
 })
 
@@ -1730,8 +1767,10 @@ describe('the long-conversation harness', () => {
   describe('what each approval mode lets through', () => {
     /*
      * The three modes are a promise about what happens WITHOUT being asked, so
-     * each is tested against the same destructive and non-destructive step
-     * rather than against itself.
+     * each is tested against the same steps rather than against itself — and
+     * through `GATE_FOR`, the table the Assistant actually reads, rather than
+     * by passing gate strings. `semi` once mapped to `none` with every test in
+     * this file still green, because the mapping was never run.
      *
      * `semi` is the one worth pinning hardest: it stops for `delete` and
      * `admin` effects and lets a `move` through, which is why closing an
@@ -1744,10 +1783,7 @@ describe('the long-conversation harness', () => {
       asked.length = 0
       await runAgent({
         host: host(),
-        llm: scripted([
-          calls(tool, tool === 'memory_clear' ? { confirm: true } : {}),
-          says('done'),
-        ]),
+        llm: scripted([calls(tool, {}), says('done')]),
         history: [],
         prompt: 'do it',
         tools: [tool.replace(/_/g, '.')],
@@ -1761,29 +1797,58 @@ describe('the long-conversation harness', () => {
       return asked.length
     }
 
-    it('manual asks before an ordinary edit', async () => {
-      expect(await runWith('writes', 'application_update')).toBe(1)
+    it('maps each mode to the gate the loop understands', () => {
+      expect(GATE_FOR).toEqual({ manual: 'writes', semi: 'destructive', auto: 'none' })
     })
 
-    it('semi does NOT ask before an ordinary edit', async () => {
-      expect(await runWith('destructive', 'application_update')).toBe(0)
+    /*
+     * One catalogued tool per effect, and whether each mode stops for it. The
+     * arguments are empty on purpose: the gate runs before `runtime.check`, so
+     * a call that then fails its own validation was still asked about.
+     */
+    const ONE_OF_EACH = {
+      create: 'timeline_item_create',
+      update: 'application_update',
+      move: 'application_stage_advance',
+      delete: 'timeline_item_delete',
+      admin: 'memory_clear',
+    } as const
+    const EXPECTED: { readonly [M in ApprovalMode]: { readonly [E in keyof typeof ONE_OF_EACH]: number } } = {
+      manual: { create: 1, update: 1, move: 1, delete: 1, admin: 1 },
+      semi: { create: 0, update: 0, move: 0, delete: 1, admin: 1 },
+      // `admin` is the floor: emptying or replacing the store asks even here.
+      auto: { create: 0, update: 0, move: 0, delete: 0, admin: 1 },
+    }
+
+    it('names a real tool of the stated effect for every row', () => {
+      for (const [effect, wire] of Object.entries(ONE_OF_EACH)) {
+        expect(CATALOG.find((e) => e.wireName === wire)?.effect).toBe(effect)
+      }
     })
 
-    it('semi DOES ask before a deletion', async () => {
-      expect(await runWith('destructive', 'timeline_item_delete')).toBe(1)
-    })
+    for (const mode of APPROVAL_MODES) {
+      for (const effect of Object.keys(ONE_OF_EACH) as (keyof typeof ONE_OF_EACH)[]) {
+        const times = EXPECTED[mode][effect]
+        it(`${mode} ${times === 1 ? 'asks' : 'does not ask'} before a ${effect}`, async () => {
+          expect(await runWith(GATE_FOR[mode], ONE_OF_EACH[effect])).toBe(times)
+        })
+      }
+    }
 
-    it('auto asks before nothing, deletions included', async () => {
-      // The mode the person chose explicitly. Nothing is confirmed — which is
-      // what its copy says, and the copy is the only warning there is.
-      expect(await runWith('none', 'timeline_item_delete')).toBe(0)
-      expect(await runWith('none', 'application_update')).toBe(0)
+    it('asks before both whole-store tools under every mode, and nothing else is exempt from auto', async () => {
+      // The floor is two tools, by the same facts the Guide counts: destructive
+      // and not undoable. A third with both properties is asked about too.
+      expect(CATALOG.filter((e) => e.alwaysAsks).map((e) => e.name).sort()).toEqual(['memory.clear', 'memory.reset'])
+      for (const mode of APPROVAL_MODES) {
+        expect(await runWith(GATE_FOR[mode], 'memory_reset')).toBe(1)
+      }
     })
 
     it('defaults to stopping for deletions when no mode is given', async () => {
       // Pipelines and the graph ask-box pass no gate. The default must not be
       // `none`, or a caller that forgets becomes the unsafe one.
       expect(await runWith(undefined, 'timeline_item_delete')).toBe(1)
+      expect(await runWith(undefined, 'application_update')).toBe(0)
     })
   })
 

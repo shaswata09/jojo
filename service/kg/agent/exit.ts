@@ -302,7 +302,16 @@ function sentBack(state: TurnState, answer: string, round: number): boolean {
  * it back and the loop should go round again.
  */
 export function settleAnswer(state: TurnState, turn: OkTurn, round: number): AgentRun | null {
-  const { onEvent } = state.options
+  const { onEvent, signal } = state.options
+  /*
+   * Checked again here, and not only in `modelRound`. The round checks the
+   * flag as the reply lands, but the loop then awaits the round itself, and a
+   * Stop that arrives in those few microtasks would otherwise be answered with
+   * an `answer` emitted after the run was stopped. When this was one function
+   * the check and the emit sat in one synchronous block, and this keeps that
+   * true.
+   */
+  if (signal?.aborted) return finish(state, 'aborted')
   // Joined to whatever earlier rounds wrote before being cut off.
   const answer = state.partial + (turn.text ?? '')
   settleContinuation(state)

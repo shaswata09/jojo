@@ -636,8 +636,9 @@ What is still honestly absent:
   change. Real notifications would remove that step and are not built.
 - **The scout finds nothing on its own.** It scores what is in front of it;
   nothing goes out and crawls a board, so the feed holds only what you put in it.
-- **The localhost bridge is not built.** Settings describes it and the repo's
-  `server/` directory is empty. Nothing tries to reach it.
+- **The localhost bridge is not built.** It was designed and then deleted, and
+  there is no `server/` directory any more (`docs/NO-SERVER.md` says why).
+  Nothing tries to reach it.
 - **Transfer is one-directional.** Records move onto this phone and not off it,
   and that is a platform fact rather than a gap: a browser cannot accept an
   inbound connection, so the phone has to be the side that listens. Receiving is

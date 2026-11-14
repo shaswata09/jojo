@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import { Link } from 'react-router'
 import { ArrowLeft, Briefcase, ChevronDown, ChevronUp, Loader2, Maximize2, X } from 'lucide-react'
 import { displayName } from '@jojo/service/core/model'
@@ -27,6 +28,49 @@ const ABOUT_PROMPTS = [
 ]
 /** And for a conversation about nothing in particular. */
 const GENERAL_PROMPTS = ['What am I waiting on?', 'Which applications have no deadline?']
+
+/*
+ * The transcript, skipped when its props have not changed.
+ *
+ * Wrapped here rather than inside `Transcript`, which the Assistant page draws
+ * too. A long conversation is the most expensive thing the dock renders — every
+ * turn is Markdown — and the window re-renders for reasons that are not about
+ * it: the dock moving, another window opening. Typing is kept out of this
+ * component altogether (see `DockComposer`); this is for the rest.
+ */
+const DockTranscript = memo(Transcript)
+
+/**
+ * The composer, holding its own text.
+ *
+ * The text was state on `ChatWindow`, so every keystroke re-rendered the whole
+ * window and the whole Markdown transcript under it: 58 ms a key in a
+ * 150-question conversation in development, against 19 ms without it. Here a
+ * keystroke re-renders this and nothing else.
+ *
+ * `draft` is the window's ref, written on every change, because this component
+ * unmounts when the window is minimised and the half-written question has to
+ * be there when it opens again — which the window's own state used to give for
+ * free.
+ */
+function DockComposer({
+  draft,
+  ...props
+}: Omit<Parameters<typeof Composer>[0], 'value' | 'onChange'> & {
+  draft: RefObject<string>
+}) {
+  const [value, setValue] = useState(draft.current)
+  return (
+    <Composer
+      {...props}
+      value={value}
+      onChange={(next) => {
+        draft.current = next
+        setValue(next)
+      }}
+    />
+  )
+}
 
 /**
  * One conversation in the chat dock — LinkedIn's message window, for jojo.
@@ -75,7 +119,7 @@ export function ChatWindow({
   })
   const { entries, busy, send, stop, thread, subject, configured, model } = convo
 
-  const [prompt, setPrompt] = useState('')
+  const draft = useRef('')
   const title = thread?.title ?? 'New conversation'
   const open = fullScreen || !win.minimized
 
@@ -168,6 +212,9 @@ export function ChatWindow({
             size="icon"
             className="size-8 shrink-0"
             aria-label="Back to conversations"
+            // Where focus goes when the window before this one was closed and
+            // the layout shows one panel at a time (`ChatDock`'s `onClose`).
+            data-dock-home=""
             onClick={(e) => {
               e.stopPropagation()
               onBack()
@@ -212,6 +259,7 @@ export function ChatWindow({
             className="size-8 shrink-0 text-text-3"
             aria-label={win.minimized ? 'Open this conversation' : 'Minimise this conversation'}
             aria-expanded={!win.minimized}
+            data-dock-home=""
             onClick={(e) => {
               e.stopPropagation()
               onToggle(win.key)
@@ -301,16 +349,15 @@ export function ChatWindow({
                 </ul>
               </div>
             ) : (
-              <Transcript entries={entries} busy={busy} model={model} compact />
+              <DockTranscript entries={entries} busy={busy} model={model} compact />
             )}
           </div>
 
           <div className="shrink-0 border-t border-hairline p-2">
-            <Composer
+            <DockComposer
               id={composerId}
               label={`Message jojo in ${title}`}
-              value={prompt}
-              onChange={setPrompt}
+              draft={draft}
               onSend={ask}
               busy={busy}
               onStop={stop}

@@ -367,6 +367,28 @@ export function serialise(policy, nonce) {
     }
   }
 
+  // ---- 1c. elements whose text is written out as markup ---------------------
+  //
+  // `outerHTML` escapes `<` in text everywhere except inside the elements the
+  // HTML parser reads as raw text: `style` and `script`, handled above, and
+  // `xmp`, `noembed`, `noframes` and `plaintext`. A page's script can build one
+  // and set its text to `</xmp><script>…</script><img onerror=…>`: every pass
+  // here sees one element holding a string, and the returned HTML carries that
+  // string as live markup none of them read (round-3 review, reproduced: the
+  // script, the handler, an entity-encoded `src` and an `@import` survived the
+  // worker's inlining too). Each becomes a <pre> of the same text, which IS
+  // escaped when written out — hidden where the original was never shown,
+  // since browsers do not render `noembed` or `noframes`.
+  function escapeRawText() {
+    for (const node of [...doc.querySelectorAll('xmp, noembed, noframes, plaintext')]) {
+      const pre = inert.createElement('pre')
+      pre.textContent = node.textContent ?? ''
+      const tag = node.tagName.toLowerCase()
+      if (tag === 'noembed' || tag === 'noframes') pre.setAttribute('hidden', '')
+      node.replaceWith(pre)
+    }
+  }
+
   // ---- 2. attributes, walked against the live tree --------------------------
   function rewriteAttributes() {
     /*
@@ -686,6 +708,7 @@ export function serialise(policy, nonce) {
   readLiveTree()
   stripElements()
   dropAddressAnimations()
+  escapeRawText()
   rewriteAttributes()
   normaliseStyleElements()
   appendAdoptedSheets()

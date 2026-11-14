@@ -32,9 +32,13 @@ import { TODAY } from '@/lib/today'
  * given a different one, so the dates under test are built FROM it rather than
  * pinned to a literal. A pinned date here would pass forever and test nothing
  * the day the clock moved past it.
+ *
+ * Day arithmetic in UTC at both ends: parsing local noon and printing it as a
+ * UTC date moved the day by one in zones more than twelve hours from UTC
+ * (Kiritimati, UTC+14), so "today" came out as yesterday there.
  */
 const dayFrom = (offset: number): string =>
-  new Date(Date.parse(`${TODAY}T12:00:00`) + offset * 86_400_000).toISOString().slice(0, 10)
+  new Date(Date.parse(`${TODAY}T12:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10)
 
 /** The minimum an item needs for `whenLabel` to reach its non-completed tail. */
 const itemOn = (date: string): TimelineItem => ({

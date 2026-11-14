@@ -89,22 +89,17 @@ export type PairingSession = {
   /**
    * Throws the current offer away and shows a new one — and forgets a pairing.
    *
-   * The screen MUST call this when the handoff the pairing was for ends, done
-   * or failed (`needsNewOffer`). The offer is single-use and the re-mint timer
-   * stands down once paired, so nothing else ever puts a code back up: after
-   * one pairing, a failed send could not be retried and a second device could
-   * not be sent to without leaving the page (R18).
+   * The screen MUST call this once the run that used the offer is over — done,
+   * failed after the answer reached `complete`, or abandoned (`replacesOffer`
+   * in `components/transfer-ui/send-cycle.ts`). A failure before the answer
+   * keeps the offer, which the phone still holds.
+   *
+   * The offer is single-use and the re-mint timer stands down once paired, so
+   * nothing else ever puts a code back up: after one pairing, a failed send
+   * could not be retried and a second device could not be sent to without
+   * leaving the page (R18).
    */
   refresh: () => void
-}
-
-/**
- * Whether a send at this stage has finished with the pairing it used, so the
- * screen should call `refresh` for a new code. Both ends: a finished send's
- * offer is spent, and a failed one's keys belong to a session that is over.
- */
-export function needsNewOffer(stage: string): boolean {
-  return stage === 'done' || stage === 'failed'
 }
 
 /**

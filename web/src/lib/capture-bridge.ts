@@ -233,8 +233,9 @@ type Ask = {
  * hop, and this was 40 s: a slow board that the worker read successfully was
  * reported here as "no boards could be read" two seconds earlier.
  *
- * Fifty, and `reader-relay.test.ts` reads all four numbers out of
- * `background.js` and fails if the worker's worst case comes within 7.5 s of it.
+ * Fifty, and `reader-relay.test.ts` imports all four numbers from the worker
+ * (`worker/tabs.js` and `worker/scan-board.js`) and fails if the worker's worst
+ * case comes within 7.5 s of it.
  */
 const SCAN_TIMEOUT_MS = 50000
 
@@ -263,7 +264,7 @@ const CAPTURE_TIMEOUT_MS = 90000
  * How long a relayed READ or MODEL call gets, once the extension has proved it
  * is there.
  *
- * A TRANSCRIPTION of `READ_TIMEOUT_MS` in `web/extension/background.js`, plus a
+ * A TRANSCRIPTION of `READ_TIMEOUT_MS` in `web/extension/worker/relay.js`, plus a
  * margin, and `reader-relay.test.ts` fails if the two drift apart. They are two
  * budgets for ONE request and they were 40s here against 120s there: a 55-second
  * PDF conversion the worker was still working on was abandoned at this end and

@@ -6,6 +6,7 @@
  * comment on a refused repair for why `repair.ts` does not get to write them.
  */
 
+import type { ApprovalMode } from '../core/model'
 import type { ToolCall } from '../core/model-server'
 import { CATALOG, needsConfirming } from './catalog'
 import type { CatalogEntry } from './catalog'
@@ -211,8 +212,30 @@ function refuseUnparsed(base: AgentStep, args: unknown, call: ToolCall, truncate
   return null
 }
 
+/**
+ * What each approval mode means to the loop.
+ *
+ * A table rather than a chain of ternaries, so adding a mode is a line here and
+ * a compile error everywhere it has not been handled — which is what an
+ * exhaustive `Record` buys over an `if`. Here rather than in the hook that
+ * reads it so the mapping is tested: it is the whole meaning of a setting the
+ * person chooses, and `semi` mapped to `none` once passed every test there was.
+ */
+export const GATE_FOR: { readonly [M in ApprovalMode]: NonNullable<AgentOptions['gate']> } = {
+  manual: 'writes',
+  semi: 'destructive',
+  auto: 'none',
+}
+
 /** Whether this step has to be approved before it runs, under the caller's policy. */
-function isGated(options: AgentOptions, base: AgentStep): boolean {
+function isGated(options: AgentOptions, entry: CatalogEntry | undefined, base: AgentStep): boolean {
+  /*
+   * The floor, before the mode is read: emptying or replacing the whole store
+   * is asked about under every setting, `none` included. Every other step a
+   * mode lets through can be undone afterwards; these two cannot, so "act
+   * without asking" stops short of them. See `CatalogEntry.alwaysAsks`.
+   */
+  if (entry?.alwaysAsks === true) return true
   /*
    * `'unknown'` is excluded deliberately: it means the model named a tool that
    * does not exist, and `callTool` refuses it a line later regardless. Asking a
@@ -224,7 +247,7 @@ function isGated(options: AgentOptions, base: AgentStep): boolean {
    *   writes       — every non-read step (85 of 95 tools)
    *   destructive  — `delete` and `admin`, plus the tools that ask (19 of 95),
    *                  plus a call whose arguments ask (`Tool.confirms`)
-   *   none         — nothing, and the person chose that explicitly
+   *   none         — nothing but the floor above, and the person chose that
    *
    * `destructive` USED to be exactly "the ones that remove a record", and is
    * now that plus the few tools that declare themselves so — an offer package
@@ -317,7 +340,7 @@ export async function performCall(options: AgentOptions, call: ToolCall, ctx: Ca
   const malformed = refusePartialList(base, repaired) ?? refuseUnparsed(base, args, call, truncated)
   if (malformed !== null) return settle(malformed)
 
-  if (isGated(options, base) && approve) {
+  if (isGated(options, entry, base) && approve) {
     const allowed = await approve(base)
     if (!allowed) {
       return settle({

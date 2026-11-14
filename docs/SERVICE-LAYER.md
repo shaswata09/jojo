@@ -284,7 +284,7 @@ will not compile"*. Measured against `mobile/src` before the deletion:
 
 | Delta | Consumers outside its own file | Applied? |
 |---|---|---|
-| `tools/vault.ts` — the `uri` prop | `FileEditor.tsx`, `FileViewer.tsx`, `lib/documents.ts` | **Yes** — §4.3 |
+| `tools/vault.ts` (since split; the file tools are `vault-files.ts`) — the `uri` prop | `FileEditor.tsx`, `FileViewer.tsx`, `lib/documents.ts` | **Yes** — §4.3 |
 | `react/use-scout.ts` — `addMatch` | **0 in `mobile/src`, 0 in `web/src`** | No |
 | `storage/schema.ts` — `STORE_SPEC_BY_NAME` | **0**, and `rn-driver.ts` does not import it | No |
 | `storage/memory-driver.ts` — `emptyMemoryDriver()` | **0**; `rn-driver.ts` imports `createMemoryDriver` and `emptyRows` | No |

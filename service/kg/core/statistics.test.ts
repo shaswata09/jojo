@@ -130,12 +130,37 @@ describe('reachedOf', () => {
   })
 
   /**
-   * Under-counting is the safe direction, and this is where it shows: an
-   * application that reached an interview before it was rejected counts only as
-   * far as its `firstReplyOn`, because the app never recorded the rest.
+   * Under-counting is the safe direction, and this is where it shows: a closed
+   * application with no stage dates counts only as far as its `firstReplyOn`,
+   * because nothing on it records the rest.
    */
   it('never claims more than the record can show', () => {
     expect(reachedOf(closed('rejected', { firstReplyOn: '2026-09-20' }))).toBe(REACH.replied)
+  })
+
+  /**
+   * A rejection after an interview is the commonest way an application ends,
+   * and the board stamps the Interview date on the way through. The record's
+   * own panel shows that row (`stagesToDate`), so the funnel, the segments and
+   * the advice have to count the interview too, or they read it as no reply.
+   */
+  it('counts the dated stages a closed record went through', () => {
+    const interviewed = closed('rejected', {
+      stageDates: { interview: '2026-09-25', closed: '2026-10-02' },
+    })
+    expect(reachedOf(interviewed)).toBe(REACH.interview)
+    expect(reachedOf(closed('ghosted', { stageDates: { screen: '2026-09-22' } }))).toBe(REACH.screen)
+    expect(reachedOf(closed('rejected', { stageDates: { closed: '2026-10-02' } }))).toBe(REACH.sent)
+  })
+
+  /**
+   * Only on a closed record. An open one is where the board shows it: an
+   * Interview date left behind by a card dragged back to Submitted is a
+   * mis-drop the person undid, not an interview.
+   */
+  it('reads an open record by its stage, not by a date it left behind', () => {
+    const back = app({ stage: 'submitted', stageDates: { interview: '2026-09-25' } })
+    expect(reachedOf(back)).toBe(REACH.sent)
   })
 })
 

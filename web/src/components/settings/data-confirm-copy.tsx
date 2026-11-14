@@ -19,18 +19,23 @@ export type PendingData = 'demo' | 'empty' | 'storage'
  *
  * Every branch here exists because the sentence is only true in one of the two
  * cases: `persists` carries whether a reload will remember the outcome,
- * `untouchedDemo` whether anything in the store is the user's yet, and `isEmpty`
- * whether loading the demo data replaces something or fills a void.
+ * `untouchedDemo` whether anything in the store is the user's yet, and
+ * `demoReplacesNothing` whether loading the demo data replaces something or
+ * fills a void. That last one is `useStoreAdmin`'s, and it counts keywords and
+ * every other record type, not only the lists on the board: it used to be the
+ * panel's `isEmpty`, which ignored notes, conversations, contacts, CV facts and
+ * keywords, so this dialog promised to replace nothing, hid the export, and the
+ * load deleted them.
  */
 export function pendingCopy({
   untouchedDemo,
-  isEmpty,
+  demoReplacesNothing,
   durable,
   persists,
   onExport,
 }: {
   untouchedDemo: boolean
-  isEmpty: boolean
+  demoReplacesNothing: boolean
   durable: boolean
   /** The clause about the next reload, spelled by the panel that owns it. */
   persists: string
@@ -64,7 +69,7 @@ export function pendingCopy({
         <>
           {untouchedDemo
             ? `The demo applications, timeline, vault, saved postings, keywords and profile all go, ${persists}. Nothing here was yours — this store has not been written to since the demo data was loaded.`
-            : `Applications, the timeline, the vault, saved postings and your profile all go, including anything you added this session, ${persists}. There is no undo. Your keywords are kept — they are records of their own — but nothing is left carrying them, so every count in the keyword panel goes to zero.`}
+            : `Applications, the timeline, the vault, saved postings, contacts, notes, conversations, CV facts and your profile all go, including anything you added this session, ${persists}. There is no undo. Your keywords are kept — they are records of their own — but nothing is left carrying them, so every count in the keyword panel goes to zero.`}
           {untouchedDemo ? null : exportFirst}
         </>
       ),
@@ -74,10 +79,10 @@ export function pendingCopy({
       title: 'Load the demo data?',
       description: (
         <>
-          {isEmpty
+          {demoReplacesNothing
             ? `Twelve applications, a timeline, a stocked vault and a profile${durable ? ' are written to your database' : ' are loaded'}, tagged with the keywords they shipped with. Clearing them again is one press.`
-            : 'Everything in jojo is replaced by the seeded records — your applications, timeline, vault, saved postings, keywords and profile, all of it, replaced rather than merged. There is no undo.'}
-          {isEmpty ? null : exportFirst}
+            : 'Everything in jojo is replaced by the seeded records — your applications, timeline, vault, saved postings, contacts, notes, conversations, CV facts, keywords and profile, all of it, replaced rather than merged. There is no undo.'}
+          {demoReplacesNothing ? null : exportFirst}
         </>
       ),
       confirm: 'Load demo data',

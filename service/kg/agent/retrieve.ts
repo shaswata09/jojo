@@ -65,8 +65,8 @@
  *
  * ## Why it runs once per run and not per round
  *
- * `loop.ts` hoists the tool array out of the loop so it is byte-identical on
- * every round, which is what lets a server reuse the prompt prefix. Reselecting
+ * The run builds the tool array once (`offerFor` in `offer.ts`, kept on the
+ * turn's state) so it is byte-identical on every round, which is what lets a server reuse the prompt prefix. Reselecting
  * each round would move the first difference to the front of the prompt and
  * force a full re-read of a growing conversation every time. So the set is
  * chosen once, from the first message, and only ever GROWS after that.
@@ -1089,7 +1089,7 @@ export function offeredFor(
   /*
    * Counted in TOOLS, not in spellings.
    *
-   * `resolveOffered` in `loop.ts` deliberately puts both `name` and `wireName`
+   * `resolveOffered` in `offer.ts` deliberately puts both `name` and `wireName`
    * into the offered set, so that the enforcement check matches whichever the
    * model sends. That set becomes the next turn's `carried` — so a naive count
    * spent two of twelve slots on one tool, and a turn carried about six.

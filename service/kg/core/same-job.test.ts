@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { findDuplicate } from './duplicates'
 import { sameEmployerStrict, sameJob } from './same-job'
 
 /** One Kansas State posting, as three boards listed it (CRA's is the real one). */
@@ -116,5 +117,79 @@ describe('a posting ID on its own', () => {
       ),
     ).toBe('id')
     expect(sameJob({ org: 'Rice University', role: 'x', postingId: 'JR1' }, { org: 'Rice', role: 'y', postingId: 'JR1' })).toBe('id')
+  })
+
+  /*
+   * A job board's host is every employer's host. Two requisitions numbered
+   * R1023 on Greenhouse are at the two tenants the paths name, and two
+   * jobs.ac.uk listings sharing a reference are at whichever universities
+   * placed them — the board does not say, so the address proves nothing.
+   */
+  it('does not count a job board as the site both agree on', () => {
+    const anthropic = {
+      org: 'Anthropic',
+      role: 'Research Engineer',
+      url: 'https://boards.greenhouse.io/anthropic/jobs/4020305008',
+      postingId: 'R1023',
+    }
+    const stripe = { org: 'Stripe', role: 'Data Scientist', url: 'https://boards.greenhouse.io/stripe/jobs/5550001', postingId: 'R1023' }
+    expect(sameJob(anthropic, stripe)).toBeNull()
+    expect(findDuplicate([{ id: 'a', ...anthropic }], stripe)).toBeUndefined()
+
+    const leeds = {
+      org: 'University of Leeds',
+      role: 'Lecturer in Physics',
+      url: 'https://www.jobs.ac.uk/job/DAB123/lecturer-in-physics',
+      postingId: 'EAS1234',
+    }
+    const york = {
+      org: 'University of York',
+      role: 'Research Associate',
+      url: 'https://www.jobs.ac.uk/job/DCX987/research-associate',
+      postingId: 'EAS1234',
+    }
+    expect(sameJob(leeds, york)).toBeNull()
+    expect(findDuplicate([{ id: 'b', ...leeds }], york)).toBeUndefined()
+  })
+
+  it('still counts one tenant of a board as one site', () => {
+    expect(
+      sameJob(
+        { org: 'Mistral AI', role: 'x', postingId: 'R7', url: 'https://jobs.lever.co/mistral/abc-123' },
+        { org: 'Mistral', role: 'y', postingId: 'R7', url: 'https://jobs.lever.co/mistral/def-456?lever-source=x' },
+      ),
+    ).toBe('id')
+    // The employer field spelled two unrelated ways: only the tenant agrees.
+    expect(
+      sameJob(
+        { org: 'Acme Robotics', role: 'x', postingId: 'R7', url: 'https://boards.greenhouse.io/acme/jobs/1' },
+        { org: 'ACR', role: 'y', postingId: 'R7', url: 'https://boards.greenhouse.io/acme/jobs/2' },
+      ),
+    ).toBe('id')
+  })
+})
+
+describe('a name that leads a longer one', () => {
+  /*
+   * A bare name before a longer one is the same employer only when what the
+   * longer one adds is the kind of employer ('University', 'Inc') or a campus
+   * after a comma. Any other word makes a different employer: a bank, a power
+   * company, a publisher.
+   */
+  it('does not merge a name with a different employer that starts with it', () => {
+    expect(sameEmployerStrict('Rice', 'Rice Bank')).toBe(false)
+    expect(sameEmployerStrict('Duke', 'Duke Energy')).toBe(false)
+    expect(sameEmployerStrict('Institute of Physics', 'Institute of Physics Publishing')).toBe(false)
+    expect(sameEmployerStrict('Rice University', 'Rice Bank')).toBe(false)
+    const role = 'Data Scientist'
+    expect(sameJob({ org: 'Rice', role }, { org: 'Rice Bank', role })).toBeNull()
+  })
+
+  it('merges the kind of employer and a campus after a comma', () => {
+    expect(sameEmployerStrict('Rice', 'Rice University')).toBe(true)
+    expect(sameEmployerStrict('Rice', 'Rice University, Houston')).toBe(true)
+    expect(sameEmployerStrict('Stripe', 'Stripe, Inc.')).toBe(true)
+    expect(sameEmployerStrict('Stripe', 'Stripe Inc')).toBe(true)
+    expect(sameEmployerStrict('Kansas State University', 'Kansas State University, Manhattan')).toBe(true)
   })
 })

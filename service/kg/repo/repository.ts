@@ -21,7 +21,7 @@
  */
 
 import type { EdgeId, Instant, NodeId, NodeType, Rel, StoredEdge, StoredNode } from '../core/model'
-import { uuidv7 } from '../core/ref'
+import { edgeId, foldName, uuidv7 } from '../core/ref'
 import { fail, ok } from '../core/result'
 import type { KgErrorCode, Result } from '../core/result'
 import type { GraphSnapshot, MutableSnapshot } from '../core/snapshot'
@@ -346,13 +346,139 @@ function withoutDanglingEdges<E extends Pick<JournalEntry, 'nodes' | 'edges'>>(
     }
     if (more) continue
     if (!dropped) return entry
+    // A claim this revert would have put back, whole, is kept on the entry so
+    // the revert that later restores its missing end can restore it too. See
+    // `JournalEntry.held`.
+    const heldNodes: StoredNode[] = []
     const nodes = entry.nodes.flatMap((d): RecordDelta<StoredNode>[] => {
       if (d.after === null || !halfClaims.has(d.id as NodeId)) return [d]
+      if (d.before === null) heldNodes.push(d.after)
       const live = s.node(d.id as NodeId)
       return live ? [{ id: d.id, before: live, after: null }] : []
     })
-    return { ...entry, nodes, edges }
+    const heldIds = new Set<string>(heldNodes.map((n) => n.id))
+    const heldEdges = entry.edges.flatMap((d) =>
+      d.after !== null && heldIds.has(d.after.from) && (d.after.rel === 'SUBJECT' || d.after.rel === 'OBJECT')
+        ? [d.after]
+        : [],
+    )
+    return {
+      ...entry,
+      nodes,
+      edges,
+      ...(heldNodes.length > 0 ? { held: { nodes: heldNodes, edges: heldEdges } } : {}),
+    }
   }
+}
+
+/**
+ * The draft, plus every claim an earlier revert held back (`JournalEntry.held`)
+ * whose missing end this draft brings back.
+ *
+ * Only claims with an end THIS draft restores, and only when every end will be
+ * there and the claim itself is still gone. That keeps it to the case it is
+ * for: the claim was deleted with an end, its revert could not bring it back,
+ * and now the other end is coming back too. A claim someone deleted on purpose
+ * is never in `held`, because only a revert that wanted to restore it writes
+ * one there.
+ */
+function withHeldClaims(s: MutableSnapshot, draft: JournalDraft, audit: readonly JournalEntry[]): JournalDraft {
+  const restoring = new Set(draft.nodes.filter((d) => d.before === null && d.after !== null).map((d) => d.id))
+  if (restoring.size === 0) return draft
+  const inDraft = new Map(draft.nodes.map((d) => [d.id, d.after !== null]))
+  const present = (id: string) => inDraft.get(id) ?? s.node(id as NodeId) !== undefined
+  const nodes: RecordDelta<StoredNode>[] = []
+  const edges: RecordDelta<StoredEdge>[] = []
+  const taken = new Set<string>()
+
+  for (const entry of audit) {
+    for (const claim of entry.held?.nodes ?? []) {
+      if (taken.has(claim.id) || inDraft.has(claim.id) || s.node(claim.id) !== undefined) continue
+      const ends = (entry.held?.edges ?? []).filter((e) => e.from === claim.id)
+      if (!ends.some((e) => restoring.has(e.to)) || !ends.every((e) => present(e.to))) continue
+      taken.add(claim.id)
+      nodes.push({ id: claim.id, before: null, after: claim })
+      for (const e of ends) if (s.edge(e.id) === undefined) edges.push({ id: e.id, before: null, after: e })
+    }
+  }
+  if (nodes.length === 0) return draft
+  return { ...draft, nodes: [...draft.nodes, ...nodes], edges: [...draft.edges, ...edges] }
+}
+
+/**
+ * The draft with its employers sorted out: none missing, none doubled.
+ *
+ * `application.delete` takes an employer left with no jobs, so two things can
+ * go wrong when a delete is reverted.
+ *
+ * - Out of order. Delete AP, then Lecturer (the org goes with the second),
+ *   then Undo the first: the first delete never held the org, so its AT edge
+ *   had nothing to point at and `withoutDanglingEdges` dropped it. AP came back
+ *   with no employer, and a later ⌘Z of the second delete did not fix it. The
+ *   org is brought back from the newest entry that deleted it.
+ * - After a re-add. Delete the only Rice job (Rice goes), add a new Rice job
+ *   (`org.ensure` mints a second Rice, because the first's slug stays
+ *   reserved), then Undo the delete: two organisations named Rice. A restored
+ *   organisation is dropped when a live one has the same folded name
+ *   (`org.ensure`'s own rule), and its links are moved onto the live one.
+ *
+ * Organisations only. An employer exists for its jobs and is deleted only as a
+ * side effect of deleting the last of them, so putting it back with a job is
+ * what the user asked for. A person or a document someone deleted is not
+ * brought back because a revert would like to link to it.
+ */
+function withLiveEmployers(s: MutableSnapshot, draft: JournalDraft, audit: readonly JournalEntry[]): JournalDraft {
+  const inDraft = new Map(draft.nodes.map((d) => [d.id, d.after !== null]))
+  const present = (id: string) => inDraft.get(id) ?? s.node(id as NodeId) !== undefined
+  let nodes = [...draft.nodes]
+
+  for (const d of draft.edges) {
+    const e = d.after
+    if (e === null || e.rel !== 'AT' || present(e.to)) continue
+    const image = deletedImage(e.to, audit)
+    if (image?.type !== 'organisation') continue
+    nodes.push({ id: image.id, before: null, after: image })
+    inDraft.set(image.id, true)
+  }
+
+  // Restored organisations that a live one of the same name now stands for.
+  const live = new Map(s.ofType('organisation').map((o) => [foldName(o.props.name), o.id]))
+  const onto = new Map<string, NodeId>()
+  for (const d of nodes) {
+    if (d.before !== null || d.after?.type !== 'organisation') continue
+    const name = (d.after.props as { name?: unknown }).name
+    const same = typeof name === 'string' ? live.get(foldName(name)) : undefined
+    if (same !== undefined && same !== d.id && inDraft.get(same) !== false) onto.set(d.id, same)
+  }
+  if (onto.size === 0 && nodes.length === draft.nodes.length) return draft
+  nodes = nodes.filter((d) => !onto.has(d.id))
+
+  const named = new Set<string>()
+  const edges = draft.edges.flatMap((d): RecordDelta<StoredEdge>[] => {
+    const e = d.after
+    if (e === null || (!onto.has(e.from) && !onto.has(e.to))) {
+      named.add(d.id)
+      return [d]
+    }
+    const from = onto.get(e.from) ?? e.from
+    const to = onto.get(e.to) ?? e.to
+    const id = edgeId(from, e.rel, to)
+    // Already there, or already being put there by this draft: nothing to add.
+    if (named.has(id) || s.edge(id) !== undefined) return []
+    named.add(id)
+    return [{ id, before: null, after: { ...e, id, from, to } }]
+  })
+  return { ...draft, nodes, edges }
+}
+
+/** The record as the newest entry that deleted it last saw it, if that entry still has its images. */
+function deletedImage(id: string, audit: readonly JournalEntry[]): StoredNode | undefined {
+  for (const entry of audit) {
+    if (entry.trimmed === true) continue
+    const d = entry.nodes.find((n) => n.id === id)
+    if (d?.before && d.after === null) return d.before
+  }
+  return undefined
 }
 
 /**
@@ -508,7 +634,8 @@ export function createRepository(options: RepositoryOptions): Repository {
     const undone = target.reverts?.undone !== true
     const of = target.reverts?.of ?? target.label
     const draft = revertDraft(target, current, `${undone ? 'Undo' : 'Redo'} ${of}`, undone, audit.entries)
-    return withoutDanglingEdges(snapshot, draft)
+    const employed = withLiveEmployers(snapshot, draft, audit.entries)
+    return withoutDanglingEdges(snapshot, withHeldClaims(snapshot, employed, audit.entries))
   }
 
   /**

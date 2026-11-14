@@ -95,7 +95,7 @@ const browserBlocked = (target?: string) => {
      * The remedy names the extension again, and this time it is true.
      *
      * It said "install the jojo extension, which relays that one hop for you"
-     * while `background.js` relayed only loopback and five hosted providers —
+     * while the extension relayed only loopback and five hosted providers —
      * so somebody with a LAN model server installed an extension that then told
      * them their address was not a provider it knew about. The extension now
      * relays private-network addresses (RFC 1918, link-local, `.local`) over

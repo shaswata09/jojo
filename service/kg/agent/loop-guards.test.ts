@@ -412,6 +412,39 @@ describe('a write that would not do what the model meant is refused', () => {
     expect(step?.detail).toContain('These were sent and are not fields of this tool: due')
     expect(w.memory().node(item, 'timelineItem')?.props.date).toBe('2026-09-01')
   })
+
+  it('refuses one inside a nested object too, and names where it was', async () => {
+    // An offer's pay lives in `comp`. Sent as `salary`, it was stored where no
+    // screen reads it and the step said done.
+    const w = world()
+    const app = w.must(
+      w.runtime.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'interview' } as never),
+    ) as NodeId
+    const { step } = await semi(w, 'application_stage_advance', {
+      id: app,
+      stage: 'offer',
+      offer: { respondBy: '2026-09-10', salary: '$120k', note: 'verbal' },
+    })
+    expect(step?.status).toBe('failed')
+    expect(step?.detail).toContain('These were sent and are not fields of this tool: offer.salary')
+    expect(step?.detail).toContain('offer takes:')
+    expect(step?.detail).toContain('comp')
+    expect(w.memory().node(app, 'application')?.props.stage).toBe('interview')
+  })
+
+  it('still accepts a nested object that sends only what it declares', async () => {
+    const w = world()
+    const app = w.must(
+      w.runtime.run('application.create', { org: 'Rice', role: 'AP', roleTag: 'Faculty', stage: 'interview' } as never),
+    ) as NodeId
+    const { step } = await semi(w, 'application_stage_advance', {
+      id: app,
+      stage: 'offer',
+      offer: { respondBy: '2026-09-10', comp: '$120k', note: 'verbal' },
+    })
+    expect(step?.status).toBe('done')
+    expect(w.memory().node(app, 'application')?.props.offer?.comp).toBe('$120k')
+  })
 })
 
 /*
@@ -443,5 +476,26 @@ describe('a filing that would drop a referee’s brief is asked about', () => {
     const { step, asked } = await semi(r.w, 'vault_person_update', { id: r.person, phone: '555-0100' })
     expect(asked).toEqual([])
     expect(step?.status).toBe('done')
+  })
+
+  /*
+   * The two other routes to the same deletion, which the R12 fix left open:
+   * an empty brief list, and taking the person off that one job.
+   */
+  it('asks before an empty brief list, and a no keeps the brief', async () => {
+    const r = referee()
+    const { step, asked } = await semi(r.w, 'vault_person_update', { id: r.person, briefs: [] })
+    expect(asked.map((s) => s.name)).toEqual(['vault.person.update'])
+    expect(step?.status).toBe('declined')
+    expect(r.w.memory().node(r.person, 'person')?.props.briefs).toHaveLength(1)
+  })
+
+  it('asks before unfiling them from the briefed job, and a no keeps both', async () => {
+    const r = referee()
+    const { step, asked } = await semi(r.w, 'vault_person_unfile', { id: r.person, applicationId: r.app })
+    expect(asked.map((s) => s.name)).toEqual(['vault.person.unfile'])
+    expect(step?.status).toBe('declined')
+    expect(r.w.memory().node(r.person, 'person')?.props.briefs).toHaveLength(1)
+    expect(r.w.memory().out(r.person, 'FILED_UNDER')).toHaveLength(1)
   })
 })

@@ -27,17 +27,18 @@ export const EXPORT_NAME_SHAPE = `${EXPORT_PREFIX}-YYYY-MM-DD.json`
  * "jojo-data (1).json", which is not a name anyone can choose between six
  * months later.
  *
- * The UTC day, which is what this has always written and is carried over
- * unchanged. It is not obviously the right day — the name is read next to the
- * other files in a downloads folder, so an export taken at 9pm on the 20th in
- * UTC+13 calls itself the 21st — but that is a separate decision from the one
- * this file was extracted to fix, and changing it here would have moved a
- * filename while the point was to stop the label from lying about it. Left as
- * an open question rather than settled in passing; `at` is a parameter so the
- * answer is testable when somebody makes it.
+ * The person's own day, read through a local `Date` — the same rule `dayOf` in
+ * `core/project.ts` states for every other date in the app. This used to slice
+ * `toISOString()`, which is the UTC day: a backup taken at 22:19 on Friday the
+ * 13th in California was saved as the 14th while the dashboard beside it said
+ * Friday 13 November, and two backups either side of 16:00 on one day got
+ * different names. A file in a downloads folder is read against the calendar
+ * of the person who downloaded it, not Greenwich's.
  */
 export function exportFilename(at: Date): string {
-  return `${EXPORT_PREFIX}-${at.toISOString().slice(0, 10)}.json`
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const day = `${String(at.getFullYear())}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`
+  return `${EXPORT_PREFIX}-${day}.json`
 }
 
 /**

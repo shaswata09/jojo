@@ -60,6 +60,24 @@ describe('draftFromUrl', () => {
     expect(draftFromUrl('https://jobs.unimelb.edu.au/en/job/1')?.org).toBe('Unimelb')
   })
 
+  // Government and research hosts outside the English-speaking world register
+  // under second levels of their own. Each of these became an employer called
+  // 'GO', 'GC', 'RE' or 'GV' once two-letter labels stopped all counting as
+  // suffixes.
+  it('walks past the second levels other countries register under', () => {
+    expect(draftFromUrl('https://www.aist.go.jp/aist_e/careers/postdoc.html')?.org).toBe('Aist')
+    expect(draftFromUrl('https://www.nrc-cnrc.gc.ca/eng/careers/associate.html')?.org).toBe('NRC Cnrc')
+    expect(draftFromUrl('https://www.kist.re.kr/eng/careers/postdoc')?.org).toBe('Kist')
+    expect(draftFromUrl('https://www.bmbwf.gv.at/jobs/referent')?.org).toBe('Bmbwf')
+    expect(draftFromUrl('https://www.riken.or.jp/careers/postdoc')?.org).toBe('Riken')
+    expect(draftFromUrl('https://www.nict.go.kr/careers/postdoc')?.org).toBe('Nict')
+    expect(draftFromUrl('https://www.city.lg.jp/careers/clerk')?.org).toBe('City')
+    // A third-level label that happens to be in that list is still a name.
+    expect(draftFromUrl('https://www.ed.ac.uk/jobs/lecturer')?.org).toBe('ED')
+    expect(draftFromUrl('https://jobs.lever.co/mistral/abc-123')?.org).toBe('Mistral')
+    expect(draftFromUrl('https://careers.openai.com/research-scientist')?.org).toBe('Openai')
+  })
+
   it('never names the employer after the site’s own filing label', () => {
     expect(draftFromUrl('https://careers.co.uk/ml-engineer')?.org).toBeUndefined()
   })

@@ -17,7 +17,7 @@ requirements with it — the ones you are about to be asked about.
 
 ## The toolbar panel
 
-Clicking the jojo icon opens `popup.html`. It does four things, and each is
+Clicking the jojo icon opens `popup.html`. It does five things, and each is
 something about the EXTENSION rather than about a page — which is why they are
 here and not in the app:
 
@@ -35,12 +35,19 @@ here and not in the app:
   and a dot that means something: the check is a real MCP `initialize`, because
   markitdown-mcp answers a GET with a 307 and that would make an unreachable
   server look fine.
-- **Model providers** — one switch per provider on the allowlist. Switch one off
-  and the relay refuses to carry anything to it, naming the provider. A model on
-  your own machine is loopback, is never routed through here, and is unaffected.
+- **Model providers** — one switch per hosted provider on the allowlist. Switch
+  one off and the relay refuses to carry anything to it, naming the provider.
+- **Models on my network** — one switch for model servers at a private address
+  on your network, reached over http. While it is off the relay also refuses
+  any port on this machine that is not a usual model port. The app reaches a
+  model on this machine straight from the page, not through the relay, so that
+  works either way.
 
-Both switches default to ON. An extension that arrives switched off looks
-broken, and its refusal reads exactly like the bug the relay exists to fix.
+The reader and provider switches default to ON. An extension that arrives
+switched off looks broken, and its refusal reads exactly like the bug the relay
+exists to fix. **Models on my network defaults to OFF**: the other switches each
+reach one named place, and this one lets a page reach any private address it
+names, so only the popup can turn it on.
 
 `chrome.action.onClicked` no longer has a listener: Chrome does not fire it for
 an action that declares a `default_popup`. The capture path is the same
@@ -153,7 +160,12 @@ provider hosts in `policy.js`. Loopback means the ports local model servers
 use out of the box (Ollama 11434, LM Studio 1234, 8000, 8080 and a few more —
 `LOCAL_MODEL_PORTS` in `worker/routing.js`); any other port on this machine needs
 "Models on my network", and jojo's own reader (3001) and bridge (3002) are
-refused outright. The hosts are transcribed from `service/kg/core/provider.ts`
+refused outright. On this machine and on your network the PATH is pinned as
+well, to the model API paths the app calls (`…/v1/chat/completions`,
+`…/v1/models`, Ollama's `/api/chat` and `/api/tags`, and their neighbours —
+`MODEL_API_PATH` in `worker/routing.js`), because 8000, 8080 and 5000 are also
+where Django, most dev servers and Flask listen, and a port alone let a page
+read `http://localhost:8000/admin/` through the relay. The hosts are transcribed from `service/kg/core/provider.ts`
 and checked against it by `web/src/lib/capture-policy.test.ts`, so a host cannot
 drift in or out unnoticed. Exact hostname match, not a suffix test, because
 `endsWith('openai.com')` also accepts `evil-openai.com`.

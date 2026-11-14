@@ -3,7 +3,8 @@
  *
  * The worker itself is `dist/sw.js`, written at build time by
  * `scripts/make-sw.mjs` — which carries the reasoning for what it caches and
- * why it is hand-written. This is only the handshake.
+ * why it is hand-written. This is the registration, and the page's half of the
+ * update handshake (`handshake` below).
  *
  * NOTHING HERE BLOCKS THE APP. Registration is fire-and-forget and every failure
  * is swallowed: a browser with service workers disabled, a private window, an
@@ -42,6 +43,62 @@ async function unregisterInDev(): Promise<void> {
 }
 
 /**
+ * The scripts and stylesheets this document is running, as absolute URLs.
+ *
+ * The service worker reads these to tell which build a window runs: every file
+ * under `assets/` carries a content hash, so the set names exactly one build.
+ * Vite's runtime-inserted preloads for lazy routes are included, which is right
+ * — they are this build's too.
+ */
+function runningAssets(): string[] {
+  const out: string[] = []
+  for (const el of document.querySelectorAll(
+    'script[src], link[rel="modulepreload"][href], link[rel="stylesheet"][href]',
+  )) {
+    const url = el instanceof HTMLScriptElement ? el.src : (el as HTMLLinkElement).href
+    if (url) out.push(url)
+  }
+  return out
+}
+
+/**
+ * The page's half of the update handshake. The worker's half, and why it
+ * exists, is the 'message' listener in `scripts/make-sw.mjs`.
+ *
+ * Two messages, and their shapes are a protocol between builds — a window of
+ * this build will be asked by workers from builds not written yet, and asks
+ * workers that were — so change them only by adding:
+ *
+ * - `jojo:which-build`, from a worker, with a port: answer on the port with
+ *   `{ assets }`. A worker deciding whether to take over asks every window.
+ * - `jojo:take-over`, to a WAITING worker, with `{ assets }`: "I am running
+ *   your build". The worker checks that, then takes over only if every other
+ *   window says the same.
+ *
+ * Offered when a worker is found waiting at load, when one finishes
+ * installing, and when this tab comes back into view — the usual moment just
+ * after the person closed the other tab that was holding the update back.
+ */
+function handshake(registration: ServiceWorkerRegistration): void {
+  const offer = () => {
+    registration.waiting?.postMessage({ type: 'jojo:take-over', assets: runningAssets() })
+  }
+  const watch = (worker: ServiceWorker | null) => {
+    worker?.addEventListener('statechange', () => {
+      if (worker.state === 'installed') offer()
+    })
+  }
+  offer()
+  watch(registration.installing)
+  registration.addEventListener('updatefound', () => {
+    watch(registration.installing)
+  })
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') offer()
+  })
+}
+
+/**
  * Called once, from `main.tsx`, after the app has been handed to React.
  *
  * After rather than before on purpose: an install fetches the whole precache
@@ -59,7 +116,20 @@ export function startOffline(): void {
     return
   }
 
-  void navigator.serviceWorker.register(swUrl(), { scope: import.meta.env.BASE_URL }).catch(() => {
-    /* See the header: every failure here leaves a working online app. */
+  // Answered before registering, so a worker that is already deciding whether
+  // to take over hears from this window too.
+  navigator.serviceWorker.addEventListener('message', (event: MessageEvent<unknown>) => {
+    const data = event.data as { type?: unknown } | null
+    if (data?.type === 'jojo:which-build') event.ports[0]?.postMessage({ assets: runningAssets() })
   })
+  // A worker's messages are queued until this is called or the document has
+  // loaded; startOffline runs after render, so this is belt and braces.
+  navigator.serviceWorker.startMessages()
+
+  void navigator.serviceWorker
+    .register(swUrl(), { scope: import.meta.env.BASE_URL })
+    .then(handshake)
+    .catch(() => {
+      /* See the header: every failure here leaves a working online app. */
+    })
 }

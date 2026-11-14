@@ -1,10 +1,18 @@
-import { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { StackDiagram } from '@/components/guide/diagrams/StackDiagram'
 import { GuideContents } from '@/components/guide/GuideNav'
 import { OnThisPage } from '@/components/guide/OnThisPage'
-import { CONTROL_FLOWS, FLOW_LAYERS, FLOW_PLACEMENT, FLOW_RULES } from '@/components/guide/flow-map'
+import {
+  CONTROL_FLOWS,
+  FLOW_LAYERS,
+  FLOW_PLACEMENT,
+  FLOW_RULES,
+  flowSteps,
+  tabForKey,
+} from '@/components/guide/flow-map'
 import { useTitle } from '@/lib/links'
 import { cn } from '@/lib/utils'
 
@@ -53,6 +61,22 @@ export function GuideControlFlow() {
   useTitle('Control flow graph')
   const [flowId, setFlowId] = useState(CONTROL_FLOWS[0]?.id ?? '')
   const flow = CONTROL_FLOWS.find((f) => f.id === flowId) ?? CONTROL_FLOWS[0]
+  const tabs = useRef<(HTMLButtonElement | null)[]>([])
+
+  /*
+   * The tabs pattern: one tab stop for the row (the chosen tab), the arrows
+   * move along it and choose as they go, Home and End jump to the ends. The
+   * key-to-tab mapping is `tabForKey`, tested beside the charts.
+   */
+  const onTabKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    const current = CONTROL_FLOWS.findIndex((f) => f.id === flow?.id)
+    const next = tabForKey(event.key, current, CONTROL_FLOWS.length)
+    const target = next === null ? undefined : CONTROL_FLOWS[next]
+    if (next === null || target === undefined) return
+    event.preventDefault()
+    setFlowId(target.id)
+    tabs.current[next]?.focus()
+  }
 
   return (
     <>
@@ -83,34 +107,59 @@ export function GuideControlFlow() {
           Read the one closest to what you are changing first: the step you are about to touch is
           rarely the only one that has to agree.
         </p>
-        <div className="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Journey">
-          {CONTROL_FLOWS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              role="tab"
-              aria-selected={f.id === flow?.id}
-              onClick={() => setFlowId(f.id)}
-              className={cn(
-                'pressable rounded-full border px-2.5 py-1 text-xs transition-colors',
-                f.id === flow?.id
-                  ? 'border-accent-border bg-accent-soft text-text-1'
-                  : 'border-hairline bg-well text-text-2 hover:text-text-1',
-              )}
-            >
-              {f.name}
-            </button>
-          ))}
+        <div className="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Journey" onKeyDown={onTabKey}>
+          {CONTROL_FLOWS.map((f, i) => {
+            const chosen = f.id === flow?.id
+            return (
+              <button
+                key={f.id}
+                ref={(el) => {
+                  tabs.current[i] = el
+                }}
+                id={`cf-tab-${f.id}`}
+                type="button"
+                role="tab"
+                aria-selected={chosen}
+                aria-controls="cf-journey"
+                tabIndex={chosen ? 0 : -1}
+                onClick={() => setFlowId(f.id)}
+                className={cn(
+                  'pressable rounded-full border px-2.5 py-1 text-xs transition-colors',
+                  chosen
+                    ? 'border-accent-border bg-accent-soft text-text-1'
+                    : 'border-hairline bg-well text-text-2 hover:text-text-1',
+                )}
+              >
+                {f.name}
+              </button>
+            )
+          })}
         </div>
         {flow ? (
-          <div role="tabpanel" aria-label={flow.name}>
+          <div role="tabpanel" id="cf-journey" aria-labelledby={`cf-tab-${flow.id}`}>
             <p className="mb-3 text-xs text-text-3">{flow.summary}</p>
             <Suspense fallback={<Loading />}>
               <ControlFlowGraph key={flow.id} flow={flow} />
             </Suspense>
+            {/* The chart in words, for a screen reader: its branches are SVG
+                edge labels, which nothing reads aloud. Outside the lazy chart
+                so it is there while the drawing loads. */}
+            <h3 className="sr-only">{flow.name}, step by step</h3>
+            <ol className="sr-only">
+              {flowSteps(flow).map((step) => (
+                <li key={step.id}>
+                  {step.text}
+                  <ul>
+                    {step.exits.map((exit) => (
+                      <li key={exit}>{exit}</li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
             <p className="mt-2 text-xs text-text-3">
               Amber boxes are decisions, red ones stop the journey, green ones end it. Dashed arrows loop
-              back. Hover a box for the full path of its file.
+              back. Hover or focus a box for the full path of its file.
             </p>
           </div>
         ) : null}

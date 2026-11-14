@@ -17,6 +17,27 @@ import { cn } from '@/lib/utils'
 export const COPIED_MS = 1600
 
 /**
+ * The toast for a step's Undo, chosen from what the Undo says it did.
+ *
+ * The outcome is `StepUndoOutcome` from `tools/runtime.ts`, reached through
+ * `AgentStep` because UI code may not import the tools layer. The words are
+ * the ⌘Z path's: "Nothing to undo — it has changed since" is
+ * `NothingToRevert`'s message.
+ */
+function undoToast(outcome: ReturnType<NonNullable<AgentStep['undo']>>, label: string) {
+  switch (outcome) {
+    case 'nothing':
+      return { title: 'Nothing to undo — it has changed since', description: label }
+    case 'already-undone':
+      return { title: 'Already undone', description: label }
+    case 'out-of-reach':
+      return { title: 'Too far back to undo from here', description: label }
+    case 'undone':
+      return { title: 'Undone', description: label, tone: 'danger' as const }
+  }
+}
+
+/**
  * One conversation's turns: the person's questions, each tool the agent ran,
  * its narration while it works, and its answers — in the order they happened.
  *
@@ -74,10 +95,14 @@ export function Transcript({
    * because it IS that undo — `runtime.run` handed it back and the step kept it.
    * The row stays on screen afterwards: the trace is a record of what happened,
    * and a step vanishing when it is reverted would make the record wrong.
+   *
+   * The toast follows what the Undo did (`undoToast`). It said "Undone"
+   * every time, including after a later write had moved everything on and
+   * after ⌘Z had already taken the step back, when the press changed nothing.
    */
   const undoStep = (step: AgentStep) => {
-    step.undo?.()
-    toast({ title: 'Undone', description: step.announcement?.title ?? step.title, tone: 'danger' })
+    if (!step.undo) return
+    toast(undoToast(step.undo(), step.announcement?.title ?? step.title))
   }
 
   /** The question that produced a given answer, for the snippet's title. */

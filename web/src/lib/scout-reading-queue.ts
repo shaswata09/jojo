@@ -1,6 +1,7 @@
-import { onOneOf, parseSources } from '@jojo/service/core/board'
+import { isJobPostingUrl, onOneOf, parseSources } from '@jojo/service/core/board'
+import { canonicalPostingUrl } from '@jojo/service/core/capture'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
-import { postingPreview } from '@jojo/service/core/proposal'
+import { postingPreview, scoutReading } from '@jojo/service/core/proposal'
 import type { ScoutReading } from '@jojo/service/core/proposal'
 import { isLocalTarget } from '@/lib/posting-target'
 
@@ -114,6 +115,16 @@ export function unread(p: Proposal): string | null {
  * watches (by host, the way `board.search` itself decides), and never one on
  * this machine or the person's network. Anything else waits for Approve, where
  * a person has seen the address first.
+ *
+ * AND ONLY A POSTING. The board's host alone let in every page the person is
+ * signed in to there: with LinkedIn watched, `linkedin.com/messaging/` and
+ * `/psettings/email` were opened, read and sent to the model (round 3). So the
+ * address must have a posting's shape (`isJobPostingUrl`, which `board.search`
+ * itself requires of every row), judged as it will be OPENED: `readPosting`
+ * opens the canonical address, and that is the page that is read. A LinkedIn
+ * address carrying `?currentJobId=` is opened as that job whatever its path
+ * says; `canonicalPostingUrl` only ever moves an address onto a board's own
+ * posting shape, never onto this machine, so the local check before it holds.
  */
 export function autoReadable(
   url: string,
@@ -121,8 +132,10 @@ export function autoReadable(
   listed: (pipelineId: string, url: string) => boolean,
 ): boolean {
   if (isLocalTarget(url)) return false
+  const opened = canonicalPostingUrl(url)
+  if (!isJobPostingUrl(opened)) return false
   if (listed(pipeline.id, url)) return true
-  return onOneOf(url, parseSources(pipeline.source))
+  return onOneOf(opened, parseSources(pipeline.source))
 }
 
 /**
@@ -150,16 +163,75 @@ export function nextToRead(
   return null
 }
 
-/**
- * The page a discarded card may take back out of the Vault, or null.
+/*
+ * WHICH SUGGESTION KEPT A PAGE, written on the page itself.
  *
- * Only a page the card's own read CREATED. A read reuses a page already kept
- * for the address — often the person's own clip of it — and Discard used to
- * delete that too (R9). `page` is a page a finished read created but could not
- * store on the card, because the card was answered while it ran.
+ * A read keeps the page before it asks the model, and says it did on the
+ * card's reading — which lands only once the model has answered. A reload in
+ * between lost that: the next pass found the page already kept, reused it, and
+ * its reading said "not created", so Discard left a page nobody wanted in the
+ * Vault for good (round 3). So the page carries the claim, in its note, from
+ * the moment it is kept.
+ *
+ * The note, because it is the one free-text field a file record has, and it is
+ * honest there: the person reading their Vault sees why the page is in it. A
+ * person who edits the note has made the page theirs, and the marker goes with
+ * the edit — which is the right way for that to fail. A page kept before this
+ * marker existed has none and is never taken out on inference.
  */
-export function discardablePage(reading: ScoutReading | null, page?: string): string | null {
-  if (page !== undefined) return page
-  if (reading?.created !== true) return null
-  return reading.fileId ?? null
+const KEPT_FOR = /(?:^| · )Kept while reading a scout suggestion \(([^()\s]+)\)$/
+
+/** A kept page's note, with the line that says which suggestion's read kept it. */
+export function scoutKeptNote(note: string | undefined, proposalId: string): string {
+  const line = `Kept while reading a scout suggestion (${proposalId})`
+  const base = (note ?? '').replace(KEPT_FOR, '').trim()
+  return base === '' ? line : `${base} · ${line}`
+}
+
+/** The suggestion a page's note says its read kept it for, or undefined. */
+export function scoutKeptFor(note: string | undefined): string | undefined {
+  return note === undefined ? undefined : KEPT_FOR.exec(note.trim())?.[1]
+}
+
+/**
+ * The pages a discarded card may take back out of the Vault.
+ *
+ * Only a page the card's own read KEPT: the one its reading says it created,
+ * and any whose note says it was kept for this card (`scoutKeptNote`). A read
+ * reuses a page already kept for the address — often the person's own clip of
+ * it — and Discard used to delete that too (R9). `page` is a page a finished
+ * read created but could not store on the card, because the card was answered
+ * while it ran.
+ *
+ * Whether something ELSE claims a page — an application, a saved posting,
+ * another card's reading — is `otherClaimant` and the caller's to ask.
+ */
+export function discardablePages(
+  proposalId: string,
+  reading: ScoutReading | null,
+  files: readonly { id: string; note?: string | undefined }[],
+  page?: string,
+): string[] {
+  const out = new Set<string>()
+  if (page !== undefined) out.add(page)
+  if (reading?.created === true && reading.fileId !== undefined) out.add(reading.fileId)
+  for (const file of files) if (scoutKeptFor(file.note) === proposalId) out.add(file.id)
+  return [...out]
+}
+
+/**
+ * Whether a card other than this one still points at the page — a reading on a
+ * card nobody has discarded. Two pipelines can suggest the same posting, and
+ * the second's read reuses the first's page; discarding the first must not take
+ * the second's page with it.
+ */
+export function otherClaimant(
+  proposals: readonly Pick<Proposal, 'id' | 'status' | 'reading'>[],
+  proposalId: string,
+  fileId: string,
+): boolean {
+  return proposals.some(
+    (p) =>
+      p.id !== proposalId && p.status !== 'discarded' && scoutReading(p.reading)?.fileId === fileId,
+  )
 }

@@ -126,7 +126,16 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
   }
 
   const changeRole = (p: Person, next: ContactRole | null) => {
-    const { restore } = filePerson(p.id, applicationId, next)
+    const changed = filePerson(p.id, applicationId, next)
+    if (!changed.ok) {
+      toast({
+        title: 'That did not save',
+        description: changed.refusal ?? p.name,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = changed
     toast({
       title:
         next === null
@@ -137,7 +146,16 @@ export function PeoplePanel({ applicationId }: { applicationId: string }) {
   }
 
   const takeOff = (p: Person) => {
-    const { restore } = unfilePerson(p.id, applicationId)
+    const removed = unfilePerson(p.id, applicationId)
+    if (!removed.ok) {
+      toast({
+        title: 'That did not save',
+        description: removed.refusal ?? `${p.name} is still on this application.`,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = removed
     toast({
       title: `${p.name} taken off this application`,
       description: 'They are still in the Vault, and on their other applications.',

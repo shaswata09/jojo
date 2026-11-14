@@ -27,7 +27,9 @@ import { CAPTURE_MAX_BYTES, remoteRefCount } from '@jojo/service/core/capture'
 export async function droppedPageNote(
   file: File,
 ): Promise<{ title: string; description: string } | null> {
-  // .mhtml is a MIME archive, not markup; the scan would read its encoded parts.
+  // .mhtml is a MIME archive, not markup: the scan would read its encoded parts,
+  // and the viewer does not render one (`isPageArchive`), so there is nothing
+  // to warn about.
   if (!/\.html?$/i.test(file.name)) return null
   // The scan is a regex over the whole text, so a huge file is not handed to it
   // — the same order `readCapture` checks in.
@@ -35,7 +37,7 @@ export async function droppedPageNote(
     return {
       title: `${file.name} was too large to check`,
       description:
-        'It is filed, and it opens with every web address in it blocked, so nothing in it reaches the network — but anything it loads from the web will be missing.',
+        'It is filed, and jojo shows it with every web address in it blocked and its links switched off, so viewing it here reaches nothing on the network — but anything it loads from the web will be missing.',
     }
   }
   let refs: number
@@ -48,7 +50,7 @@ export async function droppedPageNote(
   return {
     title: `${file.name} names ${String(refs)} web address${refs === 1 ? '' : 'es'}`,
     description:
-      'It is filed as you dropped it, and jojo shows it with every one of them blocked, so opening it never reaches the network. Pictures or styles it loaded from the web will be missing.',
+      'It is filed as you dropped it, and jojo shows it with every one of them blocked and its links switched off, so viewing it here reaches nothing on the network. Pictures or styles it loaded from the web will be missing.',
   }
 }
 

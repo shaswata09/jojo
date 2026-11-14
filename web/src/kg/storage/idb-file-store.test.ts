@@ -16,7 +16,7 @@ import {
   type ConformanceHooks,
 } from '@jojo/service/storage/file-store-conformance'
 import type { FileStore } from '@jojo/service/storage/file-store'
-import { createIdbFileStore, type IdbFileStore } from './idb-file-store'
+import { createIdbFileStore, isBlockedFailure, type IdbFileStore } from './idb-file-store'
 
 const enc = new TextEncoder()
 
@@ -285,5 +285,65 @@ describe('idb-file-store — what list and open cost', () => {
       }, 2_000)),
     ])
     expect(after).not.toBe('hung')
+  })
+
+  /*
+   * R3 platform finding: a tab still running a build from before version 2
+   * holds the database at version 1 and has no `versionchange` handler, so the
+   * upgrade here was blocked until that tab closed — `list` and `open` pending
+   * with nothing on screen. Now the store waits out its grace, answers
+   * `files/failed` marked as blocked, and recovers on its own once that tab
+   * lets go, without opening a second connection.
+   */
+  it('a pre-v2 tab holding the database blocks for the grace, then fails, then recovers', async () => {
+    const dbName = `jojo-files-blocked-${++seq}`
+    await deleteDB(dbName)
+    // The old tab: version 1, and no `versionchange` handler, exactly as it shipped.
+    const oldTab = await openDB(dbName, 1, {
+      upgrade(fresh) {
+        fresh.createObjectStore('blobs')
+      },
+    })
+    await oldTab.put('blobs', { data: new Uint8Array(5), mtime: 9 }, 'Documents/cv.pdf')
+
+    const realOpen = indexedDB.open.bind(indexedDB)
+    let opens = 0
+    indexedDB.open = (name: string, version?: number) => {
+      if (name === dbName) opens += 1
+      return realOpen(name, version)
+    }
+    try {
+      const store = createIdbFileStore({ now: tickingClock(), dbName, blockedGraceMs: 300 })
+      const first = await Promise.race([
+        store.list('Documents'),
+        new Promise<'hung'>((resolve) => setTimeout(() => {
+          resolve('hung')
+        }, 2_000)),
+      ])
+      expect(first).not.toBe('hung')
+      expect(first !== 'hung' && !first.ok && first.error.code).toBe('files/failed')
+      expect(first !== 'hung' && !first.ok && isBlockedFailure(first.error)).toBe(true)
+      // Still blocked: answered at once, not after another grace.
+      const again = await Promise.race([
+        store.open(),
+        new Promise<'waited'>((resolve) => setTimeout(() => {
+          resolve('waited')
+        }, 100)),
+      ])
+      expect(again !== 'waited' && !again.ok && isBlockedFailure(again.error)).toBe(true)
+
+      // The old tab closes. The pending open lands, and the data written under
+      // version 1 reads back through the store.
+      oldTab.close()
+      let listed = await store.list('Documents')
+      for (let i = 0; i < 20 && !listed.ok; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+        listed = await store.list('Documents')
+      }
+      expect(listed.ok && listed.value).toEqual([{ path: 'Documents/cv.pdf', bytes: 5, mtime: 9 }])
+    } finally {
+      indexedDB.open = realOpen
+    }
+    expect(opens).toBe(1)
   })
 })

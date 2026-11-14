@@ -43,7 +43,7 @@ export const APPROVAL_TITLE: { readonly [M in ApprovalMode]: string } = {
 export const APPROVAL_SAID: { readonly [M in ApprovalMode]: string } = {
   manual: 'You are asked before anything in this conversation is written.',
   semi: 'Edits happen straight away. You are asked before anything is deleted or cleared.',
-  auto: 'Everything happens straight away, deletions included. Nothing is confirmed.',
+  auto: 'Everything happens straight away, deletions included. Only emptying or replacing the whole store is confirmed.',
 }
 
 /**

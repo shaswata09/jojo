@@ -188,12 +188,46 @@ const SUFFIXES = new Set(['com', 'org', 'net', 'edu', 'gov', 'ac', 'co', 'io', '
 
 /**
  * The second level a country code is registered under: the 'ac' in '.ac.uk',
- * the 'com' in '.com.au'. Only these, and only right before a country code —
- * any other two-letter label is somebody's name ('ox', 'ge', 'hp'), and
- * treating every one as a suffix turned 'jobs.ox.ac.uk' into an employer
- * called 'Jobs'.
+ * the 'com' in '.com.au', the 'go' in '.go.jp'. Only these, and only right
+ * before a country code — any other two-letter label is somebody's name ('ox',
+ * 'ge', 'hp'), and treating every one as a suffix turned 'jobs.ox.ac.uk' into
+ * an employer called 'Jobs'.
+ *
+ * So the list has to name the second levels that public employers actually
+ * sit under, which is where a research or government job is posted: Japan
+ * (go, or, ne, lg, ed, gr, ad), Korea (go, re, or, ne), Canada's federal gc.ca,
+ * Austria's gv.at, Thailand (go, or, mi, in), and the longer spellings Spanish,
+ * French, New Zealand and Indian hosts use. A name that is also in this list
+ * is still read as a name when it sits anywhere but right before the country
+ * code — 'www.ed.ac.uk' is Edinburgh.
  */
-const COUNTRY_SECOND_LEVEL = new Set(['ac', 'co', 'com', 'gov', 'edu', 'org', 'net'])
+const COUNTRY_SECOND_LEVEL = new Set([
+  'ac',
+  'co',
+  'com',
+  'gov',
+  'edu',
+  'org',
+  'net',
+  'go',
+  'gc',
+  're',
+  'gv',
+  'ne',
+  'or',
+  'lg',
+  'ed',
+  'gr',
+  'ad',
+  'mi',
+  'in',
+  'gob',
+  'gouv',
+  'govt',
+  'res',
+  'nic',
+  'mil',
+])
 
 /**
  * Path segments that describe the site's own filing, not the job. Dropping them
@@ -387,6 +421,52 @@ function orgFromBoard(url: URL, segments: string[], named: string[]) {
   return GENERIC_HOSTS.has(leading) || JOB_BOARDS.has(leading) ? '' : leading
 }
 
+/** Whether this address is a job board's rather than an employer's own site. */
+const isBoard = (url: URL) =>
+  url.hostname.toLowerCase().split('.').some((l) => JOB_BOARDS.has(l)) || onBoardHost(url.hostname)
+
+/**
+ * The path's segments, and the ones among them that name something: not the
+ * site's routing ('jobs', 'view') and not a bare ID.
+ */
+function pathOf(url: URL): { segments: string[]; named: string[] } {
+  const segments = url.pathname
+    .split('/')
+    .map(decodeSegment)
+    .map((s) => withoutReqNumber(s.replace(/\.(html?|php|aspx?|jsp)$/i, '')))
+    .filter(Boolean)
+  const named = segments.filter((s) => !ROUTING_SEGMENTS.has(s.toLowerCase()) && !looksLikeId(s))
+  return { segments, named }
+}
+
+/**
+ * The one employer's site a posting address is on, or undefined when the
+ * address says nothing about which employer it belongs to.
+ *
+ * On a careers page that is the host. On a job board the host is shared by
+ * every employer the board lists, so it is the host plus the tenant the board
+ * files the job under ('boards.greenhouse.io/anthropic'), and nothing at all
+ * on an aggregator that keeps the employer only in the page's text. Two
+ * postings with the same requisition number on 'boards.greenhouse.io' are at
+ * Anthropic and at Stripe, not one job — `idDecides` in `same-job.ts` read the
+ * host alone and said they were.
+ */
+export function employerSite(u: string | undefined): string | undefined {
+  if (u === undefined) return undefined
+  let url: URL
+  try {
+    url = new URL(u)
+  } catch {
+    return undefined
+  }
+  const host = url.hostname.toLowerCase().replace(/^www\./, '')
+  if (host === '') return undefined
+  if (!isBoard(url)) return host
+  const { segments, named } = pathOf(url)
+  const tenant = orgFromBoard(url, segments, named).toLowerCase()
+  return tenant === '' ? undefined : `${host}/${tenant}`
+}
+
 /**
  * Guesses an application out of a posting link.
  *
@@ -407,17 +487,9 @@ export function draftFromUrl(u: string): Partial<Application> {
   if (!parsed) return draftFromText(text)
 
   const { url, href } = parsed
-  const labels = url.hostname.toLowerCase().split('.')
-  const board = labels.some((l) => JOB_BOARDS.has(l)) || onBoardHost(url.hostname)
+  const board = isBoard(url)
   const source: Source = board ? 'Job board' : 'Careers page'
-
-  const segments = url.pathname
-    .split('/')
-    .map(decodeSegment)
-    .map((s) => withoutReqNumber(s.replace(/\.(html?|php|aspx?|jsp)$/i, '')))
-    .filter(Boolean)
-
-  const named = segments.filter((s) => !ROUTING_SEGMENTS.has(s.toLowerCase()) && !looksLikeId(s))
+  const { segments, named } = pathOf(url)
 
   const orgSegment = board ? orgFromBoard(url, segments, named) : ''
   const org = orgCase(board ? orgSegment : orgFromHost(url.hostname))

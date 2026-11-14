@@ -76,7 +76,16 @@ export function PeopleTool({ focus }: { focus?: string }) {
   }
 
   const onDelete = (person: Person) => {
-    const { restore } = removePerson(person.id)
+    const removed = removePerson(person.id)
+    if (!removed.ok) {
+      toast({
+        title: 'That did not delete',
+        description: removed.refusal ?? `${person.name} is still in the Vault.`,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = removed
     toast({
       title: 'Person removed',
       description: person.name,

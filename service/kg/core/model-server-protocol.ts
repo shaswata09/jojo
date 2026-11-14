@@ -2,7 +2,9 @@
  * The wire, as data: URL arithmetic, the request and response a caller sends
  * and reports back, and the conversation in OpenAI's spelling.
  *
- * Split out of `model-server.ts`, which re-exports every public name here.
+ * Split out of `model-server.ts`, which re-exports the names importers used
+ * before the split. `parse` and `safeParse` are exported for the readers beside
+ * this file and are not part of that surface.
  */
 
 /**

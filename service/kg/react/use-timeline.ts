@@ -20,7 +20,8 @@ import { addDays, bucketOf, followUpsOf, remindersOf } from '../core/dates'
 import type { TimelineItem } from '../core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
-import { asNull, asText, nothingToRestore, present } from './patch'
+import { removalOf } from './use-vault'
+import { asNull, asText, present } from './patch'
 
 /**
  * `applicationIds` is optional here and required on the projection.
@@ -113,8 +114,10 @@ export function useTimeline() {
 
   const remove = useCallback(
     (id: string) => {
-      const result = run('timeline.item.delete', { id })
-      return { restore: (result.ok && result.undo) || nothingToRestore }
+      // `ok` and the refusal as well as the Undo, as the Vault's removals do:
+      // a delete refused (gone already, removed in another tab) must not be
+      // toasted as "deleted" with an Undo that does nothing.
+      return removalOf(run('timeline.item.delete', { id }))
     },
     [run],
   )

@@ -9,7 +9,13 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import type { VaultFile } from '@jojo/service/data/vault'
-import { keptOrDropped, reusablePage } from './posting-agent'
+import {
+  NOTHING_TO_READ_WITH,
+  NO_BACKGROUND_ROUTE,
+  keptOrDropped,
+  reusablePage,
+  withoutExtension,
+} from './posting-agent'
 
 const file = { id: 'file_1', name: 'Rice — Assistant Professor.html' } as VaultFile
 
@@ -40,5 +46,27 @@ describe('reusablePage', () => {
 
   it('reuses nothing when nothing is kept for the address', () => {
     expect(reusablePage(undefined, files, () => true)).toBeUndefined()
+  })
+})
+
+/*
+ * Round 3: MarkItDown follows redirects and nothing here sees the hops, so a
+ * board-listed address that 302s to `http://127.0.0.1:…` was read, sent to the
+ * model and filed. A read nobody asked for goes through the extension or not
+ * at all.
+ */
+describe('withoutExtension', () => {
+  it('never hands an unattended read to the document reader', () => {
+    expect(withoutExtension('http://127.0.0.1:3001/mcp', true)).toEqual({
+      reason: NO_BACKGROUND_ROUTE,
+    })
+    expect(withoutExtension('', true)).toEqual({ reason: NO_BACKGROUND_ROUTE })
+  })
+
+  it('uses the reader for a posting a person opened, when it is set up', () => {
+    expect(withoutExtension('http://127.0.0.1:3001/mcp', false)).toEqual({
+      reader: 'http://127.0.0.1:3001/mcp',
+    })
+    expect(withoutExtension('  ', false)).toEqual({ reason: NOTHING_TO_READ_WITH })
   })
 })

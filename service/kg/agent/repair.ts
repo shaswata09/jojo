@@ -495,13 +495,20 @@ function repairObject(
      * of them". No repair can tell which, so the call is refused and the
      * model is told to send the whole list. A real list under the right key,
      * a JSON-encoded one, and null (clear) are untouched.
+     *
+     * Under the SINGULAR key, only a list of two or more is renamed. One item
+     * there — `{keyword: ["kw:3"]}` — is the same "add this one" in brackets,
+     * and is refused. Two or more is a list whatever the key says, and
+     * refusing `{keyword: [kw1, kw2]}` told the model it had sent one item
+     * when it had sent the set.
      */
     if (field && replacesList(field)) {
       const nested: Repair[] = []
       const repaired = repairValue(field, raw, at, nested)
       const singular = name !== key && plural(norm(key), norm(name))
+      const aList = Array.isArray(repaired) && repaired.length > 1
       const wrapped = nested.some((r) => r.path === at && (r.kind === 'wrapped-list' || r.kind === 'split-list'))
-      if (singular || wrapped) {
+      if ((singular && !aList) || wrapped) {
         push(repairs, 'refused-partial-list', at, `${name} replaces the whole list`)
         out[key] = raw
         continue

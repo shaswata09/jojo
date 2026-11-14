@@ -306,7 +306,7 @@ export async function inlineCapture(raw: RawCapture, now: string): Promise<Captu
   // `remoteRefCount` was blind in the same way from the same spelling. `<` must
   // be followed by an ASCII letter because that is exactly when the tokeniser
   // starts a tag. Identical to `REMOTE_REF` in `service/kg/core/capture.ts` —
-  // a third copy lives in `web/extension/background.js`, and the three change
+  // a third copy lives in `web/extension/worker/splice.js`, and the three change
   // together.
   html = html.replace(
     /(<[a-zA-Z](?:[^>"']|"[^"]*"|'[^']*')*?\s(?:src|srcset|imagesrcset|href|poster|data|action|formaction|background)\s*=\s*)(?:(["'])\s*(?:https?:|\/\/)[^"']*\2|(?:https?:|\/\/)[^\s>]*)/gi,

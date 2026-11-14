@@ -18,6 +18,17 @@ import {
 import { CHANNELS } from './flow-map'
 import { layoutCodeGraph } from './flow-layout'
 
+// @ts-expect-error TS2307 — node:fs has no types under tsconfig.app.json; a tree on disk is the point.
+const fs = (await import('node:fs')) as {
+  mkdtempSync: (prefix: string) => string
+  mkdirSync: (p: string, o: { recursive: true }) => void
+  writeFileSync: (p: string, text: string) => void
+  symlinkSync: (target: string, p: string) => void
+  rmSync: (p: string, o: { recursive: true; force: true }) => void
+}
+// @ts-expect-error TS2307 — as above.
+const os = (await import('node:os')) as { tmpdir: () => string }
+
 describe('reading imports', () => {
   it('finds static, re-export, side-effect and dynamic imports', () => {
     const source = [
@@ -46,6 +57,36 @@ describe('reading imports', () => {
 
   it('finds an import that follows another statement on the same line', () => {
     expect(importsOf("const a = 1; import { b } from './b'")).toEqual(['./b'])
+  })
+
+  // The regex reader got both of these wrong, and the first cost the real graph
+  // an edge: mobile/src/lib/timeline-visuals.ts → service/kg/core/timeline-view.ts.
+  it('does not let a type alias swallow the re-export after it', () => {
+    expect(importsOf("export type A = B\n\nexport { c } from './kept'", 'x.ts')).toEqual(['./kept'])
+  })
+
+  it('draws no arrow for the words of an import inside a string, a template or JSX text', () => {
+    const source = [
+      'const doc = `',
+      "import fake from './template-fake'",
+      '`',
+      "const s = 'import x from \"./string-fake\"'",
+      'export function P() { return <p>import x from "./jsx-fake"</p> }',
+    ].join('\n')
+    expect(importsOf(source, 'x.tsx')).toEqual([])
+  })
+
+  it('reads each dialect by its extension', () => {
+    // `<T>(v) => v` is a generic arrow in .ts and an unclosed tag in .tsx.
+    const source = "const f = (<T>(v: T): T => v)\nimport { g } from './g'"
+    expect(importsOf(source, 'x.ts')).toEqual(['./g'])
+    expect(importsOf("import { h } from './h'\nexport const J = () => <div />", 'x.tsx')).toEqual(['./h'])
+    expect(importsOf("import k from './k.js'\nconst l = import('./l.js')", 'x.js')).toEqual(['./k.js', './l.js'])
+  })
+
+  it('keeps a re-export whose names are not all types', () => {
+    expect(importsOf("export { type A, b } from './b'\nexport * as ns from './ns'", 'x.ts')).toEqual(['./b', './ns'])
+    expect(importsOf("export { type A } from './a'", 'x.ts')).toEqual([])
   })
 })
 
@@ -96,6 +137,31 @@ describe('grouping files', () => {
     expect(groupOf('web/src/kg/storage/idb-driver.ts')).toMatchObject({ id: 'web/kg/storage', tier: 'storage' })
     expect(groupOf('mobile/App.tsx')).toMatchObject({ id: 'mobile/entry', band: 'mobile' })
     expect(groupOf('web/extension/background.js')).toMatchObject({ id: 'web/extension', tier: 'entry' })
+  })
+})
+
+describe('collecting the sources', () => {
+  it('skips symbolic links, so nothing outside the repo is named and a loop cannot throw', () => {
+    const base = fs.mkdtempSync(`${os.tmpdir()}/jojo-code-graph-`)
+    try {
+      const root = `${base}/repo`
+      for (const dir of ['service/kg/core', 'service/data', 'web/src', 'web/extension', 'mobile/src']) {
+        fs.mkdirSync(`${root}/${dir}`, { recursive: true })
+      }
+      for (const file of ['jojo-bridge.mjs', 'mobile/App.tsx', 'mobile/index.ts', 'web/src/main.tsx']) {
+        fs.writeFileSync(`${root}/${file}`, 'export {}\n')
+      }
+      fs.mkdirSync(`${base}/outside`, { recursive: true })
+      fs.writeFileSync(`${base}/outside/private-notes.ts`, 'export const secret = 1\n')
+      fs.symlinkSync(`${base}/outside`, `${root}/web/src/linked`)
+      fs.symlinkSync(`${base}/outside/private-notes.ts`, `${root}/web/src/notes.ts`)
+      fs.symlinkSync('..', `${root}/web/src/loop`)
+
+      const names = Object.keys(collectSources(root)).sort()
+      expect(names).toEqual(['jojo-bridge.mjs', 'mobile/App.tsx', 'mobile/index.ts', 'web/src/main.tsx'])
+    } finally {
+      fs.rmSync(base, { recursive: true, force: true })
+    }
   })
 })
 

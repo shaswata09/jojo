@@ -130,8 +130,9 @@ describe('destructiveness', () => {
      * passed while a tool quietly stopped being confirmed.
      *
      * If this fails, update it here AND in:
-     *   kg/agent/loop.ts   — the `GATE_FOR` comment and the three-settings one
-     *   core/model.ts      — the `APPROVAL_LABEL` paragraph
+     *   kg/agent/perform-call.ts — the three-settings comment in `isGated`
+     *   kg/agent/types.ts        — the `AgentOptions.gate` paragraph
+     *   core/model-thread.ts     — the `APPROVAL_LABEL` paragraph
      */
     expect(CATALOG.filter((e) => e.destructive)).toHaveLength(19)
   })
@@ -150,6 +151,8 @@ describe('destructiveness', () => {
     const noWayBack = CATALOG.filter((e) => e.destructive && !e.undoable)
     expect(noWayBack.map((e) => e.name).sort()).toEqual(['memory.clear', 'memory.reset'])
     for (const e of noWayBack) expect(describeEntry(e)).toContain('NOT undoable')
+    // The same pair is the approval floor every mode keeps (`isGated`).
+    expect(CATALOG.filter((e) => e.alwaysAsks)).toEqual(noWayBack)
   })
 
   /*
@@ -249,9 +252,10 @@ describe('the counts the comments quote', () => {
     // If this fails, the number changed. Update it here AND in:
     //   kg/agent/queries.ts   — "ninety-five entries", "a hundred and seven names"
     //   kg/agent/mcp.ts       — "ninety-five tools is one page" (twice)
-    //   kg/agent/loop.ts      — "every non-read step (85 of 95 tools)"
-    //   web/src/lib/keys-stay-local.test.ts — "the hundred and five tools live"
-    //   core/model.ts         — the destructive count on `APPROVAL_LABEL`
+    //   kg/agent/perform-call.ts — "every non-read step (85 of 95 tools)"
+    //   kg/agent/types.ts     — "19 of the 95 catalog entries", "85 of them"
+    //   core/model-thread.ts  — the counts on `APPROVAL_LABEL`
+    //   README.md             — "85 named write tools and 10 reads"
     //   web guide CodeStructure.tsx — "N named write operations"
     expect(CATALOG.length).toBe(95)
   })

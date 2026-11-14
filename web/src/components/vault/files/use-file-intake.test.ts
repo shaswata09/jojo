@@ -21,6 +21,21 @@ describe('droppedPageNote', () => {
     expect(note?.description).toMatch(/blocked/)
   })
 
+  it('promises what the viewer holds to, and no more', async () => {
+    // Round 3: "opening it never reaches the network" was said while a click
+    // on one of the page's links loaded the live site in the viewer. The
+    // links are disarmed now (`lockedCaptureHtml`), and the note says so.
+    for (const file of [
+      page('posting.html', '<img src="https://t.example/b.gif">'),
+      page('huge.html', 'x'.repeat(CAPTURE_MAX_BYTES + 1)),
+    ]) {
+      const note = await droppedPageNote(file)
+      expect(note?.description, file.name).toMatch(/links switched off/)
+      expect(note?.description, file.name).toMatch(/viewing it here/)
+      expect(note?.description, file.name).not.toMatch(/opening it/i)
+    }
+  })
+
   it('reads .htm and the singular too', async () => {
     const note = await droppedPageNote(page('A.HTM', '<div style="background:url(http://t.example/x)">x</div>'))
     expect(note?.title).toBe('A.HTM names 1 web address')

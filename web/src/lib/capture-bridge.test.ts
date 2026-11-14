@@ -129,18 +129,29 @@ describe('a relayed read that is cancelled', () => {
 
 describe('how long a relayed read waits', () => {
   /*
-   * THE ORDER OF THESE FOUR IS THE TEST, and the file walks it forwards on
-   * purpose. The long budget is EARNED: `answered` is module state, set by the
-   * first round trip anything replies to, and there is no honest way back to
-   * "nothing has ever answered" once one has. So the unproven case is asserted
-   * first, the reply that proves the bridge is second, and the two budgets that
-   * follow from it are third and fourth.
+   * The long budget is EARNED: `answered` is module state, set by the first
+   * round trip anything replies to, and there is no honest way back to "nothing
+   * has ever answered" once one has. So every case starts on a fresh copy of the
+   * module, and the two that need a proven bridge prove it themselves. These
+   * used to rely on running in file order, the reply in the second case
+   * proving the bridge for the third and fourth, and failed every time under
+   * `--sequence.shuffle` (round-3 review).
    *
    * The budgets disagreed with the worker's for a release: 40 seconds here
    * against 120 there, with nothing re-arming this one because reads do not
    * stream. A 55-second PDF conversion succeeded in the worker and was reported
    * to the user as "the extension did not answer".
    */
+  beforeEach(freshPage)
+
+  /** One answered round trip, which is what earns the long budget. */
+  async function proveTheBridge() {
+    const read = readDocument(request)
+    reply({ ok: true, status: 200, text: '{}' })
+    await read
+    posted.length = 0
+  }
+
   it('gives up quickly while nothing has ever answered', async () => {
     vi.useFakeTimers()
     const read = readDocument(request)
@@ -165,6 +176,7 @@ describe('how long a relayed read waits', () => {
   })
 
   it('waits out a conversion that runs past the short budget', async () => {
+    await proveTheBridge()
     vi.useFakeTimers()
     const read = readDocument(request)
 
@@ -177,9 +189,13 @@ describe('how long a relayed read waits', () => {
   })
 
   it('still blames the extension once even the worker has given up', async () => {
+    await proveTheBridge()
     vi.useFakeTimers()
     const read = readDocument(request)
-    await vi.advanceTimersByTimeAsync(125000)
+    // Past the short budget it is still waiting, so this is the long one.
+    await vi.advanceTimersByTimeAsync(124000)
+    expect(listeners.size).toBe(1)
+    await vi.advanceTimersByTimeAsync(1000)
 
     const answer = await read
     expect('failed' in answer && answer.failed.reason).toContain(

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { EXPORT_NAME_SHAPE, EXPORT_PREFIX, exportFilename } from './export-name'
 
 /**
@@ -39,22 +39,40 @@ const stripComments = (source: string) =>
 
 describe('the exported filename', () => {
   it('is the dated stem the guide publishes', () => {
-    expect(exportFilename(new Date('2026-08-20T12:00:00Z'))).toBe('jojo-backup-2026-08-20.json')
+    expect(exportFilename(new Date(2026, 7, 20, 12))).toBe('jojo-backup-2026-08-20.json')
     expect(EXPORT_NAME_SHAPE).toBe('jojo-backup-YYYY-MM-DD.json')
     // The published shape has to be the real one with the date blanked out, not
     // a second sentence about it.
     expect(EXPORT_NAME_SHAPE).toBe(
-      exportFilename(new Date('2026-08-20T12:00:00Z')).replace('2026-08-20', 'YYYY-MM-DD'),
+      exportFilename(new Date(2026, 7, 20, 12)).replace('2026-08-20', 'YYYY-MM-DD'),
     )
   })
 
   it('pads a single-digit month and day, so the names sort', () => {
-    expect(exportFilename(new Date('2026-01-05T12:00:00Z'))).toBe('jojo-backup-2026-01-05.json')
+    expect(exportFilename(new Date(2026, 0, 5, 12))).toBe('jojo-backup-2026-01-05.json')
+  })
+
+  it("is dated by the person's own day, not the UTC one", () => {
+    // Pinned to a zone west of Greenwich, because in UTC the two days agree and
+    // a test there cannot tell them apart. Node re-reads TZ when it changes.
+    vi.stubEnv('TZ', 'America/Los_Angeles')
+    try {
+      // 22:19 on Friday 13 November in California is already the 14th in UTC.
+      const evening = new Date('2026-11-14T06:19:00Z')
+      expect(evening.getDate()).toBe(13)
+      expect(exportFilename(evening)).toBe('jojo-backup-2026-11-13.json')
+      // And either side of 16:00 local on one day is one name.
+      expect(exportFilename(new Date('2026-11-13T23:30:00Z'))).toBe(
+        exportFilename(new Date('2026-11-14T00:30:00Z')),
+      )
+    } finally {
+      vi.unstubAllEnvs()
+    }
   })
 
   it('gives two exports on different days different names', () => {
-    expect(exportFilename(new Date('2026-08-20T12:00:00Z'))).not.toBe(
-      exportFilename(new Date('2026-08-21T12:00:00Z')),
+    expect(exportFilename(new Date(2026, 7, 20, 12))).not.toBe(
+      exportFilename(new Date(2026, 7, 21, 12)),
     )
   })
 })

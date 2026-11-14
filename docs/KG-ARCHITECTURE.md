@@ -90,7 +90,7 @@ src/kg/
     tool.ts          Tool, ToolContext, ToolResult, Tx, defineTool
     runtime.ts       run / check / undo / redo / can; the only `catch`
     index.ts         TOOLS registry + InputOf/OutputOf
-    application.ts timeline.ts vault.ts keyword.ts scout.ts profile.ts memory.ts
+    application*.ts timeline.ts vault-*.ts keyword.ts scout.ts profile.ts memory.ts …
   react/                          L4 — the binding. Thin by construction.
     kg-context.ts    context, KgContextValue, useKg() guard
     kg.tsx           KgProvider (~40 lines)

@@ -393,7 +393,16 @@ export function SnippetsTool({ focus }: { focus?: string }) {
     const doomed = snippets.find((s) => s.id === id)
     const stashed = labelIdsOf(id)
 
-    const { restore } = removeSnippet(id)
+    const removed = removeSnippet(id)
+    if (!removed.ok) {
+      toast({
+        title: 'That did not delete',
+        description: removed.refusal ?? `${doomed?.title ?? 'The snippet'} is still in the Vault.`,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = removed
     removeRecord(id)
     if (editing?.id === id) closeEditor()
 

@@ -1,9 +1,9 @@
 /**
  * How a model request failed, and the sentence for each way it can.
  *
- * Split out of `model-server.ts`, which re-exports every public name here.
- * `refused` is exported for the readers beside it and is not part of that
- * surface.
+ * Split out of `model-server.ts`, which re-exports the names importers used
+ * before the split. `refused` is exported for the readers beside it and is not
+ * part of that surface.
  */
 
 import { normaliseEndpoint } from './model-server-protocol'

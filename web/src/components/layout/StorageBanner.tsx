@@ -7,6 +7,7 @@ import { useStoreStatus } from '@jojo/service/react/status-context'
 import { estimateStorage } from '@/kg/storage/probe'
 import { sessionOf, useBoot } from '@/lib/boot-context'
 import { settingsPath } from '@/lib/links'
+import { useVaultBlobs } from '@/lib/vault-blobs'
 
 /**
  * The three ways a session that booted can stop being able to save, said out
@@ -124,6 +125,7 @@ export function StorageBanner() {
   const { state, interrupted } = useBoot()
   const { health } = useStoreStatus()
   const pressure = useStoragePressure(health.state === 'writing')
+  const { blocked: documentsBlocked } = useVaultBlobs()
 
   if (interrupted) {
     return (
@@ -236,6 +238,24 @@ export function StorageBanner() {
             warning someone can wait out and one they can only guess at. */}
         {health.unsaved === 1 ? '1 change' : `${health.unsaved} changes`} could not be saved and
         jojo is still retrying. Export from Settings if you need a copy now. ({health.lastError})
+      </Banner>
+    )
+  }
+
+  /*
+   * The documents database, held by a tab on an older build.
+   *
+   * Its own store, so the records above still save: this is a warning, not a
+   * stop. The older tab has no handler to let go when a newer one upgrades the
+   * database, so the Vault would otherwise just look empty. No Reload button —
+   * reloading this tab does not free the database; closing the other one does,
+   * and the index retries on its own (`vault-blobs.ts`) and this clears.
+   */
+  if (documentsBlocked) {
+    return (
+      <Banner tone="warning">
+        Your documents are still on this device, but another jojo tab, open on an older version of
+        the app, is holding them. Close the other jojo tabs — this one picks them up by itself.
       </Banner>
     )
   }

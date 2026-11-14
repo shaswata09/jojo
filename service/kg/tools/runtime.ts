@@ -23,7 +23,7 @@
 import type { EdgeId, Instant, NodeId, NodeType, StoredEdge, StoredNode } from '../core/model'
 import { newNodeId, slugify, uniqueSlug } from '../core/ref'
 import type { Parsed } from '../core/schema'
-import { standingFor } from '../repo/journal'
+import { standingFor, undoneFor } from '../repo/journal'
 import type { JournalEntry, RecordDelta } from '../repo/journal'
 import { NothingToRevert } from '../repo/repository'
 import type { Repository } from '../repo/repository'
@@ -50,9 +50,32 @@ export type ToolResult<O> =
       announcement: Announcement
       changed: ChangeSet
       journalId: string
-      undo: (() => void) | null
+      /**
+       * Takes this result's change back, and says whether it did.
+       *
+       * The assistant transcript offers this on every step, long after it
+       * ran, and toasted "Undone" whatever happened: after a later write had
+       * moved every field on, or after ⌘Z had already taken it back, the press
+       * changed nothing and still said it had. Callers that ignore the outcome
+       * still compile, because a function returning one is a `() => void`.
+       */
+      undo: (() => StepUndoOutcome) | null
     }
   | { ok: false; errors: readonly ToolError[] }
+
+/**
+ * What a step's Undo did (`undoStep`).
+ *
+ * - `undone`: it was taken back.
+ * - `nothing`: every field it changed has been written since, so there was
+ *   nothing left to take back (`NothingToRevert`, the ⌘Z path's "Nothing to
+ *   undo — it has changed since").
+ * - `already-undone`: ⌘Z, or an earlier press, already took it back.
+ * - `out-of-reach`: it is no longer on the undo ring — aged off it, the
+ *   history was cleared, or an earlier press found nothing left and the
+ *   repository dropped it — so this button can no longer reach it.
+ */
+export type StepUndoOutcome = 'undone' | 'nothing' | 'already-undone' | 'out-of-reach'
 
 export interface ToolRuntime {
   run<N extends ToolName>(name: N, input: InputOf<N>): ToolResult<OutputOf<N>>
@@ -385,18 +408,23 @@ export function createToolRuntime(deps: { repo: Repository; now: () => Instant }
    * live again under the redo's id, so that is what gets reverted. When no entry
    * on the undo ring stands for the step — already undone, or aged off the ring
    * — it does nothing, because the step is not there to take back.
+   *
+   * It says which of those happened (`StepUndoOutcome`), so the transcript's
+   * toast can stop claiming "Undone" over a press that changed nothing.
    */
-  function undoStep(id: string): void {
+  function undoStep(id: string): StepUndoOutcome {
     // Matched on `reverts.root`, not walked through the audit ring: that ring
     // is shared with every `stack: false` system write, and 200 fit readings
     // after a ⌘Z/⇧⌘Z pair broke the walk and this did nothing.
     const stand = standingFor(id, repo.undoable, repo.audit)
-    if (!stand) return
+    if (!stand) return undoneFor(id, repo.redoable, repo.audit) ? 'already-undone' : 'out-of-reach'
     try {
       repo.revert(stand.id)
+      return 'undone'
     } catch (e) {
       // Nothing left to take back: everything it changed was written since.
       if (!(e instanceof NothingToRevert)) throw e
+      return 'nothing'
     }
   }
 

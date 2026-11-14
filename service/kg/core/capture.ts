@@ -68,7 +68,9 @@
  * `default-src 'none'` and only `data:` let back in, so a reference every
  * pattern below missed is refused by the browser rather than fetched. It closes
  * the whole class — CSS escapes, entity-encoded schemes, SMIL — that a regex
- * scan can only chase one spelling at a time. It does not cover a capture opened
+ * scan can only chase one spelling at a time — provided no `<script>` reaches
+ * the frame, since one turns the policy off for the browser's preload scanner;
+ * the lock renames them (see its own comment). It does not cover a capture opened
  * from a downloaded file or on the phone's viewer unless those add it too, so a
  * hole in the scan is still a live beacon somewhere.
  */
@@ -249,7 +251,7 @@ export const CAPTURE_MAX_ASSET_BYTES = 2 * 1024 * 1024
  * Everything past it is counted as dropped, which is the outcome an asset that
  * failed to fetch already has.
  *
- * `web/extension/background.js` restates the number rather than reading it:
+ * `web/extension/worker/inline.js` restates the number rather than reading it:
  * the extension is loaded from disk and imports `policy.js`, which transcribes
  * this file under `web/src/lib/capture-policy.test.ts` — and that test does not
  * carry this constant. Two copies, one owner, and the extension's copy is the
@@ -268,6 +270,26 @@ export const CAPTURE_MAX_ASSETS = 500
  * capture concern inside a map that thirty unrelated extensions also live in.
  */
 export const CAPTURE_EXTENSIONS = ['html', 'htm', 'mhtml', 'mht'] as const
+
+/**
+ * Whether a saved page is a MIME archive — Chrome's "Webpage, Single File" —
+ * rather than markup, which the web viewer does not render.
+ *
+ * Neither serialiser writes one; they arrive only by being dropped on the Vault,
+ * where nothing scans them (the scan would read encoded parts, not markup). The
+ * viewer used to hand the raw archive to `lockedCaptureHtml` as if it were a
+ * page, and the browser parsed the quoted-printable markup inside it well enough
+ * to run its `<style>@import`s (round-3 review). Decoding the archive properly
+ * is a MIME parser this layer does not have, for a preview that would still be
+ * a guess; it gets "no preview" and the file's own Save instead.
+ */
+export function isPageArchive(name: string): boolean {
+  return /\.mht(?:ml)?$/i.test(name)
+}
+
+/** What the viewer says instead of rendering a stored page archive. */
+export const PAGE_ARCHIVE_NO_PREVIEW =
+  'This is a web archive (.mhtml), which jojo files but does not open here. Save hands it to your browser.'
 
 /**
  * What a platform serialiser hands back.
@@ -789,6 +811,44 @@ export const CAPTURE_VIEW_CSP =
  *
  * Policies combine by intersection, so a page that carried a looser CSP of its
  * own (both walks strip those anyway) cannot widen this one.
+ *
+ * ## Scripts are renamed too, because one script switches the policy off
+ *
+ * The frame runs no script, so a `<script>` looked harmless to keep. It is not
+ * (round-3 review, reproduced in Chrome for Testing 151 and Chrome 157): the
+ * moment the parser meets one, the browser's preload scanner reads ahead and
+ * fetches the images, `@import`s, posters and `background`s it finds there
+ * WITHOUT the meta policy, with the app's own address as the referrer. Any
+ * script did it \u2014 `type=text/plain`, `type=module`, one inside `<svg>` or
+ * `<template>` \u2014 and the effect outlived the frame: a clean capture viewed after
+ * a page with a script, in the same tab, fetched its references too. A dropped
+ * "Save page as" file is full of scripts. So every `<script>` becomes
+ * `<xmp hidden>`, which the tokeniser reads the same way (raw text up to its
+ * closing tag) and which is not a script to anyone. A script body that spells
+ * `</xmp>` ends it early, and what follows is ordinary markup under a policy
+ * that is now in force.
+ *
+ * `<iframe>` goes the same way, as a precaution rather than a reproduced leak:
+ * its `srcdoc` is a whole second document whose markup is entity-encoded, where
+ * no rename here can reach its scripts or its links. The policy refuses every
+ * other kind of frame source, so nothing that could have loaded is lost.
+ *
+ * ## And links are renamed, because a click is a navigation no policy governs
+ *
+ * `sandbox=""` stops a link opening a tab or leaving the app and does not stop
+ * it navigating the FRAME, and CSP has no directive for that. A capture from the
+ * extension has its `href`s moved aside (`CAPTURE_HREF_ATTR`); a page dropped on
+ * the Vault does not, and one click on its "Apply" loaded the live site in the
+ * viewer. `<a>` becomes `<g>`, which renders its children in HTML and in SVG
+ * alike (an `<a>` can be either, and the rename cannot tell which), and
+ * `<area>` becomes the same void `<basefont>` a `<link>` does. What is lost is
+ * the page's own styling of `a`, on a page whose links could not go anywhere.
+ *
+ * All of these are renamed by tag NAME \u2014 the tokeniser's own test, `<` then the
+ * name then whitespace, `/` or `>` \u2014 never by reading an attribute. The same
+ * spelling inside an attribute value or a comment is renamed too, which changes
+ * text and nothing else. None of it touches the stored file: this is the string
+ * the frame is given, built again at every viewing.
  */
 export function lockedCaptureHtml(html: string): string {
   const meta = `<meta http-equiv="Content-Security-Policy" content="${CAPTURE_VIEW_CSP}">`
@@ -797,12 +857,31 @@ export function lockedCaptureHtml(html: string): string {
   const body = html.replace(/^\uFEFF+/, '')
   const doctype = /<!doctype\s+html/i.test(body.slice(0, 1024)) ? '<!doctype html>' : ''
   const rest = body.replace(/^[\t\n\f\r ]*<!doctype[^>]*>/i, '')
-  return `${doctype}<head>${meta}<meta http-equiv="x-dns-prefetch-control" content="off">${inertLinks(rest)}`
+  return `${doctype}<head>${meta}<meta http-equiv="x-dns-prefetch-control" content="off">${inertTags(rest)}`
 }
 
-/** Every `<link` tag renamed to an inert void one. See `lockedCaptureHtml`. */
-function inertLinks(html: string): string {
-  return html.replace(/<link(?=[\t\n\f\r />])/gi, '<basefont')
+/**
+ * What each disarmed tag becomes, start and end. See `lockedCaptureHtml`.
+ * `link` and `area` are void, so their end tags are ignored either way.
+ */
+const INERT_TAG: Record<string, readonly [start: string, end: string]> = {
+  script: ['xmp hidden', 'xmp'],
+  iframe: ['xmp hidden', 'xmp'],
+  link: ['basefont', 'basefont'],
+  area: ['basefont', 'basefont'],
+  a: ['g', 'g'],
+}
+
+/** Every tag in `INERT_TAG` renamed by name. See `lockedCaptureHtml`. */
+function inertTags(html: string): string {
+  return html.replace(
+    /<(\/?)(script|iframe|link|area|a)(?=[\t\n\f\r />])/gi,
+    (tag: string, close: string, name: string) => {
+      const to = INERT_TAG[name.toLowerCase()]
+      if (to === undefined) return tag
+      return `<${close}${close === '' ? to[0] : to[1]}`
+    },
+  )
 }
 
 /**

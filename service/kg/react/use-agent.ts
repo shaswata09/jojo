@@ -30,6 +30,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
+import { GATE_FOR } from '../agent/loop'
 import type { AgentOptions, AgentStep, LlmTurnFn } from '../agent/loop'
 import type { ToolHost } from '../agent/execute'
 import type { ChatMessage } from '../core/model-server'
@@ -167,19 +168,6 @@ export type UseAgentOptions = {
    * another summarisation.
    */
   onCompacted?: (threadId: NodeId, context: string, throughMessages: number) => void
-}
-
-/**
- * What each mode means to the loop.
- *
- * A table rather than a chain of ternaries, so adding a mode is a line here and
- * a compile error everywhere it has not been handled — which is what an
- * exhaustive `Record` buys over an `if`.
- */
-const GATE_FOR: { readonly [M in ApprovalMode]: NonNullable<AgentOptions['gate']> } = {
-  manual: 'writes',
-  semi: 'destructive',
-  auto: 'none',
 }
 
 export function useAgent({

@@ -131,6 +131,15 @@ export function useConversation({
     [save],
   )
 
+  // Kept across commits that do not touch this conversation (`thread` is
+  // reused while its node is unchanged), so the transcript's memo can skip
+  // re-rendering a long conversation on every unrelated write.
+  const entries = useMemo(() => (thread ? toAgentEntries(thread.entries) : []), [thread])
+  const history = useMemo(
+    () => (thread ? historyFor(thread.entries, thread.contextThrough).history : []),
+    [thread],
+  )
+
   const agent = useAgent({
     llm: configured ? llm : null,
     chooser,
@@ -142,8 +151,8 @@ export function useConversation({
     onCompacted: setContext,
     thread: {
       id: threadId,
-      entries: thread ? toAgentEntries(thread.entries) : [],
-      history: thread ? historyFor(thread.entries, thread.contextThrough).history : [],
+      entries,
+      history,
       ...(thread?.context === undefined ? {} : { context: thread.context }),
       approval: thread?.approval ?? 'manual',
       ...(focus === undefined ? {} : { focus }),

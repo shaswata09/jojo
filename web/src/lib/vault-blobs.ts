@@ -29,7 +29,12 @@
  */
 
 import { useMemo, useSyncExternalStore } from 'react'
-import { createIdbFileStore, type IdbFileStore } from '@/kg/storage/idb-file-store'
+import {
+  createIdbFileStore,
+  isBlockedFailure,
+  trashPath,
+  type IdbFileStore,
+} from '@/kg/storage/idb-file-store'
 import { mimeOfFile } from '@jojo/service/core/files'
 import { revokeLater } from '@/lib/save-file'
 /*
@@ -74,6 +79,14 @@ export type VaultBlobs = {
    * reading. Put this in the dependency array beside `has`.
    */
   revision: number
+  /**
+   * True while another jojo tab, running a build from before the documents
+   * database's current version, is holding that database so this tab cannot
+   * open it. The documents are still there; `has` answers false for all of
+   * them until that tab closes, and a person needs to be told which tab to
+   * close rather than left looking at an empty Vault. Clears on its own.
+   */
+  blocked: boolean
   put: (id: string, file: File) => Promise<boolean>
   get: (id: string) => Promise<File | null>
   /**
@@ -233,9 +246,11 @@ type IndexSnapshot = {
   readonly ready: boolean
   /** Bumped on every change to the index. See `VaultBlobs.revision`. */
   readonly revision: number
+  /** See `VaultBlobs.blocked`. */
+  readonly blocked: boolean
 }
 
-let current: IndexSnapshot = { index: new Map(), ready: false, revision: 0 }
+let current: IndexSnapshot = { index: new Map(), ready: false, revision: 0, blocked: false }
 const subscribers = new Set<() => void>()
 /**
  * Bumped by every local change. A listing that was in flight while one
@@ -244,9 +259,13 @@ const subscribers = new Set<() => void>()
  */
 let changes = 0
 
-function setIndex(next: ReadonlyMap<string, string>, ready = true): void {
+function setIndex(
+  next: ReadonlyMap<string, string>,
+  ready = true,
+  blocked = current.blocked,
+): void {
   changes += 1
-  current = { index: next, ready, revision: current.revision + 1 }
+  current = { index: next, ready, revision: current.revision + 1, blocked }
   for (const notify of [...subscribers]) notify()
 }
 
@@ -259,14 +278,30 @@ function edit(change: (index: Map<string, string>) => void): void {
   setIndex(next, current.ready)
 }
 
+/**
+ * How often a blocked index tries again. The store answers a blocked call at
+ * once, so a try costs nothing until the other tab lets go — and nothing else
+ * would ever re-list this tab, since that tab closing announces nothing.
+ */
+const BLOCKED_RETRY_MS = 3_000
+let retrying: ReturnType<typeof setTimeout> | null = null
+
 async function relist(): Promise<void> {
   for (;;) {
     const before = changes
     const listed = await store().list(DIR)
     if (changes !== before) continue
+    const blocked = !listed.ok && isBlockedFailure(listed.error)
     // A store that will not open is a store with nothing in it. The caller
-    // renders "not on this device", which is true.
-    setIndex(listed.ok ? indexFrom(listed.value) : new Map())
+    // renders "not on this device", which is true — and, when another tab is
+    // what is in the way, `blocked` says which tab to close.
+    setIndex(listed.ok ? indexFrom(listed.value) : new Map(), true, blocked)
+    if (blocked && retrying === null) {
+      retrying = setTimeout(() => {
+        retrying = null
+        void relist()
+      }, BLOCKED_RETRY_MS)
+    }
     return
   }
 }
@@ -333,11 +368,28 @@ const trashed = new Map<string, { path: string; data: Uint8Array }>()
  * Without a limit the map kept every document deleted this session, in full,
  * for the life of the page. The toast offering the Undo runs 8 s but pauses
  * while hovered or focused, so the hold is generous rather than exact; past it,
- * Undo brings the row back and says the document could not come with it.
+ * Undo reads the `jojo/Trash` copy instead (see `trashedFrom`), and only if
+ * that has been swept too does it bring the row back without its document.
  */
 export const TRASH_HOLD_MS = 120_000
 
 const evictions = new Map<string, ReturnType<typeof setTimeout>>()
+
+/**
+ * Where each document this session deleted was, and how big it was — kept
+ * after its bytes are let go.
+ *
+ * The hold above is a fixed timer, and the Undo toast is not: its countdown
+ * pauses for as long as it is hovered or focused, so a pointer resting on the
+ * toast for two minutes outlived the bytes, and Undo brought the row back
+ * saying its document could not come — while the bytes sat in `jojo/Trash`
+ * the whole time. Past the hold, `restore` reads that copy instead. Only a
+ * path and a number per delete, so it costs nothing to keep for the page.
+ *
+ * The hold is still read first, because the trash copy can vanish: any tab
+ * that loads sweeps `jojo/Trash`. When it has, Undo says so, as it did before.
+ */
+const trashedFrom = new Map<string, { path: string; bytes: number }>()
 
 function hold(id: string, entry: { path: string; data: Uint8Array }): void {
   trashed.set(id, entry)
@@ -355,6 +407,30 @@ function release(id: string): void {
   clearTimeout(evictions.get(id))
   evictions.delete(id)
   trashed.delete(id)
+  trashedFrom.delete(id)
+}
+
+/**
+ * The copy `remove` put under `jojo/Trash`, read back — or null if it is gone.
+ *
+ * `trash` takes the first free `trashPath(path, n)`, so the latest copy of a
+ * path is the last in an unbroken run from 1; a document deleted, put back and
+ * deleted again has two. The size has to match too, so a copy left by an
+ * earlier delete of the same record is never passed off as this one.
+ */
+async function fromTrash(id: string): Promise<{ path: string; data: Uint8Array } | null> {
+  const from = trashedFrom.get(id)
+  if (from === undefined) return null
+  let latest: string | null = null
+  for (let n = 1; ; n += 1) {
+    const stat = await store().stat(trashPath(from.path, n))
+    if (!stat.ok) break
+    latest = trashPath(from.path, n)
+  }
+  if (latest === null) return null
+  const read = await store().read(latest)
+  if (!read.ok || read.value.byteLength !== from.bytes) return null
+  return { path: from.path, data: read.value }
 }
 
 /**
@@ -450,7 +526,10 @@ async function removeNow(id: string): Promise<boolean> {
   // the document with it even if this tab is closed.
   const moved = await store().trash(path)
   if (!moved.ok) return false
-  if (held.ok) hold(id, { path, data: held.value })
+  if (held.ok) {
+    hold(id, { path, data: held.value })
+    trashedFrom.set(id, { path, bytes: held.value.byteLength })
+  }
   edit((index) => index.delete(id))
   announce()
   return true
@@ -458,12 +537,12 @@ async function removeNow(id: string): Promise<boolean> {
 
 async function restore(id: string): Promise<boolean> {
   await removing.get(id)
-  const held = trashed.get(id)
-  if (held === undefined) return false
-  // Written from the bytes captured at `remove`, never re-read from the trash.
-  // A rename would be simpler and the port has none — `FileStore` can read,
-  // write and trash, and Undo has to be expressible in those or it is not
-  // expressible on every adapter.
+  const held = trashed.get(id) ?? (await fromTrash(id))
+  if (held === null) return false
+  // Written from the bytes captured at `remove` while the hold lasts, and from
+  // the trash copy after it — see `trashedFrom`. A rename would be simpler and
+  // the port has none — `FileStore` can read, write and trash, and Undo has to
+  // be expressible in those or it is not expressible on every adapter.
   const rewritten = await store().write(held.path, held.data)
   if (!rewritten.ok) return false
   release(id)
@@ -493,13 +572,20 @@ async function all(): Promise<{ id: string; name: string }[]> {
 async function replaceAll(
   documents: readonly { path: string; data: Uint8Array }[],
 ): Promise<number> {
+  // The whole index, not whatever part of it has loaded. A restore made in the
+  // first moments after load used to walk an index the first listing had not
+  // filled yet, trash nothing, and then watch that listing — re-taken because
+  // this bumped `changes` — put the old documents back beside the restored
+  // ones: bytes no record points at, counted against the quota. `removeNow`
+  // awaits this for the same reason.
+  await hydrate()
   // Trashed, not deleted: `FileStore` never unlinks, and a restore is
   // exactly the moment a person might discover they picked the wrong file.
   // What they replaced is still under `jojo/Trash`.
   for (const [, path] of current.index) await store().trash(path)
   // A restore replaces every record; an Undo of a delete from before it would
   // put back a document belonging to none of them.
-  for (const id of [...trashed.keys()]) release(id)
+  for (const id of new Set([...trashed.keys(), ...trashedFrom.keys()])) release(id)
 
   const next = new Map<string, string>()
   let landed = 0
@@ -558,7 +644,12 @@ export function useVaultBlobs(): VaultBlobs {
     blobIndex.getSnapshot,
   )
   return useMemo(
-    () => ({ ...vaultBlobStore, ready: snapshot.ready, revision: snapshot.revision }),
+    () => ({
+      ...vaultBlobStore,
+      ready: snapshot.ready,
+      revision: snapshot.revision,
+      blocked: snapshot.blocked,
+    }),
     [snapshot],
   )
 }

@@ -35,9 +35,15 @@ describe('the build-time script policy', () => {
     expect(inlineScriptHashes(PAGE)).toHaveLength(1)
   })
 
-  it('allows gtag’s host only in a build with analytics', () => {
+  it('allows gtag only in a build with analytics', () => {
     expect(policyOf(withScriptPolicy(PAGE))).not.toContain(GTM)
     expect(policyOf(withScriptPolicy(PAGE, { analytics: true }))).toContain(GTM)
+  })
+
+  it('allows gtag’s one file, not the host that serves every tag container', () => {
+    const script = /script-src ([^;]*)/.exec(policyOf(withScriptPolicy(PAGE, { analytics: true })))?.[1] ?? ''
+    const google = script.split(/\s+/).filter((source) => source.includes('googletagmanager'))
+    expect(google).toEqual(['https://www.googletagmanager.com/gtag/js'])
   })
 
   it('refuses a page with no policy to extend, rather than shipping none', () => {

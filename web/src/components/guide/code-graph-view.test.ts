@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fileLinks, filesOf, neighboursOf, strokeFor } from './code-graph-view'
+import { fileLinks, filesOf, moduleLabel, neighboursOf, nextPick, picksOnKey, strokeFor } from './code-graph-view'
 
 const graph = {
   files: [
@@ -39,5 +39,25 @@ describe('the code graph panel', () => {
     expect(strokeFor(1)).toBe(1)
     expect(strokeFor(8)).toBe(4)
     expect(strokeFor(1000)).toBe(4)
+  })
+})
+
+describe('picking a module from the keyboard', () => {
+  it('picks with Enter or Space, like a button, and with nothing else', () => {
+    expect(picksOnKey('Enter')).toBe(true)
+    expect(picksOnKey(' ')).toBe(true)
+    for (const key of ['Tab', 'Escape', 'ArrowDown', 'Delete', 'Backspace', 'a']) expect(picksOnKey(key), key).toBe(false)
+  })
+
+  it('picks a module, and picking it again clears it — the same as a click', () => {
+    expect(nextPick(null, 'web/lib')).toBe('web/lib')
+    expect(nextPick('web/routes', 'web/lib')).toBe('web/lib')
+    expect(nextPick('web/lib', 'web/lib')).toBeNull()
+  })
+
+  it('names a module box by what is on it, and says when it is the one picked', () => {
+    const group = { label: 'agent', files: 1, lines: 12345 }
+    expect(moduleLabel(group, false)).toBe('agent: 1 file, 12,345 lines')
+    expect(moduleLabel({ ...group, files: 3 }, true)).toBe('agent: 3 files, 12,345 lines, picked')
   })
 })

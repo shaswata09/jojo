@@ -19,6 +19,8 @@ import { isLoopback as workerIsLoopback, sameLoopbackServer } from '../../extens
 // @ts-expect-error — as above.
 import { JOJO_BRIDGE_ADDRESS, isKnownModelHost as workerIsKnownModelHost } from '../../extension/worker/routing.js'
 // @ts-expect-error — as above.
+import { modelRefusal as workerModelRefusal } from '../../extension/worker/routing.js'
+// @ts-expect-error — as above.
 import { READ_TIMEOUT_MS as WORKER_READ_TIMEOUT_MS, relay } from '../../extension/worker/relay.js'
 // @ts-expect-error — as above.
 import { LOAD_TIMEOUT_MS, SETTLE_MS } from '../../extension/worker/tabs.js'
@@ -181,6 +183,68 @@ describe('what the extension will relay a MODEL request to', () => {
       expect(() => isKnownModelHost(junk), junk).not.toThrow()
       expect(isKnownModelHost(junk), junk).toBe(false)
     }
+  })
+})
+
+/*
+ * Round 3: the local model ports are also every dev server's (8000 Django,
+ * 8080 anything, 5000 Flask), and the port was the only check — so
+ * `jojo:call-model` at `http://localhost:8000/admin/` was relayed and its
+ * answer read back. The path has to be a model API's as well.
+ */
+describe('which PATHS a local model request may go to', () => {
+  /** The real `modelRefusal`, with the popup's routing as `saved`. */
+  const refusalWith = (saved: unknown) => (url: string) => {
+    vi.stubGlobal('chrome', {
+      storage: { local: { get: async () => ({ 'jojo.routing': saved }) } },
+    })
+    return (workerModelRefusal as (url: string) => Promise<string | null>)(url)
+  }
+
+  it('refuses a dev server on a model port, switch or no switch', async () => {
+    for (const saved of [undefined, { network: true }]) {
+      for (const at of [
+        'http://127.0.0.1:8000/admin/',
+        'http://localhost:8080/api/secrets',
+        'http://127.0.0.1:5000/',
+        'http://localhost:8000/api/models',
+        'http://localhost:8080/v1/admin/users',
+        'http://10.0.0.5:8000/admin/',
+      ]) {
+        if (saved === undefined && at.startsWith('http://10.')) continue
+        await expect(refusalWith(saved)(at), at).resolves.toMatch(/not a model API path/)
+      }
+    }
+  })
+
+  it('relays every path the app calls on every local server it supports', async () => {
+    const refusal = refusalWith(undefined)
+    for (const at of [
+      // Ollama, native and OpenAI-compatible.
+      'http://localhost:11434/api/chat',
+      'http://localhost:11434/api/tags',
+      'http://localhost:11434/v1/chat/completions',
+      // LM Studio, vLLM / llama-cpp-python, llama.cpp, LocalAI, Jan, GPT4All,
+      // text-generation-webui, KoboldCpp.
+      'http://127.0.0.1:1234/v1/models',
+      'http://127.0.0.1:1234/v1/chat/completions',
+      'http://localhost:8000/v1/chat/completions',
+      'http://127.0.0.1:8080/chat/completions',
+      'http://127.0.0.1:8080/models',
+      'http://127.0.0.1:8080/v1/embeddings',
+      'http://localhost:1337/v1/chat/completions',
+      'http://localhost:4891/v1/models',
+      'http://127.0.0.1:5000/v1/chat/completions',
+      'http://127.0.0.1:5001/v1/models',
+      // An Anthropic-shaped proxy, and a prefixed one.
+      'http://127.0.0.1:8080/v1/messages',
+      'http://127.0.0.1:8080/openai/v1/chat/completions',
+    ]) {
+      await expect(refusal(at), at).resolves.toBeNull()
+    }
+    await expect(
+      refusalWith({ network: true })('http://10.0.0.5:8103/v1/chat/completions'),
+    ).resolves.toBeNull()
   })
 })
 

@@ -25,7 +25,7 @@ import { describe, expect, it } from 'vitest'
 import serialiseSource from '../../extension/serialise.js?raw'
 // @ts-expect-error — a plain ES module the extension loads from disk, untyped.
 import { asFile } from '../../extension/save-file.js'
-import { remoteRefCount } from '@jojo/service/core/capture'
+import { CAPTURE_STRIP_TAGS, remoteRefCount } from '@jojo/service/core/capture'
 
 /** The file with its comments removed, so prose about `cloneNode` does not count. */
 const code = serialiseSource.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
@@ -43,24 +43,31 @@ describe('the copy the walk works on', () => {
   })
 })
 
+/**
+ * One nested pass, lifted out of the file by name. `serialise` is injected into
+ * the page whole, so nothing inside it can be exported; `scope` names what the
+ * pass closes over, handed in as arguments.
+ */
+function lift(name: string, ...scope: string[]): (...values: unknown[]) => unknown {
+  const at = code.indexOf(`function ${name}(`)
+  if (at === -1) throw new Error(`${name} is not in extension/serialise.js any more`)
+  let depth = 0
+  let end = -1
+  for (let i = code.indexOf('{', at); i < code.length; i += 1) {
+    if (code[i] === '{') depth += 1
+    else if (code[i] === '}' && --depth === 0) {
+      end = i + 1
+      break
+    }
+  }
+  if (end === -1) throw new Error(`could not find the end of ${name}`)
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+  return new Function(...scope, `${code.slice(at, end)}; return ${name}`) as (...values: unknown[]) => unknown
+}
+
 describe('the last look at the returned string', () => {
   /** The pass, lifted from the file by name and run on a string. */
-  const pass = (() => {
-    const at = code.indexOf('function lastLookAtString(')
-    if (at === -1) throw new Error('the final string pass is not in extension/serialise.js any more')
-    let depth = 0
-    let end = -1
-    for (let i = code.indexOf('{', at); i < code.length; i += 1) {
-      if (code[i] === '{') depth += 1
-      else if (code[i] === '}' && --depth === 0) {
-        end = i + 1
-        break
-      }
-    }
-    if (end === -1) throw new Error('could not find the end of lastLookAtString')
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    return new Function(`${code.slice(at, end)}; return lastLookAtString`)() as (input: string) => string
-  })()
+  const pass = lift('lastLookAtString')() as (input: string) => string
 
   it('is what the returned string is built from, not a helper beside it', () => {
     expect(code).toContain('const html = lastLookAtString(`<!doctype html>${doc.outerHTML}`)')
@@ -81,6 +88,76 @@ describe('the last look at the returned string', () => {
   it('reads an attribute holding a `>` as the serialiser writes it', () => {
     const out = pass('<head><meta content="a > b" http-equiv="refresh"><title>t</title></head>')
     expect(out).toBe('<head><title>t</title></head>')
+  })
+})
+
+/**
+ * Round 3: `outerHTML` writes the text of a raw-text element literally, so a
+ * page that built an `<xmp>` (or `noembed`, `noframes`, `plaintext`) with a
+ * script and filled it with `</xmp><script>…<img onerror>…@import` had all of
+ * that come out of the walk as live markup — reproduced in Chromium, and it
+ * survived the worker's inlining. Verified fixed in Chromium with the same page;
+ * pinned here is the pass, run against a stand-in for the inert document.
+ */
+describe('elements whose text the serialiser writes literally', () => {
+  type Fake = {
+    tagName: string
+    textContent: string
+    attributes: Record<string, string>
+    replacedBy?: Fake
+    setAttribute(name: string, value: string): void
+    replaceWith(next: Fake): void
+  }
+  const element = (tagName: string, textContent = ''): Fake => ({
+    tagName,
+    textContent,
+    attributes: {},
+    setAttribute(name, value) {
+      this.attributes[name] = value
+    },
+    replaceWith(next) {
+      this.replacedBy = next
+    },
+  })
+
+  it('become a <pre> of the same text, which is escaped when written out', () => {
+    const payload = '</xmp><script>alert(1)</script><img src=x onerror=alert(1)><style>@import url(http://e.test/x.css)</style>'
+    const found = ['XMP', 'NOEMBED', 'NOFRAMES', 'PLAINTEXT'].map((tag) => element(tag, payload))
+    let selector = ''
+    const doc = {
+      querySelectorAll(query: string) {
+        selector = query
+        return found
+      },
+    }
+    const inert = { createElement: (tag: string) => element(tag.toUpperCase()) }
+    const escapeRawText = lift('escapeRawText', 'doc', 'inert')(doc, inert) as () => void
+    escapeRawText()
+
+    expect(selector.split(',').map((s) => s.trim()).sort()).toEqual(['noembed', 'noframes', 'plaintext', 'xmp'])
+    for (const node of found) {
+      expect(node.replacedBy?.tagName, node.tagName).toBe('PRE')
+      expect(node.replacedBy?.textContent, node.tagName).toBe(payload)
+    }
+    // Hidden where browsers never showed the original.
+    expect(found.map((node) => 'hidden' in (node.replacedBy?.attributes ?? {}))).toEqual([false, true, true, false])
+  })
+
+  it('leave no raw-text element unhandled between them and the strip list', () => {
+    // The HTML serialiser's literal-text set. `style` is written back from the
+    // CSSOM with `<` escaped (see `rulesOf`); the rest are stripped or escaped.
+    const literal = ['style', 'script', 'xmp', 'iframe', 'noembed', 'noframes', 'plaintext', 'noscript']
+    const stripped: readonly string[] = CAPTURE_STRIP_TAGS
+    const escaped = /querySelectorAll\('([^']*)'\)\]\) \{\s*const pre/.exec(code)?.[1].split(',').map((s) => s.trim()) ?? []
+    for (const tag of literal) {
+      expect(tag === 'style' || stripped.includes(tag) || escaped.includes(tag), tag).toBe(true)
+    }
+  })
+
+  it('are escaped before the string is written', () => {
+    const walk = code.slice(code.lastIndexOf('readLiveTree()'))
+    expect(walk.indexOf('escapeRawText()')).toBeGreaterThan(walk.indexOf('stripElements()'))
+    expect(walk.indexOf('escapeRawText()')).toBeLessThan(walk.indexOf('lastLookAtString('))
   })
 })
 

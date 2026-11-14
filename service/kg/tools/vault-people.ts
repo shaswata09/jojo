@@ -140,15 +140,15 @@ export const vaultPersonUpdate = defineTool({
   effect: 'update',
   touches: ['person'],
   /*
-   * Asked about only when the filing sent would drop a job this person has a
-   * brief or a role on. `applicationIds: []` beside a phone number silently
-   * deleted every referee brief, ungated (R12); a filing that drops nothing
-   * written down is still a plain save.
+   * Asked about only when the save would delete a brief or a role this person
+   * already has. `applicationIds: []` beside a phone number silently deleted
+   * every referee brief, ungated (R12), and `briefs: []` still did after that
+   * fix; a save that drops nothing written down is still a plain save.
    */
   confirms: {
     when: (input, memory) => dropsBriefOrRole(input, memory),
     because:
-      'Asks first when the filing sent leaves out an application this person has a brief or a role on: those are deleted with it.',
+      'Asks first when the filing sent leaves out an application this person has a brief or a role on, or the briefs sent leave out or blank one they already have: those are deleted.',
   },
   input: s.object({
     id: personId,
@@ -202,21 +202,46 @@ export const vaultPersonUpdate = defineTool({
 })
 
 /**
- * Whether this update's filing leaves out an application the person has a
- * brief or a role on. Absent `applicationIds` leaves the filing alone; `null`
- * and `[]` both empty it.
+ * Whether this update deletes a brief or a role the person already has.
+ *
+ * Two ways in. The filing: absent `applicationIds` leaves it alone; `null` and
+ * `[]` both empty it, and a job left out loses its brief and its role. And the
+ * briefs: a list sent replaces them all, so `briefs: []` — or a list that
+ * leaves one job's brief out, or blanks it — deletes what was written for that
+ * job. The second is read through `normaliseBriefs`, the same function `run`
+ * stores with, so "dropped" here means dropped there.
  */
 function dropsBriefOrRole(
-  input: { id: NodeId; applicationIds?: readonly NodeId[] | null },
+  input: {
+    id: NodeId
+    applicationIds?: readonly NodeId[] | null
+    briefs?: Parameters<typeof normaliseBriefs>[0]
+  },
   memory: GraphSnapshot,
 ): boolean {
-  if (input.applicationIds === undefined) return false
-  const kept = new Set<string>(input.applicationIds ?? [])
   const person = memory.node(input.id, 'person')
-  const briefed = new Set<string>((person?.props.briefs ?? []).map((b) => b.applicationId))
-  return memory
-    .out(input.id, 'FILED_UNDER')
-    .some((e) => !kept.has(e.to) && (briefed.has(e.to) || (e.props as { role?: unknown }).role !== undefined))
+  const existing = person?.props.briefs ?? []
+  const filing = memory.out(input.id, 'FILED_UNDER')
+  const kept = new Set<string>(
+    input.applicationIds === undefined ? filing.map((e) => e.to) : (input.applicationIds ?? []),
+  )
+  const briefed = new Set<string>(existing.map((b) => b.applicationId))
+  const dropsFiling = filing.some(
+    (e) => !kept.has(e.to) && (briefed.has(e.to) || (e.props as { role?: unknown }).role !== undefined),
+  )
+  if (dropsFiling) return true
+  if (input.briefs === undefined) return false
+  const after = new Set(normaliseBriefs(input.briefs, kept).map((b) => b.applicationId))
+  return existing.some((b) => !after.has(b.applicationId))
+}
+
+/** Whether taking this person off this one job deletes their brief or role for it. */
+function unfileDropsBriefOrRole(input: { id: NodeId; applicationId: NodeId }, memory: GraphSnapshot): boolean {
+  const briefed = (memory.node(input.id, 'person')?.props.briefs ?? []).some(
+    (b) => b.applicationId === input.applicationId,
+  )
+  const edge = memory.out(input.id, 'FILED_UNDER').find((e) => e.to === input.applicationId)
+  return briefed || (edge?.props as { role?: unknown } | undefined)?.role !== undefined
 }
 
 export const vaultPersonDelete = defineTool({
@@ -294,6 +319,16 @@ export const vaultPersonUnfile = defineTool({
   summary: 'Takes a person off one application; their other jobs stay.',
   effect: 'update',
   touches: ['person'],
+  /*
+   * The same rule `vault.person.update` asks by, for one job: taking someone
+   * off an application deletes their brief and their role there, and under
+   * Semi-auto that went through with no question while the whole-filing route
+   * to the same deletion asked.
+   */
+  confirms: {
+    when: (input, memory) => unfileDropsBriefOrRole(input, memory),
+    because: 'Asks first when this person has a brief or a role on that application: those are deleted with it.',
+  },
   input: s.object({
     id: personId,
     applicationId: s.id('application', { label: 'Application' }),

@@ -210,3 +210,34 @@ describe('briefs and the confirmation reference', () => {
     expect(out.nodes).toEqual([])
   })
 })
+
+/*
+ * A snippet's text is the record — often a letter or a CV a model tailored for
+ * one posting — and the formatting laid over it is not worth losing it for. The
+ * same trade as an application's note, one type up.
+ */
+describe('a snippet’s body formatting', () => {
+  const snippetRow = (props: Record<string, unknown>) => ({
+    id: 'snippet:0199aaaa-0000-7000-8000-00000000000a',
+    type: 'snippet',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    props: { slug: 'letter-rice', title: 'Letter for Rice', tag: 'Cover letter', body: 'Dear committee,', ...props },
+  })
+  const malformed = [{ start: 'zero', end: 4, bold: true }]
+
+  it('is dropped on restore and the snippet kept, with a word to say so', () => {
+    const out = validateRows([snippetRow({ bodyFormat: malformed })], [], { salvage: true })
+    expect(out.nodes).toHaveLength(1)
+    expect(out.nodes[0]?.props).toMatchObject({ title: 'Letter for Rice', body: 'Dear committee,' })
+    expect(out.nodes[0]?.props).not.toHaveProperty('bodyFormat')
+    expect(out.skipped).toHaveLength(1)
+    expect(out.skipped[0]?.id).toBe('snippet:0199aaaa-0000-7000-8000-00000000000a')
+    expect(out.skipped[0]?.message).toBe('Came back without its text formatting.')
+  })
+
+  /* The hydrate path still refuses it: out of IndexedDB this means corruption. */
+  it('still fails the record outside a restore', () => {
+    expect(validateRows([snippetRow({ bodyFormat: malformed })], []).nodes).toEqual([])
+  })
+})

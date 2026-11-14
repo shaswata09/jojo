@@ -2,6 +2,7 @@ import { Smartphone } from 'lucide-react'
 import { SceneBackdrop } from '@/components/transfer-ui/SceneBackdrop'
 import type { PulseFrame } from '@jojo/service/core/pulse'
 import { summarise, type TransferGroup } from '@/components/transfer-ui/groups'
+import { showsOffer } from '@/components/transfer-ui/send-cycle'
 import type { SendStage } from '@/lib/handoff-send'
 import { cn } from '@/lib/utils'
 
@@ -122,10 +123,11 @@ export function TransferStage({
   frames?: readonly PulseFrame[] | null
 }) {
   const copy = COPY[role][stage]
-  // Only while the key is the thing on screen to look at. Once a phone has
-  // answered, the offer it read is spent, and a card still cycling it would be
-  // showing a key that pairs with nothing.
-  const showing = role === 'send' && stage === 'idle' ? frames : null
+  // Only while the key is the thing on screen to look at: never mid-run, when
+  // the offer is in use. After a run that stopped it is shown again, because
+  // that offer is either still the live one or the new code the panel tells
+  // the person to scan — hiding it there left nothing to scan.
+  const showing = role === 'send' && showsOffer(stage) ? frames : null
 
   return (
     <section className="surface relative flex min-h-[24rem] flex-col overflow-hidden rounded-lg px-4 py-4 sm:px-5 sm:py-5">

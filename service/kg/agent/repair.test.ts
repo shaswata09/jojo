@@ -713,4 +713,10 @@ describe('a list that replaces the set', () => {
     expect(repaired('application.update', { id: APP, Keywords: [KW1] })['keywords']).toEqual([KW1])
     expect(repaired('vault.file.update', { id: 'file:1', applicationIds: null })['applicationIds']).toBeNull()
   })
+
+  it('renames a list of two or more sent under the singular key, which is a set and not "add this one"', () => {
+    expect(repaired('application.update', { id: APP, keyword: [KW1, KW2] })['keywords']).toEqual([KW1, KW2])
+    // Still refused when the value was split into the list rather than sent as one.
+    expect(refused('application.update', { id: APP, keyword: `${KW1}, ${KW2}` })).toEqual(['keywords'])
+  })
 })

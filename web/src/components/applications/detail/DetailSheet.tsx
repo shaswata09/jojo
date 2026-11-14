@@ -17,6 +17,7 @@ import {
   parseStoredWidth,
 } from '@/lib/sheet-width'
 import { SheetResizer } from './SheetResizer'
+import { nextOpener } from './sheet-opener'
 
 /**
  * The open record, over the board rather than beside it.
@@ -143,8 +144,16 @@ export function DetailSheet({
    * <main>): a keyboard user lost their place on the board. `??=` for the
    * reason `ui/dialog.tsx` gives: a re-attached ref must not capture something
    * inside the sheet.
+   *
+   * Asked again whenever the record changes, because the sheet stays mounted
+   * while the person Tabs back to the board and opens the next card — see
+   * `sheet-opener.ts`. At mount this agrees with the ref's capture, or keeps
+   * it: Radix has moved focus into the sheet by the time this effect runs.
    */
   const opener = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    opener.current = nextOpener(opener.current, triggerElement(), node.current)
+  }, [applicationId])
   const onCloseAutoFocus = useCallback((event: Event) => {
     const back = opener.current?.isConnected ? opener.current : null
     // An Undo raised on the way out has taken focus; hand the opener to the

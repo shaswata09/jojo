@@ -44,11 +44,15 @@ and affiliates), Radix UI (MIT, WorkOS), lucide-react (ISC, Lucide Icons and
 Contributors), class-variance-authority (Apache-2.0, Joe Bell), Firebase
 (Apache-2.0, Google LLC), three.js, pdf.js (Apache-2.0, Mozilla Foundation),
 pdf-lib, fflate, the noble cryptography libraries and the Inter and JetBrains
-Mono typefaces (OFL-1.1). Each keeps its own licence. The Guide's "Built with"
+Mono typefaces (OFL-1.1) — and the packages those depend on, among them the d3
+modules (ISC; d3-ease BSD-3-Clause), pako (MIT and Zlib), tslib (0BSD), zustand
+and Floating UI (MIT). Each keeps its own licence. The Guide's "Built with"
 page lists every one by name with its installed version, licence and copyright
-holder, and a test fails if a production dependency of the web app is missing
-from it (web/src/components/guide/credits.test.ts). Their full licence texts
-travel with them in node_modules.
+holder. The production build fails if it bundles a package that page does not
+credit (jojo:credited-bundle in web/vite.config.ts), and a test fails if a
+credited version or licence differs from node_modules
+(web/src/components/guide/credits.test.ts). The notices those licences ask to
+travel with the code are in THIRD-PARTY-NOTICES.md.
 
 No third-party source is vendored into this repository itself. The programs
 jojo TALKS TO — MarkItDown, and whichever model server you point it at — are

@@ -94,7 +94,23 @@ describe('bucketKey and bucketLabel agree on what they are keyed by', () => {
     expect(bucketLabel('2026-03', 'month')).toBe('Mar')
   })
 
-  it('labels a quarter without its year', () => {
-    expect(bucketLabel(bucketKey('2026-08-01', 'quarter'), 'quarter')).toBe('Q3')
+  it('labels a quarter with its year', () => {
+    expect(bucketLabel(bucketKey('2026-08-01', 'quarter'), 'quarter')).toBe('Q3 2026')
+  })
+
+  it('gives every quarter on the widest axis its own label', () => {
+    // Eight quarters is two years. Without the year, 'Q3' came round twice on one
+    // axis and the chart's bars, keyed by label, collided.
+    const keys = bucketKeys('2024-01-01', '2026-11-14', 'quarter')
+    expect(keys).toHaveLength(MAX_BUCKETS.quarter)
+    const labels = keys.map((k) => bucketLabel(k, 'quarter'))
+    expect(new Set(labels).size).toBe(labels.length)
+  })
+
+  it('gives every month and week on the widest axis its own label', () => {
+    for (const period of ['month', 'week'] as const) {
+      const labels = bucketKeys('2024-01-01', '2026-11-14', period).map((k) => bucketLabel(k, period))
+      expect(new Set(labels).size).toBe(labels.length)
+    }
   })
 })

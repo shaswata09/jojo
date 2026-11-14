@@ -44,7 +44,8 @@ export declare const BANDS: readonly CodeBand[]
 export declare function includePath(file: string): boolean
 export declare function groupOf(file: string): { id: string; band: CodeBand; tier: CodeTier }
 export declare function labelOf(id: string): string
-export declare function importsOf(source: string): string[]
+/** `file` names the dialect by its extension (`.tsx` reads JSX); a TSX parse when omitted. */
+export declare function importsOf(source: string, file?: string): string[]
 export declare function resolveImport(spec: string, from: string, known: ReadonlySet<string>): string | null
 export declare function buildCodeGraph(sources: Readonly<Record<string, string>>): CodeGraph
 export declare function collectSources(root: string): Record<string, string>

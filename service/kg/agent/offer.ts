@@ -308,9 +308,11 @@ export function offerFor(options: AgentOptions, picked: readonly string[] | null
    * a person" or "add Dr Chen as a referee". Nothing about the second is less
    * safe.
    *
-   * A miss now falls through to the approval gate below, which is the real
-   * control: with approvals on the person is asked, and with them off a delete
-   * still stops. Nothing runs unseen that would not have run before.
+   * A miss now falls through to the approval gate in `perform-call.ts`, which
+   * is the real control. When this was written that meant "with approvals on
+   * the person is asked, and with them off a delete still stops". `auto`
+   * changed the second half: what holds now is the `NEVER_IMPLICIT` refusal
+   * and the approval floor, both in `perform-call.ts`.
    */
   const enforced = options.tools !== undefined
 

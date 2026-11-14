@@ -197,10 +197,10 @@ function matchesQuery(value: string, search: string, keywords?: string[]) {
  * One group of palette rows.
  *
  * At MODULE scope, and that is the point rather than tidiness: declared inside
- * `SpotlightSearch` it was a new function — a new element TYPE — on every
- * render, so React unmounted and remounted every group and every row beneath
- * it. `SpotlightSearch` subscribes to the store, so any write anywhere in the
- * app re-rendered it and threw the palette's rows away mid-search.
+ * the palette it was a new function — a new element TYPE — on every render, so
+ * React unmounted and remounted every group and every row beneath it. The
+ * palette's body (`PaletteBody`) subscribes to the store, so any write anywhere
+ * in the app re-rendered it and threw the palette's rows away mid-search.
  *
  * `go` arrives as a prop because a component cannot close over the hook state
  * of a component it no longer lives inside.
@@ -238,12 +238,24 @@ function Section({
   )
 }
 
-export function SpotlightSearch({
-  open,
+/**
+ * Everything the open palette lists, and every subscription that feeds it.
+ *
+ * A component of its own so that it exists only while the palette is open —
+ * `CommandDialog` renders nothing when closed. The topbar mounts the palette on
+ * every page, and while these hooks lived on `SpotlightSearch` a closed palette
+ * still subscribed to the graph and, on every commit, re-ran `available()` and
+ * `planToolForm` for every tool and rebuilt the application, reminder and event
+ * rows: about 9 ms a commit in development, the most expensive component on the
+ * dashboard, for a list nobody was looking at.
+ */
+function PaletteBody({
   onOpenChange,
+  onPickTool,
 }: {
-  open: boolean
   onOpenChange: (open: boolean) => void
+  /** A tool row was chosen: its form opens once the palette has closed. */
+  onPickTool: (row: ToolRow) => void
 }) {
   const navigate = useNavigate()
   const { all: applications, byId } = useApplications()
@@ -251,8 +263,6 @@ export function SpotlightSearch({
   const runCreate = useRunCreateAction()
   const createActions = useCreateActions()
   const memory = useGraph()
-  /** The tool whose generated form is open, with the plan the row was offered on. */
-  const [pending, setPending] = useState<ToolRow | null>(null)
 
   /**
    * Every registered tool that can be given an honest form, in registry order.
@@ -341,6 +351,122 @@ export function SpotlightSearch({
     navigate(to)
   }
 
+  // This build's CommandDialog renders Dialog > DialogContent > children with
+  // no cmdk root, so the Command provider has to be supplied here — without it
+  // CommandInput has no store and throws on mount.
+  return (
+    <Command label="Search applications, reminders, events and pages" filter={matchesQuery}>
+      <CommandInput placeholder="Search applications, reminders, events…" />
+      <CommandList className="max-h-[62vh]">
+        <CommandEmpty>
+          <div className="py-6 text-center">
+            <FileText className="mx-auto size-5 text-text-3" strokeWidth={1.6} aria-hidden />
+            <p className="mt-2 text-sm text-text-2">Nothing matches that.</p>
+            <p className="mt-0.5 text-xs text-text-3">
+              Try a role, an organisation or a stage.
+            </p>
+          </div>
+        </CommandEmpty>
+
+        {/* First, and before anything typed narrows the list: the palette is
+          the fastest route to "add a thing" from any page, and a create
+          action buried under forty applications is not a route at all. The
+          same array the topbar's menu renders, run through the same hook —
+          so a row that became a link cannot still be fired as a dialog
+          here. */}
+        <CommandGroup heading="Actions">
+          {createActions.map((action) => (
+            <CommandItem
+              key={action.id}
+              value={`${action.label} ${action.hint ?? ''}`}
+              onSelect={() => {
+                onOpenChange(false)
+                // Deferred a frame: this dialog returns focus to its trigger
+                // as it unmounts, and a dialog mounted in the same commit
+                // would have that focus pulled straight back out of it.
+                requestAnimationFrame(() => runCreate(action))
+              }}
+              className="gap-2.5"
+            >
+              <action.icon
+                className="size-4 shrink-0 text-text-3"
+                strokeWidth={1.7}
+                aria-hidden
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate">{action.label}</span>
+                {action.hint ? (
+                  <span className="block truncate text-xs text-text-3">{action.hint}</span>
+                ) : null}
+              </span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandSeparator />
+
+        <Section heading="Applications" items={apps} go={go} />
+        <CommandSeparator />
+        <Section heading="Reminders" items={rems} go={go} />
+        <CommandSeparator />
+        <Section heading="Calendar" items={events} go={go} />
+        <CommandSeparator />
+
+        {/* Below the records, above the pages. A palette is asked for a
+          record far more often than for a verb, and the verbs are long
+          enough a list to push everything under them off the screen — but
+          they are what someone types "delete" or "snooze" hoping to find,
+          and typing is what this group is reached by. */}
+        <CommandGroup heading="Tools">
+          {tools.map((row) => (
+            <CommandItem
+              key={row.name}
+              // The tool's own name is in here as well: it is what the
+              // architecture document and the audit log call it, and someone
+              // who has read either should be able to type it.
+              value={`${row.plan.tool.title} ${row.plan.tool.summary} ${row.name}`}
+              onSelect={() => {
+                onOpenChange(false)
+                // A frame later, for the same reason the create rows defer:
+                // this dialog hands focus back to its trigger as it unmounts,
+                // and a dialog mounted in the same commit loses it again.
+                requestAnimationFrame(() => onPickTool(row))
+              }}
+              className="gap-2.5"
+            >
+              <row.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate">{row.plan.tool.title}</span>
+                <span className="block truncate text-xs text-text-3">
+                  {row.plan.tool.summary}
+                </span>
+              </span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandSeparator />
+
+        <Section heading="Go to" items={PAGES} go={go} />
+      </CommandList>
+
+      <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">
+        <span className="flex items-center gap-1">
+          <CornerDownLeft className="size-3" aria-hidden /> to open
+        </span>
+        <span>esc to close</span>
+      </div>
+    </Command>
+  )
+}
+
+export function SpotlightSearch({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  /** The tool whose generated form is open, with the plan the row was offered on. */
+  const [pending, setPending] = useState<ToolRow | null>(null)
 
   return (
     <>
@@ -351,109 +477,7 @@ export function SpotlightSearch({
         description="Search applications, reminders, events and pages"
         className="top-[15%] w-[min(92vw,44rem)] max-w-none sm:max-w-none"
       >
-        {/* This build's CommandDialog renders Dialog > DialogContent > children
-          with no cmdk root, so the Command provider has to be supplied here —
-          without it CommandInput has no store and throws on mount. */}
-        <Command label="Search applications, reminders, events and pages" filter={matchesQuery}>
-          <CommandInput placeholder="Search applications, reminders, events…" />
-          <CommandList className="max-h-[62vh]">
-            <CommandEmpty>
-              <div className="py-6 text-center">
-                <FileText className="mx-auto size-5 text-text-3" strokeWidth={1.6} aria-hidden />
-                <p className="mt-2 text-sm text-text-2">Nothing matches that.</p>
-                <p className="mt-0.5 text-xs text-text-3">
-                  Try a role, an organisation or a stage.
-                </p>
-              </div>
-            </CommandEmpty>
-
-            {/* First, and before anything typed narrows the list: the palette is
-              the fastest route to "add a thing" from any page, and a create
-              action buried under forty applications is not a route at all. The
-              same array the topbar's menu renders, run through the same hook —
-              so a row that became a link cannot still be fired as a dialog
-              here. */}
-            <CommandGroup heading="Actions">
-              {createActions.map((action) => (
-                <CommandItem
-                  key={action.id}
-                  value={`${action.label} ${action.hint ?? ''}`}
-                  onSelect={() => {
-                    onOpenChange(false)
-                    // Deferred a frame: this dialog returns focus to its trigger
-                    // as it unmounts, and a dialog mounted in the same commit
-                    // would have that focus pulled straight back out of it.
-                    requestAnimationFrame(() => runCreate(action))
-                  }}
-                  className="gap-2.5"
-                >
-                  <action.icon
-                    className="size-4 shrink-0 text-text-3"
-                    strokeWidth={1.7}
-                    aria-hidden
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate">{action.label}</span>
-                    {action.hint ? (
-                      <span className="block truncate text-xs text-text-3">{action.hint}</span>
-                    ) : null}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandSeparator />
-
-            <Section heading="Applications" items={apps} go={go} />
-            <CommandSeparator />
-            <Section heading="Reminders" items={rems} go={go} />
-            <CommandSeparator />
-            <Section heading="Calendar" items={events} go={go} />
-            <CommandSeparator />
-
-            {/* Below the records, above the pages. A palette is asked for a
-              record far more often than for a verb, and the verbs are long
-              enough a list to push everything under them off the screen — but
-              they are what someone types "delete" or "snooze" hoping to find,
-              and typing is what this group is reached by. */}
-            <CommandGroup heading="Tools">
-              {tools.map((row) => (
-                <CommandItem
-                  key={row.name}
-                  // The tool's own name is in here as well: it is what the
-                  // architecture document and the audit log call it, and someone
-                  // who has read either should be able to type it.
-                  value={`${row.plan.tool.title} ${row.plan.tool.summary} ${row.name}`}
-                  onSelect={() => {
-                    onOpenChange(false)
-                    // A frame later, for the same reason the create rows defer:
-                    // this dialog hands focus back to its trigger as it unmounts,
-                    // and a dialog mounted in the same commit loses it again.
-                    requestAnimationFrame(() => setPending(row))
-                  }}
-                  className="gap-2.5"
-                >
-                  <row.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate">{row.plan.tool.title}</span>
-                    <span className="block truncate text-xs text-text-3">
-                      {row.plan.tool.summary}
-                    </span>
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandSeparator />
-
-            <Section heading="Go to" items={PAGES} go={go} />
-          </CommandList>
-
-          <div className="flex items-center justify-between border-t border-hairline px-3 py-2 text-xs text-text-3">
-            <span className="flex items-center gap-1">
-              <CornerDownLeft className="size-3" aria-hidden /> to open
-            </span>
-            <span>esc to close</span>
-          </div>
-        </Command>
+        <PaletteBody onOpenChange={onOpenChange} onPickTool={setPending} />
       </CommandDialog>
 
       {/* Outside the palette, and only while a tool is pending: the palette is

@@ -250,7 +250,16 @@ export function ItemForm({
   const onDelete = () => {
     if (!editingId) return
     const stashed = labelIdsOf(editingId)
-    const { restore } = remove(editingId)
+    const removed = remove(editingId)
+    if (!removed.ok) {
+      toast({
+        title: 'That did not delete',
+        description: removed.refusal ?? `${stored?.title ?? initial?.title ?? 'The reminder'} is still on the calendar.`,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = removed
     removeRecord(editingId)
     onOpenChange(false)
 

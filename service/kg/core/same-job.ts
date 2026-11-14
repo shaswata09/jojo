@@ -32,6 +32,7 @@
  */
 
 import { postingIdentity } from './capture'
+import { employerSite } from './parse-posting'
 import { fold } from './text'
 
 export type JobIdentity = {
@@ -107,7 +108,22 @@ const significant = (text: string | undefined): string[] =>
   wordsOf(text).filter((w) => !FUNCTION_WORDS.has(w))
 
 /** Words that name a kind of employer and never which one. */
-const INSTITUTION_WORDS = new Set(['university', 'college', 'institute', 'school', 'company', 'inc', 'corporation', 'llc', 'ltd'])
+const INSTITUTION_WORDS = new Set([
+  'university',
+  'college',
+  'institute',
+  'school',
+  'company',
+  'inc',
+  'incorporated',
+  'corporation',
+  'corp',
+  'llc',
+  'ltd',
+  'limited',
+  'plc',
+  'gmbh',
+])
 
 const initials = (text: string): string =>
   wordsOf(text)
@@ -125,15 +141,27 @@ const initials = (text: string): string =>
  * University of Washington — three pairs of different employers whose names
  * are each other's words reshuffled. A bare "University" leads everything, so
  * a shorter name made only of such words never matches a longer one.
+ *
+ * Leading is not enough on its own either. What the longer name adds has to
+ * be the kind of employer ("Rice" → "Rice University", "Stripe" → "Stripe
+ * Inc") or a campus after a comma ("…, Manhattan"). Any other word makes it
+ * a different employer that happens to start the same way: "Rice Bank",
+ * "Duke Energy", "Institute of Physics Publishing". A comma still cannot tell
+ * a campus that is the same employer from one that is not ("University of
+ * California, Davis"); the city check in `sameJob` is what keeps those apart.
  */
 export function sameEmployerStrict(a: string | undefined, b: string | undefined): boolean {
   if (!a?.trim() || !b?.trim()) return false
   const wa = significant(a)
   const wb = significant(b)
   if (wa.length === 0 || wb.length === 0) return false
-  const [short, long] = wa.length <= wb.length ? [wa, wb] : [wb, wa]
+  const [short, long, longText] = wa.length <= wb.length ? [wa, wb, b] : [wb, wa, a]
   const leads = short.every((w, i) => long[i] === w)
-  if (leads && (short.length === long.length || short.some((w) => !INSTITUTION_WORDS.has(w)))) return true
+  // Where the longer name's comma tail starts, counted in its own words.
+  const beforeComma = significant(longText.split(',')[0]).length
+  const addsOnlyKind = long.every((w, i) => i < short.length || i >= beforeComma || INSTITUTION_WORDS.has(w))
+  if (leads && addsOnlyKind && (short.length === long.length || short.some((w) => !INSTITUTION_WORDS.has(w))))
+    return true
   const squash = (x: string) => fold(x).replace(/[^a-z0-9]/g, '')
   const sa = squash(a)
   const sb = squash(b)
@@ -160,17 +188,6 @@ export function postingIdKey(value: string | undefined): string | undefined {
   return /\d/.test(folded) ? folded : undefined
 }
 
-/** The host a URL is on, without a `www.`; undefined when it is not a URL. */
-function hostOf(url: string | undefined): string | undefined {
-  if (url === undefined) return undefined
-  try {
-    const host = new URL(url).hostname.toLowerCase().replace(/^www\./, '')
-    return host === '' ? undefined : host
-  } catch {
-    return undefined
-  }
-}
-
 /**
  * Two records with the same posting ID are one job — when the employer or the
  * site agrees as well.
@@ -178,15 +195,17 @@ function hostOf(url: string | undefined): string | undefined {
  * The ID alone used to be certain. But a requisition number is the employer's
  * own numbering, and short ones repeat across employers: 'JR100234' at Rice
  * and at Duke are two jobs. So it decides only alongside the same employer
- * (`sameEmployerStrict`) or the same host; otherwise the other rules get their
- * turn.
+ * (`sameEmployerStrict`) or the same employer's site (`employerSite`) —
+ * which on a job board is the board's tenant and not its host, because every
+ * employer on 'boards.greenhouse.io' or 'jobs.ac.uk' shares that. Otherwise
+ * the other rules get their turn.
  */
 export function idDecides(a: JobIdentity, b: JobIdentity): boolean {
   const id = postingIdKey(a.postingId)
   if (id === undefined || id !== postingIdKey(b.postingId)) return false
   if (sameEmployerStrict(a.org, b.org)) return true
-  const host = hostOf(a.url)
-  return host !== undefined && host === hostOf(b.url)
+  const site = employerSite(a.url)
+  return site !== undefined && site === employerSite(b.url)
 }
 
 /** The city: everything before the first comma, folded. */

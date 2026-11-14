@@ -63,6 +63,7 @@ export const SALVAGE_NOTE: Partial<Record<NodeType, string>> = {
   file: 'Came back without its document link or its note formatting.',
   application: 'Came back without its checklist, its stage dates or its note formatting.',
   keyword: 'Came back in one of the eight named colours rather than its own.',
+  snippet: 'Came back without its text formatting.',
   person: 'Came back without the highlights and notes kept for their applications.',
 }
 

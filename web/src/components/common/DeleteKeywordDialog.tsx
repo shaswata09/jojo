@@ -30,7 +30,16 @@ export function DeleteKeywordDialog({
 
   const onConfirm = () => {
     if (!label) return
-    const { restore } = removeLabel(label.id)
+    const removed = removeLabel(label.id)
+    if (!removed.ok) {
+      toast({
+        title: 'That did not delete',
+        description: removed.refusal ?? `${label.name} is still a keyword.`,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = removed
     toast({
       title: `${label.name} deleted`,
       description:

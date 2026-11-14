@@ -97,7 +97,7 @@ export function ApplicationFrequencyBody() {
     }
 
     return {
-      data: keys.map((key) => ({ label: bucketLabel(key, period), counts: counts.get(key)! })),
+      data: keys.map((key) => ({ key, label: bucketLabel(key, period), counts: counts.get(key)! })),
       // Only the roles actually present get a series — an always-empty legend
       // entry is a filter that filters nothing.
       series: vocabulary
@@ -256,7 +256,7 @@ export function ApplicationFrequencyBody() {
                   let cursor = y(0)
 
                   return (
-                    <g key={d.label} opacity={dim ? 0.72 : 1}>
+                    <g key={d.key} opacity={dim ? 0.72 : 1}>
                       {parts.map((s, idx) => {
                         const h = (d.counts[s.key] / yMax) * PLOT_H
                         // The 2px gap sits BETWEEN segments, never under the
@@ -294,7 +294,7 @@ export function ApplicationFrequencyBody() {
                       />
                       {data.map((d, i) => (
                         <circle
-                          key={d.label}
+                          key={d.key}
                           cx={cx(i)}
                           cy={y(d.counts[s.key])}
                           r={hover === i ? 4.5 : 3}
@@ -310,7 +310,7 @@ export function ApplicationFrequencyBody() {
             {data.map((d, i) =>
               i % labelEvery === 0 ? (
                 <text
-                  key={d.label}
+                  key={d.key}
                   x={cx(i)}
                   y={H - 8}
                   textAnchor="middle"
@@ -324,7 +324,7 @@ export function ApplicationFrequencyBody() {
             {/* Hit targets are the full slot, and reachable by keyboard and touch. */}
             {data.map((d, i) => (
               <rect
-                key={d.label}
+                key={d.key}
                 x={PAD.left + i * slot}
                 y={PAD.top}
                 width={slot}
@@ -404,7 +404,7 @@ export function ApplicationFrequencyBody() {
             </thead>
             <tbody>
               {data.map((d) => (
-                <tr key={d.label}>
+                <tr key={d.key}>
                   <th scope="row">{d.label}</th>
                   {series.map((s) => (
                     <td key={s.key}>{d.counts[s.key]}</td>

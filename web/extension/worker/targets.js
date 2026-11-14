@@ -103,53 +103,150 @@ export function isPrivateNetwork(raw) {
 function privateHost(hostname) {
   // A trailing dot is the same name (`nas.local.` is `nas.local`), and `URL`
   // keeps it, so every suffix test below missed it.
-  const host = String(hostname).replace(/^\[|\]$/g, '').toLowerCase().replace(/\.+$/, '')
+  const host = bareHost(hostname)
 
   if (host.endsWith('.local')) return true
 
   if (host.includes(':')) {
     // An IPv4 address written as IPv6 (`::ffff:a00:1`) is that IPv4 address.
-    const mapped = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(host)
-    if (mapped) {
-      const hi = parseInt(mapped[1], 16)
-      const lo = parseInt(mapped[2], 16)
-      return privateHost(`${String(hi >> 8)}.${String(hi & 255)}.${String(lo >> 8)}.${String(lo & 255)}`)
-    }
-    // IPv6 unique-local and link-local.
-    return /^f[cd][0-9a-f]{2}:/.test(host) || /^fe[89ab][0-9a-f]:/.test(host)
+    const mapped = mappedIpv4(host)
+    if (mapped !== null) return privateHost(mapped)
+    return privateIpv6(host)
   }
 
+  const octets = ipv4Octets(host)
+  return octets !== null && privateIpv4(octets)
+}
+
+/** `URL`'s hostname without IPv6 brackets or trailing dots, lower-cased. */
+function bareHost(hostname) {
+  return String(hostname).replace(/^\[|\]$/g, '').toLowerCase().replace(/\.+$/, '')
+}
+
+/** The four octets of a dotted-decimal IPv4 address, or null for anything else. */
+function ipv4Octets(host) {
   const parts = host.split('.')
-  if (parts.length !== 4) return false
+  if (parts.length !== 4) return null
   const octets = parts.map((p) => (/^\d{1,3}$/.test(p) ? Number(p) : -1))
-  if (octets.some((n) => n < 0 || n > 255)) return false
-  const [a, b] = octets
+  return octets.some((n) => n < 0 || n > 255) ? null : octets
+}
+
+/**
+ * RFC 1918 (10/8, 172.16/12, 192.168/16), link-local 169.254/16, and RFC 6598
+ * carrier-grade NAT 100.64/10 — also where Tailscale puts every machine on a
+ * tailnet, which is the person's own network by another name.
+ */
+function privateIpv4([a, b]) {
   if (a === 10) return true
-  if (a === 172 && b !== undefined && b >= 16 && b <= 31) return true
+  if (a === 172 && b >= 16 && b <= 31) return true
   if (a === 192 && b === 168) return true
   if (a === 169 && b === 254) return true
-  // RFC 6598 carrier-grade NAT, 100.64/10 — also where Tailscale puts every
-  // machine on a tailnet, which is the person's own network by another name.
-  if (a === 100 && b !== undefined && b >= 64 && b <= 127) return true
+  if (a === 100 && b >= 64 && b <= 127) return true
+  return false
+}
+
+/** IPv6 unique-local (fc00::/7) and link-local (fe80::/10), as `URL` prints them. */
+function privateIpv6(host) {
+  return /^f[cd][0-9a-f]{2}:/.test(host) || /^fe[89ab][0-9a-f]:/.test(host)
+}
+
+/** `::ffff:7f00:1` as `127.0.0.1`, or null when the address is not IPv4-mapped. */
+function mappedIpv4(host) {
+  const mapped = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(host)
+  if (!mapped) return null
+  const hi = parseInt(mapped[1], 16)
+  const lo = parseInt(mapped[2], 16)
+  return `${String(hi >> 8)}.${String(hi & 255)}.${String(lo >> 8)}.${String(lo & 255)}`
+}
+
+/** This machine (127/8, and 0/8, which every OS treats as "this host") or a private range. */
+function localIpv4(octets) {
+  return octets[0] === 127 || octets[0] === 0 || privateIpv4(octets)
+}
+
+/** Suffixes that only ever name a machine on the person's own network. */
+const LOCAL_SUFFIXES = ['local', 'internal', 'lan', 'home.arpa']
+
+/**
+ * Public DNS names that answer with a loopback or private address.
+ *
+ * Some answer 127.0.0.1 for every name under them (`localtest.me`, `lvh.me`),
+ * and some answer whatever address is written into the name
+ * (`10.0.0.1.nip.io`, `app-192-168-1-1.sslip.io`, and the hex spelling
+ * `0a000001.nip.io`). They exist so a developer can reach their own machine by
+ * name, which is exactly what a posting must not be able to do. The services
+ * that echo an address are refused whole: no posting lives under one, and the
+ * hex spelling cannot be read back any other way.
+ */
+const LOOPBACK_DOMAINS = [
+  'localtest.me',
+  'lvh.me',
+  'vcap.me',
+  'lacolhost.com',
+  'localho.st',
+  'fuf.me',
+  'local.gd',
+  'localhost.direct',
+  'traefik.me',
+  'nip.io',
+  'sslip.io',
+  'xip.io',
+]
+
+const under = (host, domain) => host === domain || host.endsWith(`.${domain}`)
+
+/**
+ * Whether a name carries a local IPv4 address inside it — four labels in a row
+ * (`10.0.0.1.example.dev`) or four numbers joined by dashes in one label
+ * (`ip-192-168-1-1.example.dev`). That is how every wildcard-DNS service spells
+ * an address, including ones not on the list above, and a public site has no
+ * reason to name itself after a private address.
+ */
+function embedsLocalIpv4(host) {
+  const labels = host.split('.')
+  for (let i = 0; i + 4 <= labels.length; i += 1) {
+    const octets = ipv4Octets(labels.slice(i, i + 4).join('.'))
+    if (octets !== null && localIpv4(octets)) return true
+  }
+  for (const label of labels) {
+    const parts = label.split('-')
+    for (let i = 0; i + 4 <= parts.length; i += 1) {
+      const octets = ipv4Octets(parts.slice(i, i + 4).join('.'))
+      if (octets !== null && localIpv4(octets)) return true
+    }
+  }
   return false
 }
 
 /**
- * Whether an address is this machine or the person's own network, by ANY scheme.
+ * Whether an address is this machine or the person's own network.
  *
  * The scan and "From link" open a tab with the person's cookies and hand the
  * whole rendered DOM back to the page that asked. Pointed at a router's admin
  * page, a NAS, or a dev server on this machine, that is a page reading the
  * person's intranet through their own browser — so those two verbs refuse it,
  * before the tab opens and again after any redirect. A posting is on the public
- * web; nobody's job advert lives at 192.168.1.1.
+ * web; nobody's job advert lives at 192.168.1.1. Anything that is not http(s)
+ * is refused too: no posting is a `file:` or `chrome:` page.
  *
- * Hostname-only. A public name that RESOLVES to a private address passes —
- * DNS rebinding, a name that answers public for the check and private for the
- * fetch, included. A worker cannot see DNS answers, so that is out of reach
- * here; `privateHost` closes every LITERAL spelling. `URL` already folds the
- * numeric ones (`0x7f.1`, `2130706433`, `0177.0.0.1`, `127.0.0.1.`) into dotted
- * decimal, so they need no case of their own.
+ * THE APP HAS A COPY, `isLocalTarget` in `web/src/lib/posting-target.ts`, for
+ * the document reader's route. The two are kept line for line the same and one
+ * table in `posting-target.test.ts` runs both. They disagreed once: this copy
+ * caught `127.0.0.1.nip.io` by a prefix test and the app's passed it.
+ *
+ * Hostname-only. A worker cannot see DNS answers, so a public name that
+ * RESOLVES to a private address is judged by its name alone. Every literal
+ * spelling is closed (`URL` already folds `0x7f.1`, `2130706433`, `0177.0.0.1`
+ * and `127.0.0.1.` into dotted decimal), and so are the names that exist to
+ * resolve to this machine: the loopback domains above, and any name carrying a
+ * local IPv4 address. What is left is a name somebody registered and pointed
+ * at a private address, or one that changes its answer between check and fetch
+ * (DNS rebinding). Judging those needs the address the browser actually
+ * connected to. `chrome.webRequest` reports one (`details.ip`), but only after
+ * the request has been sent, not at all for a response served from cache, and
+ * as the proxy's address behind a proxy — so it could refuse a body, never stop
+ * the request, and would need a new permission and a way to pair each event
+ * with the fetch or tab that caused it. Not built.
  */
 export function isLocalTarget(raw) {
   let url
@@ -158,19 +255,26 @@ export function isLocalTarget(raw) {
   } catch {
     return true
   }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return true
   // Trailing dots stripped: `URL` keeps `localhost.`, which is localhost to
   // every resolver and slipped past the equality test below.
-  const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase().replace(/\.+$/, '')
+  const host = bareHost(url.hostname)
   if (host === '' || host === 'localhost' || host.endsWith('.localhost')) return true
+  if (host.includes(':')) {
+    if (host === '::1' || host === '::') return true
+    const mapped = mappedIpv4(host)
+    if (mapped !== null) return localIpv4(ipv4Octets(mapped))
+    return privateIpv6(host)
+  }
   // A single-label name — `http://router/`, `http://intranet/` — is resolved
   // through the local search domain, so it is a machine on the person's own
-  // network by construction. No public posting lives at one. (IPv6 has colons
-  // and no dots, and is judged below.)
-  if (!host.includes('.') && !host.includes(':')) return true
-  if (host === '::1' || host === '::' || host === '0.0.0.0' || /^127\./.test(host) || /^0\./.test(host)) return true
-  if (/^::ffff:7f[0-9a-f]{2}:/.test(host)) return true
-  if (host.endsWith('.internal') || host.endsWith('.lan') || host.endsWith('.home.arpa')) return true
-  return privateHost(host)
+  // network by construction. No public posting lives at one.
+  if (!host.includes('.')) return true
+  if (LOCAL_SUFFIXES.some((suffix) => under(host, suffix))) return true
+  if (LOOPBACK_DOMAINS.some((domain) => under(host, domain))) return true
+  const octets = ipv4Octets(host)
+  if (octets !== null) return localIpv4(octets)
+  return embedsLocalIpv4(host)
 }
 
 export function hostOf(url) {

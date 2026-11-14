@@ -130,7 +130,16 @@ export function Calendar() {
   }
 
   const onDelete = (item: TimelineItem) => {
-    const { restore } = remove(item.id)
+    const removed = remove(item.id)
+    if (!removed.ok) {
+      toast({
+        title: 'That did not delete',
+        description: removed.refusal ?? `${item.title} is still on the calendar.`,
+        tone: 'danger',
+      })
+      return
+    }
+    const { restore } = removed
     // A calendar entry is a cheap record — a title, a date and a kind, all of
     // them retyped in seconds. An undo is the right guard; a confirmation
     // dialog on every row of a day list would be a tax on the common case.
