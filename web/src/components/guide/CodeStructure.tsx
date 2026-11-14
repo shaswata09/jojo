@@ -221,12 +221,12 @@ export const SHAPE: DirRow[] = [
     // The chat dock: `chat-dock/ChatDock.tsx` and `ChatWindow.tsx`, and the two
     // pieces it shares with the Assistant page, `assistant/Transcript.tsx` and
     // `assistant/Composer.tsx`.
-    // 323 with the Guide's FAQ page: `guide/GuideFaq.tsx`, the map it draws
-    // (`guide/faq-map.ts`, with a test that every path it names exists) and
+    // 323 with the Guide's Control flow graph page: `guide/GuideControlFlow.tsx`, the map it draws
+    // (`guide/flow-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    files: 352,
-    tests: 46,
-    lines: 60362,
+    files: 360,
+    tests: 49,
+    lines: 61643,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -304,7 +304,7 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 125
+export const WEB_TEST_FILES = 128
 
 type TestGroup = { title: string; files: string; body: string }
 

@@ -173,7 +173,7 @@ export const GUIDE_PAGES = [
   'graph',
   'tools',
   'built-with',
-  'faq',
+  'control-flow',
   'licence',
 ] as const
 export type GuidePage = (typeof GUIDE_PAGES)[number]

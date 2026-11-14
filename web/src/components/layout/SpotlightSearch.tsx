@@ -82,7 +82,8 @@ const GUIDE_KEYWORDS: Record<GuidePage, string> = {
   tools:
     'assistant agent tools permissions safety what can it do api key claude openai ollama model provider',
   'built-with': 'credits acknowledgements dependencies versions attribution',
-  faq: 'faq code architecture layers mvc flow where does it go structure developer contributing',
+  'control-flow':
+    'control flow graph code flow graph dependency imports modules architecture layers mvc where does it go structure developer contributing faq',
   licence:
     'licence license mit free open source copyright terms disclaimer warranty nvidia microsoft markitdown legal cost commercial',
 }

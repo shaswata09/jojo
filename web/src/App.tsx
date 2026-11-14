@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { Panel } from '@/components/common/Panel'
 import { GuideBuiltWith } from '@/components/guide/GuideBuiltWith'
 import { GuideGraph } from '@/components/guide/GuideGraph'
-import { GuideFaq } from '@/components/guide/GuideFaq'
+import { GuideControlFlow } from '@/components/guide/GuideControlFlow'
 import { GuideLicence } from '@/components/guide/GuideLicence'
 import { GuideOverview } from '@/components/guide/GuideOverview'
 import { GuideScreens } from '@/components/guide/GuideScreens'
@@ -237,7 +237,9 @@ export default function App() {
             <Route path="graph" element={<GuideGraph />} />
             <Route path="tools" element={<GuideTools />} />
             <Route path="built-with" element={<GuideBuiltWith />} />
-            <Route path="faq" element={<GuideFaq />} />
+            <Route path="control-flow" element={<GuideControlFlow />} />
+            {/* The page was called FAQ first; a saved link still lands. */}
+            <Route path="faq" element={<Navigate to="/guide/control-flow" replace />} />
             <Route path="licence" element={<GuideLicence />} />
           </Route>
           <Route

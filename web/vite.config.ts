@@ -11,6 +11,7 @@ import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
 import { loadEnv } from 'vite'
 import type { Plugin } from 'vite'
 import { withScriptPolicy, withoutEvalProbe } from './scripts/csp.mjs'
+import { buildCodeGraph, collectSources } from './scripts/code-graph.mjs'
 
 // https://vite.dev/config/
 /**
@@ -130,13 +131,46 @@ function contentSecurityPolicy(analytics: boolean): Plugin {
   }
 }
 
+/**
+ * The code flow graph the Guide's Control flow graph page draws, computed from
+ * the repository's source at build time and served as a virtual module.
+ *
+ * Never committed: a graph someone has to remember to regenerate is wrong by
+ * the next commit. In dev it is recomputed whenever a source file changes, so
+ * the page reloads with the graph as the code now stands.
+ */
+function codeGraph(): Plugin {
+  const ID = 'virtual:jojo-code-graph'
+  const RESOLVED = `\0${ID}`
+  const root = fileURLToPath(new URL('..', import.meta.url))
+  return {
+    name: 'jojo:code-graph',
+    resolveId: (id) => (id === ID ? RESOLVED : null),
+    load(id) {
+      if (id !== RESOLVED) return null
+      return `export default ${JSON.stringify(buildCodeGraph(collectSources(root)))}`
+    },
+    handleHotUpdate({ file, server }) {
+      if (!/\.(ts|tsx|js|mjs)$/.test(file)) return
+      const module = server.moduleGraph.getModuleById(RESOLVED)
+      if (module) server.moduleGraph.invalidateModule(module)
+    },
+  }
+}
+
 const envDir = fileURLToPath(new URL('..', import.meta.url))
 /** Same test as `ANALYTICS_CAPABILITY` needs at least: a measurement id to load gtag for. */
 const analyticsBuilt = (loadEnv('production', envDir, 'VITE_')['VITE_ANALYTICS_ID'] ?? '').trim() !== ''
 
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss(), freshExtensionZip(), contentSecurityPolicy(analyticsBuilt)],
+  plugins: [
+    react(),
+    tailwindcss(),
+    freshExtensionZip(),
+    contentSecurityPolicy(analyticsBuilt),
+    codeGraph(),
+  ],
   /*
    * `.env` lives at the REPO ROOT, not in `web/`.
    *

@@ -50,10 +50,10 @@ const META: Record<GuidePage, Omit<GuidePageMeta, 'id'>> = {
     blurb:
       'The open-source work jojo is made of, the licences that cover it, and how the code is arranged.',
   },
-  faq: {
-    label: 'FAQ',
+  'control-flow': {
+    label: 'Control flow graph',
     blurb:
-      'How the code is layered across the web app, the phone app and the extension, how a request travels through it, and where a change belongs.',
+      'Every module and import as a graph, how control moves through six journeys, and where a change belongs.',
   },
   licence: {
     label: 'Licence',
