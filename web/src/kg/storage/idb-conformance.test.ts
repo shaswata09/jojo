@@ -48,7 +48,9 @@ describeDriverConformance({
   make: () => {
     const listeners = new Set<(event: StoreEvent) => void>()
     const deliver = (event: StoreEvent) => {
-      for (const fn of [...listeners]) fn(event)
+      // A snapshot, so a listener that subscribes or unsubscribes while being called
+      // does not change who this round reaches.
+      for (const fn of Array.from(listeners)) fn(event)
     }
     // Named once and captured, so `reopen()` addresses the same database rather
     // than minting the next name in the sequence — which would open an empty

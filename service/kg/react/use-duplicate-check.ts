@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 import { findDuplicate } from '../core/duplicates'
 import type { DuplicateCandidate, DuplicateOf } from '../core/duplicates'
 import type { ModelSettings } from '../core/provider'
@@ -39,32 +39,45 @@ export type DuplicateCheckOptions<T, S extends Cancellation> = {
   signal?: S
 }
 
+/** The check both forms run at Save. */
+export type DuplicateCheck<S extends Cancellation> = <
+  T extends DuplicateCandidate & DuplicateSubject & { id: string },
+>(
+  options: DuplicateCheckOptions<T, S>,
+) => Promise<DuplicateFound<T> | null>
+
+/**
+ * The check itself, over an injected model turn — a plain function, so the order
+ * it asks in can be tested without rendering anything (D20). The hook below only
+ * keeps its identity stable for as long as `turn` is.
+ */
+export function duplicateCheckWith<S extends Cancellation>(
+  turn: AgentTurnFn<S>,
+): DuplicateCheck<S> {
+  return async ({ existing, candidate, skipId, settings, signal }) => {
+    const found = findDuplicate(existing, candidate, skipId)
+    if (found) return { ...found, how: 'static' }
+
+    if (settings.model.trim() === '') return null
+    const offered = duplicateCandidates(existing, candidate, skipId)
+    if (offered.length === 0) return null
+
+    const reply = await turn(settings, duplicateJudgeMessages(candidate, offered), [], signal)
+    // A refused or empty answer is not a duplicate. The static rule has
+    // already had its say, and a save must not hang on a model being down.
+    if (!reply.ok || reply.text === null) return null
+    const verdict = readDuplicateVerdict(reply.text, offered)
+    if (verdict === null) return null
+    const record = offered.find((r) => r.id === verdict.duplicateOf)
+    if (record === undefined) return null
+    return { record, reason: 'name', how: 'model', because: verdict.reason }
+  }
+}
+
 export function useDuplicateCheck<S extends Cancellation>({
   turn,
 }: {
   turn: AgentTurnFn<S>
-}): <T extends DuplicateCandidate & DuplicateSubject & { id: string }>(
-  options: DuplicateCheckOptions<T, S>,
-) => Promise<DuplicateFound<T> | null> {
-  return useCallback(
-    async ({ existing, candidate, skipId, settings, signal }) => {
-      const found = findDuplicate(existing, candidate, skipId)
-      if (found) return { ...found, how: 'static' }
-
-      if (settings.model.trim() === '') return null
-      const offered = duplicateCandidates(existing, candidate, skipId)
-      if (offered.length === 0) return null
-
-      const reply = await turn(settings, duplicateJudgeMessages(candidate, offered), [], signal)
-      // A refused or empty answer is not a duplicate. The static rule has
-      // already had its say, and a save must not hang on a model being down.
-      if (!reply.ok || reply.text === null) return null
-      const verdict = readDuplicateVerdict(reply.text, offered)
-      if (verdict === null) return null
-      const record = offered.find((r) => r.id === verdict.duplicateOf)
-      if (record === undefined) return null
-      return { record, reason: 'name', how: 'model', because: verdict.reason }
-    },
-    [turn],
-  )
+}): DuplicateCheck<S> {
+  return useMemo(() => duplicateCheckWith(turn), [turn])
 }

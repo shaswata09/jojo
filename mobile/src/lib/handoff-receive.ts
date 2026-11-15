@@ -53,8 +53,15 @@ export type ReceiveSession = {
 export type ReceiveResult =
   { ok: true; value: ReceiveSession } | { ok: false; error: ReceiveProblem }
 
-/** This device's address on the local network, or why there is not one. */
-async function localAddress(port: number): Promise<ReceiveResult | DialAddress> {
+/**
+ * This device's address on the local network, or why there is not one.
+ *
+ * Exported for `handoff-serve.ts`: a phone that is sending is reached at the
+ * same address, by the same rule, as one that is receiving.
+ */
+export async function localAddress(
+  port: number,
+): Promise<{ ok: false; error: ReceiveProblem } | DialAddress> {
   const state = await NetInfo.fetch()
   const ip = (state.details as { ipAddress?: string } | null)?.ipAddress
   if (typeof ip !== 'string' || ip.length === 0) {
@@ -144,7 +151,7 @@ export async function beginReceiving(offerBytes: Uint8Array): Promise<ReceiveRes
 export const RECEIVE_ADVICE: Record<ReceiveProblem, string> = {
   'receive/offer': 'That code is not a jojo pairing offer. Scan the one on your other device.',
   'receive/no-network':
-    'This phone is not on a wifi network. jojo transfers over your local network only, so both devices need to be on the same wifi.',
+    'This phone is not on a local network. jojo transfers over your local network only, so both devices need to be on the same one.',
   'receive/not-local':
     'This phone is on a network jojo will not transfer over. It only connects to a private network address, so your records never cross the internet.',
   'receive/no-socket': 'jojo could not open a connection on this phone. Try again.',

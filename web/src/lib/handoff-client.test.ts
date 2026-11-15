@@ -13,7 +13,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fetchPairingResponse, sendChunk } from '@/lib/handoff-client'
+import { fetchPairingResponse, pullChunk, readCapped, sendChunk } from '@/lib/handoff-client'
 import type { DialAddress } from '@jojo/service/core/dial'
 
 /** A private address, so `isPrivateAddress` lets the request past. */
@@ -71,5 +71,43 @@ describe('a body that stops arriving after the headers did', () => {
       ok: true,
       value: new Uint8Array([7, 8]),
     })
+  })
+})
+
+/*
+ * Q129: the computer now READS the phone's backup, so the far end decides how
+ * much arrives. Every answer is held to the size the phone's own parser holds a
+ * request to, and the read stops there rather than buffering the rest.
+ */
+describe('an answer larger than any real one', () => {
+  it('is refused as oversized, and the stream is cancelled rather than drained', async () => {
+    let cancelled = false
+    let pulled = 0
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1
+        controller.enqueue(new Uint8Array(64 * 1024))
+      },
+      cancel() {
+        cancelled = true
+      },
+    })
+    const out = await readCapped(new Response(body), 256 * 1024)
+    expect(out).toEqual({ ok: false, error: 'handoff/oversized' })
+    expect(cancelled).toBe(true)
+    // Five pieces read to cross 256 KiB, then it stopped.
+    expect(pulled).toBeLessThanOrEqual(6)
+  })
+
+  it('reads an answer within the limit whole', async () => {
+    const out = await readCapped(new Response(new Uint8Array([1, 2, 3])), 3)
+    expect(out).toEqual({ ok: true, value: new Uint8Array([1, 2, 3]) })
+  })
+
+  it('refuses an oversized chunk from the pull route through the real call', async () => {
+    vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 Chrome/140' })
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response(new Uint8Array(300 * 1024))))
+    const out = await pullChunk(PHONE, 'token', new Uint8Array(36))
+    expect(out).toEqual({ ok: false, error: 'handoff/oversized' })
   })
 })

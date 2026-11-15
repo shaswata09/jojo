@@ -387,7 +387,7 @@ export const CONTROL_FLOWS: readonly ControlFlow[] = [
       { id: 'decide', kind: 'decision', label: 'Person: approve or discard?', layer: 'web', path: 'web/src/components/scout/ProposalQueue.tsx' },
       { id: 'approve', kind: 'step', label: 'pipeline.proposal.approve runs the saved write', layer: 'tools', path: 'service/kg/tools/pipeline.ts' },
       { id: 'fill', kind: 'end', label: 'Saved and filled from the reading; Add to applications offered', layer: 'web', path: 'web/src/lib/fill-from-posting.ts' },
-      { id: 'discard', kind: 'end', label: 'Discarded; the page is dropped only if this card’s read kept it and nothing else claims it', layer: 'web', path: 'web/src/lib/scout-reading.tsx' },
+      { id: 'discard', kind: 'end', label: 'Discarded; the page is dropped only if this card’s read kept it and nothing else claims it', layer: 'web', path: 'web/src/lib/scout-reading-hooks.ts' },
     ],
     edges: [
       { from: 'tick', to: 'twin' },

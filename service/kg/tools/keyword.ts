@@ -209,6 +209,9 @@ export const keywordAttach = defineTool({
 
   describe: (input, _output, m) => ({
     title: `${m.node(input.keyword, 'keyword')?.props.name ?? 'Keyword'} added`,
+    // The record it went on, which is the one that changed. A sticky note has
+    // no name to give, and says nothing rather than something wrong.
+    description: nameOf(m, input.record),
   }),
 })
 
@@ -238,6 +241,7 @@ export const keywordDetach = defineTool({
 
   describe: (input, _output, m) => ({
     title: `${m.node(input.keyword, 'keyword')?.props.name ?? 'Keyword'} removed`,
+    description: nameOf(m, input.record),
   }),
 })
 
@@ -274,10 +278,11 @@ export const keywordRecordSet = defineTool({
     }
   },
 
-  describe: (input) => ({
+  describe: (input, _output, m) => ({
     title:
       input.keywords.length === 0
         ? 'Keywords cleared'
         : `${input.keywords.length} keyword${input.keywords.length === 1 ? '' : 's'} set`,
+    description: nameOf(m, input.record),
   }),
 })

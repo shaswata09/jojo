@@ -1,5 +1,6 @@
 import { useId } from 'react'
-import { Arrow, DASH } from '@/components/guide/diagrams/parts'
+import { DASH } from '@/components/guide/diagrams/marks'
+import { Arrow } from '@/components/guide/diagrams/parts'
 
 /**
  * What deleting an application does to everything pointing at it.

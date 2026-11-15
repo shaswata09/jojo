@@ -53,17 +53,19 @@ export { emptyProfile, profileIsBlank } from '../kg/core/profile'
  *
  * The links point at `example.com`, which is reserved by RFC 2606 precisely so
  * that documentation cannot accidentally name somebody real.
+ *
+ * The name is the owner's choice (2026-11-15): Lonardo Jenson, spelled so.
  */
 export const seedProfile = (): Profile => ({
   text: {
-    fullName: 'Alex Rivera',
+    fullName: 'Lonardo Jenson',
     position: 'PhD candidate, Computer Science',
     location: 'Santa Clara, CA',
     email: 'mockemail@email.com',
     website: 'https://www.mockwebsite.com',
     scholar: 'https://scholar.example.com/citations?user=demo',
-    github: 'https://github.example.com/alexrivera',
-    linkedin: 'https://www.linkedin.example.com/in/alexrivera',
+    github: 'https://github.example.com/lonardojenson',
+    linkedin: 'https://www.linkedin.example.com/in/lonardojenson',
     // Comma-separated, because that is what the scout splits on. The previous
     // values used ` · ` and `termsOf` in `fit.ts` does not split on it, so all
     // three roles were scored as one long phrase that could never match and the

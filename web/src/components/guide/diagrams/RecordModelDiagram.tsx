@@ -1,5 +1,6 @@
 import { useId } from 'react'
-import { Arrow, DASH, Elbow, Rule } from '@/components/guide/diagrams/parts'
+import { DASH } from '@/components/guide/diagrams/marks'
+import { Arrow, Elbow, Rule } from '@/components/guide/diagrams/parts'
 
 /**
  * The eleven record types and the seven relations, drawn as the graph they are.

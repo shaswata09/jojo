@@ -1,62 +1,140 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
-import { Download, Upload } from 'lucide-react'
+import { ArrowDown, Download, Loader } from 'lucide-react'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { Panel, PanelTitle } from '@/components/common/Panel'
+import { restoreSummary } from '@/components/settings/restore-report'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { sizeLabel } from '@jojo/service/core/files'
+import { canReachLocalNetwork } from '@/lib/handoff-client'
+import { pullConfirmCopy, type PullState } from '@/lib/handoff-pull'
 import { settingsPath } from '@/lib/links'
 
 /**
- * Receiving, on a device that cannot.
+ * Receiving the phone's records on this computer.
  *
- * ## What this used to be
+ * ## What this used to say
  *
- * A pairing code field that accepted any well-formed string, and a permanently
- * disabled "Turn on the camera" button labelled "Inert here, on purpose". Both
- * were honest about being props — the copy said so — and both were still the
- * wrong thing on the screen. A person who types a code into a field and sees
- * "Paired" has been told this computer is about to receive something. It never
- * was, and the sentence explaining that sat underneath the control rather than
- * in place of it.
+ * "Not possible in a browser", with a link to the backup file. Half of that
+ * was right: a web page cannot accept a connection, so a phone can never
+ * connect TO this computer. The conclusion did not follow. The phone already
+ * listens on the local network for the other direction, and a page that can
+ * connect to it can ask it for its records as easily as it can post its own —
+ * so the phone serves its backup in sealed chunks and this computer pulls them.
+ * See `lib/handoff-pull.ts` and `core/handoff-pull.ts`.
  *
- * ## Why there is nothing to build here
+ * ## The steps, and the one the person does
  *
- * A web page cannot accept an inbound connection. `TCPServerSocket` exists in
- * Chrome only for Isolated Web Apps — a packaged, enterprise-installed thing
- * that jojo is not — and nothing equivalent is proposed for the open web. So a
- * phone cannot reach this browser, whatever network both are on and whatever
- * either device is willing to do about it.
+ * The phone reads the animation on the left, which agrees a key. It then shows
+ * its address as twelve characters, typed here, because a browser cannot find
+ * a device on the network by itself. Everything else is jojo's.
  *
- * That is why the whole transfer is shaped the way it is: the phone listens
- * because it is the only side that can, and the browser connects to it. Nothing
- * here is waiting on an implementation. See `jojo-transfer-design` and
- * `lib/handoff-send.ts` for the topology this falls out of.
+ * ## Where it ends
  *
- * ## So this points at the thing that does work
- *
- * The backup file. It has no size limit, no network in it at all, and
- * `repo/restore.ts` puts it back — the same code path the phone runs when it
- * receives one over the wire. Sending a file from a phone to a computer is
- * something every phone already does well, so jojo does not need to.
+ * Where a backup file ends: behind the same "replace everything" confirmation,
+ * through the same restore, onto the same dialog that reloads the page. What
+ * arrived is checked in full before that question is asked, and nothing here
+ * changes until it is answered.
  */
-export function ReceivePanel() {
+export function ReceivePanel({ pull, token }: { pull: PullState; token: string | null }) {
+  const [code, setCode] = useState('')
+  const able = canReachLocalNetwork()
+  const busy =
+    pull.stage === 'connecting' ||
+    pull.stage === 'receiving' ||
+    pull.stage === 'confirming' ||
+    pull.stage === 'restoring'
+  const confirmCopy = pull.plan === null ? null : pullConfirmCopy(pull.plan)
+
   return (
     <>
       <Panel>
-        <PanelTitle hint="not possible in a browser">Receive on this computer</PanelTitle>
-        <p className="text-sm text-text-2">
-          A web page is not allowed to accept a connection from another device. That is a rule of
-          the browser rather than a setting, so no network, no permission and no other browser
-          changes it — which is why the phone is the side that listens, and this computer is the
-          side that connects to it.
+        <PanelTitle hint="from your phone">Receive from phone</PanelTitle>
+
+        {!able ? (
+          <p className="text-sm text-text-2">
+            Safari cannot connect to another device on your network. Use Chrome, Edge or Firefox
+            here — or export a backup on your phone and open it under Settings.
+          </p>
+        ) : (
+          <>
+            <p className="mb-3 text-sm text-text-2">
+              On your phone, open Transfer, choose Send to a computer, and point it at the animation.
+              It then shows a short code — type it here. Both devices need to be on the same local
+              network.
+            </p>
+
+            <div className="flex gap-2">
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="K3M9-2XQ7-4B1P"
+                spellCheck={false}
+                autoCapitalize="characters"
+                autoComplete="off"
+                className="tabular font-mono tracking-[0.12em]"
+                aria-label="The code shown on your phone"
+                disabled={busy}
+              />
+              <Button
+                size="sm"
+                disabled={busy || token === null || code.trim().length === 0}
+                onClick={() => {
+                  if (token !== null) void pull.start(code, token)
+                }}
+              >
+                {busy ? (
+                  <Loader className="size-3.5 animate-spin" strokeWidth={1.8} aria-hidden />
+                ) : (
+                  <ArrowDown className="size-3.5" strokeWidth={1.8} aria-hidden />
+                )}
+                Receive
+              </Button>
+            </div>
+
+            {/* Bytes, not a percentage: the phone does not say how much is
+                coming, and a bar that guessed would be the kind of progress
+                this page stopped showing. */}
+            {pull.stage === 'connecting' || pull.stage === 'receiving' ? (
+              <p className="mt-3 text-xs text-text-3" role="status">
+                {pull.stage === 'connecting'
+                  ? 'Reaching your phone…'
+                  : `${sizeLabel(pull.bytes)} received so far. Nothing here changes until you agree to it.`}
+              </p>
+            ) : null}
+            {pull.stage === 'restoring' ? (
+              <p className="mt-3 text-xs text-text-3" role="status">
+                Replacing the records on this computer…
+              </p>
+            ) : null}
+
+            {pull.problem === null ? null : (
+              <p className="mt-3 text-sm text-warning">{pull.problem}</p>
+            )}
+          </>
+        )}
+
+        {/* Before the field's consequences rather than after them. A restore
+            replaces the store wholesale and clears the history, so the time
+            to keep a copy of what is here is before the phone is dialled. */}
+        <p className="mt-4 text-xs text-text-3">
+          Receiving replaces everything on this computer with what is on your phone, once you agree
+          to it. To keep a copy of what is here, download a backup first.
         </p>
-        <p className="mt-3 text-sm text-text-2">
-          To move records the other way, export a backup on your phone and open it here. Nothing
-          about that route touches a network.
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2.5">
-          <Button size="sm" asChild>
+        <div className="mt-2 flex flex-wrap items-center gap-2.5">
+          <Button variant="outline" size="sm" asChild>
             <Link to={settingsPath()}>
-              <Upload className="size-3.5" strokeWidth={1.8} aria-hidden />
-              Open a backup
+              <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
+              Download a backup first
             </Link>
           </Button>
         </div>
@@ -65,9 +143,9 @@ export function ReceivePanel() {
       <Panel>
         <PanelTitle hint="between two computers">Two browsers</PanelTitle>
         <p className="text-sm text-text-2">
-          Neither can listen, so two computers cannot connect to each other either. Export a backup
-          from one and open it on the other — it carries every record and every document, and it is
-          the same file the phone receives.
+          A web page cannot accept a connection, and neither can the other computer&rsquo;s, so two
+          computers cannot connect to each other. Export a backup from one and open it on the other —
+          it carries every record and every document.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2.5">
           <Button variant="outline" size="sm" asChild>
@@ -78,6 +156,47 @@ export function ReceivePanel() {
           </Button>
         </div>
       </Panel>
+
+      {/* The question a backup file asks, about what the phone sent. */}
+      <ConfirmDialog
+        open={confirmCopy !== null}
+        onOpenChange={(open) => {
+          if (!open && pull.stage === 'confirming') pull.decline()
+        }}
+        title={confirmCopy?.title ?? ''}
+        description={confirmCopy?.description ?? ''}
+        confirmLabel={confirmCopy?.confirm ?? 'Replace everything'}
+        tone="danger"
+        onConfirm={() => void pull.confirm()}
+      />
+
+      {/* What the restore did, and the only way off it is the reload — as on
+          Settings, because every projection behind it describes a store that
+          no longer exists. */}
+      {pull.outcome === null ? null : (
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            if (!open) window.location.reload()
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle
+                className={
+                  restoreSummary(pull.outcome).tone === 'danger' ? 'text-danger' : undefined
+                }
+              >
+                {restoreSummary(pull.outcome).title}
+              </DialogTitle>
+              <DialogDescription>{restoreSummary(pull.outcome).description}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => window.location.reload()}>Reload jojo</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }

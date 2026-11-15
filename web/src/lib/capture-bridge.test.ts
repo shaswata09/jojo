@@ -63,7 +63,9 @@ const { CAPTURE_REJECTION_MESSAGE } = await import('@jojo/service/core/capture')
 /** What the bridge would post back, correlated on the id the page chose. */
 const reply = (extra: Record<string, unknown>) => {
   const last = posted.at(-1)
-  for (const listener of [...listeners]) {
+  // A snapshot, so a listener that subscribes or unsubscribes while being called
+  // does not change who this round reaches.
+  for (const listener of Array.from(listeners)) {
     listener({
       source: fakeWindow,
       origin: 'https://jojo.test',

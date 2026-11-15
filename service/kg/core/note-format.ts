@@ -356,3 +356,50 @@ export const hasFormat = (
   text: string,
   spans: readonly NoteSpan[] | undefined,
 ): boolean => normaliseFormat(text, spans) !== undefined
+
+/**
+ * What a write leaves in a format prop, for a tool that takes the text and,
+ * optionally, the editor's formatting beside it — or `undefined` when the
+ * write should not touch the prop at all.
+ *
+ * The rule every rich-text field shares, in one place rather than one copy per
+ * tool:
+ *
+ * - formatting GIVEN is canonicalised against the text being saved with it
+ *   (or the stored text, when only the formatting changed). `''` clears it;
+ * - formatting ABSENT while the text changes — the phone, the assistant, any
+ *   writer that only knows the words — moves the existing spans onto the new
+ *   text with `retextFormat`, so a typo fixed costs the bold on that word and
+ *   never puts bold on a word nobody bolded;
+ * - neither given leaves the prop exactly as it is.
+ *
+ * `{ value: undefined }` is a real answer — "delete the key" — which is why the
+ * result is wrapped rather than being the spans themselves.
+ */
+export function formatWrite(
+  storedText: string,
+  nextText: string | undefined,
+  stored: readonly NoteSpan[] | undefined,
+  wire: string | undefined,
+): { value: NoteSpan[] | undefined } | undefined {
+  if (wire !== undefined) {
+    return { value: normaliseFormat(nextText ?? storedText, decodeFormat(wire)) }
+  }
+  if (nextText === undefined) return undefined
+  return { value: retextFormat(storedText, nextText, stored) }
+}
+
+/**
+ * The tool-input half of the same field, declared once: one short string, for
+ * the reason `application.note.set` gives — the same spans as a JSON-Schema
+ * array cost about 1,100 characters on every model request, for a parameter no
+ * model should ever produce.
+ */
+export const formatWire = (label: string) =>
+  s.optional(
+    s.string({
+      label,
+      // As short as it can be: every model request carries it, seven times.
+      description: 'Leave this out.',
+    }),
+  )

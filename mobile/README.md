@@ -639,11 +639,12 @@ What is still honestly absent:
 - **The localhost bridge is not built.** It was designed and then deleted, and
   there is no `server/` directory any more (`docs/NO-SERVER.md` says why).
   Nothing tries to reach it.
-- **Transfer is one-directional.** Records move onto this phone and not off it,
-  and that is a platform fact rather than a gap: a browser cannot accept an
-  inbound connection, so the phone has to be the side that listens. Receiving is
-  real end to end — camera, key agreement, socket, decryption, restore. Sending
-  points at Export under Settings.
+- **Transfer works both ways between this phone and a computer** on the same
+  local network. The phone always listens and the computer connects, because a
+  browser cannot accept an inbound connection; to send, the computer pulls the
+  phone's backup and restores it behind the same confirmation as a backup file.
+  Receiving has run on a device; sending (the pull) is tested below the socket
+  but has not yet run on a device.
 
 The graph is a smaller model than the web's: the same node types and
 relationships, laid out by type rather than by a force simulation. The visual

@@ -39,6 +39,8 @@ const FULL_DRAFT: Required<ApplicationDraft> = {
   roleTag: 'Assistant Professor',
   stage: 'submitted',
   note: 'Deadline is soft.',
+  // The edit dialog's formatting over `note`, encoded (Q268).
+  noteFormat: '0-8:b::',
   flagged: true,
   lastAction: 'Submitted the packet',
   daysAgo: 3,

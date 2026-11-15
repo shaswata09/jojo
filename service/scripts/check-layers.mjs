@@ -858,6 +858,10 @@ const APP_SEAMS = {
   'web/src/lib/handoff-send.ts': ['repo', 'crypto'],
   'web/src/lib/pairing-session.ts': ['crypto'],
   'mobile/src/lib/handoff-receive.ts': ['crypto'],
+  // The reverse direction: the computer pulls the phone's backup and restores it;
+  // the phone serves it sealed. Same crypto box, same handed-over stamp.
+  'web/src/lib/handoff-pull.ts': ['repo', 'crypto'],
+  'mobile/src/lib/handoff-serve.ts': ['repo', 'crypto'],
   // Type-only (`ToolName`) — the create menu names the tool it dispatches.
   'web/src/lib/create-actions.ts': ['tools'],
   // `DEADLINE_DETAIL` copy, a twin of web's components/applications/deadline.ts.

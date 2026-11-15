@@ -7,6 +7,7 @@ import { Divider, Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
 import { HandoverStatus } from '@/components/transfer/HandoverStatus'
 import { ReceivePanel } from '@/components/transfer/ReceivePanel'
+import { SendPanel } from '@/components/transfer/SendPanel'
 import { useLabels } from '@/lib/labels-context'
 import { useApplications, useProfile, useScout, useTimeline, useVault } from '@/lib/store-context'
 import { s } from '@/theme/styles'
@@ -15,14 +16,14 @@ import { space } from '@/theme/tokens'
 type Role = 'send' | 'receive'
 
 const ROLES = [
-  { value: 'send', label: 'Send from here' },
-  { value: 'receive', label: 'Receive here' },
+  { value: 'send', label: 'Send to a computer' },
+  { value: 'receive', label: 'Receive from a computer' },
 ] as const satisfies readonly { value: Role; label: string }[]
 
 type Group = { id: string; label: string; unit: string; hint: string; count: number }
 
 /**
- * Receiving your jojo data from another device.
+ * Moving your jojo data between this phone and a computer, either way.
  *
  * ## What this screen used to claim
  *
@@ -39,26 +40,33 @@ type Group = { id: string; label: string; unit: string; hint: string; count: num
  * REAL transfer — two bars on one screen for one operation, one of them
  * measuring a timer.
  *
- * ## Why the send half is a signpost rather than a feature
+ * ## How the phone sends, when a browser cannot be connected to
  *
- * The phone cannot send, and this is not a gap waiting to be filled. The whole
- * topology falls out of one platform fact: a browser cannot accept an inbound
- * connection, so the phone has to be the side that listens and the computer has
- * to be the side that connects. There is no arrangement of the same pieces in
- * which the phone pushes to a browser, and two phones cannot pair either —
- * neither can show the other an animation to read, because the scene is WebGPU
- * and this app has no browser in it.
+ * This screen used to say the phone could not send, and the reasoning was half
+ * right. A browser cannot accept an inbound connection, so the phone is always
+ * the side that LISTENS and the computer always the side that connects. But who
+ * connects does not decide which way the records go. Sending to a computer is
+ * the same pairing and the same socket as receiving; the computer then asks
+ * this phone for its backup, chunk by chunk, instead of posting its own
+ * (`lib/handoff-serve.ts`, `core/handoff-pull.ts`).
  *
- * So sending points at the export under Settings, which reaches the other
- * device by whatever a phone is already good at.
+ * Two phones still cannot pair — neither can show the other an animation to
+ * read, because the scene is WebGPU and this app has no browser in it — and
+ * two computers cannot either. Both sides of every transfer are this phone and
+ * a computer, on the same local network.
  *
  * ## What is real
  *
- * Receiving, all of it. The camera reads the key off the other device's
- * animation, `core/pairing.ts` agrees a session, the phone opens a socket on
- * the local network, and what arrives is decrypted, authenticated and written
- * to the store by the same `repo/restore.ts` the browser uses for a backup
- * file. See `lib/restore-received.ts` for the last step.
+ * Both directions, all of it. The camera reads the key off the computer's
+ * animation, `core/pairing.ts` agrees a session, and the phone opens a socket
+ * on the local network. Receiving decrypts, authenticates and writes what
+ * arrives with the same `repo/restore.ts` the browser uses for a backup file
+ * (`lib/restore-received.ts`). Sending hands over this phone's backup in the
+ * same format, and the computer restores it the way it restores a file —
+ * behind the same confirmation.
+ *
+ * Neither has been run on a real phone yet: the socket, NetInfo and the
+ * camera need hardware. The protocol both carry is tested in `@jojo/service`.
  *
  * The counts come from the live store rather than from a fixture, which is the
  * point of showing them: what you are about to receive replaces exactly this.
@@ -71,8 +79,8 @@ export function TransferScreen() {
   const { isBlank: profileIsBlank } = useProfile()
   const { labels } = useLabels()
 
-  // Receive first, because it is the half that works. A screen opening on the
-  // one thing it cannot do is a screen that reads as broken.
+  // Receive first: it is what a new phone is opened for, and the order the
+  // two halves were built in.
   const [role, setRole] = useState<Role>('receive')
 
   const groups = useMemo<Group[]>(
@@ -150,7 +158,7 @@ export function TransferScreen() {
   return (
     <Screen
       title="Transfer"
-      subtitle="Take everything from your computer onto this phone, over your local network. Nothing goes to the internet and nothing is stored anywhere else."
+      subtitle="Move everything between this phone and your computer, over your local network. Both need to be on the same network. Nothing goes to the internet and nothing is stored anywhere else."
     >
       {/* Above the direction switch: it is true of the whole screen, and on
           this device it is the answer to "how old is what I am holding". */}
@@ -158,22 +166,7 @@ export function TransferScreen() {
 
       <Segment label="Direction" options={ROLES} value={role} onChange={setRole} />
 
-      {role === 'send' ? (
-        <Panel>
-          <PanelTitle hint="not possible from a phone">Send from here</PanelTitle>
-          <Txt size="sm" tone="secondary">
-            A transfer needs one device to listen and the other to connect, and only this phone can
-            listen — a web page is never allowed to accept a connection. So records move onto this
-            phone, not off it.
-          </Txt>
-          <Txt size="sm" tone="secondary" style={{ marginTop: space[2] }}>
-            To copy what is here somewhere else, use Export under Settings. It writes the whole
-            store, and any device can read it.
-          </Txt>
-        </Panel>
-      ) : (
-        <ReceivePanel />
-      )}
+      {role === 'send' ? <SendPanel /> : <ReceivePanel />}
 
       <Panel>
         <PanelTitle hint={`${total} records`}>What is on this phone now</PanelTitle>
@@ -211,8 +204,9 @@ export function TransferScreen() {
             anything that happened before one. Somebody deciding whether to
             start needs that before they point the camera, not after. */}
         <Txt size="xs" tone="muted">
-          Receiving replaces all of it. Everything above is overwritten by what arrives, and it
-          cannot be undone — export first if you want to keep this.
+          {role === 'send'
+            ? 'Sending copies all of it to your computer, which asks before it replaces what it holds. Nothing on this phone changes.'
+            : 'Receiving replaces all of it. Everything above is overwritten by what arrives, and it cannot be undone — export first if you want to keep this.'}
         </Txt>
       </Panel>
     </Screen>

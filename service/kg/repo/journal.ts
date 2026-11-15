@@ -429,10 +429,12 @@ type Image = Record<string, unknown>
  */
 const FIELD_GROUPS: { readonly [T in NodeType]?: readonly (readonly (keyof NodePropsByType[T] & string)[])[] } = {
   application: [
-    ['stage', 'submittedOn', 'appliedOn', 'firstReplyOn', 'stageDates', 'outcome', 'offer'],
+    ['stage', 'submittedOn', 'appliedOn', 'firstReplyOn', 'stageDates', 'outcome', 'offer', 'offerNoteFormat'],
     ['note', 'noteFormat'],
   ],
   file: [['note', 'noteFormat']],
+  timelineItem: [['note', 'noteFormat']],
+  person: [['note', 'noteFormat']],
   snippet: [['body', 'bodyFormat']],
 }
 

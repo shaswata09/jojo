@@ -5,7 +5,7 @@ import { ApplicationFrequencyBody } from '@/components/dashboard/ApplicationFreq
 import { HeadlineRatesBody } from '@/components/dashboard/HeadlineRates'
 import { PipelineBody } from '@/components/dashboard/PipelineBreakdown'
 import { SearchHealthBody } from '@/components/dashboard/SearchHealth'
-import { useApplications } from '@jojo/service/react/use-applications'
+import { useScopedApplications } from '@/lib/roles-scope'
 
 /**
  * Four statistics in one card, switched by the control beside the title.
@@ -50,7 +50,9 @@ const TITLE: Record<ViewKey, string> = {
 
 export function StatsCard() {
   const [view, setView] = useState<ViewKey>('pipeline')
-  const { all } = useApplications()
+  // The roles picked in the top bar, so "12 tracked" counts the same records
+  // the pie under it draws.
+  const { all } = useScopedApplications()
 
   return (
     <Panel className="flex min-w-0 flex-col">

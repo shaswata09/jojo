@@ -277,26 +277,14 @@ function useSavePage(): (page: Page, target: string, stem: string) => Promise<Va
         const filed = await fileCapture(page.capture)
         kept = { file: filed.file, stored: filed.stored }
       } else {
-        // Wrapped, not raw: the record is `kind: 'page'` and both viewers
-        // render a page as HTML, which would collapse every newline in the
-        // markdown. See `postingDocument`.
-        const html = postingDocument(target, page.text)
-        const bytes = new TextEncoder().encode(html)
-        const name = nameFor(stem, target)
-        const saved = addFile({
-          name,
-          // 'page' rather than 'md': what was saved IS a posting, and the
-          // kind is what the Vault's icon and the viewer key off.
-          kind: 'page',
-          // The settled rule: a posting is somebody else's document and
-          // never lands in 'Applications', which holds what the user wrote.
-          bucket: 'Job postings',
-          size: sizeLabel(bytes.byteLength),
-          sourceUrl: target,
-          capturedAt: new Date().toISOString(),
-          savedOn: TODAY,
-          note: `Read by the model from ${target}`,
-        })
+        const { bytes, name, record } = readerPageFile(
+          target,
+          page.text,
+          stem,
+          TODAY,
+          new Date().toISOString(),
+        )
+        const saved = addFile(record)
         const stored = await blobs.put(saved.id, new File([bytes], name, { type: 'text/html' }))
         kept = { file: saved, stored }
       }
@@ -304,6 +292,43 @@ function useSavePage(): (page: Page, target: string, stem: string) => Promise<Va
     },
     [addFile, removeFile, blobs, fileCapture],
   )
+}
+
+/**
+ * The file a page read by the document reader becomes: its bytes, its name and
+ * the Vault record. Lifted out of `useSavePage` so a test can hold it.
+ */
+export function readerPageFile(
+  target: string,
+  text: string,
+  stem: string,
+  today: string,
+  capturedAt: string,
+) {
+  // Wrapped, not raw: the record is `kind: 'page'` and both viewers
+  // render a page as HTML, which would collapse every newline in the
+  // markdown. See `postingDocument`.
+  const html = postingDocument(target, text)
+  const bytes = new TextEncoder().encode(html)
+  const name = nameFor(stem, target)
+  return {
+    bytes,
+    name,
+    record: {
+      name,
+      // 'page' rather than 'md': what was saved IS a posting, and the
+      // kind is what the Vault's icon and the viewer key off.
+      kind: 'page' as const,
+      // The settled rule: a posting is somebody else's document and
+      // never lands in 'Applications', which holds what the user wrote.
+      bucket: 'Job postings' as const,
+      size: sizeLabel(bytes.byteLength),
+      sourceUrl: target,
+      capturedAt,
+      savedOn: today,
+      note: `Read by the model from ${target}`,
+    },
+  }
 }
 
 /**

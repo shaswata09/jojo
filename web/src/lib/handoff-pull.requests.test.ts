@@ -1,0 +1,122 @@
+/**
+ * Q129, the phone-to-computer half: what a person sees on each device, and the
+ * order the computer does things in — read as source, because the panels and
+ * the hook cannot be mounted here (D20).
+ *
+ * The protocol itself is tested for real elsewhere: both directions and every
+ * refusal in `service/kg/crypto/handoff-pull.test.ts` and `service/kg/core/handoff.test.ts`, the
+ * computer's run in `handoff-pull.test.ts` beside this file, the phone's
+ * handler in `mobile/src/lib/handoff-serve.test.ts`.
+ */
+
+import { describe, expect, it } from 'vitest'
+import pullSource from './handoff-pull.ts?raw'
+import transferSource from '@/routes/Transfer.tsx?raw'
+import receiveSource from '@/components/transfer-ui/ReceivePanel.tsx?raw'
+import dataPanelSource from '@/components/settings/DataPanel.tsx?raw'
+import phoneScreenSource from '../../../mobile/src/screens/TransferScreen.tsx?raw'
+import phoneSendSource from '../../../mobile/src/components/transfer/SendPanel.tsx?raw'
+import phoneServeSource from '../../../mobile/src/lib/handoff-serve.ts?raw'
+import { pullConfirmCopy } from '@/lib/handoff-pull'
+
+const strip = (source: string) =>
+  source
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ')
+
+describe('what the person sees (Q129)', () => {
+  it('offers "Send to a computer" on the phone', () => {
+    expect(strip(phoneScreenSource)).toContain("{ value: 'send', label: 'Send to a computer' }")
+    expect(strip(phoneScreenSource)).toContain("role === 'send' ? <SendPanel /> : <ReceivePanel />")
+    expect(strip(phoneScreenSource)).not.toMatch(/not possible from a phone/)
+  })
+
+  it('offers "Receive from phone" on the computer, with a real panel behind it', () => {
+    const page = strip(transferSource)
+    expect(page).toContain("{ value: 'receive', label: 'Receive from phone' }")
+    expect(page).toContain('<ReceivePanel pull={pull} token={pairing.token} />')
+    // The animation the phone reads is up in both roles.
+    expect(page).toContain('usePairingSession(true)')
+    const panel = strip(receiveSource)
+    expect(panel).toContain('Receive from phone')
+    expect(panel).not.toMatch(/not possible in a browser/)
+  })
+
+  it('shows the phone’s code on its send screen, built from its own address', () => {
+    expect(strip(phoneSendSource)).toContain('{groupCode(encodeAddress(session.address))}')
+  })
+
+  it('takes the typed code on the computer and starts the pull with it', () => {
+    const panel = strip(receiveSource)
+    expect(panel).toContain('aria-label="The code shown on your phone"')
+    expect(panel).toContain('void pull.start(code, token)')
+  })
+
+  it('says on both devices that they must share a local network', () => {
+    expect(strip(receiveSource)).toMatch(/Both devices need to be on the same local\s+network/)
+    expect(strip(phoneSendSource)).toMatch(/Both need to be on the same local network/)
+    expect(strip(phoneScreenSource)).toMatch(/Both need to be on the same network/)
+  })
+})
+
+describe('the computer pulls only after the proof (Q129)', () => {
+  const code = strip(pullSource)
+  const run = code.slice(code.indexOf('export async function pullFromPhone('))
+  const at = (needle: string) => {
+    const i = run.indexOf(needle)
+    expect(i, needle).toBeGreaterThan(-1)
+    return i
+  }
+
+  it('dials the address the code decodes to, then checks the proof, then pulls', () => {
+    const decoded = at('const read = decodeAddress(code)')
+    const asked = at('await fetchPairing(address, token)')
+    const keyed = at('const keys = await complete(response.value)')
+    const refused = at('if (keys === null) return')
+    const pulled = at('await runPull<HandoffFailure>(')
+    expect(asked).toBeGreaterThan(decoded)
+    expect(keyed).toBeGreaterThan(asked)
+    expect(refused).toBeGreaterThan(keyed)
+    expect(pulled).toBeGreaterThan(refused)
+    // The pull is keyed by what the proof produced and nothing else.
+    expect(run.slice(pulled, pulled + 120)).toContain('keys,')
+  })
+
+  it('sends a pulling phone into the pull direction and nothing else', () => {
+    expect(strip(phoneServeSource)).toMatch(/startHandoffServer\([\s\S]*?'pull',\s*\)/)
+  })
+})
+
+describe('what arrives is restored the way a backup file is (Q129)', () => {
+  it('runs the same restore Settings runs for a file', () => {
+    expect(strip(pullSource)).toContain('await restoreBackup(repo, blobs, plan, at)')
+    expect(strip(dataPanelSource)).toContain('await restoreBackup(repo, blobs, plan,')
+    // And the same document store: the vault's, through the same hook.
+    expect(strip(pullSource)).toContain('const blobs = useVaultBlobs()')
+    expect(strip(dataPanelSource)).toContain('const blobs = useVaultBlobs()')
+  })
+
+  it('asks the same "replaces / back up first" question, word for word', () => {
+    // Read out of DataPanel's own dialog, so the two cannot drift apart.
+    const file = /That file holds \$\{describeBackup\(staged\)\}\. (.*?)`/.exec(dataPanelSource)?.[1]
+    expect(file).toBeTruthy()
+    const plan = { exportedAt: '', nodes: [], edges: [], documents: [] }
+    expect(pullConfirmCopy(plan).description.endsWith(file!)).toBe(true)
+    expect(dataPanelSource).toContain(`confirmLabel="${pullConfirmCopy(plan).confirm}"`)
+  })
+
+  it('puts the plan behind that dialog, and nothing is written before it is agreed', () => {
+    const panel = strip(receiveSource)
+    expect(panel).toContain('pullConfirmCopy(pull.plan)')
+    expect(panel).toContain('onConfirm={() => void pull.confirm()}')
+    const hook = strip(pullSource).slice(strip(pullSource).indexOf('export function useHandoffPull('))
+    // The run stages the plan; only `confirm` restores.
+    const staged = hook.indexOf("setStage('confirming')")
+    const restored = hook.indexOf('await restoreFromPhone(')
+    const confirm = hook.indexOf('const confirm = useCallback(')
+    expect(staged).toBeGreaterThan(-1)
+    expect(restored).toBeGreaterThan(confirm)
+    expect(confirm).toBeGreaterThan(staged)
+  })
+})

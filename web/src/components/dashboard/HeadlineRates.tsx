@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { ClipboardList } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { statsFor } from '@jojo/service/core/statistics'
-import { useApplications } from '@jojo/service/react/use-applications'
+import { useScopedApplications } from '@/lib/roles-scope'
 
 /**
  * The four headline rates — reply, interview, offer and the rest.
@@ -18,7 +18,7 @@ import { useApplications } from '@jojo/service/react/use-applications'
  * the same reason Statistics guards the section it used to live in.
  */
 export function HeadlineRatesBody({ showTypical = false }: { showTypical?: boolean }) {
-  const { all } = useApplications()
+  const { all } = useScopedApplications()
   const { sent, kpis } = useMemo(() => statsFor(all), [all])
 
   if (sent === 0) {

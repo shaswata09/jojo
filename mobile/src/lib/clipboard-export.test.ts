@@ -71,30 +71,19 @@ describe('copyExport — copies, or explains, never both', () => {
   })
 
   /**
-   * And it does not offer Transfer as the route that carries them.
+   * And, when the store is too big, it names the route that does carry it.
    *
-   * This assertion used to be `toMatch(/transfer/i)` — it PINNED the claim.
-   * `screens/TransferScreen.tsx` says in its own header that the phone cannot
-   * send: a browser cannot accept an inbound connection, so the phone is always
-   * the side that listens, and sending "points at the export under Settings",
-   * which is this very button. The oversize branch said "Use Transfer instead"
-   * and Transfer said "use the export", so a user whose store was too big was
-   * sent round a circle — and this test held one end of it in place.
-   *
-   * Two more copies of the same claim were found by a source-text guard in
-   * `instant-day.test.ts` once the phrasing was banned there: SettingsScreen's
-   * "or Transfer, which hands the whole store to another device", and the
-   * phone guide's "Transfer sends a copy straight to your other device".
+   * For a while the phone could only receive, and pointing at Transfer sent the
+   * reader round a circle (Transfer pointed back at this export). Since
+   * 2026-11-15 the computer pulls the phone's backup, so the oversize branch
+   * points at Transfer — to a computer, which is the only place it goes.
    */
-  it('does not offer Transfer as a way to send, on either branch', () => {
+  it('points a store too big for the clipboard at Transfer to a computer', () => {
     const { copy } = spy()
-    expect(copyExport(json(1000), copy).description).not.toMatch(/transfer[^.]*\b(sends?|carries|hands)\b/i)
-
     const oversize = copyExport(json(CLIPBOARD_MAX_BYTES), copy, true)
     expect(oversize.tone).toBe('danger')
-    expect(oversize.description).not.toMatch(/use transfer instead/i)
-    // It says what is actually true, so the reader is not sent looking.
-    expect(oversize.description).toMatch(/only way out of this phone/i)
+    expect(oversize.description).toMatch(/Transfer to send everything to your computer/)
+    expect(oversize.description).not.toMatch(/only receives|only way out/i)
   })
 
   it('copies a store sized exactly to the limit', () => {

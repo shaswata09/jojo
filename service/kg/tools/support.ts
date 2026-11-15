@@ -169,6 +169,19 @@ export function nameOf(m: GraphSnapshot, id: NodeId): string {
   return org ? `${own} — ${String(org.props.name)}` : own
 }
 
+/**
+ * The names of a batch of new records, for the line under its announcement.
+ *
+ * The first three and a count of the rest: a toast for ten files that lists
+ * all ten is a paragraph nobody reads, and one that lists none says nothing
+ * about which ten.
+ */
+export function namesOf(records: readonly { readonly name: string }[]): string {
+  const shown = records.slice(0, 3).map((r) => r.name.trim())
+  const rest = records.length - shown.length
+  return rest > 0 ? `${shown.join(', ')} and ${rest} more` : shown.join(', ')
+}
+
 export function displayOf(m: GraphSnapshot, appId: NodeId): string {
   const app = m.node(appId, 'application')
   if (!app) return ''

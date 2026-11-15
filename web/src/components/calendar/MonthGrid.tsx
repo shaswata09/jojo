@@ -1,6 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { DayCell } from '@/components/calendar/DayCell'
 import { MonthPicker } from '@/components/calendar/MonthPicker'
+import { KIND_LEGEND } from '@/components/calendar/kind-filter'
+import { ChartLegend } from '@/components/charts/ChartLegend'
 import { Panel } from '@/components/common/Panel'
 import { MONTH_LABELS, WEEKDAYS, stepMonth } from '@/data/calendar'
 import type { CalendarMonth } from '@/data/calendar'
@@ -23,9 +25,10 @@ export function MonthGrid({
   onSelectDay,
   onAdd,
   onOpen,
+  kinds,
 }: {
   month: CalendarMonth
-  /** Everything in the month, for the key under the grid. */
+  /** Everything in the month the legend leaves on, for the date key under the grid. */
   monthItems: TimelineItem[]
   /** Day of the month → what is on it, already sorted. */
   eventsFor: Map<number, TimelineItem[]>
@@ -37,6 +40,13 @@ export function MonthGrid({
   onSelectDay: (day: number) => void
   onAdd: (iso: string) => void
   onOpen: (item: TimelineItem) => void
+  /** The event-type switches, from `useSeriesToggle` in the route. */
+  kinds: {
+    hidden: ReadonlySet<string>
+    isHidden: (key: string) => boolean
+    toggle: (key: string) => void
+    showAll: () => void
+  }
 }) {
   /**
    * Today, as the Today button's tooltip spells it.
@@ -67,13 +77,13 @@ export function MonthGrid({
   ]
 
   /**
-   * The key under the grid, built from what this month actually contains.
+   * The date key under the grid, built from what the grid actually draws.
    *
-   * It replaces a legend of seven kind icons — none of which the grid ever
-   * drew — with the marks that are really on it. Filtered by presence rather
+   * It explains the cell colours and nothing else. Filtered by presence rather
    * than listed unconditionally: a key promising an overdue colour in a month
    * that has nothing overdue is the same invented data the empty-state law
-   * bans, one step removed.
+   * bans, one step removed. `monthItems` arrives already filtered by the type
+   * legend, so a colour that only a hidden type carried leaves the key too.
    */
   const marksPresent = new Set(monthItems.map(markOf))
   const markKey = [
@@ -200,22 +210,50 @@ export function MonthGrid({
         })}
       </div>
 
-      {/* A key to the grid, not a filter of it. The divider goes with the
-          key when the month has none of these marks, rather than ruling a
-          line under nothing. */}
-      {markKey.length > 0 ? (
-        <ul className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-hairline pt-3.5">
-          {markKey.map((entry) => (
-            <li key={entry.key} className="flex items-center gap-1.5 text-xs text-text-2">
-              <span
-                aria-hidden
-                className={cn('size-2.5 shrink-0 rounded-[2px] border', entry.swatch)}
-              />
-              <span className={cn(entry.struck && 'line-through decoration-1')}>{entry.label}</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      {/* Two rows with two jobs, each named, because they look alike and do
+          not behave alike. The first filters the grid: every event type is
+          a switch, as in the charts' legends. The second is only a key to
+          the cell colours and does nothing when pressed — so it is plain
+          text, and it goes (with nothing else) when the month has none of
+          its marks. */}
+      <div className="mt-4 space-y-2 border-t border-hairline pt-3.5">
+        <div
+          role="group"
+          aria-label="Event types"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1"
+        >
+          <span className="w-24 shrink-0 text-xs text-text-3">Event types</span>
+          <ChartLegend items={KIND_LEGEND} isHidden={kinds.isHidden} onToggle={kinds.toggle} />
+          {kinds.hidden.size > 0 ? (
+            <button
+              type="button"
+              onClick={kinds.showAll}
+              className="cursor-pointer rounded-sm px-1 py-0.5 text-xs text-accent hover:underline hover:decoration-1 hover:underline-offset-2"
+            >
+              Show all
+            </button>
+          ) : null}
+        </div>
+
+        {markKey.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="w-24 shrink-0 text-xs text-text-3">Date colours</span>
+            <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1">
+              {markKey.map((entry) => (
+                <li key={entry.key} className="flex items-center gap-1.5 text-xs text-text-2">
+                  <span
+                    aria-hidden
+                    className={cn('size-2.5 shrink-0 rounded-[2px] border', entry.swatch)}
+                  />
+                  <span className={cn(entry.struck && 'line-through decoration-1')}>
+                    {entry.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
     </Panel>
   )
 }

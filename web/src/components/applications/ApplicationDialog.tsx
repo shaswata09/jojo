@@ -34,6 +34,9 @@ import { displayName } from '@/data/seed'
 import type { RoleTag } from '@/data/seed'
 import { duplicateMessage, findDuplicate } from '@jojo/service/core/duplicates'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { encodeFormat } from '@jojo/service/core/note-format'
+import type { NodeId } from '@jojo/service/core/model'
+import { useGraph } from '@jojo/service/react/kg-context'
 import { useDialogs } from '@/lib/dialogs-context'
 import { appPath, hrefOutsideRouter } from '@/lib/links'
 import { useLabels } from '@/lib/labels-context'
@@ -57,7 +60,7 @@ export function ApplicationDialog({
   open,
   onOpenChange,
   mode,
-  initial,
+  initial: given,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -68,6 +71,24 @@ export function ApplicationDialog({
   const { labelIdsOf } = useLabels()
   const { toast } = useToast()
   const { open: openDialog } = useDialogs()
+
+  /*
+   * What the dialog opened with, plus the note's stored formatting (Q268). A
+   * record is opened from its projection, which carries no spans, so they are
+   * read off the node here — once, like the form below — and from then on
+   * `initial` is what the form, `hasUnsaved` and the writes all measure
+   * against. A draft handed back by Undo already carries its own.
+   */
+  const graph = useGraph()
+  const [initial] = useState<ApplicationInitial | undefined>(() =>
+    given?.id !== undefined && given.noteFormat === undefined
+      ? {
+          ...given,
+          noteFormat:
+            encodeFormat(graph.node(given.id as NodeId, 'application')?.props.noteFormat) ?? '',
+        }
+      : given,
+  )
 
   const [form, setForm] = useState<FormState>(() => formFrom(initial))
   const [keywords, setKeywords] = useState<string[]>(() => keywordsOf(initial, labelIdsOf))
@@ -165,6 +186,7 @@ export function ApplicationDialog({
     location: form.location,
     comp: form.comp,
     note: form.note,
+    noteFormat: form.noteFormat,
     deadline: form.deadline,
     keywords,
     // So the form it reopens counts as unsaved — see `hasUnsaved`.
@@ -412,6 +434,8 @@ export function ApplicationDialog({
             roleTagRef={roleTagRef}
             deadlineRef={deadlineRef}
             urlRef={urlRef}
+            noteFormat={form.noteFormat}
+            onNoteFormatChange={(format) => set('noteFormat', format)}
           />
 
           <DialogFooter className="mt-4">

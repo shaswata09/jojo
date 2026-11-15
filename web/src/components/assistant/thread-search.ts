@@ -92,7 +92,8 @@ export function findMatches(text: string, query: string): Match[] {
     if (start === undefined || lastOriginal === undefined) break
     // Step past the whole original character, not one unit — the last folded
     // character may have come from a surrogate pair.
-    const end = lastOriginal + [...text.slice(lastOriginal)][0]!.length
+    // Array.from splits a string by code point, so [0] is the whole character.
+    const end = lastOriginal + Array.from(text.slice(lastOriginal))[0]!.length
     out.push({ start, end })
     from = at + needle.length
   }

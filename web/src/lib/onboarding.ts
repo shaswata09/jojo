@@ -88,6 +88,36 @@ export function markOffered(stage: OnboardingStage): void {
   writeStored(KEYS[stage], new Date().toISOString())
 }
 
+/** What `nextSetupStage` decides from. */
+export type SetupGate = {
+  /** The data-set fork was answered in this session. */
+  fresh: boolean
+  /** The profile has nothing in it yet. */
+  isBlank: boolean
+  /** A model is configured, which is what makes the document reader worth asking about. */
+  modelConfigured: boolean
+  /** Which stages have already been offered, from `wasOffered`. */
+  offered: Readonly<Record<OnboardingStage, boolean>>
+}
+
+/**
+ * The next first-run step to show, or null when there is nothing left to ask.
+ *
+ * The order `Onboarding` walks, as a plain function: details, then a model,
+ * then the extension, then the document reader (only with a model configured),
+ * then crash reporting, then the tour. `Onboarding.tsx` argues each position.
+ */
+export function nextSetupStage(gate: SetupGate): OnboardingStage | null {
+  const { offered } = gate
+  if (!offered.details && (gate.fresh || gate.isBlank)) return 'details'
+  if (!offered.model) return 'model'
+  if (!offered.extension) return 'extension'
+  if (!offered.reader && gate.modelConfigured) return 'reader'
+  if (!offered.crash) return 'crash'
+  if (!offered.tour) return 'tour'
+  return null
+}
+
 /* --- the dashboard's checklist ---------------------------------------------- */
 
 /**

@@ -172,6 +172,10 @@ export const personProps = s.object({
   email: s.optional(s.string({ label: 'Email' })),
   phone: s.optional(s.string({ label: 'Phone' })),
   note: s.optional(s.string({ label: 'Note', multiline: true })),
+  // Formatting over `note`, as on an application. Optional, salvageable.
+  noteFormat: s.optional(
+    s.array(noteSpanShape, { max: MAX_NOTE_SPANS, label: 'Note formatting' }),
+  ),
   /*
    * What the person is asked to highlight for each application. See
    * `RefereeBrief`. Declared rather than passed through, with the bounds

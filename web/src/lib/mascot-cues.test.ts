@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ADVANCE_GESTURES, advanceGesture, isAdvance } from './mascot-cues'
 import { POSE_MS } from './mascot-context'
+import rowActions from '@/components/applications/use-row-actions.tsx?raw'
 
 describe('what counts as moving forward', () => {
   it('is a later column, one step or several', () => {
@@ -78,5 +79,22 @@ describe('the gesture an advance draws', () => {
         expect(advanceGesture(roll, previous)).not.toBe(previous)
       }
     }
+  })
+})
+
+/**
+ * Q259 — the rules above only matter if a stage move reaches them.
+ *
+ * `useRowActions().onMoveStage` is the one path the board's drag, its stage
+ * pill and the table's stage menu all go through. Read as source (D20); comments
+ * stripped so the paragraph explaining the wiring cannot stand in for it.
+ */
+describe('a stage move on the board', () => {
+  const code = rowActions.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
+
+  it('plays a random advance gesture on the mascot when the card moves forward', () => {
+    expect(code).toMatch(
+      /if \(isAdvance\(from, stage\)\) \{\s*const gesture = advanceGesture\(Math\.random\(\), lastGesture\.current\)\s*lastGesture\.current = gesture\s*play\(gesture\)/,
+    )
   })
 })

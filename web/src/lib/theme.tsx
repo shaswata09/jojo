@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { readStored, writeStored } from '@/lib/storage'
-import { THEME_STORAGE_KEY, ThemeContext, type Theme, type ThemePref } from '@/lib/theme-context'
+import {
+  THEME_STORAGE_KEY,
+  ThemeContext,
+  themePrefOf,
+  type Theme,
+  type ThemePref,
+} from '@/lib/theme-context'
 
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 
@@ -23,9 +29,7 @@ const DARK_QUERY = '(prefers-color-scheme: dark)'
  * and come back Dark on the next load, with nothing on screen to explain it.
  */
 function readPref(): ThemePref {
-  const stored = readStored(THEME_STORAGE_KEY)
-  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
-  return 'dark'
+  return themePrefOf(readStored(THEME_STORAGE_KEY))
 }
 
 function systemTheme(): Theme {

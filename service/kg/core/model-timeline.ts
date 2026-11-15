@@ -3,6 +3,7 @@
  * them and as they are stored. Re-exported by `core/model.ts`.
  */
 
+import type { NoteSpan } from './model-format'
 import type { ISODate } from './model-graph'
 
 export const URGENCY_VALUES = ['red', 'amber', 'gray'] as const
@@ -74,6 +75,17 @@ export type TimelineItemProps = {
   title: string
   detail?: string
   note?: string
+  /**
+   * The formatting over `note`. See `ApplicationProps.noteFormat`, whose rules
+   * this shares exactly: absent when the note is plain, offsets into the stored
+   * text, and moved by `retextFormat` inside the tools whenever something that
+   * only knows the text — the phone, the assistant — rewrites it.
+   *
+   * Optional, so every item stored before it existed reads exactly as before.
+   * The calendar, the reminders list, the ICS export and the search box all
+   * read `note`, and none of them changed.
+   */
+  noteFormat?: NoteSpan[]
   date: ISODate
   /** Absent means all-day. `allDay` was the same fact stored twice. */
   startMins?: number

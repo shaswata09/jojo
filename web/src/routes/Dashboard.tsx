@@ -1,4 +1,6 @@
+import { AddByUrl } from '@/components/applications/AddByUrl'
 import { PageHeader } from '@/components/common/PageHeader'
+import { Panel } from '@/components/common/Panel'
 import { GlancePanel } from '@/components/dashboard/GlancePanel'
 import { OwedThisWeek } from '@/components/dashboard/OwedThisWeek'
 import { StatsCard } from '@/components/dashboard/StatsCard'
@@ -59,6 +61,17 @@ export function Dashboard() {
   return (
     <>
       <PageHeader title="Today" subtitle={subtitle} />
+
+      {/* The quick start the owner asked for: paste a posting's link and start
+          an application from it, above the deck. It is the same AddByUrl as on
+          /applications, so the button opens the same flow there and here — the
+          From link reader with a model connected, the form without one — and
+          the duplicate check at Save comes with it. One row on its own slim
+          surface: the field takes the width and the button sits on its right,
+          which still fits a 400px phone. */}
+      <Panel aria-label="Start from a link" className="py-2.5 sm:py-3">
+        <AddByUrl />
+      </Panel>
 
       <div className="grid grid-cols-1 items-stretch gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
         <PriorityActions />

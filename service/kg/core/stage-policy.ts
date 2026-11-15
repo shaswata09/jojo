@@ -59,6 +59,11 @@ export type StageTransitionDraft = {
   respondBy: string
   offerComp: string
   offerNote: string
+  /**
+   * The offer note's formatting, ENCODED. Optional: the phone's sheet has a
+   * plain box and leaves it out, and the tool then moves what was there.
+   */
+  offerNoteFormat?: string
   mintRespondBy: boolean
   outcome: Outcome
   /** Only consulted when `leavingOffer` is true. */
@@ -154,6 +159,7 @@ export function buildStagePatch(
         ...(draft.offerComp.trim() ? { comp: draft.offerComp.trim() } : {}),
         note: draft.offerNote.trim(),
       }
+      if (draft.offerNoteFormat !== undefined) patch.offerNoteFormat = draft.offerNoteFormat
       patch.lastAction = 'Offer received'
       break
 

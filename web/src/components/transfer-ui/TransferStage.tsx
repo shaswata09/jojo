@@ -2,65 +2,11 @@ import { Smartphone } from 'lucide-react'
 import { SceneBackdrop } from '@/components/transfer-ui/SceneBackdrop'
 import type { PulseFrame } from '@jojo/service/core/pulse'
 import { summarise, type TransferGroup } from '@/components/transfer-ui/groups'
-import { showsOffer } from '@/components/transfer-ui/send-cycle'
-import type { SendStage } from '@/lib/handoff-send'
+import { showsOffer, type RunStage } from '@/components/transfer-ui/send-cycle'
+import { stageCopy, type TransferRole } from '@/components/transfer-ui/stage-copy'
 import { cn } from '@/lib/utils'
 
-export type TransferRole = 'send' | 'receive'
-
-type Copy = { title: string; body: string }
-
-/**
- * The one true thing about receiving in a browser.
- *
- * A web page cannot accept an inbound connection — `TCPServerSocket` exists
- * only for Isolated Web Apps — so this computer can never be the receiving end
- * of a live transfer, however both devices are connected. That is a platform
- * fact rather than a missing feature, which is why it is one sentence repeated
- * across every stage below instead of a sequence of states to walk through.
- * `ReceivePanel` carries what to do instead.
- */
-const RECEIVE: Copy = {
-  title: 'This computer cannot receive',
-  body: 'A web page is not allowed to accept a connection, so a phone cannot reach this browser however both devices are connected. Send from the phone with a backup file instead, and open it under Settings.',
-}
-
-const COPY: Record<TransferRole, Record<SendStage, Copy>> = {
-  send: {
-    idle: {
-      title: 'Waiting for the other device',
-      body: 'Open jojo on your phone, choose Receive, and point its camera at this animation. The key is carried by the dots themselves — reading it agrees an encryption key between the two devices, and nothing is broadcast to do it.',
-    },
-    connecting: {
-      title: 'Reaching your phone',
-      body: 'Asking the address you typed for its half of the handshake. Nothing has been sent yet.',
-    },
-    packing: {
-      title: 'Gathering your records',
-      body: 'Reading everything in the list below out of this device. Still nothing on the network.',
-    },
-    sending: {
-      title: 'Moving your records',
-      body: 'Sealed chunks, straight to your phone over the local network. Progress is beside the code you typed.',
-    },
-    done: {
-      title: 'Everything moved',
-      body: 'Your phone now holds the records below. Nothing was removed from this device — a transfer is a copy.',
-    },
-    failed: {
-      title: 'The transfer stopped',
-      body: 'Nothing on this device has changed. What went wrong is written beside the code you typed.',
-    },
-  },
-  receive: {
-    idle: RECEIVE,
-    connecting: RECEIVE,
-    packing: RECEIVE,
-    sending: RECEIVE,
-    done: RECEIVE,
-    failed: RECEIVE,
-  },
-}
+export type { TransferRole }
 
 /**
  * The stage card: the animation, what is about to move, and where the run is.
@@ -104,8 +50,11 @@ export function TransferStage({
   frames = null,
 }: {
   role: TransferRole
-  /** The real send state, straight from `useHandoffSend`. */
-  stage: SendStage
+  /**
+   * The real run's state for the role on screen — `useHandoffSend` when this
+   * device sends, `useHandoffPull` when it receives from the phone.
+   */
+  stage: RunStage
   groups: readonly TransferGroup[]
   /** False when nothing is selected, which is the only reason to hold back. */
   canStart: boolean
@@ -122,12 +71,13 @@ export function TransferStage({
    */
   frames?: readonly PulseFrame[] | null
 }) {
-  const copy = COPY[role][stage]
+  const copy = stageCopy(role, stage)
   // Only while the key is the thing on screen to look at: never mid-run, when
   // the offer is in use. After a run that stopped it is shown again, because
   // that offer is either still the live one or the new code the panel tells
-  // the person to scan — hiding it there left nothing to scan.
-  const showing = role === 'send' && showsOffer(stage) ? frames : null
+  // the person to scan — hiding it there left nothing to scan. Both roles:
+  // receiving pairs exactly as sending does, by the phone reading this screen.
+  const showing = showsOffer(stage) ? frames : null
 
   return (
     <section className="surface relative flex min-h-[24rem] flex-col overflow-hidden rounded-lg px-4 py-4 sm:px-5 sm:py-5">
@@ -138,7 +88,7 @@ export function TransferStage({
         <h2 className="text-lg font-medium">{copy.title}</h2>
         <p className="mt-1 max-w-md text-sm text-text-2">{copy.body}</p>
 
-        {role === 'send' && groups.length > 0 ? (
+        {groups.length > 0 ? (
           <>
             <ul className="mt-4 max-w-xs space-y-1.5">
               {groups.map((group) => (
@@ -156,18 +106,20 @@ export function TransferStage({
               ))}
             </ul>
             <p className="mt-3 max-w-md text-sm text-text-2">
-              {stage === 'done'
-                ? `${summarise(groups)} — that is what is now on the other device.`
-                : `${summarise(groups)} — that is what will move.`}
+              {role === 'receive'
+                ? `${summarise(groups)} — that is what is on this computer now, and what your phone's records replace.`
+                : stage === 'done'
+                  ? `${summarise(groups)} — that is what is now on the other device.`
+                  : `${summarise(groups)} — that is what will move.`}
             </p>
           </>
         ) : null}
 
-        {role === 'send' && stage === 'idle' ? (
+        {stage === 'idle' ? (
           <div className="mt-auto pt-5">
             <p className="flex items-center gap-2 text-xs text-text-3">
               <Smartphone className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
-              {canStart
+              {role === 'receive' || canStart
                 ? 'Your phone reads the key from this animation, then shows you a short code to type on the right.'
                 : 'Choose at least one group to send.'}
             </p>

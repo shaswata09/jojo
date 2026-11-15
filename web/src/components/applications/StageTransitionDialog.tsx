@@ -17,6 +17,9 @@ import {
   stageNeedsDetails,
 } from '@jojo/service/core/stage-policy'
 import type { StageTransitionDraft } from '@jojo/service/core/stage-policy'
+import { encodeFormat } from '@jojo/service/core/note-format'
+import type { NodeId } from '@jojo/service/core/model'
+import { useGraph } from '@jojo/service/react/kg-context'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -142,9 +145,14 @@ function TransitionForm({
   // rules that read them lived in this file; now that they are a value handed
   // to `dialog/stage-policy.ts`, keeping them apart meant assembling the bag by
   // hand at three call sites and forgetting a field at one of them.
-  const [draft, setDraft] = useState<StageTransitionDraft>(() =>
-    initialStageDraft(application, TODAY),
-  )
+  const graph = useGraph()
+  const [draft, setDraft] = useState<StageTransitionDraft>(() => ({
+    ...initialStageDraft(application, TODAY),
+    // The offer note's stored formatting, read off the node (the projection
+    // carries no spans), so the editor opens on it and a save keeps it (Q268).
+    offerNoteFormat:
+      encodeFormat(graph.node(application.id as NodeId, 'application')?.props.offerNoteFormat) ?? '',
+  }))
   const set = <K extends keyof StageTransitionDraft>(key: K, value: StageTransitionDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }))
 
@@ -213,7 +221,10 @@ function TransitionForm({
             offerComp={draft.offerComp}
             onOfferCompChange={(v) => set('offerComp', v)}
             offerNote={draft.offerNote}
-            onOfferNoteChange={(v) => set('offerNote', v)}
+            offerNoteFormat={draft.offerNoteFormat}
+            onOfferNoteChange={(text, format) =>
+              setDraft((d) => ({ ...d, offerNote: text, offerNoteFormat: format }))
+            }
             mintRespondBy={draft.mintRespondBy}
             onMintRespondByChange={(v) => set('mintRespondBy', v)}
           />

@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { Link as LinkIcon, Plus } from 'lucide-react'
-import { draftFromUrl } from '@/components/applications/draft-from'
+import { addByUrlDialog } from '@/components/applications/add-by-url'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDialogs } from '@/lib/dialogs-context'
@@ -54,10 +54,9 @@ export function AddByUrl({
   const [url, setUrl] = useState('')
 
   const submit = () => {
-    const text = url.trim()
-    if (!text) return
-    if (connected) open('applicationFromLink', { url: text, start: true })
-    else open('application', { mode: 'create', initial: draftFromUrl(text) })
+    const next = addByUrlDialog(url, connected)
+    if (!next) return
+    open(next.name, next.props)
     // Cleared, because the URL now lives in the form. Left behind, a second
     // Enter would start a duplicate record from a field that looks like it has
     // already been dealt with.

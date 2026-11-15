@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -12,6 +12,7 @@ import { CalendarArrowDown, Plus } from 'lucide-react'
 import { DayRail } from '@/components/calendar/DayRail'
 import { EventChip } from '@/components/calendar/EventChip'
 import { MonthGrid } from '@/components/calendar/MonthGrid'
+import { kindToReveal, shownKinds } from '@/components/calendar/kind-filter'
 import { DAY_DROP_PREFIX, dayDropLabel, dropTarget } from '@/components/calendar/drop-target'
 import { dragAnnouncements } from '@/components/common/drag-announcements'
 import { PageHeader, PageOption } from '@/components/common/PageHeader'
@@ -30,6 +31,8 @@ import { useToast } from '@/lib/toast-context'
 import { TODAY_PARTS } from '@/lib/today'
 import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
 import { useReducedMotion } from '@/lib/use-media-query'
+import { useSeriesToggle } from '@/lib/use-series-toggle'
+import { TIMELINE_KINDS } from '@/lib/timeline-visuals'
 import { announceRefusal } from '@/components/common/write-result'
 
 export function Calendar() {
@@ -53,6 +56,10 @@ export function Calendar() {
   const [dotsOnly, setDotsOnly] = useState(false)
   const [tallCells, setTallCells] = useState(true)
   const reducedMotion = useReducedMotion()
+  // Which event types the legend under the grid has switched off. The charts'
+  // hook, so it behaves as their legends do: for this visit only, nothing
+  // stored, and everything can be off at once.
+  const kinds = useSeriesToggle(TIMELINE_KINDS)
   const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
   const { forMonth, get, remove, reschedule } = useTimeline()
 
@@ -70,7 +77,23 @@ export function Calendar() {
 
   // `forMonth` matches the 'YYYY-MM' prefix, year included — checked, because a
   // month-only match would list next October's deadlines under this one.
-  const monthItems = useMemo(() => forMonth(view.year, view.month), [forMonth, view])
+  const allMonthItems = useMemo(() => forMonth(view.year, view.month), [forMonth, view])
+  // Everything below reads this one, so a hidden type leaves the grid, the
+  // day list and the rest-of-month list together — and the date key, which
+  // describes what the grid draws.
+  const monthItems = useMemo(
+    () => shownKinds(allMonthItems, kinds.hidden),
+    [allMonthItems, kinds.hidden],
+  )
+
+  // A link that names an item has to land on it, so its type comes back on if
+  // the legend had switched it off (`kindToReveal`).
+  const focusedKind = focus ? get(focus)?.kind : undefined
+  const reveal = kindToReveal(focusedKind, kinds.hidden)
+  const { toggle: toggleKind } = kinds
+  useEffect(() => {
+    if (reveal !== null) toggleKind(reveal)
+  }, [reveal, toggleKind])
 
   const eventsFor = useMemo(() => {
     const map = new Map<number, TimelineItem[]>()
@@ -96,6 +119,9 @@ export function Calendar() {
   const isCurrentMonth = view.year === TODAY_PARTS.year && view.month === TODAY_PARTS.month
 
   const selectedEvents = eventsFor.get(selected) ?? []
+  /** What the selected day holds that the legend is keeping off screen. */
+  const hiddenOnDay =
+    allMonthItems.filter((e) => partsOf(e.date).d === selected).length - selectedEvents.length
   const selectedISO = isoOf(view.year, view.month, selected)
 
   const restOfMonth = useMemo(
@@ -266,6 +292,7 @@ export function Calendar() {
             onSelectDay={(day) => set({ d: day, focus: undefined })}
             onAdd={addOn}
             onOpen={openItem}
+            kinds={kinds}
           />
 
           <DayRail
@@ -273,6 +300,8 @@ export function Calendar() {
             selected={selected}
             selectedISO={selectedISO}
             events={selectedEvents}
+            hiddenOnDay={hiddenOnDay}
+            onShowAllKinds={kinds.showAll}
             restOfMonth={restOfMonth}
             focus={focus}
             isCurrentMonth={isCurrentMonth}

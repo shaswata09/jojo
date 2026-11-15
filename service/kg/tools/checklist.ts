@@ -212,8 +212,11 @@ export const checklistItemRemove = defineTool({
     ctx.tx.patch<'application'>(input.id, { checklist: stored(next) })
   },
 
-  describe: (input, _output, m) => {
-    const application = m.node(input.id, 'application')
+  describe: (input, _output, m, before) => {
+    // From the store WITHOUT this write: `m` already has the step gone, so the
+    // lookup there always missed and every deletion was announced by the
+    // application's name instead of the step's.
+    const application = (before ?? m).node(input.id, 'application')
     const item = itemsOf(application?.props.checklist).find((i) => i.id === input.itemId)
     return {
       title: 'Step deleted',

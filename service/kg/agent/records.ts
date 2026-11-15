@@ -52,7 +52,9 @@ export type AgentRecord = { id: NodeId; type: NodeType; label: string } & Record
  * cannot see the formatting of. The note's TEXT is right there beside it.
  */
 const HIDDEN_PROPS: Partial<Record<NodeType, readonly string[]>> = {
-  application: ['noteFormat'],
+  application: ['noteFormat', 'offerNoteFormat'],
+  timelineItem: ['noteFormat'],
+  person: ['noteFormat'],
 }
 
 /**

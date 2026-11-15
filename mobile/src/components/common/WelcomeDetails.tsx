@@ -129,7 +129,7 @@ export function WelcomeDetails({ fresh, onDone }: { fresh: boolean; onDone: () =
           label="Full name"
           value={draft.fullName}
           autoComplete="name"
-          placeholder="e.g. Alex Rivera"
+          placeholder="e.g. Lonardo Jenson"
           onChangeText={set('fullName')}
         />
         <TextField

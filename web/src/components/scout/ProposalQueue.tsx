@@ -27,7 +27,7 @@ import {
 import type { ScoutReading } from '@jojo/service/core/proposal'
 import { shortDate } from '@jojo/service/core/dates'
 import { KeywordChips } from '@/components/common/LabelPicker'
-import { useReadingNow } from '@/lib/scout-reading'
+import { useReadingNow } from '@/lib/scout-reading-hooks'
 import type { ApprovedJob } from '@jojo/service/core/proposal'
 import type { Pipeline, Proposal } from '@jojo/service/core/model'
 

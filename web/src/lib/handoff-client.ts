@@ -27,7 +27,7 @@
  * a way around the first one.
  */
 
-import { chunkPath, pairPath } from '@jojo/service/core/handoff'
+import { MAX_BODY_BYTES, chunkPath, pairPath, pullPath } from '@jojo/service/core/handoff'
 import { formatAddress, isPrivateAddress, type DialAddress } from '@jojo/service/core/dial'
 
 export type HandoffFailure =
@@ -39,6 +39,8 @@ export type HandoffFailure =
   | 'handoff/unreachable'
   /** Reached, and it refused — usually a stale code, so the token is wrong. */
   | 'handoff/refused'
+  /** Answered with more than any real answer holds. Not read past the limit. */
+  | 'handoff/oversized'
 
 export type HandoffResult<T> = { ok: true; value: T } | { ok: false; error: HandoffFailure }
 
@@ -91,7 +93,7 @@ async function call(
 
   if (!response.ok) return { ok: false, error: 'handoff/refused' }
   try {
-    return { ok: true, value: new Uint8Array(await response.arrayBuffer()) }
+    return await readCapped(response, MAX_BODY_BYTES)
   } catch {
     /*
      * The body is a SECOND read off the network, after the headers have already
@@ -104,6 +106,55 @@ async function call(
      */
     return { ok: false, error: 'handoff/unreachable' }
   }
+}
+
+/**
+ * Reads a response body, and stops reading at `limit` bytes.
+ *
+ * Every answer the phone gives is small: a 67-byte pairing response, an empty
+ * acknowledgement, or one sealed chunk of at most 64 KiB and a tag. Now that
+ * the computer also READS the phone's backup, the far end of this socket
+ * decides how much arrives, and `arrayBuffer()` would buffer whatever it was
+ * sent before anything could look at it. So the body is read piece by piece
+ * and the read is abandoned the moment it passes the limit — the same limit
+ * the phone's own parser holds a request to (`MAX_BODY_BYTES`).
+ *
+ * Exported because D20 rules out mounting: this is a guard the tests can reach.
+ */
+export async function readCapped(
+  response: Response,
+  limit: number,
+): Promise<HandoffResult<Uint8Array>> {
+  const stream = response.body as ReadableStream<Uint8Array> | null | undefined
+  if (!stream) {
+    // No stream to read piecewise — an empty body, or an engine that offers
+    // only the whole buffer. Still held to the limit, after the fact.
+    const whole = new Uint8Array(await response.arrayBuffer())
+    return whole.byteLength > limit
+      ? { ok: false, error: 'handoff/oversized' }
+      : { ok: true, value: whole }
+  }
+  const reader = stream.getReader()
+  const parts: Uint8Array[] = []
+  let size = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    size += value.byteLength
+    if (size > limit) {
+      // Tell the socket to stop rather than draining it into nowhere.
+      void reader.cancel().catch(() => undefined)
+      return { ok: false, error: 'handoff/oversized' }
+    }
+    parts.push(value)
+  }
+  const out = new Uint8Array(size)
+  let at = 0
+  for (const part of parts) {
+    out.set(part, at)
+    at += part.byteLength
+  }
+  return { ok: true, value: out }
 }
 
 /** Asks the phone for its pairing response — step three of the handshake. */
@@ -128,6 +179,25 @@ export const sendChunk = (
     body: sealed as BodyInit,
   })
 
+/**
+ * Asks the phone for one sealed chunk of ITS backup — phone to computer.
+ *
+ * A POST, because the request carries a body: the chunk number and the proof
+ * that this computer holds the session's key (`core/handoff-pull.ts`). The
+ * same content type as `sendChunk`, for the same reason — the preflight is
+ * worth one round trip.
+ */
+export const pullChunk = (
+  address: DialAddress,
+  token: string,
+  request: Uint8Array,
+): Promise<HandoffResult<Uint8Array>> =>
+  call(address, pullPath(token), {
+    method: 'POST',
+    headers: { 'content-type': 'application/octet-stream' },
+    body: request as BodyInit,
+  })
+
 /** What to tell the person, per failure. */
 export const HANDOFF_ADVICE: Record<HandoffFailure, string> = {
   'handoff/unsupported':
@@ -135,7 +205,9 @@ export const HANDOFF_ADVICE: Record<HandoffFailure, string> = {
   'handoff/not-local':
     'That address is not on a local network. jojo only connects to a private address, so the transfer never crosses the internet.',
   'handoff/unreachable':
-    'No answer from that address. Check both devices are on the same wifi, and that your browser was allowed to find devices on the local network. Some guest networks block devices from seeing each other.',
+    'No answer from that address. Check both devices are on the same local network, and that your browser was allowed to find devices on the local network. Some guest networks block devices from seeing each other.',
   'handoff/refused':
     'That device refused the connection. The code may have expired — show a new one and scan it again.',
+  'handoff/oversized':
+    'That device answered with far more than jojo expects, so it stopped reading. Nothing on this computer has changed.',
 }

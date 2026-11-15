@@ -563,6 +563,12 @@ jobs:
             # Fail loudly on a mangled paste rather than shipping a
             # Firebase-less build that looks like a successful one.
             plutil -lint mobile/ios/jojo/GoogleService-Info.plist
+            # Analytics on, whatever the secret says. A plist downloaded from
+            # the console before analytics was enabled carries
+            # IS_ANALYTICS_ENABLED=false, and the owner wants usage reported
+            # (consent is still asked in the app). Set here so the build does
+            # not depend on which copy of the file the secret holds.
+            plutil -replace IS_ANALYTICS_ENABLED -bool YES mobile/ios/jojo/GoogleService-Info.plist
             echo "Firebase config in place — Crashlytics and Analytics are compiled in."
           else
             echo "No GOOGLE_SERVICE_INFO_PLIST secret — building without Firebase."

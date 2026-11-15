@@ -181,7 +181,22 @@ export type Application = {
  * Every `Partial<Application>` is assignable to this, so widening a parameter
  * to it costs no caller anything.
  */
-export type ApplicationPatch = { [K in keyof Application]?: Application[K] | undefined }
+export type ApplicationPatch = { [K in keyof Application]?: Application[K] | undefined } &
+  ApplicationFormatWrites
+
+/**
+ * The formatting a form may send with the text it belongs to, ENCODED —
+ * `encodeFormat`'s one-line string, the shape the tools take it in.
+ *
+ * Not on `Application`, because the projection does not carry spans (see
+ * `applicationFrom`), and a read type that cannot hold them is what stops a
+ * card from handing stale ones back. Absent means "keep the formatting there
+ * is, moved onto the new text"; `''` means "none".
+ */
+export type ApplicationFormatWrites = {
+  noteFormat?: string
+  offerNoteFormat?: string
+}
 
 /** An application known to carry offer details, so consumers need no `!`. */
 export type OfferApplication = Application & { offer: NonNullable<Application['offer']> }
@@ -262,6 +277,21 @@ export type ApplicationProps = {
   stageDates?: StageDates
   outcome?: Outcome
   offer?: Offer
+  /**
+   * Formatting over `offer.note`, by the rules `noteFormat` states below.
+   *
+   * Beside the offer rather than inside it, and the reason is the restore: a
+   * node that fails validation is dropped WHOLE, and only a top-level prop can
+   * be in `SALVAGEABLE_PROPS`. Nested, one malformed span in a hand-edited
+   * backup would cost the application, its stage, its dates and the offer
+   * itself; here it costs the bold.
+   *
+   * The price of living outside the offer is that the tools have to clear it
+   * with the offer, and they do — every write that drops or replaces `offer`
+   * moves or drops this in the same patch (`offerWrite` in
+   * `tools/application-fields.ts`).
+   */
+  offerNoteFormat?: NoteSpan[]
   /**
    * What is still to be done before this application is finished.
    *

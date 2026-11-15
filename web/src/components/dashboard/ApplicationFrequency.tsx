@@ -8,8 +8,9 @@ import { Segment } from '@/components/common/Segment'
 import { Button } from '@/components/ui/button'
 import { PERIODS, type Period, type RoleTag } from '@/data/seed'
 import { useRoleVocabulary } from '@jojo/service/react/use-roles'
-import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
+import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
+import { useScopedApplications } from '@/lib/roles-scope'
 import { TODAY } from '@/lib/today'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 
@@ -73,7 +74,9 @@ export function ApplicationFrequencyBody() {
   const [chart, setChart] = useState<ChartType>('bar')
   const [period, setPeriod] = useState<Period>('week')
 
-  const { all } = useApplications()
+  // Scoped to the roles picked in the top bar. The colours still come from the
+  // whole vocabulary below, so a role keeps its colour when others are hidden.
+  const { all, total } = useScopedApplications()
   const vocabulary = useRoleVocabulary()
   const { open } = useDialogs()
 
@@ -141,6 +144,7 @@ export function ApplicationFrequencyBody() {
   const labelEvery = Math.ceil(data.length / 7)
 
   const noRecords = all.length === 0
+  const filteredOut = noRecords && total > 0
   const noDates = !noRecords && series.length === 0
   const showChart = !noRecords && !noDates
 
@@ -191,7 +195,9 @@ export function ApplicationFrequencyBody() {
         />
       ) : null}
 
-      {noRecords ? (
+      {filteredOut ? (
+        <RoleScopeEmpty />
+      ) : noRecords ? (
         <EmptyState
           icon={ClipboardList}
           title="Nothing to chart yet"

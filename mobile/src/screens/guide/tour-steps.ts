@@ -106,7 +106,7 @@ export const TOUR_STEPS: TourStep[] = [
     body: [
       'Everything is stored on the device and survives closing the app. There is no sign-in, no sync and nothing uploaded — there is no server to upload to.',
       'What the app can reach is only what you point it at, and all of it is optional: a model server and a document reader at addresses you type into Settings, a job posting when you ask for one, and your other device over the local network during a Transfer.',
-      'Settings can clear everything, and Transfer is how records move to another device without going through anyone else.',
+      'Settings can clear everything, and Transfer is how records move between this phone and your computer without going through anyone else.',
     ],
   },
 ]

@@ -21,12 +21,25 @@
  * it would count an edit and its undo as two changes, and it would reset to zero
  * on reload, which is exactly when a person most needs to be told they have
  * unbacked-up work.
+ *
+ * ## Where it is said, and how it is put away
+ *
+ * `StorageBanner` reads `shouldNudge` and offers "Download a backup" (Q097).
+ * Before that, `changed` and `shouldNudge` were computed here and read by
+ * nothing, so the owner's request — prompt for a backup after a substantial
+ * change — was a number nobody was shown.
+ *
+ * "Not now" stamps an instant beside the last-backup one, in localStorage, and
+ * the prompt then counts from whichever is later. So it stays away until another
+ * `BACKUP_NUDGE_AT` records have changed since it was put away — not until the
+ * next load, which would be the nagging that teaches people to dismiss it unread.
+ * A backup moves the later instant forward too, which is what resets the count.
  */
 
 import { reportError } from '@/lib/report-error'
 import { revokeLater } from '@/lib/save-file'
-import { useCallback, useMemo } from 'react'
-import { useGraph } from '@jojo/service/react/kg-context'
+import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import {
   BACKUP_TAIL,
   DOCUMENT_CLOSE,
@@ -40,6 +53,7 @@ import { useVaultBlobs, type VaultBlobs } from '@/lib/vault-blobs'
 import { blobPath } from '@jojo/service/core/blob-path'
 import { report } from '@/lib/analytics'
 import { bucket } from '@jojo/service/core/analytics'
+import type { ToastOptions } from '@/lib/toast-context'
 
 /** Where the last backup's instant lives. Per origin, like everything else. */
 const LAST_BACKUP_KEY = 'jojo.lastBackupAt'
@@ -54,6 +68,15 @@ const LAST_BACKUP_KEY = 'jojo.lastBackupAt'
  */
 export const BACKUP_NUDGE_AT = 15
 
+/**
+ * When the person last said "Not now" to the backup prompt.
+ *
+ * Beside `LAST_BACKUP_KEY` rather than in IndexedDB: it is the same kind of fact
+ * about this browser — not a record, not part of a backup, and gone with the
+ * rest when someone clears the site.
+ */
+const NUDGE_DISMISSED_KEY = 'jojo.backupNudgeDismissedAt'
+
 function readLastBackup(): string | null {
   try {
     return localStorage.getItem(LAST_BACKUP_KEY)
@@ -64,6 +87,43 @@ function readLastBackup(): string | null {
   }
 }
 
+function readNudgeDismissed(): string | null {
+  try {
+    return localStorage.getItem(NUDGE_DISMISSED_KEY)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Who to tell when either instant moves.
+ *
+ * The banner and the Settings panel are separate components with separate
+ * `useBackup` calls, and localStorage fires no event in the tab that wrote it.
+ * Read during render with no subscription, a backup taken from Settings left the
+ * banner asking for one until some unrelated edit happened to re-render it.
+ */
+const markListeners = new Set<() => void>()
+
+function marksChanged(): void {
+  for (const listener of markListeners) listener()
+}
+
+function subscribeMarks(listener: () => void): () => void {
+  markListeners.add(listener)
+  // `storage` is the other tabs: a backup taken in one puts the prompt away in all.
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === null || event.key === LAST_BACKUP_KEY || event.key === NUDGE_DISMISSED_KEY) listener()
+  }
+  window.addEventListener('storage', onStorage)
+  return () => {
+    markListeners.delete(listener)
+    window.removeEventListener('storage', onStorage)
+  }
+}
+
+const noMark = (): string | null => null
+
 function writeLastBackup(at: string): void {
   try {
     localStorage.setItem(LAST_BACKUP_KEY, at)
@@ -71,6 +131,90 @@ function writeLastBackup(at: string): void {
     // The backup still downloaded. Failing to REMEMBER that must not report the
     // backup as failed — the file is on their disk either way.
   }
+  marksChanged()
+}
+
+/**
+ * A restore counts as a backup taken at that moment.
+ *
+ * Every record a restore writes came out of a backup file, so nothing on this
+ * device is unprotected yet — but the records keep their own `updatedAt`, and a
+ * store restored on a new device has no last-backup stamp, so the count read
+ * them all as unbacked and the prompt asked for a backup of the backup the
+ * moment the page came back. Called once the restore has succeeded.
+ */
+export function markRestoredFromBackup(at: string): void {
+  writeLastBackup(at)
+}
+
+/** "Not now": the prompt stays away until another `BACKUP_NUDGE_AT` changes. */
+export function dismissBackupNudge(at: string = new Date().toISOString()): void {
+  try {
+    localStorage.setItem(NUDGE_DISMISSED_KEY, at)
+  } catch {
+    // Not remembered, so it comes back on the next render that crosses the line.
+    // Asking again is the harmless direction to be wrong in.
+  }
+  marksChanged()
+}
+
+/** The later of two ISO instants, either of which may be missing. */
+const later = (a: string | null, b: string | null): string | null =>
+  a === null ? b : b === null ? a : a > b ? a : b
+
+export type BackupMarks = {
+  /** The last backup this browser took, or null. */
+  lastBackupAt: string | null
+  /** When the prompt was last put away, or null. */
+  dismissedAt: string | null
+  /**
+   * When the demo fixtures were written, or null. Every seeded node carries
+   * exactly this `updatedAt`, so counting strictly after it leaves out demo
+   * records nobody has touched — without it a first run, which has never backed
+   * up, would be asked to back up a hundred records it did not write.
+   */
+  seededAt: string | null
+}
+
+/**
+ * How many records have changed since the last backup, and whether to say so.
+ *
+ * Pure, for the tests (D20). `changed` is what the prompt reports: everything
+ * since the last backup, because that is what a lost browser would lose.
+ * `shouldNudge` counts only since the later of that and the last "Not now", so
+ * putting the prompt away holds until there is a substantial change MORE.
+ */
+export function backupNudge(
+  nodes: readonly { readonly updatedAt: string }[],
+  { lastBackupAt, dismissedAt, seededAt }: BackupMarks,
+): { changed: number; shouldNudge: boolean } {
+  // ISO-8601 sorts lexicographically, which is the whole reason this app
+  // stores instants as strings — no parsing, and no timezone to get wrong.
+  const since = (from: string | null) =>
+    from === null ? nodes.length : nodes.filter((n) => n.updatedAt > from).length
+  const unbacked = later(lastBackupAt, seededAt)
+  const changed = since(unbacked)
+  const quietSince = later(unbacked, dismissedAt)
+  const counted = quietSince === unbacked ? changed : since(quietSince)
+  return { changed, shouldNudge: counted >= BACKUP_NUDGE_AT }
+}
+
+/**
+ * The prompt's sentence: how much is unprotected, said in the person's terms.
+ *
+ * Pure so the counting and the never-backed-up branch are tested without a
+ * renderer (D20). The date is the person's own calendar day, the same rule the
+ * backup's filename follows.
+ */
+export function backupPromptText(changed: number, lastBackupAt: string | null): string {
+  const records = changed === 1 ? '1 record' : `${String(changed)} records`
+  const parsed = lastBackupAt === null ? Number.NaN : Date.parse(lastBackupAt)
+  const keep = 'download a copy and keep it somewhere else.'
+  if (Number.isNaN(parsed)) {
+    return `${records} in jojo ${changed === 1 ? 'is' : 'are'} not in any backup yet. Everything here lives only in this browser, so clearing it or losing this machine would lose ${changed === 1 ? 'it' : 'them'} — ${keep}`
+  }
+  const day = new Date(parsed).toLocaleDateString(undefined, { dateStyle: 'medium' })
+  return `${records} ${changed === 1 ? 'has' : 'have'} changed since your last backup on ${day}. ${changed === 1 ? 'It lives' : 'They live'} only in this browser until you ${keep}`
 }
 
 /**
@@ -272,6 +416,39 @@ async function storedBytes(): Promise<number> {
 /** How a download ended, because "cancelled" must not read as "failed". */
 export type DownloadOutcome = 'saved' | 'started' | 'cancelled' | 'failed'
 
+/**
+ * What to tell the person once a download has ended, or null to say nothing.
+ *
+ * Here rather than in the Settings panel because a backup can now be started
+ * from two places — that panel and the storage banner's prompt — and the
+ * careful wording below (asserted only where it is known, named rather than
+ * promised where it is not) must not exist in two spellings.
+ */
+export function backupToast(outcome: DownloadOutcome, name: string): ToastOptions | null {
+  if (outcome === 'cancelled') return null
+  if (outcome === 'failed') {
+    return {
+      title: 'The backup could not be written',
+      description:
+        'Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.',
+      tone: 'danger',
+    }
+  }
+  return outcome === 'saved'
+    ? {
+        // Asserted, because it is known: the file handle closed on disk.
+        title: 'Backup saved',
+        description: `${name} holds your records and every document you have attached.`,
+      }
+    : {
+        title: 'Backup started',
+        // Named, not asserted. The click is the last thing this page can
+        // observe — the browser's decision after it fires no event — so what is
+        // said is what to look for rather than that it arrived.
+        description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
+      }
+}
+
 export type BuildOptions = {
   /**
    * Whether document bytes go in. Default true.
@@ -291,8 +468,13 @@ export type BackupState = {
   changed: number
   /** ISO instant of the last backup, or null. */
   lastBackupAt: string | null
-  /** Whether `changed` has crossed the threshold worth mentioning. */
+  /**
+   * Whether to ask for a backup: `BACKUP_NUDGE_AT` changes since the later of
+   * the last backup and the last "Not now".
+   */
   shouldNudge: boolean
+  /** Puts the prompt away until the next substantial change. */
+  dismiss: () => void
   /**
    * The backup as bytes, without saving anything.
    *
@@ -340,15 +522,18 @@ export function useBackup(readable?: () => unknown): BackupState {
   const graph = useGraph()
   const blobs = useVaultBlobs()
 
-  const lastBackupAt = readLastBackup()
+  const { repo } = useKg()
 
-  const changed = useMemo(() => {
-    const nodes = graph.nodes()
-    if (lastBackupAt === null) return nodes.length
-    // ISO-8601 sorts lexicographically, which is the whole reason this app
-    // stores instants as strings — no parsing, and no timezone to get wrong.
-    return nodes.filter((n) => n.updatedAt > lastBackupAt).length
-  }, [graph, lastBackupAt])
+  const lastBackupAt = useSyncExternalStore(subscribeMarks, readLastBackup, noMark)
+  const dismissedAt = useSyncExternalStore(subscribeMarks, readNudgeDismissed, noMark)
+  // Off the repository's meta during render. `useGraph()` above is the
+  // subscription, and `seededAt` only moves on a reseed, which commits.
+  const seededAt = repo.meta.seededAt
+
+  const { changed, shouldNudge } = useMemo(
+    () => backupNudge(graph.nodes(), { lastBackupAt, dismissedAt, seededAt }),
+    [graph, lastBackupAt, dismissedAt, seededAt],
+  )
 
   /** Everything in front of the documents, as the head of the file. */
   const head = useCallback(
@@ -492,7 +677,11 @@ export function useBackup(readable?: () => unknown): BackupState {
   return {
     changed,
     lastBackupAt,
-    shouldNudge: changed >= BACKUP_NUDGE_AT,
+    shouldNudge,
+    // A closure, not `dismissBackupNudge` itself: handed straight to `onClick`,
+    // the click event arrived as `at` and was stored as "[object Object]" —
+    // which sorts after every ISO instant, so the prompt never came back.
+    dismiss: () => dismissBackupNudge(),
     build,
     blob,
     download,

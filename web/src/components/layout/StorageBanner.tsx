@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { RefreshCw, TriangleAlert } from 'lucide-react'
+import { Download, RefreshCw, TriangleAlert } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { useStoreStatus } from '@jojo/service/react/status-context'
@@ -8,6 +9,11 @@ import { estimateStorage } from '@/kg/storage/probe'
 import { sessionOf, useBoot } from '@/lib/boot-context'
 import { settingsPath } from '@/lib/links'
 import { useVaultBlobs } from '@/lib/vault-blobs'
+import { reportError } from '@/lib/report-error'
+import { backupPromptText, backupToast, useBackup, type DownloadOutcome } from '@/lib/backup'
+import { exportFilename } from '@/components/settings/export-name'
+import { useStoreAdmin } from '@jojo/service/react/use-admin'
+import { useToast } from '@/lib/toast-context'
 
 /**
  * The three ways a session that booted can stop being able to save, said out
@@ -47,10 +53,12 @@ function Banner({
   tone,
   children,
   action,
+  icon: Icon = TriangleAlert,
 }: {
   tone: 'danger' | 'warning'
   children: ReactNode
   action?: ReactNode
+  icon?: LucideIcon
 }) {
   return (
     <div
@@ -61,7 +69,7 @@ function Banner({
           : 'flex flex-wrap items-start gap-2.5 rounded-lg border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning'
       }
     >
-      <TriangleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
+      <Icon className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} aria-hidden />
       <p className="min-w-0 flex-1">{children}</p>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -313,5 +321,67 @@ export function StorageBanner() {
     )
   }
 
-  return null
+  return <BackupPrompt />
+}
+
+/**
+ * Q097: after a substantial change, ask for a backup — and run it from here.
+ *
+ * Last, below every arm above, because each of those is something already going
+ * wrong and already says to export; this one is the ordinary case of a person
+ * with a lot of work in one browser and no copy of it anywhere else.
+ *
+ * Its own component so its hooks run only when no failure arm has returned —
+ * none of them needs a backup's machinery. `shouldNudge` holds the counting and
+ * the "Not now" rule (`backupNudge` in `lib/backup.ts`); this only says it.
+ *
+ * The download is the one Settings runs — same hook, same `readable` half, same
+ * filename and the same toast — so a backup taken from the prompt is not a
+ * second kind of file. It resets the count by stamping the last-backup instant,
+ * which every `useBackup` is subscribed to, so the prompt goes away on its own.
+ */
+function BackupPrompt() {
+  const { exportJSON } = useStoreAdmin()
+  const backup = useBackup(exportJSON)
+  const { toast } = useToast()
+  const [busy, setBusy] = useState(false)
+
+  if (!backup.shouldNudge) return null
+
+  const onDownload = () => {
+    if (busy) return
+    const name = exportFilename(new Date())
+    setBusy(true)
+    void backup
+      .download(name)
+      .catch((error: unknown): DownloadOutcome => {
+        reportError('backup', error)
+        return 'failed'
+      })
+      .then((outcome) => {
+        setBusy(false)
+        const said = backupToast(outcome, name)
+        if (said !== null) toast(said)
+      })
+  }
+
+  return (
+    <Banner
+      tone="warning"
+      icon={Download}
+      action={
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" disabled={busy} onClick={onDownload}>
+            <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
+            {busy ? 'Backing up…' : 'Download a backup'}
+          </Button>
+          <Button variant="ghost" size="sm" disabled={busy} onClick={backup.dismiss}>
+            Not now
+          </Button>
+        </div>
+      }
+    >
+      {backupPromptText(backup.changed, backup.lastBackupAt)}
+    </Banner>
+  )
 }

@@ -9,11 +9,10 @@ import { radius, space } from '@/theme/tokens'
 /**
  * How old the copy on this phone is.
  *
- * The web component carries the argument. On a phone it reads the other way
- * round and matters more: this device only ever RECEIVES, so its records are as
- * old as the last handover and everything added on the computer since is
- * missing — which is exactly the fact a one-directional transfer never told
- * anybody, on the device most likely to be behind.
+ * The web component carries the argument. On a phone it matters more: a phone
+ * is where records get added on the move, and whichever way the last transfer
+ * went, everything added on either device since is missing from the other —
+ * the fact a replace-not-merge transfer never told anybody.
  */
 export function HandoverStatus() {
   const { repo } = useKg()

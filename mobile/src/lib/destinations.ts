@@ -153,7 +153,7 @@ export const DESTINATIONS: Destination[] = [
   {
     id: 'd-transfer',
     label: 'Transfer',
-    hint: 'Move everything to another device',
+    hint: 'Move everything to or from your computer',
     icon: 'smartphone',
     go: push('Transfer'),
   },

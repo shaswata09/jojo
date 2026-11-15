@@ -8,11 +8,11 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { searchHealthFor } from '@/data/statistics'
-import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { applicationsPath } from '@/lib/links'
 import { TODAY } from '@/lib/today'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
+import { useScopedApplications } from '@/lib/roles-scope'
 
 /**
  * A radar of this search against a typical one, plus the suggestions that fall
@@ -41,7 +41,7 @@ const MIN_AXES = 3
 
 export function SearchHealthBody() {
   const { toggle, showAll, isHidden, allHidden } = useSeriesToggle(RADAR_SERIES.map((s) => s.key))
-  const { all } = useApplications()
+  const { all } = useScopedApplications()
   const { all: timeline } = useTimeline()
 
   // An axis with no denominator has no score — no applications sent means no

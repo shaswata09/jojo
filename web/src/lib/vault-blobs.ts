@@ -266,7 +266,9 @@ function setIndex(
 ): void {
   changes += 1
   current = { index: next, ready, revision: current.revision + 1, blocked }
-  for (const notify of [...subscribers]) notify()
+  // A snapshot, so a listener that subscribes or unsubscribes while being called
+  // does not change who this round reaches.
+  for (const notify of Array.from(subscribers)) notify()
 }
 
 function edit(change: (index: Map<string, string>) => void): void {

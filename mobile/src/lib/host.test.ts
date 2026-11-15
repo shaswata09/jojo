@@ -25,7 +25,9 @@ const listeners = new Set<Listener>()
 
 /** Every registered listener, in registration order. Drives the cases below. */
 const emit = (state: string) => {
-  for (const fn of [...listeners]) fn(state)
+  // A snapshot, so a listener that subscribes or unsubscribes while being called
+  // does not change who this round reaches.
+  for (const fn of Array.from(listeners)) fn(state)
 }
 
 vi.mock('react-native', () => ({

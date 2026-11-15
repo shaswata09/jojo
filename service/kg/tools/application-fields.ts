@@ -15,7 +15,8 @@
  */
 
 import { SOURCES, STAGE_VALUES } from '../core/model'
-import type { ISODate, NodeId } from '../core/model'
+import type { ApplicationProps, ISODate, NodeId, Offer } from '../core/model'
+import { formatWire, formatWrite } from '../core/note-format'
 import { s } from '../core/schema'
 import {
   DEADLINE_DETAIL,
@@ -37,6 +38,12 @@ export const fields = {
   note: s.optional(
     s.string({ label: 'Note', multiline: true, description: 'The whole note. An empty string deletes it.' }),
   ),
+  /*
+   * The note editor's formatting, sent with the text it belongs to — so the
+   * edit dialog can save a bold word in the same call, and the same Undo, as
+   * the rest of the form. Absent keeps what is there, moved onto the new text.
+   */
+  noteFormat: formatWire('Note formatting'),
   source: s.optional(s.enum(SOURCES, { label: 'Where it came from' })),
   location: s.optional(s.string({ label: 'Location' })),
   comp: s.optional(s.string({ label: 'Compensation' })),
@@ -56,6 +63,36 @@ export const offerShape = s.object({
   comp: s.optional(s.string({ label: 'Package' })),
   note: s.string({ label: 'Note', multiline: true }),
 })
+
+/** The formatting over the offer's note, beside `offer` in every tool that takes one. */
+export const offerNoteFormat = formatWire('Offer note formatting')
+
+/**
+ * The offer and its note's formatting, written together.
+ *
+ * The formatting lives beside the offer (`ApplicationProps.offerNoteFormat`
+ * says why), so every write that replaces or drops the offer has to say what
+ * happens to it — and does it here, once, rather than in each of the three
+ * tools that can. Dropping the offer drops it; replacing the offer moves it
+ * onto the new note unless the editor sent its own; leaving the offer alone
+ * leaves it alone, unless only the formatting was sent.
+ *
+ * `offer: undefined` is "not mentioned", `null` is "clear it".
+ */
+export function offerWrite(
+  current: ApplicationProps,
+  offer: Offer | null | undefined,
+  wire: string | undefined,
+): { offer?: Offer | undefined; offerNoteFormat?: ApplicationProps['offerNoteFormat'] | undefined } {
+  if (offer === null) return { offer: undefined, offerNoteFormat: undefined }
+  if (offer === undefined) {
+    if (wire === undefined || current.offer === undefined) return {}
+    const only = formatWrite(current.offer.note, undefined, current.offerNoteFormat, wire)
+    return only === undefined ? {} : { offerNoteFormat: only.value }
+  }
+  const moved = formatWrite(current.offer?.note ?? '', offer.note, current.offerNoteFormat, wire)
+  return { offer, offerNoteFormat: moved?.value }
+}
 
 /**
  * A blank string clears the field rather than storing one.

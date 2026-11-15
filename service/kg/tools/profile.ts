@@ -21,7 +21,7 @@ import { foldName } from '../core/ref'
 import type { GraphSnapshot } from '../core/snapshot'
 import { s } from '../core/schema'
 import { cleared } from './application-fields'
-import { opt } from './support'
+import { namesOf, opt } from './support'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
 
@@ -284,9 +284,9 @@ export const profileDocumentAdd = defineTool({
     })
   },
 
-  describe: (_input, ids) => ({
+  describe: (input, ids) => ({
     title: ids.length === 1 ? 'Document added' : `${ids.length} documents added`,
-    description: `Filed in the Vault under ${DOCUMENTS_BUCKET}. The name, size and type are kept — the file itself is not read.`,
+    description: `${namesOf(input.files)}, filed in the Vault under ${DOCUMENTS_BUCKET}. The name, size and type are kept — the file itself is not read.`,
   }),
 })
 

@@ -1,7 +1,8 @@
 import { useId } from 'react'
 import { FORMATS, OUTCOMES } from '@jojo/service/core/transition-options'
 import type { Format } from '@jojo/service/core/transition-options'
-import { Field, FormField, SettingRow, TextareaField } from '@/components/common/Field'
+import { Field, FormField, SettingRow } from '@/components/common/Field'
+import { RichNoteField } from '@/components/common/RichTextEditorField'
 import { Segment } from '@/components/common/Segment'
 import { Switch } from '@/components/ui/switch'
 import type { Application, Outcome } from '@/data/seed'
@@ -112,6 +113,7 @@ export function OfferFields({
   offerComp,
   onOfferCompChange,
   offerNote,
+  offerNoteFormat,
   onOfferNoteChange,
   mintRespondBy,
   onMintRespondByChange,
@@ -121,7 +123,10 @@ export function OfferFields({
   offerComp: string
   onOfferCompChange: (next: string) => void
   offerNote: string
-  onOfferNoteChange: (next: string) => void
+  /** The note's formatting, encoded (`encodeFormat`). Absent opens it plain. */
+  offerNoteFormat?: string | undefined
+  /** The text, and the formatting encoded — `''` when there is none. */
+  onOfferNoteChange: (next: string, format: string) => void
   mintRespondBy: boolean
   onMintRespondByChange: (next: boolean) => void
 }) {
@@ -140,12 +145,14 @@ export function OfferFields({
         value={offerComp}
         onChange={(e) => onOfferCompChange(e.target.value)}
       />
-      <TextareaField
+      {/* The rich text editor, so the offer's note keeps its formatting the
+          way the application's own note does (Q268). */}
+      <RichNoteField
         label="Note"
-        rows={3}
         placeholder="What is still being negotiated"
-        value={offerNote}
-        onChange={(e) => onOfferNoteChange(e.target.value)}
+        text={offerNote}
+        format={offerNoteFormat}
+        onChange={onOfferNoteChange}
       />
       <SettingRow
         label="Add the deadline to the timeline"

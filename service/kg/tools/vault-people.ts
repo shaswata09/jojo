@@ -13,6 +13,7 @@ import {
 } from '../core/model'
 import type { NodeId } from '../core/model'
 import { briefsWithin, normaliseBriefs } from '../core/referee-brief'
+import { decodeFormat, formatWire, formatWrite, normaliseFormat } from '../core/note-format'
 import { s } from '../core/schema'
 import type { GraphSnapshot } from '../core/snapshot'
 import { defineTool } from './tool'
@@ -34,6 +35,8 @@ const personDetails = {
   email: s.optional(s.string({ label: 'Email' })),
   phone: s.optional(s.string({ label: 'Phone' })),
   note: s.optional(s.string({ label: 'Note', multiline: true })),
+  /** The note editor's formatting, beside its text. See `formatWrite`. */
+  noteFormat: formatWire('Note formatting'),
 }
 
 /**
@@ -103,6 +106,8 @@ export const vaultPersonCreate = defineTool({
     const email = cleared(input.email)
     const phone = cleared(input.phone)
     const note = cleared(input.note)
+    // Against the cleared text — the offsets have to fit what is stored.
+    const noteFormat = normaliseFormat(note ?? '', decodeFormat(input.noteFormat))
     ctx.tx.put({
       id,
       type: 'person',
@@ -114,6 +119,7 @@ export const vaultPersonCreate = defineTool({
         ...(email === undefined ? {} : { email }),
         ...(phone === undefined ? {} : { phone }),
         ...(note === undefined ? {} : { note }),
+        ...(noteFormat === undefined ? {} : { noteFormat }),
       },
       createdAt: ctx.now,
       updatedAt: ctx.now,
@@ -182,6 +188,13 @@ export const vaultPersonUpdate = defineTool({
         : input.applicationIds !== undefined
           ? briefsWithin(person.props.briefs, filed)
           : undefined
+    // The formatting follows the text, by the rule `formatWrite` states.
+    const noteFormat = formatWrite(
+      person.props.note ?? '',
+      input.note === undefined ? undefined : (cleared(input.note) ?? ''),
+      person.props.noteFormat,
+      input.noteFormat,
+    )
     ctx.tx.patch<'person'>(input.id, {
       ...(input.name === undefined ? {} : { name: input.name.trim() }),
       ...(input.role === undefined ? {} : { role: cleared(input.role) }),
@@ -189,6 +202,7 @@ export const vaultPersonUpdate = defineTool({
       ...(input.email === undefined ? {} : { email: cleared(input.email) }),
       ...(input.phone === undefined ? {} : { phone: cleared(input.phone) }),
       ...(input.note === undefined ? {} : { note: cleared(input.note) }),
+      ...(noteFormat === undefined ? {} : { noteFormat: noteFormat.value }),
       // `undefined` deletes the key: an empty list is stored as no list.
       ...(nextBriefs === undefined ? {} : { briefs: nextBriefs.length === 0 ? undefined : nextBriefs }),
     })

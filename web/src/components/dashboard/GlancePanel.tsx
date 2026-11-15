@@ -374,83 +374,96 @@ export function GlancePanel() {
 
           {/* The selected day. `aria-live` because the heading and the list both
               change under a click that happens somewhere else on the page. */}
+          {/*
+           * Never taller than the month beside it. A day with a dozen deadlines
+           * used to grow this column, which grew the card, which grew the whole
+           * dashboard row — the month's rows spread apart and the "Needs a
+           * decision" cards stretched to match. Side by side, the list sits
+           * absolutely inside its column, so the column is as tall as the month
+           * and no taller; stacked, it is capped. Either way it scrolls, with
+           * the bar on the card's right edge like the dashboard's other lists.
+           */}
           <div
             aria-live="polite"
-            className="min-w-0 border-t border-hairline pt-3 @[21rem]:border-t-0 @[21rem]:border-l @[21rem]:pt-0 @[21rem]:pl-4"
+            className="relative min-w-0 border-t border-hairline pt-3 @[21rem]:border-t-0 @[21rem]:border-l @[21rem]:pt-0 @[21rem]:pl-4"
           >
-            <h4 className="mb-2 text-xs font-medium text-text-2">
-              {month.label} {selected}
-              {selected === month.today ? <span className="text-text-3"> · today</span> : null}
-            </h4>
+            <div className="flex flex-col @[21rem]:absolute @[21rem]:inset-y-0 @[21rem]:right-0 @[21rem]:left-4">
+              <h4 className="mb-2 shrink-0 text-xs font-medium text-text-2">
+                {month.label} {selected}
+                {selected === month.today ? <span className="text-text-3"> · today</span> : null}
+              </h4>
 
-            {dayEvents.length === 0 ? (
-              <p className="text-xs text-text-3">
-                Nothing planned.{' '}
-                <button
-                  type="button"
-                  // The empty day is the moment you want to fill it, and until
-                  // now this was the one dead end left on the panel: a picker
-                  // that could select a day and then do nothing with it.
-                  onClick={() =>
-                    open('timelineItem', {
-                      mode: 'event',
-                      initial: { date: isoOf(view.year, view.month, selected) },
-                    })
-                  }
-                  className="cursor-pointer text-accent underline-offset-2 hover:underline"
-                >
-                  Add something
-                </button>
-                .
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-2.5">
-                {dayEvents.map((e) => {
-                  const Icon = KIND_ICON[e.kind]
-                  const mark = markOf(e)
-                  return (
-                    <li key={e.id} className="flex gap-2">
-                      <Icon
-                        className={cn('mt-0.5 size-3.5 shrink-0', DAY_TEXT[mark])}
-                        strokeWidth={1.8}
-                        aria-hidden
-                      />
-                      {/* The row opens the item. It named one and left you to
+              {dayEvents.length === 0 ? (
+                <p className="text-xs text-text-3">
+                  Nothing planned.{' '}
+                  <button
+                    type="button"
+                    // The empty day is the moment you want to fill it, and until
+                    // now this was the one dead end left on the panel: a picker
+                    // that could select a day and then do nothing with it.
+                    onClick={() =>
+                      open('timelineItem', {
+                        mode: 'event',
+                        initial: { date: isoOf(view.year, view.month, selected) },
+                      })
+                    }
+                    className="cursor-pointer text-accent underline-offset-2 hover:underline"
+                  >
+                    Add something
+                  </button>
+                  .
+                </p>
+              ) : (
+                // Bleeds right by the panel's own padding, so the scrollbar rides
+                // the card's edge rather than the gap beside the text.
+                <ul className="-mr-4 flex max-h-44 min-h-0 flex-1 flex-col gap-2.5 overflow-x-hidden overflow-y-auto pr-4 sm:-mr-5 sm:pr-5 @[21rem]:max-h-none">
+                  {dayEvents.map((e) => {
+                    const Icon = KIND_ICON[e.kind]
+                    const mark = markOf(e)
+                    return (
+                      <li key={e.id} className="flex gap-2">
+                        <Icon
+                          className={cn('mt-0.5 size-3.5 shrink-0', DAY_TEXT[mark])}
+                          strokeWidth={1.8}
+                          aria-hidden
+                        />
+                        {/* The row opens the item. It named one and left you to
                           find it on the calendar, which is two navigations to
                           correct a time. */}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          open('timelineItem', {
-                            mode: e.remind ? 'reminder' : 'event',
-                            initial: e,
-                          })
-                        }
-                        /* `hover:underline` as well as the colour: in dark,
+                        <button
+                          type="button"
+                          onClick={() =>
+                            open('timelineItem', {
+                              mode: e.remind ? 'reminder' : 'event',
+                              initial: e,
+                            })
+                          }
+                          /* `hover:underline` as well as the colour: in dark,
                            --accent and --text-1 are the same #fafafa (see
                            index.css), so this row said nothing under the
                            pointer. The counters above it were never affected —
                            their <Link> underlines the whole group. */
-                        className="min-w-0 cursor-pointer rounded-sm text-left underline-offset-2 transition-colors hover:text-accent hover:underline"
-                      >
-                        {/* Struck and greyed once ticked off, the same as the
+                          className="min-w-0 cursor-pointer rounded-sm text-left underline-offset-2 transition-colors hover:text-accent hover:underline"
+                        >
+                          {/* Struck and greyed once ticked off, the same as the
                             calendar draws it — the row stays because the day
                             still held it, but it is no longer something owed. */}
-                        <span
-                          className={cn(
-                            'block truncate text-xs text-text-1',
-                            mark === 'done' && 'text-text-3 line-through decoration-1',
-                          )}
-                        >
-                          {e.title}
-                        </span>
-                        <span className="block truncate text-xs text-text-3">{e.detail}</span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
+                          <span
+                            className={cn(
+                              'block truncate text-xs text-text-1',
+                              mark === 'done' && 'text-text-3 line-through decoration-1',
+                            )}
+                          >
+                            {e.title}
+                          </span>
+                          <span className="block truncate text-xs text-text-3">{e.detail}</span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       </div>

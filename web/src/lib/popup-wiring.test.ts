@@ -423,3 +423,92 @@ describe('every control the popup ships', () => {
     expect(attribute(label?.[1] ?? '', 'class')).toContain('sr')
   })
 })
+
+/*
+ * Owner requests Q178 and Q179 (2026-08-24): clicking the extension's icon
+ * opens a menu that keeps the page, LISTS what was kept and deletes an entry
+ * from that list, and shows the document reader's (markitdown-mcp's) status
+ * with a switch, and the routing of each model provider — NVIDIA named.
+ * "Keep this page" is pinned above; these are the other three, run against
+ * the real `popup.js` through the same harness.
+ */
+describe('owner requests: what the toolbar popup offers', () => {
+  const kept = {
+    id: 'cap_1',
+    title: 'Rice — Assistant Professor',
+    url: 'https://jobs.rice.edu/postings/29411',
+    capturedAt: '2026-08-24T10:00:00.000Z',
+    bytes: 84_000,
+  }
+
+  /** A worker with one kept page that a delete really removes. */
+  const withQueue = () => {
+    let captures = [kept]
+    return (message: Message): Reply => {
+      if (message.type === 'jojo:list-captures') return { response: { captures } }
+      if (message.type === 'jojo:delete-capture') {
+        captures = captures.filter((c) => c.id !== message.id)
+        return { response: { ok: true } }
+      }
+      return awake(message)
+    }
+  }
+
+  it('Q178 lists each kept page, and its × deletes that entry from the list', async () => {
+    const popup = mount({ tab: page, reply: withQueue() })
+    await popup.start()
+
+    const list = popup.at('kept')
+    expect(list.kids).toHaveLength(1)
+    expect(list.textContent).toContain('Rice — Assistant Professor')
+    expect(popup.at('kept-empty').hidden).toBe(true)
+
+    const remove = list.kids[0]?.kids.find((kid) => kid.className === 'del')
+    expect(remove?.title).toBe('Delete Rice — Assistant Professor')
+    await remove?.fire('click')
+
+    expect(popup.sent).toContainEqual({ type: 'jojo:delete-capture', id: 'cap_1' })
+    expect(popup.at('kept').kids).toHaveLength(0)
+    expect(popup.at('kept-empty').hidden).toBe(false)
+  })
+
+  it('Q179 switches the document reader on and shows whether it answers', async () => {
+    const popup = mount({ tab: page, reply: awake })
+    await popup.start()
+    expect(popup.at('reader-status').textContent).toContain('Switched off')
+
+    popup.at('reader-on').checked = true
+    await popup.at('reader-on').fire('change')
+
+    expect(popup.sent).toContainEqual({ type: 'jojo:set-routing', reader: { enabled: true } })
+    expect(popup.sent.some((m) => m.type === 'jojo:probe-reader')).toBe(true)
+    expect(popup.at('reader-status').textContent).toContain('Answering')
+  })
+
+  it('Q179 lists NVIDIA among the model providers, and its switch stops routing to it', async () => {
+    const nvidia = 'integrate.api.nvidia.com'
+    const popup = mount({
+      tab: page,
+      reply: (message) =>
+        message.type === 'jojo:get-routing'
+          ? {
+              response: {
+                routing: { reader: { enabled: false, endpoint: '' }, models: {} },
+                hosts: [...HOSTS, nvidia],
+              },
+            }
+          : awake(message),
+    })
+    await popup.start()
+
+    const row = popup.at('models').kids.find((kid) => kid.textContent.includes(nvidia))
+    expect(row?.textContent).toContain('NVIDIA')
+    const toggle = row?.kids[1]?.kids[0]
+    expect(toggle?.checked).toBe(true)
+    expect(toggle?.attributes['aria-label']).toBe('Route to NVIDIA')
+
+    if (toggle) toggle.checked = false
+    await toggle?.fire('change')
+    expect(popup.sent).toContainEqual({ type: 'jojo:set-routing', models: { [nvidia]: false } })
+  })
+})

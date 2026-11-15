@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { H, LABEL_RING, plot, ringPoint, W } from './Radar'
+import { H, LABEL_RING, plot, ringPoint, W } from './radar-geometry'
 
 /**
  * The two rings this chart draws things on, and why they are two functions.

@@ -113,7 +113,9 @@ export function createStoreChannel(name: string): Channel {
 
   channel.onmessage = (message: MessageEvent<unknown>) => {
     if (!isStoreEvent(message.data)) return
-    for (const fn of [...listeners]) fn(message.data)
+    // A snapshot, so a listener that subscribes or unsubscribes while being called
+    // does not change who this round reaches.
+    for (const fn of Array.from(listeners)) fn(message.data)
   }
 
   return {

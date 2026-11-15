@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { FileSpreadsheet, Mail, Pencil, Phone, Plus, Trash2, UserRound } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Field, FormField, TextareaField } from '@/components/common/Field'
+import { Field, FormField } from '@/components/common/Field'
+import { RichNoteField } from '@/components/common/RichTextEditorField'
 import { MenuItem, MenuSection, RowMenu } from '@/components/common/RowMenu'
 import { Panel, Row, RowList } from '@/components/common/Panel'
 import { ApplicationPicker } from '@/components/vault/ApplicationPicker'
@@ -11,7 +12,9 @@ import { matchesQuery } from '@/components/vault/search'
 import { Button } from '@/components/ui/button'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useVault } from '@jojo/service/react/use-vault'
-import type { Person } from '@jojo/service/core/model'
+import type { NodeId, Person } from '@jojo/service/core/model'
+import { encodeFormat } from '@jojo/service/core/note-format'
+import { useGraph } from '@jojo/service/react/kg-context'
 import { displayName } from '@jojo/service/data/seed'
 import { useToast } from '@/lib/toast-context'
 import { report } from '@/lib/analytics'
@@ -256,7 +259,12 @@ export function PeopleTool({ focus }: { focus?: string }) {
   )
 }
 
-type Draft = Omit<Person, 'id'>
+/**
+ * `format` is the note's formatting, ENCODED (`encodeFormat`) — the name the
+ * snippet draft uses for the same thing — carried beside the text so a bold
+ * word saves in the same write as the rest of the person (Q268).
+ */
+type Draft = Omit<Person, 'id'> & { format?: string }
 
 /**
  * One form for adding and for editing, because they ask the same questions.
@@ -284,6 +292,14 @@ function PersonForm({
     note: person?.note ?? '',
     applicationIds: person?.applicationIds ?? [],
   })
+  /*
+   * Read off the node, as the application's note panel reads its own; a person
+   * saved before notes could be formatted, and a new one, start plain.
+   */
+  const graph = useGraph()
+  const [format, setFormat] = useState(() =>
+    person ? (encodeFormat(graph.node(person.id as NodeId, 'person')?.props.noteFormat) ?? '') : '',
+  )
   const [submitted, setSubmitted] = useState(false)
 
   const set = (key: keyof Draft) => (event: { target: { value: string } }) => {
@@ -300,7 +316,7 @@ function PersonForm({
         event.preventDefault()
         setSubmitted(true)
         if (!named) return
-        onSave({ ...draft, name: draft.name.trim() })
+        onSave({ ...draft, name: draft.name.trim(), format })
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
@@ -349,12 +365,17 @@ function PersonForm({
             onChange={(ids) => setDraft((prev) => ({ ...prev, applicationIds: ids }))}
           />
         </FormField>
-        <TextareaField
+        {/* The rich text editor, as on an application's note (Q268). */}
+        <RichNoteField
           label="Note"
           className="sm:col-span-2"
-          value={draft.note ?? ''}
+          text={draft.note ?? ''}
+          format={format}
           placeholder="What they said, what they owe you, when to chase."
-          onChange={set('note')}
+          onChange={(text, next) => {
+            setDraft((prev) => ({ ...prev, note: text }))
+            setFormat(next)
+          }}
         />
       </div>
 

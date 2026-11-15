@@ -1,5 +1,6 @@
 import { useId } from 'react'
-import { Box, Connector, DASH, Rule } from '@/components/guide/diagrams/parts'
+import { DASH } from '@/components/guide/diagrams/marks'
+import { Box, Connector, Rule } from '@/components/guide/diagrams/parts'
 import { CATALOG } from '@jojo/service/agent/catalog'
 
 /**

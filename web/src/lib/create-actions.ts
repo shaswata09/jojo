@@ -169,8 +169,15 @@ export const CREATE_ACTIONS: CreateAction[] = [
  */
 export function useCreateActions(): CreateAction[] {
   const { settings } = useModelSettings()
-  const hasModel = isConfigured(settings)
-  return CREATE_ACTIONS.filter((action) => action.requires !== 'model' || hasModel)
+  return offeredCreateActions(CREATE_ACTIONS, isConfigured(settings))
+}
+
+/** The gate `useCreateActions` applies, lifted out so a test can hold it. */
+export function offeredCreateActions(
+  actions: readonly CreateAction[],
+  hasModel: boolean,
+): CreateAction[] {
+  return actions.filter((action) => action.requires !== 'model' || hasModel)
 }
 
 /**

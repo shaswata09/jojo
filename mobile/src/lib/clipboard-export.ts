@@ -85,30 +85,18 @@ export function copyExport(
      * The number is the point. "Too big" leaves somebody pressing the same
      * button again; the size is what tells them this route is closed.
      *
-     * It used to end "Use Transfer instead — it hands the whole store to
-     * another device over your own network", and that sent the reader in a
-     * CIRCLE. `screens/TransferScreen.tsx` says it in its own header: "The
-     * phone cannot send, and this is not a gap waiting to be filled… So
-     * sending points at the export under Settings" — this export. A browser
-     * cannot accept an inbound connection, so the phone is always the side
-     * that listens; Transfer receives and never sends.
-     *
-     * So the clipboard is the ONLY route off this device, and pointing at the
-     * one screen that points back here is worse than saying nothing: it costs
-     * the reader a trip to find that out for themselves, at the moment they
-     * are deciding whether it is safe to press Clear.
-     *
-     * What is left is the truth, which is a real product limit and not a copy
-     * problem: this store does not fit, and the honest move is to make it
-     * smaller or to keep the computer's copy as the backup. Anything better
-     * than that needs a file-and-share route this app does not have — worth
-     * building, and not something a sentence can stand in for.
+     * It used to point at Transfer while Transfer could only RECEIVE, which
+     * sent the reader in a circle, so for a while it said the clipboard was
+     * the only way out. Since 2026-11-15 Transfer sends too — the computer
+     * pulls the phone's backup over the local network — so the honest route
+     * for a store too big for the clipboard is Transfer to a computer, named
+     * with where it goes and what it needs.
      */
     return {
       title: 'Too big for the clipboard',
       description: `Your records come to ${sizeLabel(byteLengthOf(json))} and Android's clipboard takes about ${sizeLabel(
         CLIPBOARD_MAX_BYTES / 2,
-      )} of text. Nothing was copied, and the clipboard is the only way out of this phone — Transfer only receives. Detach some documents or clear what you no longer need, or keep the copy on your computer as the backup.`,
+      )} of text. Nothing was copied. Use Transfer to send everything to your computer over your local network, or detach some documents and try again.`,
       tone: 'danger',
     }
   }

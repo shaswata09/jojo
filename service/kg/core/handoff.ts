@@ -8,7 +8,7 @@
  *
  * ## Deliberately not a web server
  *
- * It answers three requests and refuses everything else by shape. No routing
+ * It answers a handful of requests and refuses everything else by shape. No routing
  * table, no header folding, no chunked transfer, no keep-alive negotiation, no
  * content negotiation. Every one of those is a place for a parser bug, and none
  * of them is needed by the single client this will ever have — which is jojo,
@@ -62,8 +62,36 @@ export type HandoffRoute =
   | 'pair'
   /** The browser delivering one sealed convoy chunk. */
   | 'chunk'
+  /** The browser asking for one sealed chunk of the phone's backup. */
+  | 'pull'
   /** A CORS preflight, which a browser sends before the POST. */
   | 'preflight'
+
+/**
+ * Which way the records are going, fixed for the life of one listener.
+ *
+ * The phone always listens and the computer always connects — a browser cannot
+ * accept a connection, so that much never changes. What changes is who holds
+ * the records. `push` is the computer posting its backup to the phone. `pull`
+ * is the computer asking the phone for the phone's backup, one chunk at a time:
+ * a browser cannot be connected TO, but it can connect and read the answer.
+ *
+ * A listener speaks one direction and refuses the other's requests by shape.
+ * A phone that is sending has no business accepting chunks, and a phone that
+ * is receiving has nothing to hand out; accepting both on one socket would turn
+ * a mistake in either half into a way through the other.
+ */
+export type HandoffDirection = 'push' | 'pull'
+
+/**
+ * The exact size of a pull request's body: the chunk's sequence number and the
+ * proof that the asker holds this session's key. See `core/handoff-pull.ts`.
+ *
+ * Exact, not "at most". A pull request has one shape, so anything else is
+ * refused before a byte of it is buffered as a body — the 256 KiB a chunk may
+ * occupy is no business of a request that carries 36 bytes.
+ */
+export const PULL_REQUEST_BYTES = 4 + 32
 
 export type HandoffRequest = { route: HandoffRoute; body: Uint8Array }
 
@@ -91,6 +119,7 @@ export async function pathToken(secrets: Secrets, offer: PairingOffer): Promise<
 /** Where the browser should send each request. */
 export const pairPath = (token: string): string => `/${ROOT}/${token}/pair`
 export const chunkPath = (token: string): string => `/${ROOT}/${token}/chunk`
+export const pullPath = (token: string): string => `/${ROOT}/${token}/pull`
 
 /** Finds the blank line that ends the headers. -1 if it has not arrived. */
 function headerEnd(bytes: Uint8Array): number {
@@ -120,7 +149,11 @@ const asciiOf = (bytes: Uint8Array): string => {
  * on any real network, and the reason this takes the whole buffer each time
  * rather than a single read.
  */
-export function readRequest(bytes: Uint8Array, token: string): HandoffRead {
+export function readRequest(
+  bytes: Uint8Array,
+  token: string,
+  direction: HandoffDirection = 'push',
+): HandoffRead {
   const end = headerEnd(bytes)
   if (end < 0) {
     // Not yet — unless the client is filling memory with a header that will
@@ -134,14 +167,16 @@ export function readRequest(bytes: Uint8Array, token: string): HandoffRead {
   if (method === undefined || path === undefined) return 'refused'
 
   // Compared whole. A prefix match would let `/jojo/<token>/pair/../anything`
-  // through, and there is no reason to accept anything but these two.
-  if (method === 'OPTIONS' && (path === pairPath(token) || path === chunkPath(token))) {
+  // through, and there is no reason to accept anything but these two. The
+  // second path is the one this direction posts to, and only that one.
+  const posts = direction === 'pull' ? pullPath(token) : chunkPath(token)
+  if (method === 'OPTIONS' && (path === pairPath(token) || path === posts)) {
     return { route: 'preflight', body: new Uint8Array(0) }
   }
   if (method === 'GET' && path === pairPath(token)) {
     return { route: 'pair', body: new Uint8Array(0) }
   }
-  if (method !== 'POST' || path !== chunkPath(token)) return 'refused'
+  if (method !== 'POST' || path !== posts) return 'refused'
 
   let length = -1
   for (const line of lines.slice(1)) {
@@ -154,9 +189,12 @@ export function readRequest(bytes: Uint8Array, token: string): HandoffRead {
     length = Number(value)
   }
   if (length < 0 || length > MAX_BODY_BYTES) return 'refused'
+  // A pull request has exactly one size. Checked on the DECLARED length, so a
+  // request that announces anything else is refused before it is waited for.
+  if (direction === 'pull' && length !== PULL_REQUEST_BYTES) return 'refused'
   if (bytes.byteLength < end + length) return 'incomplete'
 
-  return { route: 'chunk', body: bytes.slice(end, end + length) }
+  return { route: direction === 'pull' ? 'pull' : 'chunk', body: bytes.slice(end, end + length) }
 }
 
 /** How many bytes one complete request occupied, so the buffer can be advanced. */

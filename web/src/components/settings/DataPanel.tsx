@@ -26,7 +26,13 @@ import { useStoreAdmin } from '@jojo/service/react/use-admin'
 import { useBoot } from '@/lib/boot-context'
 import { transferPath } from '@/lib/links'
 import { clearSiteData } from '@/lib/storage'
-import { useBackup, type BackupProgress, type DownloadOutcome } from '@/lib/backup'
+import {
+  backupToast,
+  markRestoredFromBackup,
+  useBackup,
+  type BackupProgress,
+  type DownloadOutcome,
+} from '@/lib/backup'
 import { restoreBackup } from '@jojo/service/repo/restore'
 import { useVaultBlobs } from '@/lib/vault-blobs'
 import { describeBackup } from '@jojo/service/core/backup'
@@ -100,6 +106,9 @@ export function DataPanel() {
       toast({ title: 'The restore failed', description: done.message, tone: 'danger' })
       return
     }
+    // What was just restored is in the file it came from: the backup prompt
+    // must not ask for it again the moment the page reloads.
+    markRestoredFromBackup(new Date().toISOString())
     // After the outcome is known, so a failed restore is not counted as one.
     // Bucketed, like the export half — see `core/analytics.ts`.
     report('backup_used', { direction: 'restore', records: bucket(done.nodes) })
@@ -225,31 +234,9 @@ export function DataPanel() {
       })
       .then((outcome) => {
         setExporting(null)
-        if (outcome === 'cancelled') return
-        if (outcome === 'failed') {
-          toast({
-            title: 'The backup could not be written',
-            description:
-              'Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.',
-            tone: 'danger',
-          })
-          return
-        }
-        toast(
-          outcome === 'saved'
-            ? {
-                // Asserted, because it is known: the file handle closed on disk.
-                title: 'Backup saved',
-                description: `${name} holds your records and every document you have attached.`,
-              }
-            : {
-                title: 'Backup started',
-                // Named, not asserted. The click is the last thing this page can
-                // observe — the browser's decision after it fires no event — so what is
-                // said is what to look for rather than that it arrived.
-                description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
-              },
-        )
+        // The copy is shared with the storage banner's backup prompt.
+        const said = backupToast(outcome, name)
+        if (said !== null) toast(said)
       })
   }
 

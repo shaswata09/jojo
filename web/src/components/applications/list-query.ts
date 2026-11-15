@@ -109,9 +109,10 @@ export function compareApplications(sort: ApplicationSort) {
  * Four controls can blank it — the search box, the stage chips, the keyword row
  * and the role filter — and "nothing matches" without saying which one is doing
  * it leaves the reader hunting across the toolbar for the switch to flip. The
- * role filter is the one that used to be unnameable here: it lived in the top
- * bar, so the page could say "nothing carries the Offer stage" while ten
- * records sat hidden behind a control this page could not reach.
+ * role filter lives in the top bar (the owner's decision, 2026-11-15), outside
+ * this page's toolbar, so it is named by where it is: otherwise the page could
+ * say "nothing carries the Offer stage" while ten records sat hidden behind a
+ * control the reader is not looking at.
  */
 export function emptyReason({
   query,
@@ -128,7 +129,7 @@ export function emptyReason({
     query.trim() ? 'that search' : '',
     stageFilter === 'all' ? '' : `the ${STAGE_LABEL[stageFilter]} stage`,
     keywordCount > 0 ? 'the selected keywords' : '',
-    roleCount > 0 ? 'the selected roles' : '',
+    roleCount > 0 ? 'the roles selected in the top bar' : '',
   ].filter(Boolean)
   if (on.length === 0) return 'Nothing here to show.'
   return `Nothing carries ${listJoin(on)}.`

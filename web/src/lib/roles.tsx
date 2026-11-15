@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { RoleTag } from '@/data/seed'
-import { RolesContext } from '@/lib/roles-context'
+import { RolesContext, roleMatches, toggledRole } from '@/lib/roles-context'
 
 /**
  * The global job-role filter.
@@ -24,19 +24,14 @@ export function RolesProvider({ children }: { children: ReactNode }) {
   const [selected, setSelected] = useState<ReadonlySet<RoleTag>>(() => new Set<RoleTag>())
 
   const toggle = useCallback((role: RoleTag) => {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(role)) next.delete(role)
-      else next.add(role)
-      return next
-    })
+    setSelected((prev) => toggledRole(prev, role))
   }, [])
 
   const setAll = useCallback((roles: RoleTag[]) => setSelected(new Set(roles)), [])
   const clear = useCallback(() => setSelected(new Set<RoleTag>()), [])
 
   const matches = useCallback(
-    (role: RoleTag) => selected.size === 0 || selected.has(role),
+    (role: RoleTag) => roleMatches(selected, role),
     [selected],
   )
 

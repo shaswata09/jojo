@@ -1,7 +1,8 @@
 import { useId, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Field, FormField, TextareaField } from '@/components/common/Field'
+import { Field, FormField } from '@/components/common/Field'
 import { KeywordPicker } from '@/components/common/KeywordPicker'
+import { RichNoteField } from '@/components/common/RichTextEditorField'
 import { ApplicationLinkField } from '@/components/timeline/dialog/ApplicationLinkField'
 import { KindGrid } from '@/components/timeline/dialog/KindGrid'
 import { ScheduleFields } from '@/components/timeline/dialog/ScheduleFields'
@@ -18,6 +19,9 @@ import { DialogClose, DialogFooter } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { shortDate, whenLabel } from '@/data/timeline'
 import type { TimelineItem, TimelineKind } from '@/data/timeline'
+import { encodeFormat } from '@jojo/service/core/note-format'
+import type { NodeId } from '@jojo/service/core/model'
+import { useGraph } from '@jojo/service/react/kg-context'
 import { useApplications } from '@jojo/service/react/use-applications'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useDialogs } from '@/lib/dialogs-context'
@@ -66,6 +70,18 @@ export function ItemForm({
   const [kindTouched, setKindTouched] = useState(initial?.kind !== undefined)
   const [detail, setDetail] = useState(initial?.detail ?? '')
   const [note, setNote] = useState(initial?.note ?? '')
+  /*
+   * The note's formatting, encoded, beside its text (Q268). Read off the node,
+   * as the application's note panel reads its own: the projection a dialog is
+   * opened with does not promise to carry spans. A new item, and every item
+   * saved before notes could be formatted, starts plain.
+   */
+  const graph = useGraph()
+  const [noteFormat, setNoteFormat] = useState(() =>
+    editingId
+      ? (encodeFormat(graph.node(editingId as NodeId, 'timelineItem')?.props.noteFormat) ?? '')
+      : '',
+  )
   const [remind, setRemind] = useState(initial?.remind ?? mode === 'reminder')
   /**
    * Keywords are staged, not written on click.
@@ -170,6 +186,14 @@ export function ItemForm({
       // the seed set, since nothing reads it.
     }
 
+    /*
+     * The write, with the note's formatting beside its text — under `format`,
+     * the encoded spans, the name the snippet draft already uses — so a bold
+     * word is saved in the same call and the same Undo as the rest. Kept off
+     * `patch`, which also becomes the copy handed to `onSaved`.
+     */
+    const write = { ...patch, format: noteFormat }
+
     let saved: TimelineItem
     // The journal's Undo for an edit, not a hand-built patch. Handing `update`
     // the stored record back merged it over the edit, so a key the record never
@@ -185,7 +209,7 @@ export function ItemForm({
       // A refusal keeps the dialog open with what was typed, rather than
       // closing it under an 'updated' toast that is not true.
       const { value: written, restore } = undoable(() => {
-        const result = update(editingId, patch)
+        const result = update(editingId, write)
         // Keywords inside the same burst so one Undo takes both back; skipped
         // on a refusal, which keeps the dialog open with what was typed.
         if (refusalToast(result) === null) commitKeywords(editingId)
@@ -198,7 +222,7 @@ export function ItemForm({
       // one. The fallback matches the default `add` stamps.
       saved = { ...stored, ...patch, id: editingId, urgency: stored?.urgency ?? 'gray' }
     } else {
-      saved = add(patch)
+      saved = add(write)
       commitKeywords(saved.id)
     }
 
@@ -411,12 +435,15 @@ export function ItemForm({
             </span>
           </summary>
           <div className="grid gap-3.5 border-t border-hairline px-3 py-3">
-            <TextareaField
+            <RichNoteField
               label="Note"
               hint="Your own scribble. Kept apart from the detail, so an edit never clobbers it."
-              rows={2}
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
+              text={note}
+              format={noteFormat}
+              onChange={(text, format) => {
+                setNote(text)
+                setNoteFormat(format)
+              }}
             />
 
             <FormField

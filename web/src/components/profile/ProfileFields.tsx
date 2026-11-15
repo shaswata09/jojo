@@ -21,7 +21,7 @@ export function ProfileFields({ draft, set }: { draft: ProfileText; set: Setter 
             label="Full name"
             value={draft.fullName}
             autoComplete="name"
-            placeholder="e.g. Alex Rivera"
+            placeholder="e.g. Lonardo Jenson"
             onChange={set('fullName')}
           />
           <Field

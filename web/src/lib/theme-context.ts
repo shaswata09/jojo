@@ -6,6 +6,17 @@ export type ThemePref = Theme | 'system'
 /** Shared with the pre-paint script in index.html — change both together. */
 export const THEME_STORAGE_KEY = 'jojo.theme'
 
+/**
+ * The stored preference, or dark when there is none worth reading.
+ *
+ * `readPref` in `theme.tsx` applies this to what `localStorage` holds; it is
+ * here, as a plain function, so the default can be tested without a browser.
+ */
+export function themePrefOf(stored: string | null): ThemePref {
+  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+  return 'dark'
+}
+
 export type ThemeContextValue = {
   /** What the user chose. 'system' means follow the OS. */
   pref: ThemePref

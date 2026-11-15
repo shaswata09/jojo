@@ -67,6 +67,8 @@ export function useApplicationWrites({
     roleTag: form.roleTag as RoleTag,
     stage: form.stage,
     note: form.note.trim(),
+    // The editor's formatting, saved in the same call as the text (Q268).
+    noteFormat: form.noteFormat,
     source: form.source === 'none' ? undefined : form.source,
     location: form.location.trim() || undefined,
     comp: form.comp.trim() || undefined,

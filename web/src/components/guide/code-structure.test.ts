@@ -28,7 +28,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { SHAPE, WEB_TEST_FILES } from './CodeStructure'
+import { SHAPE, WEB_TEST_FILES } from './code-structure-shape'
 // Vite's `import.meta.glob` leaves out the module that calls it, so without this
 // every count below is one short and the one it is short by is this file — the
 // off-by-one that is hardest to notice, because it only shows up in the row this

@@ -3,7 +3,6 @@ import { Search } from 'lucide-react'
 import { BucketFilter } from '@/components/common/BucketFilter'
 import { LabelFilter } from '@/components/common/LabelFilter'
 import { Segment } from '@/components/common/Segment'
-import { RoleFilter } from '@/components/layout/RoleFilter'
 import { Input } from '@/components/ui/input'
 import { STAGES, STAGE_LABEL, type Application } from '@/data/seed'
 import { refKey } from '@/lib/ids'
@@ -16,8 +15,10 @@ const VIEWS = [
 ] as const satisfies readonly { value: ApplicationsView; label: string }[]
 
 /**
- * Search, roles, keywords, stage and layout — the controls that decide what the
- * table and the board are looking at.
+ * Search, keywords, stage and layout — the controls that decide what the table
+ * and the board are looking at. The role filter narrows them too, but it lives
+ * in the top bar, because it narrows the dashboard and Statistics as well and
+ * a control that changes three pages belongs on none of them.
  *
  * The filters belong to the page, not to the table — they lived inside the
  * table panel, which is why switching to Board silently dropped every one of
@@ -64,11 +65,6 @@ export function ApplicationsFilters({
             className="pl-8"
           />
         </div>
-
-        {/* Was pinned to the top bar, where it changed two of a dozen
-            surfaces and left every number on the dashboard ambiguous. It
-            belongs to the list it actually filters. */}
-        <RoleFilter />
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">

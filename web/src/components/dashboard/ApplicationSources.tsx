@@ -5,8 +5,9 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Segment } from '@/components/common/Segment'
 import { Button } from '@/components/ui/button'
-import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
+import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
+import { useScopedApplications } from '@/lib/roles-scope'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { cn } from '@/lib/utils'
 
@@ -35,7 +36,8 @@ const UNRECORDED_COLOR = 'var(--text-3)'
  */
 export function ApplicationSources() {
   const [view, setView] = useState<View>('donut')
-  const { all, sourceCounts } = useApplications()
+  // Scoped to the roles picked in the top bar; everything when none are.
+  const { all, sourceCounts, total: tracked } = useScopedApplications()
   const { open } = useDialogs()
 
   /**
@@ -92,7 +94,9 @@ export function ApplicationSources() {
           them, so an empty store drew a bare grey ring reading "0 applications"
           — a panel that looks broken rather than one that is waiting. Reachable
           now that Settings can clear the records. */}
-      {all.length === 0 ? (
+      {tracked > 0 && all.length === 0 ? (
+        <RoleScopeEmpty />
+      ) : all.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
           title="Nothing to break down yet"

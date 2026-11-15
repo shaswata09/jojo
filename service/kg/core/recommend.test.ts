@@ -284,7 +284,7 @@ describe('the order', () => {
      * one drawn from a benchmark nobody in this app has met, however large the
      * benchmark's gap looks.
      */
-    const rows = [...Array.from({ length: 10 }, () => app({ daysAgo: 40 }))]
+    const rows = Array.from({ length: 10 }, () => app({ daysAgo: 40 }))
     const found = run(rows, { timeline: [item({ date: '2026-09-01' })] })
     const firstSuggested = found.findIndex((r) => r.strength === 'suggested')
     const lastMeasured = found.map((r) => r.strength).lastIndexOf('measured')

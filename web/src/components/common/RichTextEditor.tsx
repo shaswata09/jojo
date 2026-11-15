@@ -100,10 +100,12 @@ const TABLE_HTML = `<table><tbody>${Array.from(
  * call when collaborative editing or a serialisable schema matter and the wrong
  * one for a formatting toolbar over a text field.
  *
- * `onChange` hands back HTML, and every field in this app stores plain text —
- * so a caller that persists must convert through `textFromHtml`, the way the
- * snippets tool and the file-note drawer do. Writing this straight into a
- * record puts `<span style="font-weight: bold;">` on every list and search
+ * `onChange` hands back HTML, and every field in this app stores plain text
+ * with its formatting BESIDE it as spans — so a caller that persists converts
+ * through `noteFromRuns(rawRunsFromHtml(html))` (`lib/note-html.ts`), the way
+ * the note panel, the snippets tool and the file-note drawer do, or through
+ * `RichNoteField`, which does it for a form field. Writing this straight into
+ * a record puts `<span style="font-weight: bold;">` on every list and search
  * result that prints the field, because nothing outside this box renders HTML.
  */
 export function RichTextEditor({
@@ -114,6 +116,7 @@ export function RichTextEditor({
   inlineOnly = false,
   onBlur,
   className,
+  surfaceClassName,
 }: {
   value: string
   onChange: (html: string) => void
@@ -144,6 +147,11 @@ export function RichTextEditor({
    */
   ariaLabel?: string
   className?: string
+  /**
+   * Classes for the editing surface itself, merged over its own. For a note in
+   * a dialog, where the snippet editor's 14rem would push Save off the screen.
+   */
+  surfaceClassName?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState<Record<string, boolean>>({})
@@ -393,7 +401,10 @@ export function RichTextEditor({
         onBlur={onBlur}
         onKeyUp={refresh}
         onMouseUp={refresh}
-        className="rte min-h-[14rem] flex-1 overflow-y-auto rounded-b-md border border-t-0 border-hairline bg-panel px-3 py-2.5 text-sm outline-none focus-visible:border-accent-border"
+        className={cn(
+          'rte min-h-[14rem] flex-1 overflow-y-auto rounded-b-md border border-t-0 border-hairline bg-panel px-3 py-2.5 text-sm outline-none focus-visible:border-accent-border',
+          surfaceClassName,
+        )}
       />
     </div>
   )

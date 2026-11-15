@@ -4,6 +4,7 @@ import { CircleHelp, Menu, Search, Settings, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { RobotIcon } from '@/components/brand/RobotIcon'
 import { NewMenu } from '@/components/layout/NewMenu'
+import { RoleFilter } from '@/components/layout/RoleFilter'
 import { SpotlightSearch } from '@/components/layout/SpotlightSearch'
 import { useSpotlight } from '@/lib/use-spotlight'
 import { cn } from '@/lib/utils'
@@ -90,11 +91,16 @@ export function Topbar({
           callers would be two listeners driving two states, and the key would
           open whichever menu mounted last as well.
 
-          The role filter used to sit beside it. It was pinned globally but
-          changed two of a dozen surfaces, so every dashboard number was
-          ambiguous about whether it counted the whole search; it now lives in
-          the Applications toolbar, next to the only list it filters. */}
+          The role filter sits beside it, on every page. It spent a while in
+          the Applications toolbar instead, because up here it changed two of
+          a dozen surfaces and left every dashboard number unclear about what
+          it counted. The owner moved it back on 2026-11-15, and the fix for
+          that ambiguity went with it: the dashboard and Statistics charts
+          now read `useScopedApplications`, so they follow the same selection
+          the Applications list does. One selection (`RolesProvider`), shown
+          once, here. */}
       <div className="ml-auto flex items-center gap-2 sm:ml-0">
+        <RoleFilter />
         <NewMenu />
       </div>
 

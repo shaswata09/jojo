@@ -253,7 +253,9 @@ export function closeOver(seed: Iterable<string>): Set<string> {
     // required, but offering the producers of all of them is the safe
     // direction: a slightly wider set costs tokens, and a missing producer
     // costs the person their answer.
-    for (const name of [...set]) {
+    // A snapshot: producers added in this pass wait for the next one, which is
+    // what `growing` is for.
+    for (const name of Array.from(set)) {
       for (const type of [...(NEEDS.get(name) ?? []), ...(NEEDS_ANY.get(name) ?? [])]) {
         for (const producer of PRODUCERS.get(type) ?? []) {
           if (set.has(producer)) continue

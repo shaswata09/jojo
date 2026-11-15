@@ -1,5 +1,6 @@
 import { useId } from 'react'
-import { Box, Connector, DASH } from '@/components/guide/diagrams/parts'
+import { DASH } from '@/components/guide/diagrams/marks'
+import { Box, Connector } from '@/components/guide/diagrams/parts'
 
 /**
  * The failure the benchmark was built to catch, drawn once.

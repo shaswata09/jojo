@@ -12,7 +12,7 @@ import { shortDate } from '../core/dates'
 import { enteredStage } from '../core/stage-dates'
 import { OUTCOME_VALUES, STAGE_VALUES, TIMELINE_KIND_VALUES, URGENCY_VALUES } from '../core/model'
 import { s } from '../core/schema'
-import { appId, cleared, offerShape } from './application-fields'
+import { appId, cleared, offerShape, offerWrite } from './application-fields'
 import { STAGE_LABEL, dayOf, displayOf, touch } from './support'
 import { defineTool } from './tool'
 
@@ -97,8 +97,11 @@ export const applicationStageAdvance = defineTool({
       ...(input.firstReplyOn === undefined ? {} : { firstReplyOn: input.firstReplyOn }),
       ...(cleared(input.url) === undefined ? {} : { url: cleared(input.url) }),
       ...(input.outcome === undefined ? {} : { outcome: input.outcome }),
-      ...(input.offer === undefined ? {} : { offer: input.offer }),
-      ...(input.clearOffer ? { offer: undefined } : {}),
+      // The offer and the formatting on its note travel together — see
+      // `offerWrite`. A clear wins, as it always has, and takes both. No
+      // formatting is taken here: nothing with an editor calls this tool, so a
+      // new offer's note moves what was there by the text-only rule.
+      ...offerWrite(current.props, input.clearOffer ? null : input.offer, undefined),
       /*
        * The day of the move, for the stage being moved to.
        *
@@ -237,7 +240,8 @@ export const applicationOfferClear = defineTool({
 
   run(ctx, input) {
     ctx.require('application', input.id)
-    ctx.tx.patch<'application'>(input.id, { offer: undefined })
+    // The formatting on the offer's note goes with the note it was laid over.
+    ctx.tx.patch<'application'>(input.id, { offer: undefined, offerNoteFormat: undefined })
     touch(ctx, input.id, 'Offer details cleared')
   },
 

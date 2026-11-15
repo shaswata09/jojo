@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { useColorScheme } from 'react-native'
 import { ThemeContext } from '@/theme/theme-context'
 import type { ThemePref } from '@/theme/theme-context'
+import { DEFAULT_THEME_PREF, resolveTheme } from '@/theme/theme-pref'
 import { PALETTES, type ThemeName } from '@/theme/tokens'
 
 /**
@@ -30,9 +31,9 @@ import { PALETTES, type ThemeName } from '@/theme/tokens'
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme()
-  const [pref, setPref] = useState<ThemePref>('dark')
+  const [pref, setPref] = useState<ThemePref>(DEFAULT_THEME_PREF)
 
-  const theme: ThemeName = pref === 'system' ? (system === 'light' ? 'light' : 'dark') : pref
+  const theme: ThemeName = resolveTheme(pref, system)
 
   const toggle = useCallback(() => setPref(theme === 'dark' ? 'light' : 'dark'), [theme])
 

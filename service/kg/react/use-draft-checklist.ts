@@ -143,9 +143,7 @@ export function useDraftChecklist<S extends Cancellation>({
         return { ok: false, step: 'drafting', reason: 'The model answered with nothing at all.' }
       }
 
-      const read = readChecklist(reply.text, existing, {
-        ...(reply.finishReason === 'length' ? { cutOff: true } : {}),
-      })
+      const read = readChecklist(reply.text, existing, reply.finishReason === 'length' ? { cutOff: true } : {})
       if (!read.ok) return { ok: false, step: 'drafting', reason: read.reason }
 
       if (signal?.aborted) return { ok: false, step: 'drafting', reason: 'Stopped.' }

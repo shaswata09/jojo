@@ -38,7 +38,7 @@ const META: Record<GuidePage, Omit<GuidePageMeta, 'id'>> = {
   tools: {
     label: 'The tools',
     blurb:
-      'What the assistant can actually do, how it is stopped from doing anything else, and how it picks the right one out of eighty-two.',
+      'What the assistant can actually do, how it is stopped from doing anything else, and how it picks the right one out of the whole catalog.',
   },
   graph: {
     label: 'The graph',

@@ -210,7 +210,7 @@ html[data-theme='light'] {
      fill below, which is the tightest of the four. */
   --text-3: #656565; /* 5.44:1 panel · 4.98:1 well · 4.76:1 row-hover · 4.54:1 accent-soft */
   /* An empty field's example text, and deliberately FAINTER than --text-3.
-     At --text-3 the examples ("e.g. Alex Rivera", "https://github.com/you")
+     At --text-3 the examples ("e.g. Lonardo Jenson", "https://github.com/you")
      read as answers someone had already typed, and people skipped fields they
      had never filled in. Pitched between the two jobs it has: far enough under
      a typed value that the two cannot be confused, and still above 3:1 so the

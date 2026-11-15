@@ -85,7 +85,8 @@ export const readingQueue = {
 
   /** Lets go of finished readings whose card has left the queue for good. */
   settle(live: (proposalId: string) => boolean): void {
-    for (const id of [...finished.keys()]) if (!live(id)) finished.delete(id)
+    // The keys copied first, so deleting from the map cannot disturb the walk.
+    for (const id of Array.from(finished.keys())) if (!live(id)) finished.delete(id)
   },
 
   /** For tests: an empty queue. */

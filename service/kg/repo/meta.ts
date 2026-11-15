@@ -44,7 +44,7 @@ export type StoreMeta = {
    *
    * `null` on a store that has never been in one, which is most of them. It
    * exists so the app can say how far the OTHER device has drifted: Transfer is
-   * one-directional and manual, so two devices start disagreeing the moment
+   * whole-store and manual, so two devices start disagreeing the moment
    * either is used after a handover, and nothing said so. Divergence you can see
    * is a different thing from divergence you discover.
    *

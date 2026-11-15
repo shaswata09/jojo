@@ -143,7 +143,9 @@ export function createIdbDriver(options: IdbDriverOptions = {}): Driver {
   const blockingListeners = new Set<() => void>()
 
   const announceBlocking = () => {
-    for (const fn of [...blockingListeners]) fn()
+    // A snapshot, so a listener that subscribes or unsubscribes while being called
+    // does not change who this round reaches.
+    for (const fn of Array.from(blockingListeners)) fn()
   }
 
   const stop = (reason: 'blocking' | 'terminated' | 'closed') => {

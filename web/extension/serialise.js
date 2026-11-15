@@ -330,7 +330,7 @@ export function serialise(policy, nonce) {
   // or a <link>'s href and never have to decide about them.
   function stripElements() {
     for (const tag of CAPTURE_STRIP_TAGS) {
-      for (const node of [...doc.querySelectorAll(tag)]) {
+      for (const node of doc.querySelectorAll(tag)) {
         if (tag === 'link') {
           const rel = (node.getAttribute('rel') ?? '').toLowerCase()
           const href = absolute(node.getAttribute('href'))
@@ -360,7 +360,7 @@ export function serialise(policy, nonce) {
   // animation of a link target is not something a posting needs, and one whose
   // values name an address is a fetch however it is aimed.
   function dropAddressAnimations() {
-    for (const node of [...doc.querySelectorAll('set, animate, animateTransform, animateMotion')]) {
+    for (const node of doc.querySelectorAll('set, animate, animateTransform, animateMotion')) {
       const target = (node.getAttribute('attributeName') ?? '').trim().toLowerCase()
       const values = ['to', 'from', 'by', 'values'].map((a) => node.getAttribute(a) ?? '').join(';')
       if (/^(?:xlink:)?href$|^src$/.test(target) || /https?:|\/\/|\\\\/i.test(values)) node.remove()
@@ -380,7 +380,7 @@ export function serialise(policy, nonce) {
   // escaped when written out — hidden where the original was never shown,
   // since browsers do not render `noembed` or `noframes`.
   function escapeRawText() {
-    for (const node of [...doc.querySelectorAll('xmp, noembed, noframes, plaintext')]) {
+    for (const node of doc.querySelectorAll('xmp, noembed, noframes, plaintext')) {
       const pre = inert.createElement('pre')
       pre.textContent = node.textContent ?? ''
       const tag = node.tagName.toLowerCase()
@@ -421,7 +421,9 @@ export function serialise(policy, nonce) {
     // Every on* handler. Markup can carry code without a <script> in sight, and
     // the list of event names is open-ended, so this is a shape match rather
     // than a list.
-    for (const { name } of [...node.attributes]) {
+    // Copied first: `attributes` is live, and removing one while walking it would
+    // skip the attribute after it.
+    for (const { name } of Array.from(node.attributes)) {
       if (name.toLowerCase().startsWith('on')) node.removeAttribute(name)
     }
   }
@@ -577,7 +579,7 @@ export function serialise(policy, nonce) {
   // inline sheets; a cross-origin sheet throws `SecurityError` on `.cssRules`
   // and is exactly the case the <link> fetch path above already covers.
   function normaliseStyleElements() {
-    for (const style of [...doc.querySelectorAll('style')]) {
+    for (const style of doc.querySelectorAll('style')) {
       const raw = style.textContent ?? ''
       if (raw.startsWith(TOKEN)) continue // a token from step 1
       // One pass 0 could not reach — read through a constructed sheet instead,
@@ -652,7 +654,7 @@ export function serialise(policy, nonce) {
   // on. Emptied instead: a template is inert markup a script was going to
   // stamp out, and there is no script any more.
   function emptyTemplates() {
-    for (const template of [...doc.querySelectorAll('template')]) {
+    for (const template of doc.querySelectorAll('template')) {
       if (template.content.querySelector('*') !== null) dropped += 1
       template.innerHTML = ''
     }

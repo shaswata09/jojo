@@ -86,6 +86,14 @@ export const applicationProps = s.object({
   outcome: s.optional(s.enum(OUTCOME_VALUES, { label: 'Outcome' })),
   offer: s.optional(offerSchema),
   /*
+   * The formatting over `offer.note`. Same shape and bound as `noteFormat`,
+   * and top-level rather than inside `offerSchema` so that it can be in
+   * `SALVAGEABLE_PROPS`: a malformed span costs the bold, not the record.
+   */
+  offerNoteFormat: s.optional(
+    s.array(noteSpanShape, { max: MAX_NOTE_SPANS, label: 'Offer note formatting' }),
+  ),
+  /*
    * What is still to be done. See `ChecklistItem`.
    *
    * Declared exactly rather than passed through, and bounded on both axes for
@@ -125,6 +133,10 @@ export const timelineItemProps = s.object({
   title: s.string({ min: 1, label: 'Title' }),
   detail: s.optional(s.string({ label: 'Detail' })),
   note: s.optional(s.string({ label: 'Note', multiline: true })),
+  // Formatting over `note`, as on an application. Optional, salvageable.
+  noteFormat: s.optional(
+    s.array(noteSpanShape, { max: MAX_NOTE_SPANS, label: 'Note formatting' }),
+  ),
   date: s.isoDate({ label: 'Date' }),
   startMins: s.optional(s.number({ min: 0, max: 1439, int: true, label: 'Starts at' })),
   durationMins: s.optional(s.number({ min: 0, int: true, label: 'Lasts' })),

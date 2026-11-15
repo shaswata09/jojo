@@ -50,18 +50,23 @@ const SALVAGEABLE_FILE_PROPS = ['path', 'bytes', 'mtime', 'hash', 'uri', 'readin
  */
 const SALVAGEABLE_PROPS: Partial<Record<NodeType, readonly string[]>> = {
   file: [...SALVAGEABLE_FILE_PROPS, 'noteFormat'],
-  application: ['checklist', 'stageDates', 'noteFormat'],
+  application: ['checklist', 'stageDates', 'noteFormat', 'offerNoteFormat'],
+  // The same trade as the application's note, for the two other notes the
+  // rich text editor writes.
+  timelineItem: ['noteFormat'],
   keyword: ['ink'],
   // The text is the record; the formatting over it is not worth losing the
   // record for. Same trade as the application's note, one type up.
   snippet: ['bodyFormat'],
-  person: ['briefs'],
+  person: ['briefs', 'noteFormat'],
 }
 
 /** What the restore summary says about each, in the person's terms. */
 export const SALVAGE_NOTE: Partial<Record<NodeType, string>> = {
   file: 'Came back without its document link or its note formatting.',
-  application: 'Came back without its checklist, its stage dates or its note formatting.',
+  application:
+    'Came back without its checklist, its stage dates or the formatting on its notes.',
+  timelineItem: 'Came back without the formatting on its note.',
   keyword: 'Came back in one of the eight named colours rather than its own.',
   snippet: 'Came back without its text formatting.',
   person: 'Came back without the highlights and notes kept for their applications.',

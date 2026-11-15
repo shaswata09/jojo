@@ -77,9 +77,14 @@ export function useConversation({
         onDelta?: (text: string) => void,
         onReasoning?: (text: string) => void,
       ) =>
-        agentTurn(settings, messages, tools, controller.signal, onDelta, {
-          ...(onReasoning === undefined ? {} : { onReasoning }),
-        })
+        agentTurn(
+          settings,
+          messages,
+          tools,
+          controller.signal,
+          onDelta,
+          onReasoning === undefined ? {} : { onReasoning },
+        )
     },
     [settings],
   )

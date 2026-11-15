@@ -5,11 +5,12 @@ import { useKg } from '@jojo/service/react/kg-context'
 /**
  * How far this device has drifted from the copy it last handed over.
  *
- * Transfer is one-directional, manual and on demand — records move onto a phone
- * and nothing comes back — and the README has always been honest about that.
- * What nothing ever said is the consequence: add a record here and another
- * there, and the two stores can never be reconciled, because the only merge on
- * offer is a restore, which replaces everything.
+ * Transfer is manual, on demand and whole-store — records move from the phone
+ * to this computer or from this computer to the phone, and either way the
+ * receiving end is REPLACED, not merged. What nothing ever said is the
+ * consequence: add a record here and another there, and the two stores can
+ * never be reconciled, because the only merge on offer is a restore, which
+ * replaces everything.
  *
  * So this states the number before the button that overwrites it. It is not
  * sync and does not pretend to be; it answers one question from two facts this

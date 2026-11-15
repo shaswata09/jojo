@@ -31,17 +31,6 @@ import { ANALYTICS_CAPABILITY, setAnalyticsEnabled } from '@/lib/analytics'
  * person may reasonably take one and refuse the other. Bundling them into a
  * single "help improve jojo" is how consent stops meaning anything.
  */
-/**
- * Whether there is anything to ask at all.
- *
- * Read by the onboarding sequencer BEFORE this component is mounted, rather
- * than returning `null` from the render. A step that renders nothing and never
- * calls `onDone` is a step the flow stops on: the stage is never marked, so the
- * tour is never offered and setup ends silently on a blank screen. Deciding it
- * outside means the sequencer simply moves to the next question.
- */
-export const REPORTING_ASKABLE = CRASH_CAPABILITY !== 'off' || ANALYTICS_CAPABILITY !== 'off'
-
 export function ReportingStep({ onDone }: { onDone: () => void }) {
   const c = useColors()
   const [crashes, setCrashes] = useState(true)

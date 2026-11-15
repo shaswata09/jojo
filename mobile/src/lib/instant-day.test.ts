@@ -165,27 +165,20 @@ describe('writing a record`s keywords and then sweeping the same record', () => 
  * What the phone's copy may promise about Transfer
  * -----------------------------------------------------------------------------
  *
- * `screens/TransferScreen.tsx` states it in its own header: "The phone cannot
- * send, and this is not a gap waiting to be filled… So sending points at the
- * export under Settings." A browser cannot accept an inbound connection, so the
- * phone is always the side that listens — Transfer receives and never sends.
+ * Transfer moves a whole store between this phone and a COMPUTER, in either
+ * direction since 2026-11-15: the phone always listens, and to send, the
+ * computer pulls. It does not go phone to phone, and it is not sync.
  *
- * Two pieces of copy told the reader otherwise. The clipboard's oversize toast
- * said "Use Transfer instead — it hands the whole store to another device",
- * which points at the one screen that points straight back here: a CIRCLE, hit
- * exactly by the users with the most to lose, while they are deciding whether
- * it is safe to press Clear. The Settings panel said "A transfer carries those
- * too" about attached documents.
- *
- * Neither was reachable by a test, because both are strings inside components
- * D20 forbids mounting. So the rule is asserted over the source text: no phone
- * copy may describe Transfer as a way to send.
+ * So two kinds of copy are wrong, and both have shipped: copy that says the
+ * phone cannot send ("Transfer only receives" — true until the pull existed),
+ * and copy that promises "another device", which a reader takes to include a
+ * second phone. Both live in components D20 forbids mounting, so the rule is
+ * asserted over the source text.
  */
-const SENDS_VIA_TRANSFER = [
-  /Use Transfer instead/i,
-  /a transfer carries/i,
-  /transfer[^.]{0,40}\bhands the whole store\b/i,
-  /transfer[^.]{0,40}\bsends?\b/i,
+const MISLEADS_ABOUT_TRANSFER = [
+  /transfer only receives/i,
+  /transfer[^.]{0,40}\b(?:another|other) device\b/i,
+  /cannot send one from here/i,
 ]
 
 const COPY = import.meta.glob('../{components,screens,sheets,lib}/**/*.{ts,tsx}', {
@@ -195,35 +188,29 @@ const COPY = import.meta.glob('../{components,screens,sheets,lib}/**/*.{ts,tsx}'
 }) as Record<string, string>
 
 describe('what the phone tells the user about Transfer', () => {
-  it('never offers it as a way to send', () => {
-    /*
-     * Two exclusions, both narrow. `TransferScreen` is the file that EXPLAINS
-     * why the phone cannot send, so it necessarily contains the words. And a
-     * `.test.` file quotes the banned phrasings in order to assert they are
-     * absent — `clipboard-export.test.ts` holds both shipped sentences as
-     * `.not.toMatch` fixtures, which is the guard working, not a violation.
-     * The rule is about user-facing COPY; neither of these is copy.
-     */
+  it('says it sends to a computer, never that it only receives or reaches another phone', () => {
+    // A `.test.` file quotes the banned phrasings in order to assert they are
+    // absent; the rule is about user-facing copy.
     const offenders = Object.entries(COPY)
-      .filter(([path]) => !path.includes('TransferScreen') && !path.includes('.test.'))
-      .filter(([, code]) => SENDS_VIA_TRANSFER.some((r) => r.test(withoutComments(code))))
+      .filter(([path]) => !path.includes('.test.'))
+      .filter(([, code]) => MISLEADS_ABOUT_TRANSFER.some((r) => r.test(withoutComments(code))))
       .map(([path]) => path)
     expect(offenders, offenders.join('\n')).toEqual([])
   })
 
   it('would notice each phrasing that was actually shipped', () => {
-    // Guards the guard against the inertness the set-then-sweep rule had.
     const shipped = [
       'Nothing was copied. Use Transfer instead — it hands the whole store to another device.',
-      'The documents you attached stay on this phone — a transfer carries those too.',
+      'the clipboard is the only way out of this phone — Transfer only receives',
+      'Transfer brings a copy IN from your computer; it cannot send one from here.',
     ]
     for (const line of shipped) {
-      expect(SENDS_VIA_TRANSFER.some((r) => r.test(line)), line).toBe(true)
+      expect(MISLEADS_ABOUT_TRANSFER.some((r) => r.test(line)), line).toBe(true)
     }
     // And does not fire on the copy that replaced them.
     expect(
-      SENDS_VIA_TRANSFER.some((r) =>
-        r.test('the clipboard is the only way out of this phone — Transfer only receives'),
+      MISLEADS_ABOUT_TRANSFER.some((r) =>
+        r.test('Use Transfer to send everything to your computer over your local network'),
       ),
     ).toBe(false)
   })

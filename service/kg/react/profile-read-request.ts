@@ -44,7 +44,9 @@ let current: ProfileReadRequest | null = null
 const listeners = new Set<() => void>()
 
 const notify = (): void => {
-  for (const listener of [...listeners]) listener()
+  // A snapshot, so a listener that subscribes or unsubscribes while being called
+  // does not change who this round reaches.
+  for (const listener of Array.from(listeners)) listener()
 }
 
 /** The request standing, if any. A snapshot: stable until it changes. */

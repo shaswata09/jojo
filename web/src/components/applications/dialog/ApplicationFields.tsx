@@ -2,8 +2,9 @@ import { useId, useState } from 'react'
 import type { RefObject } from 'react'
 import { ChevronsUpDown } from 'lucide-react'
 import type { Errors, FormState } from '@/components/applications/dialog/form-state'
-import { Field, FormField, TextareaField } from '@/components/common/Field'
+import { Field, FormField } from '@/components/common/Field'
 import { KeywordPicker } from '@/components/common/KeywordPicker'
+import { RichNoteField } from '@/components/common/RichTextEditorField'
 import { Segment } from '@/components/common/Segment'
 import { Button } from '@/components/ui/button'
 import {
@@ -120,6 +121,8 @@ export function ApplicationFields({
   roleTagRef,
   deadlineRef,
   urlRef,
+  noteFormat,
+  onNoteFormatChange,
 }: {
   form: FormState
   errors: Errors
@@ -133,6 +136,15 @@ export function ApplicationFields({
   roleTagRef: RefObject<HTMLButtonElement | null>
   deadlineRef: RefObject<HTMLInputElement | null>
   urlRef: RefObject<HTMLInputElement | null>
+  /**
+   * The note's formatting, encoded (`encodeFormat`), and where an edit to it
+   * goes. Beside `form` rather than in it so the note's TEXT stays the plain
+   * `form.note` every other reader of the form already uses; the dialog that
+   * owns the form decides where the formatting is held and saves it with the
+   * rest. Absent, the note opens plain and the formatting is not reported.
+   */
+  noteFormat?: string | undefined
+  onNoteFormatChange?: (format: string) => void
 }) {
   return (
     // `-mx-4 px-4` cancels `DialogContent`'s own `p-4` and puts it straight
@@ -259,13 +271,19 @@ export function ApplicationFields({
         onChange={(e) => set('confirmationRef', e.target.value)}
       />
 
-      <TextareaField
+      {/* The rich text editor, as on the record's own note panel (Q268): the
+          text goes into the form as it always did, and the formatting beside
+          it is handed to the dialog, which saves both in one call. */}
+      <RichNoteField
         label="Note"
-        rows={3}
         placeholder="What still has to happen before this goes out."
         className="sm:col-span-2"
-        value={form.note}
-        onChange={(e) => set('note', e.target.value)}
+        text={form.note}
+        format={noteFormat}
+        onChange={(text, format) => {
+          set('note', text)
+          onNoteFormatChange?.(format)
+        }}
       />
 
       <FormField label="Keywords" className="sm:col-span-2">

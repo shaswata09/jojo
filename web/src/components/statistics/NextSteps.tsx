@@ -3,7 +3,7 @@ import { CircleCheck, Lightbulb, Ruler } from 'lucide-react'
 import { Panel } from '@/components/common/Panel'
 import { recommendationsFor } from '@jojo/service/core/recommend'
 import type { Recommendation } from '@jojo/service/core/recommend'
-import { useApplications } from '@jojo/service/react/use-applications'
+import { useScopedApplications } from '@/lib/roles-scope'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { TODAY } from '@/lib/today'
@@ -41,7 +41,8 @@ const BADGE: Record<Recommendation['strength'], { label: string; hint: string }>
 }
 
 export function NextSteps() {
-  const { all } = useApplications()
+  // The roles picked in the top bar, like every other figure on this page.
+  const { all } = useScopedApplications()
   const { all: timeline } = useTimeline()
   const graph = useGraph()
   const { projections } = useKg()

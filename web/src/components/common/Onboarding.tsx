@@ -23,7 +23,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useBoot } from '@/lib/boot-context'
-import { markOffered, wasOffered } from '@/lib/onboarding'
+import { markOffered, nextSetupStage, wasOffered } from '@/lib/onboarding'
 import type { OnboardingStage } from '@/lib/onboarding'
 import type { TourIntent } from '@/components/guide/GuidedTour'
 import { guidePath } from '@/lib/links'
@@ -112,7 +112,23 @@ export function Onboarding() {
   // The fork owns the screen until it is answered.
   if (needsDataChoice) return null
 
-  if (!detailsOffered && (fresh || isBlank)) {
+  // The order lives in `nextSetupStage`; each branch below says why its step
+  // sits where it does.
+  const stage = nextSetupStage({
+    fresh,
+    isBlank,
+    modelConfigured: isConfigured(settings),
+    offered: {
+      details: detailsOffered,
+      model: modelOffered,
+      reader: readerOffered,
+      extension: extensionOffered,
+      crash: crashOffered,
+      tour: tourOffered,
+    },
+  })
+
+  if (stage === 'details') {
     return <WelcomeDetails open fresh={fresh} onDone={() => finish('details')} />
   }
 
@@ -123,7 +139,7 @@ export function Onboarding() {
    * do things, and walking someone through the assistant before they have a
    * model connected shows them the scripted stand-in.
    */
-  if (!modelOffered) {
+  if (stage === 'model') {
     return <ConnectModelStep onSkip={() => finish('model')} onDone={() => finish('model')} />
   }
 
@@ -153,11 +169,11 @@ export function Onboarding() {
    * its own, which is why it is not gated on `isConfigured` the way the reader
    * is.
    */
-  if (!extensionOffered) {
+  if (stage === 'extension') {
     return <ExtensionStep onSkip={() => finish('extension')} onDone={() => finish('extension')} />
   }
 
-  if (!readerOffered && isConfigured(settings)) {
+  if (stage === 'reader') {
     return <DocumentReaderStep onSkip={() => finish('reader')} onDone={() => finish('reader')} />
   }
 
@@ -175,7 +191,7 @@ export function Onboarding() {
    * to on, so that build reported usage to Google having asked nobody. The
    * phone's `REPORTING_ASKABLE` is the same test, spelled the same way.
    */
-  if (!crashOffered) {
+  if (stage === 'crash') {
     if (CRASH_CAPABILITY === 'off' && ANALYTICS_CAPABILITY === 'off') {
       finish('crash')
       return null
@@ -183,7 +199,7 @@ export function Onboarding() {
     return <CrashStep onSkip={() => finish('crash')} onDone={() => finish('crash')} />
   }
 
-  if (!tourOffered) {
+  if (stage === 'tour') {
     return (
       <Dialog
         open

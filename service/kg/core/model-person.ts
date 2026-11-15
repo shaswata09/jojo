@@ -3,6 +3,7 @@
  * written for referees. Re-exported by `core/model.ts`.
  */
 
+import type { NoteSpan } from './model-format'
 import type { Props } from './model-graph'
 
 /**
@@ -113,6 +114,12 @@ export type PersonProps = {
   email?: string
   phone?: string
   note?: string
+  /**
+   * The formatting over `note`. Same shape and same rules as
+   * `ApplicationProps.noteFormat`; absent on every person saved before it
+   * existed, and on every person whose note is plain.
+   */
+  noteFormat?: NoteSpan[]
   /** One per application, only where something was written. See `RefereeBrief`. */
   briefs?: RefereeBrief[]
 }

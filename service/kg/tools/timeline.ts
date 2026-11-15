@@ -22,6 +22,7 @@
 import { addDays, shortDate } from '../core/dates'
 import { TIMELINE_KIND_VALUES, URGENCY_VALUES } from '../core/model'
 import type { ISODate, NodeId } from '../core/model'
+import { decodeFormat, formatWire, formatWrite, normaliseFormat } from '../core/note-format'
 import { s } from '../core/schema'
 import { defineTool } from './tool'
 import type { ToolContext } from './tool'
@@ -33,6 +34,8 @@ const fields = {
   title: s.optional(s.string({ min: 1, label: 'Title' })),
   detail: s.optional(s.string({ label: 'Detail' })),
   note: s.optional(s.string({ label: 'Note', multiline: true })),
+  /** The note editor's formatting, beside its text. See `formatWrite`. */
+  noteFormat: formatWire('Note formatting'),
   date: s.optional(s.isoDate({ label: 'Date' })),
   startMins: s.optional(s.nullable(s.number({ min: 0, max: 1439, int: true, label: 'Starts at' }))),
   durationMins: s.optional(s.nullable(s.number({ min: 0, int: true, label: 'Lasts' }))),
@@ -128,6 +131,7 @@ export const timelineItemCreate = defineTool({
 
   run(ctx, input): NodeId {
     const id = ctx.newId('timelineItem')
+    const note = cleared(input.note)
     ctx.tx.put({
       id,
       type: 'timelineItem',
@@ -139,7 +143,9 @@ export const timelineItemCreate = defineTool({
         urgency: input.urgency ?? 'gray',
         remind: input.remind ?? false,
         ...opt('detail', cleared(input.detail)),
-        ...opt('note', cleared(input.note)),
+        ...opt('note', note),
+        // Against the cleared text — the offsets have to fit what is stored.
+        ...opt('noteFormat', normaliseFormat(note ?? '', decodeFormat(input.noteFormat))),
         ...opt('startMins', input.startMins ?? undefined),
         ...opt('durationMins', input.durationMins ?? undefined),
         ...opt('location', cleared(input.location)),
@@ -177,7 +183,15 @@ export const timelineItemUpdate = defineTool({
   }),
 
   run(ctx, input) {
-    ctx.require('timelineItem', input.id)
+    const current = ctx.require('timelineItem', input.id)
+    const note = input.note === undefined ? undefined : (cleared(input.note) ?? '')
+    /*
+     * The formatting follows the text, as an application's note does: sent
+     * with it, it is kept; text sent without it — the phone, the assistant —
+     * carries the existing spans across, so a bold word stays on that word
+     * and never lands on a different one.
+     */
+    const noteFormat = formatWrite(current.props.note ?? '', note, current.props.noteFormat, input.noteFormat)
     ctx.tx.patch<'timelineItem'>(input.id, {
       ...(input.title === undefined ? {} : { title: input.title.trim() }),
       ...(input.date === undefined ? {} : { date: input.date }),
@@ -186,6 +200,7 @@ export const timelineItemUpdate = defineTool({
       ...(input.remind === undefined ? {} : { remind: input.remind }),
       ...(input.detail === undefined ? {} : { detail: cleared(input.detail) }),
       ...(input.note === undefined ? {} : { note: cleared(input.note) }),
+      ...(noteFormat === undefined ? {} : { noteFormat: noteFormat.value }),
       ...(input.startMins === undefined ? {} : { startMins: input.startMins ?? undefined }),
       ...(input.durationMins === undefined
         ? {}
@@ -373,7 +388,8 @@ export const timelineItemRemindSet = defineTool({
     ctx.tx.patch<'timelineItem'>(input.id, { remind: input.remind })
   },
 
-  describe: (input) => ({
+  describe: (input, _output, m) => ({
     title: input.remind ? 'Added to Reminders' : 'Removed from Reminders',
+    description: m.node(input.id, 'timelineItem')?.props.title ?? '',
   }),
 })

@@ -1,5 +1,6 @@
 import { useId } from 'react'
-import { Arrow, DASH } from '@/components/guide/diagrams/parts'
+import { DASH } from '@/components/guide/diagrams/marks'
+import { Arrow } from '@/components/guide/diagrams/parts'
 
 /**
  * One feature, traced through the layers: what happens when someone adds an

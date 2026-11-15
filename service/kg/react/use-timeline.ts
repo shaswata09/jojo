@@ -17,6 +17,7 @@
 
 import { useCallback, useMemo } from 'react'
 import { addDays, bucketOf, followUpsOf, remindersOf } from '../core/dates'
+import { filedUnder } from '../core/filed-under'
 import type { TimelineItem } from '../core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
@@ -48,7 +49,7 @@ export function useTimeline() {
 
   const forApplication = useCallback(
     // `includes`, not `===`: an item can be about several applications now.
-    (appId: string) => all.filter((i) => i.applicationIds.includes(appId)),
+    (appId: string) => filedUnder(all, appId),
     [all],
   )
 
@@ -65,14 +66,21 @@ export function useTimeline() {
     [all],
   )
 
+  /*
+   * `format` is the note's formatting ENCODED — `encodeFormat`'s string, the
+   * name the snippet draft uses — and goes to the tool as `noteFormat`. Not a
+   * field of `TimelineItem`: the item a screen holds never carries it, so a
+   * whole item handed back here cannot send stale spans.
+   */
   const add = useCallback(
-    (draft: TimelineDraft): TimelineItem => {
+    (draft: TimelineDraft & { format?: string }): TimelineItem => {
       const result = run('timeline.item.create', {
         title: draft.title,
         date: draft.date,
         kind: draft.kind,
         ...present('detail', draft.detail),
         ...present('note', draft.note),
+        ...present('noteFormat', draft.format),
         ...present('startMins', draft.startMins),
         ...present('durationMins', draft.durationMins),
         ...present('urgency', draft.urgency),
@@ -91,7 +99,7 @@ export function useTimeline() {
   )
 
   const update = useCallback(
-    (id: string, patch: Partial<TimelineItem>) => {
+    (id: string, patch: Partial<TimelineItem> & { format?: string }) => {
       return run('timeline.item.update', {
         id,
         ...present('title', patch.title),
@@ -101,6 +109,7 @@ export function useTimeline() {
         ...present('remind', patch.remind),
         ...asText('detail', patch, 'detail'),
         ...asText('note', patch, 'note'),
+        ...present('noteFormat', patch.format),
         ...asText('location', patch, 'location'),
         ...asText('joinUrl', patch, 'joinUrl'),
         ...asNull('startMins', patch, 'startMins'),

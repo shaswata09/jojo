@@ -1,5 +1,7 @@
 /**
  * Sending the backup to a phone that is already paired and already listening.
+ * The other direction — this computer pulling the phone's backup — is
+ * `handoff-pull.ts`, over the same pairing and the same socket.
  *
  * The last mile, and the only part of the transfer a person has to steer. By the
  * time this runs the phone has read the code and agreed a key; what it cannot do
@@ -67,7 +69,7 @@ export type SendState = {
 }
 
 /** What to say when the twelve characters do not parse. */
-const DIAL_ADVICE: Record<DialFailure, string> = {
+export const DIAL_ADVICE: Record<DialFailure, string> = {
   'dial/unreadable':
     'That code has characters jojo does not use. Check it against the other screen.',
   'dial/length': 'That code is the wrong length. It is twelve characters, in three groups of four.',
@@ -208,8 +210,8 @@ export function useHandoffSend({
          * `handoverAt` is a fact about THIS store — when it last agreed with
          * another one — so it belongs to the sender as much as to the receiver,
          * and each keeps its own. It is what lets the Transfer page say how far
-         * this device has drifted since, which is the one thing a one-directional
-         * transfer never told anybody.
+         * this device has drifted since, which is the one thing a whole-store,
+         * replace-not-merge transfer never told anybody.
          */
         repo.setMeta(handedOver(repo.meta, new Date().toISOString() as Instant))
         setStage('done')

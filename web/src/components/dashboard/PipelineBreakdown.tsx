@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router'
 import { ClipboardList, Plus } from 'lucide-react'
 import type { Stage } from '@jojo/service/data/seed'
-import { useApplications } from '@jojo/service/react/use-applications'
 import { Pie } from '@/components/charts/Pie'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Button } from '@/components/ui/button'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath } from '@/lib/links'
+import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
+import { useScopedApplications } from '@/lib/roles-scope'
 
 /**
  * Where everything currently sits. The single most informative thing a job
@@ -48,9 +49,12 @@ const STAGE_FILL: Record<Stage, string> = {
   closed: 'var(--stage-closed)',
 }
 
-/** How many applications sit in each stage. */
+/**
+ * How many applications sit in each stage — of the roles picked in the top
+ * bar, or of everything when none are.
+ */
 export function PipelineBody() {
-  const { all, stageCounts } = useApplications()
+  const { all, stageCounts, total } = useScopedApplications()
   const { open } = useDialogs()
   const navigate = useNavigate()
 
@@ -60,7 +64,9 @@ export function PipelineBody() {
           rendered six labelled rows of zero — technically true and useless, and
           reachable now that Settings can clear the records. A chart with
           nothing in it should say what would fill it. */}
-      {all.length === 0 ? (
+      {total > 0 && all.length === 0 ? (
+        <RoleScopeEmpty />
+      ) : all.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
           title="Nothing in the pipeline"

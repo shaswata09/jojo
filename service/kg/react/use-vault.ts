@@ -18,6 +18,7 @@
 
 import { useCallback, useMemo } from 'react'
 import type { ContactRole, Person, Snippet, VaultFile, VaultLink } from '../core/model'
+import { filedUnder } from '../core/filed-under'
 import { useGraph, useKg } from './kg-context'
 import { useReadBack } from './read-back'
 import { useRun } from './use-tool'
@@ -88,7 +89,8 @@ type FileDraft = Omit<VaultFile, 'id' | 'savedOn' | 'applicationIds'> & {
  * could express them would invite every other writer to try.
  */
 type SnippetDraft = Omit<Snippet, 'id' | 'applicationIds'> & Filing & { format?: string }
-type PersonDraft = Omit<Person, 'id' | 'applicationIds'> & Filing
+/** `format` is the note's formatting, ENCODED, as on `SnippetDraft`. */
+type PersonDraft = Omit<Person, 'id' | 'applicationIds'> & Filing & { format?: string }
 
 export function useVault() {
   const graph = useGraph()
@@ -119,10 +121,10 @@ export function useVault() {
     // `includes`, not `===`: a record can be filed under several applications
     // now, and the one being asked about may not be the first of them.
     (appId: string) => ({
-      links: links.filter((l) => l.applicationIds.includes(appId)),
-      files: files.filter((f) => f.applicationIds.includes(appId)),
-      snippets: snippets.filter((n) => n.applicationIds.includes(appId)),
-      people: people.filter((n) => n.applicationIds.includes(appId)),
+      links: filedUnder(links, appId),
+      files: filedUnder(files, appId),
+      snippets: filedUnder(snippets, appId),
+      people: filedUnder(people, appId),
     }),
     [links, files, snippets, people],
   )
@@ -315,6 +317,7 @@ export function useVault() {
         ...present('email', draft.email),
         ...present('phone', draft.phone),
         ...present('note', draft.note),
+        ...present('noteFormat', draft.format),
         ...present('applicationIds', draft.applicationIds),
         ...present(
           'roles',
@@ -330,7 +333,7 @@ export function useVault() {
   )
 
   const updatePerson = useCallback(
-    (id: string, patch: Partial<Person>) => {
+    (id: string, patch: Partial<Person> & { format?: string }) => {
       return run('vault.person.update', {
         id,
         ...present('name', patch.name),
@@ -339,6 +342,7 @@ export function useVault() {
         ...present('email', patch.email),
         ...present('phone', patch.phone),
         ...present('note', patch.note),
+        ...present('noteFormat', patch.format),
         ...asNull('applicationIds', patch, 'applicationIds'),
         // The whole list or nothing, like `applicationIds`: an empty list is
         // "every brief cleared", which is a real edit and has to reach the tool.

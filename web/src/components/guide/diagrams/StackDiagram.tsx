@@ -1,5 +1,6 @@
 import { useId } from 'react'
-import { Box, Connector, DASH } from '@/components/guide/diagrams/parts'
+import { DASH } from '@/components/guide/diagrams/marks'
+import { Box, Connector } from '@/components/guide/diagrams/parts'
 
 /**
  * The whole codebase as one stack: the three things a person touches on top,

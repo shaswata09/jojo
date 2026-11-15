@@ -23,7 +23,7 @@
 
 import { shortDate } from '../core/dates'
 import { OUTCOME_VALUES, SOURCES, STAGE_VALUES } from '../core/model'
-import { retextFormat } from '../core/note-format'
+import { decodeFormat, formatWrite, normaliseFormat } from '../core/note-format'
 import type { NodeId } from '../core/model'
 import { foldName } from '../core/ref'
 import { s } from '../core/schema'
@@ -33,7 +33,9 @@ import {
   cleared,
   fields,
   noteText,
+  offerNoteFormat,
   offerShape,
+  offerWrite,
   syncDeadline,
   syncKeywords,
 } from './application-fields'
@@ -126,6 +128,8 @@ export const applicationCreate = defineTool({
         slug: ctx.mintSlug('application', input.org),
         role: input.role.trim(),
         note: input.note?.trim() ?? '',
+        // Against the trimmed text, which is what the offsets have to fit.
+        ...opt('noteFormat', normaliseFormat(input.note?.trim() ?? '', decodeFormat(input.noteFormat))),
         roleTag: input.roleTag,
         stage: input.stage,
         // 'Draft created' is a lie for anything logged at a later stage, and
@@ -219,6 +223,7 @@ export const applicationUpdate = defineTool({
     stageDates: s.optional(s.nullable(stageDatesShape)),
     outcome: s.optional(s.nullable(s.enum(OUTCOME_VALUES, { label: 'Outcome' }))),
     offer: s.optional(s.nullable(offerShape)),
+    offerNoteFormat,
   }),
 
   run(ctx, input) {
@@ -244,6 +249,13 @@ export const applicationUpdate = defineTool({
       ctx.tx.link(input.id, 'AT', ctx.call('org.ensure', { name: input.org }))
     }
 
+    const noteFormat = formatWrite(
+      current.props.note,
+      input.note === undefined ? undefined : noteText(input.note),
+      current.props.noteFormat,
+      input.noteFormat,
+    )
+
     ctx.tx.patch<'application'>(input.id, {
       ...(input.role === undefined ? {} : { role: input.role.trim() }),
       ...(input.roleTag === undefined ? {} : { roleTag: input.roleTag }),
@@ -251,18 +263,16 @@ export const applicationUpdate = defineTool({
       /*
        * The spans move with the text, here rather than in the caller.
        *
-       * This is the second of exactly two places that may write `note`, and
-       * the remap lives INSIDE both so no caller can forget it — including the
-       * edit dialog, which sends `note` on every save even when it did not
-       * change, where `retextFormat` is a provable no-op. Against the TRIMMED
-       * value, because trimming shifts every offset.
+       * One of the places that may write `note`, and the rule lives INSIDE
+       * each so no caller can forget it: formatting sent with the text (the
+       * edit dialog's editor) is canonicalised against it, and text sent
+       * without any (the assistant, the phone) carries the existing spans
+       * across with `retextFormat` — a provable no-op when the text did not
+       * change. Against the TRIMMED value, because trimming shifts every
+       * offset. See `formatWrite`.
        */
-      ...(input.note === undefined
-        ? {}
-        : {
-            note: noteText(input.note),
-            noteFormat: retextFormat(current.props.note, noteText(input.note), current.props.noteFormat),
-          }),
+      ...(input.note === undefined ? {} : { note: noteText(input.note) }),
+      ...(noteFormat === undefined ? {} : { noteFormat: noteFormat.value }),
       ...(input.source === undefined ? {} : { source: input.source ?? undefined }),
       ...(input.location === undefined ? {} : { location: cleared(input.location) }),
       ...(input.comp === undefined ? {} : { comp: cleared(input.comp) }),
@@ -301,7 +311,8 @@ export const applicationUpdate = defineTool({
         ? enteredStage(dated, input.stage, dayOf(ctx.now))
         : {}),
       ...(input.outcome === undefined ? {} : { outcome: input.outcome ?? undefined }),
-      ...(input.offer === undefined ? {} : { offer: input.offer ?? undefined }),
+      // The offer and the formatting on its note, together: see `offerWrite`.
+      ...offerWrite(current.props, input.offer, input.offerNoteFormat),
     })
 
     syncKeywords(ctx, input.id, input.keywords)

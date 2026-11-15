@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Panel } from '@/components/common/Panel'
 import { comparisonsFor, MIN_ARM, rangeLabel } from '@jojo/service/core/segments'
 import type { Arm, Comparison } from '@jojo/service/core/segments'
-import { useApplications } from '@jojo/service/react/use-applications'
+import { useScopedApplications } from '@/lib/roles-scope'
 
 /**
  * Which parts of the search are doing better, and whether that means anything.
@@ -84,7 +84,8 @@ function Group({ c }: { c: Comparison }) {
 }
 
 export function WhatIsWorking() {
-  const { all } = useApplications()
+  // The roles picked in the top bar, like every other figure on this page.
+  const { all } = useScopedApplications()
   const comparisons = useMemo(() => comparisonsFor(all), [all])
 
   // Nothing to compare is the ordinary state of a young search, and the right

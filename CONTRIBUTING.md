@@ -38,6 +38,12 @@ of things to remember.
 If the gate is red on something you did not touch, check `git status` first;
 this repo is sometimes worked on from more than one place at once.
 
+[`docs/REQUESTS.md`](docs/REQUESTS.md) lists every fix and feature the owner has
+asked for and the tests that guard each one. If a change turns one of those tests
+red, it is undoing something that was asked for. Change the behaviour only on
+purpose, and record that in the list. A new request gets a Q-number there and at
+least one test.
+
 ## Where code goes
 
 - `service/` — everything both apps share: the graph, the tools, the agent, the

@@ -10,17 +10,13 @@ import type { Op } from '@jojo/service/core/calculator'
 // apart would let someone type a number the display could not print back.
 import { MAX_DIGITS } from '@jojo/service/core/calculator'
 import { planCalculatorKey } from './calculator-keys'
-
-/** History is a short memory, not an audit log. */
-const MAX_HISTORY = 30
+import { type HistoryEntry, withEntry } from './calculator-history'
 
 const MODES = [
   { value: 'basic', label: 'Basic' },
   { value: 'scientific', label: 'Scientific' },
 ] as const
 type Mode = (typeof MODES)[number]['value']
-
-type Entry = { id: number; expr: string; value: string }
 
 /**
  * A four-function calculator with an optional scientific pad and a running
@@ -48,13 +44,11 @@ export function Calculator() {
   const [replace, setReplace] = useState(true)
 
   const [mode, setMode] = useState<Mode>('basic')
-  const [history, setHistory] = useState<Entry[]>([])
+  const [history, setHistory] = useState<HistoryEntry[]>([])
   const [showHistory, setShowHistory] = useState(false)
 
   const record = useCallback((expr: string, value: string) => {
-    setHistory((prev) =>
-      [{ id: prev.length ? prev[0].id + 1 : 1, expr, value }, ...prev].slice(0, MAX_HISTORY),
-    )
+    setHistory((prev) => withEntry(prev, expr, value))
   }, [])
 
   const digit = useCallback(

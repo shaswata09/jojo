@@ -120,7 +120,7 @@ export function SnippetEditor({
         label="Text"
         required
         error={bodyError}
-        hint="Stored as plain text — line breaks survive, the formatting buttons do not."
+        hint="Size, colour, bold, italic, underline and strikethrough are saved with the text. Lists and tables are kept as plain lines."
       >
         <div className="relative">
           {/* Over the toolbar's right end rather than beside the field

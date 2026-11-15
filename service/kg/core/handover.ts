@@ -3,13 +3,15 @@
  *
  * ## The problem
  *
- * Transfer is one-directional, manual and on demand: records move onto a phone
- * over a camera handshake, and nothing moves back. That is a platform fact — a
- * browser cannot accept an inbound connection — and the README says so honestly.
- * What was missing is that nothing in the app ever mentioned the CONSEQUENCE:
- * add a record on the laptop and another on the phone, and you have two stores
- * that can never be reconciled, because the only merge available is a restore,
- * which replaces everything.
+ * Transfer is manual, on demand and whole-store: records move between a phone
+ * and a computer over a camera handshake, in either direction, and the device
+ * that receives is REPLACED rather than merged into. (The phone always listens
+ * and the computer always connects — a browser cannot accept an inbound
+ * connection — but the computer can pull as well as push; see
+ * `handoff-pull.ts`.) What was missing is that nothing in the app ever
+ * mentioned the CONSEQUENCE: add a record on the laptop and another on the
+ * phone, and you have two stores that can never be reconciled, because the only
+ * merge available is a restore, which replaces everything.
  *
  * Divergence you can see is a different thing from divergence you discover. This
  * is the seeing.

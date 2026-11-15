@@ -1,68 +1,9 @@
 import * as React from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
+import type { VariantProps } from 'class-variance-authority'
 import { Slot } from 'radix-ui'
 
+import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
-
-const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-  {
-    variants: {
-      variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/80',
-        outline:
-          'border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
-        // `hover:bg-row-hover`, not the `color-mix()` over `var(--secondary)`
-        // and `var(--foreground)` this used to carry. Neither of THOSE two
-        // names is a custom property anywhere in the stylesheet — both resolve
-        // to the empty string — so the mix was invalid at computed-value time,
-        // `background-color` fell back to its initial value, and the hover
-        // measured `rgba(0, 0, 0, 0)` in both themes: the button did not move
-        // under the pointer.
-        //
-        // The prefixed `--color-secondary` and `--color-foreground` DO resolve
-        // at runtime (measured `#171717` dark / `#f5f5f5` light), so `@theme
-        // inline` is not the culprit and a mix over those would have worked —
-        // an earlier version of this comment claimed otherwise and was wrong.
-        // The bug was only ever the missing `--color-` prefix. `--row-hover` is
-        // still the better answer: it is the token the palette defines for
-        // exactly this step ("move away from the page" — darker in light,
-        // lighter in dark), so a named utility replaces the arbitrary value.
-        secondary:
-          'bg-secondary text-secondary-foreground hover:bg-row-hover aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
-        ghost:
-          'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
-        // The ink is the danger red pushed toward the page's far pole, not the
-        // red itself: on its own tinted fill, in a confirm dialog's muted
-        // footer, plain `text-destructive` measured 4.27:1 light and 4.36:1
-        // dark. Mixed in sRGB so the arithmetic matches what was measured:
-        // light ≥ 5.1:1 and dark ≥ 4.9:1 over the fill and its hover, on both
-        // the dialog body and its footer. The dark fill steps down (/15, /20)
-        // because the lighter ink alone could not clear 4.5 over /30.
-        destructive:
-          'bg-destructive/10 text-[color-mix(in_srgb,var(--color-destructive)_80%,black)] hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/15 dark:text-[color-mix(in_srgb,var(--color-destructive)_85%,white)] dark:hover:bg-destructive/20 dark:focus-visible:ring-destructive/40',
-        link: 'text-primary underline-offset-4 hover:underline',
-      },
-      size: {
-        default:
-          'h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: 'h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
-        icon: 'size-8',
-        'icon-xs':
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        'icon-sm':
-          'size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg',
-        'icon-lg': 'size-9',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
-  },
-)
 
 function Button({
   className,
@@ -87,4 +28,4 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+export { Button }

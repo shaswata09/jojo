@@ -9,7 +9,7 @@ import { FILE_BUCKET_VALUES, FILE_KIND_VALUES } from '../core/model'
 import type { NodeId } from '../core/model'
 import { s } from '../core/schema'
 import { defineTool } from './tool'
-import { dayOf, opt } from './support'
+import { dayOf, namesOf, opt } from './support'
 import { applicationIds, cleared, fileUnder } from './vault-shared'
 
 const fileId = s.id('file', { label: 'File' })
@@ -92,9 +92,9 @@ export const vaultFileAdd = defineTool({
     })
   },
 
-  describe: (_input, ids) => ({
+  describe: (input, ids) => ({
     title: ids.length === 1 ? 'Document added' : `${ids.length} documents added`,
-    description: `The name, size and type are kept — the file itself is not read.`,
+    description: `${namesOf(input.files)}. The name, size and type are kept — the file itself is not read.`,
   }),
 })
 
@@ -229,7 +229,10 @@ export const vaultFileMove = defineTool({
     ctx.tx.patch<'file'>(input.id, { bucket: input.bucket })
   },
 
-  describe: (input) => ({ title: `Moved to ${input.bucket}` }),
+  describe: (input, _output, m) => ({
+    title: `Moved to ${input.bucket}`,
+    description: m.node(input.id, 'file')?.props.name ?? '',
+  }),
 })
 
 export const vaultFileNoteSet = defineTool({
@@ -251,5 +254,8 @@ export const vaultFileNoteSet = defineTool({
     })
   },
 
-  describe: (input) => ({ title: input.note.trim() ? 'Note saved' : 'Note cleared' }),
+  describe: (input, _output, m) => ({
+    title: input.note.trim() ? 'Note saved' : 'Note cleared',
+    description: m.node(input.id, 'file')?.props.name ?? '',
+  }),
 })

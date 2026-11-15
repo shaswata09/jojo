@@ -89,7 +89,7 @@ describe('emptyReason', () => {
 
   it('joins several with commas and a final "and"', () => {
     expect(reason({ query: 'x', stageFilter: 'offer', roleCount: 1 })).toBe(
-      'Nothing carries that search, the Offer stage and the selected roles.',
+      'Nothing carries that search, the Offer stage and the roles selected in the top bar.',
     )
   })
 

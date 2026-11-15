@@ -148,7 +148,7 @@ describe('elements whose text the serialiser writes literally', () => {
     // CSSOM with `<` escaped (see `rulesOf`); the rest are stripped or escaped.
     const literal = ['style', 'script', 'xmp', 'iframe', 'noembed', 'noframes', 'plaintext', 'noscript']
     const stripped: readonly string[] = CAPTURE_STRIP_TAGS
-    const escaped = /querySelectorAll\('([^']*)'\)\]\) \{\s*const pre/.exec(code)?.[1].split(',').map((s) => s.trim()) ?? []
+    const escaped = /querySelectorAll\('([^']*)'\)\) \{\s*const pre/.exec(code)?.[1].split(',').map((s) => s.trim()) ?? []
     for (const tag of literal) {
       expect(tag === 'style' || stripped.includes(tag) || escaped.includes(tag), tag).toBe(true)
     }

@@ -1,10 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { ToolHost } from '@jojo/service/agent/execute'
 import { mcpAllowed } from '@jojo/service/agent/mcp'
 import { useToolHost } from '@jojo/service/react/use-tool-host'
 import { relayToBridge } from '@/lib/capture-bridge'
 import { BRIDGE_ADDRESS, directTransport, mintToken, runElected, runLink } from '@/lib/mcp-link'
+import { McpLinkContext } from '@/lib/mcp-link-context'
+import type { McpLink } from '@/lib/mcp-link-context'
 import type { LinkStatus, LinkTransport } from '@/lib/mcp-link'
 import { useReadDocument } from '@/lib/read-document'
 import { readStored, writeStored } from '@/lib/storage'
@@ -48,31 +50,6 @@ function load(): Stored {
   } catch {
     return { enabled: false, token: '' }
   }
-}
-
-export type McpLinkStatus = LinkStatus | { state: 'off' }
-
-export type McpLink = {
-  enabled: boolean
-  /** Empty until the link is first switched on; minted then, kept after. */
-  token: string
-  status: McpLinkStatus
-  /** Client messages answered since the page loaded. */
-  served: number
-  lastMethod: string | null
-  /** True on a hosted copy, where the extension carries the link. */
-  viaExtension: boolean
-  setEnabled: (on: boolean) => void
-  /** A new token. The old commands stop working, which is the point of pressing it. */
-  regenerate: () => void
-}
-
-const McpLinkContext = createContext<McpLink | null>(null)
-
-export function useMcpLink(): McpLink {
-  const ctx = useContext(McpLinkContext)
-  if (!ctx) throw new Error('useMcpLink must be used inside <McpLinkProvider>')
-  return ctx
 }
 
 /** Pages served from this machine; only they may call the bridge without the extension. */

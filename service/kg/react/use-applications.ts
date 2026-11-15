@@ -20,7 +20,13 @@
 
 import { useCallback, useMemo } from 'react'
 import { resolveAddress } from '../core/address'
-import type { Application, ApplicationPatch, OfferApplication, Stage } from '../core/model'
+import type {
+  Application,
+  ApplicationFormatWrites,
+  ApplicationPatch,
+  OfferApplication,
+  Stage,
+} from '../core/model'
 import { SOURCES, STAGE_LABEL, STAGE_VALUES } from '../core/model'
 import { useGraph, useKg } from './kg-context'
 import { useRun } from './use-tool'
@@ -46,7 +52,8 @@ export type ApplicationDraft = Omit<
   'id' | 'slug' | 'lastAction' | 'daysAgo' | 'stageDates'
 > &
   Partial<Pick<Application, 'lastAction' | 'daysAgo'>> &
-  FormWrites<string>
+  FormWrites<string> &
+  Pick<ApplicationFormatWrites, 'noteFormat'>
 
 /**
  * The two writes the form owns beyond the record: its deadline and its keyword
@@ -89,6 +96,7 @@ export function applicationCreateInput(draft: ApplicationDraft) {
     roleTag: draft.roleTag,
     stage: draft.stage,
     note: draft.note,
+    ...present('noteFormat', draft.noteFormat),
     ...present('lastAction', draft.lastAction),
     ...present('source', draft.source),
     ...present('location', draft.location),
@@ -127,6 +135,9 @@ export function applicationUpdateInput(
     ...present('org', patch.org),
     ...asText('role', patch, 'role'),
     ...asText('note', patch, 'note'),
+    // Encoded spans, beside the text they belong to. Absent keeps what is
+    // there, moved onto the new text by the tool.
+    ...present('noteFormat', patch.noteFormat),
     ...present('roleTag', patch.roleTag),
     ...present('stage', patch.stage),
     ...present('lastAction', patch.lastAction),
@@ -145,6 +156,7 @@ export function applicationUpdateInput(
     ...asNull('stageDates', patch, 'stageDates'),
     ...asNull('outcome', patch, 'outcome'),
     ...asNull('offer', patch, 'offer'),
+    ...present('offerNoteFormat', patch.offerNoteFormat),
     // `null` is a real value here (delete the deadline), so `present` and not
     // `asNull`: only an absent key means "leave it alone".
     ...present('deadline', writes.deadline),
@@ -236,11 +248,10 @@ export function useApplications() {
   /**
    * The note, with its formatting.
    *
-   * Separate from `update` on purpose. `applicationUpdateInput` is an explicit
-   * field list and `application.update`'s schema takes the note's TEXT and
-   * nothing else, so neither can carry spans and neither can forget to — the
-   * tool moves the existing formatting onto the new text by itself. Only this
-   * path, used by the note editor, may replace the formatting outright.
+   * The note panel's path. `update` can carry formatting too now (the edit
+   * dialog's Note is the same editor), as `noteFormat` beside `note`; either
+   * way, text sent without formatting has the existing spans moved onto it by
+   * the tool.
    *
    * `format` omitted means "keep what is there, moved"; `format` given replaces
    * it; an empty string clears it.

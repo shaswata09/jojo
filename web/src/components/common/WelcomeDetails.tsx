@@ -160,7 +160,7 @@ export function WelcomeDetails({
             value={draft.fullName}
             autoComplete="name"
             autoFocus
-            placeholder="e.g. Alex Rivera"
+            placeholder="e.g. Lonardo Jenson"
             onChange={set('fullName')}
           />
           <Field

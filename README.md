@@ -477,7 +477,7 @@ charts. Adding a job already tracked says so, matching on the posting URL or on
 employer-and-role, and never on employer alone: three roles at one university is
 the case this product is for.
 
-**Two devices:** still one-directional, and now honest about the cost. Transfer
+**Two devices:** both directions between a phone and a computer, still whole-store and replace-not-merge, and honest about the cost. Transfer
 records when it last happened at both ends, so each side can say how far it has
 drifted since — "last transfer 6 days ago, and 11 changes have been made here
 since". That is not sync and does not pretend to be; it is the number you want

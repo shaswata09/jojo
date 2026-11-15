@@ -20,7 +20,7 @@
 import { s } from '../core/schema'
 import type { NodeId, ThreadEntry } from '../core/model'
 import { APPROVAL_MODES, APPROVAL_SAID, APPROVAL_TITLE } from '../core/model'
-import { nameOf } from './support'
+import { displayOf, nameOf } from './support'
 import { defineTool } from './tool'
 
 /**
@@ -93,7 +93,7 @@ export const threadCreate = defineTool({
     }
     return id
   },
-  describe: () => ({ title: 'Conversation started' }),
+  describe: (_input, id, m) => ({ title: 'Conversation started', description: nameOf(m, id) }),
 })
 
 /**
@@ -130,7 +130,7 @@ export const threadSet = defineTool({
     const kept = input.entries.slice(-TURN_CAP) as ThreadEntry[]
     ctx.tx.patch<'thread'>(input.id, { entries: kept })
   },
-  describe: () => ({ title: 'Conversation saved' }),
+  describe: (input, _output, m) => ({ title: 'Conversation saved', description: nameOf(m, input.id) }),
 })
 
 export const threadRename = defineTool({
@@ -172,8 +172,16 @@ export const threadFile = defineTool({
       ctx.tx.link(input.id, 'FILED_UNDER', input.applicationId)
     }
   },
-  describe: (input) => ({
-    title: input.applicationId === null ? 'Unfiled' : 'Filed under the application',
+  /*
+   * Both ends named: the conversation that moved is the record changed, and
+   * "the application" over a list of twelve said nothing about which one.
+   */
+  describe: (input, _output, m) => ({
+    title:
+      input.applicationId === null
+        ? 'Unfiled'
+        : `Filed under ${displayOf(m, input.applicationId) || 'the application'}`,
+    description: nameOf(m, input.id),
   }),
 })
 
@@ -221,10 +229,18 @@ export const threadAutoSet = defineTool({
      */
     ctx.tx.patch<'thread'>(input.id, { approval: input.mode, autoApprove: undefined })
   },
-  describe: (input) => ({
-    title: APPROVAL_TITLE[input.mode],
-    description: APPROVAL_SAID[input.mode],
-  }),
+  /*
+   * The conversation is named because this is a confirmed, permission-raising
+   * write: the card has to say WHICH conversation stops asking, not only what
+   * stopping means.
+   */
+  describe: (input, _output, m) => {
+    const name = nameOf(m, input.id)
+    return {
+      title: APPROVAL_TITLE[input.mode],
+      description: name ? `In “${name}”: ${APPROVAL_SAID[input.mode]}` : APPROVAL_SAID[input.mode],
+    }
+  },
 })
 
 export const threadDelete = defineTool({
@@ -291,5 +307,5 @@ export const threadContextSet = defineTool({
     ctx.require('thread', input.id)
     ctx.tx.patch<'thread'>(input.id, { context: input.context, contextThrough: input.through })
   },
-  describe: () => ({ title: 'Earlier messages summarised' }),
+  describe: (input, _output, m) => ({ title: 'Earlier messages summarised', description: nameOf(m, input.id) }),
 })

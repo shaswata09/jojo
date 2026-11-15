@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { popoverLabelling } from './popover'
+import { popoverLabelling } from './popover-labelling'
 import popoverSource from './popover.tsx?raw'
 
 const sources = import.meta.glob('../../**/*.{ts,tsx}', {

@@ -30,6 +30,10 @@ import { DESKTOP_QUERY, useMediaQuery, useReducedMotion } from '@/lib/use-media-
 import { useRoles } from '@/lib/roles-context'
 
 export function Applications() {
+  // The top bar's role selection, not a copy of it: this list, the dashboard
+  // and Statistics all narrow by the same picks, so a role chosen here is still
+  // chosen on the next page. "Show all" below clears it as well, because an
+  // empty list whose cause sits in the top bar should still be one press away.
   const { matches, selected: selectedRoles, clear: clearRoles } = useRoles()
   const { matches: keywordMatches, selected: selectedKeywords, clearSelected } = useLabels()
   const { all, get } = useApplications()

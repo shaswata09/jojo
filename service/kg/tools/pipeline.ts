@@ -41,6 +41,7 @@ import { s } from '../core/schema'
 import type { NodeId } from '../core/model'
 import { MAX_PROPOSAL_READING, PIPELINE_KINDS } from '../core/model'
 import type { ToolName } from './index'
+import { nameOf } from './support'
 import { defineTool } from './tool'
 
 const proposalId = s.id('proposal', { label: 'Suggestion' })
@@ -275,7 +276,7 @@ export const proposalFail = defineTool({
       error: input.error.trim(),
     })
   },
-  describe: () => ({ title: 'Could not be applied' }),
+  describe: (input, _output, m) => ({ title: 'Could not be applied', description: nameOf(m, input.id) }),
 })
 
 /**
@@ -319,7 +320,7 @@ export const proposalReadingSet = defineTool({
     }
     ctx.tx.patch<'proposal'>(input.id, { reading: input.reading })
   },
-  describe: () => ({ title: 'Posting read' }),
+  describe: (input, _output, m) => ({ title: 'Posting read', description: nameOf(m, input.id) }),
 })
 
 /* ------------------------------- housekeeping ----------------------------- */
@@ -471,5 +472,5 @@ export const pipelineRunRecord = defineTool({
     const idle = input.raised > 0 ? 0 : (pipeline.props.idleRounds ?? 0) + 1
     ctx.tx.patch<'pipeline'>(input.id, { lastRunAt: ctx.now, idleRounds: idle })
   },
-  describe: () => ({ title: 'Pipeline ran' }),
+  describe: (input, _output, m) => ({ title: 'Pipeline ran', description: nameOf(m, input.id) }),
 })

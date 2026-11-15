@@ -206,5 +206,8 @@ export const vaultSnippetRetag = defineTool({
     ctx.tx.patch<'snippet'>(input.id, { tag: input.tag })
   },
 
-  describe: (input) => ({ title: `Moved to ${input.tag}` }),
+  describe: (input, _output, m) => ({
+    title: `Moved to ${input.tag}`,
+    description: m.node(input.id, 'snippet')?.props.title ?? '',
+  }),
 })

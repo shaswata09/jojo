@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Smartphone } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -12,6 +12,7 @@ import { totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
 import { ConnectPanel } from '@/components/transfer-ui/ConnectPanel'
 import { useBackup } from '@/lib/backup'
 import { useHandoffSend } from '@/lib/handoff-send'
+import { useHandoffPull } from '@/lib/handoff-pull'
 import { usePairingSession } from '@/lib/pairing-session'
 import { replacesOffer } from '@/components/transfer-ui/send-cycle'
 import { Button } from '@/components/ui/button'
@@ -26,8 +27,8 @@ import { useLabels } from '@/lib/labels-context'
 import { settingsPath, useTitle } from '@/lib/links'
 
 const ROLES = [
-  { value: 'send', label: 'Send from this device' },
-  { value: 'receive', label: 'Receive on this device' },
+  { value: 'send', label: 'Send to phone' },
+  { value: 'receive', label: 'Receive from phone' },
 ] as const satisfies readonly { value: TransferRole; label: string }[]
 
 /**
@@ -43,6 +44,8 @@ const ROLES = [
  * `ConnectPanel` then takes the address the phone shows, asks it for its half
  * of the handshake, and streams the backup in sealed chunks — over the local
  * network, to a private address, with no server and no relay anywhere in it.
+ * Both devices have to be on the same local network for any of it to connect,
+ * and the copy on both roles says so.
  *
  * The last piece of theatre went with `useTransferRun`: the stage card walked a
  * timer through the groups and finished on "nothing moved" while, a few inches
@@ -52,10 +55,13 @@ const ROLES = [
  *
  * ## Receiving
  *
- * A browser cannot. Not a gap — `TCPServerSocket` is Isolated-Web-Apps only, so
- * no web page can accept an inbound connection — and the reason the phone is
- * the listening side in the first place. The receive role says so and points at
- * the backup file, which is what actually works in that direction.
+ * A browser cannot be connected TO — `TCPServerSocket` is Isolated-Web-Apps
+ * only — which is why the phone is always the listening side. It never needed
+ * to be. The phone chooses Send to a computer, reads the same animation, and
+ * listens exactly as it does to receive; this page dials it the same way, and
+ * then ASKS for the phone's backup chunk by chunk instead of posting its own
+ * (`lib/handoff-pull.ts`). What arrives goes through the restore a backup file
+ * goes through, behind the same confirmation.
  *
  * The counts come from the live store rather than from a fixture, which is the
  * point of showing them: what you are about to move is what you actually have.
@@ -74,11 +80,11 @@ export function Transfer() {
   /*
    * The live pairing offer.
    *
-   * Only minted while this device is the one SENDING — the offer holds a private
-   * key and a secret, and a receiving device has no use for either. Switching
-   * role tears the session down, which is what `active` does here.
+   * Minted in BOTH roles: receiving pairs exactly as sending does, by the phone
+   * reading this screen. A role switch puts a fresh code up (below), so the
+   * code on screen always belongs to the direction on screen.
    */
-  const pairing = usePairingSession(role === 'send')
+  const pairing = usePairingSession(true)
   const backup = useBackup()
   /*
    * Whether the current run has handed the phone's answer to the pairing — the
@@ -110,6 +116,11 @@ export function Transfer() {
     complete,
     build: () => backup.build({ documents: sendFiles }),
   })
+  /*
+   * Receiving from the phone. Shares `complete` with the send, so the same
+   * `answered` line decides when the code is spent in either direction.
+   */
+  const pull = useHandoffPull({ complete })
   /**
    * Off by default.
    *
@@ -247,6 +258,8 @@ export function Transfer() {
   // convoy to the same phone. Returning the function covers both — React runs
   // cleanup before re-running the effect, so a role switch still cancels.
   useEffect(() => cancel, [role, cancel])
+  const { cancel: cancelPull } = pull
+  useEffect(() => cancelPull, [role, cancelPull])
 
   /*
    * A new code once the run that used this one is over — done, failed after
@@ -258,11 +271,26 @@ export function Transfer() {
    * with the refresh is what makes one finished run mint one new code.
    */
   const { refresh } = pairing
+  // The stage of the run for the role on screen. The other role's run was
+  // cancelled by the switch, so it cannot be the one holding the offer.
+  const stage = role === 'send' ? send.stage : pull.stage
   useEffect(() => {
-    if (!replacesOffer(send.stage, answered)) return
+    if (!replacesOffer(stage, answered)) return
     setAnswered(false)
     refresh()
-  }, [send.stage, answered, refresh])
+  }, [stage, answered, refresh])
+
+  // A fresh code on every role switch — not on the first render, which mints
+  // its own. A phone that scanned the send code and is waiting to RECEIVE
+  // would refuse a pull anyway (`core/handoff.ts` speaks one direction per
+  // listener); a new code makes the mismatch impossible rather than refused.
+  const shownRole = useRef(role)
+  useEffect(() => {
+    if (shownRole.current === role) return
+    shownRole.current = role
+    setAnswered(false)
+    refresh()
+  }, [role, refresh])
 
   const empty = totalOf(groups) === 0
 
@@ -270,7 +298,7 @@ export function Transfer() {
     <>
       <PageHeader
         title="Transfer"
-        subtitle="Move everything to another device"
+        subtitle="Move everything between this computer and your phone"
         settings={
           <>
             <PageOption
@@ -320,7 +348,7 @@ export function Transfer() {
         <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           <TransferStage
             role={role}
-            stage={send.stage}
+            stage={stage}
             groups={offered}
             showScene={showScene}
             canStart={offered.length > 0}
@@ -344,7 +372,7 @@ export function Transfer() {
                 />
               </>
             ) : (
-              <ReceivePanel />
+              <ReceivePanel pull={pull} token={pairing.token} />
             )}
           </div>
         </div>

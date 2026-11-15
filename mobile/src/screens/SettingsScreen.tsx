@@ -399,16 +399,13 @@ export function SettingsScreen() {
             there is nothing to switch on, and nothing leaves the device. Documents you attach are
             copied into jojo&rsquo;s own folder, so they survive the original being moved or deleted.
           </Txt>
-          {/* Export, and only Export. This said "or Transfer, which hands the
-              whole store to another device", which is true on the COMPUTER and
-              false here: a browser cannot accept an inbound connection, so the
-              phone is always the side that listens. `TransferScreen`'s own
-              header says it — "The phone cannot send… So sending points at the
-              export under Settings" — which is this screen, so the sentence
-              sent the reader in a circle. */}
+          {/* Both ways out. The phone is still always the side that listens —
+              a browser cannot accept an inbound connection — but since
+              2026-11-15 the computer can connect and PULL the phone's backup,
+              so Transfer sends from here as well as receiving. */}
           <Txt size="sm" tone="secondary">
-            To get a copy out, use Export below. Transfer brings a copy IN from your computer; it
-            cannot send one from here.
+            To get a copy out, use Export below, or Transfer to send everything to your computer over
+            your local network.
           </Txt>
         </Panel>
 

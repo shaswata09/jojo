@@ -115,7 +115,9 @@ export function createProjections(today: ISODate): Projections {
     applicationFrom(n, g, today)
 
   const projectTimelineItem = (n: StoredNode<'timelineItem'>, g: GraphSnapshot): TimelineItem => {
-    const { slug: _slug, ...rest } = n.props
+    // `noteFormat` is dropped as a file's is, below: one dialog draws it, and
+    // it reads it off the node.
+    const { slug: _slug, noteFormat: _format, ...rest } = n.props
     return {
       ...rest,
       id: n.id,
@@ -248,7 +250,7 @@ export function createProjections(today: ISODate): Projections {
      */
     people: sortedBy(
       createProjection('person', (n, g): Person => {
-        const { slug: _slug, briefs: stored, ...rest } = n.props
+        const { slug: _slug, briefs: stored, noteFormat: _format, ...rest } = n.props
         const { applicationIds } = filedUnder(g, n.id)
         // Only briefs about a job they are still named on — see `RefereeBrief`
         // for why a stale one is kept in storage but never shown.

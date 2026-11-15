@@ -13,9 +13,10 @@ import { WhatIsWorking } from '@/components/statistics/WhatIsWorking'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { statsFor } from '@/data/statistics'
-import { useApplications } from '@jojo/service/react/use-applications'
 import { useDialogs } from '@/lib/dialogs-context'
 import { applicationsPath, useTitle } from '@/lib/links'
+import { RoleScopeEmpty } from '@/lib/roles-scope-empty'
+import { useScopedApplications } from '@/lib/roles-scope'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
 import { cn } from '@/lib/utils'
 
@@ -41,7 +42,9 @@ export function Statistics() {
   useTitle('Statistics')
   // The benchmark is useful, and noisy when you are reading your own numbers.
   const [showTypical, setShowTypical] = useState(true)
-  const { all } = useApplications()
+  // Every figure on this page counts the roles picked in the top bar, and all
+  // of them when none are picked.
+  const { all, total, filtered } = useScopedApplications()
   const { open } = useDialogs()
 
   const { sent, funnel, outcomes, roles } = useMemo(() => statsFor(all), [all])
@@ -54,6 +57,23 @@ export function Statistics() {
   // Nothing on this page survives a zero: a rate has no denominator, a funnel
   // has no first step, and every panel would be an invented search sitting
   // beside a store the user has just emptied.
+  //
+  // A filter that hides every record is not that zero: the records are there,
+  // so the page says what is hiding them and how to bring them back.
+  if (total > 0 && all.length === 0) {
+    return (
+      <>
+        <PageHeader
+          title="Statistics"
+          subtitle="The role filter in the top bar leaves nothing to measure."
+        />
+        <Panel>
+          <RoleScopeEmpty />
+        </Panel>
+      </>
+    )
+  }
+
   if (all.length === 0) {
     return (
       <>
@@ -86,9 +106,17 @@ export function Statistics() {
         // there are no headline rates for the switch to change and no figure
         // on the page wearing the word "typical" for the subtitle to explain.
         subtitle={
-          sent > 0
-            ? 'Counted from your own records. Figures labelled typical are a sample search, there to compare against.'
-            : 'Counted from your own records. It fills in as applications go out.'
+          // Says when the role filter is narrowing it, since the filter
+          // itself sits up in the top bar, away from these figures.
+          `${
+            filtered
+              ? `Counted from the ${all.length} of your ${total} applications under the roles picked in the top bar.`
+              : 'Counted from your own records.'
+          } ${
+            sent > 0
+              ? 'Figures labelled typical are a sample search, there to compare against.'
+              : 'It fills in as applications go out.'
+          }`
         }
         settings={
           sent > 0 ? (

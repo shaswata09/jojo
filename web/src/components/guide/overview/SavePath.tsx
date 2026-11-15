@@ -1,4 +1,4 @@
-import { DASH } from '@/components/guide/diagrams/parts'
+import { DASH } from '@/components/guide/diagrams/marks'
 /**
  * What happens between pressing Save and the record being on disk.
  *

@@ -172,5 +172,8 @@ export const vaultLinkRecategorise = defineTool({
     ctx.tx.patch<'link'>(input.id, { category: input.category })
   },
 
-  describe: (input) => ({ title: `Moved to ${input.category}` }),
+  describe: (input, _output, m) => ({
+    title: `Moved to ${input.category}`,
+    description: m.node(input.id, 'link')?.props.title ?? '',
+  }),
 })

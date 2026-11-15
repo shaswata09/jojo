@@ -119,6 +119,28 @@ export const kindOf = (p: Pipeline): PipelineKind => p.kind ?? 'scout'
 /** Auto is a property of the pipeline AND of its kind. Both, every time. */
 export const isAuto = (p: Pipeline): boolean => p.auto === true && AUTO_CAPABLE[kindOf(p)]
 
+/**
+ * The pipeline the shutdown modal asks about, or null. See `shutdownOffer` in
+ * `usePipelines` for why it is derived; lifted out so a test can hold it.
+ */
+export function shutdownCandidate(
+  pipelines: readonly Pipeline[],
+  proposals: readonly Pick<Proposal, 'pipelineId' | 'status'>[],
+  running: string | null,
+): Pipeline | null {
+  if (running !== null) return null
+  return (
+    pipelines.find(
+      (p) =>
+        p.enabled &&
+        shouldOfferShutdown(
+          p.idleRounds ?? 0,
+          proposals.filter((q) => q.pipelineId === p.id && q.status === 'pending').length,
+        ),
+    ) ?? null
+  )
+}
+
 export function usePipelines({
   llm,
   llmFor,
@@ -416,17 +438,7 @@ export function usePipelines({
    * pipeline with nothing to do, whatever the counter said a moment ago.
    */
   const shutdownOffer = useMemo(
-    () =>
-      running === null
-        ? (pipelines.find(
-            (p) =>
-              p.enabled &&
-              shouldOfferShutdown(
-                p.idleRounds ?? 0,
-                proposals.filter((q) => q.pipelineId === p.id && q.status === 'pending').length,
-              ),
-          ) ?? null)
-        : null,
+    () => shutdownCandidate(pipelines, proposals, running),
     [pipelines, proposals, running],
   )
 

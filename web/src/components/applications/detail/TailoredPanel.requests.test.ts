@@ -1,0 +1,45 @@
+/**
+ * Owner requests about the tailored materials on an application:
+ * - Q254: they show as cards without their content, and Preview opens the
+ *   snippet preview dialog;
+ * - Q257: a card's description sits on a second row of its own, not squeezed
+ *   under the title beside the buttons.
+ *
+ * JSX-only decisions, so D20 leaves a narrow source read of `TailoredCard`.
+ */
+
+import { describe, expect, it } from 'vitest'
+import panel from './TailoredPanel.tsx?raw'
+
+const card = /function TailoredCard\([\s\S]*$/.exec(panel)?.[0] ?? ''
+
+describe('Q254 — tailored materials are cards, previewed in a dialog', () => {
+  it('found the card', () => {
+    expect(card).not.toBe('')
+  })
+
+  it('never prints the tailored body on the card', () => {
+    expect(card).not.toMatch(/\bs\.body\b/)
+  })
+
+  it('opens the snippet from a Preview button and from the title', () => {
+    expect(card).toMatch(/onClick=\{onPreview\} aria-label=\{`Preview \$\{s\.title\}`\}>\s*Preview/)
+    expect(card).toMatch(/<button\s+type="button"\s+onClick=\{onPreview\}/)
+  })
+
+  it('previews in the snippet preview dialog', () => {
+    expect(panel).toContain('onPreview={() => setPreviewing(s.id)}')
+    expect(panel).toMatch(/<SnippetPreviewDialog\s+snippet=\{preview && asPreview\(preview\)\}/)
+  })
+})
+
+describe('Q257 — the description is a second row of its own', () => {
+  it('puts the provenance line after the title row closes, as the card’s own row', () => {
+    const titleRowEnd = card.indexOf('</RowMenu>')
+    const description = card.indexOf('{s.tag} · from {s.from}')
+    expect(titleRowEnd).toBeGreaterThan(0)
+    expect(description).toBeGreaterThan(titleRowEnd)
+    // A paragraph directly in the card, the full width of it.
+    expect(card).toMatch(/<\/div>\s*<\/div>\s*\{\/\*[\s\S]*?\*\/\}\s*<p className="mt-1 truncate text-xs text-text-3">\s*\{s\.tag\}/)
+  })
+})

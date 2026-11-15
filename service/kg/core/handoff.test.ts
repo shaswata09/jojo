@@ -14,8 +14,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   MAX_BODY_BYTES,
+  PULL_REQUEST_BYTES,
   chunkPath,
   pairPath,
+  pullPath,
   readRequest,
   requestLength,
   writeResponse,
@@ -208,5 +210,60 @@ describe('what it answers with', () => {
     // prefix shorter than that finds no separator and silently reads from 3.
     const end = textOf(bytes).indexOf('\r\n\r\n') + 4
     expect([...bytes.subarray(end)]).toEqual([...payload])
+  })
+})
+
+/*
+ * Q129: the phone also serves its own backup, to a computer that asks for it.
+ * The listener speaks ONE direction for its whole life, and the other
+ * direction's requests are refused by shape — a phone that is sending must not
+ * accept chunks, and one that is receiving has nothing to hand out.
+ */
+describe('a phone that is sending (the pull direction)', () => {
+  const proof = new Uint8Array(PULL_REQUEST_BYTES).fill(7)
+
+  it('reads a pull request, body intact, only when it is sending', () => {
+    const read = readRequest(post(pullPath(TOKEN), proof), TOKEN, 'pull')
+    expect(read).toEqual({ route: 'pull', body: proof })
+    // The same bytes to a phone that is receiving are nothing it answers.
+    expect(readRequest(post(pullPath(TOKEN), proof), TOKEN)).toBe('refused')
+    expect(readRequest(post(pullPath(TOKEN), proof), TOKEN, 'push')).toBe('refused')
+  })
+
+  it('refuses a chunk posted to a phone that is sending', () => {
+    expect(readRequest(post(chunkPath(TOKEN), new Uint8Array(8)), TOKEN, 'pull')).toBe('refused')
+    // And the preflight for it, so a browser is never told it may try.
+    const preflight = request(`OPTIONS ${chunkPath(TOKEN)} HTTP/1.1${NL}${NL}`)
+    expect(readRequest(preflight, TOKEN, 'pull')).toBe('refused')
+  })
+
+  it('still answers the pairing request and the pull preflight', () => {
+    expect(readRequest(get(pairPath(TOKEN)), TOKEN, 'pull')).toEqual({
+      route: 'pair',
+      body: new Uint8Array(0),
+    })
+    const preflight = request(`OPTIONS ${pullPath(TOKEN)} HTTP/1.1${NL}${NL}`)
+    expect(readRequest(preflight, TOKEN, 'pull')).toEqual({
+      route: 'preflight',
+      body: new Uint8Array(0),
+    })
+  })
+
+  it("refuses a pull under a different session's token", () => {
+    const other = 'fedcba9876543210fedcba9876543210'
+    expect(readRequest(post(pullPath(other), proof), TOKEN, 'pull')).toBe('refused')
+    expect(readRequest(get(pairPath(other)), TOKEN, 'pull')).toBe('refused')
+  })
+
+  it('refuses a pull request of any size but the one it has', () => {
+    // Bigger is the attack — a phone asked to buffer a body it has no use for.
+    // Smaller is a request it cannot read. Both are refused on the declared
+    // length, before the body is waited for.
+    for (const size of [0, PULL_REQUEST_BYTES - 1, PULL_REQUEST_BYTES + 1, MAX_BODY_BYTES]) {
+      const head = request(
+        `POST ${pullPath(TOKEN)} HTTP/1.1${NL}Content-Length: ${size}${NL}${NL}`,
+      )
+      expect(readRequest(head, TOKEN, 'pull'), String(size)).toBe('refused')
+    }
   })
 })

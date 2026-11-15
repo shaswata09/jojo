@@ -305,7 +305,14 @@ export function applicationFrom(
    * board card, table row and dashboard entry that never draws one. Only the
    * note panel reads it, and it reads it off the node.
    */
-  const { lastActionAt, checklist: _checklist, noteFormat: _noteFormat, ...rest } = n.props
+  // `offerNoteFormat` is the offer's note's spans, dropped for the same reason.
+  const {
+    lastActionAt,
+    checklist: _checklist,
+    noteFormat: _noteFormat,
+    offerNoteFormat: _offerNoteFormat,
+    ...rest
+  } = n.props
   return {
     ...rest,
     id: n.id,

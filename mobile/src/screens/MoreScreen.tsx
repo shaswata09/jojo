@@ -96,7 +96,7 @@ export function MoreScreen() {
     {
       screen: 'Transfer',
       label: 'Transfer',
-      hint: 'Move everything to another device',
+      hint: 'Move everything to or from your computer',
       icon: 'smartphone',
     },
   ]

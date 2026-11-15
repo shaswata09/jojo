@@ -84,6 +84,12 @@ export function CalendarScreen() {
           that did not happen is worse than silence.
         </li>
         <li>
+          The event types under the grid are switches, like a chart&rsquo;s legend: turn one off and
+          its entries leave the grid and both day lists, for this visit. A day whose entries are all
+          switched off says so rather than claiming to be empty, and a link to an entry of a hidden
+          type turns that type back on so it has something to land on.
+        </li>
+        <li>
           The key under the grid is built from what this month actually holds. A month with nothing
           overdue in it does not list an overdue colour, because a key promising a mark that is not
           on the grid sends you hunting for it.

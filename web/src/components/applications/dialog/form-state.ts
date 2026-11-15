@@ -32,6 +32,12 @@ export type ApplicationInitial = Partial<Application> & {
    * and no Undo — the edits the person had just asked for back were gone.
    */
   restored?: boolean
+  /**
+   * The note's formatting, ENCODED (`encodeFormat`). Not on `Application` —
+   * the projection carries no spans — so the dialog reads it off the node
+   * when it opens on a record, and Undo hands it back with the draft.
+   */
+  noteFormat?: string
 }
 
 export type FormState = {
@@ -50,6 +56,8 @@ export type FormState = {
   comp: string
   deadline: string
   note: string
+  /** Beside `note`, encoded. `''` is a plain note. */
+  noteFormat: string
 }
 
 export type FieldKey = 'org' | 'role' | 'roleTag' | 'url' | 'deadline'
@@ -74,6 +82,7 @@ export function formFrom(initial?: ApplicationInitial): FormState {
     comp: initial?.comp ?? '',
     deadline: initial?.deadline ?? '',
     note: initial?.note ?? '',
+    noteFormat: initial?.noteFormat ?? '',
   }
 }
 

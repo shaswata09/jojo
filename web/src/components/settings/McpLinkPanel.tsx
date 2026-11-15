@@ -5,8 +5,8 @@ import { Panel, PanelTitle } from '@/components/common/Panel'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { bridgeCommand, clientCommand } from '@/lib/mcp-link'
-import { useMcpLink } from '@/lib/mcp-link-provider'
-import type { McpLink, McpLinkStatus } from '@/lib/mcp-link-provider'
+import { useMcpLink } from '@/lib/mcp-link-context'
+import type { McpLink, McpLinkStatus } from '@/lib/mcp-link-context'
 import { publicUrl } from '@/lib/public-url'
 
 /**

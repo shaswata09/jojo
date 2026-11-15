@@ -22,6 +22,8 @@ export function DayRail({
   selected,
   selectedISO,
   events,
+  hiddenOnDay = 0,
+  onShowAllKinds,
   restOfMonth,
   focus,
   isCurrentMonth,
@@ -36,6 +38,9 @@ export function DayRail({
   selectedISO: string
   /** What is on the selected day, already sorted. */
   events: TimelineItem[]
+  /** Events on the selected day whose type the grid's legend has switched off. */
+  hiddenOnDay?: number
+  onShowAllKinds?: () => void
   /** Everything later in the month than the selected day. */
   restOfMonth: TimelineItem[]
   /** The item a link arrived naming, tinted until the highlight decays. */
@@ -68,7 +73,25 @@ export function DayRail({
         {selected === month.today ? 'Today' : 'Selected day'}
       </PanelTitle>
 
-      {events.length === 0 ? (
+      {/* A day whose every event is switched off is not an empty day. Saying
+          "Nothing on 14 Oct" there would be the legend's choice presented as
+          a fact about the calendar, so it says what is hidden and how to get
+          it back instead. */}
+      {events.length === 0 && hiddenOnDay > 0 ? (
+        <EmptyState
+          className="py-6"
+          icon={CalendarDays}
+          title={`Nothing shown on ${shortDate(selectedISO)}`}
+          description={`${String(hiddenOnDay)} ${hiddenOnDay === 1 ? 'event is' : 'events are'} of a type switched off under the grid.`}
+          action={
+            onShowAllKinds ? (
+              <Button variant="outline" size="sm" onClick={onShowAllKinds}>
+                Show all event types
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : events.length === 0 ? (
         <EmptyState
           className="py-6"
           icon={CalendarDays}

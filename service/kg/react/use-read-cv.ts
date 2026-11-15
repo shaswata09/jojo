@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 import {
   cvMessages,
   cvPasses,
@@ -155,163 +155,173 @@ const TOO_SHORT = 120
  */
 const MAX_PASSES = 8
 
+/**
+ * The reader itself, over an injected model turn and document reader — a plain
+ * function, so what it asks the model can be tested without rendering anything
+ * (D20). `useReadCv` below only keeps its identity stable for as long as its
+ * two dependencies are.
+ */
+export function readCvWith<S extends Cancellation>({
+  turn,
+  readDocument,
+}: ReadCvDeps<S>): (options: ReadCvOptions<S>) => Promise<CvOutcome> {
+  return async ({ fileId, name, settings, onStep, signal }: ReadCvOptions<S>): Promise<CvOutcome> => {
+    /* ----------------------------- 1. read ----------------------------- */
+    onStep?.('Opening the document')
+    const document = await readDocument(fileId)
+    if (!document.ok) return { ok: false, reason: document.reason }
+
+    const markdown = document.markdown
+    if (markdown.trim().length < TOO_SHORT) {
+      return {
+        ok: false,
+        reason: `${name} came back with almost no text. A document that was scanned rather than typed is a picture as far as the reader is concerned — there is nothing in it to read.`,
+      }
+    }
+
+    /* --------------------------- 2. section --------------------------- */
+    /*
+     * What kind of document this is, decided before anything is asked of the
+     * model. A research statement read as a CV returns three entries out of
+     * thirty — it is prose and the list guidance does not fit it — and a
+     * cover letter read as anything else files the employer's qualifications
+     * as the person's. See `core/document-kind.ts`.
+     */
+    const kind = documentKindOf(name, markdown)
+    const all = cvPasses(markdown)
+    const passes = all.slice(0, MAX_PASSES)
+    const found: BackgroundDraft[][] = []
+    const skipped: string[] = []
+
+    if (all.length > passes.length) {
+      skipped.push(
+        `The document has ${String(all.length)} sections and only the first ${String(passes.length)} were read.`,
+      )
+    }
+
+    /* ----------------------------- 3. ask ----------------------------- */
+    for (const [i, pass] of passes.entries()) {
+      if (signal?.aborted) break
+      onStep?.(
+        passes.length === 1
+          ? `Reading your ${DOCUMENT_LABEL[kind]}`
+          : `Reading ${pass.label} (${String(i + 1)} of ${String(passes.length)})`,
+      )
+
+      const reply = await turn(settings, cvMessages(name, pass, kind), [], signal)
+      if (!reply.ok) {
+        skipped.push(`${pass.label}: ${reply.reason}`)
+        continue
+      }
+      if (reply.text === null || reply.text.trim() === '') {
+        skipped.push(`${pass.label}: the model answered with nothing at all.`)
+        continue
+      }
+      const read = readCv(reply.text)
+      if (!read.ok) {
+        // Not fatal, and often not even wrong: a "Referees" or "Interests"
+        // section legitimately holds nothing this app records, and the
+        // parser's refusal for it reads the same as a failure.
+        skipped.push(`${pass.label}: ${read.reason}`)
+        continue
+      }
+      found.push([...read.background])
+      skipped.push(...read.skipped.map((s) => `${pass.label}: ${s}`))
+    }
+
+    const merged = mergeBackground(found)
+    if (merged.length === 0) {
+      return {
+        ok: false,
+        reason:
+          skipped[0] ??
+          'Nothing in that document could be read as a fact about you.',
+      }
+    }
+
+    /* -------------------------- 4. look again -------------------------- */
+    /*
+     * Skipped when the document was one pass anyway AND that pass succeeded:
+     * asking a model to check its own single answer against the same text it
+     * just read is the case where the omission pass earns least and costs a
+     * whole round trip.
+     */
+    if (!signal?.aborted && (passes.length > 1 || skipped.length > 0)) {
+      onStep?.('Checking for anything missed')
+      const reply = await turn(
+        settings,
+        missedMessages(name, markdown, merged, kind),
+        [],
+        signal,
+      )
+      if (reply.ok && reply.text !== null && reply.text.trim() !== '') {
+        const read = readCv(reply.text)
+        // A second look that finds nothing is the commonest correct outcome,
+        // and `readCv` reports an empty list as a refusal — so its failure is
+        // not worth reporting to anybody.
+        if (read.ok) found.push([...read.background])
+      }
+    }
+
+    const background = mergeBackground(found)
+
+    /* ------------------------ 5. how they relate ----------------------- */
+    /*
+     * Last, and separately, because a model asked for facts AND how they
+     * relate in one reply does neither well — and the entries have to be
+     * numbered before anything can point at them, which is only possible once
+     * they are final.
+     *
+     * Its failure costs the relations and never the entries: this runs after
+     * a reading that already succeeded, and a person who uploaded a CV should
+     * get their thirty facts whether or not the graph also learned that one
+     * of them evidences another.
+     */
+    let relations: readonly RelationDraft[] = []
+    let linking: LinkResult | null = null
+    if (!signal?.aborted && background.length > 1) {
+      /*
+       * A SEPARATE AGENT PASS, over every pair, in batches.
+       *
+       * This was one request carrying all thirty entries, inside a `catch {}`
+       * described as deliberately silent. Thirty entries is the shape that
+       * hits a model's output limit; a truncated reply parses to nothing; and
+       * nothing said so — which is how the graph came to be a collection of
+       * nodes with no edges at all.
+       *
+       * `linkProfile` asks about the records in front of it and no more, and
+       * `pairBatches` guarantees every pair is in front of it once. It never
+       * throws: a batch that fails is counted, and the count comes back here
+       * so the caller can say the graph is thin rather than implying it is
+       * complete.
+       */
+      linking = await linkProfile(
+        { ask: (messages) => turn(settings, messages, [], signal) },
+        name,
+        markdown,
+        background,
+        {
+          ...(signal === undefined ? {} : { signal }),
+          onBatch: (done, total) =>
+            onStep?.(`Working out how these connect — ${String(done)} of ${String(total)}`),
+        },
+      )
+      relations = linking.relations
+    }
+
+    return {
+      ok: true,
+      background,
+      relations,
+      skipped,
+      ...(linking === null ? {} : { linking }),
+    }
+  }
+}
+
 export function useReadCv<S extends Cancellation>({
   turn,
   readDocument,
 }: ReadCvDeps<S>): (options: ReadCvOptions<S>) => Promise<CvOutcome> {
-  return useCallback(
-    async ({ fileId, name, settings, onStep, signal }: ReadCvOptions<S>): Promise<CvOutcome> => {
-      /* ----------------------------- 1. read ----------------------------- */
-      onStep?.('Opening the document')
-      const document = await readDocument(fileId)
-      if (!document.ok) return { ok: false, reason: document.reason }
-
-      const markdown = document.markdown
-      if (markdown.trim().length < TOO_SHORT) {
-        return {
-          ok: false,
-          reason: `${name} came back with almost no text. A document that was scanned rather than typed is a picture as far as the reader is concerned — there is nothing in it to read.`,
-        }
-      }
-
-      /* --------------------------- 2. section --------------------------- */
-      /*
-       * What kind of document this is, decided before anything is asked of the
-       * model. A research statement read as a CV returns three entries out of
-       * thirty — it is prose and the list guidance does not fit it — and a
-       * cover letter read as anything else files the employer's qualifications
-       * as the person's. See `core/document-kind.ts`.
-       */
-      const kind = documentKindOf(name, markdown)
-      const all = cvPasses(markdown)
-      const passes = all.slice(0, MAX_PASSES)
-      const found: BackgroundDraft[][] = []
-      const skipped: string[] = []
-
-      if (all.length > passes.length) {
-        skipped.push(
-          `The document has ${String(all.length)} sections and only the first ${String(passes.length)} were read.`,
-        )
-      }
-
-      /* ----------------------------- 3. ask ----------------------------- */
-      for (const [i, pass] of passes.entries()) {
-        if (signal?.aborted) break
-        onStep?.(
-          passes.length === 1
-            ? `Reading your ${DOCUMENT_LABEL[kind]}`
-            : `Reading ${pass.label} (${String(i + 1)} of ${String(passes.length)})`,
-        )
-
-        const reply = await turn(settings, cvMessages(name, pass, kind), [], signal)
-        if (!reply.ok) {
-          skipped.push(`${pass.label}: ${reply.reason}`)
-          continue
-        }
-        if (reply.text === null || reply.text.trim() === '') {
-          skipped.push(`${pass.label}: the model answered with nothing at all.`)
-          continue
-        }
-        const read = readCv(reply.text)
-        if (!read.ok) {
-          // Not fatal, and often not even wrong: a "Referees" or "Interests"
-          // section legitimately holds nothing this app records, and the
-          // parser's refusal for it reads the same as a failure.
-          skipped.push(`${pass.label}: ${read.reason}`)
-          continue
-        }
-        found.push([...read.background])
-        skipped.push(...read.skipped.map((s) => `${pass.label}: ${s}`))
-      }
-
-      const merged = mergeBackground(found)
-      if (merged.length === 0) {
-        return {
-          ok: false,
-          reason:
-            skipped[0] ??
-            'Nothing in that document could be read as a fact about you.',
-        }
-      }
-
-      /* -------------------------- 4. look again -------------------------- */
-      /*
-       * Skipped when the document was one pass anyway AND that pass succeeded:
-       * asking a model to check its own single answer against the same text it
-       * just read is the case where the omission pass earns least and costs a
-       * whole round trip.
-       */
-      if (!signal?.aborted && (passes.length > 1 || skipped.length > 0)) {
-        onStep?.('Checking for anything missed')
-        const reply = await turn(
-          settings,
-          missedMessages(name, markdown, merged, kind),
-          [],
-          signal,
-        )
-        if (reply.ok && reply.text !== null && reply.text.trim() !== '') {
-          const read = readCv(reply.text)
-          // A second look that finds nothing is the commonest correct outcome,
-          // and `readCv` reports an empty list as a refusal — so its failure is
-          // not worth reporting to anybody.
-          if (read.ok) found.push([...read.background])
-        }
-      }
-
-      const background = mergeBackground(found)
-
-      /* ------------------------ 5. how they relate ----------------------- */
-      /*
-       * Last, and separately, because a model asked for facts AND how they
-       * relate in one reply does neither well — and the entries have to be
-       * numbered before anything can point at them, which is only possible once
-       * they are final.
-       *
-       * Its failure costs the relations and never the entries: this runs after
-       * a reading that already succeeded, and a person who uploaded a CV should
-       * get their thirty facts whether or not the graph also learned that one
-       * of them evidences another.
-       */
-      let relations: readonly RelationDraft[] = []
-      let linking: LinkResult | null = null
-      if (!signal?.aborted && background.length > 1) {
-        /*
-         * A SEPARATE AGENT PASS, over every pair, in batches.
-         *
-         * This was one request carrying all thirty entries, inside a `catch {}`
-         * described as deliberately silent. Thirty entries is the shape that
-         * hits a model's output limit; a truncated reply parses to nothing; and
-         * nothing said so — which is how the graph came to be a collection of
-         * nodes with no edges at all.
-         *
-         * `linkProfile` asks about the records in front of it and no more, and
-         * `pairBatches` guarantees every pair is in front of it once. It never
-         * throws: a batch that fails is counted, and the count comes back here
-         * so the caller can say the graph is thin rather than implying it is
-         * complete.
-         */
-        linking = await linkProfile(
-          { ask: (messages) => turn(settings, messages, [], signal) },
-          name,
-          markdown,
-          background,
-          {
-            ...(signal === undefined ? {} : { signal }),
-            onBatch: (done, total) =>
-              onStep?.(`Working out how these connect — ${String(done)} of ${String(total)}`),
-          },
-        )
-        relations = linking.relations
-      }
-
-      return {
-        ok: true,
-        background,
-        relations,
-        skipped,
-        ...(linking === null ? {} : { linking }),
-      }
-    },
-    [readDocument, turn],
-  )
+  return useMemo(() => readCvWith({ turn, readDocument }), [readDocument, turn])
 }

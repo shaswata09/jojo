@@ -124,12 +124,13 @@ export const applicationNoteSet = defineTool({
   effect: 'update',
   touches: ['application'],
   /*
-   * The ONLY tool that may write formatting, and that narrowness is the design.
+   * The note panel's write: the text and, from its editor, the formatting.
    *
-   * `application.update` and `application.create` take the note's text and
-   * nothing else, so three of the four places that could have forgotten to
-   * carry spans cannot express them at all. What is left is here, where the
-   * note editor sends them, and the remap below for everybody else.
+   * `application.update` and `application.create` take formatting too now,
+   * because the edit dialog's Note is the same editor and has to save in the
+   * same call as the rest of the form. All three apply one rule —
+   * `formatWrite` in `core/note-format.ts` — so formatting sent is kept and
+   * text sent without it moves what is there.
    */
   input: s.object({
     id: appId,

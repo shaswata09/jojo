@@ -119,7 +119,7 @@ Two rules that are easy to break and are guarded:
 
 ## The guards
 
-`npm -w @jojo/service run lint` runs oxlint and seven scripts (`check-layers`, `check-platform`, `check-no-copies`, `check-compositions`, `check-projects`, `check-docs`, `check-status`). **Both apps run them
+`npm -w @jojo/service run lint` runs oxlint and eight scripts (`check-layers`, `check-platform`, `check-no-copies`, `check-compositions`, `check-projects`, `check-docs`, `check-status`, `check-requests`). **Both apps run them
 too**, so a violation in mobile's tree fails web's lint.
 
 - `scripts/check-layers.mjs` — the import direction above, plus what an app's adapter
@@ -132,6 +132,9 @@ too**, so a violation in mobile's tree fails web's lint.
 - `scripts/check-no-copies.mjs` — one copy of the layer, reached through the exports
   map. Written after `mobile/src/kg` spent four months as a `cp -R` of `web/src/kg`
   that drifted 813 lines with nothing able to see it.
+- `scripts/check-requests.mjs` — `docs/REQUESTS.md`, every fix and feature the owner
+  has asked for, names the tests that would fail if it broke; this fails when a cited
+  test file or test title no longer exists, so a refactor cannot quietly drop a guard.
 
 All three discover the apps from the workspace list in the root `package.json`. They
 used to name `web` and `mobile` as literals, which meant a third app would have been

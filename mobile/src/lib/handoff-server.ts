@@ -13,8 +13,13 @@
  * Because a browser cannot. There is no API in any browser for accepting an
  * inbound connection — Direct Sockets exists and is restricted to Isolated Web
  * Apps, which a static site is not. So of the two devices, only this one can be
- * the server, and the direction of the transfer is decided by that platform
- * limit rather than by design.
+ * the server.
+ *
+ * That decides who CONNECTS, not which way the records go. In `push` the
+ * computer posts its backup here; in `pull` it asks this phone for the phone's
+ * backup, chunk by chunk, and reads the answers (`core/handoff-pull.ts`). One
+ * listener speaks one direction, chosen when it starts, and the parser refuses
+ * the other direction's requests by shape.
  *
  * ## What is open, and for how long
  *
@@ -36,6 +41,7 @@ import {
   readRequest,
   requestLength,
   writeResponse,
+  type HandoffDirection,
   type HandoffRequest,
 } from '@jojo/service/core/handoff'
 
@@ -63,6 +69,7 @@ export type HandoffServer = {
 export function startHandoffServer(
   token: string,
   answer: (request: HandoffRequest) => Promise<HandoffAnswer>,
+  direction: HandoffDirection = 'push',
 ): Promise<HandoffServer> {
   return new Promise((resolve, reject) => {
     const sockets = new Set<{ destroy: () => void }>()
@@ -146,7 +153,7 @@ export function startHandoffServer(
         }
         if (busy) return
 
-        const read = readRequest(held, token)
+        const read = readRequest(held, token, direction)
         if (read === 'incomplete') return
         if (read === 'refused') {
           // Bytes, handed over as bytes. All three of the responses this file

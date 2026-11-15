@@ -111,7 +111,7 @@ function fakeBridge(options: { chunks?: readonly string[]; text?: string }) {
       if (message.type !== REQUEST) return
       const deliver = (data: unknown) => {
         // A copy, because a listener removes itself while we are iterating.
-        for (const fn of [...listeners]) fn({ source: win, origin, data })
+        for (const fn of Array.from(listeners)) fn({ source: win, origin, data })
       }
       // Asynchronous, like the real one: `ask` posts before it can be answered.
       queueMicrotask(() => {
