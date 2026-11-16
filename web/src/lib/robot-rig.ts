@@ -28,8 +28,9 @@ import { POSE_MS, type MascotPose } from '@/lib/mascot-context'
  *
  * The first rule was "body only": arm gestures on the old Spline robot read as
  * a limb flailing near a robot. With a real skeleton the owner asked for the
- * arms back in the dance and in new moves (2026-11-15). The five gestures they
- * dropped — Hello, Thumbs up, Head scratch, Thinking, Excited — stay dropped.
+ * arms back in the dance and in new moves (2026-11-15). Of the five gestures
+ * they dropped, Hello came back as Hi at their request; Thumbs up, Head
+ * scratch, Thinking and Excited stay dropped.
  */
 
 /** Old scene units to this scene's: about one centimetre. */
@@ -50,6 +51,11 @@ export const BONE_KEYS = [
   'rUpper',
   'rFore',
   'rHand',
+  'rIndex1',
+  'rIndex2',
+  'rIndex3',
+  'rThumb1',
+  'rThumb2',
 ] as const
 export type BoneKey = (typeof BONE_KEYS)[number]
 
@@ -68,6 +74,12 @@ export const BONE_NAMES: Record<BoneKey, string> = {
   rUpper: 'CC_Base_R_Upperarm_062',
   rFore: 'CC_Base_R_Forearm_065',
   rHand: 'CC_Base_R_Hand_070',
+  // The right hand's fingers: one index chain carries all four, and a thumb.
+  rIndex1: 'CC_Base_R_Index1_074',
+  rIndex2: 'CC_Base_R_Index2_075',
+  rIndex3: 'CC_Base_R_Index3_076',
+  rThumb1: 'CC_Base_R_Thumb1_071',
+  rThumb2: 'CC_Base_R_Thumb2_072',
 }
 
 /** `bot` is the whole robot — a hop, a spin; the rest are bones. */
@@ -167,6 +179,50 @@ export const GESTURES: Record<Exclude<MascotPose, 'idle'>, Track[]> = {
   ],
 
   // A deep bow from the waist, right hand to the chest, held, then up.
+  // Hi: the robot's right hand up beside its head, waving side to side, the
+  // head tipped toward it. Asked for by the owner on 2026-11-15 as the first
+  // thing the robot does when the page loads (Q033, revised again). The right
+  // side's z is mirrored (see `both`). Raised sideways, the hand went to the
+  // card's corner — the rest pose angles the arm outward — so it is bent up
+  // at the elbow instead.
+  hi: [
+    // The pose Hands up uses for its right hand — beside the head, which the
+    // card keeps in frame — and the forearm rocking about it: the wave.
+    r('rUpper', 'z', hold(-0.6, 0.16, 0.8, 0.18)),
+    r('rUpper', 'x', hold(-0.3, 0.16, 0.8, 0.18)),
+    r('rFore', 'x', hold(-1.8, 0.18, 0.8, 0.18)),
+    // Swung mostly inward, toward the face: an outward swing as wide carried
+    // the hand behind the moves button in the card's corner.
+    r('rFore', 'z', [
+      [0, 0],
+      [0.26, 0],
+      [0.34, 0.35],
+      [0.42, -0.1],
+      [0.5, 0.35],
+      [0.58, -0.1],
+      [0.66, 0.35],
+      [0.74, 0],
+      [1, 0],
+    ]),
+    // An open, flat palm: the fingers straightened out of their resting
+    // curl (one index chain carries all four), the thumb spread away from
+    // them, and the hand turned a little so the palm faces out. Measured on
+    // frozen frames: a wave with the rig's resting hand read as a fist.
+    r('rIndex1', 'z', hold(-0.6, 0.18, 0.8, 0.18)),
+    r('rIndex2', 'z', hold(-0.5, 0.18, 0.8, 0.18)),
+    r('rIndex3', 'z', hold(-0.4, 0.18, 0.8, 0.18)),
+    r('rThumb1', 'z', hold(-0.6, 0.18, 0.8, 0.18)),
+    r('rThumb2', 'z', hold(-0.4, 0.18, 0.8, 0.18)),
+    r('rHand', 'y', hold(-0.35, 0.18, 0.8, 0.18)),
+    r('head', 'z', hold(0.12, 0.2, 0.8, 0.18)),
+    r('chest', 'z', hold(-0.05, 0.2, 0.8, 0.18)),
+    k('bot', 'position', 'y', [
+      [0, 0],
+      [0.14, 3],
+      [0.3, 0],
+      [1, 0],
+    ]),
+  ],
   bow: [
     k('bot', 'rotation', 'x', hold(0.3, 0.26, 0.68, 0.32)),
     k('bot', 'position', 'y', hold(-6, 0.26, 0.68, 0.32)),
@@ -958,6 +1014,7 @@ const f = (key: FaceKey, keys: [number, number][]): FaceTrack => ({ key, keys })
 const FACES: Partial<Record<Exclude<MascotPose, 'idle'>, FaceTrack[]>> = {
   nod: [f('smile', hold(0.8, 0.15, 0.8))],
   shake: [f('squint', hold(0.45, 0.12, 0.82))],
+  hi: [f('smile', hold(1, 0.15, 0.85, 0.15))],
   bow: [f('smile', hold(0.7, 0.2, 0.7, 0.3)), f('squint', hold(0.5, 0.26, 0.68, 0.3))],
   leanIn: [f('wide', hold(0.55, 0.2, 0.82))],
   wobble: [f('squint', hold(0.35, 0.15, 0.85))],

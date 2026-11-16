@@ -965,6 +965,25 @@ html[data-theme='dark'] {
     transform: translateY(3%) rotate(360deg) scaleY(0.95);
   }
 }
+@keyframes jojo-mascot-hi {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20%,
+  80% {
+    transform: rotate(-6deg);
+  }
+  34%,
+  50%,
+  66% {
+    transform: rotate(-12deg);
+  }
+  42%,
+  58% {
+    transform: rotate(-2deg);
+  }
+}
 @keyframes jojo-mascot-stretch {
   0%,
   100% {
@@ -1225,6 +1244,9 @@ html[data-theme='dark'] {
 }
 .jojo-mascot[data-pose='hopSpin'] {
   animation: jojo-mascot-hop-spin var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='hi'] .jojo-mascot-head {
+  animation: jojo-mascot-hi var(--pose-ms) ease-in-out;
 }
 .jojo-mascot[data-pose='stretch'] .jojo-mascot-root {
   animation: jojo-mascot-stretch var(--pose-ms) ease-in-out;

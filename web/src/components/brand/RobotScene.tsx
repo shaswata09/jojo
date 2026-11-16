@@ -84,6 +84,8 @@ export type RobotSceneProps = {
   active: boolean
   /** The first frame has been drawn. */
   onReady: () => void
+  /** The arrival has finished: the robot has risen into place and the camera has pulled back. */
+  onLanded: () => void
 }
 
 /**
@@ -336,7 +338,7 @@ function setBone(rig: Rig, key: BoneKey, x: number, y: number, z: number) {
   local.decompose(b.position, b.quaternion, b.scale)
 }
 
-function Robot({ pose, seq, still, onReady }: Omit<RobotSceneProps, 'active'>) {
+function Robot({ pose, seq, still, onReady, onLanded }: Omit<RobotSceneProps, 'active'>) {
   const rig = useRig()
   const { gl, clock, invalidate, camera } = useThree()
 
@@ -454,6 +456,9 @@ function Robot({ pose, seq, still, onReady }: Omit<RobotSceneProps, 'active'>) {
       camera.position.set(...lerp3(CAMERA_FROM, CAMERA_REST, arrive))
       camera.lookAt(...lerp3(LOOK_FROM, LOOK_REST, arrive))
       s.landed = arrive >= 1
+      // Once, in rendered time: a slow machine that takes three seconds to
+      // rise is greeted after three seconds, not mid-rise.
+      if (s.landed) onLanded()
     }
 
     rig.root.position.set(0, s.body.py + idle.lift - (1 - arrive) * 0.18, s.body.pz)

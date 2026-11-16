@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CUES, isAdvance, stageGesture } from './mascot-cues'
+import { CUES, greetingFor, isAdvance, stageGesture } from './mascot-cues'
 import { POSE_MS } from './mascot-context'
 import rowActions from '@/components/applications/use-row-actions.tsx?raw'
 import detail from '@/routes/ApplicationDetail.tsx?raw'
@@ -128,5 +128,14 @@ describe('the actions wired to the mascot (Q323)', () => {
     expect(code(backup).match(/mascot\.play\(CUES\.backupSaved\)/g)?.length).toBe(2)
     expect(code(pipelines)).toMatch(/engine\.runNow\(id\)\s*mascot\.play\(CUES\.scoutStarted\)/)
     expect(code(conversation)).toMatch(/mascot\.play\(CUES\.assistantWorking\)\s*void send\(text\)/)
+  })
+})
+
+describe('the greeting as the robot lands (Q326)', () => {
+  it('waves hi on a first load, and bows on a refresh', () => {
+    expect(greetingFor('navigate')).toBe('hi')
+    expect(greetingFor(undefined)).toBe('hi')
+    expect(greetingFor('back_forward')).toBe('hi')
+    expect(greetingFor('reload')).toBe('bow')
   })
 })

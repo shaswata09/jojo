@@ -24,10 +24,10 @@ const strip = (src: string) =>
 const robot = strip(jojoRobot)
 const scene = strip(robotScene)
 
-/** The `onReady` handler, to the render below it. */
-const onReady = robot.slice(
-  robot.indexOf('const onReady = '),
-  robot.indexOf('  return (', robot.indexOf('const onReady = ')),
+/** The `onLanded` handler — the greeting — to the render below it. */
+const onLanded = robot.slice(
+  robot.indexOf('const onLanded = '),
+  robot.indexOf('  return (', robot.indexOf('const onLanded = ')),
 )
 
 /** The frame loop. */
@@ -134,17 +134,21 @@ describe('the 3D mascot', () => {
   })
 
   it('greets once per scene, so the arrival does not shake (Q083)', () => {
-    // Two loads in dev (StrictMode) each scheduled a bow, ~200 ms apart, and
-    // the second interrupted the first. The pending one is cleared first.
-    const clearAt = onReady.indexOf('clearTimeout(greeting.current)')
-    const greetAt = onReady.indexOf("play('bow')")
+    // Two loads in dev (StrictMode) each scheduled a greeting, ~200 ms apart,
+    // and the second interrupted the first. The pending one is cleared first.
+    const clearAt = onLanded.indexOf('clearTimeout(greeting.current)')
+    const greetAt = onLanded.indexOf('play(hello)')
     expect(clearAt).toBeGreaterThan(-1)
     expect(greetAt).toBeGreaterThan(clearAt)
   })
 
   it('lets the robot finish rising into place before the greeting (Q083)', () => {
-    expect(onReady).toMatch(/setTimeout\(\(\) => play\('bow'\), GREET_MS\)/)
-    expect(robot).toMatch(/const GREET_MS = Math\.round\(INTRO_S \* 1000\)/)
+    // Greeted when the scene says it has landed — in rendered time, so a slow
+    // machine is not greeted mid-rise — and a beat after that.
+    expect(onLanded).toMatch(/const hello = greetingFor\(navigationType\(\)\)/)
+    expect(onLanded).toMatch(/setTimeout\(\(\) => play\(hello\), GREET_MS\)/)
+    expect(frame).toMatch(/s\.landed = arrive >= 1\s*if \(s\.landed\) onLanded\(\)/)
+    expect(robot).toMatch(/onLanded=\{onLanded\}/)
     expect(frame).toMatch(/introProgress\(age\)/)
   })
 

@@ -1842,8 +1842,8 @@ Guarded by:
 
 ### Q033 — Robot has selectable gestures: keep Nod, Shake, Startle and a body-only Dance, drop Hello/Thumbs up/Head scratch/Thinking/Excited, add new gestures from existing body movement, chosen via a single temporary dropdown.
 `feature` · 2026-08-08 · web · active
-Must stay true: The mascot gesture set keeps Nod, Shake, Startle and Dance, and every gesture moves the body or head; Hello, Thumbs up, Head scratch, Thinking and Excited do not exist.
-Note: Revised by the owner 2026-11-15, with a rigged model: the arms may move in the Dance and in new moves (Shrug, Look around, Hop spin, Stretch were added, then Flex, Punch combo, Power up, Doze off, Wink, Love and Robot dance under Q316, and seven hand gestures under Q319); the "body-only" rule is lifted, the five dropped gestures stay dropped.
+Must stay true: The mascot gesture set keeps Nod, Shake, Startle and Dance, and every gesture moves the body or head; Thumbs up, Head scratch, Thinking and Excited do not exist.
+Note: Revised by the owner 2026-11-15, with a rigged model: the arms may move in the Dance and in new moves (Shrug, Look around, Hop spin, Stretch were added, then Flex, Punch combo, Power up, Doze off, Wink, Love and Robot dance under Q316, and seven hand gestures under Q319); the "body-only" rule is lifted. Hello came back as Hi, a right-hand wave, at the owner's request (Q326); the other four dropped gestures stay dropped.
 Guarded by:
 - `web/src/lib/mascot-context.requests.test.ts` › "keeps Nod, Shake, Startle and Dance"
 - `web/src/lib/mascot-context.requests.test.ts` › "has none of the five that were dropped"
@@ -1949,6 +1949,17 @@ Guarded by:
 - `web/src/components/tour/tour.requests.test.ts` › "names the model providers the app really offers"
 - `web/src/components/tour/tour.requests.test.ts` › "is done when a keyword is picked in the filter row"
 - `web/src/components/tour/tour.requests.test.ts` › "is done on a vault tab only when that tab is the one open"
+
+### Q326 — Add a jojo mascot right-hand "Hi" gesture, and make it the first one when the page first loads.
+`feature` · 2026-11-15 · web · active
+Must stay true: The mascot has a Hi gesture — its right hand raised beside its head, open and flat (fingers and thumb straightened, palm turned out), waving — and it is the greeting the robot plays once it has risen into place on a first load (in rendered time, once per scene); a refresh keeps the bow (owner, 2026-11-16).
+Note: Revises Q033, which had dropped a Hello gesture; the owner asked for this one.
+Guarded by:
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "lets the robot finish rising into place before the greeting (Q083)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "greets once per scene, so the arrival does not shake (Q083)"
+- `web/src/lib/mascot-context.requests.test.ts` › "moves the body or head in every gesture, so none is an arm alone"
+- `web/src/lib/mascot-context.requests.test.ts` › "waves Hi with an open, flat palm — the fingers and thumb straightened — not a fist (Q326)"
+- `web/src/lib/mascot-cues.test.ts` › "waves hi on a first load, and bows on a refresh"
 
 ### Q036 — All scrollbars use a glassmorphic style.
 `change` · 2026-08-08 · web · active

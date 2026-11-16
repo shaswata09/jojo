@@ -86,3 +86,13 @@ export function isAdvance(from: Stage, to: Stage): boolean {
   const column = (stage: Stage) => STAGES.findIndex((s) => s.id === stage)
   return column(to) > column(from)
 }
+
+/**
+ * How the robot greets the page as it lands: a wave on a first load, a bow on
+ * a refresh (the owner's choice, 2026-11-16). `navigation` is the browser's
+ * own word for how the page was reached — `PerformanceNavigationTiming.type`:
+ * 'navigate', 'reload', 'back_forward' or 'prerender'.
+ */
+export function greetingFor(navigation: string | undefined): 'hi' | 'bow' {
+  return navigation === 'reload' ? 'bow' : 'hi'
+}

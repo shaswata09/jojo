@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { RobotMascot } from '@/components/brand/RobotMascot'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { useMascot } from '@/lib/mascot-context'
-import { INTRO_S } from '@/lib/robot-rig'
+import { greetingFor } from '@/lib/mascot-cues'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 
@@ -26,8 +26,27 @@ const RobotScene = lazy(() => import('@/components/brand/RobotScene'))
 const SPINNER_MS = 500
 const FALLBACK_MS = 8000
 
-/** The arrival greeting waits for the robot to rise into place. */
-const GREET_MS = Math.round(INTRO_S * 1000) + 150
+/**
+ * A beat between the robot landing and its wave. The landing itself is
+ * reported by the scene, in rendered time (`onLanded`), so a slow machine that
+ * takes longer to rise is greeted when it has, not on a clock that ran out
+ * mid-rise — which is what a timer of INTRO_S did in a slow headless browser.
+ */
+const GREET_MS = 150
+
+/**
+ * How this page was reached — 'navigate', 'reload', 'back_forward' — from the
+ * browser's navigation timing. Undefined where it is not available, which
+ * greets as a first load.
+ */
+function navigationType(): string | undefined {
+  try {
+    const [entry] = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[]
+    return entry?.type
+  } catch {
+    return undefined
+  }
+}
 
 /**
  * Whether this browser can make a WebGL context at all, asked once.
@@ -65,7 +84,9 @@ function useOnScreen(ref: React.RefObject<HTMLElement | null>): boolean {
   useEffect(() => {
     const el = ref.current
     if (!el || typeof IntersectionObserver === 'undefined') return
-    const observer = new IntersectionObserver(([entry]) => setVisible(entry?.isIntersecting ?? true))
+    const observer = new IntersectionObserver(([entry]) =>
+      setVisible(entry?.isIntersecting ?? true),
+    )
     observer.observe(el)
     return () => observer.disconnect()
   }, [ref])
@@ -120,16 +141,24 @@ export function JojoRobot({ className }: { className?: string }) {
 
   useEffect(() => () => clearTimeout(greeting.current), [])
 
-  const onReady = () => {
+  const onReady = () => setReady(true)
+
+  /**
+   * The greeting, once the robot has risen into place: a wave of the right
+   * hand on a first load, a bow on a refresh (`greetingFor`).
+   */
+  const onLanded = () => {
     // Once per scene. StrictMode mounts the canvas twice in dev, and two
     // greetings landing ~200 ms apart was the "shake on load" of the old robot
-    // (Q083): the second interrupted the first mid-bow.
+    // (Q083): the second interrupted the first mid-gesture.
     clearTimeout(greeting.current)
-    setReady(true)
     if (reduced) return
-    // Greet once the robot has risen into place; if a gesture was already
-    // asked for, the scene plays that instead and there is no greeting.
-    if (pending.current === 'idle') greeting.current = setTimeout(() => play('bow'), GREET_MS)
+    // If a gesture was already asked for, the scene plays that instead and
+    // there is no greeting.
+    if (pending.current === 'idle') {
+      const hello = greetingFor(navigationType())
+      greeting.current = setTimeout(() => play(hello), GREET_MS)
+    }
   }
 
   return (
@@ -148,7 +177,14 @@ export function JojoRobot({ className }: { className?: string }) {
           }}
         >
           <Suspense fallback={null}>
-            <RobotScene pose={pose} seq={seq} still={reduced} active={onScreen} onReady={onReady} />
+            <RobotScene
+              pose={pose}
+              seq={seq}
+              still={reduced}
+              active={onScreen}
+              onReady={onReady}
+              onLanded={onLanded}
+            />
           </Suspense>
         </ErrorBoundary>
       )}

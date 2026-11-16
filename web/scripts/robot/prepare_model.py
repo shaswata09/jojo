@@ -67,6 +67,13 @@ DRIVEN = (
     'CC_Base_R_Upperarm_062',
     'CC_Base_R_Forearm_065',
     'CC_Base_R_Hand_070',
+    # The right hand's fingers, opened flat for the Hi wave: the rig's fingers
+    # are one index chain and a thumb.
+    'CC_Base_R_Index1_074',
+    'CC_Base_R_Index2_075',
+    'CC_Base_R_Index3_076',
+    'CC_Base_R_Thumb1_071',
+    'CC_Base_R_Thumb2_072',
 )
 # Eye height above the head bone: the middle of the visor, just above where it
 # faces straight ahead (ray casts: its normal turns from downward to upward

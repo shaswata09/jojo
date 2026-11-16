@@ -5,7 +5,8 @@ import robotRig from '@/lib/robot-rig.ts?raw'
 /**
  * Q033 — the mascot's gesture set.
  *
- * The owner kept Nod, Shake, Startle and Dance, dropped Hello, Thumbs up,
+ * The owner kept Nod, Shake, Startle and Dance, dropped Hello (since back as
+ * Hi, at their request), Thumbs up,
  * Head scratch, Thinking and Excited, and asked for the rest to be built from
  * movement the body already has. On 2026-11-15, with a rigged model, they
  * allowed the arms back into the dance and into new moves.
@@ -29,8 +30,10 @@ describe('the gestures the mascot knows (Q033)', () => {
     }
   })
 
+  // Hello came back as "Hi" — the robot's right-hand wave, its greeting on
+  // load — when the owner asked for it on 2026-11-15. The other four stay out.
   it('has none of the five that were dropped', () => {
-    for (const dropped of ['hello', 'thumbs', 'scratch', 'thinking', 'excited']) {
+    for (const dropped of ['thumbs', 'scratch', 'thinking', 'excited']) {
       expect(labels.some((l) => l.includes(dropped))).toBe(false)
       expect(poses.some((p) => p.toLowerCase().includes(dropped))).toBe(false)
     }
@@ -44,22 +47,33 @@ describe('the gestures the mascot knows (Q033)', () => {
       ...[...text.matchAll(/\bboth\('([^']+)'/g)].map((m) => `arm:${m[1]!}`),
     ])
   }
-  const isArm = (joint: string) => joint.startsWith('arm:') || /^[lr](Shoulder|Upper|Fore|Hand)$/.test(joint)
+  const isArm = (joint: string) =>
+    joint.startsWith('arm:') || /^[lr](Shoulder|Upper|Fore|Hand)$/.test(joint)
 
   // Revised 2026-11-15: with a skeleton to drive, the owner asked for the
-  // arms back in the dance and in new moves. The five dropped gestures stay
-  // dropped (above).
+  // arms back in the dance and in new moves. The dropped gestures stay
+  // dropped (above), Hello aside.
   it('dances with its arms as well as its body (Q033, revised)', () => {
     const joints = [...jointsOf('dance')]
     expect(joints.some(isArm)).toBe(true)
     expect(joints.some((j) => !isArm(j))).toBe(true)
   })
 
+  it('waves Hi with an open, flat palm — the fingers and thumb straightened — not a fist (Q326)', () => {
+    const joints = jointsOf('hi')
+    for (const joint of ['rUpper', 'rFore', 'rIndex1', 'rIndex2', 'rIndex3', 'rThumb1', 'rHand']) {
+      expect(joints.has(joint), joint).toBe(true)
+    }
+  })
+
   it('moves the body or head in every gesture, so none is an arm alone', () => {
     for (const pose of poses) {
       const joints = [...jointsOf(pose)]
       expect(joints.length, pose).toBeGreaterThan(0)
-      expect(joints.some((j) => !isArm(j)), pose).toBe(true)
+      expect(
+        joints.some((j) => !isArm(j)),
+        pose,
+      ).toBe(true)
     }
   })
 })

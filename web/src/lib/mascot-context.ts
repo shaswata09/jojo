@@ -7,8 +7,9 @@ import { createContext, useContext } from 'react'
  * First whole-body only, by the owner's choice (Q033): arm gestures on the
  * old Spline robot read as a limb flailing near a robot. With a rigged model
  * the owner allowed the arms back (2026-11-15) — the dance pumps its fists, a
- * shrug opens them — while the five gestures they dropped stay dropped, and
- * every gesture still moves the body or head. Seven more came the same day
+ * shrug opens them — and every gesture still moves the body or head. Of the
+ * five gestures they dropped, Hello came back as Hi (a right-hand wave, the
+ * greeting on load) at their request; the other four stay dropped. Seven more came the same day
  * (Flex to Robot dance), with the eyes able to wink, close and turn to hearts,
  * and seven hand gestures after them (Jazz hands to Drumroll, Q319).
  * See `robot-rig.ts`.
@@ -17,7 +18,8 @@ export type MascotPose =
   | 'idle'
   | 'nod' // agreement, "done", a saved change
   | 'shake' // refusal, "nothing found", a failed action
-  | 'bow' // greeting, thanks — plays itself when the robot first appears
+  | 'hi' // a wave of the right hand — the robot's hello as the page first loads
+  | 'bow' // greeting, thanks
   | 'leanIn' // curiosity, paying attention
   | 'wobble' // uncertainty, "hmm"
   | 'bounce' // pleased, a small win
@@ -53,6 +55,7 @@ export const POSE_MS: Record<MascotPose, number> = {
   idle: 0,
   nod: 900,
   shake: 700,
+  hi: 2000,
   bow: 1400,
   leanIn: 1300,
   wobble: 1100,
@@ -85,6 +88,7 @@ export const POSE_MS: Record<MascotPose, number> = {
 export const GESTURES: { pose: Exclude<MascotPose, 'idle'>; label: string }[] = [
   { pose: 'nod', label: 'Nod' },
   { pose: 'shake', label: 'Shake' },
+  { pose: 'hi', label: 'Hi' },
   { pose: 'bow', label: 'Bow' },
   { pose: 'leanIn', label: 'Lean in' },
   { pose: 'wobble', label: 'Wobble' },
