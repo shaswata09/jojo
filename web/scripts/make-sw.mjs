@@ -11,10 +11,10 @@
  * unreachable.
  *
  * Most of the work was already done and unreachable for want of this file. The
- * app deliberately serves every asset from its own origin — the Spline scene,
- * the fonts, the sounds each carry a comment saying it is so things work offline
- * — so there is nothing here to fetch from anywhere else. All that was missing
- * was something to keep a copy.
+ * app deliberately serves every asset from its own origin — the fonts, the
+ * sounds, the Transfer scene's textures and the mascot's model each carry a
+ * comment saying it is so things work offline — so there is nothing here to
+ * fetch from anywhere else. All that was missing was something to keep a copy.
  *
  * ## Why this is written out rather than installed
  *
@@ -48,7 +48,6 @@ import {
   localPath,
   olderCaches,
   precachedAsset,
-  precachedStatic,
 } from './precache-guard.mjs'
 
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -132,9 +131,6 @@ for (const f of files) if (f.url.startsWith('icons/')) boot.add(f.url)
  * activate, and the page failed offline until it had been opened online again.
  */
 for (const f of files) if (precachedAsset(f.url)) boot.add(f.url)
-
-// And the mascot's scene and wasm — see `precachedStatic`.
-for (const f of files) if (precachedStatic(f.url)) boot.add(f.url)
 
 /*
  * Fail closed: the assets the DOCUMENT names must actually be in that list.
@@ -442,7 +438,7 @@ const precached = files.filter((f) => boot.has(f.url))
 const deferred = files.filter((f) => !boot.has(f.url))
 console.log(
   `make-sw: dist/sw.js written, version ${hash}\n` +
-    `  precached ${String(precached.length)} files: the boot set, the mascot and every lazy chunk but the Transfer scene ` +
+    `  precached ${String(precached.length)} files: the boot set and every lazy chunk but the Transfer scene, the mascot's included ` +
     `(${kb(precached.reduce((n, f) => n + f.size, 0))})\n` +
     `  ${String(deferred.length)} more cached on first use ` +
     `(${kb(deferred.reduce((n, f) => n + f.size, 0))})`,

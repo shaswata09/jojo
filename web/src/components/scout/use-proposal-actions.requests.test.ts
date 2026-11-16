@@ -40,8 +40,12 @@ describe('Q291 approving a scouted job makes it an application', () => {
 describe('Q292 the approved draft is filled from its page, and keeps the page', () => {
   it('reads the posting into the draft on Approve and on Approve all', () => {
     const src = code(actions)
-    expect(src).toMatch(/if \(page\) void fillDraft\(application, page\.url, page\.title, proposal\)/)
-    expect(src).toMatch(/if \(page\) await fillDraft\(application, page\.url, page\.title, proposal\)/)
+    expect(src).toMatch(
+      /if \(page\) void fillDraft\(application, page\.url, page\.title, proposal\)/,
+    )
+    expect(src).toMatch(
+      /if \(page\) await fillDraft\(application, page\.url, page\.title, proposal\)/,
+    )
   })
 
   it('asks the model when one is set up, and only keeps the page when none is', () => {
@@ -49,7 +53,9 @@ describe('Q292 the approved draft is filled from its page, and keeps the page', 
     expect(src).toMatch(
       /if \(!isConfigured\(settings\)\) \{\s*pages\.keepAndReport\(postingUrl, title\)\s*return\s*\}/,
     )
-    expect(src).toMatch(/await fillFromPosting\(\{\s*applicationId: application\.id,\s*url: postingUrl,/)
+    expect(src).toMatch(
+      /await fillFromPosting\(\{\s*applicationId: application\.id,\s*url: postingUrl,/,
+    )
   })
 
   it('files the page it read under the draft once the fields are written', () => {

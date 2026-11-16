@@ -119,7 +119,7 @@ describe('the build check', () => {
   const credits: readonly Credit[] = [
     { name: 'radix-ui', version: '1', licence: 'MIT', holder: null, what: '', covers: '@radix-ui/' },
     { name: 'd3-ease', version: '3', licence: 'BSD-3-Clause', holder: null, what: '' },
-    { name: 'spline', version: '4', licence: 'MIT', holder: null, what: '' },
+    { name: 'scene-loader', version: '4', licence: 'MIT', holder: null, what: '' },
   ]
 
   it('passes a bundle whose every package is credited, by name or by its umbrella', () => {
@@ -129,7 +129,7 @@ describe('the build check', () => {
           { name: 'd3-ease', version: '3', licence: 'BSD-3-Clause' },
           { name: '@radix-ui/react-popper', version: '1.3.7', licence: 'MIT' },
           // States nothing in its manifest; the credit read its LICENSE file.
-          { name: 'spline', version: '4', licence: null },
+          { name: 'scene-loader', version: '4', licence: null },
         ],
         credits,
       ),
@@ -155,13 +155,15 @@ describe('the build check', () => {
 
   it('credits every package the reviewed production build shipped', () => {
     // From the source maps of `vite build --sourcemap`, 2026-11-14 — the 35 the
-    // first page left out. The build re-checks the real list every time.
+    // first page left out, less lodash.debounce and react-merge-refs, which
+    // came only with the old third-party mascot's loader and left the bundle
+    // with it. The build re-checks the real list every time.
     const shipped = [
       'd3-color', 'd3-dispatch', 'd3-drag', 'd3-ease', 'd3-interpolate', 'd3-selection', 'd3-timer', 'd3-transition',
       'd3-zoom', 'zustand', 'pako', 'tslib', '@floating-ui/core', '@floating-ui/dom', '@floating-ui/react-dom',
       '@floating-ui/utils', 'react-remove-scroll', 'react-remove-scroll-bar', 'aria-hidden', 'use-sidecar', 'its-fine',
-      'suspend-react', 'lodash.debounce', 'classcat', '@xyflow/system', '@dnd-kit/accessibility', '@dnd-kit/utilities',
-      '@pdf-lib/standard-fonts', '@pdf-lib/upng', 'get-nonce', 'react-merge-refs', 'react-style-singleton',
+      'suspend-react', 'classcat', '@xyflow/system', '@dnd-kit/accessibility', '@dnd-kit/utilities',
+      '@pdf-lib/standard-fonts', '@pdf-lib/upng', 'get-nonce', 'react-style-singleton',
       'react-use-measure', 'use-callback-ref', 'use-sync-external-store',
     ]
     const credited = new Set(BUNDLED.map((c) => c.name))

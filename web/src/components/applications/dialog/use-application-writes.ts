@@ -1,4 +1,8 @@
-import type { ApplicationInitial, Errors, FormState } from '@/components/applications/dialog/form-state'
+import type {
+  ApplicationInitial,
+  Errors,
+  FormState,
+} from '@/components/applications/dialog/form-state'
 import { deadlineWrite, refusalOf } from '@/components/applications/dialog/form-state'
 import { STAGE_LABEL, displayName } from '@/data/seed'
 import type { Application, RoleTag } from '@/data/seed'
@@ -12,11 +16,12 @@ import { useReadFit } from '@/lib/fit-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /** What Save came to: the record as stored, or the tool's refusal to show. */
 export type SaveOutcome =
-  | { ok: true; application: Application }
-  | { ok: false; message: string; fields: Errors }
+  { ok: true; application: Application } | { ok: false; message: string; fields: Errors }
 
 /**
  * Everything `ApplicationDialog` writes when Save is pressed, and nothing else.
@@ -48,6 +53,7 @@ export function useApplicationWrites({
   const { settings } = useModelSettings()
   const readFit = useReadFit()
   const { toast } = useToast()
+  const mascot = useMascot()
   const undoable = useUndoable()
   const vault = useVault()
 
@@ -164,9 +170,7 @@ export function useApplicationWrites({
       } catch (error) {
         // `add` throws on a refusal (its other callers rely on that); here the
         // form is open and the person can fix what was refused.
-        failure = refused([
-          { message: error instanceof Error ? error.message : String(error) },
-        ])
+        failure = refused([{ message: error instanceof Error ? error.message : String(error) }])
         return null
       }
       /*
@@ -202,6 +206,7 @@ export function useApplicationWrites({
     // undo ring by its own declaration rather than by where it was called.
     prewarmFit()
 
+    mascot.play(CUES.applicationAdded)
     toast({
       title: `${displayName(created)} added`,
       description: [

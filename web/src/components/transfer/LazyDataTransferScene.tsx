@@ -25,8 +25,8 @@ const Scene = lazy(() => import('./DataTransferScene'))
  * - Chunk still in flight. Covered by Suspense, showing the same still image
  *   the fallback uses, so there is no reflow when the canvas takes over.
  * - `init()` rejects anyway, or a shader fails to compile on this particular
- *   driver. Caught by the boundary — the same rule the Spline mascot follows: a
- *   decorative canvas must never be able to take a route down with it.
+ *   driver. Caught by the boundary — the same rule the 3D mascot (`JojoRobot`)
+ *   follows: a decorative canvas must never be able to take a route down with it.
  */
 export function LazyDataTransferScene({ className, ...props }: DataTransferSceneProps) {
   const status = useWebGPU()

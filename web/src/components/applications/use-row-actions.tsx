@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { STAGE_LABEL, displayName, type Application, type Stage } from '@/data/seed'
 import { useApplications } from '@jojo/service/react/use-applications'
@@ -6,7 +6,7 @@ import { useDialogs } from '@/lib/dialogs-context'
 import { useToast } from '@/lib/toast-context'
 import { useUndoable } from '@/lib/undo'
 import { report } from '@/lib/analytics'
-import { advanceGesture, isAdvance, type AdvanceGesture } from '@/lib/mascot-cues'
+import { stageGesture } from '@/lib/mascot-cues'
 import { useMascot } from '@/lib/mascot-context'
 import { announceRefusal } from '@/components/common/write-result'
 
@@ -27,8 +27,6 @@ export function useRowActions() {
   const undoable = useUndoable()
   const { play } = useMascot()
   const [pendingDelete, setPendingDelete] = useState<Application | null>(null)
-  /** What the mascot did on the last advance, so it does not do it twice over. */
-  const lastGesture = useRef<AdvanceGesture | null>(null)
 
   const onEdit = (a: Application) => open('application', { mode: 'edit', id: a.id })
 
@@ -69,21 +67,19 @@ export function useRowActions() {
        */
       if (stage !== 'draft') report('application_advanced', { to: stage })
       /*
-       * The mascot reacts to a move up the board: a nod, a spin or a dance, and
-       * not the same one twice running. Here rather than in the board's drop
-       * handler because the board pill and the table's stage menu do the same
-       * thing by a different gesture, and a robot that only answered the drag
-       * would read as the other two not having landed.
+       * The mascot reacts to the move with the gesture that stage earns — a
+       * draft sent off dances, an interview powers up (lib/mascot-cues.ts).
+       * Here rather than in the board's drop handler because the board pill
+       * and the table's stage menu do the same thing by a different gesture,
+       * and a robot that only answered the drag would read as the other two
+       * not having landed.
        *
        * Nothing to guard. A page with no `MascotProvider` gets a no-op `play` by
        * design, and both renderers drop the animation themselves under
        * `prefers-reduced-motion`.
        */
-      if (isAdvance(from, stage)) {
-        const gesture = advanceGesture(Math.random(), lastGesture.current)
-        lastGesture.current = gesture
-        play(gesture)
-      }
+      const gesture = stageGesture(from, stage, a.outcome)
+      if (gesture) play(gesture)
       toast({
         title: `${displayName(a)} moved to ${STAGE_LABEL[stage]}`,
         description: `It was in ${STAGE_LABEL[from]}. The dashboard pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,

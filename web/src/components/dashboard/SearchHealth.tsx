@@ -86,13 +86,13 @@ export function SearchHealthBody() {
           }
         />
       ) : (
-          // A CONTAINER query, not `lg:`. The viewport breakpoint was right while
-          // this only ever rendered full-width on Statistics, and wrong the moment
-          // `StatsCard` put it in the dashboard's ~460px column: the viewport was
-          // still `lg`, so the two-column rule applied and 320px of radar left the
-          // list beside it about 140px — one word per line, and the panel three
-          // times its intended height. `@container` asks the card how wide it is,
-          // which is the question that was always being asked.
+        // A CONTAINER query, not `lg:`. The viewport breakpoint was right while
+        // this only ever rendered full-width on Statistics, and wrong the moment
+        // `StatsCard` put it in the dashboard's ~460px column: the viewport was
+        // still `lg`, so the two-column rule applied and 320px of radar left the
+        // list beside it about 140px — one word per line, and the panel three
+        // times its intended height. `@container` asks the card how wide it is,
+        // which is the question that was always being asked.
         <div className="@container/health grid grid-cols-1 gap-5 @[36rem]/health:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
           <div>
             {allHidden ? (

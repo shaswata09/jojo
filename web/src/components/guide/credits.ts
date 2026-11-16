@@ -12,10 +12,10 @@
  *    is missing the LICENSE file beside it is the next authority. Two packages
  *    here disagree with the obvious guess: `lucide-react` and `idb` are ISC
  *    rather than MIT, and `class-variance-authority`, `typescript` and
- *    `fake-indexeddb` are Apache-2.0. One package states nothing at all, and
- *    that is recorded as nothing rather than filled in — `licence: null` below
- *    renders as "not stated", which is the honest answer and the only one that
- *    cannot be wrong.
+ *    `fake-indexeddb` are Apache-2.0. A package that states nothing at all is
+ *    recorded as nothing rather than filled in — `licence: null` renders as
+ *    "not stated", which is the honest answer and the only one that cannot be
+ *    wrong. None does today; the third-party mascot runtime that did is gone.
  *
  * Data rather than markup so the page reads as one shape, and so the next
  * person to run `npm install` has one file to reconcile. If you update a
@@ -126,40 +126,24 @@ const DIRECT: readonly Credit[] = [
     version: '0.185.1',
     licence: 'MIT',
     holder: '2010–2026 three.js authors',
-    what: 'The 3D scene on the Transfer page — its WebGPU renderer, its shading language and the bloom pass. Loaded only when that page is opened.',
-    where: 'src/components/transfer/DataTransferScene.tsx',
+    what: 'The two 3D scenes: the robot mascot in the sidebar — a CC BY model, credited on this page, loaded with three’s glTF loader and posed through its skeleton — and the scene on the Transfer page — its WebGPU renderer, its shading language and the bloom pass. Each is a chunk of its own, loaded lazily.',
+    where: 'src/components/brand/RobotScene.tsx, src/components/transfer/DataTransferScene.tsx',
   },
   {
     name: '@react-three/fiber',
     version: '9.7.0',
     licence: 'MIT',
     holder: 'Paul Henschel and contributors',
-    what: 'Lets that scene be written as React components rather than as an imperative render loop.',
-    where: 'src/components/transfer/DataTransferScene.tsx',
+    what: 'Lets both scenes be written as React components rather than as an imperative render loop.',
+    where: 'src/components/brand/RobotScene.tsx, src/components/transfer/DataTransferScene.tsx',
   },
   {
     name: '@react-three/drei',
     version: '10.7.8',
     licence: 'MIT',
     holder: '2020 react-spring',
-    what: 'Two helpers in the same scene: fitting the plane to the viewport, and loading its two textures.',
+    what: 'Helpers in the scene on the Transfer page: fitting the plane to the viewport and loading its two textures. The mascot does not use it — its studio lighting is baked with three.js alone, which keeps drei’s environment helper, and the CDN address of its lighting presets, out of the mascot’s chunk.',
     where: 'src/components/transfer/DataTransferScene.tsx',
-  },
-  {
-    name: '@splinetool/react-spline',
-    version: '4.1.0',
-    licence: 'MIT',
-    holder: '2022 Spline, Inc.',
-    what: 'Loads the robot mascot in the sidebar, lazily and behind an error boundary. Its package.json declares no licence; the MIT text ships in the package itself, and that file is what this line is read from.',
-    where: 'src/components/ui/splite.tsx',
-  },
-  {
-    name: '@splinetool/runtime',
-    version: '1.12.98',
-    licence: null,
-    holder: null,
-    what: 'The engine that plays that scene, and the source of the two types the mascot rig is written against. The package states no licence in its manifest and ships no licence file, so nothing is claimed here about its terms — it is credited by name, and the gap is named rather than filled in with a guess.',
-    where: 'src/lib/spline-rig.ts, src/components/brand/SplineRobot.tsx',
   },
   {
     name: 'pdf-lib',
@@ -491,21 +475,6 @@ export const BUNDLED: readonly Credit[] = [
     what: 'Brought in by @react-three/fiber: sizes the canvas to its box.',
   },
   {
-    name: 'react-merge-refs',
-    version: '2.1.1',
-    licence: 'MIT',
-    holder: '2020 Greg Bergé',
-    what: 'Brought in by @splinetool/react-spline: joins its refs to the mascot’s canvas.',
-  },
-  {
-    name: 'lodash.debounce',
-    version: '4.0.8',
-    licence: 'MIT',
-    holder:
-      'jQuery Foundation and other contributors; based on Underscore.js, Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors',
-    what: 'Brought in by @splinetool/react-spline: holds back a resize of the mascot’s canvas until the window has settled.',
-  },
-  {
     name: 'aria-hidden',
     version: '1.2.6',
     licence: 'MIT',
@@ -603,8 +572,9 @@ export function creditProblems(
       )
     } else if (copy.licence !== null && credit.licence !== copy.licence) {
       // A manifest that states nothing is not a disagreement: the credit may
-      // read the licence from the file beside it (@splinetool/react-spline).
-      // The test holds those credits to node_modules either way.
+      // read the licence from the LICENSE file beside it, as it once did for
+      // the old mascot's loader. The test holds those credits to node_modules
+      // either way.
       problems.add(
         `${copy.name} ${copy.version} states ${copy.licence ?? 'no licence'}, and is credited under ${credit.licence ?? 'none'} (${credit.name}).`,
       )

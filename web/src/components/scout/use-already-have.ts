@@ -5,6 +5,8 @@ import { useToast } from '@/lib/toast-context'
 import { findSameJob } from '@jojo/service/core/same-job'
 import type { JobIdentity } from '@jojo/service/core/same-job'
 import { alreadyHaveDescription } from './scout-approval'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /**
  * The application a job already is, if any, and the toast that says so.
@@ -12,6 +14,7 @@ import { alreadyHaveDescription } from './scout-approval'
 export function useAlreadyHave() {
   const kg = useKg()
   const { toast } = useToast()
+  const mascot = useMascot()
   const navigate = useNavigate()
 
   /**
@@ -29,12 +32,14 @@ export function useAlreadyHave() {
   const sayAlreadyHave = (
     existing: { org: string; role: string },
     target: Parameters<typeof appPath>[0],
-  ) =>
+  ) => {
+    mascot.play(CUES.alreadyHave)
     toast({
       title: `Already in your applications — not added again`,
       description: alreadyHaveDescription(existing),
       action: { label: 'Open', onClick: () => navigate(appPath(target)) },
     })
+  }
 
   return { alreadyHave, sayAlreadyHave }
 }

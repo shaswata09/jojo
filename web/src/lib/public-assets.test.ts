@@ -2,16 +2,19 @@
  * Nothing addresses a vendored asset by a bare root-absolute path.
  *
  * This is the regression guard for a bug that is invisible twice over. At
- * `base: '/'` — every dev server, every test — `'/mascot.splinecode'` is
- * correct. Under a subpath it 404s, and the 3D mascot quietly hands over to the
- * 2D fallback, which is a fallback doing exactly its job: nothing logged,
- * nothing obviously broken, just a different robot on a deployed site that
- * nobody runs locally.
+ * `base: '/'` — every dev server, every test — `'/transfer/scene.png'` is
+ * correct. Under a subpath it 404s. It was found on the old sidebar mascot,
+ * whose scene file was fetched by a path like that: the 3D mascot quietly
+ * handed over to the 2D fallback, which is a fallback doing exactly its job —
+ * nothing logged, nothing obviously broken, just a different robot on a
+ * deployed site that nobody runs locally. That mascot is now modelled in code
+ * and loads nothing from `public/`; the Transfer scene's textures are what is
+ * addressed this way today, and would fail the same way.
  *
- * `SplineRobot.tsx` already carried a comment promising that a change of `base`
- * would "break both together rather than one quietly". It broke four things
- * quietly. A promise about coupling that only a comment enforces is not a
- * coupling, so this asserts it.
+ * The old mascot's component already carried a comment promising that a
+ * change of `base` would "break both together rather than one quietly". It
+ * broke four things quietly. A promise about coupling that only a comment
+ * enforces is not a coupling, so this asserts it.
  *
  * `import.meta.glob` rather than `node:fs`, the same way
  * `guide/code-structure.test.ts` walks the tree: this app has no Node types on
@@ -53,8 +56,8 @@ const QUOTES_IT_ON_PURPOSE = new Set([
 
 describe('assets vendored into public/', () => {
   it('finds the files this is guarding', () => {
-    expect(assets).toContain('/mascot.splinecode')
     expect(assets).toContain('/transfer/scene.png')
+    expect(assets).toContain('/transfer/scene-depth.webp')
     expect(assets.length).toBeGreaterThan(3)
   })
 
@@ -69,7 +72,7 @@ describe('assets vendored into public/', () => {
     for (const [path, source] of Object.entries(sources)) {
       if (QUOTES_IT_ON_PURPOSE.has(path)) continue
       for (const asset of assets) {
-        // Quoted exactly, so `publicUrl('mascot.splinecode')` — which has no
+        // Quoted exactly, so `publicUrl('transfer/scene.png')` — which has no
         // leading slash — does not match, and neither does prose in a comment.
         for (const quoted of [`'${asset}'`, `"${asset}"`]) {
           if (source.includes(quoted)) offenders.push(`${path} → ${quoted}`)
@@ -79,18 +82,20 @@ describe('assets vendored into public/', () => {
 
     expect(
       offenders,
-      `Use publicUrl() from '@/lib/public-url'. A root-absolute path is correct at base '/' and 404s under a subpath, which is how the 3D mascot silently became the 2D one on GitHub Pages.\n${offenders.join('\n')}`,
+      `Use publicUrl() from '@/lib/public-url'. A root-absolute path is correct at base '/' and 404s under a subpath, which is how the old 3D mascot silently became the 2D one on GitHub Pages.\n${offenders.join('\n')}`,
     ).toEqual([])
   })
 
-  /**
-   * The directory the Spline runtime is pointed at, which is not a file and so
-   * is not covered by the sweep above.
+  /*
+   * The textures the Transfer scene hands to three.js's loader: the same shape
+   * as the old mascot's scene file — a path given to a renderer, whose failure
+   * is a missing picture rather than an error. Asserted by name, so the sweep
+   * above cannot pass merely because nothing references public/ at all.
    */
-  it('include the wasm directory, which is addressed the same way', () => {
-    const robot = sources['/src/components/brand/SplineRobot.tsx']
-    expect(robot).toBeDefined()
-    expect(robot).toContain("publicUrl('spline')")
-    expect(robot).not.toContain("= '/spline'")
+  it('include the Transfer scene’s textures, which go through publicUrl', () => {
+    const textures = sources['/src/components/transfer/textures.ts']
+    expect(textures).toBeDefined()
+    expect(textures).toContain("publicUrl('transfer/scene.png')")
+    expect(textures).toContain("publicUrl('transfer/scene-depth.webp')")
   })
 })

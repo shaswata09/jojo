@@ -29,7 +29,6 @@ import {
   localPath,
   olderCaches,
   precachedAsset,
-  precachedStatic,
 } from '../../scripts/precache-guard.mjs'
 import makeSw from '../../scripts/make-sw.mjs?raw'
 
@@ -211,7 +210,7 @@ describe('which lazy chunks are installed with the worker', () => {
 
   it('leaves the Transfer scene to first use, and nothing outside assets/', () => {
     expect(precachedAsset('assets/DataTransferScene-Dj5ps2Oj.js')).toBe(false)
-    expect(precachedAsset('mascot.splinecode')).toBe(false)
+    expect(precachedAsset('transfer/scene.png')).toBe(false)
     expect(precachedAsset('jojo-extension.zip')).toBe(false)
   })
 
@@ -221,28 +220,28 @@ describe('which lazy chunks are installed with the worker', () => {
     expect(activate.indexOf('carry(')).toBeGreaterThan(-1)
     expect(activate.indexOf('carry(')).toBeLessThan(activate.indexOf('caches.delete'))
     expect(isFingerprinted('assets/x-ABC.js')).toBe(true)
-    expect(isFingerprinted('mascot.splinecode')).toBe(false)
+    expect(isFingerprinted('transfer/scene.png')).toBe(false)
   })
 })
 
 describe('what the mascot needs offline', () => {
   /*
-   * R3. The scene and its wasm keep one URL across builds, so they were left
-   * to first use — in the worker's own cache, which the next deploy deleted.
+   * R3. The old third-party scene and its wasm kept one URL across builds,
+   * outside assets/, so they were left to first use — in the worker's own
+   * cache, which the next deploy deleted — until a list of their own installed
+   * them. The robot that replaced it is a lazy chunk and a model, both
+   * fingerprinted like the rest, so the ordinary rule has to cover both.
    */
-  it('installs the scene and the wasm with the worker', () => {
-    expect(precachedStatic('mascot.splinecode')).toBe(true)
-    expect(precachedStatic('spline/process.wasm')).toBe(true)
+  it('installs the mascot’s lazy scene chunk with the worker', () => {
+    expect(precachedAsset('assets/RobotScene-B7xQ2kLm.js')).toBe(true)
   })
 
-  it('is what make-sw adds to the install', () => {
-    expect(makeSw).toMatch(/if \(precachedStatic\(f\.url\)\) boot\.add\(f\.url\)/)
+  it('installs the mascot’s model with the worker', () => {
+    expect(precachedAsset('assets/jojo-robot-Cq81xV0a.glb')).toBe(true)
   })
 
-  it('and nothing else outside assets/ that is large and not needed offline', () => {
-    expect(precachedStatic('jojo-extension.zip')).toBe(false)
-    expect(precachedStatic('transfer/scene.png')).toBe(false)
-    expect(precachedStatic('jojo-bridge.mjs')).toBe(false)
+  it('no longer adds anything outside assets/ by a list of its own', () => {
+    expect(makeSw).not.toMatch(/precachedStatic|OFFLINE_STATIC/)
   })
 })
 

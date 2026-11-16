@@ -16,10 +16,23 @@
  *
  *   'self'                every chunk is served from jojo's own origin.
  *   'sha256-…'            the theme resolver, as above.
- *   'wasm-unsafe-eval'    WebAssembly compilation. The mascot's runtime
- *                         (Spline: physics, navmesh, boolean ops) and pdf.js
- *                         instantiate wasm; without this they throw on load.
+ *   'wasm-unsafe-eval'    WebAssembly compilation, for pdf.js: its worker
+ *                         compiles wasm for the image decoders and for the
+ *                         PostScript functions it turns into wasm in memory.
  *                         It allows wasm only — not `eval`, not `new Function`.
+ *                         Kept with care rather than proven needed: the worker
+ *                         is loaded from this origin, and a worker from a
+ *                         non-local URL takes its policy from its own response
+ *                         rather than from this meta tag, so strictly it may
+ *                         not reach the worker at all. Nothing on the page
+ *                         itself compiles wasm any more — the third-party
+ *                         mascot runtime that did (physics, navmesh, boolean
+ *                         ops) is gone, and the robot that replaced it is
+ *                         three.js through React Three Fiber, plain JS — but
+ *                         dropping this has not been measured against a PDF
+ *                         that exercises those paths in every browser, and
+ *                         wasm compilation is not the string-eval this policy
+ *                         exists to refuse.
  *   …/gtag/js             only in a build with analytics configured:
  *                         `firebase/analytics` loads gtag.js from there. A
  *                         build without analytics does not allow it. The
@@ -30,9 +43,15 @@
  *                         run someone else's code (round-3 review). A path
  *                         without a trailing slash matches that one file;
  *                         the query string is not part of the match.
- *   worker-src 'self' blob:
- *                         pdf.js runs its worker from this origin; Spline
- *                         starts its workers from blob: URLs it creates.
+ *   worker-src 'self'     pdf.js runs its worker from this origin (a module
+ *                         worker Vite emits as a hashed asset, handed over as
+ *                         `workerPort`, so pdf.js never builds its blob:
+ *                         wrapper), and the service worker, `sw.js`, is this
+ *                         origin's too. `blob:` used to be here for the old
+ *                         third-party mascot runtime, which started its
+ *                         physics, navmesh and decoder workers from blob: URLs
+ *                         it created; nothing else in the bundle does, so a
+ *                         blob: worker is now refused.
  */
 
 import { createHash } from 'node:crypto'
@@ -65,27 +84,7 @@ export function withScriptPolicy(html, { analytics = false } = {}) {
       throw new Error('csp: the policy already names script-src or worker-src; it is added at build time')
     }
     const base = policy.trim().replace(/;\s*$/, '')
-    return `${open}${base}; script-src ${script.join(' ')}; worker-src 'self' blob:${close}`
+    return `${open}${base}; script-src ${script.join(' ')}; worker-src 'self'${close}`
   })
 }
 
-/**
- * The one string-eval the bundle attempts, removed at build time.
- *
- * `@splinetool/runtime` bundles msgpackr, which probes for `new Function` at
- * load — `try{new Function("")}catch{X=1/0}` — and, refused, sets X to
- * Infinity so it never compiles a decoder and reads every record the slow,
- * safe way. Under the policy above the probe is refused, the mascot works, and
- * the browser logs a CSP violation on every page load. This writes the
- * probe's refused outcome in directly: the same behaviour, with no attempt to
- * report.
- *
- * Returns null when the probe is not there, which the build turns into an
- * error: a Spline upgrade that moved it would otherwise bring the violation
- * back with nothing to say why.
- */
-export const EVAL_PROBE = /try\{new Function\(""\)\}catch\{([A-Za-z_$][\w$]*)=1\/0\}/
-
-export function withoutEvalProbe(code) {
-  return EVAL_PROBE.test(code) ? code.replace(EVAL_PROBE, '$1=1/0;') : null
-}

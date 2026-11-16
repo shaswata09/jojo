@@ -7,11 +7,14 @@ import { useToast } from '@/lib/toast-context'
 import { report } from '@/lib/analytics'
 import { kindOf } from '@jojo/service/react/use-pipelines'
 import { announceRefusal } from '@/components/common/write-result'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /** Creating, editing, deleting, switching and running pipelines. */
 export function usePipelineActions(scout: ReturnType<typeof useScout>, engine: PipelinesState) {
   const { addPipeline, updatePipeline, removePipeline } = scout
   const { toast } = useToast()
+  const mascot = useMascot()
   /** 'new' opens the create dialog; a pipeline opens the same dialog seeded. */
   const [editing, setEditing] = useState<Pipeline | 'new' | null>(null)
 
@@ -60,6 +63,7 @@ export function usePipelineActions(scout: ReturnType<typeof useScout>, engine: P
 
   const onRunNow = (id: string) => {
     engine.runNow(id)
+    mascot.play(CUES.scoutStarted)
     /*
      * The KIND, not the pipeline — its name is a saved search somebody
      * wrote, which frequently contains a role and a city. `kindOf` is the

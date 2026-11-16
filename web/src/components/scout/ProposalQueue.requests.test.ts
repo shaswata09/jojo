@@ -40,7 +40,9 @@ describe('Q287 a scout suggestion shows a summary, its link, and an open button'
 
 describe('Q305 suggestion cards stay inside the Suggestions panel', () => {
   it('lays the cards out in a one-column grid the panel’s width, not an auto-sized one', () => {
-    expect(code).toMatch(/<ul className="grid grid-cols-1 gap-2\.5">\s*\{\[\.\.\.pending, \.\.\.answered\]/)
+    expect(code).toMatch(
+      /<ul className="grid grid-cols-1 gap-2\.5">\s*\{\[\.\.\.pending, \.\.\.answered\]/,
+    )
   })
 
   it('lets each card shrink below its content, and long words wrap', () => {

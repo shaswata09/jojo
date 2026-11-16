@@ -22,6 +22,8 @@ import { TODAY } from '@/lib/today'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 import { announceRefusal } from '@/components/common/write-result'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /**
  * The card's only colour, and it comes off the date.
@@ -47,6 +49,7 @@ const URGENCY_BORDER: Record<DateMark, string> = {
 function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | 'xs' }) {
   const { get, toggleDone, update, snooze, reschedule } = useTimeline()
   const { toast } = useToast()
+  const mascot = useMascot()
   const [open, setOpen] = useState(false)
   const item = get(itemId)
   if (!item) return null
@@ -57,6 +60,7 @@ function ItemControls({ itemId, size = 'sm' }: { itemId: string; size?: 'sm' | '
 
   const done = () => {
     if (announceRefusal(toggleDone(item.id), toast)) return
+    mascot.play(CUES.taskDone)
     toast({
       title: `${item.title} completed`,
       description: 'It leaves the deck and this week — nothing is deleted.',

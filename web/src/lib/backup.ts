@@ -54,6 +54,8 @@ import { blobPath } from '@jojo/service/core/blob-path'
 import { report } from '@/lib/analytics'
 import { bucket } from '@jojo/service/core/analytics'
 import type { ToastOptions } from '@/lib/toast-context'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /** Where the last backup's instant lives. Per origin, like everything else. */
 const LAST_BACKUP_KEY = 'jojo.lastBackupAt'
@@ -113,7 +115,8 @@ function subscribeMarks(listener: () => void): () => void {
   markListeners.add(listener)
   // `storage` is the other tabs: a backup taken in one puts the prompt away in all.
   const onStorage = (event: StorageEvent) => {
-    if (event.key === null || event.key === LAST_BACKUP_KEY || event.key === NUDGE_DISMISSED_KEY) listener()
+    if (event.key === null || event.key === LAST_BACKUP_KEY || event.key === NUDGE_DISMISSED_KEY)
+      listener()
   }
   window.addEventListener('storage', onStorage)
   return () => {
@@ -343,7 +346,9 @@ export async function streamDocuments(
   if (written < listed.length) {
     reportError(
       'backup',
-      new Error(`${listed.length - written} of ${listed.length} documents would not read and are not in this backup.`),
+      new Error(
+        `${listed.length - written} of ${listed.length} documents would not read and are not in this backup.`,
+      ),
     )
   }
 }
@@ -363,7 +368,10 @@ export async function collectDocuments(
   for (const item of listed) {
     const file = await blobs.get(item.id)
     if (file === null) continue
-    documents.push({ path: blobPath(item.id, item.name), data: new Uint8Array(await file.arrayBuffer()) })
+    documents.push({
+      path: blobPath(item.id, item.name),
+      data: new Uint8Array(await file.arrayBuffer()),
+    })
   }
   if (listed.length > 0 && documents.length === 0) throw new Error(DOCUMENTS_UNREADABLE)
   if (documents.length < listed.length) {
@@ -519,6 +527,7 @@ export type BackupState = {
 }
 
 export function useBackup(readable?: () => unknown): BackupState {
+  const mascot = useMascot()
   const graph = useGraph()
   const blobs = useVaultBlobs()
 
@@ -561,11 +570,18 @@ export function useBackup(readable?: () => unknown): BackupState {
   )
 
   const blob = useCallback(
-    async ({ documents: withDocuments = true }: BuildOptions = {}, onProgress?: (p: BackupProgress) => void) => {
+    async (
+      { documents: withDocuments = true }: BuildOptions = {},
+      onProgress?: (p: BackupProgress) => void,
+    ) => {
       const pieces: Blob[] = []
-      await write(async (part) => {
-        pieces.push(new Blob([part as BlobPart]))
-      }, withDocuments, onProgress)
+      await write(
+        async (part) => {
+          pieces.push(new Blob([part as BlobPart]))
+        },
+        withDocuments,
+        onProgress,
+      )
       return new Blob(pieces, { type: 'application/json' })
     },
     [write],
@@ -620,6 +636,7 @@ export function useBackup(readable?: () => unknown): BackupState {
           }
           writeLastBackup(at.toISOString())
           report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
+          mascot.play(CUES.backupSaved)
           return 'saved'
         }
       }
@@ -669,9 +686,10 @@ export function useBackup(readable?: () => unknown): BackupState {
        * nothing extra.
        */
       report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
+      mascot.play(CUES.backupSaved)
       return 'started'
     },
-    [blob, write, graph],
+    [blob, write, graph, mascot],
   )
 
   return {

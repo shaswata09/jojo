@@ -27,9 +27,10 @@ import { useTitle } from '@/lib/links'
  *
  * One thing on this page is unusual and it is deliberate.
  *
- * It says out loud where the provenance runs out: one package states no
- * licence at all, and two vendored images have no recorded source. Both are
- * named rather than smoothed over. A credits page is the one page in an app
+ * It says out loud where the provenance runs out: two vendored images have no
+ * recorded source, and that is named rather than smoothed over. (A second gap —
+ * a mascot runtime that stated no licence at all — was named here the same way
+ * until the mascot was replaced by a CC BY model, credited below.) A credits page is the one page in an app
  * where a confident guess is worse than an admitted gap, because a reader has
  * no way to tell the two apart and every other line loses its weight.
  *
@@ -124,20 +125,25 @@ export function GuideBuiltWith() {
           />
           <OtherCredit
             title="The robot mascot"
-            meta="a Spline scene, vendored into this repository"
+            meta="CC BY 4.0 — Jungle Jim"
             body={
               <>
-                The scene in the sidebar is a Spline export, served from this app&rsquo;s own origin
-                as <span className="font-mono text-xs break-all">public/mascot.splinecode</span>{' '}
-                rather than from Spline&rsquo;s CDN — a request on a page carrying somebody&rsquo;s
-                job applications would have made the promise on the dashboard false. The runtime
-                needs a 492kB WebAssembly module to build the scene&rsquo;s geometry, and that is
-                vendored too, at{' '}
-                <span className="font-mono text-xs break-all">public/spline/process.wasm</span>,
-                from <span className="font-mono text-xs break-all">@splinetool/modelling-wasm</span>{' '}
-                at the version matching the runtime. Credit to Spline, Inc. The scene asset&rsquo;s
-                own terms are a separate grant from the npm package&rsquo;s and have to be confirmed
-                separately — that has not been done here.
+                The robot in the sidebar is based on &ldquo;Sci-fi O.B. Robot Unit TH-ICC02
+                (animated)&rdquo; by Jungle Jim, licensed under Creative Commons Attribution 4.0
+                (CC BY 4.0). Model:{' '}
+                <span className="font-mono text-xs break-all">
+                  sketchfab.com/3d-models/sci-fi-ob-robot-unit-th-icc02-animated-6c0764c2bc4c4aaa8e03ba1653f455a6
+                </span>
+                . Artist: <span className="font-mono text-xs break-all">sketchfab.com/jungle_jim</span>.
+                Licence:{' '}
+                <span className="font-mono text-xs break-all">creativecommons.org/licenses/by/4.0</span>.
+                jojo changed it: the mesh and textures are reduced for the web, its bundled animation
+                is removed, and jojo adds its own eyes on the visor and its own movements. The
+                changes are made by{' '}
+                <span className="font-mono text-xs break-all">web/scripts/robot/prepare_model.py</span>
+                , which lists each one. The model is served from jojo&rsquo;s own origin and drawn on
+                your device with three.js, so showing it makes no request to anyone else&rsquo;s
+                server. The artist does not endorse jojo.
               </>
             }
           />
@@ -146,12 +152,12 @@ export function GuideBuiltWith() {
             meta="MIT — patterns and generated files, not a dependency at runtime"
             body={
               <>
-                The thirteen components in{' '}
+                The twelve components in{' '}
                 <span className="font-mono text-xs break-all">src/components/ui</span> — button,
-                command, dialog, input, input group, label, popover, separator, spotlight, splite,
-                switch, textarea, toast — began as shadcn/ui output and live in this repository,
-                edited since. The app does not import them from a package; it owns them. Copyright
-                (c) 2023 shadcn.
+                command, dialog, input, input group, label, popover, separator, spotlight, switch,
+                textarea, toast — began as shadcn/ui output and live in this repository, edited
+                since. The app does not import them from a package; it owns them. Copyright (c) 2023
+                shadcn.
               </>
             }
           />
@@ -256,11 +262,6 @@ export function GuideBuiltWith() {
             <span className="font-medium text-text-1">SIL Open Font License 1.1</span> — covering
             the two typefaces. Its full text ships inside each font package, and the copyright lines
             and Reserved Font Names are given above.
-          </p>
-          <p>
-            <span className="font-medium text-text-1">@splinetool/runtime</span> states no licence
-            in its manifest and ships no licence file. That is recorded here as an absence rather
-            than filled in from what its sibling package happens to say.
           </p>
         </div>
       </Panel>

@@ -1721,12 +1721,12 @@ Note: Vague polish ask; the theme was replaced by the shadcn theme request (see 
 ### Q011 — Use an animated app icon (four stage icons glowing in sequence) that is clearly visible in both light and dark themes, including the inner four icons.
 `feature` · 2026-08-07 · web · superseded
 Must stay true: n/a (superseded).
-Note: Animated logo icon replaced by the mascot card and then the Spline robot (Q012, Q015).; from C1-012
+Note: Animated logo icon replaced by the mascot card and then the Spline robot (Q012, Q015) — itself since replaced by jojo's own R3F robot.; from C1-012
 
 ### Q012 — Put the logo in a separate square card above the sidebar menu with a futuristic 3D animated background (molecule-style animation as hero-futuristic or Spline robot).
 `change` · 2026-08-07 · web · superseded
 Must stay true: n/a (superseded).
-Note: The animated background was replaced by the Spline robot (Q015).; from C1-013
+Note: The animated background was replaced by the Spline robot (Q015) — itself since replaced by jojo's own R3F robot.; from C1-013
 
 ### Q013 — Navbar shows separate icon buttons (not a dropdown) after the Academia/Industry toggle in the order: Profile, Settings, Chat | AI assistant | Theme | How to use; the AI assistant uses the react-icons RiRobot3Fill robot icon.
 `change` · 2026-08-07 · web · active
@@ -1738,16 +1738,18 @@ Guarded by:
 
 ### Q015 — Remove the logo and animation in the square and show the Spline robot from 21st.dev exactly, looking at the cursor.
 `change` · 2026-08-07 · web · active
-Must stay true: The sidebar mascot card renders the Spline 3D robot (SplineRobot.tsx), not a logo animation.
+Must stay true: The sidebar mascot card renders a 3D robot (JojoRobot.tsx), not a logo animation, looking at the cursor.
+Note: Delivered as the Spline robot from 21st.dev (SplineRobot.tsx); since replaced by a CC BY 4.0 model ("Sci-fi O.B. Robot Unit TH-ICC02" by Jungle Jim, credited in THIRD-PARTY-NOTICES.md and on the Built with page), prepared by web/scripts/robot/prepare_model.py and drawn with React Three Fiber (JojoRobot.tsx, RobotScene.tsx) — so no third-party runtime, scene or wasm ships.
 Guarded by:
-- `web/src/components/brand/BrandCard.requests.test.ts` › "renders the 3D Spline robot, not a logo (Q015)"
-- `web/src/components/brand/SplineRobot.requests.test.ts` › "renders the Spline scene served from this app (Q015, Q149)"
+- `web/src/components/brand/BrandCard.requests.test.ts` › "renders the 3D robot, not a logo (Q015)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "renders the 3D robot, a licensed model served from this app (Q015, Q149)"
 
 ### Q016 — The robot must follow the cursor anywhere on the entire page, not only inside its box.
 `fix` · 2026-08-08 · web · active
 Must stay true: The robot's head and body follow the cursor anywhere on the page, not only while the pointer is inside its card.
 Guarded by:
-- `web/src/components/brand/SplineRobot.requests.test.ts` › "follows the cursor across the whole page, not just its card (Q016)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "follows the cursor across the whole page, not just its card (Q016)"
+- `web/src/lib/robot-rig.test.ts` › "turns toward the pointer, the head further than the body"
 
 ### Q017 — Replace the colour theme (light and bluish dark) with the ui.shadcn.com light and dark themes for the web app.
 `change` · 2026-08-08 · web · active
@@ -1825,26 +1827,107 @@ Note: Owner rewound the colour inversion in M071.; from C1-030
 
 ### Q031 — Keep the earlier 3D robot and add own animation gestures.
 `feature` · 2026-08-08 · web · active
-Must stay true: The 3D Spline robot is kept and has its own scripted gestures on top of the scene (spline-rig.ts).
+Must stay true: The 3D robot is kept and has its own scripted gestures (robot-rig.ts).
+Note: First built as gestures layered on the Spline scene (spline-rig.ts); since replaced by a rigged CC BY model (JojoRobot.tsx, RobotScene.tsx, robot-rig.ts) whose bundled animation is removed, so every gesture is jojo's own, driven through its skeleton.
 Guarded by:
-- `web/src/components/brand/SplineRobot.requests.test.ts` › "drives its own scripted gestures through the rig (Q031)"
-- `web/src/lib/spline-rig.test.ts` › "still settles when a different gesture interrupts one in flight"
-- `web/src/lib/spline-rig.test.ts` › "leaves nothing running once a gesture has landed"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "drives its own scripted gestures through the rig (Q031)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "blends an interrupted gesture instead of snapping (Q031)"
+- `web/src/lib/robot-rig.test.ts` › "leaves nothing running once a gesture has landed"
 
 ### Q032 — On page load the previous 2D robot flashes briefly; fix it.
 `fix` · 2026-08-08 · web · active
 Must stay true: On page load no 2D fallback robot appears before the 3D robot.
 Guarded by:
-- `web/src/components/brand/SplineRobot.requests.test.ts` › "does not show the 2D robot while the 3D one is still loading (Q032)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "does not show the 2D robot while the 3D one is still loading (Q032)"
 
 ### Q033 — Robot has selectable gestures: keep Nod, Shake, Startle and a body-only Dance, drop Hello/Thumbs up/Head scratch/Thinking/Excited, add new gestures from existing body movement, chosen via a single temporary dropdown.
 `feature` · 2026-08-08 · web · active
-Must stay true: The mascot gesture set is Nod, Shake, Startle, a body-only Dance and gestures built from existing body movement; Hello, Thumbs up, Head scratch, Thinking and Excited do not exist.
+Must stay true: The mascot gesture set keeps Nod, Shake, Startle and Dance, and every gesture moves the body or head; Hello, Thumbs up, Head scratch, Thinking and Excited do not exist.
+Note: Revised by the owner 2026-11-15, with a rigged model: the arms may move in the Dance and in new moves (Shrug, Look around, Hop spin, Stretch were added, then Flex, Punch combo, Power up, Doze off, Wink, Love and Robot dance under Q316, and seven hand gestures under Q319); the "body-only" rule is lifted, the five dropped gestures stay dropped.
 Guarded by:
 - `web/src/lib/mascot-context.requests.test.ts` › "keeps Nod, Shake, Startle and Dance"
 - `web/src/lib/mascot-context.requests.test.ts` › "has none of the five that were dropped"
-- `web/src/lib/mascot-context.requests.test.ts` › "dances with the body alone — no arm joint moves"
-- `web/src/lib/mascot-context.requests.test.ts` › "builds every gesture from the body, the movement the scene already has"
+- `web/src/lib/mascot-context.requests.test.ts` › "dances with its arms as well as its body (Q033, revised)"
+- `web/src/lib/mascot-context.requests.test.ts` › "moves the body or head in every gesture, so none is an arm alone"
+
+### Q314 — Add a light round button at the top left of the mascot card listing the gestures, ending with the model's attribution.
+`feature` · 2026-11-15 · web · active
+Must stay true: The brand card's top-left corner has a round light-on-dark button, styled like the theme toggle, that opens beside the card a list of every move (each playable, with its stroke) ending with the robot model's CC BY credit.
+Guarded by:
+- `web/src/components/brand/BrandCard.requests.test.ts` › "puts a moves button in the top-left corner that lists every move and ends with the robot credit (Q314)"
+- `web/src/components/brand/BrandCard.requests.test.ts` › "opens the moves beside the card, not over the robot (Q314)"
+- `web/src/components/brand/MascotMoves.requests.test.ts` › "credits the robot model as its CC BY licence asks: title, artist, source, licence, changes (Q314)"
+
+### Q315 — Make the mascot card a mouse gesture pad for different actions, and list the strokes.
+`feature` · 2026-11-15 · web · active
+Must stay true: A stroke drawn on the brand card (tap, double tap, press and hold, swipes, a flick, back and forth, zigzag, scribble, circle, square, V, peak, Z) plays the move it names, anything unreadable plays Wobble, the keyboard can still poke the robot, and every stroke is listed beside its move.
+Guarded by:
+- `web/src/components/brand/BrandCard.requests.test.ts` › "reads strokes drawn on the card and plays the move each names (Q315)"
+- `web/src/components/brand/BrandCard.requests.test.ts` › "still lets the keyboard poke the robot (Q315)"
+- `web/src/lib/gesture-pad.test.ts` › "reads straight swipes by direction"
+- `web/src/lib/gesture-pad.test.ts` › "reads a loop either way round, and tells a square from a circle"
+- `web/src/lib/gesture-pad.test.ts` › "answers a scrawl it cannot read rather than ignoring it"
+- `web/src/lib/gesture-pad.test.ts` › "plays a move the mascot knows for every stroke, and lists each stroke once"
+
+### Q316 — Add more cool actions to the mascot.
+`feature` · 2026-11-15 · web · active
+Must stay true: The mascot also has Flex, Punch combo, Power up, Doze off, Wink, Love (heart eyes) and Robot dance, each reachable by a stroke, each moving the body or head (Q033).
+Guarded by:
+- `web/src/lib/gesture-pad.test.ts` › "has Flex, Punch combo, Power up, Doze off, Wink, Love and Robot dance, each on a stroke"
+- `web/src/lib/robot-rig.test.ts` › "keeps the eyes on the visor: every expression within its range"
+- `web/src/lib/mascot-context.requests.test.ts` › "moves the body or head in every gesture, so none is an arm alone"
+
+### Q317 — The mascot's eyes sit too low, at the nose area; raise them a little.
+`fix` · 2026-11-15 · web · active
+Must stay true: The drawn eyes sit at the middle of the visor, not on its lower slope.
+Guarded by:
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "hangs the eyes at the middle of the visor, not on its slope toward the chin (Q317)"
+
+### Q318 — Reflect the new moves, the gesture pad and the attribution on the Settings page too.
+`feature` · 2026-11-15 · web · active
+Must stay true: Settings › Appearance offers every move as a button, lists every stroke with its move, and shows the robot model's credit.
+Guarded by:
+- `web/src/components/brand/MascotMoves.requests.test.ts` › "shows the moves, the strokes and the credit in Settings too (Q318)"
+
+### Q319 — Add some more hand gestures to the mascot.
+`feature` · 2026-11-15 · web · active
+Must stay true: The mascot also has Jazz hands, Point, Hero pose, Hands up, Disco, Typing and Drumroll; Jazz hands, Point and Disco each have a stroke (an arc, an L, a triangle).
+Guarded by:
+- `web/src/lib/gesture-pad.test.ts` › "has Jazz hands, Point, Hero pose, Hands up, Disco, Typing and Drumroll"
+- `web/src/lib/gesture-pad.test.ts` › "reads an arc, an L and a triangle"
+- `web/src/lib/gesture-pad.test.ts` › "still tells the earlier strokes apart from the new ones"
+
+### Q320 — Change the moves button's icon from the AI (sparkle) icon to a robot icon.
+`change` · 2026-11-15 · web · active
+Must stay true: The brand card's moves button shows a robot icon, not a sparkle.
+Guarded by:
+- `web/src/components/brand/BrandCard.requests.test.ts` › "shows a robot, not a sparkle (Q320)"
+
+### Q321 — Hand gestures over the chest overlap and vanish into the chest; fix that.
+`fix` · 2026-11-15 · web · active
+Must stay true: No gesture folds a forearm across the chest, where the hand sinks into the armour; hands go beside the head, the shoulders or the hips.
+Note: The model's chest and shoulders are too broad for hands to meet in front of it, and the card frames the head too closely for hands above it; Clap, Arms crossed and Rub hands became Jazz hands, Hands up and Drumroll, and Love raises its hands beside the shoulders.
+Guarded by:
+- `web/src/lib/robot-rig.test.ts` › "never folds a forearm across the chest, where the hand sinks into the armour (Q321)"
+
+### Q322 — The head's pointer tracking is not as fast and pointed as the old Spline robot's; make it so.
+`fix` · 2026-11-15 · web · active
+Must stay true: The head aims at the pointer (a true aim near the robot: a pointer 100px off turns it about 18°) and closes most of a turn within 0.15s, while the body's share stays under 15°.
+Guarded by:
+- `web/src/lib/robot-rig.test.ts` › "points at the pointer, turning hard for one close by, as the old robot did"
+- `web/src/lib/robot-rig.test.ts` › "catches up with the pointer quickly, the head faster than the body"
+- `web/src/lib/robot-rig.test.ts` › "never swings past its limits, however far the pointer goes"
+
+### Q323 — Tag fitting mascot gestures to user actions in the app (e.g. a draft moved to submitted dances).
+`feature` · 2026-11-15 · web · active
+Must stay true: Stage moves play their stage's gesture everywhere a stage changes (draft→submitted dances, screen bounces, interview powers up, offer hop-spins; Closed loves an acceptance, nods at a withdrawal or a declined offer, and plays nothing over a rejection or a ghosting), and new applications, duplicates, finished tasks, saved backups, scout runs and assistant questions each play theirs, from the one table in lib/mascot-cues.ts.
+Guarded by:
+- `web/src/lib/mascot-cues.test.ts` › "dances when a draft is sent off, the owner's own example"
+- `web/src/lib/mascot-cues.test.ts` › "closes by the outcome: love for an acceptance, a nod for your own call, nothing over bad news"
+- `web/src/lib/mascot-cues.test.ts` › "plays the stage gesture wherever a stage changes: the board, the table and the detail page"
+- `web/src/lib/mascot-cues.test.ts` › "bounces for a new application, by hand or from the scout"
+- `web/src/lib/mascot-cues.test.ts` › "nods when a task is ticked off, and not when one is reopened"
+- `web/src/lib/mascot-cues.test.ts` › "flexes for a saved backup, scans for a scout run, types while the assistant works"
 
 ### Q036 — All scrollbars use a glassmorphic style.
 `change` · 2026-08-08 · web · active
@@ -1915,15 +1998,17 @@ Guarded by:
 ### Q081 — On load the robot glitches by moving toward the back; fix.
 `fix` · 2026-08-22 · web · active
 Must stay true: On load the mascot does not jump toward the back of the scene.
-Guarded by: not testable — An on-load glitch in the WebGL scene with no recorded cause; nothing short of rendering the Spline scene can show it is gone (the load-time shake, Q083, is guarded).
+Guarded by: not testable — An on-load glitch in the WebGL scene with no recorded cause; nothing short of rendering the scene can show it is gone (the load-time shake, Q083, is guarded). Reported against the Spline scene, since replaced by a CC BY model drawn with React Three Fiber (JojoRobot.tsx, RobotScene.tsx).
 
 ### Q083 — After load the robot makes a sudden shake then acts normal, and the camera zoom-out animation is gone; restore the zoom-out (revert or fix).
 `fix` · 2026-08-22 · web · active
 Must stay true: After load the mascot has no sudden shake and the camera zoom-out intro still plays.
+Note: The zoom-out was the Spline scene's own; the current robot (RobotScene.tsx) has jojo's own — the camera opens close on the visor and pulls back to the bust — timed in rendered frames so a load stall pauses it rather than cutting it, before the greeting bow.
 Guarded by:
-- `web/src/lib/spline-rig.test.ts` › "does not amputate a gesture when idle arrives before it has landed"
-- `web/src/components/brand/SplineRobot.requests.test.ts` › "throws away an earlier load before greeting, so the arrival does not shake (Q083)"
-- `web/src/components/brand/SplineRobot.requests.test.ts` › "lets the scene finish its own zoom-out intro before the greeting (Q083)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "never lets idle cut a gesture short (Q031)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "greets once per scene, so the arrival does not shake (Q083)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "lets the robot finish rising into place before the greeting (Q083)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "opens with the camera zoom-out, and always lands it (Q083)"
 
 ### Q084 — On pages with no settings icon beside the title (Assistant, Settings, Today) the title sits at the left with no reserved gap.
 `fix` · 2026-08-22 · web · active
@@ -2011,10 +2096,11 @@ Guarded by:
 
 ### Q149 — GitHub Pages build shows the 2D flaticon robot instead of the 3D mascot; mascot card should not use it.
 `fix` · 2026-08-23 · web · active
-Must stay true: The production (GitHub Pages) build renders the 3D Spline mascot, never the 2D flaticon robot.
+Must stay true: The production (GitHub Pages) build renders the 3D mascot, never the 2D flaticon robot.
+Note: Reported against the Spline scene, whose scene file 404'd under the Pages base path; since replaced by a CC BY model drawn by JojoRobot.tsx and RobotScene.tsx, whose model file is imported through the bundler and fingerprinted, so it resolves under the base path rather than from public/.
 Guarded by:
 - `web/src/lib/public-assets.test.ts` › "are never addressed by a bare root-absolute path"
-- `web/src/components/brand/SplineRobot.requests.test.ts` › "renders the Spline scene served from this app (Q015, Q149)"
+- `web/src/components/brand/JojoRobot.requests.test.ts` › "renders the 3D robot, a licensed model served from this app (Q015, Q149)"
 
 ### Q153 — Replace mock user Alex Rahman everywhere with Shaswata Mitra details (UA, Santa Clara, links), region US, role Assistant professor.
 `change` · 2026-08-24 · web · active
@@ -2096,13 +2182,9 @@ Guarded by:
 - `web/src/lib/check-outside-router.test.ts` › "would have caught the 2026-09-11 crash"
 
 ### Q259 — When a kanban card moves forward, the sidebar mascot randomly dances, nods or spins.
-`feature` · 2026-09-14 · web · active
-Must stay true: When a board card moves to a later stage, the sidebar mascot plays a random dance, nod or spin (isAdvance/advanceGesture in mascot-cues.ts).
-Guarded by:
-- `web/src/lib/mascot-cues.test.ts` › "is a later column, one step or several"
-- `web/src/lib/mascot-cues.test.ts` › "is the three the board celebrates with"
-- `web/src/lib/mascot-cues.test.ts` › "never repeats the gesture that just played"
-- `web/src/lib/mascot-cues.test.ts` › "plays a random advance gesture on the mascot when the card moves forward"
+`feature` · 2026-09-14 · web · superseded
+Must stay true: n/a (superseded).
+Note: Replaced by Q323 (2026-11-15): each stage now has its own gesture rather than a random one — a draft sent off dances, an interview powers up — and Closed plays by outcome.
 
 ### Q267 — Add a color palette/picker anywhere the user chooses a color (keyword, text editor text color, etc.), allowing any color from the spectrum beyond the 8 presets, and make chosen colors persist wherever used.
 `feature` · 2026-09-14 · web · active
@@ -2353,7 +2435,7 @@ Guarded by:
 ### Q203 — Triage and make changes for best agentic UX, fix remaining audit issues except spline, tuned for smaller LLMs.
 `change` · 2026-08-25 · cross · process
 Must stay true: n/a (process).
-Note: Triage of an audit not in the messages; no specific outcome.; from C3-030
+Note: Triage of an audit not in the messages; no specific outcome. (The Spline issue it excepted — a runtime with no licence grant — was later closed by replacing the mascot with jojo's own R3F robot.); from C3-030
 
 ### Q208 — Do the 4-file move for seed.ts now and defer the rename.
 `change` · 2026-08-26 · service · process

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MascotCredit, StrokeLegend } from '@/components/brand/MascotMoves'
 import { RobotMascot } from '@/components/brand/RobotMascot'
 import { SettingRow } from '@/components/common/Field'
 import { Panel, PanelTitle } from '@/components/common/Panel'
@@ -61,6 +62,18 @@ export function AppearancePanel() {
           </div>
         }
       />
+      {/* The same strokes the sidebar card reads (lib/gesture-pad.ts), and
+          the model's credit, which the card's moves button also shows. */}
+      <SettingRow
+        label="Draw a move"
+        description="Draw on the robot in the sidebar card. The robot button in its corner lists these too."
+        control={
+          <StrokeLegend className="max-w-36 grid-cols-1 min-[380px]:max-w-56 sm:max-w-none lg:grid-cols-2" />
+        }
+      />
+      <div className="border-t border-hairline py-3">
+        <MascotCredit />
+      </div>
       <SettingRow
         label="Interface sounds"
         description="A short click when you flip a switch"

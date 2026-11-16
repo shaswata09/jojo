@@ -914,6 +914,263 @@ html[data-theme='dark'] {
   }
 }
 
+@keyframes jojo-mascot-shrug {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25%,
+  70% {
+    transform: translateY(-5%) rotate(-8deg);
+  }
+}
+@keyframes jojo-mascot-look-around {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  18%,
+  40% {
+    transform: rotate(10deg) translateX(6%);
+  }
+  62%,
+  84% {
+    transform: rotate(-10deg) translateX(-6%);
+  }
+}
+@keyframes jojo-mascot-hop-spin {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg) scaleY(1);
+  }
+  16% {
+    transform: translateY(4%) rotate(0deg) scaleY(0.94);
+  }
+  50% {
+    transform: translateY(-22%) rotate(200deg) scaleY(1.04);
+  }
+  78% {
+    transform: translateY(0) rotate(360deg) scaleY(1);
+  }
+  86% {
+    transform: translateY(3%) rotate(360deg) scaleY(0.95);
+  }
+}
+@keyframes jojo-mascot-stretch {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  30%,
+  68% {
+    transform: translateY(-4%) scaleY(1.08);
+  }
+}
+@keyframes jojo-mascot-flex {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  22%,
+  50%,
+  80% {
+    transform: scale(1.06);
+  }
+  38%,
+  62% {
+    transform: scale(1.1);
+  }
+}
+@keyframes jojo-mascot-jab {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  24%,
+  64% {
+    transform: translateX(-5%) rotate(-4deg);
+  }
+  44% {
+    transform: translateX(5%) rotate(4deg);
+  }
+  84% {
+    transform: translateX(7%) translateY(-2%) rotate(6deg);
+  }
+  34%,
+  54%,
+  74% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+@keyframes jojo-mascot-power-up {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  20%,
+  50% {
+    transform: translateY(5%) scale(0.95);
+  }
+  62% {
+    transform: translateY(-7%) scale(1.07);
+  }
+  84% {
+    transform: translateY(-4%) scale(1.04);
+  }
+}
+@keyframes jojo-mascot-doze {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  22% {
+    transform: rotate(10deg) translateY(3%);
+  }
+  30% {
+    transform: rotate(4deg) translateY(1%);
+  }
+  58%,
+  72% {
+    transform: rotate(16deg) translateY(5%);
+  }
+  80% {
+    transform: rotate(-4deg) translateY(-6%);
+  }
+}
+@keyframes jojo-mascot-wink {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20%,
+  62% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes jojo-mascot-love {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  20%,
+  60% {
+    transform: translateY(-4%) rotate(5deg);
+  }
+  40%,
+  80% {
+    transform: translateY(-4%) rotate(-5deg);
+  }
+}
+@keyframes jojo-mascot-robot {
+  0%,
+  28%,
+  100% {
+    transform: rotate(0deg);
+  }
+  36%,
+  56% {
+    transform: rotate(12deg);
+  }
+  66%,
+  86% {
+    transform: rotate(-12deg);
+  }
+}
+@keyframes jojo-mascot-jazz {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  22%,
+  42%,
+  62%,
+  82% {
+    transform: translateY(2%);
+  }
+  32%,
+  52%,
+  72% {
+    transform: translateY(-1%);
+  }
+}
+@keyframes jojo-mascot-point {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  20%,
+  78% {
+    transform: rotate(12deg) translateX(5%);
+  }
+}
+@keyframes jojo-mascot-hero {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  18%,
+  82% {
+    transform: scale(1.06) translateY(-2%);
+  }
+}
+@keyframes jojo-mascot-hands-up {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20%,
+  85% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes jojo-mascot-disco {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  16%,
+  56% {
+    transform: rotate(-9deg) translateY(-3%);
+  }
+  36%,
+  76% {
+    transform: rotate(9deg) translateY(1%);
+  }
+}
+@keyframes jojo-mascot-typing {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  14%,
+  86% {
+    transform: translateY(3%);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateY(4%);
+  }
+  40%,
+  60% {
+    transform: translateY(2.5%);
+  }
+}
+@keyframes jojo-mascot-drumroll {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  20%,
+  80% {
+    transform: translateY(3%) rotate(-4deg);
+  }
+  40%,
+  60% {
+    transform: translateY(3%) rotate(4deg);
+  }
+}
+
 /* Head-driven, because a flat character reads a nod and a shake in the head
    rather than the whole body. Everything else drives the body. */
 .jojo-mascot[data-pose='nod'] .jojo-mascot-head {
@@ -950,6 +1207,61 @@ html[data-theme='dark'] {
    the length of the gesture, then the bob resumes. */
 .jojo-mascot[data-pose='dance'] .jojo-mascot-root {
   animation: jojo-mascot-dance var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='shrug'] .jojo-mascot-head {
+  animation: jojo-mascot-shrug var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='lookAround'] .jojo-mascot-head {
+  animation: jojo-mascot-look-around var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='hopSpin'] {
+  animation: jojo-mascot-hop-spin var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='stretch'] .jojo-mascot-root {
+  animation: jojo-mascot-stretch var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='flex'] .jojo-mascot-root {
+  animation: jojo-mascot-flex var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='jab'] .jojo-mascot-root {
+  animation: jojo-mascot-jab var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='powerUp'] .jojo-mascot-root {
+  animation: jojo-mascot-power-up var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='doze'] .jojo-mascot-head {
+  animation: jojo-mascot-doze var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='wink'] .jojo-mascot-head {
+  animation: jojo-mascot-wink var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='love'] .jojo-mascot-root {
+  animation: jojo-mascot-love var(--pose-ms) ease-in-out;
+}
+/* Stepped, so the flat robot ticks between angles the way the 3D one does. */
+.jojo-mascot[data-pose='robot'] .jojo-mascot-head {
+  animation: jojo-mascot-robot var(--pose-ms) steps(1, jump-end);
+}
+.jojo-mascot[data-pose='jazz'] .jojo-mascot-root {
+  animation: jojo-mascot-jazz var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='point'] .jojo-mascot-head {
+  animation: jojo-mascot-point var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='hero'] .jojo-mascot-root {
+  animation: jojo-mascot-hero var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='handsUp'] .jojo-mascot-head {
+  animation: jojo-mascot-hands-up var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='disco'] .jojo-mascot-root {
+  animation: jojo-mascot-disco var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='typing'] .jojo-mascot-head {
+  animation: jojo-mascot-typing var(--pose-ms) ease-in-out;
+}
+.jojo-mascot[data-pose='drumroll'] .jojo-mascot-root {
+  animation: jojo-mascot-drumroll var(--pose-ms) ease-in-out;
 }
 
 /* The rich-text editor's content is user-authored HTML, so Tailwind's utility

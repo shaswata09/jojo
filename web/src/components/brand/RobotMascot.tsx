@@ -29,10 +29,9 @@ const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(mi
  * keyframes (see index.css); only the cursor tracking runs in JS, because that
  * one has to follow input continuously rather than replay a fixed curve.
  *
- * Stands in for the 3D robot (see SplineRobot) while its scene downloads, and
- * permanently if that download never lands — the scene is a 1.35MB fetch from
- * prod.spline.design, so the card would otherwise sit empty offline. It speaks
- * the same pose vocabulary, so the fallback is never inert either.
+ * Stands in for the 3D robot (see JojoRobot) wherever it cannot run — no
+ * WebGL, or a scene that throws — so the card is never empty. It speaks the
+ * same pose vocabulary, so the fallback is never inert either.
  */
 export function RobotMascot({
   pose = 'idle',
@@ -100,7 +99,7 @@ export function RobotMascot({
     }
 
     // On `window`, not the card — the robot should follow the cursor anywhere on
-    // the page, which is what the 3D scene did via its globalEvents flag.
+    // the page, as the 3D one does (Q016).
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => {
       window.removeEventListener('pointermove', onMove)

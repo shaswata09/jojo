@@ -25,6 +25,8 @@ import { useArrivalScroll } from '@/lib/use-arrival-highlight'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 import { announceRefusal } from '@/components/common/write-result'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /**
  * Everything flagged to come back to, off the one timeline.
@@ -50,6 +52,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
   const { byId } = useApplications()
   const { open } = useDialogs()
   const { toast } = useToast()
+  const mascot = useMascot()
   const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const focusedRow = useArrivalScroll<HTMLLIElement>(focus)
 
@@ -167,6 +170,7 @@ export function RemindersTool({ focus }: { focus?: string }) {
       const done = Boolean(item.completedOn)
       play(item.id, { preview: { completedOn: done ? null : TODAY }, arrive: true }, () => {
         if (announceRefusal(toggleDone(item.id), toast)) return
+        if (!done) mascot.play(CUES.taskDone)
         toast({
           title: `${item.title} ${done ? 'reopened' : 'completed'}`,
           description: done

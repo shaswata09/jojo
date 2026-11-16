@@ -107,26 +107,19 @@ export const isFingerprinted = (url) => url.startsWith('assets/')
  */
 export const LAZY = /^assets\/DataTransferScene-/
 
-/** Fingerprinted code, styles, fonts and wasm, except what `LAZY` names. */
-export const precachedAsset = (url) =>
-  isFingerprinted(url) && /\.(?:m?js|css|woff2|wasm)$/.test(url) && !LAZY.test(url)
-
 /**
- * Files outside `assets/` that are installed with the worker anyway.
+ * Fingerprinted code, styles, fonts, wasm and 3D models, except what `LAZY` names.
  *
- * The mascot's scene (1.3 MB) and the wasm it runs on keep the same URL across
- * builds, so they were left to the runtime rule — cached on first use, and in
- * the worker's own cache, which the next deploy's worker deletes on activate.
- * After every deploy the 3D mascot fell back to the SVG offline until it had
- * been opened online again: R32 for the half that is not fingerprinted. They
- * load on every page, so installing them costs nothing the first visit was not
- * going to fetch, and the worker reuses an earlier cache's copy when its bytes
- * are unchanged rather than downloading them again.
+ * The sidebar mascot is in this set: its scene is a lazy chunk like any other,
+ * and its model, `jojo-robot-<hash>.glb`, is a fingerprinted asset beside it —
+ * imported with `?url`, so it gets a new name whenever it changes. Without
+ * `glb` here the robot would be the one thing on the always-mounted sidebar
+ * missing offline, and fall back to the SVG after every deploy — exactly what
+ * R3 recorded for the third-party scene it replaced, whose file lived outside
+ * `assets/` and needed a list of its own (`OFFLINE_STATIC`, now gone).
  */
-export const OFFLINE_STATIC = /^(?:mascot\.splinecode|spline\/[^/]+\.wasm)$/
-
-/** Whether a non-fingerprinted file of the build is installed with the worker. */
-export const precachedStatic = (url) => OFFLINE_STATIC.test(url)
+export const precachedAsset = (url) =>
+  isFingerprinted(url) && /\.(?:m?js|css|woff2|wasm|glb)$/.test(url) && !LAZY.test(url)
 
 /**
  * The strings `index.html` has to contain to be THIS build's document: the

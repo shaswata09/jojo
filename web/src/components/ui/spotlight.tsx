@@ -5,7 +5,7 @@ type SpotlightProps = {
   fill?: string
 }
 
-/** Blurred elliptical light sweep, as used behind the Spline scene. */
+/** Blurred elliptical light sweep, as used behind the 3D mascot in the sidebar card. */
 export function Spotlight({ className, fill }: SpotlightProps) {
   return (
     <svg

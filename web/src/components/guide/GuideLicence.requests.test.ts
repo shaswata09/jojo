@@ -37,7 +37,7 @@ describe('Q187: the Licence page', () => {
     expect(prose).toContain('title="MarkItDown (Microsoft)"')
     expect(prose).toContain('title="Anthropic · OpenAI · OpenRouter · Groq"')
     expect(prose).toMatch(
-      /not endorsed by, sponsored by or affiliated with NVIDIA, Microsoft, Anthropic, OpenAI, Groq, OpenRouter or Spline/,
+      /not endorsed by, sponsored by or affiliated with NVIDIA, Microsoft, Anthropic, OpenAI, Groq or OpenRouter\./,
     )
   })
 })

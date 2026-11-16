@@ -4,10 +4,12 @@
  * The policy is added by the build, so these cases pin the transform; the
  * browser check — the app, the mascot, the PDF editor and the graph loading
  * with no violation — was made against a production build and is recorded in
- * `scripts/csp.mjs`.
+ * `scripts/csp.mjs`. That check was made with the old third-party mascot,
+ * whose runtime needed blob: workers and an eval-probe rewrite at build time;
+ * the robot that replaced it is plain three.js, and both are gone.
  */
 import { describe, expect, it } from 'vitest'
-import { GTM, inlineScriptHashes, withScriptPolicy, withoutEvalProbe } from '../../scripts/csp.mjs'
+import { GTM, inlineScriptHashes, withScriptPolicy } from '../../scripts/csp.mjs'
 import indexHtml from '../../index.html?raw'
 
 const PAGE =
@@ -22,7 +24,7 @@ describe('the build-time script policy', () => {
     const [hash] = inlineScriptHashes(PAGE)
     expect(hash).toMatch(/^'sha256-[A-Za-z0-9+/]+=*'$/)
     expect(policy).toContain(`script-src 'self' ${String(hash)} 'wasm-unsafe-eval'`)
-    expect(policy).toContain("worker-src 'self' blob:")
+    expect(policy).toContain("worker-src 'self'")
     expect(policy).not.toContain("'unsafe-eval'")
     expect(policy).not.toContain("'unsafe-inline'")
     expect(policy).toContain("object-src 'none'; base-uri 'self'")
@@ -56,13 +58,16 @@ describe('the build-time script policy', () => {
   })
 })
 
-describe('the Spline runtime’s eval probe', () => {
-  it('is replaced by the outcome a refused probe has', () => {
-    const code = 'var cd=!1,ZD=2;try{new Function("")}catch{ZD=1/0}var Lo=1'
-    expect(withoutEvalProbe(code)).toBe('var cd=!1,ZD=2;ZD=1/0;var Lo=1')
-  })
-
-  it('reports a runtime where the probe has moved, rather than passing it through', () => {
-    expect(withoutEvalProbe('try{new Function("x")}catch{}')).toBeNull()
+describe('workers', () => {
+  /*
+   * pdf.js's module worker and the service worker are both served from this
+   * origin. blob: was allowed only for the old mascot runtime, which built its
+   * workers from blob: URLs; with it gone, a worker from a blob: (or data:)
+   * URL — the shape an injected script would use to run code off the page —
+   * is refused.
+   */
+  it('allows workers from this origin and nowhere else', () => {
+    const worker = /worker-src ([^;]*)/.exec(policyOf(withScriptPolicy(PAGE)))?.[1] ?? ''
+    expect(worker.trim().split(/\s+/)).toEqual(["'self'"])
   })
 })

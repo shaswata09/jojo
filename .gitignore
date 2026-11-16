@@ -32,3 +32,6 @@ web/public/jojo-extension.zip
 # Scratch CDP driver scripts, which have been committed by accident before.
 __rt*.mjs
 .vscode/
+
+# Python bytecode from the model generator (web/scripts/robot)
+__pycache__/

@@ -49,8 +49,8 @@ export class ErrorBoundary extends Component<Props, State> {
     // Named for what this boundary DID, not "unhandled render error", which is
     // what it used to say. Every line it prints is by definition one it caught,
     // and the widget boundaries print it on their designed path — a machine with
-    // no GPU logs it once as `SplineRobot` hands over to the 2D mascot, exactly
-    // as intended. An audit read that line as a crash the build had missed and
+    // no GPU logs it once as the 3D mascot (`JojoRobot`) hands over to the 2D
+    // one, exactly as intended. An audit read that line as a crash the build had missed and
     // went looking for the bug; a boundary that reports a working fallback as an
     // unhandled failure is spending someone's afternoon every time it fires.
     const scope = this.props.fallback === undefined ? 'app' : 'widget'

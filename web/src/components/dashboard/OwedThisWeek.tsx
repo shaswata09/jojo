@@ -30,6 +30,8 @@ import { useToast } from '@/lib/toast-context'
 import { TODAY } from '@/lib/today'
 import { cn } from '@/lib/utils'
 import { announceRefusal } from '@/components/common/write-result'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -186,6 +188,7 @@ export function OwedThisWeek() {
   const { all, toggleDone, update, snooze, reschedule } = useTimeline()
   const { open } = useDialogs()
   const { toast } = useToast()
+  const mascot = useMascot()
 
   /*
    * The pin, sampled once per render and then used everywhere below.
@@ -256,6 +259,7 @@ export function OwedThisWeek() {
    */
   const complete = (item: TimelineItem) => {
     if (announceRefusal(toggleDone(item.id), toast)) return
+    mascot.play(CUES.taskDone)
     toast({
       title: `${item.title} completed`,
       description: 'It leaves this list and counts towards today — nothing is deleted.',

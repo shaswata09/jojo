@@ -32,6 +32,8 @@ import { useVault } from '@jojo/service/react/use-vault'
 import { useDialogs } from '@/lib/dialogs-context'
 import { appPath, applicationsPath, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
+import { useMascot } from '@/lib/mascot-context'
+import { stageGesture } from '@/lib/mascot-cues'
 import { useUndoable } from '@/lib/undo'
 import { announceRefusal } from '@/components/common/write-result'
 
@@ -113,6 +115,7 @@ function Detail({
 }: { application: Application } & ApplicationDetailProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { play } = useMascot()
   const undoable = useUndoable()
   const { open: openDialog } = useDialogs()
   const { update, remove, duplicate } = useApplications()
@@ -214,6 +217,10 @@ function Detail({
       return written
     })
     if (announceRefusal(moved, toast)) return
+    // The same gesture the board plays for this move (lib/mascot-cues.ts) —
+    // the stage picker here and the board's drag are one action.
+    const gesture = stageGesture(a.stage, to, patch.outcome ?? a.outcome)
+    if (gesture) play(gesture)
 
     toast({
       title: `${displayName(a)} moved to ${STAGE_LABEL[to]}`,
@@ -241,6 +248,8 @@ function Detail({
       }),
     )
     if (announceRefusal(closed, toast)) return
+    const gesture = stageGesture(a.stage, 'closed', decision)
+    if (gesture) play(gesture)
     toast({
       title: `${displayName(a)} closed`,
       description: `Recorded as ${decision}. The offer details and its reminders were kept.`,

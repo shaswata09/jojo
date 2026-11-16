@@ -7,6 +7,8 @@ import { report } from '@/lib/analytics'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { atBottom } from '@/lib/scroll-stick'
 import { useConversation } from '@/lib/use-conversation'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /**
  * The connected Assistant's conversation: which thread is open, the run in it,
@@ -95,6 +97,7 @@ export function useConversationPanel(threads: ReturnType<typeof useThreads>['thr
    * shared with the chat dock's windows, in `lib/use-conversation.ts`. Two
    * surfaces showing the same conversation must not run it differently.
    */
+  const mascot = useMascot()
   const { entries, busy, send, stop, clear } = useConversation({
     threadId: activeId,
     onStarted: openThread,
@@ -142,6 +145,7 @@ export function useConversationPanel(threads: ReturnType<typeof useThreads>['thr
    */
   const ask = (text: string) => {
     stick.current = true
+    mascot.play(CUES.assistantWorking)
     void send(text)
   }
 

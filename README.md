@@ -570,7 +570,7 @@ third party who never touched this code.
 **The services you point it at are not covered by that.** jojo ships no API key
 and calls nothing on its own, so every connection is one you configure with your
 own credentials — which makes you, not this project, the party to that
-provider's agreement. Two are worth knowing before you rely on them:
+provider's agreement. One is worth knowing before you rely on it:
 
 - **NVIDIA's free API catalogue is licensed for evaluation, not production.**
   Its [API Trial Terms of Service][nv] permit use "for internal testing and
@@ -579,11 +579,6 @@ provider's agreement. Two are worth knowing before you rely on them:
   individual". jojo's assistant sends your profile, your CV text and your
   contacts' names and email addresses. Running a real job search on the free
   tier is outside what that licence grants.
-- **`@splinetool/runtime` ships in the web bundle with no licence grant at
-  all** — no `license` field, no LICENSE file, no lockfile entry. That is an
-  open question for anyone forking or deploying this, and it is recorded in
-  `THIRD-PARTY-NOTICES.md` rather than smoothed over. The mascot is decoration
-  and a 2D fallback already exists.
 
 Guide → **Licence** says all of this inside the app, where somebody deciding
 what to connect will actually meet it. None of it is legal advice.

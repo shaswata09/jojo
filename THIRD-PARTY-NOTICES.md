@@ -204,10 +204,6 @@ ships.
 - its-fine 2.0.0 — Copyright (c) 2022-2025 Poimandres
 - react-use-measure 2.1.7 — Copyright (c) 2019-2025 Poimandres
 - suspend-react 0.1.3 — Copyright (c) 2021 Paul Henschel
-- react-merge-refs 2.1.1 — Copyright (c) 2020 Greg Bergé
-- lodash.debounce 4.0.8 — Copyright jQuery Foundation and other contributors
-  <https://jquery.org/>; based on Underscore.js, copyright Jeremy Ashkenas,
-  DocumentCloud and Investigative Reporters & Editors
 - aria-hidden 1.2.6, react-remove-scroll 2.7.2, react-style-singleton 2.2.3,
   use-callback-ref 1.3.3, use-sidecar 1.1.3 — Copyright (c) 2017 Anton
   Korzunov
@@ -239,6 +235,27 @@ The parts of Radix (`@radix-ui/…`, MIT, WorkOS) and Firebase (`@firebase/…`,
 Apache-2.0, Google LLC) that the bundle contains are covered by those projects'
 own credits on the Built with page.
 
+## 3D model
+
+The robot mascot in the web app's sidebar is built from a model licensed under
+**Creative Commons Attribution 4.0 International (CC BY 4.0)**. The credit, as
+the artist's licence file asks for it:
+
+> This work is based on "Sci-fi O.B. Robot Unit TH-ICC02 (animated)"
+> (https://sketchfab.com/3d-models/sci-fi-ob-robot-unit-th-icc02-animated-6c0764c2bc4c4aaa8e03ba1653f455a6)
+> by Jungle Jim (https://sketchfab.com/jungle_jim) licensed under CC-BY-4.0
+> (http://creativecommons.org/licenses/by/4.0/)
+
+Changes made (CC BY §3(a)(1)(B)): the mesh is reduced from about 125,000 to
+about 62,000 triangles; the six 4K textures are resized to 1024 px and stored as
+WebP; the bundled animation clip, a stray helper sphere and one unused morph
+target per part are removed; vertex data is stored quantized; the body material
+is marked opaque; and two empties are added, one recording the joints' pivots and
+one at the visor, which jojo draws its own eyes from. jojo animates the skeleton
+itself. The script that makes every change is
+`web/scripts/robot/prepare_model.py`; the result is `web/src/assets/jojo-robot.glb`.
+The artist does not endorse jojo.
+
 ## Fonts
 
 Inter and JetBrains Mono are used on both platforms and both are licensed under
@@ -255,28 +272,3 @@ them.
 - Inter — Copyright 2016 The Inter Project Authors, https://github.com/rsms/inter
 - JetBrains Mono — Copyright 2020 The JetBrains Mono Project Authors,
   https://github.com/JetBrains/JetBrainsMono
-
-## Unresolved: @splinetool/runtime
-
-**The 3D mascot's runtime ships with no licence grant, and this is a
-distribution question that has not been answered.**
-
-`@splinetool/runtime` (1.12.98) declares no `license` field, carries no LICENSE
-file, records no licence in `package-lock.json`, and describes itself as
-"© 2025 Spline, Inc.". It is compiled into two chunks of the published web
-bundle. Absent a grant, there is no stated permission to redistribute it.
-
-`web/src/components/guide/credits.ts` already refuses to guess at the terms and
-says so on the Built with page, which is the right instinct; this note exists so
-the question is recorded where a licence audit will find it rather than only in
-a source comment.
-
-Two ways to close it, and one of them has to happen before wide distribution:
-obtain terms from Spline in writing, or drop the mascot. Nothing else in the
-tree depends on it — it is decoration on the sidebar, and the 2D fallback
-already renders whenever WebGPU is unavailable.
-
-The scene file `public/mascot.splinecode` and `public/spline/process.wasm` come
-from the same vendor and inherit the same question. `process.wasm` additionally
-has no lockfile entry at all, having been vendored from
-`@splinetool/modelling-wasm` rather than installed.

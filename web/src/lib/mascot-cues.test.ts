@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { ADVANCE_GESTURES, advanceGesture, isAdvance } from './mascot-cues'
+import { CUES, isAdvance, stageGesture } from './mascot-cues'
 import { POSE_MS } from './mascot-context'
 import rowActions from '@/components/applications/use-row-actions.tsx?raw'
+import detail from '@/routes/ApplicationDetail.tsx?raw'
+import writes from '@/components/applications/dialog/use-application-writes.ts?raw'
+import proposals from '@/components/scout/use-proposal-actions.ts?raw'
+import postings from '@/components/scout/use-posting-actions.ts?raw'
+import alreadyHave from '@/components/scout/use-already-have.ts?raw'
+import fillDraft from '@/components/scout/use-fill-draft.ts?raw'
+import pipelines from '@/components/scout/use-pipeline-actions.ts?raw'
+import priority from '@/components/dashboard/PriorityActions.tsx?raw'
+import owed from '@/components/dashboard/OwedThisWeek.tsx?raw'
+import reminders from '@/components/vault/RemindersTool.tsx?raw'
+import backup from '@/lib/backup.ts?raw'
+import conversation from '@/components/assistant/use-conversation-panel.ts?raw'
 
 describe('what counts as moving forward', () => {
   it('is a later column, one step or several', () => {
@@ -36,65 +48,85 @@ describe('what counts as moving forward', () => {
   })
 })
 
-describe('the gesture an advance draws', () => {
-  it('is one the mascot actually knows', () => {
-    for (const gesture of ADVANCE_GESTURES) expect(POSE_MS[gesture]).toBeGreaterThan(0)
+describe('the gesture a stage move draws (Q323)', () => {
+  it("dances when a draft is sent off, the owner's own example", () => {
+    expect(stageGesture('draft', 'submitted')).toBe('dance')
   })
 
-  it('is the three the board celebrates with', () => {
-    expect([...ADVANCE_GESTURES]).toEqual(['nod', 'spin', 'dance'])
+  it('gives each forward stage its own gesture', () => {
+    expect(stageGesture('submitted', 'screen')).toBe('bounce')
+    expect(stageGesture('screen', 'interview')).toBe('powerUp')
+    expect(stageGesture('interview', 'offer')).toBe('hopSpin')
+    // Crossing columns plays the one it lands in.
+    expect(stageGesture('draft', 'offer')).toBe('hopSpin')
   })
 
-  it('spreads across the whole pool as the roll moves', () => {
-    // Nothing played before, so all three are candidates: thirds of the range.
-    expect(advanceGesture(0)).toBe('nod')
-    expect(advanceGesture(0.5)).toBe('spin')
-    expect(advanceGesture(0.99)).toBe('dance')
+  it('plays nothing for a move back down the board, or nowhere', () => {
+    expect(stageGesture('offer', 'interview')).toBeNull()
+    expect(stageGesture('submitted', 'draft')).toBeNull()
+    expect(stageGesture('screen', 'screen')).toBeNull()
   })
 
-  it('never repeats the gesture that just played', () => {
-    for (const previous of ADVANCE_GESTURES) {
-      for (const roll of [0, 0.25, 0.5, 0.75, 0.99]) {
-        expect(advanceGesture(roll, previous)).not.toBe(previous)
-      }
-    }
+  it('closes by the outcome: love for an acceptance, a nod for your own call, nothing over bad news', () => {
+    expect(stageGesture('offer', 'closed', 'accepted')).toBe('love')
+    expect(stageGesture('offer', 'closed', 'declined')).toBe('nod')
+    expect(stageGesture('interview', 'closed', 'withdrawn')).toBe('nod')
+    expect(stageGesture('interview', 'closed', 'rejected')).toBeNull()
+    expect(stageGesture('submitted', 'closed', 'ghosted')).toBeNull()
+    expect(stageGesture('submitted', 'closed')).toBeNull()
+    expect(stageGesture('closed', 'closed', 'accepted')).toBeNull()
+  })
+})
+
+describe('the gestures other actions draw (Q323)', () => {
+  it('uses only gestures the mascot knows', () => {
+    for (const pose of Object.values(CUES)) expect(POSE_MS[pose]).toBeGreaterThan(0)
   })
 
-  it('can still reach every gesture once one is excluded', () => {
-    expect(new Set([advanceGesture(0, 'nod'), advanceGesture(0.99, 'nod')])).toEqual(
-      new Set(['spin', 'dance']),
-    )
-    expect(new Set([advanceGesture(0, 'dance'), advanceGesture(0.99, 'dance')])).toEqual(
-      new Set(['nod', 'spin']),
-    )
-  })
-
-  it('stays inside the pool on a roll that is out of range', () => {
-    // `Math.random()` cannot produce these, but a caller could.
-    for (const roll of [-1, 0, 1, 2, Number.NaN, Number.POSITIVE_INFINITY]) {
-      expect(ADVANCE_GESTURES).toContain(advanceGesture(roll))
-      // Including against the first of the pool, which is what an index that
-      // misses would fall back to.
-      for (const previous of ADVANCE_GESTURES) {
-        expect(advanceGesture(roll, previous)).not.toBe(previous)
-      }
-    }
+  it('never celebrates a refusal', () => {
+    expect(['dance', 'spin', 'hopSpin', 'bounce', 'love', 'jazz']).not.toContain(CUES.alreadyHave)
   })
 })
 
 /**
- * Q259 — the rules above only matter if a stage move reaches them.
- *
- * `useRowActions().onMoveStage` is the one path the board's drag, its stage
- * pill and the table's stage menu all go through. Read as source (D20); comments
- * stripped so the paragraph explaining the wiring cannot stand in for it.
+ * Q323 — the table only matters if the actions reach it. Read as source
+ * (D20), comments stripped so a paragraph about the wiring cannot stand in
+ * for it.
  */
-describe('a stage move on the board', () => {
-  const code = rowActions.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
+const code = (src: string) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
 
-  it('plays a random advance gesture on the mascot when the card moves forward', () => {
-    expect(code).toMatch(
-      /if \(isAdvance\(from, stage\)\) \{\s*const gesture = advanceGesture\(Math\.random\(\), lastGesture\.current\)\s*lastGesture\.current = gesture\s*play\(gesture\)/,
+describe('the actions wired to the mascot (Q323)', () => {
+  it('plays the stage gesture wherever a stage changes: the board, the table and the detail page', () => {
+    expect(code(rowActions)).toMatch(
+      /const gesture = stageGesture\(from, stage, a\.outcome\)\s*if \(gesture\) play\(gesture\)/,
     )
+    const page = code(detail)
+    expect(page).toMatch(/stageGesture\(a\.stage, to, patch\.outcome \?\? a\.outcome\)/)
+    expect(page).toMatch(/stageGesture\(a\.stage, 'closed', decision\)/)
+  })
+
+  it('bounces for a new application, by hand or from the scout', () => {
+    for (const src of [writes, proposals, postings]) {
+      expect(code(src)).toMatch(/mascot\.play\(CUES\.applicationAdded\)/)
+    }
+  })
+
+  it('shakes its head at a job already in the applications', () => {
+    for (const src of [alreadyHave, fillDraft, proposals]) {
+      expect(code(src)).toMatch(/mascot\.play\(CUES\.alreadyHave\)/)
+    }
+  })
+
+  it('nods when a task is ticked off, and not when one is reopened', () => {
+    expect(code(priority)).toMatch(/mascot\.play\(CUES\.taskDone\)/)
+    expect(code(owed)).toMatch(/mascot\.play\(CUES\.taskDone\)/)
+    expect(code(reminders)).toMatch(/if \(!done\) mascot\.play\(CUES\.taskDone\)/)
+  })
+
+  it('flexes for a saved backup, scans for a scout run, types while the assistant works', () => {
+    expect(code(backup).match(/mascot\.play\(CUES\.backupSaved\)/g)?.length).toBe(2)
+    expect(code(pipelines)).toMatch(/engine\.runNow\(id\)\s*mascot\.play\(CUES\.scoutStarted\)/)
+    expect(code(conversation)).toMatch(/mascot\.play\(CUES\.assistantWorking\)\s*void send\(text\)/)
   })
 })

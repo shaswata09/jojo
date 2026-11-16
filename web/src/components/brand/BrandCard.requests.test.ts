@@ -19,7 +19,10 @@ const strip = (src: string) =>
 const card = strip(brandCard)
 
 /** The body of `ThemeToggle`, up to the card itself. */
-const toggle = card.slice(card.indexOf('function ThemeToggle'), card.indexOf('export function BrandCard'))
+const toggle = card.slice(
+  card.indexOf('function ThemeToggle'),
+  card.indexOf('export function BrandCard'),
+)
 
 describe('the brand card', () => {
   it('shows the tagline under the jojo name (Q008)', () => {
@@ -29,8 +32,8 @@ describe('the brand card', () => {
     expect(tagline).toBeGreaterThan(name)
   })
 
-  it('renders the 3D Spline robot, not a logo (Q015)', () => {
-    expect(card).toMatch(/<SplineRobot\b/)
+  it('renders the 3D robot, not a logo (Q015)', () => {
+    expect(card).toMatch(/<JojoRobot\b/)
     expect(card).not.toMatch(/<RobotIcon\b|<img\b/)
   })
 
@@ -49,5 +52,56 @@ describe('the brand card', () => {
     // Sound first, then the state change, in one onClick: the two land on the
     // same frame rather than the click trailing as a second event.
     expect(toggle).toMatch(/onClick=\{\(\) => \{\s*playSwitchClick\(\)\s*toggle\(\)\s*\}\}/)
+  })
+})
+
+/** The card's JSX from its opening `<Popover>` on. */
+const body = card.slice(card.indexOf('export function BrandCard'))
+
+describe('the moves button and the gesture pad', () => {
+  it('puts a moves button in the top-left corner that lists every move and ends with the robot credit (Q314)', () => {
+    // Same round, light-on-dark chrome as the theme toggle opposite it.
+    expect(body).toMatch(
+      /<div className="absolute top-2 left-2[^"]*">\s*<PopoverTrigger[^>]*className=\{CORNER_BUTTON\}/,
+    )
+    expect(toggle).toMatch(/className=\{CORNER_BUTTON\}/)
+    const panel = card.slice(
+      card.indexOf('function MovesPanel'),
+      card.indexOf('function useGesturePad'),
+    )
+    const list = panel.indexOf('<MoveList')
+    const credit = panel.indexOf('<MascotCredit')
+    expect(list).toBeGreaterThan(-1)
+    expect(credit).toBeGreaterThan(list)
+  })
+
+  it('opens the moves beside the card, not over the robot (Q314)', () => {
+    expect(body).toMatch(/<Popover>\s*<PopoverAnchor asChild>/)
+    expect(card).toMatch(/<PopoverContent[^>]*side="right"/)
+  })
+
+  it('reads strokes drawn on the card and plays the move each names (Q315)', () => {
+    expect(body).toMatch(/\{\.\.\.pad\.handlers\}/)
+    const pad = card.slice(
+      card.indexOf('function useGesturePad'),
+      card.indexOf('function ThemeToggle'),
+    )
+    expect(pad).toMatch(/recognise\(points\)/)
+    expect(pad).toMatch(/isDoubleTap\(/)
+    expect(pad).toMatch(/play\(poseForStroke\('hold'\)\)/)
+    expect(pad).toMatch(/poseForStroke\(double \? 'doubleTap' : id\)/)
+    // A finger draws instead of scrolling the drawer.
+    expect(body).toMatch(/aria-label="Poke jojo"\s*className="[^"]*touch-none/)
+  })
+
+  it('still lets the keyboard poke the robot (Q315)', () => {
+    expect(body).toMatch(/if \(e\.detail === 0\) play\('nod'\)/)
+  })
+})
+
+describe('the moves button icon', () => {
+  it('shows a robot, not a sparkle (Q320)', () => {
+    expect(body).toMatch(/<PopoverTrigger[^>]*>\s*<Bot\b/)
+    expect(card).not.toMatch(/Sparkles/)
   })
 })

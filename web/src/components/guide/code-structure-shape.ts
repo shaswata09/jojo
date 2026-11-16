@@ -176,8 +176,8 @@ export const SHAPE: DirRow[] = [
     // 323 with the Guide's Control flow graph page: `guide/GuideControlFlow.tsx`, the map it draws
     // (`guide/flow-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    files: 483,
-    tests: 131,
+    files: 485,
+    tests: 132,
     lines: 70724,
     what: 'every surface you can see',
   },
@@ -224,9 +224,9 @@ export const SHAPE: DirRow[] = [
     // 175 with `scout-reading.tsx`: each suggested posting read while it waits
     // for an answer, so the card shows the employer, role and place, and
     // approving does not open the page a second time.
-    files: 207,
-    tests: 93,
-    lines: 32862,
+    files: 209,
+    tests: 94,
+    lines: 34316,
     what: 'web-only adapters and URL state',
   },
   {
@@ -256,4 +256,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 244
+export const WEB_TEST_FILES = 246

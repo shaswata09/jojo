@@ -14,6 +14,8 @@ import { approveAllToast, approvedDescription, identityOf } from './scout-approv
 import { useAlreadyHave } from './use-already-have'
 import type { FillDraft } from './use-fill-draft'
 import type { PostingPages } from './use-posting-pages'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /**
  * Answering the scout's suggestions: approve, approve all, discard, clear all,
@@ -28,6 +30,7 @@ export function useProposalActions(
   const { updatePosting, promoteToApplication, promotePosting } = scout
   const { settings } = useModelSettings()
   const { toast } = useToast()
+  const mascot = useMascot()
   const navigate = useNavigate()
   const dropDiscardedPage = useDropDiscardedPage()
   const { alreadyHave, sayAlreadyHave } = useAlreadyHave()
@@ -78,6 +81,7 @@ export function useProposalActions(
     // Already read while it waited: the fill's own toast follows at once and
     // says everything, so a "reading…" one in front of it would only flicker.
     const readAlready = page !== null && scoutReading(proposal.reading)?.ok === true
+    mascot.play(CUES.applicationAdded)
     if (!readAlready)
       toast({
         title: `${application.org} added to your applications as a draft`,
@@ -106,6 +110,8 @@ export function useProposalActions(
     report('scout_proposal_decided', { decision: 'approved' })
     const said = approveAllToast(done.length, repeats.length, isConfigured(settings))
     if (said) toast(said)
+    if (done.length > 0) mascot.play(CUES.applicationAdded)
+    else if (repeats.length > 0) mascot.play(CUES.alreadyHave)
     if (done.length === 0) return
     void (async () => {
       for (const { application, page, proposal } of done) {

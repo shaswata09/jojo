@@ -23,12 +23,15 @@ import { useTitle } from '@/lib/links'
  * ## The rule this page is written under
  *
  * Every claim here is either quoted from a licence or checked against one, and
- * where the answer is uncomfortable it is written down anyway. Two are:
- * `@splinetool/runtime` ships in the bundle with no licence grant at all, and
- * NVIDIA's free API is licensed for evaluation and explicitly not for
- * production — which is what most people will actually use it for. A licence
- * page that omitted either would be worse than no page, because a reader has no
- * way to tell a careful list from a comfortable one.
+ * where the answer is uncomfortable it is written down anyway. NVIDIA's free
+ * API is licensed for evaluation and explicitly not for production — which is
+ * what most people will actually use it for. A licence page that omitted that
+ * would be worse than no page, because a reader has no way to tell a careful
+ * list from a comfortable one. (It used to name a second: the 3D mascot's
+ * third-party runtime shipped in the bundle with no licence grant at all. That
+ * gap was closed by replacing the mascot — first with a robot modelled in
+ * code, then with a CC BY model credited on the Built with page — rather than
+ * by guessing at the terms.)
  *
  * It is not legal advice and says so. What it can honestly be is a map of where
  * the obligations are, so somebody who needs advice knows what to ask about.
@@ -213,37 +216,6 @@ export function GuideLicence() {
         </div>
       </Panel>
 
-      {/* ------------------------------------------------------ the open gap */}
-      <Panel>
-        <PanelTitle hint="named rather than smoothed over">
-          Where the provenance runs out
-        </PanelTitle>
-        <div className="space-y-2.5 text-sm text-text-2">
-          <p>
-            <span className="text-text-1">
-              The 3D mascot’s runtime ships with no licence grant.
-            </span>{' '}
-            <span className="font-mono text-xs">@splinetool/runtime</span> declares no{' '}
-            <span className="font-mono text-xs">license</span> field, carries no LICENSE file,
-            records nothing in the lockfile, and describes itself as “© 2025 Spline, Inc.”. It is
-            compiled into the published bundle. Absent a grant there is no stated permission to
-            redistribute it, which is a real question for anyone forking or deploying jojo — not a
-            theoretical one.
-          </p>
-          <p>
-            The scene file and its WebAssembly helper come from the same vendor and inherit the same
-            question. Nothing else in the tree depends on any of it: the mascot is decoration, and a
-            2D fallback already renders wherever WebGPU is unavailable.
-          </p>
-          <p className="text-text-3">
-            This is recorded here, in{' '}
-            <span className="font-mono text-xs">THIRD-PARTY-NOTICES.md</span>, and on the Built with
-            page, because a licence audit should find it in the first place it looks rather than the
-            third.
-          </p>
-        </div>
-      </Panel>
-
       {/* --------------------------------------------------------- disclaimer */}
       <Panel>
         <PanelTitle hint="the part that is not boilerplate">Disclaimers</PanelTitle>
@@ -263,8 +235,8 @@ export function GuideLicence() {
           <p>
             <span className="text-text-1">No affiliation.</span> jojo is an independent project. It
             is not endorsed by, sponsored by or affiliated with NVIDIA, Microsoft, Anthropic,
-            OpenAI, Groq, OpenRouter or Spline. Those names appear here because jojo can talk to
-            their services or is built on their work, and every trademark belongs to its owner.
+            OpenAI, Groq or OpenRouter. Those names appear here because jojo can talk to their
+            services, and every trademark belongs to its owner.
           </p>
           <p>
             <span className="text-text-1">Your data is yours, and so is the responsibility.</span>{' '}

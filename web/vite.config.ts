@@ -10,7 +10,7 @@ import { execFile } from 'node:child_process'
 import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
 import { loadEnv } from 'vite'
 import type { Plugin } from 'vite'
-import { withScriptPolicy, withoutEvalProbe } from './scripts/csp.mjs'
+import { withScriptPolicy } from './scripts/csp.mjs'
 import { buildCodeGraph, collectSources } from './scripts/code-graph.mjs'
 import { readFileSync as readManifest } from 'node:fs'
 import { creditProblems, packageOfModule } from './src/components/guide/credits.ts'
@@ -115,17 +115,6 @@ function contentSecurityPolicy(analytics: boolean): Plugin {
   return {
     name: 'jojo:csp',
     apply: 'build',
-    // The Spline runtime's `new Function` probe — see `withoutEvalProbe`.
-    transform(code, id) {
-      if (!/[\\/]@splinetool[\\/]runtime[\\/]build[\\/]runtime\.js$/.test(id)) return null
-      const patched = withoutEvalProbe(code)
-      if (patched === null) {
-        this.error(
-          'jojo:csp — the `new Function` probe in @splinetool/runtime has moved. Find the new one and update EVAL_PROBE in scripts/csp.mjs, or the built page logs a CSP violation on every load.',
-        )
-      }
-      return { code: patched, map: null }
-    },
     transformIndexHtml: {
       // Last, so the hash is taken from the inline script as it will ship.
       order: 'post',

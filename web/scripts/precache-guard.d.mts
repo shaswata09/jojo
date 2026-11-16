@@ -22,8 +22,6 @@ export declare function auditPrecache(input: {
 export declare const isFingerprinted: (url: string) => boolean
 export declare const LAZY: RegExp
 export declare const precachedAsset: (url: string) => boolean
-export declare const OFFLINE_STATIC: RegExp
-export declare const precachedStatic: (url: string) => boolean
 export declare function bootMarks(html: string, base: string): string[]
 export declare function belongsToBuild(
   reported: unknown,

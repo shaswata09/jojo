@@ -12,6 +12,8 @@ import { announceRefusal } from '@/components/common/write-result'
 import { useAlreadyHave } from './use-already-have'
 import type { FillDraft } from './use-fill-draft'
 import type { PostingPages } from './use-posting-pages'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /** Saving, promoting and removing postings, and promoting matches. */
 export function usePostingActions(
@@ -29,6 +31,7 @@ export function usePostingActions(
   } = scout
   const { settings } = useModelSettings()
   const { toast } = useToast()
+  const mascot = useMascot()
   const navigate = useNavigate()
   const undoable = useUndoable()
   const { alreadyHave, sayAlreadyHave } = useAlreadyHave()
@@ -57,6 +60,7 @@ export function usePostingActions(
   const onPromote = (matchId: string) => {
     const { value: application, restore } = undoable(() => promoteToApplication(matchId))
     if (!application) return
+    mascot.play(CUES.applicationAdded)
     toast({
       title: `${application.org} added as a draft`,
       description: 'The match stays in this feed, now linked to the application.',
@@ -111,6 +115,7 @@ export function usePostingActions(
     const reading = Boolean(posting) && isConfigured(settings)
     if (posting && reading) void fillDraft(application, posting.url, posting.title)
     else if (posting && !pages.pageFor(posting)) pages.keepAndReport(posting.url, posting.title)
+    mascot.play(CUES.applicationAdded)
     toast({
       title: `${application.org} added as a draft`,
       description: reading

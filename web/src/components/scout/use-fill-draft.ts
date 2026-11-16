@@ -8,6 +8,8 @@ import { takeReading } from '@/lib/scout-reading-hooks'
 import { scoutReading } from '@jojo/service/core/proposal'
 import { fillDoneToast, fillFailedToast, withScheme } from './scout-approval'
 import type { PostingPages } from './use-posting-pages'
+import { useMascot } from '@/lib/mascot-context'
+import { CUES } from '@/lib/mascot-cues'
 
 /**
  * The draft an approved job becomes, and — for a posting — the page read into it.
@@ -31,6 +33,7 @@ export function useFillDraft(pages: PostingPages) {
   const { reader, settings } = useModelSettings()
   const fillFromPosting = useFillFromPosting()
   const { toast } = useToast()
+  const mascot = useMascot()
   const navigate = useNavigate()
 
   return async (
@@ -71,6 +74,7 @@ export function useFillDraft(pages: PostingPages) {
         if (window.location.pathname === appPath(application as Parameters<typeof appPath>[0])) {
           navigate(appPath({ id: duplicate.id }))
         }
+        mascot.play(CUES.alreadyHave)
         toast({
           title: `Already in your applications — not added again`,
           description: `The posting is ${duplicate.name}, which you already have. ${duplicate.why} Its page is filed under that one.`,
