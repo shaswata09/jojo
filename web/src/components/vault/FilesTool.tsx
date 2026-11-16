@@ -314,6 +314,7 @@ export function FilesTool({ focus }: { focus?: string }) {
     // you can still see what else is in the bucket.
     <div className="flex flex-wrap items-start gap-4 sm:gap-5">
       <Panel
+        data-tour="files"
         className={cn('relative min-w-0', open ? 'flex-1 basis-[320px]' : 'w-full')}
         onDragEnter={onDragEnter}
         onDragOver={onDragOver}

@@ -18,16 +18,19 @@ const shell = strip(appShell)
 /** The z-index a class string gives, or NaN. */
 const z = (classes: string) => Number(/(?:^|\s)z-(\d+)\b/.exec(classes)?.[1])
 
-const scrim = /<div\s+aria-hidden\s+className="(pointer-events-none fixed[^"]*)"\s+style=\{\{\s*background:\s*'([^']*)'/.exec(
-  shell,
-)
+const scrim =
+  /<div\s+aria-hidden\s+className="(pointer-events-none fixed[^"]*)"\s+style=\{\{\s*background:\s*'([^']*)'/.exec(
+    shell,
+  )
 const topbarClasses = /<div className="(surface sticky[^"]*)"/.exec(strip(topbar))?.[1] ?? ''
 const sidebarClasses = /'(surface z-\d+[^']*)'/.exec(strip(sidebar))?.[1] ?? ''
 
 describe('content scrolling under the topbar (Q028)', () => {
   it('fades into a scrim that is solid page colour at the top and clear below', () => {
     expect(scrim).not.toBeNull()
-    expect(scrim![2]).toMatch(/^linear-gradient\(to bottom, var\(--page\) 0%, .*transparent 100%\)$/)
+    expect(scrim![2]).toMatch(
+      /^linear-gradient\(to bottom, var\(--page\) 0%, .*transparent 100%\)$/,
+    )
   })
 
   it('never covers the topbar or the mascot card', () => {
@@ -56,6 +59,8 @@ describe('where a page starts (Q091)', () => {
   })
 
   it('opens each new page at its top', () => {
-    expect(shell).toMatch(/if \(isDesktop && isSamePage\(from, pathname\)\) return\s*window\.scrollTo\(0, 0\)/)
+    expect(shell).toMatch(
+      /if \(isDesktop && isSamePage\(from, pathname\)\) return\s*window\.scrollTo\(0, 0\)/,
+    )
   })
 })

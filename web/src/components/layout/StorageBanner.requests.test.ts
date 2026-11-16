@@ -48,7 +48,9 @@ describe('Settings → Diagnostics (Q165)', () => {
   })
 
   it('scrolls to that row and lights it when the banner’s link arrives', () => {
-    expect(diagnostics).toMatch(/if \(focus !== 'skipped'\) return\s*skippedRef\.current\?\.scrollIntoView\(/)
+    expect(diagnostics).toMatch(
+      /if \(focus !== 'skipped'\) return\s*skippedRef\.current\?\.scrollIntoView\(/,
+    )
     const row = diagnostics.slice(diagnostics.indexOf('ref={skippedRef}'))
     expect(row.slice(0, 300)).toContain("focus === 'skipped' ? 'arrival-highlight'")
   })
@@ -65,7 +67,10 @@ describe('the backup prompt (Q097)', () => {
   const prompt = banner.slice(banner.indexOf('function BackupPrompt()'))
 
   it('is the last arm of the storage banner, below every failure', () => {
-    const main = banner.slice(banner.indexOf('export function StorageBanner()'), banner.indexOf('function BackupPrompt()'))
+    const main = banner.slice(
+      banner.indexOf('export function StorageBanner()'),
+      banner.indexOf('function BackupPrompt()'),
+    )
     expect(main.trimEnd()).toMatch(/return <BackupPrompt \/>\s*\}$/)
     expect(main.lastIndexOf('return null')).toBe(-1)
   })

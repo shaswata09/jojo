@@ -42,6 +42,7 @@ export function NewMenu({ className }: { className?: string }) {
           ref={triggerRef}
           type="button"
           aria-label="New"
+          data-tour="new"
           // Squares off below `sm`, where the topbar already wraps the search
           // field onto its own row and the top row has no width to spare.
           // `size-8` rather than `h-8 w-8`: they draw identically, and only the
@@ -59,6 +60,7 @@ export function NewMenu({ className }: { className?: string }) {
 
       <PopoverContent
         align="end"
+        data-tour="new-menu"
         className="w-64 p-0"
         onCloseAutoFocus={(event) => {
           // The popover restores focus to its trigger on a `setTimeout(0)`,

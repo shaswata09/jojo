@@ -229,7 +229,10 @@ export function Graph() {
         }
       />
 
-      <div className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div
+        data-tour="graph"
+        className="grid min-w-0 gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_320px]"
+      >
         <Panel className="flex min-w-0 flex-col">
           <PanelTitle
             hint={

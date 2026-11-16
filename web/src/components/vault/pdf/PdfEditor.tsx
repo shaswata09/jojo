@@ -58,6 +58,7 @@ export function PdfEditor() {
 
   return (
     <Panel
+      data-tour="pdf"
       className={cn(
         'relative transition-colors',
         drop.dragging ? 'border-accent bg-accent-soft' : '',

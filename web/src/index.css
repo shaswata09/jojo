@@ -236,6 +236,12 @@ html[data-theme='light'] {
      an alias of it. */
   --accent-soft: #e3e3e3; /* 1.19:1 on panel · 1.09:1 on well */
   --accent-border: #9d9d9d; /* 2.53:1 on panel — a clear step past hairline-strong */
+  /* The guided tour's one colour: the orange of jojo's body (sampled from the
+     model's lit armour). The ring and bar use it as it is; text in it is the
+     same orange, deepened, since the body orange is 2.7:1 on a light fill. */
+  --tour: #e2772f;
+  --tour-ink: #a84a12; /* 5.1:1 on its own soft fill */
+  --tour-soft: rgb(226 119 47 / 0.1);
 
   --danger: #c81e1e; /* 5.36:1 panel · 4.90:1 well */
   --danger-soft: #fef2f2;
@@ -391,6 +397,9 @@ html[data-theme='dark'] {
      light palette had. See the light block for the eight states it silenced. */
   --accent-soft: #303030; /* 1.25:1 on panel · 1.36:1 on well */
   --accent-border: #5a5a5a; /* 2.39:1 on panel */
+  --tour: #e2772f;
+  --tour-ink: #e2772f; /* 5.2:1 on its own soft fill */
+  --tour-soft: rgb(226 119 47 / 0.14);
 
   --danger: #ff6467; /*  6.21:1 — shadcn's --destructive */
   --danger-soft: #2a1515;
@@ -1800,3 +1809,78 @@ html[data-theme='dark'] {
 .pdf-text-layer ::selection {
   background: color-mix(in srgb, var(--accent) 45%, transparent);
 }
+
+/* The guided tour (components/tour). The lit cut-out is one box whose shadow
+   is the whole window; its ring breathes so the eye finds it. Everything here
+   animates only with motion allowed — the global reduced-motion rule above
+   stops it otherwise. */
+.tour-spot {
+  box-shadow:
+    0 0 0 2px var(--tour),
+    0 0 18px 2px color-mix(in srgb, var(--tour) 55%, transparent),
+    0 0 0 9999px rgb(0 0 0 / 0.58);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tour-spot::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    border: 2px solid var(--tour);
+    animation: tour-ring 1.8s ease-out infinite;
+  }
+  .tour-dot {
+    animation: tour-dot 1.2s ease-in-out infinite;
+  }
+  .tour-card-in {
+    animation: tour-card-in 220ms ease-out;
+  }
+}
+@keyframes tour-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+@keyframes tour-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.55;
+  }
+}
+@keyframes tour-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tour-progress {
+  background: var(--tour);
+}
+.tour-dot {
+  background: var(--tour);
+}
+.tour-task {
+  border-color: color-mix(in srgb, var(--tour) 45%, transparent);
+  background: var(--tour-soft);
+  color: var(--text-1);
+}
+.tour-task-done {
+  border-color: var(--tour);
+  background: var(--tour-soft);
+  color: var(--tour-ink);
+}
+

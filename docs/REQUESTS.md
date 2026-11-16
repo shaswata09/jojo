@@ -1929,6 +1929,27 @@ Guarded by:
 - `web/src/lib/mascot-cues.test.ts` › "nods when a task is ticked off, and not when one is reopened"
 - `web/src/lib/mascot-cues.test.ts` › "flexes for a saved backup, scans for a scout run, types while the assistant works"
 
+### Q324 — Replace the tour's basic modal with a hands-on tutorial: visuals and highlights on the real app, like modern websites.
+`change` · 2026-11-15 · web · active
+Must stay true: The tour walks the real pages with a spotlight on each element and a card beside it; hands-on steps wait for the reader to do the thing (draw on jojo, open a page, switch the view, open the New menu or the palette) and move on by themselves; Next always works; and the tour itself never types, saves or changes anything.
+Note: Replaces the seven-step dialog on the guide page, whose header had rejected coach marks only for want of a mount point above the router — the app shell is in this package, so the tour lives there (components/tour).
+Guarded by:
+- `web/src/components/tour/tour.requests.test.ts` › "only ever ask the reader for things that write nothing"
+- `web/src/components/tour/tour.requests.test.ts` › "point only at elements the app really marks"
+- `web/src/components/tour/tour.requests.test.ts` › "is done when a menu opens, and again when it closes"
+- `web/src/components/tour/tour.requests.test.ts` › "passes over a step about a menu that is not open, and only such a step"
+- `web/src/components/tour/tour.requests.test.ts` › "lives in the app shell, inside the router, so it can walk from page to page"
+- `web/src/components/tour/tour.requests.test.ts` › "starts where the reader is, from onboarding and from the guide"
+
+### Q325 — Add tour steps for every end-to-end aspect: connecting vLLM, OpenAI or Claude by API or endpoint, starting and testing the MarkItDown server, file preview, chat, job scout, statistics, PDF merge tools, the knowledge graph, browser storage, and adding or editing tags.
+`feature` · 2026-11-15 · web · active
+Must stay true: The guided tour covers the model connection (local servers by address; OpenAI, Anthropic (Claude) and others by API key), the document reader's setup and Test, file preview, the chat, scout pipelines, statistics, the PDF editor, the knowledge graph, browser storage, and keywords (picking, adding, renaming, recolouring), with hands-on steps where they write nothing.
+Guarded by:
+- `web/src/components/tour/tour.requests.test.ts` › "covers every area: models, the reader, files, chat, scout, statistics, PDF tools, the graph, storage and keywords"
+- `web/src/components/tour/tour.requests.test.ts` › "names the model providers the app really offers"
+- `web/src/components/tour/tour.requests.test.ts` › "is done when a keyword is picked in the filter row"
+- `web/src/components/tour/tour.requests.test.ts` › "is done on a vault tab only when that tab is the one open"
+
 ### Q036 — All scrollbars use a glassmorphic style.
 `change` · 2026-08-08 · web · active
 Must stay true: Scrollbars across the app use the glassmorphic style defined globally in index.css (protected design).

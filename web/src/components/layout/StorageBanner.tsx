@@ -297,7 +297,8 @@ export function StorageBanner() {
       <Banner tone="warning">
         {skipped.length === 1 ? '1 record' : `${skipped.length} records`} on this device could not
         be read and {skipped.length === 1 ? 'is' : 'are'} not being shown. Nothing has been deleted
-        — <Link
+        —{' '}
+        <Link
           to={settingsPath({ focus: 'skipped' })}
           className="underline underline-offset-2 hover:text-text-1"
         >

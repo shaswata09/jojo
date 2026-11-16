@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { Compass } from 'lucide-react'
 import { useProfile } from '@jojo/service/react/use-profile'
 import {
@@ -25,8 +24,7 @@ import {
 import { useBoot } from '@/lib/boot-context'
 import { markOffered, nextSetupStage, wasOffered } from '@/lib/onboarding'
 import type { OnboardingStage } from '@/lib/onboarding'
-import type { TourIntent } from '@/components/guide/GuidedTour'
-import { guidePath } from '@/lib/links'
+import { useTour } from '@/components/tour/tour-context'
 import { contentModal } from '@/components/ui/dialog-width'
 
 /**
@@ -65,6 +63,7 @@ import { contentModal } from '@/components/ui/dialog-width'
  */
 export function Onboarding() {
   const { needsDataChoice } = useBoot()
+  const tour = useTour()
   const { isBlank } = useProfile()
   const { settings } = useModelSettings()
 
@@ -225,32 +224,17 @@ export function Onboarding() {
             <Button variant="ghost" onClick={() => finish('tour')}>
               Not now
             </Button>
-            {/* A router Link, not a bare anchor.
-                The handover is still the same one the old comment argued for —
-                the tour lives on the guide's overview page and opens itself
-                from the launcher there, so the honest thing is to send the
-                reader where it is. What a bare `<a>` also did was leave the
-                router: it bypassed `basename`, so on GitHub Pages — served at
-                `/<repo>/` — "Start the tour" went to `github.io/guide` instead
-                of `github.io/jojo/guide` and landed on a 404.
-
-                It also reloaded the document, which now costs more than it did:
-                agent runs live in a registry above the router (`agent-runs.ts`)
-                and a reload is the one thing that genuinely kills them. Anyone
-                who pressed this mid-conversation lost it. */}
-            <Button asChild>
-              {/* `state`, because the button says START and used to only
-                  NAVIGATE — it landed the reader on the guide's overview beside
-                  a second button reading "Take the tour", which is a step this
-                  dialog had already asked them to take. `TourLauncher` reads
-                  this on arrival and consumes it. */}
-              <Link
-                to={guidePath('overview')}
-                state={{ startTour: true } satisfies TourIntent}
-                onClick={() => finish('tour')}
-              >
-                Start the tour
-              </Link>
+            {/* Starts the tour where the reader is. It used to send them to
+                the guide page, where the tour was a dialog, and that page then
+                opened it from router state; the tour now lives in the app shell
+                and walks the real pages, so there is nowhere to go first. */}
+            <Button
+              onClick={() => {
+                finish('tour')
+                tour.start(0)
+              }}
+            >
+              Start the tour
             </Button>
           </DialogFooter>
 

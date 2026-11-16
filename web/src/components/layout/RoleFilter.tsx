@@ -117,7 +117,10 @@ export function RoleFilter() {
 
               <Separator />
               <CommandGroup>
-                <CommandItem onSelect={() => setAll([...vocabulary])} className="justify-center text-xs">
+                <CommandItem
+                  onSelect={() => setAll([...vocabulary])}
+                  className="justify-center text-xs"
+                >
                   Select all
                 </CommandItem>
                 {selected.size > 0 ? (

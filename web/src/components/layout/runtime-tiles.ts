@@ -114,7 +114,13 @@ export function modelTile(state: ModelState): RuntimeTile {
         detail: 'a model is configured but did not answer — check it is running',
       }
     case 'probing':
-      return { ...tile, meta: 'checking', status: 'off', icon: Cpu, detail: 'asking the model whether it is there' }
+      return {
+        ...tile,
+        meta: 'checking',
+        status: 'off',
+        icon: Cpu,
+        detail: 'asking the model whether it is there',
+      }
     default:
       return {
         ...tile,
@@ -126,7 +132,11 @@ export function modelTile(state: ModelState): RuntimeTile {
   }
 }
 
-export function runtimeTiles(status: StoreStatus, interrupted: boolean, model: ModelState): RuntimeTile[] {
+export function runtimeTiles(
+  status: StoreStatus,
+  interrupted: boolean,
+  model: ModelState,
+): RuntimeTile[] {
   return [
     storageTile(status, interrupted),
     // A 'Localhost bridge' tile stood here and pointed at a Settings panel that

@@ -355,16 +355,18 @@ function PaletteBody({
   // no cmdk root, so the Command provider has to be supplied here — without it
   // CommandInput has no store and throws on mount.
   return (
-    <Command label="Search applications, reminders, events and pages" filter={matchesQuery}>
+    <Command
+      label="Search applications, reminders, events and pages"
+      filter={matchesQuery}
+      data-tour="palette"
+    >
       <CommandInput placeholder="Search applications, reminders, events…" />
       <CommandList className="max-h-[62vh]">
         <CommandEmpty>
           <div className="py-6 text-center">
             <FileText className="mx-auto size-5 text-text-3" strokeWidth={1.6} aria-hidden />
             <p className="mt-2 text-sm text-text-2">Nothing matches that.</p>
-            <p className="mt-0.5 text-xs text-text-3">
-              Try a role, an organisation or a stage.
-            </p>
+            <p className="mt-0.5 text-xs text-text-3">Try a role, an organisation or a stage.</p>
           </div>
         </CommandEmpty>
 
@@ -388,11 +390,7 @@ function PaletteBody({
               }}
               className="gap-2.5"
             >
-              <action.icon
-                className="size-4 shrink-0 text-text-3"
-                strokeWidth={1.7}
-                aria-hidden
-              />
+              <action.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="block truncate">{action.label}</span>
                 {action.hint ? (
@@ -436,9 +434,7 @@ function PaletteBody({
               <row.icon className="size-4 shrink-0 text-text-3" strokeWidth={1.7} aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="block truncate">{row.plan.tool.title}</span>
-                <span className="block truncate text-xs text-text-3">
-                  {row.plan.tool.summary}
-                </span>
+                <span className="block truncate text-xs text-text-3">{row.plan.tool.summary}</span>
               </span>
             </CommandItem>
           ))}

@@ -37,13 +37,15 @@ export function InstrumentsTool() {
 
   return (
     <div className="flex flex-col gap-3">
-      <Segment
-        options={INSTRUMENTS}
-        value={instrument}
-        onChange={setInstrument}
-        label="Which tool"
-        className="self-start"
-      />
+      {/* Wrapped only to carry the guided tour's mark (components/tour). */}
+      <div data-tour="instruments" className="self-start">
+        <Segment
+          options={INSTRUMENTS}
+          value={instrument}
+          onChange={setInstrument}
+          label="Which tool"
+        />
+      </div>
       {instrument === 'calculator' ? (
         <Calculator />
       ) : (

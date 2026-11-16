@@ -393,7 +393,7 @@ export function FileViewer({
       <div className="flex min-h-0 flex-1 flex-col gap-1">
         <pre
           aria-label={`${file.name}, as text`}
-          className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words rounded-md border border-hairline bg-well p-3 font-mono text-xs text-text-1"
+          className="min-h-0 flex-1 overflow-auto rounded-md border border-hairline bg-well p-3 font-mono text-xs break-words whitespace-pre-wrap text-text-1"
         >
           {text.body}
         </pre>
@@ -424,12 +424,14 @@ export function FileViewer({
          * document behind this row" for every non-PDF, including a .docx the
          * person had just dropped and could Save from this same header.
          */
-        description={archive && blob ? PAGE_ARCHIVE_NO_PREVIEW : noPreviewText(file, blob !== undefined)}
+        description={
+          archive && blob ? PAGE_ARCHIVE_NO_PREVIEW : noPreviewText(file, blob !== undefined)
+        }
       />
     )
 
   return (
-    <Panel className="flex min-h-0 min-w-0 flex-1 flex-col">
+    <Panel data-tour="file-viewer" className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <PanelTitle className="mb-0 truncate font-mono text-sm">{file.name}</PanelTitle>

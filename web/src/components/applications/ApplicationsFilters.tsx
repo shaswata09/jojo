@@ -90,18 +90,20 @@ export function ApplicationsFilters({
           />
         ) : null}
 
-        <Segment
-          label="Layout"
-          options={VIEWS}
-          value={params.view}
-          // Only the board branch touches `stage`: `set` treats a key that
-          // is present-but-undefined as "delete it", so passing it either
-          // way would drop the stage filter on the way back to the table.
-          onChange={(next) =>
-            params.set(next === 'board' ? { view: next, stage: 'all' } : { view: next })
-          }
-          className="ml-auto shrink-0"
-        />
+        {/* Wrapped only to carry the guided tour's mark (components/tour). */}
+        <div data-tour="layout" className="ml-auto shrink-0">
+          <Segment
+            label="Layout"
+            options={VIEWS}
+            value={params.view}
+            // Only the board branch touches `stage`: `set` treats a key that
+            // is present-but-undefined as "delete it", so passing it either
+            // way would drop the stage filter on the way back to the table.
+            onChange={(next) =>
+              params.set(next === 'board' ? { view: next, stage: 'all' } : { view: next })
+            }
+          />
+        </div>
       </div>
     </div>
   )

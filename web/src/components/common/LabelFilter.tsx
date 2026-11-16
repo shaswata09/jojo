@@ -86,6 +86,9 @@ export function LabelFilter({
     <div
       role="group"
       aria-label="Filter by keyword"
+      data-tour="keywords"
+      // Read by the guided tour's "pick a keyword" step; a filter, not a write.
+      data-selected={selected.size > 0 ? '' : undefined}
       className={cn('flex flex-wrap items-center gap-1.5', className)}
     >
       <Tag aria-hidden strokeWidth={1.8} className="size-3.5 shrink-0 text-text-3" />

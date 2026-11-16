@@ -151,7 +151,7 @@ export function Statistics() {
           reading aid for a page about figures, and the dashboard card has no
           room for a second number under each one. */}
       {sent > 0 ? (
-        <section>
+        <section data-tour="stats">
           <h2 className="mb-3.5 text-base font-medium">Headline rates</h2>
           <HeadlineRatesBody showTypical={showTypical} />
         </section>

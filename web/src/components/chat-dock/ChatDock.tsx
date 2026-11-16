@@ -39,7 +39,8 @@ import { readStored, writeStored } from '@/lib/storage'
 import { useReducedMotion } from '@/lib/use-media-query'
 import { cn } from '@/lib/utils'
 
-const dockAttr = { [DOCK_ATTR]: '' }
+/** The dock's own marker, and the guided tour's (components/tour). */
+const dockAttr = { [DOCK_ATTR]: '', 'data-tour': 'chat' }
 
 /**
  * The room the dock has: the window's width, and where the navigation column

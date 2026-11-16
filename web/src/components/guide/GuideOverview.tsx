@@ -60,8 +60,9 @@ export function GuideOverview() {
 
       <div className="surface flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg px-4 py-3.5 sm:px-5">
         <p className="min-w-0 flex-1 basis-64 text-sm text-text-2">
-          Or be walked through it. Seven steps on the real pages, opening the real controls — the
-          tour never types anything for you, never saves a record and never changes a setting.
+          Or be walked through it, hands on: a spotlight on the real pages, and you try each thing
+          as you go. The tour never types anything for you, never saves a record and never changes a
+          setting.
         </p>
         <TourLauncher className="shrink-0" />
       </div>

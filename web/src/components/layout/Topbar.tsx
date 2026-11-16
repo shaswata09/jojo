@@ -72,6 +72,7 @@ export function Topbar({
       <button
         type="button"
         onClick={() => spotlight.setOpen(true)}
+        data-tour="search"
         className="order-last flex h-8 w-full min-w-0 items-center gap-2 rounded-md border border-hairline bg-well px-2.5 text-left text-sm text-text-3 transition-colors hover:border-hairline-strong hover:text-text-2 sm:order-none sm:w-auto sm:flex-1"
       >
         <Search className="size-4 shrink-0" strokeWidth={1.7} aria-hidden />
@@ -116,6 +117,7 @@ export function Topbar({
             to={to}
             title={label}
             aria-label={label}
+            data-tour={`top:${label}`}
             className={({ isActive }) =>
               cn(
                 iconButton,
@@ -137,6 +139,7 @@ export function Topbar({
             to={to}
             title={label}
             aria-label={label}
+            data-tour={`top:${label}`}
             className={({ isActive }) =>
               cn(
                 iconButton,
@@ -158,6 +161,7 @@ export function Topbar({
             to={to}
             title={label}
             aria-label={label}
+            data-tour={`top:${label}`}
             className={({ isActive }) =>
               cn(
                 iconButton,

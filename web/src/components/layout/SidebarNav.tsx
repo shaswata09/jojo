@@ -133,6 +133,7 @@ export function SidebarNav({ tabIndex }: { tabIndex?: number }) {
           key={to}
           to={to}
           end={to === '/'}
+          data-tour={`nav:${label}`}
           // Not tabbable while the drawer is closed off-screen.
           tabIndex={tabIndex}
           className={({ isActive }) =>

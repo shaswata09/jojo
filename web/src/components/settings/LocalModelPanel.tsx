@@ -266,7 +266,7 @@ export function LocalModelPanel({ bare = false }: { bare?: boolean } = {}) {
   }
 
   return (
-    <Shell bare={bare}>
+    <Shell bare={bare} tour="model">
       <PanelTitle
         hint="OpenAI-compatible"
         right={

@@ -172,6 +172,7 @@ export function BrandCard({ action, className }: { action?: ReactNode; className
     <Popover>
       <PopoverAnchor asChild>
         <div
+          data-tour="mascot"
           className={cn(
             'relative aspect-square overflow-hidden rounded-lg border bg-black/[0.96]',
             className,
@@ -244,6 +245,7 @@ export function BrandCard({ action, className }: { action?: ReactNode; className
             <PopoverTrigger
               title="jojo's moves"
               aria-label="jojo's moves and credit"
+              data-tour="moves"
               className={CORNER_BUTTON}
             >
               <Bot className="size-4" strokeWidth={1.7} />

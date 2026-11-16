@@ -9,6 +9,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { StorageBanner } from '@/components/layout/StorageBanner'
 import { ProfileUpdateOffer } from '@/components/profile/ProfileUpdateOffer'
+import { TourProvider } from '@/components/tour/TourProvider'
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { isSamePage, pageKey } from '@/lib/links'
 import { report } from '@/lib/analytics'
@@ -185,7 +186,9 @@ export function AppShell() {
   }, [navOpen, isDesktop, closeNav])
 
   return (
-    <>
+    // The guided tour lives here, inside the router and above every page, so
+    // it can walk the reader from one page to the next (components/tour).
+    <TourProvider>
       {/* Off-screen until focused, which is the whole point: it is the first
           tab stop in the document, and without it reaching page content from
           the address bar costs eighteen presses through the sidebar, topbar
@@ -313,6 +316,6 @@ export function AppShell() {
           corner would be the same thing twice. Inside the router for the same
           reason as the line above: it links to the Assistant and to Settings. */}
       {pathname.startsWith(assistantPath()) ? null : <ChatDock />}
-    </>
+    </TourProvider>
   )
 }

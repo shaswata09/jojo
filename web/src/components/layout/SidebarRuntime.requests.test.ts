@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { Cpu, PlugZap, Share, Waypoints } from 'lucide-react'
 import type { StoreStatus } from '@jojo/service/react/status-context'
-import { modelTile, runtimeTiles, storageTile, type ModelState } from '@/components/layout/runtime-tiles'
+import {
+  modelTile,
+  runtimeTiles,
+  storageTile,
+  type ModelState,
+} from '@/components/layout/runtime-tiles'
 import { graphPath, transferPath } from '@/lib/links'
 import sidebarRuntime from '@/components/layout/SidebarRuntime.tsx?raw'
 import transferPage from '@/routes/Transfer.tsx?raw'

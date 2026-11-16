@@ -176,8 +176,8 @@ export const SHAPE: DirRow[] = [
     // 323 with the Guide's Control flow graph page: `guide/GuideControlFlow.tsx`, the map it draws
     // (`guide/flow-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    files: 485,
-    tests: 132,
+    files: 489,
+    tests: 133,
     lines: 70724,
     what: 'every surface you can see',
   },
@@ -256,4 +256,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 246
+export const WEB_TEST_FILES = 247

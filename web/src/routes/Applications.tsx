@@ -287,6 +287,7 @@ export function Applications() {
           <Panel
             ref={fill.ref}
             style={{ maxHeight: fill.maxHeight }}
+            data-tour="records"
             className="flex min-h-0 min-w-0 flex-1 flex-col"
           >
             <ApplicationsTable
@@ -304,6 +305,7 @@ export function Applications() {
           <Panel
             ref={fill.ref}
             style={{ maxHeight: fill.maxHeight }}
+            data-tour="records"
             className="flex min-h-0 min-w-0 flex-1 flex-col"
           >
             <ApplicationsBoard

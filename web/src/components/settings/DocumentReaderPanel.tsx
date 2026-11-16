@@ -107,7 +107,7 @@ export function DocumentReaderPanel({ bare = false }: { bare?: boolean } = {}) {
   }
 
   return (
-    <Shell bare={bare}>
+    <Shell bare={bare} tour="reader">
       <PanelTitle hint="optional">Read my documents</PanelTitle>
       <p className="mb-3 text-sm text-text-2">
         The assistant can only see a document&apos;s name until something turns it into text. Run{' '}

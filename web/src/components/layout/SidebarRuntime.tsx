@@ -91,7 +91,6 @@ function useModelState(): ModelState {
   return state
 }
 
-
 /** Named in each tile's tooltip, so a click never lands somewhere unannounced. */
 const RUNTIME_DEST: Record<string, string> = {
   [graphPath()]: 'the graph',
@@ -115,7 +114,8 @@ export function SidebarRuntime({ tabIndex }: { tabIndex?: number }) {
   const navigate = useNavigate()
 
   return (
-    <div className="mt-auto flex flex-col gap-[7px] pt-4">
+    // The guided tour lights the whole block, heading and tiles (components/tour).
+    <div className="mt-auto flex flex-col gap-[7px] pt-4" data-tour="runtime">
       <div className="px-2.5 pb-0.5 text-xs tracking-wide text-text-3 uppercase">Runtime</div>
       {/* Icon over value, four up. Colour carries health, the icon carries
           what it is, the text carries the value. The label survives as the

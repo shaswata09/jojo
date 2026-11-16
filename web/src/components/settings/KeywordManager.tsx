@@ -177,7 +177,7 @@ export function KeywordManager() {
   }
 
   return (
-    <Panel>
+    <Panel data-tour="keyword-manager">
       <PanelTitle hint="shared by every record">Keywords</PanelTitle>
       <p className="mb-3 text-sm text-text-2">
         One set across applications, reminders and the vault. Renaming one carries everywhere it is

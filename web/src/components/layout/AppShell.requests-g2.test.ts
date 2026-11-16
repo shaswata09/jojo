@@ -16,7 +16,9 @@ import shell from './AppShell.tsx?raw'
 
 describe('Q248 / Q275 — closing a record leaves the list where it was', () => {
   it('does not scroll to the top when the record opened or closed over the same page', () => {
-    expect(shell).toMatch(/if \(isDesktop && isSamePage\(from, pathname\)\) return\s*window\.scrollTo\(0, 0\)/)
+    expect(shell).toMatch(
+      /if \(isDesktop && isSamePage\(from, pathname\)\) return\s*window\.scrollTo\(0, 0\)/,
+    )
   })
 
   it('does not rebuild the page under the record, so the columns keep their own scroll', () => {

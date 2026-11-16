@@ -17,7 +17,8 @@ const healthy = {
   health: { state: 'ok', unsaved: 0 },
 } as unknown as StoreStatus
 
-const transferTile = () => runtimeTiles(healthy, false, 'unset').find((t) => t.to === transferPath())
+const transferTile = () =>
+  runtimeTiles(healthy, false, 'unset').find((t) => t.to === transferPath())
 
 describe('the Transfer tile (Q106, Q107)', () => {
   it('reads "Sync with Other Device"', () => {

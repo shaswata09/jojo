@@ -370,7 +370,14 @@ export function DataPanel() {
       <Panel>
         <PanelTitle>Your data</PanelTitle>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={onExport} disabled={exporting !== null} aria-live="polite">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onExport}
+            disabled={exporting !== null}
+            aria-live="polite"
+            data-tour="backup"
+          >
             <Download className="size-3.5" strokeWidth={1.8} aria-hidden />
             {exporting === null
               ? 'Download a backup'

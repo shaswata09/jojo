@@ -81,21 +81,24 @@ export function JobScout() {
 
       {engine.paused ? <PausedNotice /> : null}
 
-      <PipelinesPanel
-        pipelines={visiblePipelines}
-        onlyActive={onlyActive}
-        running={engine.running}
-        activity={engine.activity}
-        paused={engine.paused}
-        pendingCount={(id) => engine.pendingFor(id).length}
-        onShowAll={() => setOnlyActive(false)}
-        onNew={() => setEditing('new')}
-        onEdit={setEditing}
-        onDelete={pipelineActions.onDelete}
-        onToggle={pipelineActions.onToggle}
-        onSetAuto={pipelineActions.onSetAuto}
-        onRunNow={pipelineActions.onRunNow}
-      />
+      {/* Wrapped only to carry the guided tour's mark (components/tour). */}
+      <div data-tour="pipelines">
+        <PipelinesPanel
+          pipelines={visiblePipelines}
+          onlyActive={onlyActive}
+          running={engine.running}
+          activity={engine.activity}
+          paused={engine.paused}
+          pendingCount={(id) => engine.pendingFor(id).length}
+          onShowAll={() => setOnlyActive(false)}
+          onNew={() => setEditing('new')}
+          onEdit={setEditing}
+          onDelete={pipelineActions.onDelete}
+          onToggle={pipelineActions.onToggle}
+          onSetAuto={pipelineActions.onSetAuto}
+          onRunNow={pipelineActions.onRunNow}
+        />
+      </div>
 
       {/* Above the matches and the postings: it is the only panel on the page
           that is asking the reader for something. */}
