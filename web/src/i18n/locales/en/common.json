@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "Language",
+    "description": "The language jojo is shown in. Your records stay in the language you wrote them in.",
+    "system": "Same as this browser ({{name}})",
+    "loadFailed": "That language could not be loaded. jojo stays in {{name}}."
+  }
+}

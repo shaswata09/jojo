@@ -77,7 +77,8 @@ describe('the moves button and the gesture pad', () => {
 
   it('opens the moves beside the card, not over the robot (Q314)', () => {
     expect(body).toMatch(/<Popover>\s*<PopoverAnchor asChild>/)
-    expect(card).toMatch(/<PopoverContent[^>]*side="right"/)
+    // Beside it on a desktop, below it in the phone drawer (review 2026-11-16).
+    expect(card).toMatch(/<PopoverContent[^>]*side=\{isDesktop \? 'right' : 'bottom'\}/)
   })
 
   it('reads strokes drawn on the card and plays the move each names (Q315)', () => {

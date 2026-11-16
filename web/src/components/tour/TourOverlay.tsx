@@ -72,6 +72,16 @@ export function TourOverlay({
   /** The step whose task was seen done — a step id, so a new step starts undone. */
   const [doneFor, setDoneFor] = useState<string | null>(null)
   const done = doneFor === step.id
+  /**
+   * The step whose task was DONE WHILE IT WAS SHOWING — seen undone, then
+   * done. Only that moves the tour on by itself. A task already true when its
+   * step opens (Back onto "Open Applications" while on Applications) shows as
+   * done and waits for Next: moving on would bounce the reader straight back
+   * to where they came from.
+   */
+  const [advanceFor, setAdvanceFor] = useState<string | null>(null)
+  /** A menu or popover is open (Radix's), which must be usable above the dim. */
+  const [popper, setPopper] = useState(false)
   const [view, setView] = useState({ width: window.innerWidth, height: window.innerHeight })
 
   // What the per-frame check reads, kept current without restarting the loop.
@@ -108,6 +118,10 @@ export function TourOverlay({
     let raf = 0
     let scrolled = false
     let ticked = false
+    let seenUndone = false
+    // A fresh visit to the step: an advance earned on an earlier visit (the
+    // task done, then Back to it) must not fire again.
+    setAdvanceFor(null)
     const tick = () => {
       const el = find(step.target)
       if (el && !scrolled) {
@@ -128,23 +142,28 @@ export function TourOverlay({
           plays: w.seq - w.base,
           has: (selector) => document.querySelector(selector) !== null,
         })
-        if (now) {
+        if (!now) seenUndone = true
+        else {
           ticked = true
           setDoneFor(step.id)
+          if (seenUndone) setAdvanceFor(step.id)
         }
       }
+      const open = document.querySelector('[data-radix-popper-content-wrapper]') !== null
+      setPopper((prev) => (prev === open ? prev : open))
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [step, reduced])
 
-  // Done: a moment to see the tick, then on.
+  // Done while showing: a moment to see the tick, then on.
+  const advance = advanceFor === step.id
   useEffect(() => {
-    if (!done) return
+    if (!advance) return
     const t = setTimeout(() => (last ? onFinish() : onGo(index + 1)), ADVANCE_MS)
     return () => clearTimeout(t)
-  }, [done, index, last, onGo, onFinish])
+  }, [advance, index, last, onGo, onFinish])
 
   useEffect(() => {
     const onResize = () => setView({ width: window.innerWidth, height: window.innerHeight })
@@ -174,13 +193,18 @@ export function TourOverlay({
   useEffect(() => {
     if (step.open) return
     const onKey = (event: KeyboardEvent) => {
-      const typing =
-        event.target instanceof HTMLElement &&
-        event.target.closest('input, textarea, [contenteditable="true"]')
-      if (typing || event.metaKey || event.ctrlKey || event.altKey) return
+      // A key something else already handled is not the tour's: Escape that
+      // closed a popover or the phone drawer, an arrow that moved a radio
+      // group. Radix and the Segment both mark theirs `defaultPrevented`.
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target instanceof HTMLElement ? event.target : null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+      // The arrows walk the tour only from the tour card or the bare page —
+      // never from a control the reader is using.
+      const onTour = !target || target === document.body || card.current?.contains(target) === true
       if (event.key === 'Escape') onLeave()
-      else if (event.key === 'ArrowRight') next()
-      else if (event.key === 'ArrowLeft' && index > 0) onGo(index - 1)
+      else if (event.key === 'ArrowRight' && onTour) next()
+      else if (event.key === 'ArrowLeft' && onTour && index > 0) onGo(index - 1)
       else return
       event.preventDefault()
     }
@@ -192,7 +216,7 @@ export function TourOverlay({
   // Clicks reach only the lit element — unless the step's menu is open, or
   // there is nothing lit and the step asks the reader to go and do something
   // (the sidebar is a closed drawer on a phone, and its button must work).
-  const shield = !step.open && (lit !== null || !step.task)
+  const shield = !step.open && !popper && (lit !== null || !step.task)
   const place = placeCard(lit, size, view, step.side)
   const move = reduced ? '' : 'transition-[left,top,width,height] duration-300 ease-out'
 

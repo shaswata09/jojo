@@ -1,8 +1,9 @@
-import { Children, createContext, useContext, useState } from 'react'
+import { Children, createContext, useContext, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import type { ScrollViewProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { TourScrollContext, type Scroller } from '@/components/tour/registry'
 import { IconButton } from '@/components/ui/Button'
 import { Sheet } from '@/components/ui/Sheet'
 import { Txt } from '@/components/ui/Text'
@@ -72,6 +73,20 @@ export function Screen({
   const { gutter, short } = layout
   const [optionsOpen, setOptionsOpen] = useState(false)
 
+  // How the guided tour brings a control it points at into view: a control
+  // marked with `TourTarget` inside this screen scrolls it by the distance the
+  // tour asks for. The offset is tracked here because a ScrollView will not
+  // say where it is.
+  const scrollRef = useRef<ScrollView>(null)
+  const offset = useRef(0)
+  const scroller = useMemo<Scroller>(
+    () => ({
+      scrollBy: (dy) =>
+        scrollRef.current?.scrollTo({ y: Math.max(0, offset.current + dy), animated: true }),
+    }),
+    [],
+  )
+
   // Recomputed every render rather than baked into the stylesheet, because both
   // halves of it move: the gutter widens when the phone turns, and `insets`
   // changes with it as the notch swings to the side.
@@ -124,6 +139,12 @@ export function Screen({
       {scroll ? (
         <ScrollView
           {...rest}
+          ref={scrollRef}
+          onScroll={(event) => {
+            offset.current = event.nativeEvent.contentOffset.y
+            rest.onScroll?.(event)
+          }}
+          scrollEventThrottle={rest.scrollEventThrottle ?? 32}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={[
             styles.content,
@@ -136,7 +157,7 @@ export function Screen({
             contentContainerStyle,
           ]}
         >
-          {body}
+          <TourScrollContext.Provider value={scroller}>{body}</TourScrollContext.Provider>
         </ScrollView>
       ) : (
         <View style={[styles.content, pad, short ? styles.contentShort : null, styles.fill]}>

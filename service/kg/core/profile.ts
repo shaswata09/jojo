@@ -64,3 +64,22 @@ export const emptyProfile = (): Profile => ({
 export const profileIsBlank = (profile: Profile) =>
   profile.matchTerms.length === 0 &&
   Object.values(profile.text).every((value) => value.trim() === '')
+
+/**
+ * What the profile's two sector switches tell a scout round, as a sentence —
+ * or '' when both are on and there is nothing to say.
+ *
+ * The switches ("Include academia / industry postings") were stored and read
+ * by nothing: turning industry off changed no round. The scout's instructions
+ * are where a preference about what to PROPOSE can act, so this is appended
+ * to them. Both off is said plainly rather than left for the model to infer.
+ */
+export function sectorRule(p: { includeAcademia: boolean; includeIndustry: boolean }): string {
+  if (p.includeAcademia && p.includeIndustry) return ''
+  if (!p.includeAcademia && !p.includeIndustry) {
+    return 'The person has switched off both academic and industry postings in their profile, so propose nothing this round and say why.'
+  }
+  return p.includeAcademia
+    ? 'Only academic postings are wanted — universities, colleges and research institutes. Leave out jobs at companies.'
+    : 'Only industry postings are wanted — jobs at companies. Leave out posts at universities, colleges and research institutes.'
+}

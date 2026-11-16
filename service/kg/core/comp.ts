@@ -102,6 +102,13 @@ const AMOUNT =
  *  separator is standing between thousands rather than in front of cents. */
 const GROUPED = /^(?:\d{1,3}(?:[,\s.]\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})$/
 
+/**
+ * The upper end of a range straight after an amount: ` – $30`, `-30`,
+ * `-$3,500`, ` to 140k`. Its own currency, separators and multiplier are
+ * allowed, and nothing else — a comma ends it.
+ */
+const RANGE_END = /^\s*(?:-|–|—|to\b)\s*[$£€¥₹]?\s*\d+(?:[,.\s]\d{3})*(?:\.\d+)?\s*(?:k\b|m\b)?/i
+
 /** The same pattern across the whole text rather than stopping at the first
  *  hit. See `parseComp`: the first hit is not the first AMOUNT. */
 const AMOUNT_SCAN = new RegExp(AMOUNT.source, 'gi')
@@ -244,13 +251,35 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
   const code = candidates.find((c) => c !== undefined && CODES.has(c))
   const currency = symbol ? SYMBOLS[symbol] : code ? code.toUpperCase() : undefined
 
-  const after = source.slice(hit.index + hit[0].length)
+  /*
+   * What follows the amount, for the "touching" period test — and two things
+   * the match itself can hide it behind:
+   *
+   * - A trailing three-letter word that is not a currency. The pattern's
+   *   `code` group takes any such word, so in `£3,000 pcm` it took `pcm`, the
+   *   text after the match was empty, and a monthly figure read as yearly.
+   *   The word is given back to the text after the amount.
+   * - The upper half of a range. In `$25 – $30 per hour` the period follows
+   *   the SECOND number, and `nearestPeriod` rightly skips a period word that
+   *   labels a different number — so the range lost its period and $25 an hour
+   *   was ranked as $25 a year. A period touching the end of the range belongs
+   *   to both ends of it.
+   */
+  const trailing = groups['code']
+  const giveBack =
+    trailing !== undefined && !CODES.has(trailing.toLowerCase()) ? trailing.length : 0
+  const after = source.slice(hit.index + hit[0].length - giveBack)
+  const range = RANGE_END.exec(after)
+  const afterRange = range ? after.slice(range[0].length) : undefined
+  const touchingIn = (text: string | undefined) =>
+    text === undefined ? -1 : PERIOD_AFTER.findIndex((p) => p.test(text))
   const signalled =
     symbol !== undefined ||
     code !== undefined ||
     suffix !== undefined ||
     separated ||
-    PERIOD_AFTER.some((p) => p.test(after))
+    touchingIn(after) !== -1 ||
+    touchingIn(afterRange) !== -1
 
   /*
    * The period that TOUCHES the amount wins, and only then the nearest one.
@@ -267,7 +296,8 @@ function readAmount(hit: RegExpExecArray, source: string): Reading | undefined {
    * `PERIOD_AFTER` is the same set anchored to the start of what follows the
    * digits, which is exactly "the word attached to this number".
    */
-  const touching = PERIOD_AFTER.findIndex((p) => p.test(after))
+  const direct = touchingIn(after)
+  const touching = direct !== -1 ? direct : touchingIn(afterRange)
   const stated = touching === -1 ? nearestPeriod(source, hit.index) : PERIODS[touching]
 
   return {

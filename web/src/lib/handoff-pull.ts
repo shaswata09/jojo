@@ -31,7 +31,12 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { createBackupReader } from '@jojo/service/core/backup-stream'
-import { describeBackup, type BackupRead, type RestorePlan } from '@jojo/service/core/backup'
+import {
+  describeBackup,
+  replacesClause,
+  type BackupRead,
+  type RestorePlan,
+} from '@jojo/service/core/backup'
 import { decodeAddress, formatAddress, type DialAddress } from '@jojo/service/core/dial'
 import { runPull, type PullFailure } from '@jojo/service/core/handoff-pull'
 import type { SessionKeys } from '@jojo/service/core/pairing'
@@ -128,17 +133,26 @@ export async function pullFromPhone({
   onTarget,
   onBytes,
   cancelled = () => false,
+  signal,
 }: {
   code: string
-  token: string
+  /** The code on screen, or every path the phone may hold, newest first (`PairingSession.tokens`). */
+  token: string | readonly string[]
   secrets: Secrets
-  complete: (response: Uint8Array) => Promise<SessionKeys | null>
-  fetchPairing?: (address: DialAddress, token: string) => Promise<HandoffResult<Uint8Array>>
+  complete: (response: Uint8Array, token?: string) => Promise<SessionKeys | null>
+  fetchPairing?: (
+    address: DialAddress,
+    token: string,
+    signal?: AbortSignal,
+  ) => Promise<HandoffResult<Uint8Array>>
   fetchChunk?: (
     address: DialAddress,
     token: string,
     request: Uint8Array,
+    signal?: AbortSignal,
   ) => Promise<HandoffResult<Uint8Array>>
+  /** Aborts the request in flight when the person cancels. */
+  signal?: AbortSignal
   onStage?: (stage: PullStage) => void
   onTarget?: (target: string) => void
   onBytes?: (bytes: number) => void
@@ -150,11 +164,22 @@ export async function pullFromPhone({
   onTarget?.(formatAddress(address))
 
   onStage?.('connecting')
-  const response = await fetchPairing(address, token)
-  if (!response.ok) return { ok: false, problem: HANDOFF_ADVICE[response.error], answered: false }
+  // The code on screen first, then the one it replaced — see `PairingSession.tokens`.
+  const tokens = typeof token === 'string' ? [token] : token
+  let path = tokens[0] ?? ''
+  let response = await fetchPairing(address, path, signal)
+  for (const older of tokens.slice(1)) {
+    if (response.ok || response.error !== 'handoff/refused') break
+    path = older
+    response = await fetchPairing(address, path, signal)
+  }
+  if (!response.ok) {
+    if (response.error === 'handoff/cancelled' || cancelled()) return null
+    return { ok: false, problem: HANDOFF_ADVICE[response.error], answered: false }
+  }
 
   // The proof. Nothing below runs for a phone that did not read this screen.
-  const keys = await complete(response.value)
+  const keys = await complete(response.value, path)
   if (keys === null) return { ok: false, problem: UNPROVEN_ADVICE, answered: true }
   if (cancelled()) return null
 
@@ -162,12 +187,13 @@ export async function pullFromPhone({
   const pulled = await runPull<HandoffFailure>({
     secrets,
     keys,
-    fetchChunk: (request) => fetchChunk(address, token, request),
+    fetchChunk: (request) => fetchChunk(address, path, request, signal),
     onBytes,
     cancelled,
   })
   if (!pulled.ok) {
-    if (pulled.error === 'pull/cancelled') return null
+    if (pulled.error === 'pull/cancelled' || pulled.error === 'handoff/cancelled' || cancelled())
+      return null
     const problem =
       pulled.error === 'pull/forged' || pulled.error === 'pull/oversized'
         ? PULL_ADVICE[pulled.error]
@@ -204,7 +230,7 @@ export function pullConfirmCopy(plan: RestorePlan): {
 } {
   return {
     title: 'Replace everything with what your phone sent?',
-    description: `Your phone sent ${describeBackup(plan)}. Restoring replaces every record and every document you have now, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.`,
+    description: `Your phone sent ${describeBackup(plan)}. ${replacesClause(plan, 'you have now')}, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.`,
     confirm: 'Replace everything',
   }
 }
@@ -266,7 +292,7 @@ export type PullState = {
   plan: RestorePlan | null
   /** What the restore did, for the dialog that ends in a reload. */
   outcome: RestoreReport | null
-  start: (code: string, token: string) => Promise<void>
+  start: (code: string, tokens: readonly string[]) => Promise<void>
   /** Agrees to the plan. Destroys what is here. */
   confirm: () => Promise<void>
   /** Declines the plan. Nothing changes. */
@@ -277,7 +303,7 @@ export type PullState = {
 export function useHandoffPull({
   complete,
 }: {
-  complete: (response: Uint8Array) => Promise<SessionKeys | null>
+  complete: (response: Uint8Array, token?: string) => Promise<SessionKeys | null>
 }): PullState {
   const { repo } = useKg()
   const blobs = useVaultBlobs()
@@ -288,21 +314,29 @@ export function useHandoffPull({
   const [problem, setProblem] = useState<string | null>(null)
   const [plan, setPlan] = useState<RestorePlan | null>(null)
   const [outcome, setOutcome] = useState<RestoreReport | null>(null)
-  /** A ref, so a running pull sees the person walk away — see `handoff-send.ts`. */
-  const cancelled = useRef(false)
+  /** The current run's cancel — one per run, so a stale run cannot write over a new one. See `handoff-send.ts`. */
+  const run = useRef<AbortController | null>(null)
   /** The answer to the current plan. A ref: both handlers fire in one event. */
   const decision = useRef(createDecision())
 
   const start = useCallback(
-    async (code: string, token: string) => {
-      cancelled.current = false
+    async (code: string, tokens: readonly string[]) => {
+      run.current?.abort()
+      const mine = new AbortController()
+      run.current = mine
+      const cancelled = {
+        get current() {
+          return mine.signal.aborted || run.current !== mine
+        },
+      }
       setProblem(null)
       setBytes(0)
       setPlan(null)
       try {
-        const run = await pullFromPhone({
+        const pulled = await pullFromPhone({
           code,
-          token,
+          token: tokens,
+          signal: mine.signal,
           secrets,
           // The page's own `complete`, which also records that the answer was
           // handed over — the line `send-cycle.ts` draws for both directions.
@@ -312,16 +346,17 @@ export function useHandoffPull({
           onBytes: setBytes,
           cancelled: () => cancelled.current,
         })
-        if (run === null || cancelled.current) return
-        if (!run.ok) {
-          setProblem(run.problem)
+        if (pulled === null || cancelled.current) return
+        if (!pulled.ok) {
+          setProblem(pulled.problem)
           setStage('failed')
           return
         }
         decision.current = createDecision()
-        setPlan(run.plan)
+        setPlan(pulled.plan)
         setStage('confirming')
       } catch (thrown) {
+        if (cancelled.current) return
         reportError('transfer', thrown)
         setProblem(UNEXPECTED_ADVICE)
         setStage('failed')
@@ -361,7 +396,8 @@ export function useHandoffPull({
   }, [])
 
   const cancel = useCallback(() => {
-    cancelled.current = true
+    run.current?.abort()
+    run.current = null
     setPlan(null)
     setStage('idle')
     setBytes(0)

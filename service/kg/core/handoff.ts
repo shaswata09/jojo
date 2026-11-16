@@ -110,8 +110,23 @@ export type HandoffRead = HandoffRequest | HandoffProblem
  * can. Hex rather than base64 because it goes in a URL and base64's `+` and `/`
  * would need escaping — a needless place for two implementations to disagree.
  */
-export async function pathToken(secrets: Secrets, offer: PairingOffer): Promise<string> {
-  const label = new Uint8Array([...'jojo/handoff/url/v1'].map((c) => c.charCodeAt(0) & 0x7f))
+/**
+ * The token every path carries — and the DIRECTION is part of it.
+ *
+ * Without it either side's pairing matched the other's, so a phone set to
+ * "Send to a computer" paired with a computer also sending: the computer
+ * gathered its whole backup and then failed with advice about the network
+ * (transfer audit, 2026-11-16). Now the two derive different paths unless they
+ * agree which way the records go, and the very first request is refused.
+ * Push keeps the original label, so a push between versions still pairs.
+ */
+export async function pathToken(
+  secrets: Secrets,
+  offer: PairingOffer,
+  direction: HandoffDirection = 'push',
+): Promise<string> {
+  const name = direction === 'push' ? 'jojo/handoff/url/v1' : 'jojo/handoff/url/v1/pull'
+  const label = new Uint8Array([...name].map((c) => c.charCodeAt(0) & 0x7f))
   const bits = await secrets.derive(offer.secret, offer.nonce, label, 16)
   return [...bits].map((b) => b.toString(16).padStart(2, '0')).join('')
 }

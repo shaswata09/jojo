@@ -149,7 +149,9 @@ describe('reachedOf', () => {
       stageDates: { interview: '2026-09-25', closed: '2026-10-02' },
     })
     expect(reachedOf(interviewed)).toBe(REACH.interview)
-    expect(reachedOf(closed('ghosted', { stageDates: { screen: '2026-09-22' } }))).toBe(REACH.screen)
+    expect(reachedOf(closed('ghosted', { stageDates: { screen: '2026-09-22' } }))).toBe(
+      REACH.screen,
+    )
     expect(reachedOf(closed('rejected', { stageDates: { closed: '2026-10-02' } }))).toBe(REACH.sent)
   })
 
@@ -350,7 +352,10 @@ describe('the outcome bands', () => {
    */
   it('keeps an offer that was closed without an outcome in the Offer band', () => {
     const kept = app({ stage: 'closed', offer: { respondBy: '2026-10-20', note: '' } })
-    const dated = app({ stage: 'closed', stageDates: { offer: '2026-10-01', closed: '2026-10-09' } })
+    const dated = app({
+      stage: 'closed',
+      stageDates: { offer: '2026-10-01', closed: '2026-10-09' },
+    })
     for (const a of [kept, dated]) {
       expect(reachedOf(a)).toBe(REACH.offer)
       expect(band([a], 'Offer').count).toBe(1)
@@ -558,5 +563,18 @@ describe('the health suggestions say what was counted', () => {
     expect(none).not.toBe(some)
     expect(none).toMatch(/None of these/)
     expect(some).toMatch(/1 of 2/)
+  })
+})
+
+describe('the per-role table (review 2026-11-16)', () => {
+  it('counts applications under a custom role tag, so the rows still cross-foot', () => {
+    const s = statsFor([
+      staged('interview', { roleTag: 'Data Scientist' as RoleTag }),
+      staged('submitted', { roleTag: 'Data Scientist' as RoleTag }),
+      staged('submitted'),
+    ])
+    const ds = s.roles.find((r) => r.role === 'Data Scientist')
+    expect(ds).toMatchObject({ applied: 2, interviews: 1 })
+    expect(s.roles.reduce((n, r) => n + r.applied, 0)).toBe(s.sent)
   })
 })

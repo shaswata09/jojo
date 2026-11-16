@@ -185,7 +185,7 @@ export async function send(
   } catch (error) {
     const aborted = error instanceof Error && error.name === 'AbortError'
     const detail = error instanceof Error ? error.message : String(error)
-    const failure = unreachable(endpoint, detail, aborted)
+    const failure = unreachable(endpoint, detail, aborted, timeoutMs)
     // A timeout is not ambiguous — something was listening long enough to keep
     // us waiting — so it keeps the plain wording and is not second-guessed.
     return {

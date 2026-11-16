@@ -310,11 +310,14 @@ export type BackupProgress = { readonly done: number; readonly total: number }
  * A backup missing one file is worth far more than no backup. What changes is
  * that the shortfall is REPORTED instead of being invisible.
  */
+/** How many documents a backup holds, of how many there were. */
+export type DocumentCount = { written: number; total: number }
+
 export async function streamDocuments(
   blobs: BackupBlobs,
   sink: BackupSink,
   onProgress?: (p: BackupProgress) => void,
-): Promise<void> {
+): Promise<DocumentCount> {
   if (!blobs.ready) throw new Error(DOCUMENTS_NOT_READY)
 
   const listed = await blobs.all()
@@ -351,6 +354,9 @@ export async function streamDocuments(
       ),
     )
   }
+  // Returned, not only logged: the toast used to promise "every document you
+  // have attached" over a backup that had quietly left some out.
+  return { written, total: listed.length }
 }
 
 /**
@@ -422,7 +428,26 @@ async function storedBytes(): Promise<number> {
 }
 
 /** How a download ended, because "cancelled" must not read as "failed". */
-export type DownloadOutcome = 'saved' | 'started' | 'cancelled' | 'failed'
+export type DownloadKind = 'saved' | 'started' | 'cancelled' | 'failed'
+
+/**
+ * How a download ended, and what it held.
+ *
+ * The bare word is still accepted — a caller that catches a throw says
+ * 'failed' — but the hook answers with the detail: how many documents went
+ * in, and, for a refusal jojo made on purpose, the sentence that says why.
+ * Without it a backup missing three unreadable documents was announced as
+ * holding "every document you have attached", and an index that had not
+ * loaded was reported as a blocked download.
+ */
+export type DownloadOutcome =
+  DownloadKind | { kind: DownloadKind; documents?: DocumentCount; reason?: string }
+
+/** The refusals that are jojo's own, whose sentence is worth more than "check the download". */
+const OWN_REFUSALS: ReadonlySet<string> = new Set([DOCUMENTS_NOT_READY, DOCUMENTS_UNREADABLE])
+
+const reasonOf = (error: unknown): string | undefined =>
+  error instanceof Error && OWN_REFUSALS.has(error.message) ? error.message : undefined
 
 /**
  * What to tell the person once a download has ended, or null to say nothing.
@@ -433,27 +458,37 @@ export type DownloadOutcome = 'saved' | 'started' | 'cancelled' | 'failed'
  * promised where it is not) must not exist in two spellings.
  */
 export function backupToast(outcome: DownloadOutcome, name: string): ToastOptions | null {
-  if (outcome === 'cancelled') return null
-  if (outcome === 'failed') {
+  const { kind, documents, reason } =
+    typeof outcome === 'string'
+      ? { kind: outcome, documents: undefined, reason: undefined }
+      : outcome
+  if (kind === 'cancelled') return null
+  if (kind === 'failed') {
     return {
       title: 'The backup could not be written',
       description:
+        reason ??
         'Your records are unchanged and nothing was saved. If your browser blocked the download, check its download settings.',
       tone: 'danger',
     }
   }
-  return outcome === 'saved'
+  const missing = documents === undefined ? 0 : documents.total - documents.written
+  const holds =
+    missing === 0
+      ? 'your records and every document you have attached'
+      : `your records and ${documents?.written ?? 0} of your ${documents?.total ?? 0} documents — ${missing} could not be read and ${missing === 1 ? 'is' : 'are'} not in it`
+  return kind === 'saved'
     ? {
         // Asserted, because it is known: the file handle closed on disk.
         title: 'Backup saved',
-        description: `${name} holds your records and every document you have attached.`,
+        description: `${name} holds ${holds}.`,
       }
     : {
         title: 'Backup started',
         // Named, not asserted. The click is the last thing this page can
         // observe — the browser's decision after it fires no event — so what is
         // said is what to look for rather than that it arrived.
-        description: `Look for ${name} in your downloads. It holds your records and every document you have attached.`,
+        description: `Look for ${name} in your downloads. It holds ${holds}.`,
       }
 }
 
@@ -561,30 +596,44 @@ export function useBackup(readable?: () => unknown): BackupState {
    * documents cannot be vouched for — every caller discards what it got.
    */
   const write = useCallback(
-    async (sink: BackupSink, withDocuments: boolean, onProgress?: (p: BackupProgress) => void) => {
+    async (
+      sink: BackupSink,
+      withDocuments: boolean,
+      onProgress?: (p: BackupProgress) => void,
+    ): Promise<DocumentCount> => {
       await sink(head())
-      if (withDocuments) await streamDocuments(blobs, sink, onProgress)
+      const counted = withDocuments
+        ? await streamDocuments(blobs, sink, onProgress)
+        : { written: 0, total: 0 }
       await sink(BACKUP_TAIL)
+      return counted
     },
     [head, blobs],
   )
 
-  const blob = useCallback(
+  /** The whole file as a Blob, and how many documents it holds. */
+  const assemble = useCallback(
     async (
       { documents: withDocuments = true }: BuildOptions = {},
       onProgress?: (p: BackupProgress) => void,
     ) => {
       const pieces: Blob[] = []
-      await write(
+      const documents = await write(
         async (part) => {
           pieces.push(new Blob([part as BlobPart]))
         },
         withDocuments,
         onProgress,
       )
-      return new Blob(pieces, { type: 'application/json' })
+      return { file: new Blob(pieces, { type: 'application/json' }), documents }
     },
     [write],
+  )
+
+  const blob = useCallback(
+    async (options: BuildOptions = {}, onProgress?: (p: BackupProgress) => void) =>
+      (await assemble(options, onProgress)).file,
+    [assemble],
   )
 
   const build = useCallback(
@@ -622,22 +671,24 @@ export function useBackup(readable?: () => unknown): BackupState {
         }
         if (handle !== null) {
           let file: Awaited<ReturnType<typeof handle.createWritable>> | null = null
+          let documents: DocumentCount
           try {
             file = await handle.createWritable()
             const out = file
-            await write((part) => out.write(part), true, onProgress)
+            documents = await write((part) => out.write(part), true, onProgress)
             // `close` is what makes the file real: until it resolves the bytes
             // are in a swap file the browser deletes on abort.
             await file.close()
           } catch (error) {
             reportError('backup', error)
             await file?.abort().catch(() => undefined)
-            return 'failed'
+            const reason = reasonOf(error)
+            return reason === undefined ? 'failed' : { kind: 'failed', reason }
           }
           writeLastBackup(at.toISOString())
           report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
           mascot.play(CUES.backupSaved)
-          return 'saved'
+          return { kind: 'saved', documents }
         }
       }
 
@@ -649,9 +700,11 @@ export function useBackup(readable?: () => unknown): BackupState {
       // file, no toast and no error. A button that does nothing reads as a
       // broken button, not as a warning about their records.
       let href: string | null = null
+      let documents: DocumentCount
       try {
-        const file = await blob({}, onProgress)
-        href = URL.createObjectURL(file)
+        const made = await assemble({}, onProgress)
+        documents = made.documents
+        href = URL.createObjectURL(made.file)
         const anchor = document.createElement('a')
         anchor.href = href
         anchor.download = name
@@ -663,7 +716,8 @@ export function useBackup(readable?: () => unknown): BackupState {
         // the app.
         reportError('backup', error)
         if (href !== null) URL.revokeObjectURL(href)
-        return 'failed'
+        const reason = reasonOf(error)
+        return reason === undefined ? 'failed' : { kind: 'failed', reason }
       }
 
       // Revoked LATER, NOT synchronously and not in a `finally`. An early
@@ -687,9 +741,9 @@ export function useBackup(readable?: () => unknown): BackupState {
        */
       report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
       mascot.play(CUES.backupSaved)
-      return 'started'
+      return { kind: 'started', documents }
     },
-    [blob, write, graph, mascot],
+    [assemble, write, graph, mascot],
   )
 
   return {

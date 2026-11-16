@@ -34,8 +34,11 @@
  * that no longer exists.
  */
 
+import { keptDocuments } from '../core/backup'
 import { validateRows } from '../core/validate'
 import type { RestorePlan } from '../core/backup'
+
+export { keptDocuments }
 import type { Repository } from './repository'
 import type { StoreMeta } from './meta'
 
@@ -52,7 +55,15 @@ import type { StoreMeta } from './meta'
  * told.
  */
 export type DocumentStore = {
-  replaceAll: (documents: readonly { path: string; data: Uint8Array }[]) => Promise<number>
+  /**
+   * `keep` names records whose document this device already holds and the
+   * backup does not carry — see `keptDocuments`. Their bytes stay; everything
+   * else is replaced.
+   */
+  replaceAll: (
+    documents: readonly { path: string; data: Uint8Array }[],
+    keep: ReadonlySet<string>,
+  ) => Promise<number>
 }
 
 export type RestoreOutcome =
@@ -136,7 +147,12 @@ export async function restoreBackup(
   // Documents second, and as a replace rather than a merge: leaving the previous
   // store's documents behind would mean a restored jojo holding files belonging
   // to records that no longer exist, taking up a quota nothing can account for.
-  const documents = await blobs.replaceAll(plan.documents)
+  // Except where a restored record came without its document — see
+  // `keptDocuments`.
+  const documents = await blobs.replaceAll(
+    plan.documents,
+    keptDocuments(checked.nodes, plan.documents),
+  )
 
   return {
     ok: true,

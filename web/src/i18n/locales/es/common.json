@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "Idioma",
+    "description": "El idioma en que se muestra jojo. Tus registros se quedan en el idioma en que los escribiste.",
+    "system": "Igual que este navegador ({{name}})",
+    "loadFailed": "No se pudo cargar ese idioma. jojo sigue en {{name}}."
+  }
+}

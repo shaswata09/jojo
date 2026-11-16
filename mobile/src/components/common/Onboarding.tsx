@@ -7,7 +7,7 @@ import { Txt } from '@/components/ui/Text'
 import { ReportingStep } from '@/components/common/ReportingStep'
 import { REPORTING_ASKABLE } from '@/components/common/reporting-askable'
 import { WelcomeDetails } from '@/components/common/WelcomeDetails'
-import { GuidedTour } from '@/screens/guide/GuidedTour'
+import { startTour } from '@/components/tour/store'
 import { markOffered, readOffered } from '@/lib/onboarding'
 import type { OnboardingStage } from '@/lib/onboarding'
 import { fromOverlay } from '@/navigation/ref'
@@ -23,7 +23,7 @@ import { space } from '@/theme/tokens'
  *
  *   1. Which records to start from   — `FirstRunChoice`, which owns the screen
  *   2. Who you are                   — `WelcomeDetails`
- *   3. Would you like the tour       — the sheet below, into `GuidedTour`
+ *   3. Would you like the tour       — the sheet below, into the guided tour
  *
  * Three sheets rather than one wizard, because they are three different KINDS of
  * question: the first has no neutral answer and cannot be dismissed, the second
@@ -53,7 +53,6 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
   const c = useColors()
   const { isBlank } = useProfile()
   const [offered, setOffered] = useState<Record<OnboardingStage, boolean> | null>(null)
-  const [tourOpen, setTourOpen] = useState(false)
   const { settings } = useModelSettings()
 
   useEffect(() => {
@@ -118,7 +117,7 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
         <View style={{ gap: space[2], paddingBottom: space[2] }}>
           <View style={s.row}>
             <Feather name="cpu" size={15} color={c.accent} />
-            <Txt size="sm" tone="secondary">
+            <Txt size="sm" tone="secondary" style={s.fill}>
               Point it at a server on your own machine — vLLM, Ollama or LM Studio — and nothing
               leaves the device.
             </Txt>
@@ -141,37 +140,33 @@ export function Onboarding({ fresh }: { fresh: boolean }) {
   }
 
   if (!offered.tour) {
-    // Once the tour is open the offer is answered, so the offer sheet is gone
-    // and only the tour is on screen. Closing the tour ends onboarding.
-    if (tourOpen) {
-      return (
-        <GuidedTour
-          open
-          onClose={() => {
-            setTourOpen(false)
-            finish('tour')
-          }}
-        />
-      )
-    }
-
+    // Starting the tour answers the offer; the tour then runs on its own.
     return (
       <Sheet
         open
         onClose={() => finish('tour')}
-        title="Want the two-minute tour?"
-        description="Six steps on what each part of the app is for — what the five tabs hold, how a deadline and an interview are one record, and where your data actually is."
+        title="Want a hands-on tour?"
+        description="A hands-on walk through the real screens — what each part is for, with a spotlight on it, and you try each thing as you go."
         footer={
           <>
             <Button label="Not now" variant="ghost" size="md" onPress={() => finish('tour')} />
-            <Button label="Start the tour" size="md" onPress={() => setTourOpen(true)} />
+            <Button
+              label="Start the tour"
+              size="md"
+              onPress={() => {
+                // Answers the offer, then walks the real screens — the tour is
+                // an overlay beside the navigator (components/tour), not a sheet.
+                finish('tour')
+                void startTour(0)
+              }}
+            />
           </>
         }
       >
         <View style={{ gap: space[2], paddingBottom: space[2] }}>
           <View style={s.row}>
             <Feather name="compass" size={15} color={c.accent} />
-            <Txt size="sm" tone="secondary">
+            <Txt size="sm" tone="secondary" style={s.fill}>
               It changes nothing — no record is written and no setting is touched.
             </Txt>
           </View>

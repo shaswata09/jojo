@@ -279,7 +279,21 @@ describe('what is derived from the pin', () => {
 
     // And the day that is now yesterday has to start appearing in the URL,
     // which is the half a "recompute the default" fix can still get wrong.
-    expect(calendarPath({ y: 2026, m: 10, d: 12 })).toBe('/calendar?d=12')
+    // As the whole date: a part on its own is read against "today" and would
+    // mean a different day tomorrow (review 2026-11-16).
+    expect(calendarPath({ y: 2026, m: 10, d: 12 })).toBe('/calendar?y=2026&m=10&d=12')
+  })
+
+  it('writes a date as all of year, month and day, so a link means the same day later', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(lateOnThe12th)
+    const { calendarDate, calendarPath } = await import('@/lib/links')
+    // A month ahead, same day of the month: once only `?m=11` was written.
+    const link = calendarPath({ y: 2026, m: 11, d: 12 })
+    expect(link).toBe('/calendar?y=2026&m=11&d=12')
+    // Read back months later, it is still that day.
+    const later = calendarDate(new URL(link, 'http://x').searchParams, { y: 2027, m: 1, d: 5 })
+    expect(later).toEqual({ y: 2026, m: 11, d: 12 })
   })
 
   /**

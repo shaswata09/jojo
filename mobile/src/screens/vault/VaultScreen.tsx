@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import { LabelFilter } from '@/components/common/Labels'
 import { Screen } from '@/components/ui/Screen'
@@ -13,6 +13,7 @@ import { LinksTool } from '@/screens/vault/LinksTool'
 import { RemindersTool } from '@/screens/vault/RemindersTool'
 import { PeopleTool } from '@/screens/vault/PeopleTool'
 import { SnippetsTool } from '@/screens/vault/SnippetsTool'
+import { TourTarget } from '@/components/tour/TourTarget'
 
 const TOOLS = [
   { value: 'reminders', label: 'Reminders' },
@@ -47,9 +48,15 @@ export function VaultScreen() {
 
   // A link from elsewhere names a tool; the shell has to follow it even when
   // this screen was already mounted on another tab.
+  // Cleared once applied, so the same link followed again (after switching
+  // tool by hand) still lands — keyed on the value, a repeat changed nothing.
+  const navigation = useNavigation()
+  const linkTool = route.params?.tool
   useEffect(() => {
-    if (route.params?.tool) setTool(route.params.tool)
-  }, [route.params?.tool])
+    if (!linkTool) return
+    setTool(linkTool)
+    navigation.setParams({ tool: undefined } as never)
+  }, [linkTool, navigation])
 
   /**
    * Ids of whatever the active tool lists, so the keyword counts describe the
@@ -94,7 +101,10 @@ export function VaultScreen() {
         />
       }
     >
-      <Segment label="Vault tool" scroll options={TOOLS} value={tool} onChange={setTool} />
+      {/* Marked for the guided tour, which asks for Files. */}
+      <TourTarget id="vault-tools" state={tool}>
+        <Segment label="Vault tool" scroll options={TOOLS} value={tool} onChange={setTool} />
+      </TourTarget>
 
       {/* One filter for the whole vault: a keyword means the same thing on a
           reminder, a link, a file and a snippet, so it would be wrong to give

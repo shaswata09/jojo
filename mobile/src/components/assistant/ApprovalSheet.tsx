@@ -6,6 +6,7 @@ import { proposalDetail } from '@jojo/service/core/proposal'
 import { useAgentRuns, useWaitingRuns } from '@jojo/service/react/agent-runs-context'
 import { useThreads } from '@jojo/service/react/use-threads'
 import { space } from '@/theme/tokens'
+import { report } from '@/lib/analytics'
 
 /**
  * Answers a destructive step from wherever the person happens to be.
@@ -58,6 +59,10 @@ export function ApprovalSheet() {
             size="md"
             onPress={() => {
               if (run) runs.decide(run.threadId, false)
+              void report('assistant_tool_decided', {
+                decision: 'declined',
+                destructive: step?.destructive === true,
+              })
             }}
           />
           <Button
@@ -65,6 +70,10 @@ export function ApprovalSheet() {
             size="md"
             onPress={() => {
               if (run) runs.decide(run.threadId, true)
+              void report('assistant_tool_decided', {
+                decision: 'approved',
+                destructive: step?.destructive === true,
+              })
             }}
           />
         </>
@@ -72,15 +81,15 @@ export function ApprovalSheet() {
     >
       <View style={{ paddingBottom: space[2], gap: space[1.5] }}>
         {/*
-          * WHAT it would run, before what it is called.
-          *
-          * This comment used to claim the sheet showed "a delete whose target
-          * they cannot otherwise see from here" while rendering only the tool's
-          * id — so "Delete application" was approved without knowing which one.
-          * The web card has rendered `proposalDetail` for exactly this reason:
-          * a person being asked to approve a note without being shown the note
-          * is not being asked anything.
-          */}
+         * WHAT it would run, before what it is called.
+         *
+         * This comment used to claim the sheet showed "a delete whose target
+         * they cannot otherwise see from here" while rendering only the tool's
+         * id — so "Delete application" was approved without knowing which one.
+         * The web card has rendered `proposalDetail` for exactly this reason:
+         * a person being asked to approve a note without being shown the note
+         * is not being asked anything.
+         */}
         {detail !== null && <Txt size="sm">{detail}</Txt>}
         <Txt size="xs" tone="muted" mono>
           {step?.name ?? ''}

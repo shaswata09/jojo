@@ -34,6 +34,7 @@ import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { report } from '@/lib/analytics'
 
 const CATEGORY_LABELS = Object.fromEntries(LINK_CATEGORIES.map((k) => [k, k])) as Record<
   LinkCategory,
@@ -315,6 +316,7 @@ export function LinksTool({ focus }: { focus?: string }) {
               toast({ title: 'Link updated', description: draft.title })
             } else {
               addLink(draft)
+              void report('vault_item_added', { kind: 'link' })
               toast({ title: 'Link saved', description: draft.title })
             }
             setEditing(null)

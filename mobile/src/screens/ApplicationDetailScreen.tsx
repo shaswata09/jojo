@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { TODAY } from '@/lib/today'
 import { Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
@@ -155,6 +155,16 @@ function Detail({ application: a }: { application: Application }) {
    * the new text rather than clearing them, so fixing a typo costs the
    * formatting on that word and nothing else.
    */
+  /*
+   * The draft follows the record whenever it is not being edited. It was set
+   * once, at mount: a note saved from the edit sheet or by the assistant left
+   * the pencil opening on the old text, and tapping away wrote that old text
+   * back over the real note, with no undo.
+   */
+  useEffect(() => {
+    if (!editingNote) setNote(a.note)
+  }, [a.note, editingNote])
+
   const commitNote = () => {
     const next = note.trim()
     if (next === a.note) {
@@ -464,7 +474,10 @@ function Detail({ application: a }: { application: Application }) {
 
       <Panel>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
-          <PanelTitle style={{ flex: 1 }} hint={editingNote ? 'Saves when you tap away' : undefined}>
+          <PanelTitle
+            style={{ flex: 1 }}
+            hint={editingNote ? 'Saves when you tap away' : undefined}
+          >
             Note
           </PanelTitle>
           {!editingNote && a.note !== '' ? (

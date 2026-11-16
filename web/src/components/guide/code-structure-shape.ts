@@ -50,8 +50,11 @@ export const SHAPE: DirRow[] = [
     // for each application, and the one rule for when a brief counts as empty.
     // `backup-stream.ts` and its test: the backup written and read in pieces,
     // because a 500 MB store is more base64 than one string can hold.
-    files: 184,
-    tests: 76,
+    // `locale.ts` and `locale-catalog.ts`, each with a test: which languages
+    // both apps offer and which one a device gets, and the rule that holds
+    // every translation catalog to English's keys and placeholders.
+    files: 189,
+    tests: 79,
     // No new file: `postingIdentity` moved into `core/capture.ts` from
     // `core/duplicates.ts`, where it had been one of three answers to "is this
     // the same posting" — the other two are now callers, and the tests for the
@@ -60,7 +63,7 @@ export const SHAPE: DirRow[] = [
     lines: 45282,
     what: 'model, ids, schema, algebra, dates',
   },
-  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8182, what: 'transactions, journal, boot' },
+  { dir: 'service/kg/repo', files: 17, tests: 8, lines: 8461, what: 'transactions, journal, boot' },
   {
     dir: 'service/kg/tools',
     // `fit.ts` and `fit.test.ts`: keeping what a model read off a posting, and
@@ -176,9 +179,12 @@ export const SHAPE: DirRow[] = [
     // 323 with the Guide's Control flow graph page: `guide/GuideControlFlow.tsx`, the map it draws
     // (`guide/flow-map.ts`, with a test that every path it names exists) and
     // `diagrams/StackDiagram.tsx`.
-    files: 489,
-    tests: 133,
-    lines: 70724,
+    // `transfer/PulseOverlay.tsx` and `transfer/pulse-paint.ts`, with a test
+    // that the phone's reader decodes it: the pairing key drawn with Canvas2D
+    // wherever the WebGPU scene cannot draw it.
+    files: 492,
+    tests: 134,
+    lines: 71267,
     what: 'every surface you can see',
   },
   // Shorter since the Assistant's transcript, composer and wiring moved into
@@ -226,7 +232,7 @@ export const SHAPE: DirRow[] = [
     // approving does not open the page a second time.
     files: 209,
     tests: 94,
-    lines: 34316,
+    lines: 35406,
     what: 'web-only adapters and URL state',
   },
   {
@@ -256,4 +262,4 @@ export const SHAPE: DirRow[] = [
  * heading below splits the suite across three workspaces, and exactly one of
  * the three can be counted from inside it.
  */
-export const WEB_TEST_FILES = 247
+export const WEB_TEST_FILES = 249

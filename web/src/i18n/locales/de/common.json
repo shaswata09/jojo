@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "Sprache",
+    "description": "Die Sprache, in der jojo angezeigt wird. Deine Einträge bleiben in der Sprache, in der du sie geschrieben hast.",
+    "system": "Wie dieser Browser ({{name}})",
+    "loadFailed": "Diese Sprache konnte nicht geladen werden. jojo bleibt auf {{name}}."
+  }
+}

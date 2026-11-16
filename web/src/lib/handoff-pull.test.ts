@@ -84,11 +84,11 @@ async function scene({
   serve = phoneBackup,
 }: { unproven?: boolean; elsewhere?: boolean; serve?: () => Uint8Array } = {}) {
   const state: PairingState = await beginPairing(secrets, Date.now())
-  const token = await pathToken(secrets, state.offer)
+  const token = await pathToken(secrets, state.offer, 'pull')
   const other = (await beginPairing(secrets, Date.now())).offer
   const accepted = await acceptPairing(secrets, encodeOffer(unproven ? other : state.offer))
   if (!accepted.ok) throw new Error(accepted.error)
-  const phoneToken = elsewhere ? await pathToken(secrets, other) : token
+  const phoneToken = elsewhere ? await pathToken(secrets, other, 'pull') : token
   const server = createPullServer(secrets, accepted.value.keys, async () => serve())
   const log: string[] = []
 

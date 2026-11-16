@@ -22,9 +22,18 @@ import { limit, matched, nodeType } from './shared'
  * the field decides, and `record-query.ts` compares each kind as itself.
  */
 const condition = s.object({
-  field: s.string({ label: 'Field', description: 'e.g. stage, deadline, date.month, offer.respondBy.', min: 1 }),
+  field: s.string({
+    label: 'Field',
+    description: 'e.g. stage, deadline, date.month, offer.respondBy.',
+    min: 1,
+  }),
   op: s.enum(OPS, { label: 'Test' }),
-  value: s.optional(s.unknown({ label: 'Value', description: '"today", "today+7" work for dates; a list for "in".' })),
+  value: s.optional(
+    s.unknown({
+      label: 'Value',
+      description: '"today", "today+7" work for dates; a list for "in".',
+    }),
+  ),
 })
 
 /**
@@ -70,8 +79,16 @@ type ListInput = {
 function liftCondition(t: Omit<RelatedTest, 'type'> & { type: string }): RelatedTest {
   const flat = t as typeof t & { field?: unknown; op?: unknown; value?: unknown }
   const lifted =
-    t.where === undefined && typeof flat.field === 'string' && (OPS as readonly unknown[]).includes(flat.op)
-      ? [{ field: flat.field, op: flat.op as Condition['op'], ...(flat.value === undefined ? {} : { value: flat.value }) }]
+    t.where === undefined &&
+    typeof flat.field === 'string' &&
+    (OPS as readonly unknown[]).includes(flat.op)
+      ? [
+          {
+            field: flat.field,
+            op: flat.op as Condition['op'],
+            ...(flat.value === undefined ? {} : { value: flat.value }),
+          },
+        ]
       : t.where
   return {
     type: t.type as NodeType,
@@ -150,21 +167,56 @@ export const memoryList = defineRead({
   effect: 'read',
   input: s.object({
     type: nodeType('Kind', 'Which kind of record to list.'),
-    where: s.optional(s.array(condition, { label: 'Where', description: 'Keep records passing these tests.' })),
-    match: s.optional(s.enum(['all', 'any'] as const, { label: 'Match', description: 'all tests (default) or any one.' })),
+    where: s.optional(
+      s.array(condition, { label: 'Where', description: 'Keep records passing these tests.' }),
+    ),
+    match: s.optional(
+      s.enum(['all', 'any'] as const, {
+        label: 'Match',
+        description: 'all tests (default) or any one.',
+      }),
+    ),
     related: s.optional(
       s.array(relatedTest, {
         label: 'Related',
-        description: 'Keep records by their linked records, e.g. applications with an interview in November, or none.',
+        description:
+          'Keep records by their linked records, e.g. applications with an interview in November, or none.',
       }),
     ),
-    orderBy: s.optional(s.string({ label: 'Order by', description: 'A field to sort on. Records without it go last.' })),
-    order: s.optional(s.enum(['asc', 'desc'] as const, { label: 'Order', description: 'asc (earliest, smallest first; the default) or desc.' })),
-    groupBy: s.optional(s.string({ label: 'Group by', description: 'Count records per value of this field instead of listing them.' })),
-    aggregate: s.optional(s.enum(AGGREGATES, { label: 'Aggregate', description: 'Figures over the records (per group, with groupBy).' })),
+    orderBy: s.optional(
+      s.string({
+        label: 'Order by',
+        description: 'A field to sort on. Records without it go last.',
+      }),
+    ),
+    order: s.optional(
+      s.enum(['asc', 'desc'] as const, {
+        label: 'Order',
+        description: 'asc (earliest, smallest first; the default) or desc.',
+      }),
+    ),
+    groupBy: s.optional(
+      s.string({
+        label: 'Group by',
+        description: 'Count records per value of this field instead of listing them.',
+      }),
+    ),
+    aggregate: s.optional(
+      s.enum(AGGREGATES, {
+        label: 'Aggregate',
+        description: 'Figures over the records (per group, with groupBy).',
+      }),
+    ),
     of: s.optional(s.string({ label: 'Of', description: 'The field the aggregate works over.' })),
-    fields: s.optional(s.array(s.string({ min: 1 }), { label: 'Fields', description: 'Show only these fields, to fit more records.' })),
-    offset: s.optional(s.number({ label: 'Offset', description: 'Skip this many, to page on.', min: 0 })),
+    fields: s.optional(
+      s.array(s.string({ min: 1 }), {
+        label: 'Fields',
+        description: 'Show only these fields, to fit more records.',
+      }),
+    ),
+    offset: s.optional(
+      s.number({ label: 'Offset', description: 'Skip this many, to page on.', min: 0 }),
+    ),
     limit,
   }),
   read: (memory, input: ListInput, ctx) => {
@@ -191,7 +243,13 @@ export const memoryList = defineRead({
       ...(where === undefined ? {} : match === 'any' ? { any: where } : { where }),
       ...(related === undefined ? {} : { related: related.map(liftCondition) }),
     }
-    const answer = runRecordQuery(rows, byName(query, rows, memory), ctx.today, input.type, declaredFields)
+    const answer = runRecordQuery(
+      rows,
+      byName(query, rows, memory),
+      ctx.today,
+      input.type,
+      declaredFields,
+    )
     if (answer.kind === 'refused') return { ok: false, hint: answer.hint }
     if (answer.kind === 'groups') return { total: answer.groups.length, groups: answer.groups }
     if (answer.kind === 'value') return answer.value
@@ -249,20 +307,34 @@ function refusalFor(
     }
   }
 
-  const strange = (input.related ?? []).map((t) => t.type).filter((t) => !(NODE_TYPES as readonly string[]).includes(t))
+  const strange = (input.related ?? [])
+    .map((t) => t.type)
+    .filter((t) => !(NODE_TYPES as readonly string[]).includes(t))
   if (strange.length > 0) {
-    return { ok: false, hint: `"${strange.join('", "')}" is not a kind of record. The kinds are: ${NODE_TYPES.join(', ')}.` }
+    return {
+      ok: false,
+      hint: `"${strange.join('", "')}" is not a kind of record. The kinds are: ${NODE_TYPES.join(', ')}.`,
+    }
   }
   return undefined
 }
 
 /** The rows cut down to `fields`, plus `ALWAYS_SHOWN`; untouched when no fields were asked for. */
+/**
+ * Each row cut down to the fields asked for. Read through `fieldOf`, the same
+ * resolver `refusalFor` validated them with, so a dotted path the schema
+ * offers — `offer.respondBy`, `lastActionAt.day` — comes back as a value. Read
+ * as `r[k]` it never matched, and the field was silently dropped from every
+ * row with no refusal and no hint.
+ */
 function onlyFields(rows: readonly AgentRecord[], fields: readonly string[]) {
   return fields.length === 0
     ? rows
     : rows.map((r) =>
         Object.fromEntries(
-          [...ALWAYS_SHOWN, ...fields].filter((k) => r[k] !== undefined).map((k) => [k, r[k]]),
+          [...ALWAYS_SHOWN, ...fields]
+            .map((k) => [k, fieldOf(r as Parameters<typeof fieldOf>[0], k)] as const)
+            .filter(([, v]) => v !== undefined),
         ),
       )
 }

@@ -60,6 +60,9 @@ export function ReportingStep({ onDone }: { onDone: () => void }) {
         </>
       }
     >
+      {/* Taller than the sheet on a phone, and drawn through the footer — the
+          last sentence lay on top of "Turn both off" — until `Sheet` scrolled
+          its body. */}
       <View style={{ gap: space[2], paddingBottom: space[2] }}>
         {/*
           SPECIFIC RATHER THAN REASSURING, and the two are not the same thing.
@@ -81,13 +84,19 @@ export function ReportingStep({ onDone }: { onDone: () => void }) {
           }}
         >
           <Txt size="xs">What is in a crash report</Txt>
-          <Txt size="xs" tone="muted">· The error message and where in jojo it happened.</Txt>
-          <Txt size="xs" tone="muted">· The stack trace, which names the code that failed.</Txt>
+          <Txt size="xs" tone="muted">
+            · The error message and where in jojo it happened.
+          </Txt>
+          <Txt size="xs" tone="muted">
+            · The stack trace, which names the code that failed.
+          </Txt>
           <Txt size="xs" tone="muted">
             · Your device model, its OS version, and a random id used to count how many people hit
             the same crash — no name, no account.
           </Txt>
-          <Txt size="xs" style={{ marginTop: space[2] }}>What is never in one</Txt>
+          <Txt size="xs" style={{ marginTop: space[2] }}>
+            What is never in one
+          </Txt>
           <Txt size="xs" tone="muted">
             · Your applications, documents, notes, profile or conversations.
           </Txt>
@@ -101,9 +110,7 @@ export function ReportingStep({ onDone }: { onDone: () => void }) {
           <SettingRow
             label="Report crashes"
             description="The error and where it happened. Goes to Firebase Crashlytics."
-            control={
-              <Toggle value={crashes} onValueChange={setCrashes} label="Report crashes" />
-            }
+            control={<Toggle value={crashes} onValueChange={setCrashes} label="Report crashes" />}
           />
         )}
 
@@ -113,11 +120,7 @@ export function ReportingStep({ onDone }: { onDone: () => void }) {
               label="Share which features I use"
               description="Counts only — which screens are opened, how often. Never what is in them."
               control={
-                <Toggle
-                  value={usage}
-                  onValueChange={setUsage}
-                  label="Share which features I use"
-                />
+                <Toggle value={usage} onValueChange={setUsage} label="Share which features I use" />
               }
             />
             <Txt size="xs" tone="muted">

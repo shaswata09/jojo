@@ -31,6 +31,8 @@ import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { TourTarget } from '@/components/tour/TourTarget'
+import { report } from '@/lib/analytics'
 
 const BUCKET_LABELS = Object.fromEntries(FILE_BUCKETS.map((b) => [b, b])) as Record<
   FileBucket,
@@ -220,75 +222,78 @@ export function FilesTool({ focus }: { focus?: string }) {
       />
       <Button label="Record a document" icon="plus" onPress={() => setEditing('new')} />
 
-      <Panel padded={false}>
-        {rows.length === 0 ? (
-          <View style={{ padding: space[4] }}>
-            <EmptyState
-              icon={empty.icon}
-              title={empty.title}
-              description={empty.description}
-              action={
-                empty.clear ? (
-                  <Button
-                    label={empty.clear.label}
-                    variant="outline"
-                    onPress={empty.clear.onPress}
-                  />
-                ) : (
-                  addButton
-                )
-              }
-            />
-          </View>
-        ) : (
-          rows.map((f, i) => {
-            return (
-              <View key={f.id}>
-                {i > 0 ? <Divider /> : null}
-                <View style={[styles.row, focus === f.id && { backgroundColor: c.accentSoft }]}>
-                  <Feather
-                    name={FILE_KIND_ICON[f.kind]}
-                    size={17}
-                    color={c.text3}
-                    style={styles.icon}
-                  />
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open ${f.name}`}
-                    onPress={() => setViewing(f)}
-                    style={s.fill}
-                  >
-                    <Txt size="sm" weight="medium" mono numberOfLines={2}>
-                      {f.name}
-                    </Txt>
-                    <Txt size="xs" tone="muted">
-                      {f.size} · saved {agoLabel(f.savedOn, TODAY)}
-                    </Txt>
-                    {f.note ? (
-                      <Txt size="xs" tone="muted" numberOfLines={2}>
-                        {f.note}
+      {/* Marked for the guided tour, which points at the list. */}
+      <TourTarget id="files">
+        <Panel padded={false}>
+          {rows.length === 0 ? (
+            <View style={{ padding: space[4] }}>
+              <EmptyState
+                icon={empty.icon}
+                title={empty.title}
+                description={empty.description}
+                action={
+                  empty.clear ? (
+                    <Button
+                      label={empty.clear.label}
+                      variant="outline"
+                      onPress={empty.clear.onPress}
+                    />
+                  ) : (
+                    addButton
+                  )
+                }
+              />
+            </View>
+          ) : (
+            rows.map((f, i) => {
+              return (
+                <View key={f.id}>
+                  {i > 0 ? <Divider /> : null}
+                  <View style={[styles.row, focus === f.id && { backgroundColor: c.accentSoft }]}>
+                    <Feather
+                      name={FILE_KIND_ICON[f.kind]}
+                      size={17}
+                      color={c.text3}
+                      style={styles.icon}
+                    />
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Open ${f.name}`}
+                      onPress={() => setViewing(f)}
+                      style={s.fill}
+                    >
+                      <Txt size="sm" weight="medium" mono numberOfLines={2}>
+                        {f.name}
                       </Txt>
-                    ) : null}
-                    <FiledUnderLinks applicationIds={f.applicationIds} />
-                    <View style={styles.chips}>
-                      <Chip size="sm" tone="gray">
-                        {f.bucket}
-                      </Chip>
-                      <LabelChips recordId={f.id} />
-                    </View>
-                  </Pressable>
-                  <LabelPicker recordId={f.id} name={f.name} />
-                  <IconButton
-                    icon="more-horizontal"
-                    label={`More actions for ${f.name}`}
-                    onPress={() => setMenuFor(f)}
-                  />
+                      <Txt size="xs" tone="muted">
+                        {f.size} · saved {agoLabel(f.savedOn, TODAY)}
+                      </Txt>
+                      {f.note ? (
+                        <Txt size="xs" tone="muted" numberOfLines={2}>
+                          {f.note}
+                        </Txt>
+                      ) : null}
+                      <FiledUnderLinks applicationIds={f.applicationIds} />
+                      <View style={styles.chips}>
+                        <Chip size="sm" tone="gray">
+                          {f.bucket}
+                        </Chip>
+                        <LabelChips recordId={f.id} />
+                      </View>
+                    </Pressable>
+                    <LabelPicker recordId={f.id} name={f.name} />
+                    <IconButton
+                      icon="more-horizontal"
+                      label={`More actions for ${f.name}`}
+                      onPress={() => setMenuFor(f)}
+                    />
+                  </View>
                 </View>
-              </View>
-            )
-          })
-        )}
-      </Panel>
+              )
+            })
+          )}
+        </Panel>
+      </TourTarget>
 
       <MenuSheet
         open={menuFor !== null}
@@ -359,6 +364,7 @@ export function FilesTool({ focus }: { focus?: string }) {
               toast({ title: 'Document updated', description: draft.name })
             } else {
               addFile(draft)
+              void report('vault_item_added', { kind: 'file' })
               toast({
                 title: 'Document recorded',
                 description: `${draft.name} · filed under ${draft.bucket}. The name, size and type are kept — the file itself is not read.`,

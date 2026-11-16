@@ -5,6 +5,7 @@ import type { Application, Stage } from '@jojo/service/data/seed'
 import { useSheets } from '@/lib/sheets-context'
 import { useApplications } from '@/lib/store-context'
 import { useToast } from '@/lib/toast-context'
+import { report } from '@/lib/analytics'
 
 /**
  * Everything a row or card can do to its record, in one place.
@@ -24,15 +25,19 @@ export function useRowActions() {
     [open],
   )
 
-  const onDuplicate = useCallback((a: Application) => {
-    const copy = duplicate(a.id)
-    if (!copy) return
-    toast({
-      title: `${displayName(copy)} duplicated`,
-      description: 'The copy starts as a draft — the original stage, dates and offer stay behind.',
-      action: { label: 'Undo', onPress: () => remove(copy.id) },
-    })
-  }, [duplicate, remove, toast])
+  const onDuplicate = useCallback(
+    (a: Application) => {
+      const copy = duplicate(a.id)
+      if (!copy) return
+      toast({
+        title: `${displayName(copy)} duplicated`,
+        description:
+          'The copy starts as a draft — the original stage, dates and offer stay behind.',
+        action: { label: 'Undo', onPress: () => remove(copy.id) },
+      })
+    },
+    [duplicate, remove, toast],
+  )
 
   // No toast: the filled icon says it on the row itself, and the same tap undoes
   // it. A toast per flag would fire twice a minute.
@@ -46,19 +51,24 @@ export function useRowActions() {
   )
 
   /** The single path a stage change takes — board pill and list chip alike. */
-  const onMoveStage = useCallback((a: Application, stage: Stage) => {
-    if (a.stage === stage) return
-    // Snapshot all three fields the move rewrites. `update` stamps daysAgo 0 on
-    // every edit unless the patch overrides it, so an undo that put back only
-    // the stage would leave the row claiming it was touched today.
-    const before = { stage: a.stage, lastAction: a.lastAction, daysAgo: a.daysAgo }
-    setStage(a.id, stage)
-    toast({
-      title: `${displayName(a)} moved to ${STAGE_LABEL[stage]}`,
-      description: `It was in ${STAGE_LABEL[before.stage]}. The pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,
-      action: { label: 'Undo', onPress: () => update(a.id, before) },
-    })
-  }, [setStage, toast, update])
+  const onMoveStage = useCallback(
+    (a: Application, stage: Stage) => {
+      if (a.stage === stage) return
+      // Snapshot all three fields the move rewrites. `update` stamps daysAgo 0 on
+      // every edit unless the patch overrides it, so an undo that put back only
+      // the stage would leave the row claiming it was touched today.
+      const before = { stage: a.stage, lastAction: a.lastAction, daysAgo: a.daysAgo }
+      setStage(a.id, stage)
+      // A move back to draft is a correction, not progress — as on the web.
+      if (stage !== 'draft') void report('application_advanced', { to: stage })
+      toast({
+        title: `${displayName(a)} moved to ${STAGE_LABEL[stage]}`,
+        description: `It was in ${STAGE_LABEL[before.stage]}. The pipeline and the funnel count it under ${STAGE_LABEL[stage]} from now on.`,
+        action: { label: 'Undo', onPress: () => update(a.id, before) },
+      })
+    },
+    [setStage, toast, update],
+  )
 
   const onDelete = () => {
     const a = pendingDelete

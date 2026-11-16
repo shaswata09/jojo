@@ -100,6 +100,8 @@ export function StageTransitionSheet({
       onClose={() => onOpenChange(false)}
       title={`Move to ${STAGE_LABEL[target]}`}
       description={`${displayName(application)} · currently ${STAGE_LABEL[application.stage]}`}
+      // The form scrolls itself (`TransitionForm`).
+      scroll={false}
     >
       {/* Keyed on the target so switching destination while open starts a clean
           form rather than carrying the last one's half-typed values. */}

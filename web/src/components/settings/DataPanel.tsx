@@ -35,7 +35,7 @@ import {
 } from '@/lib/backup'
 import { restoreBackup } from '@jojo/service/repo/restore'
 import { useVaultBlobs } from '@/lib/vault-blobs'
-import { describeBackup } from '@jojo/service/core/backup'
+import { describeBackup, replacesClause } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { useKg } from '@jojo/service/react/kg-context'
 import { useToast } from '@/lib/toast-context'
@@ -580,7 +580,7 @@ export function DataPanel() {
         description={
           staged === null
             ? ''
-            : `That file holds ${describeBackup(staged)}. Restoring replaces every record and every document you have now, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.`
+            : `That file holds ${describeBackup(staged)}. ${replacesClause(staged, 'you have now')}, and it cannot be undone — the history goes with them. Download a backup first if you are not sure.`
         }
         confirmLabel="Replace everything"
         tone="danger"

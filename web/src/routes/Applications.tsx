@@ -169,8 +169,12 @@ export function Applications() {
    * owns the h1 and the tab name and this header stands down entirely — leaving
    * it rendered put two `<h1>`s on the page and titled a bookmarked record
    * "Applications", because the parent's title effect runs after the child's.
+   *
+   * On a desktop too: the record names the tab whenever one is open, and
+   * standing down only below `lg` left a bookmarked record titled
+   * "Applications" there for the same reason.
    */
-  useTitle(inlineDetail ? null : 'Applications')
+  useTitle(detail ? null : 'Applications')
 
   return (
     <>

@@ -1889,6 +1889,12 @@ html[data-theme='dark'] {
     transform: none;
   }
 }
+/* A menu or popover opened during the tour sits ABOVE its dim, where it can
+   be read and used. Radix writes its own z-index inline on the wrapper, hence
+   the !important; it applies only while the tour is on screen. */
+body:has(.tour-overlay) [data-radix-popper-content-wrapper] {
+  z-index: 61 !important;
+}
 .tour-progress {
   background: var(--tour);
 }

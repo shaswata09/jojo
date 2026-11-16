@@ -87,29 +87,99 @@ export function plannedUris(
     // Percent-encoded, because that is what a `file://` URI is and what
     // `documents.ts`'s `pathOf` decodes on the way back out. Skip it and a
     // document with a space in its name reports itself lost the moment it lands.
-    out.set(planned.id, `file://${encodeURI(planned.path)}`)
+    // Segment by segment, not `encodeURI`, which leaves '#' and '?' raw — a
+    // document called "CV #2.pdf" then parsed as a path ending at "CV " and a
+    // fragment, and iOS shared a file that was not there (transfer audit,
+    // 2026-11-16). `pathOf` and `forgetUris` decode it back exactly.
+    out.set(planned.id, `file://${planned.path.split('/').map(encodeURIComponent).join('/')}`)
   }
   return out
 }
 
 /**
- * The same nodes, with each file node pointed at where its document will be.
+ * The same nodes, with each file node pointed at where its document is.
  *
- * A node with no document in this backup keeps the uri it arrived with, rather
- * than losing it: the backup may simply have been built without documents — the
- * sender offers that choice — and blanking the field would turn "not in this
- * file" into "this record never had one".
+ * Three cases, in order:
+ *   - the backup carries the document: the uri it is about to be written to;
+ *   - it does not, and this phone already holds a copy for that record (`held`,
+ *     read from the store before the restore): that copy's uri. A transfer
+ *     sends records only by default, and a record that arrives without its
+ *     document has not said the document is gone — see `keptDocuments`;
+ *   - neither: no uri. The one that arrived is dropped, because a uri is a
+ *     path in ONE device's sandbox — a phone's `file:///data/user/0/…` restored
+ *     onto another phone named a file that phone does not have, and
+ *     `hasBytesOnRecord` then reported bytes that could not be opened.
  */
 export function withDocumentUris(
   nodes: readonly StoredNode[],
   uris: ReadonlyMap<string, string>,
+  held: ReadonlyMap<string, string> = new Map(),
 ): StoredNode[] {
   return nodes.map((node) => {
     if (node.type !== 'file') return node
-    const uri = uris.get(node.id)
-    if (uri === undefined) return node
-    return { ...node, props: { ...node.props, uri } }
+    const uri = uris.get(node.id) ?? held.get(node.id)
+    if (uri !== undefined) return { ...node, props: { ...node.props, uri } }
+    if (!('uri' in node.props)) return node
+    const { uri: _foreign, ...props } = node.props as Record<string, unknown>
+    return { ...node, props } as StoredNode
   })
+}
+
+/**
+ * The documents this phone holds now, by record id — read before a restore
+ * replaces the records, so `withDocumentUris` can keep them.
+ */
+export async function heldDocuments(
+  nodes: readonly StoredNode[],
+  exists: (path: string) => Promise<boolean> = (path) => ReactNativeBlobUtil.fs.exists(path),
+): Promise<Map<string, string>> {
+  const held = new Map<string, string>()
+  for (const node of nodes) {
+    if (node.type !== 'file') continue
+    const uri = (node.props as { uri?: unknown }).uri
+    if (typeof uri !== 'string' || !uri.startsWith('file://')) continue
+    try {
+      if (await exists(decodeURIComponent(uri.slice('file://'.length)))) held.set(node.id, uri)
+    } catch {
+      // Unreadable: treated as not held, so the record says its document is missing.
+    }
+  }
+  return held
+}
+
+/**
+ * Deletes the files behind these uris, quietly — what `forgetDocuments` in
+ * `documents.ts` does, kept here so the restore path does not import the
+ * picker and React Native, which a node test cannot load.
+ */
+export async function forgetUris(uris: readonly string[]): Promise<void> {
+  for (const uri of new Set(uris)) {
+    const path = uri.startsWith('file://') ? decodeURIComponent(uri.slice('file://'.length)) : uri
+    try {
+      await ReactNativeBlobUtil.fs.unlink(path)
+    } catch {
+      // Already gone, or not ours to delete: a few kilobytes that go with the app.
+    }
+  }
+}
+
+/**
+ * The uris a restore left nothing pointing at: documents of records that are
+ * gone. Deleted after the restore succeeds, because the confirmation told the
+ * person that what was on this phone goes — and the bytes used to stay,
+ * unreachable, in the per-pick folders nothing walks.
+ */
+export function orphanedUris(
+  before: ReadonlyMap<string, string>,
+  after: readonly StoredNode[],
+): string[] {
+  const still = new Set(
+    after
+      .filter((n) => n.type === 'file')
+      .map((n) => (n.props as { uri?: unknown }).uri)
+      .filter((u): u is string => typeof u === 'string'),
+  )
+  return [...new Set(before.values())].filter((uri) => !still.has(uri))
 }
 
 /**
@@ -127,11 +197,20 @@ export function withDocumentUris(
  */
 export function createDocumentStore(): DocumentStore {
   return {
-    replaceAll: async (documents) => {
+    replaceAll: async (documents, keep) => {
       const dir = root()
       try {
-        if (await ReactNativeBlobUtil.fs.exists(dir)) await ReactNativeBlobUtil.fs.unlink(dir)
-        await ReactNativeBlobUtil.fs.mkdir(dir)
+        if (await ReactNativeBlobUtil.fs.exists(dir)) {
+          // Everything here except a document whose record came back without
+          // one (`keep`, see `keptDocuments`). Clearing the whole folder used
+          // to delete every document a records-only push brought back.
+          for (const name of await ReactNativeBlobUtil.fs.ls(dir)) {
+            const id = name.split(BLOB_SEP)[0] ?? ''
+            if (!keep.has(id)) await ReactNativeBlobUtil.fs.unlink(`${dir}/${name}`)
+          }
+        } else {
+          await ReactNativeBlobUtil.fs.mkdir(dir)
+        }
       } catch {
         // Nowhere to put anything. Reported as none landed, which is exactly
         // what the Vault will show and what re-running the transfer will fix.

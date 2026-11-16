@@ -45,7 +45,7 @@ import { settingsPath } from '@/lib/links'
  * arrived is checked in full before that question is asked, and nothing here
  * changes until it is answered.
  */
-export function ReceivePanel({ pull, token }: { pull: PullState; token: string | null }) {
+export function ReceivePanel({ pull, tokens }: { pull: PullState; tokens: readonly string[] }) {
   const [code, setCode] = useState('')
   const able = canReachLocalNetwork()
   const busy =
@@ -62,15 +62,16 @@ export function ReceivePanel({ pull, token }: { pull: PullState; token: string |
 
         {!able ? (
           <p className="text-sm text-text-2">
-            Safari cannot connect to another device on your network. Use Chrome, Edge or Firefox
-            here — or export a backup on your phone and open it under Settings.
+            This browser cannot connect to another device on your network — Safari and every browser
+            on an iPhone or iPad cannot, and nor can Firefox from the published site. Use Chrome or
+            Edge on a computer — or export a backup on your phone and open it under Settings.
           </p>
         ) : (
           <>
             <p className="mb-3 text-sm text-text-2">
-              On your phone, open Transfer, choose Send to a computer, and point it at the animation.
-              It then shows a short code — type it here. Both devices need to be on the same local
-              network.
+              On your phone, open Transfer, choose Send to a computer, and point it at the
+              animation. It then shows a short code — type it here. Both devices need to be on the
+              same local network.
             </p>
 
             <div className="flex gap-2">
@@ -87,9 +88,9 @@ export function ReceivePanel({ pull, token }: { pull: PullState; token: string |
               />
               <Button
                 size="sm"
-                disabled={busy || token === null || code.trim().length === 0}
+                disabled={busy || tokens.length === 0 || code.trim().length === 0}
                 onClick={() => {
-                  if (token !== null) void pull.start(code, token)
+                  if (tokens.length > 0) void pull.start(code, tokens)
                 }}
               >
                 {busy ? (
@@ -105,11 +106,18 @@ export function ReceivePanel({ pull, token }: { pull: PullState; token: string |
                 coming, and a bar that guessed would be the kind of progress
                 this page stopped showing. */}
             {pull.stage === 'connecting' || pull.stage === 'receiving' ? (
-              <p className="mt-3 text-xs text-text-3" role="status">
-                {pull.stage === 'connecting'
-                  ? 'Reaching your phone…'
-                  : `${sizeLabel(pull.bytes)} received so far. Nothing here changes until you agree to it.`}
-              </p>
+              <div className="mt-3 flex items-start justify-between gap-2">
+                <p className="text-xs text-text-3" role="status">
+                  {pull.stage === 'connecting'
+                    ? 'Reaching your phone…'
+                    : `${sizeLabel(pull.bytes)} received so far. Nothing here changes until you agree to it.`}
+                </p>
+                {/* Always a way out — a phone that went quiet used to leave
+                    this waiting with nothing to press. */}
+                <Button size="xs" variant="ghost" onClick={pull.cancel}>
+                  Cancel
+                </Button>
+              </div>
             ) : null}
             {pull.stage === 'restoring' ? (
               <p className="mt-3 text-xs text-text-3" role="status">
@@ -144,8 +152,8 @@ export function ReceivePanel({ pull, token }: { pull: PullState; token: string |
         <PanelTitle hint="between two computers">Two browsers</PanelTitle>
         <p className="text-sm text-text-2">
           A web page cannot accept a connection, and neither can the other computer&rsquo;s, so two
-          computers cannot connect to each other. Export a backup from one and open it on the other —
-          it carries every record and every document.
+          computers cannot connect to each other. Export a backup from one and open it on the other
+          — it carries every record and every document.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2.5">
           <Button variant="outline" size="sm" asChild>

@@ -27,6 +27,7 @@
  */
 import type { Application, Offer, Outcome, RoleTag, Stage, StageDates, TimelineItem } from './model'
 import { ROLES } from './model'
+import { roleVocabulary } from './model-profile'
 import { daysBetween } from './dates'
 import { sentOn } from './sent-on'
 
@@ -319,17 +320,26 @@ export type RoleRow = {
  */
 function rolesFor(all: readonly Application[]): RoleRow[] {
   const sent = all.filter((a) => reachedOf(a) >= REACH.sent)
-  return ROLES.filter((role) => sent.some((a) => a.roleTag === role)).map((role) => {
-    const rows = sent.filter((a) => a.roleTag === role)
-    const at = (rank: number) => rows.filter((a) => reachedOf(a) >= rank).length
-    return {
-      role,
-      applied: rows.length,
-      responded: at(REACH.replied),
-      interviews: at(REACH.interview),
-      offers: at(REACH.offer),
-    }
-  })
+  /*
+   * The default roles first, in their usual order, then any other tag in use
+   * — role tags are free text, edited in Profile. Iterating `ROLES` alone
+   * dropped every application under a custom tag: two "Data Scientist"
+   * interviews vanished from this table while the funnel above counted them,
+   * so the rows no longer cross-footed.
+   */
+  return roleVocabulary(ROLES, sent)
+    .filter((role) => sent.some((a) => a.roleTag === role))
+    .map((role) => {
+      const rows = sent.filter((a) => a.roleTag === role)
+      const at = (rank: number) => rows.filter((a) => reachedOf(a) >= rank).length
+      return {
+        role,
+        applied: rows.length,
+        responded: at(REACH.replied),
+        interviews: at(REACH.interview),
+        offers: at(REACH.offer),
+      }
+    })
 }
 
 /* --------------------------------- surface -------------------------------- */

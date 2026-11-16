@@ -28,7 +28,7 @@ import { ICS_FILENAME } from '@jojo/service/core/ics'
 import { useTitle } from '@/lib/links'
 import { useCalendarParams } from '@/lib/link-params'
 import { useToast } from '@/lib/toast-context'
-import { TODAY_PARTS } from '@/lib/today'
+import { TODAY, TODAY_PARTS } from '@/lib/today'
 import { useArrivalHighlight } from '@/lib/use-arrival-highlight'
 import { useReducedMotion } from '@/lib/use-media-query'
 import { useSeriesToggle } from '@/lib/use-series-toggle'
@@ -60,7 +60,15 @@ export function Calendar() {
   // hook, so it behaves as their legends do: for this visit only, nothing
   // stored, and everything can be off at once.
   const kinds = useSeriesToggle(TIMELINE_KINDS)
-  const month = useMemo(() => buildMonth(view.year, view.month, TODAY_PARTS), [view])
+  // Keyed on today as well as the view: `TODAY_PARTS` moves at midnight (the
+  // page re-renders then), and keyed on the view alone the grid kept marking
+  // yesterday as today until you paged away and back.
+  const todayKey = TODAY
+  const month = useMemo(
+    () => buildMonth(view.year, view.month, TODAY_PARTS),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- todayKey is the trigger, TODAY_PARTS its value
+    [view, todayKey],
+  )
   const { forMonth, get, remove, reschedule } = useTimeline()
 
   /** The chip currently in the pointer's hand, rendered in the overlay. */

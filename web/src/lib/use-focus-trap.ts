@@ -35,6 +35,19 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean
       const first = items[0]
       const last = items[items.length - 1]
       const activeEl = document.activeElement
+      /*
+       * Focus inside a layer portalled out of the trapped region — a Radix
+       * menu or popover opened from inside it, or the guided tour's card — has
+       * not escaped; it is in something this region opened. Pulling it back
+       * moved focus out of the open menu, and Radix then closed it, so in the
+       * phone drawer only the first entry of jojo's moves list was reachable.
+       */
+      if (
+        activeEl instanceof HTMLElement &&
+        activeEl.closest('[data-radix-popper-content-wrapper], .tour-overlay')
+      ) {
+        return
+      }
 
       // Wrap at both ends, and pull focus back in if it has already escaped.
       if (event.shiftKey && (activeEl === first || !node.contains(activeEl))) {

@@ -20,6 +20,7 @@ import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
 import { STATUS_HEADLINE, STATUS_POINTS, STATUS_SUMMARY } from '@jojo/service/core/status'
+import { TourTarget } from '@/components/tour/TourTarget'
 
 type Entry = {
   screen: keyof RootStackParamList
@@ -128,32 +129,35 @@ export function MoreScreen() {
     },
   ]
 
+  // Each row is marked for the guided tour, which points at a few of them.
   const Row = ({ entry }: { entry: Entry }) => (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={entry.badge ? `${entry.label}, ${entry.badge}` : entry.label}
-      onPress={() => navigation.navigate(entry.screen as never)}
-      style={({ pressed }) => [
-        styles.row,
-        pressed && { backgroundColor: c.rowHover, borderRadius: radius.md },
-      ]}
-    >
-      <Feather name={entry.icon} size={18} color={c.text2} />
-      <View style={s.fill}>
-        <Txt size="base">{entry.label}</Txt>
-        <Txt size="xs" tone="muted" numberOfLines={1}>
-          {entry.hint}
-        </Txt>
-      </View>
-      {entry.badge ? (
-        <View style={[styles.badge, { backgroundColor: c.accentSoft }]}>
-          <Txt size="xs" weight="semibold" tone="accent">
-            {entry.badge}
+    <TourTarget id={`more:${entry.label}`}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={entry.badge ? `${entry.label}, ${entry.badge}` : entry.label}
+        onPress={() => navigation.navigate(entry.screen as never)}
+        style={({ pressed }) => [
+          styles.row,
+          pressed && { backgroundColor: c.rowHover, borderRadius: radius.md },
+        ]}
+      >
+        <Feather name={entry.icon} size={18} color={c.text2} />
+        <View style={s.fill}>
+          <Txt size="base">{entry.label}</Txt>
+          <Txt size="xs" tone="muted" numberOfLines={1}>
+            {entry.hint}
           </Txt>
         </View>
-      ) : null}
-      <Feather name="chevron-right" size={18} color={c.text3} />
-    </Pressable>
+        {entry.badge ? (
+          <View style={[styles.badge, { backgroundColor: c.accentSoft }]}>
+            <Txt size="xs" weight="semibold" tone="accent">
+              {entry.badge}
+            </Txt>
+          </View>
+        ) : null}
+        <Feather name="chevron-right" size={18} color={c.text3} />
+      </Pressable>
+    </TourTarget>
   )
 
   return (

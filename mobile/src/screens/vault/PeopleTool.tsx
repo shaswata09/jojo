@@ -18,6 +18,7 @@ import { filedUnderLabel } from '@jojo/service/data/seed'
 import type { Person } from '@jojo/service/core/model'
 import { s } from '@/theme/styles'
 import { space } from '@/theme/tokens'
+import { report } from '@/lib/analytics'
 
 /**
  * The people a job search is actually made of, on a phone.
@@ -181,7 +182,10 @@ export function PeopleTool({ focus }: { focus?: string }) {
           onClose={() => setEditing(null)}
           onSave={(draft) => {
             if (editing !== 'new') updatePerson(editing.id, draft)
-            else addPerson(draft)
+            else {
+              addPerson(draft)
+              void report('vault_item_added', { kind: 'person' })
+            }
             setEditing(null)
             toast({ title: 'Person saved', description: draft.name })
           }}
@@ -236,6 +240,9 @@ function PersonSheet({
         open
         onClose={onClose}
         size="tall"
+        // Taller than the screen with a field or two open; scrolls rather
+        // than clipping the last field and its Save under the footer.
+        scroll
         title={person ? 'Edit person' : 'Add person'}
         description="A name is the only thing this needs. The rest is what turns out to matter."
         footer={

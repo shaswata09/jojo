@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "언어",
+    "description": "jojo가 표시되는 언어입니다. 기록은 작성한 언어 그대로 남습니다.",
+    "system": "이 기기와 동일({{name}})",
+    "restartForDirection": "jojo를 다시 시작하면 아랍어가 오른쪽에서 왼쪽으로 표시됩니다."
+  }
+}

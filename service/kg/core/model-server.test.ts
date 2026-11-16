@@ -1171,7 +1171,9 @@ describe('thinking control', () => {
   })
 
   it('takes the mode from the person’s setting, and a caller’s own mode over that', () => {
-    expect(bodyOf(local({ thinking: 'off' }))['chat_template_kwargs']).toEqual({ enable_thinking: false })
+    expect(bodyOf(local({ thinking: 'off' }))['chat_template_kwargs']).toEqual({
+      enable_thinking: false,
+    })
     expect(bodyOf(local({ thinking: 'off' }))['reasoning_effort']).toBeUndefined()
     expect(bodyOf(local({ thinking: 'off' }), 'on')['reasoning_effort']).toBe('medium')
   })
@@ -1183,7 +1185,9 @@ describe('thinking control', () => {
   it('spells the same thing Ollama-native way, and disturbs nothing else', () => {
     const body = bodyOf(local({ provider: 'ollama', endpoint: 'http://localhost:11434' }))
     expect(body['think']).toBe(true)
-    expect(bodyOf(local({ provider: 'ollama', endpoint: 'http://localhost:11434' }), 'off')['think']).toBe(false)
+    expect(
+      bodyOf(local({ provider: 'ollama', endpoint: 'http://localhost:11434' }), 'off')['think'],
+    ).toBe(false)
     /*
      * The hard-won fields, asserted here because this test is the one that
      * changed the Ollama body. `shift:false` is what makes a too-large prompt a
@@ -1505,14 +1509,20 @@ function refusedTurn(status: number, body: string): Turn {
 
 describe('reading what the model thought', () => {
   const reply = (message: Record<string, unknown>) =>
-    readTurn({ ok: true, status: 200, text: JSON.stringify({ choices: [{ message, finish_reason: 'tool_calls' }] }) })
+    readTurn({
+      ok: true,
+      status: 200,
+      text: JSON.stringify({ choices: [{ message, finish_reason: 'tool_calls' }] }),
+    })
 
   // vLLM's shape for Gemma 4 and gpt-oss, as measured 2026-10-22.
   it('keeps vLLM’s reasoning beside the answer, never in it', () => {
     const turn = reply({
       content: '',
       reasoning: 'The user wants interviews.',
-      tool_calls: [{ id: 'c1', type: 'function', function: { name: 'application_list', arguments: '{}' } }],
+      tool_calls: [
+        { id: 'c1', type: 'function', function: { name: 'application_list', arguments: '{}' } },
+      ],
     })
     expect(turn.ok && turn.reasoning).toBe('The user wants interviews.')
     expect(turn.ok && turn.text).toBeNull()
@@ -1523,7 +1533,10 @@ describe('reading what the model thought', () => {
     const ollama = readOllamaTurn({
       ok: true,
       status: 200,
-      text: JSON.stringify({ message: { content: 'ok', thinking: 'Considering.' }, done_reason: 'stop' }),
+      text: JSON.stringify({
+        message: { content: 'ok', thinking: 'Considering.' },
+        done_reason: 'stop',
+      }),
     })
     expect(ollama.ok && ollama.reasoning).toBe('Considering.')
   })
@@ -1541,5 +1554,14 @@ describe('how much the helper calls reason', () => {
     expect(helperThinking('low')).toBe('off')
     expect(helperThinking('off')).toBe('off')
     expect(helperThinking('server-default')).toBe('server-default')
+  })
+})
+
+describe('a timeout says how long it really waited (review 2026-11-16)', () => {
+  it('names the wait the request was given, not always the default', () => {
+    expect(unreachable('http://localhost:11434/v1', 'x', true, 240_000).reason).toMatch(
+      /within 240 seconds/,
+    )
+    expect(unreachable('http://localhost:11434/v1', 'x', true).reason).toMatch(/within 60 seconds/)
   })
 })

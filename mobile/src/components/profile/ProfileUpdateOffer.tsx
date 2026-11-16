@@ -183,44 +183,39 @@ export function ProfileUpdateOffer() {
     const keeping = drafts.map((draft, at) => ({ draft, at })).filter(({ at }) => !dropped.has(at))
     if (keeping.length === 0) return
 
-    const result = run('profile.background.add', {
-      // `source` on every entry: `twinState` counts a document as read when a
-      // fact points back at it, so omitting it would leave the document
-      // eternally unread and this strip would offer it again tomorrow.
-      background: keeping.map(({ draft }) => ({ ...draft, source: fileId })),
-    })
-
     /*
-     * The relations, once the entries have ids to point at. The ids come back
-     * in the order the entries were given, which is what makes a position
-     * resolvable — and why the reader returns positions rather than asking a
-     * model to copy uuids. `claim.add` refuses any the graph already holds
-     * under another name, which is the feature working rather than an error.
+     * One composite write: the entries and the relations between them in a
+     * single transaction, as the web banner does (`profile.background.import`).
+     * This used to be `profile.background.add` and then a `claim.add` per
+     * relation — a dozen journal rows for one tap, nothing that could take the
+     * import back, and a refusal part way left facts without their relations.
+     *
+     * Relations name entries by their position in the list the MODEL was
+     * shown; the tool takes positions in the list it is GIVEN, so each end is
+     * moved to its place in `keeping`, and a relation naming an entry the
+     * person dropped is left out rather than pointed at whichever shifted up.
+     * `source` closes the loop: `twinState` counts a document as read when a
+     * fact points back at it. The tool applies it to every entry.
      */
-    // `output.ids`, in the order the entries were given. The tool also reports
-    // `created` — which of them it actually minted — and that is what its own
-    // announcement counts; the positions below only need the ids.
-    const out = result.ok ? (result.output as { ids: string[]; created: string[] }) : null
-    // `ids` in the order the entries were given; `created` is the subset this
-    // call actually minted. Most of a newer CV is the older one, so "how many
-    // were added" and "how many were offered" are different numbers — and the
-    // toast used to print the second while the journal row printed the first.
-    const ids = out?.ids ?? []
-    const added = out?.created.length ?? 0
-    // Original position -> the id it was written under, so a relation naming a
-    // dropped entry is skipped rather than pointing at whichever one shifted up.
-    const idAt = new Map(keeping.map(({ at }, i) => [at, ids[i]]))
-    let related = 0
-    if (result.ok) {
-      for (const link of links) {
-        const subject = idAt.get(link.subject)
-        const object = idAt.get(link.object)
-        if (subject === undefined || object === undefined) continue
-        if (run('claim.add', { subject, predicate: link.predicate, object, source: fileId }).ok) {
-          related += 1
-        }
-      }
-    }
+    const position = new Map(keeping.map(({ at }, i) => [at, i]))
+    const relations = links.flatMap((link) => {
+      const subject = position.get(link.subject)
+      const object = position.get(link.object)
+      return subject === undefined || object === undefined
+        ? []
+        : [{ subject, predicate: link.predicate, object }]
+    })
+    const result = run('profile.background.import', {
+      background: keeping.map(({ draft }) => draft),
+      relations,
+      source: fileId,
+    })
+    // `created` is the subset this call actually minted. Most of a newer CV is
+    // the older one, so "how many were added" and "how many were offered" are
+    // different numbers.
+    const added = result.ok ? result.output.created.length : 0
+    const related = result.ok ? result.output.related.length : 0
+    const undo = result.ok ? result.undo : null
 
     remember([fileId])
     setDrafts(null)
@@ -237,6 +232,9 @@ export function ProfileUpdateOffer() {
         ? `Read from ${target.subject}.${added < keeping.length ? ` ${String(keeping.length - added)} of ${String(keeping.length)} were already known.` : ''}${related > 0 ? ` ${String(related)} connection${related === 1 ? '' : 's'} recorded.` : ''}`
         : (result.errors[0]?.message ?? 'The entries were refused.'),
       ...(result.ok ? {} : { tone: 'danger' as const }),
+      // One journal entry, so one Undo takes back the facts and their
+      // relations together. The document stays marked as asked.
+      ...(undo ? { action: { label: 'Undo', onPress: undo } } : {}),
     })
   }
 

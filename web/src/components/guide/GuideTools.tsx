@@ -123,10 +123,13 @@ export function GuideTools() {
         <h3 className="mt-5 text-sm font-medium">The distinction that matters</h3>
         <p className="mt-1.5 text-sm text-text-2">
           Choosing what to <em>show</em> the model is a hint. Checking what it actually{' '}
-          <em>called</em> is a rule. jojo does both, and only the second one is load-bearing: a call
-          to something outside the offered set is refused before anything is looked up, let alone
-          run. The model is told the name is unavailable, in the same words it gets for a name that
-          does not exist, and it moves on.
+          <em>called</em> is a rule, and the rule depends on who chose the set. Where the screen
+          fixes it — Ask the graph, a scout pipeline — a call to anything outside it is refused
+          before anything is looked up, let alone run. In a chat the set is jojo&rsquo;s guess at
+          what you need, so a call outside it is not refused: it goes to the same approval check as
+          every other call, which asks you first unless the conversation is set to run on its own.
+          The one exception is clearing your records, the only thing that cannot be undone: it is
+          refused unless you asked to wipe everything in so many words.
         </p>
         <p className="mt-3 text-sm text-text-2">
           This is why the &ldquo;Ask the graph&rdquo; card can safely offer two read-only tools. It

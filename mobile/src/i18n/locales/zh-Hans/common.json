@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "语言",
+    "description": "jojo 的显示语言。你的记录会保留你书写时使用的语言。",
+    "system": "与此设备相同（{{name}}）",
+    "restartForDirection": "重新启动 jojo 后，阿拉伯语将从右向左显示。"
+  }
+}

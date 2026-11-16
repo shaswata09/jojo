@@ -14,7 +14,7 @@ import type { RestorePlan } from '../core/backup'
 import type { Repository } from './repository'
 import type { StoreMeta } from './meta'
 import type { DocumentStore } from './restore'
-import { metaForRestore, restoreBackup } from './restore'
+import { keptDocuments, metaForRestore, restoreBackup } from './restore'
 
 const META: StoreMeta = {
   schemaVersion: 1,
@@ -205,5 +205,33 @@ describe('restoreBackup', () => {
     // rewrite that, and the schema is this build's.
     expect(meta.createdAt).toBe(META.createdAt)
     expect(meta.schemaVersion).toBe(META.schemaVersion)
+  })
+})
+
+describe('which documents a restore keeps', () => {
+  /*
+   * Transfer audit, 2026-11-16: a records-only transfer replaced every
+   * document with none, though the file records came back. A file record that
+   * arrives without its document keeps the copy this device has.
+   */
+  const file = (id: string) => ({ id, type: 'file' })
+  it('names every file record the backup carries no document for', () => {
+    expect([
+      ...keptDocuments(
+        [file('file:a'), file('file:b'), { id: 'app:x', type: 'application' }],
+        [{ path: 'Documents/file:a__CV.pdf' }],
+      ),
+    ]).toEqual(['file:b'])
+  })
+
+  it('is handed to the document store with the documents', async () => {
+    const blobs = stubBlobs()
+    await restoreBackup(
+      stubRepo(),
+      blobs,
+      plan({ nodes: [node('01a02b14-31db-7278-a6d7-c03d325832ba')] as never }),
+      '2026-08-22T12:00:00.000Z',
+    )
+    expect(blobs.replaceAll.mock.calls[0]?.length).toBe(2)
   })
 })

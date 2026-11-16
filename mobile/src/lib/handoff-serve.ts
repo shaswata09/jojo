@@ -85,7 +85,7 @@ export async function beginServing(
   const accepted = await acceptPairing(secrets, offerBytes)
   if (!accepted.ok) return { ok: false, error: 'receive/offer' }
 
-  const token = await pathToken(secrets, read.value)
+  const token = await pathToken(secrets, read.value, 'pull')
   const pull = createPullServer(secrets, accepted.value.keys, build)
 
   let server: HandoffServer

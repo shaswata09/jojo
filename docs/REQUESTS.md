@@ -1961,6 +1961,43 @@ Guarded by:
 - `web/src/lib/mascot-context.requests.test.ts` › "waves Hi with an open, flat palm — the fingers and thumb straightened — not a fist (Q326)"
 - `web/src/lib/mascot-cues.test.ts` › "waves hi on a first load, and bows on a refresh"
 
+### Q327 — Fix the mobile guided tour and bring it to parity with the web tour where the platform allows.
+`change` · 2026-11-16 · mobile · active
+Must stay true: The phone's tour is a coach-mark overlay drawn beside the navigator: it opens each screen itself, lights the real control (a tab, a header button, a More row, a Settings card) with the cut-out ring in jojo's orange, and its hands-on steps move on once the reader does the thing (open a tab or screen, switch to Board, pick Files); Next and Skip always work, Android's back button ends it keeping the place, and it never writes. It says what the phone does where it differs from the browser (no PDF editor; only PDFs need the reader).
+Note: Replaces the six-step sheet, whose header rejected an overlay for want of a way to find controls; `TourTarget` marks them and the overlay measures them against its own root. Returning to a tab uses `StackActions.popTo('Tabs')`, since React Navigation 7's `navigate` stacked a second copy of the tabs from How to use.
+Guarded by:
+- `mobile/src/lib/tour.requests.test.ts` › "only ever ask the reader for things that write nothing"
+- `mobile/src/lib/tour.requests.test.ts` › "point only at controls the app really marks"
+- `mobile/src/lib/tour.requests.test.ts` › "covers the whole app, end to end"
+- `mobile/src/lib/tour.requests.test.ts` › "says what the phone does where it differs from the browser"
+- `mobile/src/lib/tour.requests.test.ts` › "draws the tour beside the navigator, where it outlives every screen"
+- `mobile/src/lib/tour.requests.test.ts` › "reaches the navigator only through its ref, never the hook that throws out there"
+- `mobile/src/lib/tour.requests.test.ts` › "lets Android’s back button leave the tour, keeping the place"
+
+### Q328 — Thoroughly review the full codebase to find any missing or broken part, then fix it end to end.
+`fix` · 2026-11-16 · cross · active
+Must stay true: The defects the 2026-11-16 review found and reproduced stay fixed: pay ranges and "pcm" keep their period; dotted memory.list fields come back; record queries read an instant in the local day; Statistics counts custom role tags; a punctuation-only checklist step is refused; a timeout names the real wait; note colours stay apart; calendar links carry a whole date and the today marker moves at midnight; Duplicate and Delete keep the list's filters; a crash is recorded once; the tour neither bounces on Back nor swallows a menu's keys; phone sheets hold and scroll their content; the phone keeps notes, deadlines and event undos honest, follows links into an open tab, asks before discarding a snippet, reads a CV in one undoable write, sends the web's usage events, and the profile's sector switches reach the scout.
+Note: Run as six area reviews (service, web lib/routes, web components, mobile screens/sheets, end-to-end seams; the mobile lib review was refused by the permission system and done by hand). Each finding was reproduced before it was fixed. Transfer, backup and i18n files belong to the parallel session and were reported to it, not edited. Left to the owner: whether the phone should show the web's sticky notes and hand-edited stage dates (Q063 says the phone covers the web's journeys; Q289 and Q264 are scoped web).
+Guarded by:
+- `service/kg/core/comp.test.ts` › "reads the period after the top of the range as the whole range's"
+- `service/kg/core/comp.test.ts` › "does not take a period word for a currency code"
+- `service/kg/core/statistics.test.ts` › "counts applications under a custom role tag, so the rows still cross-foot"
+- `service/kg/agent/record-query.test.ts` › "matches "today" by the day the person is in, not the UTC date"
+- `service/kg/agent/record-query.test.ts` › "returns a dotted field it accepted, rather than silently dropping it"
+- `service/kg/tools/checklist.test.ts` › "refuses a step that is only punctuation, rather than reporting one added"
+- `service/kg/core/model-server.test.ts` › "names the wait the request was given, not always the default"
+- `service/kg/core/profile.test.ts` › "keeps a round to the one kind that is switched on"
+- `web/src/lib/note-html.test.ts` › "keeps each word in its own colour"
+- `web/src/lib/today.test.ts` › "writes a date as all of year, month and day, so a link means the same day later"
+- `web/src/components/tour/tour.requests.test.ts` › "moves on by itself only for a task done while its step was showing"
+- `web/src/components/tour/tour.requests.test.ts` › "leaves a key alone that a menu or a radio group already handled"
+- `mobile/src/lib/review-fixes.requests.test.ts` › "measure their 92% cap against the screen, not against their own content"
+- `mobile/src/lib/review-fixes.requests.test.ts` › "takes back every field an event edit wrote, including ones it added"
+- `mobile/src/lib/review-fixes.requests.test.ts` › "apply a stage or a sort to Applications, then clear them"
+- `mobile/src/lib/review-fixes.requests.test.ts` › "sends each feature event the web sends, so opted-in phone usage is not just opens"
+- `mobile/src/lib/review-fixes.requests.test.ts` › "reads a CV into the profile in one undoable write, as the web does"
+- `mobile/src/lib/review-fixes.requests.test.ts` › "appends the sector rule to every scout round's instructions"
+
 ### Q036 — All scrollbars use a glassmorphic style.
 `change` · 2026-08-08 · web · active
 Must stay true: Scrollbars across the app use the glassmorphic style defined globally in index.css (protected design).

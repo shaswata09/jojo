@@ -29,9 +29,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
     /*
-     * Recorded, and this is not redundant with `listenForCrashes`.
+     * Recorded, and this is not redundant with the window listeners in
+     * `main.tsx`.
      *
-     * That listener is on `window.onerror` and `unhandledrejection`, and React
+     * Those are on `window.onerror` and `unhandledrejection`, and React
      * catches a render error before it reaches either — so every crash this
      * boundary exists for was missing from the list in Settings, which is the
      * one place a person is told to look. The console line below is a developer

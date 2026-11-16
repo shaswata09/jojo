@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "언어",
+    "description": "jojo가 표시되는 언어입니다. 기록은 작성한 언어 그대로 남습니다.",
+    "system": "이 브라우저와 동일({{name}})",
+    "loadFailed": "해당 언어를 불러올 수 없습니다. jojo는 {{name}}(으)로 유지됩니다."
+  }
+}

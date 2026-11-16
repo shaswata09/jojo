@@ -59,7 +59,15 @@ export function MenuSheet({
   const c = useColors()
 
   return (
-    <Sheet open={open} onClose={onClose} title={title} description={description} footer={footer}>
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={title}
+      description={description}
+      footer={footer}
+      // The action list scrolls itself.
+      scroll={false}
+    >
       {children}
       <ScrollView style={styles.list} bounces={false}>
         {actions.map((a) => (

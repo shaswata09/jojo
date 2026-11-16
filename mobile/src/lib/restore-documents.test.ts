@@ -22,6 +22,8 @@ import { blobPath } from '@jojo/service/core/blob-path'
 import type { StoredNode } from '@jojo/service/core/model'
 import {
   createDocumentStore,
+  heldDocuments,
+  orphanedUris,
   plannedPath,
   plannedUris,
   withDocumentUris,
@@ -40,12 +42,15 @@ let present = new Set<string>()
 let writeFails = false
 /** Set to make the folder refuse to be created. */
 let mkdirFails = false
+/** What `ls` lists in the restored folder. */
+let listing: string[] = []
 
 vi.mock('react-native-blob-util', () => ({
   default: {
     fs: {
       dirs: { DocumentDir: '/data/user/0/dev.jojo/files' },
       exists: (path: string) => Promise.resolve(present.has(path)),
+      ls: () => Promise.resolve([...listing]),
       unlink: (path: string) => {
         unlinked.push(path)
         return Promise.resolve()
@@ -71,6 +76,7 @@ beforeEach(() => {
   present = new Set()
   writeFails = false
   mkdirFails = false
+  listing = []
 })
 
 const fileNode = (id: string, uri?: string): StoredNode =>
@@ -133,6 +139,16 @@ describe('plannedUris', () => {
     expect(uris.get('file_x')).toBe(`file://${DIR}/restored/file_x__My%20CV.pdf`)
   })
 
+  it('encodes # and ? too, so a URL parser keeps the whole name', () => {
+    const uris = plannedUris([{ path: blobPath('file_x', 'CV #2 ?.pdf'), data: new Uint8Array(1) }])
+    const uri = uris.get('file_x')!
+    expect(uri).not.toMatch(/[#?]/)
+    expect(decodeURIComponent(uri.slice('file://'.length))).toBe(
+      `${DIR}/restored/file_x__CV #2 ?.pdf`,
+    )
+    expect(new URL(uri).pathname.endsWith('CV%20%232%20%3F.pdf')).toBe(true)
+  })
+
   it('leaves out documents belonging to no record', () => {
     const uris = plannedUris([
       { path: blobPath('file_a', 'a.pdf'), data: new Uint8Array(1) },
@@ -150,11 +166,20 @@ describe('withDocumentUris', () => {
     expect(uriOf(node)).toBe(uris.get('file_a'))
   })
 
-  it('leaves a node alone when this backup carries no document for it', () => {
-    // The sender offers a backup WITHOUT documents. Blanking the field would
-    // turn "not in this file" into "this record never had one".
-    const [node] = withDocumentUris([fileNode('file_a', 'file:///old/CV.pdf')], new Map())
-    expect(uriOf(node)).toBe('file:///old/CV.pdf')
+  it('keeps the copy this phone holds when the backup carries no document for it', () => {
+    // A records-only transfer: "not in this file" is not "gone".
+    const held = new Map([['file_a', `file://${DIR}/restored/file_a__CV.pdf`]])
+    const [node] = withDocumentUris([fileNode('file_a')], new Map(), held)
+    expect(uriOf(node)).toBe(`file://${DIR}/restored/file_a__CV.pdf`)
+  })
+
+  it('drops a uri from another device, which names a file this phone does not have', () => {
+    const [node] = withDocumentUris(
+      [fileNode('file_a', 'file:///data/user/0/other/CV.pdf')],
+      new Map(),
+    )
+    expect(uriOf(node)).toBeUndefined()
+    expect('uri' in (node as { props: object }).props).toBe(false)
   })
 
   it('does not touch nodes that are not files', () => {
@@ -182,19 +207,31 @@ describe('withDocumentUris', () => {
 describe('createDocumentStore', () => {
   it('clears the folder first, so a restore replaces rather than merges', async () => {
     present.add(`${DIR}/restored`)
+    listing = ['file_old__x.pdf', 'file_kept__y.pdf']
     const store = createDocumentStore()
-    await store.replaceAll([{ path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1, 2]) }])
+    await store.replaceAll(
+      [{ path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1, 2]) }],
+      new Set(['file_kept']),
+    )
     // Leaving the previous store's documents behind would mean a restored jojo
-    // holding files belonging to records that no longer exist.
-    expect(unlinked).toEqual([`${DIR}/restored`])
+    // holding files belonging to records that no longer exist — except a record
+    // that came back without its document, whose copy stays.
+    expect(unlinked).toEqual([`${DIR}/restored/file_old__x.pdf`])
+    expect(made).toEqual([])
+  })
+
+  it('makes the folder when there is none yet', async () => {
+    const store = createDocumentStore()
+    await store.replaceAll([], new Set())
     expect(made).toEqual([`${DIR}/restored`])
   })
 
   it('writes each document where its planned uri says it will be', async () => {
     const store = createDocumentStore()
-    const landed = await store.replaceAll([
-      { path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1, 2, 3]) },
-    ])
+    const landed = await store.replaceAll(
+      [{ path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1, 2, 3]) }],
+      new Set(),
+    )
     expect(landed).toBe(1)
     expect(writes[0]!.path).toBe(`${DIR}/restored/file_a__a.pdf`)
     expect(writes[0]!.encoding).toBe('base64')
@@ -209,7 +246,7 @@ describe('createDocumentStore', () => {
     // A document is not text: a PDF starts with a byte no text encoder would
     // pass through unchanged, and 0xFF is not valid UTF-8 at all.
     const data = new Uint8Array([0, 255, 128, 10])
-    await store.replaceAll([{ path: blobPath('file_a', 'a.bin'), data }])
+    await store.replaceAll([{ path: blobPath('file_a', 'a.bin'), data }], new Set())
     const expected = globalThis.btoa(String.fromCharCode(...data))
     expect(writes[0]!.data).toBe(expected)
     // Round-trips: the bytes on the phone are the bytes that were sent.
@@ -219,10 +256,13 @@ describe('createDocumentStore', () => {
 
   it('skips a document belonging to no record', async () => {
     const store = createDocumentStore()
-    const landed = await store.replaceAll([
-      { path: 'Documents/orphan.pdf', data: new Uint8Array([1]) },
-      { path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1]) },
-    ])
+    const landed = await store.replaceAll(
+      [
+        { path: 'Documents/orphan.pdf', data: new Uint8Array([1]) },
+        { path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1]) },
+      ],
+      new Set(),
+    )
     expect(landed).toBe(1)
     expect(writes).toHaveLength(1)
   })
@@ -230,10 +270,13 @@ describe('createDocumentStore', () => {
   it('loses one document rather than the restore, when a write fails', async () => {
     writeFails = true
     const store = createDocumentStore()
-    const landed = await store.replaceAll([
-      { path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1]) },
-      { path: blobPath('file_b', 'b.pdf'), data: new Uint8Array([1]) },
-    ])
+    const landed = await store.replaceAll(
+      [
+        { path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1]) },
+        { path: blobPath('file_b', 'b.pdf'), data: new Uint8Array([1]) },
+      ],
+      new Set(),
+    )
     // A backup missing one file is worth far more than a restore that refused
     // over it, and the Vault already says out loud that a document is missing.
     expect(landed).toBe(0)
@@ -245,8 +288,33 @@ describe('createDocumentStore', () => {
     // Nowhere to put anything. The restore still lands the records, which is the
     // part that cannot be re-fetched, and re-running the transfer fixes the rest.
     await expect(
-      store.replaceAll([{ path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1]) }]),
+      store.replaceAll(
+        [{ path: blobPath('file_a', 'a.pdf'), data: new Uint8Array([1]) }],
+        new Set(),
+      ),
     ).resolves.toBe(0)
     expect(writes).toHaveLength(0)
+  })
+})
+
+describe('heldDocuments and orphanedUris', () => {
+  it('reads which records hold a document that is really on this phone', async () => {
+    const here = `${DIR}/restored/file_a__CV.pdf`
+    present.add(here)
+    const held = await heldDocuments([
+      fileNode('file_a', `file://${here}`),
+      fileNode('file_b', `file://${DIR}/gone.pdf`),
+      fileNode('file_c'),
+      fileNode('file_d', 'blob:https://jojo.app/x'),
+    ])
+    expect([...held.keys()]).toEqual(['file_a'])
+  })
+
+  it('names the documents whose record a restore left behind', () => {
+    const before = new Map([
+      ['file_a', 'file:///a.pdf'],
+      ['file_b', 'file:///b.pdf'],
+    ])
+    expect(orphanedUris(before, [fileNode('file_a', 'file:///a.pdf')])).toEqual(['file:///b.pdf'])
   })
 })

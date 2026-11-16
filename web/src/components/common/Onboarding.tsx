@@ -210,13 +210,12 @@ export function Onboarding() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Compass className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-              Want the two-minute tour?
+              Want a hands-on tour?
             </DialogTitle>
             <DialogDescription>
-              Seven steps on what each part of the app is for — where a record lives, how a deadline
-              and an interview are the same kind of thing, and where your data actually is. It hands
-              you to the real controls rather than showing pictures of them, and it keeps your place
-              if you wander off.
+              A walk through the real pages — a spotlight on each part, what it is for, and you try
+              each thing as you go. It never types, saves or changes anything for you, and it keeps
+              your place if you stop.
             </DialogDescription>
           </DialogHeader>
 

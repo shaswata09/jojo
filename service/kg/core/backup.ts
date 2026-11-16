@@ -32,6 +32,7 @@
  * machine that wrote it and fails on the one that restores it.
  */
 
+import { idOfPath } from './blob-path'
 import type { StoredEdge, StoredNode } from './model'
 import { lossOf, validateRows } from './validate'
 import type { RowLoss } from './validate'
@@ -335,6 +336,41 @@ export function validateBackup(
       loss,
     },
   }
+}
+
+/**
+ * The file records a restore brings back WITHOUT their document, by id.
+ *
+ * Reported 2026-11-16 by the transfer audit, and reproduced on both platforms:
+ * a transfer sends records only by default, so a computer that sent its
+ * records to a phone and later pulled them back received every file record
+ * with no bytes — and the document store, told to "replace all", threw away
+ * every document the computer held. The same happened to a phone receiving a
+ * second, records-only push. The records survived, pointing at nothing.
+ *
+ * A record that arrives without its document has not said its document is
+ * gone; it has said nothing about it. So the copy this device already has for
+ * that record is kept. Documents belonging to records the backup does NOT
+ * hold still go, which is what "replace" has always meant.
+ */
+export function keptDocuments(
+  nodes: readonly { id: string; type: string }[],
+  documents: readonly { path: string }[],
+): Set<string> {
+  const carried = new Set(documents.map((d) => idOfPath(d.path)).filter((id) => id !== null))
+  return new Set(nodes.filter((n) => n.type === 'file' && !carried.has(n.id)).map((n) => n.id))
+}
+
+/**
+ * What a restore of this plan replaces, as the sentence a confirmation says
+ * it in — so the web's Restore, the web's pull from a phone and the phone's
+ * receive all promise the same thing, and none promises more than happens.
+ */
+export function replacesClause(plan: RestorePlan, here: string): string {
+  const kept = keptDocuments(plan.nodes, plan.documents).size
+  return kept === 0
+    ? `Restoring replaces every record and every document ${here}`
+    : `Restoring replaces every record ${here} and every document, except for the ${count(kept, 'record')} arriving without ${kept === 1 ? 'its document, whose copy' : 'their documents, whose copies'} already here ${kept === 1 ? 'is' : 'are'} kept`
 }
 
 /** A one-line summary for a confirmation dialog: what is about to replace what. */

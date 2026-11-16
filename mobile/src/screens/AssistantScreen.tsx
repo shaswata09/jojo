@@ -38,6 +38,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { useColors } from '@/theme/theme-context'
 import { Feather } from '@react-native-vector-icons/feather/static'
 import { fonts, radius, space, type } from '@/theme/tokens'
+import { report } from '@/lib/analytics'
 
 /**
  * A worked example, and the prompt that produces it.
@@ -398,6 +399,8 @@ function AgentScreen() {
     const clean = prompt.trim()
     if (!clean || busy) return
     setPrompt('')
+    // That a question was asked, and nothing about the question — as on the web.
+    void report('assistant_asked', { tools_available: CATALOG.length, has_model: true })
     void send(clean)
   }
 
@@ -765,13 +768,13 @@ function ScriptedScreen() {
       }
     >
       {/*
-        * A banner, and somewhere to press.
-        *
-        * The subtitle said "connect a local model" and offered no way to do it
-        * — so the one screen where a person discovers the assistant needs a
-        * model was also the one screen with no route to the setting. Web has
-        * had a warning strip with a link to Settings since it was written.
-        */}
+       * A banner, and somewhere to press.
+       *
+       * The subtitle said "connect a local model" and offered no way to do it
+       * — so the one screen where a person discovers the assistant needs a
+       * model was also the one screen with no route to the setting. Web has
+       * had a warning strip with a link to Settings since it was written.
+       */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Connect a model in Settings"
@@ -948,7 +951,9 @@ function ThoughtRow({ text, live }: { text: string; live: boolean }) {
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={live ? 'Thinking. Show what the model is thinking' : 'Show what the model thought'}
+        accessibilityLabel={
+          live ? 'Thinking. Show what the model is thinking' : 'Show what the model thought'
+        }
         onPress={() => setOpen((was) => !was)}
         hitSlop={8}
       >
@@ -962,7 +967,12 @@ function ThoughtRow({ text, live }: { text: string; live: boolean }) {
           {text}
         </Txt>
       ) : live && latest ? (
-        <Txt size="xs" tone="muted" numberOfLines={1} style={{ marginTop: space[1], fontStyle: 'italic' }}>
+        <Txt
+          size="xs"
+          tone="muted"
+          numberOfLines={1}
+          style={{ marginTop: space[1], fontStyle: 'italic' }}
+        >
           {latest}
         </Txt>
       ) : null}

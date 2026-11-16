@@ -63,8 +63,11 @@ export type SendState = {
   target: string | null
   /** What went wrong, in words a person can act on. */
   problem: string | null
-  /** Reads the typed code and runs the whole thing. */
-  start: (code: string, token: string) => Promise<void>
+  /**
+   * Reads the typed code and runs the whole thing. `tokens` is every path the
+   * phone may hold, newest first — see `PairingSession.tokens`.
+   */
+  start: (code: string, tokens: readonly string[]) => Promise<void>
   cancel: () => void
 }
 
@@ -121,7 +124,7 @@ export function useHandoffSend({
   build,
 }: {
   /** Hands the pairing response to the protocol; returns the agreed keys. */
-  complete: (response: Uint8Array) => Promise<SessionKeys | null>
+  complete: (response: Uint8Array, token?: string) => Promise<SessionKeys | null>
   /** Produces the backup bytes. Called late, and only once. */
   build: () => Promise<Uint8Array>
 }): SendState {
@@ -141,16 +144,32 @@ export function useHandoffSend({
    * rather than the one that existed when it started — a cancel that a running
    * loop cannot observe is not a cancel.
    */
-  const cancelled = useRef(false)
-
-  const stop = useCallback((failure: HandoffFailure) => {
-    setProblem(HANDOFF_ADVICE[failure])
-    setStage('failed')
-  }, [])
+  /**
+   * The run that is current, with its own cancel.
+   *
+   * One shared boolean used to serve every run: starting again reset it, so a
+   * run cancelled a moment earlier woke up, found it false, and wrote its
+   * stage over the new run's (transfer audit, 2026-11-16). Each run now checks
+   * that it is still the current one, and its controller aborts the request
+   * in flight rather than waiting for it.
+   */
+  const run = useRef<AbortController | null>(null)
 
   const start = useCallback(
-    async (code: string, token: string) => {
-      cancelled.current = false
+    async (code: string, tokens: readonly string[]) => {
+      run.current?.abort()
+      const mine = new AbortController()
+      run.current = mine
+      const cancelled = {
+        get current() {
+          return mine.signal.aborted || run.current !== mine
+        },
+      }
+      const stop = (failure: HandoffFailure) => {
+        if (cancelled.current || failure === 'handoff/cancelled') return
+        setProblem(HANDOFF_ADVICE[failure])
+        setStage('failed')
+      }
       setProblem(null)
       setProgress(0)
 
@@ -168,10 +187,19 @@ export function useHandoffSend({
         setTarget(formatAddress(address))
 
         setStage('connecting')
-        const response = await fetchPairingResponse(address, token)
+        // The code on screen first, then the one it replaced — a phone that
+        // scanned just before the swap answers on the older path.
+        let token = tokens[0] ?? ''
+        let response = await fetchPairingResponse(address, token, mine.signal)
+        for (const older of tokens.slice(1)) {
+          if (response.ok || response.error !== 'handoff/refused') break
+          token = older
+          response = await fetchPairingResponse(address, token, mine.signal)
+        }
         if (!response.ok) return stop(response.error)
 
-        const keys = await complete(response.value)
+        const keys = await complete(response.value, token)
+        if (cancelled.current) return
         if (keys === null) {
           // The device answered and could not prove it read this screen. That is
           // either a stale code or something in the middle of the network, and
@@ -196,7 +224,7 @@ export function useHandoffSend({
 
         for (let seq = 0; seq < plan.chunks; seq += 1) {
           if (cancelled.current) return
-          const sent = await sendChunk(address, token, await plan.seal(seq))
+          const sent = await sendChunk(address, token, await plan.seal(seq), mine.signal)
           if (!sent.ok) return stop(sent.error)
           // Reported after the phone acknowledged, not after the write. A bar that
           // runs ahead of what actually arrived is a bar that finishes and then
@@ -223,15 +251,16 @@ export function useHandoffSend({
          */
         report('transfer_completed', { records: bucket(repo.getSnapshot().nodes().length) })
       })
-      if (advice === null) return
+      if (advice === null || cancelled.current) return
       setProblem(advice)
       setStage('failed')
     },
-    [build, complete, secrets, stop, repo],
+    [build, complete, secrets, repo],
   )
 
   const cancel = useCallback(() => {
-    cancelled.current = true
+    run.current?.abort()
+    run.current = null
     setStage('idle')
     setProgress(0)
   }, [])

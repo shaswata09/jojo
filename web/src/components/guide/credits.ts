@@ -89,6 +89,22 @@ const DIRECT: readonly Credit[] = [
     where: 'src/App.tsx',
   },
   {
+    name: 'i18next',
+    version: '26.7.1',
+    licence: 'MIT',
+    holder: '2011-present i18next',
+    what: 'The translations: which language a sentence is shown in, its plurals, and English for anything not yet translated.',
+    where: 'src/i18n/i18n.ts',
+  },
+  {
+    name: 'react-i18next',
+    version: '17.1.11',
+    licence: 'MIT',
+    holder: '2015-present i18next',
+    what: 'The React binding of those translations, so a component re-renders when the language changes.',
+    where: 'src/i18n/i18n.ts',
+  },
+  {
     name: 'class-variance-authority',
     version: '0.7.1',
     licence: 'Apache-2.0',

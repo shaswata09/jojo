@@ -128,3 +128,22 @@ export function summarise(groups: readonly TransferGroup[]) {
   if (groups.length === 0) return 'nothing'
   return groups.map((group) => `${group.count} ${group.unit}`).join(' · ')
 }
+
+/**
+ * How many records each group carries, read straight off the store.
+ *
+ * The manifest used to be built by hand from eight hooks and missed what no
+ * hook was asked about — referees and everything read out of a CV moved
+ * uncounted (transfer audit, 2026-11-16). Counting the stored nodes through
+ * `GROUP_OF` cannot miss a kind: the table is exhaustive over `NodeType`.
+ */
+export function countByGroup(
+  nodes: readonly { type: NodeType }[],
+): Partial<Record<GroupId, number>> {
+  const out: Partial<Record<GroupId, number>> = {}
+  for (const node of nodes) {
+    const group = GROUP_OF[node.type]
+    if (group !== null) out[group] = (out[group] ?? 0) + 1
+  }
+  return out
+}

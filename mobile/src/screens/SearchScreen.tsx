@@ -22,6 +22,7 @@ import { KIND_ICON } from '@/lib/timeline-visuals'
 import type { RootStackParamList } from '@/navigation/types'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { TourTarget } from '@/components/tour/TourTarget'
 
 type Result = {
   id: string
@@ -173,13 +174,16 @@ export function SearchScreen() {
 
   return (
     <Screen title="Search" subtitle="Applications, dates, the vault and the scout, all at once">
-      <SearchInput
-        label="Search everything"
-        value={query}
-        onChange={setQuery}
-        placeholder="Search applications, reminders, files…"
-        autoFocus
-      />
+      {/* Marked for the guided tour, which lights the field to type in. */}
+      <TourTarget id="search-field">
+        <SearchInput
+          label="Search everything"
+          value={query}
+          onChange={setQuery}
+          placeholder="Search applications, reminders, files…"
+          autoFocus
+        />
+      </TourTarget>
 
       {!q ? (
         <>

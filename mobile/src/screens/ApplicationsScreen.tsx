@@ -52,6 +52,7 @@ import type { RowActions } from '@/screens/applications/use-row-actions'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { TourTarget } from '@/components/tour/TourTarget'
 
 type View_ = 'list' | 'board'
 
@@ -127,6 +128,25 @@ export function ApplicationsScreen() {
    * reopen the sheet on a link the user already dealt with — a route param is
    * an instruction here, not a filter.
    */
+  /*
+   * A link that names a stage or a sort — a slice of Today's pipeline, a
+   * glance counter — is followed even when this tab is already mounted, and
+   * cleared once applied, as `shared` is below. Read only into the initial
+   * state, a link into an already-visited Applications tab opened unfiltered.
+   */
+  const linkStage = route.params?.stage
+  const linkSort = route.params?.sort
+  useEffect(() => {
+    if (linkStage === undefined && linkSort === undefined) return
+    if (linkStage !== undefined) {
+      setStageFilter(linkStage)
+      // Stage chips are list-only, so a stage link shows the list.
+      setView('list')
+    }
+    if (linkSort !== undefined) setSort(linkSort)
+    navigation.setParams({ stage: undefined, sort: undefined })
+  }, [linkStage, linkSort, navigation])
+
   const shared = route.params?.shared
   useEffect(() => {
     if (!shared) return
@@ -301,13 +321,10 @@ export function ApplicationsScreen() {
           />
 
           <View style={s.row}>
-            <Segment
-              label="Layout"
-              options={VIEWS}
-              value={view}
-              onChange={setView}
-              style={s.fill}
-            />
+            {/* Marked for the guided tour, which asks for the board. */}
+            <TourTarget id="layout" state={view} style={s.fill}>
+              <Segment label="Layout" options={VIEWS} value={view} onChange={setView} />
+            </TourTarget>
             <IconButton
               icon="filter"
               label="Filter by role"
@@ -374,27 +391,31 @@ export function ApplicationsScreen() {
               />
             </Panel>
           ) : view === 'list' ? (
-            <Panel padded={false}>
-              {rows.map((a, i) => (
-                <View key={a.id}>
-                  {i > 0 ? <Divider /> : null}
-                  <ApplicationRow
-                    application={a}
-                    nextDate={nextDates.get(a.id)}
-                    showNote={showNotes}
-                    actions={actions}
-                    onOpen={openApplication}
-                  />
-                </View>
-              ))}
-            </Panel>
+            <TourTarget id="records">
+              <Panel padded={false}>
+                {rows.map((a, i) => (
+                  <View key={a.id}>
+                    {i > 0 ? <Divider /> : null}
+                    <ApplicationRow
+                      application={a}
+                      nextDate={nextDates.get(a.id)}
+                      showNote={showNotes}
+                      actions={actions}
+                      onOpen={openApplication}
+                    />
+                  </View>
+                ))}
+              </Panel>
+            </TourTarget>
           ) : (
-            <Board
-              pool={pool}
-              actions={actions}
-              onOpen={openApplication}
-              onDragChange={setBoardDragging}
-            />
+            <TourTarget id="records">
+              <Board
+                pool={pool}
+                actions={actions}
+                onOpen={openApplication}
+                onDragChange={setBoardDragging}
+              />
+            </TourTarget>
           )}
         </>
       )}

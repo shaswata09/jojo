@@ -102,7 +102,7 @@ export async function beginReceiving(offerBytes: Uint8Array): Promise<ReceiveRes
   const accepted = await acceptPairing(secrets, offerBytes)
   if (!accepted.ok) return { ok: false, error: 'receive/offer' }
 
-  const token = await pathToken(secrets, offer)
+  const token = await pathToken(secrets, offer, 'push')
   const convoy = createConvoyReceiver(secrets, accepted.value.keys.offererToAnswerer)
 
   let server: HandoffServer

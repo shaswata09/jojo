@@ -26,7 +26,7 @@ import { canReachLocalNetwork } from '@/lib/handoff-client'
  * than after a request that would hang, and paired with the thing that does
  * work: the backup file.
  */
-export function ConnectPanel({ send, token }: { send: SendState; token: string | null }) {
+export function ConnectPanel({ send, tokens }: { send: SendState; tokens: readonly string[] }) {
   const [code, setCode] = useState('')
   const able = canReachLocalNetwork()
   const busy = send.stage === 'connecting' || send.stage === 'packing' || send.stage === 'sending'
@@ -36,9 +36,10 @@ export function ConnectPanel({ send, token }: { send: SendState; token: string |
       <Panel>
         <PanelTitle hint="not in this browser">Connect</PanelTitle>
         <p className="text-sm text-text-2">
-          Safari cannot connect to another device on your network. Use Chrome, Edge or Firefox
-          here — or move everything with a backup file from Settings, which works everywhere and
-          has no size limit.
+          This browser cannot connect to another device on your network — Safari and every browser
+          on an iPhone or iPad cannot, and nor can Firefox from the published site. Use Chrome or
+          Edge on a computer — or move everything with a backup file from Settings, which works
+          everywhere and has no size limit.
         </p>
       </Panel>
     )
@@ -50,9 +51,13 @@ export function ConnectPanel({ send, token }: { send: SendState; token: string |
 
       {send.stage === 'done' ? (
         <>
+          {/* Not "both devices now hold the same records": the phone has the
+              bytes, and it asks its person before it replaces anything — so
+              until they confirm there, nothing on it has changed (transfer
+              audit, 2026-11-16). */}
           <p className="text-sm text-text-2">
-            Everything moved{send.target === null ? '' : ` to ${send.target}`}. Both devices now
-            hold the same records.
+            Everything was sent{send.target === null ? '' : ` to ${send.target}`}. Your phone asks
+            before it replaces anything — confirm there to finish.
           </p>
           {/* The page has already put a new code up for the next device, and
               this is the way back to the field to type that device's address.
@@ -91,9 +96,9 @@ export function ConnectPanel({ send, token }: { send: SendState; token: string |
             />
             <Button
               size="sm"
-              disabled={busy || token === null || code.trim().length === 0}
+              disabled={busy || tokens.length === 0 || code.trim().length === 0}
               onClick={() => {
-                if (token !== null) void send.start(code, token)
+                if (tokens.length > 0) void send.start(code, tokens)
               }}
             >
               {busy ? (
@@ -120,13 +125,22 @@ export function ConnectPanel({ send, token }: { send: SendState; token: string |
                   style={{ width: `${Math.round(send.progress * 100)}%` }}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-text-3">
-                {send.stage === 'connecting'
-                  ? 'Reaching your phone…'
-                  : send.stage === 'packing'
-                    ? 'Gathering your records…'
-                    : `${Math.round(send.progress * 100)}% sent`}
-              </p>
+              <div className="mt-1.5 flex items-center justify-between gap-2">
+                <p className="text-xs text-text-3">
+                  {send.stage === 'connecting'
+                    ? 'Reaching your phone…'
+                    : send.stage === 'packing'
+                      ? 'Gathering your records…'
+                      : `${Math.round(send.progress * 100)}% sent`}
+                </p>
+                {/* Always a way out. A phone that went quiet used to leave this
+                    spinning with every control disabled. Stopping part-way
+                    changes nothing on the phone, which acts only on a whole,
+                    authenticated transfer. */}
+                <Button size="xs" variant="ghost" onClick={send.cancel}>
+                  Cancel
+                </Button>
+              </div>
             </div>
           ) : null}
 

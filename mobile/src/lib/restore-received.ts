@@ -28,11 +28,22 @@
 
 import { readBackup, type RestorePlan } from '@jojo/service/core/backup'
 import { decodeUtf8 } from '@jojo/service/core/utf8'
+import { stripBom } from '@/lib/import-backup'
 import { restoreBackup, type RestoreOutcome } from '@jojo/service/repo/restore'
+
+/** Re-exported for the import screen, which may not reach into the repo layer itself. */
+export type { RestoreOutcome }
 import { handedOver } from '@jojo/service/repo/meta'
 import type { Instant } from '@jojo/service/core/model'
 import type { Repository } from '@jojo/service/repo/repository'
-import { createDocumentStore, plannedUris, withDocumentUris } from '@/lib/restore-documents'
+import {
+  createDocumentStore,
+  forgetUris,
+  heldDocuments,
+  orphanedUris,
+  plannedUris,
+  withDocumentUris,
+} from '@/lib/restore-documents'
 
 /**
  * Replaces everything on this phone with what arrived.
@@ -59,7 +70,9 @@ import { createDocumentStore, plannedUris, withDocumentUris } from '@/lib/restor
 export function planReceived(
   payload: Uint8Array,
 ): { ok: true; plan: RestorePlan } | { ok: false; message: string } {
-  const read = readBackup(decodeUtf8(payload))
+  // A leading U+FEFF is dropped before parsing: `decodeUtf8` keeps it, and
+  // `JSON.parse` refuses a whole backup over it. See `stripBom`.
+  const read = readBackup(stripBom(decodeUtf8(payload)))
   if (!read.ok) {
     // Authenticated bytes that are not a backup. Not an attack — GCM already
     // ruled that out — so it is a version mismatch or a truncated file, and the
@@ -69,28 +82,38 @@ export function planReceived(
   return { ok: true, plan: read.value }
 }
 
-/** Writes a plan the user has agreed to. Destroys what is already here. */
+/**
+ * Writes a plan the user has agreed to. Destroys what is already here.
+ *
+ * `handover` says where the plan came from, and it is required rather than
+ * defaulted so neither caller can get the other's meaning by omission: `true`
+ * for a transfer from another device, `false` for a backup file or a paste the
+ * person kept themselves — see the stamp at the end.
+ */
 export async function applyPlan(
   repo: Repository,
   plan: RestorePlan,
   at: string,
+  { handover }: { handover: boolean },
 ): Promise<RestoreOutcome> {
   const uris = plannedUris(plan.documents)
-  const outcome = await restoreBackup(
-    repo,
-    createDocumentStore(),
-    { ...plan, nodes: withDocumentUris(plan.nodes, uris) },
-    at,
-  )
+  // What this phone holds now, read before the records are replaced: the copy
+  // a record keeps when it arrives without its document, and the copies that
+  // go when their record does.
+  const held = await heldDocuments(repo.getSnapshot().ofType('file'))
+  const nodes = withDocumentUris(plan.nodes, uris, held)
+  const outcome = await restoreBackup(repo, createDocumentStore(), { ...plan, nodes }, at)
+  if (outcome.ok) await forgetUris(orphanedUris(held, nodes))
 
   /*
    * Stamped only on success, and only here rather than inside `restoreBackup`.
    *
-   * That function serves two callers with different meanings: this one, which is
-   * a handover from another device, and Settings' Restore, which is a file the
-   * user kept. Recording the second as a transfer would tell them a device is
-   * holding a copy when none is.
+   * That function serves two callers with different meanings: a handover from
+   * another device, and Settings' Import, which is a file or a paste the user
+   * kept. Both now reach it through here, so the difference is the `handover`
+   * flag. Recording an import as a transfer would tell them a device is holding
+   * a copy when none is.
    */
-  if (outcome.ok) repo.setMeta(handedOver(repo.meta, at as Instant))
+  if (outcome.ok && handover) repo.setMeta(handedOver(repo.meta, at as Instant))
   return outcome
 }

@@ -366,8 +366,11 @@ export function ProfileScreen() {
          */}
         {dirty ? (
           <Panel>
+            {/* Was "saving keeps them for this visit, not to disk", which was
+                false — the profile is stored — and argued against pressing
+                Save. Web corrected the same line. */}
             <Txt size="sm" tone="secondary">
-              Unsaved changes — saving keeps them for this visit, not to disk.
+              Unsaved changes — saving writes them to this phone.
             </Txt>
             <View style={styles.saveRow}>
               <Button label="Discard" variant="outline" size="md" onPress={() => setDraft(saved)} />

@@ -3,6 +3,7 @@ import { StatusBar, StyleSheet, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { LocaleProvider } from '@/i18n/LocaleProvider'
 import { sweepTrashedDocuments } from '@/lib/documents'
 import { reportError } from '@/lib/report-error'
 import { LabelsProvider } from '@/lib/labels'
@@ -17,6 +18,7 @@ import { StoreProvider } from '@/lib/store'
 import { ToastProvider } from '@/lib/toast'
 import { RootNavigator } from '@/navigation'
 import { SheetHost } from '@/sheets/SheetHost'
+import { TourOverlay } from '@/components/tour/TourOverlay'
 import { ThemeProvider } from '@/theme/theme'
 import { useTheme } from '@/theme/theme-context'
 
@@ -55,46 +57,48 @@ export default function App() {
           and no console. It renders in plain React Native primitives so that a
           failure in ThemeProvider cannot take the error screen down with it. */}
       <ErrorBoundary>
-        <SafeAreaProvider>
-          <ThemeProvider>
-            <RolesProvider>
-              <ToastProvider>
-                <ModelSettingsProvider>
-                  <StoreProvider>
-                    {/* Inside the store, because keywords are records now. They
+        <LocaleProvider>
+          <SafeAreaProvider>
+            <ThemeProvider>
+              <RolesProvider>
+                <ToastProvider>
+                  <ModelSettingsProvider>
+                    <StoreProvider>
+                      {/* Inside the store, because keywords are records now. They
                         used to be `useState` in this provider — a second set
                         beside the graph's own, which meant the seven keyword
                         tools were unreachable and nothing you tagged survived a
                         restart. `useKeywords` is the graph's, so this provider
                         keeps only the filter selection, which is view state. */}
-                    <LabelsProvider>
-                      <SheetsProvider>
-                        {/* Above the navigator, which `Themed` renders. A
+                      <LabelsProvider>
+                        <SheetsProvider>
+                          {/* Above the navigator, which `Themed` renders. A
                             conversation's run has to outlive the screen that
                             started it, and every exit from the Assistant screen
                             pops it — it is always the leaf of the stack. */}
-                        <AppJobsProvider>
-                          <AgentRunsProvider
-                            onError={(e) => {
-                              reportError('agent', e)
-                            }}
-                          >
-                            {/* Above the navigator too: a pipeline that stopped
+                          <AppJobsProvider>
+                            <AgentRunsProvider
+                              onError={(e) => {
+                                reportError('agent', e)
+                              }}
+                            >
+                              {/* Above the navigator too: a pipeline that stopped
                               when you left Job Scout was a pipeline that did not
                               do what its own footer said. */}
-                            <PipelinesProvider>
-                              <Themed />
-                            </PipelinesProvider>
-                          </AgentRunsProvider>
-                        </AppJobsProvider>
-                      </SheetsProvider>
-                    </LabelsProvider>
-                  </StoreProvider>
-                </ModelSettingsProvider>
-              </ToastProvider>
-            </RolesProvider>
-          </ThemeProvider>
-        </SafeAreaProvider>
+                              <PipelinesProvider>
+                                <Themed />
+                              </PipelinesProvider>
+                            </AgentRunsProvider>
+                          </AppJobsProvider>
+                        </SheetsProvider>
+                      </LabelsProvider>
+                    </StoreProvider>
+                  </ModelSettingsProvider>
+                </ToastProvider>
+              </RolesProvider>
+            </ThemeProvider>
+          </SafeAreaProvider>
+        </LocaleProvider>
       </ErrorBoundary>
     </GestureHandlerRootView>
   )
@@ -138,6 +142,9 @@ function Themed() {
       {/* Beside the sheet host, outside the navigator: an approval for a run
           whose screen has been popped has nowhere else to be drawn. */}
       <ApprovalSheet />
+      {/* Above everything, beside the navigator for the same reason: the
+          guided tour walks from screen to screen and must outlive each one. */}
+      <TourOverlay />
     </View>
   )
 }

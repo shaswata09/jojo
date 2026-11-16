@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
@@ -70,6 +70,20 @@ export function SendPanel() {
     if (granted === 'granted') setScanning(true)
   }, [])
 
+  /**
+   * Whether the panel is still on screen. Starting the server awaits key
+   * agreement and the network; a person who switches away in that window used
+   * to leave a listener bound on the LAN with nothing pointing at it
+   * (transfer audit, 2026-11-16).
+   */
+  const mounted = useRef(true)
+  useEffect(
+    () => () => {
+      mounted.current = false
+    },
+    [],
+  )
+
   const onOffer = useCallback(
     async (offer: Uint8Array) => {
       setScanning(false)
@@ -85,6 +99,10 @@ export function SendPanel() {
       })
       if (!started.ok) {
         setFailed(RECEIVE_ADVICE[started.error])
+        return
+      }
+      if (!mounted.current) {
+        started.value.stop()
         return
       }
       setServed({ served: 0, chunks: null })
@@ -114,8 +132,9 @@ export function SendPanel() {
           stampSent(repo, now())
           setFinished(true)
         },
+        // The session stays until the watcher's grace has passed, so the reply
+        // telling the computer why can reach it; the message shows at once.
         onFailed: () => {
-          setSession(null)
           setFailed(
             'jojo could not gather the records on this phone, so nothing was sent. Try again.',
           )
@@ -181,7 +200,7 @@ export function SendPanel() {
                 </Txt>
               </Pressable>
             </>
-          ) : session !== null ? (
+          ) : session !== null && failed === null ? (
             <>
               <Txt size="sm" tone="muted" center>
                 Type this on your computer
@@ -196,6 +215,17 @@ export function SendPanel() {
                     ? 'Handing over your records…'
                     : `Handing over your records — ${String(served.served)} of ${String(served.chunks)}.`}
               </Txt>
+              {/* Always a way out: the computer may have given up, or this
+                  may be the wrong one. Nothing on this phone changes. */}
+              <Pressable
+                accessibilityRole="button"
+                onPress={again}
+                style={[styles.action, { borderColor: c.hairline }]}
+              >
+                <Txt size="sm" weight="semibold">
+                  Cancel
+                </Txt>
+              </Pressable>
             </>
           ) : (
             <>
@@ -208,7 +238,10 @@ export function SendPanel() {
               {access === 'blocked' ? null : (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={start}
+                  onPress={() => {
+                    if (session !== null) again()
+                    void start()
+                  }}
                   style={[styles.action, { borderColor: c.hairline }]}
                 >
                   <Txt size="sm" weight="semibold">

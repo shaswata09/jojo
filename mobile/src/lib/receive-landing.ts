@@ -63,6 +63,9 @@ export type LandingReport = {
  * masquerade as a finished one, so acting earlier would mean replacing the
  * person's records with part of a backup.
  */
+/** How long the socket outlives the last chunk, so its reply can finish writing. */
+export const LANDING_STOP_GRACE_MS = 2_000
+
 export function createLanding(session: LandingSource, report: LandingReport): () => void {
   /*
    * Set the instant the last chunk authenticates, and never cleared.
@@ -81,8 +84,11 @@ export function createLanding(session: LandingSource, report: LandingReport): ()
     const payload = session.payload()
     if (payload === null) return
     // Nothing more is coming, and a socket left listening after the transfer is
-    // a port open on somebody's phone with nothing on screen about it.
-    session.stop()
+    // a port open on somebody's phone with nothing on screen about it. Closed a
+    // moment later rather than now: the last chunk's "200" may still be on its
+    // way out, and destroying the socket under it made the computer report a
+    // finished transfer as "no answer" (transfer audit, 2026-11-16).
+    setTimeout(() => session.stop(), LANDING_STOP_GRACE_MS)
 
     /*
      * Read, then ASK. Applying used to start here, and `replaceAll` took every

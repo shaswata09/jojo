@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest'
 import { NODE_TYPES, type Instant, type NodeType } from '@jojo/service/core/model'
 import { bootInMemory } from '@jojo/service/repo/boot'
 import { createToolRuntime } from '@jojo/service/tools/runtime'
-import { GROUP_OF, summarise, totalOf, type TransferGroup } from './groups'
+import { GROUP_OF, summarise, totalOf, type TransferGroup, countByGroup } from './groups'
 
 /** Fixed, like every other test that boots the seed: D26, and buckets that drift. */
 const NOW: Instant = new Date('2026-10-12T12:00:00').toISOString()
@@ -106,5 +106,21 @@ describe('the sentence the page reads back', () => {
   it('says "nothing" rather than an empty sentence', () => {
     expect(summarise([])).toBe('nothing')
     expect(totalOf([])).toBe(0)
+  })
+})
+
+describe('counting what moves off the store', () => {
+  it('counts every kind of record into its group, referees and CV facts included', () => {
+    const counts = countByGroup([
+      { type: 'application' },
+      { type: 'organisation' },
+      { type: 'person' },
+      { type: 'person' },
+      { type: 'background' },
+      { type: 'claim' },
+      { type: 'thread' },
+      { type: 'proposal' },
+    ])
+    expect(counts).toEqual({ applications: 2, people: 2, background: 2 })
   })
 })

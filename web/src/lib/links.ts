@@ -354,11 +354,26 @@ export function vaultPath(p: { tool?: VaultTool; focus?: string } = {}) {
 export function calendarPath(p: { y?: number; m?: number; d?: number; focus?: string } = {}) {
   const today = calendarDefaults()
   return withQuery('/calendar', {
-    y: omitDefault(p.y, today.y),
-    m: omitDefault(p.m, today.m),
-    d: omitDefault(p.d, today.d),
+    ...calendarWire({ y: p.y ?? today.y, m: p.m ?? today.m, d: p.d ?? today.d }, today),
     focus: p.focus,
   })
+}
+
+/**
+ * A date as calendar URL parameters: all three of year, month and day, or
+ * none of them when it is today.
+ *
+ * Never one or two. Each part used to be left out whenever it matched today's
+ * value on its own, so 16 December, chosen on 16 November, was written as
+ * `?m=12` — a URL whose missing parts are read as "today's", and so meant 17
+ * December the next day and December of the following year in January. A
+ * date is only "today" as a whole.
+ */
+export function calendarWire(
+  date: { y: number; m: number; d: number },
+  today: { y: number; m: number; d: number },
+): { y?: number; m?: number; d?: number } {
+  return date.y === today.y && date.m === today.m && date.d === today.d ? {} : { ...date }
 }
 
 /**

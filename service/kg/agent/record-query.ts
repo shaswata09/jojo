@@ -38,7 +38,8 @@
 
 import { addDays, daysBetween } from '../core/dates'
 import { TAGGABLE } from '../core/model'
-import type { ISODate, NodeType, Rel, StoredNode } from '../core/model'
+import type { ISODate, Instant, NodeType, Rel, StoredNode } from '../core/model'
+import { dayOf } from '../core/project'
 import { sentOn } from '../core/sent-on'
 import type { GraphSnapshot } from '../core/snapshot'
 
@@ -48,8 +49,14 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
 const isDate = (v: unknown): v is string => typeof v === 'string' && ISO_DATE.test(v.slice(0, 10))
 
-/** The date part of a date or an instant — an instant's own day, as written. */
-const dayPart = (v: string): string => v.slice(0, 10)
+/**
+ * The date part of a date or an instant. A date-only value is its own day;
+ * an instant is the LOCAL day it fell on, through `dayOf` — the day `today`
+ * is counted in. Slicing an instant gave its UTC date, so in Chicago a 9pm
+ * `lastActionAt` was "tomorrow" and "what did I touch today" missed the
+ * evening's work (`core/project.ts` warns against exactly this slice).
+ */
+const dayPart = (v: string): string => (v.length > 10 ? dayOf(v as Instant) : v.slice(0, 10))
 
 const isOpen = (item: StoredNode<'timelineItem'>) => item.props.completedOn === undefined
 
@@ -80,9 +87,7 @@ export function derivedFields(node: StoredNode, memory: GraphSnapshot, today: IS
   const out: Derived = {}
 
   if ((TAGGABLE as readonly string[]).includes(node.type)) {
-    const keywords = memory
-      .many(node.id, 'TAGS', 'in', 'keyword')
-      .map((k) => k.props.name)
+    const keywords = memory.many(node.id, 'TAGS', 'in', 'keyword').map((k) => k.props.name)
     if (keywords.length > 0) out.keywords = keywords
   }
 
@@ -110,7 +115,8 @@ export function derivedFields(node: StoredNode, memory: GraphSnapshot, today: IS
     const p = (node as StoredNode<'application'>).props
     // The one precedence every reader shares (R25); see `core/sent-on.ts`.
     const sent = sentOn(p)
-    if (isDate(sent) && isDate(p.firstReplyOn)) out.daysToReply = daysBetween(dayPart(sent), dayPart(p.firstReplyOn))
+    if (isDate(sent) && isDate(p.firstReplyOn))
+      out.daysToReply = daysBetween(dayPart(sent), dayPart(p.firstReplyOn))
   }
 
   if (node.type === 'timelineItem') {
@@ -161,7 +167,15 @@ export type FieldBag = Readonly<Record<string, unknown>>
 export const DATE_PARTS = ['year', 'month', 'week', 'weekday', 'day'] as const
 type DatePart = (typeof DATE_PARTS)[number]
 
-const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const
+const WEEKDAYS = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+] as const
 /** A known Monday, so a weekday is a remainder and no clock or `Date` is needed. */
 const A_MONDAY = '2024-01-01'
 
@@ -211,7 +225,9 @@ export function fieldOf(bag: FieldBag, field: string): unknown {
   if (between) {
     const from = pathOf(bag, between[1] ?? '')
     const to = pathOf(bag, between[2] ?? '')
-    return isDate(from) && isDate(to) ? Math.abs(daysBetween(dayPart(from), dayPart(to))) : undefined
+    return isDate(from) && isDate(to)
+      ? Math.abs(daysBetween(dayPart(from), dayPart(to)))
+      : undefined
   }
   const direct = pathOf(bag, field)
   if (direct !== undefined) return direct
@@ -230,12 +246,28 @@ function knownField(known: ReadonlySet<string>, field: string): boolean {
   const between = DAYS_BETWEEN.exec(field)
   if (between) return knownField(known, between[1] ?? '') && knownField(known, between[2] ?? '')
   const cut = field.lastIndexOf('.')
-  return cut > 0 && DATE_PARTS.includes(field.slice(cut + 1) as DatePart) && known.has(field.slice(0, cut))
+  return (
+    cut > 0 &&
+    DATE_PARTS.includes(field.slice(cut + 1) as DatePart) &&
+    known.has(field.slice(0, cut))
+  )
 }
 
 /* ------------------------------ the conditions ---------------------------- */
 
-export const OPS = ['eq', 'ne', 'in', 'contains', 'excludes', 'gt', 'gte', 'lt', 'lte', 'exists', 'missing'] as const
+export const OPS = [
+  'eq',
+  'ne',
+  'in',
+  'contains',
+  'excludes',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'exists',
+  'missing',
+] as const
 export type Op = (typeof OPS)[number]
 
 export type Condition = { readonly field: string; readonly op: Op; readonly value?: unknown }
@@ -258,7 +290,20 @@ export function resolveValue(value: unknown, today: ISODate): unknown {
 
 const fold = (v: unknown): unknown => (typeof v === 'string' ? v.trim().toLowerCase() : v)
 
-const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const
+const MONTHS = [
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'may',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'oct',
+  'nov',
+  'dec',
+] as const
 
 /**
  * A month number from what a person might write for one: 11, "11", "Nov",
@@ -286,7 +331,11 @@ const YEAR_MONTH = /^\d{4}-\d{2}$/
 function comparable(a: unknown, b: unknown): [number | string, number | string] | null {
   if (isDate(a) && isDate(b)) return [dayPart(a), dayPart(b)]
   // A year-month against a bare month compares the months — see `equal`.
-  if (typeof a === 'string' && YEAR_MONTH.test(a) && !(typeof b === 'string' && YEAR_MONTH.test(b))) {
+  if (
+    typeof a === 'string' &&
+    YEAR_MONTH.test(a) &&
+    !(typeof b === 'string' && YEAR_MONTH.test(b))
+  ) {
     const n = monthNumber(b)
     if (n !== null) return [Number(a.slice(5)), n]
   }
@@ -297,16 +346,23 @@ function comparable(a: unknown, b: unknown): [number | string, number | string] 
   return null
 }
 
-
 function equal(a: unknown, b: unknown): boolean {
-  if (typeof a === 'boolean' || typeof b === 'boolean') return String(a).toLowerCase() === String(b).toLowerCase()
+  if (typeof a === 'boolean' || typeof b === 'boolean')
+    return String(a).toLowerCase() === String(b).toLowerCase()
   /*
    * `date.month eq 11` is how a model writes "in November" — measured, Gemma
    * sent exactly that, against a field that reads "2026-11". The year is the
    * one in the record; the question named only the month.
    */
-  for (const [ym, other] of [[a, b], [b, a]] as const) {
-    if (typeof ym === 'string' && YEAR_MONTH.test(ym) && !(typeof other === 'string' && YEAR_MONTH.test(other))) {
+  for (const [ym, other] of [
+    [a, b],
+    [b, a],
+  ] as const) {
+    if (
+      typeof ym === 'string' &&
+      YEAR_MONTH.test(ym) &&
+      !(typeof other === 'string' && YEAR_MONTH.test(other))
+    ) {
       const n = monthNumber(other)
       if (n !== null) return Number(ym.slice(5)) === n
     }
@@ -317,7 +373,8 @@ function equal(a: unknown, b: unknown): boolean {
 
 function contains(have: unknown, want: unknown): boolean {
   if (Array.isArray(have)) return have.some((h) => equal(h, want) || contains(h, want))
-  if (typeof have === 'string' && typeof want === 'string') return have.toLowerCase().includes(want.toLowerCase())
+  if (typeof have === 'string' && typeof want === 'string')
+    return have.toLowerCase().includes(want.toLowerCase())
   return false
 }
 
@@ -410,8 +467,16 @@ export type QueryAnswer<R> =
   | { readonly kind: 'value'; readonly value: AggregateValue }
   | { readonly kind: 'refused'; readonly hint: string }
 
-export type Group = { readonly value: unknown; readonly count: number; readonly [k: string]: unknown }
-export type AggregateValue = { readonly of?: string; readonly count: number; readonly [k: string]: unknown }
+export type Group = {
+  readonly value: unknown
+  readonly count: number
+  readonly [k: string]: unknown
+}
+export type AggregateValue = {
+  readonly of?: string
+  readonly count: number
+  readonly [k: string]: unknown
+}
 
 /** Missing values last, in BOTH directions — a record with no deadline is not the "furthest" one. */
 function compareBy(field: string, order: 'asc' | 'desc') {
@@ -436,14 +501,19 @@ function numbersOf(bags: readonly FieldBag[], field: string): { nums: number[]; 
     const v = fieldOf(b, field)
     if (typeof v === 'number' && Number.isFinite(v)) nums.push(v)
     else if (isDate(v)) dates.push(dayPart(v))
-    else if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) nums.push(Number(v))
+    else if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v)))
+      nums.push(Number(v))
   }
   return { nums, dates }
 }
 
 const round = (n: number) => Math.round(n * 100) / 100
 
-function aggregateOver(bags: readonly FieldBag[], fn: Aggregate, field: string | undefined): AggregateValue {
+function aggregateOver(
+  bags: readonly FieldBag[],
+  fn: Aggregate,
+  field: string | undefined,
+): AggregateValue {
   if (fn === 'count' || field === undefined) return { count: bags.length }
   const { nums, dates } = numbersOf(bags, field)
   if (dates.length > 0 && nums.length === 0) {
@@ -454,7 +524,8 @@ function aggregateOver(bags: readonly FieldBag[], fn: Aggregate, field: string |
   const sum = nums.reduce((a, b) => a + b, 0)
   const sorted = [...nums].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
-  const median = sorted.length % 2 === 1 ? (sorted[mid] ?? 0) : ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2
+  const median =
+    sorted.length % 2 === 1 ? (sorted[mid] ?? 0) : ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2
   // Every figure at once, whichever was asked for: they cost a few tokens, and
   // "the average — and what was the longest?" is then one call, not two.
   return {
@@ -474,7 +545,8 @@ export function fieldsOf(bags: readonly FieldBag[]): string[] {
   for (const b of bags) {
     for (const [k, v] of Object.entries(b)) {
       keys.add(k)
-      if (v && typeof v === 'object' && !Array.isArray(v)) for (const sub of Object.keys(v)) keys.add(`${k}.${sub}`)
+      if (v && typeof v === 'object' && !Array.isArray(v))
+        for (const sub of Object.keys(v)) keys.add(`${k}.${sub}`)
     }
   }
   return [...keys].sort()
@@ -571,7 +643,8 @@ export function runRecordQuery<R>(
       }
     }
     const out: Group[] = [...groups.values()].map((g) => {
-      const agg = q.aggregate && q.aggregate !== 'count' ? aggregateOver(g.bags, q.aggregate, q.of) : null
+      const agg =
+        q.aggregate && q.aggregate !== 'count' ? aggregateOver(g.bags, q.aggregate, q.of) : null
       const { count: _count, of: _of, ...figures } = agg ?? { count: 0 }
       return { value: g.value, count: g.bags.length, ...figures }
     })
@@ -585,7 +658,15 @@ export function runRecordQuery<R>(
     return { kind: 'groups', groups: ordered }
   }
 
-  if (q.aggregate) return { kind: 'value', value: aggregateOver(kept.map((r) => r.bag), q.aggregate, q.of) }
+  if (q.aggregate)
+    return {
+      kind: 'value',
+      value: aggregateOver(
+        kept.map((r) => r.bag),
+        q.aggregate,
+        q.of,
+      ),
+    }
 
   if (q.orderBy) {
     const by = compareBy(q.orderBy, q.order ?? 'asc')
@@ -593,7 +674,8 @@ export function runRecordQuery<R>(
   }
   const hint =
     kept.length === 0
-      ? (unlinked(rows, q.related ?? []) ?? whyNothing(bags, [...(q.where ?? []), ...(q.any ?? [])]))
+      ? (unlinked(rows, q.related ?? []) ??
+        whyNothing(bags, [...(q.where ?? []), ...(q.any ?? [])]))
       : undefined
   return { kind: 'rows', rows: kept.map((r) => r.shown), ...(hint === undefined ? {} : { hint }) }
 }
@@ -609,7 +691,9 @@ export function runRecordQuery<R>(
  */
 function unlinked<R>(rows: readonly Row<R>[], related: readonly RelatedTest[]): string | undefined {
   if (rows.length === 0) return undefined
-  const none = related.filter((t) => rows.every((r) => (r.linked?.(t.type, t.rel) ?? []).length === 0))
+  const none = related.filter((t) =>
+    rows.every((r) => (r.linked?.(t.type, t.rel) ?? []).length === 0),
+  )
   if (none.length === 0) return undefined
   const kinds = [...new Set(none.map((t) => t.type))].join(', ')
   return `Nothing matched: none of these records is linked to any ${kinds}. To test the records themselves, put those conditions in "where" instead.`
@@ -633,11 +717,15 @@ function whyNothing(bags: readonly FieldBag[], where: readonly Condition[]): str
     for (const b of bags) {
       const v = fieldOf(b, c.field)
       for (const x of Array.isArray(v) ? v : [v]) {
-        if (typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') seen.add(String(x))
+        if (typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean')
+          seen.add(String(x))
       }
     }
     if (seen.size === 0) continue
-    const sample = [...seen].slice(0, 8).map((v) => `"${v}"`).join(', ')
+    const sample = [...seen]
+      .slice(0, 8)
+      .map((v) => `"${v}"`)
+      .join(', ')
     parts.push(`"${c.field}" holds ${sample}${seen.size > 8 ? ', …' : ''}.`)
   }
   if (parts.length === 0) return undefined

@@ -252,6 +252,10 @@ const sameish = (
     a.underline === b.underline &&
     a.strike === b.strike &&
     a.colour === b.colour &&
+    // A custom colour from the spectrum picker is `ink`, not `colour`: left out
+    // of this test, two adjacent words in different custom colours merged into
+    // one span in the first word's colour, and nothing reported it dropped.
+    a.ink === b.ink &&
     a.size === b.size
   )
 }
@@ -304,8 +308,12 @@ export function htmlFromNote(text: string, format: readonly NoteSpan[] | undefin
         .filter(Boolean)
         .join('; ')
       const escaped = escapeHtml(part)
-      lines[lines.length - 1]?.push(style === '' ? escaped : `<span style="${style}">${escaped}</span>`)
+      lines[lines.length - 1]?.push(
+        style === '' ? escaped : `<span style="${style}">${escaped}</span>`,
+      )
     })
   }
-  return lines.map((parts) => (parts.length === 0 ? '<p><br></p>' : `<p>${parts.join('')}</p>`)).join('')
+  return lines
+    .map((parts) => (parts.length === 0 ? '<p><br></p>' : `<p>${parts.join('')}</p>`))
+    .join('')
 }

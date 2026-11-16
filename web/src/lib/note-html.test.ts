@@ -42,7 +42,9 @@ describe('what a colour means', () => {
       expect(toneOf(TONE_INK[tone]), tone).toBe(tone)
       // The browser rewrites the hex the moment it lands in a style attribute.
       const n = Number.parseInt(TONE_INK[tone].slice(1), 16)
-      expect(toneOf(`rgb(${String((n >> 16) & 255)}, ${String((n >> 8) & 255)}, ${String(n & 255)})`)).toBe(tone)
+      expect(
+        toneOf(`rgb(${String((n >> 16) & 255)}, ${String((n >> 8) & 255)}, ${String(n & 255)})`),
+      ).toBe(tone)
     }
   })
 
@@ -69,9 +71,15 @@ describe('runs from the editor into what is stored', () => {
   })
 
   it('coalesces neighbours that look the same and keeps ones that do not', () => {
-    const same = noteFromRuns([{ text: 'ab', bold: true }, { text: 'cd', bold: true }])
+    const same = noteFromRuns([
+      { text: 'ab', bold: true },
+      { text: 'cd', bold: true },
+    ])
     expect(same.format).toEqual([{ start: 0, end: 4, bold: true }])
-    const different = noteFromRuns([{ text: 'ab', bold: true }, { text: 'cd', italic: true }])
+    const different = noteFromRuns([
+      { text: 'ab', bold: true },
+      { text: 'cd', italic: true },
+    ])
     expect(different.format).toHaveLength(2)
   })
 
@@ -183,6 +191,20 @@ describe('the stored note back into the editor', () => {
     // The same completeness `runsOf` guarantees, checked at this end too.
     const text = 'Chased the chair about the start date'
     const format = [{ start: 11, end: 16, bold: true } as const]
-    expect(runsOf(text, format).map((r) => r.text).join('')).toBe(text)
+    expect(
+      runsOf(text, format)
+        .map((r) => r.text)
+        .join(''),
+    ).toBe(text)
+  })
+})
+
+describe('two custom colours side by side (review 2026-11-16)', () => {
+  it('keeps each word in its own colour', () => {
+    const out = noteFromRuns([
+      { text: 'red', colour: '#ff0000' },
+      { text: 'blue', colour: '#0000ff' },
+    ] as never)
+    expect(out.format?.map((f) => f.ink)).toEqual(['#ff0000', '#0000ff'])
   })
 })

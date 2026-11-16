@@ -91,12 +91,16 @@ export function copyExport(
      * pulls the phone's backup over the local network — so the honest route
      * for a store too big for the clipboard is Transfer to a computer, named
      * with where it goes and what it needs.
+     *
+     * It also used to offer "or detach some documents and try again", which
+     * cannot help: this envelope never carries document bytes (see the
+     * `documents: []` note below), so detaching one shrinks it by a row.
      */
     return {
       title: 'Too big for the clipboard',
       description: `Your records come to ${sizeLabel(byteLengthOf(json))} and Android's clipboard takes about ${sizeLabel(
         CLIPBOARD_MAX_BYTES / 2,
-      )} of text. Nothing was copied. Use Transfer to send everything to your computer over your local network, or detach some documents and try again.`,
+      )} of text. Nothing was copied. Use Transfer to send everything to your computer over your local network.`,
       tone: 'danger',
     }
   }

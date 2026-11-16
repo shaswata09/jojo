@@ -19,7 +19,10 @@ const START = Date.parse('2026-10-01T09:00:00.000Z')
 const TODAY = '2026-10-22'
 
 const nullDriver = () => ({
-  open: async () => ({ ok: true as const, value: { version: 1, from: 0, migrated: [], crossTab: false } }),
+  open: async () => ({
+    ok: true as const,
+    value: { version: 1, from: 0, migrated: [], crossTab: false },
+  }),
   readAll: async () => ({ ok: true as const, value: { nodes: [], edges: [], meta: [], ops: [] } }),
   commit: async () => ({ ok: true as const, value: undefined }),
   replace: async () => ({ ok: true as const, value: undefined }),
@@ -68,8 +71,20 @@ function store() {
       stage: 'submitted',
       ...extra,
     }) as NodeId
-  const item = (title: string, date: string, kind: TimelineKind, about: NodeId, extra: Record<string, unknown> = {}) =>
-    h.runtime.runOrThrow('timeline.item.create', { title, date, kind, applicationIds: [about], ...extra }) as NodeId
+  const item = (
+    title: string,
+    date: string,
+    kind: TimelineKind,
+    about: NodeId,
+    extra: Record<string, unknown> = {},
+  ) =>
+    h.runtime.runOrThrow('timeline.item.create', {
+      title,
+      date,
+      kind,
+      applicationIds: [about],
+      ...extra,
+    }) as NodeId
 
   const rice = app('Rice', { submittedOn: '2026-09-01', firstReplyOn: '2026-09-21' })
   const unt = app('UNT', { submittedOn: '2026-09-10' })
@@ -88,7 +103,10 @@ function store() {
   item('Chase Rice', '2026-10-15', 'follow-up', rice)
   item('Rice interview', '2026-10-28', 'interview', rice)
 
-  const keyword = h.runtime.runOrThrow('keyword.create', { name: 'Research', tone: 'teal' }) as NodeId
+  const keyword = h.runtime.runOrThrow('keyword.create', {
+    name: 'Research',
+    tone: 'teal',
+  }) as NodeId
   h.runtime.runOrThrow('keyword.attach', { keyword, record: rice })
   h.runtime.runOrThrow('keyword.attach', { keyword, record: unt })
 
@@ -109,7 +127,11 @@ describe('derived fields', () => {
     const out = list(memory(), { type: 'application' }) as unknown as Listed
     const record = out.matches.find((m) => m['id'] === unt)
     // The open deadline still ahead — not the early round already met.
-    expect(record).toMatchObject({ employer: 'UNT', deadline: '2026-11-30', keywords: ['Research'] })
+    expect(record).toMatchObject({
+      employer: 'UNT',
+      deadline: '2026-11-30',
+      keywords: ['Research'],
+    })
   })
 
   it('counts what is upcoming and what is overdue, and how long a reply took', () => {
@@ -133,7 +155,10 @@ describe('derived fields', () => {
 
   it('tells a timeline item which application it is about, and whether it is late', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'timelineItem', where: [{ field: 'overdue', op: 'eq', value: true }] })
+    const out = list(memory(), {
+      type: 'timelineItem',
+      where: [{ field: 'overdue', op: 'eq', value: true }],
+    })
     expect((out as unknown as Listed).matches).toEqual([
       expect.objectContaining({ title: 'Chase Rice', employer: 'Rice', done: false, daysAway: -7 }),
     ])
@@ -151,7 +176,12 @@ describe('derived fields', () => {
 describe('memory.list as a query', () => {
   it('answers "which deadline is furthest away" in one call', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'application', orderBy: 'deadline', order: 'desc', limit: 1 })
+    const out = list(memory(), {
+      type: 'application',
+      orderBy: 'deadline',
+      order: 'desc',
+      limit: 1,
+    })
     expect(employers(out)).toEqual(['UNT'])
     // The limit hides records, never that they exist.
     expect(out).toMatchObject({ total: 4, shown: 1 })
@@ -167,7 +197,9 @@ describe('memory.list as a query', () => {
       expect.any(String),
       expect.any(String),
     ])
-    const desc = employers(list(memory(), { type: 'application', orderBy: 'deadline', order: 'desc' }))
+    const desc = employers(
+      list(memory(), { type: 'application', orderBy: 'deadline', order: 'desc' }),
+    )
     expect(desc.slice(0, 2)).toEqual(['UNT', 'Rice'])
   })
 
@@ -185,21 +217,33 @@ describe('memory.list as a query', () => {
 
   it('reads a nested field by its dotted path', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'application', where: [{ field: 'offer.respondBy', op: 'exists' }] })
+    const out = list(memory(), {
+      type: 'application',
+      where: [{ field: 'offer.respondBy', op: 'exists' }],
+    })
     expect(employers(out)).toEqual(['Baylor'])
   })
 
   it('matches a list field by any element, without case', () => {
     const { memory } = store()
-    const tagged = list(memory(), { type: 'application', where: [{ field: 'keywords', op: 'eq', value: 'research' }] })
+    const tagged = list(memory(), {
+      type: 'application',
+      where: [{ field: 'keywords', op: 'eq', value: 'research' }],
+    })
     expect(employers(tagged).sort()).toEqual(['Rice', 'UNT'])
-    const untagged = list(memory(), { type: 'application', where: [{ field: 'keywords', op: 'missing' }] })
+    const untagged = list(memory(), {
+      type: 'application',
+      where: [{ field: 'keywords', op: 'missing' }],
+    })
     expect(employers(untagged).sort()).toEqual(['Baylor', 'SMU'])
   })
 
   it('takes "in" over a list of values', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'application', where: [{ field: 'stage', op: 'in', value: ['offer', 'closed'] }] })
+    const out = list(memory(), {
+      type: 'application',
+      where: [{ field: 'stage', op: 'in', value: ['offer', 'closed'] }],
+    })
     expect(employers(out).sort()).toEqual(['Baylor', 'SMU'])
   })
 
@@ -230,7 +274,12 @@ describe('memory.list as a query', () => {
 
   it('aggregates per group', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'application', groupBy: 'stage', aggregate: 'avg', of: 'daysToReply' })
+    const out = list(memory(), {
+      type: 'application',
+      groupBy: 'stage',
+      aggregate: 'avg',
+      of: 'daysToReply',
+    })
     expect(out['groups']).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ value: 'submitted', count: 2, avg: 20 }),
@@ -254,7 +303,13 @@ describe('memory.list as a query', () => {
 
   it('counts with a filter', () => {
     const { memory } = store()
-    expect(list(memory(), { type: 'application', where: [{ field: 'outcome', op: 'ne', value: 'rejected' }], aggregate: 'count' })).toEqual({ count: 3 })
+    expect(
+      list(memory(), {
+        type: 'application',
+        where: [{ field: 'outcome', op: 'ne', value: 'rejected' }],
+        aggregate: 'count',
+      }),
+    ).toEqual({ count: 3 })
   })
 
   it('refuses a field no record has, and names the ones they do', () => {
@@ -283,11 +338,17 @@ describe('memory.list as a query', () => {
   it('names what a field holds when an exact match finds nothing', () => {
     // "Houston" against "Houston, TX": the empty answer was read as "none".
     const { memory } = store()
-    const out = list(memory(), { type: 'application', where: [{ field: 'employer', op: 'eq', value: 'Ric' }] })
+    const out = list(memory(), {
+      type: 'application',
+      where: [{ field: 'employer', op: 'eq', value: 'Ric' }],
+    })
     expect(out).toMatchObject({ total: 0 })
     expect(out['hint']).toMatch(/"employer" holds .*"Rice"/)
     expect(out['hint']).toMatch(/contains/)
-    const found = list(memory(), { type: 'application', where: [{ field: 'employer', op: 'contains', value: 'Ric' }] })
+    const found = list(memory(), {
+      type: 'application',
+      where: [{ field: 'employer', op: 'contains', value: 'Ric' }],
+    })
     expect(employers(found)).toEqual(['Rice'])
     expect(found).not.toHaveProperty('hint')
   })
@@ -316,7 +377,9 @@ describe('the comparison rules', () => {
   })
 
   it('takes a boolean by its spelling, and a number written as text', () => {
-    expect(passes({ flagged: true }, { field: 'flagged', op: 'eq', value: 'true' }, TODAY)).toBe(true)
+    expect(passes({ flagged: true }, { field: 'flagged', op: 'eq', value: 'true' }, TODAY)).toBe(
+      true,
+    )
     expect(passes({ upcoming: 3 }, { field: 'upcoming', op: 'gte', value: '2' }, TODAY)).toBe(true)
   })
 
@@ -379,7 +442,9 @@ describe('questions about linked records', () => {
     const { memory } = store()
     const out = list(memory(), {
       type: 'application',
-      related: [{ type: 'timelineItem', where: [{ field: 'done', op: 'eq', value: false }], atLeast: 2 }],
+      related: [
+        { type: 'timelineItem', where: [{ field: 'done', op: 'eq', value: false }], atLeast: 2 },
+      ],
     })
     expect(employers(out)).toEqual(['Rice'])
   })
@@ -426,7 +491,11 @@ describe('the other shapes a question takes', () => {
 
   it('groups by a part of a date, in date order when asked', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'application', groupBy: 'submittedOn.month', orderBy: 'submittedOn.month' })
+    const out = list(memory(), {
+      type: 'application',
+      groupBy: 'submittedOn.month',
+      orderBy: 'submittedOn.month',
+    })
     expect(out['groups']).toEqual([
       { value: '2026-08', count: 1 },
       { value: '2026-09', count: 2 },
@@ -436,22 +505,34 @@ describe('the other shapes a question takes', () => {
 
   it('measures the days between two date fields', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'application', aggregate: 'median', of: 'days(submittedOn, firstReplyOn)' })
+    const out = list(memory(), {
+      type: 'application',
+      aggregate: 'median',
+      of: 'days(submittedOn, firstReplyOn)',
+    })
     expect(out).toMatchObject({ count: 2, min: 10, max: 20, avg: 15, median: 15 })
   })
 
   it('excludes, including the records with nothing there', () => {
     const { memory } = store()
-    const out = list(memory(), { type: 'application', where: [{ field: 'keywords', op: 'excludes', value: 'Research' }] })
+    const out = list(memory(), {
+      type: 'application',
+      where: [{ field: 'keywords', op: 'excludes', value: 'Research' }],
+    })
     expect(employers(out).sort()).toEqual(['Baylor', 'SMU'])
   })
 
   it('shows only the fields asked for, and always the id and label', () => {
     const { memory } = store()
     const out = list(memory(), { type: 'application', fields: ['deadline'] }) as unknown as Listed
-    for (const m of out.matches) expect(Object.keys(m).every((k) => ['id', 'type', 'label', 'deadline'].includes(k))).toBe(true)
+    for (const m of out.matches)
+      expect(Object.keys(m).every((k) => ['id', 'type', 'label', 'deadline'].includes(k))).toBe(
+        true,
+      )
     expect(out.matches.some((m) => m['deadline'] === '2026-11-30')).toBe(true)
-    expect(list(memory(), { type: 'application', fields: ['dueDate'] })).toMatchObject({ ok: false })
+    expect(list(memory(), { type: 'application', fields: ['dueDate'] })).toMatchObject({
+      ok: false,
+    })
   })
 
   it('pages with offset, and still reports every match', () => {
@@ -493,10 +574,17 @@ describe('what a model actually writes', () => {
 
   it('matches a month by its number or its name', () => {
     for (const value of [10, '10', 'Oct', 'october', '2026-10']) {
-      expect(passes({ d: '2026-10-28' }, { field: 'd.month', op: 'eq', value }, TODAY), String(value)).toBe(true)
+      expect(
+        passes({ d: '2026-10-28' }, { field: 'd.month', op: 'eq', value }, TODAY),
+        String(value),
+      ).toBe(true)
     }
-    expect(passes({ d: '2026-10-28' }, { field: 'd.month', op: 'eq', value: 11 }, TODAY)).toBe(false)
-    expect(passes({ d: '2026-11-02' }, { field: 'd.month', op: 'gte', value: 'Nov' }, TODAY)).toBe(true)
+    expect(passes({ d: '2026-10-28' }, { field: 'd.month', op: 'eq', value: 11 }, TODAY)).toBe(
+      false,
+    )
+    expect(passes({ d: '2026-11-02' }, { field: 'd.month', op: 'gte', value: 'Nov' }, TODAY)).toBe(
+      true,
+    )
   })
 
   it('says so when a related test is aimed at a kind nothing is linked to', () => {
@@ -521,24 +609,59 @@ describe('the names a model brings with it', () => {
     expect(out).toMatchObject({ total: 4 })
   })
 
-  it('reads a record id in a filter as that record\'s name', () => {
+  it("reads a record id in a filter as that record's name", () => {
     // The id `memory.search` handed over, against a field of names.
     const { memory, keyword } = store()
-    const out = list(memory(), { type: 'application', where: [{ field: 'keywords', op: 'contains', value: keyword }] })
+    const out = list(memory(), {
+      type: 'application',
+      where: [{ field: 'keywords', op: 'contains', value: keyword }],
+    })
     expect(employers(out).sort()).toEqual(['Rice', 'UNT'])
   })
 
   it('still means the id when filtering on the id', () => {
     const { memory, unt } = store()
-    expect(employers(list(memory(), { type: 'application', where: [{ field: 'id', op: 'eq', value: unt }] }))).toEqual(['UNT'])
+    expect(
+      employers(
+        list(memory(), { type: 'application', where: [{ field: 'id', op: 'eq', value: unt }] }),
+      ),
+    ).toEqual(['UNT'])
   })
 
-  it('names a timeline item\'s application by role AND employer', () => {
+  it("names a timeline item's application by role AND employer", () => {
     const { memory } = store()
     const out = list(memory(), { type: 'timelineItem', groupBy: 'application' })
     expect(out['groups']).toEqual([
       { value: 'Assistant professor, CS — Rice', count: 3 },
       { value: 'Assistant professor, CS — UNT', count: 2 },
     ])
+  })
+})
+
+describe('an instant is read in the local day (review 2026-11-16)', () => {
+  it('matches "today" by the day the person is in, not the UTC date', () => {
+    // An instant late in the local evening; its local date is what "today" means.
+    const at = new Date(2026, 9, 22, 22, 30).toISOString()
+    expect(
+      passes(
+        { lastActionAt: at },
+        { field: 'lastActionAt', op: 'eq', value: 'today' } as never,
+        TODAY,
+      ),
+    ).toBe(true)
+    expect(fieldOf({ lastActionAt: at }, 'lastActionAt.day')).toBe('2026-10-22')
+  })
+})
+
+describe('memory.list fields (review 2026-11-16)', () => {
+  it('returns a dotted field it accepted, rather than silently dropping it', () => {
+    const { memory } = store()
+    const out = list(memory(), {
+      type: 'application',
+      fields: ['employer', 'lastActionAt.day'],
+    }) as unknown as Listed
+    const row = out.matches[0]!
+    expect(out.matches.length).toBeGreaterThan(0)
+    expect(Object.keys(row)).toContain('lastActionAt.day')
   })
 })

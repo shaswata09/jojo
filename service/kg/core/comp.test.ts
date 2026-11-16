@@ -323,3 +323,30 @@ describe('which period word labels the amount', () => {
     expect(read?.periodStated).toBe(false)
   })
 })
+
+describe('a pay range keeps its period (review 2026-11-16)', () => {
+  it("reads the period after the top of the range as the whole range's", () => {
+    expect(parseComp('$25 – $30 per hour')).toMatchObject({
+      amount: 25,
+      period: 'hour',
+      periodStated: true,
+    })
+    expect(parseComp('$25-30/hr')).toMatchObject({ amount: 25, period: 'hour' })
+    expect(parseComp('$3,000-$3,500 per month')).toMatchObject({ amount: 3000, period: 'month' })
+  })
+
+  it('does not take a period word for a currency code', () => {
+    expect(parseComp('£3,000 pcm')).toMatchObject({ amount: 3000, period: 'month', currency: '£' })
+    expect(parseComp('$500 day')).toMatchObject({ amount: 500, period: 'day' })
+    expect(annualised(parseComp('£3,000 pcm')!)).toBe(36000)
+  })
+
+  it('still ignores a period that labels a different number after the range', () => {
+    expect(parseComp('£55,000 - £65,000, 35 hour week')).toMatchObject({
+      amount: 55000,
+      period: 'year',
+      periodStated: false,
+    })
+    expect(parseComp('$120k-$140k')).toMatchObject({ amount: 120000, period: 'year' })
+  })
+})

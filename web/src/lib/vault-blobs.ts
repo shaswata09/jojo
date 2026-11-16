@@ -111,7 +111,10 @@ export type VaultBlobs = {
    * deleted — invisible in the app and counted against a quota nothing can
    * account for.
    */
-  replaceAll: (documents: readonly { path: string; data: Uint8Array }[]) => Promise<number>
+  replaceAll: (
+    documents: readonly { path: string; data: Uint8Array }[],
+    keep?: ReadonlySet<string>,
+  ) => Promise<number>
   /**
    * Whether the browser has exempted this data from eviction.
    *
@@ -573,6 +576,7 @@ async function all(): Promise<{ id: string; name: string }[]> {
 
 async function replaceAll(
   documents: readonly { path: string; data: Uint8Array }[],
+  keep: ReadonlySet<string> = new Set(),
 ): Promise<number> {
   // The whole index, not whatever part of it has loaded. A restore made in the
   // first moments after load used to walk an index the first listing had not
@@ -584,12 +588,18 @@ async function replaceAll(
   // Trashed, not deleted: `FileStore` never unlinks, and a restore is
   // exactly the moment a person might discover they picked the wrong file.
   // What they replaced is still under `jojo/Trash`.
-  for (const [, path] of current.index) await store().trash(path)
+  // Except a document whose record came back without one — `keptDocuments`
+  // in `repo/restore.ts`. Trashing it here, and the purge on the next load,
+  // used to erase every document a records-only transfer brought back.
+  const next = new Map<string, string>()
+  for (const [id, path] of current.index) {
+    if (keep.has(id)) next.set(id, path)
+    else await store().trash(path)
+  }
   // A restore replaces every record; an Undo of a delete from before it would
   // put back a document belonging to none of them.
   for (const id of new Set([...trashed.keys(), ...trashedFrom.keys()])) release(id)
 
-  const next = new Map<string, string>()
   let landed = 0
   for (const doc of documents) {
     const id = idOfPath(doc.path)

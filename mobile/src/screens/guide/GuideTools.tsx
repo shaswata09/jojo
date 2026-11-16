@@ -98,11 +98,14 @@ export function GuideTools() {
             The distinction that matters
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[1.5] }}>
-            Choosing what to show the model is a hint. Checking what it actually called is a rule.
-            jojo does both, and only the second one is load-bearing: a call to something outside the
-            offered set is refused before anything is looked up, let alone run. The model is told
-            the name is unavailable, in the same words it gets for a name that does not exist, and
-            it moves on.
+            Choosing what to show the model is a hint. Checking what it actually called is a rule,
+            and the rule depends on who chose the set. Where the screen fixes it — Ask the graph, a
+            scout pipeline — a call to anything outside it is refused before anything is looked up,
+            let alone run. In a chat the set is jojo&apos;s guess at what you need, so a call
+            outside it is not refused: it goes to the same approval check as every other call, which
+            asks you first unless the conversation is set to run on its own. The one exception is
+            clearing your records, the only thing that cannot be undone: it is refused unless you
+            asked to wipe everything in so many words.
           </Txt>
           <Txt size="sm" tone="secondary" style={{ marginTop: space[3] }}>
             This is why the Graph screen&apos;s &ldquo;Ask the graph&rdquo; box can safely offer two

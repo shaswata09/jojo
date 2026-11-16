@@ -105,7 +105,10 @@ describe('a phone sending to a computer (Q129)', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(started.direction).toBe('pull')
-    expect(started.token).toBe(await pathToken(secrets, state.offer))
+    expect(started.token).toBe(await pathToken(secrets, state.offer, 'pull'))
+    // A computer that is SENDING derives the push path from the same offer,
+    // and must not reach a phone that is sending too.
+    expect(started.token).not.toBe(await pathToken(secrets, state.offer, 'push'))
     expect(result.value.address).toEqual({ host: [192, 168, 1, 23], port: 50123 })
   })
 
@@ -155,7 +158,7 @@ describe('a phone sending to a computer (Q129)', () => {
     const theirs: PairingState = await beginPairing(secrets, Date.now())
     const result = await beginServing(encodeOffer(ours.offer), build)
     if (!result.ok) throw new Error(result.error)
-    const other = await pathToken(secrets, theirs.offer)
+    const other = await pathToken(secrets, theirs.offer, 'pull')
     expect(await ask(pullPath(other), new Uint8Array(36))).toEqual({ status: 404 })
   })
 

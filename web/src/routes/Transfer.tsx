@@ -8,7 +8,7 @@ import { Segment } from '@/components/common/Segment'
 import { ReceivePanel } from '@/components/transfer-ui/ReceivePanel'
 import { DetailsPanel, PayloadPanel } from '@/components/transfer-ui/SendPanel'
 import { TransferStage, type TransferRole } from '@/components/transfer-ui/TransferStage'
-import { totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
+import { countByGroup, totalOf, type TransferGroup } from '@/components/transfer-ui/groups'
 import { ConnectPanel } from '@/components/transfer-ui/ConnectPanel'
 import { useBackup } from '@/lib/backup'
 import { useHandoffSend } from '@/lib/handoff-send'
@@ -18,6 +18,7 @@ import { replacesOffer } from '@/components/transfer-ui/send-cycle'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useApplications } from '@jojo/service/react/use-applications'
+import { useGraph } from '@jojo/service/react/kg-context'
 import { useProfile } from '@jojo/service/react/use-profile'
 import { useScout } from '@jojo/service/react/use-scout'
 import { useStickyNotes } from '@jojo/service/react/use-sticky-notes'
@@ -84,7 +85,7 @@ export function Transfer() {
    * reading this screen. A role switch puts a fresh code up (below), so the
    * code on screen always belongs to the direction on screen.
    */
-  const pairing = usePairingSession(true)
+  const pairing = usePairingSession(true, role === 'send' ? 'push' : 'pull')
   const backup = useBackup()
   /*
    * Whether the current run has handed the phone's answer to the pairing — the
@@ -135,6 +136,9 @@ export function Transfer() {
    * being able to put it away is worth more than the picture.
    */
   const [showScene, setShowScene] = useState(true)
+
+  const graph = useGraph()
+  const stored = useMemo(() => countByGroup(graph.nodes()), [graph])
 
   const groups = useMemo<TransferGroup[]>(
     () => [
@@ -204,6 +208,22 @@ export function Transfer() {
         // instead of offering to move a page of blank fields.
         count: profileIsBlank ? 0 : 1,
       },
+      // Counted off the store, not off a hook: these two moved uncounted
+      // until the transfer audit (2026-11-16) — `countByGroup`.
+      {
+        id: 'people',
+        label: 'People',
+        unit: 'people',
+        hint: 'Referees, hiring chairs and recruiters, and the applications they belong to',
+        count: stored.people ?? 0,
+      },
+      {
+        id: 'background',
+        label: 'Background',
+        unit: 'background facts',
+        hint: 'Degrees, posts, papers and skills read from your CV',
+        count: stored.background ?? 0,
+      },
     ],
     [
       applications.length,
@@ -218,6 +238,7 @@ export function Transfer() {
       matches.length,
       stickyNotes.length,
       profileIsBlank,
+      stored,
     ],
   )
 
@@ -292,7 +313,14 @@ export function Transfer() {
     refresh()
   }, [role, refresh])
 
-  const empty = totalOf(groups) === 0
+  /*
+   * Nothing to SEND is not nothing to do: an empty computer is exactly the one
+   * that wants to receive from the phone — a new laptop after "Start empty".
+   * The whole page used to give way to "Nothing to move yet", Receive panel
+   * and pulse included (transfer audit, 2026-11-16), so the empty state now
+   * stands in for the send role only.
+   */
+  const empty = role === 'send' && totalOf(groups) === 0
 
   return (
     <>
@@ -335,12 +363,17 @@ export function Transfer() {
         <section className="surface rounded-lg px-4 py-4 sm:px-5 sm:py-5">
           <EmptyState
             icon={Smartphone}
-            title="Nothing to move yet"
-            description="There are no applications, reminders, vault records, keywords or scout records on this device, and the profile is blank. Add something, or load the demo data, and it will show up here as a group you can send."
+            title="Nothing to send yet"
+            description="This device holds no records, so there is nothing to send. To bring your records over from your phone, choose Receive from phone above. Or add something, or load the demo data, and it will show up here as a group you can send."
             action={
-              <Button size="sm" asChild>
-                <Link to={settingsPath()}>Load the demo data</Link>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => setRole('receive')}>
+                  Receive from phone
+                </Button>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to={settingsPath()}>Load the demo data</Link>
+                </Button>
+              </div>
             }
           />
         </section>
@@ -363,7 +396,7 @@ export function Transfer() {
                   paired={pairing.keys !== null}
                   target={send.target}
                 />
-                <ConnectPanel send={send} token={pairing.token} />
+                <ConnectPanel send={send} tokens={pairing.tokens} />
                 <PayloadPanel
                   sendFiles={sendFiles}
                   fileCount={files.length}
@@ -372,7 +405,7 @@ export function Transfer() {
                 />
               </>
             ) : (
-              <ReceivePanel pull={pull} token={pairing.token} />
+              <ReceivePanel pull={pull} tokens={pairing.tokens} />
             )}
           </div>
         </div>

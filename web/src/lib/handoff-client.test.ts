@@ -13,7 +13,13 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fetchPairingResponse, pullChunk, readCapped, sendChunk } from '@/lib/handoff-client'
+import {
+  canReachLocalNetwork,
+  fetchPairingResponse,
+  pullChunk,
+  readCapped,
+  sendChunk,
+} from '@/lib/handoff-client'
 import type { DialAddress } from '@jojo/service/core/dial'
 
 /** A private address, so `isPrivateAddress` lets the request past. */
@@ -109,5 +115,34 @@ describe('an answer larger than any real one', () => {
     vi.stubGlobal('fetch', () => Promise.resolve(new Response(new Uint8Array(300 * 1024))))
     const out = await pullChunk(PHONE, 'token', new Uint8Array(36))
     expect(out).toEqual({ ok: false, error: 'handoff/oversized' })
+  })
+})
+
+describe('which browsers can reach a phone on the local network', () => {
+  const CHROME =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
+  const SAFARI =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Safari/605.1.15'
+  const FIREFOX =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:140.0) Gecko/20100101 Firefox/140.0'
+  const EDGE_IOS =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 EdgiOS/131.0 Mobile/15E148 Safari/605.1.15'
+  const CHROME_IOS =
+    'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/131.0 Mobile/15E148 Safari/604.1'
+
+  it('lets Chromium through, on the published site and off it', () => {
+    expect(canReachLocalNetwork(CHROME, true)).toBe(true)
+    expect(canReachLocalNetwork(CHROME, false)).toBe(true)
+  })
+
+  it('stops Safari and every browser on an iPhone or iPad, which are all WebKit', () => {
+    expect(canReachLocalNetwork(SAFARI, false)).toBe(false)
+    expect(canReachLocalNetwork(EDGE_IOS, false)).toBe(false)
+    expect(canReachLocalNetwork(CHROME_IOS, false)).toBe(false)
+  })
+
+  it('stops Firefox only where its mixed-content rule bites: an https page', () => {
+    expect(canReachLocalNetwork(FIREFOX, true)).toBe(false)
+    expect(canReachLocalNetwork(FIREFOX, false)).toBe(true)
   })
 })

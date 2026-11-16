@@ -70,7 +70,7 @@ export async function send(
   } catch (error) {
     const aborted = error instanceof Error && error.name === 'AbortError'
     const detail = error instanceof Error ? error.message : String(error)
-    return { failed: unreachable(endpoint, detail, aborted) }
+    return { failed: unreachable(endpoint, detail, aborted, timeoutMs) }
   } finally {
     clearTimeout(timer)
   }

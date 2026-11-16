@@ -4,15 +4,12 @@ import { report } from '@/lib/analytics'
 import { SCREENS } from '@jojo/service/core/analytics'
 import { StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
-import {
-  DarkTheme,
-  DefaultTheme,
-  NavigationContainer,
-} from '@react-navigation/native'
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import type { Theme } from '@react-navigation/native'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { IconButton } from '@/components/ui/Button'
+import { TourTarget } from '@/components/tour/TourTarget'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Txt } from '@/components/ui/Text'
 import { bucketOf } from '@jojo/service/data/timeline'
@@ -74,6 +71,13 @@ function TabNavigator() {
 
   return (
     <Tabs.Navigator
+      // The bar is wrapped only so the guided tour can find it: it lights one
+      // tab by taking its fifth of the bar (components/tour).
+      tabBar={(props) => (
+        <TourTarget id="tabbar">
+          <BottomTabBar {...props} />
+        </TourTarget>
+      )}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: c.text1,
@@ -180,8 +184,12 @@ function CreateButton() {
 function HeaderActions({ onSearch }: { onSearch: () => void }) {
   return (
     <View style={styles.headerActions}>
-      <IconButton icon="search" label="Search" onPress={onSearch} />
-      <CreateButton />
+      <TourTarget id="header:search">
+        <IconButton icon="search" label="Search" onPress={onSearch} />
+      </TourTarget>
+      <TourTarget id="header:new">
+        <CreateButton />
+      </TourTarget>
     </View>
   )
 }

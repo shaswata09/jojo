@@ -49,6 +49,7 @@ import { pipelinePrompt, proposingHost, toolsForKind } from '../agent/pipelines'
 import { dayOf } from '../core/project'
 import { AUTO_CAPABLE, WORKING_GAP_MS, isDue, shouldOfferShutdown } from '../core/proposal'
 import { parseSources } from '../core/board'
+import { sectorRule } from '../core/profile'
 import { twinBriefing, twinState } from '../core/twin'
 import type { GraphSnapshot } from '../core/snapshot'
 import type { Instant, Pipeline, PipelineKind, Proposal } from '../core/model'
@@ -792,6 +793,11 @@ function promptFor(
      * is the first thing that ever read this field — both dialogs have promised
      * comma separation since the beginning and nothing split on one.
      */
+    // The profile's sector switches — the one place they can act.
+    const profile = memory.ofType('profile')[0]?.props
+    const sector = profile ? sectorRule(profile) : ''
+    if (sector) parts.push(sector)
+
     const boards = parseSources(pipeline.source)
     if (boards.length > 0) {
       parts.push(`The boards to read, one at a time: ${boards.join(', ')}.`)

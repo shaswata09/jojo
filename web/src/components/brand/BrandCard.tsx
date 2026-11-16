@@ -15,6 +15,7 @@ import {
   type PadPoint,
 } from '@/lib/gesture-pad'
 import { useMascot, type MascotPose } from '@/lib/mascot-context'
+import { DESKTOP_QUERY, useMediaQuery } from '@/lib/use-media-query'
 import { EYE_RGB } from '@/lib/robot-rig'
 import { cn } from '@/lib/utils'
 
@@ -40,9 +41,14 @@ const TRAIL = `rgb(${EYE_RGB.map((c) => Math.round(c * 255)).join(' ')})`
  */
 function MovesPanel() {
   const { play } = useMascot()
+  // Beside the card on a desktop; below it in the phone drawer, where the
+  // card already fills the drawer's width and a panel to its right started
+  // past the edge of the screen — two thirds of it, credit included, out of
+  // reach at 390px.
+  const isDesktop = useMediaQuery(DESKTOP_QUERY)
   return (
     <PopoverContent
-      side="right"
+      side={isDesktop ? 'right' : 'bottom'}
       align="start"
       sideOffset={8}
       collisionPadding={12}

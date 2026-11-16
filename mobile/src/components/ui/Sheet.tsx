@@ -6,6 +6,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from 'react-native'
@@ -36,6 +37,7 @@ export function Sheet({
   footer,
   /** A sheet holding a long form wants the whole screen; a menu wants its content. */
   size = 'auto',
+  scroll = size === 'auto',
 }: {
   open: boolean
   onClose: () => void
@@ -44,6 +46,17 @@ export function Sheet({
   children: ReactNode
   footer?: ReactNode
   size?: 'auto' | 'tall'
+  /**
+   * Scrolls the body. On by default for a sheet sized to its content: such a
+   * sheet is capped at 92% of the screen, and content taller than that — a
+   * long explanation, a form with the keyboard up — has to be reachable
+   * rather than drawn through the footer (as "Crash reports and usage" was)
+   * or clipped. Off for a sheet that brings its own scroller, since a list
+   * inside a scroll view in the same direction does not scroll on Android,
+   * and off by default for a tall sheet, whose content lays itself out to
+   * fill the height.
+   */
+  scroll?: boolean
 }) {
   const c = useColors()
   const insets = useSafeAreaInsets()
@@ -130,7 +143,20 @@ export function Sheet({
                 the overflow simply paints outside the rounded edge — which is
                 exactly what a long menu did in landscape, where the cap is a
                 third of the height it is in portrait. */}
-            <View style={size === 'tall' ? styles.bodyTall : styles.body}>{children}</View>
+            <View style={size === 'tall' ? styles.bodyTall : styles.body}>
+              {scroll ? (
+                <ScrollView
+                  keyboardShouldPersistTaps="handled"
+                  bounces={false}
+                  // Sized to its content until the cap, not stretched or squeezed.
+                  style={styles.scroll}
+                >
+                  {children}
+                </ScrollView>
+              ) : (
+                children
+              )}
+            </View>
 
             {footer ? (
               <View style={[styles.footer, { borderTopColor: c.hairline }]}>{footer}</View>
@@ -144,7 +170,12 @@ export function Sheet({
 
 const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: 'flex-end' },
-  keyboard: { justifyContent: 'flex-end' },
+  // Full height, so the sheet's `maxHeight: '92%'` (and a tall sheet's
+  // height) is 92% of the SCREEN. Sized to its content, this wrapper made the
+  // percentage resolve against the sheet itself — every sheet came out shorter
+  // than what it held, and the overflow was drawn through its footer. Touches
+  // still reach the backdrop: the wrapper is `box-none`.
+  keyboard: { flex: 1, justifyContent: 'flex-end' },
   // Landscape. A phone on its side has ~390pt of height, so a sheet rising from
   // the bottom edge covers nearly all of it and stops reading as a sheet — it
   // reads as the screen, with a seam across the top. With that little room the
@@ -176,8 +207,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   tall: { height: '92%' },
-  body: { flexShrink: 1, minHeight: 0 },
-  bodyTall: { flex: 1, minHeight: 0 },
+  // Clipped, so a body taller than the space left never paints over the
+  // footer: Android does not clip children to their parent by default, and a
+  // sheet whose content was a plain View drew its last lines through its own
+  // buttons. Content that can be long belongs in a ScrollView here.
+  body: { flexShrink: 1, minHeight: 0, overflow: 'hidden' },
+  scroll: { flexGrow: 0 },
+  bodyTall: { flex: 1, minHeight: 0, overflow: 'hidden' },
   grabber: {
     width: 36,
     height: 4,

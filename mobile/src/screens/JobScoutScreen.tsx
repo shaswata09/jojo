@@ -37,6 +37,7 @@ import type { RootStackParamList } from '@/navigation/types'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { report } from '@/lib/analytics'
 
 /** Fit bands. A number alone doesn't say whether 64 is good. */
 const fitTone = (fit: number) => (fit >= 80 ? 'green' : fit >= 60 ? 'amber' : 'gray')
@@ -312,7 +313,10 @@ export function JobScoutScreen() {
                     icon="play"
                     label={`Run ${p.name} now`}
                     disabled={engine.paused || engine.running !== null}
-                    onPress={() => engine.runNow(p.id)}
+                    onPress={() => {
+                      engine.runNow(p.id)
+                      void report('scout_pipeline_started', { kind: kindOf(p) })
+                    }}
                   />
                   <IconButton
                     icon="edit-2"
@@ -337,8 +341,14 @@ export function JobScoutScreen() {
       <ProposalQueue
         proposals={engine.proposals}
         pipelines={engine.pipelines}
-        onApprove={engine.approve}
-        onDiscard={engine.discard}
+        onApprove={(id) => {
+          void report('scout_proposal_decided', { decision: 'approved' })
+          return engine.approve(id)
+        }}
+        onDiscard={(id) => {
+          void report('scout_proposal_decided', { decision: 'declined' })
+          return engine.discard(id)
+        }}
         onSweep={engine.sweep}
         onClearAll={engine.clearAll}
       />

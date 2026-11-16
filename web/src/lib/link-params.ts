@@ -10,6 +10,7 @@ import {
   VAULT_TOOLS,
   calendarDate,
   calendarDefaults,
+  calendarWire,
   patched,
   type ApplicationsView,
   type GuidePage,
@@ -176,18 +177,29 @@ export function useCalendarParams() {
 
   const set = useCallback(
     (patch: { y?: number; m?: number; d?: number; focus?: string }, opts?: SetOptions) => {
-      const wire: Record<string, ParamValue> = {}
-      if ('y' in patch) wire.y = patch.y
-      if ('m' in patch) wire.m = patch.m
-      if ('d' in patch) wire.d = patch.d
-      if ('focus' in patch) wire.focus = patch.focus
-
       // Sampled inside the callback rather than closed over, so a tab left open
       // across midnight writes the URL against today and not against the day it
       // was opened on.
-      setParams((prev) => patched(prev, wire, calendarDefaults()), {
-        replace: opts?.replace ?? true,
-      })
+      setParams(
+        (prev) => {
+          const wire: Record<string, ParamValue> = {}
+          if ('focus' in patch) wire.focus = patch.focus
+          if ('y' in patch || 'm' in patch || 'd' in patch) {
+            // The whole date or none of it — see `calendarWire`. Part of one
+            // is read against "today" and means a different day tomorrow.
+            const today = calendarDefaults()
+            const shown = calendarDate(prev, today)
+            const date = { y: patch.y ?? shown.y, m: patch.m ?? shown.m, d: patch.d ?? shown.d }
+            const kept = calendarWire(date, today)
+            wire.y = kept.y
+            wire.m = kept.m
+            wire.d = kept.d
+          }
+          // No defaults: `calendarWire` has already decided what is dropped.
+          return patched(prev, wire, {})
+        },
+        { replace: opts?.replace ?? true },
+      )
     },
     [setParams],
   )

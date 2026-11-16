@@ -7,7 +7,7 @@ import { GuideGraph } from '@/screens/guide/GuideGraph'
 import { GuideOverview } from '@/screens/guide/GuideOverview'
 import { GuideScreens } from '@/screens/guide/GuideScreens'
 import { GuideTools } from '@/screens/guide/GuideTools'
-import { GuidedTour } from '@/screens/guide/GuidedTour'
+import { startTour } from '@/components/tour/store'
 
 /**
  * The guide, as a section rather than a page.
@@ -50,7 +50,6 @@ const SUBTITLE: Record<Page, string> = {
 
 export function GuideScreen() {
   const [page, setPage] = useState<Page>('overview')
-  const [tour, setTour] = useState(false)
 
   return (
     <Screen title="How to use jojo" subtitle={SUBTITLE[page]}>
@@ -66,9 +65,9 @@ export function GuideScreen() {
         icon="compass"
         variant="outline"
         full
-        onPress={() => setTour(true)}
+        // Resumes where the reader left off, if they did (`startTour`).
+        onPress={() => void startTour()}
       />
-      <GuidedTour open={tour} onClose={() => setTour(false)} />
 
       {page === 'overview' ? <GuideOverview /> : null}
       {page === 'screens' ? <GuideScreens /> : null}

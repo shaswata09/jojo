@@ -19,7 +19,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { createLanding } from './receive-landing'
+import { LANDING_STOP_GRACE_MS, createLanding } from './receive-landing'
 import type { LandingSource } from './receive-landing'
 import type { RestorePlan } from '@jojo/service/core/backup'
 
@@ -100,11 +100,16 @@ describe('createLanding — once the last chunk has authenticated', () => {
     const convoy = session(bytes(BACKUP), 1)
     const tick = createLanding(convoy, w.report)
 
+    vi.useFakeTimers()
     tick()
 
     expect(w.plans).toHaveLength(1)
     expect(w.plans[0]?.nodes).toHaveLength(1)
+    // Not at once: the last chunk's reply may still be writing.
+    expect(convoy.stops).toBe(0)
+    vi.advanceTimersByTime(LANDING_STOP_GRACE_MS)
     expect(convoy.stops).toBe(1)
+    vi.useRealTimers()
   })
 
   it('never offers a second time, however long the poll keeps running', () => {
@@ -114,7 +119,10 @@ describe('createLanding — once the last chunk has authenticated', () => {
 
     // Twenty ticks is five seconds of the real 250 ms poll — a person reading
     // the sheet before deciding. `complete` is still true on every one of them.
+    vi.useFakeTimers()
     for (let i = 0; i < 20; i += 1) tick()
+    vi.advanceTimersByTime(LANDING_STOP_GRACE_MS)
+    vi.useRealTimers()
 
     expect(w.plans).toHaveLength(1)
     // And the socket is closed once, not twenty times.

@@ -30,7 +30,7 @@ export const SAME_NETWORK =
 const SEND: Record<SendStage, StageCopy> = {
   idle: {
     title: 'Waiting for the other device',
-    body: `Open jojo on your phone, choose Transfer, then Receive from a computer, and point its camera at this animation. The key is carried by the dots themselves — reading it agrees an encryption key between the two devices, and nothing is broadcast to do it. ${SAME_NETWORK}`,
+    body: `Open jojo on your phone, choose Transfer, then Receive from a computer, and point its camera at the pulsing pattern of light here. The key is carried by the light itself — reading it agrees an encryption key between the two devices, and nothing is broadcast to do it. ${SAME_NETWORK}`,
   },
   connecting: {
     title: 'Reaching your phone',
@@ -57,7 +57,7 @@ const SEND: Record<SendStage, StageCopy> = {
 const RECEIVE: Record<PullStage, StageCopy> = {
   idle: {
     title: 'Waiting for your phone',
-    body: `Open jojo on your phone, choose Transfer, then Send to a computer, and point its camera at this animation. Your phone then shows a short code to type on the right. ${SAME_NETWORK}`,
+    body: `Open jojo on your phone, choose Transfer, then Send to a computer, and point its camera at the pulsing pattern of light here. Your phone then shows a short code to type on the right. ${SAME_NETWORK}`,
   },
   connecting: {
     title: 'Reaching your phone',

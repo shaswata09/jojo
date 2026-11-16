@@ -30,6 +30,13 @@ import { cn } from '@/lib/utils'
  * exists at all. It is there to keep copy legible over a photograph; a region
  * it has veiled is a region a camera cannot measure, so a key showing through a
  * full-strength gradient would be a key that never decodes.
+ *
+ * Where the scene cannot run, `LazyDataTransferScene` falls back to a still
+ * picture with `PulseOverlay` drawing the key on it. That overlay is the one
+ * part of this box that is not decoration — it has a label telling a person
+ * what to do with it — so `aria-hidden` sits on the pieces that are, not on
+ * the box, and `isolate` keeps the overlay's lift above the gradient inside
+ * this box rather than above the copy the stage lays over it.
  */
 export function SceneBackdrop({
   className,
@@ -44,10 +51,7 @@ export function SceneBackdrop({
   frames?: readonly PulseFrame[] | null
 }) {
   return (
-    <div
-      aria-hidden
-      className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
-    >
+    <div className={cn('pointer-events-none absolute inset-0 isolate overflow-hidden', className)}>
       <LazyDataTransferScene
         /*
          * Held back to 85% normally, so the picture sits behind the copy rather
@@ -66,6 +70,7 @@ export function SceneBackdrop({
           Weighted to the left, where the text is, so the picture survives on
           the side that has nothing over it. */}
       <div
+        aria-hidden
         className={cn(
           'absolute inset-0 bg-gradient-to-r',
           frames === null

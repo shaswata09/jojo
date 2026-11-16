@@ -1,9 +1,4 @@
-import {
-  CRASH_KEPT,
-  keepCrash,
-  toCrashReport,
-  type CrashReport,
-} from '@jojo/service/core/crash'
+import { CRASH_KEPT, keepCrash, toCrashReport, type CrashReport } from '@jojo/service/core/crash'
 import { CRASH_DEFAULTS, crashCapability, crashReportingOn } from '@jojo/service/core/crash-config'
 import { readStored, writeStored } from '@/lib/storage'
 
@@ -113,11 +108,7 @@ export function clearCrashes(): void {
  * Returns whether anything was kept, so a caller can tell "reporting is off"
  * from "reporting failed", which are different things to say to a user.
  */
-export function recordCrash(
-  thrown: unknown,
-  where: string,
-  enabled: boolean,
-): boolean {
+export function recordCrash(thrown: unknown, where: string, enabled: boolean): boolean {
   try {
     if (!crashReportingOn(CRASH_CAPABILITY, { enabled })) return false
     const report = toCrashReport(thrown, where, new Date().toISOString(), newId())
@@ -139,31 +130,4 @@ function newId(): string {
   const now = Date.now().toString(36)
   const salt = Math.floor(Math.random() * 1e6).toString(36)
   return `crash-${now}-${salt}`
-}
-
-/**
- * Catches what React cannot: a throw outside a component, and a rejected promise
- * nobody awaited.
- *
- * An error boundary only sees errors thrown during render. Most of what actually
- * breaks in this app happens somewhere else — a storage write, an agent turn, a
- * fetch handler — so without these two listeners a crash reporter would report
- * the minority of crashes and quietly imply it had seen them all.
- *
- * `enabled` is read through a getter rather than passed by value, because these
- * listeners are installed once at startup and the setting changes later.
- */
-export function listenForCrashes(enabled: () => boolean): () => void {
-  const onError = (event: ErrorEvent) => {
-    recordCrash(event.error ?? event.message, 'window', enabled())
-  }
-  const onRejection = (event: PromiseRejectionEvent) => {
-    recordCrash(event.reason, 'promise', enabled())
-  }
-  window.addEventListener('error', onError)
-  window.addEventListener('unhandledrejection', onRejection)
-  return () => {
-    window.removeEventListener('error', onError)
-    window.removeEventListener('unhandledrejection', onRejection)
-  }
 }

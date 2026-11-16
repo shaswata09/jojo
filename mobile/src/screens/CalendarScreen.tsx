@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Feather } from '@react-native-vector-icons/feather/static'
-import { useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import type { RouteProp } from '@react-navigation/native'
 import { MonthPickerSheet } from '@/components/common/DateField'
 import { ItemMenu, SnoozeMenu } from '@/components/common/ItemMenus'
@@ -66,13 +66,17 @@ export function CalendarScreen() {
 
   // A link from elsewhere in the app names a day; the calendar has to follow it
   // even when this screen was already mounted on another month.
+  // Cleared once applied, so following the same link again after paging away
+  // still moves the calendar — keyed on the value, a repeat changed nothing.
+  const navigation = useNavigation()
+  const linkDate = route.params?.date
   useEffect(() => {
-    const iso = route.params?.date
-    if (!iso) return
-    const { y, m, d } = partsOf(iso)
+    if (!linkDate) return
+    const { y, m, d } = partsOf(linkDate)
     setView({ year: y, month: m })
     setSelected(d)
-  }, [route.params?.date])
+    navigation.setParams({ date: undefined } as never)
+  }, [linkDate, navigation])
 
   /*
    * `TODAY_PARTS` is passed, and its absence would be SILENT.

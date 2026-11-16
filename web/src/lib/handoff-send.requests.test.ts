@@ -41,12 +41,12 @@ describe('starting a transfer from the code the phone shows (Q129)', () => {
   it('takes the typed code on the computer and starts the send with it', () => {
     const connect = strip(connectSource)
     expect(connect).toContain('aria-label="The code shown on your phone"')
-    expect(connect).toContain('void send.start(code, token)')
+    expect(connect).toContain('void send.start(code, tokens)')
   })
 
   it('dials the address the code decodes to, and asks that phone for the handshake', () => {
     const decoded = at('const read = decodeAddress(code)')
-    const asked = at('await fetchPairingResponse(address, token)')
+    const asked = at('await fetchPairingResponse(address, token, mine.signal)')
     expect(asked).toBeGreaterThan(decoded)
     // A code that does not decode stops the run before anything is dialled.
     expect(start.slice(decoded, asked)).toMatch(/if \(!read\.ok\) \{[\s\S]*?return\s*\}/)
@@ -55,11 +55,11 @@ describe('starting a transfer from the code the phone shows (Q129)', () => {
 
 describe('nothing moves before the handshake has passed the key (Q114)', () => {
   it('sends chunks only after complete() has produced keys', () => {
-    const asked = at('await fetchPairingResponse(address, token)')
-    const keyed = at('const keys = await complete(response.value)')
+    const asked = at('await fetchPairingResponse(address, token, mine.signal)')
+    const keyed = at('const keys = await complete(response.value, token)')
     const refused = at('if (keys === null) {')
     const sealed = at('planConvoy(secrets, keys.offererToAnswerer, payload)')
-    const sent = at('await sendChunk(address, token, await plan.seal(seq))')
+    const sent = at('await sendChunk(address, token, await plan.seal(seq), mine.signal)')
     expect(keyed).toBeGreaterThan(asked)
     expect(refused).toBeGreaterThan(keyed)
     expect(sealed).toBeGreaterThan(refused)
@@ -69,8 +69,8 @@ describe('nothing moves before the handshake has passed the key (Q114)', () => {
   })
 
   it('stops on a handshake the phone did not answer, before any chunk', () => {
-    const asked = at('await fetchPairingResponse(address, token)')
-    const keyed = at('const keys = await complete(response.value)')
+    const asked = at('await fetchPairingResponse(address, token, mine.signal)')
+    const keyed = at('const keys = await complete(response.value, token)')
     expect(start.slice(asked, keyed)).toContain('if (!response.ok) return stop(response.error)')
   })
 })

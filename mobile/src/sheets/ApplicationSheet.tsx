@@ -36,6 +36,7 @@ import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { useReadFit } from '@/lib/fit-agent'
 import { useModelSettings } from '@/lib/model-settings-context'
 import { space } from '@/theme/tokens'
+import { report } from '@/lib/analytics'
 
 /**
  * `deadline` is not on `Application` — it is a timeline item this sheet mints.
@@ -282,9 +283,13 @@ export function ApplicationSheet({
     // An untouched date field must not reach the calendar at all. Whoever opened
     // this sheet decides what to prefill, and a save that always wrote would
     // mint a duplicate deadline every time someone edited a location.
-    if (form.deadline === (initial?.deadline ?? '')) return null
-
+    //
+    // Compared with the deadline ON THE CALENDAR, not with what the sheet was
+    // opened with: after "Changes discarded" → Undo the sheet reopens with the
+    // typed values as its `initial`, so a moved deadline compared equal to
+    // itself and the save left the old date on the calendar.
     const existing = applicationDeadlineOf(timeline.forApplication(next.id))
+    if (form.deadline === (existing?.date ?? '')) return null
 
     if (!form.deadline) {
       if (!existing) return null
@@ -354,6 +359,8 @@ export function ApplicationSheet({
       lastAction: fields.stage === 'draft' ? undefined : `Added at ${STAGE_LABEL[fields.stage]}`,
     })
     setRecord(refKey('app', created.id), keywords)
+    // The phone's half of the web's `application_created` (Q175, review 2026-11-16).
+    void report('application_created', { source: 'manual' })
     // Filed under what it became; added to any filing it already has, since
     // `applicationIds` is a set. Web does this inside its undo; see there.
     if (posting) {

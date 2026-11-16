@@ -31,7 +31,10 @@ function rig(states: PullServing[]) {
 
 describe('watching a phone that is sending', () => {
   it('says finished once, and keeps listening until the last write has had time to land', () => {
-    const r = rig([serving({ served: 1, chunks: 2 }), serving({ served: 2, chunks: 2, finished: true })])
+    const r = rig([
+      serving({ served: 1, chunks: 2 }),
+      serving({ served: 2, chunks: 2, finished: true }),
+    ])
     r.tick()
     r.tick()
     r.tick()
@@ -47,13 +50,18 @@ describe('watching a phone that is sending', () => {
     expect(r.stop).toHaveBeenCalledOnce()
   })
 
-  it('closes at once, and says so once, when the backup could not be gathered', () => {
+  it('says so once when the backup could not be gathered, and closes after the grace', () => {
     const r = rig([serving({ failed: true })])
     r.tick()
     r.tick()
-    expect(r.stop).toHaveBeenCalledOnce()
     expect(r.report.onFailed).toHaveBeenCalledOnce()
     expect(r.report.onFinished).not.toHaveBeenCalled()
+    // Still listening, so the 409 telling the computer why can reach it.
+    expect(r.stop).not.toHaveBeenCalled()
+    r.advance(1000)
+    r.tick()
+    r.tick()
+    expect(r.stop).toHaveBeenCalledOnce()
   })
 
   it('reports progress on every tick until it stops', () => {

@@ -10,7 +10,15 @@ import {
 } from '@jojo/service/core/model-server'
 import { endpointOf } from '@jojo/service/core/provider'
 import { failed, send } from '@/lib/local-service'
-import type { ChatMessage, ChatResult, ModelsResult, Turn } from '@jojo/service/core/model-server'
+import { report } from '@/lib/analytics'
+import { reportableProvider } from '@jojo/service/core/analytics'
+import type {
+  ChatMessage,
+  ChatResult,
+  ModelFailure,
+  ModelsResult,
+  Turn,
+} from '@jojo/service/core/model-server'
 
 /**
  * The model client.
@@ -67,6 +75,24 @@ export { isConfigured }
  * For vLLM that id is the full HuggingFace path, which nobody types correctly
  * from memory.
  */
+/**
+ * A failed model request, counted — the phone's half of the web's
+ * `model_failed` (review 2026-11-16: the phone sent none). Never the address
+ * or the message: `EventParams` has no string in it, so neither can travel.
+ */
+function reportFailure(
+  failure: ModelFailure,
+  provider: string,
+  phase: 'connect' | 'chat' | 'models',
+): ModelFailure {
+  void report('model_failed', {
+    provider: reportableProvider(provider),
+    kind: failure.why ?? failure.kind,
+    phase,
+  })
+  return failure
+}
+
 export async function listModels(
   /*
    * The whole settings object, not just an address.
@@ -82,7 +108,9 @@ export async function listModels(
   const endpoint = endpointOf(settings)
   if (endpoint.trim().length === 0) return unconfigured()
   const response = await send(modelsRequest(settings), endpoint, signal)
-  return failed(response) ? response.failed : readModelsResponse(response, endpoint)
+  if (failed(response)) return reportFailure(response.failed, settings.provider, 'models')
+  const read = readModelsResponse(response, endpoint)
+  return read.ok ? read : reportFailure(read, settings.provider, 'models')
 }
 
 export async function complete(
@@ -96,7 +124,9 @@ export async function complete(
     endpointOf(settings),
     signal,
   )
-  return failed(response) ? response.failed : readChatResponse(response)
+  return failed(response)
+    ? reportFailure(response.failed, settings.provider, 'chat')
+    : readChatResponse(response)
 }
 
 /**
@@ -129,7 +159,7 @@ export async function agentTurn(
    */
   const request = chatRequest(settings, messages, tools, false)
   const response = await send(request, endpointOf(settings), signal, options.timeoutMs)
-  if (failed(response)) return response.failed
+  if (failed(response)) return reportFailure(response.failed, settings.provider, 'chat')
 
   const turn = readTurnFor(settings, response)
 

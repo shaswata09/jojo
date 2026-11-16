@@ -1,5 +1,6 @@
 import { Smartphone } from 'lucide-react'
 import { SceneBackdrop } from '@/components/transfer-ui/SceneBackdrop'
+import { PulseOverlay } from '@/components/transfer/PulseOverlay'
 import type { PulseFrame } from '@jojo/service/core/pulse'
 import { summarise, type TransferGroup } from '@/components/transfer-ui/groups'
 import { showsOffer, type RunStage } from '@/components/transfer-ui/send-cycle'
@@ -81,10 +82,20 @@ export function TransferStage({
 
   return (
     <section className="surface relative flex min-h-[24rem] flex-col overflow-hidden rounded-lg px-4 py-4 sm:px-5 sm:py-5">
-      {/* Behind the words, never over them. */}
-      {showScene ? <SceneBackdrop frames={showing} /> : null}
+      {/* Behind the words, never over them. With the scene put away the key
+          still has to be on screen — the phone cannot pair without it — so
+          the overlay the scene's own fallback uses draws it alone. */}
+      {showScene ? <SceneBackdrop frames={showing} /> : <PulseOverlay frames={showing} />}
 
-      <div className="relative flex flex-1 flex-col">
+      {/* While a key is up the copy keeps clear of the overlay's column, so
+          no word sits over a region the camera has to measure. The same
+          width as the overlay in `PulseOverlay`, plus a gutter. */}
+      <div
+        className={cn(
+          'relative flex flex-1 flex-col',
+          showing !== null && 'pr-[calc(min(40%,17rem)+2rem)]',
+        )}
+      >
         <h2 className="text-lg font-medium">{copy.title}</h2>
         <p className="mt-1 max-w-md text-sm text-text-2">{copy.body}</p>
 
@@ -120,7 +131,7 @@ export function TransferStage({
             <p className="flex items-center gap-2 text-xs text-text-3">
               <Smartphone className="size-3.5 shrink-0" strokeWidth={1.8} aria-hidden />
               {role === 'receive' || canStart
-                ? 'Your phone reads the key from this animation, then shows you a short code to type on the right.'
+                ? "Point your phone's camera at the pulsing pattern of light here — that is the key — and it then shows you a short code to type on the right."
                 : 'Choose at least one group to send.'}
             </p>
           </div>

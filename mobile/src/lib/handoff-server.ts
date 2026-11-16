@@ -196,6 +196,7 @@ export function startHandoffServer(
 
     // '0.0.0.0', not 'localhost': the point is to be reachable from the other
     // device, and a loopback bind would accept only this phone's own traffic.
+    let closed = false
     server.listen({ port: 0, host: '0.0.0.0' }, () => {
       const bound = server.address()
       if (bound === null || typeof bound === 'string') {
@@ -204,7 +205,11 @@ export function startHandoffServer(
       }
       resolve({
         port: bound.port,
+        // Idempotent: the watcher closes after its grace and the panel closes
+        // when it goes away, and either may come first.
         stop: () => {
+          if (closed) return
+          closed = true
           for (const open of sockets) open.destroy()
           sockets.clear()
           server.close()

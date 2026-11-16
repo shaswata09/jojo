@@ -37,7 +37,7 @@ import {
   type PairingState,
   type SessionKeys,
 } from '@jojo/service/core/pairing'
-import { pathToken } from '@jojo/service/core/handoff'
+import { pathToken, type HandoffDirection } from '@jojo/service/core/handoff'
 import { planPulse, type PulseFrame } from '@jojo/service/core/pulse'
 import type { Secrets } from '@jojo/service/core/secrets'
 import { SecretsUnavailable, createSecrets } from '@jojo/service/crypto/noble-secrets'
@@ -70,6 +70,17 @@ export type PairingSession = {
    * token to build a URL and has no business with what produced it.
    */
   token: string | null
+  /**
+   * Every path a phone may still be holding, newest first: the code on screen,
+   * then the one it replaced while that one is still in date.
+   *
+   * The code on screen is swapped for a fresh one before it expires, and a
+   * phone that scanned the old one just before the swap is still on its way —
+   * scanning, then a person typing twelve characters. Answering only the new
+   * path refused that phone ('handoff/refused') for doing nothing wrong
+   * (transfer audit, 2026-11-16).
+   */
+  tokens: readonly string[]
   /** The agreed keys, once a device has proved it read the screen. */
   keys: SessionKeys | null
   /** Why pairing is impossible here, if it is. */
@@ -85,7 +96,7 @@ export type PairingSession = {
    * and conclude the pairing failed. Returning the keys is what makes the
    * result usable in the same function that asked for it.
    */
-  complete: (response: Uint8Array) => Promise<SessionKeys | null>
+  complete: (response: Uint8Array, token?: string) => Promise<SessionKeys | null>
   /**
    * Throws the current offer away and shows a new one — and forgets a pairing.
    *
@@ -133,7 +144,11 @@ export function armRefresh(
   return () => clearTimeout(id)
 }
 
-export function usePairingSession(active: boolean): PairingSession {
+export function usePairingSession(
+  active: boolean,
+  /** Which way the records go; part of the path, so a phone set the other way cannot pair. */
+  direction: HandoffDirection = 'push',
+): PairingSession {
   // One instance for the life of the component. `createSecrets` is cheap, but a
   // new one per render would be a new object identity in every callback below.
   const secrets = useMemo<Secrets>(() => createSecrets(), [])
@@ -155,11 +170,27 @@ export function usePairingSession(active: boolean): PairingSession {
    * because the code had refreshed since.
    */
   const state = useRef<PairingState | null>(null)
+  /** The token of the offer in `state`. */
+  const liveToken = useRef<string | null>(null)
+  /** The offer the timer last replaced, kept answerable until it really expires. */
+  const previous = useRef<{ state: PairingState; token: string } | null>(null)
+  const [previousToken, setPreviousToken] = useState<string | null>(null)
   /** Set by `complete`; read by the refresh timer. A ref for the reason `state` is. */
   const paired = useRef(false)
 
+  /** The timer's re-mint: a new code goes up, and the old one stays answerable. */
+  const rollover = useCallback(() => {
+    if (state.current !== null && liveToken.current !== null) {
+      previous.current = { state: state.current, token: liveToken.current }
+      setPreviousToken(liveToken.current)
+    }
+    setGeneration((n) => n + 1)
+  }, [])
+
   // An explicit refresh is a person asking for a new code, so it starts over.
   const refresh = useCallback(() => {
+    previous.current = null
+    setPreviousToken(null)
     paired.current = false
     // A new code is a new session: the old keys belong to a send that has
     // ended, and keeping them left the screen saying "paired" under a code
@@ -177,14 +208,16 @@ export function usePairingSession(active: boolean): PairingSession {
         const next = await beginPairing(secrets, Date.now())
         if (!live) return
         state.current = next
+        liveToken.current = null
         // The path token, derived from the offer's screen secret. It IS the
         // access control on the phone's socket: `core/handoff.ts` refuses any
         // request whose path does not carry it, which is what stops a random
         // page in another tab from reaching a phone whose address it guessed.
         // CORS headers are advice to a browser, not a gate, and are not the
         // defence — see the note on `pathToken`.
-        const url = await pathToken(secrets, next.offer)
+        const url = await pathToken(secrets, next.offer, direction)
         if (!live) return
+        liveToken.current = url
         // Ten frames, cycling. The offer is 83 bytes and a frame carries nine,
         // so at `PULSE_FPS` the animation says the whole key in about 1.7
         // seconds and then says it again for as long as the screen is up. A
@@ -215,12 +248,12 @@ export function usePairingSession(active: boolean): PairingSession {
     // Re-minting on a timer rather than watching a clock: nothing needs to know
     // the remaining time, only that a fresh code goes up before this one stops
     // working.
-    const cancel = armRefresh(refresh, () => paired.current)
+    const cancel = armRefresh(rollover, () => paired.current)
     return () => {
       live = false
       cancel()
     }
-  }, [active, secrets, generation, refresh])
+  }, [active, secrets, generation, rollover, direction])
 
   // Leaving the screen takes the private key and the agreed keys with it. There
   // is no pairing that outlives the page, by design — see `core/pairing.ts`.
@@ -228,6 +261,9 @@ export function usePairingSession(active: boolean): PairingSession {
     if (active) return
     paired.current = false
     state.current = null
+    liveToken.current = null
+    previous.current = null
+    setPreviousToken(null)
     setFrames(null)
     setToken(null)
     setKeys(null)
@@ -236,8 +272,16 @@ export function usePairingSession(active: boolean): PairingSession {
   }, [active])
 
   const complete = useCallback(
-    async (response: Uint8Array): Promise<SessionKeys | null> => {
-      const current = state.current
+    async (response: Uint8Array, token?: string): Promise<SessionKeys | null> => {
+      // The offer this phone scanned: the one whose path it answered on.
+      const older = previous.current
+      const current =
+        token !== undefined &&
+        older !== null &&
+        token === older.token &&
+        token !== liveToken.current
+          ? older.state
+          : state.current
       if (current === null) return null
 
       const result = await completePairing(secrets, current, response, Date.now())
@@ -253,6 +297,9 @@ export function usePairingSession(active: boolean): PairingSession {
       // on screen would invite a second device to pair against a session this
       // one is already holding.
       state.current = null
+      liveToken.current = null
+      previous.current = null
+      setPreviousToken(null)
       paired.current = true
       setFrames(null)
       setRefused(null)
@@ -263,5 +310,10 @@ export function usePairingSession(active: boolean): PairingSession {
     [secrets, refresh],
   )
 
-  return { phase, frames, token, keys, problem, refused, complete, refresh }
+  const tokens = useMemo(
+    () => [token, previousToken].filter((t): t is string => t !== null && t !== undefined),
+    [token, previousToken],
+  )
+
+  return { phase, frames, token, tokens, keys, problem, refused, complete, refresh }
 }

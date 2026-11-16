@@ -128,7 +128,9 @@ describe('gathering the documents a backup is supposed to contain', () => {
 
 /** What a sink was handed, joined back into the file text. */
 async function streamed(source: BackupBlobs): Promise<{ text: string; parts: number }> {
-  const parts: string[] = [backupHead({ exportedAt: '2026-10-22T10:00:00.000Z', nodes: [], edges: [] })]
+  const parts: string[] = [
+    backupHead({ exportedAt: '2026-10-22T10:00:00.000Z', nodes: [], edges: [] }),
+  ]
   await streamDocuments(source, async (part) => {
     parts.push(typeof part === 'string' ? part : new TextDecoder().decode(part))
   })
@@ -168,7 +170,9 @@ describe('streaming the documents into a backup', () => {
       { id: 'a', name: 'CV.pdf' },
       { id: 'b', name: 'Letter.pdf' },
     ]
-    await expect(streamDocuments(blobs(two, {}), async () => undefined)).rejects.toThrow(DOCUMENTS_UNREADABLE)
+    await expect(streamDocuments(blobs(two, {}), async () => undefined)).rejects.toThrow(
+      DOCUMENTS_UNREADABLE,
+    )
   })
 
   it('keeps a partial backup, and says how much of it is missing', async () => {
@@ -182,7 +186,10 @@ describe('streaming the documents into a backup', () => {
       ),
     )
     // The skipped first document must not leave a leading comma behind.
-    expect(readBackup(text)).toMatchObject({ ok: true, value: { documents: [{ path: 'Documents/b__Letter.pdf' }] } })
+    expect(readBackup(text)).toMatchObject({
+      ok: true,
+      value: { documents: [{ path: 'Documents/b__Letter.pdf' }] },
+    })
     expect(reported).toHaveBeenCalledTimes(1)
     expect((reported.mock.calls[0] as [string, Error])[1].message).toContain('1 of 2')
   })
@@ -191,7 +198,11 @@ describe('streaming the documents into a backup', () => {
     // 7 MiB: three slices. Each is read with `slice`, never `arrayBuffer` on the whole file.
     const big = new File([new Uint8Array(7 * 1024 * 1024).fill(9)], 'big.bin')
     const whole = vi.spyOn(big, 'arrayBuffer')
-    const { text } = await streamed({ ready: true, all: async () => [{ id: 'x', name: 'big.bin' }], get: async () => big })
+    const { text } = await streamed({
+      ready: true,
+      all: async () => [{ id: 'x', name: 'big.bin' }],
+      get: async () => big,
+    })
     expect(whole).not.toHaveBeenCalled()
     const read = readBackup(text)
     expect(read.ok && read.value.documents[0]?.data.byteLength).toBe(7 * 1024 * 1024)
@@ -233,7 +244,7 @@ describe('the hook is wired to it', () => {
     expect(closed).toBeGreaterThan(-1)
     expect(firstStamp).toBeGreaterThan(closed)
 
-    const assembled = download.indexOf('await blob({}, onProgress)')
+    const assembled = download.indexOf('await assemble({}, onProgress)')
     const clicked = download.indexOf('anchor.click()')
     const lastStamp = download.lastIndexOf('writeLastBackup(')
     expect(assembled).toBeGreaterThan(-1)
@@ -269,15 +280,24 @@ describe('asking for a backup after a substantial change (Q097)', () => {
   it('stops asking once a backup is taken after the changes', () => {
     const nodes = touched(20, 1)
     expect(backupNudge(nodes, none).shouldNudge).toBe(true)
-    expect(backupNudge(nodes, { ...none, lastBackupAt: at(30) })).toEqual({ changed: 0, shouldNudge: false })
+    expect(backupNudge(nodes, { ...none, lastBackupAt: at(30) })).toEqual({
+      changed: 0,
+      shouldNudge: false,
+    })
   })
 
   it('does not count demo records nobody has touched', () => {
     // Every seeded node carries the seed instant as its `updatedAt`.
     const seeded = Array.from({ length: 120 }, () => ({ updatedAt: at(0) }))
-    expect(backupNudge(seeded, { ...none, seededAt: at(0) })).toEqual({ changed: 0, shouldNudge: false })
+    expect(backupNudge(seeded, { ...none, seededAt: at(0) })).toEqual({
+      changed: 0,
+      shouldNudge: false,
+    })
     const edited = [...seeded.slice(15), ...touched(15, 1)]
-    expect(backupNudge(edited, { ...none, seededAt: at(0) })).toEqual({ changed: 15, shouldNudge: true })
+    expect(backupNudge(edited, { ...none, seededAt: at(0) })).toEqual({
+      changed: 15,
+      shouldNudge: true,
+    })
   })
 
   it('stays away after "Not now" until another substantial change, then asks again', () => {
@@ -288,7 +308,10 @@ describe('asking for a backup after a substantial change (Q097)', () => {
     // Fourteen more is not yet a substantial change.
     expect(backupNudge([...before, ...touched(14, 31)], dismissed).shouldNudge).toBe(false)
     // Fifteen is, and the sentence still counts from the last backup.
-    expect(backupNudge([...before, ...touched(15, 31)], dismissed)).toEqual({ changed: 35, shouldNudge: true })
+    expect(backupNudge([...before, ...touched(15, 31)], dismissed)).toEqual({
+      changed: 35,
+      shouldNudge: true,
+    })
   })
 
   it('does not ask for a backup of what a restore just brought back', () => {
@@ -306,8 +329,11 @@ describe('asking for a backup after a substantial change (Q097)', () => {
     expect(map.get('jojo.lastBackupAt')).toBe(at(50))
     expect(backupNudge(restored, { ...none, lastBackupAt: at(50) }).shouldNudge).toBe(false)
     // Settings stamps it once the restore has succeeded, before the reload.
-    const onRestore = /const onRestore = async \(\) => \{[\s\S]*?\n {2}\}\n/.exec(dataPanelSource)?.[0] ?? ''
-    expect(onRestore.indexOf('markRestoredFromBackup(')).toBeGreaterThan(onRestore.indexOf('if (!done.ok)'))
+    const onRestore =
+      /const onRestore = async \(\) => \{[\s\S]*?\n {2}\}\n/.exec(dataPanelSource)?.[0] ?? ''
+    expect(onRestore.indexOf('markRestoredFromBackup(')).toBeGreaterThan(
+      onRestore.indexOf('if (!done.ok)'),
+    )
   })
 
   it('ignores a "Not now" older than the last backup', () => {
@@ -335,7 +361,9 @@ describe('asking for a backup after a substantial change (Q097)', () => {
   it('says how much is unprotected, and whether there has ever been a backup', () => {
     expect(backupPromptText(15, null)).toMatch(/^15 records in jojo are not in any backup yet\./)
     expect(backupPromptText(1, null)).toMatch(/^1 record in jojo is not in any backup yet\./)
-    expect(backupPromptText(22, at(0))).toMatch(/^22 records have changed since your last backup on /)
+    expect(backupPromptText(22, at(0))).toMatch(
+      /^22 records have changed since your last backup on /,
+    )
   })
 
   it('tells every useBackup when a backup is taken or the prompt is put away', () => {
@@ -345,7 +373,9 @@ describe('asking for a backup after a substantial change (Q097)', () => {
     expect(code).toContain('useSyncExternalStore(subscribeMarks, readNudgeDismissed, noMark)')
     const stamp = code.slice(code.indexOf('function writeLastBackup('))
     expect(stamp.slice(0, stamp.indexOf('\n}'))).toContain('marksChanged()')
-    expect(code).toMatch(/backupNudge\(graph\.nodes\(\), \{ lastBackupAt, dismissedAt, seededAt \}\)/)
+    expect(code).toMatch(
+      /backupNudge\(graph\.nodes\(\), \{ lastBackupAt, dismissedAt, seededAt \}\)/,
+    )
     // Never the function itself: `onClick={backup.dismiss}` would pass it the event.
     expect(code).toContain('dismiss: () => dismissBackupNudge(),')
   })
@@ -354,6 +384,30 @@ describe('asking for a backup after a substantial change (Q097)', () => {
     expect(backupToast('cancelled', 'x.json')).toBeNull()
     expect(backupToast('failed', 'x.json')?.tone).toBe('danger')
     expect(backupToast('saved', 'x.json')?.title).toBe('Backup saved')
-    expect(backupToast('started', 'x.json')?.description).toContain('Look for x.json in your downloads.')
+    expect(backupToast('started', 'x.json')?.description).toContain(
+      'Look for x.json in your downloads.',
+    )
+  })
+})
+
+describe('what the backup toast promises', () => {
+  it('says how many documents are missing instead of promising every one', () => {
+    const said = backupToast({ kind: 'started', documents: { written: 7, total: 10 } }, 'x.json')
+    expect(said?.description).toContain(
+      '7 of your 10 documents — 3 could not be read and are not in it',
+    )
+    expect(said?.description).not.toContain('every document')
+  })
+
+  it('gives jojo’s own refusal its own sentence, not the download advice', () => {
+    const said = backupToast({ kind: 'failed', reason: DOCUMENTS_NOT_READY }, 'x.json')
+    expect(said?.description).toBe(DOCUMENTS_NOT_READY)
+  })
+
+  it('still promises every document when every one went in', () => {
+    const said = backupToast({ kind: 'saved', documents: { written: 2, total: 2 } }, 'x.json')
+    expect(said?.description).toBe(
+      'x.json holds your records and every document you have attached.',
+    )
   })
 })

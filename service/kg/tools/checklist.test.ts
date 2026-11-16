@@ -191,7 +191,11 @@ describe('changing and removing', () => {
     okOr(add(h, id, 'Order a transcript'))
     const before = h.repo.getSnapshot().node(id as never, 'application')?.updatedAt
 
-    const set = h.runtime.run('application.checklist.item.set', { id, itemId: 'Order a transcript', done: true })
+    const set = h.runtime.run('application.checklist.item.set', {
+      id,
+      itemId: 'Order a transcript',
+      done: true,
+    })
     const remove = h.runtime.run('application.checklist.item.remove', { id, itemId: 'nope' })
     expect(set.ok).toBe(false)
     expect(remove.ok).toBe(false)
@@ -242,5 +246,16 @@ describe('what a background pipeline may propose', () => {
     // `draft.add` is NOT system: a person pressed Draft, so ⌘Z takes it back.
     expect(TOOLS['application.checklist.draft.add'].system).toBeUndefined()
     expect(TOOLS['application.checklist.draft.add'].internal).toBe(true)
+  })
+})
+
+describe('checklist.item.add with no words (review 2026-11-16)', () => {
+  it('refuses a step that is only punctuation, rather than reporting one added', () => {
+    const h = harness()
+    const id = anApplication(h)
+    const r = add(h, id, '...')
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.errors[0]?.message).toMatch(/no words/)
+    expect(listOf(h, id)).toHaveLength(0)
   })
 })

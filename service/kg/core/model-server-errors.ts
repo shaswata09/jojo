@@ -148,7 +148,11 @@ const blockedByBrowser = (): ModelFailure => ({
  * model name with the list of names it does have. Truncated, because some of
  * them answer with an HTML error page.
  */
-export const refused = (status: number, body: string, retryAfter: string | null = null): ModelFailure =>
+export const refused = (
+  status: number,
+  body: string,
+  retryAfter: string | null = null,
+): ModelFailure =>
   status === 0
     ? blockedByBrowser()
     : status === 429
@@ -195,12 +199,23 @@ export const emptyTurn = (): ModelFailure => ({
  * same fact, "nothing is listening at that address", and the only actionable
  * difference is how long they waited to learn it.
  */
-export const unreachable = (endpoint: string, detail: string, timedOut: boolean): ModelFailure => ({
+/**
+ * `waitedMs` is how long the request was actually given. Most requests get the
+ * default, but a long document read is given four minutes, and telling someone
+ * "nothing answered within 60 seconds" after they watched it wait four is a
+ * message they stop believing.
+ */
+export const unreachable = (
+  endpoint: string,
+  detail: string,
+  timedOut: boolean,
+  waitedMs: number = MODEL_TIMEOUT_MS,
+): ModelFailure => ({
   ok: false,
   kind: 'unreachable',
   why: timedOut ? 'timeout' : 'unreachable',
   reason: timedOut
-    ? `Nothing answered ${normaliseEndpoint(endpoint)} within ${String(MODEL_TIMEOUT_MS / 1000)} seconds.`
+    ? `Nothing answered ${normaliseEndpoint(endpoint)} within ${String(Math.round(waitedMs / 1000))} seconds.`
     : `Could not reach ${normaliseEndpoint(endpoint)} — ${detail}.`,
 })
 

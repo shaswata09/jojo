@@ -17,6 +17,7 @@ import {
   fromBase64,
   readBackup,
   toBase64,
+  replacesClause,
 } from './backup'
 
 /**
@@ -279,6 +280,24 @@ describe('reading a backup, which must refuse rather than repair', () => {
     expect(read.value.loss).toEqual({ records: 1, links: 1, changed: 1 })
     expect(describeBackup(read.value)).toBe(
       '3 records, 1 links, no documents — of which 1 record and 1 link cannot be read and will be left out, and 1 record will come back changed',
+    )
+  })
+})
+
+describe('what a restore confirmation promises about documents', () => {
+  const file = (id: string) => ({ id, type: 'file' }) as never
+  const plan = (nodes: never[], documents: { path: string; data: Uint8Array }[]) =>
+    ({ exportedAt: '', nodes, edges: [], documents }) as never
+
+  it('says every document goes when the backup carries each record its document', () => {
+    expect(
+      replacesClause(plan([file('file:a')], [{ path: 'Documents/file:a__CV.pdf', data: new Uint8Array(1) }]), 'here'),
+    ).toBe('Restoring replaces every record and every document here')
+  })
+
+  it('says which copies stay when records arrive without their documents', () => {
+    expect(replacesClause(plan([file('file:a'), file('file:b')], []), 'on this phone')).toBe(
+      'Restoring replaces every record on this phone and every document, except for the 2 records arriving without their documents, whose copies already here are kept',
     )
   })
 })

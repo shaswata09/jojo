@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { DEVICE_LOCALE, LOCALES, localeInfo } from '@jojo/service/core/locale'
+import type { LocaleChoice } from '@jojo/service/core/locale'
+import { useLocale } from '@/i18n/locale-context'
 import { MascotCredit, StrokeLegend } from '@/components/brand/MascotMoves'
 import { RobotMascot } from '@/components/brand/RobotMascot'
 import { SettingRow } from '@/components/common/Field'
@@ -29,6 +33,7 @@ export function AppearancePanel() {
         description="System follows your operating system setting"
         control={<Segment label="Theme" options={THEMES} value={pref} onChange={setPref} />}
       />
+      <LanguageRow />
       <SettingRow
         label="Mascot gestures"
         description="jojo reacts as you work. Try one."
@@ -91,5 +96,38 @@ export function AppearancePanel() {
         }
       />
     </Panel>
+  )
+}
+
+/**
+ * The language picker. Each language is named in itself — "Deutsch", "日本語" —
+ * because a person looking for theirs in a list written in a language they do
+ * not read can still find their own name for it.
+ */
+function LanguageRow() {
+  const { t } = useTranslation()
+  const { choice, device, setChoice } = useLocale()
+  return (
+    <SettingRow
+      label={t('language.label')}
+      description={t('language.description')}
+      control={
+        <select
+          aria-label={t('language.label')}
+          className="h-9 w-full max-w-56 rounded-md border border-hairline bg-panel px-2.5 text-sm"
+          value={choice}
+          onChange={(e) => setChoice(e.target.value as LocaleChoice)}
+        >
+          <option value={DEVICE_LOCALE}>
+            {t('language.system', { name: localeInfo(device).native })}
+          </option>
+          {LOCALES.map((l) => (
+            <option key={l.code} value={l.code} lang={l.code}>
+              {l.native}
+            </option>
+          ))}
+        </select>
+      }
+    />
   )
 }

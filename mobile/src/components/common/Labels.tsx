@@ -143,6 +143,8 @@ function KeywordSheet({
       onClose={onClose}
       title={title}
       description="Keywords are yours, and shared by applications, reminders, files and links — filtering by one finds all of them."
+      // The keyword list scrolls itself.
+      scroll={false}
     >
       <ScrollView style={styles.keywordList} bounces={false}>
         {labels.map((l) => {

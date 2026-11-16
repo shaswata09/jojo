@@ -49,7 +49,7 @@ export function createServeWatch(
   graceMs: number = SERVE_GRACE_MS,
 ): () => void {
   let finishedAt: number | null = null
-  let failed = false
+  let failedAt: number | null = null
   let stopped = false
 
   return () => {
@@ -57,20 +57,20 @@ export function createServeWatch(
     const at = session.progress()
     report.onProgress(at.served, at.chunks)
 
-    if (at.failed && !failed) {
-      failed = true
-      // Nothing was handed over, and nothing will be: close now.
-      stopped = true
-      session.stop()
+    // Failed: said at once, and the socket kept open for the same grace as a
+    // finish, so the 409 telling the computer why reaches it. Closing at once
+    // cut that reply off, and the computer blamed the network (transfer
+    // audit, 2026-11-16).
+    if (at.failed && failedAt === null) {
+      failedAt = now()
       report.onFailed()
-      return
     }
-
     if (at.finished && finishedAt === null) {
       finishedAt = now()
       report.onFinished()
     }
-    if (finishedAt !== null && now() - finishedAt >= graceMs) {
+    const since = finishedAt ?? failedAt
+    if (since !== null && now() - since >= graceMs) {
       stopped = true
       session.stop()
     }

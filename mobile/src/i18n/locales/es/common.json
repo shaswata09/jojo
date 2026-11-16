@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "Idioma",
+    "description": "El idioma en que se muestra jojo. Tus registros se quedan en el idioma en que los escribiste.",
+    "system": "Igual que este dispositivo ({{name}})",
+    "restartForDirection": "El árabe se lee de derecha a izquierda cuando jojo se reinicia."
+  }
+}

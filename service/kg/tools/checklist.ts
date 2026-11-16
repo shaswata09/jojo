@@ -134,6 +134,9 @@ export const checklistItemAdd = defineTool({
      * minute, so a step the person typed meanwhile is only catchable by the
      * write that happens inside the transaction.
      */
+    // Punctuation alone ("...") has no words to keep: `addItems` would skip
+    // it, and the call would report "Step added" for a write it never made.
+    if (keyOf(text) === '') ctx.fail('That step has no words in it.', { field: 'text' })
     if (itemsOf(held).some((i) => keyOf(i.text) === keyOf(text))) {
       ctx.fail('That step is already on the list.', { field: 'text' })
     }
@@ -227,14 +230,13 @@ export const checklistItemRemove = defineTool({
 })
 
 /** Fails, naming where the ids are, when no step on this checklist has `itemId`. */
-function requireStep(
-  ctx: ToolContext,
-  held: Parameters<typeof itemsOf>[0],
-  itemId: string,
-): void {
+function requireStep(ctx: ToolContext, held: Parameters<typeof itemsOf>[0], itemId: string): void {
   if (itemsOf(held).some((i) => i.id === itemId)) return
-  ctx.fail('No step on this application’s checklist has that id. Read the application for its steps and their ids.', {
-    field: 'itemId',
-    code: 'graph/not-found',
-  })
+  ctx.fail(
+    'No step on this application’s checklist has that id. Read the application for its steps and their ids.',
+    {
+      field: 'itemId',
+      code: 'graph/not-found',
+    },
+  )
 }

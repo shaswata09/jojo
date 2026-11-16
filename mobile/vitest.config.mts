@@ -38,6 +38,12 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/kg/**/*.test.ts', 'src/lib/**/*.test.ts', 'src/theme/**/*.test.ts'],
+    include: [
+      'src/kg/**/*.test.ts',
+      'src/lib/**/*.test.ts',
+      'src/theme/**/*.test.ts',
+      // The translation catalogs: JSON and the index that imports it.
+      'src/i18n/**/*.test.ts',
+    ],
   },
 })

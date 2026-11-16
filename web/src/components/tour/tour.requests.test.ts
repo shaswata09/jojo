@@ -204,3 +204,21 @@ describe('the tour’s wiring (Q324)', () => {
     expect(launcher).toMatch(/tour\.start\(\)/)
   })
 })
+
+describe("the tour keeps out of the reader's way (review 2026-11-16)", () => {
+  it('moves on by itself only for a task done while its step was showing', () => {
+    expect(overlay).toMatch(/if \(!now\) seenUndone = true/)
+    expect(overlay).toMatch(/if \(seenUndone\) setAdvanceFor\(step\.id\)/)
+    // And not again on a later visit: the flag resets each time the step opens.
+    expect(overlay).toMatch(/let seenUndone = false[\s\S]{0,200}setAdvanceFor\(null\)/)
+    expect(overlay).toMatch(/const advance = advanceFor === step\.id/)
+  })
+
+  it('leaves a key alone that a menu or a radio group already handled', () => {
+    expect(overlay).toMatch(/if \(event\.defaultPrevented \|\|/)
+  })
+
+  it('lets a menu opened during the tour be used above its dim', () => {
+    expect(overlay).toMatch(/const shield = !step\.open && !popper &&/)
+  })
+})

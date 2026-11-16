@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "语言",
+    "description": "jojo 的显示语言。你的记录会保留你书写时使用的语言。",
+    "system": "与此浏览器相同（{{name}}）",
+    "loadFailed": "无法加载该语言。jojo 仍使用{{name}}。"
+  }
+}

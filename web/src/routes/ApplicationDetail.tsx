@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { FileQuestion } from 'lucide-react'
 import { DatesPanel } from '@/components/applications/detail/DatesPanel'
 import { FiledPanel } from '@/components/applications/detail/FiledPanel'
@@ -30,7 +30,7 @@ import type { TimelineDraft } from '@jojo/service/react/use-timeline'
 import { useTimeline } from '@jojo/service/react/use-timeline'
 import { useVault } from '@jojo/service/react/use-vault'
 import { useDialogs } from '@/lib/dialogs-context'
-import { appPath, applicationsPath, useTitle } from '@/lib/links'
+import { appPath, applicationsPath, listStateOf, useTitle } from '@/lib/links'
 import { useToast } from '@/lib/toast-context'
 import { useMascot } from '@/lib/mascot-context'
 import { stageGesture } from '@/lib/mascot-cues'
@@ -125,6 +125,15 @@ function Detail({
   // The record's own name, so a tab left open on one application is
   // distinguishable from the list it came from.
   useTitle(displayName(a))
+
+  /**
+   * The list's own state — view, stage, search, sort — carried on every
+   * navigation that leaves this record for another place in the list, the way
+   * opening and closing a record already carry it (`listStateOf`). Duplicate
+   * and Delete dropped it, and the table behind the sheet reset to the
+   * unfiltered board.
+   */
+  const keep = listStateOf(useLocation().search)
 
   const [target, setTarget] = useState<Stage | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -267,11 +276,11 @@ function Detail({
         label: 'Undo',
         onClick: () => {
           remove(copy.id)
-          navigate(appPath(a))
+          navigate(appPath(a) + keep)
         },
       },
     })
-    navigate(appPath(copy))
+    navigate(appPath(copy) + keep)
   }
 
   const onDraft = () => openDialog('draft', { applicationId: a.id })
@@ -290,11 +299,11 @@ function Detail({
         label: 'Undo',
         onClick: () => {
           restore()
-          navigate(appPath(a))
+          navigate(appPath(a) + keep)
         },
       },
     })
-    navigate(applicationsPath())
+    navigate(applicationsPath() + keep)
   }
 
   return (

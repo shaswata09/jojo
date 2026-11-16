@@ -108,6 +108,8 @@ describe('on the phone (Q145)', () => {
     expect(details).toBeGreaterThan(-1)
     expect(tour).toBeGreaterThan(details)
     expect(phone).toMatch(/<WelcomeDetails\b/)
-    expect(phone).toMatch(/<GuidedTour\b/)
+    // The tour is the coach-mark overlay now (mobile/src/components/tour),
+    // started from the offer rather than drawn inside it.
+    expect(phone).toMatch(/startTour\(0\)/)
   })
 })

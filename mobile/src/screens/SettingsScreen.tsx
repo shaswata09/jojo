@@ -22,7 +22,20 @@ import {
 } from '@jojo/service/core/provider'
 import type { ProviderId } from '@jojo/service/core/provider'
 import { copyExport } from '@/lib/clipboard-export'
+import { bucket } from '@jojo/service/core/analytics'
 import { buildPhoneBackup } from '@/lib/phone-backup'
+import {
+  importOutcomeToast,
+  pathOfUri,
+  pickFailure,
+  planImport,
+  planImportBase64,
+  type ImportPlan,
+} from '@/lib/import-backup'
+import { applyPlan } from '@/lib/restore-received'
+import { describeBackup, replacesClause, type RestorePlan } from '@jojo/service/core/backup'
+import { keepLocalCopy, pick, types } from '@react-native-documents/picker'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 import { useGraph, useKg } from '@jojo/service/react/kg-context'
 import { forgetDocuments } from '@/lib/documents'
 import { s } from '@/theme/styles'
@@ -36,6 +49,7 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { SettingRow, TextField } from '@/components/ui/Field'
+import { LanguageRow } from '@/components/settings/LanguageRow'
 import { MenuSheet } from '@/components/ui/Menu'
 import { Columns, Screen } from '@/components/ui/Screen'
 import { Segment } from '@/components/ui/Segment'
@@ -51,6 +65,9 @@ import { useTheme } from '@/theme/theme-context'
 import type { ThemePref } from '@/theme/theme-context'
 import { useColors } from '@/theme/theme-context'
 import { radius, space } from '@/theme/tokens'
+import { TourTarget } from '@/components/tour/TourTarget'
+import { report } from '@/lib/analytics'
+import { reportableProvider } from '@jojo/service/core/analytics'
 
 const THEMES = [
   { value: 'light', label: 'Light' },
@@ -149,8 +166,10 @@ export function SettingsScreen() {
     const result = await testReader(readerAt)
     setReaderTesting(false)
     setReaderOk(result.ok)
-    if (result.ok) setReader(readerAt.trim())
-    else setReaderFailure(result.reason)
+    if (result.ok) {
+      setReader(readerAt.trim())
+      void report('reader_connected', { via: 'direct' })
+    } else setReaderFailure(result.reason)
   }
 
   const connected = model.trim().length > 0
@@ -230,6 +249,7 @@ export function SettingsScreen() {
     setModel(found)
     setNameEdit(null)
     save({ ...settings, endpoint: endpoint.trim(), model: found })
+    void report('model_connected', { provider: reportableProvider(settings.provider) })
     // Saved under the model's own name unless this address already had one the
     // user chose. That is the "auto-saved" half: connecting is the act, and
     // keeping the address is a consequence of it rather than a second button.
@@ -249,7 +269,7 @@ export function SettingsScreen() {
   // than `new Date()` for the reason `kg-context` gives: one clock, injected,
   // so nothing in this tree disagrees about when something happened.
   const graph = useGraph()
-  const { now } = useKg()
+  const { now, repo } = useKg()
   // Only for the paths below: the copies behind the file rows have to be named
   // before the rows go, and the rows are the only record of where they are.
   const { files } = useVault()
@@ -306,7 +326,107 @@ export function SettingsScreen() {
       // sentence about keywords under this button.
       readable: JSON.parse(exportJSON()) as unknown,
     })
-    toast(copyExport(backup, (text) => Clipboard.setString(text), Platform.OS === 'android'))
+    const said = copyExport(backup, (text) => Clipboard.setString(text), Platform.OS === 'android')
+    toast(said)
+    // The web's event, from the phone: counted only when the copy landed.
+    if (said.tone !== 'danger') {
+      void report('backup_used', { direction: 'export', records: bucket(graph.nodes().length) })
+    }
+  }
+
+  /*
+   * IMPORT — a backup file, or the phone's own export pasted back.
+   *
+   * The button was disabled with a sentence saying the picker was not wired,
+   * and Export's clipboard backup had no way back in at all. Both now end at
+   * the transfer receive's own question, "Replace everything on this phone?",
+   * and at the same `applyPlan` — with `handover: false`, because a file the
+   * person kept is not a device holding a copy.
+   *
+   * What is said to the person is decided in `lib/import-backup.ts`, where it
+   * can be tested; these handlers only move bytes between the picker, the disk
+   * and those functions.
+   */
+  const [importing, setImporting] = useState<RestorePlan | null>(null)
+  const [restoring, setRestoring] = useState(false)
+
+  const refuseImport = (description: string) =>
+    toast({ title: 'Nothing was imported', description, tone: 'danger' })
+
+  const offerImport = (planned: ImportPlan) => {
+    if (!planned.ok) {
+      refuseImport(planned.message)
+      return
+    }
+    setImporting(planned.plan)
+  }
+
+  const onImportFile = async () => {
+    try {
+      // All files as well: some Android file managers report a .json as
+      // octet-stream, which would grey it out. The reader refuses what is not
+      // a backup, with a sentence, so offering everything costs nothing.
+      const [picked] = await pick({ type: [types.json, types.plainText, types.allFiles] })
+      // A copy first, as `pickDocuments` does: on Android the picker hands back
+      // a `content://` uri whose read grant belongs to the activity, and
+      // `keepLocalCopy` is the module's own way to turn it into a path.
+      const [copy] = await keepLocalCopy({
+        files: [{ uri: picked.uri, fileName: picked.name ?? 'backup.json' }],
+        destination: 'cachesDirectory',
+      })
+      if (copy.status !== 'success') {
+        refuseImport(`The file could not be opened: ${copy.copyError}`)
+        return
+      }
+      const path = pathOfUri(copy.localUri)
+      try {
+        offerImport(planImportBase64(await ReactNativeBlobUtil.fs.readFile(path, 'base64')))
+      } finally {
+        // The plan holds what it needs; the cached copy of a whole backup does
+        // not get to outlive the question.
+        void ReactNativeBlobUtil.fs.unlink(path).catch(() => undefined)
+      }
+    } catch (error) {
+      const reason = pickFailure(error)
+      if (reason !== null) refuseImport(reason)
+    }
+  }
+
+  const onPasteBackup = async () => {
+    try {
+      offerImport(planImport(await Clipboard.getString(), 'clipboard'))
+    } catch (error) {
+      refuseImport(
+        `The clipboard could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
+
+  /*
+   * Called from `ConfirmSheet`'s confirm button, which runs `onClose()` first —
+   * so the plan comes in as an argument from the render that showed the sheet,
+   * not from state `onClose` has just cleared. `onClose` only clears; it never
+   * declines anything destructive (see `lib/receive-decision.ts` for the panel
+   * where it did).
+   */
+  const applyImport = (plan: RestorePlan) => {
+    setRestoring(true)
+    applyPlan(repo, plan, now(), { handover: false })
+      .then((done) => {
+        toast(importOutcomeToast(done))
+        // A transfer is counted once, by the computer; a backup brought in by
+        // hand is this phone's own event.
+        if (done.ok)
+          void report('backup_used', { direction: 'restore', records: bucket(done.nodes) })
+      })
+      .catch((error: unknown) =>
+        toast({
+          title: 'The import did not finish',
+          description: error instanceof Error ? error.message : String(error),
+          tone: 'danger',
+        }),
+      )
+      .finally(() => setRestoring(false))
   }
 
   /**
@@ -379,58 +499,62 @@ export function SettingsScreen() {
     <Screen title="Settings" subtitle="Connections, sync and your data" wide>
       {/* Setting groups. The confirm sheet stays outside — it is an overlay, not a panel. Side by side on a tablet. */}
       <Columns>
-        <Panel>
-          {/*
-            * WHERE THE BYTES ARE, rather than three switches that did nothing.
-            *
-            * This panel held `autoSync`, `snapshots` and `watchFolder` — bare
-            * `useState` with no reader anywhere. They flipped, looked live,
-            * were never persisted and were wired to nothing, under a heading
-            * promising records that "survive closing the app". Web deleted the
-            * same three and names them in `DocumentsPanel` as the defect it was
-            * written to remove; the phone kept them.
-            *
-            * A switch that does nothing is worse than an absent feature: it is
-            * a promise the app has already broken by the time anybody notices.
-            */}
-          <PanelTitle hint="where your records actually live">On this device</PanelTitle>
-          <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            Everything you add is written straight to this phone&rsquo;s own storage as you work —
-            there is nothing to switch on, and nothing leaves the device. Documents you attach are
-            copied into jojo&rsquo;s own folder, so they survive the original being moved or deleted.
-          </Txt>
-          {/* Both ways out. The phone is still always the side that listens —
+        <TourTarget id="device">
+          <Panel>
+            {/*
+             * WHERE THE BYTES ARE, rather than three switches that did nothing.
+             *
+             * This panel held `autoSync`, `snapshots` and `watchFolder` — bare
+             * `useState` with no reader anywhere. They flipped, looked live,
+             * were never persisted and were wired to nothing, under a heading
+             * promising records that "survive closing the app". Web deleted the
+             * same three and names them in `DocumentsPanel` as the defect it was
+             * written to remove; the phone kept them.
+             *
+             * A switch that does nothing is worse than an absent feature: it is
+             * a promise the app has already broken by the time anybody notices.
+             */}
+            <PanelTitle hint="where your records actually live">On this device</PanelTitle>
+            <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
+              Everything you add is written straight to this phone&rsquo;s own storage as you work —
+              there is nothing to switch on, and nothing leaves the device. Documents you attach are
+              copied into jojo&rsquo;s own folder, so they survive the original being moved or
+              deleted.
+            </Txt>
+            {/* Both ways out. The phone is still always the side that listens —
               a browser cannot accept an inbound connection — but since
               2026-11-15 the computer can connect and PULL the phone's backup,
               so Transfer sends from here as well as receiving. */}
-          <Txt size="sm" tone="secondary">
-            To get a copy out, use Export below, or Transfer to send everything to your computer over
-            your local network.
-          </Txt>
-        </Panel>
+            <Txt size="sm" tone="secondary">
+              To get a copy out, use Export below, or Transfer to send everything to your computer
+              over your local network.
+            </Txt>
+          </Panel>
+        </TourTarget>
 
-        <Panel>
-          {/* Was "Local model", and that stopped being true the moment this
+        <TourTarget id="model">
+          <Panel>
+            {/* Was "Local model", and that stopped being true the moment this
               panel could reach Claude. A heading that names one of the two
               answers is a heading that is wrong half the time. */}
-          <PanelTitle
-            right={
-              <IconButton
-                icon="link"
-                label="Saved servers"
-                onPress={() => setPicking(true)}
-                disabled={shown.length === 0}
-              />
-            }
-          >
-            Model
-          </PanelTitle>
-          <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            A model on a machine you can reach, or one you pay for. Local is the default because it
-            is the only arrangement where your records never leave this device.
-          </Txt>
+            <PanelTitle
+              right={
+                <IconButton
+                  icon="link"
+                  label="Saved servers"
+                  onPress={() => setPicking(true)}
+                  disabled={shown.length === 0}
+                />
+              }
+            >
+              Model
+            </PanelTitle>
+            <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
+              A model on a machine you can reach, or one you pay for. Local is the default because
+              it is the only arrangement where your records never leave this device.
+            </Txt>
 
-          {/* The provider first, because every field under it depends on the
+            {/* The provider first, because every field under it depends on the
               answer: a local server needs an address, a cloud one needs a key
               and has its address already.
 
@@ -439,170 +563,170 @@ export function SettingsScreen() {
               Studio, llama.cpp)", do not fit a 390pt track — scrolled sideways
               they become a row you have to swipe to discover, which is the one
               thing a picker must not be. */}
-          <SettingRow
-            label="Provider"
-            description={provider.label}
-            onPress={() => setChoosing(true)}
-          />
-          {provider.cloud ? <CloudTerms provider={provider} /> : null}
-          <View style={{ gap: space[3] }}>
-            {/* Not offered at all when the provider's address is fixed. An
+            <SettingRow
+              label="Provider"
+              description={provider.label}
+              onPress={() => setChoosing(true)}
+            />
+            {provider.cloud ? <CloudTerms provider={provider} /> : null}
+            <View style={{ gap: space[3] }}>
+              {/* Not offered at all when the provider's address is fixed. An
                 editable field over a value the request builder is going to
                 ignore is a field that can only mislead. */}
-            {provider.fixedEndpoint ? null : (
-              <TextField
-                label="Endpoint"
-                mono
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="url"
-                value={endpoint}
-                // A LAN address, not `localhost`. A placeholder is a
-                // suggestion, and this one is on a phone: `localhost` here is
-                // the phone, which is not running the model.
-                placeholder="http://192.168.1.20:8000/v1"
-                hint={
-                  /*
-                   * The loopback warning outranks the dialect note, because one
-                   * is a detail about a URL that will work and the other is the
-                   * reason a URL cannot.
-                   *
-                   * Ollama's default endpoint is `http://localhost:11434`, and
-                   * it is right on a desktop browser and wrong here — the
-                   * request goes to the phone, fails to connect, and reads
-                   * exactly like a server that is switched off. Somebody who
-                   * followed the setup copy has then done everything correctly
-                   * and been told it does not work.
-                   */
-                  isLoopbackEndpoint(endpoint || provider.endpoint)
-                    ? 'That address means “this device”, so on a phone it points at the phone. Use the computer’s address on your network instead — something like 192.168.1.20, or its .local name.'
-                    : provider.dialect === 'ollama'
-                      ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
-                      : 'The base URL, ending in /v1.'
-                }
-                onChangeText={onEndpointChange}
-              />
-            )}
+              {provider.fixedEndpoint ? null : (
+                <TextField
+                  label="Endpoint"
+                  mono
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                  value={endpoint}
+                  // A LAN address, not `localhost`. A placeholder is a
+                  // suggestion, and this one is on a phone: `localhost` here is
+                  // the phone, which is not running the model.
+                  placeholder="http://192.168.1.20:8000/v1"
+                  hint={
+                    /*
+                     * The loopback warning outranks the dialect note, because one
+                     * is a detail about a URL that will work and the other is the
+                     * reason a URL cannot.
+                     *
+                     * Ollama's default endpoint is `http://localhost:11434`, and
+                     * it is right on a desktop browser and wrong here — the
+                     * request goes to the phone, fails to connect, and reads
+                     * exactly like a server that is switched off. Somebody who
+                     * followed the setup copy has then done everything correctly
+                     * and been told it does not work.
+                     */
+                    isLoopbackEndpoint(endpoint || provider.endpoint)
+                      ? 'That address means “this device”, so on a phone it points at the phone. Use the computer’s address on your network instead — something like 192.168.1.20, or its .local name.'
+                      : provider.dialect === 'ollama'
+                        ? 'The host and port. No /v1 — jojo uses Ollama’s own endpoint so it can ask it not to truncate.'
+                        : 'The base URL, ending in /v1.'
+                  }
+                  onChangeText={onEndpointChange}
+                />
+              )}
 
-            {/* Written straight to the settings document, which lives in
+              {/* Written straight to the settings document, which lives in
                 AsyncStorage BESIDE the graph rather than inside it — so a
                 backup, which is nodes, edges and documents, cannot carry a key
                 even by accident. `textContentType="none"` is the other half of
                 keeping it there: iOS offers to save anything in a secure field
                 to the keychain, and a provider key is not the user's password. */}
-            {provider.needsKey ? (
-              <TextField
-                label="API key"
-                mono
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="off"
-                textContentType="none"
-                value={settings.apiKey ?? ''}
-                placeholder="sk-…"
-                hint="Kept on this device only. It is never put in a backup and never sent anywhere but the provider."
-                onChangeText={(next) => {
-                  save({ ...settings, apiKey: cleanKey(next) })
-                }}
-              />
-            ) : null}
-            {/* Empty and unusable until a server has answered. The model id is
-                the server's to state, not the user's to guess, and a field
-                offering to take a guess is a field inviting a 404 later. */}
-            <TextField
-              label="Model"
-              mono
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={model}
-              editable={connected}
-              placeholder={connected ? '' : 'Found when you test the connection'}
-              hint={
-                connected
-                  ? 'What the server reported. Change it if you serve more than one.'
-                  : undefined
-              }
-              onChangeText={setModel}
-              onBlur={() => {
-                save({ ...settings, endpoint: endpoint.trim(), model: model.trim() })
-              }}
-            />
-            {/* Only once there is something to name. Before that it would be a
-                label for a connection that does not exist. */}
-            {connected ? (
-              <TextField
-                label="Saved as"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={name}
-                placeholder={model}
-                hint="What this server is called in the list. Defaults to the model."
-                onChangeText={setNameEdit}
-                onBlur={onRename}
-              />
-            ) : null}
-            {/*
-             * The window, which had no control at all until now.
-             *
-             * `contextOf` has always read `settings.contextWindow` and fallen
-             * back to the provider's default, and nothing in either app could
-             * write it — so every Ollama user planned against 4,096 tokens
-             * whatever their `num_ctx` actually was, and the agent compacted
-             * history it had room for. The default is a floor Ollama ships,
-             * not a measurement of anybody's deployment.
-             *
-             * Empty means "use the default", which is a real choice: for Ollama
-             * it also stops jojo sending `num_ctx` at all, letting the server
-             * size itself against its own VRAM rather than failing to load at a
-             * number the user guessed.
-             */}
-            <TextField
-              label="Context window"
-              mono
-              keyboardType="number-pad"
-              autoCorrect={false}
-              value={windowEdit}
-              placeholder={String(provider.defaultContext)}
-              hint={
-                provider.dialect === 'ollama'
-                  ? `Tokens. Empty uses ${provider.defaultContext.toLocaleString()} and lets Ollama size itself; a number here is also sent as num_ctx.`
-                  : `Tokens your deployment can hold. Empty uses ${provider.defaultContext.toLocaleString()}.`
-              }
-              onChangeText={(next) => {
-                setWindowEdit(next.replace(/[^0-9]/g, ''))
-              }}
-              onBlur={() => {
-                const keep = parseContextWindow(windowEdit)
-                setWindowEdit(keep === undefined ? '' : String(keep))
-                const { contextWindow: _dropped, ...rest } = settings
-                save({ ...rest, ...(keep === undefined ? {} : { contextWindow: keep }) })
-              }}
-            />
-            {/* Reasoning, as on the web form — and only where a mode puts
-                something on the wire. See `REASONING`. */}
-            {sendsThinking(provider.id, 'on') ? (
-              <>
-                <SettingRow
-                  label="Reasoning"
-                  description="Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model."
-                  control={null}
-                />
-                <Segment
-                  label="Reasoning"
-                  options={REASONING}
-                  value={
-                    settings.thinking === undefined || settings.thinking === 'server-default'
-                      ? DEFAULT_THINKING
-                      : settings.thinking
-                  }
-                  onChange={(next) => {
-                    save({ ...settings, thinking: next })
+              {provider.needsKey ? (
+                <TextField
+                  label="API key"
+                  mono
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="off"
+                  textContentType="none"
+                  value={settings.apiKey ?? ''}
+                  placeholder="sk-…"
+                  hint="Kept on this device only. It is never put in a backup and never sent anywhere but the provider."
+                  onChangeText={(next) => {
+                    save({ ...settings, apiKey: cleanKey(next) })
                   }}
                 />
-              </>
-            ) : null}
-            {/*
+              ) : null}
+              {/* Empty and unusable until a server has answered. The model id is
+                the server's to state, not the user's to guess, and a field
+                offering to take a guess is a field inviting a 404 later. */}
+              <TextField
+                label="Model"
+                mono
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={model}
+                editable={connected}
+                placeholder={connected ? '' : 'Found when you test the connection'}
+                hint={
+                  connected
+                    ? 'What the server reported. Change it if you serve more than one.'
+                    : undefined
+                }
+                onChangeText={setModel}
+                onBlur={() => {
+                  save({ ...settings, endpoint: endpoint.trim(), model: model.trim() })
+                }}
+              />
+              {/* Only once there is something to name. Before that it would be a
+                label for a connection that does not exist. */}
+              {connected ? (
+                <TextField
+                  label="Saved as"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  value={name}
+                  placeholder={model}
+                  hint="What this server is called in the list. Defaults to the model."
+                  onChangeText={setNameEdit}
+                  onBlur={onRename}
+                />
+              ) : null}
+              {/*
+               * The window, which had no control at all until now.
+               *
+               * `contextOf` has always read `settings.contextWindow` and fallen
+               * back to the provider's default, and nothing in either app could
+               * write it — so every Ollama user planned against 4,096 tokens
+               * whatever their `num_ctx` actually was, and the agent compacted
+               * history it had room for. The default is a floor Ollama ships,
+               * not a measurement of anybody's deployment.
+               *
+               * Empty means "use the default", which is a real choice: for Ollama
+               * it also stops jojo sending `num_ctx` at all, letting the server
+               * size itself against its own VRAM rather than failing to load at a
+               * number the user guessed.
+               */}
+              <TextField
+                label="Context window"
+                mono
+                keyboardType="number-pad"
+                autoCorrect={false}
+                value={windowEdit}
+                placeholder={String(provider.defaultContext)}
+                hint={
+                  provider.dialect === 'ollama'
+                    ? `Tokens. Empty uses ${provider.defaultContext.toLocaleString()} and lets Ollama size itself; a number here is also sent as num_ctx.`
+                    : `Tokens your deployment can hold. Empty uses ${provider.defaultContext.toLocaleString()}.`
+                }
+                onChangeText={(next) => {
+                  setWindowEdit(next.replace(/[^0-9]/g, ''))
+                }}
+                onBlur={() => {
+                  const keep = parseContextWindow(windowEdit)
+                  setWindowEdit(keep === undefined ? '' : String(keep))
+                  const { contextWindow: _dropped, ...rest } = settings
+                  save({ ...rest, ...(keep === undefined ? {} : { contextWindow: keep }) })
+                }}
+              />
+              {/* Reasoning, as on the web form — and only where a mode puts
+                something on the wire. See `REASONING`. */}
+              {sendsThinking(provider.id, 'on') ? (
+                <>
+                  <SettingRow
+                    label="Reasoning"
+                    description="Lets models that can think — gpt-oss, Gemma 4, Qwen3 — reason before answering. Turn it off if replies come back empty on a small model."
+                    control={null}
+                  />
+                  <Segment
+                    label="Reasoning"
+                    options={REASONING}
+                    value={
+                      settings.thinking === undefined || settings.thinking === 'server-default'
+                        ? DEFAULT_THINKING
+                        : settings.thinking
+                    }
+                    onChange={(next) => {
+                      save({ ...settings, thinking: next })
+                    }}
+                  />
+                </>
+              ) : null}
+              {/*
               The three address chips that used to sit here are gone. They
               existed to save somebody remembering whether Ollama is 11434 or
               11343 — and the provider row above now sets the address as a
@@ -610,113 +734,116 @@ export function SettingsScreen() {
               arriving earlier. Two controls writing one field is how they end
               up disagreeing.
             */}
-          </View>
-          <View style={styles.testRow}>
-            <Button
-              label={testing ? 'Testing…' : connected ? 'Test again' : 'Test connection'}
-              variant="outline"
-              disabled={testing || endpoint.trim().length === 0}
-              blocker={endpoint.trim().length === 0 ? 'Fill in an endpoint first.' : undefined}
-              onPress={onTest}
-            />
-            {connected ? (
-              <Chip tone="green">Connected</Chip>
-            ) : failure ? (
-              <Chip tone="red">No answer</Chip>
-            ) : (
-              <Chip tone="gray">Not connected</Chip>
-            )}
-          </View>
-          {/* The server's own words, not a paraphrase. A wrong port and a path
+            </View>
+            <View style={styles.testRow}>
+              <Button
+                label={testing ? 'Testing…' : connected ? 'Test again' : 'Test connection'}
+                variant="outline"
+                disabled={testing || endpoint.trim().length === 0}
+                blocker={endpoint.trim().length === 0 ? 'Fill in an endpoint first.' : undefined}
+                onPress={onTest}
+              />
+              {connected ? (
+                <Chip tone="green">Connected</Chip>
+              ) : failure ? (
+                <Chip tone="red">No answer</Chip>
+              ) : (
+                <Chip tone="gray">Not connected</Chip>
+              )}
+            </View>
+            {/* The server's own words, not a paraphrase. A wrong port and a path
               missing its /v1 fail differently, and only the endpoint knows
               which happened. */}
-          {failure ? (
-            <Txt size="xs" tone="danger" style={{ marginTop: space[2] }}>
-              {failure}
-            </Txt>
-          ) : connected ? (
-            <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-              Kept on this device. The assistant will use this model.
-            </Txt>
-          ) : null}
-        </Panel>
+            {failure ? (
+              <Txt size="xs" tone="danger" style={{ marginTop: space[2] }}>
+                {failure}
+              </Txt>
+            ) : connected ? (
+              <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
+                Kept on this device. The assistant will use this model.
+              </Txt>
+            ) : null}
+          </Panel>
+        </TourTarget>
 
-        <Panel>
-          <PanelTitle hint="PDFs only">Read my documents</PanelTitle>
-          {/* The honest split, because the old copy asked for a server before
+        <TourTarget id="reader">
+          <Panel>
+            <PanelTitle hint="PDFs only">Read my documents</PanelTitle>
+            {/* The honest split, because the old copy asked for a server before
               anything could be read and that is no longer true. Saying what
               already works is what stops somebody setting up a reader they do
               not need — and naming PDF plainly is what stops the opposite. */}
-          <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            This phone already reads Word files, OpenDocument files, decks, saved pages and plain
-            text on its own — nothing to set up and nothing sent anywhere.
-          </Txt>
-          <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
-            <Txt size="sm" tone="primary">
-              PDFs are the exception.
-            </Txt>{' '}
-            Turning one back into text needs the font tables inside it, which is more than this app
-            carries. For those, run {MARKITDOWN.name} on a machine this phone can reach and give its
-            address below.
-          </Txt>
-          <TextField
-            label="Address"
-            mono
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
-            value={readerAt}
-            placeholder={MARKITDOWN.defaultEndpoint}
-            hint="Where markitdown-mcp is listening. The path ends in /mcp."
-            onChangeText={(next) => {
-              setReaderAt(next)
-              setReaderOk(false)
-              setReaderFailure(null)
-            }}
-          />
-          <View style={{ marginTop: space[3], gap: space[1] }}>
-            <Txt size="xs" tone="muted">
-              Not running it yet?
+            <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
+              This phone already reads Word files, OpenDocument files, decks, saved pages and plain
+              text on its own — nothing to set up and nothing sent anywhere.
             </Txt>
-            <Txt size="xs" tone="secondary" mono>
-              {MARKITDOWN.install}
+            <Txt size="sm" tone="secondary" style={{ marginBottom: space[3] }}>
+              <Txt size="sm" tone="primary">
+                PDFs are the exception.
+              </Txt>{' '}
+              Turning one back into text needs the font tables inside it, which is more than this
+              app carries. For those, run {MARKITDOWN.name} on a machine this phone can reach and
+              give its address below.
             </Txt>
-            <Txt size="xs" tone="secondary" mono>
-              {MARKITDOWN.serve}
-            </Txt>
-          </View>
-          <View style={styles.testRow}>
-            <Button
-              label={readerTesting ? 'Testing…' : readerOk ? 'Test again' : 'Test connection'}
-              variant="outline"
-              disabled={readerTesting || readerAt.trim().length === 0}
-              blocker={readerAt.trim().length === 0 ? 'Fill in an address first.' : undefined}
-              onPress={onTestReader}
+            <TextField
+              label="Address"
+              mono
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              value={readerAt}
+              placeholder={MARKITDOWN.defaultEndpoint}
+              hint="Where markitdown-mcp is listening. The path ends in /mcp."
+              onChangeText={(next) => {
+                setReaderAt(next)
+                setReaderOk(false)
+                setReaderFailure(null)
+              }}
             />
-            {readerOk ? (
-              <Chip tone="green">Connected</Chip>
-            ) : readerFailure ? (
-              <Chip tone="red">No answer</Chip>
-            ) : (
-              <Chip tone="gray">Not connected</Chip>
-            )}
-          </View>
-          {readerFailure ? (
-            <Txt size="xs" tone="danger" style={{ marginTop: space[2] }}>
-              {readerFailure}
+            <View style={{ marginTop: space[3], gap: space[1] }}>
+              <Txt size="xs" tone="muted">
+                Not running it yet?
+              </Txt>
+              <Txt size="xs" tone="secondary" mono>
+                {MARKITDOWN.install}
+              </Txt>
+              <Txt size="xs" tone="secondary" mono>
+                {MARKITDOWN.serve}
+              </Txt>
+            </View>
+            <View style={styles.testRow}>
+              <Button
+                label={readerTesting ? 'Testing…' : readerOk ? 'Test again' : 'Test connection'}
+                variant="outline"
+                disabled={readerTesting || readerAt.trim().length === 0}
+                blocker={readerAt.trim().length === 0 ? 'Fill in an address first.' : undefined}
+                onPress={onTestReader}
+              />
+              {readerOk ? (
+                <Chip tone="green">Connected</Chip>
+              ) : readerFailure ? (
+                <Chip tone="red">No answer</Chip>
+              ) : (
+                <Chip tone="gray">Not connected</Chip>
+              )}
+            </View>
+            {readerFailure ? (
+              <Txt size="xs" tone="danger" style={{ marginTop: space[2] }}>
+                {readerFailure}
+              </Txt>
+            ) : readerOk ? (
+              <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
+                Documents are sent to that address and nowhere else. Nothing is uploaded.
+              </Txt>
+            ) : null}
+            {/* The notice the licence asks for, where the choice is made. */}
+            <Divider style={{ marginVertical: space[3] }} />
+            <Txt size="xs" tone="muted">
+              {MARKITDOWN.name} is a separate program, not part of jojo. {MARKITDOWN.copyright}{' '}
+              {MARKITDOWN.licence}. jojo is not affiliated with Microsoft.
             </Txt>
-          ) : readerOk ? (
-            <Txt size="xs" tone="muted" style={{ marginTop: space[2] }}>
-              Documents are sent to that address and nowhere else. Nothing is uploaded.
-            </Txt>
-          ) : null}
-          {/* The notice the licence asks for, where the choice is made. */}
-          <Divider style={{ marginVertical: space[3] }} />
-          <Txt size="xs" tone="muted">
-            {MARKITDOWN.name} is a separate program, not part of jojo. {MARKITDOWN.copyright}{' '}
-            {MARKITDOWN.licence}. jojo is not affiliated with Microsoft.
-          </Txt>
-        </Panel>
+          </Panel>
+        </TourTarget>
 
         <Panel>
           <PanelTitle>Appearance</PanelTitle>
@@ -726,32 +853,31 @@ export function SettingsScreen() {
             control={null}
           />
           <Segment label="Theme" options={THEMES} value={pref} onChange={setPref} />
+          <LanguageRow />
         </Panel>
 
         <Panel>
           <PanelTitle>Your data</PanelTitle>
           <View style={styles.dataRow}>
             <Button label="Export as JSON" icon="upload" variant="outline" onPress={onExport} />
-            {/* The blocker has changed twice and both previous reasons are now
-                false, so it is worth saying which one this is.
-
-                "The store can be read but not yet replaced" was wrong because
-                `repo.replaceAll` exists. "Reading a backup needs a validator
-                able to refuse a file it does not understand" was right when it
-                was written and is not any more: `core/backup.ts`'s `readBackup`
-                is that validator, `repo/restore.ts` is the restore, and the
-                Transfer screen already runs both on every backup that arrives
-                over the network.
-
-                What is missing now is only the FILE half — a picker that hands
-                this app a .json from wherever the person keeps it. That is a
-                `@react-native-documents/picker` call away and is genuinely not
-                built, rather than being a reason not to build it. */}
+            {/* Was disabled behind three successive blockers; the last said the
+                picker was not wired, and it is now. A .json or .txt backup from
+                wherever the person keeps it, or Export's own clipboard backup
+                pasted back — both through the same plan, question and restore
+                as a transfer. Disabled only while a restore is writing. */}
             <Button
               label="Import"
               icon="download"
               variant="outline"
-              blocker="Reading a backup file needs the document picker wired to it, which is not built — a transfer from your computer already restores one"
+              disabled={restoring}
+              onPress={() => void onImportFile()}
+            />
+            <Button
+              label="Paste a backup"
+              icon="clipboard"
+              variant="outline"
+              disabled={restoring}
+              onPress={() => void onPasteBackup()}
             />
           </View>
           {/* This paragraph said keywords "live in their own store and are not in
@@ -773,8 +899,8 @@ export function SettingsScreen() {
             The export covers applications, the timeline, the vault, saved postings, your keywords
             and what they tag, and your profile. It is a backup this app can read back — but the
             documents you attached stay on this phone, so their rows come back without their
-            contents, and the clipboard is the only way out of this phone — Transfer only
-            receives.
+            contents. Transfer, under More, moves everything to a computer with the documents
+            included.
           </Txt>
 
           <View style={{ marginTop: space[3] }}>
@@ -800,7 +926,7 @@ export function SettingsScreen() {
 
             <SettingRow
               label="Move to another device"
-              description="Pair with a second device and hand over everything. A demonstration in this build — nothing is transmitted."
+              description="Pair with your computer over your local network and move everything, documents included."
               onPress={() => navigation.navigate('Transfer')}
             />
             <SettingRow
@@ -850,6 +976,24 @@ export function SettingsScreen() {
         confirmLabel={pending ? pendingCopy[pending].confirm : 'Continue'}
         tone="danger"
         onConfirm={applyPending}
+      />
+
+      {/* The transfer receive's own gate, word for word: what is arriving and
+          what it replaces. */}
+      <ConfirmSheet
+        open={importing !== null}
+        onClose={() => setImporting(null)}
+        title="Replace everything on this phone?"
+        description={
+          importing === null
+            ? ''
+            : `${describeBackup(importing)}. ${replacesClause(importing, 'on this phone')}, and that cannot be undone.`
+        }
+        confirmLabel="Replace"
+        tone="danger"
+        onConfirm={() => {
+          if (importing !== null) applyImport(importing)
+        }}
       />
 
       <ProviderPicker
@@ -1147,7 +1291,9 @@ function KeywordManager() {
     toast({
       title: `${target.name} deleted`,
       description:
-        target.used > 0 ? `Taken off ${target.used} record${target.used === 1 ? '' : 's'}.` : undefined,
+        target.used > 0
+          ? `Taken off ${target.used} record${target.used === 1 ? '' : 's'}.`
+          : undefined,
       tone: 'danger',
       action: { label: 'Undo', onPress: restore },
     })

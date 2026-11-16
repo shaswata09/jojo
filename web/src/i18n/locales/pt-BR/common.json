@@ -1,0 +1,8 @@
+{
+  "language": {
+    "label": "Idioma",
+    "description": "O idioma em que o jojo é exibido. Seus registros continuam no idioma em que você os escreveu.",
+    "system": "Igual a este navegador ({{name}})",
+    "loadFailed": "Não foi possível carregar esse idioma. O jojo continua em {{name}}."
+  }
+}

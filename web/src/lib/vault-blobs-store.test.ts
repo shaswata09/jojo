@@ -29,7 +29,8 @@ const fake = vi.hoisted(() => ({
 
 vi.mock('@/kg/storage/idb-file-store', async () => ({
   trashPath: (await import('@jojo/service/storage/file-store')).trashPath,
-  isBlockedFailure: (error: { context?: Record<string, unknown> }) => error.context?.blocked === true,
+  isBlockedFailure: (error: { context?: Record<string, unknown> }) =>
+    error.context?.blocked === true,
   createIdbFileStore: () => ({
     open: async () => ({ ok: true, value: undefined }),
     purgeTrash: async () => {
@@ -241,6 +242,32 @@ describe('a restore made before the index has hydrated', () => {
     expect(mod.vaultBlobStore.has('new1')).toBe(true)
     const left = await fake.store.list('Documents')
     expect(left.ok && left.value.map((e) => e.path)).toEqual([blobPath('new1', 'letter.pdf')])
+  })
+})
+
+describe('a restore that brings records back without their documents', () => {
+  /*
+   * Transfer audit, 2026-11-16: a records-only transfer from the phone trashed
+   * every document here, and the purge on the next load made it permanent,
+   * though the file records came back. `keep` names those records.
+   */
+  it('keeps the document of every record it was told to keep, and trashes the rest', async () => {
+    const mod = await load({
+      [blobPath('kept1', 'cv.pdf')]: bytes('cv'),
+      [blobPath('gone1', 'old.pdf')]: bytes('old'),
+    })
+    await mod.blobIndex.ready()
+    await mod.vaultBlobStore.replaceAll(
+      [{ path: blobPath('new1', 'letter.pdf'), data: bytes('new') }],
+      new Set(['kept1']),
+    )
+    expect(mod.vaultBlobStore.has('kept1')).toBe(true)
+    expect(mod.vaultBlobStore.has('gone1')).toBe(false)
+    expect(mod.vaultBlobStore.has('new1')).toBe(true)
+    const left = await fake.store.list('Documents')
+    expect(left.ok && left.value.map((e) => e.path).sort()).toEqual(
+      [blobPath('kept1', 'cv.pdf'), blobPath('new1', 'letter.pdf')].sort(),
+    )
   })
 })
 

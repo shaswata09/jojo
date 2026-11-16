@@ -35,9 +35,9 @@ describe('what the person sees (Q129)', () => {
   it('offers "Receive from phone" on the computer, with a real panel behind it', () => {
     const page = strip(transferSource)
     expect(page).toContain("{ value: 'receive', label: 'Receive from phone' }")
-    expect(page).toContain('<ReceivePanel pull={pull} token={pairing.token} />')
+    expect(page).toContain('<ReceivePanel pull={pull} tokens={pairing.tokens} />')
     // The animation the phone reads is up in both roles.
-    expect(page).toContain('usePairingSession(true)')
+    expect(page).toContain("usePairingSession(true, role === 'send' ? 'push' : 'pull')")
     const panel = strip(receiveSource)
     expect(panel).toContain('Receive from phone')
     expect(panel).not.toMatch(/not possible in a browser/)
@@ -50,11 +50,11 @@ describe('what the person sees (Q129)', () => {
   it('takes the typed code on the computer and starts the pull with it', () => {
     const panel = strip(receiveSource)
     expect(panel).toContain('aria-label="The code shown on your phone"')
-    expect(panel).toContain('void pull.start(code, token)')
+    expect(panel).toContain('void pull.start(code, tokens)')
   })
 
   it('says on both devices that they must share a local network', () => {
-    expect(strip(receiveSource)).toMatch(/Both devices need to be on the same local\s+network/)
+    expect(strip(receiveSource)).toMatch(/Both devices need to be on the\s+same local\s+network/)
     expect(strip(phoneSendSource)).toMatch(/Both need to be on the same local network/)
     expect(strip(phoneScreenSource)).toMatch(/Both need to be on the same network/)
   })
@@ -71,8 +71,8 @@ describe('the computer pulls only after the proof (Q129)', () => {
 
   it('dials the address the code decodes to, then checks the proof, then pulls', () => {
     const decoded = at('const read = decodeAddress(code)')
-    const asked = at('await fetchPairing(address, token)')
-    const keyed = at('const keys = await complete(response.value)')
+    const asked = at('await fetchPairing(address, path, signal)')
+    const keyed = at('const keys = await complete(response.value, path)')
     const refused = at('if (keys === null) return')
     const pulled = at('await runPull<HandoffFailure>(')
     expect(asked).toBeGreaterThan(decoded)
@@ -99,10 +99,15 @@ describe('what arrives is restored the way a backup file is (Q129)', () => {
 
   it('asks the same "replaces / back up first" question, word for word', () => {
     // Read out of DataPanel's own dialog, so the two cannot drift apart.
-    const file = /That file holds \$\{describeBackup\(staged\)\}\. (.*?)`/.exec(dataPanelSource)?.[1]
+    // Both say what goes through the one `replacesClause`, then the same words.
+    const file =
+      /That file holds \$\{describeBackup\(staged\)\}\. \$\{replacesClause\(staged, 'you have now'\)\}(.*?)`/.exec(
+        dataPanelSource,
+      )?.[1]
     expect(file).toBeTruthy()
     const plan = { exportedAt: '', nodes: [], edges: [], documents: [] }
     expect(pullConfirmCopy(plan).description.endsWith(file!)).toBe(true)
+    expect(pullSource).toContain("replacesClause(plan, 'you have now')")
     expect(dataPanelSource).toContain(`confirmLabel="${pullConfirmCopy(plan).confirm}"`)
   })
 
@@ -110,7 +115,9 @@ describe('what arrives is restored the way a backup file is (Q129)', () => {
     const panel = strip(receiveSource)
     expect(panel).toContain('pullConfirmCopy(pull.plan)')
     expect(panel).toContain('onConfirm={() => void pull.confirm()}')
-    const hook = strip(pullSource).slice(strip(pullSource).indexOf('export function useHandoffPull('))
+    const hook = strip(pullSource).slice(
+      strip(pullSource).indexOf('export function useHandoffPull('),
+    )
     // The run stages the plan; only `confirm` restores.
     const staged = hook.indexOf("setStage('confirming')")
     const restored = hook.indexOf('await restoreFromPhone(')

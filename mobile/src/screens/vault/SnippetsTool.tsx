@@ -34,6 +34,7 @@ import { useToast } from '@/lib/toast-context'
 import { s } from '@/theme/styles'
 import { useColors } from '@/theme/theme-context'
 import { space } from '@/theme/tokens'
+import { report } from '@/lib/analytics'
 
 const TAG_LABELS = Object.fromEntries(SNIPPET_TAGS.map((t) => [t, t])) as Record<SnippetTag, string>
 
@@ -214,7 +215,9 @@ export function SnippetsTool({ focus }: { focus?: string }) {
                 icon={isCopied(snippet.id) ? 'check' : 'copy'}
                 label={`Copy ${snippet.title}`}
                 active={isCopied(snippet.id)}
-                onPress={() => copy(snippet.tailored ? stripMarks(snippet.body) : snippet.body, snippet.id)}
+                onPress={() =>
+                  copy(snippet.tailored ? stripMarks(snippet.body) : snippet.body, snippet.id)
+                }
               />
               <LabelPicker recordId={snippet.id} name={snippet.title} />
               <IconButton
@@ -290,6 +293,7 @@ export function SnippetsTool({ focus }: { focus?: string }) {
               toast({ title: 'Snippet saved', description: draft.title })
             } else {
               addSnippet(draft)
+              void report('vault_item_added', { kind: 'snippet' })
               toast({
                 title: 'Snippet added',
                 description: `${draft.title} · filed under ${draft.tag}`,
@@ -362,7 +366,9 @@ function SnippetEditor({
       description="Anything in [BRACKETS] stays a blank when the draft sheet loads this, so a person's name is never filled in for you."
       footer={
         <>
-          <Button label="Cancel" variant="ghost" size="md" onPress={onClose} />
+          {/* Through `askOrClose`, as the backdrop, the X and Back are: Cancel
+              threw away a half-written snippet without asking, and there is no undo. */}
+          <Button label="Cancel" variant="ghost" size="md" onPress={askOrClose} />
           <Button label="Save" size="md" onPress={submit} />
         </>
       }

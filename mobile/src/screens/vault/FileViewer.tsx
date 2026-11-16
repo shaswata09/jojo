@@ -152,6 +152,9 @@ export function FileViewer({
         open
         onClose={onClose}
         size="tall"
+        // Taller than the screen with a field or two open; scrolls rather
+        // than clipping the last field and its Save under the footer.
+        scroll
         title={file.name}
         description={`${file.bucket} · filed ${agoLabel(file.savedOn, TODAY)}`}
         footer={
@@ -319,7 +322,7 @@ export function FileViewer({
             ) : (
               <View style={s.row}>
                 <Feather name="edit-3" size={14} color={c.text3} />
-                <Txt size="sm" tone="muted">
+                <Txt size="sm" tone="muted" style={s.fill}>
                   Nothing written down about this one yet.
                 </Txt>
               </View>

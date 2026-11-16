@@ -228,10 +228,18 @@ export function TimelineItemSheet({ open, onOpenChange, mode, initial }: Timelin
         label: 'Undo',
         onPress: () => {
           if (editingId) {
-            // The whole stored record, not a diff: `update` merges, so handing
-            // it back the object it had restores fields this form never
-            // collected as well as the ones it did.
-            if (beforeItem) update(editingId, beforeItem)
+            // The whole stored record, plus every key this save wrote. `update`
+            // only touches keys that are present, and a field the record did
+            // not have — no time, no note — has no key in `beforeItem`, so a
+            // time or note the edit ADDED survived the undo. Naming each
+            // written key, with its old value (undefined clears it), is what
+            // takes it back off.
+            if (beforeItem) {
+              const revert: Record<string, unknown> = { ...beforeItem }
+              for (const key of Object.keys(patch))
+                revert[key] = beforeItem[key as keyof TimelineItem]
+              update(editingId, revert as Partial<TimelineItem>)
+            }
             if (beforeKeywords.length > 0) setRecord(editingId, beforeKeywords)
             else removeRecord(editingId)
           } else {

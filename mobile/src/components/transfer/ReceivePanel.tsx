@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { Panel, PanelTitle } from '@/components/ui/Surface'
 import { Txt } from '@/components/ui/Text'
@@ -13,7 +13,7 @@ import { applyPlan } from '@/lib/restore-received'
 import { createLanding } from '@/lib/receive-landing'
 import { actionFor, recordAnswer } from '@/lib/receive-decision'
 import type { SheetAnswer } from '@/lib/receive-decision'
-import { describeBackup } from '@jojo/service/core/backup'
+import { describeBackup, replacesClause } from '@jojo/service/core/backup'
 import type { RestorePlan } from '@jojo/service/core/backup'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { useColors } from '@/theme/theme-context'
@@ -94,6 +94,15 @@ export function ReceivePanel() {
     if (granted === 'granted') setScanning(true)
   }, [])
 
+  /** Whether the panel is still on screen — see the same guard in `SendPanel`. */
+  const mounted = useRef(true)
+  useEffect(
+    () => () => {
+      mounted.current = false
+    },
+    [],
+  )
+
   const onOffer = useCallback(async (offer: Uint8Array) => {
     setScanning(false)
     const started = await beginReceiving(offer)
@@ -101,8 +110,28 @@ export function ReceivePanel() {
       setFailed(RECEIVE_ADVICE[started.error])
       return
     }
+    if (!mounted.current) {
+      started.value.stop()
+      return
+    }
     setSession(started.value)
   }, [])
+
+  /**
+   * Back to the start: the socket closed and a fresh scan offered.
+   *
+   * Once a session existed this panel had no button at all, so when the
+   * computer gave up the phone kept listening on the LAN with a dead code on
+   * screen (transfer audit, 2026-11-16). Nothing on the phone has changed at
+   * this point: it acts only on a whole transfer, and only after asking.
+   */
+  const reset = useCallback(() => {
+    session?.stop()
+    setSession(null)
+    setBytes(0)
+    setFailed(null)
+    setLanded(null)
+  }, [session])
 
   /**
    * Watches the stream, and lands it once it is whole.
@@ -149,7 +178,7 @@ export function ReceivePanel() {
    */
   const applyPending = useCallback(
     (plan: RestorePlan) => {
-      void applyPlan(repo, plan, new Date().toISOString()).then((done) => {
+      void applyPlan(repo, plan, new Date().toISOString(), { handover: true }).then((done) => {
         if (!done.ok) {
           setFailed(done.message)
           return
@@ -232,8 +261,17 @@ export function ReceivePanel() {
               <Txt size="sm" tone="muted" center style={{ marginTop: space[2] }}>
                 {landed}
               </Txt>
+              <Pressable
+                accessibilityRole="button"
+                onPress={reset}
+                style={[styles.action, { borderColor: c.hairline }]}
+              >
+                <Txt size="sm" weight="semibold">
+                  Done
+                </Txt>
+              </Pressable>
             </>
-          ) : session !== null ? (
+          ) : session !== null && failed === null ? (
             <>
               <Txt size="sm" tone="muted" center>
                 Type this on your other device
@@ -244,8 +282,17 @@ export function ReceivePanel() {
               <Txt size="xs" tone="muted" center style={{ marginTop: space[2] }}>
                 {bytes === 0
                   ? 'Paired. This phone is listening on your local network and nowhere else.'
-                  : `Receiving — ${sizeLabel(bytes)} so far. Everything on this phone will be replaced.`}
+                  : `Receiving — ${sizeLabel(bytes)} so far. Nothing here changes until you agree to it.`}
               </Txt>
+              <Pressable
+                accessibilityRole="button"
+                onPress={reset}
+                style={[styles.action, { borderColor: c.hairline }]}
+              >
+                <Txt size="sm" weight="semibold">
+                  Cancel
+                </Txt>
+              </Pressable>
             </>
           ) : (
             <>
@@ -258,7 +305,10 @@ export function ReceivePanel() {
               {access === 'blocked' ? null : (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={start}
+                  onPress={() => {
+                    if (session !== null) reset()
+                    void start()
+                  }}
                   style={[styles.action, { borderColor: c.hairline }]}
                 >
                   <Txt size="sm" weight="semibold">
@@ -292,7 +342,7 @@ export function ReceivePanel() {
         description={
           pending === null
             ? ''
-            : `${describeBackup(pending)} All of it replaces what is here now — every application, document and reminder on this phone goes, and that cannot be undone.`
+            : `${describeBackup(pending)}. ${replacesClause(pending, 'on this phone')}, and that cannot be undone.`
         }
         confirmLabel="Replace"
         tone="danger"
